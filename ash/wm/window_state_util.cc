@@ -26,8 +26,8 @@ void ToggleFullScreen(wm::WindowState* window_state,
     window_state->Restore();
   } else {
     // Set the property to activate full screen.
-    window_state->window()->SetProperty(aura::client::kShowStateKey,
-                                        ui::SHOW_STATE_FULLSCREEN);
+    window_state->aura_window()->SetProperty(aura::client::kShowStateKey,
+                                             ui::SHOW_STATE_FULLSCREEN);
   }
 }
 

@@ -28,6 +28,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"

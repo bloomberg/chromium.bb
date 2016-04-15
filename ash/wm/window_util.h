@@ -29,6 +29,8 @@ const int kMinimumOnScreenArea = 25;
 
 namespace wm {
 
+class WmWindow;
+
 // Utility functions for window activation.
 ASH_EXPORT void ActivateWindow(aura::Window* window);
 ASH_EXPORT void DeactivateWindow(aura::Window* window);
@@ -51,6 +53,11 @@ ASH_EXPORT bool IsWindowUserPositionable(aura::Window* window);
 
 // Moves the window to the center of the display.
 ASH_EXPORT void CenterWindow(aura::Window* window);
+
+ASH_EXPORT gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(
+    wm::WmWindow* window);
+ASH_EXPORT gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(
+    wm::WmWindow* window);
 
 // Returns the bounds of a left snapped window with default width in parent
 // coordinates.

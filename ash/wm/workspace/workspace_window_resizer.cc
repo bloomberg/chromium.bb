@@ -22,6 +22,7 @@
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_window_resizer.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/two_step_edge_cycler.h"
@@ -81,8 +82,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   if (bounds_change == WindowResizer::kBoundsChangeDirection_None)
     return std::unique_ptr<WindowResizer>();
 
-  window_state->CreateDragDetails(window, point_in_parent, window_component,
-      source);
+  window_state->CreateDragDetails(point_in_parent, window_component, source);
   if (window->parent() &&
       (window->parent()->id() == kShellWindowId_DefaultContainer ||
        window->parent()->id() == kShellWindowId_DockedContainer ||
@@ -764,15 +764,14 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
     for (aura::Window::Windows::const_reverse_iterator i = children.rbegin();
          i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
       wm::WindowState* other_state = wm::GetWindowState(*i);
-      if (other_state->window() == GetTarget() ||
+      if (other_state->aura_window() == GetTarget() ||
           !other_state->window()->IsVisible() ||
-          !other_state->IsNormalOrSnapped() ||
-          !other_state->CanResize()) {
+          !other_state->IsNormalOrSnapped() || !other_state->CanResize()) {
         continue;
       }
       if (matcher.ShouldAttach(
               other_state->window()->GetBoundsInScreen(), &magnetism_edge_)) {
-        magnetism_window_ = other_state->window();
+        magnetism_window_ = other_state->aura_window();
         window_tracker_.Add(magnetism_window_);
         return true;
       }

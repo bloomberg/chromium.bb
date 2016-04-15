@@ -13,6 +13,7 @@
 #include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"

@@ -17,6 +17,7 @@
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ui/aura/client/aura_constants.h"
@@ -200,10 +201,12 @@ void WorkspaceLayoutManager::OnFullscreenStateChanged(
   WindowSet windows(windows_);
   for (auto window : windows) {
     wm::WindowState* window_state = wm::GetWindowState(window);
-    if (is_fullscreen)
-      window_state->DisableAlwaysOnTop(fullscreen_window);
-    else
+    if (is_fullscreen) {
+      window_state->DisableAlwaysOnTop(
+          wm::WmWindowAura::Get(fullscreen_window));
+    } else {
       window_state->RestoreAlwaysOnTop();
+    }
   }
 }
 

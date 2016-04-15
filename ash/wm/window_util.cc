@@ -10,9 +10,13 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/snap_to_pixel_layout_manager.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/wm_event.h"
+#include "ash/wm/common/wm_screen_util.h"
+#include "ash/wm/common/wm_window.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -33,16 +37,18 @@ namespace wm {
 namespace {
 
 // Returns the default width of a snapped window.
-int GetDefaultSnappedWindowWidth(aura::Window* window) {
+int GetDefaultSnappedWindowWidth(wm::WmWindow* window) {
   const float kSnappedWidthWorkspaceRatio = 0.5f;
 
-  int work_area_width =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window).width();
-  int min_width = window->delegate() ?
-      window->delegate()->GetMinimumSize().width() : 0;
+  int work_area_width = GetDisplayWorkAreaBoundsInParent(window).width();
+  int min_width = window->GetMinimumSize().width();
   int ideal_width =
       static_cast<int>(work_area_width * kSnappedWidthWorkspaceRatio);
   return std::min(work_area_width, std::max(ideal_width, min_width));
+}
+
+int GetDefaultSnappedWindowWidth(aura::Window* window) {
+  return GetDefaultSnappedWindowWidth(WmWindowAura::Get(window));
 }
 
 }  // namespace
@@ -84,6 +90,20 @@ bool IsWindowUserPositionable(aura::Window* window) {
 void CenterWindow(aura::Window* window) {
   wm::WMEvent event(wm::WM_EVENT_CENTER);
   wm::GetWindowState(window)->OnWMEvent(&event);
+}
+
+gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(wm::WmWindow* window) {
+  gfx::Rect work_area_in_parent(GetDisplayWorkAreaBoundsInParent(window));
+  return gfx::Rect(work_area_in_parent.x(), work_area_in_parent.y(),
+                   GetDefaultSnappedWindowWidth(window),
+                   work_area_in_parent.height());
+}
+
+gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(wm::WmWindow* window) {
+  gfx::Rect work_area_in_parent(GetDisplayWorkAreaBoundsInParent(window));
+  int width = GetDefaultSnappedWindowWidth(window);
+  return gfx::Rect(work_area_in_parent.right() - width, work_area_in_parent.y(),
+                   width, work_area_in_parent.height());
 }
 
 gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(aura::Window* window) {

@@ -20,6 +20,7 @@
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "base/i18n/rtl.h"
 #include "base/win/windows_version.h"
 #include "ui/aura/client/aura_constants.h"

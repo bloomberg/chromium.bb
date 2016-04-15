@@ -15,6 +15,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"

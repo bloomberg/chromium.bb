@@ -8,6 +8,7 @@
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -89,7 +90,7 @@ TEST_F(MruWindowTrackerTest, DraggedWindowsInListOnlyOnce) {
 
   // Start dragging the window.
   wm::GetWindowState(w1.get())->CreateDragDetails(
-      w1.get(), gfx::Point(), HTRIGHT, aura::client::WINDOW_MOVE_SOURCE_TOUCH);
+      gfx::Point(), HTRIGHT, aura::client::WINDOW_MOVE_SOURCE_TOUCH);
 
   // During a drag the window is reparented by the Docked container.
   aura::Window* drag_container = Shell::GetContainer(

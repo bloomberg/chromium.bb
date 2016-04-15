@@ -18,6 +18,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
@@ -838,7 +839,7 @@ void DockedWindowLayoutManager::OnShelfAlignmentChanged(
 void DockedWindowLayoutManager::OnPreWindowStateTypeChange(
     wm::WindowState* window_state,
     wm::WindowStateType old_type) {
-  aura::Window* window = window_state->window();
+  aura::Window* window = window_state->aura_window();
   if (IsPopupOrTransient(window))
     return;
   // The window property will still be set, but no actual change will occur
@@ -962,7 +963,7 @@ void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(
 
 void DockedWindowLayoutManager::MinimizeDockedWindow(
     wm::WindowState* window_state) {
-  DCHECK(!IsPopupOrTransient(window_state->window()));
+  DCHECK(!IsPopupOrTransient(window_state->aura_window()));
   window_state->window()->Hide();
   if (window_state->IsActive())
     window_state->Deactivate();
@@ -971,7 +972,7 @@ void DockedWindowLayoutManager::MinimizeDockedWindow(
 
 void DockedWindowLayoutManager::RestoreDockedWindow(
     wm::WindowState* window_state) {
-  aura::Window* window = window_state->window();
+  aura::Window* window = window_state->aura_window();
   DCHECK(!IsPopupOrTransient(window));
   // Always place restored window at the bottom shuffling the other windows up.
   // TODO(varkha): add a separate container for docked windows to keep track

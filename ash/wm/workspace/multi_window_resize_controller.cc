@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "grit/ash_resources.h"
@@ -443,9 +444,7 @@ void MultiWindowResizeController::StartResize(
   }
   int component = windows_.direction == LEFT_RIGHT ? HTRIGHT : HTBOTTOM;
   wm::WindowState* window_state = wm::GetWindowState(windows_.window1);
-  window_state->CreateDragDetails(windows_.window1,
-                                  location_in_parent,
-                                  component,
+  window_state->CreateDragDetails(location_in_parent, component,
                                   aura::client::WINDOW_MOVE_SOURCE_MOUSE);
   window_resizer_.reset(WorkspaceWindowResizer::Create(window_state, windows));
 

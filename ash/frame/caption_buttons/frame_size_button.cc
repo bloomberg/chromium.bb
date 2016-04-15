@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "base/i18n/rtl.h"

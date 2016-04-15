@@ -18,6 +18,7 @@
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/strings/string_number_conversions.h"

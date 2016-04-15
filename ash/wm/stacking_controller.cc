@@ -11,6 +11,7 @@
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

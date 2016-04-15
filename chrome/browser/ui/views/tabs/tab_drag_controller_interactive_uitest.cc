@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -59,6 +58,8 @@
 #include "ash/shell.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "ui/aura/client/screen_position_client.h"

@@ -13,6 +13,7 @@
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/run_loop.h"
 #include "chromeos/network/network_handler.h"

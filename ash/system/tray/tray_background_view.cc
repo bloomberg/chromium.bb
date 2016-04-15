@@ -38,6 +38,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace {
 

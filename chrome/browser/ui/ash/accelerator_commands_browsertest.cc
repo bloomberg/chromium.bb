@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -79,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(AcceleratorCommandsBrowserTest, ToggleMaximized) {
 
   // When in fullscreen accelerators::ToggleMaximized gets out of fullscreen.
   EXPECT_FALSE(window_state->IsFullscreen());
-  Browser* browser = chrome::FindBrowserWithWindow(window_state->window());
+  Browser* browser = chrome::FindBrowserWithWindow(window_state->aura_window());
   ASSERT_TRUE(browser);
   chrome::ToggleFullscreenMode(browser);
   EXPECT_TRUE(window_state->IsFullscreen());
@@ -152,7 +153,8 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
 
   // 2) ToggleFullscreen() should have no effect on windows which cannot be
   // maximized.
-  window_state->window()->SetProperty(aura::client::kCanMaximizeKey, false);
+  window_state->aura_window()->SetProperty(aura::client::kCanMaximizeKey,
+                                           false);
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(IsInitialShowState(window_state));
 

@@ -39,6 +39,7 @@
 
 #if defined(USE_ASH)
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #endif
 
 // The alpha and color of the bubble's shadow.

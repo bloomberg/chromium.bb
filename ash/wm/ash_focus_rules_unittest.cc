@@ -11,6 +11,7 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"

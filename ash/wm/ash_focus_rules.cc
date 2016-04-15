@@ -9,6 +9,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
 
 namespace ash {

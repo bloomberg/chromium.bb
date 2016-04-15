@@ -54,9 +54,10 @@ void MoveToDisplayForRestore(WindowState* window_state) {
   // TODO(oshima): Restore information should contain the
   // work area information like WindowResizer does for the
   // last window location.
-  gfx::Rect display_area = gfx::Screen::GetScreen()
-                               ->GetDisplayNearestWindow(window_state->window())
-                               .bounds();
+  gfx::Rect display_area =
+      gfx::Screen::GetScreen()
+          ->GetDisplayNearestWindow(window_state->aura_window())
+          .bounds();
 
   if (!display_area.Intersects(restore_bounds)) {
     const gfx::Display& display =
@@ -65,10 +66,10 @@ void MoveToDisplayForRestore(WindowState* window_state) {
         Shell::GetInstance()->window_tree_host_manager();
     aura::Window* new_root =
         window_tree_host_manager->GetRootWindowForDisplayId(display.id());
-    if (new_root != window_state->window()->GetRootWindow()) {
-      aura::Window* new_container =
-          Shell::GetContainer(new_root, window_state->window()->parent()->id());
-      new_container->AddChild(window_state->window());
+    if (new_root != window_state->aura_window()->GetRootWindow()) {
+      aura::Window* new_container = Shell::GetContainer(
+          new_root, window_state->aura_window()->parent()->id());
+      new_container->AddChild(window_state->aura_window());
     }
   }
 }
@@ -138,7 +139,7 @@ void CycleSnapDock(WindowState* window_state, WMEventType event) {
        current_dock_alignment != desired_dock_alignment)) {
     if (window_state->CanSnap() &&
         window_state->GetStateType() != desired_snap_state &&
-        window_state->window()->type() != ui::wm::WINDOW_TYPE_PANEL) {
+        window_state->aura_window()->type() != ui::wm::WINDOW_TYPE_PANEL) {
       const wm::WMEvent event(desired_snap_state ==
                               wm::WINDOW_STATE_TYPE_LEFT_SNAPPED ?
                               wm::WM_EVENT_SNAP_LEFT : wm::WM_EVENT_SNAP_RIGHT);
@@ -147,7 +148,7 @@ void CycleSnapDock(WindowState* window_state, WMEventType event) {
     }
 
     if (dock_layout &&
-        dock_layout->CanDockWindow(window_state->window(),
+        dock_layout->CanDockWindow(window_state->aura_window(),
                                    desired_dock_alignment)) {
       if (window_state->IsDocked()) {
         dock_layout->MaybeSetDesiredDockedAlignment(desired_dock_alignment);
@@ -168,7 +169,7 @@ void CycleSnapDock(WindowState* window_state, WMEventType event) {
     window_state->Restore();
     return;
   }
-  ::wm::AnimateWindow(window_state->window(),
+  ::wm::AnimateWindow(window_state->aura_window(),
                       ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
 }
 
@@ -262,7 +263,8 @@ void DefaultState::AttachState(
   // If the display has changed while in the another mode,
   // we need to let windows know the change.
   gfx::Display current_display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window_state->window());
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(
+          window_state->aura_window());
   if (stored_display_state_.bounds() != current_display.bounds()) {
     const WMEvent event(wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED);
     window_state->OnWMEvent(&event);
@@ -274,7 +276,7 @@ void DefaultState::AttachState(
 
 void DefaultState::DetachState(WindowState* window_state) {
   stored_window_state_ = window_state;
-  aura::Window* window = window_state->window();
+  aura::Window* window = window_state->aura_window();
   stored_bounds_ = window->bounds();
   stored_restore_bounds_ = window_state->HasRestoreBounds() ?
       window_state->GetRestoreBoundsInParent() : gfx::Rect();
@@ -282,14 +284,14 @@ void DefaultState::DetachState(WindowState* window_state) {
   // while in the other mode, we can perform necessary action to
   // restore the window state to the proper state for the current
   // display.
-  stored_display_state_ =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window_state->window());
+  stored_display_state_ = gfx::Screen::GetScreen()->GetDisplayNearestWindow(
+      window_state->aura_window());
 }
 
 // static
 bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
                                          const WMEvent* event) {
-  aura::Window* window = window_state->window();
+  aura::Window* window = window_state->aura_window();
 
   switch (event->type()) {
     case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
@@ -418,7 +420,7 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
         return true;
       }
 
-      aura::Window* window = window_state->window();
+      aura::Window* window = window_state->aura_window();
       gfx::Rect bounds = window->bounds();
 
       // Don't adjust window bounds if the bounds are empty as this
@@ -453,13 +455,14 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
         return true;
       }
       gfx::Rect work_area_in_parent =
-          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
-      gfx::Rect bounds = window_state->window()->bounds();
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+              window_state->aura_window());
+      gfx::Rect bounds = window_state->aura_window()->bounds();
       // When display bounds has changed, make sure the entire window is fully
       // visible.
       bounds.AdjustToFit(work_area_in_parent);
       window_state->AdjustSnappedBounds(&bounds);
-      if (window_state->window()->bounds() != bounds)
+      if (window_state->aura_window()->bounds() != bounds)
         window_state->SetBoundsDirectAnimated(bounds);
       return true;
     }
@@ -467,7 +470,7 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
       // Don't resize the maximized window when the desktop is covered
       // by fullscreen window. crbug.com/504299.
       bool in_fullscreen =
-          RootWindowController::ForWindow(window_state->window())
+          RootWindowController::ForWindow(window_state->aura_window())
               ->workspace_controller()
               ->GetWindowState() == WORKSPACE_WINDOW_STATE_FULL_SCREEN;
       if (in_fullscreen && window_state->IsMaximized())
@@ -478,11 +481,12 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
         return true;
       }
       gfx::Rect work_area_in_parent =
-          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
-      gfx::Rect bounds = window_state->window()->bounds();
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+              window_state->aura_window());
+      gfx::Rect bounds = window_state->aura_window()->bounds();
       AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent, &bounds);
       window_state->AdjustSnappedBounds(&bounds);
-      if (window_state->window()->bounds() != bounds)
+      if (window_state->aura_window()->bounds() != bounds)
         window_state->SetBoundsDirectAnimated(bounds);
       return true;
     }
@@ -512,13 +516,13 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
 bool DefaultState::SetMaximizedOrFullscreenBounds(WindowState* window_state) {
   DCHECK(!window_state->is_dragged());
   if (window_state->IsMaximized()) {
-    window_state->SetBoundsDirect(
-        ScreenUtil::GetMaximizedWindowBoundsInParent(window_state->window()));
+    window_state->SetBoundsDirect(ScreenUtil::GetMaximizedWindowBoundsInParent(
+        window_state->aura_window()));
     return true;
   }
   if (window_state->IsFullscreen()) {
     window_state->SetBoundsDirect(
-        ScreenUtil::GetDisplayBoundsInParent(window_state->window()));
+        ScreenUtil::GetDisplayBoundsInParent(window_state->aura_window()));
     return true;
   }
   return false;
@@ -533,7 +537,8 @@ void DefaultState::SetBounds(WindowState* window_state,
     window_state->SetBoundsDirect(event->requested_bounds());
   } else if (window_state->IsSnapped()) {
     gfx::Rect work_area_in_parent =
-        ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
+        ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+            window_state->aura_window());
     gfx::Rect child_bounds(event->requested_bounds());
     AdjustBoundsSmallerThan(work_area_in_parent.size(), &child_bounds);
     window_state->AdjustSnappedBounds(&child_bounds);
@@ -555,7 +560,7 @@ void DefaultState::EnterToNextState(WindowState* window_state,
   window_state->UpdateWindowShowStateFromStateType();
   window_state->NotifyPreStateTypeChange(previous_state_type);
 
-  if (window_state->window()->parent()) {
+  if (window_state->aura_window()->parent()) {
     if (!window_state->HasRestoreBounds() &&
         (previous_state_type == WINDOW_STATE_TYPE_DEFAULT ||
          previous_state_type == WINDOW_STATE_TYPE_NORMAL) &&
@@ -629,7 +634,7 @@ void DefaultState::ReenterToCurrentState(
 
 void DefaultState::UpdateBoundsFromState(WindowState* window_state,
                                          WindowStateType previous_state_type) {
-  aura::Window* window = window_state->window();
+  aura::Window* window = window_state->aura_window();
   gfx::Rect bounds_in_parent;
   switch (state_type_) {
     case WINDOW_STATE_TYPE_LEFT_SNAPPED:
@@ -654,7 +659,8 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
     case WINDOW_STATE_TYPE_DEFAULT:
     case WINDOW_STATE_TYPE_NORMAL: {
       gfx::Rect work_area_in_parent =
-          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+              window_state->aura_window());
       if (window_state->HasRestoreBounds()) {
         bounds_in_parent = window_state->GetRestoreBoundsInParent();
         // Check if the |window|'s restored size is bigger than the working area
@@ -710,19 +716,20 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
 
   if (window_state->IsMinimized()) {
     // Save the previous show state so that we can correctly restore it.
-    window_state->window()->SetProperty(aura::client::kRestoreShowStateKey,
-                                        ToWindowShowState(previous_state_type));
+    window_state->aura_window()->SetProperty(
+        aura::client::kRestoreShowStateKey,
+        ToWindowShowState(previous_state_type));
     ::wm::SetWindowVisibilityAnimationType(
-        window_state->window(), WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+        window_state->aura_window(), WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
 
     // Hide the window.
     window_state->window()->Hide();
     // Activate another window.
     if (window_state->IsActive())
       window_state->Deactivate();
-  } else if ((window_state->window()->TargetVisibility() ||
-             IsMinimizedWindowState(previous_state_type)) &&
-             !window_state->window()->layer()->visible()) {
+  } else if ((window_state->window()->GetTargetVisibility() ||
+              IsMinimizedWindowState(previous_state_type)) &&
+             !window_state->aura_window()->layer()->visible()) {
     // The layer may be hidden if the window was previously minimized. Make
     // sure it's visible.
     window_state->window()->Show();
@@ -737,7 +744,7 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
 void DefaultState::CenterWindow(WindowState* window_state) {
   if (!window_state->IsNormalOrSnapped())
     return;
-  aura::Window* window = window_state->window();
+  aura::Window* window = window_state->aura_window();
   if (window_state->IsSnapped()) {
     gfx::Rect center_in_screen =
         gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();

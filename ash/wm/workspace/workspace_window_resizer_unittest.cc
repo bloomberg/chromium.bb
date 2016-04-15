@@ -14,6 +14,7 @@
 #include "ash/test/display_manager_test_api.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace_controller.h"
@@ -157,8 +158,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
       aura::client::WindowMoveSource source,
       const std::vector<aura::Window*>& attached_windows) {
     wm::WindowState* window_state = wm::GetWindowState(window);
-    window_state->CreateDragDetails(
-        window, point_in_parent, window_component, source);
+    window_state->CreateDragDetails(point_in_parent, window_component, source);
     return WorkspaceWindowResizer::Create(window_state, attached_windows);
   }
 

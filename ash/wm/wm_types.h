@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ui/base/ui_base_types.h"
 
+// TODO(sky): move to common.
 namespace ash {
 namespace wm {
 

@@ -9,6 +9,7 @@
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
 #include "base/message_loop/message_loop.h"

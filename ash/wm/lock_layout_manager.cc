@@ -9,6 +9,7 @@
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/lock_window_state.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event.h"

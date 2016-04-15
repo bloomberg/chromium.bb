@@ -15,6 +15,7 @@
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"

@@ -1,0 +1,149 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef ASH_WM_COMMON_WM_WINDOW_H_
+#define ASH_WM_COMMON_WM_WINDOW_H_
+
+#include <vector>
+
+#include "ash/ash_export.h"
+#include "ui/base/ui_base_types.h"
+#include "ui/wm/public/window_types.h"
+
+namespace gfx {
+class Display;
+class Point;
+class Rect;
+class Size;
+}
+
+namespace ui {
+class Layer;
+}
+
+namespace ash {
+namespace wm {
+
+class WMEvent;
+class WmRootWindowController;
+class WmWindowObserver;
+enum class WmWindowProperty;
+class WindowState;
+
+// This class exists as a porting layer to allow ash/wm to work with
+// aura::Window
+// or mus::Window. See aura::Window for details on the functions.
+class ASH_EXPORT WmWindow {
+ public:
+  WmWindow* GetRootWindow() {
+    return const_cast<WmWindow*>(
+        const_cast<const WmWindow*>(this)->GetRootWindow());
+  }
+  virtual const WmWindow* GetRootWindow() const = 0;
+  virtual WmRootWindowController* GetRootWindowController() = 0;
+
+  virtual int GetShellWindowId() = 0;
+  virtual WmWindow* GetChildByShellWindowId(int id) = 0;
+
+  virtual ui::wm::WindowType GetType() const = 0;
+
+  // TODO(sky): seems like this shouldn't be exposed.
+  virtual ui::Layer* GetLayer() = 0;
+
+  virtual gfx::Display GetDisplayNearestWindow() = 0;
+
+  virtual bool HasNonClientArea() = 0;
+  virtual int GetNonClientComponent(const gfx::Point& location) = 0;
+
+  virtual gfx::Point ConvertPointToTarget(const WmWindow* target,
+                                          const gfx::Point& point) const = 0;
+  virtual gfx::Point ConvertPointToScreen(const gfx::Point& point) const = 0;
+  virtual gfx::Point ConvertPointFromScreen(const gfx::Point& point) const = 0;
+  virtual gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const = 0;
+  virtual gfx::Rect ConvertRectFromScreen(const gfx::Rect& rect) const = 0;
+
+  virtual gfx::Size GetMinimumSize() = 0;
+  virtual gfx::Size GetMaximumSize() = 0;
+
+  // Returns the visibility requested by this window. IsVisible() takes into
+  // account the visibility of the layer and ancestors, where as this tracks
+  // whether Show() without a Hide() has been invoked.
+  virtual bool GetTargetVisibility() const = 0;
+
+  virtual bool IsVisible() const = 0;
+
+  virtual bool GetBoolProperty(WmWindowProperty key) = 0;
+
+  virtual WindowState* GetWindowState() = 0;
+
+  virtual WmWindow* GetToplevelWindow() = 0;
+
+  virtual WmWindow* GetParent() = 0;
+
+  virtual WmWindow* GetTransientParent() = 0;
+
+  virtual void SetBounds(const gfx::Rect& bounds) = 0;
+  // Sets the bounds in such a way that LayoutManagers are circumvented.
+  virtual void SetBoundsDirect(const gfx::Rect& bounds) = 0;
+  virtual void SetBoundsDirectAnimated(const gfx::Rect& bounds) = 0;
+  virtual void SetBoundsDirectCrossFade(const gfx::Rect& bounds) = 0;
+  virtual void SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
+                                 const gfx::Display& dst_display) = 0;
+  virtual gfx::Rect GetBoundsInScreen() const = 0;
+  virtual const gfx::Rect& GetBounds() const = 0;
+  virtual gfx::Rect GetTargetBounds() = 0;
+
+  virtual void ClearRestoreBounds() = 0;
+  virtual void SetRestoreBoundsInScreen(const gfx::Rect& bounds) = 0;
+  virtual gfx::Rect GetRestoreBoundsInScreen() const = 0;
+
+  virtual void OnWMEvent(const wm::WMEvent* event) = 0;
+
+  virtual bool Contains(const WmWindow* other) const = 0;
+
+  virtual void SetShowState(ui::WindowShowState show_state) = 0;
+  virtual ui::WindowShowState GetShowState() const = 0;
+
+  virtual void SetCapture() = 0;
+  virtual bool HasCapture() = 0;
+  virtual void ReleaseCapture() = 0;
+
+  virtual bool HasRestoreBounds() const = 0;
+
+  virtual void SetAlwaysOnTop(bool value) = 0;
+  virtual bool IsAlwaysOnTop() const = 0;
+
+  virtual void Hide() = 0;
+  virtual void Show() = 0;
+
+  virtual bool IsActive() const = 0;
+  virtual void Activate() = 0;
+  virtual void Deactivate() = 0;
+
+  virtual void Maximize() = 0;
+  virtual void Minimize() = 0;
+  virtual void Unminimize() = 0;
+
+  virtual bool CanMaximize() const = 0;
+  virtual bool CanMinimize() const = 0;
+  virtual bool CanResize() const = 0;
+  virtual bool CanActivate() const = 0;
+
+  virtual void StackChildAtTop(WmWindow* child) = 0;
+  virtual void StackChildAbove(WmWindow* child, WmWindow* target) = 0;
+  virtual void StackChildBelow(WmWindow* child, WmWindow* target) = 0;
+
+  virtual std::vector<WmWindow*> GetChildren() = 0;
+
+  virtual void AddObserver(WmWindowObserver* observer) = 0;
+  virtual void RemoveObserver(WmWindowObserver* observer) = 0;
+
+ protected:
+  virtual ~WmWindow() {}
+};
+
+}  // namespace wm
+}  // namespace ash
+
+#endif  // ASH_WM_COMMON_WM_WINDOW_H_

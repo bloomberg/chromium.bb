@@ -46,6 +46,7 @@
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
@@ -133,7 +134,7 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
                        new_parent->id() != kShellWindowId_DockedContainer;
   gfx::Rect local_bounds;
   if (update_bounds) {
-    local_bounds = state->window()->bounds();
+    local_bounds = state->aura_window()->bounds();
     MoveOriginRelativeToSize(src_size, dst_size, &local_bounds);
   }
 

@@ -53,6 +53,7 @@
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/command_line.h"

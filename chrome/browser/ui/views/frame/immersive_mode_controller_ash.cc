@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/wm/immersive_revealed_lock.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"

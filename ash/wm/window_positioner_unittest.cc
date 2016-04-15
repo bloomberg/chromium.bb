@@ -12,6 +12,7 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/screen.h"

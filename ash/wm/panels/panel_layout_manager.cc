@@ -19,6 +19,7 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -487,18 +488,18 @@ void PanelLayoutManager::OnPostWindowStateTypeChange(
   // but the set to restore when the shelf becomes visible is updated.
   if (restore_windows_on_shelf_visible_) {
     if (window_state->IsMinimized()) {
-      MinimizePanel(window_state->window());
-      restore_windows_on_shelf_visible_->Remove(window_state->window());
+      MinimizePanel(window_state->aura_window());
+      restore_windows_on_shelf_visible_->Remove(window_state->aura_window());
     } else {
-      restore_windows_on_shelf_visible_->Add(window_state->window());
+      restore_windows_on_shelf_visible_->Add(window_state->aura_window());
     }
     return;
   }
 
   if (window_state->IsMinimized())
-    MinimizePanel(window_state->window());
+    MinimizePanel(window_state->aura_window());
   else
-    RestorePanel(window_state->window());
+    RestorePanel(window_state->aura_window());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
