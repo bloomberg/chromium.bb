@@ -120,8 +120,10 @@ void SigninSupervisedUserImportHandler::LoadCustodianProfileCallback(
     case Profile::CREATE_STATUS_INITIALIZED: {
       // We are only interested in Profile::CREATE_STATUS_INITIALIZED when
       // everything is ready.
-      if (profile->IsSupervised())
+      if (profile->IsSupervised()) {
+        webui_callback_id_.clear();
         return;
+      }
 
       if (!IsAccountConnected(profile) || HasAuthError(profile)) {
         RejectCallback(GetAuthErorrMessage());
