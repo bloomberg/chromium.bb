@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import contextlib
 import os
 import re
 import shutil
 import StringIO
+import sys
 import tempfile
 import unittest
 
@@ -25,6 +27,26 @@ _GOLDEN_GRAPHVIZ = """digraph graphname {
   n5 [label="e", color=blue, shape=ellipse];
   n5 -> n4;
 }\n"""
+
+
+@contextlib.contextmanager
+def EatStdoutAndStderr():
+  """Overrides sys.std{out,err} to intercept write calls."""
+  sys.stdout.flush()
+  sys.stderr.flush()
+  original_stdout = sys.stdout
+  original_stderr = sys.stderr
+  try:
+    sys.stdout = StringIO.StringIO()
+    sys.stderr = StringIO.StringIO()
+    yield
+  finally:
+    sys.stdout = original_stdout
+    sys.stderr = original_stderr
+
+
+class TestException(Exception):
+  pass
 
 
 class TaskManagerTestCase(unittest.TestCase):
@@ -244,6 +266,52 @@ class GenerateScenarioTest(TaskManagerTestCase):
     task_manager.OutputGraphViz(scenario, [TaskF], output)
     self.assertEqual(_GOLDEN_GRAPHVIZ, output.getvalue())
 
+  def testListResumingTasksToFreeze(self):
+    TaskManagerTestCase.setUp(self)
+    builder = task_manager.Builder(self.output_directory)
+    static_task = builder.CreateStaticTask('static', __file__)
+    @builder.RegisterTask('a')
+    def TaskA():
+      pass
+    @builder.RegisterTask('b', dependencies=[static_task])
+    def TaskB():
+      pass
+    @builder.RegisterTask('c', dependencies=[TaskA, TaskB])
+    def TaskC():
+      pass
+    @builder.RegisterTask('d', dependencies=[TaskA])
+    def TaskD():
+      pass
+    @builder.RegisterTask('e', dependencies=[TaskC])
+    def TaskE():
+      pass
+    @builder.RegisterTask('f', dependencies=[TaskC])
+    def TaskF():
+      pass
+
+    for k in 'abcdef':
+      self.TouchOutputFile(k)
+
+    def RunSubTest(final_tasks, initial_frozen_tasks, failed_task, reference):
+      scenario = \
+          task_manager.GenerateScenario(final_tasks, initial_frozen_tasks)
+      resume_frozen_tasks = task_manager.ListResumingTasksToFreeze(
+          scenario, final_tasks, failed_task)
+      self.assertEqual(reference, resume_frozen_tasks)
+
+      failed_pos = scenario.index(failed_task)
+      new_scenario = \
+          task_manager.GenerateScenario(final_tasks, resume_frozen_tasks)
+      self.assertEqual(scenario[failed_pos:], new_scenario)
+
+    RunSubTest([TaskA], set([]), TaskA, set([]))
+    RunSubTest([TaskD], set([]), TaskA, set([]))
+    RunSubTest([TaskD], set([]), TaskD, set([TaskA]))
+    RunSubTest([TaskE, TaskF], set([TaskA]), TaskB, set([TaskA]))
+    RunSubTest([TaskE, TaskF], set([TaskA]), TaskC, set([TaskA, TaskB]))
+    RunSubTest([TaskE, TaskF], set([TaskA]), TaskE, set([TaskC]))
+    RunSubTest([TaskE, TaskF], set([TaskA]), TaskF, set([TaskC, TaskE]))
+
 
 class CommandLineControlledExecutionTest(TaskManagerTestCase):
   def Execute(self, *command_line_args):
@@ -265,15 +333,16 @@ class CommandLineControlledExecutionTest(TaskManagerTestCase):
       pass
     @builder.RegisterTask('raise_exception', dependencies=[TaskB])
     def TaskF():
-      raise Exception('Expected error.')
+      raise TestException('Expected error.')
 
     default_final_tasks = [TaskD, TaskE]
     parser = task_manager.CommandLineParser()
     cmd = ['-o', self.output_directory]
     cmd.extend([i for i in command_line_args])
     args = parser.parse_args(cmd)
-    return task_manager.ExecuteWithCommandLine(
-        args, [TaskA, TaskB, TaskC, TaskD, TaskE, TaskF], default_final_tasks)
+    with EatStdoutAndStderr():
+      return task_manager.ExecuteWithCommandLine(
+          args, [TaskA, TaskB, TaskC, TaskD, TaskE, TaskF], default_final_tasks)
 
   def testSimple(self):
     self.assertEqual(0, self.Execute())
@@ -291,7 +360,7 @@ class CommandLineControlledExecutionTest(TaskManagerTestCase):
     self.assertEqual(0, self.Execute('-f', 'c'))
 
   def testTaskFailure(self):
-    with self.assertRaisesRegexp(Exception, r'^Expected error\.$'):
+    with self.assertRaisesRegexp(TestException, r'^Expected error\.$'):
       self.Execute('-e', 'raise_exception')
 
 

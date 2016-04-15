@@ -216,6 +216,40 @@ def GenerateScenario(final_tasks, frozen_tasks):
   return scenario
 
 
+def ListResumingTasksToFreeze(scenario, final_tasks, failed_task):
+  """Lists the tasks that one needs to freeze to be able to resume the scenario
+  after failure.
+
+  Args:
+    scenario: The scenario (list of Task) to be resumed.
+    final_tasks: The list of final Task used to generate the scenario.
+    failed_task: A Task that have failed in the scenario.
+
+  Returns:
+    set(Task)
+  """
+  task_to_id = {t: i for i, t in enumerate(scenario)}
+  assert failed_task in task_to_id
+  frozen_tasks = set()
+  walked_tasks = set()
+
+  def InternalWalk(task):
+    if task.IsStatic() or task in walked_tasks:
+      return
+    walked_tasks.add(task)
+    if task not in task_to_id:
+      frozen_tasks.add(task)
+    elif task_to_id[task] < task_to_id[failed_task]:
+      frozen_tasks.add(task)
+    else:
+      for dependency in task._dependencies:
+        InternalWalk(dependency)
+
+  for final_task in final_tasks:
+    InternalWalk(final_task)
+  return frozen_tasks
+
+
 def OutputGraphViz(scenario, final_tasks, output):
   """Outputs the build dependency graph covered by this scenario.
 
@@ -283,6 +317,17 @@ def CommandLineParser():
       help='Outputs the {} and {} file in the output directory.'
            ''.format(_TASK_GRAPH_DOTFILE_NAME, _TASK_GRAPH_PNG_NAME))
   return parser
+
+
+def _GetCommandLineArgumentsStr(final_task_regexes, frozen_tasks):
+  arguments = []
+  if frozen_tasks:
+    arguments.append('-f')
+    arguments.extend([task.name for task in frozen_tasks])
+  if final_task_regexes:
+    arguments.append('-e')
+    arguments.extend(final_task_regexes)
+  return subprocess.list2cmdline(arguments)
 
 
 def ExecuteWithCommandLine(args, tasks, default_final_tasks):
@@ -353,11 +398,11 @@ def ExecuteWithCommandLine(args, tasks, default_final_tasks):
         print '# Looks like something went wrong in \'{}\''.format(task.name)
         print '#'
         print '# To re-execute only this task, add the following parameters:'
-        suggested_flags = []
-        if task._dependencies:
-          suggested_flags.append('-f')
-          suggested_flags.extend([dep.name for dep in task._dependencies])
-        suggested_flags.extend(['-e', task.name])
-        print '#   ' + subprocess.list2cmdline(suggested_flags)
+        print '#   ' + _GetCommandLineArgumentsStr(
+            [task.name], task._dependencies)
+        print '#'
+        print '# To resume from this task, add the following parameters:'
+        print '#   ' + _GetCommandLineArgumentsStr(args.run_regexes,
+            ListResumingTasksToFreeze(scenario, final_tasks, task))
         raise
   return 0
