@@ -7,9 +7,13 @@
 function test()
 {
     Runtime.experiments.enableForTest("resolveVariableNames");
-    InspectorTest.startDebuggerTest(() => InspectorTest.runTestFunctionAndWaitUntilPaused());
+    InspectorTest.waitForScriptSource("resolve-identifiers.ts", onSourceMapLoaded);
 
-    InspectorTest.addSniffer(WebInspector.SourceMapNamesResolver, "_scopeResolvedForTest", onAllScopesResolved, true);
+    function onSourceMapLoaded()
+    {
+        InspectorTest.startDebuggerTest(() => InspectorTest.runTestFunctionAndWaitUntilPaused());
+        InspectorTest.addSniffer(WebInspector.SourceMapNamesResolver, "_scopeResolvedForTest", onAllScopesResolved, true);
+    }
 
     function onAllScopesResolved()
     {

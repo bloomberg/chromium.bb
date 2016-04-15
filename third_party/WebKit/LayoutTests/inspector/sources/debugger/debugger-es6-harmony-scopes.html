@@ -47,19 +47,24 @@ function testFunction()
 
 function test()
 {
-    InspectorTest.startDebuggerTest(step1);
+    InspectorTest.startDebuggerTest(onTestStarted);
 
-    function step1()
+    function onTestStarted()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(onDebuggerPaused);
     }
 
-    function step2()
+    function onDebuggerPaused()
     {
-        InspectorTest.expandScopeVariablesSidebarPane(step3);
+        InspectorTest.addSniffer(WebInspector.ScopeChainSidebarPane.prototype, "_sidebarPaneUpdatedForTest", onSidebarRendered, true);
     }
 
-    function step3()
+    function onSidebarRendered()
+    {
+        InspectorTest.expandScopeVariablesSidebarPane(onScopeVariablesExpanded);
+    }
+
+    function onScopeVariablesExpanded()
     {
         InspectorTest.addResult("");
         InspectorTest.dumpScopeVariablesSidebarPane();

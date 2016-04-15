@@ -2,27 +2,21 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
-<script src="resources/resolve-variable-names-compressed.js"></script>
+<script src="resources/resolve-this.js"></script>
 <script>
 function test()
 {
     Runtime.experiments.enableForTest("resolveVariableNames");
-    InspectorTest.waitForScriptSource("resolve-variable-names-origin.js", onSourceMapLoaded);
+
+    InspectorTest.waitForScriptSource("resolve-this.ts", onSourceMapLoaded);
 
     function onSourceMapLoaded()
     {
         InspectorTest.startDebuggerTest(() => InspectorTest.runTestFunctionAndWaitUntilPaused());
-        InspectorTest.addSniffer(WebInspector.SourceMapNamesResolver, "_scopeResolvedForTest", onScopeResolved, true);
+        InspectorTest.addSniffer(WebInspector.ScopeChainSidebarPane.prototype, "_sidebarPaneUpdatedForTest", onSidebarRendered, true);
     }
 
-    var resolvedScopes = 0;
-    function onScopeResolved()
-    {
-        if (++resolvedScopes === 2)
-            onAllScopesResolved();
-    }
-
-    function onAllScopesResolved()
+    function onSidebarRendered()
     {
         InspectorTest.expandScopeVariablesSidebarPane(onSidebarsExpanded);
     }
@@ -40,7 +34,7 @@ function test()
 
 <body onload="runTest()">
 <p>
-Tests resolving variable names via source maps.
+Tests resolving this object name via source maps.
 </p>
 </body>
 </html>
