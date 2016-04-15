@@ -32,7 +32,7 @@
 #include <linux/input.h>
 
 #include "window.h"
-#include "scaler-client-protocol.h"
+#include "viewporter-client-protocol.h"
 
 #define BUFFER_SCALE 2
 static const int BUFFER_WIDTH = 421 * BUFFER_SCALE;
@@ -50,9 +50,8 @@ struct box {
 	struct widget *widget;
 	int width, height;
 
-	struct wl_scaler *scaler;
-	int scaler_version;
-	struct wl_viewport *viewport;
+	struct wp_viewporter *viewporter;
+	struct wp_viewport *viewport;
 
 	enum {
 		MODE_NO_VIEWPORT,
@@ -84,33 +83,20 @@ set_my_viewport(struct box *box)
 	src_width = wl_fixed_from_double((RECT_W - 0.5) / BUFFER_SCALE);
 	src_height = wl_fixed_from_double((RECT_H - 0.5) / BUFFER_SCALE);
 
-	if (box->scaler_version < 2 && box->mode != MODE_SRC_DST) {
-		fprintf(stderr, "Error: server's wl_scaler interface version "
-			"%d does not support this mode.\n",
-			box->scaler_version);
-		exit(1);
-	}
-
 	switch (box->mode){
 	case MODE_SRC_ONLY:
-		wl_viewport_set_source(box->viewport, src_x, src_y,
+		wp_viewport_set_source(box->viewport, src_x, src_y,
 				       src_width, src_height);
 		break;
 	case MODE_DST_ONLY:
-		wl_viewport_set_destination(box->viewport,
+		wp_viewport_set_destination(box->viewport,
 					    dst_width, dst_height);
 		break;
 	case MODE_SRC_DST:
-		if (box->scaler_version < 2) {
-			wl_viewport_set(box->viewport,
-					src_x, src_y, src_width, src_height,
-					dst_width, dst_height);
-		} else {
-			wl_viewport_set_source(box->viewport, src_x, src_y,
-					       src_width, src_height);
-			wl_viewport_set_destination(box->viewport,
-						    dst_width, dst_height);
-		}
+		wp_viewport_set_source(box->viewport, src_x, src_y,
+				       src_width, src_height);
+		wp_viewport_set_destination(box->viewport,
+					    dst_width, dst_height);
 		break;
 	default:
 		assert(!"not reached");
@@ -188,14 +174,11 @@ global_handler(struct display *display, uint32_t name,
 {
 	struct box *box = data;
 
-	if (strcmp(interface, "wl_scaler") == 0) {
-		box->scaler_version = version < 2 ? version : 2;
+	if (strcmp(interface, "wp_viewporter") == 0) {
+		box->viewporter = display_bind(display, name,
+					       &wp_viewporter_interface, 1);
 
-		box->scaler = display_bind(display, name,
-					   &wl_scaler_interface,
-					   box->scaler_version);
-
-		box->viewport = wl_scaler_get_viewport(box->scaler,
+		box->viewport = wp_viewporter_get_viewport(box->viewporter,
 			widget_get_wl_surface(box->widget));
 
 		set_my_viewport(box);
