@@ -30,8 +30,6 @@
 #include "core/events/EventQueue.h"
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
@@ -39,13 +37,7 @@ class Event;
 class DOMWindowEventQueueTimer;
 class ExecutionContext;
 
-#if ENABLE(OILPAN)
-#define DOMWINDOWEVENTQUEUE_BASE_CLASSES public EventQueue
-#else
-#define DOMWINDOWEVENTQUEUE_BASE_CLASSES public RefCounted<DOMWindowEventQueue>, public EventQueue
-#endif
-
-class DOMWindowEventQueue final : DOMWINDOWEVENTQUEUE_BASE_CLASSES {
+class DOMWindowEventQueue final : public EventQueue {
 public:
     static DOMWindowEventQueue* create(ExecutionContext*);
     ~DOMWindowEventQueue() override;
