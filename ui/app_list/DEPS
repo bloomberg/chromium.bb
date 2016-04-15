@@ -7,6 +7,7 @@ include_rules = [
   "+ui/accessibility",
   "+ui/aura",
   "+ui/base",
+  "+ui/display",
   "+ui/compositor",
   "+ui/events",
   "+ui/gfx",

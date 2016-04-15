@@ -36,7 +36,6 @@
 #include "ui/gfx/path_win.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/win/direct_manipulation.h"
-#include "ui/gfx/win/dpi.h"
 #include "ui/gfx/win/hwnd_util.h"
 #include "ui/gfx/win/rendering_window_manager.h"
 #include "ui/native_theme/native_theme_win.h"
@@ -1405,8 +1404,8 @@ void HWNDMessageHandler::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
   gfx::Size min_window_size;
   gfx::Size max_window_size;
   delegate_->GetMinMaxSize(&min_window_size, &max_window_size);
-  min_window_size = gfx::win::DIPToScreenSize(min_window_size);
-  max_window_size = gfx::win::DIPToScreenSize(max_window_size);
+  min_window_size = delegate_->DIPToScreenSize(min_window_size);
+  max_window_size = delegate_->DIPToScreenSize(max_window_size);
 
 
   // Add the native frame border size to the minimum and maximum size if the

@@ -103,7 +103,6 @@
 #include "ui/base/win/hidden_window.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/gdi_util.h"
-#include "ui/gfx/win/dpi.h"
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -1018,7 +1017,8 @@ bool RenderWidgetHostViewAura::UsesNativeWindowFrame() const {
 
 void RenderWidgetHostViewAura::UpdateMouseLockRegion() {
   RECT window_rect =
-      gfx::win::DIPToScreenRect(window_->GetBoundsInScreen()).ToRECT();
+      gfx::Screen::GetScreen()->DIPToScreenRectInWindow(
+          window_, window_->GetBoundsInScreen()).ToRECT();
   ::ClipCursor(&window_rect);
 }
 
@@ -1112,7 +1112,7 @@ gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
     }
   }
 
-  bounds = gfx::win::ScreenToDIPRect(bounds);
+  bounds = gfx::Screen::GetScreen()->ScreenToDIPRectInWindow(top_level, bounds);
 #endif
 
   return bounds;

@@ -7,9 +7,6 @@
 #include <windows.h>
 #include "base/win/scoped_hdc.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/geometry/size_conversions.h"
 
 namespace {
 
@@ -57,40 +54,6 @@ float GetDPIScale() {
 }
 
 namespace win {
-
-Point ScreenToDIPPoint(const Point& pixel_point) {
-  return ScaleToFlooredPoint(pixel_point, 1.0f / GetDPIScale());
-}
-
-Point DIPToScreenPoint(const Point& dip_point) {
-  return ScaleToFlooredPoint(dip_point, GetDPIScale());
-}
-
-Rect ScreenToDIPRect(const Rect& pixel_bounds) {
-  // It's important we scale the origin and size separately. If we instead
-  // calculated the size from the floored origin and ceiled right the size could
-  // vary depending upon where the two points land. That would cause problems
-  // for the places this code is used (in particular mapping from native window
-  // bounds to DIPs).
-  return Rect(ScreenToDIPPoint(pixel_bounds.origin()),
-              ScreenToDIPSize(pixel_bounds.size()));
-}
-
-Rect DIPToScreenRect(const Rect& dip_bounds) {
-  // See comment in ScreenToDIPRect for why we calculate size like this.
-  return Rect(DIPToScreenPoint(dip_bounds.origin()),
-              DIPToScreenSize(dip_bounds.size()));
-}
-
-Size ScreenToDIPSize(const Size& size_in_pixels) {
-  // Always ceil sizes. Otherwise we may be leaving off part of the bounds.
-  return ScaleToCeiledSize(size_in_pixels, 1.0f / GetDPIScale());
-}
-
-Size DIPToScreenSize(const Size& dip_size) {
-  // Always ceil sizes. Otherwise we may be leaving off part of the bounds.
-  return ScaleToCeiledSize(dip_size, GetDPIScale());
-}
 
 int GetSystemMetricsInDIP(int metric) {
   // The system metrics always reflect the system DPI, not whatever scale we've

@@ -29,6 +29,7 @@
         '../../../third_party/icu/icu.gyp:icui18n',
         '../../../third_party/icu/icu.gyp:icuuc',
         '../../../url/url.gyp:url_lib',
+        '../../display/display.gyp:display',
         '../../events/events.gyp:dom_keycode_converter',
         '../../events/events.gyp:events',
         '../../events/events.gyp:events_base',

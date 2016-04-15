@@ -41,7 +41,7 @@
 #if defined(OS_WIN)
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/win/internal_constants.h"
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/screen_win.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
 
@@ -176,7 +176,8 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
     return;
 
 #if defined(OS_WIN)
-  gfx::Point screen_loc_pixels = gfx::win::DIPToScreenPoint(screen_loc);
+  gfx::Point screen_loc_pixels =
+      display::win::ScreenWin::DIPToScreenPoint(screen_loc);
   HWND target_window = ::WindowFromPoint(screen_loc_pixels.ToPOINT());
   // If we don't find a native window for the HWND at the current location,
   // then attempt to find a native window from its parent if one exists.

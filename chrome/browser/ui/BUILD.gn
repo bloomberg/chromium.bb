@@ -119,6 +119,7 @@ source_set("ui") {
     "//ui/accessibility",
     "//ui/base",
     "//ui/content_accelerators",
+    "//ui/display",
     "//ui/events",
     "//ui/events:gesture_detection",
     "//ui/gfx",

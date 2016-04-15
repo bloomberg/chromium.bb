@@ -20,6 +20,7 @@
         '../base/ui_base.gyp:ui_base',
         '../base/ime/ui_base_ime.gyp:ui_base_ime',
         '../compositor/compositor.gyp:compositor',
+        '../display/display.gyp:display',
         '../events/events.gyp:events_base',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',

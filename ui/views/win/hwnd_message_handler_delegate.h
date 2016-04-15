@@ -89,6 +89,8 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Returns the current size of the RootView.
   virtual gfx::Size GetRootViewSize() const = 0;
 
+  virtual gfx::Size DIPToScreenSize(const gfx::Size& dip_size) const = 0;
+
   virtual void ResetWindowControls() = 0;
 
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;

@@ -10,9 +10,9 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/win/dpi.h"
 #include "ui/views/corewm/cursor_height_provider_win.h"
 
 namespace views {
@@ -77,7 +77,8 @@ bool TooltipWin::EnsureTooltipWindow() {
 }
 
 void TooltipWin::PositionTooltip() {
-  gfx::Point screen_point = gfx::win::DIPToScreenPoint(location_);
+  gfx::Point screen_point =
+      display::win::ScreenWin::DIPToScreenPoint(location_);
   const int cursoroffset = GetCurrentCursorVisibleHeight();
   screen_point.Offset(0, cursoroffset);
 
@@ -86,16 +87,19 @@ void TooltipWin::PositionTooltip() {
   const gfx::Size size(LOWORD(tooltip_size), HIWORD(tooltip_size));
 
   const gfx::Display display(
-      gfx::Screen::GetScreen()->GetDisplayNearestPoint(screen_point));
+      gfx::Screen::GetScreen()->GetDisplayNearestPoint(location_));
 
   gfx::Rect tooltip_bounds(screen_point, size);
-  tooltip_bounds.AdjustToFit(gfx::win::DIPToScreenRect(display.work_area()));
+  tooltip_bounds.AdjustToFit(
+      display::win::ScreenWin::DIPToScreenRect(parent_hwnd_,
+                                               display.work_area()));
   SetWindowPos(tooltip_hwnd_, NULL, tooltip_bounds.x(), tooltip_bounds.y(), 0,
                0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 int TooltipWin::GetMaxWidth(const gfx::Point& location) const {
-  const gfx::Point screen_point = gfx::win::DIPToScreenPoint(location);
+  const gfx::Point screen_point =
+      display::win::ScreenWin::DIPToScreenPoint(location);
   gfx::Display display(
       gfx::Screen::GetScreen()->GetDisplayNearestPoint(screen_point));
   const gfx::Rect monitor_bounds = display.bounds();

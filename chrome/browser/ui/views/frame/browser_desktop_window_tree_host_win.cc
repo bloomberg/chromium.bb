@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_constants.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/screen_win.h"
 #include "ui/views/controls/menu/native_menu_win.h"
 
 namespace {
@@ -285,7 +285,8 @@ MARGINS BrowserDesktopWindowTreeHostWin::GetDWMFrameMargins() const {
     if (!browser_view_->IsFullscreen()) {
       gfx::Rect tabstrip_bounds(
           browser_frame_->GetBoundsForTabStrip(browser_view_->tabstrip()));
-      tabstrip_bounds = gfx::win::DIPToScreenRect(tabstrip_bounds);
+      tabstrip_bounds =
+          display::win::ScreenWin::DIPToClientRect(GetHWND(), tabstrip_bounds);
       margins.cyTopHeight = tabstrip_bounds.bottom();
 
       // On pre-Win 10, we need to offset the DWM frame into the toolbar so that

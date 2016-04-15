@@ -110,6 +110,7 @@ component("ime") {
     "//net",
     "//third_party/icu",
     "//ui/base",
+    "//ui/display",
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",

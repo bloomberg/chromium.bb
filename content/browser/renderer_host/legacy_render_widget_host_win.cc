@@ -19,9 +19,9 @@
 #include "ui/base/view_prop.h"
 #include "ui/base/win/internal_constants.h"
 #include "ui/base/win/window_event_target.h"
+#include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/win/direct_manipulation.h"
-#include "ui/gfx/win/dpi.h"
 
 namespace content {
 
@@ -85,7 +85,8 @@ void LegacyRenderWidgetHostHWND::Hide() {
 }
 
 void LegacyRenderWidgetHostHWND::SetBounds(const gfx::Rect& bounds) {
-  gfx::Rect bounds_in_pixel = gfx::win::DIPToScreenRect(bounds);
+  gfx::Rect bounds_in_pixel = display::win::ScreenWin::DIPToClientRect(hwnd(),
+                                                                       bounds);
   ::SetWindowPos(hwnd(), NULL, bounds_in_pixel.x(), bounds_in_pixel.y(),
                  bounds_in_pixel.width(), bounds_in_pixel.height(),
                  SWP_NOREDRAW);

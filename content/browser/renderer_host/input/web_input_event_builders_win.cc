@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
+#include "ui/display/win/screen_win.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/win/dpi.h"
 
 using blink::WebInputEvent;
 using blink::WebKeyboardEvent;
@@ -163,7 +163,7 @@ WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd,
   ClientToScreen(hwnd, &global_point);
 
   // We need to convert the global point back to DIP before using it.
-  gfx::Point dip_global_point = gfx::win::ScreenToDIPPoint(
+  gfx::Point dip_global_point = display::win::ScreenWin::ScreenToDIPPoint(
       gfx::Point(global_point.x, global_point.y));
 
   result.globalX = dip_global_point.x();

@@ -12,7 +12,10 @@
 #include "ui/display/win/screen_win_display.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/win/dpi.h"
 
 namespace display {
@@ -75,6 +78,72 @@ ScreenWin::ScreenWin() {
 
 ScreenWin::~ScreenWin() = default;
 
+// static
+gfx::Point ScreenWin::ScreenToDIPPoint(const gfx::Point& pixel_point) {
+  return ScaleToFlooredPoint(pixel_point, 1.0f / gfx::GetDPIScale());
+}
+
+// static
+gfx::Point ScreenWin::DIPToScreenPoint(const gfx::Point& dip_point) {
+  return ScaleToFlooredPoint(dip_point, gfx::GetDPIScale());
+}
+
+// static
+gfx::Point ScreenWin::ClientToDIPPoint(HWND hwnd,
+                                       const gfx::Point& client_point) {
+  // TODO(robliao): Get the scale factor from |hwnd|.
+  return ScreenToDIPPoint(client_point);
+}
+
+// static
+gfx::Point ScreenWin::DIPToClientPoint(HWND hwnd, const gfx::Point& dip_point) {
+  // TODO(robliao): Get the scale factor from |hwnd|.
+  return DIPToScreenPoint(dip_point);
+}
+
+// static
+gfx::Rect ScreenWin::ScreenToDIPRect(HWND hwnd, const gfx::Rect& pixel_bounds) {
+  // It's important we scale the origin and size separately. If we instead
+  // calculated the size from the floored origin and ceiled right the size could
+  // vary depending upon where the two points land. That would cause problems
+  // for the places this code is used (in particular mapping from native window
+  // bounds to DIPs).
+  return gfx::Rect(ScreenToDIPPoint(pixel_bounds.origin()),
+                   ScreenToDIPSize(hwnd, pixel_bounds.size()));
+}
+
+// static
+gfx::Rect ScreenWin::DIPToScreenRect(HWND hwnd, const gfx::Rect& dip_bounds) {
+  // See comment in ScreenToDIPRect for why we calculate size like this.
+  return gfx::Rect(DIPToScreenPoint(dip_bounds.origin()),
+                   DIPToScreenSize(hwnd, dip_bounds.size()));
+}
+
+// static
+gfx::Rect ScreenWin::ClientToDIPRect(HWND hwnd, const gfx::Rect& pixel_bounds) {
+  return ScreenToDIPRect(hwnd, pixel_bounds);
+}
+
+// static
+gfx::Rect ScreenWin::DIPToClientRect(HWND hwnd, const gfx::Rect& dip_bounds) {
+  return DIPToScreenRect(hwnd, dip_bounds);
+}
+
+// static
+gfx::Size ScreenWin::ScreenToDIPSize(HWND hwnd,
+                                     const gfx::Size& size_in_pixels) {
+  // Always ceil sizes. Otherwise we may be leaving off part of the bounds.
+  // TODO(robliao): Get the scale factor from |hwnd|.
+  return ScaleToCeiledSize(size_in_pixels, 1.0f / gfx::GetDPIScale());
+}
+
+// static
+gfx::Size ScreenWin::DIPToScreenSize(HWND hwnd, const gfx::Size& dip_size) {
+  // Always ceil sizes. Otherwise we may be leaving off part of the bounds.
+  // TODO(robliao): Get the scale factor from |hwnd|.
+  return ScaleToCeiledSize(dip_size, gfx::GetDPIScale());
+}
+
 HWND ScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
   NOTREACHED();
   return nullptr;
@@ -89,7 +158,7 @@ gfx::Point ScreenWin::GetCursorScreenPoint() {
   POINT pt;
   ::GetCursorPos(&pt);
   gfx::Point cursor_pos_pixels(pt);
-  return gfx::win::ScreenToDIPPoint(cursor_pos_pixels);
+  return ScreenToDIPPoint(cursor_pos_pixels);
 }
 
 gfx::NativeWindow ScreenWin::GetWindowUnderCursor() {
@@ -100,7 +169,7 @@ gfx::NativeWindow ScreenWin::GetWindowUnderCursor() {
 }
 
 gfx::NativeWindow ScreenWin::GetWindowAtScreenPoint(const gfx::Point& point) {
-  gfx::Point point_in_pixels = gfx::win::DIPToScreenPoint(point);
+  gfx::Point point_in_pixels = DIPToScreenPoint(point);
   return GetNativeWindowFromHWND(WindowFromPoint(point_in_pixels.ToPOINT()));
 }
 
@@ -126,7 +195,7 @@ gfx::Display ScreenWin::GetDisplayNearestWindow(gfx::NativeView window) const {
 }
 
 gfx::Display ScreenWin::GetDisplayNearestPoint(const gfx::Point& point) const {
-  gfx::Point screen_point(gfx::win::DIPToScreenPoint(point));
+  gfx::Point screen_point(DIPToScreenPoint(point));
   ScreenWinDisplay screen_win_display =
       GetScreenWinDisplayNearestScreenPoint(screen_point);
   return screen_win_display.display();

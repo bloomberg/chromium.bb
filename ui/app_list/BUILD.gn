@@ -82,6 +82,7 @@ component("app_list") {
     "//ui/base",
     "//ui/base/ime",
     "//ui/compositor",
+    "//ui/display",
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",

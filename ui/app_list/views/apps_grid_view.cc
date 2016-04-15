@@ -48,7 +48,7 @@
 #include "ui/base/dragdrop/drop_target_win.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/screen_win.h"
 #endif
 
 namespace app_list {
@@ -338,7 +338,9 @@ class SynchronousDrag : public ui::DragSourceWin {
     GetCursorPos(&p);
     ScreenToClient(GetGridViewHWND(), &p);
     gfx::Point grid_view_pt(p.x, p.y);
-    grid_view_pt = gfx::win::ScreenToDIPPoint(grid_view_pt);
+    grid_view_pt =
+        display::win::ScreenWin::ClientToDIPPoint(GetGridViewHWND(),
+                                                  grid_view_pt);
     views::View::ConvertPointFromWidget(grid_view_, &grid_view_pt);
     return grid_view_pt;
   }
