@@ -1,0 +1,5 @@
+{
+  "name": "mojo:catalog_viewer",
+  "display_name": "Catalog Viewer",
+  "capabilities": { "*": [ "*" ] }
+}

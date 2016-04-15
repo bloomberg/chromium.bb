@@ -12,6 +12,7 @@ group("all") {
   deps = [
     ":mash_unittests",
     "//components/leveldb",
+    "//mash/catalog_viewer",
     "//mash/example",
     "//mash/init",
     "//mash/login",
