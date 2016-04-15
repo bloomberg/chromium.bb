@@ -58,9 +58,9 @@ public:
     void finishLayout();
 
 private:
-    void updateCharacterPositionIfNeeded(float& x, float& y);
-    void updateCurrentTextPosition(float x, float y, float glyphAdvance);
-    void updateRelativePositionAdjustmentsIfNeeded(float dx, float dy);
+    bool setCurrentTextPosition(const SVGCharacterData&);
+    void advanceCurrentTextPosition(float glyphAdvance);
+    bool applyRelativePositionAdjustmentsIfNeeded(const SVGCharacterData&);
 
     void computeCurrentFragmentMetrics(SVGInlineTextBox*);
     void recordTextFragment(SVGInlineTextBox*);
@@ -85,10 +85,7 @@ private:
     unsigned m_logicalCharacterOffset;
     unsigned m_logicalMetricsListOffset;
     SVGInlineTextMetricsIterator m_visualMetricsIterator;
-    float m_x;
-    float m_y;
-    float m_dx;
-    float m_dy;
+    FloatPoint m_textPosition;
     bool m_isVerticalText;
     bool m_inPathLayout;
     bool m_textLengthSpacingInEffect;
@@ -97,6 +94,7 @@ private:
     OwnPtr<PathPositionMapper> m_textPath;
     float m_textPathStartOffset;
     float m_textPathCurrentOffset;
+    float m_textPathDisplacement;
     float m_textPathSpacing;
     float m_textPathScaling;
 };

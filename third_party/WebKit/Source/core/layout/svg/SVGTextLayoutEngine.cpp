@@ -38,15 +38,12 @@ SVGTextLayoutEngine::SVGTextLayoutEngine(Vector<SVGTextLayoutAttributes*>& layou
     , m_layoutAttributesPosition(0)
     , m_logicalCharacterOffset(0)
     , m_logicalMetricsListOffset(0)
-    , m_x(0)
-    , m_y(0)
-    , m_dx(0)
-    , m_dy(0)
     , m_isVerticalText(false)
     , m_inPathLayout(false)
     , m_textLengthSpacingInEffect(false)
     , m_textPath(nullptr)
     , m_textPathCurrentOffset(0)
+    , m_textPathDisplacement(0)
     , m_textPathSpacing(0)
     , m_textPathScaling(1)
 {
@@ -55,60 +52,66 @@ SVGTextLayoutEngine::SVGTextLayoutEngine(Vector<SVGTextLayoutAttributes*>& layou
 
 SVGTextLayoutEngine::~SVGTextLayoutEngine() = default;
 
-void SVGTextLayoutEngine::updateCharacterPositionIfNeeded(float& x, float& y)
+bool SVGTextLayoutEngine::setCurrentTextPosition(const SVGCharacterData& data)
 {
-    if (m_inPathLayout)
-        return;
+    bool hasX = !SVGTextLayoutAttributes::isEmptyValue(data.x);
+    if (hasX)
+        m_textPosition.setX(data.x);
 
-    // Replace characters x/y position, with the current text position plus any
-    // relative adjustments, if it doesn't specify an absolute position itself.
-    if (SVGTextLayoutAttributes::isEmptyValue(x))
-        x = m_x + m_dx;
+    bool hasY = !SVGTextLayoutAttributes::isEmptyValue(data.y);
+    if (hasY)
+        m_textPosition.setY(data.y);
 
-    if (SVGTextLayoutAttributes::isEmptyValue(y))
-        y = m_y + m_dy;
-
-    m_dx = 0;
-    m_dy = 0;
-}
-
-void SVGTextLayoutEngine::updateCurrentTextPosition(float x, float y, float glyphAdvance)
-{
-    // Update current text position after processing the character.
-    if (m_isVerticalText) {
-        m_x = x;
-        m_y = y + glyphAdvance;
-    } else {
-        m_x = x + glyphAdvance;
-        m_y = y;
+    // If there's an absolute x/y position available, it marks the beginning of
+    // a new position along the path.
+    if (m_inPathLayout) {
+        // TODO(fs): If a new chunk (== absolute position) is defined while in
+        // path layout mode, alignment should be based on that chunk and not
+        // the path as a whole. (Re: the addition of m_textPathStartOffset
+        // below.)
+        if (m_isVerticalText) {
+            if (hasY)
+                m_textPathCurrentOffset = data.y + m_textPathStartOffset;
+        } else {
+            if (hasX)
+                m_textPathCurrentOffset = data.x + m_textPathStartOffset;
+        }
     }
+    return hasX || hasY;
 }
 
-void SVGTextLayoutEngine::updateRelativePositionAdjustmentsIfNeeded(float dx, float dy)
+void SVGTextLayoutEngine::advanceCurrentTextPosition(float glyphAdvance)
 {
-    // Update relative positioning information.
-    if (SVGTextLayoutAttributes::isEmptyValue(dx) && SVGTextLayoutAttributes::isEmptyValue(dy))
-        return;
+    // TODO(fs): m_textPathCurrentOffset should preferably also be updated
+    // here, but that requires a bit more untangling yet.
+    if (m_isVerticalText)
+        m_textPosition.setY(m_textPosition.y() + glyphAdvance);
+    else
+        m_textPosition.setX(m_textPosition.x() + glyphAdvance);
+}
 
-    if (SVGTextLayoutAttributes::isEmptyValue(dx))
-        dx = 0;
-    if (SVGTextLayoutAttributes::isEmptyValue(dy))
-        dy = 0;
+bool SVGTextLayoutEngine::applyRelativePositionAdjustmentsIfNeeded(const SVGCharacterData& data)
+{
+    FloatPoint delta;
+    bool hasDx = !SVGTextLayoutAttributes::isEmptyValue(data.dx);
+    if (hasDx)
+        delta.setX(data.dx);
+
+    bool hasDy = !SVGTextLayoutAttributes::isEmptyValue(data.dy);
+    if (hasDy)
+        delta.setY(data.dy);
+
+    // Apply dx/dy value adjustments to current text position, if needed.
+    m_textPosition.moveBy(delta);
 
     if (m_inPathLayout) {
-        if (m_isVerticalText) {
-            m_dx += dx;
-            m_dy = dy;
-        } else {
-            m_dx = dx;
-            m_dy += dy;
-        }
+        if (m_isVerticalText)
+            delta = delta.transposedPoint();
 
-        return;
+        m_textPathCurrentOffset += delta.x();
+        m_textPathDisplacement += delta.y();
     }
-
-    m_dx = dx;
-    m_dy = dy;
+    return hasDx || hasDy;
 }
 
 void SVGTextLayoutEngine::computeCurrentFragmentMetrics(SVGInlineTextBox* textBox)
@@ -345,10 +348,16 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
 
     bool didStartTextFragment = false;
     bool applySpacingToNextCharacter = false;
+    bool needsFragmentPerGlyph = m_isVerticalText || m_inPathLayout || m_textLengthSpacingInEffect;
 
     float lastAngle = 0;
-    float baselineShift = baselineLayout.calculateBaselineShift(style);
-    baselineShift -= baselineLayout.calculateAlignmentBaselineShift(m_isVerticalText, textLineLayout);
+    float baselineShiftValue = baselineLayout.calculateBaselineShift(style);
+    baselineShiftValue -= baselineLayout.calculateAlignmentBaselineShift(m_isVerticalText, textLineLayout);
+    FloatPoint baselineShift;
+    if (m_isVerticalText)
+        baselineShift.setX(baselineShiftValue);
+    else
+        baselineShift.setY(-baselineShiftValue);
 
     // Main layout algorithm.
     const unsigned boxEndOffset = textBox->start() + textBox->len();
@@ -374,63 +383,42 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
         if (it != characterDataMap.end())
             data = it->value;
 
-        float x = data.x;
-        float y = data.y;
+        // TODO(fs): Use the return value to eliminate the additional
+        // hash-lookup below when determining if this text box should be tagged
+        // as starting a new text chunk.
+        setCurrentTextPosition(data);
 
         // When we've advanced to the box start offset, determine using the original x/y values,
         // whether this character starts a new text chunk, before doing any further processing.
         if (m_visualMetricsIterator.characterOffset() == textBox->start())
             textBox->setStartsNewTextChunk(logicalAttributes->context()->characterStartsNewTextChunk(m_logicalCharacterOffset));
 
-        float angle = SVGTextLayoutAttributes::isEmptyValue(data.rotate) ? 0 : data.rotate;
+        bool hasRelativePosition = applyRelativePositionAdjustmentsIfNeeded(data);
 
-        // Calculate glyph orientation angle.
+        // Determine the orientation of the current glyph.
         // Font::width() calculates the resolved FontOrientation for each character,
-        // but is not exposed today to avoid the API complexity.
+        // but that value is not exposed today to avoid the API complexity.
         UChar32 currentCharacter = textLineLayout.codepointAt(m_visualMetricsIterator.characterOffset());
         FontOrientation fontOrientation = font.getFontDescription().orientation();
         fontOrientation = adjustOrientationForCharacterInMixedVertical(fontOrientation, currentCharacter);
 
         // Calculate glyph advance.
-        // Shaping engine takes care of x/y orientation shifts for different fontOrientation values.
+        // The shaping engine takes care of x/y orientation shifts for different fontOrientation values.
         float glyphAdvance = visualMetrics.advance(fontOrientation);
 
-        // Assign current text position to x/y values, if needed.
-        updateCharacterPositionIfNeeded(x, y);
-
-        // Apply dx/dy value adjustments to current text position, if needed.
-        updateRelativePositionAdjustmentsIfNeeded(data.dx, data.dy);
-
-        // Calculate CSS 'letter-spacing' and 'word-spacing' for next character, if needed.
+        // Calculate CSS 'letter-spacing' and 'word-spacing' for the character, if needed.
         float spacing = spacingLayout.calculateCSSSpacing(currentCharacter);
 
-        float textPathShiftX = 0;
-        float textPathShiftY = 0;
+        FloatPoint textPathShift;
+        float angle = 0;
+        FloatPoint position;
         if (m_inPathLayout) {
             float scaledGlyphAdvance = glyphAdvance * m_textPathScaling;
-            if (m_isVerticalText) {
-                // If there's an absolute y position available, it marks the beginning of a new position along the path.
-                if (!SVGTextLayoutAttributes::isEmptyValue(y))
-                    m_textPathCurrentOffset = y + m_textPathStartOffset;
-
-                m_textPathCurrentOffset += m_dy;
-                m_dy = 0;
-
-                // Apply dx/dy correction and setup translations that move to the glyph midpoint.
-                textPathShiftX += m_dx + baselineShift;
-                textPathShiftY -= scaledGlyphAdvance / 2;
-            } else {
-                // If there's an absolute x position available, it marks the beginning of a new position along the path.
-                if (!SVGTextLayoutAttributes::isEmptyValue(x))
-                    m_textPathCurrentOffset = x + m_textPathStartOffset;
-
-                m_textPathCurrentOffset += m_dx;
-                m_dx = 0;
-
-                // Apply dx/dy correction and setup translations that move to the glyph midpoint.
-                textPathShiftX -= scaledGlyphAdvance / 2;
-                textPathShiftY += m_dy - baselineShift;
-            }
+            // Setup translations that move to the glyph midpoint.
+            textPathShift.set(-scaledGlyphAdvance / 2, m_textPathDisplacement);
+            if (m_isVerticalText)
+                textPathShift = textPathShift.transposedPoint();
+            textPathShift += baselineShift;
 
             // Calculate current offset along path.
             float textPathOffset = m_textPathCurrentOffset + scaledGlyphAdvance / 2;
@@ -438,8 +426,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
             // Move to next character.
             m_textPathCurrentOffset += scaledGlyphAdvance + m_textPathSpacing + spacing * m_textPathScaling;
 
-            FloatPoint point;
-            PathPositionMapper::PositionType positionType = m_textPath->pointAndNormalAtLength(textPathOffset, point, angle);
+            PathPositionMapper::PositionType positionType = m_textPath->pointAndNormalAtLength(textPathOffset, position, angle);
 
             // Skip character, if we're before the path.
             if (positionType == PathPositionMapper::BeforePath) {
@@ -452,26 +439,22 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
             if (positionType == PathPositionMapper::AfterPath)
                 break;
 
-            x = point.x();
-            y = point.y();
+            m_textPosition = position;
 
             // For vertical text on path, the actual angle has to be rotated 90 degrees anti-clockwise, not the orientation angle!
             if (m_isVerticalText)
                 angle -= 90;
         } else {
-            // Apply all previously calculated shift values.
-            if (m_isVerticalText)
-                x += baselineShift;
-            else
-                y -= baselineShift;
-
-            x += m_dx;
-            y += m_dy;
+            position = m_textPosition;
+            position += baselineShift;
         }
 
+        if (!SVGTextLayoutAttributes::isEmptyValue(data.rotate))
+            angle += data.rotate;
+
         // Determine whether we have to start a new fragment.
-        bool shouldStartNewFragment = m_dx || m_dy || m_isVerticalText || m_inPathLayout || angle || angle != lastAngle
-            || applySpacingToNextCharacter || m_textLengthSpacingInEffect;
+        bool shouldStartNewFragment = needsFragmentPerGlyph || hasRelativePosition
+            || angle || angle != lastAngle || applySpacingToNextCharacter;
 
         // If we already started a fragment, close it now.
         if (didStartTextFragment && shouldStartNewFragment) {
@@ -487,18 +470,18 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
             didStartTextFragment = true;
             m_currentTextFragment.characterOffset = m_visualMetricsIterator.characterOffset();
             m_currentTextFragment.metricsListOffset = m_visualMetricsIterator.metricsListOffset();
-            m_currentTextFragment.x = x;
-            m_currentTextFragment.y = y;
+            m_currentTextFragment.x = position.x();
+            m_currentTextFragment.y = position.y();
 
             // Build fragment transformation.
             if (angle)
                 m_currentTextFragment.transform.rotate(angle);
 
-            if (textPathShiftX || textPathShiftY)
-                m_currentTextFragment.transform.translate(textPathShiftX, textPathShiftY);
+            if (textPathShift.x() || textPathShift.y())
+                m_currentTextFragment.transform.translate(textPathShift.x(), textPathShift.y());
 
-            // In vertical text, always rotate by 90 degrees regardless of fontOrientation.
-            // Shaping engine takes care of the necessary orientation.
+            // For vertical text, always rotate by 90 degrees regardless of fontOrientation.
+            // The shaping engine takes care of the necessary orientation.
             if (m_isVerticalText)
                 m_currentTextFragment.transform.rotate(90);
 
@@ -508,24 +491,12 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
                 m_currentTextFragment.lengthAdjustScale = m_textPathScaling;
         }
 
-        // Update current text position, after processing of the current character finished.
-        if (m_inPathLayout) {
-            updateCurrentTextPosition(x, y, glyphAdvance);
-        } else {
-            // Apply CSS 'kerning', 'letter-spacing' and 'word-spacing' to next character, if needed.
-            if (spacing)
-                applySpacingToNextCharacter = true;
+        // Advance current text position after processing of the current character finished.
+        advanceCurrentTextPosition(glyphAdvance + spacing);
 
-            float xNew = x - m_dx;
-            float yNew = y - m_dy;
-
-            if (m_isVerticalText)
-                xNew -= baselineShift;
-            else
-                yNew += baselineShift;
-
-            updateCurrentTextPosition(xNew, yNew, glyphAdvance + spacing);
-        }
+        // Apply CSS 'letter-spacing' and 'word-spacing' to the next character, if needed.
+        if (!m_inPathLayout && spacing)
+            applySpacingToNextCharacter = true;
 
         advanceToNextLogicalCharacter(logicalMetrics);
         m_visualMetricsIterator.next();
