@@ -41,11 +41,6 @@ class CORE_EXPORT CSSStyleDeclaration : public GarbageCollectedFinalized<CSSStyl
 public:
     virtual ~CSSStyleDeclaration() { }
 
-#if !ENABLE(OILPAN)
-    virtual void ref() = 0;
-    virtual void deref() = 0;
-#endif
-
     virtual CSSRule* parentRule() const = 0;
     String cssFloat()
     {

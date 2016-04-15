@@ -34,10 +34,6 @@ CSSMediaRule::CSSMediaRule(StyleRuleMedia* mediaRule, CSSStyleSheet* parent)
 
 CSSMediaRule::~CSSMediaRule()
 {
-#if !ENABLE(OILPAN)
-    if (m_mediaCSSOMWrapper)
-        m_mediaCSSOMWrapper->clearParentRule();
-#endif
 }
 
 MediaQuerySet* CSSMediaRule::mediaQueries() const

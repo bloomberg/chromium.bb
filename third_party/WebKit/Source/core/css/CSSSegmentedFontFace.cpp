@@ -45,11 +45,6 @@ CSSSegmentedFontFace::CSSSegmentedFontFace(CSSFontSelector* fontSelector, FontTr
 
 CSSSegmentedFontFace::~CSSSegmentedFontFace()
 {
-    pruneTable();
-#if !ENABLE(OILPAN)
-    for (const auto& fontFace : m_fontFaces)
-        fontFace->cssFontFace()->clearSegmentedFontFace();
-#endif
 }
 
 void CSSSegmentedFontFace::pruneTable()

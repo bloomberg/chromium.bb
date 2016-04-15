@@ -37,13 +37,6 @@ CSSImportRule::CSSImportRule(StyleRuleImport* importRule, CSSStyleSheet* parent)
 
 CSSImportRule::~CSSImportRule()
 {
-#if !ENABLE(OILPAN)
-    if (m_styleSheetCSSOMWrapper)
-        m_styleSheetCSSOMWrapper->clearOwnerRule();
-
-    if (m_mediaCSSOMWrapper)
-        m_mediaCSSOMWrapper->clearParentRule();
-#endif // ENABLE(OILPAN)
 }
 
 String CSSImportRule::href() const
