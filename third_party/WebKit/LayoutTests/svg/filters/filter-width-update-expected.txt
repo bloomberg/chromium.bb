@@ -13,7 +13,6 @@
         },
         {
           "object": "LayoutSVGResourceFilter filter id='blur'",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

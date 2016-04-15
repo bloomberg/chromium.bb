@@ -7,13 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='flex-item'",
-          "rect": [70, 20, 10, 50],
-          "reason": "location change"
+          "object": "LayoutBlockFlow DIV id='flex-item-1' class='flex-item width'",
+          "rect": [30, 20, 40, 50],
+          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow DIV class='flex-item'",
-          "rect": [110, 20, 10, 50],
+          "rect": [160, 20, 10, 50],
           "reason": "location change"
         },
         {
@@ -23,13 +23,13 @@
         },
         {
           "object": "LayoutBlockFlow DIV class='flex-item'",
-          "rect": [160, 20, 10, 50],
+          "rect": [110, 20, 10, 50],
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='flex-item-1' class='flex-item width'",
-          "rect": [30, 20, 40, 50],
-          "reason": "incremental"
+          "object": "LayoutBlockFlow DIV class='flex-item'",
+          "rect": [70, 20, 10, 50],
+          "reason": "location change"
         }
       ]
     }

@@ -18,7 +18,6 @@
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [0, 0, 0, 0],
           "reason": "style change"
         }
       ]

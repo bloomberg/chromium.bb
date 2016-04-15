@@ -15,13 +15,13 @@
           "paintInvalidations": [
             {
               "object": "LayoutBlockFlow (positioned) DIV id='target'",
-              "rect": [0, 0, 200, 200],
-              "reason": "full"
+              "rect": [0, 0, 406, 546],
+              "reason": "style change"
             },
             {
               "object": "LayoutBlockFlow (positioned) DIV id='target'",
-              "rect": [0, 0, 406, 546],
-              "reason": "style change"
+              "rect": [0, 0, 200, 200],
+              "reason": "full"
             }
           ]
         },

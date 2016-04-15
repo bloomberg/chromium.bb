@@ -7,31 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 110, 56, 1],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 109, 56, 2],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [8, 8, 56, 54],
           "reason": "location change"
@@ -42,8 +17,33 @@
           "reason": "location change"
         },
         {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 109, 56, 2],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 110, 56, 1],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [9, 9, 54, 100],
+          "reason": "location change"
+        },
+        {
           "object": "LayoutTableRow TR",
           "rect": [9, 59, 54, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableRow TR id='row'",
+          "rect": [9, 9, 54, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [10, 10, 52, 100],
           "reason": "location change"
         },
         {
@@ -53,23 +53,20 @@
         },
         {
           "object": "LayoutTableRow TR id='row'",
-          "rect": [9, 9, 54, 50],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTableRow TR id='row'",
           "rect": [10, 10, 52, 50],
           "reason": "location change"
         },
         {
-          "object": "LayoutTableSection TBODY",
-          "rect": [9, 9, 54, 100],
-          "reason": "location change"
+          "object": "LayoutTableCell TD",
+          "reason": "full"
         },
         {
-          "object": "LayoutTableSection TBODY",
-          "rect": [10, 10, 52, 100],
-          "reason": "location change"
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
         }
       ]
     }

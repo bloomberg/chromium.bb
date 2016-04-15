@@ -7,26 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [25, 53, 50, 150],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [1, 53, 50, 150],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [125, 53, 50, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [149, 53, 50, 100],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow DIV class='item1'",
           "rect": [24, 52, 52, 152],
           "reason": "location change"
@@ -38,12 +18,32 @@
         },
         {
           "object": "LayoutBlockFlow DIV class='item2'",
-          "rect": [124, 52, 52, 150],
+          "rect": [148, 52, 52, 150],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item2'",
-          "rect": [148, 52, 52, 150],
+          "rect": [124, 52, 52, 150],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [25, 53, 50, 150],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [1, 53, 50, 150],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [149, 53, 50, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [125, 53, 50, 100],
           "reason": "location change"
         }
       ]

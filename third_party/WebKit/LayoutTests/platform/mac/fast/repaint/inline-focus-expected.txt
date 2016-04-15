@@ -7,33 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutInline A id='link'",
+          "rect": [-5, -5, 810, 242],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox 'Home'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'crbug.com/424078: ensure inline elements get their outline painted'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [-5, -5, 805, 28],
+          "object": "LayoutBlockFlow HTML",
+          "rect": [-5, -5, 805, 237],
           "reason": "bounds change"
         },
         {
@@ -42,8 +22,8 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [-5, -5, 805, 237],
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [-5, -5, 805, 28],
           "reason": "bounds change"
         },
         {
@@ -52,23 +32,35 @@
           "reason": "invalidate paint rectangle"
         },
         {
-          "object": "LayoutInline A id='link'",
-          "rect": [-5, -5, 810, 242],
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
           "reason": "style change"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "InlineTextBox 'Home'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'crbug.com/424078: ensure inline elements get their outline painted'",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

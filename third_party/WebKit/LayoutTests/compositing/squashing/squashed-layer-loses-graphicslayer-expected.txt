@@ -40,8 +40,8 @@ CASE 2, The original composited layer is no longer composited, which then also r
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-          "rect": [140, 140, 100, 100],
+          "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
+          "rect": [300, 300, 100, 100],
           "reason": "location change"
         },
         {
@@ -50,8 +50,8 @@ CASE 2, The original composited layer is no longer composited, which then also r
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-          "rect": [300, 300, 100, 100],
+          "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
+          "rect": [140, 140, 100, 100],
           "reason": "location change"
         },
         {

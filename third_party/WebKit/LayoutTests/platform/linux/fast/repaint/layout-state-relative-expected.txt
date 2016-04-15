@@ -7,16 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow (relative positioned) DIV id='target'",
           "rect": [8, 152, 784, 19],
           "reason": "invalidate paint rectangle"
@@ -27,8 +17,15 @@
           "reason": "full"
         },
         {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "reason": "full"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

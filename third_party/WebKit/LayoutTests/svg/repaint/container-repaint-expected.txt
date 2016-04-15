@@ -8,22 +8,22 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGRect rect",
-          "rect": [0, 50, 100, 50],
+          "rect": [0, 100, 100, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='mover'",
+          "rect": [0, 100, 100, 50],
           "reason": "location change"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [0, 100, 100, 50],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='mover'",
           "rect": [0, 50, 100, 50],
           "reason": "location change"
         },
         {
           "object": "LayoutSVGViewportContainer svg id='mover'",
-          "rect": [0, 100, 100, 50],
+          "rect": [0, 50, 100, 50],
           "reason": "location change"
         }
       ]

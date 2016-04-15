@@ -12,13 +12,12 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='outside'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 136, 100, 100],
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 136, 100, 100],
+          "object": "LayoutBlockFlow (positioned) DIV id='outside'",
           "reason": "location change"
         }
       ]

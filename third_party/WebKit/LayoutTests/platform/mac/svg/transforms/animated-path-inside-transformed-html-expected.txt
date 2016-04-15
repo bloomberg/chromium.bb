@@ -6,28 +6,73 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#FFFFFF",
-      "repaintRects": [
-        [355, 126, 103, 101],
-        [352, 395, 98, 99],
-        [246, 104, 119, 28],
-        [246, 104, 119, 28],
-        [203, 335, 121, 43],
-        [203, 335, 121, 43],
-        [187, 104, 310, 390],
-        [111, 83, 101, 100],
-        [90, 206, 98, 98],
-        [90, 83, 275, 248]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox 'This is some text'",
-        "LayoutSVGRoot svg",
-        "LayoutSVGRect rect id='rect'",
-        "LayoutSVGText text id='text'",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'This is some text'",
-        "LayoutSVGImage image id='image'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [187, 104, 310, 390],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [90, 83, 275, 248],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [203, 335, 121, 43],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGText text id='text'",
+          "rect": [203, 335, 121, 43],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [246, 104, 119, 28],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGText text id='text'",
+          "rect": [246, 104, 119, 28],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [355, 126, 103, 101],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [111, 83, 101, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGImage image id='image'",
+          "rect": [352, 395, 98, 99],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGImage image id='image'",
+          "rect": [90, 206, 98, 98],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'This is some text'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'This is some text'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        }
       ]
     }
   ]

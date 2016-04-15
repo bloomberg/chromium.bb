@@ -7,13 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [1, 102, 198, 50],
+          "object": "LayoutBlockFlow DIV class='item'",
+          "rect": [0, 202, 200, 150],
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [1, 53, 198, 50],
+          "object": "LayoutBlockFlow DIV class='item'",
+          "rect": [0, 52, 200, 150],
           "reason": "location change"
         },
         {
@@ -27,13 +27,13 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [0, 52, 200, 150],
+          "object": "LayoutBlockFlow DIV",
+          "rect": [1, 102, 198, 50],
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [0, 202, 200, 150],
+          "object": "LayoutBlockFlow DIV",
+          "rect": [1, 53, 198, 50],
           "reason": "location change"
         }
       ]

@@ -13,28 +13,24 @@
           "backfaceVisibility": "hidden",
           "paintInvalidations": [
             {
+              "object": "LayoutText #text",
+              "rect": [520, 0, 80, 340],
+              "reason": "style change"
+            },
+            {
               "object": "InlineTextBox 'Lorem ipsum dolor'",
-              "rect": [0, 0, 0, 0],
               "reason": "style change"
             },
             {
               "object": "InlineTextBox 'adipiscing elit.'",
-              "rect": [0, 0, 0, 0],
               "reason": "style change"
             },
             {
               "object": "InlineTextBox 'consectetur'",
-              "rect": [0, 0, 0, 0],
               "reason": "style change"
             },
             {
               "object": "InlineTextBox 'sit amet,'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [520, 0, 80, 340],
               "reason": "style change"
             }
           ]

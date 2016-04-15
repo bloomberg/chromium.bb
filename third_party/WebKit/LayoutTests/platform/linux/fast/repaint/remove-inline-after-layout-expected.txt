@@ -7,54 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'This span should disappear.\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'This span should disappear.\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 108, 784, 104],
           "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [112, 193, 171, 19],
+          "reason": "layoutObject removal"
         },
         {
           "object": "LayoutBlockFlow DIV",
@@ -67,23 +27,51 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutInline SPAN id='target'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
+          "object": "InlineBox",
+          "reason": "full"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [112, 193, 171, 19],
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'This span should disappear.\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'This span should disappear.\n'",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutInline SPAN id='target'",
           "reason": "layoutObject removal"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

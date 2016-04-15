@@ -7,38 +7,32 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutText #text",
+          "rect": [548, 191, 23, 35],
+          "reason": "selection"
+        },
+        {
           "object": "InlineTextBox '\u7B2C\u4E00\u6BB5\u843D paragraph 1'",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow DIV class='basic d1 vert'",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow DIV class='lrblock'",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [548, 191, 23, 35],
           "reason": "selection"
         }
       ]

@@ -7,43 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'x'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 40, 784, 104],
           "reason": "invalidate paint rectangle"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 200, 100, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 220, 100, 100],
+          "object": "LayoutInline (relative positioned) SPAN id='target'",
+          "rect": [8, 220, 100, 104],
           "reason": "location change"
         },
         {
@@ -52,18 +22,8 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutInline (relative positioned) SPAN id='target'",
-          "rect": [8, 220, 100, 104],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 200, 100, 100],
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 220, 100, 100],
           "reason": "location change"
         },
         {
@@ -72,18 +32,49 @@
           "reason": "location change"
         },
         {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 200, 100, 100],
+          "reason": "location change"
+        },
+        {
           "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
+          "rect": [8, 200, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'x'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
           "reason": "location change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

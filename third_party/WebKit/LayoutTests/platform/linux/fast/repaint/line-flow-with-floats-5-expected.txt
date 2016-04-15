@@ -7,204 +7,24 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox ' was'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'Alice began to feel very uneasy: to be sure, she had not as\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'The players all played at once without waiting\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'The players all played at once without waiting\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'They\u2019re dreadfully fond of beheading people here; the great'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'a very short time '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'a very short time '",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'any dispute with the Queen, but she knew that it might\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'for'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'for'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'happen any'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'hedgehogs; and in\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'hedgehogs; and in\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'her head!\u2019 about'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'her head!\u2019 about'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'in a furious passion, and went\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'me?'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'minute, \u2018and then,\u2019 thought she, \u2018what would become of\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'once in a minute.\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'once in a minute.\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'other parts of\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'stamping about, and'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'stamping about, and'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'the Queen'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'the Queen'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'the ground, Alice soon came to the conclusion that it'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'turns,\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'turns,\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'was a very\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'was in a furious passion, and went\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'yet had'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
-          "rect": [46, 363, 16, 65],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow P",
           "rect": [8, 340, 418, 259],
           "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 420, 355, 79],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [49, 380, 320, 59],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [49, 380, 303, 19],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
@@ -218,16 +38,6 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [49, 380, 303, 19],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [49, 380, 320, 59],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [303, 420, 67, 19],
           "reason": "bounds change"
         },
@@ -237,73 +47,212 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [14, 420, 355, 79],
+          "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+          "rect": [46, 363, 16, 65],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox ' was'",
           "reason": "bounds change"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "InlineTextBox 'Alice began to feel very uneasy: to be sure, she had not as\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'The players all played at once without waiting\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'The players all played at once without waiting\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'They\u2019re dreadfully fond of beheading people here; the great'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'a very short time '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'a very short time '",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'any dispute with the Queen, but she knew that it might\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'difficult game indeed.\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'difficult game indeed.\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'for'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'for'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'happen any'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hedgehogs; and in\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hedgehogs; and in\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'her head!\u2019 about'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'her head!\u2019 about'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'in a furious passion, and went\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'me?'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'minute, \u2018and then,\u2019 thought she, \u2018what would become of\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'once in a minute.\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'once in a minute.\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'other parts of\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'stamping about, and'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'stamping about, and'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'the Queen'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'the Queen'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'the ground, Alice soon came to the conclusion that it'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'turns,\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'turns,\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'was a very\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'was in a furious passion, and went\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'yet had'",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

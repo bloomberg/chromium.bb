@@ -7,28 +7,24 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'X'",
-          "rect": [0, 0, 0, 0],
-          "reason": "none"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 0, 0],
-          "reason": "none"
-        },
-        {
-          "object": "LayoutSVGResourcePattern pattern id='pat'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutSVGText text",
           "rect": [8, 8, 100, 100],
           "reason": "SVG resource change"
         },
         {
+          "object": "InlineTextBox 'X'",
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGResourcePattern pattern id='pat'",
+          "reason": "full"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

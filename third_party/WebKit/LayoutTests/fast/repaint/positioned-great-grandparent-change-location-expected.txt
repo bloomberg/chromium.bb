@@ -7,21 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Target'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [100, 200, 100, 100],
           "reason": "location change"
@@ -29,11 +14,6 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [100, 100, 100, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='great-grandparent'",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         },
         {
@@ -47,8 +27,23 @@
           "reason": "location change"
         },
         {
+          "object": "InlineTextBox 'Target'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='great-grandparent'",
+          "reason": "location change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

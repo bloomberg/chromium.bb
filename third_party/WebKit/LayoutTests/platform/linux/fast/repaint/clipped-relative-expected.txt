@@ -7,18 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='inner'",
           "rect": [8, 74, 204, 232],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='i'",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         },
         {
@@ -27,18 +17,23 @@
           "reason": "location change"
         },
         {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='i'",
+          "reason": "location change"
+        },
+        {
           "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

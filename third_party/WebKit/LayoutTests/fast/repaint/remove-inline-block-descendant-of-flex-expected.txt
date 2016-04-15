@@ -7,38 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutBlockFlow DIV id='inline-block-2' class='item'",
+          "rect": [0, 200, 100, 100],
           "reason": "location change"
         },
         {
@@ -53,37 +23,55 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='inline-block-2' class='item'",
-          "rect": [0, 200, 100, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='inline-block-2' class='item'",
           "rect": [0, 100, 100, 100],
           "reason": "location change"
         },
         {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "layoutObject removal"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

@@ -8,12 +8,10 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         }
       ],
@@ -27,23 +25,20 @@
           "backgroundColor": "#D3D3D3",
           "paintInvalidations": [
             {
+              "object": "LayoutText #text",
+              "rect": [0, 160, 23, 18],
+              "reason": "selection"
+            },
+            {
               "object": "InlineTextBox 'test'",
-              "rect": [0, 0, 0, 0],
               "reason": "selection"
             },
             {
               "object": "LayoutBlockFlow DIV id='scroller'",
-              "rect": [0, 0, 0, 0],
               "reason": "selection"
             },
             {
               "object": "LayoutBlockFlow DIV id='target'",
-              "rect": [0, 0, 0, 0],
-              "reason": "selection"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [0, 160, 23, 18],
               "reason": "selection"
             }
           ],
@@ -57,23 +52,20 @@
                   "drawsContent": true,
                   "paintInvalidations": [
                     {
+                      "object": "LayoutText #text",
+                      "rect": [0, 610, 23, 18],
+                      "reason": "selection"
+                    },
+                    {
                       "object": "InlineTextBox 'test'",
-                      "rect": [0, 0, 0, 0],
                       "reason": "selection"
                     },
                     {
                       "object": "LayoutBlockFlow DIV id='scroller'",
-                      "rect": [0, 0, 0, 0],
                       "reason": "selection"
                     },
                     {
                       "object": "LayoutBlockFlow DIV id='target'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "selection"
-                    },
-                    {
-                      "object": "LayoutText #text",
-                      "rect": [0, 610, 23, 18],
                       "reason": "selection"
                     }
                   ]

@@ -8,13 +8,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='rel'",
-          "rect": [20, -64, 196, 214],
-          "reason": "layer"
+          "rect": [8, 8, 220, 70],
+          "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow DIV id='rel'",
-          "rect": [8, 8, 220, 70],
-          "reason": "location change"
+          "rect": [20, -64, 196, 214],
+          "reason": "layer"
         }
       ]
     }

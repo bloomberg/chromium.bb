@@ -7,9 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGGradientStop stop id='stop1'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
+          "object": "LayoutSVGRect rect",
+          "rect": [24, 24, 402, 402],
+          "reason": "SVG resource change"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -22,9 +22,8 @@
           "reason": "SVG resource change"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [24, 24, 402, 402],
-          "reason": "SVG resource change"
+          "object": "LayoutSVGGradientStop stop id='stop1'",
+          "reason": "full"
         }
       ]
     }

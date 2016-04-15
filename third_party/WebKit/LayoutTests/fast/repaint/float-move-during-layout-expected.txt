@@ -7,9 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [8, 104, 100, 100],
-          "reason": "location change"
+          "object": "LayoutBlockFlow DIV id='t'",
+          "rect": [8, 104, 784, 100],
+          "reason": "became visible"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
@@ -17,14 +17,13 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='s'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [8, 104, 100, 100],
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='t'",
-          "rect": [8, 104, 784, 100],
-          "reason": "became visible"
+          "object": "LayoutBlockFlow DIV id='s'",
+          "reason": "location change"
         }
       ]
     }

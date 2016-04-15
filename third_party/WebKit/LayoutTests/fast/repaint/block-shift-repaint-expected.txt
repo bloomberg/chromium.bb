@@ -7,14 +7,49 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='green half'",
-          "rect": [8, 68, 60, 30],
+          "object": "LayoutBlockFlow DIV class='half'",
+          "rect": [8, 353, 60, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='half'",
+          "rect": [8, 338, 60, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='half'",
+          "rect": [8, 323, 60, 30],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='half'",
+          "rect": [8, 308, 60, 30],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='red half'",
+          "rect": [8, 248, 60, 30],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow DIV class='green half'",
-          "rect": [8, 38, 60, 30],
+          "rect": [8, 218, 60, 30],
           "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='red half'",
+          "rect": [8, 218, 60, 30],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='green half'",
+          "rect": [8, 188, 60, 30],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='div2' class='zero'",
+          "rect": [8, 188, 60, 30],
+          "reason": "became visible"
         },
         {
           "object": "LayoutBlockFlow DIV class='green half'",
@@ -27,33 +62,28 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV class='green half'",
-          "rect": [8, 188, 60, 30],
+          "object": "LayoutBlockFlow DIV class='red half'",
+          "rect": [8, 128, 60, 30],
           "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='red half'",
+          "rect": [8, 98, 60, 30],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='top' class='blue half'",
+          "rect": [8, 98, 60, 30],
+          "reason": "became invisible"
         },
         {
           "object": "LayoutBlockFlow DIV class='green half'",
-          "rect": [8, 218, 60, 30],
+          "rect": [8, 68, 60, 30],
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV class='half'",
-          "rect": [8, 308, 60, 30],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='half'",
-          "rect": [8, 323, 60, 30],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='half'",
-          "rect": [8, 338, 60, 38],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='half'",
-          "rect": [8, 353, 60, 38],
+          "object": "LayoutBlockFlow DIV class='green half'",
+          "rect": [8, 38, 60, 30],
           "reason": "location change"
         },
         {
@@ -67,44 +97,14 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV class='red half'",
-          "rect": [8, 128, 60, 30],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='red half'",
-          "rect": [8, 98, 60, 30],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='red half'",
-          "rect": [8, 218, 60, 30],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='red half'",
-          "rect": [8, 248, 60, 30],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='div1' class='blue half'",
           "rect": [8, 8, 60, 30],
           "reason": "became invisible"
         },
         {
-          "object": "LayoutBlockFlow DIV id='div2' class='zero'",
-          "rect": [8, 188, 60, 30],
-          "reason": "became visible"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='innerDiv'",
           "rect": [48, 308, 10, 15],
           "reason": "became visible"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='top' class='blue half'",
-          "rect": [8, 98, 60, 30],
-          "reason": "became invisible"
         }
       ]
     }

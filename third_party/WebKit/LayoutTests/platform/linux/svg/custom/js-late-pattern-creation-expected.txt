@@ -7,14 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Pattern on fill'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [8, 12, 17, 26],
-          "reason": "layoutObject insertion"
+          "object": "LayoutSVGText text",
+          "rect": [33, 23, 622, 194],
+          "reason": "style change"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -22,23 +17,24 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGResourcePattern pattern id='dynPattern'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutSVGRect rect",
+          "rect": [8, 12, 17, 26],
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [33, 23, 622, 194],
-          "reason": "style change"
+          "object": "InlineTextBox 'Pattern on fill'",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGResourcePattern pattern id='dynPattern'",
+          "reason": "layoutObject insertion"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

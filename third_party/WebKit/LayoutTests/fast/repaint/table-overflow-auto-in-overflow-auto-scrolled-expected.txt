@@ -12,33 +12,8 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow DIV id='innerDiv'",
-          "rect": [762, 8, 15, 300],
-          "reason": "scroll"
-        },
-        {
           "object": "LayoutTable TABLE",
           "rect": [8, 8, 306, 300],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [10, 8, 302, 300],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [10, 8, 302, 300],
           "reason": "location change"
         },
         {
@@ -57,8 +32,30 @@
           "reason": "location change"
         },
         {
+          "object": "LayoutTableCell TD",
+          "rect": [10, 8, 302, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [10, 8, 302, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='innerDiv'",
+          "rect": [762, 8, 15, 300],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
           "object": "VerticalScrollbar",
-          "rect": [0, 0, 0, 0],
           "reason": "scroll"
         }
       ]

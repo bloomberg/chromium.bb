@@ -7,19 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutImage IMG id='target'",
-          "rect": [48, 100, 100, 100],
-          "reason": "forced by layout"
+          "object": "LayoutListItem LI",
+          "rect": [30, 100, 762, 104],
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutListItem LI",
@@ -27,14 +17,9 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutListItem LI",
-          "rect": [30, 100, 762, 104],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutListMarker (anonymous)",
-          "rect": [30, 135, 7, 19],
-          "reason": "location change"
+          "object": "LayoutImage IMG id='target'",
+          "rect": [48, 100, 100, 100],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutListMarker (anonymous)",
@@ -42,13 +27,24 @@
           "reason": "location change"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutListMarker (anonymous)",
+          "rect": [30, 135, 7, 19],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

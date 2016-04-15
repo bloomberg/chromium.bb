@@ -7,16 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'Test'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutInline SPAN",
           "rect": [210, -5, 50, 20],
           "reason": "style change"
@@ -24,6 +14,14 @@
         {
           "object": "LayoutText #text",
           "rect": [215, 0, 40, 10],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'Test'",
           "reason": "style change"
         }
       ]

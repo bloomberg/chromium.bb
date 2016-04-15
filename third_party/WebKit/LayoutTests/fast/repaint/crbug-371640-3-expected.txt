@@ -13,11 +13,6 @@
         },
         {
           "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
-          "rect": [408, 84, 100, 300],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
           "rect": [508, 84, 100, 300],
           "reason": "location change"
         },
@@ -27,12 +22,27 @@
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='abs_pos'",
-          "rect": [408, 204, 100, 100],
+          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
+          "rect": [408, 84, 100, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='keep_inner'",
+          "rect": [508, 84, 100, 220],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='keep_inner'",
+          "rect": [408, 84, 100, 220],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='abs_pos'",
+          "rect": [508, 204, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='keep_child'",
           "rect": [508, 204, 100, 100],
           "reason": "location change"
         },
@@ -42,23 +52,13 @@
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='keep_inner'",
-          "rect": [408, 84, 100, 220],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='keep_inner'",
-          "rect": [508, 84, 100, 220],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='keep_child'",
+          "object": "LayoutBlockFlow (positioned) DIV id='abs_pos'",
           "rect": [408, 204, 100, 100],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow DIV id='keep_child'",
-          "rect": [508, 204, 100, 100],
+          "rect": [408, 204, 100, 100],
           "reason": "location change"
         }
       ]

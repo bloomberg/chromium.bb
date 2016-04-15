@@ -7,103 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'A B C'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'D E F'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'G H I'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'J K L'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'M N O'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'P Q R'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'S T U'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'V W X'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Y Z'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='box'",
           "rect": [61, 87, 178, 206],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutInline (relative positioned) SPAN id='child'",
-          "rect": [300, 300, 80, 179],
           "reason": "location change"
         },
         {
@@ -113,12 +18,17 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [300, 302, 80, 176],
+          "rect": [135, 361, 159, 194],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutInline (relative positioned) SPAN id='child'",
+          "rect": [300, 300, 80, 179],
           "reason": "location change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [135, 361, 159, 194],
+          "rect": [300, 302, 80, 176],
           "reason": "location change"
         },
         {
@@ -127,8 +37,79 @@
           "reason": "location change"
         },
         {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'A B C'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'D E F'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'G H I'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'J K L'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'M N O'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'P Q R'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'S T U'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'V W X'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Y Z'",
+          "reason": "location change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

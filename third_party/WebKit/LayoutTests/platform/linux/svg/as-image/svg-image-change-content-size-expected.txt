@@ -7,23 +7,20 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 52, 602, 425],
           "reason": "forced by layout"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "InlineBox",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

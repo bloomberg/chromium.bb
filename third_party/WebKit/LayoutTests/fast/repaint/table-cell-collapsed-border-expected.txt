@@ -7,49 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD id='t1'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
+          "object": "LayoutTableCell TD id='t3'",
+          "rect": [220, 260, 122, 110],
+          "reason": "style change"
         },
         {
           "object": "LayoutTableCell TD id='t1'",
@@ -58,23 +18,52 @@
         },
         {
           "object": "LayoutTableCell TD id='t2'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD id='t2'",
           "rect": [3, 260, 118, 110],
           "reason": "style change"
         },
         {
-          "object": "LayoutTableCell TD id='t3'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD id='t1'",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD id='t2'",
           "reason": "full"
         },
         {
           "object": "LayoutTableCell TD id='t3'",
-          "rect": [220, 260, 122, 110],
-          "reason": "style change"
+          "reason": "full"
         }
       ]
     }

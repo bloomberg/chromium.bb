@@ -8,21 +8,6 @@ Hi!
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Hi!'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Hi!'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
-          "rect": [425, 480, 360, 90],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 980, 360, 90],
           "reason": "location change"
@@ -38,18 +23,8 @@ Hi!
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [425, 480, 19, 19],
+          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
+          "rect": [425, 480, 360, 90],
           "reason": "location change"
         },
         {
@@ -65,16 +40,35 @@ Hi!
         {
           "object": "LayoutText #text",
           "rect": [425, 480, 19, 19],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [425, 480, 19, 19],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Hi!'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Hi!'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
           "reason": "location change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

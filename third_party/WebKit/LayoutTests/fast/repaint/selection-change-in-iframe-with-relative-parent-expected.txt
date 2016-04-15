@@ -7,83 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'Bar'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'Bazz'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'Foo'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [48, 198, 10, 10],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [18, 208, 10, 10],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [48, 218, 10, 10],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [18, 228, 10, 10],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [58, 238, 10, 10],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
           "object": "LayoutText #text",
-          "rect": [18, 198, 30, 10],
+          "rect": [18, 238, 40, 10],
           "reason": "selection"
         },
         {
@@ -93,7 +18,72 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [18, 238, 40, 10],
+          "rect": [18, 198, 30, 10],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [58, 238, 10, 10],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [48, 218, 10, 10],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [48, 198, 10, 10],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [18, 228, 10, 10],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [18, 208, 10, 10],
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'Bar'",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'Bazz'",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'Foo'",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
           "reason": "selection"
         }
       ]

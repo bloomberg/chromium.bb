@@ -7,43 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Chromium'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 88, 32, 67],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow H2",
-          "rect": [8, 107, 111, 28],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow H2",
           "rect": [40, 107, 111, 28],
           "reason": "location change"
         },
         {
-          "object": "LayoutImage IMG id='foo'",
-          "rect": [8, 88, 32, 32],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 107, 111, 27],
+          "object": "LayoutBlockFlow H2",
+          "rect": [8, 107, 111, 28],
           "reason": "location change"
         },
         {
@@ -52,23 +22,42 @@
           "reason": "location change"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [8, 107, 111, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [8, 88, 32, 67],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutImage IMG id='foo'",
+          "rect": [8, 88, 32, 32],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Chromium'",
+          "reason": "location change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

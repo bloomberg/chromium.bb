@@ -7,39 +7,39 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 785, 841],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 742, 785, 99],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
+          "rect": [8, 191, 769, 642],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
+          "rect": [8, 191, 769, 642],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
+          "rect": [8, 92, 769, 642],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
+          "rect": [8, 92, 769, 642],
+          "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 92, 769, 99],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-          "rect": [8, 191, 769, 642],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-          "rect": [8, 92, 769, 642],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
-          "rect": [8, 191, 769, 642],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
-          "rect": [8, 92, 769, 642],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 785, 841],
-          "reason": "forced by layout"
         },
         {
           "object": "LayoutIFrame IFRAME id='iframe'",
@@ -57,28 +57,23 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
+          "object": "InlineBox",
+          "reason": "full"
         },
         {
           "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [0, 742, 785, 99],
-          "reason": "incremental"
+          "object": "LayoutText #text",
+          "reason": "layoutObject removal"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

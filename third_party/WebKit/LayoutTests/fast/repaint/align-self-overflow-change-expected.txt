@@ -12,9 +12,9 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 2, 200, 200],
-          "reason": "location change"
+          "object": "LayoutGrid DIV id='container'",
+          "rect": [0, 2, 200, 350],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
@@ -23,23 +23,23 @@
         },
         {
           "object": "LayoutBlockFlow DIV class='item1'",
+          "rect": [0, 52, 200, 200],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
           "rect": [0, 2, 200, 200],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item1'",
-          "rect": [0, 52, 200, 200],
+          "rect": [0, 2, 200, 200],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item2'",
           "rect": [0, 252, 200, 100],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutGrid DIV id='container'",
-          "rect": [0, 2, 200, 350],
-          "reason": "bounds change"
         }
       ]
     }

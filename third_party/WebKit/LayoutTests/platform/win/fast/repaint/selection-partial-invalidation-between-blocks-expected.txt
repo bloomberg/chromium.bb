@@ -7,38 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'First cell'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'Second cell'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutTable TABLE",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutTableCell TD id='firstCell'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutTableCell TD id='secondCell'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutText #text",
+          "rect": [11, 33, 79, 17],
           "reason": "selection"
         },
         {
@@ -47,8 +17,31 @@
           "reason": "selection"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [11, 33, 79, 17],
+          "object": "InlineTextBox 'First cell'",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'Second cell'",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutTableCell TD id='firstCell'",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutTableCell TD id='secondCell'",
           "reason": "selection"
         }
       ]

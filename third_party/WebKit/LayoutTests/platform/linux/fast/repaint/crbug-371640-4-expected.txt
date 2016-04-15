@@ -7,38 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\u00A0'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\u00A0'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
-          "rect": [208, 88, 100, 100],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
           "rect": [408, 88, 100, 100],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
-          "rect": [208, 88, 100, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
           "rect": [408, 88, 100, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_outer' class='outer'",
-          "rect": [208, 88, 100, 100],
           "reason": "location change"
         },
         {
@@ -58,11 +33,6 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='keep' class='item'",
-          "rect": [208, 88, 100, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='keep' class='item'",
           "rect": [408, 88, 100, 100],
           "reason": "location change"
         },
@@ -70,6 +40,31 @@
           "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
           "rect": [408, 88, 100, 100],
           "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
+          "rect": [208, 88, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
+          "rect": [208, 88, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_outer' class='outer'",
+          "rect": [208, 88, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='keep' class='item'",
+          "rect": [208, 88, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [408, 88, 4, 19],
+          "reason": "location change"
         },
         {
           "object": "LayoutText #text",
@@ -82,18 +77,19 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [408, 88, 4, 19],
+          "object": "InlineTextBox '\u00A0'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
           "reason": "location change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

@@ -7,18 +7,16 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\u1EA6\u1EA4\u1EAA\u1EA8\u1EB0'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutText #text",
           "rect": [19, 159, 130, 41],
           "reason": "layoutObject removal"
         },
         {
+          "object": "InlineTextBox '\u1EA6\u1EA4\u1EAA\u1EA8\u1EB0'",
+          "reason": "full"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

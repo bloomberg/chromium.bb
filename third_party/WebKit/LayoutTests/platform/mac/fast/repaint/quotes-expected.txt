@@ -7,69 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'quote 2'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '{'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '}'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 26, 784, 18],
           "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutInline \u003Cpseudo:after\u003E",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutInline \u003Cpseudo:before\u003E",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutInline Q id='q2' class='q-changed'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutQuote (anonymous)",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutQuote (anonymous)",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [17, 26, 48, 18],
-          "reason": "style change"
         },
         {
           "object": "LayoutText #text",
@@ -77,8 +17,8 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutTextFragment (anonymous)",
-          "rect": [8, 26, 10, 18],
+          "object": "LayoutText #text",
+          "rect": [17, 26, 48, 18],
           "reason": "style change"
         },
         {
@@ -88,12 +28,60 @@
         },
         {
           "object": "LayoutTextFragment (anonymous)",
+          "rect": [8, 26, 10, 18],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutTextFragment (anonymous)",
           "rect": [63, 26, 8, 18],
           "reason": "style change"
         },
         {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'quote 2'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '{'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '}'",
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutInline \u003Cpseudo:after\u003E",
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutInline \u003Cpseudo:before\u003E",
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutInline Q id='q2' class='q-changed'",
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutQuote (anonymous)",
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutQuote (anonymous)",
+          "reason": "style change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

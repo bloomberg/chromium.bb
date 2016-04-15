@@ -7,14 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGGradientStop stop id='stop'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 100, 100],
           "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop id='stop'",
+          "reason": "style change"
         }
       ]
     }

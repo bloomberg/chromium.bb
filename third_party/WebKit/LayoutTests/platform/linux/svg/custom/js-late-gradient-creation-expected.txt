@@ -7,38 +7,32 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Gradient on fill'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGGradientStop stop",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGGradientStop stop",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGResourceLinearGradient linearGradient id='dynGrad'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGText text",
           "rect": [33, 23, 697, 194],
           "reason": "style change"
         },
         {
+          "object": "InlineTextBox 'Gradient on fill'",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGResourceLinearGradient linearGradient id='dynGrad'",
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

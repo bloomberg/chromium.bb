@@ -10,24 +10,9 @@ Tested locations: 1200,1500
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='box'",
-          "rect": [900, 0, 100, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='box'",
-          "rect": [1200, 0, 100, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='box'",
-          "rect": [1200, 0, 100, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='box'",
-          "rect": [1500, 0, 100, 100],
-          "reason": "location change"
+          "object": "LayoutView #document",
+          "rect": [1300, 0, 300, 585],
+          "reason": "incremental"
         },
         {
           "object": "LayoutView #document",
@@ -35,9 +20,24 @@ Tested locations: 1200,1500
           "reason": "incremental"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [1300, 0, 300, 585],
-          "reason": "incremental"
+          "object": "LayoutBlockFlow DIV id='box'",
+          "rect": [1500, 0, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='box'",
+          "rect": [1200, 0, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='box'",
+          "rect": [1200, 0, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='box'",
+          "rect": [900, 0, 100, 100],
+          "reason": "location change"
         }
       ]
     }

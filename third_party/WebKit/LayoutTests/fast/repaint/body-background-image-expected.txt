@@ -8,13 +8,13 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [8, 240, 784, 284],
+          "object": "LayoutView #document",
+          "rect": [0, 0, 800, 600],
           "reason": "style change"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 240, 784, 284],
           "reason": "style change"
         }
       ]

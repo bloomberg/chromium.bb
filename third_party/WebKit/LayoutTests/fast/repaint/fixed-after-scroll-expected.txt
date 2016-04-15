@@ -8,8 +8,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
+          "rect": [8, 700, 100, 100],
+          "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
@@ -18,8 +18,7 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
-          "rect": [8, 700, 100, 100],
-          "reason": "location change"
+          "reason": "style change"
         }
       ]
     }

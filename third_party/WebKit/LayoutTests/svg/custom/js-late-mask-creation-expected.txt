@@ -8,17 +8,16 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGRect rect",
-          "rect": [0, 100, 800, 100],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
           "rect": [0, 0, 800, 300],
           "reason": "layoutObject insertion"
         },
         {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 100, 800, 100],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutSVGResourceMasker mask id='dynMask'",
-          "rect": [0, 0, 0, 0],
           "reason": "layoutObject insertion"
         }
       ]

@@ -7,18 +7,17 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [0, 0, 4, 4],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGPath path",
           "rect": [203, 211, 111, 111],
           "reason": "style change"
         },
         {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [0, 0, 4, 4],
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "LayoutSVGResourceMarker marker id='markerMiddle'",
-          "rect": [0, 0, 0, 0],
           "reason": "layoutObject insertion"
         }
       ]

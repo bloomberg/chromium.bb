@@ -7,81 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox ' eleifend lacus,'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' eleifend'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'at sagittis eros leo pulvinar'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'augue'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'convallis,\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'convallis.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'lacus, at sagittis eros leo'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'pulvinar velit. Integer'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'purus'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'purus'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'sollicitudin nisi ut urna blandit'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'ut urna blandit convallis.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'velit. Integer sollicitudin nisi'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow BODY",
           "rect": [7, 16, 785, 262],
           "reason": "bounds change"
@@ -92,9 +17,9 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutInline SPAN id='t'",
-          "rect": [37, 132, 37, 18],
-          "reason": "style change"
+          "object": "LayoutText #text",
+          "rect": [7, 114, 201, 89],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN id='t'",
@@ -103,47 +28,101 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [37, 132, 37, 18],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [115, 114, 37, 18],
           "reason": "bounds change"
         },
         {
+          "object": "LayoutInline SPAN id='t'",
+          "rect": [37, 132, 37, 18],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutText #text",
-          "rect": [7, 114, 201, 89],
+          "rect": [37, 132, 37, 18],
           "reason": "bounds change"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox ' eleifend lacus,'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ' eleifend'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'at sagittis eros leo pulvinar'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'augue'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'convallis,\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'convallis.'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'lacus, at sagittis eros leo'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'pulvinar velit. Integer'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'purus'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'purus'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'sollicitudin nisi ut urna blandit'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'ut urna blandit convallis.'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'velit. Integer sollicitudin nisi'",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

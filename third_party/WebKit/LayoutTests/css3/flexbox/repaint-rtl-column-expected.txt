@@ -7,9 +7,34 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [13, 218, 190, 350],
+          "object": "LayoutBlockFlow DIV id='content'",
+          "rect": [8, 119, 200, 356],
           "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='content'",
+          "rect": [8, 119, 200, 356],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='content'",
+          "rect": [8, 116, 200, 356],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='content'",
+          "rect": [8, 213, 200, 355],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='left'",
+          "rect": [8, 119, 200, 94],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='left'",
+          "rect": [8, 116, 200, 4],
+          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow DIV",
@@ -27,34 +52,9 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [8, 213, 200, 355],
+          "object": "LayoutBlockFlow DIV",
+          "rect": [13, 218, 190, 350],
           "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [8, 119, 200, 356],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [8, 119, 200, 356],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [8, 116, 200, 356],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='left'",
-          "rect": [8, 119, 200, 94],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='left'",
-          "rect": [8, 116, 200, 4],
-          "reason": "incremental"
         }
       ]
     }

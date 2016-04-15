@@ -7,64 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox ' was in a furious passion, and went\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Queen'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'a very short time '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'for the hedgehogs; and in\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'for turns,\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'quarrelling all the while, and fighting'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'stamping'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutBlockFlow P",
           "rect": [8, 386, 418, 54],
           "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutInline SPAN id='theQueen'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
         },
         {
           "object": "LayoutText #text",
@@ -72,18 +17,59 @@
           "reason": "style change"
         },
         {
+          "object": "InlineTextBox ' was in a furious passion, and went\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Queen'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'a very short time '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'for the hedgehogs; and in\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'for turns,\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'quarrelling all the while, and fighting'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'stamping'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'the'",
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutInline SPAN id='theQueen'",
+          "reason": "style change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

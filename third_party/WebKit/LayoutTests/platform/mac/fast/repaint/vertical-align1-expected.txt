@@ -7,39 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 100, 800, 4],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 0, 800, 104],
           "reason": "invalidate paint rectangle"
         },
         {
-          "object": "LayoutBlockFlow DIV class='other'",
-          "rect": [0, 80, 20, 20],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='other'",
-          "rect": [0, 34, 20, 20],
-          "reason": "location change"
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 100, 800, 4],
+          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow DIV class='other'",
@@ -52,13 +27,33 @@
           "reason": "location change"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutBlockFlow DIV class='other'",
+          "rect": [0, 80, 20, 20],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='other'",
+          "rect": [0, 34, 20, 20],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

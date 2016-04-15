@@ -7,8 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow (positioned) DIV id='target2' class='border-box'",
+          "rect": [0, 200, 440, 140],
+          "reason": "content box change"
+        },
+        {
           "object": "LayoutBlockFlow (positioned) DIV id='target1' class='content-box'",
-          "rect": [400, 0, 40, 140],
+          "rect": [0, 80, 440, 60],
           "reason": "incremental"
         },
         {
@@ -23,13 +28,8 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target1' class='content-box'",
-          "rect": [0, 80, 440, 60],
+          "rect": [400, 0, 40, 140],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target2' class='border-box'",
-          "rect": [0, 200, 440, 140],
-          "reason": "content box change"
         }
       ]
     }

@@ -7,8 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='thumb'",
-          "rect": [69, 10, 11, 21],
+          "object": "LayoutSlider INPUT",
+          "rect": [9, 9, 131, 23],
           "reason": "full"
         },
         {
@@ -22,8 +22,8 @@
           "reason": "full"
         },
         {
-          "object": "LayoutSlider INPUT",
-          "rect": [9, 9, 131, 23],
+          "object": "LayoutBlockFlow DIV id='thumb'",
+          "rect": [69, 10, 11, 21],
           "reason": "full"
         }
       ]

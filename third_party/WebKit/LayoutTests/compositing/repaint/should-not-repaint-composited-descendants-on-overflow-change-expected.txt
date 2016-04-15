@@ -7,13 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='overflow1'",
-          "rect": [0, 0, 200, 200],
+          "object": "LayoutBlockFlow DIV id='overflow2'",
+          "rect": [0, 200, 200, 200],
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='overflow2'",
-          "rect": [0, 200, 200, 200],
+          "object": "LayoutBlockFlow DIV id='overflow1'",
+          "rect": [0, 0, 200, 200],
           "reason": "style change"
         }
       ],

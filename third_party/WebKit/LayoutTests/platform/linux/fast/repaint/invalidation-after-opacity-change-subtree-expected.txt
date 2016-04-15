@@ -7,69 +7,19 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'This test checks that switching opacity'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layer"
-        },
-        {
-          "object": "InlineTextBox 'This test checks that switching opacity'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'This text should be visible in the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layer"
-        },
-        {
-          "object": "InlineTextBox 'This text should be visible in the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'invalidates the full subtree.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layer"
-        },
-        {
-          "object": "InlineTextBox 'invalidates the full subtree.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'output.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layer"
-        },
-        {
-          "object": "InlineTextBox 'output.'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
+          "rect": [8, 2000, 777, 350],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
           "rect": [8, 2000, 777, 350],
           "reason": "layer"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
-          "rect": [8, 2000, 777, 350],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='container'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layer"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='container'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 2046, 777, 107],
-          "reason": "layer"
+          "rect": [8, 2196, 777, 107],
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
@@ -83,7 +33,12 @@
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 2196, 777, 107],
+          "rect": [8, 2046, 777, 107],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 2046, 768, 107],
           "reason": "style change"
         },
         {
@@ -94,26 +49,59 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 2196, 639, 107],
-          "reason": "layer"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 2046, 768, 107],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 2196, 639, 107],
+          "reason": "layer"
+        },
+        {
+          "object": "InlineTextBox 'This test checks that switching opacity'",
           "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'This test checks that switching opacity'",
+          "reason": "layer"
+        },
+        {
+          "object": "InlineTextBox 'This text should be visible in the'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'This text should be visible in the'",
+          "reason": "layer"
+        },
+        {
+          "object": "InlineTextBox 'invalidates the full subtree.'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'invalidates the full subtree.'",
+          "reason": "layer"
+        },
+        {
+          "object": "InlineTextBox 'output.'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'output.'",
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='container'",
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='container'",
+          "reason": "layer"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

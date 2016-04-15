@@ -8,11 +8,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [0, 0, 0, 0],
-          "reason": "scroll"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [88, 53, 15, 100],
           "reason": "scroll"
         },
@@ -22,8 +17,11 @@
           "reason": "incremental"
         },
         {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "reason": "scroll"
+        },
+        {
           "object": "VerticalScrollbar",
-          "rect": [0, 0, 0, 0],
           "reason": "scroll"
         }
       ]

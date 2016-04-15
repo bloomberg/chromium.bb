@@ -8,18 +8,23 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g",
-          "rect": [0, 0, 110, 110],
-          "reason": "SVG resource change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
           "rect": [40, 40, 120, 120],
           "reason": "SVG resource change"
         },
         {
-          "object": "LayoutSVGEllipse circle id='circle'",
-          "rect": [0, 0, 100, 100],
-          "reason": "full"
+          "object": "LayoutSVGRoot svg",
+          "rect": [40, 40, 120, 120],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 110, 110],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [0, 0, 110, 110],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGEllipse circle id='circle'",
@@ -27,14 +32,9 @@
           "reason": "full"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [0, 0, 110, 110],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [40, 40, 120, 120],
-          "reason": "bounds change"
+          "object": "LayoutSVGEllipse circle id='circle'",
+          "rect": [0, 0, 100, 100],
+          "reason": "full"
         }
       ]
     }

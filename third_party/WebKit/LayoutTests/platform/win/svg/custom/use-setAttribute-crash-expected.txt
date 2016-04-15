@@ -7,9 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
+          "object": "LayoutBlockFlow body",
+          "rect": [8, 8, 784, 203],
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutBlockFlow body",
@@ -17,23 +17,8 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow body",
-          "rect": [8, 8, 784, 203],
-          "reason": "invalidate paint rectangle"
-        },
-        {
           "object": "LayoutSVGContainer svg:use id='use'",
           "rect": [33, 33, 50, 50],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGEllipse svg:circle id='circle'",
-          "rect": [53, 53, 10, 10],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGEllipse svg:circle id='circle'",
-          "rect": [8, 8, 25, 25],
           "reason": "full"
         },
         {
@@ -48,22 +33,34 @@
         },
         {
           "object": "LayoutSVGViewportContainer svg id='symbol'",
+          "rect": [33, 33, 50, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGEllipse svg:circle id='circle'",
+          "rect": [8, 8, 25, 25],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGEllipse svg:circle id='circle'",
           "rect": [53, 53, 10, 10],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutSVGViewportContainer svg id='symbol'",
-          "rect": [33, 33, 50, 50],
-          "reason": "location change"
+          "rect": [53, 53, 10, 10],
+          "reason": "layoutObject removal"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "InlineBox",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

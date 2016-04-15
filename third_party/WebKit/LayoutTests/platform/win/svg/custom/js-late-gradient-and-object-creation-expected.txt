@@ -7,64 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Gradient on fill'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'Gradient on fill/stroke'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'Gradient on stroke'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGContainer g id='content'",
           "rect": [0, 15, 759, 362],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGGradientStop stop",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGGradientStop stop",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGGradientStop stop",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 15, 449, 127],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 130, 596, 130],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 247, 759, 130],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGResourceLinearGradient linearGradient id='fillLinearGradient'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGResourceLinearGradient linearGradient id='strokeLinearGradient'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRoot svg id='svg-root'",
@@ -72,13 +17,8 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [0, 15, 449, 127],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 130, 596, 130],
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 247, 759, 130],
           "reason": "layoutObject insertion"
         },
         {
@@ -87,18 +27,67 @@
           "reason": "layoutObject insertion"
         },
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 130, 596, 130],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 130, 596, 130],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 15, 449, 127],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 15, 449, 127],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'Gradient on fill'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'Gradient on fill/stroke'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'Gradient on stroke'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGResourceLinearGradient linearGradient id='fillLinearGradient'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGResourceLinearGradient linearGradient id='strokeLinearGradient'",
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

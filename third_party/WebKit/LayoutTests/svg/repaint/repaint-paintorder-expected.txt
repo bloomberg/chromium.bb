@@ -7,33 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGContainer use id='t1'",
-          "rect": [47, 166, 133, 132],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGContainer use id='t2'",
-          "rect": [184, 166, 132, 132],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGEllipse circle id='t4'",
-          "rect": [46, 28, 7, 7],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutSVGPath polygon",
           "rect": [137, 37, 580, 563],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGPath polygon",
-          "rect": [47, 166, 133, 132],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGPath polygon",
-          "rect": [184, 166, 132, 132],
           "reason": "style change"
         },
         {
@@ -47,13 +22,38 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutSVGViewportContainer svg id='poly'",
+          "object": "LayoutSVGContainer use id='t1'",
+          "rect": [47, 166, 133, 132],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon",
           "rect": [47, 166, 133, 132],
           "reason": "style change"
         },
         {
           "object": "LayoutSVGViewportContainer svg id='poly'",
+          "rect": [47, 166, 133, 132],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='t2'",
           "rect": [184, 166, 132, 132],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon",
+          "rect": [184, 166, 132, 132],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='poly'",
+          "rect": [184, 166, 132, 132],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle id='t4'",
+          "rect": [46, 28, 7, 7],
           "reason": "style change"
         }
       ]

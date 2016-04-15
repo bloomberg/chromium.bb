@@ -7,114 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' world'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'hello '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'hello '",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'hello world hello'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'hello world hello'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'world hello world'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'world hello world'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'world hello'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'world hello'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'world'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'world'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='test'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='test'",
-          "rect": [38, 94, 152, 90],
-          "reason": "incremental"
+          "rect": [38, 75, 152, 107],
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutBlockFlow DIV id='test'",
@@ -123,33 +18,13 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='test'",
-          "rect": [38, 75, 152, 107],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutInline SPAN id='removeme'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
+          "rect": [38, 94, 152, 90],
+          "reason": "incremental"
         },
         {
           "object": "LayoutText #text",
           "rect": [39, 75, 119, 107],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [39, 75, 36, 17],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
         },
         {
           "object": "LayoutText #text",
@@ -162,38 +37,132 @@
           "reason": "bounds change"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [39, 75, 36, 17],
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ' world'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hello '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hello '",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'hello world hello'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hello world hello'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'world hello world'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'world hello world'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'world hello'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'world hello'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'world'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'world'",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='test'",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutInline SPAN id='removeme'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "reason": "selection"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

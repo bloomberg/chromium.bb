@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 0, 800, 202],
           "reason": "invalidate paint rectangle"
@@ -22,8 +17,11 @@
           "reason": "style change"
         },
         {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

@@ -7,18 +7,16 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGGradientStop stop",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 100, 100],
           "reason": "SVG resource change"
         },
         {
+          "object": "LayoutSVGGradientStop stop",
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "LayoutSVGResourceLinearGradient linearGradient id='test'",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

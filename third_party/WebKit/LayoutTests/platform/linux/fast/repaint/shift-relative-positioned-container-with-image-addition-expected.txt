@@ -7,38 +7,33 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-          "rect": [8, 92, 769, 642],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-          "rect": [8, 186, 769, 642],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
-          "rect": [8, 92, 769, 642],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
-          "rect": [8, 186, 769, 642],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [18, 102, 712, 74],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow HTML",
           "rect": [0, 0, 785, 836],
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [10, 94, 728, 90],
+          "object": "LayoutView #document",
+          "rect": [0, 742, 785, 94],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
+          "rect": [8, 186, 769, 642],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
+          "rect": [8, 186, 769, 642],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
+          "rect": [8, 92, 769, 642],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
+          "rect": [8, 92, 769, 642],
           "reason": "location change"
         },
         {
@@ -47,8 +42,23 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutImage IMG",
-          "rect": [58, 142, 489, 537],
+          "object": "LayoutBlockFlow HTML",
+          "rect": [10, 94, 728, 90],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [10, 94, 728, 90],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [10, 94, 728, 90],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [18, 102, 712, 74],
           "reason": "location change"
         },
         {
@@ -57,33 +67,24 @@
           "reason": "location change"
         },
         {
+          "object": "LayoutImage IMG",
+          "rect": [58, 142, 489, 537],
+          "reason": "location change"
+        },
+        {
           "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         },
         {
           "object": "LayoutView #document",
-          "rect": [0, 742, 785, 94],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [10, 94, 728, 90],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [10, 94, 728, 90],
-          "reason": "location change"
+          "reason": "scroll"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "VerticalScrollbar",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

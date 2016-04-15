@@ -7,8 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "HorizontalScrollbar",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutBlockFlow DIV id='container'",
+          "rect": [1, 236, 185, 15],
           "reason": "scroll"
         },
         {
@@ -17,8 +17,7 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow DIV id='container'",
-          "rect": [1, 236, 185, 15],
+          "object": "HorizontalScrollbar",
           "reason": "scroll"
         }
       ]

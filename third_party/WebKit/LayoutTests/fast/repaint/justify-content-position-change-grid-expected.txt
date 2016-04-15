@@ -7,33 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
+          "object": "LayoutGrid DIV id='container'",
+          "rect": [0, 52, 300, 200],
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [0, 52, 50, 200],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [150, 52, 50, 200],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [50, 52, 50, 200],
+          "rect": [250, 52, 50, 200],
           "reason": "location change"
         },
         {
@@ -43,18 +23,35 @@
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
+          "rect": [150, 52, 50, 200],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item'",
           "rect": [100, 52, 50, 200],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [250, 52, 50, 200],
+          "rect": [50, 52, 50, 200],
           "reason": "location change"
         },
         {
-          "object": "LayoutGrid DIV id='container'",
-          "rect": [0, 52, 300, 200],
-          "reason": "style change"
+          "object": "LayoutBlockFlow DIV class='item'",
+          "rect": [0, 52, 50, 200],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "reason": "location change"
         }
       ]
     }

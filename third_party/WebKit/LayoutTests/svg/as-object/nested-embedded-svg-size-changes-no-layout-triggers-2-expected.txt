@@ -7,49 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "HorizontalScrollbar",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 0, 800, 202],
           "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 285, 135],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [1, 1, 400, 200],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 285, 135],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [1, 1, 400, 200],
-          "reason": "location change"
         },
         {
           "object": "LayoutEmbeddedObject OBJECT",
@@ -57,8 +17,13 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutEmbeddedObject OBJECT",
-          "rect": [0, 0, 285, 135],
+          "object": "LayoutBlockFlow BODY",
+          "rect": [1, 1, 400, 200],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [1, 1, 400, 200],
           "reason": "location change"
         },
         {
@@ -67,8 +32,63 @@
           "reason": "location change"
         },
         {
+          "object": "LayoutView #document",
+          "rect": [1, 1, 400, 200],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [1, 1, 400, 200],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [1, 1, 400, 200],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [11, 11, 380, 180],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 0, 285, 135],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 285, 135],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutEmbeddedObject OBJECT",
+          "rect": [0, 0, 285, 135],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 285, 135],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 285, 135],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 135, 285, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [10, 10, 275, 125],
+          "reason": "location change"
+        },
+        {
           "object": "LayoutSVGRect rect",
-          "rect": [10, 10, 180, 125],
+          "rect": [211, 11, 180, 180],
           "reason": "location change"
         },
         {
@@ -78,63 +98,13 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [210, 10, 75, 125],
+          "rect": [10, 10, 180, 125],
           "reason": "location change"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [211, 11, 180, 180],
+          "rect": [210, 10, 75, 125],
           "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [10, 10, 275, 125],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [11, 11, 380, 180],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [1, 1, 400, 200],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 285, 135],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [1, 1, 400, 200],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 285, 135],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [1, 1, 400, 200],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 0, 0],
-          "reason": "scroll"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 135, 285, 15],
-          "reason": "scroll"
         },
         {
           "object": "LayoutView #document",
@@ -147,28 +117,47 @@
           "reason": "scroll"
         },
         {
+          "object": "HorizontalScrollbar",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutText #text",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutView #document",
+          "reason": "scroll"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "VerticalScrollbar",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

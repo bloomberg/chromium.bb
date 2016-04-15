@@ -7,13 +7,12 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Text Text Text Text Text Text Text Text Text Text Text Text Text'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutText #text",
+          "rect": [0, 320, 385, 19],
           "reason": "style change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [0, 320, 385, 19],
+          "object": "InlineTextBox 'Text Text Text Text Text Text Text Text Text Text Text Text Text'",
           "reason": "style change"
         }
       ]

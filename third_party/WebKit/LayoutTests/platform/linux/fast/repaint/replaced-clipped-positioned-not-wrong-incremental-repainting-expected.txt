@@ -12,23 +12,20 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='shiftMe'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutImage IMG",
           "rect": [8, 8, 194, 232],
           "reason": "location change"
         },
         {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='shiftMe'",
+          "reason": "location change"
+        },
+        {
           "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

@@ -7,51 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'AAAA AAAA AAAA AAAA AAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'AAAA AAAA AAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAA AAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [152, 8, 40, 184],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [172, 8, 20, 284],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [144, 0, 56, 200],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [164, 0, 36, 300],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [153, 8, 39, 140],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [173, 8, 19, 236],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [0, 0, 200, 300],
           "reason": "full"
@@ -62,18 +17,57 @@
           "reason": "incremental"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutBlockFlow HTML",
+          "rect": [144, 0, 56, 200],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [152, 8, 40, 184],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [153, 8, 39, 140],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [164, 0, 36, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [172, 8, 20, 284],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [173, 8, 19, 236],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'AAAA AAAA AAAA AAAA AAAA'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'AAAA AAAA AAAA'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AAAA AAAA'",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]
@@ -89,41 +83,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'AAAA AAAA AAAA AAAA AAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [172, 8, 20, 284],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [272, 8, 20, 284],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [164, 0, 36, 300],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [264, 0, 36, 300],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [173, 8, 19, 236],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [273, 8, 19, 236],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [0, 0, 300, 300],
           "reason": "full"
@@ -134,8 +93,41 @@
           "reason": "incremental"
         },
         {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [264, 0, 36, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [164, 0, 36, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [272, 8, 20, 284],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [172, 8, 20, 284],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [273, 8, 19, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [173, 8, 19, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'AAAA AAAA AAAA AAAA AAAA'",
+          "reason": "location change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]
@@ -151,51 +143,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'AAAA AAAA AAAA AAAA AAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAA AAAA AAAA AAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'AAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [272, 8, 20, 284],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [252, 8, 40, 234],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [264, 0, 36, 300],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [244, 0, 56, 250],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [273, 8, 19, 236],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [253, 8, 39, 188],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [0, 0, 300, 250],
           "reason": "full"
@@ -206,13 +153,53 @@
           "reason": "incremental"
         },
         {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [244, 0, 56, 250],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [252, 8, 40, 234],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [253, 8, 39, 188],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [264, 0, 36, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [272, 8, 20, 284],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [273, 8, 19, 236],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'AAAA AAAA AAAA AAAA AAAA'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AAAA AAAA AAAA AAAA'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'AAAA'",
+          "reason": "bounds change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]
@@ -228,24 +215,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'AAAA AAAA AAAA AAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'AAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [252, 8, 40, 234],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [202, 8, 40, 234],
-          "reason": "location change"
+          "object": "LayoutView #document",
+          "rect": [0, 0, 250, 250],
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow HTML",
@@ -255,6 +227,21 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [194, 0, 56, 250],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [250, 0, 50, 250],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [252, 8, 40, 234],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [202, 8, 40, 234],
           "reason": "location change"
         },
         {
@@ -268,18 +255,15 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 250, 250],
-          "reason": "full"
+          "object": "InlineTextBox 'AAAA AAAA AAAA AAAA'",
+          "reason": "location change"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [250, 0, 50, 250],
-          "reason": "incremental"
+          "object": "InlineTextBox 'AAAA'",
+          "reason": "location change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

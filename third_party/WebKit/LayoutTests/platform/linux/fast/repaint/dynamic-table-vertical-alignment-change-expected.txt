@@ -7,24 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (floating) DIV id='target'",
-          "rect": [11, 75, 100, 100],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
+          "object": "LayoutTableCell TD",
+          "rect": [10, 77, 102, 99],
+          "reason": "incremental"
         },
         {
           "object": "LayoutTableCell TD",
@@ -32,9 +17,14 @@
           "reason": "incremental"
         },
         {
+          "object": "LayoutBlockFlow (floating) DIV id='target'",
+          "rect": [11, 75, 100, 100],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutTableCell TD",
-          "rect": [10, 77, 102, 99],
-          "reason": "incremental"
+          "rect": [114, 74, 2, 102],
+          "reason": "location change"
         },
         {
           "object": "LayoutTableCell TD",
@@ -42,8 +32,15 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutTableCell TD",
-          "rect": [114, 74, 2, 102],
+          "object": "LayoutBlockFlow DIV",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
           "reason": "location change"
         }
       ]

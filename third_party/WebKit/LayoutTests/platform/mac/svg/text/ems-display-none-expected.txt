@@ -7,31 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'Two lines of text should be visible.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'Two lines of text should be visible.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGContainer g",
           "rect": [50, 54, 571, 86],
           "reason": "bounds change"
@@ -72,8 +47,27 @@
           "reason": "layoutObject insertion"
         },
         {
+          "object": "InlineFlowBox",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'Two lines of text should be visible.'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'Two lines of text should be visible.'",
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

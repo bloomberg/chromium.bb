@@ -7,13 +7,12 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'findme'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutText #text",
+          "rect": [282, 36, 45, 18],
           "reason": "full"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [282, 36, 45, 18],
+          "object": "InlineTextBox 'findme'",
           "reason": "full"
         }
       ],
@@ -25,43 +24,13 @@
           "drawsContent": true,
           "paintInvalidations": [
             {
-              "object": "InlineTextBox 'Can you findme in this boring text?'",
-              "rect": [0, 0, 0, 0],
-              "reason": "full"
-            },
-            {
-              "object": "InlineTextBox 'Findme in a typewriter!'",
-              "rect": [0, 0, 0, 0],
-              "reason": "full"
-            },
-            {
-              "object": "InlineTextBox 'Findme on a path! Did you findme?'",
-              "rect": [0, 0, 0, 0],
-              "reason": "full"
-            },
-            {
-              "object": "InlineTextBox 'findme'",
-              "rect": [0, 0, 0, 0],
-              "reason": "full"
-            },
-            {
-              "object": "InlineTextBox 'findme'",
-              "rect": [0, 0, 0, 0],
-              "reason": "full"
-            },
-            {
-              "object": "InlineTextBox 'findme'",
-              "rect": [0, 0, 0, 0],
-              "reason": "full"
-            },
-            {
-              "object": "InlineTextBox 'findme'",
-              "rect": [0, 0, 0, 0],
+              "object": "LayoutSVGInlineText #text",
+              "rect": [10, 72, 227, 18],
               "reason": "full"
             },
             {
               "object": "LayoutSVGInlineText #text",
-              "rect": [10, 72, 227, 18],
+              "rect": [20, 160, 200, 72],
               "reason": "full"
             },
             {
@@ -70,8 +39,8 @@
               "reason": "full"
             },
             {
-              "object": "LayoutSVGInlineText #text",
-              "rect": [20, 160, 200, 72],
+              "object": "LayoutText #text",
+              "rect": [268, 0, 46, 18],
               "reason": "full"
             },
             {
@@ -86,12 +55,35 @@
             },
             {
               "object": "LayoutText #text",
-              "rect": [268, 0, 46, 18],
+              "rect": [52, 18, 45, 18],
               "reason": "full"
             },
             {
-              "object": "LayoutText #text",
-              "rect": [52, 18, 45, 18],
+              "object": "InlineTextBox 'Can you findme in this boring text?'",
+              "reason": "full"
+            },
+            {
+              "object": "InlineTextBox 'Findme in a typewriter!'",
+              "reason": "full"
+            },
+            {
+              "object": "InlineTextBox 'Findme on a path! Did you findme?'",
+              "reason": "full"
+            },
+            {
+              "object": "InlineTextBox 'findme'",
+              "reason": "full"
+            },
+            {
+              "object": "InlineTextBox 'findme'",
+              "reason": "full"
+            },
+            {
+              "object": "InlineTextBox 'findme'",
+              "reason": "full"
+            },
+            {
+              "object": "InlineTextBox 'findme'",
               "reason": "full"
             }
           ],
@@ -105,43 +97,13 @@
                   "drawsContent": true,
                   "paintInvalidations": [
                     {
-                      "object": "InlineTextBox 'Can you findme in this boring text?'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "full"
-                    },
-                    {
-                      "object": "InlineTextBox 'Findme in a typewriter!'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "full"
-                    },
-                    {
-                      "object": "InlineTextBox 'Findme on a path! Did you findme?'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "full"
-                    },
-                    {
-                      "object": "InlineTextBox 'findme'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "full"
-                    },
-                    {
-                      "object": "InlineTextBox 'findme'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "full"
-                    },
-                    {
-                      "object": "InlineTextBox 'findme'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "full"
-                    },
-                    {
-                      "object": "InlineTextBox 'findme'",
-                      "rect": [0, 0, 0, 0],
+                      "object": "LayoutSVGInlineText #text",
+                      "rect": [10, 72, 227, 18],
                       "reason": "full"
                     },
                     {
                       "object": "LayoutSVGInlineText #text",
-                      "rect": [10, 72, 227, 18],
+                      "rect": [20, 160, 200, 72],
                       "reason": "full"
                     },
                     {
@@ -150,8 +112,8 @@
                       "reason": "full"
                     },
                     {
-                      "object": "LayoutSVGInlineText #text",
-                      "rect": [20, 160, 200, 72],
+                      "object": "LayoutText #text",
+                      "rect": [268, 0, 46, 18],
                       "reason": "full"
                     },
                     {
@@ -166,12 +128,35 @@
                     },
                     {
                       "object": "LayoutText #text",
-                      "rect": [268, 0, 46, 18],
+                      "rect": [52, 18, 45, 18],
                       "reason": "full"
                     },
                     {
-                      "object": "LayoutText #text",
-                      "rect": [52, 18, 45, 18],
+                      "object": "InlineTextBox 'Can you findme in this boring text?'",
+                      "reason": "full"
+                    },
+                    {
+                      "object": "InlineTextBox 'Findme in a typewriter!'",
+                      "reason": "full"
+                    },
+                    {
+                      "object": "InlineTextBox 'Findme on a path! Did you findme?'",
+                      "reason": "full"
+                    },
+                    {
+                      "object": "InlineTextBox 'findme'",
+                      "reason": "full"
+                    },
+                    {
+                      "object": "InlineTextBox 'findme'",
+                      "reason": "full"
+                    },
+                    {
+                      "object": "InlineTextBox 'findme'",
+                      "reason": "full"
+                    },
+                    {
+                      "object": "InlineTextBox 'findme'",
                       "reason": "full"
                     }
                   ]

@@ -7,141 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'A A A A A AA AA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'A A A A A'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'A A A A A'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'A A A A'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'A A'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AA AA AA A A A'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AA AA AA A'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AA AA AA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AA AA AAA AAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AA AAA AAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAA AAA AA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAA AAA AAA AA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AAA AAAA AAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AAA AAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAA AAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAA AAAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAAA AAAA AAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AAAAA AAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAAA AAAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AAAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAAAA AAAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AAAAAA AAAAAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'AAAAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'AAAAAAA'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='div1' class='container'",
-          "rect": [0, 0, 200, 300],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='div1' class='container'",
           "rect": [0, 0, 300, 200],
           "reason": "forced by layout"
@@ -152,9 +17,9 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [200, 0, 100, 200],
-          "reason": "incremental"
+          "object": "LayoutBlockFlow (positioned) DIV id='div1' class='container'",
+          "rect": [0, 0, 200, 300],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
@@ -162,93 +27,184 @@
           "reason": "incremental"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutText #text",
+          "rect": [200, 0, 100, 200],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'A A A A A AA AA'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'A A A A A'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'A A A A A'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'A A A A'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'A A'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'AA AA AA A A A'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'AA AA AA A'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AA AA AA'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AA AA AAA AAA'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'AA AAA AAA'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AAA AAA AA'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AAA AAA AAA AA'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'AAA AAAA AAAA'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'AAA AAAA'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AAAA AAA'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AAAA AAAAA'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AAAAA AAAA AAAA'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'AAAAA AAAA'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AAAAA AAAAA'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'AAAAA'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AAAAA'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AAAAAA AAAAA'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'AAAAAA AAAAAAA'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'AAAAAA'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AAAAAA'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'AAAAAAA'",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

@@ -7,123 +7,18 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'condimentum leo neque sed nulla. Nunc quis porta elit.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'laoreet dolor id urna eleifend aliquet. Nulla vel dolor ipsum.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat, tellus'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'penatibus et magnis dis parturient montes, nascetur ridiculus mus.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta elit.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [400, 128, 392, 160],
+          "rect": [138, 128, 654, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [138, 128, 654, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [138, 128, 651, 99],
           "reason": "location change"
         },
         {
@@ -132,8 +27,33 @@
           "reason": "location change"
         },
         {
+          "object": "LayoutBlockFlow P",
+          "rect": [148, 128, 644, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [148, 128, 640, 99],
+          "reason": "location change"
+        },
+        {
           "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [138, 128, 654, 100],
+          "rect": [400, 128, 392, 160],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [400, 128, 392, 160],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='left'",
+          "rect": [8, 228, 392, 60],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [400, 128, 389, 159],
           "reason": "location change"
         },
         {
@@ -143,117 +63,159 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
-          "rect": [8, 228, 392, 60],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='left'",
           "rect": [138, 128, 10, 100],
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [400, 128, 392, 160],
+          "object": "InlineTextBox 'Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [148, 128, 644, 100],
+          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [138, 128, 654, 100],
+          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
           "reason": "location change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [400, 128, 389, 159],
+          "object": "InlineTextBox 'Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'condimentum leo neque sed nulla. Nunc quis porta elit.'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
           "reason": "location change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [148, 128, 640, 99],
+          "object": "InlineTextBox 'laoreet dolor id urna eleifend aliquet. Nulla vel dolor ipsum.'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat, tellus'",
           "reason": "location change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [138, 128, 651, 99],
+          "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'penatibus et magnis dis parturient montes, nascetur ridiculus mus.'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta elit.'",
           "reason": "location change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

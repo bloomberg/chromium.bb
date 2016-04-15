@@ -7,23 +7,20 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutText #text",
+          "rect": [186, 201, 17, 173],
+          "reason": "selection"
+        },
+        {
           "object": "InlineTextBox 'Some text in vertical mode'",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [186, 201, 17, 173],
           "reason": "selection"
         }
       ]

@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
           "rect": [0, 0, 1500, 236],
           "reason": "location change"
@@ -19,6 +14,21 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
           "rect": [-250, 0, 1500, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 800, 52],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+          "rect": [704, 0, 700, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+          "rect": [454, 0, 700, 236],
           "reason": "location change"
         },
         {
@@ -32,29 +42,9 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
-          "rect": [704, 0, 700, 236],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
-          "rect": [454, 0, 700, 236],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 800, 52],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutImage IMG",
-          "rect": [0, 0, 214, 232],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutImage IMG",
-          "rect": [-250, 0, 214, 232],
-          "reason": "location change"
+          "object": "LayoutView #document",
+          "rect": [1250, 0, 250, 585],
+          "reason": "incremental"
         },
         {
           "object": "LayoutImage IMG",
@@ -67,8 +57,13 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutImage IMG",
+          "rect": [0, 0, 214, 232],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [-250, 0, 214, 232],
           "reason": "location change"
         },
         {
@@ -82,33 +77,31 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
+          "object": "InlineTextBox '\n'",
           "reason": "location change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [1250, 0, 250, 585],
-          "reason": "incremental"
+          "object": "LayoutText #text",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "reason": "location change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

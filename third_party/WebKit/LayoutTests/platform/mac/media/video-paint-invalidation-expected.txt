@@ -24,19 +24,24 @@
               "drawsContent": true,
               "paintInvalidations": [
                 {
-                  "object": "InlineTextBox ''",
-                  "rect": [0, 0, 0, 0],
+                  "object": "LayoutFlexibleBox DIV",
+                  "rect": [47, 208, 111, 24],
+                  "reason": "forced by layout"
+                },
+                {
+                  "object": "LayoutSlider INPUT",
+                  "rect": [47, 208, 111, 24],
                   "reason": "full"
                 },
                 {
-                  "object": "InlineTextBox '0:00'",
-                  "rect": [0, 0, 0, 0],
+                  "object": "LayoutSlider INPUT",
+                  "rect": [229, 208, 50, 24],
                   "reason": "full"
                 },
                 {
-                  "object": "LayoutBlockFlow (anonymous)",
-                  "rect": [159, 205, 27, 22],
-                  "reason": "invalidate paint rectangle"
+                  "object": "LayoutButton INPUT",
+                  "rect": [194, 205, 36, 30],
+                  "reason": "full"
                 },
                 {
                   "object": "LayoutBlockFlow DIV id='thumb'",
@@ -54,33 +59,25 @@
                   "reason": "full"
                 },
                 {
-                  "object": "LayoutButton INPUT",
-                  "rect": [194, 205, 36, 30],
-                  "reason": "full"
-                },
-                {
-                  "object": "LayoutFlexibleBox DIV",
-                  "rect": [47, 208, 111, 24],
-                  "reason": "forced by layout"
-                },
-                {
-                  "object": "LayoutSlider INPUT",
-                  "rect": [47, 208, 111, 24],
-                  "reason": "full"
-                },
-                {
-                  "object": "LayoutSlider INPUT",
-                  "rect": [229, 208, 50, 24],
-                  "reason": "full"
-                },
-                {
                   "object": "LayoutText #text",
                   "rect": [159, 212, 28, 15],
                   "reason": "full"
                 },
                 {
+                  "object": "LayoutBlockFlow (anonymous)",
+                  "rect": [159, 205, 27, 22],
+                  "reason": "invalidate paint rectangle"
+                },
+                {
+                  "object": "InlineTextBox ''",
+                  "reason": "full"
+                },
+                {
+                  "object": "InlineTextBox '0:00'",
+                  "reason": "full"
+                },
+                {
                   "object": "RootInlineBox",
-                  "rect": [0, 0, 0, 0],
                   "reason": "full"
                 }
               ]

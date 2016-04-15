@@ -13,12 +13,12 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='child'",
-          "rect": [150, 50, 20, 300],
+          "rect": [300, 50, 20, 300],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='child'",
-          "rect": [300, 50, 20, 300],
+          "rect": [150, 50, 20, 300],
           "reason": "location change"
         }
       ]

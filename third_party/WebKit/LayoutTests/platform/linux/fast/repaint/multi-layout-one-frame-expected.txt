@@ -7,24 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASSED'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASSED'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [168, 11, 150, 16],
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
@@ -32,9 +17,9 @@
           "reason": "invalidate paint rectangle"
         },
         {
-          "object": "LayoutBlockFlow DIV id='inner-editor'",
-          "rect": [168, 11, 150, 16],
-          "reason": "invalidate paint rectangle"
+          "object": "LayoutText #text",
+          "rect": [168, 11, 53, 16],
+          "reason": "full"
         },
         {
           "object": "LayoutText #text",
@@ -42,18 +27,27 @@
           "reason": "full"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [168, 11, 53, 16],
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASSED'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASSED'",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

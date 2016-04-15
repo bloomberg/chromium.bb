@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGHiddenContainer defs",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutSVGRect rect",
           "rect": [7, 5, 786, 590],
           "reason": "style change"
@@ -19,6 +14,10 @@
         {
           "object": "LayoutSVGRoot svg",
           "rect": [7, 5, 786, 590],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGHiddenContainer defs",
           "reason": "style change"
         }
       ]

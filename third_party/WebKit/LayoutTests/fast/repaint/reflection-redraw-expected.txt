@@ -7,88 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'The color of this'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'The color of this'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'The color of this'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'The color of this'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'green'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'green'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'green'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'green'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'reflection should be'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'reflection should be'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'reflection should be'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'reflection should be'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'text in the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'text in the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'text in the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'text in the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutText #text",
-          "rect": [304, 21, 128, 208],
+          "rect": [379, 267, 288, 72],
           "reason": "style change"
         },
         {
@@ -98,12 +18,76 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [379, 267, 288, 72],
+          "rect": [304, 21, 128, 208],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
           "rect": [304, 377, 128, 156],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'The color of this'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'The color of this'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'The color of this'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'The color of this'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'green'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'green'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'green'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'green'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'reflection should be'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'reflection should be'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'reflection should be'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'reflection should be'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'text in the'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'text in the'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'text in the'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'text in the'",
           "reason": "style change"
         }
       ]

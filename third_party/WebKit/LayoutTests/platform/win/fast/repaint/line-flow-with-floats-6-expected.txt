@@ -7,59 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'The players all played at once without waiting'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'a very short time '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'foo'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'for the hedgehogs; and in\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'for turns,\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'other parts of\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'quarrelling all the while, and fighting'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'that it was a very\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'the ground, Alice soon came to the conclusion'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 332, 418, 90],
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
@@ -67,43 +17,76 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 332, 418, 90],
-          "reason": "invalidate paint rectangle"
-        },
-        {
           "object": "LayoutText #text",
           "rect": [27, 353, 22, 18],
           "reason": "location change"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "InlineTextBox 'The players all played at once without waiting'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'a very short time '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'difficult game indeed.\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'foo'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'for the hedgehogs; and in\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'for turns,\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'other parts of\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'quarrelling all the while, and fighting'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'that it was a very\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'the ground, Alice soon came to the conclusion'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'the'",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

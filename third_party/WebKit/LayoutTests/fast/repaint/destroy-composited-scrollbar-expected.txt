@@ -20,12 +20,11 @@
             },
             {
               "object": "LayoutBlockFlow (positioned) DIV",
-              "rect": [0, 0, 0, 0],
+              "rect": [185, 0, 15, 200],
               "reason": "scroll"
             },
             {
               "object": "LayoutBlockFlow (positioned) DIV",
-              "rect": [185, 0, 15, 200],
               "reason": "scroll"
             }
           ]

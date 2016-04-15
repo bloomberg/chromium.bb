@@ -7,49 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'FAIL: Test did'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'not run'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\u00A0'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox '\u00A0'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
+          "object": "LayoutBlockFlow DIV id='firstLine'",
+          "rect": [8, 8, 100, 200],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
@@ -62,31 +22,6 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='firstLine'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='firstLine'",
-          "rect": [8, 8, 100, 200],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='root'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
           "object": "LayoutText #text",
           "rect": [8, 48, 88, 119],
           "reason": "layoutObject removal"
@@ -97,23 +32,75 @@
           "reason": "location change"
         },
         {
+          "object": "InlineTextBox '\n'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'FAIL: Test did'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'not run'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='firstLine'",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='root'",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutText #text",
+          "reason": "selection"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

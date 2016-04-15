@@ -18,23 +18,19 @@
         },
         {
           "object": "LayoutSVGResourceFilter filter id='filter'",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "LayoutSVGResourceFilter filter id='filter'",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage-green'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage-green'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
+          "reason": "layoutObject removal"
         }
       ]
     }

@@ -7,16 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Hello'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Hello'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutSVGContainer g",
           "rect": [9, 13, 46, 28],
           "reason": "bounds change"
@@ -37,13 +27,19 @@
           "reason": "style change"
         },
         {
+          "object": "InlineTextBox 'Hello'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Hello'",
+          "reason": "style change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

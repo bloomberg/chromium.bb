@@ -8,22 +8,18 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "InlineTextBox 'is invisible'",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

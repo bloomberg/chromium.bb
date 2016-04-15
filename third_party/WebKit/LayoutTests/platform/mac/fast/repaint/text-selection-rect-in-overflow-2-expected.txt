@@ -7,28 +7,24 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutText #text",
+          "rect": [18, 28, 238, 18],
+          "reason": "selection"
+        },
+        {
           "object": "InlineTextBox 'Should have blue, not gray, highlight'",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow DIV id='t'",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [18, 28, 238, 18],
           "reason": "selection"
         }
       ]

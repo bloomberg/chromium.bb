@@ -8,18 +8,23 @@
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
+          "object": "LayoutView #document",
+          "rect": [0, 0, 800, 600],
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (positioned) HTML class='changed'",
           "rect": [0, 0, 800, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 16, 784, 18],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 16, 784, 18],
           "reason": "location change"
         },
         {
@@ -29,21 +34,16 @@
         },
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [8, 16, 784, 18],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
           "rect": [108, 116, 436, 18],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 16, 784, 18],
+          "rect": [108, 116, 436, 18],
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow P",
+          "object": "LayoutText #text",
           "rect": [108, 116, 436, 18],
           "reason": "location change"
         },
@@ -53,23 +53,19 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [108, 116, 436, 18],
+          "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
           "reason": "location change"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "style change"
-        },
-        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

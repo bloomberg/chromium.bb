@@ -7,13 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'abc'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'abc'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutBlockFlow DIV id='inner-target'",
+          "rect": [8, 184, 784, 18],
           "reason": "location change"
         },
         {
@@ -27,11 +22,6 @@
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutBlockFlow DIV id='inner-target'",
-          "rect": [8, 184, 784, 18],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutText #text",
           "rect": [18, 18, 23, 17],
           "reason": "layoutObject removal"
@@ -42,13 +32,19 @@
           "reason": "location change"
         },
         {
+          "object": "InlineTextBox 'abc'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'abc'",
+          "reason": "location change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

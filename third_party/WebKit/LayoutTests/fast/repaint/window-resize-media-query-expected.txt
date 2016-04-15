@@ -8,8 +8,8 @@
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutView #document",
+          "rect": [0, 0, 200, 300],
           "reason": "style change"
         },
         {
@@ -18,8 +18,7 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 200, 300],
+          "object": "LayoutBlockFlow BODY",
           "reason": "style change"
         }
       ]
@@ -36,9 +35,9 @@
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 0, 0],
-          "reason": "became visible"
+          "object": "LayoutView #document",
+          "rect": [0, 0, 300, 300],
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow HTML",
@@ -47,13 +46,12 @@
         },
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 300, 300],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutView #document",
           "rect": [200, 0, 100, 300],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "reason": "became visible"
         }
       ]
     }
@@ -69,14 +67,14 @@
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 300, 8],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [0, 250, 300, 50],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 300, 8],
+          "reason": "forced by layout"
         }
       ]
     }
@@ -92,11 +90,6 @@
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 0, 0],
-          "reason": "became visible"
-        },
-        {
           "object": "LayoutBlockFlow HTML",
           "rect": [0, 0, 300, 8],
           "reason": "forced by layout"
@@ -110,6 +103,10 @@
           "object": "LayoutView #document",
           "rect": [250, 0, 50, 250],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "reason": "became visible"
         }
       ]
     }

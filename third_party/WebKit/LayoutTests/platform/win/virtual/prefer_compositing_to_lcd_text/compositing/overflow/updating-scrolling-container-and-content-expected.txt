@@ -13,123 +13,8 @@
           "drawsContent": true,
           "paintInvalidations": [
             {
-              "object": "InlineTextBox 'CONTENT'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "rect": [0, 0, 0, 0],
-              "reason": "style change"
-            },
-            {
               "object": "LayoutText #text",
-              "rect": [0, -49, 75, 17],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [0, -31, 75, 17],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [0, -13, 75, 17],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [0, 5, 75, 17],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [0, 23, 75, 17],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [0, 41, 75, 17],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [0, 59, 75, 17],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [0, 77, 75, 17],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [0, 95, 75, 17],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [0, 113, 75, 17],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [0, 131, 75, 17],
+              "rect": [0, 167, 75, 17],
               "reason": "style change"
             },
             {
@@ -139,7 +24,109 @@
             },
             {
               "object": "LayoutText #text",
-              "rect": [0, 167, 75, 17],
+              "rect": [0, 131, 75, 17],
+              "reason": "style change"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [0, 113, 75, 17],
+              "reason": "style change"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [0, 95, 75, 17],
+              "reason": "style change"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [0, 77, 75, 17],
+              "reason": "style change"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [0, 59, 75, 17],
+              "reason": "style change"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [0, 41, 75, 17],
+              "reason": "style change"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [0, 23, 75, 17],
+              "reason": "style change"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [0, 5, 75, 17],
+              "reason": "style change"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [0, -13, 75, 17],
+              "reason": "style change"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [0, -31, 75, 17],
+              "reason": "style change"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [0, -49, 75, 17],
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
               "reason": "style change"
             }
           ],
@@ -153,123 +140,8 @@
                   "drawsContent": true,
                   "paintInvalidations": [
                     {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "rect": [0, 0, 0, 0],
-                      "reason": "style change"
-                    },
-                    {
                       "object": "LayoutText #text",
-                      "rect": [0, 0, 75, 17],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "LayoutText #text",
-                      "rect": [0, 18, 75, 17],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "LayoutText #text",
-                      "rect": [0, 36, 75, 17],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "LayoutText #text",
-                      "rect": [0, 54, 75, 17],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "LayoutText #text",
-                      "rect": [0, 72, 75, 17],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "LayoutText #text",
-                      "rect": [0, 90, 75, 17],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "LayoutText #text",
-                      "rect": [0, 108, 75, 17],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "LayoutText #text",
-                      "rect": [0, 126, 75, 17],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "LayoutText #text",
-                      "rect": [0, 144, 75, 17],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "LayoutText #text",
-                      "rect": [0, 162, 75, 17],
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "LayoutText #text",
-                      "rect": [0, 180, 75, 17],
+                      "rect": [0, 216, 75, 17],
                       "reason": "style change"
                     },
                     {
@@ -279,7 +151,109 @@
                     },
                     {
                       "object": "LayoutText #text",
-                      "rect": [0, 216, 75, 17],
+                      "rect": [0, 180, 75, 17],
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "LayoutText #text",
+                      "rect": [0, 162, 75, 17],
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "LayoutText #text",
+                      "rect": [0, 144, 75, 17],
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "LayoutText #text",
+                      "rect": [0, 126, 75, 17],
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "LayoutText #text",
+                      "rect": [0, 108, 75, 17],
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "LayoutText #text",
+                      "rect": [0, 90, 75, 17],
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "LayoutText #text",
+                      "rect": [0, 72, 75, 17],
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "LayoutText #text",
+                      "rect": [0, 54, 75, 17],
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "LayoutText #text",
+                      "rect": [0, 36, 75, 17],
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "LayoutText #text",
+                      "rect": [0, 18, 75, 17],
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "LayoutText #text",
+                      "rect": [0, 0, 75, 17],
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "InlineTextBox 'CONTENT'",
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "InlineTextBox 'CONTENT'",
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "InlineTextBox 'CONTENT'",
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "InlineTextBox 'CONTENT'",
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "InlineTextBox 'CONTENT'",
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "InlineTextBox 'CONTENT'",
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "InlineTextBox 'CONTENT'",
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "InlineTextBox 'CONTENT'",
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "InlineTextBox 'CONTENT'",
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "InlineTextBox 'CONTENT'",
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "InlineTextBox 'CONTENT'",
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "InlineTextBox 'CONTENT'",
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "InlineTextBox 'CONTENT'",
                       "reason": "style change"
                     }
                   ]

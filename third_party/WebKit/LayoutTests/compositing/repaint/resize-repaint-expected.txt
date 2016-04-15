@@ -12,14 +12,9 @@
           "drawsContent": true,
           "paintInvalidations": [
             {
-              "object": "LayoutBlockFlow DIV",
-              "rect": [2, 104, 398, 50],
-              "reason": "location change"
-            },
-            {
-              "object": "LayoutBlockFlow DIV",
-              "rect": [2, 155, 398, 50],
-              "reason": "location change"
+              "object": "LayoutBlockFlow DIV id='resizing'",
+              "rect": [0, 104, 402, 103],
+              "reason": "incremental"
             },
             {
               "object": "LayoutBlockFlow DIV id='resizing'",
@@ -27,9 +22,14 @@
               "reason": "incremental"
             },
             {
-              "object": "LayoutBlockFlow DIV id='resizing'",
-              "rect": [0, 104, 402, 103],
-              "reason": "incremental"
+              "object": "LayoutBlockFlow DIV",
+              "rect": [2, 155, 398, 50],
+              "reason": "location change"
+            },
+            {
+              "object": "LayoutBlockFlow DIV",
+              "rect": [2, 104, 398, 50],
+              "reason": "location change"
             }
           ]
         }

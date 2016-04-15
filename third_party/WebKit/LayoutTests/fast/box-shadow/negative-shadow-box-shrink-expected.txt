@@ -7,14 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='inner2'",
-          "rect": [100, 200, 600, 100],
-          "reason": "layoutObject removal"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='outer'",
           "rect": [100, 60, 640, 240],
           "reason": "border box change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner2'",
+          "rect": [100, 200, 600, 100],
+          "reason": "layoutObject removal"
         }
       ]
     }

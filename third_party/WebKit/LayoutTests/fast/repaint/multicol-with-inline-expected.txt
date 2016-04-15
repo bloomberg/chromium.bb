@@ -7,18 +7,16 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutText #text",
+          "rect": [488, 8, 80, 20],
+          "reason": "style change"
+        },
+        {
           "object": "InlineTextBox 'PASS'",
-          "rect": [0, 0, 0, 0],
           "reason": "style change"
         },
         {
           "object": "LayoutInline SPAN id='target'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [488, 8, 80, 20],
           "reason": "style change"
         }
       ]

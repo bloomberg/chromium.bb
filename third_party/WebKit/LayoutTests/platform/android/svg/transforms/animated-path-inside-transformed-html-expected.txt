@@ -1,0 +1,35 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
+      "repaintRects": [
+        [355, 128, 103, 101],
+        [352, 397, 98, 99],
+        [246, 106, 121, 28],
+        [246, 106, 121, 28],
+        [203, 336, 123, 44],
+        [203, 336, 123, 44],
+        [187, 106, 310, 390],
+        [111, 85, 101, 100],
+        [90, 208, 98, 98],
+        [90, 85, 277, 249]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'This is some text'",
+        "LayoutSVGRoot svg",
+        "LayoutSVGRect rect id='rect'",
+        "LayoutSVGText text id='text'",
+        "RootInlineBox",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'This is some text'",
+        "LayoutSVGImage image id='image'"
+      ]
+    }
+  ]
+}
+

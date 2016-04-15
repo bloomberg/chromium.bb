@@ -18,12 +18,12 @@
         },
         {
           "object": "LayoutSVGRoot svg",
-          "rect": [40, 0, 36, 76],
+          "rect": [0, 40, 76, 36],
           "reason": "incremental"
         },
         {
           "object": "LayoutSVGRoot svg",
-          "rect": [0, 40, 76, 36],
+          "rect": [40, 0, 36, 76],
           "reason": "incremental"
         }
       ]

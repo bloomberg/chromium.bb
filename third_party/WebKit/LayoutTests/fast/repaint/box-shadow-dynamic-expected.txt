@@ -17,13 +17,13 @@
           "reason": "border box change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='a'",
-          "rect": [28, 120, 30, 20],
+          "object": "LayoutBlockFlow DIV id='b'",
+          "rect": [28, 220, 30, 20],
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow DIV id='b'",
-          "rect": [28, 220, 30, 20],
+          "object": "LayoutBlockFlow DIV id='a'",
+          "rect": [28, 120, 30, 20],
           "reason": "incremental"
         }
       ]

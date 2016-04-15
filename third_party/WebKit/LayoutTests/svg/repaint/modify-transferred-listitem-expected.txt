@@ -7,13 +7,12 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGPath polygon id='source'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutSVGPath polygon id='target'",
+          "rect": [18, 18, 30, 20],
           "reason": "full"
         },
         {
-          "object": "LayoutSVGPath polygon id='target'",
-          "rect": [18, 18, 30, 20],
+          "object": "LayoutSVGPath polygon id='source'",
           "reason": "full"
         }
       ]

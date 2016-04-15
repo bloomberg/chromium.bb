@@ -12,29 +12,28 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [0, 0, 4, 4],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [203, 211, 111, 111],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGPath path",
           "rect": [203, 211, 111, 111],
           "reason": "style change"
         },
         {
-          "object": "LayoutSVGResourceMarker marker id='markerMiddle'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutSVGPath path",
+          "rect": [203, 211, 111, 111],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRoot svg id='svg-root'",
           "rect": [203, 211, 111, 111],
           "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [0, 0, 4, 4],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGResourceMarker marker id='markerMiddle'",
+          "reason": "layoutObject insertion"
         }
       ]
     }

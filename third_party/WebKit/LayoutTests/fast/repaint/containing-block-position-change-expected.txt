@@ -8,17 +8,16 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [100, 70, 50, 50],
-          "reason": "layer"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [158, 70, 50, 50],
           "reason": "location change"
         },
         {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [100, 70, 50, 50],
+          "reason": "layer"
+        },
+        {
           "object": "LayoutBlockFlow (relative positioned) DIV id='t'",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         }
       ]

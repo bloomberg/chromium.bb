@@ -13,22 +13,22 @@
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
           "rect": [8, 8, 58, 54],
           "reason": "location change"
         },
         {
           "object": "LayoutTableRow TR",
-          "rect": [9, 9, 54, 50],
+          "rect": [10, 10, 54, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [10, 10, 54, 50],
           "reason": "location change"
         },
         {
           "object": "LayoutTableRow TR",
-          "rect": [10, 10, 54, 50],
+          "rect": [9, 9, 54, 50],
           "reason": "location change"
         },
         {
@@ -37,9 +37,8 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutTableSection TBODY",
-          "rect": [10, 10, 54, 50],
-          "reason": "location change"
+          "object": "LayoutTableCell TD",
+          "reason": "full"
         }
       ]
     }

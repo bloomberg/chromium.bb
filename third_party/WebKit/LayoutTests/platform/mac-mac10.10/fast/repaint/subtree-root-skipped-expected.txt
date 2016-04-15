@@ -7,21 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='div'",
-          "rect": [8, 288, 10, 20],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
           "rect": [11, 11, 125, 13],
           "reason": "invalidate paint rectangle"
@@ -32,8 +17,20 @@
           "reason": "full"
         },
         {
+          "object": "LayoutBlockFlow (positioned) DIV id='div'",
+          "rect": [8, 288, 10, 20],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "reason": "full"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

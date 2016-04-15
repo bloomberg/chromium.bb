@@ -8,22 +8,22 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [15, 217, 208, 68],
-          "reason": "outline"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
           "rect": [15, 377, 208, 68],
           "reason": "outline"
         },
         {
-          "object": "LayoutBlockFlow DIV id='a'",
-          "rect": [29, 261, 180, 20],
-          "reason": "incremental"
+          "object": "LayoutBlockFlow DIV",
+          "rect": [15, 217, 208, 68],
+          "reason": "outline"
         },
         {
           "object": "LayoutBlockFlow DIV id='b'",
           "rect": [29, 421, 180, 20],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='a'",
+          "rect": [29, 261, 180, 20],
           "reason": "incremental"
         }
       ]

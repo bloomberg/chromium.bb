@@ -7,6 +7,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 8, 784, 2000],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
           "rect": [108, 5100, 100, 100],
           "reason": "layer"
@@ -22,19 +27,21 @@
           "reason": "layer"
         },
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [8, 8, 784, 2000],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",
           "rect": [8, 8, 100, 100],
           "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",
+          "reason": "style change"
         }
       ]
     }

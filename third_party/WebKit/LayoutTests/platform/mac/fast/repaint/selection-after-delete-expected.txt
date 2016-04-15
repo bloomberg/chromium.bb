@@ -7,79 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'hello world hello'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'hello world hello'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'hello world hello'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'world hello world'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'world hello world'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'world hello'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='test'",
-          "rect": [38, 94, 152, 90],
-          "reason": "incremental"
+          "rect": [38, 75, 152, 108],
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutBlockFlow DIV id='test'",
@@ -88,13 +18,8 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='test'",
-          "rect": [38, 75, 152, 108],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='test'",
-          "rect": [38, 74, 3, 20],
-          "reason": "invalidate paint rectangle"
+          "rect": [38, 94, 152, 90],
+          "reason": "incremental"
         },
         {
           "object": "LayoutText #text",
@@ -102,38 +27,92 @@
           "reason": "layoutObject removal"
         },
         {
+          "object": "LayoutBlockFlow DIV id='test'",
+          "rect": [38, 74, 3, 20],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hello world hello'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hello world hello'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hello world hello'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'world hello world'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'world hello world'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'world hello'",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "bounds change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

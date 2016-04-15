@@ -7,38 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'This text should be at visible at 200,200'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'This text should be at visible at 200,200'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [20, 5, 240, 19],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGInlineText #text",
           "rect": [200, 185, 240, 19],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [20, 5, 240, 19],
           "reason": "bounds change"
         },
         {
@@ -48,12 +18,27 @@
         },
         {
           "object": "LayoutSVGTSpan tspan id='ts'",
-          "rect": [20, 5, 240, 19],
+          "rect": [200, 185, 240, 19],
           "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [200, 185, 240, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [20, 5, 240, 19],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [20, 5, 240, 19],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGTSpan tspan id='ts'",
-          "rect": [200, 185, 240, 19],
+          "rect": [20, 5, 240, 19],
           "reason": "full"
         },
         {
@@ -62,18 +47,27 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [200, 185, 240, 19],
-          "reason": "forced by layout"
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'This text should be at visible at 200,200'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'This text should be at visible at 200,200'",
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

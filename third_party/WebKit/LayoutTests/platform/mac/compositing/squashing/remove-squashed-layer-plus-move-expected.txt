@@ -18,42 +18,36 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='container'",
-          "rect": [8, 62, 769, 54],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='container'",
           "rect": [8, 8, 769, 108],
           "reason": "invalidate paint rectangle"
         },
         {
+          "object": "LayoutBlockFlow DIV id='container'",
+          "rect": [8, 62, 769, 54],
+          "reason": "incremental"
+        },
+        {
           "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ],
@@ -71,14 +65,14 @@
               "drawsContent": true,
               "paintInvalidations": [
                 {
-                  "object": "InlineBox",
-                  "rect": [0, 0, 0, 0],
-                  "reason": "full"
+                  "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+                  "rect": [0, 108, 1000, 50],
+                  "reason": "layer"
                 },
                 {
-                  "object": "InlineBox",
-                  "rect": [0, 0, 0, 0],
-                  "reason": "full"
+                  "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+                  "rect": [0, 54, 1000, 50],
+                  "reason": "location change"
                 },
                 {
                   "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
@@ -87,23 +81,21 @@
                 },
                 {
                   "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
-                  "rect": [0, 108, 1000, 50],
-                  "reason": "layer"
-                },
-                {
-                  "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
                   "rect": [0, 0, 100, 50],
-                  "reason": "location change"
-                },
-                {
-                  "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
-                  "rect": [0, 54, 1000, 50],
                   "reason": "location change"
                 },
                 {
                   "object": "LayoutBlockFlow (relative positioned) DIV id='foo' class='mv-tile'",
                   "rect": [0, 0, 100, 50],
                   "reason": "layoutObject removal"
+                },
+                {
+                  "object": "InlineBox",
+                  "reason": "full"
+                },
+                {
+                  "object": "InlineBox",
+                  "reason": "full"
                 }
               ]
             }

@@ -41,7 +41,6 @@ CASE 2, overlap3 gets added:
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-          "rect": [0, 0, 0, 0],
           "reason": "layer"
         }
       ],
@@ -136,14 +135,14 @@ CASE 4, overlap1 gets removed:
               "drawsContent": true,
               "paintInvalidations": [
                 {
-                  "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-                  "rect": [0, 0, 100, 100],
-                  "reason": "layoutObject removal"
-                },
-                {
                   "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
                   "rect": [160, 160, 100, 100],
                   "reason": "layer"
+                },
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
+                  "rect": [0, 0, 100, 100],
+                  "reason": "layoutObject removal"
                 },
                 {
                   "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
@@ -169,7 +168,6 @@ CASE 5, overlap2 gets added back:
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-          "rect": [0, 0, 0, 0],
           "reason": "layer"
         }
       ],
@@ -190,6 +188,11 @@ CASE 5, overlap2 gets added back:
               "drawsContent": true,
               "paintInvalidations": [
                 {
+                  "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
+                  "rect": [80, 80, 100, 100],
+                  "reason": "location change"
+                },
+                {
                   "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
                   "rect": [0, 0, 100, 100],
                   "reason": "layoutObject insertion"
@@ -198,11 +201,6 @@ CASE 5, overlap2 gets added back:
                   "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
                   "rect": [0, 0, 100, 100],
                   "reason": "layer"
-                },
-                {
-                  "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-                  "rect": [80, 80, 100, 100],
-                  "reason": "location change"
                 }
               ]
             }
@@ -223,7 +221,6 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-          "rect": [0, 0, 0, 0],
           "reason": "layer"
         }
       ],
@@ -244,16 +241,6 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
               "drawsContent": true,
               "paintInvalidations": [
                 {
-                  "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-                  "rect": [0, 0, 100, 100],
-                  "reason": "layoutObject insertion"
-                },
-                {
-                  "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-                  "rect": [0, 0, 100, 100],
-                  "reason": "layer"
-                },
-                {
                   "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
                   "rect": [80, 80, 100, 100],
                   "reason": "location change"
@@ -262,6 +249,16 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
                   "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
                   "rect": [80, 80, 100, 100],
                   "reason": "layoutObject removal"
+                },
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
+                  "rect": [0, 0, 100, 100],
+                  "reason": "layoutObject insertion"
+                },
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
+                  "rect": [0, 0, 100, 100],
+                  "reason": "layer"
                 }
               ]
             }

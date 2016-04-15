@@ -24,21 +24,6 @@
               "drawsContent": true,
               "paintInvalidations": [
                 {
-                  "object": "LayoutBlockFlow DIV id='thumb'",
-                  "rect": [628, 493, 24, 24],
-                  "reason": "location change"
-                },
-                {
-                  "object": "LayoutBlockFlow DIV id='thumb'",
-                  "rect": [570, 493, 24, 24],
-                  "reason": "location change"
-                },
-                {
-                  "object": "LayoutButton INPUT",
-                  "rect": [535, 490, 35, 30],
-                  "reason": "full"
-                },
-                {
                   "object": "LayoutFlexibleBox DIV",
                   "rect": [570, 493, 89, 24],
                   "reason": "forced by layout"
@@ -47,6 +32,21 @@
                   "object": "LayoutSlider INPUT",
                   "rect": [570, 493, 89, 24],
                   "reason": "full"
+                },
+                {
+                  "object": "LayoutButton INPUT",
+                  "rect": [535, 490, 35, 30],
+                  "reason": "full"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='thumb'",
+                  "rect": [628, 493, 24, 24],
+                  "reason": "location change"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='thumb'",
+                  "rect": [570, 493, 24, 24],
+                  "reason": "location change"
                 }
               ]
             }

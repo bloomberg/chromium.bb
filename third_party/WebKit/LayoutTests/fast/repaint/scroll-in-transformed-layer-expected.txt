@@ -12,13 +12,13 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
-          "rect": [100, 150, 100, 100],
+          "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped rotated'",
+          "rect": [79, 129, 142, 142],
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped rotated'",
-          "rect": [79, 129, 142, 142],
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
+          "rect": [100, 150, 100, 100],
           "reason": "location change"
         }
       ]

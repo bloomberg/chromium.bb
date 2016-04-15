@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGRect rect",
-          "rect": [10, 10, 430, 80],
+          "rect": [10, 100, 430, 80],
           "reason": "SVG resource change"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [10, 100, 430, 80],
+          "rect": [10, 10, 430, 80],
           "reason": "SVG resource change"
         },
         {
@@ -28,7 +28,6 @@
         },
         {
           "object": "LayoutSVGResourcePattern pattern id='Pattern'",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

@@ -7,19 +7,19 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 8, 300, 300],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 8, 300, 300],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='innerDiv'",
           "rect": [8, 8, 769, 300],
           "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 300, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 300, 300],
+          "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow DIV id='innerDiv'",
@@ -28,7 +28,6 @@
         },
         {
           "object": "VerticalScrollbar",
-          "rect": [0, 0, 0, 0],
           "reason": "scroll"
         }
       ]

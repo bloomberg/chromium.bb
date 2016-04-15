@@ -7,9 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'SUCCESS'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
+          "object": "LayoutBlockFlow DIV id='allcontent'",
+          "rect": [8, 130, 784, 50],
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) P",
@@ -22,11 +22,6 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='allcontent'",
-          "rect": [8, 130, 784, 50],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutText #text",
           "rect": [8, 146, 70, 17],
           "reason": "location change"
@@ -37,8 +32,11 @@
           "reason": "location change"
         },
         {
+          "object": "InlineTextBox 'SUCCESS'",
+          "reason": "location change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

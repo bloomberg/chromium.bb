@@ -7,13 +7,12 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Should have green background'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutText #text",
+          "rect": [8, 17, 199, 18],
           "reason": "selection"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [8, 17, 199, 18],
+          "object": "InlineTextBox 'Should have green background'",
           "reason": "selection"
         }
       ]

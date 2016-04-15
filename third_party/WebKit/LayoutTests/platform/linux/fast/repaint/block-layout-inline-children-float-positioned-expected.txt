@@ -7,28 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) SPAN",
-          "rect": [324, 37, 278, 20],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) SPAN",
           "rect": [162, 37, 279, 20],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [324, 37, 278, 19],
           "reason": "location change"
         },
         {
@@ -37,13 +17,29 @@
           "reason": "location change"
         },
         {
+          "object": "LayoutBlockFlow (floating) SPAN",
+          "rect": [324, 37, 278, 20],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [324, 37, 278, 19],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
+          "reason": "location change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

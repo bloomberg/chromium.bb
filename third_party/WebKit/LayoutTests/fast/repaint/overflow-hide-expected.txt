@@ -7,14 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='overflowParent' class='absolute green'",
-          "rect": [8, 8, 100, 100],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",
           "rect": [108, 108, 100, 100],
           "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='overflowParent' class='absolute green'",
+          "rect": [8, 8, 100, 100],
+          "reason": "style change"
         }
       ]
     }

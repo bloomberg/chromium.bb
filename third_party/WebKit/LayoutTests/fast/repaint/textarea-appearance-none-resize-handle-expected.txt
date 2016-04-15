@@ -13,12 +13,12 @@
         },
         {
           "object": "LayoutTextControl (positioned) TEXTAREA id='textarea'",
-          "rect": [90, 140, 15, 15],
+          "rect": [90, 240, 15, 15],
           "reason": "scroll"
         },
         {
           "object": "LayoutTextControl (positioned) TEXTAREA id='textarea'",
-          "rect": [90, 240, 15, 15],
+          "rect": [90, 140, 15, 15],
           "reason": "scroll"
         }
       ]

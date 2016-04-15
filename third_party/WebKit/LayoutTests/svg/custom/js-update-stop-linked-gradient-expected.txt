@@ -7,13 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGGradientStop stop id='stop1'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
           "object": "LayoutSVGRect rect",
-          "rect": [10, 10, 430, 80],
+          "rect": [10, 210, 430, 80],
           "reason": "SVG resource change"
         },
         {
@@ -23,12 +18,15 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [10, 210, 430, 80],
+          "rect": [10, 10, 430, 80],
           "reason": "SVG resource change"
         },
         {
+          "object": "LayoutSVGGradientStop stop id='stop1'",
+          "reason": "layoutObject removal"
+        },
+        {
           "object": "LayoutSVGResourceLinearGradient linearGradient id='gradient'",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

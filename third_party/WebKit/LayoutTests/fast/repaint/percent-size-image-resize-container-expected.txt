@@ -7,16 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [100, 50, 50, 150],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [0, 200, 100, 50],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutImage (positioned) IMG",
           "rect": [0, 50, 150, 150],
           "reason": "forced by layout"
@@ -25,6 +15,16 @@
           "object": "LayoutImage (positioned) IMG",
           "rect": [0, 50, 100, 200],
           "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [0, 200, 100, 50],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [100, 50, 50, 150],
+          "reason": "incremental"
         }
       ]
     }

@@ -7,9 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "HorizontalScrollbar",
-          "rect": [0, 0, 0, 0],
-          "reason": "scroll"
+          "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
+          "rect": [1112, 1312, 454, 469],
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
@@ -23,12 +23,11 @@
         },
         {
           "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
-          "rect": [1112, 1312, 454, 469],
-          "reason": "full"
+          "rect": [1114, 1764, 435, 15],
+          "reason": "scroll"
         },
         {
-          "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
-          "rect": [1114, 1764, 435, 15],
+          "object": "HorizontalScrollbar",
           "reason": "scroll"
         }
       ]

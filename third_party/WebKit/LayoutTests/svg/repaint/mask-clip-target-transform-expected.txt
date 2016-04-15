@@ -7,21 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGContainer g",
-          "rect": [150, 100, 100, 50],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [50, 150, 100, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRect rect id='clipper'",
-          "rect": [100, 0, 200, 300],
-          "reason": "full"
-        },
-        {
           "object": "LayoutSVGRect rect id='clipper'",
           "rect": [0, 100, 300, 200],
           "reason": "full"
@@ -32,9 +17,24 @@
           "reason": "full"
         },
         {
+          "object": "LayoutSVGRect rect id='clipper'",
+          "rect": [100, 0, 200, 300],
+          "reason": "full"
+        },
+        {
           "object": "LayoutSVGRect rect id='masker'",
           "rect": [100, 0, 200, 300],
           "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [50, 150, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [150, 100, 100, 50],
+          "reason": "incremental"
         }
       ]
     }

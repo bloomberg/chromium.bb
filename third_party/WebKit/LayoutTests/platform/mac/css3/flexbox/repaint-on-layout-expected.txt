@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow (floating) DIV class='state'",
           "rect": [712, 8, 80, 24],
           "reason": "location change"
@@ -22,13 +17,15 @@
           "reason": "layoutObject removal"
         },
         {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
           "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

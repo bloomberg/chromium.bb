@@ -14,12 +14,12 @@ CONSOLE MESSAGE: line 29: FAIL! An unexpected number of repaints occurred; expec
         {
           "object": "LayoutVideo VIDEO",
           "rect": [8, 8, 300, 150],
-          "reason": "style change"
+          "reason": "full"
         },
         {
           "object": "LayoutVideo VIDEO",
           "rect": [8, 8, 300, 150],
-          "reason": "full"
+          "reason": "style change"
         }
       ]
     }

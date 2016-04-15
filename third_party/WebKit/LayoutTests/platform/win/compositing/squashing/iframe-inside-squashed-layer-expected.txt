@@ -22,24 +22,9 @@
               "drawsContent": true,
               "paintInvalidations": [
                 {
-                  "object": "InlineTextBox 'test1'",
-                  "rect": [0, 0, 0, 0],
-                  "reason": "full"
-                },
-                {
-                  "object": "InlineTextBox 'test1'",
-                  "rect": [0, 0, 0, 0],
-                  "reason": "full"
-                },
-                {
-                  "object": "LayoutBlockFlow BODY",
-                  "rect": [8, 508, 284, 18],
-                  "reason": "forced by layout"
-                },
-                {
-                  "object": "LayoutBlockFlow BODY",
-                  "rect": [8, 508, 269, 142],
-                  "reason": "forced by layout"
+                  "object": "LayoutView #document",
+                  "rect": [0, 500, 300, 150],
+                  "reason": "style change"
                 },
                 {
                   "object": "LayoutBlockFlow HTML",
@@ -57,9 +42,14 @@
                   "reason": "full"
                 },
                 {
-                  "object": "LayoutView #document",
-                  "rect": [0, 500, 300, 150],
-                  "reason": "style change"
+                  "object": "LayoutBlockFlow BODY",
+                  "rect": [8, 508, 284, 18],
+                  "reason": "forced by layout"
+                },
+                {
+                  "object": "LayoutBlockFlow BODY",
+                  "rect": [8, 508, 269, 142],
+                  "reason": "forced by layout"
                 },
                 {
                   "object": "LayoutView #document",
@@ -67,23 +57,31 @@
                   "reason": "scroll"
                 },
                 {
+                  "object": "InlineTextBox 'test1'",
+                  "reason": "full"
+                },
+                {
+                  "object": "InlineTextBox 'test1'",
+                  "reason": "full"
+                },
+                {
+                  "object": "LayoutView #document",
+                  "reason": "scroll"
+                },
+                {
                   "object": "RootInlineBox",
-                  "rect": [0, 0, 0, 0],
                   "reason": "full"
                 },
                 {
                   "object": "RootInlineBox",
-                  "rect": [0, 0, 0, 0],
                   "reason": "full"
                 },
                 {
                   "object": "RootInlineBox",
-                  "rect": [0, 0, 0, 0],
                   "reason": "full"
                 },
                 {
                   "object": "VerticalScrollbar",
-                  "rect": [0, 0, 0, 0],
                   "reason": "scroll"
                 }
               ]

@@ -12,11 +12,6 @@
           "reason": "border box change"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target2'",
-          "rect": [300, 100, 140, 120],
-          "reason": "border box change"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='target3'",
           "rect": [100, 300, 140, 170],
           "reason": "border box change"
@@ -24,6 +19,11 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target4'",
           "rect": [300, 300, 140, 120],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='target2'",
+          "rect": [300, 100, 140, 120],
           "reason": "border box change"
         }
       ]

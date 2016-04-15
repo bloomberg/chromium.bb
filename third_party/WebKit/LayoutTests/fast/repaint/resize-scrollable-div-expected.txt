@@ -7,19 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "HorizontalScrollbar",
-          "rect": [0, 0, 0, 0],
-          "reason": "scroll"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='div'",
           "rect": [8, 108, 300, 300],
           "reason": "border box change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [8, 193, 85, 15],
-          "reason": "scroll"
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
@@ -28,7 +18,7 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [93, 108, 15, 85],
+          "rect": [8, 193, 85, 15],
           "reason": "scroll"
         },
         {
@@ -38,7 +28,7 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [93, 193, 15, 15],
+          "rect": [93, 108, 15, 85],
           "reason": "scroll"
         },
         {
@@ -47,8 +37,20 @@
           "reason": "scroll"
         },
         {
+          "object": "LayoutBlockFlow DIV id='div'",
+          "rect": [93, 193, 15, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "HorizontalScrollbar",
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='div'",
+          "reason": "scroll"
+        },
+        {
           "object": "VerticalScrollbar",
-          "rect": [0, 0, 0, 0],
           "reason": "scroll"
         }
       ]

@@ -19,7 +19,6 @@
             },
             {
               "object": "RootInlineBox",
-              "rect": [0, 0, 0, 0],
               "reason": "full"
             }
           ],
@@ -39,7 +38,6 @@
                     },
                     {
                       "object": "RootInlineBox",
-                      "rect": [0, 0, 0, 0],
                       "reason": "full"
                     }
                   ]

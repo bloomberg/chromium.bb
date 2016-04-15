@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 68, 402, 404],
           "reason": "forced by layout"
@@ -22,8 +17,13 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [59, 269, 50, 50],
+          "object": "LayoutSVGRoot svg",
+          "rect": [9, 69, 400, 400],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
+          "rect": [9, 69, 400, 400],
           "reason": "location change"
         },
         {
@@ -37,23 +37,20 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [9, 69, 400, 400],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
-          "rect": [9, 69, 400, 400],
+          "object": "LayoutSVGRect rect",
+          "rect": [59, 269, 50, 50],
           "reason": "location change"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "InlineBox",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

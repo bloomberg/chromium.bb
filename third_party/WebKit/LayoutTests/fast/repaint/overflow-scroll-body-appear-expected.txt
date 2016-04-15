@@ -7,39 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Bug 36461 - No vertical scrollbar after the CSS class change'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'This is the test for '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'You should see both vertical and horizontal scrollbars.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
+          "object": "LayoutView #document",
+          "rect": [0, 0, 2008, 2092],
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [8, 16, 2000, 2068],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 16, 784, 18],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 50, 784, 18],
-          "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
@@ -48,13 +23,18 @@
         },
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 2008, 2092],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutView #document",
           "rect": [0, 585, 785, 15],
           "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 50, 784, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 16, 784, 18],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
@@ -67,23 +47,39 @@
           "reason": "scroll"
         },
         {
+          "object": "InlineTextBox '.'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Bug 36461 - No vertical scrollbar after the CSS class change'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'This is the test for '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'You should see both vertical and horizontal scrollbars.'",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "reason": "scroll"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

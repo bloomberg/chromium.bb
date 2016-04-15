@@ -7,29 +7,25 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [8, 8, 300, 100],
+          "reason": "SVG resource change"
+        },
+        {
           "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
           "reason": "SVG resource change"
         },
         {
           "object": "InlineTextBox 'Y'",
-          "rect": [0, 0, 0, 0],
           "reason": "none"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 0, 0],
           "reason": "none"
         },
         {
           "object": "LayoutSVGResourcePattern pattern id='pat'",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [8, 8, 300, 100],
-          "reason": "SVG resource change"
         }
       ]
     }

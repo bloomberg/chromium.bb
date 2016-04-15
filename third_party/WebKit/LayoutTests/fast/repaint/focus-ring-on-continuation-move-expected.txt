@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='block'",
-          "rect": [8, 200, 100, 100],
+          "rect": [208, 200, 100, 100],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='block'",
-          "rect": [208, 200, 100, 100],
+          "rect": [8, 200, 100, 100],
           "reason": "location change"
         }
       ]

@@ -18,12 +18,12 @@
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='a'",
-          "rect": [8, 82, 100, 100],
+          "rect": [8, 132, 100, 100],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='a'",
-          "rect": [8, 132, 100, 100],
+          "rect": [8, 82, 100, 100],
           "reason": "location change"
         }
       ]

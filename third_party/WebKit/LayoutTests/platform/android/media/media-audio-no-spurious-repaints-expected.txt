@@ -1,0 +1,32 @@
+CONSOLE MESSAGE: line 29: FAIL! An unexpected number of repaints occurred; expected 3 to 4 with rects of [8, 8, 300, 150]. Actual layer tree: {
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutVideo VIDEO",
+          "rect": [8, 8, 300, 150],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutVideo VIDEO",
+          "rect": [8, 8, 300, 150],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutVideo VIDEO",
+          "rect": [8, 8, 300, 150],
+          "reason": "full"
+        }
+      ]
+    }
+  ]
+}
+
+ This is a testharness.js-based test.
+FAIL Verifies there are no spurious repaints for audio in a video tag. Cannot read property 'length' of undefined
+Harness: the test ran to completion.
+

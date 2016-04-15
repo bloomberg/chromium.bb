@@ -7,678 +7,33 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineFlowBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox '& Info'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '& Info'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Account'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Account'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Biography'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Biography'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Biography'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Biography'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Biography'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Browser'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Browser'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Browser'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Click on the second tab to see oversize content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Download'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Download'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Events'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Events'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Events'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Events'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Events'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Folder'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Folder'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Geodata'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Geodata'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Geodata'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Help'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Help'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Portrait'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Portrait'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Portrait'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Portrait'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Relations'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Relations'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Relations'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Relations'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Relations'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Relations'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'This is a tabgroup with triangular tab corners'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'This is oversize content that can be'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Your'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Your'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'and a double line tab. (use \"\\n\" as a line separator)'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'hidden on tab-change'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'hidden on tab-change'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [38, 7, 158, 236],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [38, 7, 158, 236],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [38, 7, 158, 236],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [38, 7, 158, 236],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [38, 7, 158, 236],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [7, 257, 236, 158],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [7, 257, 236, 158],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [7, 257, 236, 158],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [7, 257, 236, 158],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [7, 257, 236, 158],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [507, 233, 236, 159],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [507, 233, 236, 159],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [507, 233, 236, 159],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [507, 233, 236, 159],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [507, 233, 236, 159],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [390, 38, 314, 80],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [390, 38, 314, 80],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [390, 38, 314, 80],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [390, 38, 314, 80],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [390, 38, 314, 80],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [263, 279, 301, 301],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [263, 279, 301, 301],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [263, 279, 301, 301],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [263, 279, 301, 301],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [263, 279, 301, 301],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRect'",
-          "rect": [38, 7, 158, 236],
+          "object": "LayoutSVGRoot svg",
+          "rect": [7, 7, 736, 573],
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGContainer g id='tabgroupRectRound'",
-          "rect": [263, 279, 301, 301],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRectRound__0_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRectRound__0_content'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGContainer g id='tabgroupRectRound__1_content'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGContainer g id='tabgroupRectRound__2_content'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGContainer g id='tabgroupRectRound__3_content'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGContainer g id='tabgroupRectTriangle'",
-          "rect": [507, 233, 236, 159],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRectTriangle__0_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRectTriangle__1_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRectTriangle__2_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRectTriangle__2_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRectTriangle__3_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRect__0_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRect__1_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRect__1_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRect__2_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRect__3_content'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
           "reason": "location change"
         },
         {
@@ -687,28 +42,148 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGContainer g id='tabgroupRound__0_content'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutSVGPath path",
+          "rect": [390, 38, 314, 80],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGContainer g id='tabgroupRound__1_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGContainer g id='tabgroupRound__1_content'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutSVGPath path",
+          "rect": [390, 38, 314, 80],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGContainer g id='tabgroupRound__2_content'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutSVGPath path",
+          "rect": [390, 38, 314, 80],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGContainer g id='tabgroupRound__3_content'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutSVGPath path",
+          "rect": [390, 38, 314, 80],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 301],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 301],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 301],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 301],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 301],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectRound'",
+          "rect": [263, 279, 301, 301],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [263, 279, 301, 301],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [263, 279, 301, 301],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [263, 279, 301, 301],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [263, 279, 301, 301],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectTriangle'",
+          "rect": [507, 233, 236, 159],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [507, 233, 236, 159],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [507, 233, 236, 159],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [507, 233, 236, 159],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [507, 233, 236, 159],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
           "reason": "location change"
         },
         {
@@ -717,151 +192,31 @@
           "reason": "bounds change"
         },
         {
+          "object": "LayoutSVGPath path",
+          "rect": [7, 257, 236, 158],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [7, 257, 236, 158],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [7, 257, 236, 158],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [7, 257, 236, 158],
+          "reason": "location change"
+        },
+        {
           "object": "LayoutSVGContainer g id='tabgroupTriangle__0_content'",
           "rect": [15, 292, 211, 35],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGHiddenContainer g id='oversizeContent'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGHiddenContainer g id='oversizeContent'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__0_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__1_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__2_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__3_content'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [7, 34, 148, 23],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [7, 34, 148, 23],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [181, 11, 14, 54],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [181, 128, 14, 36],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [181, 171, 14, 39],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [181, 71, 14, 50],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [64, 258, 53, 27],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [64, 258, 53, 27],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [15, 292, 148, 23],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [15, 292, 148, 23],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [124, 258, 44, 27],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [124, 258, 44, 27],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [174, 258, 32, 27],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [174, 258, 32, 27],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [11, 258, 46, 27],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [11, 258, 46, 27],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutSVGInlineText #text",
           "rect": [15, 292, 211, 35],
           "reason": "location change"
@@ -877,319 +232,24 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [511, 235, 54, 14],
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [15, 292, 211, 35],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [571, 235, 50, 14],
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [15, 292, 211, 35],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [671, 235, 39, 14],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [628, 235, 36, 14],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [394, 39, 54, 15],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [510, 39, 37, 14],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [554, 39, 39, 14],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [454, 39, 50, 14],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [421, 336, 45, 45],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [469, 385, 36, 35],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [508, 424, 37, 37],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [370, 286, 48, 47],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [38, 7, 158, 236],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [38, 7, 158, 236],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [38, 7, 158, 236],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [38, 7, 158, 236],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [7, 257, 236, 158],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [7, 257, 236, 158],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [7, 257, 236, 158],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [7, 257, 236, 158],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [507, 233, 236, 159],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [507, 233, 236, 159],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [507, 233, 236, 159],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [507, 233, 236, 159],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [390, 38, 314, 80],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [390, 38, 314, 80],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [390, 38, 314, 80],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [390, 38, 314, 80],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [263, 279, 301, 301],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [263, 279, 301, 301],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [263, 279, 301, 301],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [263, 279, 301, 301],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRectRound__0'",
-          "rect": [363, 279, 61, 61],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRectRound__1'",
-          "rect": [414, 330, 58, 58],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRectRound__2'",
-          "rect": [462, 378, 50, 50],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRectRound__3'",
-          "rect": [501, 417, 51, 51],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRectTriangle__0'",
-          "rect": [507, 233, 62, 18],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRectTriangle__1'",
-          "rect": [567, 233, 58, 18],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRectTriangle__2'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRectTriangle__2'",
-          "rect": [623, 233, 46, 18],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRectTriangle__3'",
-          "rect": [667, 233, 47, 18],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRect__0'",
-          "rect": [179, 7, 17, 62],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRect__1'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRect__1'",
-          "rect": [179, 67, 17, 58],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRect__2'",
-          "rect": [179, 123, 17, 46],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRect__3'",
-          "rect": [179, 167, 17, 47],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRound__0'",
-          "rect": [390, 38, 62, 18],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRound__1'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRound__1'",
-          "rect": [450, 38, 58, 18],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRound__2'",
-          "rect": [506, 38, 46, 18],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRound__3'",
-          "rect": [550, 38, 47, 18],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupTriangle__0'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupTriangle__0'",
-          "rect": [7, 257, 55, 29],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupTriangle__1'",
-          "rect": [60, 257, 62, 29],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupTriangle__2'",
-          "rect": [120, 257, 52, 29],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupTriangle__3'",
-          "rect": [170, 257, 40, 29],
+          "object": "LayoutSVGText text id='contentTabGroupTriangle0'",
+          "rect": [15, 292, 211, 35],
           "reason": "location change"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [30, 147, 174, 96],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [31, 146, 172, 96],
-          "reason": "layoutObject removal"
+          "rect": [31, 404, 188, 10],
+          "reason": "location change"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -1203,82 +263,77 @@
         },
         {
           "object": "LayoutSVGRect rect",
+          "rect": [30, 147, 174, 96],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGRect rect",
           "rect": [39, 404, 172, 96],
           "reason": "location change"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [31, 404, 188, 10],
+          "rect": [31, 146, 172, 96],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [7, 7, 736, 573],
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRect'",
+          "rect": [38, 7, 158, 236],
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [7, 34, 148, 23],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [181, 11, 14, 54],
+          "object": "LayoutSVGPath path",
+          "rect": [38, 7, 158, 236],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [181, 128, 14, 36],
+          "object": "LayoutSVGPath path",
+          "rect": [38, 7, 158, 236],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [181, 171, 14, 39],
+          "object": "LayoutSVGPath path",
+          "rect": [38, 7, 158, 236],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [181, 71, 14, 50],
+          "object": "LayoutSVGPath path",
+          "rect": [38, 7, 158, 236],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [64, 258, 53, 27],
+          "object": "LayoutSVGInlineText #text",
+          "rect": [15, 292, 148, 23],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [64, 258, 53, 27],
+          "object": "LayoutSVGInlineText #text",
+          "rect": [15, 292, 148, 23],
           "reason": "location change"
         },
         {
@@ -1287,63 +342,73 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [124, 258, 44, 27],
+          "object": "LayoutSVGText text",
+          "rect": [15, 292, 148, 23],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [124, 258, 44, 27],
-          "reason": "location change"
+          "object": "LayoutSVGInlineText #text",
+          "rect": [7, 34, 148, 23],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [7, 34, 148, 23],
+          "reason": "layoutObject removal"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [174, 258, 32, 27],
+          "rect": [7, 34, 148, 23],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [7, 34, 148, 23],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupTriangle__1'",
+          "rect": [60, 257, 62, 29],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [174, 258, 32, 27],
+          "object": "LayoutSVGPath path id='tabgroupRectTriangle__0'",
+          "rect": [507, 233, 62, 18],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [11, 258, 46, 27],
+          "object": "LayoutSVGPath path id='tabgroupRound__0'",
+          "rect": [390, 38, 62, 18],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [11, 258, 46, 27],
+          "object": "LayoutSVGPath path id='tabgroupRectRound__0'",
+          "rect": [363, 279, 61, 61],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [15, 292, 211, 35],
+          "object": "LayoutSVGPath path id='tabgroupRectRound__1'",
+          "rect": [414, 330, 58, 58],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [15, 292, 211, 35],
+          "object": "LayoutSVGPath path id='tabgroupRectTriangle__1'",
+          "rect": [567, 233, 58, 18],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [511, 235, 54, 14],
+          "object": "LayoutSVGPath path id='tabgroupRound__1'",
+          "rect": [450, 38, 58, 18],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [571, 235, 50, 14],
+          "object": "LayoutSVGPath path id='tabgroupTriangle__0'",
+          "rect": [7, 257, 55, 29],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [671, 235, 39, 14],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [628, 235, 36, 14],
+          "object": "LayoutSVGInlineText #text",
+          "rect": [394, 39, 54, 15],
           "reason": "location change"
         },
         {
@@ -1352,13 +417,83 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [510, 39, 37, 14],
+          "object": "LayoutSVGText text",
+          "rect": [394, 39, 54, 15],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [511, 235, 54, 14],
           "reason": "location change"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [554, 39, 39, 14],
+          "rect": [511, 235, 54, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [511, 235, 54, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [64, 258, 53, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [64, 258, 53, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [64, 258, 53, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [64, 258, 53, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [64, 258, 53, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupTriangle__2'",
+          "rect": [120, 257, 52, 29],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectRound__3'",
+          "rect": [501, 417, 51, 51],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectRound__2'",
+          "rect": [462, 378, 50, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [571, 235, 50, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [571, 235, 50, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [571, 235, 50, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [454, 39, 50, 14],
           "reason": "location change"
         },
         {
@@ -1367,18 +502,13 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [421, 336, 45, 45],
+          "object": "LayoutSVGText text",
+          "rect": [454, 39, 50, 14],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [469, 385, 36, 35],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [508, 424, 37, 37],
+          "object": "LayoutSVGInlineText #text",
+          "rect": [370, 286, 48, 47],
           "reason": "location change"
         },
         {
@@ -1388,72 +518,37 @@
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [7, 34, 148, 23],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [181, 11, 14, 54],
+          "rect": [370, 286, 48, 47],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [181, 128, 14, 36],
+          "object": "LayoutSVGPath path id='tabgroupRectTriangle__3'",
+          "rect": [667, 233, 47, 18],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [181, 171, 14, 39],
+          "object": "LayoutSVGPath path id='tabgroupRound__3'",
+          "rect": [550, 38, 47, 18],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [181, 71, 14, 50],
+          "object": "LayoutSVGInlineText #text",
+          "rect": [11, 258, 46, 27],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [64, 258, 53, 27],
+          "object": "LayoutSVGInlineText #text",
+          "rect": [11, 258, 46, 27],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [15, 292, 148, 23],
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [11, 258, 46, 27],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [124, 258, 44, 27],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [174, 258, 32, 27],
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [11, 258, 46, 27],
           "reason": "location change"
         },
         {
@@ -1462,43 +557,23 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [511, 235, 54, 14],
+          "object": "LayoutSVGPath path id='tabgroupRectTriangle__2'",
+          "rect": [623, 233, 46, 18],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [571, 235, 50, 14],
+          "object": "LayoutSVGPath path id='tabgroupRound__2'",
+          "rect": [506, 38, 46, 18],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [671, 235, 39, 14],
+          "object": "LayoutSVGInlineText #text",
+          "rect": [421, 336, 45, 45],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [628, 235, 36, 14],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [394, 39, 54, 15],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [510, 39, 37, 14],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [554, 39, 39, 14],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [454, 39, 50, 14],
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [421, 336, 45, 45],
           "reason": "location change"
         },
         {
@@ -1507,8 +582,73 @@
           "reason": "location change"
         },
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [124, 258, 44, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [124, 258, 44, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [124, 258, 44, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [124, 258, 44, 27],
+          "reason": "location change"
+        },
+        {
           "object": "LayoutSVGText text",
-          "rect": [469, 385, 36, 35],
+          "rect": [124, 258, 44, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupTriangle__3'",
+          "rect": [170, 257, 40, 29],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [671, 235, 39, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [671, 235, 39, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [671, 235, 39, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [554, 39, 39, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [554, 39, 39, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [554, 39, 39, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [508, 424, 37, 37],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [508, 424, 37, 37],
           "reason": "location change"
         },
         {
@@ -1517,173 +657,861 @@
           "reason": "location change"
         },
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [510, 39, 37, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [510, 39, 37, 14],
+          "reason": "location change"
+        },
+        {
           "object": "LayoutSVGText text",
-          "rect": [370, 286, 48, 47],
+          "rect": [510, 39, 37, 14],
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGText text id='contentTabGroupTriangle0'",
-          "rect": [15, 292, 211, 35],
+          "object": "LayoutSVGInlineText #text",
+          "rect": [469, 385, 36, 35],
           "reason": "location change"
         },
         {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [469, 385, 36, 35],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [469, 385, 36, 35],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [628, 235, 36, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [628, 235, 36, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [628, 235, 36, 14],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [174, 258, 32, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [174, 258, 32, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [174, 258, 32, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [174, 258, 32, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [174, 258, 32, 27],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRect__0'",
+          "rect": [179, 7, 17, 62],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRect__1'",
+          "rect": [179, 67, 17, 58],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRect__3'",
+          "rect": [179, 167, 17, 47],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRect__2'",
+          "rect": [179, 123, 17, 46],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [181, 11, 14, 54],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [181, 11, 14, 54],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [181, 11, 14, 54],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [181, 71, 14, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [181, 71, 14, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [181, 71, 14, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [181, 171, 14, 39],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [181, 171, 14, 39],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [181, 171, 14, 39],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [181, 128, 14, 36],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [181, 128, 14, 36],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [181, 128, 14, 36],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox '& Info'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '& Info'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Account'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Account'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Biography'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Biography'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Biography'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Biography'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Biography'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Browser'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Browser'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Browser'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Click on the second tab to see oversize content'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Download'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Download'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Events'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Events'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Events'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Events'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Events'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Folder'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Folder'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Geodata'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Geodata'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Geodata'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Help'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Help'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Portrait'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Portrait'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Portrait'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Portrait'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Relations'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Relations'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Relations'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Relations'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Relations'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Relations'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'This is a tabgroup with triangular tab corners'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'This is oversize content that can be'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Your'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Your'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'and a double line tab. (use \"\\n\" as a line separator)'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'hidden on tab-change'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hidden on tab-change'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectRound__0_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectRound__0_content'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectRound__1_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectRound__2_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectRound__3_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectTriangle__0_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectTriangle__1_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectTriangle__2_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectTriangle__2_content'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRectTriangle__3_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRect__0_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRect__1_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRect__1_content'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRect__2_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRect__3_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRound__0_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRound__1_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRound__1_content'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRound__2_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='tabgroupRound__3_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGHiddenContainer g id='oversizeContent'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGHiddenContainer g id='oversizeContent'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__0_content'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__1_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__2_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__3_content'",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectRound__0'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectTriangle__2'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRect__1'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRound__1'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupTriangle__0'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "reason": "layoutObject removal"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

@@ -7,13 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "HorizontalScrollbar",
-          "rect": [0, 0, 0, 0],
-          "reason": "scroll"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='details-content'",
           "rect": [8, 68, 784, 19],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTextControl INPUT",
+          "rect": [8, 68, 123, 19],
           "reason": "location change"
         },
         {
@@ -27,28 +27,27 @@
           "reason": "full"
         },
         {
+          "object": "HorizontalScrollbar",
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "reason": "scroll"
+        },
+        {
           "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTextControl INPUT",
-          "rect": [8, 68, 123, 19],
           "reason": "location change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "VerticalScrollbar",
-          "rect": [0, 0, 0, 0],
           "reason": "scroll"
         }
       ]

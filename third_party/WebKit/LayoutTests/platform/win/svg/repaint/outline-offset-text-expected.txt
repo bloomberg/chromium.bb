@@ -7,24 +7,24 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Foo'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Foo'",
-          "rect": [0, 0, 0, 0],
-          "reason": "outline"
-        },
-        {
           "object": "LayoutSVGInlineText #text",
           "rect": [103, 25, 160, 114],
           "reason": "outline"
         },
         {
+          "object": "LayoutSVGText text",
+          "rect": [103, 25, 160, 114],
+          "reason": "full"
+        },
+        {
           "object": "LayoutSVGInlineText #text",
           "rect": [63, 25, 160, 114],
           "reason": "outline"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [63, 25, 160, 114],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -37,23 +37,19 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [103, 25, 160, 114],
+          "object": "InlineTextBox 'Foo'",
           "reason": "full"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [63, 25, 160, 114],
+          "object": "InlineTextBox 'Foo'",
+          "reason": "outline"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

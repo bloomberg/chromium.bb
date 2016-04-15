@@ -13,12 +13,10 @@
         },
         {
           "object": "LayoutSVGResourceFilter filter id='filter'",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage-red'",
-          "rect": [0, 0, 0, 0],
           "reason": "layoutObject removal"
         }
       ]

@@ -8,14 +8,14 @@
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [50, 50, 700, 500],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [0, 0, 800, 600],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [50, 50, 700, 500],
+          "reason": "location change"
         }
       ]
     }

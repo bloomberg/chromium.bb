@@ -7,9 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGRect rect id='move'",
-          "rect": [18, 18, 10, 10],
-          "reason": "location change"
+          "object": "LayoutSVGRoot svg",
+          "rect": [18, 18, 20, 30],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect id='move'",
@@ -17,9 +17,9 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [18, 18, 20, 30],
-          "reason": "bounds change"
+          "object": "LayoutSVGRect rect id='move'",
+          "rect": [18, 18, 10, 10],
+          "reason": "location change"
         }
       ]
     }

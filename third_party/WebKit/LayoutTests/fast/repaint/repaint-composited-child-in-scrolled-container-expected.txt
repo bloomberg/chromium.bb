@@ -7,13 +7,12 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "HorizontalScrollbar",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutBlockFlow (positioned) DIV id='outer'",
+          "rect": [8, 293, 285, 15],
           "reason": "scroll"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='outer'",
-          "rect": [8, 293, 285, 15],
+          "object": "HorizontalScrollbar",
           "reason": "scroll"
         }
       ],

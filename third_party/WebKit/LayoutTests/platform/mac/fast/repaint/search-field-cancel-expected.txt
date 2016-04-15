@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'some text'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
           "rect": [17, 45, 108, 13],
           "reason": "forced by layout"
@@ -22,8 +17,11 @@
           "reason": "location change"
         },
         {
+          "object": "InlineTextBox 'some text'",
+          "reason": "location change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

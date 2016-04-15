@@ -7,19 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'After change'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'Find-in-page 'findme', then click here)'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'To be changed: findme (Manual testing:'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
+          "object": "LayoutBlockFlow HTML",
+          "rect": [10, 102, 285, 400],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV",
@@ -29,11 +19,6 @@
         {
           "object": "LayoutBlockFlow DIV id='to-be-changed'",
           "rect": [18, 130, 269, 40],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [10, 102, 285, 400],
           "reason": "forced by layout"
         },
         {
@@ -52,23 +37,31 @@
           "reason": "scroll"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "InlineTextBox 'After change'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Find-in-page 'findme', then click here)'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'To be changed: findme (Manual testing:'",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         },
         {
           "object": "VerticalScrollbar",
-          "rect": [0, 0, 0, 0],
           "reason": "scroll"
         }
       ]

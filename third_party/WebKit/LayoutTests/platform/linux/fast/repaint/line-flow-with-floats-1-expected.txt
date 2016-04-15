@@ -7,413 +7,58 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox ' twist itself round and look up in her face, with'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 120, 418, 479],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 359, 407, 20],
           "reason": "incremental"
         },
         {
-          "object": "InlineTextBox ' twist itself round and look up in her'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
+          "object": "LayoutText #text",
+          "rect": [14, 239, 406, 20],
+          "reason": "incremental"
         },
         {
-          "object": "InlineTextBox ' was in a'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutText #text",
+          "rect": [14, 420, 355, 79],
           "reason": "bounds change"
         },
         {
-          "object": "InlineTextBox 'Alice began to feel very uneasy: to be sure, she had not as\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Alice soon came to the conclusion that it was a very'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'The chief difficulty Alice found at first was in managing her'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'The players all played at once without waiting\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'They\u2019re dreadfully fond of beheading people here; the great'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'a very short time '",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'a very short time '",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutText #text",
+          "rect": [14, 380, 355, 59],
           "reason": "bounds change"
         },
         {
-          "object": "InlineTextBox 'any dispute with the Queen, but she knew that it might\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'begin again, it was very provoking to find that the hedgehog had'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'begin again, it was very provoking to find that the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'besides all\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'blow with its head, it\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'bursting out\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'but generally, just as she had got its neck nicely'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'but generally, just as she had got its neck nicely'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'comfortably enough, under her arm, with its legs hanging'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'comfortably enough, under her arm, with its legs hanging'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutText #text",
+          "rect": [134, 360, 131, 19],
           "reason": "bounds change"
         },
         {
-          "object": "InlineTextBox 'doubled-up\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'down,\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'down,\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'face, with\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'flamingo: she succeeded in getting its body tucked away,'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'for'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'for'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'furious passion, and went\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'going to\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'happen any'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'hedgehog had\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'hedgehogs; and in\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'hedgehogs; and in\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'her head!\u2019 about once in a'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'her head!\u2019 about'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'its head, it\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'laughing: and when she had got its head down, and was going to'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'laughing: and when she had got its head down, and was'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'me?'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'minute, \u2018and then,\u2019 thought she, \u2018what would become of\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'minute.\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'once in a minute.\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'other parts of\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'out, and was going to give the hedgehog a blow with'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'out, and was going to give the hedgehog a'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'she wanted to send the hedgehog to, and, as the'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'she'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'soldiers were always getting up and walking off to'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'soldiers'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'stamping about, and shouting'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'stamping about, and'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'straightened\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'straightened\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'such a puzzled expression that she could not help bursting out'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'such a puzzled expression that she could not help'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'the Queen'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'the Queen'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'the ground, Alice soon came to the conclusion that it'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'the ground,'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'there was generally a ridge or furrow in the way wherever\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'this, there was generally a ridge or furrow in the way'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'this,'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'turns,\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'turns,\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'unrolled itself, and was in the act of crawling away: besides all\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'unrolled itself, and was in the act of crawling away:'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'wanted to send the hedgehog to, and, as the doubled-up\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'was a very\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'was in a furious passion, and went\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'were always getting up and walking off to other parts of\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'wherever\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'would'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'would'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'yet had'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\u2018Off with his head!\u2019 or \u2018Off with\n'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutText #text",
+          "rect": [65, 360, 131, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV id='pinkFloat'",
           "rect": [378, 138, 70, 30],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [303, 420, 67, 19],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [244, 420, 65, 19],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [369, 80, 52, 119],
           "reason": "incremental"
         },
         {
@@ -425,16 +70,6 @@
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 343, 48, 65],
           "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 120, 418, 479],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [369, 80, 52, 119],
-          "reason": "incremental"
         },
         {
           "object": "LayoutText #text",
@@ -452,163 +87,423 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [14, 239, 406, 20],
+          "object": "InlineTextBox ' twist itself round and look up in her face, with'",
           "reason": "incremental"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [14, 359, 407, 20],
+          "object": "InlineTextBox ' twist itself round and look up in her'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ' was in a'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'Alice began to feel very uneasy: to be sure, she had not as\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Alice soon came to the conclusion that it was a very'",
           "reason": "incremental"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [134, 360, 131, 19],
+          "object": "InlineTextBox 'The chief difficulty Alice found at first was in managing her'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'The players all played at once without waiting\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'They\u2019re dreadfully fond of beheading people here; the great'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'a very short time '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'a very short time '",
           "reason": "bounds change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [65, 360, 131, 19],
+          "object": "InlineTextBox 'any dispute with the Queen, but she knew that it might\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'begin again, it was very provoking to find that the hedgehog had'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'begin again, it was very provoking to find that the'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'besides all\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'blow with its head, it\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'bursting out\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'but generally, just as she had got its neck nicely'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'but generally, just as she had got its neck nicely'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'comfortably enough, under her arm, with its legs hanging'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'comfortably enough, under her arm, with its legs hanging'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'difficult game indeed.\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'difficult game indeed.\n'",
           "reason": "bounds change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [14, 380, 355, 59],
+          "object": "InlineTextBox 'doubled-up\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'down,\n'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'down,\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'face, with\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'flamingo: she succeeded in getting its body tucked away,'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'for'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'for'",
           "reason": "bounds change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [303, 420, 67, 19],
+          "object": "InlineTextBox 'furious passion, and went\n'",
           "reason": "bounds change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [244, 420, 65, 19],
+          "object": "InlineTextBox 'going to\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'happen any'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hedgehog had\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hedgehogs; and in\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hedgehogs; and in\n'",
           "reason": "bounds change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [14, 420, 355, 79],
+          "object": "InlineTextBox 'her head!\u2019 about once in a'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'her head!\u2019 about'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'its head, it\n'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'laughing: and when she had got its head down, and was going to'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'laughing: and when she had got its head down, and was'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'me?'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'minute, \u2018and then,\u2019 thought she, \u2018what would become of\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'minute.\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'once in a minute.\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'other parts of\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'out, and was going to give the hedgehog a blow with'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'out, and was going to give the hedgehog a'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'she wanted to send the hedgehog to, and, as the'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'she'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'soldiers were always getting up and walking off to'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'soldiers'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'stamping about, and shouting'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'stamping about, and'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'straightened\n'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'straightened\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'such a puzzled expression that she could not help bursting out'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'such a puzzled expression that she could not help'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'the Queen'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'the Queen'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'the ground, Alice soon came to the conclusion that it'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'the ground,'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'there was generally a ridge or furrow in the way wherever\n'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'this, there was generally a ridge or furrow in the way'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'this,'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'turns,\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'turns,\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'unrolled itself, and was in the act of crawling away: besides all\n'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'unrolled itself, and was in the act of crawling away:'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'wanted to send the hedgehog to, and, as the doubled-up\n'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'was a very\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'was in a furious passion, and went\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'were always getting up and walking off to other parts of\n'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'wherever\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'would'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'would'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'yet had'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\u2018Off with his head!\u2019 or \u2018Off with\n'",
           "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

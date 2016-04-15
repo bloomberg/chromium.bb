@@ -7,26 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'SUCCESS'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'SUCCESS'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [9, 84, 198, 14],
           "reason": "invalidate paint rectangle"
@@ -37,23 +17,37 @@
           "reason": "invalidate paint rectangle"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [82, 114, 52, 13],
-          "reason": "full"
-        },
-        {
           "object": "LayoutText (anonymous)",
           "rect": [9, 84, 52, 14],
           "reason": "full"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutText #text",
+          "rect": [82, 114, 52, 13],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'SUCCESS'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'SUCCESS'",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

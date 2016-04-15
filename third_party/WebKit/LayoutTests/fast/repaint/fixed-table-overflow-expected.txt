@@ -7,49 +7,24 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
-          "rect": [100, 100, 100, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='green'",
-          "rect": [0, 100, 100, 100],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='green'",
-          "rect": [0, 100, 100, 100],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutTable (positioned) TABLE",
           "rect": [0, 0, 200, 200],
           "reason": "style change"
         },
         {
-          "object": "LayoutTableCell (anonymous)",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
+          "object": "LayoutTableSection TBODY",
+          "rect": [0, 0, 200, 200],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
+          "rect": [100, 100, 100, 100],
+          "reason": "location change"
         },
         {
           "object": "LayoutTableCell (anonymous)",
           "rect": [100, 100, 100, 100],
           "reason": "location change"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD class='red'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
         },
         {
           "object": "LayoutTableCell TD id='moveMe' class='fixed'",
@@ -57,9 +32,30 @@
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutTableSection TBODY",
-          "rect": [0, 0, 200, 200],
-          "reason": "forced by layout"
+          "object": "LayoutBlockFlow (relative positioned) DIV class='green'",
+          "rect": [0, 100, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='green'",
+          "rect": [0, 100, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutTableCell (anonymous)",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD class='red'",
+          "reason": "full"
         }
       ]
     }

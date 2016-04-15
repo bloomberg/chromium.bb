@@ -7,33 +7,28 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutText #text",
+          "rect": [8, 8, 48, 32],
+          "reason": "selection"
+        },
+        {
           "object": "InlineTextBox 'xx'",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "InlineTextBox 'y'",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow DIV id='container'",
-          "rect": [0, 0, 0, 0],
           "reason": "selection"
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 8, 48, 32],
           "reason": "selection"
         }
       ]

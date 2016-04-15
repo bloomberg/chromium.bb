@@ -7,9 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTable TABLE",
-          "rect": [68, 8, 55, 54],
-          "reason": "incremental"
+          "object": "LayoutTableCell TD",
+          "rect": [63, 8, 60, 54],
+          "reason": "location change"
         },
         {
           "object": "LayoutTable TABLE",
@@ -17,19 +17,17 @@
           "reason": "incremental"
         },
         {
+          "object": "LayoutTable TABLE",
+          "rect": [68, 8, 55, 54],
+          "reason": "incremental"
+        },
+        {
           "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [63, 8, 60, 54],
-          "reason": "location change"
         }
       ]
     }

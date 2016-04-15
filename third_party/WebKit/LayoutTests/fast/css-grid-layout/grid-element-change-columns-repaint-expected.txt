@@ -7,14 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='sizedToGridArea'",
-          "rect": [58, 48, 50, 50],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutGrid DIV class='grid min-content'",
           "rect": [8, 48, 250, 50],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='sizedToGridArea'",
+          "rect": [58, 48, 50, 50],
+          "reason": "incremental"
         }
       ]
     }

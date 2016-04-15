@@ -7,58 +7,18 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
+          "object": "LayoutTableCol COLGROUP id='colgroup'",
+          "rect": [8, 8, 162, 102],
+          "reason": "style change"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
+          "rect": [61, 7, 57, 53],
+          "reason": "location change"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 8, 56, 52],
+          "rect": [7, 58, 56, 53],
           "reason": "bounds change"
         },
         {
@@ -68,7 +28,7 @@
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [61, 7, 57, 53],
+          "rect": [62, 59, 56, 52],
           "reason": "location change"
         },
         {
@@ -78,18 +38,48 @@
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [7, 58, 56, 53],
+          "rect": [8, 8, 56, 52],
           "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [62, 59, 56, 52],
-          "reason": "location change"
+          "reason": "full"
         },
         {
-          "object": "LayoutTableCol COLGROUP id='colgroup'",
-          "rect": [8, 8, 162, 102],
-          "reason": "style change"
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
         }
       ]
     }

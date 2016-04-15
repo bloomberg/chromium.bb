@@ -7,13 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGContainer g id='box'",
-          "rect": [120, 10, 110, 350],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutSVGRect rect id='rect1'",
-          "rect": [10, 10, 200, 100],
+          "object": "LayoutSVGRect rect id='rect3'",
+          "rect": [0, 240, 230, 120],
           "reason": "full"
         },
         {
@@ -22,9 +17,14 @@
           "reason": "full"
         },
         {
-          "object": "LayoutSVGRect rect id='rect3'",
-          "rect": [0, 240, 230, 120],
+          "object": "LayoutSVGRect rect id='rect1'",
+          "rect": [10, 10, 200, 100],
           "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g id='box'",
+          "rect": [120, 10, 110, 350],
+          "reason": "incremental"
         },
         {
           "object": "LayoutSVGRoot svg",

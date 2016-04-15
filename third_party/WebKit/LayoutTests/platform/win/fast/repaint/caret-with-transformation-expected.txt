@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [41, 35, 13, 18],
+          "rect": [345, 210, 13, 19],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [345, 210, 13, 19],
+          "rect": [41, 35, 13, 18],
           "reason": "invalidate paint rectangle"
         }
       ]

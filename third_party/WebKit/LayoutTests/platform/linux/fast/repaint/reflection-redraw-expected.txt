@@ -7,68 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'The color of this text'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'The color of this text'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'The color of this text'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'The color of this text'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'in the reflection'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'in the reflection'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'in the reflection'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'in the reflection'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'should be green'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'should be green'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'should be green'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'should be green'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutText #text",
-          "rect": [306, 34, 124, 182],
+          "rect": [381, 267, 284, 59],
           "reason": "style change"
         },
         {
@@ -78,12 +18,60 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [381, 267, 284, 59],
+          "rect": [306, 34, 124, 182],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
           "rect": [306, 377, 124, 156],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'The color of this text'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'The color of this text'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'The color of this text'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'The color of this text'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'in the reflection'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'in the reflection'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'in the reflection'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'in the reflection'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'should be green'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'should be green'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'should be green'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'should be green'",
           "reason": "style change"
         }
       ]

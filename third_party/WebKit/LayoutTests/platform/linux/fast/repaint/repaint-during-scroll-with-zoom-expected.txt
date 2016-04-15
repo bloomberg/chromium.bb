@@ -8,14 +8,9 @@
       "backgroundColor": "#C0C0C0",
       "paintInvalidations": [
         {
-          "object": "HorizontalScrollbar",
-          "rect": [0, 0, 0, 0],
-          "reason": "scroll"
-        },
-        {
-          "object": "InlineTextBox 'scroll me'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
+          "object": "LayoutIFrame (positioned) IFRAME",
+          "rect": [2, 64, 235, 236],
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutBlockFlow BODY",
@@ -25,16 +20,6 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [2, 65, 235, 235],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutIFrame (positioned) IFRAME",
-          "rect": [2, 64, 235, 236],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [2, 65, 52, 17],
           "reason": "location change"
         },
         {
@@ -51,6 +36,11 @@
           "object": "LayoutView #document",
           "rect": [2, 300, 235, 15],
           "reason": "scroll"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [2, 65, 52, 17],
+          "reason": "location change"
         },
         {
           "object": "LayoutView #document",
@@ -73,13 +63,19 @@
           "reason": "scroll"
         },
         {
+          "object": "HorizontalScrollbar",
+          "reason": "scroll"
+        },
+        {
+          "object": "InlineTextBox 'scroll me'",
+          "reason": "location change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "VerticalScrollbar",
-          "rect": [0, 0, 0, 0],
           "reason": "scroll"
         }
       ]

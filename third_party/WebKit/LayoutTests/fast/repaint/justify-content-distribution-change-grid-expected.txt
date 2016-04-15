@@ -7,23 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
+          "object": "LayoutGrid DIV id='container'",
+          "rect": [0, 52, 300, 200],
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [0, 52, 100, 200],
+          "rect": [200, 52, 100, 200],
           "reason": "location change"
         },
         {
@@ -33,13 +23,20 @@
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [200, 52, 100, 200],
+          "rect": [0, 52, 100, 200],
           "reason": "location change"
         },
         {
-          "object": "LayoutGrid DIV id='container'",
-          "rect": [0, 52, 300, 200],
-          "reason": "style change"
+          "object": "LayoutBlockFlow DIV",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "reason": "location change"
         }
       ]
     }

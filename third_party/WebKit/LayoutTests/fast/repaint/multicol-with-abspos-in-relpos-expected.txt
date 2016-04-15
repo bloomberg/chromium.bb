@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'PASS'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [508, 28, 80, 20],
           "reason": "style change"
@@ -22,8 +17,11 @@
           "reason": "style change"
         },
         {
+          "object": "InlineTextBox 'PASS'",
+          "reason": "style change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

@@ -7,43 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'ROW1'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'ROW1'",
-          "rect": [0, 0, 0, 0],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'ROW2'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'ROW2'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutTable (positioned) TABLE id='table'",
           "rect": [0, 150, 106, 380],
           "reason": "incremental"
         },
         {
-          "object": "LayoutTableCell TD",
-          "rect": [2, 52, 102, 238],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [2, 102, 102, 46],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [2, 292, 102, 236],
+          "object": "LayoutTableRow TR",
+          "rect": [0, 292, 106, 236],
           "reason": "location change"
         },
         {
@@ -57,14 +27,24 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [0, 292, 106, 236],
+          "object": "LayoutTableCell TD",
+          "rect": [2, 52, 102, 238],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [2, 292, 102, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [2, 102, 102, 46],
           "reason": "location change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [3, 67, 46, 18],
-          "reason": "bounds change"
+          "rect": [3, 401, 46, 18],
+          "reason": "location change"
         },
         {
           "object": "LayoutText #text",
@@ -78,27 +58,39 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [3, 401, 46, 18],
+          "rect": [3, 67, 46, 18],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'ROW1'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'ROW1'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'ROW2'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'ROW2'",
           "reason": "location change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

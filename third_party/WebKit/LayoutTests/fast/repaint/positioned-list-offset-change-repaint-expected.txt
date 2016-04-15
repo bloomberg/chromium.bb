@@ -7,18 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) UL id='list'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutListItem (positioned) LI",
+          "rect": [8, 60, 214, 236],
           "reason": "location change"
         },
         {
@@ -27,28 +17,31 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutListItem (positioned) LI",
-          "rect": [8, 60, 214, 236],
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) UL id='list'",
           "reason": "location change"
         },
         {
           "object": "LayoutListMarker (anonymous)",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [0, 0, 0, 0],
           "reason": "location change"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

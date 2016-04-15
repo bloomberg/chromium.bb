@@ -14,12 +14,12 @@
         {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 200, 200],
-          "reason": "layoutObject removal"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 200, 200],
-          "reason": "layoutObject insertion"
+          "reason": "layoutObject removal"
         },
         {
           "object": "LayoutSVGRect rect id='shape'",
@@ -33,18 +33,11 @@
         },
         {
           "object": "LayoutSVGResourcePattern pattern id='pat'",
-          "rect": [0, 0, 0, 0],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGResourcePattern pattern id='pat'",
-          "rect": [0, 0, 0, 0],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGResourcePattern pattern id='pat'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
         }
       ]
     }

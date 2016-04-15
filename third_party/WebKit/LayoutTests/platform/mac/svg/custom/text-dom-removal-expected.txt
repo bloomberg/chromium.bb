@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox ''",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutSVGContainer g id='objectsToRemove'",
           "rect": [0, 0, 216, 129],
           "reason": "became invisible"
@@ -22,18 +17,21 @@
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [0, 0, 20, 20],
-          "reason": "layoutObject removal"
-        },
-        {
           "object": "LayoutSVGText text",
           "rect": [50, 111, 166, 18],
           "reason": "layoutObject removal"
         },
         {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 20, 20],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

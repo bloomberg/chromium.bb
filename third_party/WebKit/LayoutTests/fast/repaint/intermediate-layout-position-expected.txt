@@ -7,24 +7,23 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 74, 46, 20],
+          "object": "LayoutTable TABLE",
+          "rect": [8, 172, 46, 20],
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [0, 0, 0, 0],
-          "reason": "became visible"
-        },
-        {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 172, 46, 20],
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 74, 46, 20],
           "reason": "incremental"
         },
         {
           "object": "LayoutTableCell TD id='cell'",
           "rect": [10, 170, 42, 20],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "reason": "became visible"
         }
       ]
     }

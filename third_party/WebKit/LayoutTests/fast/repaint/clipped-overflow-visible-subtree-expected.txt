@@ -13,18 +13,18 @@
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [8, 8, 300, 100],
+          "rect": [308, 8, 300, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [308, 8, 300, 100],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [308, 8, 300, 100],
+          "rect": [8, 8, 300, 100],
           "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV id='node'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject removal"
         },
         {
           "object": "LayoutBlockFlow DIV",
@@ -33,7 +33,7 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [308, 8, 300, 100],
+          "rect": [308, 8, 100, 100],
           "reason": "location change"
         },
         {
@@ -42,9 +42,8 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [308, 8, 100, 100],
-          "reason": "location change"
+          "object": "LayoutBlockFlow (floating) DIV id='node'",
+          "reason": "layoutObject removal"
         }
       ]
     }

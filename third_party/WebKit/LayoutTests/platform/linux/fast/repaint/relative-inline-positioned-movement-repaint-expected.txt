@@ -13,7 +13,6 @@
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ],
@@ -26,12 +25,10 @@
           "paintInvalidations": [
             {
               "object": "InlineFlowBox",
-              "rect": [0, 0, 0, 0],
               "reason": "full"
             },
             {
               "object": "InlineTextBox 'When this layer moves it shouldn't generate a repaint rect.'",
-              "rect": [0, 0, 0, 0],
               "reason": "full"
             }
           ]

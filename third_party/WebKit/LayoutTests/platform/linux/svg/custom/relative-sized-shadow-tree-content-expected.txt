@@ -7,29 +7,34 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 72, 402, 405],
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutSVGContainer g id='targetUse'",
-          "rect": [59, 73, 150, 200],
+          "object": "LayoutSVGRoot svg",
+          "rect": [109, 73, 300, 400],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutSVGContainer use",
-          "rect": [59, 273, 50, 200],
-          "reason": "location change"
         },
         {
           "object": "LayoutSVGContainer use",
           "rect": [209, 273, 200, 200],
           "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='targetRect'",
+          "rect": [209, 273, 200, 200],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='targetRect'",
+          "rect": [59, 273, 150, 200],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGContainer g id='targetUse'",
+          "rect": [59, 73, 150, 200],
+          "reason": "incremental"
         },
         {
           "object": "LayoutSVGContainer use",
@@ -42,9 +47,24 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutSVGRect rect id='targetRect'",
-          "rect": [59, 273, 150, 200],
+          "object": "LayoutSVGRect rect id='targetRect1'",
+          "rect": [59, 73, 150, 200],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGRect rect id='targetRect1'",
+          "rect": [59, 73, 150, 200],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGRect rect id='targetRect1'",
+          "rect": [59, 73, 150, 200],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [59, 273, 50, 200],
+          "reason": "location change"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect'",
@@ -52,38 +72,15 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutSVGRect rect id='targetRect'",
-          "rect": [209, 273, 200, 200],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGRect rect id='targetRect1'",
-          "rect": [59, 73, 150, 200],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutSVGRect rect id='targetRect1'",
-          "rect": [59, 73, 150, 200],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutSVGRect rect id='targetRect1'",
-          "rect": [59, 73, 150, 200],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [109, 73, 300, 400],
-          "reason": "incremental"
-        },
-        {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "InlineBox",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

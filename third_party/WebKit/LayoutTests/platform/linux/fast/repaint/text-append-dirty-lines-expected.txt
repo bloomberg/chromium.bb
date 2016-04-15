@@ -7,46 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse placerat. Morbi tristique. Mauris eu lacus sed felis'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Quisque enim metus, luctus tincidunt, vestibulum eu, vestibulum eu, libero. Mauris sagittis aliquam nunc. Nullam pharetra molestie'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Quisque enim metus, luctus tincidunt, vestibulum eu, vestibulum eu, libero. Mauris sagittis aliquam nunc. Nullam pharetra molestie'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'eros. Donec tempus purus ut ligula. Phasellus non nisl. Etiam eu mauris. Curabitur a velit'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'eros. Donec tempus purus ut ligula. Phasellus non nisl. Etiam eu mauris. Curabitur a velit.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'feugiat. Phasellus mollis pulvinar mi. Etiam ut neque sed eros egestas laoreet. Vestibulum ullamcorper, nulla non feugiat molestie, mi'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'lorem bibendum leo, ac gravida orci nunc nec nulla. Nunc nunc lorem, rhoncus et, rutrum ac, fermentum ut, tortor. Sed rhoncus.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'pellentesque cursus. Proin vitae nulla. Vivamus in ipsum. Etiam mi. Nam malesuada purus in sem. Sed eget elit vel erat laoreet'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow P id='target'",
           "rect": [8, 124, 784, 39],
           "reason": "invalidate paint rectangle"
@@ -57,13 +17,43 @@
           "reason": "full"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse placerat. Morbi tristique. Mauris eu lacus sed felis'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Quisque enim metus, luctus tincidunt, vestibulum eu, vestibulum eu, libero. Mauris sagittis aliquam nunc. Nullam pharetra molestie'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Quisque enim metus, luctus tincidunt, vestibulum eu, vestibulum eu, libero. Mauris sagittis aliquam nunc. Nullam pharetra molestie'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'eros. Donec tempus purus ut ligula. Phasellus non nisl. Etiam eu mauris. Curabitur a velit'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'eros. Donec tempus purus ut ligula. Phasellus non nisl. Etiam eu mauris. Curabitur a velit.'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'feugiat. Phasellus mollis pulvinar mi. Etiam ut neque sed eros egestas laoreet. Vestibulum ullamcorper, nulla non feugiat molestie, mi'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'lorem bibendum leo, ac gravida orci nunc nec nulla. Nunc nunc lorem, rhoncus et, rutrum ac, fermentum ut, tortor. Sed rhoncus.'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'pellentesque cursus. Proin vitae nulla. Vivamus in ipsum. Etiam mi. Nam malesuada purus in sem. Sed eget elit vel erat laoreet'",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

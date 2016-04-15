@@ -7,8 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Reset'",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutButton BUTTON",
+          "rect": [7, 7, 52, 24],
           "reason": "full"
         },
         {
@@ -17,18 +17,16 @@
           "reason": "full"
         },
         {
-          "object": "LayoutButton BUTTON",
-          "rect": [7, 7, 52, 24],
-          "reason": "full"
-        },
-        {
           "object": "LayoutText #text",
           "rect": [16, 11, 34, 16],
           "reason": "full"
         },
         {
+          "object": "InlineTextBox 'Reset'",
+          "reason": "full"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

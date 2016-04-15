@@ -7,29 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Test'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Test'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [8, 8, 400, 100],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutSVGInlineText #text",
           "rect": [8, 58, 400, 100],
           "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [8, 8, 400, 100],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -38,22 +18,38 @@
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [8, 8, 400, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGText text",
           "rect": [8, 58, 400, 100],
           "reason": "location change"
         },
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [8, 8, 400, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [8, 8, 400, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [8, 8, 400, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Test'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Test'",
+          "reason": "location change"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

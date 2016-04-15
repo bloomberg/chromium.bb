@@ -7,38 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'a'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'b'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
           "object": "LayoutBR BR",
           "rect": [24, 8, 16, 16],
           "reason": "selection"
         },
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='container'",
-          "rect": [0, 0, 0, 0],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutText #text",
+          "rect": [8, 24, 16, 16],
           "reason": "selection"
         },
         {
@@ -47,8 +22,27 @@
           "reason": "selection"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [8, 24, 16, 16],
+          "object": "InlineTextBox '\n'",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'a'",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'b'",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='container'",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
           "reason": "selection"
         }
       ]

@@ -7,214 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'I could'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'I could'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'Word,'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Word,'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'about all the stuff'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'about all the stuff'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'after'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'after'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'more words.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'more words.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'that comes'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'that comes'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'the break.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'the break.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox 'words,'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'words,'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'write a book'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'write a book'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [0, 0, 0, 0],
-          "reason": "location change"
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 60, 784, 262],
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
@@ -227,23 +22,18 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 60, 784, 262],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [8, 150, 10, 100],
+          "object": "LayoutText #text",
+          "rect": [8, 250, 113, 18],
           "reason": "location change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 60, 40, 18],
-          "reason": "layoutObject insertion"
+          "rect": [8, 150, 113, 18],
+          "reason": "location change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 78, 44, 18],
+          "rect": [8, 132, 80, 18],
           "reason": "layoutObject insertion"
         },
         {
@@ -253,22 +43,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 114, 45, 18],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 132, 80, 18],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 150, 113, 18],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 250, 113, 18],
+          "rect": [8, 268, 69, 18],
           "reason": "location change"
         },
         {
@@ -278,17 +53,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 268, 69, 18],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 186, 30, 18],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 286, 30, 18],
+          "rect": [8, 304, 64, 18],
           "reason": "location change"
         },
         {
@@ -298,62 +63,244 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 304, 64, 18],
+          "rect": [8, 114, 45, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 78, 44, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 60, 40, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 286, 30, 18],
           "reason": "location change"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [8, 186, 30, 18],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [8, 150, 10, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'I could'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'I could'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'Word,'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Word,'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'about all the stuff'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'about all the stuff'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'after'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'after'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'more words.'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'more words.'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'that comes'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'that comes'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'the break.'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'the break.'",
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'words,'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'words,'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'write a book'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'write a book'",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

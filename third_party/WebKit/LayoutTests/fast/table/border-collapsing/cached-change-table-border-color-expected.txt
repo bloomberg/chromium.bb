@@ -13,7 +13,6 @@
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

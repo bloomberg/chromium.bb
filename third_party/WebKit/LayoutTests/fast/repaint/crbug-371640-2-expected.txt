@@ -13,11 +13,6 @@
         },
         {
           "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
-          "rect": [88, 84, 260, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
           "rect": [348, 84, 260, 100],
           "reason": "location change"
         },
@@ -25,21 +20,6 @@
           "object": "LayoutBlockFlow (floating) DIV id='node' class='outer'",
           "rect": [348, 84, 260, 100],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
-          "rect": [88, 84, 100, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
-          "rect": [348, 84, 100, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
-          "rect": [88, 84, 260, 100],
-          "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
@@ -52,13 +32,18 @@
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
+          "rect": [88, 84, 260, 100],
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='keep' class='item'",
-          "rect": [88, 84, 100, 100],
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
+          "rect": [88, 84, 260, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
+          "rect": [348, 84, 100, 100],
           "reason": "location change"
         },
         {
@@ -70,6 +55,20 @@
           "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
           "rect": [348, 84, 100, 100],
           "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
+          "rect": [88, 84, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='keep' class='item'",
+          "rect": [88, 84, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "reason": "location change"
         }
       ]
     }

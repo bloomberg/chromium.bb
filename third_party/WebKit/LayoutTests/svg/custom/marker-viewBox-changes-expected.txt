@@ -17,9 +17,9 @@
           "reason": "full"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [2, 0, 8, 10],
-          "reason": "incremental"
+          "object": "LayoutSVGRoot svg",
+          "rect": [90, 95, 98, 98],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -27,14 +27,13 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutSVGResourceMarker marker id='markerStart'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
+          "object": "LayoutSVGRect rect",
+          "rect": [2, 0, 8, 10],
+          "reason": "incremental"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [90, 95, 98, 98],
-          "reason": "bounds change"
+          "object": "LayoutSVGResourceMarker marker id='markerStart'",
+          "reason": "full"
         }
       ]
     }

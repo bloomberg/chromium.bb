@@ -7,38 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox ' images.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox ' no '",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox ' passes if '",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox ' text is invalidated and '",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'This test '",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox 'only'",
-          "rect": [0, 0, 0, 0],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutText #text",
-          "rect": [8, 8, 59, 18],
+          "rect": [167, 8, 150, 18],
           "reason": "style change"
         },
         {
@@ -48,12 +18,17 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [139, 8, 29, 18],
+          "rect": [8, 8, 59, 18],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [167, 8, 150, 18],
+          "rect": [360, 8, 54, 18],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [139, 8, 29, 18],
           "reason": "style change"
         },
         {
@@ -62,8 +37,27 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [360, 8, 54, 18],
+          "object": "InlineTextBox ' images.'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox ' no '",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox ' passes if '",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox ' text is invalidated and '",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'This test '",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'only'",
           "reason": "style change"
         }
       ]

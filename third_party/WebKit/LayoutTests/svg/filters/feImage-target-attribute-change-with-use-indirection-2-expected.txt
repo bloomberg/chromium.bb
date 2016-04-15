@@ -7,14 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGContainer use id='use'",
-          "rect": [0, 0, 100, 100],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 110, 110],
           "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer use id='use'",
+          "rect": [0, 0, 100, 100],
+          "reason": "location change"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
@@ -23,7 +23,6 @@
         },
         {
           "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage'",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

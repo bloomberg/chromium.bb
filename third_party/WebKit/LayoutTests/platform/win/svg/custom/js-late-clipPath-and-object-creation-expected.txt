@@ -7,24 +7,29 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Clipped. INVISIBLE.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "InlineTextBox 'Clipped. INVISIBLE.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Clipped. INVISIBLE.'",
-          "rect": [0, 0, 0, 0],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutSVGContainer g id='content'",
           "rect": [16, 40, 784, 168],
           "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [16, 40, 784, 168],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRoot svg id='svg-root'",
+          "rect": [16, 40, 784, 168],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [16, 40, 784, 168],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [16, 40, 784, 168],
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGContainer g id='content'",
@@ -33,11 +38,11 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [16, 40, 784, 168],
-          "reason": "layoutObject insertion"
+          "rect": [334, 40, 466, 168],
+          "reason": "incremental"
         },
         {
-          "object": "LayoutSVGInlineText #text",
+          "object": "LayoutSVGRoot svg id='svg-root'",
           "rect": [334, 40, 466, 168],
           "reason": "incremental"
         },
@@ -47,43 +52,31 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGResourceClipper clipPath id='dynClip'",
-          "rect": [0, 0, 0, 0],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRoot svg id='svg-root'",
-          "rect": [16, 40, 784, 168],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg id='svg-root'",
-          "rect": [334, 40, 466, 168],
+          "object": "InlineTextBox 'Clipped. INVISIBLE.'",
           "reason": "incremental"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [16, 40, 784, 168],
+          "object": "InlineTextBox 'Clipped. INVISIBLE.'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Clipped. INVISIBLE.'",
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [16, 40, 784, 168],
-          "reason": "style change"
+          "object": "LayoutSVGResourceClipper clipPath id='dynClip'",
+          "reason": "layoutObject insertion"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
           "reason": "full"
         }
       ]

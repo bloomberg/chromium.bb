@@ -7,9 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [100, 0, 100, 200],
-          "reason": "incremental"
+          "object": "LayoutSVGViewportContainer svg id='inner'",
+          "rect": [0, 0, 200, 200],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -17,9 +17,9 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutSVGViewportContainer svg id='inner'",
-          "rect": [0, 0, 200, 200],
-          "reason": "full"
+          "object": "LayoutSVGRect rect",
+          "rect": [100, 0, 100, 200],
+          "reason": "incremental"
         }
       ]
     }
