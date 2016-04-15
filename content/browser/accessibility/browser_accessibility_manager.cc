@@ -833,14 +833,11 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
 }
 
 BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager() {
-  if (!GetRoot())
-    return nullptr;
-  int parent_tree_id = GetTreeData().parent_tree_id;
-  BrowserAccessibilityManager* parent_manager =
-      BrowserAccessibilityManager::FromID(parent_tree_id);
-  if (parent_manager)
-    return parent_manager->GetRootManager();
-  return this;
+  BrowserAccessibility* parent = GetParentNodeFromParentTree();
+  if (!parent)
+    return this;
+
+  return parent->manager()->GetRootManager();
 }
 
 BrowserAccessibilityDelegate*

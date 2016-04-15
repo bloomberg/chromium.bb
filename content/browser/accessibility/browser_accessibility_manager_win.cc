@@ -89,7 +89,8 @@ IAccessible* BrowserAccessibilityManagerWin::GetParentIAccessible() {
 
 void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
     DWORD event, BrowserAccessibility* node) {
-  BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
+  BrowserAccessibilityDelegate* delegate =
+      node->manager()->GetDelegateFromRootManager();
   if (!delegate) {
     // This line and other LOG(WARNING) lines are temporary, to debug
     // flaky failures in DumpAccessibilityEvent* tests.

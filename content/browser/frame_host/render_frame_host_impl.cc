@@ -679,6 +679,14 @@ void RenderFrameHostImpl::AccessibilityFatalError() {
 
 gfx::AcceleratedWidget
     RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
+  // Only the main frame's current frame host is connected to the native
+  // widget tree for accessibility, so return null if this is queried on
+  // any other frame.
+  if (frame_tree_node()->parent() ||
+      frame_tree_node()->current_frame_host() != this) {
+    return gfx::kNullAcceleratedWidget;
+  }
+
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetWidget()->GetView());
   if (view)
