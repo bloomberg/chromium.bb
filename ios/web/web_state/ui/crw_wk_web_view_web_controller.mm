@@ -29,7 +29,6 @@
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
-#include "ios/web/web_state/blocked_popup_info.h"
 #import "ios/web/web_state/error_translation_util.h"
 #include "ios/web/web_state/frame_info.h"
 #import "ios/web/web_state/js/crw_js_post_request_loader.h"
@@ -111,22 +110,6 @@
 // Returns YES if the given WKBackForwardListItem is valid to use for
 // navigation.
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item;
-
-// Asynchronously returns the referrer policy for the current page.
-- (void)queryPageReferrerPolicy:(void(^)(NSString*))responseHandler;
-
-// Informs CWRWebDelegate that CRWWebController has detected and blocked a
-// popup.
-- (void)didBlockPopupWithURL:(GURL)popupURL
-                   sourceURL:(GURL)sourceURL
-              referrerPolicy:(const std::string&)referrerPolicyString;
-
-// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
-// with NSURLSessionAuthChallengeDisposition and credentials.
-+ (void)processHTTPAuthForUser:(NSString*)user
-                      password:(NSString*)password
-             completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
-                                         NSURLCredential*))completionHandler;
 
 // Returns YES if a KVO change to |newURL| could be a 'navigation' within the
 // document (hash change, pushState/replaceState, etc.). This should only be
@@ -486,109 +469,6 @@
   SEL rendererCrashSelector = @selector(webControllerWebProcessDidCrash:);
   if ([self.delegate respondsToSelector:rendererCrashSelector])
     [self.delegate webControllerWebProcessDidCrash:self];
-}
-
-- (void)queryPageReferrerPolicy:(void(^)(NSString*))responseHandler {
-  DCHECK(responseHandler);
-  [self evaluateJavaScript:@"__gCrWeb.getPageReferrerPolicy()"
-       stringResultHandler:^(NSString* referrer, NSError* error) {
-      DCHECK_NE(error.code, WKErrorJavaScriptExceptionOccurred);
-      responseHandler(!error ? referrer : nil);
-  }];
-}
-
-- (void)didBlockPopupWithURL:(GURL)popupURL
-                   sourceURL:(GURL)sourceURL
-              referrerPolicy:(const std::string&)referrerPolicyString {
-  web::ReferrerPolicy referrerPolicy =
-      [self referrerPolicyFromString:referrerPolicyString];
-  web::Referrer referrer(sourceURL, referrerPolicy);
-  NSString* const kWindowName = @"";  // obsoleted
-  base::WeakNSObject<CRWWKWebViewWebController> weakSelf(self);
-  void(^showPopupHandler)() = ^{
-      // On Desktop cross-window comunication is not supported for unblocked
-      // popups; so it's ok to create a new independent page.
-      CRWWebController* child = [[weakSelf delegate]
-          webPageOrderedOpen:popupURL
-                    referrer:referrer
-                  windowName:kWindowName
-                inBackground:NO];
-      DCHECK(!child || child.sessionController.openedByDOM);
-  };
-
-  web::BlockedPopupInfo info(popupURL, referrer, kWindowName, showPopupHandler);
-  [self.delegate webController:self didBlockPopup:info];
-}
-
-- (void)didBlockPopupWithURL:(GURL)popupURL sourceURL:(GURL)sourceURL {
-  if (![self.delegate respondsToSelector:
-      @selector(webController:didBlockPopup:)]) {
-    return;
-  }
-
-  base::WeakNSObject<CRWWKWebViewWebController> weakSelf(self);
-  dispatch_async(dispatch_get_main_queue(), ^{
-      [self queryPageReferrerPolicy:^(NSString* policy) {
-          [weakSelf didBlockPopupWithURL:popupURL
-                               sourceURL:sourceURL
-                          referrerPolicy:base::SysNSStringToUTF8(policy)];
-      }];
-  });
-}
-
-- (void)handleHTTPAuthForChallenge:(NSURLAuthenticationChallenge*)challenge
-                 completionHandler:
-                     (void (^)(NSURLSessionAuthChallengeDisposition,
-                               NSURLCredential*))completionHandler {
-  NSURLProtectionSpace* space = challenge.protectionSpace;
-  DCHECK(
-      [space.authenticationMethod isEqual:NSURLAuthenticationMethodHTTPBasic] ||
-      [space.authenticationMethod isEqual:NSURLAuthenticationMethodNTLM] ||
-      [space.authenticationMethod isEqual:NSURLAuthenticationMethodHTTPDigest]);
-
-  if (self.shouldSuppressDialogs) {
-    [self didSuppressDialog];
-    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
-    return;
-  }
-
-  SEL selector = @selector(webController:
-         runAuthDialogForProtectionSpace:
-                      proposedCredential:
-                       completionHandler:);
-  if (![self.UIDelegate respondsToSelector:selector]) {
-    // Embedder does not support HTTP Authentication.
-    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
-    return;
-  }
-
-  [self.UIDelegate webController:self
-      runAuthDialogForProtectionSpace:space
-                   proposedCredential:challenge.proposedCredential
-                    completionHandler:^(NSString* user, NSString* password) {
-                      [CRWWKWebViewWebController
-                          processHTTPAuthForUser:user
-                                        password:password
-                               completionHandler:completionHandler];
-                    }];
-}
-
-+ (void)processHTTPAuthForUser:(NSString*)user
-                      password:(NSString*)password
-             completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
-                                         NSURLCredential*))completionHandler {
-  DCHECK_EQ(user == nil, password == nil);
-  if (!user || !password) {
-    // Embedder cancelled authentication.
-    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
-    return;
-  }
-  completionHandler(
-      NSURLSessionAuthChallengeUseCredential,
-      [NSURLCredential
-          credentialWithUser:user
-                    password:password
-                 persistence:NSURLCredentialPersistenceForSession]);
 }
 
 - (BOOL)isKVOChangePotentialSameDocumentNavigationToURL:(const GURL&)newURL {

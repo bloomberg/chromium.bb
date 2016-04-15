@@ -180,18 +180,8 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Called when web controller receives a new message from the web page.
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
 
-// Convenience method to inform CWRWebDelegate about a blocked popup.
-- (void)didBlockPopupWithURL:(GURL)popupURL sourceURL:(GURL)sourceURL;
-
 // Called when a load ends in an SSL error and certificate chain.
 - (void)handleSSLCertError:(NSError*)error;
-
-// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
-// with NSURLSessionAuthChallengeDisposition and credentials.
-- (void)handleHTTPAuthForChallenge:(NSURLAuthenticationChallenge*)challenge
-                 completionHandler:
-                     (void (^)(NSURLSessionAuthChallengeDisposition,
-                               NSURLCredential*))completionHandler;
 
 #pragma mark - Optional methods for subclasses
 // Subclasses may overwrite methods in this section.
@@ -419,17 +409,9 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // non-document-changing URL change.
 - (void)didFinishNavigation;
 
-// Called when a JavaScript dialog, HTTP authentication dialog or window.open
-// call has been suppressed.
-- (void)didSuppressDialog;
-
 // Returns the referrer policy for the given referrer policy string (as reported
 // from JS).
 - (web::ReferrerPolicy)referrerPolicyFromString:(const std::string&)policy;
-
-// Returns YES if the popup should be blocked, NO otherwise.
-- (BOOL)shouldBlockPopupWithURL:(const GURL&)popupURL
-                      sourceURL:(const GURL&)sourceURL;
 
 // Acts on a single message from the JS object, parsed from JSON into a
 // DictionaryValue. Returns NO if the format for the message was invalid.

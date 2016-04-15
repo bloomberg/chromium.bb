@@ -488,6 +488,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)cancelAllTouches;
 // Returns the referrer for the current page.
 - (web::Referrer)currentReferrer;
+// Asynchronously returns the referrer policy for the current page.
+- (void)queryPageReferrerPolicy:(void (^)(NSString*))responseHandler;
 // Presents an error to the user because the CRWWebController cannot verify the
 // URL of the current page.
 - (void)presentSpoofingError;
@@ -522,6 +524,16 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)urlTriggersNativeAppLaunch:(const GURL&)URL
                          sourceURL:(const GURL&)sourceURL
                        linkClicked:(BOOL)linkClicked;
+// Called when a JavaScript dialog, HTTP authentication dialog or window.open
+// call has been suppressed.
+- (void)didSuppressDialog;
+// Convenience method to inform CWRWebDelegate about a blocked popup.
+- (void)didBlockPopupWithURL:(GURL)popupURL sourceURL:(GURL)sourceURL;
+// Informs CWRWebDelegate that CRWWebController has detected and blocked a
+// popup.
+- (void)didBlockPopupWithURL:(GURL)popupURL
+                   sourceURL:(GURL)sourceURL
+              referrerPolicy:(const std::string&)referrerPolicyString;
 // Best guess as to whether the request is a main frame request. This method
 // should not be assumed correct for security evaluations, as it is possible to
 // spoof.
@@ -533,6 +545,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Called when a page updates its history stack using pushState or replaceState.
 - (void)didUpdateHistoryStateWithPageURL:(const GURL&)url;
 
+// Returns YES if the popup should be blocked, NO otherwise.
+- (BOOL)shouldBlockPopupWithURL:(const GURL&)popupURL
+                      sourceURL:(const GURL&)sourceURL;
 // Tries to open a popup with the given new window information.
 - (void)openPopupWithInfo:(const web::NewWindowInfo&)windowInfo;
 
@@ -543,6 +558,18 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                   certStatus:(net::CertStatus)certStatus
            completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
                                        NSURLCredential*))completionHandler;
+// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
+// with NSURLSessionAuthChallengeDisposition and credentials.
+- (void)handleHTTPAuthForChallenge:(NSURLAuthenticationChallenge*)challenge
+                 completionHandler:
+                     (void (^)(NSURLSessionAuthChallengeDisposition,
+                               NSURLCredential*))completionHandler;
+// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
+// with NSURLSessionAuthChallengeDisposition and credentials.
++ (void)processHTTPAuthForUser:(NSString*)user
+                      password:(NSString*)password
+             completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
+                                         NSURLCredential*))completionHandler;
 
 // Handlers for JavaScript messages. |message| contains a JavaScript command and
 // data relevant to the message, and |context| contains contextual information
@@ -1185,6 +1212,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // advance and use that instead. https://crbug.com/227769.
   return web::Referrer(GURL(base::SysNSStringToUTF8(referrerString)),
                        web::ReferrerPolicyAlways);
+}
+
+- (void)queryPageReferrerPolicy:(void (^)(NSString*))responseHandler {
+  DCHECK(responseHandler);
+  [self evaluateJavaScript:@"__gCrWeb.getPageReferrerPolicy()"
+       stringResultHandler:^(NSString* referrer, NSError* error) {
+         DCHECK_NE(error.code, WKErrorJavaScriptExceptionOccurred);
+         responseHandler(!error ? referrer : nil);
+       }];
 }
 
 - (void)pushStateWithPageURL:(const GURL&)pageURL
@@ -3408,6 +3444,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 #pragma mark -
 #pragma mark Popup handling
 
+- (BOOL)shouldBlockPopupWithURL:(const GURL&)popupURL
+                      sourceURL:(const GURL&)sourceURL {
+  if (![_delegate respondsToSelector:@selector(webController:
+                                         shouldBlockPopupWithURL:
+                                                       sourceURL:)]) {
+    return NO;
+  }
+  return [_delegate webController:self
+          shouldBlockPopupWithURL:popupURL
+                        sourceURL:sourceURL];
+}
+
 - (void)openPopupWithInfo:(const web::NewWindowInfo&)windowInfo {
   const GURL url(windowInfo.url);
   const GURL currentURL([self currentNavigationURL]);
@@ -3473,6 +3521,61 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     }
   }
   completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+}
+
+- (void)handleHTTPAuthForChallenge:(NSURLAuthenticationChallenge*)challenge
+                 completionHandler:
+                     (void (^)(NSURLSessionAuthChallengeDisposition,
+                               NSURLCredential*))completionHandler {
+  NSURLProtectionSpace* space = challenge.protectionSpace;
+  DCHECK(
+      [space.authenticationMethod isEqual:NSURLAuthenticationMethodHTTPBasic] ||
+      [space.authenticationMethod isEqual:NSURLAuthenticationMethodNTLM] ||
+      [space.authenticationMethod isEqual:NSURLAuthenticationMethodHTTPDigest]);
+
+  if (self.shouldSuppressDialogs) {
+    [self didSuppressDialog];
+    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+    return;
+  }
+
+  SEL selector = @selector(webController:
+         runAuthDialogForProtectionSpace:
+                      proposedCredential:
+                       completionHandler:);
+  if (![self.UIDelegate respondsToSelector:selector]) {
+    // Embedder does not support HTTP Authentication.
+    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+    return;
+  }
+
+  [self.UIDelegate webController:self
+      runAuthDialogForProtectionSpace:space
+                   proposedCredential:challenge.proposedCredential
+                    completionHandler:^(NSString* user, NSString* password) {
+                      [CRWWKWebViewWebController
+                          processHTTPAuthForUser:user
+                                        password:password
+                               completionHandler:completionHandler];
+                    }];
+}
+
++ (void)processHTTPAuthForUser:(NSString*)user
+                      password:(NSString*)password
+             completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
+                                         NSURLCredential*))completionHandler {
+  DCHECK_EQ(user == nil, password == nil);
+  if (!user || !password) {
+    // Embedder cancelled authentication.
+    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+    return;
+  }
+  completionHandler(
+      NSURLSessionAuthChallengeUseCredential,
+      [NSURLCredential
+          credentialWithUser:user
+                    password:password
+                 persistence:NSURLCredentialPersistenceForSession]);
 }
 
 #pragma mark -
@@ -4012,6 +4115,45 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [_delegate webControllerDidSuppressDialog:self];
 }
 
+- (void)didBlockPopupWithURL:(GURL)popupURL
+                   sourceURL:(GURL)sourceURL
+              referrerPolicy:(const std::string&)referrerPolicyString {
+  web::ReferrerPolicy referrerPolicy =
+      [self referrerPolicyFromString:referrerPolicyString];
+  web::Referrer referrer(sourceURL, referrerPolicy);
+  NSString* const kWindowName = @"";  // obsoleted
+  base::WeakNSObject<CRWWebController> weakSelf(self);
+  void (^showPopupHandler)() = ^{
+    // On Desktop cross-window comunication is not supported for unblocked
+    // popups; so it's ok to create a new independent page.
+    CRWWebController* child =
+        [[weakSelf delegate] webPageOrderedOpen:popupURL
+                                       referrer:referrer
+                                     windowName:kWindowName
+                                   inBackground:NO];
+    DCHECK(!child || child.sessionController.openedByDOM);
+  };
+
+  web::BlockedPopupInfo info(popupURL, referrer, kWindowName, showPopupHandler);
+  [self.delegate webController:self didBlockPopup:info];
+}
+
+- (void)didBlockPopupWithURL:(GURL)popupURL sourceURL:(GURL)sourceURL {
+  if (![self.delegate
+          respondsToSelector:@selector(webController:didBlockPopup:)]) {
+    return;
+  }
+
+  base::WeakNSObject<CRWWebController> weakSelf(self);
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [self queryPageReferrerPolicy:^(NSString* policy) {
+      [weakSelf didBlockPopupWithURL:popupURL
+                           sourceURL:sourceURL
+                      referrerPolicy:base::SysNSStringToUTF8(policy)];
+    }];
+  });
+}
+
 - (BOOL)isPutativeMainFrameRequest:(NSURLRequest*)request
                        targetFrame:(const web::FrameInfo*)targetFrame {
   // Determine whether the request is for the main frame using frame info if
@@ -4079,18 +4221,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (![_delegate respondsToSelector:@selector(headerHeightForWebController:)])
     return 0.0f;
   return [_delegate headerHeightForWebController:self];
-}
-
-- (BOOL)shouldBlockPopupWithURL:(const GURL&)popupURL
-                      sourceURL:(const GURL&)sourceURL {
-  if (![_delegate respondsToSelector:@selector(webController:
-                                         shouldBlockPopupWithURL:
-                                                       sourceURL:)]) {
-    return NO;
-  }
-  return [_delegate webController:self
-          shouldBlockPopupWithURL:popupURL
-                        sourceURL:sourceURL];
 }
 
 - (void)didUpdateHistoryStateWithPageURL:(const GURL&)url {
