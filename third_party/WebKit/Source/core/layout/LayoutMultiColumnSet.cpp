@@ -342,6 +342,20 @@ void LayoutMultiColumnSet::endFlow(LayoutUnit offsetInFlowThread)
     m_fragmentainerGroups.last().setLogicalBottomInFlowThread(offsetInFlowThread);
 }
 
+void LayoutMultiColumnSet::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
+{
+    LayoutBlockFlow::styleDidChange(diff, oldStyle);
+
+    // column-rule is specified on the parent (the multicol container) of this object, but it's the
+    // column sets that are in charge of painting them. A column rule is pretty much like any other
+    // box decoration, like borders. We need to say that we have box decorations here, so that the
+    // columnn set is invalidated when it gets laid out. We cannot check here whether the multicol
+    // container actually has a visible column rule or not, because we may not have been inserted
+    // into the tree yet. Painting a column set is cheap anyway, because the only thing it can
+    // paint is the column rule, while actual multicol content is handled by the flow thread.
+    setHasBoxDecorationBackground(true);
+}
+
 void LayoutMultiColumnSet::layout()
 {
     if (recalculateColumnHeight())

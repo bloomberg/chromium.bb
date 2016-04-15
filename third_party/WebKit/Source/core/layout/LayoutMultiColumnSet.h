@@ -148,6 +148,7 @@ public:
     // set or spanner.
     void endFlow(LayoutUnit offsetInFlowThread);
 
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void layout() override;
 
     void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const final;
