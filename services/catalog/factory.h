@@ -31,6 +31,7 @@ namespace catalog {
 
 class Catalog;
 class ManifestProvider;
+class Reader;
 class Store;
 
 // Creates and owns an instance of the catalog. Exposes a ShellClientPtr that
@@ -66,16 +67,19 @@ class Factory : public shell::ShellClient,
 
   Catalog* GetCatalogForUserId(const std::string& user_id);
 
+  void SystemPackageDirScanned();
+
   base::TaskRunner* const file_task_runner_;
   scoped_ptr<Store> store_;
-  ManifestProvider* const manifest_provider_;
 
   shell::mojom::ShellClientPtr shell_client_;
   scoped_ptr<shell::ShellConnection> shell_connection_;
 
   std::map<std::string, scoped_ptr<Catalog>> catalogs_;
 
+  scoped_ptr<Reader> system_reader_;
   EntryCache system_catalog_;
+  bool loaded_ = false;
 
   base::WeakPtrFactory<Factory> weak_factory_;
 

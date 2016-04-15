@@ -20,31 +20,23 @@
 
 namespace catalog {
 
-class ManifestProvider;
+class Reader;
 class Store;
-
-struct ReadManifestResult {
-  ReadManifestResult();
-  ~ReadManifestResult();
-  shell::mojom::ResolveResultPtr resolve_result;
-  scoped_ptr<Entry> catalog_entry;
-  base::FilePath package_dir;
-};
 
 class Catalog : public mojom::Resolver,
                 public shell::mojom::ShellResolver,
                 public mojom::Catalog {
  public:
   // |manifest_provider| may be null.
-  Catalog(scoped_ptr<Store> store,
-          base::TaskRunner* file_task_runner,
-          EntryCache* system_catalog,
-          ManifestProvider* manifest_provider);
+  Catalog(scoped_ptr<Store> store, Reader* system_reader);
   ~Catalog() override;
 
   void BindResolver(mojom::ResolverRequest request);
   void BindShellResolver(shell::mojom::ShellResolverRequest request);
   void BindCatalog(mojom::CatalogRequest request);
+
+  // Called when |cache| has been populated by a directory scan.
+  void CacheReady(EntryCache* cache);
 
  private:
   using MojoNameAliasMap =
@@ -71,39 +63,33 @@ class Catalog : public mojom::Resolver,
   void DeserializeCatalog();
   void SerializeCatalog();
 
-  // Receives the result of manifest parsing on |file_task_runner_|, may be
-  // received after the catalog object that issued the request is destroyed.
+  // Receives the result of manifest parsing, may be received after the
+  // catalog object that issued the request is destroyed.
   static void OnReadManifest(base::WeakPtr<Catalog> catalog,
-                             const std::string& name,
+                             const std::string& mojo_name,
                              const ResolveMojoNameCallback& callback,
-                             scoped_ptr<ReadManifestResult> result);
-
-  // Populate the catalog with data from |entry|, and pass it to the client
-  // via callback.
-  void AddEntryToCatalog(scoped_ptr<Entry> entry, bool is_system_catalog);
-
-  ManifestProvider* const manifest_provider_;
-
-  // Directory that contains packages and executables visible to all users.
-  base::FilePath system_package_dir_;
-  // Directory that contains packages visible to this Catalog instance's user.
-  base::FilePath user_package_dir_;
+                             shell::mojom::ResolveResultPtr result);
 
   // User-specific persistent storage of package manifests and other settings.
   scoped_ptr<Store> store_;
-
-  // Task runner for performing file operations.
-  base::TaskRunner* const file_task_runner_;
 
   mojo::BindingSet<mojom::Resolver> resolver_bindings_;
   mojo::BindingSet<shell::mojom::ShellResolver> shell_resolver_bindings_;
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;
 
-  // The current user's packages, constructed from Store/package manifests.
-  EntryCache user_catalog_;
-  // Same as above, but for system-level (visible to all-users) packages and
-  // executables.
-  EntryCache* system_catalog_;
+  Reader* system_reader_;
+
+  // A map of name -> Entry data structure for system-level packages (i.e. those
+  // that are visible to all users).
+  // TODO(beng): eventually add per-user applications.
+  EntryCache* system_catalog_ = nullptr;
+
+  // We only bind requests for these interfaces once the catalog has been
+  // populated. These data structures queue requests until that happens.
+  std::vector<mojom::ResolverRequest> pending_resolver_requests_;
+  std::vector<shell::mojom::ShellResolverRequest>
+      pending_shell_resolver_requests_;
+  std::vector<mojom::CatalogRequest> pending_catalog_requests_;
 
   base::WeakPtrFactory<Catalog> weak_factory_;
 
