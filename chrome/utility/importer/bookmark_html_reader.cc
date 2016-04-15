@@ -91,6 +91,20 @@ void DataURLToFaviconUsage(const GURL& link_url,
 
 namespace bookmark_html_reader {
 
+static std::string stripDt(const std::string& lineDt) {
+  // Remove "<DT>" if the line starts with "<DT>".  This may not occur if
+  // "<DT>" was on the previous line.  Liberally accept entries that do not
+  // have an opening "<DT>" at all.
+  std::string line = lineDt;
+  static const char kDtTag[] = "<DT>";
+  if (base::StartsWith(line, kDtTag,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    line.erase(0, arraysize(kDtTag) - 1);
+    base::TrimString(line, " ", &line);
+  }
+  return line;
+}
+
 void ImportBookmarksFile(
     const base::Callback<bool(void)>& cancellation_callback,
     const base::Callback<bool(const GURL&)>& valid_url_callback,
@@ -298,15 +312,17 @@ bool ParseCharsetFromLine(const std::string& line, std::string* charset) {
   return false;
 }
 
-bool ParseFolderNameFromLine(const std::string& line,
+bool ParseFolderNameFromLine(const std::string& lineDt,
                              const std::string& charset,
                              base::string16* folder_name,
                              bool* is_toolbar_folder,
                              base::Time* add_date) {
-  const char kFolderOpen[] = "<DT><H3";
+  const char kFolderOpen[] = "<H3";
   const char kFolderClose[] = "</H3>";
   const char kToolbarFolderAttribute[] = "PERSONAL_TOOLBAR_FOLDER";
   const char kAddDateAttribute[] = "ADD_DATE";
+
+  std::string line = stripDt(lineDt);
 
   if (!base::StartsWith(line, kFolderOpen, base::CompareCase::SENSITIVE))
     return false;
@@ -343,7 +359,7 @@ bool ParseFolderNameFromLine(const std::string& line,
   return true;
 }
 
-bool ParseBookmarkFromLine(const std::string& line,
+bool ParseBookmarkFromLine(const std::string& lineDt,
                            const std::string& charset,
                            base::string16* title,
                            GURL* url,
@@ -351,7 +367,7 @@ bool ParseBookmarkFromLine(const std::string& line,
                            base::string16* shortcut,
                            base::Time* add_date,
                            base::string16* post_data) {
-  const char kItemOpen[] = "<DT><A";
+  const char kItemOpen[] = "<A";
   const char kItemClose[] = "</A>";
   const char kFeedURLAttribute[] = "FEEDURL";
   const char kHrefAttribute[] = "HREF";
@@ -360,6 +376,7 @@ bool ParseBookmarkFromLine(const std::string& line,
   const char kAddDateAttribute[] = "ADD_DATE";
   const char kPostDataAttribute[] = "POST_DATA";
 
+  std::string line = stripDt(lineDt);
   title->clear();
   *url = GURL();
   *favicon = GURL();
@@ -430,15 +447,16 @@ bool ParseBookmarkFromLine(const std::string& line,
   return true;
 }
 
-bool ParseMinimumBookmarkFromLine(const std::string& line,
+bool ParseMinimumBookmarkFromLine(const std::string& lineDt,
                                   const std::string& charset,
                                   base::string16* title,
                                   GURL* url) {
-  const char kItemOpen[] = "<DT><A";
+  const char kItemOpen[] = "<A";
   const char kItemClose[] = "</";
   const char kHrefAttributeUpper[] = "HREF";
   const char kHrefAttributeLower[] = "href";
 
+  std::string line = stripDt(lineDt);
   title->clear();
   *url = GURL();
 
