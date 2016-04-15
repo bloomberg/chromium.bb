@@ -10,7 +10,7 @@ from common import chrome_proxy_measurements as measurements
 from common.chrome_proxy_measurements import ChromeProxyValidation
 from integration_tests import chrome_proxy_metrics as metrics
 from metrics import loading
-from telemetry.core import exceptions
+from telemetry.core import exceptions, util
 from telemetry.page import page_test
 
 
@@ -278,6 +278,94 @@ class ChromeProxyLoFi(ChromeProxyValidation):
 
   def AddResults(self, tab, results):
     self._metrics.AddResultsForLoFi(tab, results)
+
+class ChromeProxyCacheLoFiDisabled(ChromeProxyValidation):
+  """
+  Correctness measurement for Lo-Fi placeholder is not loaded from cache when a
+  page is reloaded with LoFi disabled. First a test page is opened with LoFi and
+  chrome proxy enabled. This allows Chrome to cache the LoFi placeholder image.
+  The browser is restarted with LoFi disabled and the same test page is loaded.
+  This second page load should not pick the LoFi placeholder from cache and
+  original image should be loaded. This test should be run with
+  --profile-type=default command line for the same user profile and cache to be
+  used across the two page loads.
+  """
+
+  def __init__(self):
+    super(ChromeProxyCacheLoFiDisabled, self).__init__(
+            restart_after_each_page=True,
+            metrics=metrics.ChromeProxyMetric(),
+            clear_cache_before_each_run=False)
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForLoFiCache(tab, results, self._is_lo_fi_enabled)
+
+  def WillStartBrowser(self, platform):
+    super(ChromeProxyCacheLoFiDisabled, self).WillStartBrowser(platform)
+    if not self._page:
+      # First page load, enable LoFi and chrome proxy.
+      self.options.AppendExtraBrowserArgs(
+            '--data-reduction-proxy-lo-fi=always-on')
+      self._is_lo_fi_enabled = True
+    else:
+      # Second page load, disable LoFi. Chrome proxy is still enabled.
+      self.options.browser_options.extra_browser_args.discard(
+            '--data-reduction-proxy-lo-fi=always-on')
+      self._is_lo_fi_enabled = False
+
+  def WillNavigateToPage(self, page, tab):
+    super(ChromeProxyCacheLoFiDisabled, self).WillNavigateToPage(page, tab)
+    if self._is_lo_fi_enabled:
+      # Clear cache for the first page to pick LoFi image from server.
+      tab.ClearCache(force=True)
+
+  def DidNavigateToPage(self, page, tab):
+    if not self._is_lo_fi_enabled:
+      tab.ExecuteJavaScript('window.location.reload()')
+      util.WaitFor(tab.HasReachedQuiescence, 3)
+
+class ChromeProxyCacheProxyDisabled(ChromeProxyValidation):
+  """
+  Correctness measurement for Lo-Fi placeholder is not loaded from cache when a
+  page is reloaded with data reduction proxy disabled. First a test page is
+  opened with LoFi and chrome proxy enabled. This allows Chrome to cache the
+  LoFi placeholder image. The browser is restarted with chrome proxy disabled
+  and the same test page is loaded. This second page load should not pick the
+  LoFi placeholder from cache and original image should be loaded. This test
+  should be run with --profile-type=default command line for the same user
+  profile and cache to be used across the two page loads.
+  """
+
+  def __init__(self):
+    super(ChromeProxyCacheProxyDisabled, self).__init__(
+            restart_after_each_page=True,
+            metrics=metrics.ChromeProxyMetric(),
+            clear_cache_before_each_run=False)
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForLoFiCache(tab, results,
+                                         self._is_chrome_proxy_enabled)
+
+  def WillStartBrowser(self, platform):
+    super(ChromeProxyCacheProxyDisabled, self).WillStartBrowser(platform)
+    if not self._page:
+      # First page load, enable LoFi and chrome proxy.
+      self.options.AppendExtraBrowserArgs(
+            '--data-reduction-proxy-lo-fi=always-on')
+    else:
+      # Second page load, disable chrome proxy. LoFi is still enabled.
+      self.DisableChromeProxy()
+
+  def WillNavigateToPage(self, page, tab):
+    super(ChromeProxyCacheProxyDisabled, self).WillNavigateToPage(page, tab)
+    if self._is_chrome_proxy_enabled:
+      # Clear cache for the first page to pick LoFi image from server.
+      tab.ClearCache(force=True)
+
+  def DidNavigateToPage(self, page, tab):
+    if not self._is_chrome_proxy_enabled:
+      tab.ExecuteJavaScript('window.location.reload()')
+      util.WaitFor(tab.HasReachedQuiescence, 3)
 
 class ChromeProxyLoFiPreview(ChromeProxyValidation):
   """Correctness measurement for Lo-Fi preview in Chrome-Proxy header."""

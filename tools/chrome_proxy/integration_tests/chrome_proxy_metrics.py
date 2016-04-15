@@ -256,6 +256,48 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
         results.current_page, 'lo_fi_response', 'count', lo_fi_response_count))
     super(ChromeProxyMetric, self).AddResults(tab, results)
 
+
+  def AddResultsForLoFiCache(self, tab, results, is_lo_fi):
+    request_count = 0
+    response_count = 0
+
+    for resp in self.IterResponses(tab):
+      if not resp.response.url.endswith('png'):
+        continue
+      if not resp.response.request_headers:
+        continue
+
+      if is_lo_fi != resp.HasChromeProxyLoFiRequest():
+        raise ChromeProxyMetricException, (
+            '%s: LoFi %s expected in request header.' % (resp.response.url,
+                    '' if is_lo_fi else 'not'))
+      else:
+        request_count += 1
+
+      if is_lo_fi != resp.HasChromeProxyLoFiResponse():
+        raise ChromeProxyMetricException, (
+            '%s: LoFi %s expected in response header.' % (resp.response.url,
+                    '' if is_lo_fi else 'not'))
+      else:
+        response_count += 1
+
+      if is_lo_fi != (resp.content_length < 100):
+        raise ChromeProxyMetricException, (
+            'Image %s is %d bytes. Expecting %s than 100 bytes.' %
+            (resp.response.url, resp.content_length,
+             'less' if is_lo_fi else 'more'))
+
+    if request_count == 0:
+      raise ChromeProxyMetricException, (
+          'Expected at least one %s LoFi request, but zero such requests were '
+          'sent.' % ('' if is_lo_fi else 'non'))
+    if response_count == 0:
+      raise ChromeProxyMetricException, (
+          'Expected at least one %s LoFi response, but zero such responses '
+          'were received.' % ('' if is_lo_fi else 'non'))
+
+    super(ChromeProxyMetric, self).AddResults(tab, results)
+
   def AddResultsForLoFiPreview(self, tab, results):
     lo_fi_preview_request_count = 0
     lo_fi_preview_exp_request_count = 0
