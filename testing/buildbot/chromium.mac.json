@@ -5,14 +5,28 @@
     ],
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "net_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ui_base_unittests"
       }
     ]
   },
   "Mac GN (dbg)": {
     "additional_compile_targets": [
       "accessibility_unittests",
-      "base_unittests",
       "battor_agent",
       "cacheinvalidation_unittests",
       "cast_unittests",
@@ -37,12 +51,26 @@
       "skia_unittests",
       "sql_unittests",
       "sync_unit_tests",
-      "ui_base_unittests",
       "url_unittests"
     ],
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "net_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ui_base_unittests"
       }
     ]
   },

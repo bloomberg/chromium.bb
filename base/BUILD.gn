@@ -2031,7 +2031,8 @@ test("base_unittests") {
     if (is_win) {
       data += [ "$root_out_dir/base_unittests.exe.pdb" ]
     } else if (is_mac) {
-      data += [ "$root_out_dir/base_unittests.dSYM/" ]
+      # TODO(crbug.com/330301): make this conditional on mac_strip_release.
+      # data += [ "$root_out_dir/base_unittests.dSYM/" ]
     }
   }
 }
