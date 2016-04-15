@@ -219,8 +219,8 @@ public class StripLayoutHelper {
      * @param views A List to populate with virtual views.
      */
     public void getVirtualViews(List<VirtualView> views) {
-        for (int i = mStripTabsToRender.length - 1; i >= 0; i--) {
-            StripLayoutTab tab = mStripTabsToRender[i];
+        for (int i = 0; i < mStripTabs.length; i++) {
+            StripLayoutTab tab = mStripTabs[i];
             tab.getVirtualViews(views);
         }
         if (mNewTabButton.isVisible()) views.add(mNewTabButton);

@@ -124,7 +124,7 @@ import java.util.List;
  *    their own native pointer reference, but Tab#destroy() will handle deleting the native
  *    object.
  */
-public final class Tab implements ViewGroup.OnHierarchyChangeListener,
+public class Tab implements ViewGroup.OnHierarchyChangeListener,
         View.OnSystemUiVisibilityChangeListener {
     public static final int INVALID_TAB_ID = -1;
 

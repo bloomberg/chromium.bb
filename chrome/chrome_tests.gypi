@@ -3181,6 +3181,8 @@
           'target_name': 'chrome_junit_tests',
           'type': 'none',
           'dependencies': [
+            # Allow unit-testing Chrome UI components
+            'android/chrome_apk.gyp:chrome_public_apk_java',
             'chrome_java',
             '../base/base.gyp:base',
             '../base/base.gyp:base_java_test_support',

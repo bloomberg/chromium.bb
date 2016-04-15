@@ -123,8 +123,8 @@ public class StripLayoutTab
      * @param views     A List to populate with virtual views.
      */
     public void getVirtualViews(List<VirtualView> views) {
-        if (mShowingCloseButton) views.add(mCloseButton);
         views.add(this);
+        if (mShowingCloseButton) views.add(mCloseButton);
     }
 
     /**
