@@ -30,7 +30,6 @@ static_library("browser") {
   ]
   deps = [
     "//base",
-    "//components/dom_distiller/content/common",
     "//components/dom_distiller/content/common:mojo_bindings",
     "//components/resources",
     "//components/strings",

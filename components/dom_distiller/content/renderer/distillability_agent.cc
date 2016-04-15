@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/metrics/histogram.h"
+#include "base/strings/string_util.h"
 
-#include "components/dom_distiller/content/common/distiller_messages.h"
+#include "components/dom_distiller/content/common/distillability_service.mojom.h"
 #include "components/dom_distiller/content/renderer/distillability_agent.h"
 #include "components/dom_distiller/core/distillable_page_detector.h"
 #include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/page_features.h"
 #include "components/dom_distiller/core/url_utils.h"
+#include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
 
 #include "third_party/WebKit/public/platform/WebDistillability.h"
@@ -146,10 +148,14 @@ void DistillabilityAgent::DidMeaningfulLayout(
   if (!NeedToUpdate(is_loaded)) return;
 
   bool is_last = IsLast(is_loaded);
-  Send(new FrameHostMsg_Distillability(routing_id(),
-      IsDistillablePage(doc, is_last), is_last));
+  // Connect to Mojo service on browser to notify page distillability.
+  DistillabilityServicePtr distillability_service;
+  render_frame()->GetServiceRegistry()->ConnectToRemoteService(
+      mojo::GetProxy(&distillability_service));
+  DCHECK(distillability_service);
+  distillability_service->NotifyIsDistillable(
+      IsDistillablePage(doc, is_last), is_last);
 }
-
 
 DistillabilityAgent::~DistillabilityAgent() {}
 

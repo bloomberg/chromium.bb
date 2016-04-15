@@ -140,6 +140,7 @@
       'target_name': 'dom_distiller_mojo_bindings',
       'type': 'static_library',
       'sources': [
+        'dom_distiller/content/common/distillability_service.mojom',
         'dom_distiller/content/common/distiller_javascript_service.mojom',
         'dom_distiller/content/common/distiller_page_notifier_service.mojom',
       ],
@@ -156,7 +157,6 @@
           'target_name': 'dom_distiller_content_browser',
           'type': 'static_library',
           'dependencies': [
-            'dom_distiller_content_common',
             'dom_distiller_core',
             'dom_distiller_mojo_bindings',
             'dom_distiller_protos',
@@ -207,7 +207,6 @@
           'target_name': 'dom_distiller_content_renderer',
           'type': 'static_library',
           'dependencies': [
-            'dom_distiller_content_common',
             'dom_distiller_mojo_bindings',
             'dom_distiller_protos',
             '../base/base.gyp:base',
@@ -230,24 +229,6 @@
             'dom_distiller/content/renderer/distiller_native_javascript.h',
             'dom_distiller/content/renderer/distiller_page_notifier_service_impl.cc',
             'dom_distiller/content/renderer/distiller_page_notifier_service_impl.h',
-          ],
-        },
-        {
-          # GN version: //components/dom_distiller/content/common
-          'target_name': 'dom_distiller_content_common',
-          'type': 'static_library',
-          'include_dirs': [
-            '..',
-          ],
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../content/content.gyp:content_common',
-            '../ipc/ipc.gyp:ipc',
-            '../url/url.gyp:url_lib',
-          ],
-          'sources': [
-            'dom_distiller/content/common/distiller_messages.cc',
-            'dom_distiller/content/common/distiller_messages.h',
           ],
         },
         {

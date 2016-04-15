@@ -4,24 +4,10 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-# GYP version: components/dom_distiller.gypi:dom_distiller_content_common
-source_set("common") {
-  sources = [
-    "distiller_messages.cc",
-    "distiller_messages.h",
-  ]
-
-  deps = [
-    "//base",
-    "//content/public/common",
-    "//ipc",
-    "//url",
-  ]
-}
-
 # GYP version: components/dom_distiller.gypi:dom_distiller_mojo_bindings
 mojom("mojo_bindings") {
   sources = [
+    "distillability_service.mojom",
     "distiller_javascript_service.mojom",
     "distiller_page_notifier_service.mojom",
   ]
