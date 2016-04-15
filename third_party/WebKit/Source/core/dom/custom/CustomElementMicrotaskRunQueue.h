@@ -6,7 +6,6 @@
 #define CustomElementMicrotaskRunQueue_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -15,9 +14,12 @@ class CustomElementAsyncImportMicrotaskQueue;
 class CustomElementMicrotaskStep;
 class HTMLImportLoader;
 
-class CustomElementMicrotaskRunQueue : public GarbageCollectedFinalized<CustomElementMicrotaskRunQueue> {
+class CustomElementMicrotaskRunQueue : public GarbageCollected<CustomElementMicrotaskRunQueue> {
 public:
-    static CustomElementMicrotaskRunQueue* create() { return new CustomElementMicrotaskRunQueue(); }
+    static CustomElementMicrotaskRunQueue* create()
+    {
+        return new CustomElementMicrotaskRunQueue;
+    }
 
     void enqueue(HTMLImportLoader* parentLoader, CustomElementMicrotaskStep*, bool importIsSync);
     void requestDispatchIfNeeded();
@@ -33,9 +35,6 @@ private:
     Member<CustomElementSyncMicrotaskQueue> m_syncQueue;
     Member<CustomElementAsyncImportMicrotaskQueue> m_asyncQueue;
     bool m_dispatchIsPending;
-#if !ENABLE(OILPAN)
-    WeakPtrFactory<CustomElementMicrotaskRunQueue> m_weakFactory;
-#endif
 };
 
 } // namespace blink

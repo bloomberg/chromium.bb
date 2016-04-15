@@ -38,18 +38,8 @@
 
 namespace blink {
 
-CustomElementMicrotaskImportStep* CustomElementMicrotaskImportStep::create(HTMLImportChild* import)
-{
-    return new CustomElementMicrotaskImportStep(import);
-}
-
 CustomElementMicrotaskImportStep::CustomElementMicrotaskImportStep(HTMLImportChild* import)
-#if ENABLE(OILPAN)
     : m_import(import)
-#else
-    : m_import(import->weakPtr())
-    , m_weakFactory(this)
-#endif
     , m_queue(import->loader()->microtaskQueue())
 {
 }

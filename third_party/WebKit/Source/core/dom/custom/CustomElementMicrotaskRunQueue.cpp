@@ -15,9 +15,6 @@ CustomElementMicrotaskRunQueue::CustomElementMicrotaskRunQueue()
     : m_syncQueue(CustomElementSyncMicrotaskQueue::create())
     , m_asyncQueue(CustomElementAsyncImportMicrotaskQueue::create())
     , m_dispatchIsPending(false)
-#if !ENABLE(OILPAN)
-    , m_weakFactory(this)
-#endif
 {
 }
 
@@ -39,11 +36,7 @@ void CustomElementMicrotaskRunQueue::requestDispatchIfNeeded()
 {
     if (m_dispatchIsPending || isEmpty())
         return;
-#if ENABLE(OILPAN)
     Microtask::enqueueMicrotask(WTF::bind(&CustomElementMicrotaskRunQueue::dispatch, WeakPersistentThisPointer<CustomElementMicrotaskRunQueue>(this)));
-#else
-    Microtask::enqueueMicrotask(WTF::bind(&CustomElementMicrotaskRunQueue::dispatch, m_weakFactory.createWeakPtr()));
-#endif
     m_dispatchIsPending = true;
 }
 

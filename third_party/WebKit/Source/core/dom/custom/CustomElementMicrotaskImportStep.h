@@ -33,7 +33,6 @@
 
 #include "core/dom/custom/CustomElementMicrotaskStep.h"
 #include "platform/heap/Handle.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -48,15 +47,16 @@ class HTMLImportChild;
 // import isn't "ready" (finished parsing and running script.)
 class CustomElementMicrotaskImportStep final : public CustomElementMicrotaskStep {
 public:
-    static CustomElementMicrotaskImportStep* create(HTMLImportChild*);
+    static CustomElementMicrotaskImportStep* create(HTMLImportChild* import)
+    {
+        return new CustomElementMicrotaskImportStep(import);
+    }
+
     ~CustomElementMicrotaskImportStep() override;
 
     // API for HTML Imports
     void invalidate();
     void importDidFinishLoading();
-#if !ENABLE(OILPAN)
-    WeakPtr<CustomElementMicrotaskImportStep> weakPtr() { return m_weakFactory.createWeakPtr(); }
-#endif
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -73,9 +73,6 @@ private:
     void show(unsigned indent) override;
 #endif
     WeakMember<HTMLImportChild> m_import;
-#if !ENABLE(OILPAN)
-    WeakPtrFactory<CustomElementMicrotaskImportStep> m_weakFactory;
-#endif
     Member<CustomElementSyncMicrotaskQueue> m_queue;
 };
 
