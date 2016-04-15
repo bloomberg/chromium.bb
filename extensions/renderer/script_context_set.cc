@@ -80,6 +80,11 @@ ScriptContext* ScriptContextSet::GetByV8Context(
   return nullptr;
 }
 
+ScriptContext* ScriptContextSet::GetContextByObject(
+    const v8::Local<v8::Object>& object) {
+  return GetContextByV8Context(object->CreationContext());
+}
+
 ScriptContext* ScriptContextSet::GetContextByV8Context(
     const v8::Local<v8::Context>& v8_context) {
   // g_context_set can be null in unittests.

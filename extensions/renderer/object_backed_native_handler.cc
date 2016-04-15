@@ -15,6 +15,7 @@
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/v8_helpers.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -84,6 +85,16 @@ void ObjectBackedNativeHandler::Router(
   CHECK(handler_function_value->IsExternal());
   static_cast<HandlerFunction*>(
       handler_function_value.As<v8::External>()->Value())->Run(args);
+
+  // Verify that the return value, if any, is accessible by the context.
+  v8::ReturnValue<v8::Value> ret = args.GetReturnValue();
+  v8::Local<v8::Value> ret_value = ret.Get();
+  if (ret_value->IsObject() && !ret_value->IsNull() &&
+      !ContextCanAccessObject(context, v8::Local<v8::Object>::Cast(ret_value),
+                              true)) {
+    NOTREACHED() << "Insecure return value";
+    ret.SetUndefined();
+  }
 }
 
 void ObjectBackedNativeHandler::RouteFunction(
@@ -137,6 +148,23 @@ void ObjectBackedNativeHandler::Invalidate() {
   object_template_.Reset();
 
   NativeHandler::Invalidate();
+}
+
+// static
+bool ObjectBackedNativeHandler::ContextCanAccessObject(
+    const v8::Local<v8::Context>& context,
+    const v8::Local<v8::Object>& object,
+    bool allow_null_context) {
+  if (object->IsNull())
+    return true;
+  if (context == object->CreationContext())
+    return true;
+  ScriptContext* other_script_context =
+      ScriptContextSet::GetContextByObject(object);
+  if (!other_script_context || !other_script_context->web_frame())
+    return allow_null_context;
+
+  return blink::WebFrame::scriptCanAccess(other_script_context->web_frame());
 }
 
 void ObjectBackedNativeHandler::SetPrivate(v8::Local<v8::Object> obj,

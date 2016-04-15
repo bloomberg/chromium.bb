@@ -13,7 +13,7 @@ class Dispatcher;
 
 class V8ContextNativeHandler : public ObjectBackedNativeHandler {
  public:
-  V8ContextNativeHandler(ScriptContext* context, Dispatcher* dispatcher);
+  explicit V8ContextNativeHandler(ScriptContext* context);
 
  private:
   void GetAvailability(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -22,7 +22,6 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
   void RunWithNativesEnabled(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   ScriptContext* context_;
-  Dispatcher* dispatcher_;
 };
 
 }  // namespace extensions

@@ -38,8 +38,10 @@ function handleResponse(requestId, name, success, responseList, error) {
     // lastError needs to be set on the caller's chrome object no matter what,
     // though chances are it's the same as ours (it will be different when
     // calling API methods on other contexts).
-    if (request.callback)
-      callerChrome = natives.GetGlobal(request.callback).chrome;
+    if (request.callback) {
+      var global = natives.GetGlobal(request.callback);
+      callerChrome = global ? global.chrome : callerChrome;
+    }
 
     lastError.clear(chrome);
     if (callerChrome !== chrome)

@@ -108,7 +108,8 @@ function assertRuntimeIsAvailable() {
  * method won't work if the real callback has been wrapped (etc).
  */
 function run(name, message, stack, callback, args) {
-  var targetChrome = GetGlobal(callback).chrome;
+  var global = GetGlobal(callback);
+  var targetChrome = global && global.chrome;
   set(name, message, stack, targetChrome);
   try {
     $Function.apply(callback, undefined, args);

@@ -845,8 +845,7 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       "utils", scoped_ptr<NativeHandler>(new UtilsNativeHandler(context)));
   module_system->RegisterNativeHandler(
       "v8_context",
-      scoped_ptr<NativeHandler>(
-          new V8ContextNativeHandler(context, dispatcher)));
+      scoped_ptr<NativeHandler>(new V8ContextNativeHandler(context)));
   module_system->RegisterNativeHandler(
       "event_natives", scoped_ptr<NativeHandler>(new EventBindings(context)));
   module_system->RegisterNativeHandler(

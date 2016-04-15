@@ -58,6 +58,17 @@ class ObjectBackedNativeHandler : public NativeHandler {
 
   void Invalidate() override;
 
+  // Returns true if the given |context| is allowed to access the given
+  // |object|. This should be checked before returning any objects from another
+  // context.
+  // |allow_null_context| indicates that if there is no ScriptContext associated
+  // with the |object|, it should be allowed.
+  // TODO(devlin): It'd be nice to track down when when there's no ScriptContext
+  // and remove |allow_null_context|.
+  static bool ContextCanAccessObject(const v8::Local<v8::Context>& context,
+                                     const v8::Local<v8::Object>& object,
+                                     bool allow_null_context);
+
   // The following methods are convenience wrappers for methods on v8::Object
   // with the corresponding names.
   void SetPrivate(v8::Local<v8::Object> obj,
