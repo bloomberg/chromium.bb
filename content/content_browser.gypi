@@ -1612,6 +1612,8 @@
       'browser/web_contents/web_contents_view.h',
       'browser/web_contents/web_contents_view_aura.cc',
       'browser/web_contents/web_contents_view_aura.h',
+      'browser/web_contents/web_contents_view_child_frame.h',
+      'browser/web_contents/web_contents_view_child_frame.cc',
       'browser/web_contents/web_contents_view_guest.cc',
       'browser/web_contents/web_contents_view_guest.h',
       'browser/web_contents/web_contents_view_mac.h',
