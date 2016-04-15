@@ -32,6 +32,7 @@ template<typename NodeType> class TreeShared;
 template<typename NodeType> void adopted(TreeShared<NodeType>*);
 #endif
 
+// TODO(Oilpan): Remove TreeShared. It's unused in the oilpan world.
 template<typename NodeType> class TreeShared : public GarbageCollectedFinalized<NodeType> {
     WTF_MAKE_NONCOPYABLE(TreeShared);
 protected:

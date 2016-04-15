@@ -174,29 +174,6 @@ Element::Element(const QualifiedName& tagName, Document* document, ConstructionT
 Element::~Element()
 {
     DCHECK(needsAttach());
-
-#if !ENABLE(OILPAN)
-    if (hasRareData()) {
-        elementRareData()->clearShadow();
-        detachAllAttrNodesFromElement();
-    }
-
-    if (isCustomElement())
-        CustomElement::wasDestroyed(this);
-
-    if (RuntimeEnabledFeatures::scrollCustomizationEnabled())
-        scrollCustomizationCallbacks().removeCallbacksForElement(this);
-
-    // With Oilpan, either the Element has been removed from the Document
-    // or the Document is dead as well. If the Element has been removed from
-    // the Document the element has already been removed from the pending
-    // resources. If the document is also dead, there is no need to remove
-    // the element from the pending resources.
-    if (hasPendingResources()) {
-        document().accessSVGExtensions().removeElementFromPendingResources(this);
-        DCHECK(!hasPendingResources());
-    }
-#endif
 }
 
 inline ElementRareData* Element::elementRareData() const
