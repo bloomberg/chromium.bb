@@ -281,10 +281,6 @@ const char kConnectProfile[] = "ConnectProfile";
 const char kDisconnectProfile[] = "DisconnectProfile";
 const char kPair[] = "Pair";
 const char kCancelPairing[] = "CancelPairing";
-// TODO(tengs): Remove deprecated constants after they are removed in the Chrome
-// codebase. (See crbug.com/430665).
-const char kStartConnectionMonitor[] = "StartConnectionMonitor";  // DEPRECATED
-const char kStopConnectionMonitor[] = "StopConnectionMonitor";    // DEPRECATED
 
 // Bluetooth Device properties.
 const char kAddressProperty[] = "Address";
@@ -307,11 +303,6 @@ const char kManufacturerDataProperty[] = "ManufacturerData";
 const char kServiceDataProperty[] = "ServiceData";
 const char kGattServicesProperty[] = "GattServices";         // DEPRECATED
 const char kServicesResolvedProperty[] = "ServicesResolved";
-// TODO(tengs): Remove deprecated constants after they are removed in the Chrome
-// codebase. (See crbug.com/430665).
-const char kConnectionRSSI[] = "ConnectionRSSI";             // DEPRECATED
-const char kConnectionTXPower[] = "ConnectionTXPower";       // DEPRECATED
-const char kConnectionTXPowerMax[] = "ConnectionTXPowerMax"; // DEPRECATED
 
 // Bluetooth Device errors.
 const char kErrorNotReady[] = "org.bluez.Error.NotReady";
