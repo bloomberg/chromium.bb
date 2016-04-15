@@ -361,6 +361,14 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
       [self appMenuModel]->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY));
   [[[buttonViewController_ zoomItem] viewWithTag:IDC_ZOOM_PERCENT_DISPLAY]
       setTitle:title];
+  [[[[buttonViewController_ zoomItem]
+      viewWithTag:IDC_ZOOM_MINUS] image]
+          setAccessibilityDescription:l10n_util::GetNSString(
+              IDS_TEXT_SMALLER_MAC)];
+  [[[[buttonViewController_ zoomItem]
+      viewWithTag:IDC_ZOOM_PLUS] image]
+        setAccessibilityDescription:l10n_util::GetNSString(
+              IDS_TEXT_BIGGER_MAC)];
   content::RecordAction(UserMetricsAction("ShowAppMenu"));
 
   NSImage* icon = [self appMenuModel]->browser()->window()->IsFullscreen()
