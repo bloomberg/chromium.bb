@@ -16,6 +16,7 @@
 #include "base/i18n/rtl.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -720,7 +721,8 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
   }
 
   std::unique_ptr<AppInstallInfo> install_info(new AppInstallInfo());
-  install_info->title = title;
+  install_info->title = base::CollapseWhitespace(
+      title, /* trim_sequences_with_line_breaks */ false);
   install_info->app_url = launch_url;
   install_info->page_ordinal = page_ordinal;
 
