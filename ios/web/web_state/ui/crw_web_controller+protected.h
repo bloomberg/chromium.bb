@@ -283,6 +283,13 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Returns NavigationManager's session controller.
 @property(nonatomic, readonly) CRWSessionController* sessionController;
 
+// Dictionary where keys are the names of WKWebView properties and values are
+// selector names which should be called when a corresponding property has
+// changed. e.g. @{ @"URL" : @"webViewURLDidChange" } means that
+// -[self webViewURLDidChange] must be called every time when WKWebView.URL is
+// changed.
+@property(nonatomic, readonly) NSDictionary* wkWebViewObservers;
+
 // Returns a new script which wraps |script| with windowID check so |script| is
 // not evaluated on windowID mismatch.
 - (NSString*)scriptByAddingWindowIDCheckForScript:(NSString*)script;

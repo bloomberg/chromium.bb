@@ -571,6 +571,29 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
              completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
                                          NSURLCredential*))completionHandler;
 
+// Called when WKWebView estimatedProgress has been changed.
+- (void)webViewEstimatedProgressDidChange;
+// Called when WKWebView certificateChain or hasOnlySecureContent property has
+// changed.
+- (void)webViewSecurityFeaturesDidChange;
+// Called when WKWebView loading state has been changed.
+- (void)webViewLoadingStateDidChange;
+// Called when WKWebView title has been changed.
+- (void)webViewTitleDidChange;
+// Called when WKWebView URL has been changed.
+- (void)webViewURLDidChange;
+// Returns YES if a KVO change to |newURL| could be a 'navigation' within the
+// document (hash change, pushState/replaceState, etc.). This should only be
+// used in the context of a URL KVO callback firing, and only if |isLoading| is
+// YES for the web view (since if it's not, no guesswork is needed).
+- (BOOL)isKVOChangePotentialSameDocumentNavigationToURL:(const GURL&)newURL;
+// Called when a non-document-changing URL change occurs. Updates the
+// _documentURL, and informs the superclass of the change.
+- (void)URLDidChangeWithoutDocumentChange:(const GURL&)URL;
+// Returns YES if there is currently a requested but uncommitted load for
+// |targetURL|.
+- (BOOL)isLoadRequestPendingForURL:(const GURL&)targetURL;
+
 // Handlers for JavaScript messages. |message| contains a JavaScript command and
 // data relevant to the message, and |context| contains contextual information
 // about web view state needed for some handlers.
@@ -4774,6 +4797,216 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (navigationItem == currentNavigationItem) {
     [self didUpdateSSLStatusForCurrentNavigationItem];
   }
+}
+
+#pragma mark -
+#pragma mark KVO Observation
+
+- (NSDictionary*)wkWebViewObservers {
+  return @{
+    @"certificateChain" : @"webViewSecurityFeaturesDidChange",
+    @"estimatedProgress" : @"webViewEstimatedProgressDidChange",
+    @"hasOnlySecureContent" : @"webViewSecurityFeaturesDidChange",
+    @"loading" : @"webViewLoadingStateDidChange",
+    @"title" : @"webViewTitleDidChange",
+    @"URL" : @"webViewURLDidChange",
+  };
+}
+
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context {
+  NSString* dispatcherSelectorName = self.wkWebViewObservers[keyPath];
+  DCHECK(dispatcherSelectorName);
+  if (dispatcherSelectorName)
+    [self performSelector:NSSelectorFromString(dispatcherSelectorName)];
+}
+
+- (void)webViewEstimatedProgressDidChange {
+  if ([self.delegate
+          respondsToSelector:@selector(webController:didUpdateProgress:)]) {
+    [self.delegate webController:self
+               didUpdateProgress:[self.webView estimatedProgress]];
+  }
+}
+
+- (void)webViewSecurityFeaturesDidChange {
+  if (self.loadPhase == web::LOAD_REQUESTED) {
+    // Do not update SSL Status for pending load. It will be updated in
+    // |webView:didCommitNavigation:| callback.
+    return;
+  }
+  [self updateSSLStatusForCurrentNavigationItem];
+}
+
+- (void)webViewLoadingStateDidChange {
+  if ([self.webView isLoading]) {
+    [self addActivityIndicatorTask];
+  } else {
+    [self clearActivityIndicatorTasks];
+    if ([self currentNavItem] &&
+        [self currentBackForwardListItemHolder]->navigation_type() ==
+            WKNavigationTypeBackForward) {
+      // A fast back/forward may not call |webView:didFinishNavigation:|, so
+      // finishing the navigation should be signalled explicitly.
+      [self didFinishNavigation];
+    }
+  }
+}
+
+- (void)webViewTitleDidChange {
+  // WKWebView's title becomes empty when the web process dies; ignore that
+  // update.
+  if (self.webProcessIsDead) {
+    DCHECK_EQ(self.title.length, 0U);
+    return;
+  }
+
+  if ([self.delegate
+          respondsToSelector:@selector(webController:titleDidChange:)]) {
+    DCHECK(self.title);
+    [self.delegate webController:self titleDidChange:self.title];
+  }
+}
+
+- (void)webViewURLDidChange {
+  // TODO(stuartmorgan): Determine if there are any cases where this still
+  // happens, and if so whether anything should be done when it does.
+  if (![self.webView URL]) {
+    DVLOG(1) << "Received nil URL callback";
+    return;
+  }
+  GURL url(net::GURLWithNSURL([self.webView URL]));
+  // URL changes happen at three points:
+  // 1) When a load starts; at this point, the load is provisional, and
+  //    it should be ignored until it's committed, since the document/window
+  //    objects haven't changed yet.
+  // 2) When a non-document-changing URL change happens (hash change,
+  //    history.pushState, etc.). This URL change happens instantly, so should
+  //    be reported.
+  // 3) When a navigation error occurs after provisional navigation starts,
+  //    the URL reverts to the previous URL without triggering a new navigation.
+  //
+  // If |isLoading| is NO, then it must be case 2 or 3. If the last committed
+  // URL (_documentURL) matches the current URL, assume that it is a revert from
+  // navigation failure and do nothing. If the URL does not match, assume it is
+  // a non-document-changing URL change, and handle accordingly.
+  //
+  // If |isLoading| is YES, then it could either be case 1, or it could be case
+  // 2 on a page that hasn't finished loading yet. If it's possible that it
+  // could be a same-page navigation (in which case there may not be any other
+  // callback about the URL having changed), then check the actual page URL via
+  // JavaScript. If the origin of the new URL matches the last committed URL,
+  // then check window.location.href, and if it matches, trust it. The origin
+  // check ensures that if a site somehow corrupts window.location.href it can't
+  // do a redirect to a slow-loading target page while it is still loading to
+  // spoof the origin. On a document-changing URL change, the
+  // window.location.href will match the previous URL at this stage, not the web
+  // view's current URL.
+  if (![self.webView isLoading]) {
+    if (self.documentURL == url)
+      return;
+    [self URLDidChangeWithoutDocumentChange:url];
+  } else if ([self isKVOChangePotentialSameDocumentNavigationToURL:url]) {
+    [self.webView
+        evaluateJavaScript:@"window.location.href"
+         completionHandler:^(id result, NSError* error) {
+           // If the web view has gone away, or the location
+           // couldn't be retrieved, abort.
+           if (!self.webView || ![result isKindOfClass:[NSString class]]) {
+             return;
+           }
+           GURL jsURL([result UTF8String]);
+           // Check that window.location matches the new URL. If
+           // it does not, this is a document-changing URL change as
+           // the window location would not have changed to the new
+           // URL when the script was called.
+           BOOL windowLocationMatchesNewURL = jsURL == url;
+           // Re-check origin in case navigaton has occured since
+           // start of JavaScript evaluation.
+           BOOL newURLOriginMatchesDocumentURLOrigin =
+               self.documentURL.GetOrigin() == url.GetOrigin();
+           // Check that the web view URL still matches the new URL.
+           // TODO(crbug.com/563568): webViewURLMatchesNewURL check
+           // may drop same document URL changes if pending URL
+           // change occurs immediately after. Revisit heuristics to
+           // prevent this.
+           BOOL webViewURLMatchesNewURL =
+               net::GURLWithNSURL([self.webView URL]) == url;
+           // Check that the new URL is different from the current
+           // document URL. If not, URL change should not be reported.
+           BOOL URLDidChangeFromDocumentURL = url != self.documentURL;
+           if (windowLocationMatchesNewURL &&
+               newURLOriginMatchesDocumentURLOrigin &&
+               webViewURLMatchesNewURL && URLDidChangeFromDocumentURL) {
+             [self URLDidChangeWithoutDocumentChange:url];
+           }
+         }];
+  }
+}
+
+- (BOOL)isKVOChangePotentialSameDocumentNavigationToURL:(const GURL&)newURL {
+  DCHECK([self.webView isLoading]);
+  // If the origin changes, it can't be same-document.
+  if (self.documentURL.GetOrigin().is_empty() ||
+      self.documentURL.GetOrigin() != newURL.GetOrigin()) {
+    return NO;
+  }
+  if (self.loadPhase == web::LOAD_REQUESTED) {
+    // Normally LOAD_REQUESTED indicates that this is a regular, pending
+    // navigation, but it can also happen during a fast-back navigation across
+    // a hash change, so that case is potentially a same-document navigation.
+    return web::GURLByRemovingRefFromGURL(newURL) ==
+           web::GURLByRemovingRefFromGURL(self.documentURL);
+  }
+  // If it passes all the checks above, it might be (but there's no guarantee
+  // that it is).
+  return YES;
+}
+
+- (void)URLDidChangeWithoutDocumentChange:(const GURL&)newURL {
+  DCHECK(newURL == net::GURLWithNSURL([self.webView URL]));
+  DCHECK_EQ(self.documentURL.host(), newURL.host());
+  DCHECK(self.documentURL != newURL);
+
+  // If called during window.history.pushState or window.history.replaceState
+  // JavaScript evaluation, only update the document URL. This callback does not
+  // have any information about the state object and cannot create (or edit) the
+  // navigation entry for this page change. Web controller will sync with
+  // history changes when a window.history.didPushState or
+  // window.history.didReplaceState message is received, which should happen in
+  // the next runloop.
+  //
+  // Otherwise, simulate the whole delegate flow for a load (since the
+  // superclass currently doesn't have a clean separation between URL changes
+  // and document changes). Note that the order of these calls is important:
+  // registering a load request logically comes before updating the document
+  // URL, but also must come first since it uses state that is reset on URL
+  // changes.
+  if (!self.changingHistoryState) {
+    // If this wasn't a previously-expected load (e.g., certain back/forward
+    // navigations), register the load request.
+    if (![self isLoadRequestPendingForURL:newURL])
+      [self registerLoadRequest:newURL];
+  }
+
+  [self setDocumentURL:newURL];
+
+  if (!self.changingHistoryState) {
+    [self didStartLoadingURL:self.documentURL updateHistory:YES];
+    [self updateSSLStatusForCurrentNavigationItem];
+    [self didFinishNavigation];
+  }
+}
+
+- (BOOL)isLoadRequestPendingForURL:(const GURL&)targetURL {
+  if (self.loadPhase != web::LOAD_REQUESTED)
+    return NO;
+
+  web::NavigationItem* pendingItem =
+      self.webState->GetNavigationManager()->GetPendingItem();
+  return pendingItem && pendingItem->GetURL() == targetURL;
 }
 
 #pragma mark -
