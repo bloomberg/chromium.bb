@@ -18,6 +18,7 @@ import sys
 
 REPLACEMENTS = {
   'libxml': 'third_party/libxml/BUILD.gn',
+  'zlib': 'third_party/zlib/BUILD.gn',
 }
 
 
