@@ -39,6 +39,8 @@ class FeatureProvider {
 
   // Directly get Features from the common FeatureProvider types.
   // Each is equivalent to GetByName('featuretype')->GetFeature(name).
+  // NOTE: These functions may return |nullptr| in case corresponding JSON file
+  // got corrupted.
   static const Feature* GetAPIFeature(const std::string& name);
   static const Feature* GetManifestFeature(const std::string& name);
   static const Feature* GetPermissionFeature(const std::string& name);

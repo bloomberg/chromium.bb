@@ -67,7 +67,8 @@ bool ExtensionsGuestViewManagerDelegate::IsGuestAvailableToContext(
     GuestViewBase* guest) {
   const Feature* feature =
       FeatureProvider::GetAPIFeature(guest->GetAPINamespace());
-  CHECK(feature);
+  if (!feature)
+    return false;
 
   ProcessMap* process_map = ProcessMap::Get(context_);
   CHECK(process_map);

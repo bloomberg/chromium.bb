@@ -410,5 +410,5 @@ WebContents* OpenAppShortcutWindow(Profile* profile,
 bool CanLaunchViaEvent(const extensions::Extension* extension) {
   const extensions::Feature* feature =
       extensions::FeatureProvider::GetAPIFeature("app.runtime");
-  return feature->IsAvailableToExtension(extension).is_available();
+  return feature && feature->IsAvailableToExtension(extension).is_available();
 }
