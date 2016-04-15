@@ -23,6 +23,20 @@
         <div name="zot">Zot</div>
       </iron-selector>
 
+  If no matching element is found using `attForSelected`, use `fallbackSelection` as fallback.
+
+  Example:
+
+        <iron-selector attr-for-selected="name" selected="non-existing"
+                       fallback-selection="default">
+          <div name="foo">Foo</div>
+          <div name="bar">Bar</div>
+          <div name="default">Default</div>
+        </iron-selector>
+
+  Note: When the selector is multi, the selection will set to `fallbackSelection` iff
+  the number of matching elements is zero.
+
   `iron-selector` is not styled. Use the `iron-selected` CSS class to style the selected element.
 
   Example:

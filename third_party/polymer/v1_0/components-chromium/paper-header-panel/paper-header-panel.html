@@ -124,6 +124,7 @@ Custom property | Description | Default
 `--paper-header-panel-seamed-container` | Mixin applied to the container when in seamed mode | `{}`
 `--paper-header-panel-waterfall-container` | Mixin applied to the container when in waterfall mode | `{}`
 `--paper-header-panel-waterfall-tall-container` | Mixin applied to the container when in tall waterfall mode | `{}`
+`--paper-header-panel-shadow` | Mixin applied to the waterfall shadow | `{}`
 
 @group Paper Elements
 @element paper-header-panel
@@ -135,12 +136,6 @@ Custom property | Description | Default
   <template>
     <style>
       :host {
-        --paper-header-panel-shadow: {
-          height: 6px;
-          bottom: -6px;
-          box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
-        };
-
         @apply(--layout-vertical);
 
         position: relative;
@@ -230,19 +225,18 @@ Custom property | Description | Default
       }
 
       #dropShadow {
+        transition: opacity 0.5s;
+        height: 6px;
+        box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
+
         @apply(--paper-header-panel-shadow);
 
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
-        height: 6px;
-        pointer-events: none;
-
-        -webkit-transition: opacity 0.5s;
-        transition: opacity 0.5s;
-
         opacity: 0;
+        pointer-events: none;
       }
 
       #dropShadow.has-shadow {

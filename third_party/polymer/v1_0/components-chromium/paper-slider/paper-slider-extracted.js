@@ -278,6 +278,9 @@ Polymer({
 
         // cancel selection
         event.preventDefault();
+
+        // set the focus manually because we will called prevent default
+        this.focus();
       },
 
       _knobTransitionEnd: function(event) {
@@ -290,7 +293,7 @@ Polymer({
         if (!this.snaps) {
           this._setMarkers([]);
         }
-        var steps = Math.floor((this.max - this.min) / this.step);
+        var steps = Math.round((this.max - this.min) / this.step);
         if (steps > maxMarkers) {
           steps = maxMarkers;
         }
@@ -364,9 +367,9 @@ Polymer({
         if (this.hasRipple()) {
           // note, ripple must be un-hidden prior to setting `holdDown`
           if (receivedFocusFromKeyboard) {
-            this._ripple.removeAttribute('hidden');
+            this._ripple.style.display = '';
           } else {
-            this._ripple.setAttribute('hidden', '');
+            this._ripple.style.display = 'none';
           }
           this._ripple.holdDown = receivedFocusFromKeyboard;
         }

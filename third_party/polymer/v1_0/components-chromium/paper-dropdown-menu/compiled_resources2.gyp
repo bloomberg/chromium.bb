@@ -20,5 +20,29 @@
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'paper-dropdown-menu-icons-extracted',
+      'dependencies': [
+        '../iron-iconset-svg/compiled_resources2.gyp:iron-iconset-svg-extracted',
+      ],
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'paper-dropdown-menu-light-extracted',
+      'dependencies': [
+        '../iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
+        '../iron-behaviors/compiled_resources2.gyp:iron-button-state-extracted',
+        '../iron-behaviors/compiled_resources2.gyp:iron-control-state-extracted',
+        '../iron-form-element-behavior/compiled_resources2.gyp:iron-form-element-behavior-extracted',
+        '../iron-validatable-behavior/compiled_resources2.gyp:iron-validatable-behavior-extracted',
+        '../paper-behaviors/compiled_resources2.gyp:paper-ripple-behavior-extracted',
+        '../paper-menu-button/compiled_resources2.gyp:paper-menu-button-extracted',
+      ],
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'paper-dropdown-menu-shared-styles-extracted',
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
   ],
 }

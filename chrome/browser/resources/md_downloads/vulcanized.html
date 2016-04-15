@@ -36,6 +36,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </head>
 <body><div hidden="" by-vulcanize=""><script src="chrome://resources/js/load_time_data.js"></script>
 <script src="chrome://downloads/strings.js"></script>
+
+
 <dom-module id="iron-list" assetpath="chrome://resources/polymer/v1_0/iron-list/">
   <template>
     <style>
@@ -246,6 +248,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       align-items: flex-end;
     };
 
+    --layout-baseline: {
+      -ms-flex-align: baseline;
+      -webkit-align-items: baseline;
+      align-items: baseline;
+    };
+
     /* alignment in main axis */
 
     --layout-start-justified: {
@@ -307,6 +315,49 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       -ms-align-self: stretch;
       -webkit-align-self: stretch;
       align-self: stretch;
+    };
+
+    --layout-self-baseline: {
+      -ms-align-self: baseline;
+      -webkit-align-self: baseline;
+      align-self: baseline;
+    };
+
+    /* multi-line alignment in main axis */
+
+    --layout-start-aligned: {
+      -ms-flex-line-pack: start;  /* IE10 */
+      -ms-align-content: flex-start;
+      -webkit-align-content: flex-start;
+      align-content: flex-start;
+    };
+
+    --layout-end-aligned: {
+      -ms-flex-line-pack: end;  /* IE10 */
+      -ms-align-content: flex-end;
+      -webkit-align-content: flex-end;
+      align-content: flex-end;
+    };
+
+    --layout-center-aligned: {
+      -ms-flex-line-pack: center;  /* IE10 */
+      -ms-align-content: center;
+      -webkit-align-content: center;
+      align-content: center;
+    };
+
+    --layout-between-aligned: {
+      -ms-flex-line-pack: justify;  /* IE10 */
+      -ms-align-content: space-between;
+      -webkit-align-content: space-between;
+      align-content: space-between;
+    };
+
+    --layout-around-aligned: {
+      -ms-flex-line-pack: distribute;  /* IE10 */
+      -ms-align-content: space-around;
+      -webkit-align-content: space-around;
+      align-content: space-around;
     };
 
     /*******************************
@@ -376,8 +427,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
 </style>
-
-
 <dom-module id="iron-icon" assetpath="chrome://resources/polymer/v1_0/iron-icon/">
 
   <style>
@@ -868,8 +917,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
   </template>
 </dom-module>
-
-
 <dom-module id="paper-material" assetpath="chrome://resources/polymer/v1_0/paper-material/">
   <template>
     <style include="paper-material-shared-styles"></style>
@@ -1261,8 +1308,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
 </style>
-
-
 <dom-module id="paper-progress" assetpath="chrome://resources/polymer/v1_0/paper-progress/">
   <template>
     <style>
@@ -1291,7 +1336,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       #progressContainer,
       .indeterminate::after {
-        background-color: var(--paper-progress-container-color, --google-grey-300);
+        background: var(--paper-progress-container-color, --google-grey-300);
       }
 
       :host(.transiting) #primaryProgress,
@@ -1323,20 +1368,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       #primaryProgress {
-        background-color: var(--paper-progress-active-color, --google-green-500);
+        background: var(--paper-progress-active-color, --google-green-500);
       }
 
       #secondaryProgress {
-        position: relative;
-        background-color: var(--paper-progress-secondary-color, --google-green-100);
+        background: var(--paper-progress-secondary-color, --google-green-100);
       }
 
       :host([disabled]) #primaryProgress {
-        background-color: var(--paper-progress-disabled-active-color, --google-grey-500);
+        background: var(--paper-progress-disabled-active-color, --google-grey-500);
       }
 
       :host([disabled]) #secondaryProgress {
-        background-color: var(--paper-progress-disabled-secondary-color, --google-grey-300);
+        background: var(--paper-progress-disabled-secondary-color, --google-grey-300);
       }
 
       :host(:not([disabled])) #primaryProgress.indeterminate {
@@ -1777,6 +1821,8 @@ paper-button {
   </dom-module>
 
 
+
+
 <style is="custom-style">
 
   :root {
@@ -1834,40 +1880,51 @@ paper-button {
   }
 
 </style>
+<llink rel="import" href="chrome://resources/polymer/v1_0/paper-styles/typography.html">
+
 <dom-module id="paper-item-shared-styles" assetpath="chrome://resources/polymer/v1_0/paper-item/">
   <template>
     <style>
-      :host {
+      :host, .paper-item {
         display: block;
         position: relative;
         min-height: var(--paper-item-min-height, 48px);
         padding: 0px 16px;
       }
 
-      :host([hidden]) {
+      .paper-item {
+        @apply(--paper-font-subhead);
+        border:none;
+        outline: none;
+        background: white;
+        width: 100%;
+        text-align: left;
+      }
+
+      :host([hidden]), .paper-item[hidden] {
         display: none !important;
       }
 
-      :host(.iron-selected) {
+      :host(.iron-selected), .paper-item.iron-selected {
         font-weight: var(--paper-item-selected-weight, bold);
 
         @apply(--paper-item-selected);
       }
 
-      :host([disabled]) {
+      :host([disabled]), .paper-item[disabled] {
         color: var(--paper-item-disabled-color, --disabled-text-color);
 
         @apply(--paper-item-disabled);
       }
 
-      :host(:focus) {
+      :host(:focus), .paper-item:focus {
         position: relative;
         outline: 0;
 
         @apply(--paper-item-focused);
       }
 
-      :host(:focus):before {
+      :host(:focus):before, .paper-item:focus:before {
         @apply(--layout-fit);
 
         background: currentColor;
@@ -1880,9 +1937,7 @@ paper-button {
     </style>
   </template>
 </dom-module>
-
-
-<dom-module id="paper-item" assetpath="chrome://resources/polymer/v1_0/paper-item/">
+</llink><dom-module id="paper-item" assetpath="chrome://resources/polymer/v1_0/paper-item/">
   <template>
     <style include="paper-item-shared-styles"></style>
     <style>
@@ -1936,8 +1991,6 @@ paper-button {
     </style>
   </template>
 </dom-module>
-
-
 <dom-module id="paper-menu" assetpath="chrome://resources/polymer/v1_0/paper-menu/">
   <template>
     <style include="paper-menu-shared-styles"></style>
@@ -1972,12 +2025,14 @@ paper-button {
       background-color: var(--iron-overlay-backdrop-background-color, #000);
       opacity: 0;
       transition: opacity 0.2s;
+      pointer-events: none;
 
       @apply(--iron-overlay-backdrop);
     }
 
     :host([opened]) {
       opacity: var(--iron-overlay-backdrop-opacity, 0.6);
+      pointer-events: auto;
 
       @apply(--iron-overlay-backdrop-opened);
     }
@@ -1991,8 +2046,6 @@ paper-button {
 </dom-module>
 
 <script src="chrome://resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js"></script>
-
-
 <dom-module id="iron-dropdown" assetpath="chrome://resources/polymer/v1_0/iron-dropdown/">
   <style>
     :host {
@@ -2015,56 +2068,63 @@ paper-button {
 
   </dom-module>
 <dom-module id="paper-menu-button" assetpath="chrome://resources/polymer/v1_0/paper-menu-button/">
-  <style>
-    :host {
-      display: inline-block;
-      position: relative;
-      padding: 8px;
-      outline: none;
-
-      @apply(--paper-menu-button);
-    }
-
-    :host([disabled]) {
-      cursor: auto;
-      color: var(--disabled-text-color);
-
-      @apply(--paper-menu-button-disabled);
-    }
-
-    :host([vertical-align="top"]) paper-material {
-      margin-bottom: 20px;
-      margin-top: -10px;
-      top: 10px;
-    }
-
-    :host([vertical-align="bottom"]) paper-material {
-      bottom: 10px;
-      margin-bottom: -10px;
-      margin-top: 20px;
-    }
-
-    iron-dropdown {
-      @apply(--paper-menu-button-dropdown);
-    }
-
-    .dropdown-content {
-      border-radius: 2px;
-      background-color: var(--paper-menu-button-dropdown-background, --primary-background-color);
-      @apply(--paper-menu-button-content);
-    }
-  </style>
   <template>
-    <div id="trigger" on-tap="open">
+    <style>
+      :host {
+        display: inline-block;
+        position: relative;
+        padding: 8px;
+        outline: none;
+
+        @apply(--paper-menu-button);
+      }
+
+      :host([disabled]) {
+        cursor: auto;
+        color: var(--disabled-text-color);
+
+        @apply(--paper-menu-button-disabled);
+      }
+
+      iron-dropdown {
+        @apply(--paper-menu-button-dropdown);
+      }
+
+      .dropdown-content {
+        @apply(--shadow-elevation-2dp);
+
+        position: relative;
+        border-radius: 2px;
+        background-color: var(--paper-menu-button-dropdown-background, --primary-background-color);
+
+        @apply(--paper-menu-button-content);
+      }
+
+      :host([vertical-align="top"]) .dropdown-content {
+        margin-bottom: 20px;
+        margin-top: -10px;
+        top: 10px;
+      }
+
+      :host([vertical-align="bottom"]) .dropdown-content {
+        bottom: 10px;
+        margin-bottom: -10px;
+        margin-top: 20px;
+      }
+    </style>
+
+    <div id="trigger" on-tap="toggle">
       <content select=".dropdown-trigger"></content>
     </div>
-    <iron-dropdown id="dropdown" opened="{{opened}}" horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" horizontal-offset="[[horizontalOffset]]" vertical-offset="[[verticalOffset]]" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]" no-animations="[[noAnimations]]" focus-target="[[_dropdownContent]]">
-      <paper-material class="dropdown-content">
+
+    <iron-dropdown id="dropdown" opened="{{opened}}" horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" horizontal-offset="[[horizontalOffset]]" vertical-offset="[[verticalOffset]]" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]" no-animations="[[noAnimations]]" focus-target="[[_dropdownContent]]" on-iron-overlay-canceled="__onIronOverlayCanceled">
+      <div class="dropdown-content">
         <content id="content" select=".dropdown-content"></content>
-      </paper-material>
+      </div>
     </iron-dropdown>
   </template>
-</dom-module>
+
+  </dom-module>
 <dom-module id="paper-icon-button" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/">
   <template strip-whitespace="">
     <style>
@@ -2081,12 +2141,13 @@ paper-button {
         cursor: pointer;
         z-index: 0;
         line-height: 1;
-        
+
         width: 40px;
         height: 40px;
 
         /* Because of polymer/2558, this style has lower specificity than * */
         box-sizing: border-box !important;
+
         @apply(--paper-icon-button);
       }
 
@@ -2099,10 +2160,11 @@ paper-button {
         color: var(--paper-icon-button-disabled-text, --disabled-text-color);
         pointer-events: none;
         cursor: auto;
+
         @apply(--paper-icon-button-disabled);
       }
-      
-      :host(:hover) { 
+
+      :host(:hover) {
         @apply(--paper-icon-button-hover);
       }
 
@@ -2111,40 +2173,25 @@ paper-button {
         --iron-icon-height: 100%;
       }
     </style>
+
     <iron-icon id="icon" src="[[src]]" icon="[[icon]]" alt$="[[alt]]"></iron-icon>
   </template>
 
   </dom-module>
-<style>
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
+<dom-module id="iron-a11y-announcer" assetpath="chrome://resources/polymer/v1_0/iron-a11y-announcer/">
+  <style>
+    :host {
+      display: inline-block;
+      position: fixed;
+      clip: rect(0px,0px,0px,0px);
+    }
+  </style>
 
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 300;
-  src: local('Roboto Light'), local('Roboto-Light'),
-      url("chrome://resources/roboto/roboto-light.woff2") format('woff2');
-}
+  <template>
+    <div aria-live$="[[mode]]">[[_text]]</div>
+  </template>
 
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Roboto'), local('Roboto-Regular'),
-      url("chrome://resources/roboto/roboto-regular.woff2") format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 500;
-  src: local('Roboto Medium'), local('Roboto-Medium'),
-      url("chrome://resources/roboto/roboto-medium.woff2") format('woff2');
-}
-
-</style>
+  </dom-module>
 <style is="custom-style">
 
   :root {
@@ -2301,8 +2348,36 @@ paper-button {
   }
 
 </style>
+<style>
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Roboto Light'), local('Roboto-Light'),
+      url("chrome://resources/roboto/roboto-light.woff2") format('woff2');
+}
 
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto'), local('Roboto-Regular'),
+      url("chrome://resources/roboto/roboto-regular.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Roboto Medium'), local('Roboto-Medium'),
+      url("chrome://resources/roboto/roboto-medium.woff2") format('woff2');
+}
+
+</style>
 <dom-module id="paper-input-container" assetpath="chrome://resources/polymer/v1_0/paper-input/">
   <template>
     <style>

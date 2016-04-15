@@ -6,13 +6,6 @@
 {
   'targets': [
     {
-      'target_name': 'metadata-extracted',
-      'dependencies': [
-        'paper-checkbox-extracted',
-      ],
-      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'paper-checkbox-extracted',
       'dependencies': [
         '../paper-behaviors/compiled_resources2.gyp:paper-checked-element-behavior-extracted',

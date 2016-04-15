@@ -1,0 +1,82 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head><link rel="import" href="../polymer/polymer.html">
+
+<!--
+`carbon-route` is an element that enables declarative, self-describing routing
+for a web app.
+
+> *n.b. carbon-route is still in beta. We expect it will need some changes. We're counting on your feedback!*
+
+In its typical usage, a `carbon-route` element consumes an object that describes
+some state about the current route, via the `route` property. It then parses
+that state using the `pattern` property, and produces two artifacts: some `data`
+related to the `route`, and a `tail` that contains the rest of the `route` that
+did not match.
+
+Here is a basic example, when used with `carbon-location`:
+
+    <carbon-location route="{{route}}"></carbon-location>
+    <carbon-route
+        route="{{route}}"
+        pattern="/:page"
+        data="{{data}}"
+        tail="{{tail}}">
+    </carbon-route>
+
+In the above example, the `carbon-location` produces a `route` value. Then, the
+`route.path` property is matched by comparing it to the `pattern` property. If
+the `pattern` property matches `route.path`, the `carbon-route` will set or update
+its `data` property with an object whose properties correspond to the parameters
+in `pattern`. So, in the above example, if `route.path` was `'/about'`, the value
+of `data` would be `{"page": "about"}`.
+
+The `tail` property represents the remaining part of the route state after the
+`pattern` has been applied to a matching `route`.
+
+Here is another example, where `tail` is used:
+
+    <carbon-location route="{{route}}"></carbon-location>
+    <carbon-route
+        route="{{route}}"
+        pattern="/:page"
+        data="{{routeData}}"
+        tail="{{subroute}}">
+    </carbon-route>
+    <carbon-route
+        route="{{subroute}}"
+        pattern="/:id"
+        data="{{subrouteData}}">
+    </carbon-route>
+
+In the above example, there are two `carbon-route` elements. The first
+`carbon-route` consumes a `route`. When the `route` is matched, the first
+`carbon-route` also produces `routeData` from its `data`, and `subroute` from
+its `tail`. The second `carbon-route` consumes the `subroute`, and when it
+matches, it produces an object called `subrouteData` from its `tail`.
+
+So, when `route.path` is `'/about'`, the `routeData` object will look like
+this: `{ page: 'about' }`
+
+And `subrouteData` will be null. However, if `route.path` changes to
+`'/article/123'`, the `routeData` object will look like this:
+`{ page: 'article' }`
+
+And the `subrouteData` will look like this: `{ id: '123' }`
+
+`carbon-route` is responsive to bi-directional changes to the `data` objects
+they produce. So, if `routeData.page` changed from `'article'` to `'about'`,
+the `carbon-route` will update `route.path`. This in-turn will update the
+`carbon-location`, and cause the global location bar to change its value.
+
+@element carbon-route
+@demo demo/index.html
+-->
+
+</head><body><script src="carbon-route-extracted.js"></script></body></html>

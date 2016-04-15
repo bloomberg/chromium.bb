@@ -4,18 +4,6 @@
       Polymer({
         is: 'paper-dropdown-menu',
 
-        /**
-         * Fired when the dropdown opens.
-         *
-         * @event paper-dropdown-open
-         */
-
-        /**
-         * Fired when the dropdown closes.
-         *
-         * @event paper-dropdown-close
-         */
-
         behaviors: [
           Polymer.IronButtonState,
           Polymer.IronControlState,

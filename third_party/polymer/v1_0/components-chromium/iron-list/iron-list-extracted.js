@@ -101,10 +101,6 @@
       Polymer.IronScrollTargetBehavior
     ],
 
-    listeners: {
-      'iron-resize': '_resizeHandler'
-    },
-
     keyBindings: {
       'up': '_didMoveUp',
       'down': '_didMoveDown',
@@ -408,10 +404,14 @@
     attached: function() {
       this.updateViewportBoundaries();
       this._render();
+      // `iron-resize` is fired when the list is attached if the event is added
+      // before attached causing unnecessary work.
+      this.listen(this, 'iron-resize', '_resizeHandler');
     },
 
     detached: function() {
       this._itemsRendered = false;
+      this.unlisten(this, 'iron-resize', '_resizeHandler');
     },
 
     /**
@@ -532,11 +532,9 @@
       }
 
       if (recycledTiles === 0) {
-        // If the list ever reach this case, the physical average is not significant enough
-        // to create all the items needed to cover the entire viewport.
-        // e.g. A few items have a height that differs from the average by serveral order of magnitude.
+        // Try to increase the pool if the list's client height isn't filled up with physical items
         if (physicalBottom < scrollBottom || this._physicalTop > scrollTop) {
-          this.async(this._increasePool.bind(this, 1));
+          this._increasePoolIfNeeded();
         }
       } else {
         this._virtualStart = this._virtualStart + recycledTiles;
@@ -591,19 +589,27 @@
 
     /**
      * Increases the pool of physical items only if needed.
-     * This function will allocate additional physical items
-     * if the physical size is shorter than `_optPhysicalSize`
+     *
+     * @return {boolean} True if the pool was increased.
      */
     _increasePoolIfNeeded: function() {
-      if (this._viewportSize === 0 || this._physicalSize >= this._optPhysicalSize) {
+      // Base case 1: the list has no size.
+      if (this._viewportSize === 0) {
         return false;
       }
-      // 0 <= `currentPage` <= `_maxPages`
+      // Base case 2: If the physical size is optimal and the list's client height is full
+      // with physical items, don't increase the pool.
+      var isClientHeightFull = this._physicalBottom >= this._scrollBottom && this._physicalTop <= this._scrollPosition;
+      if (this._physicalSize >= this._optPhysicalSize && isClientHeightFull) {
+        return false;
+      }
+      // this value should range between [0 <= `currentPage` <= `_maxPages`]
       var currentPage = Math.floor(this._physicalSize / this._viewportSize);
+
       if (currentPage === 0) {
         // fill the first page
         this._debounceTemplate(this._increasePool.bind(this, Math.round(this._physicalCount * 0.5)));
-      } else if (this._lastPage !== currentPage) {
+      } else if (this._lastPage !== currentPage && isClientHeightFull) {
         // paint the page and defer the next increase
         // wait 16ms which is rough enough to get paint cycle.
         Polymer.dom.addDebouncer(this.debounce('_debounceTemplate', this._increasePool.bind(this, 1), 16));
@@ -611,7 +617,9 @@
         // fill the rest of the pages
         this._debounceTemplate(this._increasePool.bind(this, 1));
       }
+
       this._lastPage = currentPage;
+
       return true;
     },
 
@@ -657,7 +665,6 @@
       if (this.isAttached && !this._itemsRendered && this._isVisible && requiresUpdate) {
         this._lastPage = 0;
         this._update();
-        this._scrollHandler();
         this._itemsRendered = true;
       }
     },
@@ -752,7 +759,7 @@
       if (!el) {
         return;
       }
-        
+
       inst = el._templateInstance;
 
       if (inst.__key__ !== key) {
@@ -1036,7 +1043,7 @@
       // update the position of the items
       this._positionItems();
       // set the new scroll position
-      this._resetScrollPosition(this._physicalTop + this._scrollerPaddingTop + targetOffsetTop + 1);
+      this._resetScrollPosition(this._physicalTop + this._scrollerPaddingTop + targetOffsetTop);
       // increase the pool of physical items if needed
       this._increasePoolIfNeeded();
       // clear cached visible index
@@ -1061,14 +1068,19 @@
       if (IOS && Math.abs(this._viewportSize - this._scrollTargetHeight) < 100) {
         return;
       }
-      this._debounceTemplate(function() {
-        this._render();
-        if (this._itemsRendered && this._physicalItems && this._isVisible) {
-          this._resetAverage();
-          this.updateViewportBoundaries();
-          this.scrollToIndex(this.firstVisibleIndex);
-        }
-      });
+      // In Desktop Safari 9.0.3, if the scroll bars are always shown, 
+      // changing the scroll position from a resize handler would result in 
+      // the scroll position being reset. Waiting 1ms fixes the issue. 
+      Polymer.dom.addDebouncer(this.debounce('_debounceTemplate',
+        function() {
+          this._render();
+
+          if (this._itemsRendered && this._physicalItems && this._isVisible) {
+            this._resetAverage();
+            this.updateViewportBoundaries();
+            this.scrollToIndex(this.firstVisibleIndex);
+          }
+        }.bind(this), 1));
     },
 
     _getModelFromItem: function(item) {

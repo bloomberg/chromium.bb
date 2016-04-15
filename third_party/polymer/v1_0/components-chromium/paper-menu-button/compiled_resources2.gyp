@@ -21,7 +21,6 @@
         '../iron-dropdown/compiled_resources2.gyp:iron-dropdown-extracted',
         '../neon-animation/animations/compiled_resources2.gyp:fade-in-animation-extracted',
         '../neon-animation/animations/compiled_resources2.gyp:fade-out-animation-extracted',
-        '../paper-material/compiled_resources2.gyp:paper-material-extracted',
         'paper-menu-button-animations-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
