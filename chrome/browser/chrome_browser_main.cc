@@ -671,6 +671,8 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   metrics::MetricsService* metrics = browser_process_->metrics_service();
   // TODO(asvitkine): Turn into a DCHECK after http://crbug.com/359406 is fixed.
   CHECK(!field_trial_list_);
+  // TODO(asvitkine): Remove this after http://crbug.com/359406 is fixed.
+  base::FieldTrialList::EnableGlobalStateChecks();
   field_trial_list_.reset(
       new base::FieldTrialList(metrics->CreateEntropyProvider().release()));
 
