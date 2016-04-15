@@ -2395,6 +2395,31 @@ TEST_F(EventRewriterAshTest, MouseWheelEventDispatchImpl) {
             static_cast<ui::KeyEvent*>(events[1])->key_code());
 }
 
+// Tests that if modifier keys are remapped, the flags of a mouse wheel event
+// will be rewritten properly.
+TEST_F(EventRewriterAshTest, MouseWheelEventModifiersRewritten) {
+  // Remap Control to Alt.
+  IntegerPrefMember control;
+  control.Init(prefs::kLanguageRemapControlKeyTo, prefs());
+  control.SetValue(chromeos::input_method::kAltKey);
+
+  // Generate a mouse wheel event that has a CONTROL_DOWN modifier flag and
+  // expect that it will be rewritten to ALT_DOWN.
+  ScopedVector<ui::Event> events;
+  gfx::Point location(0, 0);
+  ui::MouseEvent mev(
+      ui::ET_MOUSEWHEEL, location, location, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_CONTROL_DOWN, ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseWheelEvent positive(mev, 0, ui::MouseWheelEvent::kWheelDelta);
+  ui::EventDispatchDetails details = Send(&positive);
+  ASSERT_FALSE(details.dispatcher_destroyed);
+  PopEvents(&events);
+  EXPECT_EQ(1u, events.size());
+  EXPECT_TRUE(events[0]->IsMouseWheelEvent());
+  EXPECT_FALSE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(events[0]->flags() & ui::EF_ALT_DOWN);
+}
+
 class StickyKeysOverlayTest : public EventRewriterAshTest {
  public:
   StickyKeysOverlayTest() : overlay_(NULL) {}
