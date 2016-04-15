@@ -75,15 +75,6 @@ static void collectChildrenAndRemoveFromOldParent(Node& node, NodeVector& nodes,
         oldParent->removeChild(&node, exceptionState);
 }
 
-#if !ENABLE(OILPAN)
-void ContainerNode::removeDetachedChildren()
-{
-    DCHECK(!connectedSubframeCount());
-    DCHECK(needsAttach());
-    removeDetachedChildrenInContainer(*this);
-}
-#endif
-
 void ContainerNode::parserTakeAllChildrenFrom(ContainerNode& oldParent)
 {
     while (Node* child = oldParent.firstChild()) {
@@ -96,10 +87,6 @@ void ContainerNode::parserTakeAllChildrenFrom(ContainerNode& oldParent)
 ContainerNode::~ContainerNode()
 {
     DCHECK(needsAttach());
-#if !ENABLE(OILPAN)
-    willBeDeletedFromDocument();
-    removeDetachedChildren();
-#endif
 }
 
 bool ContainerNode::isChildTypeAllowed(const Node& child) const
@@ -166,12 +153,6 @@ bool ContainerNode::checkAcceptChildGuaranteedNodeTypes(const Node& newChild, co
 
 Node* ContainerNode::insertBefore(Node* newChild, Node* refChild, ExceptionState& exceptionState)
 {
-#if !ENABLE(OILPAN)
-    // Check that this node is not "floating".
-    // If it is, it can be deleted as a side effect of sending mutation events.
-    DCHECK(refCount() || parentOrShadowHostNode());
-#endif
-
     // insertBefore(node, 0) is equivalent to appendChild(node)
     if (!refChild) {
         return appendChild(newChild, exceptionState);
@@ -332,12 +313,6 @@ void ContainerNode::parserInsertBefore(Node* newChild, Node& nextChild)
 
 Node* ContainerNode::replaceChild(Node* newChild, Node* oldChild, ExceptionState& exceptionState)
 {
-#if !ENABLE(OILPAN)
-    // Check that this node is not "floating".
-    // If it is, it can be deleted as a side effect of sending mutation events.
-    DCHECK(refCount() || parentOrShadowHostNode());
-#endif
-
     if (oldChild == newChild) // Nothing to do.
         return oldChild;
 
@@ -464,75 +439,6 @@ void ContainerNode::willRemoveChildren()
     ChildFrameDisconnector(*this).disconnect(ChildFrameDisconnector::DescendantsOnly);
 }
 
-#if !ENABLE(OILPAN)
-void ContainerNode::removeDetachedChildrenInContainer(ContainerNode& container)
-{
-    // List of nodes to be deleted.
-    Node* head = nullptr;
-    Node* tail = nullptr;
-
-    addChildNodesToDeletionQueue(head, tail, container);
-
-    Node* n;
-    Node* next;
-    while (head) {
-        n = head;
-        ASSERT_WITH_SECURITY_IMPLICATION(n->m_deletionHasBegun);
-
-        next = n->nextSibling();
-        n->setNextSibling(nullptr);
-
-        head = next;
-        if (!next)
-            tail = nullptr;
-
-        if (n->hasChildren())
-            addChildNodesToDeletionQueue(head, tail, toContainerNode(*n));
-
-        delete n;
-    }
-}
-
-void ContainerNode::addChildNodesToDeletionQueue(Node*& head, Node*& tail, ContainerNode& container)
-{
-    // We have to tell all children that their parent has died.
-    Node* next = nullptr;
-    for (Node* n = container.firstChild(); n; n = next) {
-        ASSERT_WITH_SECURITY_IMPLICATION(!n->m_deletionHasBegun);
-
-        next = n->nextSibling();
-        n->setNextSibling(nullptr);
-        n->setParentOrShadowHostNode(nullptr);
-        container.setFirstChild(next);
-        if (next)
-            next->setPreviousSibling(nullptr);
-
-        if (!n->refCount()) {
-            if (n->inShadowIncludingDocument())
-                container.document().decrementNodeCount();
-
-#if ENABLE(SECURITY_ASSERT)
-            n->m_deletionHasBegun = true;
-#endif
-            // Add the node to the list of nodes to be deleted.
-            // Reuse the nextSibling pointer for this purpose.
-            if (tail)
-                tail->setNextSibling(n);
-            else
-                head = n;
-
-            tail = n;
-        } else {
-            container.document().adoptIfNeeded(*n);
-            if (n->inShadowIncludingDocument())
-                container.notifyNodeRemoved(*n);
-        }
-    }
-
-    container.setLastChild(nullptr);
-}
-#endif
-
 DEFINE_TRACE(ContainerNode)
 {
     visitor->trace(m_firstChild);
@@ -542,12 +448,6 @@ DEFINE_TRACE(ContainerNode)
 
 Node* ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
 {
-#if !ENABLE(OILPAN)
-    // Check that this node is not "floating".
-    // If it is, it can be deleted as a side effect of sending mutation events.
-    DCHECK(refCount() || parentOrShadowHostNode());
-#endif
-
     // NotFoundError: Raised if oldChild is not a child of this node.
     // FIXME: We should never really get PseudoElements in here, but editing will sometimes
     // attempt to remove them still. We should fix that and enable this ASSERT.
@@ -669,14 +569,6 @@ void ContainerNode::removeChildren(SubtreeModificationAction action)
         document().nodeChildrenWillBeRemoved(*this);
     }
 
-#if !ENABLE(OILPAN)
-    // FIXME: Remove this NodeVector. Right now WebPluginContainerImpl::m_element is a
-    // raw ptr which means the code below can drop the last ref to a plugin element and
-    // then the code in UpdateSuspendScope::performDeferredWidgetTreeOperations will
-    // try to destroy the plugin which will be a use-after-free. We should use a RefPtr
-    // in the WebPluginContainerImpl instead.
-    NodeVector removedChildren;
-#endif
     {
         HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
         DocumentOrderedMap::RemoveScope treeRemoveScope;
@@ -684,14 +576,8 @@ void ContainerNode::removeChildren(SubtreeModificationAction action)
             EventDispatchForbiddenScope assertNoEventDispatch;
             ScriptForbiddenScope forbidScript;
 
-#if !ENABLE(OILPAN)
-            removedChildren.reserveInitialCapacity(countChildren());
-#endif
             while (Node* child = m_firstChild) {
                 removeBetween(0, child->nextSibling(), *child);
-#if !ENABLE(OILPAN)
-                removedChildren.append(child);
-#endif
                 notifyNodeRemoved(*child);
             }
         }
@@ -706,12 +592,6 @@ void ContainerNode::removeChildren(SubtreeModificationAction action)
 
 Node* ContainerNode::appendChild(Node* newChild, ExceptionState& exceptionState)
 {
-
-#if !ENABLE(OILPAN)
-    // Check that this node is not "floating".
-    // If it is, it can be deleted as a side effect of sending mutation events.
-    DCHECK(refCount() || parentOrShadowHostNode());
-#endif
 
     // Make sure adding the new child is ok
     if (!checkAcceptChild(newChild, 0, exceptionState)) {
@@ -1274,11 +1154,6 @@ static void dispatchChildRemovalEvents(Node& child)
 
 void ContainerNode::updateTreeAfterInsertion(Node& child)
 {
-#if !ENABLE(OILPAN)
-    DCHECK(refCount());
-    DCHECK(child.refCount());
-#endif
-
     ChildListMutationScope(*this).childAdded(child);
 
     notifyNodeInserted(child);

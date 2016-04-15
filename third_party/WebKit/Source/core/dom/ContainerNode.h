@@ -215,10 +215,6 @@ protected:
 
     void invalidateNodeListCachesInAncestors(const QualifiedName* attrName = nullptr, Element* attributeOwnerElement = nullptr);
 
-#if !ENABLE(OILPAN)
-    void removeDetachedChildren();
-#endif
-
     void setFirstChild(Node* child) { m_firstChild = child; }
     void setLastChild(Node* child) { m_lastChild = child; }
 
