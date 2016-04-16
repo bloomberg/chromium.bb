@@ -178,6 +178,10 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         # TODO(gmanikpure): re-enable this test when we stop supporting
         # WebView on KitKat.
         'ChromeDriverTest.testGetUrlOnInvalidUrl',
+        # The WebView shell that we test against (on KitKat) does not perform
+        # cross-process navigations.
+        # TODO(samuong): reenable when it does.
+        'ChromeDriverPageLoadTimeoutTest.testPageLoadTimeoutCrossDomain',
     ]
 )
 
