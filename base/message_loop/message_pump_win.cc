@@ -9,7 +9,6 @@
 
 #include <limits>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
@@ -35,9 +34,6 @@ static const wchar_t kWndClassFormat[] = L"Chrome_MessagePumpWindow_%p";
 // Message sent to get an additional time slice for pumping (processing) another
 // task (a series of such messages creates a continuous task pump).
 static const int kMsgHaveWork = WM_USER + 1;
-
-// The application-defined code passed to the hook procedure.
-static const int kMessageFilterCode = 0x5001;
 
 //-----------------------------------------------------------------------------
 // MessagePumpWin public:
@@ -97,7 +93,7 @@ MessagePumpForUI::~MessagePumpForUI() {
 }
 
 void MessagePumpForUI::ScheduleWork() {
-  if (InterlockedExchange(&work_state_, HAVE_WORK) != READY)
+  if (InterlockedExchange(&have_work_, 1))
     return;  // Someone else continued the pumping.
 
   // Make sure the MessagePump does some work for us.
@@ -114,9 +110,7 @@ void MessagePumpForUI::ScheduleWork() {
   // common (queue is full, of about 2000 messages), so we'll do a near-graceful
   // recovery.  Nested loops are pretty transient (we think), so this will
   // probably be recoverable.
-
-  // Clarify that we didn't really insert.
-  InterlockedExchange(&work_state_, READY);
+  InterlockedExchange(&have_work_, 0);  // Clarify that we didn't really insert.
   UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem", MESSAGE_POST_ERROR,
                             MESSAGE_LOOP_PROBLEM_MAX);
 }
@@ -259,7 +253,7 @@ void MessagePumpForUI::HandleWorkMessage() {
   // sort.
   if (!state_) {
     // Since we handled a kMsgHaveWork message, we must still update this flag.
-    InterlockedExchange(&work_state_, READY);
+    InterlockedExchange(&have_work_, 0);
     return;
   }
 
@@ -402,8 +396,8 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
          msg.hwnd != message_hwnd_);
 
   // Since we discarded a kMsgHaveWork message, we must update the flag.
-  int old_work_state_ = InterlockedExchange(&work_state_, READY);
-  DCHECK_EQ(HAVE_WORK, old_work_state_);
+  int old_have_work = InterlockedExchange(&have_work_, 0);
+  DCHECK(old_have_work);
 
   // We don't need a special time slice if we didn't have_message to process.
   if (!have_message)
@@ -418,143 +412,6 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
 }
 
 //-----------------------------------------------------------------------------
-// MessagePumpForGpu public:
-
-MessagePumpForGpu::MessagePumpForGpu() : thread_id_(GetCurrentThreadId()) {
-  // Init the message queue.
-  MSG msg;
-  PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE);
-}
-
-MessagePumpForGpu::~MessagePumpForGpu() {}
-
-// static
-void MessagePumpForGpu::InitFactory() {
-  bool init_result = MessageLoop::InitMessagePumpForUIFactory(
-      &MessagePumpForGpu::CreateMessagePumpForGpu);
-  DCHECK(init_result);
-}
-
-// static
-std::unique_ptr<MessagePump> MessagePumpForGpu::CreateMessagePumpForGpu() {
-  return WrapUnique<MessagePump>(new MessagePumpForGpu);
-}
-
-void MessagePumpForGpu::ScheduleWork() {
-  if (InterlockedExchange(&work_state_, HAVE_WORK) != READY)
-    return;  // Someone else continued the pumping.
-
-  // Make sure the MessagePump does some work for us.
-  BOOL ret = PostThreadMessage(thread_id_, kMsgHaveWork, 0, 0);
-  if (ret)
-    return;  // There was room in the Window Message queue.
-
-  // See comment in MessagePumpForUI::ScheduleWork.
-  InterlockedExchange(&work_state_, READY);
-  UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem", MESSAGE_POST_ERROR,
-                            MESSAGE_LOOP_PROBLEM_MAX);
-}
-
-void MessagePumpForGpu::ScheduleDelayedWork(
-    const TimeTicks& delayed_work_time) {
-  // We know that we can't be blocked right now since this method can only be
-  // called on the same thread as Run, so we only need to update our record of
-  // how long to sleep when we do sleep.
-  delayed_work_time_ = delayed_work_time;
-}
-
-//-----------------------------------------------------------------------------
-// MessagePumpForGpu private:
-
-void MessagePumpForGpu::DoRunLoop() {
-  while (!state_->should_quit) {
-    // Indicate that the loop is handling the work.
-    // If there is a race condition between switching to WORKING state here and
-    // the producer thread setting the HAVE_WORK state after exiting the wait,
-    // the event might remain in the signalled state. That might be less than
-    // optimal but wouldn't result in failing to handle the work.
-    InterlockedExchange(&work_state_, WORKING);
-
-    bool more_work_is_plausible = state_->delegate->DoWork();
-    if (state_->should_quit)
-      break;
-
-    more_work_is_plausible |=
-        state_->delegate->DoDelayedWork(&delayed_work_time_);
-    if (state_->should_quit)
-      break;
-
-    if (more_work_is_plausible)
-      continue;
-
-    more_work_is_plausible = state_->delegate->DoIdleWork();
-    if (state_->should_quit)
-      break;
-
-    if (more_work_is_plausible)
-      continue;
-
-    // Switch that working state to READY to indicate that the loop is
-    // waiting for accepting new work if it is still in WORKING state and hasn't
-    // been signalled. Otherwise if it is in HAVE_WORK state skip the wait
-    // and proceed to handing the work.
-    if (InterlockedCompareExchange(&work_state_, READY, WORKING) == HAVE_WORK)
-      continue;  // Skip wait, more work was requested.
-
-    WaitForWork();  // Wait (sleep) until we have work to do again.
-  }
-}
-
-void MessagePumpForGpu::WaitForWork() {
-  // Wait until a message is available, up to the time needed by the timer
-  // manager to fire the next set of timers.
-  int delay;
-
-  // The while loop handles the situation where on Windows 7 and later versions
-  // MsgWaitForMultipleObjectsEx might time out slightly earlier (less than one
-  // ms) than the specified |delay|. In that situation it is more optimal to
-  // just wait again rather than waste a DoRunLoop cycle.
-  while ((delay = GetCurrentDelay()) != 0) {
-    if (delay < 0)  // Negative value means no timers waiting.
-      delay = INFINITE;
-
-    DWORD result = MsgWaitForMultipleObjectsEx(0, NULL, delay, QS_ALLINPUT, 0);
-    if (result == WAIT_OBJECT_0) {
-      // A WM_* message is available.
-      if (ProcessMessages())
-        return;
-    }
-
-    DCHECK_NE(WAIT_FAILED, result) << GetLastError();
-  }
-}
-
-bool MessagePumpForGpu::ProcessMessages() {
-  MSG msg;
-  bool have_work = false;
-  while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-    if (msg.message == WM_QUIT) {
-      // Repost the QUIT message so that it will be retrieved by the primary
-      // GetMessage() loop.
-      state_->should_quit = true;
-      PostQuitMessage(static_cast<int>(msg.wParam));
-      return true;
-    }
-
-    if (msg.hwnd == nullptr && msg.message == kMsgHaveWork) {
-      have_work = true;
-    } else {
-      if (!CallMsgFilter(const_cast<MSG*>(&msg), kMessageFilterCode)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-      }
-    }
-  }
-
-  return have_work;
-}
-
-//-----------------------------------------------------------------------------
 // MessagePumpForIO public:
 
 MessagePumpForIO::MessagePumpForIO() {
@@ -566,7 +423,7 @@ MessagePumpForIO::~MessagePumpForIO() {
 }
 
 void MessagePumpForIO::ScheduleWork() {
-  if (InterlockedExchange(&work_state_, HAVE_WORK) != READY)
+  if (InterlockedExchange(&have_work_, 1))
     return;  // Someone else continued the pumping.
 
   // Make sure the MessagePump does some work for us.
@@ -577,7 +434,7 @@ void MessagePumpForIO::ScheduleWork() {
     return;  // Post worked perfectly.
 
   // See comment in MessagePumpForUI::ScheduleWork() for this error recovery.
-  InterlockedExchange(&work_state_, READY);  // Clarify that we didn't succeed.
+  InterlockedExchange(&have_work_, 0);  // Clarify that we didn't succeed.
   UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem", COMPLETION_POST_ERROR,
                             MESSAGE_LOOP_PROBLEM_MAX);
 }
@@ -722,7 +579,7 @@ bool MessagePumpForIO::ProcessInternalIOItem(const IOItem& item) {
       reinterpret_cast<void*>(this) == reinterpret_cast<void*>(item.handler)) {
     // This is our internal completion.
     DCHECK(!item.bytes_transfered);
-    InterlockedExchange(&work_state_, READY);
+    InterlockedExchange(&have_work_, 0);
     return true;
   }
   return false;
