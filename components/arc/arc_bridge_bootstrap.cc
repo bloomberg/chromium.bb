@@ -34,16 +34,6 @@ namespace arc {
 
 namespace {
 
-// We do not know the PID of ARC, since Chrome does not create it directly.
-// Since Mojo in POSIX does not use the child PID except as an unique
-// identifier for the routing table, rather than doing a lot of plumbing in the
-// whole system to get the correct PID, just use an arbitrary number that will
-// never be used by a legitimate process. Chrome OS assigns unassigned PIDs
-// sequentially until it reaches a certain maximum value (Chrome OS uses the
-// default value of 32k), at which point it loops around to zero. An arbitrary
-// number larger than the maximum should be safe.
-const pid_t kArcPid = 0x3DE0EA7C;
-
 const base::FilePath::CharType kArcBridgeSocketPath[] =
     FILE_PATH_LITERAL("/var/run/chrome/arc_bridge.sock");
 
@@ -260,8 +250,10 @@ base::ScopedFD ArcBridgeBootstrapImpl::AcceptInstanceConnection(
   }
   base::ScopedFD scoped_fd(raw_fd);
 
+  // Hardcode pid 0 since it is unused in mojo.
+  const base::ProcessHandle kUnusedChildProcessHandle = 0;
   mojo::edk::ScopedPlatformHandle child_handle =
-      mojo::edk::ChildProcessLaunched(kArcPid);
+      mojo::edk::ChildProcessLaunched(kUnusedChildProcessHandle);
 
   mojo::edk::ScopedPlatformHandleVectorPtr handles(
       new mojo::edk::PlatformHandleVector{child_handle.release()});

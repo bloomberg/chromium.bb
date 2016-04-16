@@ -96,6 +96,7 @@ mojom("arc_bindings") {
     "common/power.mojom",
     "common/process.mojom",
     "common/video.mojom",
+    "common/video_accelerator.mojom",
   ]
 }
 

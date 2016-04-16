@@ -119,6 +119,7 @@
         'arc/common/power.mojom',
         'arc/common/process.mojom',
         'arc/common/video.mojom',
+        'arc/common/video_accelerator.mojom',
       ],
     },
     {

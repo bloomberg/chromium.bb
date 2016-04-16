@@ -40,6 +40,7 @@
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/trace_event_args_whitelist.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/gpu/chrome_content_gpu_client.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "components/component_updater/component_updater_paths.h"
@@ -141,6 +142,8 @@
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 #include "chrome/child/pdf_child_init.h"
 
+base::LazyInstance<ChromeContentGpuClient> g_chrome_content_gpu_client =
+    LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ChromeContentRendererClient>
     g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ChromeContentUtilityClient>
@@ -974,6 +977,14 @@ ChromeMainDelegate::CreateContentBrowserClient() {
   return NULL;
 #else
   return g_chrome_content_browser_client.Pointer();
+#endif
+}
+
+content::ContentGpuClient* ChromeMainDelegate::CreateContentGpuClient() {
+#if defined(CHROME_MULTIPLE_DLL_BROWSER)
+  return nullptr;
+#else
+  return g_chrome_content_gpu_client.Pointer();
 #endif
 }
 

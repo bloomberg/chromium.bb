@@ -497,6 +497,7 @@ group("child_dependencies") {
     public_deps += [
       "//chrome/browser/devtools",
       "//chrome/child",
+      "//chrome/gpu",
       "//chrome/renderer",
       "//chrome/utility",
       "//content/public/child",
@@ -1014,6 +1015,7 @@ if (is_android) {
       "//chrome/browser/ui",
       "//chrome/child",
       "//chrome/common",
+      "//chrome/gpu",
       "//chrome/renderer",
       "//chrome/utility",
       "//components/safe_browsing_db:safe_browsing_db_mobile",

@@ -5,8 +5,12 @@
 module arc;
 
 interface VideoHost {
-  // Notifies Chrome a request for ipc channel of video acceleration.
-  OnRequestArcVideoAcceleratorChannel() => (handle channel_handle);
+  // Requests an ipc channel from Chrome to be used in the video accelerator.
+  // Replies with |channel_handle| of mojo initial message pipe and |token| for
+  // creating the client end of VideoAcceleratorService message pipe.
+  // Replys invalid handle and empty token if any failure.
+  OnRequestArcVideoAcceleratorChannel() => (handle channel_handle,
+                                            string token);
 };
 
 interface VideoInstance {
