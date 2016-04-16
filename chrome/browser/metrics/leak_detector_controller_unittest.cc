@@ -69,11 +69,11 @@ TEST(LeakDetectorControllerTest, SingleReport) {
 
   // Check that default leak detector parameters are stored in the leak report.
   // Default values are listed in leak_detector_controller.cc.
-  EXPECT_DOUBLE_EQ(1.0f / 256, proto.sampling_rate());
-  EXPECT_EQ(4U, proto.max_stack_depth());
-  EXPECT_EQ(32U * 1024 * 1024, proto.analysis_interval_bytes());
-  EXPECT_EQ(4U, proto.size_suspicion_threshold());
-  EXPECT_EQ(4U, proto.call_stack_suspicion_threshold());
+  EXPECT_DOUBLE_EQ(1.0f / 256, proto.params().sampling_rate());
+  EXPECT_EQ(4U, proto.params().max_stack_depth());
+  EXPECT_EQ(32U * 1024 * 1024, proto.params().analysis_interval_bytes());
+  EXPECT_EQ(4U, proto.params().size_suspicion_threshold());
+  EXPECT_EQ(4U, proto.params().call_stack_suspicion_threshold());
 
   // No more reports.
   controller->GetLeakReports(&stored_reports);

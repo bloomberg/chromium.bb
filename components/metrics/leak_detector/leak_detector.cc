@@ -160,18 +160,15 @@ LeakDetector* LeakDetector::GetInstance() {
   return g_instance.Pointer();
 }
 
-void LeakDetector::Init(float sampling_rate,
-                        size_t max_call_stack_unwind_depth,
-                        uint64_t analysis_interval_bytes,
-                        uint32_t size_suspicion_threshold,
-                        uint32_t call_stack_suspicion_threshold) {
+void LeakDetector::Init(const MemoryLeakReportProto::Params& params) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(sampling_rate > 0) << "Sampling rate cannot be zero or negative.";
+  DCHECK_GT(params.sampling_rate(), 0);
 
-  sampling_factor_ = base::saturated_cast<uint64_t>(sampling_rate * UINT64_MAX);
+  sampling_factor_ =
+      base::saturated_cast<uint64_t>(params.sampling_rate() * UINT64_MAX);
 
-  analysis_interval_bytes_ = analysis_interval_bytes;
-  max_call_stack_unwind_depth_ = max_call_stack_unwind_depth;
+  analysis_interval_bytes_ = params.analysis_interval_bytes();
+  max_call_stack_unwind_depth_ = params.max_stack_depth();
 
   MappingInfo mapping = {0};
 #if defined(OS_CHROMEOS)
@@ -187,8 +184,8 @@ void LeakDetector::Init(float sampling_rate,
   // whether |impl_| has already been initialized.
   CHECK(!impl_.get()) << "Cannot initialize LeakDetector more than once!";
   impl_.reset(new leak_detector::LeakDetectorImpl(
-      mapping.addr, mapping.size, size_suspicion_threshold,
-      call_stack_suspicion_threshold));
+      mapping.addr, mapping.size, params.size_suspicion_threshold(),
+      params.call_stack_suspicion_threshold()));
 
   // Register allocator hook functions. This must be done last since the
   // preceding code will need to call the allocator.

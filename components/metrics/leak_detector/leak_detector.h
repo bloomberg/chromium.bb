@@ -62,27 +62,10 @@ class LeakDetector {
   // Returns the sole instance, or creates it if it hasn't already been created.
   static LeakDetector* GetInstance();
 
-  // Initializer arguments:
-  // sampling_rate:
-  //     Pseudorandomly sample a fraction of the incoming allocations and frees,
-  //     based on hash values. Setting to 0 means no allocs/frees are sampled.
-  //     Setting to 1.0 or more means all allocs/frees are sampled. Anything in
-  //     between will result in an approximately that fraction of allocs/frees
-  //     being sampled.
-  // max_call_stack_unwind_depth:
-  //     The max number of call stack frames to unwind.
-  // analysis_interval_bytes:
-  //     Perform a leak analysis each time this many bytes have been allocated
-  //     since the previous analysis.
-  // size_suspicion_threshold, call_stack_suspicion_threshold:
-  //     A possible leak should be suspected this many times to take action on i
-  //     For size analysis, the action is to start profiling by call stack.
-  //     For call stack analysis, the action is to generate a leak report.
-  void Init(float sampling_rate,
-            size_t max_call_stack_unwind_depth,
-            uint64_t analysis_interval_bytes,
-            uint32_t size_suspicion_threshold,
-            uint32_t call_stack_suspicion_threshold);
+  // Initializes leak detector with a set of params given by |params|. See the
+  // definition of MemoryLeakReportProto::Params for info about individual
+  // parameters.
+  void Init(const MemoryLeakReportProto::Params& params);
 
   // Add |observer| to the list of stored Observers, i.e. |observers_|, to which
   // the leak detector will report leaks.

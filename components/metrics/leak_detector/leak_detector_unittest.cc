@@ -67,10 +67,15 @@ class TestObserver : public LeakDetector::Observer {
 class LeakDetectorTest : public ::testing::Test {
  public:
   LeakDetectorTest() : detector_(LeakDetector::GetInstance()) {
-    detector_->Init(kDefaultSamplingRate, kDefaultMaxCallStackUnwindDepth,
-                    kDefaultAnalysisIntervalBytes,
-                    kDefaultSizeSuspicionThreshold,
-                    kDefaultCallStackSuspicionThreshold);
+    MemoryLeakReportProto::Params params;
+    params.set_sampling_rate(kDefaultSamplingRate);
+    params.set_max_stack_depth(kDefaultMaxCallStackUnwindDepth);
+    params.set_analysis_interval_bytes(kDefaultAnalysisIntervalBytes);
+    params.set_size_suspicion_threshold(kDefaultSizeSuspicionThreshold);
+    params.set_call_stack_suspicion_threshold(
+        kDefaultCallStackSuspicionThreshold);
+
+    detector_->Init(params);
   }
 
  protected:
