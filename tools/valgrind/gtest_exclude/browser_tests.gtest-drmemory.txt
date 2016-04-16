@@ -153,6 +153,7 @@ PushMessagingBrowserTest.SubscribeWithoutKeySuccessNotificationsGranted
 SubframeTaskBrowserTest.TaskManagerShowsSubframeTasks
 SyncSetupWebUITestAsync.RestoreSyncDataTypes
 WebUIWebView*
+WebrtcEventLogApiTest*
 ZoomControllerBrowserTest.NavigationResetsManualMode
 
 # https://crbug.com/603334
