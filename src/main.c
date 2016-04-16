@@ -653,6 +653,23 @@ load_backend_old(struct weston_compositor *compositor, const char *backend,
 	return backend_init(compositor, argc, argv, wc, NULL);
 }
 
+/* Temporary function to be replaced by weston_compositor_load_backend(). */
+static int
+load_backend_new(struct weston_compositor *compositor, const char *backend,
+		 struct weston_backend_config *config_base)
+{
+	int (*backend_init)(struct weston_compositor *c,
+			    int *argc, char *argv[],
+			    struct weston_config *config,
+			    struct weston_backend_config *config_base);
+
+	backend_init = weston_load_module(backend, "backend_init");
+	if (!backend_init)
+		return -1;
+
+	return backend_init(compositor, NULL, NULL, NULL, config_base);
+}
+
 static int
 load_backend(struct weston_compositor *compositor, const char *backend,
 	     int *argc, char **argv, struct weston_config *config)
