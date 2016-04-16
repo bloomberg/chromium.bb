@@ -27,6 +27,11 @@ bool MachPortRelay::ReceivePorts(PlatformHandleVector* handles) {
     if (handle->type != PlatformHandle::Type::MACH_NAME)
       continue;
 
+    if (handle->port == MACH_PORT_NULL) {
+      handle->type = PlatformHandle::Type::MACH;
+      continue;
+    }
+
     base::mac::ScopedMachReceiveRight message_port(handle->port);
     base::mac::ScopedMachSendRight received_port(
         base::ReceiveMachPort(message_port.get()));
@@ -72,8 +77,13 @@ bool MachPortRelay::SendPortsToProcess(Channel::Message* message,
     if (handle->type != PlatformHandle::Type::MACH)
       continue;
 
+    if (handle->port == MACH_PORT_NULL) {
+      handle->type = PlatformHandle::Type::MACH_NAME;
+      num_sent++;
+      continue;
+    }
+
     mach_port_name_t intermediate_port;
-    DCHECK(handle->port != MACH_PORT_NULL);
     intermediate_port = base::CreateIntermediateMachPort(
         task_port, base::mac::ScopedMachSendRight(handle->port), nullptr);
     if (intermediate_port == MACH_PORT_NULL) {
@@ -110,6 +120,12 @@ bool MachPortRelay::ExtractPortRights(Channel::Message* message,
     DCHECK(handle->type != PlatformHandle::Type::MACH);
     if (handle->type != PlatformHandle::Type::MACH_NAME)
       continue;
+
+    if (handle->port == MACH_PORT_NULL) {
+      handle->type = PlatformHandle::Type::MACH;
+      num_received++;
+      continue;
+    }
 
     mach_port_t extracted_right = MACH_PORT_NULL;
     mach_msg_type_name_t extracted_right_type;

@@ -69,13 +69,28 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     struct MachPortsEntry {
+      // Index of Mach port in the original vector of PlatformHandles.
       uint16_t index;
+
+      // Mach port name.
       uint32_t mach_port;
       static_assert(sizeof(mach_port_t) <= sizeof(uint32_t),
                     "mach_port_t must be no larger than uint32_t");
     };
     static_assert(sizeof(MachPortsEntry) == 6,
                   "sizeof(MachPortsEntry) must be 6 bytes");
+
+    // Structure of the extra header field when present on OSX.
+    struct MachPortsExtraHeader {
+      // Actual number of Mach ports encoded in the extra header.
+      uint16_t num_ports;
+
+      // Array of encoded Mach ports. If |num_ports| > 0, |entires[0]| through
+      // to |entries[num_ports-1]| inclusive are valid.
+      MachPortsEntry entries[0];
+    };
+    static_assert(sizeof(MachPortsExtraHeader) == 2,
+                  "sizeof(MachPortsExtraHeader) must be 2 bytes");
 #endif
 #pragma pack(pop)
 
@@ -155,7 +170,7 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     // On OSX, handles are serialised into the extra header section.
-    MachPortsEntry* mach_ports_ = nullptr;
+    MachPortsExtraHeader* mach_ports_header_ = nullptr;
 #endif
 
     DISALLOW_COPY_AND_ASSIGN(Message);

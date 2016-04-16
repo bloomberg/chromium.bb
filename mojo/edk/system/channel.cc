@@ -53,7 +53,10 @@ Channel::Message::Message(size_t payload_size,
   // serialised into the message buffer. Since there could be a mix of fds and
   // mach ports, we store the mach ports as an <index, port> pair (of uint32_t),
   // so that the original ordering of handles can be re-created.
-  extra_header_size = max_handles * sizeof(MachPortsEntry);
+  if (max_handles) {
+    extra_header_size =
+        sizeof(MachPortsExtraHeader) + (max_handles * sizeof(MachPortsEntry));
+  }
 #endif
   // Pad extra header data to be aliged to |kChannelMessageAlignment| bytes.
   if (extra_header_size % kChannelMessageAlignment) {
@@ -96,10 +99,14 @@ Channel::Message::Message(size_t payload_size,
     for (size_t i = 0; i < max_handles_; ++i)
       handles()[i] = PlatformHandle();
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-    mach_ports_ = reinterpret_cast<MachPortsEntry*>(mutable_extra_header());
+    mach_ports_header_ =
+        reinterpret_cast<MachPortsExtraHeader*>(mutable_extra_header());
+    mach_ports_header_->num_ports = 0;
     // Initialize all handles to invalid values.
-    for (size_t i = 0; i < max_handles_; ++i)
-      mach_ports_[i] = {0, static_cast<uint32_t>(MACH_PORT_NULL)};
+    for (size_t i = 0; i < max_handles_; ++i) {
+      mach_ports_header_->entries[i] =
+          {0, static_cast<uint32_t>(MACH_PORT_NULL)};
+    }
 #endif
   }
 }
@@ -241,16 +248,21 @@ void Channel::Message::SetHandles(ScopedPlatformHandleVectorPtr new_handles) {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   size_t mach_port_index = 0;
-  for (size_t i = 0; i < max_handles_; ++i)
-    mach_ports_[i] = {0, static_cast<uint32_t>(MACH_PORT_NULL)};
-  for (size_t i = 0; i < handle_vector_->size(); i++) {
-    if ((*handle_vector_)[i].type == PlatformHandle::Type::MACH ||
-        (*handle_vector_)[i].type == PlatformHandle::Type::MACH_NAME) {
-      mach_port_t port = (*handle_vector_)[i].port;
-      mach_ports_[mach_port_index].index = i;
-      mach_ports_[mach_port_index].mach_port = port;
-      mach_port_index++;
+  if (mach_ports_header_) {
+    for (size_t i = 0; i < max_handles_; ++i) {
+      mach_ports_header_->entries[i] =
+          {0, static_cast<uint32_t>(MACH_PORT_NULL)};
     }
+    for (size_t i = 0; i < handle_vector_->size(); i++) {
+      if ((*handle_vector_)[i].type == PlatformHandle::Type::MACH ||
+          (*handle_vector_)[i].type == PlatformHandle::Type::MACH_NAME) {
+        mach_port_t port = (*handle_vector_)[i].port;
+        mach_ports_header_->entries[mach_port_index].index = i;
+        mach_ports_header_->entries[mach_port_index].mach_port = port;
+        mach_port_index++;
+      }
+    }
+    mach_ports_header_->num_ports = static_cast<uint16_t>(mach_port_index);
   }
 #endif
 }
@@ -266,8 +278,13 @@ ScopedPlatformHandleVectorPtr Channel::Message::TakeHandles() {
   header_->num_handles = 0;
   return moved_handles;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  for (size_t i = 0; i < max_handles_; ++i)
-    mach_ports_[i] = {0, static_cast<uint32_t>(MACH_PORT_NULL)};
+  if (mach_ports_header_) {
+    for (size_t i = 0; i < max_handles_; ++i) {
+      mach_ports_header_->entries[i] =
+          {0, static_cast<uint32_t>(MACH_PORT_NULL)};
+    }
+    mach_ports_header_->num_ports = 0;
+  }
   header_->num_handles = 0;
   return std::move(handle_vector_);
 #else
