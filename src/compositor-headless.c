@@ -31,31 +31,27 @@
 #include <sys/time.h>
 #include <stdbool.h>
 
-#include "shared/helpers.h"
 #include "compositor.h"
+#include "compositor-headless.h"
+#include "shared/helpers.h"
 #include "pixman-renderer.h"
 #include "presentation-time-server-protocol.h"
 
 struct headless_backend {
 	struct weston_backend base;
 	struct weston_compositor *compositor;
+
 	struct weston_seat fake_seat;
 	bool use_pixman;
 };
 
 struct headless_output {
 	struct weston_output base;
+
 	struct weston_mode mode;
 	struct wl_event_source *finish_frame_timer;
 	uint32_t *image_buf;
 	pixman_image_t *image;
-};
-
-struct headless_parameters {
-	int width;
-	int height;
-	int use_pixman;
-	uint32_t transform;
 };
 
 static void
@@ -120,7 +116,7 @@ headless_output_destroy(struct weston_output *output_base)
 
 static int
 headless_backend_create_output(struct headless_backend *b,
-			       struct headless_parameters *param)
+			       struct weston_headless_backend_config *config)
 {
 	struct weston_compositor *c = b->compositor;
 	struct headless_output *output;
@@ -132,15 +128,15 @@ headless_backend_create_output(struct headless_backend *b,
 
 	output->mode.flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
-	output->mode.width = param->width;
-	output->mode.height = param->height;
+	output->mode.width = config->width;
+	output->mode.height = config->height;
 	output->mode.refresh = 60000;
 	wl_list_init(&output->base.mode_list);
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
 	output->base.current_mode = &output->mode;
-	weston_output_init(&output->base, c, 0, 0, param->width,
-			   param->height, param->transform, 1);
+	weston_output_init(&output->base, c, 0, 0, config->width,
+			   config->height, config->transform, 1);
 
 	output->base.make = "weston";
 	output->base.model = "headless";
@@ -158,15 +154,15 @@ headless_backend_create_output(struct headless_backend *b,
 	output->base.switch_mode = NULL;
 
 	if (b->use_pixman) {
-		output->image_buf = malloc(param->width * param->height * 4);
+		output->image_buf = malloc(config->width * config->height * 4);
 		if (!output->image_buf)
 			return -1;
 
 		output->image = pixman_image_create_bits(PIXMAN_x8r8g8b8,
-							 param->width,
-							 param->height,
+							 config->width,
+							 config->height,
 							 output->image_buf,
-							 param->width * 4);
+							 config->width * 4);
 
 		if (pixman_renderer_output_create(&output->base) < 0)
 			return -1;
@@ -217,8 +213,7 @@ headless_destroy(struct weston_compositor *ec)
 
 static struct headless_backend *
 headless_backend_create(struct weston_compositor *compositor,
-			struct headless_parameters *param,
-			const char *display_name)
+			struct weston_headless_backend_config *config)
 {
 	struct headless_backend *b;
 
@@ -236,11 +231,11 @@ headless_backend_create(struct weston_compositor *compositor,
 	b->base.destroy = headless_destroy;
 	b->base.restore = headless_restore;
 
-	b->use_pixman = param->use_pixman;
+	b->use_pixman = config->use_pixman;
 	if (b->use_pixman) {
 		pixman_renderer_init(compositor);
 	}
-	if (headless_backend_create_output(b, param) < 0)
+	if (headless_backend_create_output(b, config) < 0)
 		goto err_input;
 
 	if (!b->use_pixman && noop_renderer_init(compositor) < 0)
@@ -257,36 +252,33 @@ err_free:
 	return NULL;
 }
 
+static void
+config_init_to_defaults(struct weston_headless_backend_config *config)
+{
+}
+
 WL_EXPORT int
 backend_init(struct weston_compositor *compositor,
 	     int *argc, char *argv[],
-	     struct weston_config *config,
+	     struct weston_config *wc,
 	     struct weston_backend_config *config_base)
 {
-	int width = 1024, height = 640;
-	char *display_name = NULL;
-	struct headless_parameters param = { 0, };
-	const char *transform = "normal";
 	struct headless_backend *b;
+	struct weston_headless_backend_config config = {{ 0, }};
 
-	const struct weston_option headless_options[] = {
-		{ WESTON_OPTION_INTEGER, "width", 0, &width },
-		{ WESTON_OPTION_INTEGER, "height", 0, &height },
-		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &param.use_pixman },
-		{ WESTON_OPTION_STRING, "transform", 0, &transform },
-	};
+	if (config_base == NULL ||
+	    config_base->struct_version != WESTON_HEADLESS_BACKEND_CONFIG_VERSION ||
+	    config_base->struct_size > sizeof(struct weston_headless_backend_config)) {
+		weston_log("headless backend config structure is invalid\n");
+		return -1;
+	}
 
-	parse_options(headless_options,
-		      ARRAY_LENGTH(headless_options), argc, argv);
+	config_init_to_defaults(&config);
+	memcpy(&config, config_base, config_base->struct_size);
 
-	param.width = width;
-	param.height = height;
-
-	if (weston_parse_transform(transform, &param.transform) < 0)
-		weston_log("Invalid transform \"%s\"\n", transform);
-
-	b = headless_backend_create(compositor, &param, display_name);
+	b = headless_backend_create(compositor, &config);
 	if (b == NULL)
 		return -1;
+
 	return 0;
 }

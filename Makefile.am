@@ -72,6 +72,7 @@ weston_SOURCES =					\
 	src/log.c					\
 	src/compositor.c				\
 	src/compositor.h				\
+	src/compositor-headless.h		\
 	src/input.c					\
 	src/data-device.c				\
 	src/screenshooter.c				\
@@ -208,6 +209,7 @@ westonincludedir = $(includedir)/weston
 westoninclude_HEADERS =				\
 	src/version.h				\
 	src/compositor.h			\
+	src/compositor-headless.h		\
 	src/timeline-object.h			\
 	shared/matrix.h				\
 	shared/config-parser.h			\
@@ -353,6 +355,7 @@ headless_backend_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
 headless_backend_la_CFLAGS = $(COMPOSITOR_CFLAGS) $(AM_CFLAGS)
 headless_backend_la_SOURCES = 			\
 	src/compositor-headless.c		\
+	src/compositor-headless.h		\
 	shared/helpers.h
 endif
 

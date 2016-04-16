@@ -47,6 +47,8 @@
 #include "git-version.h"
 #include "version.h"
 
+#include "compositor-headless.h"
+
 static struct wl_list child_process_list;
 static struct weston_compositor *segv_compositor;
 
@@ -684,11 +686,45 @@ load_backend_new(struct weston_compositor *compositor, const char *backend,
 }
 
 static int
+load_headless_backend(struct weston_compositor *c, char const * backend,
+		      int *argc, char **argv, struct weston_config *wc)
+{
+	struct weston_headless_backend_config config = {{ 0, }};
+	int ret = 0;
+	const char *transform = "normal";
+
+	config.width = 1024;
+	config.height = 640;
+
+	const struct weston_option options[] = {
+		{ WESTON_OPTION_INTEGER, "width", 0, &config.width },
+		{ WESTON_OPTION_INTEGER, "height", 0, &config.height },
+		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &config.use_pixman },
+		{ WESTON_OPTION_STRING, "transform", 0, &transform },
+	};
+
+	parse_options(options, ARRAY_LENGTH(options), argc, argv);
+
+	if (weston_parse_transform(transform, &config.transform) < 0)
+		weston_log("Invalid transform \"%s\"\n", transform);
+
+	config.base.struct_version = WESTON_HEADLESS_BACKEND_CONFIG_VERSION;
+	config.base.struct_size = sizeof(struct weston_headless_backend_config);
+
+	/* load the actual wayland backend and configure it */
+	ret = load_backend_new(c, backend, &config.base);
+
+	return ret;
+}
+
+static int
 load_backend(struct weston_compositor *compositor, const char *backend,
 	     int *argc, char **argv, struct weston_config *config)
 {
+	if (strstr(backend, "headless-backend.so"))
+		return load_headless_backend(compositor, backend, argc, argv, config);
 #if 0
-	if (strstr(backend, "drm-backend.so"))
+	else if (strstr(backend, "drm-backend.so"))
 		return load_drm_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "wayland-backend.so"))
 		return load_wayland_backend(compositor, backend, argc, argv, config);
@@ -696,8 +732,6 @@ load_backend(struct weston_compositor *compositor, const char *backend,
 		return load_x11_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "fbdev-backend.so"))
 		return load_fbdev_backend(compositor, backend, argc, argv, config);
-	else if (strstr(backend, "headless-backend.so"))
-		return load_headless_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "rpi-backend.so"))
 		return load_rpi_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "rdp-backend.so"))
