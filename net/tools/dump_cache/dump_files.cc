@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
@@ -80,7 +81,7 @@ void DumpStats(const base::FilePath& path, disk_cache::CacheAddr addr) {
   size_t offset = address.start_block() * address.BlockSize() +
                   disk_cache::kBlockHeaderSize;
 
-  scoped_ptr<int32_t[]> buffer(new int32_t[length]);
+  std::unique_ptr<int32_t[]> buffer(new int32_t[length]);
   if (!file->Read(buffer.get(), length, offset))
     return;
 
@@ -295,7 +296,7 @@ bool CacheDumper::HexDump(disk_cache::CacheAddr addr, std::string* out) {
     return false;
 
   size_t size = address.num_blocks() * address.BlockSize();
-  scoped_ptr<char> buffer(new char[size]);
+  std::unique_ptr<char> buffer(new char[size]);
 
   size_t offset = address.start_block() * address.BlockSize() +
                   disk_cache::kBlockHeaderSize;

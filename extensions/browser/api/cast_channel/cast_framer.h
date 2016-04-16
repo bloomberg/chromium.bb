@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "extensions/common/api/cast_channel.h"
 #include "net/base/io_buffer.h"
 

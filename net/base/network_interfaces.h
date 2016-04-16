@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
@@ -121,7 +121,7 @@ class NET_EXPORT ScopedWifiOptions {
 // |options| is an ORed bitfield of WifiOptions.
 // Options are automatically disabled when the scoped pointer
 // is freed. Currently only available on Windows.
-NET_EXPORT scoped_ptr<ScopedWifiOptions> SetWifiOptions(int options);
+NET_EXPORT std::unique_ptr<ScopedWifiOptions> SetWifiOptions(int options);
 
 // Returns the hostname of the current system. Returns empty string on failure.
 NET_EXPORT std::string GetHostName();

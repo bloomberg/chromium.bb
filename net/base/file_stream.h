@@ -12,9 +12,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
@@ -151,7 +152,7 @@ class NET_EXPORT FileStream {
   // before completion of an async operation. Also if a FileStream is destroyed
   // without explicitly calling Close, the file should be closed asynchronously
   // without delaying FileStream's destructor.
-  scoped_ptr<Context> context_;
+  std::unique_ptr<Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(FileStream);
 };
