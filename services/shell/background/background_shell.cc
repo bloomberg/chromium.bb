@@ -15,7 +15,6 @@
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "services/catalog/store.h"
 #include "services/shell/connect_params.h"
-#include "services/shell/loader.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/cpp/shell_connection.h"
 #include "services/shell/shell.h"
@@ -28,30 +27,6 @@ namespace {
 std::unique_ptr<base::MessagePump> CreateMessagePumpMojo() {
   return base::WrapUnique(new mojo::common::MessagePumpMojo);
 }
-
-// Used to obtain the ShellClientRequest for an application. When Loader::Load()
-// is called a callback is run with the ShellClientRequest.
-class BackgroundLoader : public Loader {
- public:
-  using Callback = base::Callback<void(mojom::ShellClientRequest)>;
-
-  explicit BackgroundLoader(const Callback& callback) : callback_(callback) {}
-  ~BackgroundLoader() override {}
-
-  // Loader:
-  void Load(const std::string& name,
-            mojom::ShellClientRequest request) override {
-    DCHECK(!callback_.is_null());  // Callback should only be run once.
-    Callback callback = callback_;
-    callback_.Reset();
-    callback.Run(std::move(request));
-  }
-
- private:
-  Callback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundLoader);
-};
 
 class MojoMessageLoop : public base::MessageLoop {
  public:
@@ -77,20 +52,16 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
   ~MojoThread() override {}
 
   void CreateShellClientRequest(base::WaitableEvent* signal,
-                                std::unique_ptr<ConnectParams> params,
+                                const std::string& name,
                                 mojom::ShellClientRequest* request) {
     // Only valid to call this on the background thread.
     DCHECK_EQ(message_loop_, base::MessageLoop::current());
+    *request = context_->shell()->InitInstanceForEmbedder(name);
+    signal->Signal();
+  }
 
-    // Ownership of |loader| passes to Shell.
-    const std::string name = params->target().name();
-    BackgroundLoader* loader = new BackgroundLoader(
-        base::Bind(&MojoThread::OnGotApplicationRequest, base::Unretained(this),
-                   name, signal, request));
-    context_->shell()->SetLoaderForName(base::WrapUnique(loader), name);
+  void Connect(std::unique_ptr<ConnectParams> params) {
     context_->shell()->Connect(std::move(params));
-    // The request is asynchronously processed. When processed
-    // OnGotApplicationRequest() is called and we'll signal |signal|.
   }
 
   base::MessageLoop* message_loop() { return message_loop_; }
@@ -148,16 +119,6 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
   }
 
  private:
-  void OnGotApplicationRequest(const std::string& name,
-                               base::WaitableEvent* signal,
-                               mojom::ShellClientRequest* request_result,
-                               mojom::ShellClientRequest actual_request) {
-    *request_result = std::move(actual_request);
-    // Trigger destruction of the loader.
-    context_->shell()->SetLoaderForName(nullptr, name);
-    signal->Signal();
-  }
-
   // We own this. It's created on the main thread, but destroyed on the
   // background thread.
   MojoMessageLoop* message_loop_ = nullptr;
@@ -193,9 +154,13 @@ mojom::ShellClientRequest BackgroundShell::CreateShellClientRequest(
   base::WaitableEvent signal(true, false);
   thread_->message_loop()->task_runner()->PostTask(
       FROM_HERE, base::Bind(&MojoThread::CreateShellClientRequest,
-                            base::Unretained(thread_.get()), &signal,
-                            base::Passed(&params), &request));
+                            base::Unretained(thread_.get()), &signal, name,
+                            &request));
   signal.Wait();
+  thread_->message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&MojoThread::Connect,
+                            base::Unretained(thread_.get()),
+                            base::Passed(&params)));
   return request;
 }
 

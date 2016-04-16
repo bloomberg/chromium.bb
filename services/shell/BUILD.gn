@@ -24,7 +24,6 @@ source_set("shell") {
     "connect_params.h",
     "connect_util.cc",
     "connect_util.h",
-    "loader.h",
     "native_runner.h",
     "native_runner_delegate.h",
     "shell.cc",
@@ -53,9 +52,6 @@ source_set("shell") {
   data_deps = [
     ":manifest",
   ]
-
-  # For services/shell/loader.h
-  allow_circular_includes_from = [ "//services/catalog:lib" ]
 }
 
 mojo_application_manifest("manifest") {
