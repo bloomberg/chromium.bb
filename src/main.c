@@ -50,6 +50,7 @@
 #include "compositor-headless.h"
 #include "compositor-rdp.h"
 #include "compositor-fbdev.h"
+#include "compositor-x11.h"
 
 static struct wl_list child_process_list;
 static struct weston_compositor *segv_compositor;
@@ -805,6 +806,146 @@ load_fbdev_backend(struct weston_compositor *c, char const * backend,
 	ret = load_backend_new(c, backend, &config.base);
 
 	free(config.device);
+
+	return ret;
+}
+
+static int
+weston_x11_backend_config_append_output_config(struct weston_x11_backend_config *config,
+					       struct weston_x11_backend_output_config *output_config) {
+	struct weston_x11_backend_output_config *new_outputs;
+
+	new_outputs = realloc(config->outputs, (config->num_outputs+1) *
+			      sizeof(struct weston_x11_backend_output_config));
+	if (new_outputs == NULL)
+		return -1;
+
+	config->outputs = new_outputs;
+	config->outputs[config->num_outputs].width = output_config->width;
+	config->outputs[config->num_outputs].height = output_config->height;
+	config->outputs[config->num_outputs].transform = output_config->transform;
+	config->outputs[config->num_outputs].scale = output_config->scale;
+	config->outputs[config->num_outputs].name = strdup(output_config->name);
+	config->num_outputs++;
+
+	return 0;
+}
+
+static int
+load_x11_backend(struct weston_compositor *c, char const * backend,
+		 int *argc, char **argv, struct weston_config *wc)
+{
+	struct weston_x11_backend_output_config default_output;
+	struct weston_x11_backend_config config = {{ 0, }};
+	struct weston_config_section *section;
+	int ret = 0;
+	int option_width = 0;
+	int option_height = 0;
+	int option_scale = 0;
+	int option_count = 1;
+	int output_count = 0;
+	char const *section_name;
+	int i;
+	uint32_t j;
+
+	const struct weston_option options[] = {
+	       { WESTON_OPTION_INTEGER, "width", 0, &option_width },
+	       { WESTON_OPTION_INTEGER, "height", 0, &option_height },
+	       { WESTON_OPTION_INTEGER, "scale", 0, &option_scale },
+	       { WESTON_OPTION_BOOLEAN, "fullscreen", 'f', &config.fullscreen },
+	       { WESTON_OPTION_INTEGER, "output-count", 0, &option_count },
+	       { WESTON_OPTION_BOOLEAN, "no-input", 0, &config.no_input },
+	       { WESTON_OPTION_BOOLEAN, "use-pixman", 0, &config.use_pixman },
+	};
+
+	parse_options(options, ARRAY_LENGTH(options), argc, argv);
+
+	section = NULL;
+	while (weston_config_next_section(wc, &section, &section_name)) {
+		struct weston_x11_backend_output_config current_output = { 0, };
+		char *t;
+		char *mode;
+
+		if (strcmp(section_name, "output") != 0) {
+			continue;
+		}
+
+		weston_config_section_get_string(section, "name", &current_output.name, NULL);
+		if (current_output.name == NULL || current_output.name[0] != 'X') {
+			free(current_output.name);
+			continue;
+		}
+
+		weston_config_section_get_string(section, "mode", &mode, "1024x600");
+		if (sscanf(mode, "%dx%d", &current_output.width,
+			   &current_output.height) != 2) {
+			weston_log("Invalid mode \"%s\" for output %s\n",
+				   mode, current_output.name);
+			current_output.width = 1024;
+			current_output.height = 600;
+		}
+		free(mode);
+		if (current_output.width < 1)
+			current_output.width = 1024;
+		if (current_output.height < 1)
+			current_output.height = 600;
+		if (option_width)
+			current_output.width = option_width;
+		if (option_height)
+			current_output.height = option_height;
+
+		weston_config_section_get_int(section, "scale", &current_output.scale, 1);
+		if (option_scale)
+			current_output.scale = option_scale;
+
+		weston_config_section_get_string(section,
+						 "transform", &t, "normal");
+		if (weston_parse_transform(t, &current_output.transform) < 0)
+			weston_log("Invalid transform \"%s\" for output %s\n",
+				   t, current_output.name);
+		free(t);
+
+		if (weston_x11_backend_config_append_output_config(&config, &current_output) < 0) {
+			ret = -1;
+			goto out;
+		}
+
+		output_count++;
+		if (option_count && output_count >= option_count)
+			break;
+	}
+
+	default_output.name = NULL;
+	default_output.width = option_width ? option_width : 1024;
+	default_output.height = option_height ? option_height : 600;
+	default_output.scale = option_scale ? option_scale : 1;
+	default_output.transform = WL_OUTPUT_TRANSFORM_NORMAL;
+
+	for (i = output_count; i < option_count; i++) {
+		if (asprintf(&default_output.name, "screen%d", i) < 0) {
+			ret = -1;
+			goto out;
+		}
+
+		if (weston_x11_backend_config_append_output_config(&config, &default_output) < 0) {
+			ret = -1;
+			free(default_output.name);
+			goto out;
+		}
+		free(default_output.name);
+	}
+
+	config.base.struct_version = WESTON_X11_BACKEND_CONFIG_VERSION;
+	config.base.struct_size = sizeof(struct weston_x11_backend_config);
+
+	/* load the actual backend and configure it */
+	ret = load_backend_new(c, backend, &config.base);
+
+out:
+	for (j = 0; j < config.num_outputs; ++j)
+		free(config.outputs[j].name);
+	free(config.outputs);
+
 	return ret;
 }
 
@@ -818,13 +959,13 @@ load_backend(struct weston_compositor *compositor, const char *backend,
 		return load_rdp_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "fbdev-backend.so"))
 		return load_fbdev_backend(compositor, backend, argc, argv, config);
+	else if (strstr(backend, "x11-backend.so"))
+		return load_x11_backend(compositor, backend, argc, argv, config);
 #if 0
 	else if (strstr(backend, "drm-backend.so"))
 		return load_drm_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "wayland-backend.so"))
 		return load_wayland_backend(compositor, backend, argc, argv, config);
-	else if (strstr(backend, "x11-backend.so"))
-		return load_x11_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "rpi-backend.so"))
 		return load_rpi_backend(compositor, backend, argc, argv, config);
 #endif

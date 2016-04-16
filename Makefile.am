@@ -75,6 +75,7 @@ weston_SOURCES =					\
 	src/compositor-headless.h			\
 	src/compositor-fbdev.h				\
 	src/compositor-rdp.h				\
+	src/compositor-x11.h			\
 	src/input.c					\
 	src/data-device.c				\
 	src/screenshooter.c				\
@@ -214,6 +215,7 @@ westoninclude_HEADERS =				\
 	src/compositor-headless.h		\
 	src/compositor-fbdev.h			\
 	src/compositor-rdp.h			\
+	src/compositor-x11.h			\
 	src/timeline-object.h			\
 	shared/matrix.h				\
 	shared/config-parser.h			\
@@ -256,6 +258,7 @@ x11_backend_la_CFLAGS =				\
 	$(AM_CFLAGS)
 x11_backend_la_SOURCES = 			\
 	src/compositor-x11.c			\
+	src/compositor-x11.h			\
 	shared/helpers.h
 endif
 
