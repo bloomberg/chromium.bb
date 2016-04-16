@@ -332,8 +332,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=295792)
     self.Fail('conformance2/renderbuffers/framebuffer-test.html',
         ['mac'], bug=483282)
-    self.Fail('conformance2/renderbuffers/readbuffer.html',
-        ['mac'], bug=570453)
+    self.Fail('conformance2/rendering/framebuffer-completeness-unaffected.html',
+        ['mac'], bug=604053)
 
     # Mac Retina NVIDIA
     self.Fail('conformance2/rendering/draw-buffers.html',
