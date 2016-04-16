@@ -199,7 +199,7 @@ class InstrumentedHttp(httplib2.Http):
     except socket.timeout:
       self._update_metrics(http_metrics.STATUS_TIMEOUT, start_time)
       raise
-    except socket.error:
+    except (socket.error, socket.herror, socket.gaierror):
       self._update_metrics(http_metrics.STATUS_ERROR, start_time)
       raise
     except httplib2.HttpLib2Error:

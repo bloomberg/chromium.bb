@@ -8,6 +8,7 @@
 import base64
 import json
 import logging
+import socket
 import traceback
 
 from googleapiclient import discovery
@@ -162,7 +163,9 @@ class PubSubMonitor(Monitor):
       self._api.projects().topics().publish(
           topic=self._topic,
           body=body).execute(num_retries=5)
-    except (ValueError, errors.Error):
+    except (ValueError, errors.Error,
+            socket.timeout, socket.error, socket.herror, socket.gaierror,
+            httplib2.HttpLib2Error):
       # Log a warning, not error, to avoid false alarms in AppEngine apps.
       logging.warning('PubSubMonitor.send failed:\n%s',
                       traceback.format_exc())

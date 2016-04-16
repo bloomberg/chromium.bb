@@ -261,6 +261,7 @@ def get_build_event(event_type,
                     build_number=None,
                     build_scheduling_time=None,
                     step_name=None,
+                    step_text=None,
                     step_number=None,
                     result=None,
                     extra_result_code=None,
@@ -330,6 +331,8 @@ def get_build_event(event_type,
 
   if step_name:
     event.build_event.step_name = step_name
+  if step_text:
+    event.build_event.step_text = step_text
   if step_number is not None:
     event.build_event.step_number = step_number
   if patch_url is not None:
@@ -419,6 +422,7 @@ def send_build_event(event_type,
                      build_number=None,
                      build_scheduling_time=None,
                      step_name=None,
+                     step_text=None,
                      step_number=None,
                      result=None,
                      extra_result_code=None,
@@ -443,6 +447,7 @@ def send_build_event(event_type,
       scheduled. This is required when build_number is provided to make it
       possibly to distinguish two builds with the same build number.
     step_name (str): name of the step.
+    step_text (str): text of the step.
     step_number (int): rank of the step in the build. This is mandatory
       if step_name is provided, because step_name is not enough to tell the
       order.
@@ -464,6 +469,7 @@ def send_build_event(event_type,
                          build_number=build_number,
                          build_scheduling_time=build_scheduling_time,
                          step_name=step_name,
+                         step_text=step_text,
                          step_number=step_number,
                          result=result,
                          extra_result_code=extra_result_code,
