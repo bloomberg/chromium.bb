@@ -653,7 +653,20 @@ load_backend_old(struct weston_compositor *compositor, const char *backend,
 	return backend_init(compositor, argc, argv, wc, NULL);
 }
 
-/* Temporary function to be replaced by weston_compositor_load_backend(). */
+/** Main module call-point for backends.
+ *
+ * All backends should use this routine to access their init routine.
+ * Backends may subclass weston_backend_config to add their own
+ * configuration data, setting the major/minor version in config_base
+ * accordingly.
+ *
+ * The config_base object should be treated as temporary, and any data
+ * copied out of it by backend_init before returning.  The load_backend_new
+ * callers may then free the config_base object.
+ *
+ * NOTE: This is a temporary function intended to eventually be replaced
+ * by weston_compositor_load_backend().
+ */
 static int
 load_backend_new(struct weston_compositor *compositor, const char *backend,
 		 struct weston_backend_config *config_base)
