@@ -4,7 +4,7 @@
 //
 // Next MinVersion: 4
 
-module arc;
+module arc.mojom;
 
 // Duplicates ui::ScaleFactor enum in order to be accessible on Android side.
 enum ScaleFactor {

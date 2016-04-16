@@ -21,7 +21,7 @@ class ArcNotificationItem;
 
 class ArcNotificationManager : public ArcService,
                                public ArcBridgeService::Observer,
-                               public NotificationsHost {
+                               public mojom::NotificationsHost {
  public:
   ArcNotificationManager(ArcBridgeService* bridge_service,
                          const AccountId& main_profile_id);
@@ -36,11 +36,11 @@ class ArcNotificationManager : public ArcService,
   void OnNotificationsInstanceReady() override;
   void OnNotificationsInstanceClosed() override;
 
-  // NotificationsHost implementation:
-  void OnNotificationPosted(ArcNotificationDataPtr data) override;
+  // mojom::NotificationsHost implementation:
+  void OnNotificationPosted(mojom::ArcNotificationDataPtr data) override;
   void OnNotificationRemoved(const mojo::String& key) override;
-  void OnToastPosted(ArcToastDataPtr data) override;
-  void OnToastCancelled(ArcToastDataPtr data) override;
+  void OnToastPosted(mojom::ArcToastDataPtr data) override;
+  void OnToastCancelled(mojom::ArcToastDataPtr data) override;
 
   // Methods called from ArcNotificationItem:
   void SendNotificationRemovedFromChrome(const std::string& key);
@@ -58,7 +58,7 @@ class ArcNotificationManager : public ArcService,
 
   bool ready_ = false;
 
-  mojo::Binding<arc::NotificationsHost> binding_;
+  mojo::Binding<arc::mojom::NotificationsHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationManager);
 };

@@ -46,30 +46,29 @@ namespace {
 const int kFocusedTabScoreAdjustIntervalMs = 500;
 
 // TODO(cylee): Check whether the app is in foreground or not.
-int AppStateToPriority(
-    const arc::ProcessState& process_state) {
+int AppStateToPriority(const arc::mojom::ProcessState& process_state) {
   // Logic copied from Android:
   // frameworks/base/core/java/android/app/ActivityManager.java
   // Note that ProcessState enumerates from most important (lower value) to
   // least important (higher value), while ProcessPriority enumerates the
   // opposite.
-  if (process_state >= arc::ProcessState::HOME) {
+  if (process_state >= arc::mojom::ProcessState::HOME) {
     return ProcessPriority::ANDROID_BACKGROUND;
-  } else if (process_state >= arc::ProcessState::SERVICE) {
+  } else if (process_state >= arc::mojom::ProcessState::SERVICE) {
     return ProcessPriority::ANDROID_SERVICE;
-  } else if (process_state >= arc::ProcessState::HEAVY_WEIGHT) {
+  } else if (process_state >= arc::mojom::ProcessState::HEAVY_WEIGHT) {
     return ProcessPriority::ANDROID_CANT_SAVE_STATE;
-  } else if (process_state >= arc::ProcessState::IMPORTANT_BACKGROUND) {
+  } else if (process_state >= arc::mojom::ProcessState::IMPORTANT_BACKGROUND) {
     return ProcessPriority::ANDROID_PERCEPTIBLE;
-  } else if (process_state >= arc::ProcessState::IMPORTANT_FOREGROUND) {
+  } else if (process_state >= arc::mojom::ProcessState::IMPORTANT_FOREGROUND) {
     return ProcessPriority::ANDROID_VISIBLE;
-  } else if (process_state >= arc::ProcessState::TOP_SLEEPING) {
+  } else if (process_state >= arc::mojom::ProcessState::TOP_SLEEPING) {
     return ProcessPriority::ANDROID_TOP_SLEEPING;
-  } else if (process_state >= arc::ProcessState::FOREGROUND_SERVICE) {
+  } else if (process_state >= arc::mojom::ProcessState::FOREGROUND_SERVICE) {
     return ProcessPriority::ANDROID_FOREGROUND_SERVICE;
-  } else if (process_state >= arc::ProcessState::TOP) {
+  } else if (process_state >= arc::mojom::ProcessState::TOP) {
     return ProcessPriority::ANDROID_TOP;
-  } else if (process_state >= arc::ProcessState::PERSISTENT) {
+  } else if (process_state >= arc::mojom::ProcessState::PERSISTENT) {
     return ProcessPriority::ANDROID_PERSISTENT;
   }
   return ProcessPriority::ANDROID_NON_EXISTS;
@@ -139,7 +138,7 @@ void TabManagerDelegate::OnProcessInstanceReady() {
 
   DCHECK(arc_process_instance_);
   if (arc_process_instance_version_ < 2) {
-    VLOG(1) << "arc::ProcessInstance version < 2 does not "
+    VLOG(1) << "ProcessInstance version < 2 does not "
                "support DisableBuiltinOomAdjustment() yet.";
     return;
   }
@@ -400,7 +399,7 @@ void TabManagerDelegate::SetOomScoreAdjForApp(int nspid, int score) {
   if (!arc_process_instance_)
     return;
   if (arc_process_instance_version_ < 2) {
-    VLOG(1) << "arc::ProcessInstance version < 2 does not "
+    VLOG(1) << "ProcessInstance version < 2 does not "
                "support SetOomScoreAdj() yet.";
     return;
   }

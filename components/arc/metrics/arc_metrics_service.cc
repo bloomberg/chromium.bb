@@ -49,7 +49,7 @@ void ArcMetricsService::OnProcessInstanceClosed() {
 }
 
 void ArcMetricsService::RequestProcessList() {
-  ProcessInstance* process_instance =
+  mojom::ProcessInstance* process_instance =
       arc_bridge_service()->process_instance();
   if (!process_instance) {
     LOG(ERROR) << "No process instance found before RequestProcessList";
@@ -63,11 +63,11 @@ void ArcMetricsService::RequestProcessList() {
 }
 
 void ArcMetricsService::ParseProcessList(
-    mojo::Array<arc::RunningAppProcessInfoPtr> processes) {
+    mojo::Array<arc::mojom::RunningAppProcessInfoPtr> processes) {
   int running_app_count = 0;
   for (const auto& process : processes) {
     const mojo::String& process_name = process->process_name;
-    const ProcessState& process_state = process->process_state;
+    const mojom::ProcessState& process_state = process->process_state;
 
     // Processes like the ARC launcher and intent helper are always running
     // and not counted as apps running by users. With the same reasoning,
@@ -78,7 +78,7 @@ void ArcMetricsService::ParseProcessList(
                          base::CompareCase::SENSITIVE) ||
         base::StartsWith(process_name.get(), kGmsProcessNamePrefix,
                          base::CompareCase::SENSITIVE) ||
-        process_state != ProcessState::TOP) {
+        process_state != mojom::ProcessState::TOP) {
       VLOG(2) << "Skipped " << process_name << " " << process_state;
     } else {
       ++running_app_count;

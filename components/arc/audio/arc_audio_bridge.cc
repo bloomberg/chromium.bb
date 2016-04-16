@@ -50,15 +50,15 @@ void ArcAudioBridge::SendSwitchState(bool headphone_inserted,
   uint32_t switch_state = 0;
   if (headphone_inserted) {
     switch_state |=
-        (1 << static_cast<uint32_t>(AudioSwitch::SW_HEADPHONE_INSERT));
+        (1 << static_cast<uint32_t>(mojom::AudioSwitch::SW_HEADPHONE_INSERT));
   }
   if (microphone_inserted) {
     switch_state |=
-        (1 << static_cast<uint32_t>(AudioSwitch::SW_MICROPHONE_INSERT));
+        (1 << static_cast<uint32_t>(mojom::AudioSwitch::SW_MICROPHONE_INSERT));
   }
 
   VLOG(1) << "Send switch state " << switch_state;
-  AudioInstance* audio_instance = arc_bridge_service()->audio_instance();
+  mojom::AudioInstance* audio_instance = arc_bridge_service()->audio_instance();
   if (audio_instance)
     audio_instance->NotifySwitchState(switch_state);
 }

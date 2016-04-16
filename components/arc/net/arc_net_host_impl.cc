@@ -48,7 +48,7 @@ ArcNetHostImpl::~ArcNetHostImpl() {
 void ArcNetHostImpl::OnNetInstanceReady() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  NetHostPtr host;
+  mojom::NetHostPtr host;
   binding_.Bind(GetProxy(&host));
   arc_bridge_service()->net_instance()->Init(std::move(host));
 }
@@ -64,22 +64,23 @@ void ArcNetHostImpl::GetNetworksDeprecated(
     return;
   }
 
-  GetNetworksRequestType type = GetNetworksRequestType::CONFIGURED_ONLY;
+  mojom::GetNetworksRequestType type =
+      mojom::GetNetworksRequestType::CONFIGURED_ONLY;
   if (visible_only) {
-    type = GetNetworksRequestType::VISIBLE_ONLY;
+    type = mojom::GetNetworksRequestType::VISIBLE_ONLY;
   }
 
   GetNetworks(type, callback);
 }
 
-void ArcNetHostImpl::GetNetworks(GetNetworksRequestType type,
+void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
                                  const GetNetworksCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  NetworkDataPtr data = NetworkData::New();
+  mojom::NetworkDataPtr data = mojom::NetworkData::New();
   bool configured_only = true;
   bool visible_only = false;
-  if (type == GetNetworksRequestType::VISIBLE_ONLY) {
+  if (type == mojom::GetNetworksRequestType::VISIBLE_ONLY) {
     configured_only = false;
     visible_only = true;
   }
@@ -96,10 +97,10 @@ void ArcNetHostImpl::GetNetworks(GetNetworksRequestType type,
   // Even if there's no WiFi, an empty (size=0) list must be returned and not a
   // null one. The explicitly sized New() constructor ensures the non-null
   // property.
-  mojo::Array<WifiConfigurationPtr> networks =
-      mojo::Array<WifiConfigurationPtr>::New(0);
+  mojo::Array<mojom::WifiConfigurationPtr> networks =
+      mojo::Array<mojom::WifiConfigurationPtr>::New(0);
   for (base::Value* value : *network_properties_list) {
-    WifiConfigurationPtr wc = WifiConfiguration::New();
+    mojom::WifiConfigurationPtr wc = mojom::WifiConfiguration::New();
 
     base::DictionaryValue* network_dict = nullptr;
     value->GetAsDictionary(&network_dict);

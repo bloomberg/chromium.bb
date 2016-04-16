@@ -58,18 +58,18 @@ class ArcProcessService : public ArcService,
 
   void OnReceiveProcessList(
       const RequestProcessListCallback& callback,
-      mojo::Array<arc::RunningAppProcessInfoPtr> mojo_processes);
+      mojo::Array<arc::mojom::RunningAppProcessInfoPtr> mojo_processes);
 
   void CallbackRelay(
       const RequestProcessListCallback& callback,
       const std::vector<ArcProcess>* ret_processes);
 
   void UpdateAndReturnProcessList(
-      const std::vector<arc::RunningAppProcessInfoPtr>* raw_processes,
+      const std::vector<arc::mojom::RunningAppProcessInfoPtr>* raw_processes,
       std::vector<ArcProcess>* ret_processes);
 
   void PopulateProcessList(
-      const std::vector<arc::RunningAppProcessInfoPtr>* raw_processes,
+      const std::vector<arc::mojom::RunningAppProcessInfoPtr>* raw_processes,
       std::vector<ArcProcess>* ret_processes);
 
   void UpdateNspidToPidMap();

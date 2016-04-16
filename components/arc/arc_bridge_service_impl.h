@@ -48,7 +48,7 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   void StopInstance();
 
   // ArcBridgeBootstrap::Delegate:
-  void OnConnectionEstablished(ArcBridgeInstancePtr instance) override;
+  void OnConnectionEstablished(mojom::ArcBridgeInstancePtr instance) override;
   void OnStopped() override;
 
   // Called when the bridge channel is closed. This typically only happens when
@@ -58,8 +58,8 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   scoped_ptr<ArcBridgeBootstrap> bootstrap_;
 
   // Mojo endpoints.
-  mojo::Binding<ArcBridgeHost> binding_;
-  ArcBridgeInstancePtr instance_ptr_;
+  mojo::Binding<mojom::ArcBridgeHost> binding_;
+  mojom::ArcBridgeInstancePtr instance_ptr_;
 
   // If the user's session has started.
   bool session_started_;

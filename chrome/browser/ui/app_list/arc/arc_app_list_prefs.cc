@@ -185,7 +185,7 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
     NOTREACHED();
     return;
   }
-  arc::AppInstance* app_instance = bridge_service->app_instance();
+  arc::mojom::AppInstance* app_instance = bridge_service->app_instance();
   if (!app_instance) {
     VLOG(2) << "Request to load icon when bridge service is not ready: "
             <<  app_id << ".";
@@ -198,8 +198,9 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
     return;
   }
 
-  app_instance->RequestAppIcon(app_info->package_name, app_info->activity,
-                               static_cast<arc::ScaleFactor>(scale_factor));
+  app_instance->RequestAppIcon(
+      app_info->package_name, app_info->activity,
+      static_cast<arc::mojom::ScaleFactor>(scale_factor));
 }
 
 void ArcAppListPrefs::AddObserver(Observer* observer) {
@@ -302,7 +303,7 @@ void ArcAppListPrefs::OnAppInstanceReady() {
     NOTREACHED();
     return;
   }
-  arc::AppInstance* app_instance = bridge_service->app_instance();
+  arc::mojom::AppInstance* app_instance = bridge_service->app_instance();
   if (!app_instance) {
     VLOG(2) << "Request to refresh app list when bridge service is not ready.";
     return;
@@ -312,7 +313,7 @@ void ArcAppListPrefs::OnAppInstanceReady() {
   app_instance->RefreshAppList();
 }
 
-void ArcAppListPrefs::AddApp(const arc::AppInfo& app) {
+void ArcAppListPrefs::AddApp(const arc::mojom::AppInfo& app) {
   if (app.name.get().empty() || app.package_name.get().empty() ||
       app.activity.get().empty()) {
     VLOG(2) << "Name, package name, and activity cannot be empty.";
@@ -389,7 +390,8 @@ void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
       base::Bind(&DeleteAppFolderFromFileThread, app_path));
 }
 
-void ArcAppListPrefs::OnAppListRefreshed(mojo::Array<arc::AppInfoPtr> apps) {
+void ArcAppListPrefs::OnAppListRefreshed(
+    mojo::Array<arc::mojom::AppInfoPtr> apps) {
   std::vector<std::string> old_apps = GetAppIds();
 
   ready_apps_.clear();
@@ -408,7 +410,7 @@ void ArcAppListPrefs::OnAppListRefreshed(mojo::Array<arc::AppInfoPtr> apps) {
   }
 }
 
-void ArcAppListPrefs::OnAppAdded(arc::AppInfoPtr app) {
+void ArcAppListPrefs::OnAppAdded(arc::mojom::AppInfoPtr app) {
   AddApp(*app);
 }
 
@@ -442,7 +444,7 @@ void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package_name) {
 
 void ArcAppListPrefs::OnAppIcon(const mojo::String& package_name,
                                 const mojo::String& activity,
-                                arc::ScaleFactor scale_factor,
+                                arc::mojom::ScaleFactor scale_factor,
                                 mojo::Array<uint8_t> icon_png_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_NE(0u, icon_png_data.size());

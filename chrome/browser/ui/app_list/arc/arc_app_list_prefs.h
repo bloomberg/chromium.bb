@@ -42,7 +42,7 @@ class PrefRegistrySyncable;
 // information is used to pre-create non-ready app items while ARC bridge
 // service is not ready to provide information about available ARC apps.
 class ArcAppListPrefs : public KeyedService,
-                        public arc::AppHost,
+                        public arc::mojom::AppHost,
                         public arc::ArcBridgeService::Observer {
  public:
   struct AppInfo {
@@ -134,16 +134,16 @@ class ArcAppListPrefs : public KeyedService,
   void OnStateChanged(arc::ArcBridgeService::State state) override;
   void OnAppInstanceReady() override;
 
-  // arc::AppHost:
-  void OnAppListRefreshed(mojo::Array<arc::AppInfoPtr> apps) override;
-  void OnAppAdded(arc::AppInfoPtr app) override;
+  // arc::mojom::AppHost:
+  void OnAppListRefreshed(mojo::Array<arc::mojom::AppInfoPtr> apps) override;
+  void OnAppAdded(arc::mojom::AppInfoPtr app) override;
   void OnPackageRemoved(const mojo::String& package_name) override;
   void OnAppIcon(const mojo::String& package_name,
                  const mojo::String& activity,
-                 arc::ScaleFactor scale_factor,
+                 arc::mojom::ScaleFactor scale_factor,
                  mojo::Array<uint8_t> icon_png_data) override;
 
-  void AddApp(const arc::AppInfo& app);
+  void AddApp(const arc::mojom::AppInfo& app);
   void RemoveApp(const std::string& app_id);
   void DisableAllApps();
 
@@ -173,7 +173,7 @@ class ArcAppListPrefs : public KeyedService,
   // True if this preference has been initialized once.
   bool is_initialized_ = false;
 
-  mojo::Binding<arc::AppHost> binding_;
+  mojo::Binding<arc::mojom::AppHost> binding_;
 
   base::WeakPtrFactory<ArcAppListPrefs> weak_ptr_factory_;
 

@@ -11,7 +11,7 @@ namespace arc {
 FakeArcBridgeInstance::FakeArcBridgeInstance() : binding_(this) {}
 FakeArcBridgeInstance::~FakeArcBridgeInstance() {}
 
-void FakeArcBridgeInstance::Init(ArcBridgeHostPtr host) {
+void FakeArcBridgeInstance::Init(mojom::ArcBridgeHostPtr host) {
   host_ptr_ = std::move(host);
   init_calls_++;
 }
@@ -23,7 +23,7 @@ void FakeArcBridgeInstance::Unbind() {
 }
 
 void FakeArcBridgeInstance::Bind(
-    mojo::InterfaceRequest<ArcBridgeInstance> interface_request) {
+    mojo::InterfaceRequest<mojom::ArcBridgeInstance> interface_request) {
   binding_.Bind(std::move(interface_request));
 }
 

@@ -93,7 +93,7 @@ void ArcBridgeService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void ArcBridgeService::OnAppInstanceReady(AppInstancePtr app_ptr) {
+void ArcBridgeService::OnAppInstanceReady(mojom::AppInstancePtr app_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_app_ptr_ = std::move(app_ptr);
   temporary_app_ptr_.QueryVersion(base::Bind(
@@ -117,7 +117,7 @@ void ArcBridgeService::CloseAppChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnAppInstanceClosed());
 }
 
-void ArcBridgeService::OnAudioInstanceReady(AudioInstancePtr audio_ptr) {
+void ArcBridgeService::OnAudioInstanceReady(mojom::AudioInstancePtr audio_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_audio_ptr_ = std::move(audio_ptr);
   temporary_audio_ptr_.QueryVersion(base::Bind(
@@ -140,7 +140,7 @@ void ArcBridgeService::CloseAudioChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnAudioInstanceClosed());
 }
 
-void ArcBridgeService::OnAuthInstanceReady(AuthInstancePtr auth_ptr) {
+void ArcBridgeService::OnAuthInstanceReady(mojom::AuthInstancePtr auth_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_auth_ptr_ = std::move(auth_ptr);
   temporary_auth_ptr_.QueryVersion(base::Bind(
@@ -165,7 +165,7 @@ void ArcBridgeService::CloseAuthChannel() {
 }
 
 void ArcBridgeService::OnBluetoothInstanceReady(
-    BluetoothInstancePtr bluetooth_ptr) {
+    mojom::BluetoothInstancePtr bluetooth_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_bluetooth_ptr_ = std::move(bluetooth_ptr);
   temporary_bluetooth_ptr_.QueryVersion(base::Bind(
@@ -190,7 +190,7 @@ void ArcBridgeService::CloseBluetoothChannel() {
 }
 
 void ArcBridgeService::OnClipboardInstanceReady(
-    ClipboardInstancePtr clipboard_ptr) {
+    mojom::ClipboardInstancePtr clipboard_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_clipboard_ptr_ = std::move(clipboard_ptr);
   temporary_clipboard_ptr_.QueryVersion(base::Bind(
@@ -215,7 +215,7 @@ void ArcBridgeService::CloseClipboardChannel() {
 }
 
 void ArcBridgeService::OnCrashCollectorInstanceReady(
-    CrashCollectorInstancePtr crash_collector_ptr) {
+    mojom::CrashCollectorInstancePtr crash_collector_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_crash_collector_ptr_ = std::move(crash_collector_ptr);
   temporary_crash_collector_ptr_.QueryVersion(
@@ -242,7 +242,7 @@ void ArcBridgeService::CloseCrashCollectorChannel() {
                     OnCrashCollectorInstanceClosed());
 }
 
-void ArcBridgeService::OnImeInstanceReady(ImeInstancePtr ime_ptr) {
+void ArcBridgeService::OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_ime_ptr_ = std::move(ime_ptr);
   temporary_ime_ptr_.QueryVersion(base::Bind(
@@ -266,7 +266,7 @@ void ArcBridgeService::CloseImeChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnImeInstanceClosed());
 }
 
-void ArcBridgeService::OnInputInstanceReady(InputInstancePtr input_ptr) {
+void ArcBridgeService::OnInputInstanceReady(mojom::InputInstancePtr input_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_input_ptr_ = std::move(input_ptr);
   temporary_input_ptr_.QueryVersion(base::Bind(
@@ -291,7 +291,7 @@ void ArcBridgeService::CloseInputChannel() {
 }
 
 void ArcBridgeService::OnIntentHelperInstanceReady(
-    IntentHelperInstancePtr intent_helper_ptr) {
+    mojom::IntentHelperInstancePtr intent_helper_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_intent_helper_ptr_ = std::move(intent_helper_ptr);
   temporary_intent_helper_ptr_.QueryVersion(
@@ -316,7 +316,7 @@ void ArcBridgeService::CloseIntentHelperChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnIntentHelperInstanceClosed());
 }
 
-void ArcBridgeService::OnNetInstanceReady(NetInstancePtr net_ptr) {
+void ArcBridgeService::OnNetInstanceReady(mojom::NetInstancePtr net_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_net_ptr_ = std::move(net_ptr);
   temporary_net_ptr_.QueryVersion(base::Bind(
@@ -341,7 +341,7 @@ void ArcBridgeService::CloseNetChannel() {
 }
 
 void ArcBridgeService::OnNotificationsInstanceReady(
-    NotificationsInstancePtr notifications_ptr) {
+    mojom::NotificationsInstancePtr notifications_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_notifications_ptr_ = std::move(notifications_ptr);
   temporary_notifications_ptr_.QueryVersion(
@@ -367,7 +367,8 @@ void ArcBridgeService::CloseNotificationsChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnNotificationsInstanceClosed());
 }
 
-void ArcBridgeService::OnPolicyInstanceReady(PolicyInstancePtr policy_ptr) {
+void ArcBridgeService::OnPolicyInstanceReady(
+    mojom::PolicyInstancePtr policy_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_policy_ptr_ = std::move(policy_ptr);
   temporary_policy_ptr_.QueryVersion(base::Bind(
@@ -391,7 +392,7 @@ void ArcBridgeService::ClosePolicyChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnPolicyInstanceClosed());
 }
 
-void ArcBridgeService::OnPowerInstanceReady(PowerInstancePtr power_ptr) {
+void ArcBridgeService::OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_power_ptr_ = std::move(power_ptr);
   temporary_power_ptr_.QueryVersion(base::Bind(
@@ -415,7 +416,8 @@ void ArcBridgeService::ClosePowerChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnPowerInstanceClosed());
 }
 
-void ArcBridgeService::OnProcessInstanceReady(ProcessInstancePtr process_ptr) {
+void ArcBridgeService::OnProcessInstanceReady(
+    mojom::ProcessInstancePtr process_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_process_ptr_ = std::move(process_ptr);
   temporary_process_ptr_.QueryVersion(base::Bind(
@@ -439,7 +441,7 @@ void ArcBridgeService::CloseProcessChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnProcessInstanceClosed());
 }
 
-void ArcBridgeService::OnVideoInstanceReady(VideoInstancePtr video_ptr) {
+void ArcBridgeService::OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_video_ptr_ = std::move(video_ptr);
   temporary_video_ptr_.QueryVersion(base::Bind(

@@ -151,29 +151,29 @@ void ArcAuthService::OnSignInComplete() {
   CloseUI();
 }
 
-void ArcAuthService::OnSignInFailed(arc::ArcSignInFailureReason reason) {
+void ArcAuthService::OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) {
   DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK_EQ(state_, State::ACTIVE);
 
   int error_message_id;
   switch (reason) {
-    case arc::ArcSignInFailureReason::NETWORK_ERROR:
+    case arc::mojom::ArcSignInFailureReason::NETWORK_ERROR:
       error_message_id = IDS_ARC_SIGN_IN_NETWORK_ERROR;
       UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
       break;
-    case arc::ArcSignInFailureReason::SERVICE_UNAVAILABLE:
+    case arc::mojom::ArcSignInFailureReason::SERVICE_UNAVAILABLE:
       error_message_id = IDS_ARC_SIGN_IN_SERVICE_UNAVAILABLE_ERROR;
       UpdateOptInCancelUMA(OptInCancelReason::SERVICE_UNAVAILABLE);
       break;
-    case arc::ArcSignInFailureReason::BAD_AUTHENTICATION:
+    case arc::mojom::ArcSignInFailureReason::BAD_AUTHENTICATION:
       error_message_id = IDS_ARC_SIGN_IN_BAD_AUTHENTICATION_ERROR;
       UpdateOptInCancelUMA(OptInCancelReason::BAD_AUTHENTICATION);
       break;
-    case arc::ArcSignInFailureReason::GMS_CORE_NOT_AVAILABLE:
+    case arc::mojom::ArcSignInFailureReason::GMS_CORE_NOT_AVAILABLE:
       error_message_id = IDS_ARC_SIGN_IN_GMS_NOT_AVAILABLE_ERROR;
       UpdateOptInCancelUMA(OptInCancelReason::GMS_CORE_NOT_AVAILABLE);
       break;
-    case arc::ArcSignInFailureReason::CLOUD_PROVISION_FLOW_FAIL:
+    case arc::mojom::ArcSignInFailureReason::CLOUD_PROVISION_FLOW_FAIL:
       error_message_id = IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR;
       UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
       break;

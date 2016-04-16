@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module arc;
+module arc.mojom;
 
 interface PolicyHost {
   // Get policies from Chrome OS, as JSON-encoded dictionary with the policies'

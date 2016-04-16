@@ -19,7 +19,7 @@ namespace arc {
 
 class ArcPolicyBridge : public ArcService,
                         public ArcBridgeService::Observer,
-                        public PolicyHost,
+                        public mojom::PolicyHost,
                         public policy::PolicyService::Observer {
  public:
   explicit ArcPolicyBridge(ArcBridgeService* bridge_service);

@@ -22,10 +22,9 @@ typedef testing::Test TabManagerDelegateTest;
 
 TEST_F(TabManagerDelegateTest, LowMemoryKill) {
   std::vector<arc::ArcProcess> arc_processes = {
-    {1, 10, "top", arc::ProcessState::TOP},
-    {2, 20, "foreground", arc::ProcessState::FOREGROUND_SERVICE},
-    {3, 30, "service", arc::ProcessState::SERVICE}
-  };
+      {1, 10, "top", arc::mojom::ProcessState::TOP},
+      {2, 20, "foreground", arc::mojom::ProcessState::FOREGROUND_SERVICE},
+      {3, 30, "service", arc::mojom::ProcessState::SERVICE}};
 
   TabStats tab1, tab2, tab3, tab4, tab5;
   tab1.tab_contents_id = 100;
@@ -75,9 +74,9 @@ TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
   MockTabManagerDelegate tab_manager_delegate;
 
   std::vector<arc::ArcProcess> arc_processes = {
-      {1, 10, "top", arc::ProcessState::TOP},
-      {2, 20, "foreground", arc::ProcessState::FOREGROUND_SERVICE},
-      {3, 30, "service", arc::ProcessState::SERVICE}};
+      {1, 10, "top", arc::mojom::ProcessState::TOP},
+      {2, 20, "foreground", arc::mojom::ProcessState::FOREGROUND_SERVICE},
+      {3, 30, "service", arc::mojom::ProcessState::SERVICE}};
 
   TabStats tab1, tab2, tab3, tab4, tab5;
   tab1.is_pinned = true;

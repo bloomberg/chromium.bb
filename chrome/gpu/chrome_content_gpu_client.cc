@@ -14,7 +14,7 @@
 namespace {
 
 void CreateGpuArcVideoService(
-    mojo::InterfaceRequest<::arc::VideoHost> request) {
+    mojo::InterfaceRequest<::arc::mojom::VideoHost> request) {
   // GpuArcVideoService is strongly bound to the Mojo message pipe it
   // is connected to. When that message pipe is closed, either explicitly on the
   // other end (in the browser process), or by a connection error, this object

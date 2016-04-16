@@ -660,7 +660,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   void UninstallArcApps() {
     arc_test_.app_instance()->RefreshAppList();
-    arc_test_.app_instance()->SendRefreshAppList(std::vector<arc::AppInfo>());
+    arc_test_.app_instance()->SendRefreshAppList(
+        std::vector<arc::mojom::AppInfo>());
   }
 
   // Creates app window and set optional Arc application id.
@@ -1471,7 +1472,7 @@ TEST_F(ChromeLauncherControllerTest, ArcAppPin) {
 TEST_F(ChromeLauncherControllerTest, ArcAppShelf) {
   InitLauncherController();
 
-  const arc::AppInfo& app_info = arc_test_.fake_apps()[0];
+  const arc::mojom::AppInfo& app_info = arc_test_.fake_apps()[0];
   const std::string arc_app_id = ArcAppTest::GetAppId(app_info);
 
   InstallArcApps();

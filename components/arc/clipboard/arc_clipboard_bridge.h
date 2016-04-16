@@ -16,7 +16,7 @@ namespace arc {
 
 class ArcClipboardBridge : public ArcService,
                            public ArcBridgeService::Observer,
-                           public ClipboardHost {
+                           public mojom::ClipboardHost {
  public:
   explicit ArcClipboardBridge(ArcBridgeService* bridge_service);
   ~ArcClipboardBridge() override;
@@ -24,14 +24,14 @@ class ArcClipboardBridge : public ArcService,
   // ArcBridgeService::Observer overrides.
   void OnClipboardInstanceReady() override;
 
-  // ClipboardHost overrides.
+  // mojom::ClipboardHost overrides.
   void SetTextContent(const mojo::String& text) override;
   void GetTextContent() override;
 
  private:
   bool CalledOnValidThread();
 
-  mojo::Binding<ClipboardHost> binding_;
+  mojo::Binding<mojom::ClipboardHost> binding_;
 
   base::ThreadChecker thread_checker_;
 

@@ -228,7 +228,8 @@ TEST_F(ArcAuthServiceTest, SignInStatus) {
   EXPECT_EQ(ArcBridgeService::State::READY, bridge_service()->state());
 
   // Report failure.
-  auth_service()->OnSignInFailed(arc::ArcSignInFailureReason::UNKNOWN_ERROR);
+  auth_service()->OnSignInFailed(
+      arc::mojom::ArcSignInFailureReason::UNKNOWN_ERROR);
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
   EXPECT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());

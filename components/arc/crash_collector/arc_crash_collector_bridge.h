@@ -15,7 +15,7 @@ namespace arc {
 // Relays dumps for non-native ARC crashes to the crash reporter in Chrome OS.
 class ArcCrashCollectorBridge : public ArcService,
                                 public ArcBridgeService::Observer,
-                                public CrashCollectorHost {
+                                public mojom::CrashCollectorHost {
  public:
   explicit ArcCrashCollectorBridge(ArcBridgeService* bridge);
   ~ArcCrashCollectorBridge() override;
@@ -23,11 +23,11 @@ class ArcCrashCollectorBridge : public ArcService,
   // ArcBridgeService::Observer overrides.
   void OnCrashCollectorInstanceReady() override;
 
-  // CrashCollectorHost overrides.
+  // mojom::CrashCollectorHost overrides.
   void DumpCrash(const mojo::String& type, mojo::ScopedHandle pipe) override;
 
  private:
-  mojo::Binding<CrashCollectorHost> binding_;
+  mojo::Binding<mojom::CrashCollectorHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcCrashCollectorBridge);
 };

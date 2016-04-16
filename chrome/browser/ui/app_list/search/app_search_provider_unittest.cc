@@ -107,8 +107,8 @@ TEST_F(AppSearchProviderTest, Basic) {
   arc_test.SetUp(profile());
   arc_test.bridge_service()->SetReady();
   arc_test.app_instance()->RefreshAppList();
-  std::vector<arc::AppInfo> arc_apps(arc_test.fake_apps().begin(),
-                                     arc_test.fake_apps().begin() + 2);
+  std::vector<arc::mojom::AppInfo> arc_apps(arc_test.fake_apps().begin(),
+                                            arc_test.fake_apps().begin() + 2);
   arc_test.app_instance()->SendRefreshAppList(arc_apps);
 #endif
 
@@ -181,7 +181,7 @@ TEST_F(AppSearchProviderTest, InstallUninstallArc) {
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
   arc_test.bridge_service()->SetReady();
-  std::vector<arc::AppInfo> arc_apps;
+  std::vector<arc::mojom::AppInfo> arc_apps;
   arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(arc_apps);
 

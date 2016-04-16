@@ -20,18 +20,19 @@ class BluetoothUUID;
 namespace mojo {
 
 template <>
-struct TypeConverter<arc::BluetoothAddressPtr, std::string> {
-  static arc::BluetoothAddressPtr Convert(const std::string& address);
+struct TypeConverter<arc::mojom::BluetoothAddressPtr, std::string> {
+  static arc::mojom::BluetoothAddressPtr Convert(const std::string& address);
 };
 
 template <>
-struct TypeConverter<std::string, arc::BluetoothAddress> {
-  static std::string Convert(const arc::BluetoothAddress& ptr);
+struct TypeConverter<std::string, arc::mojom::BluetoothAddress> {
+  static std::string Convert(const arc::mojom::BluetoothAddress& ptr);
 };
 
 template <>
-struct TypeConverter<arc::BluetoothUUIDPtr, device::BluetoothUUID> {
-  static arc::BluetoothUUIDPtr Convert(const device::BluetoothUUID& uuid);
+struct TypeConverter<arc::mojom::BluetoothUUIDPtr, device::BluetoothUUID> {
+  static arc::mojom::BluetoothUUIDPtr Convert(
+      const device::BluetoothUUID& uuid);
 };
 
 }  // namespace mojo

@@ -344,7 +344,7 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   arc_test.SetUp(profile());
   arc_test.bridge_service()->SetReady();
 
-  const arc::AppInfo& app_info = arc_test.fake_apps()[0];
+  const arc::mojom::AppInfo& app_info = arc_test.fake_apps()[0];
   const std::string app_id = ArcAppTest::GetAppId(app_info);
   controller()->SetAppPinnable(app_id, AppListControllerDelegate::PIN_EDITABLE);
 
@@ -377,7 +377,8 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   EXPECT_TRUE(launch_requests[0]->IsForApp(app_info));
 
   arc_test.app_instance()->RefreshAppList();
-  arc_test.app_instance()->SendRefreshAppList(std::vector<arc::AppInfo>());
+  arc_test.app_instance()->SendRefreshAppList(
+      std::vector<arc::mojom::AppInfo>());
   item.SetReady(false);
 
   EXPECT_EQ(item.GetContextMenuModel(), menu);
@@ -401,7 +402,7 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
 
   {
     // Verify menu of store
-    const arc::AppInfo& store_info = arc_test.fake_apps()[0];
+    const arc::mojom::AppInfo& store_info = arc_test.fake_apps()[0];
     const std::string store_id = ArcAppTest::GetAppId(store_info);
     controller()->SetAppPinnable(store_id,
                                  AppListControllerDelegate::PIN_EDITABLE);
@@ -422,7 +423,7 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
 
   {
     // Verify normal app menu
-    const arc::AppInfo& app_info = arc_test.fake_apps()[1];
+    const arc::mojom::AppInfo& app_info = arc_test.fake_apps()[1];
     const std::string app_id = ArcAppTest::GetAppId(app_info);
     controller()->SetAppPinnable(app_id,
                                  AppListControllerDelegate::PIN_EDITABLE);

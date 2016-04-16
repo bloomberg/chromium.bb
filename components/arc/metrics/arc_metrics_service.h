@@ -30,7 +30,8 @@ class ArcMetricsService : public ArcService,
  private:
   bool CalledOnValidThread();
   void RequestProcessList();
-  void ParseProcessList(mojo::Array<arc::RunningAppProcessInfoPtr> processes);
+  void ParseProcessList(
+      mojo::Array<arc::mojom::RunningAppProcessInfoPtr> processes);
 
   base::ThreadChecker thread_checker_;
   base::RepeatingTimer timer_;

@@ -179,8 +179,8 @@ class TabManagerDelegate : public content::NotificationObserver,
   // Holds the focused tab's child process host id. Behind |oom_score_lock_|.
   ProcessInfo focused_tab_process_info_;
 
-  // Holds a weak pointer to arc::ProcessInstance.
-  arc::ProcessInstance* arc_process_instance_;
+  // Holds a weak pointer to arc::mojom::ProcessInstance.
+  arc::mojom::ProcessInstance* arc_process_instance_;
   // Current ProcessInstance version.
   int arc_process_instance_version_;
 

@@ -20,7 +20,8 @@ class ArcBridgeBootstrap {
  public:
   class Delegate {
    public:
-    virtual void OnConnectionEstablished(ArcBridgeInstancePtr instance_ptr) = 0;
+    virtual void OnConnectionEstablished(
+        mojom::ArcBridgeInstancePtr instance_ptr) = 0;
     virtual void OnStopped() = 0;
   };
 

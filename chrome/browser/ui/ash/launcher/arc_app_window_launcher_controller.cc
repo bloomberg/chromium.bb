@@ -162,7 +162,7 @@ void ArcAppWindowLauncherController::OnWindowPropertyChanged(
     return;
   }
 
-  arc::AppInstance* app_instance = bridge_service->app_instance();
+  arc::mojom::AppInstance* app_instance = bridge_service->app_instance();
   if (!app_instance) {
     VLOG(2) << "Request to resolve task when bridge service is not ready.";
     return;

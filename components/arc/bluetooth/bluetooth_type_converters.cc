@@ -37,23 +37,24 @@ namespace mojo {
 // TODO(smbarber): Add unit tests for Bluetooth type converters.
 
 // static
-arc::BluetoothAddressPtr
-TypeConverter<arc::BluetoothAddressPtr, std::string>::Convert(
+arc::mojom::BluetoothAddressPtr
+TypeConverter<arc::mojom::BluetoothAddressPtr, std::string>::Convert(
     const std::string& address) {
   std::string stripped = StripNonHex(address);
 
   std::vector<uint8_t> address_bytes;
   base::HexStringToBytes(stripped, &address_bytes);
 
-  arc::BluetoothAddressPtr mojo_addr = arc::BluetoothAddress::New();
+  arc::mojom::BluetoothAddressPtr mojo_addr =
+      arc::mojom::BluetoothAddress::New();
   mojo_addr->address = mojo::Array<uint8_t>::From(address_bytes);
 
   return mojo_addr;
 }
 
 // static
-std::string TypeConverter<std::string, arc::BluetoothAddress>::Convert(
-    const arc::BluetoothAddress& address) {
+std::string TypeConverter<std::string, arc::mojom::BluetoothAddress>::Convert(
+    const arc::mojom::BluetoothAddress& address) {
   std::ostringstream addr_stream;
   addr_stream << std::setfill('0') << std::hex << std::uppercase;
 
@@ -68,15 +69,15 @@ std::string TypeConverter<std::string, arc::BluetoothAddress>::Convert(
 }
 
 // static
-arc::BluetoothUUIDPtr
-TypeConverter<arc::BluetoothUUIDPtr, device::BluetoothUUID>::Convert(
+arc::mojom::BluetoothUUIDPtr
+TypeConverter<arc::mojom::BluetoothUUIDPtr, device::BluetoothUUID>::Convert(
     const device::BluetoothUUID& uuid) {
   std::string uuid_str = StripNonHex(uuid.canonical_value());
 
   std::vector<uint8_t> address_bytes;
   base::HexStringToBytes(uuid_str, &address_bytes);
 
-  arc::BluetoothUUIDPtr uuidp = arc::BluetoothUUID::New();
+  arc::mojom::BluetoothUUIDPtr uuidp = arc::mojom::BluetoothUUID::New();
   uuidp->uuid = mojo::Array<uint8_t>::From(address_bytes);
 
   return uuidp;

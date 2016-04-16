@@ -16,7 +16,7 @@
 
 namespace arc {
 
-class FakeAppInstance : public AppInstance {
+class FakeAppInstance : public mojom::AppInstance {
  public:
   class Request {
    public:
@@ -28,7 +28,7 @@ class FakeAppInstance : public AppInstance {
 
     const std::string& activity() const { return activity_; }
 
-    bool IsForApp(const AppInfo& app_info) const {
+    bool IsForApp(const mojom::AppInfo& app_info) const {
       return package_name_ == app_info.package_name &&
              activity_ == app_info.activity;
     }
@@ -44,7 +44,7 @@ class FakeAppInstance : public AppInstance {
    public:
     IconRequest(const std::string& package_name,
                 const std::string& activity,
-                ScaleFactor scale_factor)
+                mojom::ScaleFactor scale_factor)
         : Request(package_name, activity),
           scale_factor_(static_cast<int>(scale_factor)) {}
     ~IconRequest() {}
@@ -57,34 +57,35 @@ class FakeAppInstance : public AppInstance {
     DISALLOW_COPY_AND_ASSIGN(IconRequest);
   };
 
-  explicit FakeAppInstance(AppHost* app_host);
+  explicit FakeAppInstance(mojom::AppHost* app_host);
   ~FakeAppInstance() override;
 
-  void Bind(mojo::InterfaceRequest<AppInstance> interface_request) {
+  void Bind(mojo::InterfaceRequest<mojom::AppInstance> interface_request) {
     binding_.Bind(std::move(interface_request));
   }
 
-  // AppInstance overrides:
-  void Init(AppHostPtr host_ptr) override {}
+  // mojom::AppInstance overrides:
+  void Init(mojom::AppHostPtr host_ptr) override {}
   void RefreshAppList() override;
   void LaunchApp(const mojo::String& package_name,
                  const mojo::String& activity,
-                 ScreenRectPtr dimension) override;
+                 mojom::ScreenRectPtr dimension) override;
   void RequestAppIcon(const mojo::String& package_name,
                       const mojo::String& activity,
-                      ScaleFactor scale_factor) override;
-  void CanHandleResolution(const mojo::String& package_name,
+                      mojom::ScaleFactor scale_factor) override;
+  void CanHandleResolution(
+      const mojo::String& package_name,
       const mojo::String& activity,
-      ScreenRectPtr dimension,
+      mojom::ScreenRectPtr dimension,
       const CanHandleResolutionCallback& callback) override;
   void UninstallPackage(const mojo::String& package_name) override;
   void GetTaskInfo(int32_t task_id,
                    const GetTaskInfoCallback& callback) override;
 
   // Methods to reply messages.
-  void SendRefreshAppList(const std::vector<AppInfo>& apps);
-  bool GenerateAndSendIcon(const AppInfo& app,
-                           ScaleFactor scale_factor,
+  void SendRefreshAppList(const std::vector<mojom::AppInfo>& apps);
+  bool GenerateAndSendIcon(const mojom::AppInfo& app,
+                           mojom::ScaleFactor scale_factor,
                            std::string* png_data_as_string);
   void SetTaskInfo(int32_t task_id,
                    const std::string& package_name,
@@ -105,17 +106,20 @@ class FakeAppInstance : public AppInstance {
   void WaitForIncomingMethodCall();
 
   // As part of the initialization process, the instance side calls
-  // AppHost::OnAppInstanceReady(), which in turn calls AppInstance::Init() and
-  // AppInstance::RefreshAppList(). This method should be called after a call
-  // to ArcBridgeHost::OnAppInstanceReady() to make sure all method calls have
+  // mojom::AppHost::OnAppInstanceReady(), which in turn calls
+  // mojom::AppInstance::Init() and
+  // mojom::AppInstance::RefreshAppList(). This method should be called after a
+  // call
+  // to mojom::ArcBridgeHost::OnAppInstanceReady() to make sure all method calls
+  // have
   // been dispatched.
   void WaitForOnAppInstanceReady();
 
  private:
   using TaskIdToInfo = std::map<int32_t, scoped_ptr<Request>>;
   // Mojo endpoints.
-  mojo::Binding<AppInstance> binding_;
-  AppHost* app_host_;
+  mojo::Binding<mojom::AppInstance> binding_;
+  mojom::AppHost* app_host_;
   // Number of RefreshAppList calls.
   int refresh_app_list_count_ = 0;
   // Keeps information about launch requests.

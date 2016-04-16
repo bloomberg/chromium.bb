@@ -137,7 +137,7 @@ void ArcPolicyBridge::OnPolicyInstanceReady() {
   }
   policy_service_->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
 
-  PolicyInstance* const policy_instance =
+  mojom::PolicyInstance* const policy_instance =
       arc_bridge_service()->policy_instance();
   if (!policy_instance) {
     LOG(ERROR) << "OnPolicyInstanceReady called, but no policy instance found";

@@ -26,7 +26,7 @@ class ArcBridgeService;
 class ArcNetHostImpl : public ArcService,
                        public ArcBridgeService::Observer,
                        public chromeos::NetworkStateHandlerObserver,
-                       public NetHost {
+                       public mojom::NetHost {
  public:
   // The constructor will register an Observer with ArcBridgeService.
   explicit ArcNetHostImpl(ArcBridgeService* arc_bridge_service);
@@ -39,7 +39,7 @@ class ArcNetHostImpl : public ArcService,
       const GetNetworksDeprecatedCallback& callback) override;
 
   // Called when a GetNetworks call is sent from ARC.
-  void GetNetworks(GetNetworksRequestType type,
+  void GetNetworks(mojom::GetNetworksRequestType type,
                    const GetNetworksCallback& callback) override;
 
   // Called when a GetWifiEnabledState call is sent from ARC.
@@ -65,7 +65,7 @@ class ArcNetHostImpl : public ArcService,
 
  private:
   base::ThreadChecker thread_checker_;
-  mojo::Binding<arc::NetHost> binding_;
+  mojo::Binding<arc::mojom::NetHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNetHostImpl);
 };

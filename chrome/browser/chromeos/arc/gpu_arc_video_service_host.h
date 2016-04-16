@@ -24,7 +24,7 @@ namespace arc {
 // process. The corresponding end "GpuArcVideoService" runs in the GPU process.
 class GpuArcVideoServiceHost : public arc::ArcService,
                                public arc::ArcBridgeService::Observer,
-                               public arc::VideoHost {
+                               public arc::mojom::VideoHost {
  public:
   explicit GpuArcVideoServiceHost(arc::ArcBridgeService* bridge_service);
   ~GpuArcVideoServiceHost() override;
@@ -33,20 +33,20 @@ class GpuArcVideoServiceHost : public arc::ArcService,
   void OnVideoInstanceReady() override;
   void OnVideoInstanceClosed() override;
 
-  // arc::VideoHost implementation.
+  // arc::mojom::VideoHost implementation.
   void OnRequestArcVideoAcceleratorChannel(
       const OnRequestArcVideoAcceleratorChannelCallback& callback) override;
 
  private:
   void BindServiceAndCreateChannel(
       const OnRequestArcVideoAcceleratorChannelCallback& callback,
-      mojo::InterfacePtrInfo<arc::VideoHost> ptr_info);
+      mojo::InterfacePtrInfo<arc::mojom::VideoHost> ptr_info);
 
   base::ThreadChecker thread_checker_;
 
-  mojo::Binding<arc::VideoHost> binding_;
+  mojo::Binding<arc::mojom::VideoHost> binding_;
 
-  arc::VideoHostPtr service_ptr_;
+  arc::mojom::VideoHostPtr service_ptr_;
 
   base::WeakPtrFactory<GpuArcVideoServiceHost> weak_factory_;
 

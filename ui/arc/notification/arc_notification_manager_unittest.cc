@@ -89,7 +89,7 @@ class ArcNotificationManagerTest : public testing::Test {
   }
 
   std::string CreateNotificationWithKey(const std::string& key) {
-    auto data = ArcNotificationData::New();
+    auto data = mojom::ArcNotificationData::New();
     data->key = key;
     data->title = "TITLE";
     data->message = "MESSAGE";
@@ -110,7 +110,7 @@ class ArcNotificationManagerTest : public testing::Test {
   std::unique_ptr<MockMessageCenter> message_center_;
 
   void SetUp() override {
-    NotificationsInstancePtr arc_notifications_instance;
+    mojom::NotificationsInstancePtr arc_notifications_instance;
     arc_notifications_instance_.reset(
         new FakeNotificationsInstance(GetProxy(&arc_notifications_instance)));
     service_.reset(new FakeArcBridgeService());
@@ -167,7 +167,7 @@ TEST_F(ArcNotificationManagerTest, NotificationRemovedByChrome) {
 
   ASSERT_EQ(1u, arc_notifications_instance()->events().size());
   EXPECT_EQ(key, arc_notifications_instance()->events().at(0).first);
-  EXPECT_EQ(ArcNotificationEvent::CLOSED,
+  EXPECT_EQ(mojom::ArcNotificationEvent::CLOSED,
             arc_notifications_instance()->events().at(0).second);
 }
 

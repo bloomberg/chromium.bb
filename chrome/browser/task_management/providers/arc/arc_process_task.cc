@@ -47,7 +47,7 @@ int ArcProcessTask::GetChildProcessUniqueID() const {
 }
 
 void ArcProcessTask::Kill() {
-  arc::ProcessInstance* arc_process_instance =
+  arc::mojom::ProcessInstance* arc_process_instance =
       arc::ArcBridgeService::Get()->process_instance();
   if (!arc_process_instance) {
     LOG(ERROR) << "ARC process instance is not ready.";

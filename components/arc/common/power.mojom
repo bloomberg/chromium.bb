@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module arc;
+module arc.mojom;
 
 // Enumerates the types of wake lock the ARC instance can request from the
 // host.

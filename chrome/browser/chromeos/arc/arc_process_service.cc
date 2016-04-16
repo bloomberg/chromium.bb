@@ -81,7 +81,7 @@ bool ArcProcessService::RequestProcessList(
     RequestProcessListCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  arc::ProcessInstance* process_instance =
+  arc::mojom::ProcessInstance* process_instance =
       arc_bridge_service()->process_instance();
   if (!process_instance) {
     return false;
@@ -94,11 +94,11 @@ bool ArcProcessService::RequestProcessList(
 }
 
 void ArcProcessService::OnReceiveProcessList(
-      const RequestProcessListCallback& callback,
-      mojo::Array<arc::RunningAppProcessInfoPtr> mojo_processes) {
+    const RequestProcessListCallback& callback,
+    mojo::Array<arc::mojom::RunningAppProcessInfoPtr> mojo_processes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  auto raw_processes = new vector<RunningAppProcessInfoPtr>();
+  auto raw_processes = new vector<mojom::RunningAppProcessInfoPtr>();
   mojo_processes.Swap(raw_processes);
 
   auto ret_processes = new vector<ArcProcess>();
@@ -133,7 +133,7 @@ void ArcProcessService::CallbackRelay(
 }
 
 void ArcProcessService::UpdateAndReturnProcessList(
-    const vector<arc::RunningAppProcessInfoPtr>* raw_processes,
+    const vector<arc::mojom::RunningAppProcessInfoPtr>* raw_processes,
     vector<ArcProcess>* ret_processes) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -163,7 +163,7 @@ void ArcProcessService::UpdateAndReturnProcessList(
 }
 
 void ArcProcessService::PopulateProcessList(
-    const vector<arc::RunningAppProcessInfoPtr>* raw_processes,
+    const vector<arc::mojom::RunningAppProcessInfoPtr>* raw_processes,
     vector<ArcProcess>* ret_processes) {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (const auto& entry : *raw_processes) {

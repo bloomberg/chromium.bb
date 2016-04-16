@@ -14,8 +14,8 @@
 
 namespace {
 
-mojo::InterfacePtrInfo<arc::VideoHost> GetServiceOnIOThread() {
-  arc::VideoHostPtr host_ptr;
+mojo::InterfacePtrInfo<arc::mojom::VideoHost> GetServiceOnIOThread() {
+  arc::mojom::VideoHostPtr host_ptr;
   content::ServiceRegistry* registry = content::GetGpuServiceRegistry();
   registry->ConnectToRemoteService(mojo::GetProxy(&host_ptr));
 
@@ -62,7 +62,7 @@ void GpuArcVideoServiceHost::OnRequestArcVideoAcceleratorChannel(
 
 void GpuArcVideoServiceHost::BindServiceAndCreateChannel(
     const OnRequestArcVideoAcceleratorChannelCallback& callback,
-    mojo::InterfacePtrInfo<arc::VideoHost> ptr_info) {
+    mojo::InterfacePtrInfo<arc::mojom::VideoHost> ptr_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   service_ptr_.Bind(std::move(ptr_info));

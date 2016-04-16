@@ -13,7 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 // static
-std::string ArcAppTest::GetAppId(const arc::AppInfo& app_info) {
+std::string ArcAppTest::GetAppId(const arc::mojom::AppInfo& app_info) {
   return ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
 }
 
@@ -29,7 +29,7 @@ void ArcAppTest::SetUp(content::BrowserContext* browser_context) {
 
   // Make sure we have enough data for test.
   for (int i = 0; i < 3; ++i) {
-    arc::AppInfo app;
+    arc::mojom::AppInfo app;
     app.name = base::StringPrintf("Fake App %d", i);
     app.package_name = base::StringPrintf("fake.app.%d", i);
     app.activity = base::StringPrintf("fake.app.%d.activity", i);
@@ -41,7 +41,7 @@ void ArcAppTest::SetUp(content::BrowserContext* browser_context) {
   bridge_service_.reset(new arc::FakeArcBridgeService());
   app_instance_.reset(
       new arc::FakeAppInstance(ArcAppListPrefs::Get(browser_context_)));
-  arc::AppInstancePtr instance;
+  arc::mojom::AppInstancePtr instance;
   app_instance_->Bind(mojo::GetProxy(&instance));
   bridge_service_->OnAppInstanceReady(std::move(instance));
   app_instance_->WaitForOnAppInstanceReady();

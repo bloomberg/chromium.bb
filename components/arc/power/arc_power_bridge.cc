@@ -25,7 +25,7 @@ ArcPowerBridge::~ArcPowerBridge() {
 }
 
 void ArcPowerBridge::OnPowerInstanceReady() {
-  PowerInstance* power_instance = arc_bridge_service()->power_instance();
+  mojom::PowerInstance* power_instance = arc_bridge_service()->power_instance();
   if (!power_instance) {
     LOG(ERROR) << "OnPowerInstanceReady called, but no power instance found";
     return;
@@ -42,7 +42,7 @@ void ArcPowerBridge::OnPowerInstanceClosed() {
 
 void ArcPowerBridge::OnPowerStateChanged(
     chromeos::DisplayPowerState power_state) {
-  PowerInstance* power_instance = arc_bridge_service()->power_instance();
+  mojom::PowerInstance* power_instance = arc_bridge_service()->power_instance();
   if (!power_instance) {
     LOG(ERROR) << "PowerInstance is not available";
     return;
@@ -52,8 +52,7 @@ void ArcPowerBridge::OnPowerStateChanged(
   power_instance->SetInteractive(enabled);
 }
 
-void ArcPowerBridge::OnAcquireDisplayWakeLock(
-    DisplayWakeLockType type) {
+void ArcPowerBridge::OnAcquireDisplayWakeLock(mojom::DisplayWakeLockType type) {
   if (!chromeos::PowerPolicyController::IsInitialized()) {
     LOG(WARNING) << "PowerPolicyController is not available";
     return;
@@ -63,11 +62,11 @@ void ArcPowerBridge::OnAcquireDisplayWakeLock(
 
   int wake_lock_id = -1;
   switch (type) {
-    case DisplayWakeLockType::BRIGHT:
+    case mojom::DisplayWakeLockType::BRIGHT:
       wake_lock_id = controller->AddScreenWakeLock(
           chromeos::PowerPolicyController::REASON_OTHER, "ARC");
       break;
-    case DisplayWakeLockType::DIM:
+    case mojom::DisplayWakeLockType::DIM:
       wake_lock_id = controller->AddDimWakeLock(
           chromeos::PowerPolicyController::REASON_OTHER, "ARC");
       break;
@@ -79,8 +78,7 @@ void ArcPowerBridge::OnAcquireDisplayWakeLock(
   wake_locks_.insert(std::make_pair(type, wake_lock_id));
 }
 
-void ArcPowerBridge::OnReleaseDisplayWakeLock(
-    DisplayWakeLockType type) {
+void ArcPowerBridge::OnReleaseDisplayWakeLock(mojom::DisplayWakeLockType type) {
   if (!chromeos::PowerPolicyController::IsInitialized()) {
     LOG(WARNING) << "PowerPolicyController is not available";
     return;

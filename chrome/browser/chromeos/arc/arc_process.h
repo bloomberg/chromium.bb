@@ -15,7 +15,7 @@ struct ArcProcess {
   base::ProcessId nspid;
   base::ProcessId pid;
   std::string process_name;
-  ProcessState process_state;
+  mojom::ProcessState process_state;
 };
 
 }  // namespace arc

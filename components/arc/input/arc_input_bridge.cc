@@ -340,7 +340,7 @@ base::ScopedFD ArcInputBridge::CreateBridgeInputDevice(
   base::ScopedFD write_fd(fd[1]);
 
   // The read end is sent to the instance, ownership of fd transfers.
-  InputInstance* input_instance = arc_bridge_service()->input_instance();
+  mojom::InputInstance* input_instance = arc_bridge_service()->input_instance();
   if (!input_instance) {
     VLOG(1) << "ArcBridgeService InputInstance disappeared.";
     return base::ScopedFD();

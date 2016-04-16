@@ -31,7 +31,7 @@ class ArcBluetoothBridge
       public ArcBridgeService::Observer,
       public device::BluetoothAdapter::Observer,
       public device::BluetoothAdapterFactory::AdapterCallback,
-      public BluetoothHost {
+      public mojom::BluetoothHost {
  public:
   explicit ArcBluetoothBridge(ArcBridgeService* bridge_service);
   ~ArcBluetoothBridge() override;
@@ -112,53 +112,53 @@ class ArcBluetoothBridge
   void EnableAdapter(const EnableAdapterCallback& callback) override;
   void DisableAdapter(const DisableAdapterCallback& callback) override;
 
-  void GetAdapterProperty(BluetoothPropertyType type) override;
-  void SetAdapterProperty(BluetoothPropertyPtr property) override;
+  void GetAdapterProperty(mojom::BluetoothPropertyType type) override;
+  void SetAdapterProperty(mojom::BluetoothPropertyPtr property) override;
 
-  void GetRemoteDeviceProperty(BluetoothAddressPtr remote_addr,
-                               BluetoothPropertyType type) override;
-  void SetRemoteDeviceProperty(BluetoothAddressPtr remote_addr,
-                               BluetoothPropertyPtr property) override;
-  void GetRemoteServiceRecord(BluetoothAddressPtr remote_addr,
-                              BluetoothUUIDPtr uuid) override;
+  void GetRemoteDeviceProperty(mojom::BluetoothAddressPtr remote_addr,
+                               mojom::BluetoothPropertyType type) override;
+  void SetRemoteDeviceProperty(mojom::BluetoothAddressPtr remote_addr,
+                               mojom::BluetoothPropertyPtr property) override;
+  void GetRemoteServiceRecord(mojom::BluetoothAddressPtr remote_addr,
+                              mojom::BluetoothUUIDPtr uuid) override;
 
-  void GetRemoteServices(BluetoothAddressPtr remote_addr) override;
+  void GetRemoteServices(mojom::BluetoothAddressPtr remote_addr) override;
 
   void StartDiscovery() override;
   void CancelDiscovery() override;
 
-  void CreateBond(BluetoothAddressPtr addr, int32_t transport) override;
-  void RemoveBond(BluetoothAddressPtr addr) override;
-  void CancelBond(BluetoothAddressPtr addr) override;
+  void CreateBond(mojom::BluetoothAddressPtr addr, int32_t transport) override;
+  void RemoveBond(mojom::BluetoothAddressPtr addr) override;
+  void CancelBond(mojom::BluetoothAddressPtr addr) override;
 
-  void GetConnectionState(BluetoothAddressPtr addr,
+  void GetConnectionState(mojom::BluetoothAddressPtr addr,
                           const GetConnectionStateCallback& callback) override;
 
   // Chrome observer callbacks
   void OnPoweredOn(
-      const mojo::Callback<void(BluetoothAdapterState)>& callback) const;
+      const mojo::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
   void OnPoweredOff(
-      const mojo::Callback<void(BluetoothAdapterState)>& callback) const;
+      const mojo::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
   void OnPoweredError(
-      const mojo::Callback<void(BluetoothAdapterState)>& callback) const;
+      const mojo::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
   void OnDiscoveryStarted(
       scoped_ptr<device::BluetoothDiscoverySession> session);
   void OnDiscoveryStopped();
   void OnDiscoveryError();
-  void OnPairing(BluetoothAddressPtr addr) const;
-  void OnPairedDone(BluetoothAddressPtr addr) const;
+  void OnPairing(mojom::BluetoothAddressPtr addr) const;
+  void OnPairedDone(mojom::BluetoothAddressPtr addr) const;
   void OnPairedError(
-      BluetoothAddressPtr addr,
+      mojom::BluetoothAddressPtr addr,
       device::BluetoothDevice::ConnectErrorCode error_code) const;
-  void OnForgetDone(BluetoothAddressPtr addr) const;
-  void OnForgetError(BluetoothAddressPtr addr) const;
+  void OnForgetDone(mojom::BluetoothAddressPtr addr) const;
+  void OnForgetError(mojom::BluetoothAddressPtr addr) const;
 
  private:
-  mojo::Array<BluetoothPropertyPtr> GetDeviceProperties(
-      BluetoothPropertyType type,
+  mojo::Array<mojom::BluetoothPropertyPtr> GetDeviceProperties(
+      mojom::BluetoothPropertyType type,
       device::BluetoothDevice* device) const;
-  mojo::Array<BluetoothPropertyPtr> GetAdapterProperties(
-      BluetoothPropertyType type) const;
+  mojo::Array<mojom::BluetoothPropertyPtr> GetAdapterProperties(
+      mojom::BluetoothPropertyType type) const;
 
   void SendCachedDevicesFound() const;
   bool HasBluetoothInstance() const;
@@ -166,7 +166,7 @@ class ArcBluetoothBridge
   // Propagates the list of paired device to Android.
   void SendCachedPairedDevices() const;
 
-  mojo::Binding<BluetoothHost> binding_;
+  mojo::Binding<mojom::BluetoothHost> binding_;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   scoped_ptr<device::BluetoothDiscoverySession> discovery_session_;

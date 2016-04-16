@@ -5,7 +5,7 @@
 // This file defined the mojo interface between Android and Chromium for video
 // decoding and encoding. See comments of ArcVideoAccelerator for more info.
 
-module arc;
+module arc.mojom;
 
 [Extensible]
 enum HalPixelFormatExtension {

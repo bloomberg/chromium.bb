@@ -143,14 +143,14 @@ bool LaunchAppWithRect(content::BrowserContext* context,
             << app_id << ".";
     return false;
   }
-  arc::AppInstance* app_instance = bridge_service->app_instance();
+  arc::mojom::AppInstance* app_instance = bridge_service->app_instance();
   if (!app_instance) {
     VLOG(2) << "Request to launch app when bridge service is not ready: "
             << app_id << ".";
     return false;
   }
 
-  arc::ScreenRectPtr rect = arc::ScreenRect::New();
+  arc::mojom::ScreenRectPtr rect = arc::mojom::ScreenRect::New();
   rect->left = target_rect.x();
   rect->right = target_rect.right();
   rect->top = target_rect.y();
@@ -180,7 +180,7 @@ bool CanHandleResolution(content::BrowserContext* context,
   }
 
   arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  arc::AppInstance* app_instance =
+  arc::mojom::AppInstance* app_instance =
       bridge_service ? bridge_service->app_instance() : nullptr;
   if (!app_instance) {
     VLOG(2) << "Request to get resolution capability when bridge service is "
@@ -195,7 +195,7 @@ bool CanHandleResolution(content::BrowserContext* context,
     return false;
   }
 
-  arc::ScreenRectPtr screen_rect = arc::ScreenRect::New();
+  arc::mojom::ScreenRectPtr screen_rect = arc::mojom::ScreenRect::New();
   screen_rect->left = rect.x();
   screen_rect->right = rect.right();
   screen_rect->top = rect.y();
@@ -215,7 +215,7 @@ void UninstallPackage(const std::string& package_name) {
             << package_name << ".";
     return;
   }
-  arc::AppInstance* app_instance = bridge_service->app_instance();
+  arc::mojom::AppInstance* app_instance = bridge_service->app_instance();
   if (!app_instance) {
     VLOG(2) << "Request to uninstall package when bridge service is not ready: "
             << package_name << ".";

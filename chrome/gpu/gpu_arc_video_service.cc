@@ -20,10 +20,11 @@
 namespace mojo {
 
 template <>
-struct TypeConverter<arc::BufferMetadataPtr, chromeos::arc::BufferMetadata> {
-  static arc::BufferMetadataPtr Convert(
+struct TypeConverter<arc::mojom::BufferMetadataPtr,
+                     chromeos::arc::BufferMetadata> {
+  static arc::mojom::BufferMetadataPtr Convert(
       const chromeos::arc::BufferMetadata& input) {
-    arc::BufferMetadataPtr result = arc::BufferMetadata::New();
+    arc::mojom::BufferMetadataPtr result = arc::mojom::BufferMetadata::New();
     result->timestamp = input.timestamp;
     result->flags = input.flags;
     result->bytes_used = input.bytes_used;
@@ -32,9 +33,10 @@ struct TypeConverter<arc::BufferMetadataPtr, chromeos::arc::BufferMetadata> {
 };
 
 template <>
-struct TypeConverter<chromeos::arc::BufferMetadata, arc::BufferMetadataPtr> {
+struct TypeConverter<chromeos::arc::BufferMetadata,
+                     arc::mojom::BufferMetadataPtr> {
   static chromeos::arc::BufferMetadata Convert(
-      const arc::BufferMetadataPtr& input) {
+      const arc::mojom::BufferMetadataPtr& input) {
     chromeos::arc::BufferMetadata result;
     result.timestamp = input->timestamp;
     result.flags = input->flags;
@@ -44,9 +46,10 @@ struct TypeConverter<chromeos::arc::BufferMetadata, arc::BufferMetadataPtr> {
 };
 
 template <>
-struct TypeConverter<arc::VideoFormatPtr, chromeos::arc::VideoFormat> {
-  static arc::VideoFormatPtr Convert(const chromeos::arc::VideoFormat& input) {
-    arc::VideoFormatPtr result = arc::VideoFormat::New();
+struct TypeConverter<arc::mojom::VideoFormatPtr, chromeos::arc::VideoFormat> {
+  static arc::mojom::VideoFormatPtr Convert(
+      const chromeos::arc::VideoFormat& input) {
+    arc::mojom::VideoFormatPtr result = arc::mojom::VideoFormat::New();
     result->pixel_format = input.pixel_format;
     result->buffer_size = input.buffer_size;
     result->min_num_buffers = input.min_num_buffers;
@@ -62,9 +65,9 @@ struct TypeConverter<arc::VideoFormatPtr, chromeos::arc::VideoFormat> {
 
 template <>
 struct TypeConverter<chromeos::arc::ArcVideoAccelerator::Config,
-                     arc::ArcVideoAcceleratorConfigPtr> {
+                     arc::mojom::ArcVideoAcceleratorConfigPtr> {
   static chromeos::arc::ArcVideoAccelerator::Config Convert(
-      const arc::ArcVideoAcceleratorConfigPtr& input) {
+      const arc::mojom::ArcVideoAcceleratorConfigPtr& input) {
     chromeos::arc::ArcVideoAccelerator::Config result;
     result.device_type =
         static_cast<chromeos::arc::ArcVideoAccelerator::Config::DeviceType>(
@@ -81,7 +84,7 @@ namespace chromeos {
 namespace arc {
 
 class GpuArcVideoService::AcceleratorStub
-    : public ::arc::VideoAcceleratorService,
+    : public ::arc::mojom::VideoAcceleratorService,
       public ArcVideoAccelerator::Client {
  public:
   // |owner| outlives AcceleratorStub.
@@ -100,8 +103,9 @@ class GpuArcVideoService::AcceleratorStub
       return false;
     }
 
-    client_.Bind(mojo::InterfacePtrInfo<::arc::VideoAcceleratorServiceClient>(
-        std::move(server_pipe), 0u));
+    client_.Bind(
+        mojo::InterfacePtrInfo<::arc::mojom::VideoAcceleratorServiceClient>(
+            std::move(server_pipe), 0u));
 
     // base::Unretained is safe because we own |client_|
     client_.set_connection_error_handler(
@@ -111,7 +115,7 @@ class GpuArcVideoService::AcceleratorStub
     // TODO(kcwu): create ArcGpuVideoDecodeAccelerator here.
     // accelerator_.reset(new ArcGpuVideoDecodeAccelerator());
 
-    ::arc::VideoAcceleratorServicePtr service;
+    ::arc::mojom::VideoAcceleratorServicePtr service;
     binding_.Bind(GetProxy(&service));
     // base::Unretained is safe because we own |binding_|
     binding_.set_connection_error_handler(
@@ -132,15 +136,15 @@ class GpuArcVideoService::AcceleratorStub
   void OnError(ArcVideoAccelerator::Error error) override {
     DVLOG(2) << "OnError " << error;
     client_->OnError(
-        static_cast<::arc::VideoAcceleratorServiceClient::Error>(error));
+        static_cast<::arc::mojom::VideoAcceleratorServiceClient::Error>(error));
   }
 
   void OnBufferDone(PortType port,
                     uint32_t index,
                     const BufferMetadata& metadata) override {
     DVLOG(2) << "OnBufferDone " << port << "," << index;
-    client_->OnBufferDone(static_cast<::arc::PortType>(port), index,
-                          ::arc::BufferMetadata::From(metadata));
+    client_->OnBufferDone(static_cast<::arc::mojom::PortType>(port), index,
+                          ::arc::mojom::BufferMetadata::From(metadata));
   }
 
   void OnResetDone() override {
@@ -150,11 +154,11 @@ class GpuArcVideoService::AcceleratorStub
 
   void OnOutputFormatChanged(const VideoFormat& format) override {
     DVLOG(2) << "OnOutputFormatChanged";
-    client_->OnOutputFormatChanged(::arc::VideoFormat::From(format));
+    client_->OnOutputFormatChanged(::arc::mojom::VideoFormat::From(format));
   }
 
-  // ::arc::VideoAcceleratorService impementation.
-  void Initialize(::arc::ArcVideoAcceleratorConfigPtr config,
+  // ::arc::mojom::VideoAcceleratorService impementation.
+  void Initialize(::arc::mojom::ArcVideoAcceleratorConfigPtr config,
                   const InitializeCallback& callback) override {
     DVLOG(2) << "Initialize";
     bool result = accelerator_->Initialize(
@@ -162,7 +166,7 @@ class GpuArcVideoService::AcceleratorStub
     callback.Run(result);
   }
 
-  void BindSharedMemory(::arc::PortType port,
+  void BindSharedMemory(::arc::mojom::PortType port,
                         uint32_t index,
                         mojo::ScopedHandle ashmem_handle,
                         uint32_t offset,
@@ -181,7 +185,7 @@ class GpuArcVideoService::AcceleratorStub
                                    std::move(fd), offset, length);
   }
 
-  void BindDmabuf(::arc::PortType port,
+  void BindDmabuf(::arc::mojom::PortType port,
                   uint32_t index,
                   mojo::ScopedHandle dmabuf_handle) override {
     DVLOG(2) << "BindDmabuf port=" << port << ", index=" << index;
@@ -194,9 +198,9 @@ class GpuArcVideoService::AcceleratorStub
     accelerator_->BindDmabuf(static_cast<PortType>(port), index, std::move(fd));
   }
 
-  void UseBuffer(::arc::PortType port,
+  void UseBuffer(::arc::mojom::PortType port,
                  uint32_t index,
-                 ::arc::BufferMetadataPtr metadata) override {
+                 ::arc::mojom::BufferMetadataPtr metadata) override {
     DVLOG(2) << "UseBuffer port=" << port << ", index=" << index;
     accelerator_->UseBuffer(static_cast<PortType>(port), index,
                             metadata.To<BufferMetadata>());
@@ -213,12 +217,12 @@ class GpuArcVideoService::AcceleratorStub
   base::ThreadChecker thread_checker_;
   GpuArcVideoService* const owner_;
   std::unique_ptr<ArcVideoAccelerator> accelerator_;
-  ::arc::VideoAcceleratorServiceClientPtr client_;
-  mojo::Binding<::arc::VideoAcceleratorService> binding_;
+  ::arc::mojom::VideoAcceleratorServiceClientPtr client_;
+  mojo::Binding<::arc::mojom::VideoAcceleratorService> binding_;
 };
 
 GpuArcVideoService::GpuArcVideoService(
-    mojo::InterfaceRequest<::arc::VideoHost> request)
+    mojo::InterfaceRequest<::arc::mojom::VideoHost> request)
     : binding_(this, std::move(request)) {}
 
 GpuArcVideoService::~GpuArcVideoService() {}

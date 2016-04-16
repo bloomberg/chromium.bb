@@ -16,7 +16,7 @@ namespace arc {
 // Receives intents from ARC.
 class ArcIntentHelperBridge : public ArcService,
                               public ArcBridgeService::Observer,
-                              public IntentHelperHost {
+                              public mojom::IntentHelperHost {
  public:
   explicit ArcIntentHelperBridge(ArcBridgeService* bridge_service);
   ~ArcIntentHelperBridge() override;
@@ -24,11 +24,11 @@ class ArcIntentHelperBridge : public ArcService,
   // ArcBridgeService::Observer
   void OnIntentHelperInstanceReady() override;
 
-  // arc::IntentHelperHost
+  // arc::mojom::IntentHelperHost
   void OnOpenUrl(const mojo::String& url) override;
 
  private:
-  mojo::Binding<IntentHelperHost> binding_;
+  mojo::Binding<mojom::IntentHelperHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcIntentHelperBridge);
 };

@@ -10,26 +10,27 @@
 
 namespace arc {
 
-class FakeNotificationsInstance : public NotificationsInstance {
+class FakeNotificationsInstance : public mojom::NotificationsInstance {
  public:
   FakeNotificationsInstance(
-      mojo::InterfaceRequest<NotificationsInstance> request);
+      mojo::InterfaceRequest<mojom::NotificationsInstance> request);
   ~FakeNotificationsInstance() override;
 
-  void Init(NotificationsHostPtr host_ptr) override;
+  void Init(mojom::NotificationsHostPtr host_ptr) override;
 
-  void SendNotificationEventToAndroid(const mojo::String& key,
-                                      ArcNotificationEvent event) override;
+  void SendNotificationEventToAndroid(
+      const mojo::String& key,
+      mojom::ArcNotificationEvent event) override;
 
-  const std::vector<std::pair<mojo::String, ArcNotificationEvent>>& events()
-      const;
+  const std::vector<std::pair<mojo::String, mojom::ArcNotificationEvent>>&
+  events() const;
 
   void WaitForIncomingMethodCall();
 
  private:
-  std::vector<std::pair<mojo::String, ArcNotificationEvent>> events_;
+  std::vector<std::pair<mojo::String, mojom::ArcNotificationEvent>> events_;
 
-  mojo::Binding<NotificationsInstance> binding_;
+  mojo::Binding<mojom::NotificationsInstance> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNotificationsInstance);
 };

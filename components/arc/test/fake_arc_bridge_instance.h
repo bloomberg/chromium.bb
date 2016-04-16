@@ -12,20 +12,20 @@
 
 namespace arc {
 
-class FakeArcBridgeInstance : public ArcBridgeInstance {
+class FakeArcBridgeInstance : public mojom::ArcBridgeInstance {
  public:
   FakeArcBridgeInstance();
   ~FakeArcBridgeInstance() override;
 
   // Finalizes the connection between the host and the instance, and signals
   // the host that the boot sequence has finished.
-  void Bind(mojo::InterfaceRequest<ArcBridgeInstance> interface_request);
+  void Bind(mojo::InterfaceRequest<mojom::ArcBridgeInstance> interface_request);
 
   // Resets the binding. Useful to simulate a restart.
   void Unbind();
 
   // ArcBridgeInstance:
-  void Init(ArcBridgeHostPtr host) override;
+  void Init(mojom::ArcBridgeHostPtr host) override;
 
   // Ensures the call to Init() has been dispatched.
   void WaitForInitCall();
@@ -35,8 +35,8 @@ class FakeArcBridgeInstance : public ArcBridgeInstance {
 
  private:
   // Mojo endpoints.
-  mojo::Binding<ArcBridgeInstance> binding_;
-  ArcBridgeHostPtr host_ptr_;
+  mojo::Binding<mojom::ArcBridgeInstance> binding_;
+  mojom::ArcBridgeHostPtr host_ptr_;
   int init_calls_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FakeArcBridgeInstance);

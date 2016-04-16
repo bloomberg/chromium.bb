@@ -20,7 +20,7 @@ namespace arc {
 class ArcPowerBridge : public ArcService,
                        public ArcBridgeService::Observer,
                        public ui::DisplayConfigurator::Observer,
-                       public PowerHost {
+                       public mojom::PowerHost {
  public:
   explicit ArcPowerBridge(ArcBridgeService* bridge_service);
   ~ArcPowerBridge() override;
@@ -32,20 +32,20 @@ class ArcPowerBridge : public ArcService,
   // DisplayConfigurator::Observer overrides.
   void OnPowerStateChanged(chromeos::DisplayPowerState power_state) override;
 
-  // PowerHost overrides.
-  void OnAcquireDisplayWakeLock(DisplayWakeLockType type) override;
-  void OnReleaseDisplayWakeLock(DisplayWakeLockType type) override;
+  // mojom::PowerHost overrides.
+  void OnAcquireDisplayWakeLock(mojom::DisplayWakeLockType type) override;
+  void OnReleaseDisplayWakeLock(mojom::DisplayWakeLockType type) override;
 
   void IsDisplayOn(const IsDisplayOnCallback& callback) override;
 
  private:
   void ReleaseAllDisplayWakeLocks();
 
-  mojo::Binding<PowerHost> binding_;
+  mojo::Binding<mojom::PowerHost> binding_;
 
   // Stores a mapping of type -> wake lock ID for all wake locks
   // held by ARC.
-  std::multimap<DisplayWakeLockType, int> wake_locks_;
+  std::multimap<mojom::DisplayWakeLockType, int> wake_locks_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPowerBridge);
 };

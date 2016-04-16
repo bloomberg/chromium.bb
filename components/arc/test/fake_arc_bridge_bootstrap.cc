@@ -19,7 +19,7 @@ FakeArcBridgeBootstrap::FakeArcBridgeBootstrap(FakeArcBridgeInstance* instance)
 
 void FakeArcBridgeBootstrap::Start() {
   DCHECK(delegate_);
-  ArcBridgeInstancePtr instance;
+  mojom::ArcBridgeInstancePtr instance;
   instance_->Bind(mojo::GetProxy(&instance));
   delegate_->OnConnectionEstablished(std::move(instance));
 }

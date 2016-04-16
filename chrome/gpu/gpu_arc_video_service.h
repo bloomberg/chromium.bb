@@ -20,12 +20,13 @@ namespace arc {
 //
 // For each creation request from GpuArcVideoServiceHost, GpuArcVideoService
 // will create a new IPC channel.
-class GpuArcVideoService : public ::arc::VideoHost {
+class GpuArcVideoService : public ::arc::mojom::VideoHost {
  public:
   class AcceleratorStub;
 
-  // |request| is mojo interface request of arc::VideoHost.
-  explicit GpuArcVideoService(mojo::InterfaceRequest<::arc::VideoHost> request);
+  // |request| is mojo interface request of arc::mojom::VideoHost.
+  explicit GpuArcVideoService(
+      mojo::InterfaceRequest<::arc::mojom::VideoHost> request);
 
   // Upon deletion, all ArcVideoAccelerator will be deleted and the associated
   // IPC channels are closed.
@@ -35,14 +36,14 @@ class GpuArcVideoService : public ::arc::VideoHost {
   void RemoveClient(AcceleratorStub* stub);
 
  private:
-  // arc::VideoHost implementation.
+  // arc::mojom::VideoHost implementation.
   void OnRequestArcVideoAcceleratorChannel(
       const OnRequestArcVideoAcceleratorChannelCallback& callback) override;
 
   base::ThreadChecker thread_checker_;
 
-  // Binding of arc::VideoHost. It also takes ownership of |this|.
-  mojo::StrongBinding<::arc::VideoHost> binding_;
+  // Binding of arc::mojom::VideoHost. It also takes ownership of |this|.
+  mojo::StrongBinding<::arc::mojom::VideoHost> binding_;
 
   // Bookkeeping all accelerator stubs.
   std::map<AcceleratorStub*, std::unique_ptr<AcceleratorStub>>

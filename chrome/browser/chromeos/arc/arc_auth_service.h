@@ -39,7 +39,7 @@ namespace arc {
 // This class proxies the request from the client to fetch an auth code from
 // LSO.
 class ArcAuthService : public ArcService,
-                       public AuthHost,
+                       public mojom::AuthHost,
                        public ArcBridgeService::Observer,
                        public UbertokenConsumer,
                        public GaiaAuthConsumer,
@@ -109,7 +109,7 @@ class ArcAuthService : public ArcService,
       const GetAuthCodeDeprecatedCallback& callback) override;
   void GetAuthCode(const GetAuthCodeCallback& callback) override;
   void OnSignInComplete() override;
-  void OnSignInFailed(arc::ArcSignInFailureReason reason) override;
+  void OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) override;
   // Callback is called with a bool that indicates the management status of the
   // user.
   void GetIsAccountManaged(

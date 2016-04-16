@@ -23,7 +23,7 @@ namespace arc {
 // This class encapsulates the detail of IME related IPC between
 // Chromium and the ARC container.
 class ArcImeBridgeImpl : public ArcImeBridge,
-                         public ImeHost,
+                         public mojom::ImeHost,
                          public ArcBridgeService::Observer {
  public:
   ArcImeBridgeImpl(Delegate* delegate, ArcBridgeService* bridge_service);
@@ -37,13 +37,13 @@ class ArcImeBridgeImpl : public ArcImeBridge,
   void SendConfirmCompositionText() override;
   void SendInsertText(const base::string16& text) override;
 
-  // arc::ImeHost overrides:
-  void OnTextInputTypeChanged(arc::TextInputType type) override;
-  void OnCursorRectChanged(arc::CursorRectPtr rect) override;
+  // arc::mojom::ImeHost overrides:
+  void OnTextInputTypeChanged(arc::mojom::TextInputType type) override;
+  void OnCursorRectChanged(arc::mojom::CursorRectPtr rect) override;
   void OnCancelComposition() override;
 
  private:
-  mojo::Binding<ImeHost> binding_;
+  mojo::Binding<mojom::ImeHost> binding_;
   Delegate* const delegate_;
   ArcBridgeService* const bridge_service_;
 

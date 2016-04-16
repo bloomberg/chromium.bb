@@ -27,7 +27,7 @@ class ArcNotificationItem {
                       const AccountId& profile_id);
   ~ArcNotificationItem();
 
-  void UpdateWithArcNotificationData(const ArcNotificationData& data);
+  void UpdateWithArcNotificationData(const mojom::ArcNotificationData& data);
 
   // Methods called from ArcNotificationManager:
   void OnClosedFromAndroid(bool by_user);
@@ -61,7 +61,7 @@ class ArcNotificationItem {
   // Stores the latest notification data which is newer than the on-going data.
   // If the on-going data is either none or the latest, this is null.
   // This field will be removed after removing async task of image decoding.
-  ArcNotificationDataPtr newer_data_;
+  mojom::ArcNotificationDataPtr newer_data_;
 
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<ArcNotificationItem> weak_ptr_factory_;

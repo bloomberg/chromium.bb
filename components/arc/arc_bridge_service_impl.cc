@@ -83,7 +83,7 @@ void ArcBridgeServiceImpl::SetDetectedAvailability(bool arc_available) {
 }
 
 void ArcBridgeServiceImpl::OnConnectionEstablished(
-    ArcBridgeInstancePtr instance) {
+    mojom::ArcBridgeInstancePtr instance) {
   DCHECK(CalledOnValidThread());
   if (state() != State::CONNECTING) {
     VLOG(1) << "StopInstance() called while connecting";

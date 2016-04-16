@@ -287,9 +287,9 @@ void ArcBridgeBootstrapImpl::OnInstanceConnected(base::ScopedFD fd) {
     return;
   }
   SetState(State::READY);
-  ArcBridgeInstancePtr instance;
-  instance.Bind(
-      mojo::InterfacePtrInfo<ArcBridgeInstance>(std::move(server_pipe), 0u));
+  mojom::ArcBridgeInstancePtr instance;
+  instance.Bind(mojo::InterfacePtrInfo<mojom::ArcBridgeInstance>(
+      std::move(server_pipe), 0u));
   delegate_->OnConnectionEstablished(std::move(instance));
 }
 

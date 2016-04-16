@@ -4,7 +4,7 @@
 //
 // Next MinVersion: 3
 
-module arc;
+module arc.mojom;
 
 // Describes the current process state, as defined by AOSP in
 // android.app.ActivityManager.

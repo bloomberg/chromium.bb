@@ -12,7 +12,9 @@
 #include "base/macros.h"
 
 namespace arc {
+namespace mojom {
 class AppInfo;
+}
 class FakeArcBridgeService;
 class FakeAppInstance;
 }
@@ -29,10 +31,12 @@ class ArcAppTest {
 
   void SetUp(content::BrowserContext* browser_context);
 
-  static std::string GetAppId(const arc::AppInfo& app_info);
+  static std::string GetAppId(const arc::mojom::AppInfo& app_info);
 
   // The 0th item is sticky but not the followings.
-  const std::vector<arc::AppInfo>& fake_apps() const { return fake_apps_; }
+  const std::vector<arc::mojom::AppInfo>& fake_apps() const {
+    return fake_apps_;
+  }
 
   arc::FakeArcBridgeService* bridge_service() { return bridge_service_.get(); }
 
@@ -44,7 +48,7 @@ class ArcAppTest {
 
   std::unique_ptr<arc::FakeArcBridgeService> bridge_service_;
   std::unique_ptr<arc::FakeAppInstance> app_instance_;
-  std::vector<arc::AppInfo> fake_apps_;
+  std::vector<arc::mojom::AppInfo> fake_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppTest);
 };

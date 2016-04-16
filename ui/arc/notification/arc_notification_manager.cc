@@ -57,7 +57,8 @@ void ArcNotificationManager::OnNotificationsInstanceClosed() {
   ready_ = false;
 }
 
-void ArcNotificationManager::OnNotificationPosted(ArcNotificationDataPtr data) {
+void ArcNotificationManager::OnNotificationPosted(
+    mojom::ArcNotificationDataPtr data) {
   const std::string& key = data->key;
   auto it = items_.find(key);
   if (it == items_.end()) {
@@ -110,7 +111,7 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
   }
 
   notifications_instance->SendNotificationEventToAndroid(
-      key, ArcNotificationEvent::CLOSED);
+      key, mojom::ArcNotificationEvent::CLOSED);
 }
 
 void ArcNotificationManager::SendNotificationClickedOnChrome(
@@ -131,7 +132,7 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
   }
 
   notifications_instance->SendNotificationEventToAndroid(
-      key, ArcNotificationEvent::BODY_CLICKED);
+      key, mojom::ArcNotificationEvent::BODY_CLICKED);
 }
 
 void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
@@ -151,22 +152,22 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
     return;
   }
 
-  arc::ArcNotificationEvent command;
+  arc::mojom::ArcNotificationEvent command;
   switch (button_index) {
     case 0:
-      command = ArcNotificationEvent::BUTTON_1_CLICKED;
+      command = mojom::ArcNotificationEvent::BUTTON_1_CLICKED;
       break;
     case 1:
-      command = ArcNotificationEvent::BUTTON_2_CLICKED;
+      command = mojom::ArcNotificationEvent::BUTTON_2_CLICKED;
       break;
     case 2:
-      command = ArcNotificationEvent::BUTTON_3_CLICKED;
+      command = mojom::ArcNotificationEvent::BUTTON_3_CLICKED;
       break;
     case 3:
-      command = ArcNotificationEvent::BUTTON_4_CLICKED;
+      command = mojom::ArcNotificationEvent::BUTTON_4_CLICKED;
       break;
     case 4:
-      command = ArcNotificationEvent::BUTTON_5_CLICKED;
+      command = mojom::ArcNotificationEvent::BUTTON_5_CLICKED;
       break;
     default:
       VLOG(3) << "Invalid button index (key: " << key << ", index: " <<
@@ -177,11 +178,11 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
   notifications_instance->SendNotificationEventToAndroid(key, command);
 }
 
-void ArcNotificationManager::OnToastPosted(ArcToastDataPtr data) {
+void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {
   ash::Shell::GetInstance()->toast_manager()->Show(data->text, data->duration);
 }
 
-void ArcNotificationManager::OnToastCancelled(ArcToastDataPtr data) {
+void ArcNotificationManager::OnToastCancelled(mojom::ArcToastDataPtr data) {
   // TODO(yoshiki): Implement cancel.
 }
 

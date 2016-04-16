@@ -89,7 +89,7 @@ ArcNotificationItem::ArcNotificationItem(
       weak_ptr_factory_(this) {}
 
 void ArcNotificationItem::UpdateWithArcNotificationData(
-    const ArcNotificationData& data) {
+    const mojom::ArcNotificationData& data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(notification_key_ == data.key);
 
@@ -109,15 +109,15 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
   message_center::NotificationType type;
 
   switch (data.type) {
-    case ArcNotificationType::BASIC:
+    case mojom::ArcNotificationType::BASIC:
       type = message_center::NOTIFICATION_TYPE_BASE_FORMAT;
       break;
-    case ArcNotificationType::IMAGE:
+    case mojom::ArcNotificationType::IMAGE:
       // TODO(yoshiki): Implement this types.
       type = message_center::NOTIFICATION_TYPE_BASE_FORMAT;
       LOG(ERROR) << "Unsupported notification type: image";
       break;
-    case ArcNotificationType::PROGRESS:
+    case mojom::ArcNotificationType::PROGRESS:
       type = message_center::NOTIFICATION_TYPE_PROGRESS;
       rich_data.timestamp = base::Time::UnixEpoch() +
                             base::TimeDelta::FromMilliseconds(data.time);
@@ -209,7 +209,7 @@ void ArcNotificationItem::OnImageDecoded(const SkBitmap& bitmap) {
 
   if (newer_data_) {
     // There is the newer data, so updates again.
-    ArcNotificationDataPtr data(std::move(newer_data_));
+    mojom::ArcNotificationDataPtr data(std::move(newer_data_));
     UpdateWithArcNotificationData(*data);
   }
 }
