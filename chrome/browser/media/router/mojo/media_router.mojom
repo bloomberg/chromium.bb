@@ -286,6 +286,9 @@ interface MediaRouteProvider {
   // Calling this will trigger a firewall prompt on Windows if there is not
   // already a firewall rule for mDNS.
   EnableMdnsDiscovery();
+
+  // Updates media sinks capable of displaying |media_source|.
+  UpdateMediaSinks(string media_source);
 };
 
 // Interface for a service which observes state changes across media

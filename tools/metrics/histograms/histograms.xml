@@ -76963,6 +76963,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="13" label="RegisterMediaRouteProvider"/>
   <int value="14" label="ConnectRouteByRouteId"/>
   <int value="15" label="EnableMdnsDiscovery"/>
+  <int value="16" label="UpdateMediaSinks"/>
 </enum>
 
 <enum name="MediaRouteProviderWakeup" type="int">

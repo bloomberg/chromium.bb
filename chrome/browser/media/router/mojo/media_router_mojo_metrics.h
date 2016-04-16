@@ -40,9 +40,10 @@ enum class MediaRouteProviderWakeReason {
   REGISTER_MEDIA_ROUTE_PROVIDER = 13,
   CONNECT_ROUTE_BY_ROUTE_ID = 14,
   ENABLE_MDNS_DISCOVERY = 15,
+  UPDATE_MEDIA_SINKS = 16,
 
   // NOTE: Add entries only immediately above this line.
-  TOTAL_COUNT = 16
+  TOTAL_COUNT = 17
 };
 
 // The install status of the Media Router component extension.

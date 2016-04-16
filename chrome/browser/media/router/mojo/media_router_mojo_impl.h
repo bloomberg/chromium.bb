@@ -335,6 +335,12 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void OnFirewallCheckComplete(bool firewall_can_use_local_ports);
 #endif
 
+  // Requests MRPM to update media sinks.  This allows MRPs that only do
+  // discovery on sink queries an opportunity to update discovery results
+  // even if the MRP SinkAvailability is marked UNAVAILABLE.
+  void UpdateMediaSinks(const MediaSource::Id& source_id);
+  void DoUpdateMediaSinks(const MediaSource::Id& source_id);
+
   // Pending requests queued to be executed once component extension
   // becomes ready.
   std::deque<base::Closure> pending_requests_;

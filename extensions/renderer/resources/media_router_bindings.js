@@ -478,6 +478,11 @@ define('media_router_bindings', [
      * @type {function()}
      */
     this.enableMdnsDiscovery = null;
+
+    /**
+     * @type {function()}
+     */
+    this.updateMediaSinks = null;
   };
 
   /**
@@ -527,6 +532,7 @@ define('media_router_bindings', [
       'startObservingMediaRoutes',
       'connectRouteByRouteId',
       'enableMdnsDiscovery',
+      'updateMediaSinks',
     ];
     requiredHandlers.forEach(function(nextHandler) {
       if (handlers[nextHandler] === undefined) {
@@ -751,6 +757,14 @@ define('media_router_bindings', [
    */
   MediaRouteProvider.prototype.enableMdnsDiscovery = function() {
     this.handlers_.enableMdnsDiscovery();
+  };
+
+  /**
+   * Requests that the provider manager update media sinks.
+   * @param {!string} sourceUrn
+   */
+  MediaRouteProvider.prototype.updateMediaSinks = function(sourceUrn) {
+    this.handlers_.updateMediaSinks(sourceUrn);
   };
 
   mediaRouter = new MediaRouter(connector.bindHandleToProxy(

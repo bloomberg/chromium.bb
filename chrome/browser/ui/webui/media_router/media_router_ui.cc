@@ -252,9 +252,8 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("media_router", "UI", initiator,
                                       "MediaRouterUI::InitCommon", this);
 
-#if defined(OS_WIN)
   router_->OnUserGesture();
-#endif
+
   // Create |collator_| before |query_result_manager_| so that |collator_| is
   // already set up when we get a callback from |query_result_manager_|.
   UErrorCode error = U_ZERO_ERROR;

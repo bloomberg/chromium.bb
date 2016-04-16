@@ -20,6 +20,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"
+#include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_test.h"
@@ -1472,7 +1473,10 @@ TEST_F(MediaRouterMojoExtensionTest, EnableMdnsAfterEachRegister) {
                   run_loop.Quit();
                 }));
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
-      .WillOnce(Return(false));
+      .WillOnce(Return(false)).WillOnce(Return(false));
+  EXPECT_CALL(mock_media_route_provider_,
+              UpdateMediaSinks(mojo::String(MediaSourceForDesktop().id())))
+      .Times(2);
   // EnableMdnsDisocvery() is never called except on Windows.
   EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery())
       .WillOnce(InvokeWithoutArgs([&run_loop2]() {
@@ -1481,47 +1485,91 @@ TEST_F(MediaRouterMojoExtensionTest, EnableMdnsAfterEachRegister) {
   RegisterMediaRouteProvider();
   run_loop.Run();
   run_loop2.Run();
-  // Always a no-op at this point.
+  // Should not call EnableMdnsDiscovery, but will call UpdateMediaSinks
   media_router_->OnUserGesture();
+  base::RunLoop run_loop3;
+  run_loop3.RunUntilIdle();
 
   // Reset the extension by "suspending" and notifying MR.
-  base::RunLoop run_loop3;
+  base::RunLoop run_loop4;
   ResetMediaRouteProvider();
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
       .WillOnce(Return(true));
   EXPECT_CALL(*process_manager_, WakeEventPage(extension_->id(), _))
       .WillOnce(testing::DoAll(
           media::RunCallback<1>(true),
-          InvokeWithoutArgs([&run_loop3]() { run_loop3.Quit(); }),
+          InvokeWithoutArgs([&run_loop4]() { run_loop4.Quit(); }),
           Return(true)));
   // Use DetachRoute because it unconditionally calls RunOrDefer().
   media_router_->DetachRoute(kRouteId);
-  run_loop3.Run();
+  run_loop4.Run();
 
-  base::RunLoop run_loop4;
   base::RunLoop run_loop5;
+  base::RunLoop run_loop6;
   // RegisterMediaRouteProvider() is called.
   // The queued DetachRoute(kRouteId) call should be executed.
   EXPECT_CALL(provide_handler_, Invoke(testing::Not("")))
-      .WillOnce(InvokeWithoutArgs([&run_loop4]() {
-                  run_loop4.Quit();
-                }));
-  EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
-      .WillOnce(Return(false));
-  // Expected because it was used to wake up the page.
-  EXPECT_CALL(mock_media_route_provider_, DetachRoute(mojo::String(kRouteId)));
-  // EnableMdnsDisocvery() is never called except on Windows.
-  EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery())
       .WillOnce(InvokeWithoutArgs([&run_loop5]() {
                   run_loop5.Quit();
                 }));
+  EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
+      .WillOnce(Return(false)).WillOnce(Return(false));
+  // Expected because it was used to wake up the page.
+  EXPECT_CALL(mock_media_route_provider_, DetachRoute(mojo::String(kRouteId)));
+  EXPECT_CALL(mock_media_route_provider_,
+              UpdateMediaSinks(mojo::String(MediaSourceForDesktop().id())));
+  // EnableMdnsDisocvery() is never called except on Windows.
+  EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery())
+      .WillOnce(InvokeWithoutArgs([&run_loop6]() {
+                  run_loop6.Quit();
+                }));
   BindMediaRouteProvider();
   RegisterMediaRouteProvider();
-  run_loop4.Run();
   run_loop5.Run();
-  // Always a no-op at this point.
+  run_loop6.Run();
+  // Should not call EnableMdnsDiscovery, but will call UpdateMediaSinks
   media_router_->OnUserGesture();
+  base::RunLoop run_loop7;
+  run_loop7.RunUntilIdle();
 }
 #endif
+
+TEST_F(MediaRouterMojoExtensionTest, UpdateMediaSinksOnUserGesture) {
+  BindMediaRouteProvider();
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(provide_handler_, Invoke(testing::Not("")))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() {
+                  run_loop.Quit();
+                }));
+  EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
+#if defined(OS_WIN)
+      // Windows calls once for EnableMdnsDiscovery
+      .Times(3)
+#else
+      // All others call once for registration, and once for the user gesture.
+      .Times(2)
+#endif
+      .WillRepeatedly(Return(false));
+
+
+  RegisterMediaRouteProvider();
+  run_loop.Run();
+
+  media_router_->OnUserGesture();
+
+  base::RunLoop run_loop2;
+
+#if defined(OS_WIN)
+  EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery());
+#endif
+  EXPECT_CALL(mock_media_route_provider_,
+              UpdateMediaSinks(mojo::String(MediaSourceForDesktop().id())))
+      .WillOnce(InvokeWithoutArgs([&run_loop2]() {
+        run_loop2.Quit();
+      }));
+
+  run_loop2.Run();
+}
 
 }  // namespace media_router
