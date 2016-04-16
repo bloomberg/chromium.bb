@@ -76,7 +76,7 @@ WebSocketMaskingKey GenerateNonNulMaskingKey() { return kNonNulMaskingKey; }
 // Base class for WebSocketBasicStream test fixtures.
 class WebSocketBasicStreamTest : public ::testing::Test {
  protected:
-  scoped_ptr<WebSocketBasicStream> stream_;
+  std::unique_ptr<WebSocketBasicStream> stream_;
   TestNetLog net_log_;
 };
 
@@ -117,16 +117,17 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest {
     stream_.reset();
   }
 
-  scoped_ptr<ClientSocketHandle> MakeTransportSocket(MockRead reads[],
-                                                     size_t reads_count,
-                                                     MockWrite writes[],
-                                                     size_t writes_count) {
+  std::unique_ptr<ClientSocketHandle> MakeTransportSocket(MockRead reads[],
+                                                          size_t reads_count,
+                                                          MockWrite writes[],
+                                                          size_t writes_count) {
     socket_data_.reset(new StrictStaticSocketDataProvider(
         reads, reads_count, writes, writes_count, expect_all_io_to_complete_));
     socket_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
     factory_.AddSocketDataProvider(socket_data_.get());
 
-    scoped_ptr<ClientSocketHandle> transport_socket(new ClientSocketHandle);
+    std::unique_ptr<ClientSocketHandle> transport_socket(
+        new ClientSocketHandle);
     scoped_refptr<MockTransportSocketParams> params;
     transport_socket->Init(
         "a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
@@ -160,11 +161,11 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest {
 
   void CreateNullStream() { CreateStream(NULL, 0, NULL, 0); }
 
-  scoped_ptr<SocketDataProvider> socket_data_;
+  std::unique_ptr<SocketDataProvider> socket_data_;
   MockClientSocketFactory factory_;
   MockTransportClientSocketPool pool_;
   BoundTestNetLog(bound_net_log_);
-  std::vector<scoped_ptr<WebSocketFrame>> frames_;
+  std::vector<std::unique_ptr<WebSocketFrame>> frames_;
   TestCompletionCallback cb_;
   scoped_refptr<GrowableIOBuffer> http_read_buffer_;
   std::string sub_protocol_;
@@ -225,7 +226,7 @@ class WebSocketBasicStreamSocketChunkedReadTest
     CreateStream(reads_.get(), number_of_chunks, NULL, 0);
   }
 
-  scoped_ptr<MockRead[]> reads_;
+  std::unique_ptr<MockRead[]> reads_;
 };
 
 // Test fixture for write tests.
@@ -239,7 +240,7 @@ class WebSocketBasicStreamSocketWriteTest
   // Creates a WebSocketFrame with a wire format matching kWriteFrame and adds
   // it to |frames_|.
   void PrepareWriteFrame() {
-    scoped_ptr<WebSocketFrame> frame(
+    std::unique_ptr<WebSocketFrame> frame(
         new WebSocketFrame(WebSocketFrameHeader::kOpCodeText));
     const size_t payload_size =
         kWriteFrameSize - (WebSocketFrameHeader::kBaseHeaderSize +
@@ -798,7 +799,7 @@ TEST_F(WebSocketBasicStreamSocketChunkedReadTest, OneMegFrame) {
   const size_t kWireSize = kPayloadSize + kLargeFrameHeaderSize;
   const size_t kExpectedFrameCount =
       (kWireSize + kReadBufferSize - 1) / kReadBufferSize;
-  scoped_ptr<char[]> big_frame(new char[kWireSize]);
+  std::unique_ptr<char[]> big_frame(new char[kWireSize]);
   memcpy(big_frame.get(), "\x81\x7F", 2);
   base::WriteBigEndian(big_frame.get() + 2, kPayloadSize);
   memset(big_frame.get() + kLargeFrameHeaderSize, 'A', kPayloadSize);
@@ -888,13 +889,13 @@ TEST_F(WebSocketBasicStreamSocketWriteTest, WriteNullPong) {
       MockWrite(SYNCHRONOUS, kMaskedEmptyPong, kMaskedEmptyPongSize)};
   CreateWriteOnly(writes);
 
-  scoped_ptr<WebSocketFrame> frame(
+  std::unique_ptr<WebSocketFrame> frame(
       new WebSocketFrame(WebSocketFrameHeader::kOpCodePong));
   WebSocketFrameHeader& header = frame->header;
   header.final = true;
   header.masked = true;
   header.payload_length = 0;
-  std::vector<scoped_ptr<WebSocketFrame>> frames;
+  std::vector<std::unique_ptr<WebSocketFrame>> frames;
   frames.push_back(std::move(frame));
   EXPECT_EQ(OK, stream_->WriteFrames(&frames, cb_.callback()));
 }
@@ -909,7 +910,7 @@ TEST_F(WebSocketBasicStreamSocketTest, WriteNonNulMask) {
   generator_ = &GenerateNonNulMaskingKey;
   CreateStream(NULL, 0, writes, arraysize(writes));
 
-  scoped_ptr<WebSocketFrame> frame(
+  std::unique_ptr<WebSocketFrame> frame(
       new WebSocketFrame(WebSocketFrameHeader::kOpCodeText));
   const std::string unmasked_payload = "graphics";
   const size_t payload_size = unmasked_payload.size();

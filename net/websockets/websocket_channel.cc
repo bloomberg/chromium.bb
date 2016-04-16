@@ -136,14 +136,14 @@ class WebSocketChannel::SendBuffer {
   SendBuffer() : total_bytes_(0) {}
 
   // Add a WebSocketFrame to the buffer and increase total_bytes_.
-  void AddFrame(scoped_ptr<WebSocketFrame> chunk);
+  void AddFrame(std::unique_ptr<WebSocketFrame> chunk);
 
   // Return a pointer to the frames_ for write purposes.
-  std::vector<scoped_ptr<WebSocketFrame>>* frames() { return &frames_; }
+  std::vector<std::unique_ptr<WebSocketFrame>>* frames() { return &frames_; }
 
  private:
   // The frames_ that will be sent in the next call to WriteFrames().
-  std::vector<scoped_ptr<WebSocketFrame>> frames_;
+  std::vector<std::unique_ptr<WebSocketFrame>> frames_;
 
   // The total size of the payload data in |frames_|. This will be used to
   // measure the throughput of the link.
@@ -151,7 +151,8 @@ class WebSocketChannel::SendBuffer {
   uint64_t total_bytes_;
 };
 
-void WebSocketChannel::SendBuffer::AddFrame(scoped_ptr<WebSocketFrame> frame) {
+void WebSocketChannel::SendBuffer::AddFrame(
+    std::unique_ptr<WebSocketFrame> frame) {
   total_bytes_ += frame->header.payload_length;
   frames_.push_back(std::move(frame));
 }
@@ -163,7 +164,7 @@ class WebSocketChannel::ConnectDelegate
  public:
   explicit ConnectDelegate(WebSocketChannel* creator) : creator_(creator) {}
 
-  void OnSuccess(scoped_ptr<WebSocketStream> stream) override {
+  void OnSuccess(std::unique_ptr<WebSocketStream> stream) override {
     creator_->OnConnectSuccess(std::move(stream));
     // |this| may have been deleted.
   }
@@ -174,17 +175,17 @@ class WebSocketChannel::ConnectDelegate
   }
 
   void OnStartOpeningHandshake(
-      scoped_ptr<WebSocketHandshakeRequestInfo> request) override {
+      std::unique_ptr<WebSocketHandshakeRequestInfo> request) override {
     creator_->OnStartOpeningHandshake(std::move(request));
   }
 
   void OnFinishOpeningHandshake(
-      scoped_ptr<WebSocketHandshakeResponseInfo> response) override {
+      std::unique_ptr<WebSocketHandshakeResponseInfo> response) override {
     creator_->OnFinishOpeningHandshake(std::move(response));
   }
 
   void OnSSLCertificateError(
-      scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks>
+      std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>
           ssl_error_callbacks,
       const SSLInfo& ssl_info,
       bool fatal) override {
@@ -217,7 +218,7 @@ class WebSocketChannel::HandshakeNotificationSender
   }
 
   void set_handshake_request_info(
-      scoped_ptr<WebSocketHandshakeRequestInfo> request_info) {
+      std::unique_ptr<WebSocketHandshakeRequestInfo> request_info) {
     handshake_request_info_ = std::move(request_info);
   }
 
@@ -226,14 +227,14 @@ class WebSocketChannel::HandshakeNotificationSender
   }
 
   void set_handshake_response_info(
-      scoped_ptr<WebSocketHandshakeResponseInfo> response_info) {
+      std::unique_ptr<WebSocketHandshakeResponseInfo> response_info) {
     handshake_response_info_ = std::move(response_info);
   }
 
  private:
   WebSocketChannel* owner_;
-  scoped_ptr<WebSocketHandshakeRequestInfo> handshake_request_info_;
-  scoped_ptr<WebSocketHandshakeResponseInfo> handshake_response_info_;
+  std::unique_ptr<WebSocketHandshakeRequestInfo> handshake_request_info_;
+  std::unique_ptr<WebSocketHandshakeResponseInfo> handshake_response_info_;
 };
 
 WebSocketChannel::HandshakeNotificationSender::HandshakeNotificationSender(
@@ -303,7 +304,7 @@ void WebSocketChannel::PendingReceivedFrame::DidConsume(uint64_t bytes) {
 }
 
 WebSocketChannel::WebSocketChannel(
-    scoped_ptr<WebSocketEventInterface> event_interface,
+    std::unique_ptr<WebSocketEventInterface> event_interface,
     URLRequestContext* url_request_context)
     : event_interface_(std::move(event_interface)),
       url_request_context_(url_request_context),
@@ -573,7 +574,7 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCreator(
     return;
   }
   socket_url_ = socket_url;
-  scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
+  std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
       new ConnectDelegate(this));
   stream_request_ = creator.Run(socket_url_, requested_subprotocols, origin,
                                 url_request_context_, BoundNetLog(),
@@ -581,7 +582,8 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCreator(
   SetState(CONNECTING);
 }
 
-void WebSocketChannel::OnConnectSuccess(scoped_ptr<WebSocketStream> stream) {
+void WebSocketChannel::OnConnectSuccess(
+    std::unique_ptr<WebSocketStream> stream) {
   DCHECK(stream);
   DCHECK_EQ(CONNECTING, state_);
 
@@ -628,7 +630,8 @@ void WebSocketChannel::OnConnectFailure(const std::string& message) {
 }
 
 void WebSocketChannel::OnSSLCertificateError(
-    scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks> ssl_error_callbacks,
+    std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>
+        ssl_error_callbacks,
     const SSLInfo& ssl_info,
     bool fatal) {
   ignore_result(event_interface_->OnSSLCertificateError(
@@ -636,7 +639,7 @@ void WebSocketChannel::OnSSLCertificateError(
 }
 
 void WebSocketChannel::OnStartOpeningHandshake(
-    scoped_ptr<WebSocketHandshakeRequestInfo> request) {
+    std::unique_ptr<WebSocketHandshakeRequestInfo> request) {
   DCHECK(!notification_sender_->handshake_request_info());
 
   // Because it is hard to handle an IPC error synchronously is difficult,
@@ -646,7 +649,7 @@ void WebSocketChannel::OnStartOpeningHandshake(
 }
 
 void WebSocketChannel::OnFinishOpeningHandshake(
-    scoped_ptr<WebSocketHandshakeResponseInfo> response) {
+    std::unique_ptr<WebSocketHandshakeResponseInfo> response) {
   DCHECK(!notification_sender_->handshake_response_info());
 
   // Because it is hard to handle an IPC error synchronously is difficult,
@@ -793,7 +796,8 @@ ChannelState WebSocketChannel::OnReadDone(bool synchronous, int result) {
   }
 }
 
-ChannelState WebSocketChannel::HandleFrame(scoped_ptr<WebSocketFrame> frame) {
+ChannelState WebSocketChannel::HandleFrame(
+    std::unique_ptr<WebSocketFrame> frame) {
   if (frame->header.masked) {
     // RFC6455 Section 5.1 "A client MUST close a connection if it detects a
     // masked frame."
@@ -1028,7 +1032,7 @@ ChannelState WebSocketChannel::SendFrameFromIOBuffer(
   DCHECK(state_ == CONNECTED || state_ == RECV_CLOSED);
   DCHECK(stream_);
 
-  scoped_ptr<WebSocketFrame> frame(new WebSocketFrame(op_code));
+  std::unique_ptr<WebSocketFrame> frame(new WebSocketFrame(op_code));
   WebSocketFrameHeader& header = frame->header;
   header.final = fin;
   header.masked = true;

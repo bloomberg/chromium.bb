@@ -50,7 +50,7 @@ const int kNumFrameHeaderTests = arraysize(kFrameHeaderTests);
 TEST(WebSocketFrameParserTest, DecodeNormalFrame) {
   WebSocketFrameParser parser;
 
-  std::vector<scoped_ptr<WebSocketFrameChunk>> frames;
+  std::vector<std::unique_ptr<WebSocketFrameChunk>> frames;
   EXPECT_TRUE(parser.Decode(kHelloFrame, kHelloFrameLength, &frames));
   EXPECT_EQ(kWebSocketNormalClosure, parser.websocket_error());
   ASSERT_EQ(1u, frames.size());
@@ -76,7 +76,7 @@ TEST(WebSocketFrameParserTest, DecodeNormalFrame) {
 TEST(WebSocketFrameParserTest, DecodeMaskedFrame) {
   WebSocketFrameParser parser;
 
-  std::vector<scoped_ptr<WebSocketFrameChunk>> frames;
+  std::vector<std::unique_ptr<WebSocketFrameChunk>> frames;
   EXPECT_TRUE(
       parser.Decode(kMaskedHelloFrame, kMaskedHelloFrameLength, &frames));
   EXPECT_EQ(kWebSocketNormalClosure, parser.websocket_error());
@@ -135,7 +135,7 @@ TEST(WebSocketFrameParserTest, DecodeManyFrames) {
 
   WebSocketFrameParser parser;
 
-  std::vector<scoped_ptr<WebSocketFrameChunk>> frames;
+  std::vector<std::unique_ptr<WebSocketFrameChunk>> frames;
   EXPECT_TRUE(parser.Decode(&input.front(), input.size(), &frames));
   EXPECT_EQ(kWebSocketNormalClosure, parser.websocket_error());
   ASSERT_EQ(static_cast<size_t>(kNumInputs), frames.size());
@@ -181,7 +181,7 @@ TEST(WebSocketFrameParserTest, DecodePartialFrame) {
 
     WebSocketFrameParser parser;
 
-    std::vector<scoped_ptr<WebSocketFrameChunk>> frames1;
+    std::vector<std::unique_ptr<WebSocketFrameChunk>> frames1;
     EXPECT_TRUE(parser.Decode(&input1.front(), input1.size(), &frames1));
     EXPECT_EQ(kWebSocketNormalClosure, parser.websocket_error());
     EXPECT_EQ(1u, frames1.size());
@@ -211,7 +211,7 @@ TEST(WebSocketFrameParserTest, DecodePartialFrame) {
     EXPECT_FALSE(header1->masked);
     EXPECT_EQ(kHelloLength, header1->payload_length);
 
-    std::vector<scoped_ptr<WebSocketFrameChunk>> frames2;
+    std::vector<std::unique_ptr<WebSocketFrameChunk>> frames2;
     EXPECT_TRUE(parser.Decode(&input2.front(), input2.size(), &frames2));
     EXPECT_EQ(kWebSocketNormalClosure, parser.websocket_error());
     EXPECT_EQ(1u, frames2.size());
@@ -248,7 +248,7 @@ TEST(WebSocketFrameParserTest, DecodePartialMaskedFrame) {
 
     WebSocketFrameParser parser;
 
-    std::vector<scoped_ptr<WebSocketFrameChunk>> frames1;
+    std::vector<std::unique_ptr<WebSocketFrameChunk>> frames1;
     EXPECT_TRUE(parser.Decode(&input1.front(), input1.size(), &frames1));
     EXPECT_EQ(kWebSocketNormalClosure, parser.websocket_error());
     EXPECT_EQ(1u, frames1.size());
@@ -278,7 +278,7 @@ TEST(WebSocketFrameParserTest, DecodePartialMaskedFrame) {
     EXPECT_TRUE(header1->masked);
     EXPECT_EQ(kHelloLength, header1->payload_length);
 
-    std::vector<scoped_ptr<WebSocketFrameChunk>> frames2;
+    std::vector<std::unique_ptr<WebSocketFrameChunk>> frames2;
     EXPECT_TRUE(parser.Decode(&input2.front(), input2.size(), &frames2));
     EXPECT_EQ(kWebSocketNormalClosure, parser.websocket_error());
     EXPECT_EQ(1u, frames2.size());
@@ -315,7 +315,7 @@ TEST(WebSocketFrameParserTest, DecodeFramesOfVariousLengths) {
 
     WebSocketFrameParser parser;
 
-    std::vector<scoped_ptr<WebSocketFrameChunk>> frames;
+    std::vector<std::unique_ptr<WebSocketFrameChunk>> frames;
     EXPECT_EQ(kFrameHeaderTests[i].error_code == kWebSocketNormalClosure,
               parser.Decode(&input.front(), input.size(), &frames));
     EXPECT_EQ(kFrameHeaderTests[i].error_code, parser.websocket_error());
@@ -367,7 +367,7 @@ TEST(WebSocketFrameParserTest, DecodePartialHeader) {
 
     WebSocketFrameParser parser;
 
-    std::vector<scoped_ptr<WebSocketFrameChunk>> frames;
+    std::vector<std::unique_ptr<WebSocketFrameChunk>> frames;
     // Feed each byte to the parser to see if the parser behaves correctly
     // when it receives partial frame header.
     size_t last_byte_offset = frame_header_length - 1;
@@ -437,7 +437,7 @@ TEST(WebSocketFrameParserTest, InvalidLengthEncoding) {
 
     WebSocketFrameParser parser;
 
-    std::vector<scoped_ptr<WebSocketFrameChunk>> frames;
+    std::vector<std::unique_ptr<WebSocketFrameChunk>> frames;
     EXPECT_EQ(kWebSocketNormalClosure, parser.websocket_error());
     EXPECT_FALSE(parser.Decode(frame_header, frame_header_length, &frames));
     EXPECT_EQ(kWebSocketErrorProtocolError, parser.websocket_error());
@@ -486,7 +486,7 @@ TEST(WebSocketFrameParserTest, FrameTypes) {
 
     WebSocketFrameParser parser;
 
-    std::vector<scoped_ptr<WebSocketFrameChunk>> frames;
+    std::vector<std::unique_ptr<WebSocketFrameChunk>> frames;
     EXPECT_TRUE(parser.Decode(frame_header, frame_header_length, &frames));
     EXPECT_EQ(kWebSocketNormalClosure, parser.websocket_error());
     EXPECT_EQ(1u, frames.size());
@@ -542,7 +542,7 @@ TEST(WebSocketFrameParserTest, FinalBitAndReservedBits) {
 
     WebSocketFrameParser parser;
 
-    std::vector<scoped_ptr<WebSocketFrameChunk>> frames;
+    std::vector<std::unique_ptr<WebSocketFrameChunk>> frames;
     EXPECT_TRUE(parser.Decode(frame_header, frame_header_length, &frames));
     EXPECT_EQ(kWebSocketNormalClosure, parser.websocket_error());
     EXPECT_EQ(1u, frames.size());

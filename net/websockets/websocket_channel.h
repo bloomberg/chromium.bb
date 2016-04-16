@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 #include <string>
 #include <vector>
@@ -16,7 +17,6 @@
 #include "base/i18n/streaming_utf8_validator.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/net_export.h"
@@ -46,13 +46,14 @@ class NET_EXPORT WebSocketChannel {
  public:
   // The type of a WebSocketStream creator callback. Must match the signature of
   // WebSocketStream::CreateAndConnectStream().
-  typedef base::Callback<scoped_ptr<WebSocketStreamRequest>(
+  typedef base::Callback<std::unique_ptr<WebSocketStreamRequest>(
       const GURL&,
       const std::vector<std::string>&,
       const url::Origin&,
       URLRequestContext*,
       const BoundNetLog&,
-      scoped_ptr<WebSocketStream::ConnectDelegate>)> WebSocketStreamCreator;
+      std::unique_ptr<WebSocketStream::ConnectDelegate>)>
+      WebSocketStreamCreator;
 
   // Methods which return a value of type ChannelState may delete |this|. If the
   // return value is CHANNEL_DELETED, then the caller must return without making
@@ -62,7 +63,7 @@ class NET_EXPORT WebSocketChannel {
   // Creates a new WebSocketChannel in an idle state.
   // SendAddChannelRequest() must be called immediately afterwards to start the
   // connection process.
-  WebSocketChannel(scoped_ptr<WebSocketEventInterface> event_interface,
+  WebSocketChannel(std::unique_ptr<WebSocketEventInterface> event_interface,
                    URLRequestContext* url_request_context);
   virtual ~WebSocketChannel();
 
@@ -135,12 +136,12 @@ class NET_EXPORT WebSocketChannel {
   // Called when the stream starts the WebSocket Opening Handshake.
   // This method is public for testing.
   void OnStartOpeningHandshake(
-      scoped_ptr<WebSocketHandshakeRequestInfo> request);
+      std::unique_ptr<WebSocketHandshakeRequestInfo> request);
 
   // Called when the stream ends the WebSocket Opening Handshake.
   // This method is public for testing.
   void OnFinishOpeningHandshake(
-      scoped_ptr<WebSocketHandshakeResponseInfo> response);
+      std::unique_ptr<WebSocketHandshakeResponseInfo> response);
 
  private:
   class HandshakeNotificationSender;
@@ -216,7 +217,7 @@ class NET_EXPORT WebSocketChannel {
 
   // Success callback from WebSocketStream::CreateAndConnectStream(). Reports
   // success to the event interface. May delete |this|.
-  void OnConnectSuccess(scoped_ptr<WebSocketStream> stream);
+  void OnConnectSuccess(std::unique_ptr<WebSocketStream> stream);
 
   // Failure callback from WebSocketStream::CreateAndConnectStream(). Reports
   // failure to the event interface. May delete |this|.
@@ -226,7 +227,7 @@ class NET_EXPORT WebSocketChannel {
   // WebSocketStream::CreateAndConnectStream(). Forwards the request to the
   // event interface.
   void OnSSLCertificateError(
-      scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks>
+      std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>
           ssl_error_callbacks,
       const SSLInfo& ssl_info,
       bool fatal);
@@ -268,8 +269,8 @@ class NET_EXPORT WebSocketChannel {
   // This method performs sanity checks on the frame that are needed regardless
   // of the current state. Then, calls the HandleFrameByState() method below
   // which performs the appropriate action(s) depending on the current state.
-  ChannelState HandleFrame(
-      scoped_ptr<WebSocketFrame> frame) WARN_UNUSED_RESULT;
+  ChannelState HandleFrame(std::unique_ptr<WebSocketFrame> frame)
+      WARN_UNUSED_RESULT;
 
   // Handles a single frame depending on the current state. It's used by the
   // HandleFrame() method.
@@ -352,25 +353,25 @@ class NET_EXPORT WebSocketChannel {
   GURL socket_url_;
 
   // The object receiving events.
-  const scoped_ptr<WebSocketEventInterface> event_interface_;
+  const std::unique_ptr<WebSocketEventInterface> event_interface_;
 
   // The URLRequestContext to pass to the WebSocketStream creator.
   URLRequestContext* const url_request_context_;
 
   // The WebSocketStream on which to send and receive data.
-  scoped_ptr<WebSocketStream> stream_;
+  std::unique_ptr<WebSocketStream> stream_;
 
   // A data structure containing a vector of frames to be sent and the total
   // number of bytes contained in the vector.
   class SendBuffer;
   // Data that is currently pending write, or NULL if no write is pending.
-  scoped_ptr<SendBuffer> data_being_sent_;
+  std::unique_ptr<SendBuffer> data_being_sent_;
   // Data that is queued up to write after the current write completes.
   // Only non-NULL when such data actually exists.
-  scoped_ptr<SendBuffer> data_to_send_next_;
+  std::unique_ptr<SendBuffer> data_to_send_next_;
 
   // Destination for the current call to WebSocketStream::ReadFrames
-  std::vector<scoped_ptr<WebSocketFrame>> read_frames_;
+  std::vector<std::unique_ptr<WebSocketFrame>> read_frames_;
 
   // Frames that have been read but not yet forwarded to the renderer due to
   // lack of quota.
@@ -378,7 +379,7 @@ class NET_EXPORT WebSocketChannel {
 
   // Handle to an in-progress WebSocketStream creation request. Only non-NULL
   // during the connection process.
-  scoped_ptr<WebSocketStreamRequest> stream_request_;
+  std::unique_ptr<WebSocketStreamRequest> stream_request_;
 
   // If the renderer's send quota reaches this level, it is sent a quota
   // refresh. "quota units" are currently bytes. TODO(ricea): Update the
@@ -416,7 +417,7 @@ class NET_EXPORT WebSocketChannel {
   State state_;
 
   // |notification_sender_| is owned by this object.
-  scoped_ptr<HandshakeNotificationSender> notification_sender_;
+  std::unique_ptr<HandshakeNotificationSender> notification_sender_;
 
   // UTF-8 validator for outgoing Text messages.
   base::StreamingUtf8Validator outgoing_utf8_validator_;

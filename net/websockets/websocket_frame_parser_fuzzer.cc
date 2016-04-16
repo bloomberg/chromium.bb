@@ -12,7 +12,7 @@
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   net::WebSocketFrameParser parser;
-  std::vector<scoped_ptr<net::WebSocketFrameChunk>> frame_chunks;
+  std::vector<std::unique_ptr<net::WebSocketFrameChunk>> frame_chunks;
   parser.Decode(reinterpret_cast<const char*>(data), size, &frame_chunks);
 
   return 0;

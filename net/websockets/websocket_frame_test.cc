@@ -297,9 +297,8 @@ TEST(WebSocketFrameTest, MaskPayloadAlignment) {
   };
   static_assert(arraysize(kTestInput) == arraysize(kTestOutput),
                 "output and input arrays should have the same length");
-  scoped_ptr<char, base::AlignedFreeDeleter> scratch(
-      static_cast<char*>(
-          base::AlignedAlloc(kScratchBufferSize, kMaxVectorAlignment)));
+  std::unique_ptr<char, base::AlignedFreeDeleter> scratch(static_cast<char*>(
+      base::AlignedAlloc(kScratchBufferSize, kMaxVectorAlignment)));
   WebSocketMaskingKey masking_key;
   std::copy(kTestMask, kTestMask + kMaskingKeyLength, masking_key.key);
   for (size_t frame_offset = 0; frame_offset < kMaskingKeyLength;

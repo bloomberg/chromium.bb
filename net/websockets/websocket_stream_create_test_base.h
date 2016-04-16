@@ -5,12 +5,12 @@
 #ifndef NET_WEBSOCKETS_WEBSOCKET_STREAM_CREATE_TEST_BASE_H_
 #define NET_WEBSOCKETS_WEBSOCKET_STREAM_CREATE_TEST_BASE_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/timer/timer.h"
 #include "net/base/net_export.h"
@@ -40,7 +40,7 @@ class WebSocketStreamCreateTestBase {
   void CreateAndConnectStream(const std::string& socket_url,
                               const std::vector<std::string>& sub_protocols,
                               const url::Origin& origin,
-                              scoped_ptr<base::Timer> timer);
+                              std::unique_ptr<base::Timer> timer);
 
   static std::vector<HeaderKeyValuePair> RequestHeadersToVector(
       const HttpRequestHeaders& headers);
@@ -59,18 +59,19 @@ class WebSocketStreamCreateTestBase {
 
  protected:
   WebSocketTestURLRequestContextHost url_request_context_host_;
-  scoped_ptr<WebSocketStreamRequest> stream_request_;
+  std::unique_ptr<WebSocketStreamRequest> stream_request_;
   // Only set if the connection succeeded.
-  scoped_ptr<WebSocketStream> stream_;
+  std::unique_ptr<WebSocketStream> stream_;
   // Only set if the connection failed.
   std::string failure_message_;
   bool has_failed_;
-  scoped_ptr<WebSocketHandshakeRequestInfo> request_info_;
-  scoped_ptr<WebSocketHandshakeResponseInfo> response_info_;
-  scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks> ssl_error_callbacks_;
+  std::unique_ptr<WebSocketHandshakeRequestInfo> request_info_;
+  std::unique_ptr<WebSocketHandshakeResponseInfo> response_info_;
+  std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>
+      ssl_error_callbacks_;
   SSLInfo ssl_info_;
   bool ssl_fatal_;
-  std::vector<scoped_ptr<SSLSocketDataProvider>> ssl_data_;
+  std::vector<std::unique_ptr<SSLSocketDataProvider>> ssl_data_;
 
   // This temporarily sets WebSocketEndpointLockManager unlock delay to zero
   // during tests.

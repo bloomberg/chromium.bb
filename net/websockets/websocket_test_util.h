@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/websockets/websocket_stream.h"
 
@@ -82,7 +82,7 @@ class WebSocketMockClientSocketFactoryMaker {
 
   // A low-level interface to permit arbitrary expectations to be added. The
   // mock sockets will be created in the same order that they were added.
-  void AddRawExpectations(scoped_ptr<SequencedSocketData> socket_data);
+  void AddRawExpectations(std::unique_ptr<SequencedSocketData> socket_data);
 
   // Allow an SSL socket data provider to be added. You must also supply a mock
   // transport socket for it to use. If the mock SSL handshake fails then the
@@ -90,14 +90,14 @@ class WebSocketMockClientSocketFactoryMaker {
   // mock handshake succeeds then the data from the underlying transport socket
   // will be passed through unchanged (without encryption).
   void AddSSLSocketDataProvider(
-      scoped_ptr<SSLSocketDataProvider> ssl_socket_data);
+      std::unique_ptr<SSLSocketDataProvider> ssl_socket_data);
 
   // Call to get a pointer to the factory, which remains owned by this object.
   MockClientSocketFactory* factory();
 
  private:
   struct Detail;
-  scoped_ptr<Detail> detail_;
+  std::unique_ptr<Detail> detail_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketMockClientSocketFactoryMaker);
 };
@@ -115,11 +115,11 @@ struct WebSocketTestURLRequestContextHost {
     maker_.SetExpectations(expect_written, return_to_read);
   }
 
-  void AddRawExpectations(scoped_ptr<SequencedSocketData> socket_data);
+  void AddRawExpectations(std::unique_ptr<SequencedSocketData> socket_data);
 
   // Allow an SSL socket data provider to be added.
   void AddSSLSocketDataProvider(
-      scoped_ptr<SSLSocketDataProvider> ssl_socket_data);
+      std::unique_ptr<SSLSocketDataProvider> ssl_socket_data);
 
   // Allow a proxy to be set. Usage:
   //   SetProxyConfig("proxy1:8000");
@@ -135,7 +135,7 @@ struct WebSocketTestURLRequestContextHost {
   WebSocketMockClientSocketFactoryMaker maker_;
   TestURLRequestContext url_request_context_;
   TestNetworkDelegate network_delegate_;
-  scoped_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<ProxyService> proxy_service_;
   bool url_request_context_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketTestURLRequestContextHost);

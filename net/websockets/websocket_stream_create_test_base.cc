@@ -49,7 +49,7 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
                       const base::Closure& done_callback)
       : owner_(owner), done_callback_(done_callback) {}
 
-  void OnSuccess(scoped_ptr<WebSocketStream> stream) override {
+  void OnSuccess(std::unique_ptr<WebSocketStream> stream) override {
     stream.swap(owner_->stream_);
     done_callback_.Run();
   }
@@ -61,21 +61,21 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
   }
 
   void OnStartOpeningHandshake(
-      scoped_ptr<WebSocketHandshakeRequestInfo> request) override {
+      std::unique_ptr<WebSocketHandshakeRequestInfo> request) override {
     // Can be called multiple times (in the case of HTTP auth). Last call
     // wins.
     owner_->request_info_ = std::move(request);
   }
 
   void OnFinishOpeningHandshake(
-      scoped_ptr<WebSocketHandshakeResponseInfo> response) override {
+      std::unique_ptr<WebSocketHandshakeResponseInfo> response) override {
     if (owner_->response_info_)
       ADD_FAILURE();
     owner_->response_info_ = std::move(response);
   }
 
   void OnSSLCertificateError(
-      scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks>
+      std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>
           ssl_error_callbacks,
       const SSLInfo& ssl_info,
       bool fatal) override {
@@ -101,15 +101,15 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
     const std::string& socket_url,
     const std::vector<std::string>& sub_protocols,
     const url::Origin& origin,
-    scoped_ptr<base::Timer> timer) {
+    std::unique_ptr<base::Timer> timer) {
   for (size_t i = 0; i < ssl_data_.size(); ++i) {
     url_request_context_host_.AddSSLSocketDataProvider(std::move(ssl_data_[i]));
   }
   ssl_data_.clear();
-  scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
+  std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
       new TestConnectDelegate(this, connect_run_loop_.QuitClosure()));
   WebSocketStream::ConnectDelegate* delegate = connect_delegate.get();
-  scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper(
+  std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper(
       new DeterministicKeyWebSocketHandshakeStreamCreateHelper(delegate,
                                                                sub_protocols));
   stream_request_ = CreateAndConnectStreamForTesting(
@@ -117,7 +117,7 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
       url_request_context_host_.GetURLRequestContext(), BoundNetLog(),
       std::move(connect_delegate),
       timer ? std::move(timer)
-            : scoped_ptr<base::Timer>(new base::Timer(false, false)));
+            : std::unique_ptr<base::Timer>(new base::Timer(false, false)));
 }
 
 std::vector<HeaderKeyValuePair>

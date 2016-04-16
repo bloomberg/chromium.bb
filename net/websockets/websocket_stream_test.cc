@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -45,10 +46,10 @@ namespace {
 // copied. It is up to the caller to ensure they stay in scope until the test
 // ends.
 template <size_t reads_count, size_t writes_count>
-scoped_ptr<SequencedSocketData> BuildSocketData(
-    MockRead(&reads)[reads_count],
-    MockWrite(&writes)[writes_count]) {
-  scoped_ptr<SequencedSocketData> socket_data(
+std::unique_ptr<SequencedSocketData> BuildSocketData(
+    MockRead (&reads)[reads_count],
+    MockWrite (&writes)[writes_count]) {
+  std::unique_ptr<SequencedSocketData> socket_data(
       new SequencedSocketData(reads, reads_count, writes, writes_count));
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
   return socket_data;
@@ -56,8 +57,8 @@ scoped_ptr<SequencedSocketData> BuildSocketData(
 
 // Builder for a SequencedSocketData that expects nothing. This does not
 // set the connect data, so the calling code must do that explicitly.
-scoped_ptr<SequencedSocketData> BuildNullSocketData() {
-  return make_scoped_ptr(new SequencedSocketData(NULL, 0, NULL, 0));
+std::unique_ptr<SequencedSocketData> BuildNullSocketData() {
+  return base::WrapUnique(new SequencedSocketData(NULL, 0, NULL, 0));
 }
 
 class MockWeakTimer : public base::MockTimer,
@@ -93,7 +94,7 @@ class WebSocketStreamCreateTest : public ::testing::Test,
       const url::Origin& origin,
       const std::string& extra_request_headers,
       const std::string& response_body,
-      scoped_ptr<base::Timer> timer = scoped_ptr<base::Timer>()) {
+      std::unique_ptr<base::Timer> timer = std::unique_ptr<base::Timer>()) {
     url_request_context_host_.SetExpectations(
         WebSocketStandardRequest(socket_path, socket_host, origin,
                                  extra_request_headers),
@@ -111,7 +112,7 @@ class WebSocketStreamCreateTest : public ::testing::Test,
       const url::Origin& origin,
       const std::string& extra_request_headers,
       const std::string& extra_response_headers,
-      scoped_ptr<base::Timer> timer = scoped_ptr<base::Timer>()) {
+      std::unique_ptr<base::Timer> timer = std::unique_ptr<base::Timer>()) {
     CreateAndConnectCustomResponse(
         socket_url, socket_host, socket_path, sub_protocols, origin,
         extra_request_headers,
@@ -122,14 +123,14 @@ class WebSocketStreamCreateTest : public ::testing::Test,
       const std::string& socket_url,
       const std::vector<std::string>& sub_protocols,
       const url::Origin& origin,
-      scoped_ptr<SequencedSocketData> socket_data,
-      scoped_ptr<base::Timer> timer = scoped_ptr<base::Timer>()) {
+      std::unique_ptr<SequencedSocketData> socket_data,
+      std::unique_ptr<base::Timer> timer = std::unique_ptr<base::Timer>()) {
     AddRawExpectations(std::move(socket_data));
     CreateAndConnectStream(socket_url, sub_protocols, origin, std::move(timer));
   }
 
   // Add additional raw expectations for sockets created before the final one.
-  void AddRawExpectations(scoped_ptr<SequencedSocketData> socket_data) {
+  void AddRawExpectations(std::unique_ptr<SequencedSocketData> socket_data) {
     url_request_context_host_.AddRawExpectations(std::move(socket_data));
   }
 };
@@ -158,7 +159,7 @@ class CommonAuthTestHelper {
  public:
   CommonAuthTestHelper() : reads1_(), writes1_(), reads2_(), writes2_() {}
 
-  scoped_ptr<SequencedSocketData> BuildSocketData1(
+  std::unique_ptr<SequencedSocketData> BuildSocketData1(
       const std::string& response) {
     request1_ =
         WebSocketStandardRequest("/", "localhost", LocalhostOrigin(), "");
@@ -170,7 +171,7 @@ class CommonAuthTestHelper {
     return BuildSocketData(reads1_, writes1_);
   }
 
-  scoped_ptr<SequencedSocketData> BuildSocketData2(
+  std::unique_ptr<SequencedSocketData> BuildSocketData2(
       const std::string& request,
       const std::string& response) {
     request2_ = request;
@@ -290,11 +291,11 @@ class WebSocketStreamCreateUMATest : public ::testing::Test {
     void TestBody() override {}
   };
 
-  scoped_ptr<base::HistogramSamples> GetSamples(const std::string& name) {
+  std::unique_ptr<base::HistogramSamples> GetSamples(const std::string& name) {
     base::HistogramBase* histogram =
         base::StatisticsRecorder::FindHistogram(name);
     return histogram ? histogram->SnapshotSamples()
-                     : scoped_ptr<base::HistogramSamples>();
+                     : std::unique_ptr<base::HistogramSamples>();
   }
 };
 
@@ -520,7 +521,7 @@ TEST_F(WebSocketStreamCreateExtensionTest, PerMessageDeflateInflates) {
   WaitUntilConnectDone();
 
   ASSERT_TRUE(stream_);
-  std::vector<scoped_ptr<WebSocketFrame>> frames;
+  std::vector<std::unique_ptr<WebSocketFrame>> frames;
   CompletionCallback callback;
   ASSERT_EQ(OK, stream_->ReadFrames(&frames, callback));
   ASSERT_EQ(1U, frames.size());
@@ -800,7 +801,7 @@ TEST_F(WebSocketStreamCreateTest, Cancellation) {
 
 // Connect failure must look just like negotiation failure.
 TEST_F(WebSocketStreamCreateTest, ConnectionFailure) {
-  scoped_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
+  std::unique_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
   socket_data->set_connect_data(
       MockConnect(SYNCHRONOUS, ERR_CONNECTION_REFUSED));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
@@ -815,7 +816,7 @@ TEST_F(WebSocketStreamCreateTest, ConnectionFailure) {
 
 // Connect timeout must look just like any other failure.
 TEST_F(WebSocketStreamCreateTest, ConnectionTimeout) {
-  scoped_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
+  std::unique_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
   socket_data->set_connect_data(
       MockConnect(ASYNC, ERR_CONNECTION_TIMED_OUT));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
@@ -828,9 +829,9 @@ TEST_F(WebSocketStreamCreateTest, ConnectionTimeout) {
 
 // The server doesn't respond to the opening handshake.
 TEST_F(WebSocketStreamCreateTest, HandshakeTimeout) {
-  scoped_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
+  std::unique_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
-  scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
+  std::unique_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
   base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   LocalhostOrigin(), std::move(socket_data),
@@ -850,7 +851,7 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimeout) {
 
 // When the connection establishes the timer should be stopped.
 TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnSuccess) {
-  scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
+  std::unique_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
   base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
 
   CreateAndConnectStandard("ws://localhost/", "localhost", "/",
@@ -868,10 +869,10 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnSuccess) {
 
 // When the connection fails the timer should be stopped.
 TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnFailure) {
-  scoped_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
+  std::unique_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
   socket_data->set_connect_data(
       MockConnect(SYNCHRONOUS, ERR_CONNECTION_REFUSED));
-  scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
+  std::unique_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
   base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   LocalhostOrigin(), std::move(socket_data),
@@ -889,7 +890,7 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnFailure) {
 
 // Cancellation during connect works.
 TEST_F(WebSocketStreamCreateTest, CancellationDuringConnect) {
-  scoped_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
+  std::unique_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   LocalhostOrigin(), std::move(socket_data));
@@ -909,7 +910,7 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringWrite) {
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   LocalhostOrigin(),
-                                  make_scoped_ptr(socket_data));
+                                  base::WrapUnique(socket_data));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(socket_data->AllWriteDataConsumed());
   stream_request_.reset();
@@ -929,7 +930,8 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringRead) {
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 1),
   };
-  scoped_ptr<SequencedSocketData> socket_data(BuildSocketData(reads, writes));
+  std::unique_ptr<SequencedSocketData> socket_data(
+      BuildSocketData(reads, writes));
   SequencedSocketData* socket_data_raw_ptr = socket_data.get();
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   LocalhostOrigin(), std::move(socket_data));
@@ -970,7 +972,8 @@ TEST_F(WebSocketStreamCreateTest, NoResponse) {
       WebSocketStandardRequest("/", "localhost", LocalhostOrigin(), "");
   MockWrite writes[] = {MockWrite(ASYNC, request.data(), request.size(), 0)};
   MockRead reads[] = {MockRead(ASYNC, 0, 1)};
-  scoped_ptr<SequencedSocketData> socket_data(BuildSocketData(reads, writes));
+  std::unique_ptr<SequencedSocketData> socket_data(
+      BuildSocketData(reads, writes));
   SequencedSocketData* socket_data_raw_ptr = socket_data.get();
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   LocalhostOrigin(), std::move(socket_data));
@@ -984,12 +987,12 @@ TEST_F(WebSocketStreamCreateTest, NoResponse) {
 }
 
 TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateFailure) {
-  ssl_data_.push_back(make_scoped_ptr(
+  ssl_data_.push_back(base::WrapUnique(
       new SSLSocketDataProvider(ASYNC, ERR_CERT_AUTHORITY_INVALID)));
   ssl_data_[0]->cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
   ASSERT_TRUE(ssl_data_[0]->cert.get());
-  scoped_ptr<SequencedSocketData> raw_socket_data(BuildNullSocketData());
+  std::unique_ptr<SequencedSocketData> raw_socket_data(BuildNullSocketData());
   CreateAndConnectRawExpectations("wss://localhost/", NoSubProtocols(),
                                   LocalhostOrigin(),
                                   std::move(raw_socket_data));
@@ -1004,7 +1007,7 @@ TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateFailure) {
 }
 
 TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateSuccess) {
-  scoped_ptr<SSLSocketDataProvider> ssl_data(
+  std::unique_ptr<SSLSocketDataProvider> ssl_data(
       new SSLSocketDataProvider(ASYNC, ERR_CERT_AUTHORITY_INVALID));
   ssl_data->cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
@@ -1075,7 +1078,7 @@ TEST_F(WebSocketStreamCreateDigestAuthTest, DigestPasswordInUrl) {
 
 TEST_F(WebSocketStreamCreateUMATest, Incomplete) {
   const std::string name("Net.WebSocket.HandshakeResult");
-  scoped_ptr<base::HistogramSamples> original(GetSamples(name));
+  std::unique_ptr<base::HistogramSamples> original(GetSamples(name));
 
   {
     StreamCreation creation;
@@ -1084,7 +1087,7 @@ TEST_F(WebSocketStreamCreateUMATest, Incomplete) {
                                       LocalhostOrigin(), "", "");
   }
 
-  scoped_ptr<base::HistogramSamples> samples(GetSamples(name));
+  std::unique_ptr<base::HistogramSamples> samples(GetSamples(name));
   ASSERT_TRUE(samples);
   if (original) {
     samples->Subtract(*original);  // Cancel the original values.
@@ -1096,7 +1099,7 @@ TEST_F(WebSocketStreamCreateUMATest, Incomplete) {
 
 TEST_F(WebSocketStreamCreateUMATest, Connected) {
   const std::string name("Net.WebSocket.HandshakeResult");
-  scoped_ptr<base::HistogramSamples> original(GetSamples(name));
+  std::unique_ptr<base::HistogramSamples> original(GetSamples(name));
 
   {
     StreamCreation creation;
@@ -1106,7 +1109,7 @@ TEST_F(WebSocketStreamCreateUMATest, Connected) {
     creation.WaitUntilConnectDone();
   }
 
-  scoped_ptr<base::HistogramSamples> samples(GetSamples(name));
+  std::unique_ptr<base::HistogramSamples> samples(GetSamples(name));
   ASSERT_TRUE(samples);
   if (original) {
     samples->Subtract(*original);  // Cancel the original values.
@@ -1118,7 +1121,7 @@ TEST_F(WebSocketStreamCreateUMATest, Connected) {
 
 TEST_F(WebSocketStreamCreateUMATest, Failed) {
   const std::string name("Net.WebSocket.HandshakeResult");
-  scoped_ptr<base::HistogramSamples> original(GetSamples(name));
+  std::unique_ptr<base::HistogramSamples> original(GetSamples(name));
 
   {
     StreamCreation creation;
@@ -1134,7 +1137,7 @@ TEST_F(WebSocketStreamCreateUMATest, Failed) {
     creation.WaitUntilConnectDone();
   }
 
-  scoped_ptr<base::HistogramSamples> samples(GetSamples(name));
+  std::unique_ptr<base::HistogramSamples> samples(GetSamples(name));
   ASSERT_TRUE(samples);
   if (original) {
     samples->Subtract(*original);  // Cancel the original values.
@@ -1159,7 +1162,8 @@ TEST_F(WebSocketStreamCreateTest, HandleErrConnectionClosed) {
       MockRead(SYNCHRONOUS, ERR_CONNECTION_CLOSED, 2),
   };
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, 0, request.c_str())};
-  scoped_ptr<SequencedSocketData> socket_data(BuildSocketData(reads, writes));
+  std::unique_ptr<SequencedSocketData> socket_data(
+      BuildSocketData(reads, writes));
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   LocalhostOrigin(), std::move(socket_data));
@@ -1184,7 +1188,8 @@ TEST_F(WebSocketStreamCreateTest, HandleErrTunnelConnectionFailed) {
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, 1, kProxyResponse)};
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, 0, kConnectRequest)};
-  scoped_ptr<SequencedSocketData> socket_data(BuildSocketData(reads, writes));
+  std::unique_ptr<SequencedSocketData> socket_data(
+      BuildSocketData(reads, writes));
   url_request_context_host_.SetProxyConfig("https=proxy:8000");
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   LocalhostOrigin(), std::move(socket_data));
