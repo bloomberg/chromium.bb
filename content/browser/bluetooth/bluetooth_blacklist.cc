@@ -179,6 +179,8 @@ void BluetoothBlacklist::PopulateWithDefaultValues() {
 }
 
 void BluetoothBlacklist::PopulateWithServerProvidedValues() {
+  // DCHECK to maybe help debug https://crbug.com/604078.
+  DCHECK(GetContentClient());
   Add(GetContentClient()->browser()->GetWebBluetoothBlacklist());
 }
 

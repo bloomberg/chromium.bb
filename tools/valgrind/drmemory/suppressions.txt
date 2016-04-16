@@ -810,3 +810,9 @@ ipc.dll!IPC::internal::ChannelReader::HandleTranslatedMessage
 ipc.dll!IPC::internal::ChannelReader::TranslateInputData
 ipc.dll!IPC::internal::ChannelReader::AsyncReadComplete
 ipc.dll!IPC::ChannelWin::OnIOCompleted
+
+UNADDRESSABLE ACCESS
+name=bug_604078
+content.dll!content::BluetoothBlacklist::PopulateWithServerProvidedValues
+content.dll!content::BluetoothBlacklist::BluetoothBlacklist
+content.dll!content::BluetoothBlacklist::Get
