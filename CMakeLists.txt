@@ -159,6 +159,16 @@ if (ENABLE_TESTS)
                  "${LIBWEBM_SRC_DIR}/testing/test_util.h")
   target_link_libraries(vp9_header_parser_tests LINK_PUBLIC gtest webm)
 
+  add_executable(vp9_level_stats_tests
+                 "${LIBWEBM_SRC_DIR}/common/vp9_header_parser.cc"
+                 "${LIBWEBM_SRC_DIR}/common/vp9_header_parser.h"
+                 "${LIBWEBM_SRC_DIR}/common/vp9_level_stats_tests.cc"
+                 "${LIBWEBM_SRC_DIR}/common/vp9_level_stats.cc"
+                 "${LIBWEBM_SRC_DIR}/common/vp9_level_stats.h"
+                 "${LIBWEBM_SRC_DIR}/testing/test_util.cc"
+                 "${LIBWEBM_SRC_DIR}/testing/test_util.h")
+  target_link_libraries(vp9_level_stats_tests LINK_PUBLIC gtest webm)
+
   if (ENABLE_WEBMTS)
     add_executable(webm2pes_tests
                   "${LIBWEBM_SRC_DIR}/testing/test_util.cc"
