@@ -220,8 +220,7 @@ public class UrlContainer extends ViewGroup {
                 mTrailingTextShownWhileFocused = true;
                 mTrailingTextHiddenWhileFocused = false;
             } else {
-                assert mTrailingTextShownWhileFocused;
-                mTrailingTextHiddenWhileFocused = true;
+                mTrailingTextHiddenWhileFocused = mTrailingTextShownWhileFocused;
             }
             return;
         }
