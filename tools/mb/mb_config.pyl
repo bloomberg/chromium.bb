@@ -675,12 +675,8 @@
       'chromeos_amd64-generic_chromium_compile_only_ng': 'tbd',
       'chromeos_daisy_chromium_compile_only_ng': 'tbd',
       'chromeos_x86-generic_chromium_compile_only_ng': 'tbd',
-      'linux_chromium_browser_side_navigation_rel': 'tbd',
       'linux_chromium_chromeos_asan_rel_ng': 'tbd',
-      'linux_chromium_chromeos_compile_dbg_ng': 'tbd',
-      'linux_chromium_chromeos_dbg_ng': 'tbd',
       'linux_chromium_chromeos_msan_rel_ng': 'tbd',
-      'linux_chromium_chromeos_ozone_rel_ng': 'tbd',
 
       'cast_shell_linux': 'cast_gn_release_trybot',
       'chromeos_amd64-generic_variable': 'findit',
@@ -691,11 +687,18 @@
       'linux_chromium_archive_rel_ng': 'noswarming_gn_release_bot',
       'linux_chromium_asan_rel_ng': 'swarming_asan_lsan_gyp_release_trybot',
       'linux_chromium_asan_variable': 'findit',
+      'linux_chromium_browser_side_navigation_rel': 'gyp_release_trybot',
       'linux_chromium_cast_variable': 'findit',
       'linux_chromium_cfi_rel_ng': 'gn_cfi_release_trybot',
       'linux_chromium_chromeos_asan_variable': 'findit',
+      'linux_chromium_chromeos_compile_dbg_ng':
+        'swarming_chromeos_gyp_debug_trybot',
       'linux_chromium_chromeos_compile_rel_ng':
         'swarming_chromeos_gn_release_trybot',
+      'linux_chromium_chromeos_dbg_ng':
+        'swarming_chromeos_gyp_debug_trybot',
+      'linux_chromium_chromeos_ozone_rel_ng':
+        'swarming_chromeos_gyp_ozone_release_trybot',
       'linux_chromium_chromeos_rel_ng': 'swarming_chromeos_gyp_release_trybot',
       'linux_chromium_chromeos_variable': 'findit',
       'linux_chromium_chromeos_variable_chrome': 'findit',
@@ -1261,6 +1264,14 @@
 
     'swarming_chromeos_gyp_debug_bot': [
       'swarming', 'chromeos_with_codecs', 'gyp', 'debug_bot',
+    ],
+
+    'swarming_chromeos_gyp_debug_trybot': [
+      'swarming', 'chromeos_with_codecs', 'gyp', 'debug_trybot',
+    ],
+
+    'swarming_chromeos_gyp_ozone_release_trybot': [
+      'swarming', 'chromeos_with_codecs', 'gyp', 'ozone', 'release_trybot',
     ],
 
     'swarming_chromeos_gyp_release_bot': [
