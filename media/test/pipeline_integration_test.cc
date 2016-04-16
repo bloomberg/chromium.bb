@@ -617,7 +617,7 @@ class MockMediaSource {
 
     CHECK_EQ(chunk_demuxer_->AddId(kSourceId, type, codecs), ChunkDemuxer::kOk);
     chunk_demuxer_->SetTracksWatcher(
-        kSourceId, base::Bind(&MockMediaSource::InitSegmentReceivedWrapper,
+        kSourceId, base::Bind(&MockMediaSource::InitSegmentReceived,
                               base::Unretained(this)));
 
     AppendData(initial_append_size_);
@@ -634,12 +634,21 @@ class MockMediaSource {
     return last_timestamp_offset_;
   }
 
-  // A workaround for gtest mocks not allowing moving scoped_ptrs.
-  void InitSegmentReceivedWrapper(scoped_ptr<MediaTracks> tracks) {
-    InitSegmentReceived(tracks);
+  void InitSegmentReceived(scoped_ptr<MediaTracks> tracks) {
+    CHECK(tracks.get());
+    EXPECT_GT(tracks->tracks().size(), 0u);
+    CHECK(chunk_demuxer_);
+    // Generate track ids.
+    std::vector<unsigned> track_ids;
+    for (size_t track_id = 1; track_id <= tracks->tracks().size(); ++track_id) {
+      track_ids.push_back(track_id);
+    }
+
+    chunk_demuxer_->OnTrackIdsAssigned(*tracks.get(), track_ids);
+    InitSegmentReceivedMock(tracks);
   }
 
-  MOCK_METHOD1(InitSegmentReceived, void(scoped_ptr<MediaTracks>&));
+  MOCK_METHOD1(InitSegmentReceivedMock, void(scoped_ptr<MediaTracks>&));
 
  private:
   scoped_refptr<DecoderBuffer> file_data_;
@@ -693,7 +702,7 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
     hashing_enabled_ = test_type & kHashed;
     clockless_playback_ = test_type & kClockless;
 
-    EXPECT_CALL(*source, InitSegmentReceived(_)).Times(AtLeast(1));
+    EXPECT_CALL(*source, InitSegmentReceivedMock(_)).Times(AtLeast(1));
     EXPECT_CALL(*this, OnMetadata(_))
         .Times(AtMost(1))
         .WillRepeatedly(SaveArg<0>(&metadata_));
@@ -727,7 +736,7 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
 
   void StartPipelineWithEncryptedMedia(MockMediaSource* source,
                                        FakeEncryptedMedia* encrypted_media) {
-    EXPECT_CALL(*source, InitSegmentReceived(_)).Times(AtLeast(1));
+    EXPECT_CALL(*source, InitSegmentReceivedMock(_)).Times(AtLeast(1));
     EXPECT_CALL(*this, OnMetadata(_))
         .Times(AtMost(1))
         .WillRepeatedly(SaveArg<0>(&metadata_));
@@ -2133,6 +2142,65 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackPositiveStartTime) {
   ASSERT_TRUE(WaitUntilOnEnded());
   ASSERT_EQ(base::TimeDelta::FromMicroseconds(396000),
             demuxer_->GetStartTime());
+}
+
+TEST_F(PipelineIntegrationTest, AudioTrackMuteUnmute) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
+
+  // Start playback and play a little, to ensure demuxer streams are created.
+  Play();
+  ASSERT_TRUE(
+      WaitUntilCurrentTimeIsAfter(base::TimeDelta::FromMilliseconds(200)));
+  Pause();
+
+  const DemuxerStream* demux_stream = demuxer_->GetDemuxerStreamByTrackId(2);
+  EXPECT_NE(demux_stream, nullptr);
+  EXPECT_EQ(demux_stream->type(), DemuxerStream::AUDIO);
+
+  // TODO(servolk): Find a way to verify that audio is really muted/unmuted.
+  // This should mute the audio stream.
+  std::vector<const DemuxerStream*> enabledAudioStreams;
+  pipeline_->OnEnabledAudioStreamsChanged(enabledAudioStreams);
+
+  Play();
+  ASSERT_TRUE(
+      WaitUntilCurrentTimeIsAfter(base::TimeDelta::FromMilliseconds(500)));
+  Pause();
+
+  // This should unmute the audio stream.
+  enabledAudioStreams.push_back(demux_stream);
+  pipeline_->OnEnabledAudioStreamsChanged(enabledAudioStreams);
+
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
+TEST_F(PipelineIntegrationTest, VideoTrackSelectDeselect) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
+
+  // Start playback and play a little, to ensure demuxer streams are created.
+  Play();
+  ASSERT_TRUE(
+      WaitUntilCurrentTimeIsAfter(base::TimeDelta::FromMilliseconds(200)));
+  Pause();
+
+  const DemuxerStream* demux_stream = demuxer_->GetDemuxerStreamByTrackId(1);
+  EXPECT_NE(demux_stream, nullptr);
+  EXPECT_EQ(demux_stream->type(), DemuxerStream::VIDEO);
+
+  // Deselect video stream.
+  pipeline_->OnSelectedVideoStreamChanged(nullptr);
+
+  Play();
+  ASSERT_TRUE(
+      WaitUntilCurrentTimeIsAfter(base::TimeDelta::FromMilliseconds(500)));
+  Pause();
+
+  // Select video stream.
+  pipeline_->OnSelectedVideoStreamChanged(demux_stream);
+
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
 }
 
 }  // namespace media

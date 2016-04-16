@@ -14,30 +14,66 @@ MediaTracks::MediaTracks() {}
 
 MediaTracks::~MediaTracks() {}
 
-void MediaTracks::AddAudioTrack(const AudioDecoderConfig& config,
-                                const std::string& id,
-                                const std::string& kind,
-                                const std::string& label,
-                                const std::string& language) {
+const MediaTrack* MediaTracks::AddAudioTrack(const AudioDecoderConfig& config,
+                                             const std::string& id,
+                                             const std::string& kind,
+                                             const std::string& label,
+                                             const std::string& language) {
   DCHECK(config.IsValidConfig());
   CHECK(audio_configs_.find(id) == audio_configs_.end());
   scoped_ptr<MediaTrack> track = make_scoped_ptr(
       new MediaTrack(MediaTrack::Audio, id, kind, label, language));
   tracks_.push_back(std::move(track));
   audio_configs_[id] = config;
+  return tracks_.back().get();
 }
 
-void MediaTracks::AddVideoTrack(const VideoDecoderConfig& config,
-                                const std::string& id,
-                                const std::string& kind,
-                                const std::string& label,
-                                const std::string& language) {
+const MediaTrack* MediaTracks::AddVideoTrack(const VideoDecoderConfig& config,
+                                             const std::string& id,
+                                             const std::string& kind,
+                                             const std::string& label,
+                                             const std::string& language) {
   DCHECK(config.IsValidConfig());
   CHECK(video_configs_.find(id) == video_configs_.end());
   scoped_ptr<MediaTrack> track = make_scoped_ptr(
       new MediaTrack(MediaTrack::Video, id, kind, label, language));
   tracks_.push_back(std::move(track));
   video_configs_[id] = config;
+  return tracks_.back().get();
+}
+
+void MediaTracks::SetDemuxerStreamForMediaTrack(const MediaTrack* track,
+                                                const DemuxerStream* stream) {
+  DCHECK(track_to_demux_stream_map_.find(track) ==
+         track_to_demux_stream_map_.end());
+
+  bool track_found = false;
+  for (const auto& t : tracks_) {
+    if (t.get() == track) {
+      track_found = true;
+      break;
+    }
+  }
+  CHECK(track_found);
+
+  track_to_demux_stream_map_[track] = stream;
+}
+
+MediaTracks::TrackIdToDemuxStreamMap MediaTracks::OnTrackIdsAssigned(
+    const std::vector<unsigned>& track_ids) const {
+  TrackIdToDemuxStreamMap result;
+  CHECK_EQ(tracks().size(), track_ids.size());
+  CHECK_EQ(track_to_demux_stream_map_.size(), tracks().size());
+  for (size_t i = 0; i < track_ids.size(); ++i) {
+    const MediaTrack* track = tracks()[i].get();
+    DCHECK(track);
+    const auto& it = track_to_demux_stream_map_.find(track);
+    CHECK(it != track_to_demux_stream_map_.end());
+    DVLOG(3) << "OnTrackIdsAssigned track_id=" << track_ids[i]
+             << " DemuxerStream=" << it->second;
+    result[track_ids[i]] = it->second;
+  }
+  return result;
 }
 
 const AudioDecoderConfig& MediaTracks::getAudioConfig(

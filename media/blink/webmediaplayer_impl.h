@@ -127,6 +127,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool hasVideo() const override;
   bool hasAudio() const override;
 
+  void enabledAudioTracksChanged(
+      const blink::WebVector<blink::WebMediaPlayer::TrackId>& enabledTrackIds)
+      override;
+  // |selectedTrackId| is null if no track is selected.
+  void selectedVideoTrackChanged(
+      blink::WebMediaPlayer::TrackId* selectedTrackId) override;
+
   // Dimensions of the video.
   blink::WebSize naturalSize() const override;
 

@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_RENDERER_H_
 #define MEDIA_BASE_RENDERER_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -16,6 +18,7 @@
 
 namespace media {
 
+class DemuxerStream;
 class DemuxerStreamProvider;
 class VideoFrame;
 
@@ -76,6 +79,22 @@ class MEDIA_EXPORT Renderer {
 
   // Returns whether |this| renders video.
   virtual bool HasVideo() = 0;
+
+  // TODO(servolk,wolenetz): Enable media track handling in mojo, then make sure
+  // OnEnabledAudioStreamsChanged and OnSelectedVideoStreamChanged are
+  // implemented by all media renderers and make them pure virtual here.
+  // crbug.com/604083
+
+  // Notifies renderer that the set of enabled audio streams/tracks has changed.
+  // The input parameter |enabledAudioStreams| might be empty, which means that
+  // all audio tracks should be disabled/muted.
+  virtual void OnEnabledAudioStreamsChanged(
+      const std::vector<const DemuxerStream*>& enabledAudioStreams) {}
+
+  // Notifies renderer that the selected video stream has changed. The input
+  // parameter |selectedVideoStream| can be null, which means video is disabled.
+  virtual void OnSelectedVideoStreamChanged(
+      const DemuxerStream* selectedVideoStream) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Renderer);

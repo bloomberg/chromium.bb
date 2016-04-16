@@ -1221,22 +1221,25 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 
     // Note when we find our audio/video stream (we only want one of each) and
     // record src= playback UMA stats for the stream's decoder config.
+    const MediaTrack* media_track = nullptr;
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
       CHECK(!audio_stream);
       audio_stream = stream;
       audio_config = streams_[i]->audio_decoder_config();
       RecordAudioCodecStats(audio_config);
 
-      media_tracks->AddAudioTrack(audio_config, track_id, "main", track_label,
-                                  track_language);
+      media_track = media_tracks->AddAudioTrack(audio_config, track_id, "main",
+                                                track_label, track_language);
+      media_tracks->SetDemuxerStreamForMediaTrack(media_track, streams_[i]);
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
       CHECK(!video_stream);
       video_stream = stream;
       video_config = streams_[i]->video_decoder_config();
       RecordVideoCodecStats(video_config, stream->codec->color_range);
 
-      media_tracks->AddVideoTrack(video_config, track_id, "main", track_label,
-                                  track_language);
+      media_track = media_tracks->AddVideoTrack(video_config, track_id, "main",
+                                                track_label, track_language);
+      media_tracks->SetDemuxerStreamForMediaTrack(media_track, streams_[i]);
     }
 
     max_duration = std::max(max_duration, streams_[i]->duration());
@@ -1593,6 +1596,18 @@ void FFmpegDemuxer::SetLiveness(DemuxerStream::Liveness liveness) {
     if (stream)
       stream->SetLiveness(liveness);
   }
+}
+
+void FFmpegDemuxer::OnTrackIdsAssigned(const MediaTracks& tracks,
+                                       const std::vector<unsigned>& track_ids) {
+  track_id_to_demux_stream_ = tracks.OnTrackIdsAssigned(track_ids);
+}
+
+const DemuxerStream* FFmpegDemuxer::GetDemuxerStreamByTrackId(
+    unsigned track_id) const {
+  const auto& it = track_id_to_demux_stream_.find(track_id);
+  CHECK(it != track_id_to_demux_stream_.end());
+  return it->second;
 }
 
 }  // namespace media

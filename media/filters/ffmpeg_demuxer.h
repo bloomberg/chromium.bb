@@ -25,6 +25,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -38,6 +39,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decoder_buffer_queue.h"
 #include "media/base/demuxer.h"
+#include "media/base/media_tracks.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
@@ -223,6 +225,15 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // timeline.
   base::TimeDelta start_time() const { return start_time_; }
 
+  // Notifies the demuxer that track ids has been assigned to a media tracks.
+  void OnTrackIdsAssigned(const MediaTracks& tracks,
+                          const std::vector<unsigned>& track_ids) override;
+
+  // Finds a DemuxerStream corresponding to the given blink |track_id|. Note
+  // that the input track id is blink track id and not bytestream track id.
+  const DemuxerStream* GetDemuxerStreamByTrackId(
+      unsigned track_id) const override;
+
  private:
   // To allow tests access to privates.
   friend class FFmpegDemuxerTest;
@@ -333,6 +344,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   const EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
 
   const MediaTracksUpdatedCB media_tracks_updated_cb_;
+
+  MediaTracks::TrackIdToDemuxStreamMap track_id_to_demux_stream_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FFmpegDemuxer> weak_factory_;

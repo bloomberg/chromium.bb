@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/media_tracks.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
@@ -1002,32 +1003,31 @@ void ChunkDemuxer::OnSourceInitDone(
   base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
 }
 
-ChunkDemuxerStream*
-ChunkDemuxer::CreateDemuxerStream(DemuxerStream::Type type) {
-  switch (type) {
-    case DemuxerStream::AUDIO:
+ChunkDemuxerStream* ChunkDemuxer::CreateDemuxerStream(
+    const MediaTrack& media_track) {
+  // Demuxer streams can only be created when ChunkDemuxer::AppendData is in
+  // progress.
+  lock_.AssertAcquired();
+  switch (media_track.type()) {
+    case MediaTrack::Audio:
       if (audio_)
         return NULL;
       audio_.reset(
           new ChunkDemuxerStream(DemuxerStream::AUDIO, splice_frames_enabled_));
       return audio_.get();
       break;
-    case DemuxerStream::VIDEO:
+    case MediaTrack::Video:
       if (video_)
         return NULL;
       video_.reset(
           new ChunkDemuxerStream(DemuxerStream::VIDEO, splice_frames_enabled_));
       return video_.get();
       break;
-    case DemuxerStream::TEXT: {
+    case MediaTrack::Text: {
       return new ChunkDemuxerStream(DemuxerStream::TEXT,
                                     splice_frames_enabled_);
       break;
     }
-    case DemuxerStream::UNKNOWN:
-    case DemuxerStream::NUM_TYPES:
-      NOTREACHED();
-      return NULL;
   }
   NOTREACHED();
   return NULL;
@@ -1038,6 +1038,31 @@ void ChunkDemuxer::OnNewTextTrack(ChunkDemuxerStream* text_stream,
   lock_.AssertAcquired();
   DCHECK_NE(state_, SHUTDOWN);
   host_->AddTextStream(text_stream, config);
+}
+
+void ChunkDemuxer::OnTrackIdsAssigned(const MediaTracks& tracks,
+                                      const std::vector<unsigned>& track_ids) {
+  // New tracks and therefore track id assignements can happen only during
+  // ChunkDemuxer::AppendData processing, which should be holding the lock.
+  lock_.AssertAcquired();
+
+  const auto& new_track_id_map = tracks.OnTrackIdsAssigned(track_ids);
+
+  // ChunkDemuxer might have multiple media track sets (since it can have
+  // multiple SourceBuffers), so we need to merge the map for the current set of
+  // tracks with the global |track_id_to_demux_stream_| map shared across all
+  // SourceBuffers.
+  for (const auto& it : new_track_id_map) {
+    track_id_to_demux_stream_[it.first] = it.second;
+  }
+}
+
+const DemuxerStream* ChunkDemuxer::GetDemuxerStreamByTrackId(
+    unsigned track_id) const {
+  base::AutoLock auto_lock(lock_);
+  const auto& it = track_id_to_demux_stream_.find(track_id);
+  CHECK(it != track_id_to_demux_stream_.end());
+  return it->second;
 }
 
 bool ChunkDemuxer::IsValidId(const std::string& source_id) const {

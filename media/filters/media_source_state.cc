@@ -480,9 +480,22 @@ bool MediaSourceState::OnNewConfigs(
     const StreamParser::TextTrackConfigMap& text_configs) {
   DCHECK_GE(state_, PENDING_PARSER_CONFIG);
   DCHECK(tracks.get());
-  media_tracks_ = std::move(tracks);
-  const AudioDecoderConfig& audio_config = media_tracks_->getFirstAudioConfig();
-  const VideoDecoderConfig& video_config = media_tracks_->getFirstVideoConfig();
+
+  const MediaTrack* audio_track = nullptr;
+  const MediaTrack* video_track = nullptr;
+  AudioDecoderConfig audio_config;
+  VideoDecoderConfig video_config;
+  for (const auto& track : tracks->tracks()) {
+    if (!audio_track && track->type() == MediaTrack::Audio &&
+        tracks->getAudioConfig(track->id()).IsValidConfig()) {
+      audio_config = tracks->getAudioConfig(track->id());
+      audio_track = track.get();
+    } else if (!video_track && track->type() == MediaTrack::Video &&
+               tracks->getVideoConfig(track->id()).IsValidConfig()) {
+      video_config = tracks->getVideoConfig(track->id());
+      video_track = track.get();
+    }
+  }
 
   DVLOG(1) << "OnNewConfigs(" << allow_audio << ", " << allow_video << ", "
            << audio_config.IsValidConfig() << ", "
@@ -530,7 +543,8 @@ bool MediaSourceState::OnNewConfigs(
     }
 
     if (!audio_) {
-      audio_ = create_demuxer_stream_cb_.Run(DemuxerStream::AUDIO);
+      DCHECK(audio_track);
+      audio_ = create_demuxer_stream_cb_.Run(*audio_track);
 
       if (!audio_) {
         DVLOG(1) << "Failed to create an audio stream.";
@@ -558,7 +572,8 @@ bool MediaSourceState::OnNewConfigs(
     }
 
     if (!video_) {
-      video_ = create_demuxer_stream_cb_.Run(DemuxerStream::VIDEO);
+      DCHECK(video_track);
+      video_ = create_demuxer_stream_cb_.Run(*video_track);
 
       if (!video_) {
         DVLOG(1) << "Failed to create a video stream.";
@@ -578,8 +593,11 @@ bool MediaSourceState::OnNewConfigs(
   if (text_stream_map_.empty()) {
     for (TextConfigItr itr = text_configs.begin(); itr != text_configs.end();
          ++itr) {
+      // TODO(servolk): Look into unifying text tracks code path with audio and
+      // video track code paths.
+      MediaTrack dummy_text_track(MediaTrack::Text, "", "", "", "");
       ChunkDemuxerStream* const text_stream =
-          create_demuxer_stream_cb_.Run(DemuxerStream::TEXT);
+          create_demuxer_stream_cb_.Run(dummy_text_track);
       if (!frame_processor_->AddTrack(itr->first, text_stream)) {
         success &= false;
         MEDIA_LOG(ERROR, media_log_) << "Failed to add text track ID "
@@ -651,12 +669,21 @@ bool MediaSourceState::OnNewConfigs(
 
   frame_processor_->SetAllTrackBuffersNeedRandomAccessPoint();
 
+  if (audio_track) {
+    DCHECK(audio_);
+    tracks->SetDemuxerStreamForMediaTrack(audio_track, audio_);
+  }
+  if (video_track) {
+    DCHECK(video_);
+    tracks->SetDemuxerStreamForMediaTrack(video_track, video_);
+  }
+
   DVLOG(1) << "OnNewConfigs() : " << (success ? "success" : "failed");
   if (success) {
     if (state_ == PENDING_PARSER_CONFIG)
       state_ = PENDING_PARSER_INIT;
     DCHECK(!init_segment_received_cb_.is_null());
-    init_segment_received_cb_.Run(std::move(media_tracks_));
+    init_segment_received_cb_.Run(std::move(tracks));
   }
 
   return success;

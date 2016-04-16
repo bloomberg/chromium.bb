@@ -204,6 +204,36 @@ void PipelineImpl::SetCdm(CdmContext* cdm_context,
                             cdm_attached_cb));
 }
 
+void PipelineImpl::OnEnabledAudioStreamsChanged(
+    const std::vector<const DemuxerStream*>& enabledAudioStreams) {
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PipelineImpl::OnEnabledAudioStreamsChanged,
+                              weak_factory_.GetWeakPtr(), enabledAudioStreams));
+    return;
+  }
+  base::AutoLock auto_lock(lock_);
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (renderer_) {
+    renderer_->OnEnabledAudioStreamsChanged(enabledAudioStreams);
+  }
+}
+
+void PipelineImpl::OnSelectedVideoStreamChanged(
+    const DemuxerStream* selectedVideoStream) {
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PipelineImpl::OnSelectedVideoStreamChanged,
+                              weak_factory_.GetWeakPtr(), selectedVideoStream));
+    return;
+  }
+  base::AutoLock auto_lock(lock_);
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (renderer_) {
+    renderer_->OnSelectedVideoStreamChanged(selectedVideoStream);
+  }
+}
+
 void PipelineImpl::SetErrorForTesting(PipelineStatus status) {
   OnError(status);
 }
