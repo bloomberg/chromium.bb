@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/spdy_framer.h"
@@ -301,7 +301,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
     bool fin;
     bool unidirectional;
   };
-  scoped_ptr<ControlFrameFields> control_frame_fields_;
+  std::unique_ptr<ControlFrameFields> control_frame_fields_;
 
   // Collection of fields of a GOAWAY frame that this class needs to buffer.
   struct GoAwayFields {
@@ -309,7 +309,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
     SpdyGoAwayStatus status;
     std::string debug_data;
   };
-  scoped_ptr<GoAwayFields> goaway_fields_;
+  std::unique_ptr<GoAwayFields> goaway_fields_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedSpdyFramer);
 };

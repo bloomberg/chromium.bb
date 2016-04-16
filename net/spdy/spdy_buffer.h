@@ -6,12 +6,12 @@
 #define NET_SPDY_SPDY_BUFFER_H_
 
 #include <cstddef>
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -47,7 +47,7 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
 
   // Construct with the data in the given frame. Assumes that data is
   // owned by |frame| or outlives it.
-  explicit SpdyBuffer(scoped_ptr<SpdySerializedFrame> frame);
+  explicit SpdyBuffer(std::unique_ptr<SpdySerializedFrame> frame);
 
   // Construct with a copy of the given raw data. |data| must be
   // non-NULL and |size| must be non-zero.
@@ -88,7 +88,8 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
 
   // Ref-count the passed-in SpdySerializedFrame to support the semantics of
   // |GetIOBufferForRemainingData()|.
-  typedef base::RefCountedData<scoped_ptr<SpdySerializedFrame>> SharedFrame;
+  typedef base::RefCountedData<std::unique_ptr<SpdySerializedFrame>>
+      SharedFrame;
 
   class SharedFrameIOBuffer;
 

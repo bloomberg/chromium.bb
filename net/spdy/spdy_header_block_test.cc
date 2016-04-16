@@ -4,9 +4,9 @@
 
 #include "net/spdy/spdy_header_block.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "net/log/net_log.h"
 #include "net/spdy/spdy_test_utils.h"
@@ -76,7 +76,7 @@ TEST(SpdyHeaderBlockTest, ToNetLogParamAndBackAgain) {
   headers["A"] = "a";
   headers["B"] = "b";
 
-  scoped_ptr<base::Value> event_param(SpdyHeaderBlockNetLogCallback(
+  std::unique_ptr<base::Value> event_param(SpdyHeaderBlockNetLogCallback(
       &headers, NetLogCaptureMode::IncludeCookiesAndCredentials()));
 
   SpdyHeaderBlock headers2;

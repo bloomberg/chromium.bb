@@ -5,8 +5,8 @@
 #include "net/spdy/spdy_protocol.h"
 
 #include <limits>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "net/spdy/spdy_bitmasks.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/test/gtest_util.h"
@@ -19,7 +19,7 @@ namespace {
 namespace net {
 
 TEST(SpdyProtocolDeathTest, TestSpdySettingsAndIdOutOfBounds) {
-  scoped_ptr<SettingsFlagsAndId> flags_and_id;
+  std::unique_ptr<SettingsFlagsAndId> flags_and_id;
 
   EXPECT_DFATAL(flags_and_id.reset(new SettingsFlagsAndId(1, 0xffffffff)),
                 "SPDY setting ID too large.");

@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "net/base/completion_callback.h"
@@ -175,24 +175,24 @@ struct SpdySessionDependencies {
 
   // Custom proxy service dependency.
   SpdySessionDependencies(NextProto protocol,
-                          scoped_ptr<ProxyService> proxy_service);
+                          std::unique_ptr<ProxyService> proxy_service);
 
   ~SpdySessionDependencies();
 
-  static scoped_ptr<HttpNetworkSession> SpdyCreateSession(
+  static std::unique_ptr<HttpNetworkSession> SpdyCreateSession(
       SpdySessionDependencies* session_deps);
   static HttpNetworkSession::Params CreateSessionParams(
       SpdySessionDependencies* session_deps);
 
   // NOTE: host_resolver must be ordered before http_auth_handler_factory.
-  scoped_ptr<MockHostResolverBase> host_resolver;
-  scoped_ptr<CertVerifier> cert_verifier;
-  scoped_ptr<ChannelIDService> channel_id_service;
-  scoped_ptr<TransportSecurityState> transport_security_state;
-  scoped_ptr<ProxyService> proxy_service;
+  std::unique_ptr<MockHostResolverBase> host_resolver;
+  std::unique_ptr<CertVerifier> cert_verifier;
+  std::unique_ptr<ChannelIDService> channel_id_service;
+  std::unique_ptr<TransportSecurityState> transport_security_state;
+  std::unique_ptr<ProxyService> proxy_service;
   scoped_refptr<SSLConfigService> ssl_config_service;
-  scoped_ptr<MockClientSocketFactory> socket_factory;
-  scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
+  std::unique_ptr<MockClientSocketFactory> socket_factory;
+  std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
   HttpServerPropertiesImpl http_server_properties;
   bool enable_ip_pooling;
   bool enable_ping;
@@ -205,7 +205,7 @@ struct SpdySessionDependencies {
   size_t session_max_recv_window_size;
   size_t stream_max_recv_window_size;
   SpdySession::TimeFunc time_func;
-  scoped_ptr<ProxyDelegate> proxy_delegate;
+  std::unique_ptr<ProxyDelegate> proxy_delegate;
   bool parse_alternative_services;
   bool enable_alternative_service_with_different_host;
   NetLog* net_log;
@@ -291,17 +291,17 @@ class SpdyTestUtil {
   void AddUrlToHeaderBlock(base::StringPiece url,
                            SpdyHeaderBlock* headers) const;
 
-  scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlock(
+  std::unique_ptr<SpdyHeaderBlock> ConstructGetHeaderBlock(
       base::StringPiece url) const;
-  scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlockForProxy(
+  std::unique_ptr<SpdyHeaderBlock> ConstructGetHeaderBlockForProxy(
       base::StringPiece url) const;
-  scoped_ptr<SpdyHeaderBlock> ConstructHeadHeaderBlock(
+  std::unique_ptr<SpdyHeaderBlock> ConstructHeadHeaderBlock(
       base::StringPiece url,
       int64_t content_length) const;
-  scoped_ptr<SpdyHeaderBlock> ConstructPostHeaderBlock(
+  std::unique_ptr<SpdyHeaderBlock> ConstructPostHeaderBlock(
       base::StringPiece url,
       int64_t content_length) const;
-  scoped_ptr<SpdyHeaderBlock> ConstructPutHeaderBlock(
+  std::unique_ptr<SpdyHeaderBlock> ConstructPutHeaderBlock(
       base::StringPiece url,
       int64_t content_length) const;
 
@@ -310,7 +310,7 @@ class SpdyTestUtil {
   // frame.
   SpdySerializedFrame* ConstructSpdyFrame(
       const SpdyHeaderInfo& header_info,
-      scoped_ptr<SpdyHeaderBlock> headers) const;
+      std::unique_ptr<SpdyHeaderBlock> headers) const;
 
   // Construct a SPDY frame.  If it is a SYN_STREAM or SYN_REPLY frame (as
   // specified in header_info.kind), the headers provided in extra_headers and
@@ -407,7 +407,7 @@ class SpdyTestUtil {
                                          const char* location);
 
   SpdySerializedFrame* ConstructInitialSpdyPushFrame(
-      scoped_ptr<SpdyHeaderBlock> headers,
+      std::unique_ptr<SpdyHeaderBlock> headers,
       int stream_id,
       int associated_stream_id);
 
@@ -509,7 +509,7 @@ class SpdyTestUtil {
 
   // Wraps |frame| in the payload of a data frame in stream |stream_id|.
   SpdySerializedFrame* ConstructWrappedSpdyFrame(
-      const scoped_ptr<SpdySerializedFrame>& frame,
+      const std::unique_ptr<SpdySerializedFrame>& frame,
       int stream_id);
 
   // Called when necessary (when it will affect stream dependency specification
@@ -541,7 +541,7 @@ class SpdyTestUtil {
  private:
   // |content_length| may be NULL, in which case the content-length
   // header will be omitted.
-  scoped_ptr<SpdyHeaderBlock> ConstructHeaderBlock(
+  std::unique_ptr<SpdyHeaderBlock> ConstructHeaderBlock(
       base::StringPiece method,
       base::StringPiece url,
       int64_t* content_length) const;

@@ -15,7 +15,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/quic/quic_flags.h"
 #include "net/spdy/hpack/hpack_constants.h"
 #include "net/spdy/mock_spdy_framer_visitor.h"
@@ -240,7 +239,7 @@ class SpdyFramerTestUtil {
 
    private:
     SpdyMajorVersion version_;
-    scoped_ptr<char[]> buffer_;
+    std::unique_ptr<char[]> buffer_;
     size_t size_;
     bool finished_;
 
@@ -602,7 +601,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   size_t last_frame_len_;
 
   // Header block streaming state:
-  scoped_ptr<char[]> header_buffer_;
+  std::unique_ptr<char[]> header_buffer_;
   size_t header_buffer_length_;
   size_t header_buffer_size_;
   SpdyStreamId header_stream_id_;
@@ -983,7 +982,7 @@ TEST_P(SpdyFramerTest, BasicCompression) {
     return;
   }
 
-  scoped_ptr<TestSpdyVisitor> visitor(new TestSpdyVisitor(spdy_version_));
+  std::unique_ptr<TestSpdyVisitor> visitor(new TestSpdyVisitor(spdy_version_));
   SpdyFramer framer(spdy_version_);
   framer.set_debug_visitor(visitor.get());
   SpdySynStreamIR syn_stream(1);
@@ -1753,7 +1752,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     };
 
     const int kFrameSize = arraysize(kFrameHeader) + kDataSize;
-    scoped_ptr<unsigned char[]> expected_frame_data(
+    std::unique_ptr<unsigned char[]> expected_frame_data(
         new unsigned char[kFrameSize]);
     memcpy(expected_frame_data.get(), kFrameHeader, arraysize(kFrameHeader));
     memset(expected_frame_data.get() + arraysize(kFrameHeader), 'A', kDataSize);
@@ -5736,7 +5735,7 @@ TEST_P(SpdyFramerTest, ReadIncorrectlySizedRstStream) {
 // to ProcessInput (i.e. will not be calling set_process_single_input_frame()).
 TEST_P(SpdyFramerTest, ProcessAllInput) {
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<TestSpdyVisitor> visitor(new TestSpdyVisitor(spdy_version_));
+  std::unique_ptr<TestSpdyVisitor> visitor(new TestSpdyVisitor(spdy_version_));
   framer.set_visitor(visitor.get());
 
   // Create two input frames.
@@ -5786,7 +5785,7 @@ TEST_P(SpdyFramerTest, ProcessAllInput) {
 TEST_P(SpdyFramerTest, ProcessAtMostOneFrame) {
   SpdyFramer framer(spdy_version_);
   framer.set_process_single_input_frame(true);
-  scoped_ptr<TestSpdyVisitor> visitor;
+  std::unique_ptr<TestSpdyVisitor> visitor;
 
   // Create two input frames.
   const char four_score[] = "Four score and ...";

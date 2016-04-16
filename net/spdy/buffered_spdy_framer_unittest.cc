@@ -227,7 +227,7 @@ TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
   headers["aa"] = "vv";
   headers["bb"] = "ww";
   BufferedSpdyFramer framer(spdy_version());
-  scoped_ptr<SpdySerializedFrame> control_frame(
+  std::unique_ptr<SpdySerializedFrame> control_frame(
       framer.CreateSynStream(1,  // stream_id
                              0,  // associated_stream_id
                              1,  // priority
@@ -255,7 +255,7 @@ TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
   BufferedSpdyFramer framer(spdy_version());
-  scoped_ptr<SpdySerializedFrame> control_frame(
+  std::unique_ptr<SpdySerializedFrame> control_frame(
       framer.CreateSynReply(1,  // stream_id
                             CONTROL_FLAG_NONE, &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
@@ -282,7 +282,7 @@ TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
   BufferedSpdyFramer framer(spdy_version());
-  scoped_ptr<SpdySerializedFrame> control_frame(
+  std::unique_ptr<SpdySerializedFrame> control_frame(
       framer.CreateHeaders(1,  // stream_id
                            CONTROL_FLAG_NONE,
                            0,  // priority
@@ -308,7 +308,7 @@ TEST_P(BufferedSpdyFramerTest, ReadPushPromiseHeaderBlock) {
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
   BufferedSpdyFramer framer(spdy_version());
-  scoped_ptr<SpdySerializedFrame> control_frame(
+  std::unique_ptr<SpdySerializedFrame> control_frame(
       framer.CreatePushPromise(1, 2, &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
@@ -330,7 +330,7 @@ TEST_P(BufferedSpdyFramerTest, GoAwayDebugData) {
   if (spdy_version() < HTTP2)
     return;
   BufferedSpdyFramer framer(spdy_version());
-  scoped_ptr<SpdySerializedFrame> goaway_frame(
+  std::unique_ptr<SpdySerializedFrame> goaway_frame(
       framer.CreateGoAway(2u, GOAWAY_FRAME_SIZE_ERROR, "foo"));
 
   TestBufferedSpdyVisitor visitor(spdy_version());

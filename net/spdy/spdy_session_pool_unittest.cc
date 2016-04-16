@@ -5,11 +5,11 @@
 #include "net/spdy/spdy_session_pool.h"
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/dns/host_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/socket/client_socket_handle.h"
@@ -43,7 +43,7 @@ class SpdySessionPoolTest : public ::testing::Test,
   void RunIPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type);
 
   SpdySessionDependencies session_deps_;
-  scoped_ptr<HttpNetworkSession> http_session_;
+  std::unique_ptr<HttpNetworkSession> http_session_;
   SpdySessionPool* spdy_session_pool_;
 };
 
@@ -69,7 +69,7 @@ class SessionOpeningDelegate : public SpdyStream::Delegate {
     return RESPONSE_HEADERS_ARE_COMPLETE;
   }
 
-  void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override {}
+  void OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) override {}
 
   void OnDataSent() override {}
 
@@ -526,7 +526,7 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
-  scoped_ptr<SpdySerializedFrame> req(
+  std::unique_ptr<SpdySerializedFrame> req(
       spdy_util.ConstructSpdyGet("http://www.a.com", 1, MEDIUM));
   MockWrite writes[] = {CreateMockWrite(*req, 1)};
 
@@ -554,7 +554,7 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   test::StreamDelegateDoNothing delegateA(spdy_streamA);
   spdy_streamA->SetDelegate(&delegateA);
 
-  scoped_ptr<SpdyHeaderBlock> headers(
+  std::unique_ptr<SpdyHeaderBlock> headers(
       spdy_util.ConstructGetHeaderBlock(urlA.spec()));
   spdy_streamA->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_streamA->HasUrlFromHeaders());

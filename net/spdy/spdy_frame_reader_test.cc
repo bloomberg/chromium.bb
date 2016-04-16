@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/spdy/spdy_frame_reader.h"
+
 #include <algorithm>
 #include <iostream>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/sys_byteorder.h"
-#include "net/spdy/spdy_frame_reader.h"
 #include "testing/platform_test.h"
 
 namespace net {

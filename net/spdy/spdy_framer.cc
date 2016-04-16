@@ -8,17 +8,17 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "net/quic/quic_flags.h"
 #include "net/spdy/hpack/hpack_constants.h"
+#include "net/spdy/spdy_bitmasks.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_frame_reader.h"
-#include "net/spdy/spdy_bitmasks.h"
 #include "third_party/zlib/zlib.h"
 
 using base::StringPiece;

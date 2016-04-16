@@ -5,11 +5,11 @@
 #include "net/spdy/spdy_test_utils.h"
 
 #include <cstring>
+#include <memory>
 #include <vector>
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "net/http/transport_security_state.h"
@@ -68,7 +68,7 @@ void CompareCharArraysWithHexError(const string& description,
                                    const int expected_len) {
   const int min_len = std::min(actual_len, expected_len);
   const int max_len = std::max(actual_len, expected_len);
-  scoped_ptr<bool[]> marks(new bool[max_len]);
+  std::unique_ptr<bool[]> marks(new bool[max_len]);
   bool identical = (actual_len == expected_len);
   for (int i = 0; i < min_len; ++i) {
     if (actual[i] != expected[i]) {

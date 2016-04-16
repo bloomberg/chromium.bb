@@ -5,9 +5,10 @@
 #ifndef NET_SPDY_SPDY_STREAM_TEST_UTIL_H_
 #define NET_SPDY_SPDY_STREAM_TEST_UTIL_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
@@ -29,7 +30,7 @@ class ClosingDelegate : public SpdyStream::Delegate {
   void OnRequestHeadersSent() override;
   SpdyResponseHeadersStatus OnResponseHeadersUpdated(
       const SpdyHeaderBlock& response_headers) override;
-  void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override;
+  void OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) override;
   void OnDataSent() override;
   void OnTrailers(const SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;
@@ -51,7 +52,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   void OnRequestHeadersSent() override;
   SpdyResponseHeadersStatus OnResponseHeadersUpdated(
       const SpdyHeaderBlock& response_headers) override;
-  void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override;
+  void OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) override;
   void OnDataSent() override;
   void OnTrailers(const SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;

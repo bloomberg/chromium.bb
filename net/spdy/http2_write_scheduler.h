@@ -11,6 +11,7 @@
 #include <cmath>
 #include <deque>
 #include <map>
+#include <memory>
 #include <queue>
 #include <set>
 #include <unordered_map>
@@ -21,7 +22,6 @@
 #include "base/containers/linked_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 
 namespace net {
@@ -316,7 +316,7 @@ void Http2PriorityWriteScheduler<StreamIdType>::UnregisterStream(
     LOG(DFATAL) << "Stream " << stream_id << " not registered";
     return;
   }
-  scoped_ptr<StreamInfo> stream_info(std::move(it->second));
+  std::unique_ptr<StreamInfo> stream_info(std::move(it->second));
   all_stream_infos_.erase(it);
   // If scheduled, unschedule.
   if (stream_info->scheduled) {

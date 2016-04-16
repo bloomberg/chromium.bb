@@ -4,9 +4,9 @@
 
 #include "net/spdy/spdy_headers_block_parser.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "net/test/gtest_util.h"
@@ -86,7 +86,7 @@ class SpdyHeadersBlockParserTest :
   SpdyMajorVersion spdy_version_;
 
   MockSpdyHeadersHandler handler_;
-  scoped_ptr<SpdyHeadersBlockParser> parser_;
+  std::unique_ptr<SpdyHeadersBlockParser> parser_;
 
   static const char *const kBaseKey;
   static const char *const kBaseValue;

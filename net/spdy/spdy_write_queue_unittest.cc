@@ -6,11 +6,11 @@
 
 #include <cstddef>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/request_priority.h"
 #include "net/log/net_log.h"
@@ -32,17 +32,18 @@ class SpdyWriteQueueTest : public ::testing::Test {};
 
 // Makes a SpdyFrameProducer producing a frame with the data in the
 // given string.
-scoped_ptr<SpdyBufferProducer> StringToProducer(const std::string& s) {
-  scoped_ptr<char[]> data(new char[s.size()]);
+std::unique_ptr<SpdyBufferProducer> StringToProducer(const std::string& s) {
+  std::unique_ptr<char[]> data(new char[s.size()]);
   std::memcpy(data.get(), s.data(), s.size());
-  return scoped_ptr<SpdyBufferProducer>(new SimpleBufferProducer(
-      scoped_ptr<SpdyBuffer>(new SpdyBuffer(scoped_ptr<SpdySerializedFrame>(
-          new SpdySerializedFrame(data.release(), s.size(), true))))));
+  return std::unique_ptr<SpdyBufferProducer>(
+      new SimpleBufferProducer(std::unique_ptr<SpdyBuffer>(
+          new SpdyBuffer(std::unique_ptr<SpdySerializedFrame>(
+              new SpdySerializedFrame(data.release(), s.size(), true))))));
 }
 
 // Makes a SpdyBufferProducer producing a frame with the data in the
 // given int (converted to a string).
-scoped_ptr<SpdyBufferProducer> IntToProducer(int i) {
+std::unique_ptr<SpdyBufferProducer> IntToProducer(int i) {
   return StringToProducer(base::IntToString(i));
 }
 
@@ -56,13 +57,15 @@ class RequeingBufferProducer : public SpdyBufferProducer {
         base::Bind(RequeingBufferProducer::ConsumeCallback, queue));
   }
 
-  scoped_ptr<SpdyBuffer> ProduceBuffer() override { return std::move(buffer_); }
+  std::unique_ptr<SpdyBuffer> ProduceBuffer() override {
+    return std::move(buffer_);
+  }
 
   static void ConsumeCallback(SpdyWriteQueue* queue,
                               size_t size,
                               SpdyBuffer::ConsumeSource source) {
-    scoped_ptr<SpdyBufferProducer> producer(
-        new SimpleBufferProducer(scoped_ptr<SpdyBuffer>(
+    std::unique_ptr<SpdyBufferProducer> producer(
+        new SimpleBufferProducer(std::unique_ptr<SpdyBuffer>(
             new SpdyBuffer(kRequeued, arraysize(kRequeued)))));
 
     queue->Enqueue(MEDIUM, RST_STREAM, std::move(producer),
@@ -70,19 +73,19 @@ class RequeingBufferProducer : public SpdyBufferProducer {
   }
 
  private:
-  scoped_ptr<SpdyBuffer> buffer_;
+  std::unique_ptr<SpdyBuffer> buffer_;
 };
 
 // Produces a frame with the given producer and returns a copy of its
 // data as a string.
-std::string ProducerToString(scoped_ptr<SpdyBufferProducer> producer) {
-  scoped_ptr<SpdyBuffer> buffer = producer->ProduceBuffer();
+std::string ProducerToString(std::unique_ptr<SpdyBufferProducer> producer) {
+  std::unique_ptr<SpdyBuffer> buffer = producer->ProduceBuffer();
   return std::string(buffer->GetRemainingData(), buffer->GetRemainingSize());
 }
 
 // Produces a frame with the given producer and returns a copy of its
 // data as an int (converted from a string).
-int ProducerToInt(scoped_ptr<SpdyBufferProducer> producer) {
+int ProducerToInt(std::unique_ptr<SpdyBufferProducer> producer) {
   int i = 0;
   EXPECT_TRUE(base::StringToInt(ProducerToString(std::move(producer)), &i));
   return i;
@@ -102,12 +105,14 @@ SpdyStream* MakeTestStream(RequestPriority priority) {
 TEST_F(SpdyWriteQueueTest, DequeuesByPriority) {
   SpdyWriteQueue write_queue;
 
-  scoped_ptr<SpdyBufferProducer> producer_low = StringToProducer("LOW");
-  scoped_ptr<SpdyBufferProducer> producer_medium = StringToProducer("MEDIUM");
-  scoped_ptr<SpdyBufferProducer> producer_highest = StringToProducer("HIGHEST");
+  std::unique_ptr<SpdyBufferProducer> producer_low = StringToProducer("LOW");
+  std::unique_ptr<SpdyBufferProducer> producer_medium =
+      StringToProducer("MEDIUM");
+  std::unique_ptr<SpdyBufferProducer> producer_highest =
+      StringToProducer("HIGHEST");
 
-  scoped_ptr<SpdyStream> stream_medium(MakeTestStream(MEDIUM));
-  scoped_ptr<SpdyStream> stream_highest(MakeTestStream(HIGHEST));
+  std::unique_ptr<SpdyStream> stream_medium(MakeTestStream(MEDIUM));
+  std::unique_ptr<SpdyStream> stream_highest(MakeTestStream(HIGHEST));
 
   // A NULL stream should still work.
   write_queue.Enqueue(LOW, SYN_STREAM, std::move(producer_low),
@@ -118,7 +123,7 @@ TEST_F(SpdyWriteQueueTest, DequeuesByPriority) {
                       stream_highest->GetWeakPtr());
 
   SpdyFrameType frame_type = DATA;
-  scoped_ptr<SpdyBufferProducer> frame_producer;
+  std::unique_ptr<SpdyBufferProducer> frame_producer;
   base::WeakPtr<SpdyStream> stream;
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
   EXPECT_EQ(RST_STREAM, frame_type);
@@ -143,13 +148,13 @@ TEST_F(SpdyWriteQueueTest, DequeuesByPriority) {
 TEST_F(SpdyWriteQueueTest, DequeuesFIFO) {
   SpdyWriteQueue write_queue;
 
-  scoped_ptr<SpdyBufferProducer> producer1 = IntToProducer(1);
-  scoped_ptr<SpdyBufferProducer> producer2 = IntToProducer(2);
-  scoped_ptr<SpdyBufferProducer> producer3 = IntToProducer(3);
+  std::unique_ptr<SpdyBufferProducer> producer1 = IntToProducer(1);
+  std::unique_ptr<SpdyBufferProducer> producer2 = IntToProducer(2);
+  std::unique_ptr<SpdyBufferProducer> producer3 = IntToProducer(3);
 
-  scoped_ptr<SpdyStream> stream1(MakeTestStream(DEFAULT_PRIORITY));
-  scoped_ptr<SpdyStream> stream2(MakeTestStream(DEFAULT_PRIORITY));
-  scoped_ptr<SpdyStream> stream3(MakeTestStream(DEFAULT_PRIORITY));
+  std::unique_ptr<SpdyStream> stream1(MakeTestStream(DEFAULT_PRIORITY));
+  std::unique_ptr<SpdyStream> stream2(MakeTestStream(DEFAULT_PRIORITY));
+  std::unique_ptr<SpdyStream> stream3(MakeTestStream(DEFAULT_PRIORITY));
 
   write_queue.Enqueue(DEFAULT_PRIORITY, SYN_STREAM, std::move(producer1),
                       stream1->GetWeakPtr());
@@ -159,7 +164,7 @@ TEST_F(SpdyWriteQueueTest, DequeuesFIFO) {
                       stream3->GetWeakPtr());
 
   SpdyFrameType frame_type = DATA;
-  scoped_ptr<SpdyBufferProducer> frame_producer;
+  std::unique_ptr<SpdyBufferProducer> frame_producer;
   base::WeakPtr<SpdyStream> stream;
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
   EXPECT_EQ(SYN_STREAM, frame_type);
@@ -185,8 +190,8 @@ TEST_F(SpdyWriteQueueTest, DequeuesFIFO) {
 TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStream) {
   SpdyWriteQueue write_queue;
 
-  scoped_ptr<SpdyStream> stream1(MakeTestStream(DEFAULT_PRIORITY));
-  scoped_ptr<SpdyStream> stream2(MakeTestStream(DEFAULT_PRIORITY));
+  std::unique_ptr<SpdyStream> stream1(MakeTestStream(DEFAULT_PRIORITY));
+  std::unique_ptr<SpdyStream> stream2(MakeTestStream(DEFAULT_PRIORITY));
 
   for (int i = 0; i < 100; ++i) {
     base::WeakPtr<SpdyStream> stream =
@@ -198,7 +203,7 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStream) {
 
   for (int i = 0; i < 100; i += 3) {
     SpdyFrameType frame_type = DATA;
-    scoped_ptr<SpdyBufferProducer> frame_producer;
+    std::unique_ptr<SpdyBufferProducer> frame_producer;
     base::WeakPtr<SpdyStream> stream;
     ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
     EXPECT_EQ(SYN_STREAM, frame_type);
@@ -207,7 +212,7 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStream) {
   }
 
   SpdyFrameType frame_type = DATA;
-  scoped_ptr<SpdyBufferProducer> frame_producer;
+  std::unique_ptr<SpdyBufferProducer> frame_producer;
   base::WeakPtr<SpdyStream> stream;
   EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
@@ -219,14 +224,14 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStream) {
 TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStreamsAfter) {
   SpdyWriteQueue write_queue;
 
-  scoped_ptr<SpdyStream> stream1(MakeTestStream(DEFAULT_PRIORITY));
+  std::unique_ptr<SpdyStream> stream1(MakeTestStream(DEFAULT_PRIORITY));
   stream1->set_stream_id(1);
-  scoped_ptr<SpdyStream> stream2(MakeTestStream(DEFAULT_PRIORITY));
+  std::unique_ptr<SpdyStream> stream2(MakeTestStream(DEFAULT_PRIORITY));
   stream2->set_stream_id(3);
-  scoped_ptr<SpdyStream> stream3(MakeTestStream(DEFAULT_PRIORITY));
+  std::unique_ptr<SpdyStream> stream3(MakeTestStream(DEFAULT_PRIORITY));
   stream3->set_stream_id(5);
   // No stream id assigned.
-  scoped_ptr<SpdyStream> stream4(MakeTestStream(DEFAULT_PRIORITY));
+  std::unique_ptr<SpdyStream> stream4(MakeTestStream(DEFAULT_PRIORITY));
   base::WeakPtr<SpdyStream> streams[] = {
     stream1->GetWeakPtr(), stream2->GetWeakPtr(),
     stream3->GetWeakPtr(), stream4->GetWeakPtr()
@@ -241,7 +246,7 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStreamsAfter) {
 
   for (int i = 0; i < 100; i += arraysize(streams)) {
     SpdyFrameType frame_type = DATA;
-    scoped_ptr<SpdyBufferProducer> frame_producer;
+    std::unique_ptr<SpdyBufferProducer> frame_producer;
     base::WeakPtr<SpdyStream> stream;
     ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream))
         << "Unable to Dequeue i: " << i;
@@ -251,7 +256,7 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStreamsAfter) {
   }
 
   SpdyFrameType frame_type = DATA;
-  scoped_ptr<SpdyBufferProducer> frame_producer;
+  std::unique_ptr<SpdyBufferProducer> frame_producer;
   base::WeakPtr<SpdyStream> stream;
   EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
@@ -270,7 +275,7 @@ TEST_F(SpdyWriteQueueTest, Clear) {
   write_queue.Clear();
 
   SpdyFrameType frame_type = DATA;
-  scoped_ptr<SpdyBufferProducer> frame_producer;
+  std::unique_ptr<SpdyBufferProducer> frame_producer;
   base::WeakPtr<SpdyStream> stream;
   EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
@@ -278,13 +283,12 @@ TEST_F(SpdyWriteQueueTest, Clear) {
 TEST_F(SpdyWriteQueueTest, RequeingProducerWithoutReentrance) {
   SpdyWriteQueue queue;
   queue.Enqueue(
-      DEFAULT_PRIORITY,
-      SYN_STREAM,
-      scoped_ptr<SpdyBufferProducer>(new RequeingBufferProducer(&queue)),
+      DEFAULT_PRIORITY, SYN_STREAM,
+      std::unique_ptr<SpdyBufferProducer>(new RequeingBufferProducer(&queue)),
       base::WeakPtr<SpdyStream>());
   {
     SpdyFrameType frame_type;
-    scoped_ptr<SpdyBufferProducer> producer;
+    std::unique_ptr<SpdyBufferProducer> producer;
     base::WeakPtr<SpdyStream> stream;
 
     EXPECT_TRUE(queue.Dequeue(&frame_type, &producer, &stream));
@@ -295,7 +299,7 @@ TEST_F(SpdyWriteQueueTest, RequeingProducerWithoutReentrance) {
   EXPECT_FALSE(queue.IsEmpty());
 
   SpdyFrameType frame_type;
-  scoped_ptr<SpdyBufferProducer> producer;
+  std::unique_ptr<SpdyBufferProducer> producer;
   base::WeakPtr<SpdyStream> stream;
 
   EXPECT_TRUE(queue.Dequeue(&frame_type, &producer, &stream));
@@ -305,16 +309,15 @@ TEST_F(SpdyWriteQueueTest, RequeingProducerWithoutReentrance) {
 TEST_F(SpdyWriteQueueTest, ReentranceOnClear) {
   SpdyWriteQueue queue;
   queue.Enqueue(
-      DEFAULT_PRIORITY,
-      SYN_STREAM,
-      scoped_ptr<SpdyBufferProducer>(new RequeingBufferProducer(&queue)),
+      DEFAULT_PRIORITY, SYN_STREAM,
+      std::unique_ptr<SpdyBufferProducer>(new RequeingBufferProducer(&queue)),
       base::WeakPtr<SpdyStream>());
 
   queue.Clear();
   EXPECT_FALSE(queue.IsEmpty());
 
   SpdyFrameType frame_type;
-  scoped_ptr<SpdyBufferProducer> producer;
+  std::unique_ptr<SpdyBufferProducer> producer;
   base::WeakPtr<SpdyStream> stream;
 
   EXPECT_TRUE(queue.Dequeue(&frame_type, &producer, &stream));
@@ -322,21 +325,20 @@ TEST_F(SpdyWriteQueueTest, ReentranceOnClear) {
 }
 
 TEST_F(SpdyWriteQueueTest, ReentranceOnRemovePendingWritesAfter) {
-  scoped_ptr<SpdyStream> stream(MakeTestStream(DEFAULT_PRIORITY));
+  std::unique_ptr<SpdyStream> stream(MakeTestStream(DEFAULT_PRIORITY));
   stream->set_stream_id(2);
 
   SpdyWriteQueue queue;
   queue.Enqueue(
-      DEFAULT_PRIORITY,
-      SYN_STREAM,
-      scoped_ptr<SpdyBufferProducer>(new RequeingBufferProducer(&queue)),
+      DEFAULT_PRIORITY, SYN_STREAM,
+      std::unique_ptr<SpdyBufferProducer>(new RequeingBufferProducer(&queue)),
       stream->GetWeakPtr());
 
   queue.RemovePendingWritesForStreamsAfter(1);
   EXPECT_FALSE(queue.IsEmpty());
 
   SpdyFrameType frame_type;
-  scoped_ptr<SpdyBufferProducer> producer;
+  std::unique_ptr<SpdyBufferProducer> producer;
   base::WeakPtr<SpdyStream> weak_stream;
 
   EXPECT_TRUE(queue.Dequeue(&frame_type, &producer, &weak_stream));
@@ -344,21 +346,20 @@ TEST_F(SpdyWriteQueueTest, ReentranceOnRemovePendingWritesAfter) {
 }
 
 TEST_F(SpdyWriteQueueTest, ReentranceOnRemovePendingWritesForStream) {
-  scoped_ptr<SpdyStream> stream(MakeTestStream(DEFAULT_PRIORITY));
+  std::unique_ptr<SpdyStream> stream(MakeTestStream(DEFAULT_PRIORITY));
   stream->set_stream_id(2);
 
   SpdyWriteQueue queue;
   queue.Enqueue(
-      DEFAULT_PRIORITY,
-      SYN_STREAM,
-      scoped_ptr<SpdyBufferProducer>(new RequeingBufferProducer(&queue)),
+      DEFAULT_PRIORITY, SYN_STREAM,
+      std::unique_ptr<SpdyBufferProducer>(new RequeingBufferProducer(&queue)),
       stream->GetWeakPtr());
 
   queue.RemovePendingWritesForStream(stream->GetWeakPtr());
   EXPECT_FALSE(queue.IsEmpty());
 
   SpdyFrameType frame_type;
-  scoped_ptr<SpdyBufferProducer> producer;
+  std::unique_ptr<SpdyBufferProducer> producer;
   base::WeakPtr<SpdyStream> weak_stream;
 
   EXPECT_TRUE(queue.Dequeue(&frame_type, &producer, &weak_stream));

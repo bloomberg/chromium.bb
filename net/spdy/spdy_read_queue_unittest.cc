@@ -6,9 +6,9 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "net/spdy/spdy_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,8 +30,8 @@ void EnqueueString(const std::string& data,
   size_t old_total_size = queue->GetTotalSize();
   for (size_t i = 0; i < data.size();) {
     size_t buffer_size = std::min(data.size() - i, max_buffer_size);
-    queue->Enqueue(
-        scoped_ptr<SpdyBuffer>(new SpdyBuffer(data.data() + i, buffer_size)));
+    queue->Enqueue(std::unique_ptr<SpdyBuffer>(
+        new SpdyBuffer(data.data() + i, buffer_size)));
     i += buffer_size;
     EXPECT_FALSE(queue->IsEmpty());
     EXPECT_EQ(old_total_size + i, queue->GetTotalSize());
@@ -46,7 +46,7 @@ std::string DrainToString(size_t max_buffer_size, SpdyReadQueue* queue) {
   // Pad the buffer so we can detect out-of-bound writes.
   size_t padding = std::max(static_cast<size_t>(4096), queue->GetTotalSize());
   size_t buffer_size_with_padding = padding + max_buffer_size + padding;
-  scoped_ptr<char[]> buffer(new char[buffer_size_with_padding]);
+  std::unique_ptr<char[]> buffer(new char[buffer_size_with_padding]);
   std::memset(buffer.get(), 0, buffer_size_with_padding);
   char* buffer_data = buffer.get() + padding;
 

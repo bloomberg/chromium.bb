@@ -13,7 +13,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/sys_byteorder.h"
 #include "net/base/net_export.h"
@@ -592,7 +591,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     size_t len() const { return len_; }
 
    private:
-    scoped_ptr<char[]> buffer_;
+    std::unique_ptr<char[]> buffer_;
     size_t capacity_;
     size_t len_;
   };
@@ -742,14 +741,14 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // current_frame_buffer_.
   SpdySettingsScratch settings_scratch_;
 
-  scoped_ptr<CharBuffer> altsvc_scratch_;
+  std::unique_ptr<CharBuffer> altsvc_scratch_;
 
   // SPDY header compressors.
-  scoped_ptr<z_stream> header_compressor_;
-  scoped_ptr<z_stream> header_decompressor_;
+  std::unique_ptr<z_stream> header_compressor_;
+  std::unique_ptr<z_stream> header_decompressor_;
 
-  scoped_ptr<HpackEncoder> hpack_encoder_;
-  scoped_ptr<HpackDecoder> hpack_decoder_;
+  std::unique_ptr<HpackEncoder> hpack_encoder_;
+  std::unique_ptr<HpackDecoder> hpack_decoder_;
 
   SpdyFramerVisitorInterface* visitor_;
   SpdyFramerDebugVisitorInterface* debug_visitor_;

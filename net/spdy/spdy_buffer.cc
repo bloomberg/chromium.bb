@@ -22,14 +22,14 @@ const size_t kMaxSpdyFrameSize = 0x00ffffff;
 
 // Makes a SpdySerializedFrame with |size| bytes of data copied from |data|.
 // |data| must be non-NULL and |size| must be positive.
-scoped_ptr<SpdySerializedFrame> MakeSpdySerializedFrame(const char* data,
-                                                        size_t size) {
+std::unique_ptr<SpdySerializedFrame> MakeSpdySerializedFrame(const char* data,
+                                                             size_t size) {
   DCHECK(data);
   CHECK_GT(size, 0u);
   CHECK_LE(size, kMaxSpdyFrameSize);
-  scoped_ptr<char[]> frame_data(new char[size]);
+  std::unique_ptr<char[]> frame_data(new char[size]);
   std::memcpy(frame_data.get(), data, size);
-  scoped_ptr<SpdySerializedFrame> frame(new SpdySerializedFrame(
+  std::unique_ptr<SpdySerializedFrame> frame(new SpdySerializedFrame(
       frame_data.release(), size, true /* owns_buffer */));
   return frame;
 }
@@ -57,7 +57,7 @@ class SpdyBuffer::SharedFrameIOBuffer : public IOBuffer {
   DISALLOW_COPY_AND_ASSIGN(SharedFrameIOBuffer);
 };
 
-SpdyBuffer::SpdyBuffer(scoped_ptr<SpdySerializedFrame> frame)
+SpdyBuffer::SpdyBuffer(std::unique_ptr<SpdySerializedFrame> frame)
     : shared_frame_(new SharedFrame()), offset_(0) {
   shared_frame_->data = std::move(frame);
 }

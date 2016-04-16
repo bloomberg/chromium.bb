@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/spdy/hpack/hpack_decoder.h"
@@ -69,9 +69,9 @@ class NET_EXPORT_PRIVATE HpackFuzzUtil {
   struct NET_EXPORT_PRIVATE FuzzerContext {
     FuzzerContext();
     ~FuzzerContext();
-    scoped_ptr<HpackDecoder> first_stage;
-    scoped_ptr<HpackEncoder> second_stage;
-    scoped_ptr<HpackDecoder> third_stage;
+    std::unique_ptr<HpackDecoder> first_stage;
+    std::unique_ptr<HpackEncoder> second_stage;
+    std::unique_ptr<HpackDecoder> third_stage;
   };
 
   static void InitializeFuzzerContext(FuzzerContext* context);
