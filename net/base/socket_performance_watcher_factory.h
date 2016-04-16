@@ -5,9 +5,8 @@
 #ifndef NET_BASE_SOCKET_PERFORMANCE_WATCHER_FACTORY_H_
 #define NET_BASE_SOCKET_PERFORMANCE_WATCHER_FACTORY_H_
 
-#include <memory>
-
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -28,8 +27,8 @@ class NET_EXPORT_PRIVATE SocketPerformanceWatcherFactory {
   // single socket that uses |protocol| as the transport layer protocol.
   // Implementations must return a valid, unique SocketRecorder for every call;
   // recorders must not be shared across calls or objects, nor is nullptr valid.
-  virtual std::unique_ptr<SocketPerformanceWatcher>
-  CreateSocketPerformanceWatcher(const Protocol protocol) = 0;
+  virtual scoped_ptr<SocketPerformanceWatcher> CreateSocketPerformanceWatcher(
+      const Protocol protocol) = 0;
 
  protected:
   SocketPerformanceWatcherFactory() {}

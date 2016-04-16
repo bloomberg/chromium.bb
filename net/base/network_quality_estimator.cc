@@ -181,9 +181,9 @@ class NetworkQualityEstimator::SocketWatcherFactory
   ~SocketWatcherFactory() override {}
 
   // SocketPerformanceWatcherFactory implementation:
-  std::unique_ptr<SocketPerformanceWatcher> CreateSocketPerformanceWatcher(
+  scoped_ptr<SocketPerformanceWatcher> CreateSocketPerformanceWatcher(
       const Protocol protocol) override {
-    return std::unique_ptr<SocketPerformanceWatcher>(
+    return scoped_ptr<SocketPerformanceWatcher>(
         new SocketWatcher(protocol, task_runner_, network_quality_estimator_));
   }
 
@@ -198,7 +198,7 @@ class NetworkQualityEstimator::SocketWatcherFactory
 const int32_t NetworkQualityEstimator::kInvalidThroughput = 0;
 
 NetworkQualityEstimator::NetworkQualityEstimator(
-    std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
+    scoped_ptr<ExternalEstimateProvider> external_estimates_provider,
     const std::map<std::string, std::string>& variation_params)
     : NetworkQualityEstimator(std::move(external_estimates_provider),
                               variation_params,
@@ -206,7 +206,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
                               false) {}
 
 NetworkQualityEstimator::NetworkQualityEstimator(
-    std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
+    scoped_ptr<ExternalEstimateProvider> external_estimates_provider,
     const std::map<std::string, std::string>& variation_params,
     bool allow_local_host_requests_for_tests,
     bool allow_smaller_responses_for_tests)

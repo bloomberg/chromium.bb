@@ -5,13 +5,13 @@
 #include "net/base/layered_network_delegate.h"
 
 #include <map>
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
@@ -161,7 +161,7 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
 
 class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
  public:
-  TestLayeredNetworkDelegate(std::unique_ptr<NetworkDelegate> network_delegate,
+  TestLayeredNetworkDelegate(scoped_ptr<NetworkDelegate> network_delegate,
                              CountersMap* counters)
       : LayeredNetworkDelegate(std::move(network_delegate)),
         context_(true),
@@ -173,10 +173,9 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
 
   void CallAndVerify() {
     scoped_refptr<AuthChallengeInfo> auth_challenge(new AuthChallengeInfo());
-    std::unique_ptr<URLRequest> request =
+    scoped_ptr<URLRequest> request =
         context_.CreateRequest(GURL(), IDLE, &delegate_);
-    std::unique_ptr<HttpRequestHeaders> request_headers(
-        new HttpRequestHeaders());
+    scoped_ptr<HttpRequestHeaders> request_headers(new HttpRequestHeaders());
     scoped_refptr<HttpResponseHeaders> response_headers(
         new HttpResponseHeaders(""));
     TestCompletionCallback completion_callback;
@@ -342,17 +341,17 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
 class LayeredNetworkDelegateTest : public testing::Test {
  public:
   LayeredNetworkDelegateTest() {
-    std::unique_ptr<TestNetworkDelegateImpl> test_network_delegate(
+    scoped_ptr<TestNetworkDelegateImpl> test_network_delegate(
         new TestNetworkDelegateImpl(&layered_network_delegate_counters));
     test_network_delegate_ = test_network_delegate.get();
-    layered_network_delegate_ = std::unique_ptr<TestLayeredNetworkDelegate>(
+    layered_network_delegate_ = scoped_ptr<TestLayeredNetworkDelegate>(
         new TestLayeredNetworkDelegate(std::move(test_network_delegate),
                                        &layered_network_delegate_counters));
   }
 
   CountersMap layered_network_delegate_counters;
   TestNetworkDelegateImpl* test_network_delegate_;
-  std::unique_ptr<TestLayeredNetworkDelegate> layered_network_delegate_;
+  scoped_ptr<TestLayeredNetworkDelegate> layered_network_delegate_;
 };
 
 TEST_F(LayeredNetworkDelegateTest, VerifyLayeredNetworkDelegateInternal) {

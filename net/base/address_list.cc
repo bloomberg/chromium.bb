@@ -15,11 +15,11 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogAddressListCallback(
+scoped_ptr<base::Value> NetLogAddressListCallback(
     const AddressList* address_list,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  std::unique_ptr<base::ListValue> list(new base::ListValue());
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  scoped_ptr<base::ListValue> list(new base::ListValue());
 
   for (AddressList::const_iterator it = address_list->begin();
        it != address_list->end(); ++it) {

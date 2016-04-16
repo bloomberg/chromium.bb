@@ -7,8 +7,7 @@
 
 #include <stdint.h>
 
-#include <memory>
-
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "net/base/completion_callback.h"
 #include "net/base/network_delegate.h"
@@ -35,7 +34,7 @@ class URLRequest;
 class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
  public:
   explicit LayeredNetworkDelegate(
-      std::unique_ptr<NetworkDelegate> nested_network_delegate);
+      scoped_ptr<NetworkDelegate> nested_network_delegate);
   ~LayeredNetworkDelegate() override;
 
   // NetworkDelegate implementation:
@@ -153,7 +152,7 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
       const GURL& referrer_url) const;
 
  private:
-  std::unique_ptr<NetworkDelegate> nested_network_delegate_;
+  scoped_ptr<NetworkDelegate> nested_network_delegate_;
 };
 
 }  // namespace net

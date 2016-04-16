@@ -4,8 +4,7 @@
 
 #include "net/base/upload_bytes_element_reader.h"
 
-#include <memory>
-
+#include "base/memory/scoped_ptr.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +25,7 @@ class UploadBytesElementReaderTest : public PlatformTest {
   }
 
   std::vector<char> bytes_;
-  std::unique_ptr<UploadElementReader> reader_;
+  scoped_ptr<UploadElementReader> reader_;
 };
 
 TEST_F(UploadBytesElementReaderTest, ReadPartially) {

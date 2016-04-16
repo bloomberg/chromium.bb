@@ -5,9 +5,8 @@
 #ifndef NET_BASE_BACKOFF_ENTRY_SERIALIZER_H_
 #define NET_BASE_BACKOFF_ENTRY_SERIALIZER_H_
 
-#include <memory>
-
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/net_export.h"
@@ -31,9 +30,8 @@ class NET_EXPORT BackoffEntrySerializer {
   // be converted to an absolute timestamp, thus the time will continue counting
   // down even whilst the device is powered off, and will be partially
   // vulnerable to changes in the system clock time.
-  static std::unique_ptr<base::Value> SerializeToValue(
-      const BackoffEntry& entry,
-      base::Time time_now);
+  static scoped_ptr<base::Value> SerializeToValue(const BackoffEntry& entry,
+                                                  base::Time time_now);
 
   // Deserializes a ListValue back to a BackoffEntry. |policy| MUST be the same
   // Policy as the serialized entry had. |clock| may be NULL. Both |policy| and
@@ -42,7 +40,7 @@ class NET_EXPORT BackoffEntrySerializer {
   // simulate time changes. The absolute timestamp that was serialized will be
   // converted back to TimeTicks as best as possible. Returns NULL if
   // deserialization was unsuccessful.
-  static std::unique_ptr<BackoffEntry> DeserializeFromValue(
+  static scoped_ptr<BackoffEntry> DeserializeFromValue(
       const base::Value& serialized,
       const BackoffEntry::Policy* policy,
       base::TickClock* clock,

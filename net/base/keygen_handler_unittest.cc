@@ -61,12 +61,12 @@ class KeygenHandlerTest : public ::testing::Test {
   KeygenHandlerTest() {}
   ~KeygenHandlerTest() override {}
 
-  std::unique_ptr<KeygenHandler> CreateKeygenHandler() {
-    std::unique_ptr<KeygenHandler> handler(
+  scoped_ptr<KeygenHandler> CreateKeygenHandler() {
+    scoped_ptr<KeygenHandler> handler(
         new KeygenHandler(768, kChallenge, GURL("http://www.example.com")));
 #if defined(USE_NSS_CERTS)
     handler->set_crypto_module_delegate(
-        std::unique_ptr<crypto::NSSCryptoModuleDelegate>(
+        scoped_ptr<crypto::NSSCryptoModuleDelegate>(
             new StubCryptoModuleDelegate(crypto::ScopedPK11Slot(
                 PK11_ReferenceSlot(test_nss_db_.slot())))));
 #endif
@@ -165,7 +165,7 @@ void AssertValidSignedPublicKeyAndChallenge(const std::string& result,
 }
 
 TEST_F(KeygenHandlerTest, SmokeTest) {
-  std::unique_ptr<KeygenHandler> handler(CreateKeygenHandler());
+  scoped_ptr<KeygenHandler> handler(CreateKeygenHandler());
   handler->set_stores_key(false);  // Don't leave the key-pair behind
   std::string result = handler->GenKeyAndSignChallenge();
   VLOG(1) << "KeygenHandler produced: " << result;
@@ -174,7 +174,7 @@ TEST_F(KeygenHandlerTest, SmokeTest) {
 
 void ConcurrencyTestCallback(const std::string& challenge,
                              base::WaitableEvent* event,
-                             std::unique_ptr<KeygenHandler> handler,
+                             scoped_ptr<KeygenHandler> handler,
                              std::string* result) {
   // We allow Singleton use on the worker thread here since we use a
   // WaitableEvent to synchronize, so it's safe.
@@ -201,7 +201,7 @@ TEST_F(KeygenHandlerTest, ConcurrencyTest) {
   base::WaitableEvent* events[NUM_HANDLERS] = { NULL };
   std::string results[NUM_HANDLERS];
   for (int i = 0; i < NUM_HANDLERS; i++) {
-    std::unique_ptr<KeygenHandler> handler(CreateKeygenHandler());
+    scoped_ptr<KeygenHandler> handler(CreateKeygenHandler());
     events[i] = new base::WaitableEvent(false, false);
     base::WorkerPool::PostTask(FROM_HERE,
                                base::Bind(ConcurrencyTestCallback,

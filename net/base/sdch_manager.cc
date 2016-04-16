@@ -231,13 +231,13 @@ SdchProblemCode SdchManager::CanFetchDictionary(
   return SDCH_OK;
 }
 
-std::unique_ptr<SdchManager::DictionarySet> SdchManager::GetDictionarySet(
-    const GURL& target_url) {
+scoped_ptr<SdchManager::DictionarySet>
+SdchManager::GetDictionarySet(const GURL& target_url) {
   if (IsInSupportedDomain(target_url) != SDCH_OK)
     return NULL;
 
   int count = 0;
-  std::unique_ptr<SdchManager::DictionarySet> result(new DictionarySet);
+  scoped_ptr<SdchManager::DictionarySet> result(new DictionarySet);
   for (const auto& entry: dictionaries_) {
     if (entry.second->data.CanUse(target_url) != SDCH_OK)
       continue;
@@ -255,11 +255,12 @@ std::unique_ptr<SdchManager::DictionarySet> SdchManager::GetDictionarySet(
   return result;
 }
 
-std::unique_ptr<SdchManager::DictionarySet> SdchManager::GetDictionarySetByHash(
+scoped_ptr<SdchManager::DictionarySet>
+SdchManager::GetDictionarySetByHash(
     const GURL& target_url,
     const std::string& server_hash,
     SdchProblemCode* problem_code) {
-  std::unique_ptr<SdchManager::DictionarySet> result;
+  scoped_ptr<SdchManager::DictionarySet> result;
 
   *problem_code = SDCH_DICTIONARY_HASH_NOT_FOUND;
   const auto& it = dictionaries_.find(server_hash);
@@ -442,25 +443,24 @@ SdchProblemCode SdchManager::RemoveSdchDictionary(
 }
 
 // static
-std::unique_ptr<SdchManager::DictionarySet>
+scoped_ptr<SdchManager::DictionarySet>
 SdchManager::CreateEmptyDictionarySetForTesting() {
-  return std::unique_ptr<DictionarySet>(new DictionarySet);
+  return scoped_ptr<DictionarySet>(new DictionarySet);
 }
 
-std::unique_ptr<base::Value> SdchManager::SdchInfoToValue() const {
-  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+scoped_ptr<base::Value> SdchManager::SdchInfoToValue() const {
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
   value->SetBoolean("sdch_enabled", true);
 
-  std::unique_ptr<base::ListValue> entry_list(new base::ListValue());
+  scoped_ptr<base::ListValue> entry_list(new base::ListValue());
   for (const auto& entry: dictionaries_) {
-    std::unique_ptr<base::DictionaryValue> entry_dict(
-        new base::DictionaryValue());
+    scoped_ptr<base::DictionaryValue> entry_dict(new base::DictionaryValue());
     entry_dict->SetString("url", entry.second->data.url().spec());
     entry_dict->SetString("client_hash", entry.second->data.client_hash());
     entry_dict->SetString("domain", entry.second->data.domain());
     entry_dict->SetString("path", entry.second->data.path());
-    std::unique_ptr<base::ListValue> port_list(new base::ListValue());
+    scoped_ptr<base::ListValue> port_list(new base::ListValue());
     for (std::set<int>::const_iterator port_it =
              entry.second->data.ports().begin();
          port_it != entry.second->data.ports().end(); ++port_it) {
@@ -477,8 +477,7 @@ std::unique_ptr<base::Value> SdchManager::SdchInfoToValue() const {
        it != blacklisted_domains_.end(); ++it) {
     if (it->second.count == 0)
       continue;
-    std::unique_ptr<base::DictionaryValue> entry_dict(
-        new base::DictionaryValue());
+    scoped_ptr<base::DictionaryValue> entry_dict(new base::DictionaryValue());
     entry_dict->SetString("domain", it->first);
     if (it->second.count != INT_MAX)
       entry_dict->SetInteger("tries", it->second.count);

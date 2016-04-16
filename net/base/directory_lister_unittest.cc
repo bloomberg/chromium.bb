@@ -234,8 +234,8 @@ TEST_F(DirectoryListerTest, EmptyDirTest) {
 // regression.
 TEST_F(DirectoryListerTest, BasicCancelTest) {
   ListerDelegate delegate(DirectoryLister::ALPHA_DIRS_FIRST);
-  std::unique_ptr<DirectoryLister> lister(
-      new DirectoryLister(root_path(), &delegate));
+  scoped_ptr<DirectoryLister> lister(new DirectoryLister(
+      root_path(), &delegate));
   lister->Start(base::ThreadTaskRunnerHandle::Get().get());
   lister->Cancel();
   base::RunLoop().RunUntilIdle();

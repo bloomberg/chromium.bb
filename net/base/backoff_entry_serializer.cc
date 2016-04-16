@@ -19,10 +19,9 @@ const int kSerializationFormatVersion = 1;
 
 namespace net {
 
-std::unique_ptr<base::Value> BackoffEntrySerializer::SerializeToValue(
-    const BackoffEntry& entry,
-    base::Time time_now) {
-  std::unique_ptr<base::ListValue> serialized(new base::ListValue());
+scoped_ptr<base::Value> BackoffEntrySerializer::SerializeToValue(
+    const BackoffEntry& entry, base::Time time_now) {
+  scoped_ptr<base::ListValue> serialized(new base::ListValue());
   serialized->AppendInteger(kSerializationFormatVersion);
 
   serialized->AppendInteger(entry.failure_count());
@@ -40,11 +39,9 @@ std::unique_ptr<base::Value> BackoffEntrySerializer::SerializeToValue(
   return std::move(serialized);
 }
 
-std::unique_ptr<BackoffEntry> BackoffEntrySerializer::DeserializeFromValue(
-    const base::Value& serialized,
-    const BackoffEntry::Policy* policy,
-    base::TickClock* tick_clock,
-    base::Time time_now) {
+scoped_ptr<BackoffEntry> BackoffEntrySerializer::DeserializeFromValue(
+    const base::Value& serialized, const BackoffEntry::Policy* policy,
+    base::TickClock* tick_clock, base::Time time_now) {
   const base::ListValue* serialized_list = nullptr;
   if (!serialized.GetAsList(&serialized_list))
     return nullptr;
@@ -72,7 +69,7 @@ std::unique_ptr<BackoffEntry> BackoffEntrySerializer::DeserializeFromValue(
     return nullptr;
   }
 
-  std::unique_ptr<BackoffEntry> entry(new BackoffEntry(policy, tick_clock));
+  scoped_ptr<BackoffEntry> entry(new BackoffEntry(policy, tick_clock));
 
   for (int n = 0; n < failure_count; n++)
     entry->InformOfRequest(false);

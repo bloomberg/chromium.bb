@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/base/keygen_handler.h"
+
 #include <openssl/bytestring.h>
 #include <openssl/digest.h>
 #include <openssl/evp.h>
 #include <openssl/mem.h>
 #include <stdint.h>
 
-#include <memory>
-
 #include "base/base64.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "crypto/auto_cbb.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/scoped_openssl_types.h"
-#include "net/base/keygen_handler.h"
 #include "net/base/openssl_private_key_store.h"
 
 namespace net {
 
 std::string KeygenHandler::GenKeyAndSignChallenge() {
-  std::unique_ptr<crypto::RSAPrivateKey> key(
+  scoped_ptr<crypto::RSAPrivateKey> key(
       crypto::RSAPrivateKey::Create(key_size_in_bits_));
   EVP_PKEY* pkey = key->key();
 

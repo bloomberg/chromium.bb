@@ -7,11 +7,10 @@
 
 #include <stdint.h>
 
-#include <memory>
-
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 
@@ -52,7 +51,7 @@ class TestCompletionCallbackBaseInternal {
  private:
   // RunLoop.  Only non-NULL during the call to WaitForResult, so the class is
   // reusable.
-  std::unique_ptr<base::RunLoop> run_loop_;
+  scoped_ptr<base::RunLoop> run_loop_;
   bool have_result_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompletionCallbackBaseInternal);

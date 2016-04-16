@@ -53,7 +53,7 @@ class UploadFileElementReaderTest : public PlatformTest {
   }
 
   std::vector<char> bytes_;
-  std::unique_ptr<UploadElementReader> reader_;
+  scoped_ptr<UploadElementReader> reader_;
   base::ScopedTempDir temp_dir_;
   base::FilePath temp_file_path_;
 };

@@ -5,10 +5,10 @@
 #ifndef NET_BASE_KEYGEN_HANDLER_H_
 #define NET_BASE_KEYGEN_HANDLER_H_
 
-#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "url/gurl.h"
@@ -47,7 +47,7 @@ class NET_EXPORT KeygenHandler {
   // GenKeyAndSignChallenge runs on a worker thread, so using a blocking
   // password callback is okay here.
   void set_crypto_module_delegate(
-      std::unique_ptr<crypto::NSSCryptoModuleDelegate> delegate);
+      scoped_ptr<crypto::NSSCryptoModuleDelegate> delegate);
 #endif  // defined(USE_NSS_CERTS)
 
  private:
@@ -57,7 +57,7 @@ class NET_EXPORT KeygenHandler {
   bool stores_key_;  // should the generated key-pair be stored persistently?
 #if defined(USE_NSS_CERTS)
   // The callback for requesting a password to the PKCS#11 token.
-  std::unique_ptr<crypto::NSSCryptoModuleDelegate> crypto_module_delegate_;
+  scoped_ptr<crypto::NSSCryptoModuleDelegate> crypto_module_delegate_;
 #endif  // defined(USE_NSS_CERTS)
 };
 

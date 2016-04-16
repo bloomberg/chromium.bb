@@ -111,7 +111,7 @@ void DirectoryLister::Core::CancelOnOriginThread() {
 }
 
 void DirectoryLister::Core::Start() {
-  std::unique_ptr<DirectoryList> directory_list(new DirectoryList());
+  scoped_ptr<DirectoryList> directory_list(new DirectoryList());
 
   if (!base::DirectoryExists(dir_)) {
     origin_task_runner_->PostTask(
@@ -171,8 +171,7 @@ bool DirectoryLister::Core::IsCancelled() const {
 }
 
 void DirectoryLister::Core::DoneOnOriginThread(
-    std::unique_ptr<DirectoryList> directory_list,
-    int error) const {
+    scoped_ptr<DirectoryList> directory_list, int error) const {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
 
   // Need to check if the operation was before first callback.

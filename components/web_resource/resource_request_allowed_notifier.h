@@ -6,7 +6,6 @@
 #define COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/web_resource/eula_accepted_notifier.h"
 #include "net/base/network_change_notifier.h"
 
