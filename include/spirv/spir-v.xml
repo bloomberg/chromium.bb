@@ -60,7 +60,8 @@
         <id value="8"   vendor="Khronos" tool="Glslang Reference Front End" comment="Contact John Kessenich, johnkessenich@google.com"/>
         <id value="9"   vendor="Qualcomm"   comment="Contact weifengz@qti.qualcomm.com"/>
         <id value="10"  vendor="AMD"        comment="Contact Daniel Rakos, daniel.rakos@amd.com"/>
-            <unused start="11" end="0xFFFF" comment="Tool ID range reservable for future use by vendors"/>
+        <id value="11"  vendor="Intel"      comment="Contact Alexey, alexey.bader@intel.com"/>
+            <unused start="12" end="0xFFFF" comment="Tool ID range reservable for future use by vendors"/>
     </ids>
 
     <!-- SECTION: SPIR-V Opcodes and Enumerants -->
