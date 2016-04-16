@@ -540,7 +540,8 @@ class DevServerWrapper(multiprocessing.Process):
     cmd = [self.devserver_bin,
            '--pidfile', path_resolver.ToChroot(self._pid_file),
            '--logfile', path_resolver.ToChroot(self.log_file),
-           '--port=%d' % port]
+           '--port=%d' % port,
+           '--critical_update']
 
     if not self.port:
       cmd.append('--portfile=%s' % path_resolver.ToChroot(self.port_file))
@@ -727,7 +728,8 @@ You can fix this with one of the following three options:
     cmd = ['python2', self.devserver_bin,
            '--logfile=%s' % self.log_file,
            '--pidfile', self._pid_file,
-           '--port=%d' % port]
+           '--port=%d' % port,
+           '--critical_update']
 
     if not self.port:
       cmd.append('--portfile=%s' % self.port_file)
