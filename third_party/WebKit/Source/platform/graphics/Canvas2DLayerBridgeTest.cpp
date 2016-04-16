@@ -26,6 +26,7 @@
 
 #include "SkSurface.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
@@ -79,6 +80,11 @@ public:
     GrContext* grContext() override
     {
         return m_grContext.get();
+    }
+
+    gpu::Capabilities getCapabilities()
+    {
+        return gpu::Capabilities();
     }
 
     gpu::gles2::GLES2Interface* contextGL() override

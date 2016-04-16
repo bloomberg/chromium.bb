@@ -31,6 +31,7 @@
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
@@ -244,6 +245,10 @@ public:
     gpu::gles2::GLES2Interface* contextGL() override { return m_gl.get(); }
     // Not used by WebGL code.
     GrContext* grContext() override { return nullptr; }
+    gpu::Capabilities getCapabilities()
+    {
+        return gpu::Capabilities();
+    }
     void setLostContextCallback(WebClosure) {}
     void setErrorMessageCallback(WebFunction<void(const char*, int32_t id)>) {}
 

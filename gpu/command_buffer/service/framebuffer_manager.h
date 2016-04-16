@@ -62,6 +62,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
     virtual void AddToSignature(
         TextureManager* texture_manager, std::string* signature) const = 0;
     virtual bool FormsFeedbackLoop(TextureRef* texture, GLint level) const = 0;
+    virtual bool EmulatingRGB() const = 0;
 
    protected:
     friend class base::RefCounted<Attachment>;

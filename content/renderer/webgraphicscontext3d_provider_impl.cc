@@ -29,6 +29,10 @@ GrContext* WebGraphicsContext3DProviderImpl::grContext() {
   return provider_->GrContext();
 }
 
+gpu::Capabilities WebGraphicsContext3DProviderImpl::getCapabilities() {
+  return provider_->ContextCapabilities().gpu;
+}
+
 void WebGraphicsContext3DProviderImpl::setLostContextCallback(
     blink::WebClosure c) {
   provider_->SetLostContextCallback(c.TakeBaseCallback());

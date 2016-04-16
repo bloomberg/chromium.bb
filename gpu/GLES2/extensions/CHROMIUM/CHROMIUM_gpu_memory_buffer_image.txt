@@ -51,6 +51,14 @@ New Procedures and Functions
 
     INVALID_ENUM is generated if <usage> is not READ_WRTIE_CHROMIUM.
 
+    On OS X, driver bugs prevent the usage of memory buffers with RGB internal
+    format. As a workaround, the created GpuMemoryBuffer will always have
+    internal format RGBA. The caller is responsible for handling this
+    appropriately. The only support provided by this extension is that calls
+    that require parameter validation (such as copyTexImage2D and
+    copyTexSubImage2D) will perform paramter validation as if the internal
+    format were RGB.
+
 Errors
 
     None.
@@ -62,3 +70,4 @@ New State
 Revision History
 
     9/29/2014   Documented the extension.
+    4/12/2016   Added details of OS X RGB workaround.

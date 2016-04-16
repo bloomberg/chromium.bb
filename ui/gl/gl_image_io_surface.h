@@ -58,6 +58,7 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
+  bool EmulatingRGB() const override;
 
   gfx::GenericSharedMemoryId io_surface_id() const { return io_surface_id_; }
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface();
@@ -72,7 +73,14 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   class RGBConverter;
 
   const gfx::Size size_;
+
+  // The "internalformat" exposed to the command buffer, which may not be
+  // "internalformat" requested by the client.
   const unsigned internalformat_;
+
+  // The "internalformat" requested by the client.
+  const unsigned client_internalformat_;
+
   gfx::BufferFormat format_;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer_;

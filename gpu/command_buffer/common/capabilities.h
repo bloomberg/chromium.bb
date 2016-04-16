@@ -145,6 +145,13 @@ struct GPU_EXPORT Capabilities {
   bool flips_vertically;
   bool msaa_is_slow;
 
+  // When this parameter is true, a CHROMIUM image created with RGB format will
+  // actually have RGBA format. The client is responsible for handling most of
+  // the complexities associated with this. See
+  // gpu/GLES2/extensions/CHROMIUM/CHROMIUM_gpu_memory_buffer_image.txt for more
+  // details.
+  bool chromium_image_rgb_emulation;
+
   int major_version;
   int minor_version;
 };

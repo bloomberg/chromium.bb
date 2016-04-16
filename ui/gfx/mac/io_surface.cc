@@ -31,6 +31,7 @@ int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
       DCHECK_EQ(plane, 0);
       return 1;
     case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::RGBA_8888:
       DCHECK_EQ(plane, 0);
       return 4;
@@ -48,7 +49,6 @@ int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::YUV_420:
       NOTREACHED();
       return 0;
@@ -63,6 +63,7 @@ int32_t PixelFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::R_8:
       return 'L008';
     case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::RGBA_8888:
       return 'BGRA';
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -76,7 +77,6 @@ int32_t PixelFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::YUV_420:
       NOTREACHED();
       return 0;

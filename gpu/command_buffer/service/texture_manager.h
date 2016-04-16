@@ -272,6 +272,8 @@ class GPU_EXPORT Texture {
 
   void ApplyFormatWorkarounds(FeatureInfo* feature_info);
 
+  bool EmulatingRGB();
+
  private:
   friend class MailboxManagerImpl;
   friend class MailboxManagerSync;
@@ -491,6 +493,10 @@ class GPU_EXPORT Texture {
   // texture.
   void UpdateHasImages();
 
+  // Updates the flag that indicates whether this texture requires RGB
+  // emulation.
+  void UpdateEmulatingRGB();
+
   // Increment the framebuffer state change count in all the managers
   // referencing this texture.
   void IncAllFramebufferStateChangeCount();
@@ -594,6 +600,8 @@ class GPU_EXPORT Texture {
   bool texture_max_anisotropy_initialized_;
 
   const CompatibilitySwizzle* compatibility_swizzle_;
+
+  bool emulating_rgb_;
 
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };

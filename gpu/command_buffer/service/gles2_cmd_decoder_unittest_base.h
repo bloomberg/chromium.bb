@@ -175,6 +175,10 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     return group_->feature_info();
   }
 
+  FramebufferCompletenessCache* framebuffer_completeness_cache() const {
+    return group_->framebuffer_completeness_cache();
+  }
+
   ImageManager* GetImageManager() { return decoder_->GetImageManager(); }
 
   void DoCreateProgram(GLuint client_id, GLuint service_id);

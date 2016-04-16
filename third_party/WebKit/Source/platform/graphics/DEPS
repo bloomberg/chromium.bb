@@ -6,5 +6,7 @@ include_rules = [
     "+base/message_loop",
     "+cc",
     "-cc/blink",
+    # For tests only!
     "+gpu/command_buffer/client/gles2_interface.h",
+    "+gpu/command_buffer/common/capabilities.h"
 ]

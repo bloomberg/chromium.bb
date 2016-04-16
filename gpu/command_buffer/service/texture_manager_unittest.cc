@@ -166,6 +166,7 @@ class GLStreamTextureImageStub : public GLStreamTextureImage {
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override {}
+  bool EmulatingRGB() const override { return false; }
   void GetTextureMatrix(float matrix[16]) override {}
 
  protected:

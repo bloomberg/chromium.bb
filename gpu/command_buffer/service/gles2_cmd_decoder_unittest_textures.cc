@@ -49,6 +49,16 @@ using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 
+namespace {
+class EmulatingRGBImageStub : public gl::GLImageStub {
+ protected:
+  ~EmulatingRGBImageStub() override {}
+  bool EmulatingRGB() const override {
+    return true;
+  }
+};
+}  // namespace
+
 namespace gpu {
 namespace gles2 {
 
@@ -3674,6 +3684,80 @@ TEST_P(GLES3DecoderTest, ClearLevel3DMultipleCallsPerLayer) {
 
   EXPECT_TRUE(decoder_->ClearLevel3D(
       texture, kTarget, kLevel, kFormat, kType, kWidth, kHeight, kDepth));
+}
+
+// Test that copyTexImage2D uses the emulated internal format, rather than the
+// real internal format.
+TEST_P(GLES2DecoderWithShaderTest, CHROMIUMImageEmulatingRGB) {
+  const GLuint kFBOClientTextureId = 4100;
+  const GLuint kFBOServiceTextureId = 4101;
+  GLenum target = GL_TEXTURE_2D;
+  GLint level = 0;
+  GLsizei width = 1;
+  GLsizei height = 1;
+
+  // Generate the source framebuffer.
+  EXPECT_CALL(*gl_, GenTextures(_, _))
+      .WillOnce(SetArgPointee<1>(kFBOServiceTextureId))
+      .RetiresOnSaturation();
+  GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+
+  GLenum destination_texture_formats[] = {GL_RGBA, GL_RGB};
+  for (int use_rgb_emulation = 0; use_rgb_emulation < 2; ++ use_rgb_emulation) {
+    for (size_t destination_texture_index = 0; destination_texture_index < 2;
+         ++destination_texture_index) {
+      // Generate and bind the source image. Making a new image for each set of
+      // parameters is easier than trying to reuse images. Obviously there's no
+      // performance penalty.
+      int image_id = use_rgb_emulation * 2 + destination_texture_index;
+      scoped_refptr<gl::GLImage> image;
+      if (use_rgb_emulation)
+        image = new EmulatingRGBImageStub;
+      else
+        image = new gl::GLImageStub;
+      GetImageManager()->AddImage(image.get(), image_id);
+      EXPECT_FALSE(GetImageManager()->LookupImage(image_id) == NULL);
+      DoBindTexture(GL_TEXTURE_2D, kFBOClientTextureId, kFBOServiceTextureId);
+
+      DoBindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id);
+      DoFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target,
+                             kFBOClientTextureId, kFBOServiceTextureId, level,
+                             GL_NO_ERROR);
+
+      GLenum destination_texture_format =
+          destination_texture_formats[destination_texture_index];
+      bool should_succeed =
+          !use_rgb_emulation || (destination_texture_format == GL_RGB);
+      if (should_succeed) {
+        EXPECT_CALL(*gl_, GetError())
+            .WillOnce(Return(GL_NO_ERROR))
+            .RetiresOnSaturation();
+        EXPECT_CALL(*gl_,
+                    CopyTexImage2D(GL_TEXTURE_2D, 0, destination_texture_format,
+                                   0, 0, 1, 1, 0))
+            .Times(1)
+            .RetiresOnSaturation();
+        EXPECT_CALL(*gl_, GetError())
+            .WillOnce(Return(GL_NO_ERROR))
+            .RetiresOnSaturation();
+      }
+
+      if (destination_texture_index == 0 || !framebuffer_completeness_cache()) {
+        EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+            .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+            .RetiresOnSaturation();
+      }
+
+      DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+      CopyTexImage2D cmd;
+      cmd.Init(target, level, destination_texture_format, 0, 0, width, height);
+      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+      GLenum expectation = should_succeed ? GL_NO_ERROR : GL_INVALID_OPERATION;
+      EXPECT_EQ(expectation, static_cast<GLenum>(GetGLError()));
+    }
+  }
 }
 
 // TODO(gman): Complete this test.
