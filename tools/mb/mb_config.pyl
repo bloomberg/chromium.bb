@@ -490,6 +490,8 @@
       'Linux Builder': 'swarming_gn_release_bot',
       'Linux Builder-Trybot': 'swarming_gn_release_bot',
       'Linux Tests': 'swarming_gn_release_bot',
+      'Mac Builder': 'swarming_gpu_tests_gyp_release_bot',
+      'Mac Builder-Trybot': 'swarming_gpu_tests_gyp_release_bot',
       'Win Builder':
         'swarming_gpu_tests_gyp_release_bot_minimal_symbols_x86',
       'Win Builder-Trybot':
@@ -733,13 +735,8 @@
     },
 
     'tryserver.chromium.mac': {
-      'mac_chromium_10.10_rel_ng': 'tbd',
       'mac_chromium_archive_rel_ng': 'tbd',
       'mac_chromium_asan_rel_ng': 'tbd',
-      'mac_chromium_compile_dbg_ng': 'tbd',
-      'mac_chromium_compile_rel_ng': 'tbd',
-      'mac_chromium_dbg_ng': 'tbd',
-      'mac_chromium_rel_ng': 'tbd',
       'mac_optional_gpu_tests_rel': 'tbd',
 
       'ios_dbg_simulator': 'ios_gyp',
@@ -748,10 +745,15 @@
       'ios_rel_device': 'ios_gyp',
       'ios_rel_device_gn': 'ios_gn',
       'ios_rel_device_ninja': 'ios_gyp',
+      'mac_chromium_10.10_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
       'mac_chromium_asan_variable': 'findit',
+      'mac_chromium_compile_dbg_ng': 'swarming_gyp_debug_trybot',
+      'mac_chromium_compile_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
+      'mac_chromium_dbg_ng': 'swarming_gyp_debug_trybot',
       'mac_chromium_gn_dbg': 'gn_debug_static_bot',
       'mac_chromium_gn_rel': 'gn_release_trybot',
       'mac_chromium_gn_upload': 'gn_release_bot',
+      'mac_chromium_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
       'mac_chromium_variable': 'findit',
       'mac_chromium_variable_10.10': 'findit',
       'mac_chromium_variable_10.10_layout': 'findit',
@@ -1273,6 +1275,14 @@
       'chromeos_with_codecs', 'goma', 'gyp', 'ozone', 'static', 'swarming',
     ],
 
+    'swarming_gyp_debug_trybot': [
+      'swarming', 'gyp', 'debug_trybot',
+    ],
+
+    'swarming_gpu_tests_gyp_release_trybot': [
+      'swarming', 'gpu_tests', 'gyp', 'release_trybot',
+    ],
+
     'swarming_msan_gyp_release_trybot': [
       'swarming', 'chromeos', 'msan', 'gyp', 'release_trybot',
     ],
@@ -1363,11 +1373,11 @@
     ],
 
     'swarming_gpu_tests_gyp_release_bot': [
-      'swarming', 'gpu_tests', 'gyp', 'static',
+      'swarming', 'gpu_tests', 'gyp', 'release_bot',
     ],
 
     'swarming_gpu_tests_gyp_debug_bot': [
-      'swarming', 'gpu_tests', 'gyp', 'shared',
+      'swarming', 'gpu_tests', 'gyp', 'debug_bot',
     ],
 
     'swarming_gpu_tests_gyp_release_bot_minimal_symbols_x86': [
@@ -1574,6 +1584,16 @@
       'gyp_defines': 'asan=1',
     },
 
+    'ffmpeg_branding_chrome': {
+      'gn_args': 'ffmpeg_branding="Chrome"',
+      'gyp_defines': 'ffmpeg_branding=Chrome',
+    },
+
+    'ffmpeg_branding_chromeos': {
+      'gn_args': 'ffmpeg_branding="ChromeOS"',
+      'gyp_defines': 'ffmpeg_branding=ChromeOS',
+    },
+
     'cast': {
       'gn_args': 'is_chromecast=true',
       'gyp_defines': 'chromecast=1',
@@ -1590,9 +1610,7 @@
     },
 
     'chrome_with_codecs': {
-      'gn_args': 'ffmpeg_branding="Chrome"',
-      'gyp_defines': 'ffmpeg_branding=Chrome',
-      'mixins': ['proprietary_codecs'],
+      'mixins': ['ffmpeg_branding_chrome', 'proprietary_codecs'],
     },
 
     'chromeos': {
@@ -1601,9 +1619,7 @@
     },
 
     'chromeos_with_codecs': {
-      'gn_args': 'ffmpeg_branding="ChromeOS"',
-      'gyp_defines': 'ffmpeg_branding=ChromeOS',
-      'mixins': ['chromeos', 'proprietary_codecs'],
+      'mixins': ['ffmpeg_branding_chromeos', 'chromeos', 'proprietary_codecs'],
     },
 
     'clang_no_chrome_plugins': {
