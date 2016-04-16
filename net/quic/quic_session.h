@@ -10,6 +10,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -17,7 +18,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_connection.h"
@@ -340,7 +340,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   std::map<QuicStreamId, QuicStreamOffset>
       locally_closed_streams_highest_offset_;
 
-  scoped_ptr<QuicConnection> connection_;
+  std::unique_ptr<QuicConnection> connection_;
 
   std::vector<ReliableQuicStream*> closed_streams_;
 

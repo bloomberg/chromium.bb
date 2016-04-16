@@ -53,7 +53,7 @@ QuicCryptoClientStream::ChannelIDSourceCallbackImpl::
     ~ChannelIDSourceCallbackImpl() {}
 
 void QuicCryptoClientStream::ChannelIDSourceCallbackImpl::Run(
-    scoped_ptr<ChannelIDKey>* channel_id_key) {
+    std::unique_ptr<ChannelIDKey>* channel_id_key) {
   if (stream_ == nullptr) {
     return;
   }
@@ -81,7 +81,7 @@ QuicCryptoClientStream::ProofVerifierCallbackImpl::
 void QuicCryptoClientStream::ProofVerifierCallbackImpl::Run(
     bool ok,
     const string& error_details,
-    scoped_ptr<ProofVerifyDetails>* details) {
+    std::unique_ptr<ProofVerifyDetails>* details) {
   if (stream_ == nullptr) {
     return;
   }

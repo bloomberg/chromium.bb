@@ -48,7 +48,7 @@ TEST_F(QuicChromiumConnectionHelperTest, GetRandomGenerator) {
 
 TEST_F(QuicChromiumConnectionHelperTest, CreateAlarm) {
   TestDelegate* delegate = new TestDelegate();
-  scoped_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
+  std::unique_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
 
   QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(1);
   alarm->Set(clock_.Now().Add(delta));
@@ -65,7 +65,7 @@ TEST_F(QuicChromiumConnectionHelperTest, CreateAlarm) {
 
 TEST_F(QuicChromiumConnectionHelperTest, CreateAlarmAndCancel) {
   TestDelegate* delegate = new TestDelegate();
-  scoped_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
+  std::unique_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
 
   QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(1);
   alarm->Set(clock_.Now().Add(delta));
@@ -83,7 +83,7 @@ TEST_F(QuicChromiumConnectionHelperTest, CreateAlarmAndCancel) {
 
 TEST_F(QuicChromiumConnectionHelperTest, CreateAlarmAndReset) {
   TestDelegate* delegate = new TestDelegate();
-  scoped_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
+  std::unique_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
 
   QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(1);
   alarm->Set(clock_.Now().Add(delta));
@@ -110,7 +110,7 @@ TEST_F(QuicChromiumConnectionHelperTest, CreateAlarmAndReset) {
 
 TEST_F(QuicChromiumConnectionHelperTest, CreateAlarmAndResetEarlier) {
   TestDelegate* delegate = new TestDelegate();
-  scoped_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
+  std::unique_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
 
   QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(3);
   alarm->Set(clock_.Now().Add(delta));
@@ -139,7 +139,7 @@ TEST_F(QuicChromiumConnectionHelperTest, CreateAlarmAndResetEarlier) {
 
 TEST_F(QuicChromiumConnectionHelperTest, CreateAlarmAndUpdate) {
   TestDelegate* delegate = new TestDelegate();
-  scoped_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
+  std::unique_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
 
   const QuicClock* clock = helper_.GetClock();
   QuicTime start = clock->Now();

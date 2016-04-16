@@ -10,6 +10,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -196,7 +197,7 @@ class QuicStreamFactory::Job {
   bool server_and_origin_have_same_host_;
   bool is_post_;
   bool was_alternative_service_recently_broken_;
-  scoped_ptr<QuicServerInfo> server_info_;
+  std::unique_ptr<QuicServerInfo> server_info_;
   bool started_another_job_;
   const BoundNetLog net_log_;
   int num_sent_client_hellos_;
@@ -554,17 +555,17 @@ base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
       QuicServerId(host_port_pair_, privacy_mode_));
 }
 
-scoped_ptr<QuicHttpStream> QuicStreamRequest::CreateStream() {
+std::unique_ptr<QuicHttpStream> QuicStreamRequest::CreateStream() {
   if (!session_)
     return nullptr;
-  return make_scoped_ptr(new QuicHttpStream(session_));
+  return base::WrapUnique(new QuicHttpStream(session_));
 }
 
-scoped_ptr<BidirectionalStreamImpl>
+std::unique_ptr<BidirectionalStreamImpl>
 QuicStreamRequest::CreateBidirectionalStreamImpl() {
   if (!session_)
     return nullptr;
-  return make_scoped_ptr(new BidirectionalStreamQuicImpl(session_));
+  return base::WrapUnique(new BidirectionalStreamQuicImpl(session_));
 }
 
 QuicStreamFactory::QuicStreamFactory(
@@ -843,7 +844,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
   }
 
   bool server_and_origin_have_same_host = host_port_pair.host() == url.host();
-  scoped_ptr<Job> job(
+  std::unique_ptr<Job> job(
       new Job(this, host_resolver_, server_id, server_and_origin_have_same_host,
               WasQuicRecentlyBroken(server_id), cert_verify_flags,
               method == "POST" /* is_post */, quic_server_info, net_log));
@@ -971,9 +972,10 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
   job_requests_map_.erase(server_id);
 }
 
-scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateFromSession(
+std::unique_ptr<QuicHttpStream> QuicStreamFactory::CreateFromSession(
     QuicChromiumClientSession* session) {
-  return scoped_ptr<QuicHttpStream>(new QuicHttpStream(session->GetWeakPtr()));
+  return std::unique_ptr<QuicHttpStream>(
+      new QuicHttpStream(session->GetWeakPtr()));
 }
 
 QuicChromiumClientSession::QuicDisabledReason
@@ -1248,9 +1250,9 @@ void QuicStreamFactory::CloseAllSessions(int error, QuicErrorCode quic_error) {
   DCHECK(all_sessions_.empty());
 }
 
-scoped_ptr<base::Value> QuicStreamFactory::QuicStreamFactoryInfoToValue()
+std::unique_ptr<base::Value> QuicStreamFactory::QuicStreamFactoryInfoToValue()
     const {
-  scoped_ptr<base::ListValue> list(new base::ListValue());
+  std::unique_ptr<base::ListValue> list(new base::ListValue());
 
   for (SessionMap::const_iterator it = active_sessions_.begin();
        it != active_sessions_.end(); ++it) {
@@ -1395,7 +1397,7 @@ void QuicStreamFactory::MigrateSessionToNetwork(
   // Use OS-specified port for socket (DEFAULT_BIND) instead of
   // using the PortSuggester since the connection is being migrated
   // and not being newly created.
-  scoped_ptr<DatagramClientSocket> socket(
+  std::unique_ptr<DatagramClientSocket> socket(
       client_socket_factory_->CreateDatagramClientSocket(
           DatagramSocket::DEFAULT_BIND, RandIntCallback(),
           session->net_log().net_log(), session->net_log().source()));
@@ -1406,10 +1408,11 @@ void QuicStreamFactory::MigrateSessionToNetwork(
     HistogramMigrationStatus(MIGRATION_STATUS_INTERNAL_ERROR);
     return;
   }
-  scoped_ptr<QuicChromiumPacketReader> new_reader(new QuicChromiumPacketReader(
-      socket.get(), clock_.get(), session, yield_after_packets_,
-      yield_after_duration_, session->net_log()));
-  scoped_ptr<QuicPacketWriter> new_writer(
+  std::unique_ptr<QuicChromiumPacketReader> new_reader(
+      new QuicChromiumPacketReader(socket.get(), clock_.get(), session,
+                                   yield_after_packets_, yield_after_duration_,
+                                   session->net_log()));
+  std::unique_ptr<QuicPacketWriter> new_writer(
       new QuicChromiumPacketWriter(socket.get()));
 
   if (!session->MigrateToSocket(std::move(socket), std::move(new_reader),
@@ -1508,13 +1511,14 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
   return OK;
 }
 
-int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
-                                     int cert_verify_flags,
-                                     scoped_ptr<QuicServerInfo> server_info,
-                                     const AddressList& address_list,
-                                     base::TimeTicks dns_resolution_end_time,
-                                     const BoundNetLog& net_log,
-                                     QuicChromiumClientSession** session) {
+int QuicStreamFactory::CreateSession(
+    const QuicServerId& server_id,
+    int cert_verify_flags,
+    std::unique_ptr<QuicServerInfo> server_info,
+    const AddressList& address_list,
+    base::TimeTicks dns_resolution_end_time,
+    const BoundNetLog& net_log,
+    QuicChromiumClientSession** session) {
   TRACE_EVENT0("net", "QuicStreamFactory::CreateSession");
   IPEndPoint addr = *address_list.begin();
   bool enable_port_selection = enable_port_selection_;
@@ -1532,7 +1536,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
                             :            // Use our callback.
           DatagramSocket::DEFAULT_BIND;  // Use OS to randomize.
 
-  scoped_ptr<DatagramClientSocket> socket(
+  std::unique_ptr<DatagramClientSocket> socket(
       client_socket_factory_->CreateDatagramClientSocket(
           bind_type, base::Bind(&PortSuggester::SuggestPort, port_suggester),
           net_log.net_log(), net_log.source()));
@@ -1588,7 +1592,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
 
   // Use the factory to create a new socket performance watcher, and pass the
   // ownership to QuicChromiumClientSession.
-  scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher;
+  std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher;
   if (socket_performance_watcher_factory_) {
     socket_performance_watcher =
         socket_performance_watcher_factory_->CreateSocketPerformanceWatcher(
@@ -1657,7 +1661,7 @@ bool QuicStreamFactory::CryptoConfigCacheIsEmpty(
 
 void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
     const QuicServerId& server_id,
-    const scoped_ptr<QuicServerInfo>& server_info,
+    const std::unique_ptr<QuicServerInfo>& server_info,
     QuicConnectionId* connection_id) {
   QuicCryptoClientConfig::CachedState* cached =
       crypto_config_.LookupOrCreate(server_id);
@@ -1712,7 +1716,7 @@ void QuicStreamFactory::MaybeInitialize() {
     return;
   // Create a temporary QuicServerInfo object to deserialize and to populate the
   // in-memory crypto server config cache in the MRU order.
-  scoped_ptr<QuicServerInfo> server_info;
+  std::unique_ptr<QuicServerInfo> server_info;
   CompletionCallback callback;
   // Get the list of servers to be deserialized first because WaitForDataReady
   // touches quic_server_info_map.

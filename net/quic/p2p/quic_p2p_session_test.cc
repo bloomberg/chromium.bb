@@ -208,8 +208,8 @@ class QuicP2PSessionTest : public ::testing::Test {
   }
 
   void CreateSessions() {
-    scoped_ptr<FakeP2PDatagramSocket> socket1(new FakeP2PDatagramSocket());
-    scoped_ptr<FakeP2PDatagramSocket> socket2(new FakeP2PDatagramSocket());
+    std::unique_ptr<FakeP2PDatagramSocket> socket1(new FakeP2PDatagramSocket());
+    std::unique_ptr<FakeP2PDatagramSocket> socket2(new FakeP2PDatagramSocket());
     socket1->ConnectWith(socket2.get());
 
     socket1_ = socket1->GetWeakPtr();
@@ -223,17 +223,18 @@ class QuicP2PSessionTest : public ::testing::Test {
                                  Perspective::IS_CLIENT);
   }
 
-  scoped_ptr<QuicP2PSession> CreateP2PSession(scoped_ptr<Socket> socket,
-                                              QuicP2PCryptoConfig crypto_config,
-                                              Perspective perspective) {
+  std::unique_ptr<QuicP2PSession> CreateP2PSession(
+      std::unique_ptr<Socket> socket,
+      QuicP2PCryptoConfig crypto_config,
+      Perspective perspective) {
     QuicChromiumPacketWriter* writer =
         new QuicChromiumPacketWriter(socket.get());
-    scoped_ptr<QuicConnection> quic_connection1(new QuicConnection(
+    std::unique_ptr<QuicConnection> quic_connection1(new QuicConnection(
         0, IPEndPoint(IPAddress::IPv4AllZeros(), 0), &quic_helper_, writer,
         true /* owns_writer */, perspective, QuicSupportedVersions()));
     writer->SetConnection(quic_connection1.get());
 
-    scoped_ptr<QuicP2PSession> result(
+    std::unique_ptr<QuicP2PSession> result(
         new QuicP2PSession(config_, crypto_config, std::move(quic_connection1),
                            std::move(socket)));
     result->Initialize();
@@ -249,10 +250,10 @@ class QuicP2PSessionTest : public ::testing::Test {
   QuicConfig config_;
 
   base::WeakPtr<FakeP2PDatagramSocket> socket1_;
-  scoped_ptr<QuicP2PSession> session1_;
+  std::unique_ptr<QuicP2PSession> session1_;
 
   base::WeakPtr<FakeP2PDatagramSocket> socket2_;
-  scoped_ptr<QuicP2PSession> session2_;
+  std::unique_ptr<QuicP2PSession> session2_;
 };
 
 void QuicP2PSessionTest::OnWriteResult(int result) {

@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/socket_performance_watcher.h"
@@ -70,7 +71,7 @@ class QuicChromiumClientSessionTest
 
   void Initialize() {
     socket_factory_.AddSocketDataProvider(socket_data_.get());
-    scoped_ptr<DatagramClientSocket> socket =
+    std::unique_ptr<DatagramClientSocket> socket =
         socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
                                                    base::Bind(&base::RandInt),
                                                    &net_log_, NetLog::Source());
@@ -84,7 +85,7 @@ class QuicChromiumClientSessionTest
     session_.reset(new QuicChromiumClientSession(
         connection, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
-        &transport_security_state_, make_scoped_ptr((QuicServerInfo*)nullptr),
+        &transport_security_state_, base::WrapUnique((QuicServerInfo*)nullptr),
         QuicServerId(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED),
         kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
@@ -111,7 +112,7 @@ class QuicChromiumClientSessionTest
 
   QuicPacketWriter* CreateQuicPacketWriter(DatagramClientSocket* socket,
                                            QuicConnection* connection) const {
-    scoped_ptr<QuicChromiumPacketWriter> writer(
+    std::unique_ptr<QuicChromiumPacketWriter> writer(
         new QuicChromiumPacketWriter(socket));
     writer->SetConnection(connection);
     return writer.release();
@@ -121,14 +122,14 @@ class QuicChromiumClientSessionTest
   TestNetLog net_log_;
   BoundTestNetLog bound_net_log_;
   MockClientSocketFactory socket_factory_;
-  scoped_ptr<MockRead> default_read_;
-  scoped_ptr<SequencedSocketData> socket_data_;
+  std::unique_ptr<MockRead> default_read_;
+  std::unique_ptr<SequencedSocketData> socket_data_;
   MockClock clock_;
   MockRandom random_;
   QuicChromiumConnectionHelper helper_;
   TransportSecurityState transport_security_state_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
-  scoped_ptr<QuicChromiumClientSession> session_;
+  std::unique_ptr<QuicChromiumClientSession> session_;
   QuicConnectionVisitorInterface* visitor_;
   TestCompletionCallback callback_;
   QuicTestPacketMaker maker_;
@@ -147,7 +148,7 @@ TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
 
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  scoped_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1)};
@@ -182,7 +183,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
 
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  scoped_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1)};
@@ -330,10 +331,11 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   CompleteCryptoHandshake();
 
   char data[] = "ABCD";
-  scoped_ptr<QuicEncryptedPacket> ping(
+  std::unique_ptr<QuicEncryptedPacket> ping(
       maker_.MakePingPacket(1, /*include_version=*/false));
-  scoped_ptr<QuicEncryptedPacket> ack_and_data_out(maker_.MakeAckAndDataPacket(
-      2, false, 5, 1, 1, false, 0, StringPiece(data)));
+  std::unique_ptr<QuicEncryptedPacket> ack_and_data_out(
+      maker_.MakeAckAndDataPacket(2, false, 5, 1, 1, false, 0,
+                                  StringPiece(data)));
   MockRead reads[] = {MockRead(SYNCHRONOUS, ping->data(), ping->length(), 0),
                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 1)};
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 2),
@@ -344,18 +346,20 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   // Create connected socket.
-  scoped_ptr<DatagramClientSocket> new_socket =
+  std::unique_ptr<DatagramClientSocket> new_socket =
       socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
                                                  base::Bind(&base::RandInt),
                                                  &net_log_, NetLog::Source());
   EXPECT_EQ(OK, new_socket->Connect(kIpEndPoint));
 
   // Create reader and writer.
-  scoped_ptr<QuicChromiumPacketReader> new_reader(new QuicChromiumPacketReader(
-      new_socket.get(), &clock_, session_.get(), kQuicYieldAfterPacketsRead,
-      QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
-      bound_net_log_.bound()));
-  scoped_ptr<QuicPacketWriter> new_writer(
+  std::unique_ptr<QuicChromiumPacketReader> new_reader(
+      new QuicChromiumPacketReader(new_socket.get(), &clock_, session_.get(),
+                                   kQuicYieldAfterPacketsRead,
+                                   QuicTime::Delta::FromMilliseconds(
+                                       kQuicYieldAfterDurationMilliseconds),
+                                   bound_net_log_.bound()));
+  std::unique_ptr<QuicPacketWriter> new_writer(
       CreateQuicPacketWriter(new_socket.get(), session_->connection()));
 
   // Migrate session.
@@ -379,7 +383,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
 
   for (size_t i = 0; i < kMaxReadersPerQuicSession; ++i) {
     MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 1)};
-    scoped_ptr<QuicEncryptedPacket> ping_out(
+    std::unique_ptr<QuicEncryptedPacket> ping_out(
         maker_.MakePingPacket(i + 1, /*include_version=*/true));
     MockWrite writes[] = {
         MockWrite(SYNCHRONOUS, ping_out->data(), ping_out->length(), i + 2)};
@@ -388,20 +392,20 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
     socket_factory_.AddSocketDataProvider(&socket_data);
 
     // Create connected socket.
-    scoped_ptr<DatagramClientSocket> new_socket =
+    std::unique_ptr<DatagramClientSocket> new_socket =
         socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
                                                    base::Bind(&base::RandInt),
                                                    &net_log_, NetLog::Source());
     EXPECT_EQ(OK, new_socket->Connect(kIpEndPoint));
 
     // Create reader and writer.
-    scoped_ptr<QuicChromiumPacketReader> new_reader(
+    std::unique_ptr<QuicChromiumPacketReader> new_reader(
         new QuicChromiumPacketReader(new_socket.get(), &clock_, session_.get(),
                                      kQuicYieldAfterPacketsRead,
                                      QuicTime::Delta::FromMilliseconds(
                                          kQuicYieldAfterDurationMilliseconds),
                                      bound_net_log_.bound()));
-    scoped_ptr<QuicPacketWriter> new_writer(
+    std::unique_ptr<QuicPacketWriter> new_writer(
         CreateQuicPacketWriter(new_socket.get(), session_->connection()));
 
     // Migrate session.
@@ -422,7 +426,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
-  scoped_ptr<QuicEncryptedPacket> ping(
+  std::unique_ptr<QuicEncryptedPacket> ping(
       maker_.MakePingPacket(1, /*include_version=*/true));
   MockRead old_reads[] = {
       MockRead(SYNCHRONOUS, ping->data(), ping->length(), 0),
@@ -446,18 +450,20 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
   socket_factory_.AddSocketDataProvider(&new_socket_data);
 
   // Create connected socket.
-  scoped_ptr<DatagramClientSocket> new_socket =
+  std::unique_ptr<DatagramClientSocket> new_socket =
       socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
                                                  base::Bind(&base::RandInt),
                                                  &net_log_, NetLog::Source());
   EXPECT_EQ(OK, new_socket->Connect(kIpEndPoint));
 
   // Create reader and writer.
-  scoped_ptr<QuicChromiumPacketReader> new_reader(new QuicChromiumPacketReader(
-      new_socket.get(), &clock_, session_.get(), kQuicYieldAfterPacketsRead,
-      QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
-      bound_net_log_.bound()));
-  scoped_ptr<QuicPacketWriter> new_writer(
+  std::unique_ptr<QuicChromiumPacketReader> new_reader(
+      new QuicChromiumPacketReader(new_socket.get(), &clock_, session_.get(),
+                                   kQuicYieldAfterPacketsRead,
+                                   QuicTime::Delta::FromMilliseconds(
+                                       kQuicYieldAfterDurationMilliseconds),
+                                   bound_net_log_.bound()));
+  std::unique_ptr<QuicPacketWriter> new_writer(
       CreateQuicPacketWriter(new_socket.get(), session_->connection()));
 
   // Store old socket and migrate session.
@@ -487,7 +493,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketWriteError) {
   Initialize();
   CompleteCryptoHandshake();
 
-  scoped_ptr<QuicEncryptedPacket> ping(
+  std::unique_ptr<QuicEncryptedPacket> ping(
       maker_.MakePingPacket(1, /*include_version=*/true));
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 1),
@@ -497,18 +503,20 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketWriteError) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   // Create connected socket.
-  scoped_ptr<DatagramClientSocket> new_socket =
+  std::unique_ptr<DatagramClientSocket> new_socket =
       socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
                                                  base::Bind(&base::RandInt),
                                                  &net_log_, NetLog::Source());
   EXPECT_EQ(OK, new_socket->Connect(kIpEndPoint));
 
   // Create reader and writer.
-  scoped_ptr<QuicChromiumPacketReader> new_reader(new QuicChromiumPacketReader(
-      new_socket.get(), &clock_, session_.get(), kQuicYieldAfterPacketsRead,
-      QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
-      bound_net_log_.bound()));
-  scoped_ptr<QuicPacketWriter> new_writer(
+  std::unique_ptr<QuicChromiumPacketReader> new_reader(
+      new QuicChromiumPacketReader(new_socket.get(), &clock_, session_.get(),
+                                   kQuicYieldAfterPacketsRead,
+                                   QuicTime::Delta::FromMilliseconds(
+                                       kQuicYieldAfterDurationMilliseconds),
+                                   bound_net_log_.bound()));
+  std::unique_ptr<QuicPacketWriter> new_writer(
       CreateQuicPacketWriter(new_socket.get(), session_->connection()));
 
   // Migrate session.

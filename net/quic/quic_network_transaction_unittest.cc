@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -84,13 +84,13 @@ class MockQuicData {
 
   ~MockQuicData() { STLDeleteElements(&packets_); }
 
-  void AddSynchronousRead(scoped_ptr<QuicEncryptedPacket> packet) {
+  void AddSynchronousRead(std::unique_ptr<QuicEncryptedPacket> packet) {
     reads_.push_back(MockRead(SYNCHRONOUS, packet->data(), packet->length(),
                               packet_number_++));
     packets_.push_back(packet.release());
   }
 
-  void AddRead(scoped_ptr<QuicEncryptedPacket> packet) {
+  void AddRead(std::unique_ptr<QuicEncryptedPacket> packet) {
     reads_.push_back(
         MockRead(ASYNC, packet->data(), packet->length(), packet_number_++));
     packets_.push_back(packet.release());
@@ -100,7 +100,7 @@ class MockQuicData {
     reads_.push_back(MockRead(mode, rv, packet_number_++));
   }
 
-  void AddWrite(scoped_ptr<QuicEncryptedPacket> packet) {
+  void AddWrite(std::unique_ptr<QuicEncryptedPacket> packet) {
     writes_.push_back(MockWrite(SYNCHRONOUS, packet->data(), packet->length(),
                                 packet_number_++));
     packets_.push_back(packet.release());
@@ -121,7 +121,7 @@ class MockQuicData {
   std::vector<MockWrite> writes_;
   std::vector<MockRead> reads_;
   size_t packet_number_;
-  scoped_ptr<SequencedSocketData> socket_data_;
+  std::unique_ptr<SequencedSocketData> socket_data_;
 };
 
 class ProxyHeadersHandler {
@@ -167,13 +167,13 @@ class TestSocketPerformanceWatcherFactory
   ~TestSocketPerformanceWatcherFactory() override {}
 
   // SocketPerformanceWatcherFactory implementation:
-  scoped_ptr<SocketPerformanceWatcher> CreateSocketPerformanceWatcher(
+  std::unique_ptr<SocketPerformanceWatcher> CreateSocketPerformanceWatcher(
       const Protocol protocol) override {
     if (protocol != PROTOCOL_QUIC) {
       return nullptr;
     }
     ++watcher_count_;
-    return scoped_ptr<SocketPerformanceWatcher>(
+    return std::unique_ptr<SocketPerformanceWatcher>(
         new TestSocketPerformanceWatcher(&rtt_notification_received_));
   }
 
@@ -233,26 +233,26 @@ class QuicNetworkTransactionTest
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructConnectionClosePacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructConnectionClosePacket(
       QuicPacketNumber num) {
     return maker_.MakeConnectionClosePacket(num);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructGoAwayPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructGoAwayPacket(
       QuicPacketNumber num,
       QuicErrorCode error_code,
       std::string reason_phrase) {
     return maker_.MakeGoAwayPacket(num, error_code, reason_phrase);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructAckPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructAckPacket(
       QuicPacketNumber largest_received,
       QuicPacketNumber least_unacked) {
     return maker_.MakeAckPacket(2, largest_received, least_unacked,
                                 least_unacked, true);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructAckAndRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructAckAndRstPacket(
       QuicPacketNumber num,
       QuicStreamId stream_id,
       QuicRstStreamErrorCode error_code,
@@ -264,7 +264,7 @@ class QuicNetworkTransactionTest
                                       stop_least_unacked, true);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructAckPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructAckPacket(
       QuicPacketNumber largest_received,
       QuicPacketNumber least_unacked,
       QuicTestPacketMaker* maker) {
@@ -272,7 +272,7 @@ class QuicNetworkTransactionTest
                                 least_unacked, true);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructAckAndConnectionClosePacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructAckAndConnectionClosePacket(
       QuicPacketNumber packet_number,
       QuicPacketNumber largest_received,
       QuicPacketNumber ack_least_unacked,
@@ -281,7 +281,7 @@ class QuicNetworkTransactionTest
                                 ack_least_unacked, stop_least_unacked, true);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructAckAndConnectionClosePacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructAckAndConnectionClosePacket(
       QuicPacketNumber num,
       QuicTime::Delta delta_time_largest_observed,
       QuicPacketNumber largest_received,
@@ -293,7 +293,7 @@ class QuicNetworkTransactionTest
         least_unacked, quic_error, quic_error_details);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructRstPacket(
       QuicPacketNumber num,
       bool include_version,
       QuicStreamId stream_id,
@@ -326,7 +326,7 @@ class QuicNetworkTransactionTest
     return maker_.GetResponseHeaders(status, alt_svc);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructDataPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructDataPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
@@ -337,7 +337,7 @@ class QuicNetworkTransactionTest
                                  should_include_version, fin, offset, data);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
@@ -351,7 +351,7 @@ class QuicNetworkTransactionTest
         headers, offset);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
@@ -366,7 +366,7 @@ class QuicNetworkTransactionTest
         headers, offset);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
@@ -376,7 +376,7 @@ class QuicNetworkTransactionTest
                                          should_include_version, fin, headers,
                                          nullptr, &maker_);
   }
-  scoped_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
@@ -388,7 +388,7 @@ class QuicNetworkTransactionTest
                                          nullptr, maker);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
@@ -399,7 +399,7 @@ class QuicNetworkTransactionTest
                                           nullptr, &maker_);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
@@ -411,7 +411,7 @@ class QuicNetworkTransactionTest
                                           nullptr, maker);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
@@ -422,7 +422,7 @@ class QuicNetworkTransactionTest
         packet_number, stream_id, should_include_version, fin, headers, offset);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
@@ -466,7 +466,8 @@ class QuicNetworkTransactionTest
               session_->quic_stream_factory()->socket_receive_buffer_size());
   }
 
-  void CheckWasQuicResponse(const scoped_ptr<HttpNetworkTransaction>& trans) {
+  void CheckWasQuicResponse(
+      const std::unique_ptr<HttpNetworkTransaction>& trans) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != nullptr);
     ASSERT_TRUE(response->headers.get() != nullptr);
@@ -477,14 +478,15 @@ class QuicNetworkTransactionTest
               response->connection_info);
   }
 
-  void CheckResponsePort(const scoped_ptr<HttpNetworkTransaction>& trans,
+  void CheckResponsePort(const std::unique_ptr<HttpNetworkTransaction>& trans,
                          uint16_t port) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != nullptr);
     EXPECT_EQ(port, response->socket_address.port());
   }
 
-  void CheckWasHttpResponse(const scoped_ptr<HttpNetworkTransaction>& trans) {
+  void CheckWasHttpResponse(
+      const std::unique_ptr<HttpNetworkTransaction>& trans) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != nullptr);
     ASSERT_TRUE(response->headers.get() != nullptr);
@@ -495,14 +497,14 @@ class QuicNetworkTransactionTest
               response->connection_info);
   }
 
-  void CheckResponseData(const scoped_ptr<HttpNetworkTransaction>& trans,
+  void CheckResponseData(const std::unique_ptr<HttpNetworkTransaction>& trans,
                          const std::string& expected) {
     std::string response_data;
     ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
     EXPECT_EQ(expected, response_data);
   }
 
-  void RunTransaction(const scoped_ptr<HttpNetworkTransaction>& trans) {
+  void RunTransaction(const std::unique_ptr<HttpNetworkTransaction>& trans) {
     TestCompletionCallback callback;
     int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
     EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -510,7 +512,7 @@ class QuicNetworkTransactionTest
   }
 
   void SendRequestAndExpectHttpResponse(const std::string& expected) {
-    scoped_ptr<HttpNetworkTransaction> trans(
+    std::unique_ptr<HttpNetworkTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
     RunTransaction(trans);
     CheckWasHttpResponse(trans);
@@ -572,7 +574,7 @@ class QuicNetworkTransactionTest
   }
 
   void AddHangingNonAlternateProtocolSocketData() {
-    scoped_ptr<StaticSocketDataProvider> hanging_data;
+    std::unique_ptr<StaticSocketDataProvider> hanging_data;
     hanging_data.reset(new StaticSocketDataProvider());
     MockConnect hanging_connect(SYNCHRONOUS, ERR_IO_PENDING);
     hanging_data->set_connect_data(hanging_connect);
@@ -583,24 +585,24 @@ class QuicNetworkTransactionTest
 
   MockClock* clock_;  // Owned by QuicStreamFactory after CreateSession.
   QuicTestPacketMaker maker_;
-  scoped_ptr<HttpNetworkSession> session_;
+  std::unique_ptr<HttpNetworkSession> session_;
   MockClientSocketFactory socket_factory_;
   ProofVerifyDetailsChromium verify_details_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   MockHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
-  scoped_ptr<CTVerifier> cert_transparency_verifier_;
+  std::unique_ptr<CTVerifier> cert_transparency_verifier_;
   TestSocketPerformanceWatcherFactory test_socket_performance_watcher_factory_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
-  scoped_ptr<ProxyService> proxy_service_;
-  scoped_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
+  std::unique_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
   MockRandom random_generator_;
   HttpServerPropertiesImpl http_server_properties_;
   HttpNetworkSession::Params params_;
   HttpRequestInfo request_;
   BoundTestNetLog net_log_;
-  std::vector<scoped_ptr<StaticSocketDataProvider>> hanging_data_;
+  std::vector<std::unique_ptr<StaticSocketDataProvider>> hanging_data_;
   SSLSocketDataProvider ssl_data_;
 
  private:
@@ -608,7 +610,7 @@ class QuicNetworkTransactionTest
       const std::string& expected,
       bool used_proxy,
       uint16_t port) {
-    scoped_ptr<HttpNetworkTransaction> trans(
+    std::unique_ptr<HttpNetworkTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
     ProxyHeadersHandler proxy_headers_handler;
     trans->SetBeforeProxyHeadersSentCallback(
@@ -839,7 +841,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
 
   EXPECT_EQ(0U, test_socket_performance_watcher_factory_.watcher_count());
   for (size_t i = 0; i < 2; ++i) {
-    scoped_ptr<HttpNetworkTransaction> trans(
+    std::unique_ptr<HttpNetworkTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
     TestCompletionCallback callback;
     int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
@@ -1018,7 +1020,7 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
   session_->quic_stream_factory()->set_require_confirmation(true);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
-  scoped_ptr<HttpNetworkTransaction> trans(
+  std::unique_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
@@ -1756,7 +1758,7 @@ class QuicAltSvcCertificateVerificationTest
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     session_->http_server_properties()->SetAlternativeService(
         origin, alternative_service, expiration);
-    scoped_ptr<HttpNetworkTransaction> trans(
+    std::unique_ptr<HttpNetworkTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
     TestCompletionCallback callback;
     int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
@@ -1964,7 +1966,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   session_->quic_stream_factory()->set_require_confirmation(true);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
-  scoped_ptr<HttpNetworkTransaction> trans(
+  std::unique_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
@@ -2010,7 +2012,7 @@ TEST_P(QuicNetworkTransactionTest,
   session_->quic_stream_factory()->set_require_confirmation(true);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
-  scoped_ptr<HttpNetworkTransaction> trans(
+  std::unique_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
@@ -2065,7 +2067,7 @@ TEST_P(QuicNetworkTransactionTest,
   session_->quic_stream_factory()->set_require_confirmation(true);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
-  scoped_ptr<HttpNetworkTransaction> trans(
+  std::unique_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
@@ -2083,7 +2085,7 @@ TEST_P(QuicNetworkTransactionTest,
 
 TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
   // Alternate-protocol job
-  scoped_ptr<QuicEncryptedPacket> close(ConstructConnectionClosePacket(1));
+  std::unique_ptr<QuicEncryptedPacket> close(ConstructConnectionClosePacket(1));
   MockRead quic_reads[] = {
       MockRead(ASYNC, close->data(), close->length()),
       MockRead(ASYNC, ERR_IO_PENDING),  // No more data to read
@@ -2160,7 +2162,7 @@ TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
   CreateSession();
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
-  scoped_ptr<HttpNetworkTransaction> trans(
+  std::unique_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
@@ -2344,7 +2346,7 @@ TEST_P(QuicNetworkTransactionTest, QuicUpload) {
 
   request_.upload_data_stream = &upload_data;
 
-  scoped_ptr<HttpNetworkTransaction> trans(
+  std::unique_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request_, callback.callback(), net_log_.bound());

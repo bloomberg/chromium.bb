@@ -110,7 +110,7 @@ class QuicSpdyStreamTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   MockConnectionHelper helper_;
   MockConnection* connection_;
-  scoped_ptr<MockQuicSpdySession> session_;
+  std::unique_ptr<MockQuicSpdySession> session_;
 
   // Owned by the |session_|.
   TestStream* stream_;

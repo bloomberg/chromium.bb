@@ -119,7 +119,7 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
 
  private:
-  scoped_ptr<QuicCryptoStream> crypto_stream_;
+  std::unique_ptr<QuicCryptoStream> crypto_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(MockQuicClientSessionBase);
 };

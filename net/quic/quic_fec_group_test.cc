@@ -5,10 +5,10 @@
 #include "net/quic/quic_fec_group.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
@@ -46,7 +46,7 @@ class QuicFecGroupTest : public ::testing::Test {
     // kData[] and kEntropyFlag[] are indexed by packet numbers, which
     // start at 1.
     DCHECK_GE(arraysize(kData), num_packets);
-    scoped_ptr<char[]> redundancy(new char[kDataMaxLen]);
+    std::unique_ptr<char[]> redundancy(new char[kDataMaxLen]);
     for (size_t i = 0; i < kDataMaxLen; i++) {
       redundancy[i] = 0x00;
     }
@@ -278,7 +278,7 @@ class MisalignedBuffer {
   char* buffer_;
   size_t size_;
 
-  scoped_ptr<char[]> allocation_;
+  std::unique_ptr<char[]> allocation_;
 };
 
 MisalignedBuffer::MisalignedBuffer(const string& original, size_t offset) {

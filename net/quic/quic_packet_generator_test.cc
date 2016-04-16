@@ -216,7 +216,7 @@ class QuicPacketGeneratorTest : public ::testing::Test {
   QuicAckFrame ack_frame_;
 
  private:
-  scoped_ptr<char[]> data_array_;
+  std::unique_ptr<char[]> data_array_;
   struct iovec iov_;
 };
 

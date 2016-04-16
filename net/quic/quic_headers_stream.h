@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/quic/quic_header_list.h"
 #include "net/quic/quic_protocol.h"
@@ -112,7 +113,7 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
   QuicTime prev_max_timestamp_;
 
   SpdyFramer spdy_framer_;
-  scoped_ptr<SpdyFramerVisitor> spdy_framer_visitor_;
+  std::unique_ptr<SpdyFramerVisitor> spdy_framer_visitor_;
 
   // Either empty, or contains the complete list of headers.
   QuicHeaderList header_list_;

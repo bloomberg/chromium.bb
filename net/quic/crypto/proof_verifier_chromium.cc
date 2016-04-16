@@ -62,17 +62,18 @@ class ProofVerifierChromium::Job {
 
   // Starts the proof verification.  If |QUIC_PENDING| is returned, then
   // |callback| will be invoked asynchronously when the verification completes.
-  QuicAsyncStatus VerifyProof(const std::string& hostname,
-                              const uint16_t port,
-                              const std::string& server_config,
-                              QuicVersion quic_version,
-                              base::StringPiece chlo_hash,
-                              const std::vector<std::string>& certs,
-                              const std::string& cert_sct,
-                              const std::string& signature,
-                              std::string* error_details,
-                              scoped_ptr<ProofVerifyDetails>* verify_details,
-                              ProofVerifierCallback* callback);
+  QuicAsyncStatus VerifyProof(
+      const std::string& hostname,
+      const uint16_t port,
+      const std::string& server_config,
+      QuicVersion quic_version,
+      base::StringPiece chlo_hash,
+      const std::vector<std::string>& certs,
+      const std::string& cert_sct,
+      const std::string& signature,
+      std::string* error_details,
+      std::unique_ptr<ProofVerifyDetails>* verify_details,
+      ProofVerifierCallback* callback);
 
  private:
   enum State {
@@ -97,7 +98,7 @@ class ProofVerifierChromium::Job {
 
   // The underlying verifier used for verifying certificates.
   CertVerifier* verifier_;
-  scoped_ptr<CertVerifier::Request> cert_verifier_request_;
+  std::unique_ptr<CertVerifier::Request> cert_verifier_request_;
 
   CTPolicyEnforcer* policy_enforcer_;
 
@@ -110,8 +111,8 @@ class ProofVerifierChromium::Job {
   // |port| specifies the target port for the connection.
   uint16_t port_;
 
-  scoped_ptr<ProofVerifierCallback> callback_;
-  scoped_ptr<ProofVerifyDetailsChromium> verify_details_;
+  std::unique_ptr<ProofVerifierCallback> callback_;
+  std::unique_ptr<ProofVerifyDetailsChromium> verify_details_;
   std::string error_details_;
 
   // X509Certificate from a chain of DER encoded certificates.
@@ -169,7 +170,7 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     const std::string& cert_sct,
     const string& signature,
     std::string* error_details,
-    scoped_ptr<ProofVerifyDetails>* verify_details,
+    std::unique_ptr<ProofVerifyDetails>* verify_details,
     ProofVerifierCallback* callback) {
   DCHECK(error_details);
   DCHECK(verify_details);
@@ -271,9 +272,10 @@ int ProofVerifierChromium::Job::DoLoop(int last_result) {
 void ProofVerifierChromium::Job::OnIOComplete(int result) {
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING) {
-    scoped_ptr<ProofVerifierCallback> callback(std::move(callback_));
+    std::unique_ptr<ProofVerifierCallback> callback(std::move(callback_));
     // Callback expects ProofVerifyDetails not ProofVerifyDetailsChromium.
-    scoped_ptr<ProofVerifyDetails> verify_details(std::move(verify_details_));
+    std::unique_ptr<ProofVerifyDetails> verify_details(
+        std::move(verify_details_));
     callback->Run(rv == OK, error_details_, &verify_details);
     // Will delete |this|.
     proof_verifier_->OnJobComplete(this);
@@ -448,7 +450,7 @@ QuicAsyncStatus ProofVerifierChromium::VerifyProof(
     const std::string& signature,
     const ProofVerifyContext* verify_context,
     std::string* error_details,
-    scoped_ptr<ProofVerifyDetails>* verify_details,
+    std::unique_ptr<ProofVerifyDetails>* verify_details,
     ProofVerifierCallback* callback) {
   if (!verify_context) {
     *error_details = "Missing context";
@@ -456,7 +458,7 @@ QuicAsyncStatus ProofVerifierChromium::VerifyProof(
   }
   const ProofVerifyContextChromium* chromium_context =
       reinterpret_cast<const ProofVerifyContextChromium*>(verify_context);
-  scoped_ptr<Job> job(
+  std::unique_ptr<Job> job(
       new Job(this, cert_verifier_, ct_policy_enforcer_,
               transport_security_state_, cert_transparency_verifier_,
               chromium_context->cert_verify_flags, chromium_context->net_log));

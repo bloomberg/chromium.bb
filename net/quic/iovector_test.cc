@@ -6,8 +6,9 @@
 
 #include <string.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -224,7 +225,7 @@ TEST(IOVectorTest, ConsumeAndCopyHalfBlocks) {
     ASSERT_EQ(str_len, iov2[0].iov_len);
 
     // Consume half of the first block.
-    scoped_ptr<char[]> buffer(new char[str_len]);
+    std::unique_ptr<char[]> buffer(new char[str_len]);
     size_t consumed = iov.ConsumeAndCopy(tmp, buffer.get());
     EXPECT_EQ(0, memcmp(test_data[i], buffer.get(), tmp));
     ASSERT_EQ(tmp, consumed);
@@ -262,7 +263,7 @@ TEST(IOVectorTest, ConsumeAndCopyTwoAndHalfBlocks) {
   const size_t half_len = last_len / 2;
 
   const char* endp = iov.LastBlockEnd();
-  scoped_ptr<char[]> buffer(new char[length]);
+  std::unique_ptr<char[]> buffer(new char[length]);
   size_t consumed = iov.ConsumeAndCopy(length - half_len, buffer.get());
   ASSERT_EQ(length - half_len, consumed);
   const struct iovec* iov2 = iov.iovec();
@@ -292,7 +293,7 @@ TEST(IOVectorTest, ConsumeAndCopyTooMuch) {
   }
 
   int consumed = 0;
-  scoped_ptr<char[]> buffer(new char[length + 1]);
+  std::unique_ptr<char[]> buffer(new char[length + 1]);
   EXPECT_DFATAL({ consumed = iov.ConsumeAndCopy(length + 1, buffer.get()); },
                 "Attempting to consume 1 non-existent bytes.");
   ASSERT_EQ(length, consumed);

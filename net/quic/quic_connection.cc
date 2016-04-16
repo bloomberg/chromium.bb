@@ -1088,7 +1088,7 @@ void QuicConnection::SendVersionNegotiationPacket() {
   }
   DVLOG(1) << ENDPOINT << "Sending version negotiation packet: {"
            << QuicVersionVectorToString(framer_.supported_versions()) << "}";
-  scoped_ptr<QuicEncryptedPacket> version_packet(
+  std::unique_ptr<QuicEncryptedPacket> version_packet(
       packet_generator_.SerializeVersionNegotiationPacket(
           framer_.supported_versions()));
   WriteResult result = writer_->WritePacket(

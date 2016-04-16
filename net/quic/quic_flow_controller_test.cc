@@ -41,7 +41,7 @@ class QuicFlowControllerTest : public ::testing::Test {
   QuicStreamId stream_id_;
   QuicByteCount send_window_;
   QuicByteCount receive_window_;
-  scoped_ptr<QuicFlowController> flow_controller_;
+  std::unique_ptr<QuicFlowController> flow_controller_;
   MockConnectionHelper helper_;
   MockConnection connection_;
 };

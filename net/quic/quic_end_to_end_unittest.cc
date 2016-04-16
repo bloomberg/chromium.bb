@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <ostream>
 #include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -62,7 +63,7 @@ class TestTransactionFactory : public HttpTransactionFactory {
 
   // HttpTransactionFactory methods
   int CreateTransaction(RequestPriority priority,
-                        scoped_ptr<HttpTransaction>* trans) override {
+                        std::unique_ptr<HttpTransaction>* trans) override {
     trans->reset(new HttpNetworkTransaction(priority, session_.get()));
     return OK;
   }
@@ -72,7 +73,7 @@ class TestTransactionFactory : public HttpTransactionFactory {
   HttpNetworkSession* GetSession() override { return session_.get(); };
 
  private:
-  scoped_ptr<HttpNetworkSession> session_;
+  std::unique_ptr<HttpNetworkSession> session_;
 };
 
 struct TestParams {
@@ -223,8 +224,8 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
   // Initializes |request_| for a post of |length| bytes.
   void InitializePostRequest(size_t length) {
     GenerateBody(length);
-    std::vector<scoped_ptr<UploadElementReader>> element_readers;
-    element_readers.push_back(make_scoped_ptr(new UploadBytesElementReader(
+    std::vector<std::unique_ptr<UploadElementReader>> element_readers;
+    element_readers.push_back(base::WrapUnique(new UploadBytesElementReader(
         request_body_.data(), request_body_.length())));
     upload_data_stream_.reset(
         new ElementsUploadDataStream(std::move(element_readers), 0));
@@ -244,22 +245,22 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
     EXPECT_EQ(body, consumer.content());
   }
 
-  scoped_ptr<MockHostResolver> host_resolver_impl_;
+  std::unique_ptr<MockHostResolver> host_resolver_impl_;
   MappedHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
-  scoped_ptr<ChannelIDService> channel_id_service_;
+  std::unique_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;
-  scoped_ptr<CTVerifier> cert_transparency_verifier_;
+  std::unique_ptr<CTVerifier> cert_transparency_verifier_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
-  scoped_ptr<ProxyService> proxy_service_;
-  scoped_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
+  std::unique_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
   HttpServerPropertiesImpl http_server_properties;
   HttpNetworkSession::Params params_;
-  scoped_ptr<TestTransactionFactory> transaction_factory_;
+  std::unique_ptr<TestTransactionFactory> transaction_factory_;
   HttpRequestInfo request_;
   std::string request_body_;
-  scoped_ptr<UploadDataStream> upload_data_stream_;
-  scoped_ptr<ServerThread> server_thread_;
+  std::unique_ptr<UploadDataStream> upload_data_stream_;
+  std::unique_ptr<ServerThread> server_thread_;
   IPEndPoint server_address_;
   std::string server_hostname_;
   QuicConfig server_config_;

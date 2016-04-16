@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/crypto/aead_base_encrypter.h"
-
 #include <pk11pub.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "crypto/scoped_nss_types.h"
+#include "net/quic/crypto/aead_base_encrypter.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 

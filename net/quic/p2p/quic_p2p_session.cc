@@ -19,8 +19,8 @@ namespace net {
 
 QuicP2PSession::QuicP2PSession(const QuicConfig& config,
                                const QuicP2PCryptoConfig& crypto_config,
-                               scoped_ptr<QuicConnection> connection,
-                               scoped_ptr<Socket> socket)
+                               std::unique_ptr<QuicConnection> connection,
+                               std::unique_ptr<Socket> socket)
     : QuicSession(connection.release(), config),
       socket_(std::move(socket)),
       crypto_stream_(new QuicP2PCryptoStream(this, crypto_config)),

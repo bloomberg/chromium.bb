@@ -5,8 +5,9 @@
 #ifndef NET_QUIC_P2P_QUIC_P2P_SESSION_H_
 #define NET_QUIC_P2P_QUIC_P2P_SESSION_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/quic/p2p/quic_p2p_stream.h"
 #include "net/quic/quic_client_session_base.h"
@@ -43,8 +44,8 @@ class NET_EXPORT QuicP2PSession : public QuicSession {
   // shared with the peer.
   QuicP2PSession(const QuicConfig& config,
                  const QuicP2PCryptoConfig& crypto_config,
-                 scoped_ptr<QuicConnection> connection,
-                 scoped_ptr<Socket> socket);
+                 std::unique_ptr<QuicConnection> connection,
+                 std::unique_ptr<Socket> socket);
   ~QuicP2PSession() override;
 
   // QuicSession overrides.
@@ -76,8 +77,8 @@ class NET_EXPORT QuicP2PSession : public QuicSession {
   int DoRead();
   int DoReadComplete(int result);
 
-  scoped_ptr<Socket> socket_;
-  scoped_ptr<QuicP2PCryptoStream> crypto_stream_;
+  std::unique_ptr<Socket> socket_;
+  std::unique_ptr<QuicP2PCryptoStream> crypto_stream_;
 
   Delegate* delegate_ = nullptr;
 

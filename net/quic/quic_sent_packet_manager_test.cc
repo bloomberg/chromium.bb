@@ -260,7 +260,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
   MockClock clock_;
   QuicConnectionStats stats_;
   MockSendAlgorithm* send_algorithm_;
-  scoped_ptr<MockNetworkChangeVisitor> network_change_visitor_;
+  std::unique_ptr<MockNetworkChangeVisitor> network_change_visitor_;
   bool saved_FLAGS_quic_disable_pacing_;
 };
 

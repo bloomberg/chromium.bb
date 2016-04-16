@@ -117,7 +117,7 @@ class NET_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
  private:
   friend class test::QuicSpdySessionPeer;
 
-  scoped_ptr<QuicHeadersStream> headers_stream_;
+  std::unique_ptr<QuicHeadersStream> headers_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSpdySession);
 };

@@ -6,9 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/chunked_upload_data_stream.h"
@@ -162,7 +163,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   // Adds a packet to the list of expected writes.
-  void AddWrite(scoped_ptr<QuicReceivedPacket> packet) {
+  void AddWrite(std::unique_ptr<QuicReceivedPacket> packet) {
     writes_.push_back(PacketToWrite(SYNCHRONOUS, packet.release()));
   }
 
@@ -178,7 +179,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
            socket_data_->AllWriteDataConsumed();
   }
 
-  void ProcessPacket(scoped_ptr<QuicReceivedPacket> packet) {
+  void ProcessPacket(std::unique_ptr<QuicReceivedPacket> packet) {
     connection_->ProcessUdpPacket(self_addr_, peer_addr_, *packet);
   }
 
@@ -197,7 +198,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     socket_data_.reset(new StaticSocketDataProvider(
         nullptr, 0, mock_writes_.get(), writes_.size()));
 
-    scoped_ptr<MockUDPClientSocket> socket(new MockUDPClientSocket(
+    std::unique_ptr<MockUDPClientSocket> socket(new MockUDPClientSocket(
         socket_data_.get(), net_log_.bound().net_log()));
     socket->Connect(peer_addr_);
     runner_ = new TestTaskRunner(&clock_);
@@ -238,7 +239,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         connection_, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
         &transport_security_state_,
-        make_scoped_ptr(static_cast<QuicServerInfo*>(nullptr)),
+        base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)),
         QuicServerId(kDefaultServerHostName, kDefaultServerPort,
                      PRIVACY_MODE_DISABLED),
         kQuicYieldAfterPacketsRead,
@@ -285,7 +286,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     response_data_ = body;
   }
 
-  scoped_ptr<QuicReceivedPacket> InnerConstructDataPacket(
+  std::unique_ptr<QuicReceivedPacket> InnerConstructDataPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
@@ -296,7 +297,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                  should_include_version, fin, offset, data);
   }
 
-  scoped_ptr<QuicReceivedPacket> ConstructDataPacket(
+  std::unique_ptr<QuicReceivedPacket> ConstructDataPacket(
       QuicPacketNumber packet_number,
       bool should_include_version,
       bool fin,
@@ -306,7 +307,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                     should_include_version, fin, offset, data);
   }
 
-  scoped_ptr<QuicReceivedPacket> InnerConstructRequestHeadersPacket(
+  std::unique_ptr<QuicReceivedPacket> InnerConstructRequestHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
@@ -320,7 +321,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         request_headers_, spdy_headers_frame_length);
   }
 
-  scoped_ptr<QuicReceivedPacket> ConstructRequestHeadersPacket(
+  std::unique_ptr<QuicReceivedPacket> ConstructRequestHeadersPacket(
       QuicPacketNumber packet_number,
       bool fin,
       RequestPriority request_priority,
@@ -330,7 +331,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         spdy_headers_frame_length);
   }
 
-  scoped_ptr<QuicReceivedPacket> InnerConstructResponseHeadersPacket(
+  std::unique_ptr<QuicReceivedPacket> InnerConstructResponseHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool fin,
@@ -340,7 +341,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         spdy_headers_frame_length, &response_offset_);
   }
 
-  scoped_ptr<QuicReceivedPacket> ConstructResponseHeadersPacket(
+  std::unique_ptr<QuicReceivedPacket> ConstructResponseHeadersPacket(
       QuicPacketNumber packet_number,
       bool fin,
       size_t* spdy_headers_frame_length) {
@@ -348,7 +349,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                                spdy_headers_frame_length);
   }
 
-  scoped_ptr<QuicReceivedPacket> ConstructResponseHeadersPacketWithOffset(
+  std::unique_ptr<QuicReceivedPacket> ConstructResponseHeadersPacketWithOffset(
       QuicPacketNumber packet_number,
       bool fin,
       size_t* spdy_headers_frame_length,
@@ -358,7 +359,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         spdy_headers_frame_length, offset);
   }
 
-  scoped_ptr<QuicReceivedPacket> ConstructResponseTrailersPacket(
+  std::unique_ptr<QuicReceivedPacket> ConstructResponseTrailersPacket(
       QuicPacketNumber packet_number,
       bool fin,
       const SpdyHeaderBlock& trailers,
@@ -369,26 +370,26 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                             spdy_headers_frame_length, offset);
   }
 
-  scoped_ptr<QuicReceivedPacket> ConstructRstStreamPacket(
+  std::unique_ptr<QuicReceivedPacket> ConstructRstStreamPacket(
       QuicPacketNumber packet_number) {
     return maker_.MakeRstPacket(
         packet_number, true, stream_id_,
         AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, GetParam()));
   }
 
-  scoped_ptr<QuicReceivedPacket> ConstructRstStreamCancelledPacket(
+  std::unique_ptr<QuicReceivedPacket> ConstructRstStreamCancelledPacket(
       QuicPacketNumber packet_number) {
     return maker_.MakeRstPacket(packet_number, !kIncludeVersion, stream_id_,
                                 QUIC_STREAM_CANCELLED);
   }
 
-  scoped_ptr<QuicReceivedPacket> ConstructRstStreamVaryMismatchPacket(
+  std::unique_ptr<QuicReceivedPacket> ConstructRstStreamVaryMismatchPacket(
       QuicPacketNumber packet_number) {
     return maker_.MakeRstPacket(packet_number, !kIncludeVersion, promise_id_,
                                 QUIC_PROMISE_VARY_MISMATCH);
   }
 
-  scoped_ptr<QuicReceivedPacket> ConstructAckAndRstStreamPacket(
+  std::unique_ptr<QuicReceivedPacket> ConstructAckAndRstStreamPacket(
       QuicPacketNumber packet_number,
       QuicPacketNumber largest_received,
       QuicPacketNumber ack_least_unacked,
@@ -399,12 +400,12 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         !kIncludeCongestionFeedback);
   }
 
-  scoped_ptr<QuicReceivedPacket> ConstructAckAndRstStreamPacket(
+  std::unique_ptr<QuicReceivedPacket> ConstructAckAndRstStreamPacket(
       QuicPacketNumber packet_number) {
     return ConstructAckAndRstStreamPacket(packet_number, 2, 1, 1);
   }
 
-  scoped_ptr<QuicReceivedPacket> ConstructAckPacket(
+  std::unique_ptr<QuicReceivedPacket> ConstructAckPacket(
       QuicPacketNumber packet_number,
       QuicPacketNumber largest_received,
       QuicPacketNumber least_unacked) {
@@ -424,14 +425,14 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   bool use_closing_stream_;
   MockSendAlgorithm* send_algorithm_;
   scoped_refptr<TestTaskRunner> runner_;
-  scoped_ptr<MockWrite[]> mock_writes_;
+  std::unique_ptr<MockWrite[]> mock_writes_;
   MockClock clock_;
   TestQuicConnection* connection_;
-  scoped_ptr<QuicChromiumConnectionHelper> helper_;
+  std::unique_ptr<QuicChromiumConnectionHelper> helper_;
   testing::StrictMock<MockConnectionVisitor> visitor_;
-  scoped_ptr<QuicHttpStream> stream_;
+  std::unique_ptr<QuicHttpStream> stream_;
   TransportSecurityState transport_security_state_;
-  scoped_ptr<QuicChromiumClientSession> session_;
+  std::unique_ptr<QuicChromiumClientSession> session_;
   QuicCryptoClientConfig crypto_config_;
   TestCompletionCallback callback_;
   HttpRequestInfo request_;
@@ -445,7 +446,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   QuicClientPushPromiseIndex push_promise_index_;
 
   // For server push testing
-  scoped_ptr<QuicHttpStream> promised_stream_;
+  std::unique_ptr<QuicHttpStream> promised_stream_;
   SpdyHeaderBlock push_promise_;
   SpdyHeaderBlock promised_response_;
   const QuicStreamId promise_id_;
@@ -461,7 +462,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   MockRandom random_generator_;
   ProofVerifyDetailsChromium verify_details_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
-  scoped_ptr<StaticSocketDataProvider> socket_data_;
+  std::unique_ptr<StaticSocketDataProvider> socket_data_;
   std::vector<PacketToWrite> writes_;
   QuicStreamOffset response_offset_;
 };
@@ -840,8 +841,8 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
 
   Initialize();
 
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
-  element_readers.push_back(make_scoped_ptr(
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(base::WrapUnique(
       new UploadBytesElementReader(kUploadData, strlen(kUploadData))));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
   request_.method = "POST";
