@@ -35,8 +35,6 @@ scoped_refptr<media::VideoFrame> CopyFrame(
     const scoped_refptr<media::VideoFrame>& frame,
     media::SkCanvasVideoRenderer* video_renderer) {
   scoped_refptr<media::VideoFrame> new_frame;
-  const gfx::Size& size = frame->coded_size();
-
   if (frame->HasTextures()) {
     DCHECK(frame->format() == media::PIXEL_FORMAT_ARGB ||
            frame->format() == media::PIXEL_FORMAT_XRGB ||
@@ -64,22 +62,23 @@ scoped_refptr<media::VideoFrame> CopyFrame(
     }
     libyuv::ARGBToI420(reinterpret_cast<uint8_t*>(bitmap.getPixels()),
                        bitmap.rowBytes(),
-                       new_frame->data(media::VideoFrame::kYPlane),
+                       new_frame->visible_data(media::VideoFrame::kYPlane),
                        new_frame->stride(media::VideoFrame::kYPlane),
-                       new_frame->data(media::VideoFrame::kUPlane),
+                       new_frame->visible_data(media::VideoFrame::kUPlane),
                        new_frame->stride(media::VideoFrame::kUPlane),
-                       new_frame->data(media::VideoFrame::kVPlane),
+                       new_frame->visible_data(media::VideoFrame::kVPlane),
                        new_frame->stride(media::VideoFrame::kVPlane),
-                       size.width(), size.height());
+                       bitmap.width(), bitmap.height());
   } else {
     DCHECK(frame->IsMappable());
     DCHECK(frame->format() == media::PIXEL_FORMAT_YV12 ||
            frame->format() == media::PIXEL_FORMAT_YV12A ||
            frame->format() == media::PIXEL_FORMAT_I420);
+    const gfx::Size& coded_size = frame->coded_size();
     new_frame = media::VideoFrame::CreateFrame(
         media::IsOpaque(frame->format()) ? media::PIXEL_FORMAT_I420
                                          : media::PIXEL_FORMAT_YV12A,
-        frame->coded_size(), frame->visible_rect(), frame->natural_size(),
+        coded_size, frame->visible_rect(), frame->natural_size(),
         frame->timestamp());
     libyuv::I420Copy(frame->data(media::VideoFrame::kYPlane),
                      frame->stride(media::VideoFrame::kYPlane),
@@ -93,14 +92,13 @@ scoped_refptr<media::VideoFrame> CopyFrame(
                      new_frame->stride(media::VideoFrame::kUPlane),
                      new_frame->data(media::VideoFrame::kVPlane),
                      new_frame->stride(media::VideoFrame::kVPlane),
-                     size.width(), size.height());
+                     coded_size.width(), coded_size.height());
     if (frame->format() == media::PIXEL_FORMAT_YV12A) {
       libyuv::CopyPlane(frame->data(media::VideoFrame::kAPlane),
                         frame->stride(media::VideoFrame::kAPlane),
                         new_frame->data(media::VideoFrame::kAPlane),
                         new_frame->stride(media::VideoFrame::kAPlane),
-                        size.width(),
-                        size.height());
+                        coded_size.width(), coded_size.height());
     }
   }
 
