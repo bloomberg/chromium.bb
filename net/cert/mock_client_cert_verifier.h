@@ -6,6 +6,7 @@
 #define NET_CERT_MOCK_CLIENT_CERT_VERIFIER_H_
 
 #include <list>
+#include <memory>
 
 #include "net/cert/client_cert_verifier.h"
 
@@ -26,7 +27,7 @@ class MockClientCertVerifier : public ClientCertVerifier {
   // ClientCertVerifier implementation
   int Verify(X509Certificate* cert,
              const CompletionCallback& callback,
-             scoped_ptr<Request>* out_req) override;
+             std::unique_ptr<Request>* out_req) override;
 
   // Sets the default return value for Verify() for certificates/hosts that do
   // not have explicit results added via the AddResult*() methods.

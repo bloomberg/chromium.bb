@@ -6,9 +6,10 @@
 
 #include <windows.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "crypto/capi_util.h"
@@ -104,7 +105,8 @@ bool CertPrincipal::ParseDistinguishedName(const void* ber_name_data,
                            &name_info, &name_info_size);
   if (!rv)
     return false;
-  scoped_ptr<CERT_NAME_INFO, base::FreeDeleter> scoped_name_info(name_info);
+  std::unique_ptr<CERT_NAME_INFO, base::FreeDeleter> scoped_name_info(
+      name_info);
 
   std::vector<std::string> common_names, locality_names, state_names,
       country_names;

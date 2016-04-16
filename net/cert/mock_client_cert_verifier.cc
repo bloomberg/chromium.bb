@@ -4,6 +4,8 @@
 
 #include "net/cert/mock_client_cert_verifier.h"
 
+#include <memory>
+
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 
@@ -23,7 +25,7 @@ MockClientCertVerifier::~MockClientCertVerifier() {}
 
 int MockClientCertVerifier::Verify(X509Certificate* cert,
                                    const CompletionCallback& callback,
-                                   scoped_ptr<Request>* out_req) {
+                                   std::unique_ptr<Request>* out_req) {
   for (const Rule& rule : rules_) {
     // Check just the server cert. Intermediates will be ignored.
     if (rule.cert->Equals(cert))

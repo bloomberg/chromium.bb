@@ -4,10 +4,11 @@
 
 #include "net/cert/crl_set_storage.h"
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -126,7 +127,7 @@ static base::DictionaryValue* ReadHeader(base::StringPiece* data) {
   const base::StringPiece header_bytes(data->data(), header_len);
   data->remove_prefix(header_len);
 
-  scoped_ptr<base::Value> header =
+  std::unique_ptr<base::Value> header =
       base::JSONReader::Read(header_bytes, base::JSON_ALLOW_TRAILING_COMMAS);
   if (header.get() == NULL)
     return NULL;
@@ -304,7 +305,7 @@ bool CRLSetStorage::Parse(base::StringPiece data,
   #error assumes little endian
 #endif
 
-  scoped_ptr<base::DictionaryValue> header_dict(ReadHeader(&data));
+  std::unique_ptr<base::DictionaryValue> header_dict(ReadHeader(&data));
   if (!header_dict.get())
     return false;
 
@@ -366,7 +367,7 @@ bool CRLSetStorage::ApplyDelta(const CRLSet* in_crl_set,
                                const base::StringPiece& delta_bytes,
                                scoped_refptr<CRLSet>* out_crl_set) {
   base::StringPiece data(delta_bytes);
-  scoped_ptr<base::DictionaryValue> header_dict(ReadHeader(&data));
+  std::unique_ptr<base::DictionaryValue> header_dict(ReadHeader(&data));
   if (!header_dict.get())
     return false;
 
@@ -461,7 +462,7 @@ bool CRLSetStorage::ApplyDelta(const CRLSet* in_crl_set,
 bool CRLSetStorage::GetIsDeltaUpdate(const base::StringPiece& bytes,
                                      bool* is_delta) {
   base::StringPiece data(bytes);
-  scoped_ptr<base::DictionaryValue> header_dict(ReadHeader(&data));
+  std::unique_ptr<base::DictionaryValue> header_dict(ReadHeader(&data));
   if (!header_dict.get())
     return false;
 

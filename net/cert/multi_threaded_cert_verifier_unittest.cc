@@ -4,6 +4,8 @@
 
 #include "net/cert/multi_threaded_cert_verifier.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
@@ -85,7 +87,7 @@ TEST_F(MultiThreadedCertVerifierTest, CacheHit) {
   int error;
   CertVerifyResult verify_result;
   TestCompletionCallback callback;
-  scoped_ptr<CertVerifier::Request> request;
+  std::unique_ptr<CertVerifier::Request> request;
 
   error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(), 0,
                            NULL, &verify_result, callback.callback(), &request,
@@ -145,7 +147,7 @@ TEST_F(MultiThreadedCertVerifierTest, DifferentCACerts) {
   int error;
   CertVerifyResult verify_result;
   TestCompletionCallback callback;
-  scoped_ptr<CertVerifier::Request> request;
+  std::unique_ptr<CertVerifier::Request> request;
 
   error = verifier_.Verify(cert_chain1.get(), "www.example.com", std::string(),
                            0, NULL, &verify_result, callback.callback(),
@@ -182,10 +184,10 @@ TEST_F(MultiThreadedCertVerifierTest, InflightJoin) {
   int error;
   CertVerifyResult verify_result;
   TestCompletionCallback callback;
-  scoped_ptr<CertVerifier::Request> request;
+  std::unique_ptr<CertVerifier::Request> request;
   CertVerifyResult verify_result2;
   TestCompletionCallback callback2;
-  scoped_ptr<CertVerifier::Request> request2;
+  std::unique_ptr<CertVerifier::Request> request2;
 
   error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(), 0,
                            NULL, &verify_result, callback.callback(), &request,
@@ -215,7 +217,7 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequest) {
 
   int error;
   CertVerifyResult verify_result;
-  scoped_ptr<CertVerifier::Request> request;
+  std::unique_ptr<CertVerifier::Request> request;
 
   error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(), 0,
                            NULL, &verify_result, base::Bind(&FailTest),
@@ -249,7 +251,7 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequestThenQuit) {
   int error;
   CertVerifyResult verify_result;
   TestCompletionCallback callback;
-  scoped_ptr<CertVerifier::Request> request;
+  std::unique_ptr<CertVerifier::Request> request;
 
   {
     // Because shutdown intentionally doesn't join worker threads, memory may
@@ -396,7 +398,7 @@ TEST_F(MultiThreadedCertVerifierTest, CertTrustAnchorProvider) {
   int error;
   CertVerifyResult verify_result;
   TestCompletionCallback callback;
-  scoped_ptr<CertVerifier::Request> request;
+  std::unique_ptr<CertVerifier::Request> request;
   EXPECT_CALL(trust_provider, GetAdditionalTrustAnchors())
       .WillOnce(ReturnRef(empty_cert_list));
   error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(), 0,
@@ -449,19 +451,19 @@ TEST_F(MultiThreadedCertVerifierTest, MultipleInflightJoin) {
   int error;
   CertVerifyResult verify_result1;
   TestCompletionCallback callback1;
-  scoped_ptr<CertVerifier::Request> request1;
+  std::unique_ptr<CertVerifier::Request> request1;
   CertVerifyResult verify_result2;
   TestCompletionCallback callback2;
-  scoped_ptr<CertVerifier::Request> request2;
+  std::unique_ptr<CertVerifier::Request> request2;
   CertVerifyResult verify_result3;
   TestCompletionCallback callback3;
-  scoped_ptr<CertVerifier::Request> request3;
+  std::unique_ptr<CertVerifier::Request> request3;
   CertVerifyResult verify_result4;
   TestCompletionCallback callback4;
-  scoped_ptr<CertVerifier::Request> request4;
+  std::unique_ptr<CertVerifier::Request> request4;
   CertVerifyResult verify_result5;
   TestCompletionCallback callback5;
-  scoped_ptr<CertVerifier::Request> request5;
+  std::unique_ptr<CertVerifier::Request> request5;
 
   const char domain1[] = "www.example1.com";
   const char domain2[] = "www.exampleB.com";

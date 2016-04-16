@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/cert/nss_cert_database.h"
+
 #include <cert.h>
 #include <certdb.h>
 #include <pk11pub.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -26,7 +29,6 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verify_proc_nss.h"
 #include "net/cert/cert_verify_result.h"
-#include "net/cert/nss_cert_database.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertificateDB.h"
@@ -45,7 +47,7 @@ namespace net {
 namespace {
 
 void SwapCertList(CertificateList* destination,
-                  scoped_ptr<CertificateList> source) {
+                  std::unique_ptr<CertificateList> source) {
   ASSERT_TRUE(destination);
   destination->swap(*source);
 }
@@ -111,7 +113,7 @@ class CertDatabaseNSSTest : public testing::Test {
     return result;
   }
 
-  scoped_ptr<NSSCertDatabase> cert_db_;
+  std::unique_ptr<NSSCertDatabase> cert_db_;
   const CertificateList empty_cert_list_;
   crypto::ScopedTestNSSDB test_nssdb_;
   scoped_refptr<CryptoModule> public_module_;

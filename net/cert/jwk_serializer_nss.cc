@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/cert/jwk_serializer.h"
-
 #include <cert.h>
 #include <keyhi.h>
 #include <nss.h>
 
+#include <memory>
+
 #include "base/base64url.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
+#include "net/cert/jwk_serializer.h"
 
 namespace net {
 
@@ -70,10 +70,10 @@ bool ConvertEcPublicKeyInfoToJwk(
   return false;
 }
 
-typedef scoped_ptr<
+typedef std::unique_ptr<
     CERTSubjectPublicKeyInfo,
     crypto::NSSDestroyer<CERTSubjectPublicKeyInfo,
-                         SECKEY_DestroySubjectPublicKeyInfo> >
+                         SECKEY_DestroySubjectPublicKeyInfo>>
     ScopedCERTSubjectPublicKeyInfo;
 
 }  // namespace

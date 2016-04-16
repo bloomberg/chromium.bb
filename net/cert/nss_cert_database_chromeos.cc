@@ -6,7 +6,9 @@
 
 #include <cert.h>
 #include <pk11pub.h>
+
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -43,7 +45,7 @@ void NSSCertDatabaseChromeOS::ListCertsSync(CertificateList* certs) {
 
 void NSSCertDatabaseChromeOS::ListCerts(
     const NSSCertDatabase::ListCertsCallback& callback) {
-  scoped_ptr<CertificateList> certs(new CertificateList());
+  std::unique_ptr<CertificateList> certs(new CertificateList());
 
   // base::Pased will NULL out |certs|, so cache the underlying pointer here.
   CertificateList* raw_certs = certs.get();

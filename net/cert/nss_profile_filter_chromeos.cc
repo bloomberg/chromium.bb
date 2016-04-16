@@ -4,6 +4,7 @@
 
 #include "net/cert/nss_profile_filter_chromeos.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/strings/string_piece.h"
@@ -68,7 +69,7 @@ void NSSProfileFilterChromeOS::Init(crypto::ScopedPK11Slot public_slot,
                                     crypto::ScopedPK11Slot private_slot,
                                     crypto::ScopedPK11Slot system_slot) {
   // crypto::ScopedPK11Slot actually holds a reference counted object.
-  // Because scoped_ptr<T> assignment is a no-op if it already points to
+  // Because std::unique_ptr<T> assignment is a no-op if it already points to
   // the same pointer, a reference would be leaked because std::move() does
   // not release its reference, and the receiving object won't free
   // its copy.

@@ -4,9 +4,9 @@
 
 #include "net/cert/ct_policy_enforcer.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "crypto/sha2.h"
@@ -150,7 +150,7 @@ class CTPolicyEnforcerTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<CTPolicyEnforcer> policy_enforcer_;
+  std::unique_ptr<CTPolicyEnforcer> policy_enforcer_;
   scoped_refptr<X509Certificate> chain_;
   std::string google_log_id_;
   std::string non_google_log_id_;

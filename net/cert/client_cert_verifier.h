@@ -5,8 +5,9 @@
 #ifndef NET_CERT_CLIENT_CERT_VERIFIER_H_
 #define NET_CERT_CLIENT_CERT_VERIFIER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
@@ -34,7 +35,7 @@ class NET_EXPORT ClientCertVerifier {
   // Returns OK if successful or an error code upon failure.
   virtual int Verify(X509Certificate* cert,
                      const CompletionCallback& callback,
-                     scoped_ptr<Request>* out_req) = 0;
+                     std::unique_ptr<Request>* out_req) = 0;
 };
 
 }  // namespace net

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -82,19 +83,19 @@ class NET_EXPORT CertNetFetcher {
   //     pass DEFAULT.
   //   * callback -- The callback that will be invoked on completion of the job.
 
-  virtual WARN_UNUSED_RESULT scoped_ptr<Request> FetchCaIssuers(
+  virtual WARN_UNUSED_RESULT std::unique_ptr<Request> FetchCaIssuers(
       const GURL& url,
       int timeout_milliseconds,
       int max_response_bytes,
       const FetchCallback& callback) = 0;
 
-  virtual WARN_UNUSED_RESULT scoped_ptr<Request> FetchCrl(
+  virtual WARN_UNUSED_RESULT std::unique_ptr<Request> FetchCrl(
       const GURL& url,
       int timeout_milliseconds,
       int max_response_bytes,
       const FetchCallback& callback) = 0;
 
-  virtual WARN_UNUSED_RESULT scoped_ptr<Request> FetchOcsp(
+  virtual WARN_UNUSED_RESULT std::unique_ptr<Request> FetchOcsp(
       const GURL& url,
       int timeout_milliseconds,
       int max_response_bytes,

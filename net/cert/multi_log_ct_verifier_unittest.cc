@@ -4,6 +4,7 @@
 
 #include "net/cert/multi_log_ct_verifier.h"
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -158,7 +159,8 @@ class MultiLogCTVerifierTest : public ::testing::Test {
     if (histogram == NULL)
       return 0;
 
-    scoped_ptr<base::HistogramSamples> samples = histogram->SnapshotSamples();
+    std::unique_ptr<base::HistogramSamples> samples =
+        histogram->SnapshotSamples();
     return samples->GetCount(sample_index);
   }
 
@@ -177,7 +179,7 @@ class MultiLogCTVerifierTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<MultiLogCTVerifier> verifier_;
+  std::unique_ptr<MultiLogCTVerifier> verifier_;
   scoped_refptr<X509Certificate> chain_;
   scoped_refptr<X509Certificate> embedded_sct_chain_;
   std::vector<scoped_refptr<const CTLogVerifier>> log_verifiers_;

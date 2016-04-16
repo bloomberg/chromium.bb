@@ -4,6 +4,8 @@
 
 #include "net/cert/nss_cert_database_chromeos.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
@@ -33,7 +35,7 @@ bool IsCertInCertificateList(const X509Certificate* cert,
 }
 
 void SwapCertLists(CertificateList* destination,
-                   scoped_ptr<CertificateList> source) {
+                   std::unique_ptr<CertificateList> source) {
   ASSERT_TRUE(destination);
   ASSERT_TRUE(source);
 
@@ -102,8 +104,8 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
   crypto::ScopedTestNSSChromeOSUser user_1_;
   crypto::ScopedTestNSSChromeOSUser user_2_;
   crypto::ScopedTestNSSDB system_db_;
-  scoped_ptr<NSSCertDatabaseChromeOS> db_1_;
-  scoped_ptr<NSSCertDatabaseChromeOS> db_2_;
+  std::unique_ptr<NSSCertDatabaseChromeOS> db_1_;
+  std::unique_ptr<NSSCertDatabaseChromeOS> db_2_;
 };
 
 // Test that ListModules() on each user includes that user's NSS software slot,
