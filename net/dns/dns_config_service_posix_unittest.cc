@@ -179,7 +179,7 @@ TEST(DnsConfigServicePosixTest, RejectEmptyNameserver) {
 TEST(DnsConfigServicePosixTest, DestroyWhileJobsWorking) {
   // Regression test to verify crash does not occur if DnsConfigServicePosix
   // instance is destroyed while SerialWorker jobs have posted to worker pool.
-  scoped_ptr<internal::DnsConfigServicePosix> service(
+  std::unique_ptr<internal::DnsConfigServicePosix> service(
       new internal::DnsConfigServicePosix());
   service->ReadConfig(base::Bind(&DummyConfigCallback));
   service.reset();
@@ -270,7 +270,7 @@ class DnsConfigServicePosixTest : public testing::Test {
   bool seen_config_;
   base::Time creation_time_;
   base::FilePath temp_file_;
-  scoped_ptr<DnsConfigServicePosix> service_;
+  std::unique_ptr<DnsConfigServicePosix> service_;
   DnsConfig test_config_;
 };
 

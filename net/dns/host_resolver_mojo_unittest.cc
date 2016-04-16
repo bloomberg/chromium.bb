@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"
@@ -54,27 +55,27 @@ struct HostResolverAction {
     RETAIN,
   };
 
-  static scoped_ptr<HostResolverAction> ReturnError(Error error) {
-    scoped_ptr<HostResolverAction> result(new HostResolverAction);
+  static std::unique_ptr<HostResolverAction> ReturnError(Error error) {
+    std::unique_ptr<HostResolverAction> result(new HostResolverAction);
     result->error = error;
     return result;
   }
 
-  static scoped_ptr<HostResolverAction> ReturnResult(
+  static std::unique_ptr<HostResolverAction> ReturnResult(
       const AddressList& address_list) {
-    scoped_ptr<HostResolverAction> result(new HostResolverAction);
+    std::unique_ptr<HostResolverAction> result(new HostResolverAction);
     result->addresses = interfaces::AddressList::From(address_list);
     return result;
   }
 
-  static scoped_ptr<HostResolverAction> DropRequest() {
-    scoped_ptr<HostResolverAction> result(new HostResolverAction);
+  static std::unique_ptr<HostResolverAction> DropRequest() {
+    std::unique_ptr<HostResolverAction> result(new HostResolverAction);
     result->action = DROP;
     return result;
   }
 
-  static scoped_ptr<HostResolverAction> RetainRequest() {
-    scoped_ptr<HostResolverAction> result(new HostResolverAction);
+  static std::unique_ptr<HostResolverAction> RetainRequest() {
+    std::unique_ptr<HostResolverAction> result(new HostResolverAction);
     result->action = RETAIN;
     return result;
   }
@@ -90,7 +91,7 @@ class MockMojoHostResolver : public HostResolverMojo::Impl {
       const base::Closure& request_connection_error_callback);
   ~MockMojoHostResolver() override;
 
-  void AddAction(scoped_ptr<HostResolverAction> action);
+  void AddAction(std::unique_ptr<HostResolverAction> action);
 
   const mojo::Array<interfaces::HostResolverRequestInfoPtr>& requests() {
     return requests_received_;
@@ -100,11 +101,11 @@ class MockMojoHostResolver : public HostResolverMojo::Impl {
                   interfaces::HostResolverRequestClientPtr client) override;
 
  private:
-  std::vector<scoped_ptr<HostResolverAction>> actions_;
+  std::vector<std::unique_ptr<HostResolverAction>> actions_;
   size_t results_returned_ = 0;
   mojo::Array<interfaces::HostResolverRequestInfoPtr> requests_received_;
   const base::Closure request_connection_error_callback_;
-  std::vector<scoped_ptr<MockMojoHostResolverRequest>> requests_;
+  std::vector<std::unique_ptr<MockMojoHostResolverRequest>> requests_;
 };
 
 MockMojoHostResolver::MockMojoHostResolver(
@@ -116,7 +117,8 @@ MockMojoHostResolver::~MockMojoHostResolver() {
   EXPECT_EQ(results_returned_, actions_.size());
 }
 
-void MockMojoHostResolver::AddAction(scoped_ptr<HostResolverAction> action) {
+void MockMojoHostResolver::AddAction(
+    std::unique_ptr<HostResolverAction> action) {
   actions_.push_back(std::move(action));
 }
 
@@ -131,7 +133,7 @@ void MockMojoHostResolver::ResolveDns(
                            std::move(actions_[results_returned_]->addresses));
       break;
     case HostResolverAction::RETAIN:
-      requests_.push_back(make_scoped_ptr(new MockMojoHostResolverRequest(
+      requests_.push_back(base::WrapUnique(new MockMojoHostResolverRequest(
           std::move(client), request_connection_error_callback_)));
       break;
     case HostResolverAction::DROP:
@@ -166,9 +168,9 @@ class HostResolverMojoTest : public testing::Test {
         &request_handle, BoundNetLog()));
   }
 
-  scoped_ptr<MockMojoHostResolver> mock_resolver_;
+  std::unique_ptr<MockMojoHostResolver> mock_resolver_;
 
-  scoped_ptr<HostResolverMojo> resolver_;
+  std::unique_ptr<HostResolverMojo> resolver_;
 
   Waiter waiter_;
 };

@@ -50,7 +50,7 @@ TEST(DnsQueryTest, Clone) {
 
   DnsQuery q1(0, qname, dns_protocol::kTypeA);
   EXPECT_EQ(0, q1.id());
-  scoped_ptr<DnsQuery> q2 = q1.CloneWithNewId(42);
+  std::unique_ptr<DnsQuery> q2 = q1.CloneWithNewId(42);
   EXPECT_EQ(42, q2->id());
   EXPECT_EQ(q1.io_buffer()->size(), q2->io_buffer()->size());
   EXPECT_EQ(q1.qtype(), q2->qtype());

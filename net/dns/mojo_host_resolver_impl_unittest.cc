@@ -4,10 +4,10 @@
 
 #include "net/dns/mojo_host_resolver_impl.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -157,7 +157,7 @@ class MojoHostResolverImplTest : public testing::Test {
   }
 
   CallbackMockHostResolver mock_host_resolver_;
-  scoped_ptr<MojoHostResolverImpl> resolver_service_;
+  std::unique_ptr<MojoHostResolverImpl> resolver_service_;
 };
 
 TEST_F(MojoHostResolverImplTest, Resolve) {
@@ -267,7 +267,7 @@ TEST_F(MojoHostResolverImplTest, ResolveFailure) {
 
 TEST_F(MojoHostResolverImplTest, DestroyClient) {
   interfaces::HostResolverRequestClientPtr client_ptr;
-  scoped_ptr<TestRequestClient> client(
+  std::unique_ptr<TestRequestClient> client(
       new TestRequestClient(mojo::GetProxy(&client_ptr)));
 
   mock_host_resolver_.set_ondemand_mode(true);

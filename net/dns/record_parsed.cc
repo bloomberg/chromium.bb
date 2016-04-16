@@ -16,7 +16,7 @@ RecordParsed::RecordParsed(const std::string& name,
                            uint16_t type,
                            uint16_t klass,
                            uint32_t ttl,
-                           scoped_ptr<const RecordRdata> rdata,
+                           std::unique_ptr<const RecordRdata> rdata,
                            base::Time time_created)
     : name_(name),
       type_(type),
@@ -29,14 +29,14 @@ RecordParsed::~RecordParsed() {
 }
 
 // static
-scoped_ptr<const RecordParsed> RecordParsed::CreateFrom(
+std::unique_ptr<const RecordParsed> RecordParsed::CreateFrom(
     DnsRecordParser* parser,
     base::Time time_created) {
   DnsResourceRecord record;
-  scoped_ptr<const RecordRdata> rdata;
+  std::unique_ptr<const RecordRdata> rdata;
 
   if (!parser->ReadRecord(&record))
-    return scoped_ptr<const RecordParsed>();
+    return std::unique_ptr<const RecordParsed>();
 
   switch (record.type) {
     case ARecordRdata::kType:
@@ -62,13 +62,13 @@ scoped_ptr<const RecordParsed> RecordParsed::CreateFrom(
       break;
     default:
       DVLOG(1) << "Unknown RData type for received record: " << record.type;
-      return scoped_ptr<const RecordParsed>();
+      return std::unique_ptr<const RecordParsed>();
   }
 
   if (!rdata.get())
-    return scoped_ptr<const RecordParsed>();
+    return std::unique_ptr<const RecordParsed>();
 
-  return scoped_ptr<const RecordParsed>(
+  return std::unique_ptr<const RecordParsed>(
       new RecordParsed(record.name, record.type, record.klass, record.ttl,
                        std::move(rdata), time_created));
 }

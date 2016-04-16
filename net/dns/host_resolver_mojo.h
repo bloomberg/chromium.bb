@@ -53,7 +53,7 @@ class HostResolverMojo : public HostResolver {
 
   Impl* const impl_;
 
-  scoped_ptr<HostCache> host_cache_;
+  std::unique_ptr<HostCache> host_cache_;
   base::WeakPtrFactory<HostCache> host_cache_weak_factory_;
 
   base::ThreadChecker thread_checker_;

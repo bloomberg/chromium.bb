@@ -5,6 +5,7 @@
 #include "net/dns/host_resolver_impl.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -13,8 +14,8 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -514,7 +515,9 @@ class HostResolverImplTest : public testing::Test {
     Request* CreateRequest(const std::string& hostname) {
       return test->CreateRequest(hostname);
     }
-    std::vector<scoped_ptr<Request>>& requests() { return test->requests_; }
+    std::vector<std::unique_ptr<Request>>& requests() {
+      return test->requests_;
+    }
 
     void DeleteResolver() { test->resolver_.reset(); }
 
@@ -543,7 +546,7 @@ class HostResolverImplTest : public testing::Test {
   // not start until released by |proc_->SignalXXX|.
   Request* CreateRequest(const HostResolver::RequestInfo& info,
                          RequestPriority priority) {
-    requests_.push_back(make_scoped_ptr(new Request(
+    requests_.push_back(base::WrapUnique(new Request(
         info, priority, requests_.size(), resolver_.get(), handler_.get())));
     return requests_.back().get();
   }
@@ -596,10 +599,10 @@ class HostResolverImplTest : public testing::Test {
   }
 
   scoped_refptr<MockHostResolverProc> proc_;
-  scoped_ptr<HostResolverImpl> resolver_;
-  std::vector<scoped_ptr<Request>> requests_;
+  std::unique_ptr<HostResolverImpl> resolver_;
+  std::vector<std::unique_ptr<Request>> requests_;
 
-  scoped_ptr<Handler> handler_;
+  std::unique_ptr<Handler> handler_;
 };
 
 TEST_F(HostResolverImplTest, AsynchronousLookup) {
@@ -1514,7 +1517,7 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
     resolver_.reset(new TestHostResolverImpl(options, NULL));
     resolver_->set_proc_params_for_test(params);
     dns_client_ = new MockDnsClient(DnsConfig(), dns_rules_);
-    resolver_->SetDnsClient(scoped_ptr<DnsClient>(dns_client_));
+    resolver_->SetDnsClient(std::unique_ptr<DnsClient>(dns_client_));
   }
 
   // Adds a rule to |dns_rules_|. Must be followed by |CreateResolver| to apply.
@@ -1604,7 +1607,7 @@ TEST_F(HostResolverImplDnsTest, NoFallbackToProcTask) {
   // Simulate the case when the preference or policy has disabled the DNS client
   // causing AbortDnsTasks.
   resolver_->SetDnsClient(
-      scoped_ptr<DnsClient>(new MockDnsClient(DnsConfig(), dns_rules_)));
+      std::unique_ptr<DnsClient>(new MockDnsClient(DnsConfig(), dns_rules_)));
   ChangeDnsConfig(CreateValidDnsConfig());
 
   // First request is resolved by MockDnsClient, others should fail due to
@@ -1845,7 +1848,7 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
   resolver_->set_proc_params_for_test(DefaultParams(proc.get()));
 
   resolver_->SetDnsClient(
-      scoped_ptr<DnsClient>(new MockDnsClient(DnsConfig(), dns_rules_)));
+      std::unique_ptr<DnsClient>(new MockDnsClient(DnsConfig(), dns_rules_)));
 
   // Get the expected output.
   AddressList addrlist;
@@ -2205,7 +2208,7 @@ TEST_F(HostResolverImplDnsTest, ManuallyDisableDnsClientWithPendingRequests) {
 
   // Clear DnsClient.  The two in-progress jobs should fall back to a ProcTask,
   // and the next one should be started with a ProcTask.
-  resolver_->SetDnsClient(scoped_ptr<DnsClient>());
+  resolver_->SetDnsClient(std::unique_ptr<DnsClient>());
 
   // All three in-progress requests should now be running a ProcTask.
   EXPECT_EQ(3u, num_running_dispatcher_jobs());

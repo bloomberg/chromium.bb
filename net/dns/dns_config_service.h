@@ -6,11 +6,11 @@
 #define NET_DNS_DNS_CONFIG_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
@@ -47,7 +47,7 @@ struct NET_EXPORT_PRIVATE DnsConfig {
 
   // Returns a Value representation of |this|. For performance reasons, the
   // Value only contains the number of hosts rather than the full list.
-  scoped_ptr<base::Value> ToValue() const;
+  std::unique_ptr<base::Value> ToValue() const;
 
   bool IsValid() const {
     return !nameservers.empty();
@@ -102,7 +102,7 @@ class NET_EXPORT_PRIVATE DnsConfigService
   typedef base::Callback<void(const DnsConfig& config)> CallbackType;
 
   // Creates the platform-specific DnsConfigService.
-  static scoped_ptr<DnsConfigService> CreateSystemService();
+  static std::unique_ptr<DnsConfigService> CreateSystemService();
 
   DnsConfigService();
   virtual ~DnsConfigService();

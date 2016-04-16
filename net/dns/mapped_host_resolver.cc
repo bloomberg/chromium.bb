@@ -13,7 +13,7 @@
 
 namespace net {
 
-MappedHostResolver::MappedHostResolver(scoped_ptr<HostResolver> impl)
+MappedHostResolver::MappedHostResolver(std::unique_ptr<HostResolver> impl)
     : impl_(std::move(impl)) {}
 
 MappedHostResolver::~MappedHostResolver() {
@@ -56,7 +56,7 @@ HostCache* MappedHostResolver::GetHostCache() {
   return impl_->GetHostCache();
 }
 
-scoped_ptr<base::Value> MappedHostResolver::GetDnsConfigAsValue() const {
+std::unique_ptr<base::Value> MappedHostResolver::GetDnsConfigAsValue() const {
   return impl_->GetDnsConfigAsValue();
 }
 

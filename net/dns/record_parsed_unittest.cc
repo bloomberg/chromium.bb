@@ -26,7 +26,7 @@ static const uint8_t kT1ResponseWithCacheFlushBit[] = {
 TEST(RecordParsedTest, ParseSingleRecord) {
   DnsRecordParser parser(kT1ResponseDatagram, sizeof(kT1ResponseDatagram),
                          sizeof(dns_protocol::Header));
-  scoped_ptr<const RecordParsed> record;
+  std::unique_ptr<const RecordParsed> record;
   const CnameRecordRdata* rdata;
 
   parser.SkipQuestion();
@@ -49,14 +49,14 @@ TEST(RecordParsedTest, CacheFlushBitCompare) {
   DnsRecordParser parser1(kT1ResponseDatagram, sizeof(kT1ResponseDatagram),
                          sizeof(dns_protocol::Header));
   parser1.SkipQuestion();
-  scoped_ptr<const RecordParsed> record1 =
+  std::unique_ptr<const RecordParsed> record1 =
       RecordParsed::CreateFrom(&parser1, base::Time());
 
   DnsRecordParser parser2(kT1ResponseWithCacheFlushBit,
                           sizeof(kT1ResponseWithCacheFlushBit),
                           0);
 
-  scoped_ptr<const RecordParsed> record2 =
+  std::unique_ptr<const RecordParsed> record2 =
       RecordParsed::CreateFrom(&parser2, base::Time());
 
   EXPECT_FALSE(record1->IsEqual(record2.get(), false));

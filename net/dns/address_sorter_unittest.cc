@@ -48,7 +48,7 @@ TEST(AddressSorterTest, Sort) {
     closesocket(sock);
   }
 #endif
-  scoped_ptr<AddressSorter> sorter(AddressSorter::CreateAddressSorter());
+  std::unique_ptr<AddressSorter> sorter(AddressSorter::CreateAddressSorter());
   AddressList list;
   list.push_back(MakeEndPoint("10.0.0.1"));
   list.push_back(MakeEndPoint("8.8.8.8"));

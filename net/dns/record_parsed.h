@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 
@@ -25,8 +25,9 @@ class NET_EXPORT_PRIVATE RecordParsed {
   virtual ~RecordParsed();
 
   // All records are inherently immutable. Return a const pointer.
-  static scoped_ptr<const RecordParsed> CreateFrom(DnsRecordParser* parser,
-                                                   base::Time time_created);
+  static std::unique_ptr<const RecordParsed> CreateFrom(
+      DnsRecordParser* parser,
+      base::Time time_created);
 
   const std::string& name() const { return name_; }
   uint16_t type() const { return type_; }
@@ -51,7 +52,7 @@ class NET_EXPORT_PRIVATE RecordParsed {
                uint16_t type,
                uint16_t klass,
                uint32_t ttl,
-               scoped_ptr<const RecordRdata> rdata,
+               std::unique_ptr<const RecordRdata> rdata,
                base::Time time_created);
 
   std::string name_;  // in dotted form
@@ -59,7 +60,7 @@ class NET_EXPORT_PRIVATE RecordParsed {
   const uint16_t klass_;
   const uint32_t ttl_;
 
-  const scoped_ptr<const RecordRdata> rdata_;
+  const std::unique_ptr<const RecordRdata> rdata_;
 
   const base::Time time_created_;
 };

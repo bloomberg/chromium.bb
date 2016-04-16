@@ -151,7 +151,8 @@ TEST(DnsResponseTest, InitParse) {
   const char qname_data[] = "\x0A""codereview""\x08""chromium""\x03""org";
   const base::StringPiece qname(qname_data, sizeof(qname_data));
   // Compilers want to copy when binding temporary to const &, so must use heap.
-  scoped_ptr<DnsQuery> query(new DnsQuery(0xcafe, qname, dns_protocol::kTypeA));
+  std::unique_ptr<DnsQuery> query(
+      new DnsQuery(0xcafe, qname, dns_protocol::kTypeA));
 
   const uint8_t response_data[] = {
       // Header
@@ -197,12 +198,12 @@ TEST(DnsResponseTest, InitParse) {
   EXPECT_FALSE(resp.IsValid());
 
   // Reject wrong id.
-  scoped_ptr<DnsQuery> other_query = query->CloneWithNewId(0xbeef);
+  std::unique_ptr<DnsQuery> other_query = query->CloneWithNewId(0xbeef);
   EXPECT_FALSE(resp.InitParse(sizeof(response_data), *other_query));
   EXPECT_FALSE(resp.IsValid());
 
   // Reject wrong question.
-  scoped_ptr<DnsQuery> wrong_query(
+  std::unique_ptr<DnsQuery> wrong_query(
       new DnsQuery(0xcafe, qname, dns_protocol::kTypeCNAME));
   EXPECT_FALSE(resp.InitParse(sizeof(response_data), *wrong_query));
   EXPECT_FALSE(resp.IsValid());

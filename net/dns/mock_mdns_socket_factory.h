@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "net/dns/mdns_client_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -83,7 +83,7 @@ class MockMDnsSocketFactory : public MDnsSocketFactory {
   ~MockMDnsSocketFactory() override;
 
   void CreateSockets(
-      std::vector<scoped_ptr<DatagramServerSocket>>* sockets) override;
+      std::vector<std::unique_ptr<DatagramServerSocket>>* sockets) override;
 
   void SimulateReceive(const uint8_t* packet, int size);
 
@@ -99,8 +99,9 @@ class MockMDnsSocketFactory : public MDnsSocketFactory {
                        IPEndPoint* address,
                        const CompletionCallback& callback);
 
-  void CreateSocket(AddressFamily address_family,
-                    std::vector<scoped_ptr<DatagramServerSocket>>* sockets);
+  void CreateSocket(
+      AddressFamily address_family,
+      std::vector<std::unique_ptr<DatagramServerSocket>>* sockets);
 
   scoped_refptr<IOBuffer> recv_buffer_;
   int recv_buffer_size_;

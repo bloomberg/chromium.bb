@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <queue>
 #include <vector>
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -415,15 +416,15 @@ class MDnsTest : public ::testing::Test {
   void ExpectPacket(const uint8_t* packet, unsigned size);
   void SimulatePacketReceive(const uint8_t* packet, unsigned size);
 
-  scoped_ptr<MDnsClientImpl> test_client_;
+  std::unique_ptr<MDnsClientImpl> test_client_;
   IPEndPoint mdns_ipv4_endpoint_;
   StrictMock<MockMDnsSocketFactory> socket_factory_;
 
   // Transactions and listeners that can be deleted by class methods for
   // reentrancy tests.
-  scoped_ptr<MDnsTransaction> transaction_;
-  scoped_ptr<MDnsListener> listener1_;
-  scoped_ptr<MDnsListener> listener2_;
+  std::unique_ptr<MDnsTransaction> transaction_;
+  std::unique_ptr<MDnsListener> listener1_;
+  std::unique_ptr<MDnsListener> listener2_;
 };
 
 class MockListenerDelegate : public MDnsListener::Delegate {
@@ -479,9 +480,9 @@ TEST_F(MDnsTest, PassiveListeners) {
   PtrRecordCopyContainer record_privet;
   PtrRecordCopyContainer record_printer;
 
-  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
       dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_privet);
-  scoped_ptr<MDnsListener> listener_printer = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_printer = test_client_->CreateListener(
       dns_protocol::kTypePTR, "_printer._tcp.local", &delegate_printer);
 
   ASSERT_TRUE(listener_privet->Start());
@@ -521,7 +522,7 @@ TEST_F(MDnsTest, PassiveListenersCacheCleanup) {
   PtrRecordCopyContainer record_privet;
   PtrRecordCopyContainer record_privet2;
 
-  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
       dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_privet);
 
   ASSERT_TRUE(listener_privet->Start());
@@ -561,7 +562,7 @@ TEST_F(MDnsTest, CacheCleanupWithShortTTL) {
   MockTimer* timer = new MockTimer;
 
   test_client_.reset(
-      new MDnsClientImpl(make_scoped_ptr(clock), make_scoped_ptr(timer)));
+      new MDnsClientImpl(base::WrapUnique(clock), base::WrapUnique(timer)));
   test_client_->StartListening(&socket_factory_);
 
   EXPECT_CALL(*timer, StartObserver(_, _, _)).Times(1);
@@ -579,9 +580,9 @@ TEST_F(MDnsTest, CacheCleanupWithShortTTL) {
   PtrRecordCopyContainer record_privet;
   PtrRecordCopyContainer record_printer;
 
-  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
       dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_privet);
-  scoped_ptr<MDnsListener> listener_printer = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_printer = test_client_->CreateListener(
       dns_protocol::kTypePTR, "_printer._tcp.local", &delegate_printer);
 
   ASSERT_TRUE(listener_privet->Start());
@@ -617,7 +618,7 @@ TEST_F(MDnsTest, MalformedPacket) {
 
   PtrRecordCopyContainer record_printer;
 
-  scoped_ptr<MDnsListener> listener_printer = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_printer = test_client_->CreateListener(
       dns_protocol::kTypePTR, "_printer._tcp.local", &delegate_printer);
 
   ASSERT_TRUE(listener_printer->Start());
@@ -647,7 +648,7 @@ TEST_F(MDnsTest, MalformedPacket) {
 TEST_F(MDnsTest, TransactionWithEmptyCache) {
   ExpectPacket(kQueryPacketPrivet, sizeof(kQueryPacketPrivet));
 
-  scoped_ptr<MDnsTransaction> transaction_privet =
+  std::unique_ptr<MDnsTransaction> transaction_privet =
       test_client_->CreateTransaction(
           dns_protocol::kTypePTR, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
@@ -671,7 +672,7 @@ TEST_F(MDnsTest, TransactionWithEmptyCache) {
 }
 
 TEST_F(MDnsTest, TransactionCacheOnlyNoResult) {
-  scoped_ptr<MDnsTransaction> transaction_privet =
+  std::unique_ptr<MDnsTransaction> transaction_privet =
       test_client_->CreateTransaction(
           dns_protocol::kTypePTR, "_privet._tcp.local",
           MDnsTransaction::QUERY_CACHE | MDnsTransaction::SINGLE_RESULT,
@@ -688,8 +689,10 @@ TEST_F(MDnsTest, TransactionCacheOnlyNoResult) {
 TEST_F(MDnsTest, TransactionWithCache) {
   // Listener to force the client to listen
   StrictMock<MockListenerDelegate> delegate_irrelevant;
-  scoped_ptr<MDnsListener> listener_irrelevant = test_client_->CreateListener(
-      dns_protocol::kTypeA, "codereview.chromium.local", &delegate_irrelevant);
+  std::unique_ptr<MDnsListener> listener_irrelevant =
+      test_client_->CreateListener(dns_protocol::kTypeA,
+                                   "codereview.chromium.local",
+                                   &delegate_irrelevant);
 
   ASSERT_TRUE(listener_irrelevant->Start());
 
@@ -702,7 +705,7 @@ TEST_F(MDnsTest, TransactionWithCache) {
       .WillOnce(Invoke(&record_privet,
                        &PtrRecordCopyContainer::SaveWithDummyArg));
 
-  scoped_ptr<MDnsTransaction> transaction_privet =
+  std::unique_ptr<MDnsTransaction> transaction_privet =
       test_client_->CreateTransaction(
           dns_protocol::kTypePTR, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
@@ -721,7 +724,7 @@ TEST_F(MDnsTest, AdditionalRecords) {
 
   PtrRecordCopyContainer record_privet;
 
-  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
       dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_privet);
 
   ASSERT_TRUE(listener_privet->Start());
@@ -742,7 +745,7 @@ TEST_F(MDnsTest, AdditionalRecords) {
 TEST_F(MDnsTest, TransactionTimeout) {
   ExpectPacket(kQueryPacketPrivet, sizeof(kQueryPacketPrivet));
 
-  scoped_ptr<MDnsTransaction> transaction_privet =
+  std::unique_ptr<MDnsTransaction> transaction_privet =
       test_client_->CreateTransaction(
           dns_protocol::kTypePTR, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
@@ -763,7 +766,7 @@ TEST_F(MDnsTest, TransactionTimeout) {
 TEST_F(MDnsTest, TransactionMultipleRecords) {
   ExpectPacket(kQueryPacketPrivet, sizeof(kQueryPacketPrivet));
 
-  scoped_ptr<MDnsTransaction> transaction_privet =
+  std::unique_ptr<MDnsTransaction> transaction_privet =
       test_client_->CreateTransaction(
           dns_protocol::kTypePTR, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE,
@@ -821,8 +824,10 @@ TEST_F(MDnsTest, TransactionReentrantDelete) {
 
 TEST_F(MDnsTest, TransactionReentrantDeleteFromCache) {
   StrictMock<MockListenerDelegate> delegate_irrelevant;
-  scoped_ptr<MDnsListener> listener_irrelevant = test_client_->CreateListener(
-      dns_protocol::kTypeA, "codereview.chromium.local", &delegate_irrelevant);
+  std::unique_ptr<MDnsListener> listener_irrelevant =
+      test_client_->CreateListener(dns_protocol::kTypeA,
+                                   "codereview.chromium.local",
+                                   &delegate_irrelevant);
   ASSERT_TRUE(listener_irrelevant->Start());
 
   SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
@@ -844,16 +849,20 @@ TEST_F(MDnsTest, TransactionReentrantDeleteFromCache) {
 TEST_F(MDnsTest, TransactionReentrantCacheLookupStart) {
   ExpectPacket(kQueryPacketPrivet, sizeof(kQueryPacketPrivet));
 
-  scoped_ptr<MDnsTransaction> transaction1 = test_client_->CreateTransaction(
-      dns_protocol::kTypePTR, "_privet._tcp.local",
-      MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
-          MDnsTransaction::SINGLE_RESULT,
-      base::Bind(&MDnsTest::MockableRecordCallback, base::Unretained(this)));
+  std::unique_ptr<MDnsTransaction> transaction1 =
+      test_client_->CreateTransaction(
+          dns_protocol::kTypePTR, "_privet._tcp.local",
+          MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
+              MDnsTransaction::SINGLE_RESULT,
+          base::Bind(&MDnsTest::MockableRecordCallback,
+                     base::Unretained(this)));
 
-  scoped_ptr<MDnsTransaction> transaction2 = test_client_->CreateTransaction(
-      dns_protocol::kTypePTR, "_printer._tcp.local",
-      MDnsTransaction::QUERY_CACHE | MDnsTransaction::SINGLE_RESULT,
-      base::Bind(&MDnsTest::MockableRecordCallback2, base::Unretained(this)));
+  std::unique_ptr<MDnsTransaction> transaction2 =
+      test_client_->CreateTransaction(
+          dns_protocol::kTypePTR, "_printer._tcp.local",
+          MDnsTransaction::QUERY_CACHE | MDnsTransaction::SINGLE_RESULT,
+          base::Bind(&MDnsTest::MockableRecordCallback2,
+                     base::Unretained(this)));
 
   EXPECT_CALL(*this, MockableRecordCallback2(MDnsTransaction::RESULT_RECORD,
                                              _))
@@ -873,7 +882,7 @@ TEST_F(MDnsTest, TransactionReentrantCacheLookupStart) {
 TEST_F(MDnsTest, GoodbyePacketNotification) {
   StrictMock<MockListenerDelegate> delegate_privet;
 
-  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
       dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_privet);
   ASSERT_TRUE(listener_privet->Start());
 
@@ -885,7 +894,7 @@ TEST_F(MDnsTest, GoodbyePacketNotification) {
 TEST_F(MDnsTest, GoodbyePacketRemoval) {
   StrictMock<MockListenerDelegate> delegate_privet;
 
-  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
       dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_privet);
   ASSERT_TRUE(listener_privet->Start());
 
@@ -940,7 +949,7 @@ TEST_F(MDnsTest, DoubleRecordDisagreeing) {
   IPAddress address;
   StrictMock<MockListenerDelegate> delegate_privet;
 
-  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
       dns_protocol::kTypeA, "privet.local", &delegate_privet);
 
   ASSERT_TRUE(listener_privet->Start());
@@ -957,13 +966,13 @@ TEST_F(MDnsTest, DoubleRecordDisagreeing) {
 
 TEST_F(MDnsTest, NsecWithListener) {
   StrictMock<MockListenerDelegate> delegate_privet;
-  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
       dns_protocol::kTypeA, "_privet._tcp.local", &delegate_privet);
 
   // Test to make sure nsec callback is NOT called for PTR
   // (which is marked as existing).
   StrictMock<MockListenerDelegate> delegate_privet2;
-  scoped_ptr<MDnsListener> listener_privet2 = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_privet2 = test_client_->CreateListener(
       dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_privet2);
 
   ASSERT_TRUE(listener_privet->Start());
@@ -976,7 +985,7 @@ TEST_F(MDnsTest, NsecWithListener) {
 }
 
 TEST_F(MDnsTest, NsecWithTransactionFromNetwork) {
-  scoped_ptr<MDnsTransaction> transaction_privet =
+  std::unique_ptr<MDnsTransaction> transaction_privet =
       test_client_->CreateTransaction(
           dns_protocol::kTypeA, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
@@ -998,8 +1007,9 @@ TEST_F(MDnsTest, NsecWithTransactionFromNetwork) {
 TEST_F(MDnsTest, NsecWithTransactionFromCache) {
   // Force mDNS to listen.
   StrictMock<MockListenerDelegate> delegate_irrelevant;
-  scoped_ptr<MDnsListener> listener_irrelevant = test_client_->CreateListener(
-      dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_irrelevant);
+  std::unique_ptr<MDnsListener> listener_irrelevant =
+      test_client_->CreateListener(dns_protocol::kTypePTR, "_privet._tcp.local",
+                                   &delegate_irrelevant);
   listener_irrelevant->Start();
 
   SimulatePacketReceive(kSamplePacketNsec,
@@ -1008,7 +1018,7 @@ TEST_F(MDnsTest, NsecWithTransactionFromCache) {
   EXPECT_CALL(*this,
               MockableRecordCallback(MDnsTransaction::RESULT_NSEC, NULL));
 
-  scoped_ptr<MDnsTransaction> transaction_privet_a =
+  std::unique_ptr<MDnsTransaction> transaction_privet_a =
       test_client_->CreateTransaction(
           dns_protocol::kTypeA, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
@@ -1021,7 +1031,7 @@ TEST_F(MDnsTest, NsecWithTransactionFromCache) {
   // Test that a PTR transaction does NOT consider the same NSEC record to be a
   // valid answer to the query
 
-  scoped_ptr<MDnsTransaction> transaction_privet_ptr =
+  std::unique_ptr<MDnsTransaction> transaction_privet_ptr =
       test_client_->CreateTransaction(
           dns_protocol::kTypePTR, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
@@ -1036,7 +1046,7 @@ TEST_F(MDnsTest, NsecWithTransactionFromCache) {
 
 TEST_F(MDnsTest, NsecConflictRemoval) {
   StrictMock<MockListenerDelegate> delegate_privet;
-  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
       dns_protocol::kTypeA, "_privet._tcp.local", &delegate_privet);
 
   ASSERT_TRUE(listener_privet->Start());
@@ -1065,7 +1075,7 @@ TEST_F(MDnsTest, NsecConflictRemoval) {
 
 TEST_F(MDnsTest, RefreshQuery) {
   StrictMock<MockListenerDelegate> delegate_privet;
-  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+  std::unique_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
       dns_protocol::kTypeA, "_privet._tcp.local", &delegate_privet);
 
   listener_privet->SetActiveRefresh(true);
@@ -1092,17 +1102,17 @@ TEST_F(MDnsTest, RefreshQuery) {
 class SimpleMockSocketFactory : public MDnsSocketFactory {
  public:
   void CreateSockets(
-      std::vector<scoped_ptr<DatagramServerSocket>>* sockets) override {
+      std::vector<std::unique_ptr<DatagramServerSocket>>* sockets) override {
     sockets->clear();
     sockets->swap(sockets_);
   }
 
-  void PushSocket(scoped_ptr<DatagramServerSocket> socket) {
+  void PushSocket(std::unique_ptr<DatagramServerSocket> socket) {
     sockets_.push_back(std::move(socket));
   }
 
  private:
-  std::vector<scoped_ptr<DatagramServerSocket>> sockets_;
+  std::vector<std::unique_ptr<DatagramServerSocket>> sockets_;
 };
 
 class MockMDnsConnectionDelegate : public MDnsConnection::Delegate {
@@ -1126,8 +1136,8 @@ class MDnsConnectionTest : public ::testing::Test {
   void SetUp() override {
     socket_ipv4_ = new MockMDnsDatagramServerSocket(ADDRESS_FAMILY_IPV4);
     socket_ipv6_ = new MockMDnsDatagramServerSocket(ADDRESS_FAMILY_IPV6);
-    factory_.PushSocket(make_scoped_ptr(socket_ipv6_));
-    factory_.PushSocket(make_scoped_ptr(socket_ipv4_));
+    factory_.PushSocket(base::WrapUnique(socket_ipv6_));
+    factory_.PushSocket(base::WrapUnique(socket_ipv4_));
     sample_packet_ = MakeString(kSamplePacket1, sizeof(kSamplePacket1));
     sample_buffer_ = new StringIOBuffer(sample_packet_);
   }

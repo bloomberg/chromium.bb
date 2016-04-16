@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_protocol.h"
@@ -201,8 +201,8 @@ class MockDnsClient : public DnsClient {
 
  private:
   DnsConfig config_;
-  scoped_ptr<MockTransactionFactory> factory_;
-  scoped_ptr<AddressSorter> address_sorter_;
+  std::unique_ptr<MockTransactionFactory> factory_;
+  std::unique_ptr<AddressSorter> address_sorter_;
 };
 
 }  // namespace net

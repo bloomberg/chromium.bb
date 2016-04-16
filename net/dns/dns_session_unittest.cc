@@ -5,10 +5,10 @@
 #include "net/dns/dns_session.h"
 
 #include <list>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "net/base/ip_address.h"
@@ -29,28 +29,28 @@ class TestClientSocketFactory : public ClientSocketFactory {
  public:
   ~TestClientSocketFactory() override;
 
-  scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
+  std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       NetLog* net_log,
       const NetLog::Source& source) override;
 
-  scoped_ptr<StreamSocket> CreateTransportClientSocket(
+  std::unique_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
-      scoped_ptr<SocketPerformanceWatcher>,
+      std::unique_ptr<SocketPerformanceWatcher>,
       NetLog*,
       const NetLog::Source&) override {
     NOTIMPLEMENTED();
-    return scoped_ptr<StreamSocket>();
+    return std::unique_ptr<StreamSocket>();
   }
 
-  scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
-      scoped_ptr<ClientSocketHandle> transport_socket,
+  std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<ClientSocketHandle> transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) override {
     NOTIMPLEMENTED();
-    return scoped_ptr<SSLClientSocket>();
+    return std::unique_ptr<SSLClientSocket>();
   }
 
   void ClearSSLSessionCache() override { NOTIMPLEMENTED(); }
@@ -71,13 +71,13 @@ class DnsSessionTest : public testing::Test {
 
  protected:
   void Initialize(unsigned num_servers);
-  scoped_ptr<DnsSession::SocketLease> Allocate(unsigned server_index);
+  std::unique_ptr<DnsSession::SocketLease> Allocate(unsigned server_index);
   bool DidAllocate(unsigned server_index);
   bool DidFree(unsigned server_index);
   bool NoMoreEvents();
 
   DnsConfig config_;
-  scoped_ptr<TestClientSocketFactory> test_client_socket_factory_;
+  std::unique_ptr<TestClientSocketFactory> test_client_socket_factory_;
   scoped_refptr<DnsSession> session_;
   NetLog::Source source_;
 
@@ -98,14 +98,14 @@ class MockDnsSocketPool : public DnsSocketPool {
     InitializeInternal(nameservers, net_log);
   }
 
-  scoped_ptr<DatagramClientSocket> AllocateSocket(
+  std::unique_ptr<DatagramClientSocket> AllocateSocket(
       unsigned server_index) override {
     test_->OnSocketAllocated(server_index);
     return CreateConnectedSocket(server_index);
   }
 
   void FreeSocket(unsigned server_index,
-                  scoped_ptr<DatagramClientSocket> socket) override {
+                  std::unique_ptr<DatagramClientSocket> socket) override {
     test_->OnSocketFreed(server_index);
   }
 
@@ -127,15 +127,14 @@ void DnsSessionTest::Initialize(unsigned num_servers) {
   DnsSocketPool* dns_socket_pool =
       new MockDnsSocketPool(test_client_socket_factory_.get(), this);
 
-  session_ = new DnsSession(config_,
-                            scoped_ptr<DnsSocketPool>(dns_socket_pool),
-                            base::Bind(&base::RandInt),
-                            NULL /* NetLog */);
+  session_ =
+      new DnsSession(config_, std::unique_ptr<DnsSocketPool>(dns_socket_pool),
+                     base::Bind(&base::RandInt), NULL /* NetLog */);
 
   events_.clear();
 }
 
-scoped_ptr<DnsSession::SocketLease> DnsSessionTest::Allocate(
+std::unique_ptr<DnsSession::SocketLease> DnsSessionTest::Allocate(
     unsigned server_index) {
   return session_->AllocateSocket(server_index, source_);
 }
@@ -179,7 +178,7 @@ bool DnsSessionTest::ExpectEvent(const PoolEvent& expected) {
   return true;
 }
 
-scoped_ptr<DatagramClientSocket>
+std::unique_ptr<DatagramClientSocket>
 TestClientSocketFactory::CreateDatagramClientSocket(
     DatagramSocket::BindType bind_type,
     const RandIntCallback& rand_int_cb,
@@ -189,7 +188,7 @@ TestClientSocketFactory::CreateDatagramClientSocket(
   // simplest SocketDataProvider with no data supplied.
   SocketDataProvider* data_provider = new StaticSocketDataProvider();
   data_providers_.push_back(data_provider);
-  scoped_ptr<MockUDPClientSocket> socket(
+  std::unique_ptr<MockUDPClientSocket> socket(
       new MockUDPClientSocket(data_provider, net_log));
   return std::move(socket);
 }
@@ -199,7 +198,7 @@ TestClientSocketFactory::~TestClientSocketFactory() {
 }
 
 TEST_F(DnsSessionTest, AllocateFree) {
-  scoped_ptr<DnsSession::SocketLease> lease1, lease2;
+  std::unique_ptr<DnsSession::SocketLease> lease1, lease2;
 
   Initialize(2);
   EXPECT_TRUE(NoMoreEvents());

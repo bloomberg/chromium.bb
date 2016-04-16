@@ -6,12 +6,12 @@
 #define NET_DNS_MDNS_CACHE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 
@@ -66,7 +66,7 @@ class NET_EXPORT_PRIVATE MDnsCache {
   // Return value indicates whether the record was added, changed
   // (existed previously with different value) or not changed (existed
   // previously with same value).
-  UpdateType UpdateDnsRecord(scoped_ptr<const RecordParsed> record);
+  UpdateType UpdateDnsRecord(std::unique_ptr<const RecordParsed> record);
 
   // Check cache for record with key |key|. Return the record if it exists, or
   // NULL if it doesn't.
@@ -91,10 +91,10 @@ class NET_EXPORT_PRIVATE MDnsCache {
 
   // Remove a record from the cache.  Returns a scoped version of the pointer
   // passed in if it was removed, scoped null otherwise.
-  scoped_ptr<const RecordParsed> RemoveRecord(const RecordParsed* record);
+  std::unique_ptr<const RecordParsed> RemoveRecord(const RecordParsed* record);
 
  private:
-  typedef std::map<Key, scoped_ptr<const RecordParsed>> RecordMap;
+  typedef std::map<Key, std::unique_ptr<const RecordParsed>> RecordMap;
 
   // Get the effective expiration of a cache entry, based on its creation time
   // and TTL. Does adjustments so entries with a TTL of zero will have a

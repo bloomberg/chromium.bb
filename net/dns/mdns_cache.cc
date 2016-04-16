@@ -76,7 +76,7 @@ const RecordParsed* MDnsCache::LookupKey(const Key& key) {
 }
 
 MDnsCache::UpdateType MDnsCache::UpdateDnsRecord(
-    scoped_ptr<const RecordParsed> record) {
+    std::unique_ptr<const RecordParsed> record) {
   Key cache_key = Key::CreateFor(record.get());
 
   // Ignore "goodbye" packets for records not in cache.
@@ -154,18 +154,18 @@ void MDnsCache::FindDnsRecords(unsigned type,
   }
 }
 
-scoped_ptr<const RecordParsed> MDnsCache::RemoveRecord(
+std::unique_ptr<const RecordParsed> MDnsCache::RemoveRecord(
     const RecordParsed* record) {
   Key key = Key::CreateFor(record);
   RecordMap::iterator found = mdns_cache_.find(key);
 
   if (found != mdns_cache_.end() && found->second.get() == record) {
-    scoped_ptr<const RecordParsed> result = std::move(found->second);
+    std::unique_ptr<const RecordParsed> result = std::move(found->second);
     mdns_cache_.erase(key);
     return result;
   }
 
-  return scoped_ptr<const RecordParsed>();
+  return std::unique_ptr<const RecordParsed>();
 }
 
 // static

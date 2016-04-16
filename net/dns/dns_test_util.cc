@@ -166,7 +166,7 @@ class MockTransactionFactory : public DnsTransactionFactory {
 
   ~MockTransactionFactory() override {}
 
-  scoped_ptr<DnsTransaction> CreateTransaction(
+  std::unique_ptr<DnsTransaction> CreateTransaction(
       const std::string& hostname,
       uint16_t qtype,
       const DnsTransactionFactory::CallbackType& callback,
@@ -175,7 +175,7 @@ class MockTransactionFactory : public DnsTransactionFactory {
         new MockTransaction(rules_, hostname, qtype, callback);
     if (transaction->delayed())
       delayed_transactions_.push_back(transaction->AsWeakPtr());
-    return scoped_ptr<DnsTransaction>(transaction);
+    return std::unique_ptr<DnsTransaction>(transaction);
   }
 
   void CompleteDelayedTransactions() {

@@ -56,7 +56,7 @@ struct AdapterInfo {
   uint16_t ports[4];
 };
 
-scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> CreateAdapterAddresses(
+std::unique_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> CreateAdapterAddresses(
     const AdapterInfo* infos) {
   size_t num_adapters = 0;
   size_t num_addresses = 0;
@@ -70,7 +70,7 @@ scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> CreateAdapterAddresses(
   size_t heap_size = num_adapters * sizeof(IP_ADAPTER_ADDRESSES) +
                      num_addresses * (sizeof(IP_ADAPTER_DNS_SERVER_ADDRESS) +
                                       sizeof(struct sockaddr_storage));
-  scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> heap(
+  std::unique_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> heap(
       static_cast<IP_ADAPTER_ADDRESSES*>(malloc(heap_size)));
   CHECK(heap.get());
   memset(heap.get(), 0, heap_size);

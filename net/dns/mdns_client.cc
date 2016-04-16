@@ -44,13 +44,13 @@ int Bind(const IPEndPoint& multicast_addr,
 }  // namespace
 
 // static
-scoped_ptr<MDnsSocketFactory> MDnsSocketFactory::CreateDefault() {
-  return scoped_ptr<MDnsSocketFactory>(new MDnsSocketFactoryImpl);
+std::unique_ptr<MDnsSocketFactory> MDnsSocketFactory::CreateDefault() {
+  return std::unique_ptr<MDnsSocketFactory>(new MDnsSocketFactoryImpl);
 }
 
 // static
-scoped_ptr<MDnsClient> MDnsClient::CreateDefault() {
-  return scoped_ptr<MDnsClient>(new MDnsClientImpl());
+std::unique_ptr<MDnsClient> MDnsClient::CreateDefault() {
+  return std::unique_ptr<MDnsClient>(new MDnsClientImpl());
 }
 
 IPEndPoint GetMDnsIPEndPoint(AddressFamily address_family) {
@@ -84,10 +84,10 @@ InterfaceIndexFamilyList GetMDnsInterfacesToBind() {
   return interfaces;
 }
 
-scoped_ptr<DatagramServerSocket> CreateAndBindMDnsSocket(
+std::unique_ptr<DatagramServerSocket> CreateAndBindMDnsSocket(
     AddressFamily address_family,
     uint32_t interface_index) {
-  scoped_ptr<DatagramServerSocket> socket(
+  std::unique_ptr<DatagramServerSocket> socket(
       new UDPServerSocket(NULL, NetLog::Source()));
 
   IPEndPoint multicast_addr = GetMDnsIPEndPoint(address_family);

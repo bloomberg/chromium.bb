@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -45,12 +46,12 @@ const double kListenerRefreshRatio2 = 0.95;
 }  // namespace
 
 void MDnsSocketFactoryImpl::CreateSockets(
-    std::vector<scoped_ptr<DatagramServerSocket>>* sockets) {
+    std::vector<std::unique_ptr<DatagramServerSocket>>* sockets) {
   InterfaceIndexFamilyList interfaces(GetMDnsInterfacesToBind());
   for (size_t i = 0; i < interfaces.size(); ++i) {
     DCHECK(interfaces[i].second == ADDRESS_FAMILY_IPV4 ||
            interfaces[i].second == ADDRESS_FAMILY_IPV6);
-    scoped_ptr<DatagramServerSocket> socket(
+    std::unique_ptr<DatagramServerSocket> socket(
         CreateAndBindMDnsSocket(interfaces[i].second, interfaces[i].first));
     if (socket)
       sockets->push_back(std::move(socket));
@@ -58,7 +59,7 @@ void MDnsSocketFactoryImpl::CreateSockets(
 }
 
 MDnsConnection::SocketHandler::SocketHandler(
-    scoped_ptr<DatagramServerSocket> socket,
+    std::unique_ptr<DatagramServerSocket> socket,
     MDnsConnection* connection)
     : socket_(std::move(socket)),
       connection_(connection),
@@ -142,11 +143,11 @@ MDnsConnection::~MDnsConnection() {
 }
 
 bool MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
-  std::vector<scoped_ptr<DatagramServerSocket>> sockets;
+  std::vector<std::unique_ptr<DatagramServerSocket>> sockets;
   socket_factory->CreateSockets(&sockets);
 
-  for (scoped_ptr<DatagramServerSocket>& socket : sockets) {
-    socket_handlers_.push_back(make_scoped_ptr(
+  for (std::unique_ptr<DatagramServerSocket>& socket : sockets) {
+    socket_handlers_.push_back(base::WrapUnique(
         new MDnsConnection::SocketHandler(std::move(socket), this)));
   }
 
@@ -168,7 +169,7 @@ bool MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
 
 void MDnsConnection::Send(const scoped_refptr<IOBuffer>& buffer,
                           unsigned size) {
-  for (scoped_ptr<SocketHandler>& handler : socket_handlers_)
+  for (std::unique_ptr<SocketHandler>& handler : socket_handlers_)
     handler->Send(buffer, size);
 }
 
@@ -250,7 +251,7 @@ void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
 
   for (unsigned i = 0; i < answer_count; i++) {
     offset = parser.GetOffset();
-    scoped_ptr<const RecordParsed> record =
+    std::unique_ptr<const RecordParsed> record =
         RecordParsed::CreateFrom(&parser, clock_->Now());
 
     if (!record) {
@@ -311,7 +312,8 @@ void MDnsClientImpl::Core::NotifyNsecRecord(const RecordParsed* record) {
     if ((*i)->type() == dns_protocol::kTypeNSEC)
       continue;
     if (!rdata->GetBit((*i)->type())) {
-      scoped_ptr<const RecordParsed> record_removed = cache_.RemoveRecord((*i));
+      std::unique_ptr<const RecordParsed> record_removed =
+          cache_.RemoveRecord((*i));
       DCHECK(record_removed);
       OnRecordRemoved(record_removed.get());
     }
@@ -432,8 +434,8 @@ MDnsClientImpl::MDnsClientImpl()
       cleanup_timer_(new base::Timer(false, false)) {
 }
 
-MDnsClientImpl::MDnsClientImpl(scoped_ptr<base::Clock> clock,
-                               scoped_ptr<base::Timer> timer)
+MDnsClientImpl::MDnsClientImpl(std::unique_ptr<base::Clock> clock,
+                               std::unique_ptr<base::Timer> timer)
     : clock_(std::move(clock)), cleanup_timer_(std::move(timer)) {}
 
 MDnsClientImpl::~MDnsClientImpl() {
@@ -457,20 +459,20 @@ bool MDnsClientImpl::IsListening() const {
   return core_.get() != NULL;
 }
 
-scoped_ptr<MDnsListener> MDnsClientImpl::CreateListener(
+std::unique_ptr<MDnsListener> MDnsClientImpl::CreateListener(
     uint16_t rrtype,
     const std::string& name,
     MDnsListener::Delegate* delegate) {
-  return scoped_ptr<MDnsListener>(
+  return std::unique_ptr<MDnsListener>(
       new MDnsListenerImpl(rrtype, name, clock_.get(), delegate, this));
 }
 
-scoped_ptr<MDnsTransaction> MDnsClientImpl::CreateTransaction(
+std::unique_ptr<MDnsTransaction> MDnsClientImpl::CreateTransaction(
     uint16_t rrtype,
     const std::string& name,
     int flags,
     const MDnsTransaction::ResultCallback& callback) {
-  return scoped_ptr<MDnsTransaction>(
+  return std::unique_ptr<MDnsTransaction>(
       new MDnsTransactionImpl(rrtype, name, flags, callback, this));
 }
 

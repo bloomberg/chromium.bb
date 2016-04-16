@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
@@ -132,9 +132,9 @@ class NET_EXPORT MDnsSocketFactory {
  public:
   virtual ~MDnsSocketFactory() {}
   virtual void CreateSockets(
-      std::vector<scoped_ptr<DatagramServerSocket>>* sockets) = 0;
+      std::vector<std::unique_ptr<DatagramServerSocket>>* sockets) = 0;
 
-  static scoped_ptr<MDnsSocketFactory> CreateDefault();
+  static std::unique_ptr<MDnsSocketFactory> CreateDefault();
 };
 
 // Listens for Multicast DNS on the local network. You can access information
@@ -147,7 +147,7 @@ class NET_EXPORT MDnsClient {
   virtual ~MDnsClient() {}
 
   // Create listener object for RRType |rrtype| and name |name|.
-  virtual scoped_ptr<MDnsListener> CreateListener(
+  virtual std::unique_ptr<MDnsListener> CreateListener(
       uint16_t rrtype,
       const std::string& name,
       MDnsListener::Delegate* delegate) = 0;
@@ -155,7 +155,7 @@ class NET_EXPORT MDnsClient {
   // Create a transaction that can be used to query either the MDns cache, the
   // network, or both for records of type |rrtype| and name |name|. |flags| is
   // defined by MDnsTransactionFlags.
-  virtual scoped_ptr<MDnsTransaction> CreateTransaction(
+  virtual std::unique_ptr<MDnsTransaction> CreateTransaction(
       uint16_t rrtype,
       const std::string& name,
       int flags,
@@ -169,7 +169,7 @@ class NET_EXPORT MDnsClient {
   virtual bool IsListening() const = 0;
 
   // Create the default MDnsClient
-  static scoped_ptr<MDnsClient> CreateDefault();
+  static std::unique_ptr<MDnsClient> CreateDefault();
 };
 
 NET_EXPORT IPEndPoint GetMDnsIPEndPoint(AddressFamily address_family);
@@ -183,7 +183,7 @@ NET_EXPORT InterfaceIndexFamilyList GetMDnsInterfacesToBind();
 // Create sockets, binds socket to MDns endpoint, and sets multicast interface
 // and joins multicast group on for |interface_index|.
 // Returns NULL if failed.
-NET_EXPORT scoped_ptr<DatagramServerSocket> CreateAndBindMDnsSocket(
+NET_EXPORT std::unique_ptr<DatagramServerSocket> CreateAndBindMDnsSocket(
     AddressFamily address_family,
     uint32_t interface_index);
 

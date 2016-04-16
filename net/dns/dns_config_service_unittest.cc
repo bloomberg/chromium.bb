@@ -4,10 +4,11 @@
 
 #include "net/dns/dns_config_service.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
@@ -98,7 +99,7 @@ class DnsConfigServiceTest : public testing::Test {
   bool quit_on_config_;
 
   // Service under test.
-  scoped_ptr<TestDnsConfigService> service_;
+  std::unique_ptr<TestDnsConfigService> service_;
 };
 
 }  // namespace

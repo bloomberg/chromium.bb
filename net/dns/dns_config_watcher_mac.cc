@@ -81,7 +81,7 @@ bool DnsConfigWatcher::Watch(
 ConfigParsePosixResult DnsConfigWatcher::CheckDnsConfig() {
   if (!GetDnsInfoApi().dns_configuration_copy)
     return CONFIG_PARSE_POSIX_NO_DNSINFO;
-  scoped_ptr<dns_config_t, DnsConfigTDeleter> dns_config(
+  std::unique_ptr<dns_config_t, DnsConfigTDeleter> dns_config(
       GetDnsInfoApi().dns_configuration_copy());
   if (!dns_config)
     return CONFIG_PARSE_POSIX_NO_DNSINFO;

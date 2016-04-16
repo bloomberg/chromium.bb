@@ -122,8 +122,8 @@ TEST_F(MDnsCacheTest, InsertLookupSingle) {
                          sizeof(dns_protocol::Header));
   parser.SkipQuestion();
 
-  scoped_ptr<const RecordParsed> record1;
-  scoped_ptr<const RecordParsed> record2;
+  std::unique_ptr<const RecordParsed> record1;
+  std::unique_ptr<const RecordParsed> record2;
   std::vector<const RecordParsed*> results;
 
   record1 = RecordParsed::CreateFrom(&parser, default_time_);
@@ -153,8 +153,8 @@ TEST_F(MDnsCacheTest, Expiration) {
   DnsRecordParser parser(kT1ResponseDatagram, sizeof(kT1ResponseDatagram),
                          sizeof(dns_protocol::Header));
   parser.SkipQuestion();
-  scoped_ptr<const RecordParsed> record1;
-  scoped_ptr<const RecordParsed> record2;
+  std::unique_ptr<const RecordParsed> record1;
+  std::unique_ptr<const RecordParsed> record2;
 
   std::vector<const RecordParsed*> results;
   const RecordParsed* record_to_be_deleted;
@@ -204,8 +204,8 @@ TEST_F(MDnsCacheTest, RecordChange) {
                          sizeof(kTestResponsesDifferentAnswers),
                          0);
 
-  scoped_ptr<const RecordParsed> record1;
-  scoped_ptr<const RecordParsed> record2;
+  std::unique_ptr<const RecordParsed> record1;
+  std::unique_ptr<const RecordParsed> record2;
   std::vector<const RecordParsed*> results;
 
   record1 = RecordParsed::CreateFrom(&parser, default_time_);
@@ -223,8 +223,8 @@ TEST_F(MDnsCacheTest, RecordNoChange) {
                          sizeof(kTestResponsesSameAnswers),
                          0);
 
-  scoped_ptr<const RecordParsed> record1;
-  scoped_ptr<const RecordParsed> record2;
+  std::unique_ptr<const RecordParsed> record1;
+  std::unique_ptr<const RecordParsed> record2;
   std::vector<const RecordParsed*> results;
 
   record1 = RecordParsed::CreateFrom(&parser, default_time_);
@@ -242,8 +242,8 @@ TEST_F(MDnsCacheTest, RecordPreemptExpirationTime) {
                          sizeof(kTestResponsesSameAnswers),
                          0);
 
-  scoped_ptr<const RecordParsed> record1;
-  scoped_ptr<const RecordParsed> record2;
+  std::unique_ptr<const RecordParsed> record1;
+  std::unique_ptr<const RecordParsed> record2;
   std::vector<const RecordParsed*> results;
 
   record1 = RecordParsed::CreateFrom(&parser, default_time_);
@@ -266,9 +266,9 @@ TEST_F(MDnsCacheTest, GoodbyePacket) {
                          sizeof(kTestResponsesGoodbyePacket),
                          0);
 
-  scoped_ptr<const RecordParsed> record_goodbye;
-  scoped_ptr<const RecordParsed> record_hello;
-  scoped_ptr<const RecordParsed> record_goodbye2;
+  std::unique_ptr<const RecordParsed> record_goodbye;
+  std::unique_ptr<const RecordParsed> record_hello;
+  std::unique_ptr<const RecordParsed> record_goodbye2;
   std::vector<const RecordParsed*> results;
 
   record_goodbye = RecordParsed::CreateFrom(&parser, default_time_);
@@ -298,8 +298,8 @@ TEST_F(MDnsCacheTest, AnyRRType) {
                          sizeof(kTestResponseTwoRecords),
                          0);
 
-  scoped_ptr<const RecordParsed> record1;
-  scoped_ptr<const RecordParsed> record2;
+  std::unique_ptr<const RecordParsed> record1;
+  std::unique_ptr<const RecordParsed> record2;
   std::vector<const RecordParsed*> results;
 
   record1 = RecordParsed::CreateFrom(&parser, default_time_);
@@ -325,7 +325,7 @@ TEST_F(MDnsCacheTest, RemoveRecord) {
                          sizeof(dns_protocol::Header));
   parser.SkipQuestion();
 
-  scoped_ptr<const RecordParsed> record1;
+  std::unique_ptr<const RecordParsed> record1;
   std::vector<const RecordParsed*> results;
 
   record1 = RecordParsed::CreateFrom(&parser, default_time_);
@@ -336,7 +336,7 @@ TEST_F(MDnsCacheTest, RemoveRecord) {
 
   EXPECT_EQ(1u, results.size());
 
-  scoped_ptr<const RecordParsed> record_out =
+  std::unique_ptr<const RecordParsed> record_out =
       cache_.RemoveRecord(results.front());
 
   EXPECT_EQ(record_out.get(), results.front());

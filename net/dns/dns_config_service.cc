@@ -59,8 +59,8 @@ void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
   use_local_ipv6 = d.use_local_ipv6;
 }
 
-scoped_ptr<base::Value> DnsConfig::ToValue() const {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+std::unique_ptr<base::Value> DnsConfig::ToValue() const {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   base::ListValue* list = new base::ListValue();
   for (size_t i = 0; i < nameservers.size(); ++i)
