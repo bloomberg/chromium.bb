@@ -36,10 +36,6 @@ bool IsAlertOnBackgroundUploadEnabled() {
       boolForKey:kEnableAlertOnBackgroundUpload];
 }
 
-bool IsBookmarkCollectionEnabled() {
-  return true;
-}
-
 bool IsLRUSnapshotCacheEnabled() {
   // Check if the experimental flag is forced on or off.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
