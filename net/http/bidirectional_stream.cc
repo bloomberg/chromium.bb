@@ -4,10 +4,12 @@
 
 #include "net/http/bidirectional_stream.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -29,19 +31,19 @@ BidirectionalStream::Delegate::Delegate() {}
 BidirectionalStream::Delegate::~Delegate() {}
 
 BidirectionalStream::BidirectionalStream(
-    scoped_ptr<BidirectionalStreamRequestInfo> request_info,
+    std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
     HttpNetworkSession* session,
     Delegate* delegate)
     : BidirectionalStream(std::move(request_info),
                           session,
                           delegate,
-                          make_scoped_ptr(new base::Timer(false, false))) {}
+                          base::WrapUnique(new base::Timer(false, false))) {}
 
 BidirectionalStream::BidirectionalStream(
-    scoped_ptr<BidirectionalStreamRequestInfo> request_info,
+    std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
     HttpNetworkSession* session,
     Delegate* delegate,
-    scoped_ptr<base::Timer> timer)
+    std::unique_ptr<base::Timer> timer)
     : request_info_(std::move(request_info)),
       net_log_(BoundNetLog::Make(session->net_log(),
                                  NetLog::SOURCE_BIDIRECTIONAL_STREAM)),

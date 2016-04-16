@@ -4,7 +4,8 @@
 
 #include "net/http/http_chunked_decoder.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -327,7 +328,7 @@ TEST(HttpChunkedDecoderTest, MultipleExtraDataBlocks) {
 // Test when the line with the chunk length is too long.
 TEST(HttpChunkedDecoderTest, LongChunkLengthLine) {
   int big_chunk_length = HttpChunkedDecoder::kMaxLineBufLen;
-  scoped_ptr<char[]> big_chunk(new char[big_chunk_length + 1]);
+  std::unique_ptr<char[]> big_chunk(new char[big_chunk_length + 1]);
   memset(big_chunk.get(), '0', big_chunk_length);
   big_chunk[big_chunk_length] = 0;
   const char* const inputs[] = {
@@ -341,7 +342,7 @@ TEST(HttpChunkedDecoderTest, LongChunkLengthLine) {
 // long.
 TEST(HttpChunkedDecoderTest, LongLengthLengthLine) {
   int big_chunk_length = HttpChunkedDecoder::kMaxLineBufLen;
-  scoped_ptr<char[]> big_chunk(new char[big_chunk_length + 1]);
+  std::unique_ptr<char[]> big_chunk(new char[big_chunk_length + 1]);
   memset(big_chunk.get(), '0', big_chunk_length);
   big_chunk[big_chunk_length] = 0;
   const char* const inputs[] = {

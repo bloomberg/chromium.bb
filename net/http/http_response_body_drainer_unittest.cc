@@ -236,11 +236,11 @@ class HttpResponseBodyDrainerTest : public testing::Test {
     return new HttpNetworkSession(params);
   }
 
-  scoped_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<ProxyService> proxy_service_;
   scoped_refptr<SSLConfigService> ssl_config_service_;
-  scoped_ptr<HttpServerPropertiesImpl> http_server_properties_;
-  scoped_ptr<TransportSecurityState> transport_security_state_;
-  const scoped_ptr<HttpNetworkSession> session_;
+  std::unique_ptr<HttpServerPropertiesImpl> http_server_properties_;
+  std::unique_ptr<TransportSecurityState> transport_security_state_;
+  const std::unique_ptr<HttpNetworkSession> session_;
   CloseResultWaiter result_waiter_;
   MockHttpStream* const mock_stream_;  // Owned by |drainer_|.
   HttpResponseBodyDrainer* const drainer_;  // Deletes itself.

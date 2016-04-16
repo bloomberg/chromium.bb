@@ -4,6 +4,7 @@
 
 #include "net/http/transport_security_persister.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -13,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -146,7 +146,8 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
         sts_iterator.domain_state();
 
     const std::string key = HashedDomainToExternalString(hostname);
-    scoped_ptr<base::DictionaryValue> serialized(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> serialized(
+        new base::DictionaryValue);
     PopulateEntryWithDefaults(serialized.get());
 
     serialized->SetBoolean(kStsIncludeSubdomains, sts_state.include_subdomains);
@@ -180,7 +181,7 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
     const std::string key = HashedDomainToExternalString(hostname);
     base::DictionaryValue* serialized = nullptr;
     if (!toplevel.GetDictionary(key, &serialized)) {
-      scoped_ptr<base::DictionaryValue> serialized_scoped(
+      std::unique_ptr<base::DictionaryValue> serialized_scoped(
           new base::DictionaryValue);
       serialized = serialized_scoped.get();
       PopulateEntryWithDefaults(serialized);
@@ -222,7 +223,7 @@ bool TransportSecurityPersister::LoadEntries(const std::string& serialized,
 bool TransportSecurityPersister::Deserialize(const std::string& serialized,
                                              bool* dirty,
                                              TransportSecurityState* state) {
-  scoped_ptr<base::Value> value = base::JSONReader::Read(serialized);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(serialized);
   base::DictionaryValue* dict_value = NULL;
   if (!value.get() || !value->GetAsDictionary(&dict_value))
     return false;

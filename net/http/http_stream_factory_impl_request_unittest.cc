@@ -4,7 +4,8 @@
 
 #include "net/http/http_stream_factory_impl_request.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "net/http/http_stream_factory_impl_job.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
@@ -70,7 +71,7 @@ TEST_P(HttpStreamFactoryImplRequestTest, SetPriority) {
   SpdySessionDependencies session_deps(GetParam(),
                                        ProxyService::CreateDirect());
 
-  scoped_ptr<HttpNetworkSession> session =
+  std::unique_ptr<HttpNetworkSession> session =
       SpdySessionDependencies::SpdyCreateSession(&session_deps);
   HttpStreamFactoryImpl* factory =
       static_cast<HttpStreamFactoryImpl*>(session->http_stream_factory());
@@ -105,7 +106,7 @@ TEST_P(HttpStreamFactoryImplRequestTest, DelayMainJob) {
   SpdySessionDependencies session_deps(GetParam(),
                                        ProxyService::CreateDirect());
 
-  scoped_ptr<HttpNetworkSession> session =
+  std::unique_ptr<HttpNetworkSession> session =
       SpdySessionDependencies::SpdyCreateSession(&session_deps);
 
   StaticSocketDataProvider socket_data;

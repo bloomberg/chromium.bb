@@ -5,7 +5,8 @@
 #ifndef NET_FAILING_HTTP_TRANSACTION_FACTORY_H_
 #define NET_FAILING_HTTP_TRANSACTION_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_transaction.h"
@@ -27,7 +28,7 @@ class NET_EXPORT FailingHttpTransactionFactory : public HttpTransactionFactory {
 
   // HttpTransactionFactory:
   int CreateTransaction(RequestPriority priority,
-                        scoped_ptr<HttpTransaction>* trans) override;
+                        std::unique_ptr<HttpTransaction>* trans) override;
   HttpCache* GetCache() override;
   HttpNetworkSession* GetSession() override;
 

@@ -519,11 +519,12 @@ void MockNetworkLayer::TransactionStopCaching() {
   stop_caching_called_ = true;
 }
 
-int MockNetworkLayer::CreateTransaction(RequestPriority priority,
-                                        scoped_ptr<HttpTransaction>* trans) {
+int MockNetworkLayer::CreateTransaction(
+    RequestPriority priority,
+    std::unique_ptr<HttpTransaction>* trans) {
   transaction_count_++;
   last_create_transaction_priority_ = priority;
-  scoped_ptr<MockNetworkTransaction> mock_transaction(
+  std::unique_ptr<MockNetworkTransaction> mock_transaction(
       new MockNetworkTransaction(priority, this));
   last_transaction_ = mock_transaction->AsWeakPtr();
   *trans = std::move(mock_transaction);

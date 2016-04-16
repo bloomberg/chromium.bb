@@ -11,11 +11,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
@@ -430,7 +430,7 @@ class HttpCache::Transaction : public HttpTransaction {
   const HttpRequestInfo* request_;
   RequestPriority priority_;
   BoundNetLog net_log_;
-  scoped_ptr<HttpRequestInfo> custom_request_;
+  std::unique_ptr<HttpRequestInfo> custom_request_;
   HttpRequestHeaders request_headers_copy_;
   // If extra_headers specified a "if-modified-since" or "if-none-match",
   // |external_validation_| contains the value of those headers.
@@ -438,7 +438,7 @@ class HttpCache::Transaction : public HttpTransaction {
   base::WeakPtr<HttpCache> cache_;
   HttpCache::ActiveEntry* entry_;
   HttpCache::ActiveEntry* new_entry_;
-  scoped_ptr<HttpTransaction> network_trans_;
+  std::unique_ptr<HttpTransaction> network_trans_;
   CompletionCallback callback_;  // Consumer's callback.
   HttpResponseInfo response_;
   HttpResponseInfo auth_response_;
@@ -462,7 +462,7 @@ class HttpCache::Transaction : public HttpTransaction {
   int read_offset_;
   int effective_load_flags_;
   int write_len_;
-  scoped_ptr<PartialData> partial_;  // We are dealing with range requests.
+  std::unique_ptr<PartialData> partial_;  // We are dealing with range requests.
   UploadProgress final_upload_progress_;
   CompletionCallback io_callback_;
 
@@ -478,7 +478,7 @@ class HttpCache::Transaction : public HttpTransaction {
   // Load timing information for the last network request, if any.  Set in the
   // 304 and 206 response cases, as the network transaction may be destroyed
   // before the caller requests load timing information.
-  scoped_ptr<LoadTimingInfo> old_network_trans_load_timing_;
+  std::unique_ptr<LoadTimingInfo> old_network_trans_load_timing_;
 
   ConnectionAttempts old_connection_attempts_;
   IPEndPoint old_remote_endpoint_;

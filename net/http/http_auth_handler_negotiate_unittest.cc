@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
@@ -52,7 +53,7 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest {
     MockAuthLibrary::EnsureTestAccountExists();
 #endif
 #if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_ANDROID))
-    factory_->set_library(make_scoped_ptr(auth_library_));
+    factory_->set_library(base::WrapUnique(auth_library_));
 #endif
     factory_->set_host_resolver(resolver_.get());
   }
@@ -195,7 +196,7 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest {
                     bool use_port,
                     bool synchronous_resolve_mode,
                     const std::string& url_string,
-                    scoped_ptr<HttpAuthHandlerNegotiate>* handler) {
+                    std::unique_ptr<HttpAuthHandlerNegotiate>* handler) {
     http_auth_preferences_->set_negotiate_disable_cname_lookup(
         disable_cname_lookup);
     http_auth_preferences_->set_negotiate_enable_port(use_port);
@@ -203,11 +204,11 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest {
     GURL gurl(url_string);
 
     // Note: This is a little tricky because CreateAuthHandlerFromString
-    // expects a scoped_ptr<HttpAuthHandler>* rather than a
-    // scoped_ptr<HttpAuthHandlerNegotiate>*. This needs to do the cast
+    // expects a std::unique_ptr<HttpAuthHandler>* rather than a
+    // std::unique_ptr<HttpAuthHandlerNegotiate>*. This needs to do the cast
     // after creating the handler, and make sure that generic_handler
     // no longer holds on to the HttpAuthHandlerNegotiate object.
-    scoped_ptr<HttpAuthHandler> generic_handler;
+    std::unique_ptr<HttpAuthHandler> generic_handler;
     SSLInfo null_ssl_info;
     int rv = factory_->CreateAuthHandlerFromString(
         "Negotiate", HttpAuth::AUTH_SERVER, null_ssl_info, gurl, BoundNetLog(),
@@ -224,20 +225,20 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest {
 
  private:
 #if defined(OS_WIN)
-  scoped_ptr<SecPkgInfoW> security_package_;
+  std::unique_ptr<SecPkgInfoW> security_package_;
 #endif
   // |auth_library_| is passed to |factory_|, which assumes ownership of it, but
   // can't be a scoped pointer to it since the tests need access when they set
   // up the mocks after passing ownership.
   MockAuthLibrary* auth_library_;
-  scoped_ptr<MockHostResolver> resolver_;
-  scoped_ptr<MockAllowHttpAuthPreferences> http_auth_preferences_;
-  scoped_ptr<HttpAuthHandlerNegotiate::Factory> factory_;
+  std::unique_ptr<MockHostResolver> resolver_;
+  std::unique_ptr<MockAllowHttpAuthPreferences> http_auth_preferences_;
+  std::unique_ptr<HttpAuthHandlerNegotiate::Factory> factory_;
 };
 
 TEST_F(HttpAuthHandlerNegotiateTest, DisableCname) {
   SetupMocks(AuthLibrary());
-  scoped_ptr<HttpAuthHandlerNegotiate> auth_handler;
+  std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
   EXPECT_EQ(OK, CreateHandler(
       true, false, true, "http://alias:500", &auth_handler));
 
@@ -256,7 +257,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, DisableCname) {
 
 TEST_F(HttpAuthHandlerNegotiateTest, DisableCnameStandardPort) {
   SetupMocks(AuthLibrary());
-  scoped_ptr<HttpAuthHandlerNegotiate> auth_handler;
+  std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
   EXPECT_EQ(OK, CreateHandler(
       true, true, true, "http://alias:80", &auth_handler));
   ASSERT_TRUE(auth_handler.get() != NULL);
@@ -274,7 +275,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, DisableCnameStandardPort) {
 
 TEST_F(HttpAuthHandlerNegotiateTest, DisableCnameNonstandardPort) {
   SetupMocks(AuthLibrary());
-  scoped_ptr<HttpAuthHandlerNegotiate> auth_handler;
+  std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
   EXPECT_EQ(OK, CreateHandler(
       true, true, true, "http://alias:500", &auth_handler));
   ASSERT_TRUE(auth_handler.get() != NULL);
@@ -292,7 +293,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, DisableCnameNonstandardPort) {
 
 TEST_F(HttpAuthHandlerNegotiateTest, CnameSync) {
   SetupMocks(AuthLibrary());
-  scoped_ptr<HttpAuthHandlerNegotiate> auth_handler;
+  std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
   EXPECT_EQ(OK, CreateHandler(
       false, false, true, "http://alias:500", &auth_handler));
   ASSERT_TRUE(auth_handler.get() != NULL);
@@ -310,7 +311,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, CnameSync) {
 
 TEST_F(HttpAuthHandlerNegotiateTest, CnameAsync) {
   SetupMocks(AuthLibrary());
-  scoped_ptr<HttpAuthHandlerNegotiate> auth_handler;
+  std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
   EXPECT_EQ(OK, CreateHandler(
       false, false, false, "http://alias:500", &auth_handler));
   ASSERT_TRUE(auth_handler.get() != NULL);
@@ -333,7 +334,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, CnameAsync) {
 // that library.
 TEST_F(HttpAuthHandlerNegotiateTest, ServerNotInKerberosDatabase) {
   SetupErrorMocks(AuthLibrary(), GSS_S_FAILURE, 0x96C73A07);  // No server
-  scoped_ptr<HttpAuthHandlerNegotiate> auth_handler;
+  std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
   EXPECT_EQ(OK, CreateHandler(
       false, false, false, "http://alias:500", &auth_handler));
   ASSERT_TRUE(auth_handler.get() != NULL);
@@ -349,7 +350,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, ServerNotInKerberosDatabase) {
 // that library.
 TEST_F(HttpAuthHandlerNegotiateTest, NoKerberosCredentials) {
   SetupErrorMocks(AuthLibrary(), GSS_S_FAILURE, 0x96C73AC3);  // No credentials
-  scoped_ptr<HttpAuthHandlerNegotiate> auth_handler;
+  std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
   EXPECT_EQ(OK, CreateHandler(
       false, false, false, "http://alias:500", &auth_handler));
   ASSERT_TRUE(auth_handler.get() != NULL);
@@ -363,17 +364,17 @@ TEST_F(HttpAuthHandlerNegotiateTest, NoKerberosCredentials) {
 
 #if defined(DLOPEN_KERBEROS)
 TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
-  scoped_ptr<HostResolver> host_resolver(new MockHostResolver());
+  std::unique_ptr<HostResolver> host_resolver(new MockHostResolver());
   MockAllowHttpAuthPreferences http_auth_preferences;
-  scoped_ptr<HttpAuthHandlerNegotiate::Factory> negotiate_factory(
+  std::unique_ptr<HttpAuthHandlerNegotiate::Factory> negotiate_factory(
       new HttpAuthHandlerNegotiate::Factory());
   negotiate_factory->set_host_resolver(host_resolver);
   negotiate_factory->set_http_auth_preferences(&http_auth_preferences);
-  negotiate_factory->set_library(
-      make_scoped_ptr(new GSSAPISharedLibrary("/this/library/does/not/exist")));
+  negotiate_factory->set_library(base::WrapUnique(
+      new GSSAPISharedLibrary("/this/library/does/not/exist")));
 
   GURL gurl("http://www.example.com");
-  scoped_ptr<HttpAuthHandler> generic_handler;
+  std::unique_ptr<HttpAuthHandler> generic_handler;
   int rv = negotiate_factory->CreateAuthHandlerFromString(
       "Negotiate",
       HttpAuth::AUTH_SERVER,

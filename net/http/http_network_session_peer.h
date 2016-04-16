@@ -5,9 +5,10 @@
 #ifndef NET_HTTP_HTTP_NETWORK_SESSION_PEER_H_
 #define NET_HTTP_HTTP_NETWORK_SESSION_PEER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -24,13 +25,14 @@ class NET_EXPORT_PRIVATE HttpNetworkSessionPeer {
   ~HttpNetworkSessionPeer();
 
   void SetClientSocketPoolManager(
-      scoped_ptr<ClientSocketPoolManager> socket_pool_manager);
+      std::unique_ptr<ClientSocketPoolManager> socket_pool_manager);
 
   void SetProxyService(ProxyService* proxy_service);
 
-  void SetHttpStreamFactory(scoped_ptr<HttpStreamFactory> http_stream_factory);
+  void SetHttpStreamFactory(
+      std::unique_ptr<HttpStreamFactory> http_stream_factory);
   void SetHttpStreamFactoryForWebSocket(
-      scoped_ptr<HttpStreamFactory> http_stream_factory_for_websocket);
+      std::unique_ptr<HttpStreamFactory> http_stream_factory_for_websocket);
 
  private:
   HttpNetworkSession* const session_;

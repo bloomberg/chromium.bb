@@ -87,28 +87,22 @@ TEST(HttpAuthCacheTest, Basic) {
   // Add cache entries for 4 realms: "Realm1", "Realm2", "Realm3" and
   // "Realm4"
 
-  scoped_ptr<HttpAuthHandler> realm1_handler(
-      new MockAuthHandler(HttpAuth::AUTH_SCHEME_BASIC,
-                          kRealm1,
-                          HttpAuth::AUTH_SERVER));
+  std::unique_ptr<HttpAuthHandler> realm1_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_BASIC, kRealm1, HttpAuth::AUTH_SERVER));
   cache.Add(origin, realm1_handler->realm(), realm1_handler->auth_scheme(),
             "Basic realm=Realm1",
             CreateASCIICredentials("realm1-user", "realm1-password"),
             "/foo/bar/index.html");
 
-  scoped_ptr<HttpAuthHandler> realm2_handler(
-      new MockAuthHandler(HttpAuth::AUTH_SCHEME_BASIC,
-                          kRealm2,
-                          HttpAuth::AUTH_SERVER));
+  std::unique_ptr<HttpAuthHandler> realm2_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_BASIC, kRealm2, HttpAuth::AUTH_SERVER));
   cache.Add(origin, realm2_handler->realm(), realm2_handler->auth_scheme(),
             "Basic realm=Realm2",
             CreateASCIICredentials("realm2-user", "realm2-password"),
             "/foo2/index.html");
 
-  scoped_ptr<HttpAuthHandler> realm3_basic_handler(
-      new MockAuthHandler(HttpAuth::AUTH_SCHEME_BASIC,
-                          kRealm3,
-                          HttpAuth::AUTH_PROXY));
+  std::unique_ptr<HttpAuthHandler> realm3_basic_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_BASIC, kRealm3, HttpAuth::AUTH_PROXY));
   cache.Add(
       origin,
       realm3_basic_handler->realm(),
@@ -117,20 +111,16 @@ TEST(HttpAuthCacheTest, Basic) {
       CreateASCIICredentials("realm3-basic-user", "realm3-basic-password"),
       std::string());
 
-  scoped_ptr<HttpAuthHandler> realm3_digest_handler(
-      new MockAuthHandler(HttpAuth::AUTH_SCHEME_DIGEST,
-                          kRealm3,
-                          HttpAuth::AUTH_PROXY));
+  std::unique_ptr<HttpAuthHandler> realm3_digest_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_DIGEST, kRealm3, HttpAuth::AUTH_PROXY));
   cache.Add(origin, realm3_digest_handler->realm(),
             realm3_digest_handler->auth_scheme(), "Digest realm=Realm3",
             CreateASCIICredentials("realm3-digest-user",
                                    "realm3-digest-password"),
             "/baz/index.html");
 
-  scoped_ptr<HttpAuthHandler> realm4_basic_handler(
-      new MockAuthHandler(HttpAuth::AUTH_SCHEME_BASIC,
-                          kRealm4,
-                          HttpAuth::AUTH_SERVER));
+  std::unique_ptr<HttpAuthHandler> realm4_basic_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_BASIC, kRealm4, HttpAuth::AUTH_SERVER));
   cache.Add(origin, realm4_basic_handler->realm(),
             realm4_basic_handler->auth_scheme(), "Basic realm=Realm4",
             CreateASCIICredentials("realm4-basic-user",
@@ -281,9 +271,8 @@ TEST(HttpAuthCacheTest, AddToExistingEntry) {
   GURL origin("http://www.foobar.com:70");
   const std::string auth_challenge = "Basic realm=MyRealm";
 
-  scoped_ptr<HttpAuthHandler> handler(
-      new MockAuthHandler(
-          HttpAuth::AUTH_SCHEME_BASIC, "MyRealm", HttpAuth::AUTH_SERVER));
+  std::unique_ptr<HttpAuthHandler> handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_BASIC, "MyRealm", HttpAuth::AUTH_SERVER));
   HttpAuthCache::Entry* orig_entry = cache.Add(
       origin, handler->realm(), handler->auth_scheme(), auth_challenge,
       CreateASCIICredentials("user1", "password1"), "/x/y/z/");
@@ -307,21 +296,17 @@ TEST(HttpAuthCacheTest, AddToExistingEntry) {
 TEST(HttpAuthCacheTest, Remove) {
   GURL origin("http://foobar2.com");
 
-  scoped_ptr<HttpAuthHandler> realm1_handler(
-      new MockAuthHandler(
-          HttpAuth::AUTH_SCHEME_BASIC, kRealm1, HttpAuth::AUTH_SERVER));
+  std::unique_ptr<HttpAuthHandler> realm1_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_BASIC, kRealm1, HttpAuth::AUTH_SERVER));
 
-  scoped_ptr<HttpAuthHandler> realm2_handler(
-      new MockAuthHandler(
-          HttpAuth::AUTH_SCHEME_BASIC, kRealm2, HttpAuth::AUTH_SERVER));
+  std::unique_ptr<HttpAuthHandler> realm2_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_BASIC, kRealm2, HttpAuth::AUTH_SERVER));
 
-  scoped_ptr<HttpAuthHandler> realm3_basic_handler(
-      new MockAuthHandler(
-          HttpAuth::AUTH_SCHEME_BASIC, kRealm3, HttpAuth::AUTH_SERVER));
+  std::unique_ptr<HttpAuthHandler> realm3_basic_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_BASIC, kRealm3, HttpAuth::AUTH_SERVER));
 
-  scoped_ptr<HttpAuthHandler> realm3_digest_handler(
-      new MockAuthHandler(
-          HttpAuth::AUTH_SCHEME_DIGEST, kRealm3, HttpAuth::AUTH_SERVER));
+  std::unique_ptr<HttpAuthHandler> realm3_digest_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_DIGEST, kRealm3, HttpAuth::AUTH_SERVER));
 
   HttpAuthCache cache;
   cache.Add(origin, realm1_handler->realm(), realm1_handler->auth_scheme(),
@@ -395,9 +380,8 @@ TEST(HttpAuthCacheTest, Remove) {
 TEST(HttpAuthCacheTest, UpdateStaleChallenge) {
   HttpAuthCache cache;
   GURL origin("http://foobar2.com");
-  scoped_ptr<HttpAuthHandler> digest_handler(
-      new MockAuthHandler(
-          HttpAuth::AUTH_SCHEME_DIGEST, kRealm1, HttpAuth::AUTH_PROXY));
+  std::unique_ptr<HttpAuthHandler> digest_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_DIGEST, kRealm1, HttpAuth::AUTH_PROXY));
   HttpAuthCache::Entry* entry_pre = cache.Add(
       origin,
       digest_handler->realm(),
@@ -446,21 +430,17 @@ TEST(HttpAuthCacheTest, UpdateAllFrom) {
   std::string path("/some/path");
   std::string another_path("/another/path");
 
-  scoped_ptr<HttpAuthHandler> realm1_handler(
-      new MockAuthHandler(
-          HttpAuth::AUTH_SCHEME_BASIC, kRealm1, HttpAuth::AUTH_SERVER));
+  std::unique_ptr<HttpAuthHandler> realm1_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_BASIC, kRealm1, HttpAuth::AUTH_SERVER));
 
-  scoped_ptr<HttpAuthHandler> realm2_handler(
-      new MockAuthHandler(
-          HttpAuth::AUTH_SCHEME_BASIC, kRealm2, HttpAuth::AUTH_PROXY));
+  std::unique_ptr<HttpAuthHandler> realm2_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_BASIC, kRealm2, HttpAuth::AUTH_PROXY));
 
-  scoped_ptr<HttpAuthHandler> realm3_digest_handler(
-      new MockAuthHandler(
-          HttpAuth::AUTH_SCHEME_DIGEST, kRealm3, HttpAuth::AUTH_SERVER));
+  std::unique_ptr<HttpAuthHandler> realm3_digest_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_DIGEST, kRealm3, HttpAuth::AUTH_SERVER));
 
-  scoped_ptr<HttpAuthHandler> realm4_handler(
-      new MockAuthHandler(
-          HttpAuth::AUTH_SCHEME_BASIC, kRealm4, HttpAuth::AUTH_SERVER));
+  std::unique_ptr<HttpAuthHandler> realm4_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_BASIC, kRealm4, HttpAuth::AUTH_SERVER));
 
   HttpAuthCache first_cache;
   HttpAuthCache::Entry* entry;

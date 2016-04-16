@@ -295,23 +295,24 @@ SSLClientSocketPool* HttpNetworkSession::GetSocketPoolForSSLWithProxy(
       proxy_server);
 }
 
-scoped_ptr<base::Value> HttpNetworkSession::SocketPoolInfoToValue() const {
+std::unique_ptr<base::Value> HttpNetworkSession::SocketPoolInfoToValue() const {
   // TODO(yutak): Should merge values from normal pools and WebSocket pools.
   return normal_socket_pool_manager_->SocketPoolInfoToValue();
 }
 
-scoped_ptr<base::Value> HttpNetworkSession::SpdySessionPoolInfoToValue() const {
+std::unique_ptr<base::Value> HttpNetworkSession::SpdySessionPoolInfoToValue()
+    const {
   return spdy_session_pool_.SpdySessionPoolInfoToValue();
 }
 
-scoped_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("sessions", quic_stream_factory_.QuicStreamFactoryInfoToValue());
   dict->SetBoolean("quic_enabled", params_.enable_quic);
   dict->SetBoolean("quic_enabled_for_proxies", params_.enable_quic_for_proxies);
   dict->SetBoolean("enable_quic_port_selection",
                    params_.enable_quic_port_selection);
-  scoped_ptr<base::ListValue> connection_options(new base::ListValue);
+  std::unique_ptr<base::ListValue> connection_options(new base::ListValue);
   for (QuicTagVector::const_iterator it =
            params_.quic_connection_options.begin();
        it != params_.quic_connection_options.end(); ++it) {
@@ -319,7 +320,8 @@ scoped_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   }
   dict->Set("connection_options", std::move(connection_options));
 
-  scoped_ptr<base::ListValue> origins_to_force_quic_on(new base::ListValue);
+  std::unique_ptr<base::ListValue> origins_to_force_quic_on(
+      new base::ListValue);
   for (const auto& origin : params_.origins_to_force_quic_on) {
     origins_to_force_quic_on->AppendString("'" + origin.ToString() + "'");
   }

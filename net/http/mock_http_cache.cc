@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/completion_callback.h"
@@ -493,8 +494,8 @@ class MockDiskCache::NotImplementedIterator : public Iterator {
   }
 };
 
-scoped_ptr<disk_cache::Backend::Iterator> MockDiskCache::CreateIterator() {
-  return scoped_ptr<Iterator>(new NotImplementedIterator());
+std::unique_ptr<disk_cache::Backend::Iterator> MockDiskCache::CreateIterator() {
+  return std::unique_ptr<Iterator>(new NotImplementedIterator());
 }
 
 void MockDiskCache::GetStats(base::StringPairs* stats) {
@@ -518,9 +519,10 @@ void MockDiskCache::CallbackLater(const CompletionCallback& callback,
 
 //-----------------------------------------------------------------------------
 
-int MockBackendFactory::CreateBackend(NetLog* net_log,
-                                      scoped_ptr<disk_cache::Backend>* backend,
-                                      const CompletionCallback& callback) {
+int MockBackendFactory::CreateBackend(
+    NetLog* net_log,
+    std::unique_ptr<disk_cache::Backend>* backend,
+    const CompletionCallback& callback) {
   backend->reset(new MockDiskCache());
   return OK;
 }
@@ -528,11 +530,11 @@ int MockBackendFactory::CreateBackend(NetLog* net_log,
 //-----------------------------------------------------------------------------
 
 MockHttpCache::MockHttpCache()
-    : MockHttpCache(make_scoped_ptr(new MockBackendFactory())) {}
+    : MockHttpCache(base::WrapUnique(new MockBackendFactory())) {}
 
 MockHttpCache::MockHttpCache(
-    scoped_ptr<HttpCache::BackendFactory> disk_cache_factory)
-    : http_cache_(make_scoped_ptr(new MockNetworkLayer()),
+    std::unique_ptr<HttpCache::BackendFactory> disk_cache_factory)
+    : http_cache_(base::WrapUnique(new MockNetworkLayer()),
                   std::move(disk_cache_factory),
                   true) {}
 
@@ -548,7 +550,7 @@ MockDiskCache* MockHttpCache::disk_cache() {
   return static_cast<MockDiskCache*>(backend());
 }
 
-int MockHttpCache::CreateTransaction(scoped_ptr<HttpTransaction>* trans) {
+int MockHttpCache::CreateTransaction(std::unique_ptr<HttpTransaction>* trans) {
   return http_cache_.CreateTransaction(DEFAULT_PRIORITY, trans);
 }
 
@@ -633,7 +635,7 @@ int MockDiskCacheNoCB::CreateEntry(const std::string& key,
 
 int MockBackendNoCbFactory::CreateBackend(
     NetLog* net_log,
-    scoped_ptr<disk_cache::Backend>* backend,
+    std::unique_ptr<disk_cache::Backend>* backend,
     const CompletionCallback& callback) {
   backend->reset(new MockDiskCacheNoCB());
   return OK;
@@ -652,7 +654,7 @@ MockBlockingBackendFactory::~MockBlockingBackendFactory() {
 
 int MockBlockingBackendFactory::CreateBackend(
     NetLog* net_log,
-    scoped_ptr<disk_cache::Backend>* backend,
+    std::unique_ptr<disk_cache::Backend>* backend,
     const CompletionCallback& callback) {
   if (!block_) {
     if (!fail_)

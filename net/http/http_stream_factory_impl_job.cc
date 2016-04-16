@@ -66,7 +66,7 @@ void RecordChannelIDKeyMatch(SSLClientSocket* ssl_socket,
   ssl_socket->GetSSLInfo(&ssl_info);
   if (!ssl_info.channel_id_sent)
     return;
-  scoped_ptr<crypto::ECPrivateKey> request_key;
+  std::unique_ptr<crypto::ECPrivateKey> request_key;
   ChannelIDService::Request request;
   int result = channel_id_service->GetOrCreateChannelID(
       host, &request_key, base::Bind(&DoNothingAsyncCallback), &request);
@@ -114,14 +114,14 @@ void RecordChannelIDKeyMatch(SSLClientSocket* ssl_socket,
 }  // namespace
 
 // Returns parameters associated with the start of a HTTP stream job.
-scoped_ptr<base::Value> NetLogHttpStreamJobCallback(
+std::unique_ptr<base::Value> NetLogHttpStreamJobCallback(
     const NetLog::Source& source,
     const GURL* original_url,
     const GURL* url,
     const AlternativeService* alternative_service,
     RequestPriority priority,
     NetLogCaptureMode /* capture_mode */) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   if (source.IsValid())
     source.AddToEventParameters(dict.get());
   dict->SetString("original_url", original_url->GetOrigin().spec());
@@ -132,21 +132,21 @@ scoped_ptr<base::Value> NetLogHttpStreamJobCallback(
 }
 
 // Returns parameters associated with the delay of the HTTP stream job.
-scoped_ptr<base::Value> NetLogHttpStreamJobDelayCallback(
+std::unique_ptr<base::Value> NetLogHttpStreamJobDelayCallback(
     base::TimeDelta delay,
     NetLogCaptureMode /* capture_mode */) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("resume_after_ms", static_cast<int>(delay.InMilliseconds()));
   return std::move(dict);
 }
 
 // Returns parameters associated with the Proto (with NPN negotiation) of a HTTP
 // stream.
-scoped_ptr<base::Value> NetLogHttpStreamProtoCallback(
+std::unique_ptr<base::Value> NetLogHttpStreamProtoCallback(
     const SSLClientSocket::NextProtoStatus status,
     const std::string* proto,
     NetLogCaptureMode /* capture_mode */) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("next_proto_status",
                   SSLClientSocket::NextProtoStatusToString(status));
@@ -1749,12 +1749,13 @@ int HttpStreamFactoryImpl::Job::ValidSpdySessionPool::FindAvailableSession(
 }
 
 int HttpStreamFactoryImpl::Job::ValidSpdySessionPool::
-    CreateAvailableSessionFromSocket(const SpdySessionKey& key,
-                                     scoped_ptr<ClientSocketHandle> connection,
-                                     const BoundNetLog& net_log,
-                                     int certificate_error_code,
-                                     bool is_secure,
-                                     base::WeakPtr<SpdySession>* spdy_session) {
+    CreateAvailableSessionFromSocket(
+        const SpdySessionKey& key,
+        std::unique_ptr<ClientSocketHandle> connection,
+        const BoundNetLog& net_log,
+        int certificate_error_code,
+        bool is_secure,
+        base::WeakPtr<SpdySession>* spdy_session) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("net"),
                "HttpStreamFactoryImpl::Job::CreateAvailableSessionFromSocket");
   *spdy_session = spdy_session_pool_->CreateAvailableSessionFromSocket(

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/request_priority.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler_mock.h"
@@ -93,7 +94,7 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
     HttpRequestInfo* request_info = new HttpRequestInfo;
     request_info->url = GURL(url);
     request_info->method = "GET";
-    request_info_vector_.push_back(make_scoped_ptr(request_info));
+    request_info_vector_.push_back(base::WrapUnique(request_info));
     return request_info;
   }
 
@@ -102,15 +103,15 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
   }
 
   scoped_refptr<SSLConfigService> ssl_config_service_;
-  scoped_ptr<HttpAuthHandlerMock::Factory> auth_handler_factory_;
-  scoped_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<HttpAuthHandlerMock::Factory> auth_handler_factory_;
+  std::unique_ptr<ProxyService> proxy_service_;
 
   MockClientSocketFactory mock_socket_factory_;
   MockHostResolver mock_resolver_;
   HttpServerPropertiesImpl http_server_properties_;
   TransportSecurityState transport_security_state_;
   HttpNetworkSession::Params session_params_;
-  std::vector<scoped_ptr<HttpRequestInfo>> request_info_vector_;
+  std::vector<std::unique_ptr<HttpRequestInfo>> request_info_vector_;
 };
 
 // Tests that HttpNetworkTransaction attempts to fallback from

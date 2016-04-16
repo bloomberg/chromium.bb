@@ -4,8 +4,9 @@
 
 #include "net/http/http_auth_gssapi_posix.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/native_library.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
@@ -82,21 +83,22 @@ TEST(HttpAuthGSSAPIPOSIXTest, GSSAPIStartup) {
   // TODO(ahendrickson): Manipulate the libraries and paths to test each of the
   // libraries we expect, and also whether or not they have the interface
   // functions we want.
-  scoped_ptr<GSSAPILibrary> gssapi(new GSSAPISharedLibrary(std::string()));
+  std::unique_ptr<GSSAPILibrary> gssapi(new GSSAPISharedLibrary(std::string()));
   DCHECK(gssapi.get());
   EXPECT_TRUE(gssapi.get()->Init());
 }
 
 #if defined(DLOPEN_KERBEROS)
 TEST(HttpAuthGSSAPIPOSIXTest, GSSAPILoadCustomLibrary) {
-  scoped_ptr<GSSAPILibrary> gssapi(
+  std::unique_ptr<GSSAPILibrary> gssapi(
       new GSSAPISharedLibrary("/this/library/does/not/exist"));
   EXPECT_FALSE(gssapi.get()->Init());
 }
 #endif  // defined(DLOPEN_KERBEROS)
 
 TEST(HttpAuthGSSAPIPOSIXTest, GSSAPICycle) {
-  scoped_ptr<test::MockGSSAPILibrary> mock_library(new test::MockGSSAPILibrary);
+  std::unique_ptr<test::MockGSSAPILibrary> mock_library(
+      new test::MockGSSAPILibrary);
   DCHECK(mock_library.get());
   mock_library->Init();
   const char kAuthResponse[] = "Mary had a little lamb";

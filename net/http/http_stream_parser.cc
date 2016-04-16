@@ -81,12 +81,12 @@ bool HeadersContainMultipleCopiesOfField(const HttpResponseHeaders& headers,
   return false;
 }
 
-scoped_ptr<base::Value> NetLogSendRequestBodyCallback(
+std::unique_ptr<base::Value> NetLogSendRequestBodyCallback(
     uint64_t length,
     bool is_chunked,
     bool did_merge,
     NetLogCaptureMode /* capture_mode */) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("length", static_cast<int>(length));
   dict->SetBoolean("is_chunked", is_chunked);
   dict->SetBoolean("did_merge", did_merge);

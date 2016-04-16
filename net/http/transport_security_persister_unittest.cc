@@ -5,13 +5,13 @@
 #include "net/http/transport_security_persister.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "net/http/transport_security_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +41,7 @@ class TransportSecurityPersisterTest : public testing::Test {
  protected:
   base::ScopedTempDir temp_dir_;
   TransportSecurityState state_;
-  scoped_ptr<TransportSecurityPersister> persister_;
+  std::unique_ptr<TransportSecurityPersister> persister_;
 };
 
 TEST_F(TransportSecurityPersisterTest, SerializeData1) {

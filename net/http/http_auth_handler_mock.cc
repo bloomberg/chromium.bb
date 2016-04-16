@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -162,7 +163,7 @@ HttpAuthHandlerMock::Factory::~Factory() {
 
 void HttpAuthHandlerMock::Factory::AddMockHandler(
     HttpAuthHandler* handler, HttpAuth::Target target) {
-  handlers_[target].push_back(make_scoped_ptr(handler));
+  handlers_[target].push_back(base::WrapUnique(handler));
 }
 
 int HttpAuthHandlerMock::Factory::CreateAuthHandler(
@@ -173,11 +174,12 @@ int HttpAuthHandlerMock::Factory::CreateAuthHandler(
     CreateReason reason,
     int nonce_count,
     const BoundNetLog& net_log,
-    scoped_ptr<HttpAuthHandler>* handler) {
+    std::unique_ptr<HttpAuthHandler>* handler) {
   if (handlers_[target].empty())
     return ERR_UNEXPECTED;
-  scoped_ptr<HttpAuthHandler> tmp_handler = std::move(handlers_[target][0]);
-  std::vector<scoped_ptr<HttpAuthHandler>>& handlers = handlers_[target];
+  std::unique_ptr<HttpAuthHandler> tmp_handler =
+      std::move(handlers_[target][0]);
+  std::vector<std::unique_ptr<HttpAuthHandler>>& handlers = handlers_[target];
   handlers.erase(handlers.begin());
   if (do_init_from_challenge_ &&
       !tmp_handler->InitFromChallenge(challenge, target, ssl_info, origin,

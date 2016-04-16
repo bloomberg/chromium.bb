@@ -38,8 +38,9 @@ HttpNetworkLayer::~HttpNetworkLayer() {
 #endif
 }
 
-int HttpNetworkLayer::CreateTransaction(RequestPriority priority,
-                                        scoped_ptr<HttpTransaction>* trans) {
+int HttpNetworkLayer::CreateTransaction(
+    RequestPriority priority,
+    std::unique_ptr<HttpTransaction>* trans) {
   if (suspended_)
     return ERR_NETWORK_IO_SUSPENDED;
 

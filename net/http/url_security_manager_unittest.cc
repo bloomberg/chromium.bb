@@ -45,11 +45,11 @@ const TestData kTestDataList[] = {
 }  // namespace
 
 TEST(URLSecurityManager, UseDefaultCredentials) {
-  scoped_ptr<HttpAuthFilter> auth_filter(
+  std::unique_ptr<HttpAuthFilter> auth_filter(
       new HttpAuthFilterWhitelist(kTestAuthWhitelist));
   ASSERT_TRUE(auth_filter);
   // The URL security manager takes ownership of |auth_filter|.
-  scoped_ptr<URLSecurityManager> url_security_manager(
+  std::unique_ptr<URLSecurityManager> url_security_manager(
       URLSecurityManager::Create());
   url_security_manager->SetDefaultWhitelist(std::move(auth_filter));
   ASSERT_TRUE(url_security_manager.get());
@@ -65,11 +65,11 @@ TEST(URLSecurityManager, UseDefaultCredentials) {
 }
 
 TEST(URLSecurityManager, CanDelegate) {
-  scoped_ptr<HttpAuthFilter> auth_filter(
+  std::unique_ptr<HttpAuthFilter> auth_filter(
       new HttpAuthFilterWhitelist(kTestAuthWhitelist));
   ASSERT_TRUE(auth_filter);
   // The URL security manager takes ownership of |auth_filter|.
-  scoped_ptr<URLSecurityManager> url_security_manager(
+  std::unique_ptr<URLSecurityManager> url_security_manager(
       URLSecurityManager::Create());
   url_security_manager->SetDelegateWhitelist(std::move(auth_filter));
   ASSERT_TRUE(url_security_manager.get());
@@ -84,7 +84,7 @@ TEST(URLSecurityManager, CanDelegate) {
 
 TEST(URLSecurityManager, CanDelegate_NoWhitelist) {
   // Nothing can delegate in this case.
-  scoped_ptr<URLSecurityManager> url_security_manager(
+  std::unique_ptr<URLSecurityManager> url_security_manager(
       URLSecurityManager::Create());
   ASSERT_TRUE(url_security_manager.get());
 

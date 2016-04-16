@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/http/http_response_headers.h"
+
 #include <stdint.h>
 
 #include <algorithm>
 #include <iostream>
 #include <limits>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/http/http_byte_range.h"
-#include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -2087,7 +2088,7 @@ TEST(HttpResponseHeadersTest, ToNetLogParamAndBackAgain) {
   HeadersToRaw(&headers);
   scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
 
-  scoped_ptr<base::Value> event_param(parsed->NetLogCallback(
+  std::unique_ptr<base::Value> event_param(parsed->NetLogCallback(
       NetLogCaptureMode::IncludeCookiesAndCredentials()));
   scoped_refptr<HttpResponseHeaders> recreated;
 

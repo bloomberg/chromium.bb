@@ -106,7 +106,8 @@ class NET_EXPORT HttpServerPropertiesImpl
       const AlternativeService& alternative_service) override;
   void ClearAlternativeServices(const HostPortPair& origin) override;
   const AlternativeServiceMap& alternative_service_map() const override;
-  scoped_ptr<base::Value> GetAlternativeServiceInfoAsValue() const override;
+  std::unique_ptr<base::Value> GetAlternativeServiceInfoAsValue()
+      const override;
   const SettingsMap& GetSpdySettings(
       const HostPortPair& host_port_pair) override;
   bool SetSpdySetting(const HostPortPair& host_port_pair,

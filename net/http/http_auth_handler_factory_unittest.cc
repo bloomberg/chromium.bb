@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include "net/http/http_auth_handler_factory.h"
+
+#include <memory>
+
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler.h"
-#include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/http/mock_allow_http_auth_preferences.h"
 #include "net/http/url_security_manager.h"
@@ -30,7 +32,7 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
                         CreateReason reason,
                         int nonce_count,
                         const BoundNetLog& net_log,
-                        scoped_ptr<HttpAuthHandler>* handler) override {
+                        std::unique_ptr<HttpAuthHandler>* handler) override {
     handler->reset();
     return return_code_;
   }
@@ -57,7 +59,7 @@ TEST(HttpAuthHandlerFactoryTest, RegistryFactory) {
   MockHttpAuthHandlerFactory* mock_factory_digest_replace =
       new MockHttpAuthHandlerFactory(kDigestReturnCodeReplace);
 
-  scoped_ptr<HttpAuthHandler> handler;
+  std::unique_ptr<HttpAuthHandler> handler;
 
   // No schemes should be supported in the beginning.
   EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME,
@@ -102,9 +104,9 @@ TEST(HttpAuthHandlerFactoryTest, RegistryFactory) {
 }
 
 TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
-  scoped_ptr<HostResolver> host_resolver(new MockHostResolver());
+  std::unique_ptr<HostResolver> host_resolver(new MockHostResolver());
   MockAllowHttpAuthPreferences http_auth_preferences;
-  scoped_ptr<HttpAuthHandlerRegistryFactory> http_auth_handler_factory(
+  std::unique_ptr<HttpAuthHandlerRegistryFactory> http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
   http_auth_handler_factory->SetHttpAuthPreferences(kNegotiateAuthScheme,
                                                     &http_auth_preferences);
@@ -112,7 +114,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
   GURL proxy_origin("http://cache.example.com:3128");
   SSLInfo null_ssl_info;
   {
-    scoped_ptr<HttpAuthHandler> handler;
+    std::unique_ptr<HttpAuthHandler> handler;
     int rv = http_auth_handler_factory->CreateAuthHandlerFromString(
         "Basic realm=\"FooBar\"", HttpAuth::AUTH_SERVER, null_ssl_info,
         server_origin, BoundNetLog(), &handler);
@@ -125,7 +127,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
     EXPECT_FALSE(handler->is_connection_based());
   }
   {
-    scoped_ptr<HttpAuthHandler> handler;
+    std::unique_ptr<HttpAuthHandler> handler;
     int rv = http_auth_handler_factory->CreateAuthHandlerFromString(
         "UNSUPPORTED realm=\"FooBar\"", HttpAuth::AUTH_SERVER, null_ssl_info,
         server_origin, BoundNetLog(), &handler);
@@ -133,7 +135,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
     EXPECT_TRUE(handler.get() == NULL);
   }
   {
-    scoped_ptr<HttpAuthHandler> handler;
+    std::unique_ptr<HttpAuthHandler> handler;
     int rv = http_auth_handler_factory->CreateAuthHandlerFromString(
         "Digest realm=\"FooBar\", nonce=\"xyz\"", HttpAuth::AUTH_PROXY,
         null_ssl_info, proxy_origin, BoundNetLog(), &handler);
@@ -146,7 +148,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
     EXPECT_FALSE(handler->is_connection_based());
   }
   {
-    scoped_ptr<HttpAuthHandler> handler;
+    std::unique_ptr<HttpAuthHandler> handler;
     int rv = http_auth_handler_factory->CreateAuthHandlerFromString(
         "NTLM", HttpAuth::AUTH_SERVER, null_ssl_info, server_origin,
         BoundNetLog(), &handler);
@@ -159,7 +161,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
     EXPECT_TRUE(handler->is_connection_based());
   }
   {
-    scoped_ptr<HttpAuthHandler> handler;
+    std::unique_ptr<HttpAuthHandler> handler;
     int rv = http_auth_handler_factory->CreateAuthHandlerFromString(
         "Negotiate", HttpAuth::AUTH_SERVER, null_ssl_info, server_origin,
         BoundNetLog(), &handler);

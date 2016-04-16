@@ -20,7 +20,7 @@ HttpNetworkSessionPeer::HttpNetworkSessionPeer(HttpNetworkSession* session)
 HttpNetworkSessionPeer::~HttpNetworkSessionPeer() {}
 
 void HttpNetworkSessionPeer::SetClientSocketPoolManager(
-    scoped_ptr<ClientSocketPoolManager> socket_pool_manager) {
+    std::unique_ptr<ClientSocketPoolManager> socket_pool_manager) {
   session_->normal_socket_pool_manager_.swap(socket_pool_manager);
 }
 
@@ -29,12 +29,12 @@ void HttpNetworkSessionPeer::SetProxyService(ProxyService* proxy_service) {
 }
 
 void HttpNetworkSessionPeer::SetHttpStreamFactory(
-    scoped_ptr<HttpStreamFactory> http_stream_factory) {
+    std::unique_ptr<HttpStreamFactory> http_stream_factory) {
   session_->http_stream_factory_.swap(http_stream_factory);
 }
 
 void HttpNetworkSessionPeer::SetHttpStreamFactoryForWebSocket(
-    scoped_ptr<HttpStreamFactory> http_stream_factory) {
+    std::unique_ptr<HttpStreamFactory> http_stream_factory) {
   session_->http_stream_factory_for_websocket_.swap(http_stream_factory);
 }
 

@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/net_error_details.h"
@@ -325,8 +325,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // |proxy_info_| is the ProxyInfo used by the HttpStreamRequest.
   ProxyInfo proxy_info_;
 
-  scoped_ptr<HttpStreamRequest> stream_request_;
-  scoped_ptr<HttpStream> stream_;
+  std::unique_ptr<HttpStreamRequest> stream_request_;
+  std::unique_ptr<HttpStream> stream_;
 
   // True if we've validated the headers that the stream parser has returned.
   bool headers_valid_;
@@ -345,8 +345,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   SSLFailureState fallback_failure_state_;
 
   // Keys to use for signing message in Token Binding header.
-  scoped_ptr<crypto::ECPrivateKey> provided_token_binding_key_;
-  scoped_ptr<crypto::ECPrivateKey> referred_token_binding_key_;
+  std::unique_ptr<crypto::ECPrivateKey> provided_token_binding_key_;
+  std::unique_ptr<crypto::ECPrivateKey> referred_token_binding_key_;
   // Object to manage lookup of |provided_token_binding_key_| and
   // |referred_token_binding_key_|.
   ChannelIDService::Request token_binding_request_;

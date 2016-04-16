@@ -15,6 +15,7 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -66,15 +67,16 @@ HttpCache::DefaultBackend::DefaultBackend(
 HttpCache::DefaultBackend::~DefaultBackend() {}
 
 // static
-scoped_ptr<HttpCache::BackendFactory> HttpCache::DefaultBackend::InMemory(
+std::unique_ptr<HttpCache::BackendFactory> HttpCache::DefaultBackend::InMemory(
     int max_bytes) {
-  return make_scoped_ptr(new DefaultBackend(MEMORY_CACHE, CACHE_BACKEND_DEFAULT,
-                                            base::FilePath(), max_bytes,
-                                            nullptr));
+  return base::WrapUnique(
+      new DefaultBackend(MEMORY_CACHE, CACHE_BACKEND_DEFAULT, base::FilePath(),
+                         max_bytes, nullptr));
 }
 
 int HttpCache::DefaultBackend::CreateBackend(
-    NetLog* net_log, scoped_ptr<disk_cache::Backend>* backend,
+    NetLog* net_log,
+    std::unique_ptr<disk_cache::Backend>* backend,
     const CompletionCallback& callback) {
   DCHECK_GE(max_bytes_, 0);
   return disk_cache::CreateCacheBackend(type_,
@@ -113,7 +115,7 @@ struct HttpCache::PendingOp {
   ~PendingOp() {}
 
   disk_cache::Entry* disk_entry;
-  scoped_ptr<disk_cache::Backend> backend;
+  std::unique_ptr<disk_cache::Backend> backend;
   WorkItem* writer;
   CompletionCallback callback;  // BackendCallback.
   WorkItemList pending_queue;
@@ -210,7 +212,7 @@ class HttpCache::MetadataWriter {
   void SelfDestroy();
   void OnIOComplete(int result);
 
-  scoped_ptr<HttpCache::Transaction> transaction_;
+  std::unique_ptr<HttpCache::Transaction> transaction_;
   bool verified_;
   scoped_refptr<IOBuffer> buf_;
   int buf_len_;
@@ -289,14 +291,14 @@ class HttpCache::QuicServerInfoFactoryAdaptor : public QuicServerInfoFactory {
 
 //-----------------------------------------------------------------------------
 HttpCache::HttpCache(HttpNetworkSession* session,
-                     scoped_ptr<BackendFactory> backend_factory,
+                     std::unique_ptr<BackendFactory> backend_factory,
                      bool set_up_quic_server_info)
-    : HttpCache(make_scoped_ptr(new HttpNetworkLayer(session)),
+    : HttpCache(base::WrapUnique(new HttpNetworkLayer(session)),
                 std::move(backend_factory),
                 set_up_quic_server_info) {}
 
-HttpCache::HttpCache(scoped_ptr<HttpTransactionFactory> network_layer,
-                     scoped_ptr<BackendFactory> backend_factory,
+HttpCache::HttpCache(std::unique_ptr<HttpTransactionFactory> network_layer,
+                     std::unique_ptr<BackendFactory> backend_factory,
                      bool set_up_quic_server_info)
     : net_log_(nullptr),
       backend_factory_(std::move(backend_factory)),
@@ -441,7 +443,7 @@ void HttpCache::OnExternalCacheHit(const GURL& url,
 }
 
 int HttpCache::CreateTransaction(RequestPriority priority,
-                                 scoped_ptr<HttpTransaction>* trans) {
+                                 std::unique_ptr<HttpTransaction>* trans) {
   // Do lazy initialization of disk cache if needed.
   if (!disk_cache_.get()) {
     // We don't care about the result.
@@ -467,10 +469,10 @@ HttpNetworkSession* HttpCache::GetSession() {
   return network_layer_->GetSession();
 }
 
-scoped_ptr<HttpTransactionFactory>
+std::unique_ptr<HttpTransactionFactory>
 HttpCache::SetHttpNetworkTransactionFactoryForTesting(
-    scoped_ptr<HttpTransactionFactory> new_network_layer) {
-  scoped_ptr<HttpTransactionFactory> old_network_layer(
+    std::unique_ptr<HttpTransactionFactory> new_network_layer) {
+  std::unique_ptr<HttpTransactionFactory> old_network_layer(
       std::move(network_layer_));
   network_layer_ = std::move(new_network_layer);
   return old_network_layer;
@@ -485,8 +487,8 @@ int HttpCache::CreateBackend(disk_cache::Backend** backend,
 
   building_backend_ = true;
 
-  scoped_ptr<WorkItem> item(new WorkItem(WI_CREATE_BACKEND, NULL, callback,
-                                         backend));
+  std::unique_ptr<WorkItem> item(
+      new WorkItem(WI_CREATE_BACKEND, NULL, callback, backend));
 
   // This is the only operation that we can do that is not related to any given
   // entry, so we use an empty key for it.
@@ -1023,7 +1025,7 @@ void HttpCache::OnIOComplete(int result, PendingOp* pending_op) {
   if (op == WI_CREATE_BACKEND)
     return OnBackendCreated(result, pending_op);
 
-  scoped_ptr<WorkItem> item(pending_op->writer);
+  std::unique_ptr<WorkItem> item(pending_op->writer);
   bool fail_requests = false;
 
   ActiveEntry* entry = NULL;
@@ -1119,7 +1121,7 @@ void HttpCache::OnPendingOpComplete(const base::WeakPtr<HttpCache>& cache,
 }
 
 void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
-  scoped_ptr<WorkItem> item(pending_op->writer);
+  std::unique_ptr<WorkItem> item(pending_op->writer);
   WorkItemOperation op = item->operation();
   DCHECK_EQ(WI_CREATE_BACKEND, op);
 

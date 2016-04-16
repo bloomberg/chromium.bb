@@ -301,7 +301,8 @@ class NET_EXPORT HttpResponseHeaders
   bool IsChunkEncoded() const;
 
   // Creates a Value for use with the NetLog containing the response headers.
-  scoped_ptr<base::Value> NetLogCallback(NetLogCaptureMode capture_mode) const;
+  std::unique_ptr<base::Value> NetLogCallback(
+      NetLogCaptureMode capture_mode) const;
 
   // Takes in a Value created by the above function, and attempts to create a
   // copy of the original headers.  Returns true on success.  On failure,

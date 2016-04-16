@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/http/http_stream_factory.h"
 #include "net/log/net_log.h"
@@ -92,16 +93,18 @@ class NET_EXPORT BidirectionalStream
   // the request, and must be non-NULL. |session| is the http network session
   // with which this request will be made. |delegate| must be non-NULL.
   // |session| and |delegate| must outlive |this|.
-  BidirectionalStream(scoped_ptr<BidirectionalStreamRequestInfo> request_info,
-                      HttpNetworkSession* session,
-                      Delegate* delegate);
+  BidirectionalStream(
+      std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
+      HttpNetworkSession* session,
+      Delegate* delegate);
 
   // Constructor that accepts a Timer, which can be used in tests to control
   // the buffering of received data.
-  BidirectionalStream(scoped_ptr<BidirectionalStreamRequestInfo> request_info,
-                      HttpNetworkSession* session,
-                      Delegate* delegate,
-                      scoped_ptr<base::Timer> timer);
+  BidirectionalStream(
+      std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
+      HttpNetworkSession* session,
+      Delegate* delegate,
+      std::unique_ptr<base::Timer> timer);
 
   // Cancels |stream_request_| or |stream_impl_| if applicable.
   // |this| should not be destroyed during Delegate::OnHeadersSent or
@@ -186,7 +189,7 @@ class NET_EXPORT BidirectionalStream
   void OnQuicBroken() override;
 
   // BidirectionalStreamRequestInfo used when requesting the stream.
-  scoped_ptr<BidirectionalStreamRequestInfo> request_info_;
+  std::unique_ptr<BidirectionalStreamRequestInfo> request_info_;
   const BoundNetLog net_log_;
 
   HttpNetworkSession* session_;
@@ -195,13 +198,13 @@ class NET_EXPORT BidirectionalStream
 
   // Timer used to buffer data received in short time-spans and send a single
   // read completion notification.
-  scoped_ptr<base::Timer> timer_;
+  std::unique_ptr<base::Timer> timer_;
   // HttpStreamRequest used to request a BidirectionalStreamImpl. This is NULL
   // if the request has been canceled or completed.
-  scoped_ptr<HttpStreamRequest> stream_request_;
+  std::unique_ptr<HttpStreamRequest> stream_request_;
   // The underlying BidirectioanlStreamImpl used for this stream. It is
   // non-NULL, if the |stream_request_| successfully finishes.
-  scoped_ptr<BidirectionalStreamImpl> stream_impl_;
+  std::unique_ptr<BidirectionalStreamImpl> stream_impl_;
 
   // Buffer used for reading.
   scoped_refptr<IOBuffer> read_buffer_;

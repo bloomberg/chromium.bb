@@ -5,7 +5,9 @@
 #include "net/http/http_stream_parser.h"
 
 #include <stdint.h>
+
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,8 +15,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -46,17 +48,17 @@ const size_t kMaxPayloadSize =
 
 // Helper method to create a connected ClientSocketHandle using |data|.
 // Modifies |data|.
-scoped_ptr<ClientSocketHandle> CreateConnectedSocketHandle(
+std::unique_ptr<ClientSocketHandle> CreateConnectedSocketHandle(
     SequencedSocketData* data) {
   data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
 
-  scoped_ptr<MockTCPClientSocket> socket(
+  std::unique_ptr<MockTCPClientSocket> socket(
       new MockTCPClientSocket(net::AddressList(), nullptr, data));
 
   TestCompletionCallback callback;
   EXPECT_EQ(OK, socket->Connect(callback.callback()));
 
-  scoped_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
+  std::unique_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
   socket_handle->SetSocket(std::move(socket));
   return socket_handle;
 }
@@ -126,8 +128,8 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_NoBody) {
 }
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_EmptyBody) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
-  scoped_ptr<UploadDataStream> body(make_scoped_ptr(
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
+  std::unique_ptr<UploadDataStream> body(base::WrapUnique(
       new ElementsUploadDataStream(std::move(element_readers), 0)));
   ASSERT_EQ(OK, body->Init(CompletionCallback()));
   // Shouldn't be merged if upload data is empty.
@@ -137,7 +139,7 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_EmptyBody) {
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_ChunkedBody) {
   const std::string payload = "123";
-  scoped_ptr<ChunkedUploadDataStream> body(new ChunkedUploadDataStream(0));
+  std::unique_ptr<ChunkedUploadDataStream> body(new ChunkedUploadDataStream(0));
   body->AppendData(payload.data(), payload.size(), true);
   ASSERT_EQ(OK, body->Init(TestCompletionCallback().callback()));
   // Shouldn't be merged if upload data carries chunked data.
@@ -153,13 +155,13 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &temp_file_path));
 
   {
-    std::vector<scoped_ptr<UploadElementReader>> element_readers;
+    std::vector<std::unique_ptr<UploadElementReader>> element_readers;
 
-    element_readers.push_back(make_scoped_ptr(
+    element_readers.push_back(base::WrapUnique(
         new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
                                     temp_file_path, 0, 0, base::Time())));
 
-    scoped_ptr<UploadDataStream> body(
+    std::unique_ptr<UploadDataStream> body(
         new ElementsUploadDataStream(std::move(element_readers), 0));
     TestCompletionCallback callback;
     ASSERT_EQ(ERR_IO_PENDING, body->Init(callback.callback()));
@@ -174,12 +176,12 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
 }
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_SmallBodyInMemory) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   const std::string payload = "123";
-  element_readers.push_back(make_scoped_ptr(
+  element_readers.push_back(base::WrapUnique(
       new UploadBytesElementReader(payload.data(), payload.size())));
 
-  scoped_ptr<UploadDataStream> body(
+  std::unique_ptr<UploadDataStream> body(
       new ElementsUploadDataStream(std::move(element_readers), 0));
   ASSERT_EQ(OK, body->Init(CompletionCallback()));
   // Yes, should be merged if the in-memory body is small here.
@@ -188,12 +190,12 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_SmallBodyInMemory) {
 }
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_LargeBodyInMemory) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   const std::string payload(10000, 'a');  // 'a' x 10000.
-  element_readers.push_back(make_scoped_ptr(
+  element_readers.push_back(base::WrapUnique(
       new UploadBytesElementReader(payload.data(), payload.size())));
 
-  scoped_ptr<UploadDataStream> body(
+  std::unique_ptr<UploadDataStream> body(
       new ElementsUploadDataStream(std::move(element_readers), 0));
   ASSERT_EQ(OK, body->Init(CompletionCallback()));
   // Shouldn't be merged if the in-memory body is large here.
@@ -207,7 +209,7 @@ TEST(HttpStreamParser, SentBytesNoHeaders) {
   };
 
   SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
-  scoped_ptr<ClientSocketHandle> socket_handle =
+  std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
   HttpRequestInfo request;
@@ -235,7 +237,7 @@ TEST(HttpStreamParser, SentBytesWithHeaders) {
   };
 
   SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
-  scoped_ptr<ClientSocketHandle> socket_handle =
+  std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
   HttpRequestInfo request;
@@ -266,7 +268,7 @@ TEST(HttpStreamParser, SentBytesWithHeadersMultiWrite) {
   };
 
   SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
-  scoped_ptr<ClientSocketHandle> socket_handle =
+  std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
   HttpRequestInfo request;
@@ -298,7 +300,7 @@ TEST(HttpStreamParser, SentBytesWithErrorWritingHeaders) {
   };
 
   SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
-  scoped_ptr<ClientSocketHandle> socket_handle =
+  std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
   HttpRequestInfo request;
@@ -330,12 +332,12 @@ TEST(HttpStreamParser, SentBytesPost) {
   };
 
   SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
-  scoped_ptr<ClientSocketHandle> socket_handle =
+  std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      make_scoped_ptr(new UploadBytesElementReader("hello world!", 12)));
+      base::WrapUnique(new UploadBytesElementReader("hello world!", 12)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
   ASSERT_EQ(OK, upload_data_stream.Init(TestCompletionCallback().callback()));
 
@@ -370,7 +372,7 @@ TEST(HttpStreamParser, SentBytesChunkedPostError) {
   };
 
   SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
-  scoped_ptr<ClientSocketHandle> socket_handle =
+  std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
   ChunkedUploadDataStream upload_data_stream(0);
@@ -433,7 +435,7 @@ TEST(HttpStreamParser, AsyncSingleChunkAndAsyncSocket) {
   ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
-  scoped_ptr<ClientSocketHandle> socket_handle =
+  std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
   HttpRequestInfo request_info;
@@ -510,7 +512,7 @@ TEST(HttpStreamParser, SyncSingleChunkAndAsyncSocket) {
   upload_stream.AppendData(kChunk, arraysize(kChunk) - 1, true);
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
-  scoped_ptr<ClientSocketHandle> socket_handle =
+  std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
   HttpRequestInfo request_info;
@@ -587,7 +589,7 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocketWithMultipleChunks) {
   ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
-  scoped_ptr<ClientSocketHandle> socket_handle =
+  std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
   HttpRequestInfo request_info;
@@ -668,7 +670,7 @@ TEST(HttpStreamParser, AsyncEmptyChunkedUpload) {
   ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
-  scoped_ptr<ClientSocketHandle> socket_handle =
+  std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
   HttpRequestInfo request_info;
@@ -740,7 +742,7 @@ TEST(HttpStreamParser, SyncEmptyChunkedUpload) {
   upload_stream.AppendData(nullptr, 0, true);
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
-  scoped_ptr<ClientSocketHandle> socket_handle =
+  std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
   HttpRequestInfo request_info;
@@ -837,7 +839,7 @@ TEST(HttpStreamParser, TruncatedHeaders) {
     for (size_t i = 0; i < arraysize(reads); i++) {
       SCOPED_TRACE(i);
       SequencedSocketData data(reads[i], 2, writes, arraysize(writes));
-      scoped_ptr<ClientSocketHandle> socket_handle(
+      std::unique_ptr<ClientSocketHandle> socket_handle(
           CreateConnectedSocketHandle(&data));
 
       HttpRequestInfo request_info;
@@ -898,7 +900,7 @@ TEST(HttpStreamParser, Websocket101Response) {
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
-  scoped_ptr<ClientSocketHandle> socket_handle =
+  std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
   HttpRequestInfo request_info;
@@ -1002,9 +1004,9 @@ class SimpleGetRunner {
   scoped_refptr<GrowableIOBuffer> read_buffer_;
   std::vector<MockRead> reads_;
   std::vector<MockWrite> writes_;
-  scoped_ptr<ClientSocketHandle> socket_handle_;
-  scoped_ptr<SequencedSocketData> data_;
-  scoped_ptr<HttpStreamParser> parser_;
+  std::unique_ptr<ClientSocketHandle> socket_handle_;
+  std::unique_ptr<SequencedSocketData> data_;
+  std::unique_ptr<HttpStreamParser> parser_;
   int sequence_number_;
 };
 
@@ -1254,10 +1256,10 @@ TEST(HttpStreamParser, ReadAfterUnownedObjectsDestroyed) {
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
-  scoped_ptr<ClientSocketHandle> socket_handle =
+  std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
-  scoped_ptr<HttpRequestInfo> request_info(new HttpRequestInfo());
+  std::unique_ptr<HttpRequestInfo> request_info(new HttpRequestInfo());
   request_info->method = "GET";
   request_info->url = GURL("http://somewhere/foo.html");
 
@@ -1265,8 +1267,8 @@ TEST(HttpStreamParser, ReadAfterUnownedObjectsDestroyed) {
   HttpStreamParser parser(socket_handle.get(), request_info.get(),
                           read_buffer.get(), BoundNetLog());
 
-  scoped_ptr<HttpRequestHeaders> request_headers(new HttpRequestHeaders());
-  scoped_ptr<HttpResponseInfo> response_info(new HttpResponseInfo());
+  std::unique_ptr<HttpRequestHeaders> request_headers(new HttpRequestHeaders());
+  std::unique_ptr<HttpResponseInfo> response_info(new HttpResponseInfo());
   TestCompletionCallback callback;
   ASSERT_EQ(OK, parser.SendRequest("GET /foo.html HTTP/1.1\r\n",
             *request_headers, response_info.get(), callback.callback()));

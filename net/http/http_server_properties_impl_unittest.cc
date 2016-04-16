@@ -4,12 +4,12 @@
 
 #include "net/http/http_server_properties_impl.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"

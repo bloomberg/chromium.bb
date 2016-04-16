@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "net/base/net_errors.h"
 #include "net/http/mock_http_cache.h"
@@ -86,9 +87,9 @@ TEST(DiskCacheBasedQuicServerInfo, DeleteInCallback) {
   // Use the blocking mock backend factory to force asynchronous completion
   // of quic_server_info->WaitForDataReady(), so that the callback will run.
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
-  MockHttpCache cache(make_scoped_ptr(factory));
+  MockHttpCache cache(base::WrapUnique(factory));
   QuicServerId server_id("www.verisign.com", 443, PRIVACY_MODE_DISABLED);
-  scoped_ptr<QuicServerInfo> quic_server_info(
+  std::unique_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   quic_server_info->Start();
   TestCompletionCallback callback;
@@ -106,7 +107,7 @@ TEST(DiskCacheBasedQuicServerInfo, Update) {
   TestCompletionCallback callback;
 
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  scoped_ptr<QuicServerInfo> quic_server_info(
+  std::unique_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   quic_server_info->Start();
   int rv = quic_server_info->WaitForDataReady(callback.callback());
@@ -179,7 +180,7 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
 
   // Persist data for port 443.
   QuicServerId server_id1("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  scoped_ptr<QuicServerInfo> quic_server_info1(
+  std::unique_ptr<QuicServerInfo> quic_server_info1(
       new DiskCacheBasedQuicServerInfo(server_id1, cache.http_cache()));
   quic_server_info1->Start();
   int rv = quic_server_info1->WaitForDataReady(callback.callback());
@@ -207,7 +208,7 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
 
   // Persist data for port 80.
   QuicServerId server_id2("www.google.com", 80, PRIVACY_MODE_DISABLED);
-  scoped_ptr<QuicServerInfo> quic_server_info2(
+  std::unique_ptr<QuicServerInfo> quic_server_info2(
       new DiskCacheBasedQuicServerInfo(server_id2, cache.http_cache()));
   quic_server_info2->Start();
   rv = quic_server_info2->WaitForDataReady(callback.callback());
@@ -234,7 +235,7 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Verify the stored QuicServerInfo for port 443.
-  scoped_ptr<QuicServerInfo> quic_server_info(
+  std::unique_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_id1, cache.http_cache()));
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
@@ -278,7 +279,7 @@ TEST(DiskCacheBasedQuicServerInfo, IsReadyToPersist) {
   TestCompletionCallback callback;
 
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  scoped_ptr<QuicServerInfo> quic_server_info(
+  std::unique_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   EXPECT_FALSE(quic_server_info->IsDataReady());
   quic_server_info->Start();
@@ -340,7 +341,7 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersist) {
   TestCompletionCallback callback;
 
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  scoped_ptr<QuicServerInfo> quic_server_info(
+  std::unique_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   EXPECT_FALSE(quic_server_info->IsDataReady());
   quic_server_info->Start();
@@ -425,10 +426,10 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersist) {
 
 TEST(DiskCacheBasedQuicServerInfo, CancelWaitForDataReady) {
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
-  MockHttpCache cache(make_scoped_ptr(factory));
+  MockHttpCache cache(base::WrapUnique(factory));
   TestCompletionCallback callback;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  scoped_ptr<QuicServerInfo> quic_server_info(
+  std::unique_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   EXPECT_FALSE(quic_server_info->IsDataReady());
   quic_server_info->Start();
@@ -448,7 +449,7 @@ TEST(DiskCacheBasedQuicServerInfo, CancelWaitForDataReadyButDataIsReady) {
   TestCompletionCallback callback;
 
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  scoped_ptr<QuicServerInfo> quic_server_info(
+  std::unique_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   EXPECT_FALSE(quic_server_info->IsDataReady());
   quic_server_info->Start();
@@ -460,7 +461,7 @@ TEST(DiskCacheBasedQuicServerInfo, CancelWaitForDataReadyButDataIsReady) {
 }
 
 TEST(DiskCacheBasedQuicServerInfo, CancelWaitForDataReadyAfterDeleteCache) {
-  scoped_ptr<QuicServerInfo> quic_server_info;
+  std::unique_ptr<QuicServerInfo> quic_server_info;
   {
     MockHttpCache cache;
     AddMockTransaction(&kHostInfoTransaction1);
@@ -487,7 +488,7 @@ TEST(DiskCacheBasedQuicServerInfo, StartAndPersist) {
   AddMockTransaction(&kHostInfoTransaction1);
 
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  scoped_ptr<QuicServerInfo> quic_server_info(
+  std::unique_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   EXPECT_FALSE(quic_server_info->IsDataReady());
   quic_server_info->Start();
@@ -549,12 +550,12 @@ TEST(DiskCacheBasedQuicServerInfo, StartAndPersist) {
 // persists the data when Start() finishes.
 TEST(DiskCacheBasedQuicServerInfo, PersistWhenNotReadyToPersist) {
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
-  MockHttpCache cache(make_scoped_ptr(factory));
+  MockHttpCache cache(base::WrapUnique(factory));
   AddMockTransaction(&kHostInfoTransaction1);
   TestCompletionCallback callback;
 
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  scoped_ptr<QuicServerInfo> quic_server_info(
+  std::unique_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   EXPECT_FALSE(quic_server_info->IsDataReady());
   // We do a Start(), but don't call WaitForDataReady(). Because we haven't
@@ -615,7 +616,7 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersistsWithoutWaiting) {
   TestCompletionCallback callback;
 
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  scoped_ptr<QuicServerInfo> quic_server_info(
+  std::unique_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   EXPECT_FALSE(quic_server_info->IsDataReady());
   quic_server_info->Start();
@@ -696,7 +697,7 @@ TEST(DiskCacheBasedQuicServerInfo, DeleteServerInfoInCallback) {
   // Use the blocking mock backend factory to force asynchronous completion
   // of quic_server_info->WaitForDataReady(), so that the callback will run.
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
-  MockHttpCache cache(make_scoped_ptr(factory));
+  MockHttpCache cache(base::WrapUnique(factory));
   QuicServerId server_id("www.verisign.com", 443, PRIVACY_MODE_DISABLED);
   QuicServerInfo* quic_server_info =
       new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache());

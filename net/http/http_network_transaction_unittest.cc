@@ -7,7 +7,9 @@
 #include <math.h>  // ceil
 #include <stdarg.h>
 #include <stdint.h>
+
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -18,7 +20,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -253,7 +255,7 @@ void AddWebSocketHeaders(HttpRequestHeaders* headers) {
   headers->SetHeader("Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ==");
 }
 
-scoped_ptr<HttpNetworkSession> CreateSession(
+std::unique_ptr<HttpNetworkSession> CreateSession(
     SpdySessionDependencies* session_deps) {
   return SpdySessionDependencies::SpdyCreateSession(session_deps);
 }
@@ -359,8 +361,8 @@ class HttpNetworkTransactionTest
 
     BoundTestNetLog log;
     session_deps_.net_log = log.bound().net_log();
-    scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     for (size_t i = 0; i < data_count; ++i) {
@@ -599,7 +601,7 @@ class CaptureGroupNameSocketPool : public ParentPool {
   void CancelRequest(const std::string& group_name,
                      ClientSocketHandle* handle) override {}
   void ReleaseSocket(const std::string& group_name,
-                     scoped_ptr<StreamSocket> socket,
+                     std::unique_ptr<StreamSocket> socket,
                      int id) override {}
   void CloseIdleSockets() override {}
   int IdleSocketCount() const override { return 0; }
@@ -709,8 +711,8 @@ bool CheckNTLMServerAuth(const AuthChallengeInfo* auth_challenge) {
 }  // namespace
 
 TEST_P(HttpNetworkTransactionTest, Basic) {
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 }
 
@@ -1030,8 +1032,8 @@ TEST_P(HttpNetworkTransactionTest, TwoIdenticalLocationHeaders) {
   request.url = GURL("http://redirect.com/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
@@ -1075,8 +1077,8 @@ TEST_P(HttpNetworkTransactionTest, Head) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   BeforeProxyHeadersSentHandler proxy_headers_handler;
   trans->SetBeforeProxyHeadersSentCallback(
@@ -1134,7 +1136,7 @@ TEST_P(HttpNetworkTransactionTest, Head) {
 }
 
 TEST_P(HttpNetworkTransactionTest, ReuseConnection) {
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\n"),
@@ -1156,7 +1158,7 @@ TEST_P(HttpNetworkTransactionTest, ReuseConnection) {
     request.url = GURL("http://www.example.org/");
     request.load_flags = 0;
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     TestCompletionCallback callback;
@@ -1182,9 +1184,9 @@ TEST_P(HttpNetworkTransactionTest, ReuseConnection) {
 }
 
 TEST_P(HttpNetworkTransactionTest, Ignores100) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -1193,8 +1195,8 @@ TEST_P(HttpNetworkTransactionTest, Ignores100) {
   request.upload_data_stream = &upload_data_stream;
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
@@ -1235,8 +1237,8 @@ TEST_P(HttpNetworkTransactionTest, Ignores1xx) {
   request.url = GURL("http://www.foo.com/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
@@ -1274,8 +1276,8 @@ TEST_P(HttpNetworkTransactionTest, Incomplete100ThenEOF) {
   request.url = GURL("http://www.foo.com/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
@@ -1305,8 +1307,8 @@ TEST_P(HttpNetworkTransactionTest, EmptyResponse) {
   request.url = GURL("http://www.foo.com/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
@@ -1334,7 +1336,7 @@ void HttpNetworkTransactionTest::KeepAliveConnectionResendRequestTest(
 
   TestNetLog net_log;
   session_deps_.net_log = &net_log;
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Written data for successfully sending both requests.
   MockWrite data1_writes[] = {
@@ -1381,7 +1383,7 @@ void HttpNetworkTransactionTest::KeepAliveConnectionResendRequestTest(
   for (int i = 0; i < 2; ++i) {
     TestCompletionCallback callback;
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -1424,7 +1426,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
 
   TestNetLog net_log;
   session_deps_.net_log = &net_log;
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   SSLSocketDataProvider ssl1(ASYNC, OK);
   SSLSocketDataProvider ssl2(ASYNC, OK);
@@ -1436,11 +1438,11 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
 
   // SPDY versions of the request and response.
-  scoped_ptr<SpdySerializedFrame> spdy_request(spdy_util_.ConstructSpdyGet(
+  std::unique_ptr<SpdySerializedFrame> spdy_request(spdy_util_.ConstructSpdyGet(
       request.url.spec().c_str(), 1, DEFAULT_PRIORITY));
-  scoped_ptr<SpdySerializedFrame> spdy_response(
+  std::unique_ptr<SpdySerializedFrame> spdy_response(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> spdy_data(
+  std::unique_ptr<SpdySerializedFrame> spdy_data(
       spdy_util_.ConstructSpdyBodyFrame(1, "hello", 5, true));
 
   // HTTP/1.1 versions of the request and response.
@@ -1507,7 +1509,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
   // Make the request.
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -1625,8 +1627,8 @@ TEST_P(HttpNetworkTransactionTest, NonKeepAliveConnectionReset) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
@@ -1679,8 +1681,8 @@ TEST_P(HttpNetworkTransactionTest, ThrottleBeforeNetworkStart) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Defer on OnBeforeNetworkStart.
@@ -1728,8 +1730,8 @@ TEST_P(HttpNetworkTransactionTest, ThrottleAndCancelBeforeNetworkStart) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Defer on OnBeforeNetworkStart.
@@ -1759,8 +1761,8 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveEarlyClose) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
@@ -1800,8 +1802,8 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveEarlyClose2) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
@@ -1842,7 +1844,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveAfterUnreadBody) {
 
   TestNetLog net_log;
   session_deps_.net_log = &net_log;
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   const char* request_data =
       "GET / HTTP/1.1\r\n"
@@ -1909,7 +1911,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveAfterUnreadBody) {
   for (size_t i = 0; i < kNumUnreadBodies; ++i) {
     TestCompletionCallback callback;
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -1956,7 +1958,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveAfterUnreadBody) {
     EXPECT_EQ(kStatusLines[i], response_lines[i]);
 
   TestCompletionCallback callback;
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(OK, callback.GetResult(rv));
@@ -1980,8 +1982,8 @@ TEST_P(HttpNetworkTransactionTest, BasicAuth) {
 
   TestNetLog log;
   session_deps_.net_log = &log;
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes1[] = {
@@ -2091,8 +2093,8 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthWithAddressChange) {
   MockHostResolver* resolver = new MockHostResolver();
   session_deps_.net_log = &log;
   session_deps_.host_resolver.reset(resolver);
-  scoped_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   resolver->rules()->ClearRules();
@@ -2201,8 +2203,8 @@ TEST_P(HttpNetworkTransactionTest, DoNotSendAuth) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -2256,7 +2258,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAlive) {
 
     TestNetLog log;
     session_deps_.net_log = &log;
-    scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
     MockWrite data_writes[] = {
         MockWrite(ASYNC, 0,
@@ -2294,7 +2296,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAlive) {
 
     TestCompletionCallback callback1;
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
     int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
     ASSERT_EQ(OK, callback1.GetResult(rv));
@@ -2345,7 +2347,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAliveNoBody) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   MockWrite data_writes1[] = {
       MockWrite(
@@ -2388,7 +2390,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAliveNoBody) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2423,7 +2425,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAliveLargeBody) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   MockWrite data_writes1[] = {
       MockWrite(
@@ -2474,7 +2476,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAliveLargeBody) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2509,7 +2511,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAliveImpatientServer) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   MockWrite data_writes1[] = {
       MockWrite(
@@ -2563,7 +2565,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAliveImpatientServer) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2604,7 +2606,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
@@ -2656,7 +2658,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
@@ -2728,7 +2730,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
@@ -2779,7 +2781,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
@@ -2856,9 +2858,9 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
     session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
     BoundTestNetLog log;
     session_deps_.net_log = log.bound().net_log();
-    scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     // Since we have proxy, should try to establish tunnel.
@@ -2967,9 +2969,9 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
     session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
     BoundTestNetLog log;
     session_deps_.net_log = log.bound().net_log();
-    scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     // Since we have proxy, should try to establish tunnel.
@@ -3074,7 +3076,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
@@ -3134,7 +3136,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
@@ -3197,9 +3199,9 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHangupDuringBody) {
 
   // Configure against proxy server "myproxy:70".
   session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
-  scoped_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Since we have proxy, should try to establish tunnel.
@@ -3287,9 +3289,9 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyCancelTunnel) {
   // Configure against proxy server "myproxy:70".
   session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Since we have proxy, should try to establish tunnel.
@@ -3346,9 +3348,9 @@ TEST_P(HttpNetworkTransactionTest, SanitizeProxyAuthHeaders) {
   // Configure against proxy server "myproxy:70".
   session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Since we have proxy, should try to establish tunnel.
@@ -3406,8 +3408,8 @@ TEST_P(HttpNetworkTransactionTest, UnexpectedProxyAuth) {
   request.load_flags = 0;
 
   // We are using a DIRECT connection (i.e. no proxy) for this session.
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes1[] = {
@@ -3454,7 +3456,7 @@ TEST_P(HttpNetworkTransactionTest,
   session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
@@ -3484,7 +3486,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
@@ -3515,10 +3517,10 @@ TEST_P(HttpNetworkTransactionTest,
   session_deps_.proxy_service =
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
 
-  scoped_ptr<HttpAuthHandlerMock::Factory> auth_handler_factory(
+  std::unique_ptr<HttpAuthHandlerMock::Factory> auth_handler_factory(
       new HttpAuthHandlerMock::Factory());
   auth_handler_factory->set_do_init_from_challenge(true);
-  scoped_ptr<HttpAuthHandlerMock> mock_handler(new HttpAuthHandlerMock());
+  std::unique_ptr<HttpAuthHandlerMock> mock_handler(new HttpAuthHandlerMock());
   mock_handler->set_allows_default_credentials(true);
   auth_handler_factory->AddMockHandler(mock_handler.release(),
                                        HttpAuth::AUTH_PROXY);
@@ -3527,7 +3529,7 @@ TEST_P(HttpNetworkTransactionTest,
   // Add NetLog just so can verify load timing information gets a NetLog ID.
   NetLog net_log;
   session_deps_.net_log = &net_log;
-  scoped_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
@@ -3578,7 +3580,7 @@ TEST_P(HttpNetworkTransactionTest,
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   TestCompletionCallback callback;
@@ -3632,10 +3634,10 @@ TEST_P(HttpNetworkTransactionTest,
   session_deps_.proxy_service =
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
 
-  scoped_ptr<HttpAuthHandlerMock::Factory> auth_handler_factory(
+  std::unique_ptr<HttpAuthHandlerMock::Factory> auth_handler_factory(
       new HttpAuthHandlerMock::Factory());
   auth_handler_factory->set_do_init_from_challenge(true);
-  scoped_ptr<HttpAuthHandlerMock> mock_handler(new HttpAuthHandlerMock());
+  std::unique_ptr<HttpAuthHandlerMock> mock_handler(new HttpAuthHandlerMock());
   mock_handler->set_allows_default_credentials(true);
   auth_handler_factory->AddMockHandler(mock_handler.release(),
                                        HttpAuth::AUTH_PROXY);
@@ -3644,7 +3646,7 @@ TEST_P(HttpNetworkTransactionTest,
   // Add NetLog just so can verify load timing information gets a NetLog ID.
   NetLog net_log;
   session_deps_.net_log = &net_log;
-  scoped_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   // Should try to establish tunnel.
   MockWrite data_writes1[] = {
@@ -3698,7 +3700,7 @@ TEST_P(HttpNetworkTransactionTest,
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   TestCompletionCallback callback;
@@ -3754,10 +3756,10 @@ TEST_P(HttpNetworkTransactionTest,
   session_deps_.proxy_service =
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
 
-  scoped_ptr<HttpAuthHandlerMock::Factory> auth_handler_factory(
+  std::unique_ptr<HttpAuthHandlerMock::Factory> auth_handler_factory(
       new HttpAuthHandlerMock::Factory());
   auth_handler_factory->set_do_init_from_challenge(true);
-  scoped_ptr<HttpAuthHandlerMock> mock_handler(new HttpAuthHandlerMock());
+  std::unique_ptr<HttpAuthHandlerMock> mock_handler(new HttpAuthHandlerMock());
   mock_handler->set_allows_default_credentials(true);
   auth_handler_factory->AddMockHandler(mock_handler.release(),
                                        HttpAuth::AUTH_PROXY);
@@ -3766,7 +3768,7 @@ TEST_P(HttpNetworkTransactionTest,
   // Add NetLog just so can verify load timing information gets a NetLog ID.
   NetLog net_log;
   session_deps_.net_log = &net_log;
-  scoped_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   // Should try to establish tunnel.
   MockWrite data_writes1[] = {
@@ -3813,7 +3815,7 @@ TEST_P(HttpNetworkTransactionTest,
                                  data_writes2, arraysize(data_writes2));
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   TestCompletionCallback callback;
@@ -3852,10 +3854,10 @@ TEST_P(HttpNetworkTransactionTest,
   session_deps_.proxy_service =
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
 
-  scoped_ptr<HttpAuthHandlerMock::Factory> auth_handler_factory(
+  std::unique_ptr<HttpAuthHandlerMock::Factory> auth_handler_factory(
       new HttpAuthHandlerMock::Factory());
   auth_handler_factory->set_do_init_from_challenge(true);
-  scoped_ptr<HttpAuthHandlerMock> mock_handler(new HttpAuthHandlerMock());
+  std::unique_ptr<HttpAuthHandlerMock> mock_handler(new HttpAuthHandlerMock());
   mock_handler->set_allows_default_credentials(true);
   auth_handler_factory->AddMockHandler(mock_handler.release(),
                                        HttpAuth::AUTH_PROXY);
@@ -3870,7 +3872,7 @@ TEST_P(HttpNetworkTransactionTest,
   // Add NetLog just so can verify load timing information gets a NetLog ID.
   NetLog net_log;
   session_deps_.net_log = &net_log;
-  scoped_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   // Should try to establish tunnel.
   MockWrite data_writes1[] = {
@@ -3912,7 +3914,7 @@ TEST_P(HttpNetworkTransactionTest,
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   TestCompletionCallback callback;
@@ -3957,7 +3959,7 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingNoPacTwoRequests) {
   session_deps_.proxy_service = ProxyService::CreateFixed("PROXY myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
@@ -3995,7 +3997,7 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingNoPacTwoRequests) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   TestCompletionCallback callback1;
-  scoped_ptr<HttpTransaction> trans1(
+  std::unique_ptr<HttpTransaction> trans1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans1->Start(&request1, callback1.callback(), log.bound());
@@ -4016,7 +4018,7 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingNoPacTwoRequests) {
   trans1.reset();
 
   TestCompletionCallback callback2;
-  scoped_ptr<HttpTransaction> trans2(
+  std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans2->Start(&request2, callback2.callback(), log.bound());
@@ -4055,7 +4057,7 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
@@ -4093,7 +4095,7 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   TestCompletionCallback callback1;
-  scoped_ptr<HttpTransaction> trans1(
+  std::unique_ptr<HttpTransaction> trans1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans1->Start(&request1, callback1.callback(), log.bound());
@@ -4115,7 +4117,7 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
   trans1.reset();
 
   TestCompletionCallback callback2;
-  scoped_ptr<HttpTransaction> trans2(
+  std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans2->Start(&request2, callback2.callback(), log.bound());
@@ -4149,7 +4151,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxyGet) {
   session_deps_.proxy_service = ProxyService::CreateFixed("https://proxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should use full url
   MockWrite data_writes1[] = {
@@ -4174,7 +4176,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxyGet) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
@@ -4211,16 +4213,16 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
   session_deps_.proxy_service = ProxyService::CreateFixed("https://proxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // fetch http://www.example.org/ via SPDY
-  scoped_ptr<SpdySerializedFrame> req(
+  std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, false));
   MockWrite spdy_writes[] = {CreateMockWrite(*req, 0)};
 
-  scoped_ptr<SpdySerializedFrame> resp(
+  std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  scoped_ptr<SpdySerializedFrame> data(
+  std::unique_ptr<SpdySerializedFrame> data(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead spdy_reads[] = {
       CreateMockRead(*resp, 1), CreateMockRead(*data, 2), MockRead(ASYNC, 0, 3),
@@ -4236,7 +4238,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
@@ -4273,16 +4275,16 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
   session_deps_.proxy_service = ProxyService::CreateFixed("https://proxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Fetch http://www.example.org/ through the SPDY proxy.
-  scoped_ptr<SpdySerializedFrame> req(
+  std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, false));
   MockWrite spdy_writes[] = {CreateMockWrite(*req, 0)};
 
-  scoped_ptr<SpdySerializedFrame> resp(
+  std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> data(
+  std::unique_ptr<SpdySerializedFrame> data(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead spdy_reads[] = {
       CreateMockRead(*resp, 1), CreateMockRead(*data, 2), MockRead(ASYNC, 0, 3),
@@ -4298,7 +4300,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Stall the hostname resolution begun by the transaction.
@@ -4344,17 +4346,17 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
   session_deps_.proxy_service = ProxyService::CreateFixed("https://myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // The first request will be a bare GET, the second request will be a
   // GET with a Proxy-Authorization header.
-  scoped_ptr<SpdySerializedFrame> req_get(
+  std::unique_ptr<SpdySerializedFrame> req_get(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, false));
   spdy_util_.UpdateWithStreamDestruction(1);
   const char* const kExtraAuthorizationHeaders[] = {
     "proxy-authorization", "Basic Zm9vOmJhcg=="
   };
-  scoped_ptr<SpdySerializedFrame> req_get_authorization(
+  std::unique_ptr<SpdySerializedFrame> req_get_authorization(
       spdy_util_.ConstructSpdyGet(kExtraAuthorizationHeaders,
                                   arraysize(kExtraAuthorizationHeaders) / 2, 3,
                                   LOWEST, false));
@@ -4368,15 +4370,15 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
   const char* const kExtraAuthenticationHeaders[] = {
     "proxy-authenticate", "Basic realm=\"MyRealm1\""
   };
-  scoped_ptr<SpdySerializedFrame> resp_authentication(
+  std::unique_ptr<SpdySerializedFrame> resp_authentication(
       spdy_util_.ConstructSpdySynReplyError(
           "407 Proxy Authentication Required", kExtraAuthenticationHeaders,
           arraysize(kExtraAuthenticationHeaders) / 2, 1));
-  scoped_ptr<SpdySerializedFrame> body_authentication(
+  std::unique_ptr<SpdySerializedFrame> body_authentication(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdySerializedFrame> resp_data(
+  std::unique_ptr<SpdySerializedFrame> resp_data(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  scoped_ptr<SpdySerializedFrame> body_data(
+  std::unique_ptr<SpdySerializedFrame> body_data(
       spdy_util_.ConstructSpdyBodyFrame(3, true));
   MockRead spdy_reads[] = {
       CreateMockRead(*resp_authentication, 1),
@@ -4396,7 +4398,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
@@ -4442,13 +4444,13 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
   session_deps_.proxy_service = ProxyService::CreateFixed("https://proxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // CONNECT to www.example.org:443 via SPDY
-  scoped_ptr<SpdySerializedFrame> connect(spdy_util_.ConstructSpdyConnect(
+  std::unique_ptr<SpdySerializedFrame> connect(spdy_util_.ConstructSpdyConnect(
       NULL, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
   // fetch https://www.example.org/ via HTTP
 
@@ -4456,17 +4458,17 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
       "GET / HTTP/1.1\r\n"
       "Host: www.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
-  scoped_ptr<SpdySerializedFrame> wrapped_get(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get(
       spdy_util_.ConstructSpdyBodyFrame(1, get, strlen(get), false));
-  scoped_ptr<SpdySerializedFrame> conn_resp(
+  std::unique_ptr<SpdySerializedFrame> conn_resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   const char resp[] = "HTTP/1.1 200 OK\r\n"
       "Content-Length: 10\r\n\r\n";
-  scoped_ptr<SpdySerializedFrame> wrapped_get_resp(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get_resp(
       spdy_util_.ConstructSpdyBodyFrame(1, resp, strlen(resp), false));
-  scoped_ptr<SpdySerializedFrame> wrapped_body(
+  std::unique_ptr<SpdySerializedFrame> wrapped_body(
       spdy_util_.ConstructSpdyBodyFrame(1, "1234567890", 10, false));
-  scoped_ptr<SpdySerializedFrame> window_update(
+  std::unique_ptr<SpdySerializedFrame> window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp->size()));
 
   MockWrite spdy_writes[] = {
@@ -4528,33 +4530,33 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
   session_deps_.proxy_service = ProxyService::CreateFixed("https://proxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // CONNECT to www.example.org:443 via SPDY
-  scoped_ptr<SpdySerializedFrame> connect(spdy_util_.ConstructSpdyConnect(
+  std::unique_ptr<SpdySerializedFrame> connect(spdy_util_.ConstructSpdyConnect(
       NULL, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
   // fetch https://www.example.org/ via SPDY
   const char kMyUrl[] = "https://www.example.org/";
-  scoped_ptr<SpdySerializedFrame> get(
+  std::unique_ptr<SpdySerializedFrame> get(
       spdy_util_wrapped.ConstructSpdyGet(kMyUrl, 1, LOWEST));
-  scoped_ptr<SpdySerializedFrame> wrapped_get(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get(
       spdy_util_.ConstructWrappedSpdyFrame(get, 1));
-  scoped_ptr<SpdySerializedFrame> conn_resp(
+  std::unique_ptr<SpdySerializedFrame> conn_resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> get_resp(
+  std::unique_ptr<SpdySerializedFrame> get_resp(
       spdy_util_wrapped.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> wrapped_get_resp(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get_resp(
       spdy_util_.ConstructWrappedSpdyFrame(get_resp, 1));
-  scoped_ptr<SpdySerializedFrame> body(
+  std::unique_ptr<SpdySerializedFrame> body(
       spdy_util_wrapped.ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdySerializedFrame> wrapped_body(
+  std::unique_ptr<SpdySerializedFrame> wrapped_body(
       spdy_util_.ConstructWrappedSpdyFrame(body, 1));
-  scoped_ptr<SpdySerializedFrame> window_update_get_resp(
+  std::unique_ptr<SpdySerializedFrame> window_update_get_resp(
       spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp->size()));
-  scoped_ptr<SpdySerializedFrame> window_update_body(
+  std::unique_ptr<SpdySerializedFrame> window_update_body(
       spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_body->size()));
 
   MockWrite spdy_writes[] = {
@@ -4620,24 +4622,24 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
   session_deps_.proxy_service = ProxyService::CreateFixed("https://proxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // CONNECT to www.example.org:443 via SPDY
-  scoped_ptr<SpdySerializedFrame> connect(spdy_util_.ConstructSpdyConnect(
+  std::unique_ptr<SpdySerializedFrame> connect(spdy_util_.ConstructSpdyConnect(
       NULL, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
-  scoped_ptr<SpdySerializedFrame> get(
+  std::unique_ptr<SpdySerializedFrame> get(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
 
   MockWrite spdy_writes[] = {
       CreateMockWrite(*connect, 0), CreateMockWrite(*get, 2),
   };
 
-  scoped_ptr<SpdySerializedFrame> resp(
+  std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdySynReplyError(1));
-  scoped_ptr<SpdySerializedFrame> data(
+  std::unique_ptr<SpdySerializedFrame> data(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead spdy_reads[] = {
       CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, 0, 3),
@@ -4673,7 +4675,7 @@ TEST_P(HttpNetworkTransactionTest,
   session_deps_.proxy_service = ProxyService::CreateFixed("https://proxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(
+  std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps_));
 
   HttpRequestInfo request1;
@@ -4687,9 +4689,9 @@ TEST_P(HttpNetworkTransactionTest,
   request2.load_flags = 0;
 
   // CONNECT to www.example.org:443 via SPDY.
-  scoped_ptr<SpdySerializedFrame> connect1(spdy_util_.ConstructSpdyConnect(
+  std::unique_ptr<SpdySerializedFrame> connect1(spdy_util_.ConstructSpdyConnect(
       NULL, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
-  scoped_ptr<SpdySerializedFrame> conn_resp1(
+  std::unique_ptr<SpdySerializedFrame> conn_resp1(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
 
   // Fetch https://www.example.org/ via HTTP.
@@ -4697,15 +4699,15 @@ TEST_P(HttpNetworkTransactionTest,
       "GET / HTTP/1.1\r\n"
       "Host: www.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
-  scoped_ptr<SpdySerializedFrame> wrapped_get1(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get1(
       spdy_util_.ConstructSpdyBodyFrame(1, get1, strlen(get1), false));
   const char resp1[] = "HTTP/1.1 200 OK\r\n"
       "Content-Length: 1\r\n\r\n";
-  scoped_ptr<SpdySerializedFrame> wrapped_get_resp1(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get_resp1(
       spdy_util_.ConstructSpdyBodyFrame(1, resp1, strlen(resp1), false));
-  scoped_ptr<SpdySerializedFrame> wrapped_body1(
+  std::unique_ptr<SpdySerializedFrame> wrapped_body1(
       spdy_util_.ConstructSpdyBodyFrame(1, "1", 1, false));
-  scoped_ptr<SpdySerializedFrame> window_update(
+  std::unique_ptr<SpdySerializedFrame> window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp1->size()));
 
   // CONNECT to mail.example.org:443 via SPDY.
@@ -4718,10 +4720,10 @@ TEST_P(HttpNetworkTransactionTest,
     connect2_block[spdy_util_.GetHostKey()] = "mail.example.org";
     connect2_block[spdy_util_.GetPathKey()] = "mail.example.org:443";
   }
-  scoped_ptr<SpdySerializedFrame> connect2(
+  std::unique_ptr<SpdySerializedFrame> connect2(
       spdy_util_.ConstructSpdySyn(3, connect2_block, LOWEST, false));
 
-  scoped_ptr<SpdySerializedFrame> conn_resp2(
+  std::unique_ptr<SpdySerializedFrame> conn_resp2(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
 
   // Fetch https://mail.example.org/ via HTTP.
@@ -4729,13 +4731,13 @@ TEST_P(HttpNetworkTransactionTest,
       "GET / HTTP/1.1\r\n"
       "Host: mail.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
-  scoped_ptr<SpdySerializedFrame> wrapped_get2(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get2(
       spdy_util_.ConstructSpdyBodyFrame(3, get2, strlen(get2), false));
   const char resp2[] = "HTTP/1.1 200 OK\r\n"
       "Content-Length: 2\r\n\r\n";
-  scoped_ptr<SpdySerializedFrame> wrapped_get_resp2(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get_resp2(
       spdy_util_.ConstructSpdyBodyFrame(3, resp2, strlen(resp2), false));
-  scoped_ptr<SpdySerializedFrame> wrapped_body2(
+  std::unique_ptr<SpdySerializedFrame> wrapped_body2(
       spdy_util_.ConstructSpdyBodyFrame(3, "22", 2, false));
 
   MockWrite spdy_writes[] = {
@@ -4769,7 +4771,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
   EXPECT_EQ(OK, callback.GetResult(rv));
@@ -4788,7 +4790,7 @@ TEST_P(HttpNetworkTransactionTest,
   rv = trans->Read(buf.get(), 256, callback.callback());
   EXPECT_EQ(1, callback.GetResult(rv));
 
-  scoped_ptr<HttpTransaction> trans2(
+  std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
   EXPECT_EQ(OK, callback.GetResult(rv));
@@ -4815,7 +4817,7 @@ TEST_P(HttpNetworkTransactionTest,
   session_deps_.proxy_service = ProxyService::CreateFixed("https://proxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(
+  std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps_));
 
   HttpRequestInfo request1;
@@ -4829,9 +4831,9 @@ TEST_P(HttpNetworkTransactionTest,
   request2.load_flags = 0;
 
   // CONNECT to www.example.org:443 via SPDY.
-  scoped_ptr<SpdySerializedFrame> connect1(spdy_util_.ConstructSpdyConnect(
+  std::unique_ptr<SpdySerializedFrame> connect1(spdy_util_.ConstructSpdyConnect(
       NULL, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
-  scoped_ptr<SpdySerializedFrame> conn_resp1(
+  std::unique_ptr<SpdySerializedFrame> conn_resp1(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
 
   // Fetch https://www.example.org/ via HTTP.
@@ -4839,15 +4841,15 @@ TEST_P(HttpNetworkTransactionTest,
       "GET / HTTP/1.1\r\n"
       "Host: www.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
-  scoped_ptr<SpdySerializedFrame> wrapped_get1(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get1(
       spdy_util_.ConstructSpdyBodyFrame(1, get1, strlen(get1), false));
   const char resp1[] = "HTTP/1.1 200 OK\r\n"
       "Content-Length: 1\r\n\r\n";
-  scoped_ptr<SpdySerializedFrame> wrapped_get_resp1(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get_resp1(
       spdy_util_.ConstructSpdyBodyFrame(1, resp1, strlen(resp1), false));
-  scoped_ptr<SpdySerializedFrame> wrapped_body1(
+  std::unique_ptr<SpdySerializedFrame> wrapped_body1(
       spdy_util_.ConstructSpdyBodyFrame(1, "1", 1, false));
-  scoped_ptr<SpdySerializedFrame> window_update(
+  std::unique_ptr<SpdySerializedFrame> window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp1->size()));
 
   // Fetch https://www.example.org/2 via HTTP.
@@ -4855,13 +4857,13 @@ TEST_P(HttpNetworkTransactionTest,
       "GET /2 HTTP/1.1\r\n"
       "Host: www.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
-  scoped_ptr<SpdySerializedFrame> wrapped_get2(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get2(
       spdy_util_.ConstructSpdyBodyFrame(1, get2, strlen(get2), false));
   const char resp2[] = "HTTP/1.1 200 OK\r\n"
       "Content-Length: 2\r\n\r\n";
-  scoped_ptr<SpdySerializedFrame> wrapped_get_resp2(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get_resp2(
       spdy_util_.ConstructSpdyBodyFrame(1, resp2, strlen(resp2), false));
-  scoped_ptr<SpdySerializedFrame> wrapped_body2(
+  std::unique_ptr<SpdySerializedFrame> wrapped_body2(
       spdy_util_.ConstructSpdyBodyFrame(1, "22", 2, false));
 
   MockWrite spdy_writes[] = {
@@ -4891,7 +4893,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -4913,7 +4915,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_EQ(1, trans->Read(buf.get(), 256, callback.callback()));
   trans.reset();
 
-  scoped_ptr<HttpTransaction> trans2(
+  std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -4938,7 +4940,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   session_deps_.proxy_service = ProxyService::CreateFixed("https://proxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(
+  std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps_));
 
   HttpRequestInfo request1;
@@ -4952,24 +4954,24 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   request2.load_flags = 0;
 
   // http://www.example.org/
-  scoped_ptr<SpdyHeaderBlock> headers(
+  std::unique_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlockForProxy("http://www.example.org/"));
-  scoped_ptr<SpdySerializedFrame> get1(
+  std::unique_ptr<SpdySerializedFrame> get1(
       spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, true));
-  scoped_ptr<SpdySerializedFrame> get_resp1(
+  std::unique_ptr<SpdySerializedFrame> get_resp1(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> body1(
+  std::unique_ptr<SpdySerializedFrame> body1(
       spdy_util_.ConstructSpdyBodyFrame(1, "1", 1, true));
   spdy_util_.UpdateWithStreamDestruction(1);
 
   // http://mail.example.org/
-  scoped_ptr<SpdyHeaderBlock> headers2(
+  std::unique_ptr<SpdyHeaderBlock> headers2(
       spdy_util_.ConstructGetHeaderBlockForProxy("http://mail.example.org/"));
-  scoped_ptr<SpdySerializedFrame> get2(
+  std::unique_ptr<SpdySerializedFrame> get2(
       spdy_util_.ConstructSpdySyn(3, *headers2, LOWEST, true));
-  scoped_ptr<SpdySerializedFrame> get_resp2(
+  std::unique_ptr<SpdySerializedFrame> get_resp2(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  scoped_ptr<SpdySerializedFrame> body2(
+  std::unique_ptr<SpdySerializedFrame> body2(
       spdy_util_.ConstructSpdyBodyFrame(3, "22", 2, true));
 
   MockWrite spdy_writes[] = {
@@ -4995,7 +4997,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
   EXPECT_EQ(OK, callback.GetResult(rv));
@@ -5017,7 +5019,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   // Delete the first request, so the second one can reuse the socket.
   trans.reset();
 
-  scoped_ptr<HttpTransaction> trans2(
+  std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
   EXPECT_EQ(OK, callback.GetResult(rv));
@@ -5045,7 +5047,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
   session_deps_.proxy_service = ProxyService::CreateFixed("https://myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should use full url
   MockWrite data_writes1[] = {
@@ -5086,7 +5088,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
@@ -5142,7 +5144,7 @@ void HttpNetworkTransactionTest::ConnectStatusHelperWithExpectedStatus(
 
   // Configure against proxy server "myproxy:70".
   session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes[] = {
@@ -5163,7 +5165,7 @@ void HttpNetworkTransactionTest::ConnectStatusHelperWithExpectedStatus(
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -5358,9 +5360,9 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyThenServer) {
 
   // Configure against proxy server "myproxy:70".
   session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes1[] = {
@@ -5494,7 +5496,7 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuth1) {
 
   HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(MockGenerateRandom1,
                                                     MockGetHostName);
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   MockWrite data_writes1[] = {
     MockWrite("GET /kids/login.aspx HTTP/1.1\r\n"
@@ -5570,7 +5572,7 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuth1) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
@@ -5623,7 +5625,7 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuth2) {
 
   HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(MockGenerateRandom2,
                                                     MockGetHostName);
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   MockWrite data_writes1[] = {
     MockWrite("GET /kids/login.aspx HTTP/1.1\r\n"
@@ -5750,7 +5752,7 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuth2) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
@@ -5823,8 +5825,8 @@ TEST_P(HttpNetworkTransactionTest, LargeHeadersNoBody) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Respond with 300 kb of headers (we should fail after 256 kb).
@@ -5862,9 +5864,9 @@ TEST_P(HttpNetworkTransactionTest,
   // Configure against proxy server "myproxy:70".
   session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Since we have proxy, should try to establish tunnel.
@@ -5915,9 +5917,9 @@ TEST_P(HttpNetworkTransactionTest, RecycleSocket) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
@@ -5994,8 +5996,8 @@ TEST_P(HttpNetworkTransactionTest, RecycleSSLSocket) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -6060,8 +6062,8 @@ TEST_P(HttpNetworkTransactionTest, RecycleDeadSSLSocket) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -6128,7 +6130,7 @@ TEST_P(HttpNetworkTransactionTest, RecycleSocketAfterZeroContentLength) {
       "rt=prt.2642,ol.2649,xjs.2951");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 204 No Content\r\n"
@@ -6143,7 +6145,7 @@ TEST_P(HttpNetworkTransactionTest, RecycleSocketAfterZeroContentLength) {
 
   // Transaction must be created after the MockReads, so it's destroyed before
   // them.
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   TestCompletionCallback callback;
@@ -6177,9 +6179,9 @@ TEST_P(HttpNetworkTransactionTest, RecycleSocketAfterZeroContentLength) {
 }
 
 TEST_P(HttpNetworkTransactionTest, ResendRequestOnWriteBodyError) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request[2];
@@ -6197,7 +6199,7 @@ TEST_P(HttpNetworkTransactionTest, ResendRequestOnWriteBodyError) {
   request[1].upload_data_stream = &upload_data_stream;
   request[1].load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // The first socket is used for transaction 1 and the first attempt of
   // transaction 2.
@@ -6242,7 +6244,7 @@ TEST_P(HttpNetworkTransactionTest, ResendRequestOnWriteBodyError) {
   };
 
   for (int i = 0; i < 2; ++i) {
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     TestCompletionCallback callback;
@@ -6275,8 +6277,8 @@ TEST_P(HttpNetworkTransactionTest, AuthIdentityInURL) {
   request.url = GURL("http://foo:b@r@www.example.org/");
   request.load_flags = LOAD_NORMAL;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // The password contains an escaped character -- for this test to pass it
@@ -6358,8 +6360,8 @@ TEST_P(HttpNetworkTransactionTest, WrongAuthIdentityInURL) {
 
   request.load_flags = LOAD_NORMAL;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes1[] = {
@@ -6469,8 +6471,8 @@ TEST_P(HttpNetworkTransactionTest, AuthIdentityInURLSuppressed) {
   request.url = GURL("http://foo:bar@www.example.org/");
   request.load_flags = LOAD_DO_NOT_USE_EMBEDDED_IDENTITY;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes1[] = {
@@ -6543,7 +6545,7 @@ TEST_P(HttpNetworkTransactionTest, AuthIdentityInURLSuppressed) {
 
 // Test that previously tried username/passwords for a realm get re-used.
 TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Transaction 1: authenticate (foo, bar) on MyRealm1
   {
@@ -6552,7 +6554,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
     request.url = GURL("http://www.example.org/x/y/z");
     request.load_flags = 0;
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
@@ -6630,7 +6632,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
     request.url = GURL("http://www.example.org/x/y/a/b");
     request.load_flags = 0;
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
@@ -6716,7 +6718,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
     request.url = GURL("http://www.example.org/x/y/z2");
     request.load_flags = 0;
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
@@ -6765,7 +6767,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
     request.url = GURL("http://www.example.org/x/1");
     request.load_flags = 0;
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
@@ -6837,7 +6839,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
     request.url = GURL("http://www.example.org/p/q/t");
     request.load_flags = 0;
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
@@ -6943,7 +6945,7 @@ TEST_P(HttpNetworkTransactionTest, DigestPreAuthNonceCount) {
       new HttpAuthHandlerDigest::FixedNonceGenerator("0123456789abcdef");
   digest_factory->set_nonce_generator(nonce_generator);
   session_deps_.http_auth_handler_factory.reset(digest_factory);
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Transaction 1: authenticate (foo, bar) on MyRealm1
   {
@@ -6952,7 +6954,7 @@ TEST_P(HttpNetworkTransactionTest, DigestPreAuthNonceCount) {
     request.url = GURL("http://www.example.org/x/y/z");
     request.load_flags = 0;
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
@@ -7033,7 +7035,7 @@ TEST_P(HttpNetworkTransactionTest, DigestPreAuthNonceCount) {
     request.url = GURL("http://www.example.org/x/y/a/b");
     request.load_flags = 0;
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
@@ -7075,8 +7077,8 @@ TEST_P(HttpNetworkTransactionTest, DigestPreAuthNonceCount) {
 // Test the ResetStateForRestart() private method.
 TEST_P(HttpNetworkTransactionTest, ResetStateForRestart) {
   // Create a transaction (the dependencies aren't important).
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpNetworkTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Setup some state (which we expect ResetStateForRestart() will clear).
@@ -7122,8 +7124,8 @@ TEST_P(HttpNetworkTransactionTest, HTTPSBadCertificate) {
   request.url = GURL("https://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -7227,8 +7229,8 @@ TEST_P(HttpNetworkTransactionTest, HTTPSBadCertificateViaProxy) {
   for (int i = 0; i < 2; i++) {
     session_deps_.socket_factory->ResetNextMockIndexes();
 
-    scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -7291,8 +7293,8 @@ TEST_P(HttpNetworkTransactionTest, HTTPSViaHttpsProxy) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -7349,8 +7351,8 @@ TEST_P(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -7400,9 +7402,9 @@ TEST_P(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
   request.url = GURL("https://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<SpdySerializedFrame> conn(spdy_util_.ConstructSpdyConnect(
+  std::unique_ptr<SpdySerializedFrame> conn(spdy_util_.ConstructSpdyConnect(
       NULL, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
-  scoped_ptr<SpdySerializedFrame> goaway(
+  std::unique_ptr<SpdySerializedFrame> goaway(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite data_writes[] = {
       CreateMockWrite(*conn.get(), 0, SYNCHRONOUS),
@@ -7413,8 +7415,9 @@ TEST_P(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
     "location",
     "http://login.example.com/",
   };
-  scoped_ptr<SpdySerializedFrame> resp(spdy_util_.ConstructSpdySynReplyError(
-      "302 Redirect", kExtraHeaders, arraysize(kExtraHeaders) / 2, 1));
+  std::unique_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdySynReplyError("302 Redirect", kExtraHeaders,
+                                            arraysize(kExtraHeaders) / 2, 1));
   MockRead data_reads[] = {
       CreateMockRead(*resp.get(), 1), MockRead(ASYNC, 0, 3),  // EOF
   };
@@ -7429,8 +7432,8 @@ TEST_P(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -7480,8 +7483,8 @@ TEST_P(HttpNetworkTransactionTest,
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -7503,9 +7506,9 @@ TEST_P(HttpNetworkTransactionTest,
   request.url = GURL("https://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<SpdySerializedFrame> conn(spdy_util_.ConstructSpdyConnect(
+  std::unique_ptr<SpdySerializedFrame> conn(spdy_util_.ConstructSpdyConnect(
       NULL, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
-  scoped_ptr<SpdySerializedFrame> rst(
+  std::unique_ptr<SpdySerializedFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite data_writes[] = {
       CreateMockWrite(*conn.get(), 0), CreateMockWrite(*rst.get(), 3),
@@ -7515,9 +7518,10 @@ TEST_P(HttpNetworkTransactionTest,
     "location",
     "http://login.example.com/",
   };
-  scoped_ptr<SpdySerializedFrame> resp(spdy_util_.ConstructSpdySynReplyError(
-      "404 Not Found", kExtraHeaders, arraysize(kExtraHeaders) / 2, 1));
-  scoped_ptr<SpdySerializedFrame> body(spdy_util_.ConstructSpdyBodyFrame(
+  std::unique_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdySynReplyError("404 Not Found", kExtraHeaders,
+                                            arraysize(kExtraHeaders) / 2, 1));
+  std::unique_ptr<SpdySerializedFrame> body(spdy_util_.ConstructSpdyBodyFrame(
       1, "The host does not exist", 23, true));
   MockRead data_reads[] = {
       CreateMockRead(*resp.get(), 1),
@@ -7535,8 +7539,8 @@ TEST_P(HttpNetworkTransactionTest,
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -7562,12 +7566,12 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
       ProxyService::CreateFixedFromPacResult("HTTPS myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
-  scoped_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyConnect(
+  std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyConnect(
       NULL, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
-  scoped_ptr<SpdySerializedFrame> rst(
+  std::unique_ptr<SpdySerializedFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   spdy_util_.UpdateWithStreamDestruction(1);
 
@@ -7576,7 +7580,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
   const char* const kAuthCredentials[] = {
       "proxy-authorization", "Basic Zm9vOmJhcg==",
   };
-  scoped_ptr<SpdySerializedFrame> connect2(spdy_util_.ConstructSpdyConnect(
+  std::unique_ptr<SpdySerializedFrame> connect2(spdy_util_.ConstructSpdyConnect(
       kAuthCredentials, arraysize(kAuthCredentials) / 2, 3, LOWEST,
       HostPortPair("www.example.org", 443)));
   // fetch https://www.example.org/ via HTTP
@@ -7584,7 +7588,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
       "GET / HTTP/1.1\r\n"
       "Host: www.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
-  scoped_ptr<SpdySerializedFrame> wrapped_get(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get(
       spdy_util_.ConstructSpdyBodyFrame(3, get, strlen(get), false));
 
   MockWrite spdy_writes[] = {
@@ -7600,18 +7604,18 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
   const char* const kAuthChallenge[] = {
     "proxy-authenticate", "Basic realm=\"MyRealm1\"",
   };
-  scoped_ptr<SpdySerializedFrame> conn_auth_resp(
+  std::unique_ptr<SpdySerializedFrame> conn_auth_resp(
       spdy_util_.ConstructSpdySynReplyError(kAuthStatus, kAuthChallenge,
                                             arraysize(kAuthChallenge) / 2, 1));
 
-  scoped_ptr<SpdySerializedFrame> conn_resp(
+  std::unique_ptr<SpdySerializedFrame> conn_resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
   const char resp[] = "HTTP/1.1 200 OK\r\n"
       "Content-Length: 5\r\n\r\n";
 
-  scoped_ptr<SpdySerializedFrame> wrapped_get_resp(
+  std::unique_ptr<SpdySerializedFrame> wrapped_get_resp(
       spdy_util_.ConstructSpdyBodyFrame(3, resp, strlen(resp), false));
-  scoped_ptr<SpdySerializedFrame> wrapped_body(
+  std::unique_ptr<SpdySerializedFrame> wrapped_body(
       spdy_util_.ConstructSpdyBodyFrame(3, "hello", 5, false));
   MockRead spdy_reads[] = {
       CreateMockRead(*conn_auth_resp, 1, ASYNC),
@@ -7634,7 +7638,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
@@ -7693,7 +7697,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
 // origin that is different from that of its associated resource.
 TEST_P(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
   // Configure the proxy delegate to allow cross-origin SPDY pushes.
-  scoped_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
+  std::unique_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
   proxy_delegate->set_trusted_spdy_proxy(net::ProxyServer::FromURI(
       "https://myproxy:443", net::ProxyServer::SCHEME_HTTP));
   HttpRequestInfo request;
@@ -7712,25 +7716,25 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
 
   session_deps_.proxy_delegate.reset(proxy_delegate.release());
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<SpdySerializedFrame> stream1_syn(
+  std::unique_ptr<SpdySerializedFrame> stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, false));
 
   MockWrite spdy_writes[] = {
       CreateMockWrite(*stream1_syn, 0, ASYNC),
   };
 
-  scoped_ptr<SpdySerializedFrame> stream1_reply(
+  std::unique_ptr<SpdySerializedFrame> stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
 
-  scoped_ptr<SpdySerializedFrame> stream1_body(
+  std::unique_ptr<SpdySerializedFrame> stream1_body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
 
-  scoped_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
       NULL, 0, 2, 1, "http://www.another-origin.com/foo.dat"));
   const char kPushedData[] = "pushed";
-  scoped_ptr<SpdySerializedFrame> stream2_body(
+  std::unique_ptr<SpdySerializedFrame> stream2_body(
       spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
                                         true));
 
@@ -7750,7 +7754,7 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
   proxy.SetNextProto(GetProtocol());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), log.bound());
@@ -7760,7 +7764,7 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
   EXPECT_EQ(OK, rv);
   const HttpResponseInfo* response = trans->GetResponseInfo();
 
-  scoped_ptr<HttpTransaction> push_trans(
+  std::unique_ptr<HttpTransaction> push_trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = push_trans->Start(&push_request, callback.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -7809,7 +7813,7 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
 // Test that an explicitly trusted SPDY proxy cannot push HTTPS content.
 TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
   // Configure the proxy delegate to allow cross-origin SPDY pushes.
-  scoped_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
+  std::unique_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
   proxy_delegate->set_trusted_spdy_proxy(net::ProxyServer::FromURI(
       "https://myproxy:443", net::ProxyServer::SCHEME_HTTP));
   HttpRequestInfo request;
@@ -7825,25 +7829,25 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
   // Enable cross-origin push.
   session_deps_.proxy_delegate.reset(proxy_delegate.release());
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<SpdySerializedFrame> stream1_syn(
+  std::unique_ptr<SpdySerializedFrame> stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, false));
 
-  scoped_ptr<SpdySerializedFrame> push_rst(
+  std::unique_ptr<SpdySerializedFrame> push_rst(
       spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
 
   MockWrite spdy_writes[] = {
       CreateMockWrite(*stream1_syn, 0, ASYNC), CreateMockWrite(*push_rst, 3),
   };
 
-  scoped_ptr<SpdySerializedFrame> stream1_reply(
+  std::unique_ptr<SpdySerializedFrame> stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
 
-  scoped_ptr<SpdySerializedFrame> stream1_body(
+  std::unique_ptr<SpdySerializedFrame> stream1_body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
 
-  scoped_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
       NULL, 0, 2, 1, "https://www.another-origin.com/foo.dat"));
 
   MockRead spdy_reads[] = {
@@ -7861,7 +7865,7 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
   proxy.SetNextProto(GetProtocol());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), log.bound());
@@ -7890,7 +7894,7 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
 // resources.
 TEST_P(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
   // Configure the proxy delegate to allow cross-origin SPDY pushes.
-  scoped_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
+  std::unique_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
   proxy_delegate->set_trusted_spdy_proxy(
       net::ProxyServer::FromURI("myproxy:70", net::ProxyServer::SCHEME_HTTP));
 
@@ -7907,28 +7911,28 @@ TEST_P(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
   // Enable cross-origin push.
   session_deps_.proxy_delegate.reset(proxy_delegate.release());
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<SpdySerializedFrame> stream1_syn(
+  std::unique_ptr<SpdySerializedFrame> stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, false));
 
   MockWrite spdy_writes[] = {
       CreateMockWrite(*stream1_syn, 0, ASYNC),
   };
 
-  scoped_ptr<SpdySerializedFrame> stream1_reply(
+  std::unique_ptr<SpdySerializedFrame> stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
 
-  scoped_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 2, 1, "https://myproxy:70/foo.dat"));
 
-  scoped_ptr<SpdySerializedFrame> stream1_body(
+  std::unique_ptr<SpdySerializedFrame> stream1_body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
 
-  scoped_ptr<SpdySerializedFrame> stream2_reply(
+  std::unique_ptr<SpdySerializedFrame> stream2_reply(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
 
-  scoped_ptr<SpdySerializedFrame> stream2_body(
+  std::unique_ptr<SpdySerializedFrame> stream2_body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
 
   MockRead spdy_reads[] = {
@@ -7947,7 +7951,7 @@ TEST_P(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
   proxy.SetNextProto(GetProtocol());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), log.bound());
@@ -8032,8 +8036,8 @@ TEST_P(HttpNetworkTransactionTest, HTTPSBadCertificateViaHttpsProxy) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -8061,8 +8065,8 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_UserAgent) {
   request.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
                                   "Chromium Ultra Awesome X Edition");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -8102,8 +8106,8 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_UserAgentOverTunnel) {
                                   "Chromium Ultra Awesome X Edition");
 
   session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -8141,8 +8145,8 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_Referer) {
   request.extra_headers.SetHeader(HttpRequestHeaders::kReferer,
                                   "http://the.previous.site.com/");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -8179,8 +8183,8 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_PostContentLengthZero) {
   request.method = "POST";
   request.url = GURL("http://www.example.org/");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -8217,8 +8221,8 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_PutContentLengthZero) {
   request.method = "PUT";
   request.url = GURL("http://www.example.org/");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -8255,8 +8259,8 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_HeadContentLengthZero) {
   request.method = "HEAD";
   request.url = GURL("http://www.example.org/");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -8292,8 +8296,8 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_CacheControlNoCache) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = LOAD_BYPASS_CACHE;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -8333,8 +8337,8 @@ TEST_P(HttpNetworkTransactionTest,
   request.url = GURL("http://www.example.org/");
   request.load_flags = LOAD_VALIDATE_CACHE;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -8372,8 +8376,8 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_ExtraHeaders) {
   request.url = GURL("http://www.example.org/");
   request.extra_headers.SetHeader("FooHeader", "Bar");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -8413,8 +8417,8 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_ExtraHeadersStripped) {
   request.extra_headers.SetHeader("hEllo", "Kitty");
   request.extra_headers.SetHeader("FoO", "bar");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -8459,8 +8463,8 @@ TEST_P(HttpNetworkTransactionTest, SOCKS4_HTTP_GET) {
   TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   char write_buffer[] = { 0x04, 0x01, 0x00, 0x50, 127, 0, 0, 1, 0 };
@@ -8518,8 +8522,8 @@ TEST_P(HttpNetworkTransactionTest, SOCKS4_SSL_GET) {
   TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   unsigned char write_buffer[] = { 0x04, 0x01, 0x01, 0xBB, 127, 0, 0, 1, 0 };
@@ -8582,8 +8586,8 @@ TEST_P(HttpNetworkTransactionTest, SOCKS4_HTTP_GET_no_PAC) {
   TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   char write_buffer[] = { 0x04, 0x01, 0x00, 0x50, 127, 0, 0, 1, 0 };
@@ -8641,8 +8645,8 @@ TEST_P(HttpNetworkTransactionTest, SOCKS5_HTTP_GET) {
   TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   const char kSOCKS5GreetRequest[] = { 0x05, 0x01, 0x00 };
@@ -8713,8 +8717,8 @@ TEST_P(HttpNetworkTransactionTest, SOCKS5_SSL_GET) {
   TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   const char kSOCKS5GreetRequest[] = { 0x05, 0x01, 0x00 };
@@ -8790,10 +8794,10 @@ struct GroupNameTest {
   bool ssl;
 };
 
-scoped_ptr<HttpNetworkSession> SetupSessionForGroupNameTests(
+std::unique_ptr<HttpNetworkSession> SetupSessionForGroupNameTests(
     NextProto next_proto,
     SpdySessionDependencies* session_deps_) {
-  scoped_ptr<HttpNetworkSession> session(CreateSession(session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(session_deps_));
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
@@ -8813,7 +8817,7 @@ int GroupNameTransactionHelper(const std::string& url,
   request.url = GURL(url);
   request.load_flags = 0;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
 
   TestCompletionCallback callback;
@@ -8866,7 +8870,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     session_deps_.proxy_service =
         ProxyService::CreateFixed(tests[i].proxy_server);
-    scoped_ptr<HttpNetworkSession> session(
+    std::unique_ptr<HttpNetworkSession> session(
         SetupSessionForGroupNameTests(GetProtocol(), &session_deps_));
 
     HttpNetworkSessionPeer peer(session.get());
@@ -8874,7 +8878,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
         new CaptureGroupNameTransportSocketPool(NULL, NULL);
     CaptureGroupNameSSLSocketPool* ssl_conn_pool =
         new CaptureGroupNameSSLSocketPool(NULL, NULL);
-    scoped_ptr<MockClientSocketPoolManager> mock_pool_manager(
+    std::unique_ptr<MockClientSocketPoolManager> mock_pool_manager(
         new MockClientSocketPoolManager);
     mock_pool_manager->SetTransportSocketPool(transport_conn_pool);
     mock_pool_manager->SetSSLSocketPool(ssl_conn_pool);
@@ -8929,7 +8933,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     session_deps_.proxy_service =
         ProxyService::CreateFixed(tests[i].proxy_server);
-    scoped_ptr<HttpNetworkSession> session(
+    std::unique_ptr<HttpNetworkSession> session(
         SetupSessionForGroupNameTests(GetProtocol(), &session_deps_));
 
     HttpNetworkSessionPeer peer(session.get());
@@ -8940,7 +8944,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
     CaptureGroupNameSSLSocketPool* ssl_conn_pool =
         new CaptureGroupNameSSLSocketPool(NULL, NULL);
 
-    scoped_ptr<MockClientSocketPoolManager> mock_pool_manager(
+    std::unique_ptr<MockClientSocketPoolManager> mock_pool_manager(
         new MockClientSocketPoolManager);
     mock_pool_manager->SetSocketPoolForHTTPProxy(proxy_host, http_proxy_pool);
     mock_pool_manager->SetSocketPoolForSSLWithProxy(proxy_host, ssl_conn_pool);
@@ -9000,7 +9004,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     session_deps_.proxy_service =
         ProxyService::CreateFixed(tests[i].proxy_server);
-    scoped_ptr<HttpNetworkSession> session(
+    std::unique_ptr<HttpNetworkSession> session(
         SetupSessionForGroupNameTests(GetProtocol(), &session_deps_));
 
     HttpNetworkSessionPeer peer(session.get());
@@ -9011,13 +9015,13 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
     CaptureGroupNameSSLSocketPool* ssl_conn_pool =
         new CaptureGroupNameSSLSocketPool(NULL, NULL);
 
-    scoped_ptr<MockClientSocketPoolManager> mock_pool_manager(
+    std::unique_ptr<MockClientSocketPoolManager> mock_pool_manager(
         new MockClientSocketPoolManager);
     mock_pool_manager->SetSocketPoolForSOCKSProxy(proxy_host, socks_conn_pool);
     mock_pool_manager->SetSocketPoolForSSLWithProxy(proxy_host, ssl_conn_pool);
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
-    scoped_ptr<HttpTransaction> trans(
+    std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     EXPECT_EQ(ERR_IO_PENDING,
@@ -9043,8 +9047,8 @@ TEST_P(HttpNetworkTransactionTest, ReconsiderProxyAfterFailedConnection) {
   // connecting to both proxies (myproxy:70 and foobar:80).
   session_deps_.host_resolver->rules()->AddSimulatedFailure("*");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   TestCompletionCallback callback;
@@ -9069,8 +9073,8 @@ void HttpNetworkTransactionTest::BypassHostCacheOnRefreshHelper(
   // Select a host resolver that does caching.
   session_deps_.host_resolver.reset(new MockCachingHostResolver);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Warm up the host cache so it has an entry for "www.example.org".
@@ -9138,11 +9142,11 @@ TEST_P(HttpNetworkTransactionTest, RequestWriteError) {
   StaticSocketDataProvider data(NULL, 0,
                                 write_failure, arraysize(write_failure));
   session_deps_.socket_factory->AddSocketDataProvider(&data);
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -9170,11 +9174,11 @@ TEST_P(HttpNetworkTransactionTest, ConnectionClosedAfterStartOfHeaders) {
 
   StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -9248,11 +9252,11 @@ TEST_P(HttpNetworkTransactionTest, DrainResetOK) {
   StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
                                  data_writes2, arraysize(data_writes2));
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
@@ -9304,8 +9308,8 @@ TEST_P(HttpNetworkTransactionTest, HTTPSViaProxyWithExtraData) {
 
   session_deps_.socket_factory->ResetNextMockIndexes();
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -9321,8 +9325,8 @@ TEST_P(HttpNetworkTransactionTest, LargeContentLengthThenClose) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
@@ -9358,8 +9362,8 @@ TEST_P(HttpNetworkTransactionTest, UploadFileSmallerThanLength) {
   UploadFileElementReader::ScopedOverridingContentLengthForTests
       overriding_content_length(kFakeSize);
 
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
-  element_readers.push_back(make_scoped_ptr(new UploadFileElementReader(
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(base::WrapUnique(new UploadFileElementReader(
       base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0,
       std::numeric_limits<uint64_t>::max(), base::Time())));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
@@ -9370,8 +9374,8 @@ TEST_P(HttpNetworkTransactionTest, UploadFileSmallerThanLength) {
   request.upload_data_stream = &upload_data_stream;
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
@@ -9412,8 +9416,8 @@ TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
                                    temp_file_content.length()));
   ASSERT_TRUE(base::MakeFileUnreadable(temp_file));
 
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
-  element_readers.push_back(make_scoped_ptr(new UploadFileElementReader(
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(base::WrapUnique(new UploadFileElementReader(
       base::ThreadTaskRunnerHandle::Get().get(), temp_file, 0,
       std::numeric_limits<uint64_t>::max(), base::Time())));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
@@ -9425,8 +9429,8 @@ TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
   request.load_flags = 0;
 
   // If we try to upload an unreadable file, the transaction should fail.
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   StaticSocketDataProvider data(NULL, 0, NULL, 0);
@@ -9469,8 +9473,8 @@ TEST_P(HttpNetworkTransactionTest, CancelDuringInitRequestBody) {
   };
 
   FakeUploadElementReader* fake_reader = new FakeUploadElementReader;
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
-  element_readers.push_back(make_scoped_ptr(fake_reader));
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(base::WrapUnique(fake_reader));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -9479,8 +9483,8 @@ TEST_P(HttpNetworkTransactionTest, CancelDuringInitRequestBody) {
   request.upload_data_stream = &upload_data_stream;
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   StaticSocketDataProvider data;
@@ -9586,8 +9590,8 @@ TEST_P(HttpNetworkTransactionTest, ChangeAuthRealms) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Issue the first request with Authorize headers. There should be a
@@ -9681,8 +9685,8 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -9722,7 +9726,7 @@ TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
   session_deps_.enable_alternative_service_with_different_host = false;
 
   // Set an alternative service for origin.
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpServerProperties& http_server_properties =
       *session->http_server_properties();
   HostPortPair http_host_port_pair("www.example.org", 80);
@@ -9752,7 +9756,7 @@ TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -9801,8 +9805,8 @@ TEST_P(HttpNetworkTransactionTest, DoNotHonorAlternativeServiceHeader) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -9859,8 +9863,8 @@ TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeader) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -9926,8 +9930,8 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -9983,7 +9987,7 @@ TEST_P(HttpNetworkTransactionTest, EmptyAlternateProtocolHeader) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HostPortPair http_host_port_pair("www.example.org", 80);
   HttpServerProperties& http_server_properties =
@@ -9998,7 +10002,7 @@ TEST_P(HttpNetworkTransactionTest, EmptyAlternateProtocolHeader) {
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(QUIC, alternative_service_vector[0].protocol);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -10052,8 +10056,8 @@ TEST_P(HttpNetworkTransactionTest, AltSvcOverwritesAlternateProtocol) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -10112,7 +10116,7 @@ TEST_P(HttpNetworkTransactionTest, DisableAlternativeServiceToDifferentHost) {
                                        nullptr, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
 
-  scoped_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
@@ -10123,7 +10127,7 @@ TEST_P(HttpNetworkTransactionTest, DisableAlternativeServiceToDifferentHost) {
   http_server_properties->SetAlternativeService(
       HostPortPair::FromURL(request.url), alternative_service, expiration);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
@@ -10169,7 +10173,7 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicBroken) {
   // Set up a QUIC alternative service for origin.
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(QUIC, alternative);
@@ -10179,7 +10183,7 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicBroken) {
   // Mark the QUIC alternative service as broken.
   http_server_properties->MarkAlternativeServiceBroken(alternative_service);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   HttpRequestInfo request;
   request.method = "GET";
@@ -10230,7 +10234,7 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
 
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = true;
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
 
@@ -10256,7 +10260,7 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
   const AlternativeServiceVector alternative_service_vector =
       http_server_properties->GetAlternativeServices(origin);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   HttpRequestInfo request;
   request.method = "GET";
@@ -10295,7 +10299,7 @@ TEST_P(HttpNetworkTransactionTest,
       data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
@@ -10309,7 +10313,7 @@ TEST_P(HttpNetworkTransactionTest,
   http_server_properties->SetAlternativeService(
       host_port_pair, alternative_service, expiration);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
@@ -10362,7 +10366,7 @@ TEST_P(HttpNetworkTransactionTest,
       data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
@@ -10375,7 +10379,7 @@ TEST_P(HttpNetworkTransactionTest,
       HostPortPair::FromURL(restricted_port_request.url), alternative_service,
       expiration);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
@@ -10415,7 +10419,7 @@ TEST_P(HttpNetworkTransactionTest,
       data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
@@ -10428,7 +10432,7 @@ TEST_P(HttpNetworkTransactionTest,
       HostPortPair::FromURL(restricted_port_request.url), alternative_service,
       expiration);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
@@ -10467,7 +10471,7 @@ TEST_P(HttpNetworkTransactionTest,
       data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
@@ -10480,7 +10484,7 @@ TEST_P(HttpNetworkTransactionTest,
       HostPortPair::FromURL(restricted_port_request.url), alternative_service,
       expiration);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
@@ -10520,7 +10524,7 @@ TEST_P(HttpNetworkTransactionTest,
       data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
@@ -10533,7 +10537,7 @@ TEST_P(HttpNetworkTransactionTest,
       HostPortPair::FromURL(unrestricted_port_request.url), alternative_service,
       expiration);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
@@ -10572,7 +10576,7 @@ TEST_P(HttpNetworkTransactionTest,
       data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
@@ -10585,7 +10589,7 @@ TEST_P(HttpNetworkTransactionTest,
       HostPortPair::FromURL(unrestricted_port_request.url), alternative_service,
       expiration);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
@@ -10619,7 +10623,7 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
       data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
@@ -10631,7 +10635,7 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
   http_server_properties->SetAlternativeService(
       HostPortPair::FromURL(request.url), alternative_service, expiration);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
@@ -10680,13 +10684,13 @@ TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
   ASSERT_TRUE(ssl.cert.get());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<SpdySerializedFrame> req(
+  std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite spdy_writes[] = {CreateMockWrite(*req, 0)};
 
-  scoped_ptr<SpdySerializedFrame> resp(
+  std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> data(
+  std::unique_ptr<SpdySerializedFrame> data(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead spdy_reads[] = {
       CreateMockRead(*resp, 1), CreateMockRead(*data, 2), MockRead(ASYNC, 0, 3),
@@ -10706,8 +10710,8 @@ TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -10783,20 +10787,20 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
   ASSERT_TRUE(ssl.cert.get());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<SpdySerializedFrame> req1(
+  std::unique_ptr<SpdySerializedFrame> req1(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  scoped_ptr<SpdySerializedFrame> req2(
+  std::unique_ptr<SpdySerializedFrame> req2(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST, true));
   MockWrite spdy_writes[] = {
       CreateMockWrite(*req1, 0), CreateMockWrite(*req2, 1),
   };
-  scoped_ptr<SpdySerializedFrame> resp1(
+  std::unique_ptr<SpdySerializedFrame> resp1(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> data1(
+  std::unique_ptr<SpdySerializedFrame> data1(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdySerializedFrame> resp2(
+  std::unique_ptr<SpdySerializedFrame> resp2(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  scoped_ptr<SpdySerializedFrame> data2(
+  std::unique_ptr<SpdySerializedFrame> data2(
       spdy_util_.ConstructSpdyBodyFrame(3, true));
   MockRead spdy_reads[] = {
       CreateMockRead(*resp1, 2),
@@ -10816,7 +10820,7 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
   hanging_socket3.set_connect_data(never_finishing_connect);
   session_deps_.socket_factory->AddSocketDataProvider(&hanging_socket3);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   TestCompletionCallback callback1;
   HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
 
@@ -10909,8 +10913,8 @@ TEST_P(HttpNetworkTransactionTest, StallAlternateProtocolForNpnSpdy) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -10982,9 +10986,9 @@ class CapturingProxyResolverFactory : public ProxyResolverFactory {
 
   int CreateProxyResolver(
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      scoped_ptr<ProxyResolver>* resolver,
+      std::unique_ptr<ProxyResolver>* resolver,
       const net::CompletionCallback& callback,
-      scoped_ptr<Request>* request) override {
+      std::unique_ptr<Request>* request) override {
     resolver->reset(new ForwardingProxyResolver(resolver_));
     return OK;
   }
@@ -11004,8 +11008,8 @@ TEST_P(HttpNetworkTransactionTest,
 
   CapturingProxyResolver capturing_proxy_resolver;
   session_deps_.proxy_service.reset(new ProxyService(
-      make_scoped_ptr(new ProxyConfigServiceFixed(proxy_config)),
-      make_scoped_ptr(
+      base::WrapUnique(new ProxyConfigServiceFixed(proxy_config)),
+      base::WrapUnique(
           new CapturingProxyResolverFactory(&capturing_proxy_resolver)),
       NULL));
   TestNetLog net_log;
@@ -11038,7 +11042,7 @@ TEST_P(HttpNetworkTransactionTest,
   ASSERT_TRUE(ssl.cert.get());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<SpdySerializedFrame> req(
+  std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite spdy_writes[] = {
       MockWrite(ASYNC, 0,
@@ -11050,9 +11054,9 @@ TEST_P(HttpNetworkTransactionTest,
 
   const char kCONNECTResponse[] = "HTTP/1.1 200 Connected\r\n\r\n";
 
-  scoped_ptr<SpdySerializedFrame> resp(
+  std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> data(
+  std::unique_ptr<SpdySerializedFrame> data(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead spdy_reads[] = {
       MockRead(ASYNC, 1, kCONNECTResponse), CreateMockRead(*resp.get(), 3),
@@ -11073,8 +11077,8 @@ TEST_P(HttpNetworkTransactionTest,
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -11150,13 +11154,13 @@ TEST_P(HttpNetworkTransactionTest,
   ASSERT_TRUE(ssl.cert.get());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<SpdySerializedFrame> req(
+  std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite spdy_writes[] = {CreateMockWrite(*req, 0)};
 
-  scoped_ptr<SpdySerializedFrame> resp(
+  std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> data(
+  std::unique_ptr<SpdySerializedFrame> data(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead spdy_reads[] = {
       CreateMockRead(*resp, 1), CreateMockRead(*data, 2), MockRead(ASYNC, 0, 3),
@@ -11168,9 +11172,9 @@ TEST_P(HttpNetworkTransactionTest,
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -11561,7 +11565,7 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
     request.url = GURL(test_config.server_url);
     request.load_flags = 0;
 
-    scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
     SSLSocketDataProvider ssl_socket_data_provider(SYNCHRONOUS, OK);
 
@@ -11594,9 +11598,9 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
             &ssl_socket_data_provider);
     }
 
-    std::vector<scoped_ptr<StaticSocketDataProvider>> data_providers;
+    std::vector<std::unique_ptr<StaticSocketDataProvider>> data_providers;
     for (size_t i = 0; i < mock_reads.size(); ++i) {
-      data_providers.push_back(make_scoped_ptr(new StaticSocketDataProvider(
+      data_providers.push_back(base::WrapUnique(new StaticSocketDataProvider(
           mock_reads[i].data(), mock_reads[i].size(), mock_writes[i].data(),
           mock_writes[i].size())));
       session_deps_.socket_factory->AddSocketDataProvider(
@@ -11664,7 +11668,7 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
   request.url = origin;
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Use a TCP Socket Pool with only one connection per group. This is used
   // to validate that the TCP socket is not released to the pool between
@@ -11675,12 +11679,12 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
       1,   // Max sockets per group
       session_deps_.host_resolver.get(), session_deps_.socket_factory.get(),
       NULL, session_deps_.net_log);
-  scoped_ptr<MockClientSocketPoolManager> mock_pool_manager(
+  std::unique_ptr<MockClientSocketPoolManager> mock_pool_manager(
       new MockClientSocketPoolManager);
   mock_pool_manager->SetTransportSocketPool(transport_pool);
   session_peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
@@ -11750,7 +11754,7 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
   // In between rounds, another request comes in for the same domain.
   // It should not be able to grab the TCP socket that trans has already
   // claimed.
-  scoped_ptr<HttpTransaction> trans_compete(
+  std::unique_ptr<HttpTransaction> trans_compete(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback_compete;
   rv = trans_compete->Start(
@@ -11861,8 +11865,8 @@ TEST_P(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -11899,7 +11903,7 @@ TEST_P(HttpNetworkTransactionTest, SpdyPostNPNServerHangup) {
   ssl.SetNextProto(GetProtocol());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<SpdySerializedFrame> req(
+  std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite spdy_writes[] = {CreateMockWrite(*req, 1)};
 
@@ -11913,8 +11917,8 @@ TEST_P(HttpNetworkTransactionTest, SpdyPostNPNServerHangup) {
 
   TestCompletionCallback callback;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -12008,11 +12012,11 @@ TEST_P(HttpNetworkTransactionTest, SpdyAlternateProtocolThroughProxy) {
   // retry-http-when-alternate-protocol fails logic kicks in, which was more
   // complicated to set up expectations for than the SPDY session.
 
-  scoped_ptr<SpdySerializedFrame> req(
+  std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  scoped_ptr<SpdySerializedFrame> resp(
+  std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> data(
+  std::unique_ptr<SpdySerializedFrame> data(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
 
   MockWrite data_writes_2[] = {
@@ -12069,11 +12073,11 @@ TEST_P(HttpNetworkTransactionTest, SpdyAlternateProtocolThroughProxy) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
   session_deps_.socket_factory->AddSocketDataProvider(
       &hanging_non_alternate_protocol_socket);
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // First round should work and provide the Alternate-Protocol state.
   TestCompletionCallback callback_1;
-  scoped_ptr<HttpTransaction> trans_1(
+  std::unique_ptr<HttpTransaction> trans_1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans_1->Start(&request, callback_1.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -12081,7 +12085,7 @@ TEST_P(HttpNetworkTransactionTest, SpdyAlternateProtocolThroughProxy) {
 
   // Second round should attempt a tunnel connect and get an auth challenge.
   TestCompletionCallback callback_2;
-  scoped_ptr<HttpTransaction> trans_2(
+  std::unique_ptr<HttpTransaction> trans_2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans_2->Start(&request, callback_2.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -12129,8 +12133,8 @@ TEST_P(HttpNetworkTransactionTest, SimpleCancel) {
   request.load_flags = 0;
 
   session_deps_.host_resolver->set_synchronous_mode(true);
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
@@ -12167,7 +12171,7 @@ TEST_P(HttpNetworkTransactionTest, CancelAfterHeaders) {
   StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   {
     HttpRequestInfo request;
@@ -12203,7 +12207,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyGet) {
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -12229,7 +12233,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyGet) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   BeforeProxyHeadersSentHandler proxy_headers_handler;
   trans->SetBeforeProxyHeadersSentCallback(
@@ -12267,7 +12271,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGet) {
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -12301,7 +12305,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGet) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
@@ -12343,7 +12347,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGetIPv6) {
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -12377,7 +12381,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGetIPv6) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
@@ -12417,7 +12421,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
   session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -12448,7 +12452,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
 
   TestCompletionCallback callback1;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
@@ -12469,13 +12473,13 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
 
 // Test for crbug.com/55424.
 TEST_P(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
-  scoped_ptr<SpdySerializedFrame> req(
+  std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
   MockWrite spdy_writes[] = {CreateMockWrite(*req, 0)};
 
-  scoped_ptr<SpdySerializedFrame> resp(
+  std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> data(
+  std::unique_ptr<SpdySerializedFrame> data(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead spdy_reads[] = {
       CreateMockRead(*resp, 1), CreateMockRead(*data, 2), MockRead(ASYNC, 0, 3),
@@ -12489,7 +12493,7 @@ TEST_P(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
   ssl.SetNextProto(GetProtocol());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Set up an initial SpdySession in the pool to reuse.
   HostPortPair host_port_pair("www.example.org", 443);
@@ -12506,7 +12510,7 @@ TEST_P(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
   // This is the important line that marks this as a preconnect.
   request.motivation = HttpRequestInfo::PRECONNECT_MOTIVATED;
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   TestCompletionCallback callback;
@@ -12532,8 +12536,8 @@ void HttpNetworkTransactionTest::CheckErrorIsPassedBack(
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   TestCompletionCallback callback;
@@ -12619,8 +12623,8 @@ TEST_P(HttpNetworkTransactionTest,
   StaticSocketDataProvider data4(NULL, 0, NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&data4);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Begin the SSL handshake with the peer. This consumes ssl_data1.
@@ -12737,8 +12741,8 @@ TEST_P(HttpNetworkTransactionTest,
   StaticSocketDataProvider data5(data2_reads, arraysize(data2_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&data5);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Begin the initial SSL handshake.
@@ -12830,8 +12834,8 @@ TEST_P(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
 
   for (size_t i = 0; i < arraysize(requests); ++i) {
     session_deps_.socket_factory->ResetNextMockIndexes();
-    scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-    scoped_ptr<HttpNetworkTransaction> trans(
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    std::unique_ptr<HttpNetworkTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     // Begin the SSL handshake with the proxy.
@@ -12886,7 +12890,7 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
 
   // Set up a special HttpNetworkSession with a MockCachingHostResolver.
   session_deps_.host_resolver.reset(new MockCachingHostResolver());
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   SpdySessionPoolPeer pool_peer(session->spdy_session_pool());
   pool_peer.DisableDomainAuthenticationVerification();
 
@@ -12894,21 +12898,21 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   ssl.SetNextProto(GetProtocol());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<SpdySerializedFrame> host1_req(
+  std::unique_ptr<SpdySerializedFrame> host1_req(
       spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
   spdy_util_.UpdateWithStreamDestruction(1);
-  scoped_ptr<SpdySerializedFrame> host2_req(
+  std::unique_ptr<SpdySerializedFrame> host2_req(
       spdy_util_.ConstructSpdyGet("https://www.gmail.com", 3, LOWEST));
   MockWrite spdy_writes[] = {
       CreateMockWrite(*host1_req, 0), CreateMockWrite(*host2_req, 3),
   };
-  scoped_ptr<SpdySerializedFrame> host1_resp(
+  std::unique_ptr<SpdySerializedFrame> host1_resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> host1_resp_body(
+  std::unique_ptr<SpdySerializedFrame> host1_resp_body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdySerializedFrame> host2_resp(
+  std::unique_ptr<SpdySerializedFrame> host2_resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  scoped_ptr<SpdySerializedFrame> host2_resp_body(
+  std::unique_ptr<SpdySerializedFrame> host2_resp_body(
       spdy_util_.ConstructSpdyBodyFrame(3, true));
   MockRead spdy_reads[] = {
       CreateMockRead(*host1_resp, 1),
@@ -12984,7 +12988,7 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
 
   // Set up a special HttpNetworkSession with a MockCachingHostResolver.
   session_deps_.host_resolver.reset(new MockCachingHostResolver());
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   SpdySessionPoolPeer pool_peer(session->spdy_session_pool());
   pool_peer.DisableDomainAuthenticationVerification();
 
@@ -12992,21 +12996,21 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   ssl.SetNextProto(GetProtocol());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<SpdySerializedFrame> host1_req(
+  std::unique_ptr<SpdySerializedFrame> host1_req(
       spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
   spdy_util_.UpdateWithStreamDestruction(1);
-  scoped_ptr<SpdySerializedFrame> host2_req(
+  std::unique_ptr<SpdySerializedFrame> host2_req(
       spdy_util_.ConstructSpdyGet("https://www.gmail.com", 3, LOWEST));
   MockWrite spdy_writes[] = {
       CreateMockWrite(*host1_req, 0), CreateMockWrite(*host2_req, 3),
   };
-  scoped_ptr<SpdySerializedFrame> host1_resp(
+  std::unique_ptr<SpdySerializedFrame> host1_resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> host1_resp_body(
+  std::unique_ptr<SpdySerializedFrame> host1_resp_body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdySerializedFrame> host2_resp(
+  std::unique_ptr<SpdySerializedFrame> host2_resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  scoped_ptr<SpdySerializedFrame> host2_resp_body(
+  std::unique_ptr<SpdySerializedFrame> host2_resp_body(
       spdy_util_.ConstructSpdyBodyFrame(3, true));
   MockRead spdy_reads[] = {
       CreateMockRead(*host1_resp, 1),
@@ -13113,7 +13117,7 @@ TEST_P(HttpNetworkTransactionTest,
   HttpNetworkSession::Params params =
       SpdySessionDependencies::CreateSessionParams(&session_deps_);
   params.host_resolver = &host_resolver;
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   SpdySessionPoolPeer pool_peer(session->spdy_session_pool());
   pool_peer.DisableDomainAuthenticationVerification();
 
@@ -13121,21 +13125,21 @@ TEST_P(HttpNetworkTransactionTest,
   ssl.SetNextProto(GetProtocol());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<SpdySerializedFrame> host1_req(
+  std::unique_ptr<SpdySerializedFrame> host1_req(
       spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
   spdy_util_.UpdateWithStreamDestruction(1);
-  scoped_ptr<SpdySerializedFrame> host2_req(
+  std::unique_ptr<SpdySerializedFrame> host2_req(
       spdy_util_.ConstructSpdyGet("https://www.gmail.com", 3, LOWEST));
   MockWrite spdy_writes[] = {
       CreateMockWrite(*host1_req, 0), CreateMockWrite(*host2_req, 3),
   };
-  scoped_ptr<SpdySerializedFrame> host1_resp(
+  std::unique_ptr<SpdySerializedFrame> host1_resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> host1_resp_body(
+  std::unique_ptr<SpdySerializedFrame> host1_resp_body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdySerializedFrame> host2_resp(
+  std::unique_ptr<SpdySerializedFrame> host2_resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  scoped_ptr<SpdySerializedFrame> host2_resp_body(
+  std::unique_ptr<SpdySerializedFrame> host2_resp_body(
       spdy_util_.ConstructSpdyBodyFrame(3, true));
   MockRead spdy_reads[] = {
       CreateMockRead(*host1_resp, 1),
@@ -13209,16 +13213,16 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
   const std::string http_url = "http://www.example.org:8080/";
 
   // SPDY GET for HTTPS URL
-  scoped_ptr<SpdySerializedFrame> req1(
+  std::unique_ptr<SpdySerializedFrame> req1(
       spdy_util_.ConstructSpdyGet(https_url.c_str(), 1, LOWEST));
 
   MockWrite writes1[] = {
     CreateMockWrite(*req1, 0),
   };
 
-  scoped_ptr<SpdySerializedFrame> resp1(
+  std::unique_ptr<SpdySerializedFrame> resp1(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> body1(
+  std::unique_ptr<SpdySerializedFrame> body1(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads1[] = {CreateMockRead(*resp1, 1), CreateMockRead(*body1, 2),
                        MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3)};
@@ -13251,7 +13255,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Start the first transaction to set up the SpdySession
   HttpRequestInfo request1;
@@ -13312,12 +13316,12 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
     url1.append(origin.host());
     url1.append(":443");
 
-    scoped_ptr<SpdySerializedFrame> req0;
-    scoped_ptr<SpdySerializedFrame> req1;
-    scoped_ptr<SpdySerializedFrame> resp0;
-    scoped_ptr<SpdySerializedFrame> body0;
-    scoped_ptr<SpdySerializedFrame> resp1;
-    scoped_ptr<SpdySerializedFrame> body1;
+    std::unique_ptr<SpdySerializedFrame> req0;
+    std::unique_ptr<SpdySerializedFrame> req1;
+    std::unique_ptr<SpdySerializedFrame> resp0;
+    std::unique_ptr<SpdySerializedFrame> body0;
+    std::unique_ptr<SpdySerializedFrame> resp1;
+    std::unique_ptr<SpdySerializedFrame> body1;
     std::vector<MockWrite> writes;
     std::vector<MockRead> reads;
 
@@ -13365,7 +13369,7 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
 
     session_deps_.parse_alternative_services = true;
     session_deps_.enable_alternative_service_with_different_host = true;
-    scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
     base::WeakPtr<HttpServerProperties> http_server_properties =
         session->http_server_properties();
     AlternativeService alternative_service(
@@ -13376,7 +13380,7 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
 
     // First request to alternative.
     if (pooling) {
-      scoped_ptr<HttpTransaction> trans0(
+      std::unique_ptr<HttpTransaction> trans0(
           new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
       HttpRequestInfo request0;
       request0.method = "GET";
@@ -13391,7 +13395,7 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
     }
 
     // Second request to origin.
-    scoped_ptr<HttpTransaction> trans1(
+    std::unique_ptr<HttpTransaction> trans1(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
     HttpRequestInfo request1;
     request1.method = "GET";
@@ -13470,7 +13474,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
   // Set up alternative service for origin.
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = true;
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(
@@ -13479,7 +13483,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
   http_server_properties->SetAlternativeService(origin, alternative_service,
                                                 expiration);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   HttpRequestInfo request;
   request.method = "GET";
@@ -13544,7 +13548,7 @@ TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
   // Set up alternative service for origin.
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = true;
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(
@@ -13654,7 +13658,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   // Set up alternative service for origin.
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(
@@ -13664,7 +13668,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
                                                 expiration);
 
   // First transaction to alternative to open an HTTP/1.1 socket.
-  scoped_ptr<HttpTransaction> trans1(
+  std::unique_ptr<HttpTransaction> trans1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   HttpRequestInfo request1;
   request1.method = "GET";
@@ -13689,7 +13693,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   // finds one which is HTTP/1.1, and should ignore it, and should not try to
   // open other connections to alternative server.  The Job to origin fails, so
   // this request fails.
-  scoped_ptr<HttpTransaction> trans2(
+  std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   HttpRequestInfo request2;
   request2.method = "GET";
@@ -13702,7 +13706,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
 
   // Another transaction to alternative.  This is to test that the HTTP/1.1
   // socket is still open and in the pool.
-  scoped_ptr<HttpTransaction> trans3(
+  std::unique_ptr<HttpTransaction> trans3(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   HttpRequestInfo request3;
   request3.method = "GET";
@@ -13732,11 +13736,11 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
 
   // SPDY GET for HTTPS URL (through CONNECT tunnel)
   const HostPortPair host_port_pair("www.example.org", 8080);
-  scoped_ptr<SpdySerializedFrame> connect(
+  std::unique_ptr<SpdySerializedFrame> connect(
       spdy_util_.ConstructSpdyConnect(NULL, 0, 1, LOWEST, host_port_pair));
-  scoped_ptr<SpdySerializedFrame> req1(
+  std::unique_ptr<SpdySerializedFrame> req1(
       spdy_util_wrapped.ConstructSpdyGet(https_url.c_str(), 1, LOWEST));
-  scoped_ptr<SpdySerializedFrame> wrapped_req1(
+  std::unique_ptr<SpdySerializedFrame> wrapped_req1(
       spdy_util_.ConstructWrappedSpdyFrame(req1, 1));
 
   // SPDY GET for HTTP URL (through the proxy, but not the tunnel).
@@ -13746,7 +13750,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
   req2_block[spdy_util_.GetHostKey()] = "www.example.org:8080";
   req2_block[spdy_util_.GetSchemeKey()] = "http";
   req2_block[spdy_util_.GetPathKey()] = "/";
-  scoped_ptr<SpdySerializedFrame> req2(
+  std::unique_ptr<SpdySerializedFrame> req2(
       spdy_util_.ConstructSpdySyn(3, req2_block, MEDIUM, true));
 
   MockWrite writes1[] = {
@@ -13754,19 +13758,19 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
       CreateMockWrite(*req2, 6),
   };
 
-  scoped_ptr<SpdySerializedFrame> conn_resp(
+  std::unique_ptr<SpdySerializedFrame> conn_resp(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  scoped_ptr<SpdySerializedFrame> resp1(
+  std::unique_ptr<SpdySerializedFrame> resp1(
       spdy_util_wrapped.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  scoped_ptr<SpdySerializedFrame> body1(
+  std::unique_ptr<SpdySerializedFrame> body1(
       spdy_util_wrapped.ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdySerializedFrame> wrapped_resp1(
+  std::unique_ptr<SpdySerializedFrame> wrapped_resp1(
       spdy_util_wrapped.ConstructWrappedSpdyFrame(resp1, 1));
-  scoped_ptr<SpdySerializedFrame> wrapped_body1(
+  std::unique_ptr<SpdySerializedFrame> wrapped_body1(
       spdy_util_wrapped.ConstructWrappedSpdyFrame(body1, 1));
-  scoped_ptr<SpdySerializedFrame> resp2(
+  std::unique_ptr<SpdySerializedFrame> resp2(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  scoped_ptr<SpdySerializedFrame> body2(
+  std::unique_ptr<SpdySerializedFrame> body2(
       spdy_util_.ConstructSpdyBodyFrame(3, true));
   MockRead reads1[] = {
       CreateMockRead(*conn_resp, 1),
@@ -13796,7 +13800,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
-  scoped_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   // Start the first transaction to set up the SpdySession
   HttpRequestInfo request1;
@@ -13858,18 +13862,18 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   SpdyTestUtil spdy_util_secure(GetProtocol(), GetDependenciesFromPriority());
 
   // SPDY GET for HTTP URL (through SPDY proxy)
-  scoped_ptr<SpdyHeaderBlock> headers(
+  std::unique_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlockForProxy("http://www.example.org/"));
-  scoped_ptr<SpdySerializedFrame> req1(
+  std::unique_ptr<SpdySerializedFrame> req1(
       spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, true));
 
   MockWrite writes1[] = {
     CreateMockWrite(*req1, 0),
   };
 
-  scoped_ptr<SpdySerializedFrame> resp1(
+  std::unique_ptr<SpdySerializedFrame> resp1(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> body1(
+  std::unique_ptr<SpdySerializedFrame> body1(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads1[] = {
       MockRead(ASYNC, ERR_IO_PENDING, 1), CreateMockRead(*resp1, 2),
@@ -13885,16 +13889,16 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   data1.set_connect_data(connect_data1);
 
   // SPDY GET for HTTPS URL (direct)
-  scoped_ptr<SpdySerializedFrame> req2(
+  std::unique_ptr<SpdySerializedFrame> req2(
       spdy_util_secure.ConstructSpdyGet(url2.c_str(), 1, MEDIUM));
 
   MockWrite writes2[] = {
     CreateMockWrite(*req2, 0),
   };
 
-  scoped_ptr<SpdySerializedFrame> resp2(
+  std::unique_ptr<SpdySerializedFrame> resp2(
       spdy_util_secure.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> body2(
+  std::unique_ptr<SpdySerializedFrame> body2(
       spdy_util_secure.ConstructSpdyBodyFrame(1, true));
   MockRead reads2[] = {CreateMockRead(*resp2, 1), CreateMockRead(*body2, 2),
                        MockRead(ASYNC, OK, 3)};
@@ -13909,7 +13913,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   ProxyConfig proxy_config;
   proxy_config.proxy_rules().ParseFromString("http=https://proxy:443");
   session_deps_.proxy_service.reset(new ProxyService(
-      make_scoped_ptr(new ProxyConfigServiceFixed(proxy_config)), nullptr,
+      base::WrapUnique(new ProxyConfigServiceFixed(proxy_config)), nullptr,
       NULL));
 
   SSLSocketDataProvider ssl1(ASYNC, OK);  // to the proxy
@@ -13932,7 +13936,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   session_deps_.host_resolver->rules()->AddRule("news.example.org", ip_addr);
   session_deps_.host_resolver->rules()->AddRule("proxy", ip_addr);
 
-  scoped_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   // Start the first transaction to set up the SpdySession
   HttpRequestInfo request1;
@@ -13980,15 +13984,15 @@ TEST_P(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
 
   SequencedSocketData data1(reads1, arraysize(reads1), NULL, 0);
 
-  scoped_ptr<SpdySerializedFrame> req2(
+  std::unique_ptr<SpdySerializedFrame> req2(
       spdy_util_.ConstructSpdyGet(https_url.c_str(), 1, MEDIUM));
   MockWrite writes2[] = {
     CreateMockWrite(*req2, 0),
   };
 
-  scoped_ptr<SpdySerializedFrame> resp2(
+  std::unique_ptr<SpdySerializedFrame> resp2(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> body2(
+  std::unique_ptr<SpdySerializedFrame> body2(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads2[] = {
     CreateMockRead(*resp2, 1),
@@ -14009,7 +14013,7 @@ TEST_P(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
-  scoped_ptr<HttpNetworkSession> session(
+  std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps_));
 
   // Start the first transaction to set up the SpdySession and verify that
@@ -14047,7 +14051,7 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   // Use two different hosts with different IPs so they don't get pooled.
   session_deps_.host_resolver->rules()->AddRule("www.a.com", "10.0.0.1");
   session_deps_.host_resolver->rules()->AddRule("www.b.com", "10.0.0.2");
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   SSLSocketDataProvider ssl1(ASYNC, OK);
   ssl1.SetNextProto(GetProtocol());
@@ -14056,14 +14060,14 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
 
-  scoped_ptr<SpdySerializedFrame> host1_req(
+  std::unique_ptr<SpdySerializedFrame> host1_req(
       spdy_util_.ConstructSpdyGet("https://www.a.com", 1, DEFAULT_PRIORITY));
   MockWrite spdy1_writes[] = {
       CreateMockWrite(*host1_req, 0),
   };
-  scoped_ptr<SpdySerializedFrame> host1_resp(
+  std::unique_ptr<SpdySerializedFrame> host1_resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> host1_resp_body(
+  std::unique_ptr<SpdySerializedFrame> host1_resp_body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead spdy1_reads[] = {
       CreateMockRead(*host1_resp, 1), CreateMockRead(*host1_resp_body, 2),
@@ -14073,26 +14077,26 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   // Use a separate test instance for the separate SpdySession that will be
   // created.
   SpdyTestUtil spdy_util_2(GetProtocol(), GetDependenciesFromPriority());
-  scoped_ptr<SequencedSocketData> spdy1_data(
+  std::unique_ptr<SequencedSocketData> spdy1_data(
       new SequencedSocketData(spdy1_reads, arraysize(spdy1_reads), spdy1_writes,
                               arraysize(spdy1_writes)));
   session_deps_.socket_factory->AddSocketDataProvider(spdy1_data.get());
 
-  scoped_ptr<SpdySerializedFrame> host2_req(
+  std::unique_ptr<SpdySerializedFrame> host2_req(
       spdy_util_2.ConstructSpdyGet("https://www.b.com", 1, DEFAULT_PRIORITY));
   MockWrite spdy2_writes[] = {
       CreateMockWrite(*host2_req, 0),
   };
-  scoped_ptr<SpdySerializedFrame> host2_resp(
+  std::unique_ptr<SpdySerializedFrame> host2_resp(
       spdy_util_2.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdySerializedFrame> host2_resp_body(
+  std::unique_ptr<SpdySerializedFrame> host2_resp_body(
       spdy_util_2.ConstructSpdyBodyFrame(1, true));
   MockRead spdy2_reads[] = {
       CreateMockRead(*host2_resp, 1), CreateMockRead(*host2_resp_body, 2),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3),
   };
 
-  scoped_ptr<SequencedSocketData> spdy2_data(
+  std::unique_ptr<SequencedSocketData> spdy2_data(
       new SequencedSocketData(spdy2_reads, arraysize(spdy2_reads), spdy2_writes,
                               arraysize(spdy2_writes)));
   session_deps_.socket_factory->AddSocketDataProvider(spdy2_data.get());
@@ -14124,7 +14128,7 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   request1.method = "GET";
   request1.url = GURL("https://www.a.com/");
   request1.load_flags = 0;
-  scoped_ptr<HttpNetworkTransaction> trans(
+  std::unique_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
@@ -14208,8 +14212,8 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncConnectError) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockConnect mock_connect(SYNCHRONOUS, ERR_NAME_NOT_RESOLVED);
@@ -14245,8 +14249,8 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncConnectError) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockConnect mock_connect(ASYNC, ERR_NAME_NOT_RESOLVED);
@@ -14282,8 +14286,8 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncWriteError) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -14316,8 +14320,8 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncWriteError) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -14350,8 +14354,8 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncReadError) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -14387,8 +14391,8 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncReadError) {
   request.url = GURL("http://www.example.org/");
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -14425,8 +14429,8 @@ TEST_P(HttpNetworkTransactionTest, GetFullRequestHeadersIncludesExtraHeader) {
   request.load_flags = 0;
   request.extra_headers.SetHeader("X-Foo", "bar");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -14699,8 +14703,9 @@ class FakeStreamFactory : public HttpStreamFactory {
 // url_request_http_job_unittest.cc ?
 class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
  public:
-  FakeWebSocketBasicHandshakeStream(scoped_ptr<ClientSocketHandle> connection,
-                                    bool using_proxy)
+  FakeWebSocketBasicHandshakeStream(
+      std::unique_ptr<ClientSocketHandle> connection,
+      bool using_proxy)
       : state_(connection.release(), using_proxy) {}
 
   // Fake implementation of HttpStreamBase methods.
@@ -14798,9 +14803,9 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
   }
 
   // Fake implementation of WebSocketHandshakeStreamBase method(s)
-  scoped_ptr<WebSocketStream> Upgrade() override {
+  std::unique_ptr<WebSocketStream> Upgrade() override {
     NOTREACHED();
-    return scoped_ptr<WebSocketStream>();
+    return std::unique_ptr<WebSocketStream>();
   }
 
  private:
@@ -14816,7 +14821,7 @@ class FakeWebSocketStreamCreateHelper :
       public WebSocketHandshakeStreamBase::CreateHelper {
  public:
   WebSocketHandshakeStreamBase* CreateBasicStream(
-      scoped_ptr<ClientSocketHandle> connection,
+      std::unique_ptr<ClientSocketHandle> connection,
       bool using_proxy) override {
     return new FakeWebSocketBasicHandshakeStream(std::move(connection),
                                                  using_proxy);
@@ -14831,9 +14836,9 @@ class FakeWebSocketStreamCreateHelper :
 
   ~FakeWebSocketStreamCreateHelper() override {}
 
-  virtual scoped_ptr<WebSocketStream> Upgrade() {
+  virtual std::unique_ptr<WebSocketStream> Upgrade() {
     NOTREACHED();
-    return scoped_ptr<WebSocketStream>();
+    return std::unique_ptr<WebSocketStream>();
   }
 };
 
@@ -14842,10 +14847,10 @@ class FakeWebSocketStreamCreateHelper :
 // Make sure that HttpNetworkTransaction passes on its priority to its
 // stream request on start.
 TEST_P(HttpNetworkTransactionTest, SetStreamRequestPriorityOnStart) {
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkSessionPeer peer(session.get());
   FakeStreamFactory* fake_factory = new FakeStreamFactory();
-  peer.SetHttpStreamFactory(scoped_ptr<HttpStreamFactory>(fake_factory));
+  peer.SetHttpStreamFactory(std::unique_ptr<HttpStreamFactory>(fake_factory));
 
   HttpNetworkTransaction trans(LOW, session.get());
 
@@ -14865,10 +14870,10 @@ TEST_P(HttpNetworkTransactionTest, SetStreamRequestPriorityOnStart) {
 // Make sure that HttpNetworkTransaction passes on its priority
 // updates to its stream request.
 TEST_P(HttpNetworkTransactionTest, SetStreamRequestPriority) {
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkSessionPeer peer(session.get());
   FakeStreamFactory* fake_factory = new FakeStreamFactory();
-  peer.SetHttpStreamFactory(scoped_ptr<HttpStreamFactory>(fake_factory));
+  peer.SetHttpStreamFactory(std::unique_ptr<HttpStreamFactory>(fake_factory));
 
   HttpNetworkTransaction trans(LOW, session.get());
 
@@ -14890,10 +14895,10 @@ TEST_P(HttpNetworkTransactionTest, SetStreamRequestPriority) {
 // Make sure that HttpNetworkTransaction passes on its priority
 // updates to its stream.
 TEST_P(HttpNetworkTransactionTest, SetStreamPriority) {
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkSessionPeer peer(session.get());
   FakeStreamFactory* fake_factory = new FakeStreamFactory();
-  peer.SetHttpStreamFactory(scoped_ptr<HttpStreamFactory>(fake_factory));
+  peer.SetHttpStreamFactory(std::unique_ptr<HttpStreamFactory>(fake_factory));
 
   HttpNetworkTransaction trans(LOW, session.get());
 
@@ -14920,12 +14925,12 @@ TEST_P(HttpNetworkTransactionTest, CreateWebSocketHandshakeStream) {
   std::string test_cases[] = {"ws://www.example.org/",
                               "wss://www.example.org/"};
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
     HttpNetworkSessionPeer peer(session.get());
     FakeStreamFactory* fake_factory = new FakeStreamFactory();
     FakeWebSocketStreamCreateHelper websocket_stream_create_helper;
     peer.SetHttpStreamFactoryForWebSocket(
-        scoped_ptr<HttpStreamFactory>(fake_factory));
+        std::unique_ptr<HttpStreamFactory>(fake_factory));
 
     HttpNetworkTransaction trans(LOW, session.get());
     trans.SetWebSocketHandshakeStreamCreateHelper(
@@ -15002,11 +15007,11 @@ TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest) {
                                      http_writes, arraysize(http_writes));
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Start the SSL request.
   TestCompletionCallback ssl_callback;
-  scoped_ptr<HttpTransaction> ssl_trans(
+  std::unique_ptr<HttpTransaction> ssl_trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   ASSERT_EQ(ERR_IO_PENDING,
             ssl_trans->Start(&ssl_request, ssl_callback.callback(),
@@ -15014,7 +15019,7 @@ TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest) {
 
   // Start the HTTP request.  Pool should stall.
   TestCompletionCallback http_callback;
-  scoped_ptr<HttpTransaction> http_trans(
+  std::unique_ptr<HttpTransaction> http_trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   ASSERT_EQ(ERR_IO_PENDING,
             http_trans->Start(&http_request, http_callback.callback(),
@@ -15084,7 +15089,7 @@ TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest2) {
                                      http_writes, arraysize(http_writes));
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Preconnect an SSL socket.  A preconnect is needed because connect jobs are
   // cancelled when a normal transaction is cancelled.
@@ -15097,7 +15102,7 @@ TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest2) {
 
   // Start the HTTP request.  Pool should stall.
   TestCompletionCallback http_callback;
-  scoped_ptr<HttpTransaction> http_trans(
+  std::unique_ptr<HttpTransaction> http_trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   ASSERT_EQ(ERR_IO_PENDING,
             http_trans->Start(&http_request, http_callback.callback(),
@@ -15115,9 +15120,9 @@ TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest2) {
 }
 
 TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterReset) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15126,8 +15131,8 @@ TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterReset) {
   request.upload_data_stream = &upload_data_stream;
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   // Send headers successfully, but get an error while sending the body.
   MockWrite data_writes[] = {
@@ -15171,7 +15176,7 @@ TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterReset) {
 // response from a server that rejected a POST with a CONNECTION_RESET.
 TEST_P(HttpNetworkTransactionTest,
        PostReadsErrorResponseAfterResetOnReusedSocket) {
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   MockWrite data_writes[] = {
     MockWrite("GET / HTTP/1.1\r\n"
               "Host: www.foo.com\r\n"
@@ -15202,7 +15207,7 @@ TEST_P(HttpNetworkTransactionTest,
   request1.url = GURL("http://www.foo.com/");
   request1.load_flags = 0;
 
-  scoped_ptr<HttpTransaction> trans1(
+  std::unique_ptr<HttpTransaction> trans1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans1->Start(&request1, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -15223,9 +15228,9 @@ TEST_P(HttpNetworkTransactionTest,
   // Delete the transaction to release the socket back into the socket pool.
   trans1.reset();
 
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request2;
@@ -15234,7 +15239,7 @@ TEST_P(HttpNetworkTransactionTest,
   request2.upload_data_stream = &upload_data_stream;
   request2.load_flags = 0;
 
-  scoped_ptr<HttpTransaction> trans2(
+  std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -15256,9 +15261,9 @@ TEST_P(HttpNetworkTransactionTest,
 
 TEST_P(HttpNetworkTransactionTest,
        PostReadsErrorResponseAfterResetPartialBodySent) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15267,8 +15272,8 @@ TEST_P(HttpNetworkTransactionTest,
   request.upload_data_stream = &upload_data_stream;
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   // Send headers successfully, but get an error while sending the body.
   MockWrite data_writes[] = {
@@ -15320,8 +15325,8 @@ TEST_P(HttpNetworkTransactionTest, ChunkedPostReadsErrorResponseAfterReset) {
   request.upload_data_stream = &upload_data_stream;
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   // Send headers successfully, but get an error while sending the body.
   MockWrite data_writes[] = {
@@ -15369,9 +15374,9 @@ TEST_P(HttpNetworkTransactionTest, ChunkedPostReadsErrorResponseAfterReset) {
 }
 
 TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterResetAnd100) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15380,8 +15385,8 @@ TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterResetAnd100) {
   request.upload_data_stream = &upload_data_stream;
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
@@ -15423,9 +15428,9 @@ TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterResetAnd100) {
 }
 
 TEST_P(HttpNetworkTransactionTest, PostIgnoresNonErrorResponseAfterReset) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15434,8 +15439,8 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresNonErrorResponseAfterReset) {
   request.upload_data_stream = &upload_data_stream;
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   // Send headers successfully, but get an error while sending the body.
   MockWrite data_writes[] = {
@@ -15466,9 +15471,9 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresNonErrorResponseAfterReset) {
 
 TEST_P(HttpNetworkTransactionTest,
        PostIgnoresNonErrorResponseAfterResetAnd100) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15477,8 +15482,8 @@ TEST_P(HttpNetworkTransactionTest,
   request.upload_data_stream = &upload_data_stream;
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   // Send headers successfully, but get an error while sending the body.
   MockWrite data_writes[] = {
@@ -15510,9 +15515,9 @@ TEST_P(HttpNetworkTransactionTest,
 }
 
 TEST_P(HttpNetworkTransactionTest, PostIgnoresHttp09ResponseAfterReset) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15521,8 +15526,8 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresHttp09ResponseAfterReset) {
   request.upload_data_stream = &upload_data_stream;
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   // Send headers successfully, but get an error while sending the body.
   MockWrite data_writes[] = {
@@ -15551,9 +15556,9 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresHttp09ResponseAfterReset) {
 }
 
 TEST_P(HttpNetworkTransactionTest, PostIgnoresPartial400HeadersAfterReset) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15562,8 +15567,8 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresPartial400HeadersAfterReset) {
   request.upload_data_stream = &upload_data_stream;
   request.load_flags = 0;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   // Send headers successfully, but get an error while sending the body.
   MockWrite data_writes[] = {
@@ -15603,7 +15608,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWssTunnel) {
   session_deps_.proxy_service =
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since a proxy is configured, try to establish a tunnel.
   MockWrite data_writes[] = {
@@ -15650,7 +15655,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWssTunnel) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   FakeWebSocketStreamCreateHelper websocket_stream_create_helper;
   trans->SetWebSocketHandshakeStreamCreateHelper(
@@ -15707,7 +15712,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
   session_deps_.proxy_service =
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   MockWrite data_writes[] = {
       // Try to establish a tunnel for the WebSocket connection, with
@@ -15749,7 +15754,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
       GURL("http://myproxy:70/"), "MyRealm1", HttpAuth::AUTH_SCHEME_BASIC,
       "Basic realm=MyRealm1", AuthCredentials(kFoo, kBar), "/");
 
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   FakeWebSocketStreamCreateHelper websocket_stream_create_helper;
   trans->SetWebSocketHandshakeStreamCreateHelper(
@@ -15774,9 +15779,9 @@ TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
 }
 
 TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesPost) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15784,8 +15789,8 @@ TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesPost) {
   request.url = GURL("http://www.foo.com/");
   request.upload_data_stream = &upload_data_stream;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   MockWrite data_writes[] = {
       MockWrite("POST / HTTP/1.1\r\n"
@@ -15819,9 +15824,9 @@ TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesPost) {
 }
 
 TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesPost100Continue) {
-  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15829,8 +15834,8 @@ TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesPost100Continue) {
   request.url = GURL("http://www.foo.com/");
   request.upload_data_stream = &upload_data_stream;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   MockWrite data_writes[] = {
       MockWrite("POST / HTTP/1.1\r\n"
@@ -15872,8 +15877,8 @@ TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesChunkedPost) {
   request.url = GURL("http://www.foo.com/");
   request.upload_data_stream = &upload_data_stream;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   // Send headers successfully, but get an error while sending the body.
   MockWrite data_writes[] = {
@@ -15917,7 +15922,7 @@ TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesChunkedPost) {
 TEST_P(HttpNetworkTransactionTest, EnableNPN) {
   session_deps_.enable_npn = true;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
   EXPECT_THAT(trans.server_ssl_config_.alpn_protos,
@@ -15929,7 +15934,7 @@ TEST_P(HttpNetworkTransactionTest, EnableNPN) {
 TEST_P(HttpNetworkTransactionTest, DisableNPN) {
   session_deps_.enable_npn = false;
 
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
   EXPECT_THAT(trans.server_ssl_config_.alpn_protos,
@@ -15950,9 +15955,9 @@ TEST_P(HttpNetworkTransactionTest, TokenBindingSpdy) {
   ssl.SetNextProto(GetProtocol());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  scoped_ptr<SpdySerializedFrame> resp(
+  std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  scoped_ptr<SpdySerializedFrame> body(
+  std::unique_ptr<SpdySerializedFrame> body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {CreateMockRead(*resp), CreateMockRead(*body),
                       MockRead(ASYNC, ERR_IO_PENDING)};
@@ -15960,7 +15965,7 @@ TEST_P(HttpNetworkTransactionTest, TokenBindingSpdy) {
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.channel_id_service.reset(new ChannelIDService(
       new DefaultChannelIDStore(nullptr), base::ThreadTaskRunnerHandle::Get()));
-  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
   TestCompletionCallback callback;

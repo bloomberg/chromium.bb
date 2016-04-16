@@ -45,12 +45,12 @@ bool RespondToChallenge(HttpAuth::Target target,
   EXPECT_FALSE(challenge.empty());
 
   token->clear();
-  scoped_ptr<HttpAuthHandlerDigest::Factory> factory(
+  std::unique_ptr<HttpAuthHandlerDigest::Factory> factory(
       new HttpAuthHandlerDigest::Factory());
   HttpAuthHandlerDigest::NonceGenerator* nonce_generator =
       new HttpAuthHandlerDigest::FixedNonceGenerator("client_nonce");
   factory->set_nonce_generator(nonce_generator);
-  scoped_ptr<HttpAuthHandler> handler;
+  std::unique_ptr<HttpAuthHandler> handler;
 
   // Create a handler for a particular challenge.
   SSLInfo null_ssl_info;
@@ -68,7 +68,7 @@ bool RespondToChallenge(HttpAuth::Target target,
   // completes synchronously. That's why this test can get away with a
   // TestCompletionCallback without an IO thread.
   TestCompletionCallback callback;
-  scoped_ptr<HttpRequestInfo> request(new HttpRequestInfo());
+  std::unique_ptr<HttpRequestInfo> request(new HttpRequestInfo());
   request->url = GURL(request_url);
   AuthCredentials credentials(base::ASCIIToUTF16("foo"),
                               base::ASCIIToUTF16("bar"));
@@ -351,11 +351,11 @@ TEST(HttpAuthHandlerDigestTest, ParseChallenge) {
   };
 
   GURL origin("http://www.example.com");
-  scoped_ptr<HttpAuthHandlerDigest::Factory> factory(
+  std::unique_ptr<HttpAuthHandlerDigest::Factory> factory(
       new HttpAuthHandlerDigest::Factory());
   for (size_t i = 0; i < arraysize(tests); ++i) {
     SSLInfo null_ssl_info;
-    scoped_ptr<HttpAuthHandler> handler;
+    std::unique_ptr<HttpAuthHandler> handler;
     int rv = factory->CreateAuthHandlerFromString(
         tests[i].challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
         BoundNetLog(), &handler);
@@ -515,11 +515,11 @@ TEST(HttpAuthHandlerDigestTest, AssembleCredentials) {
     }
   };
   GURL origin("http://www.example.com");
-  scoped_ptr<HttpAuthHandlerDigest::Factory> factory(
+  std::unique_ptr<HttpAuthHandlerDigest::Factory> factory(
       new HttpAuthHandlerDigest::Factory());
   for (size_t i = 0; i < arraysize(tests); ++i) {
     SSLInfo null_ssl_info;
-    scoped_ptr<HttpAuthHandler> handler;
+    std::unique_ptr<HttpAuthHandler> handler;
     int rv = factory->CreateAuthHandlerFromString(
         tests[i].challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
         BoundNetLog(), &handler);
@@ -542,9 +542,9 @@ TEST(HttpAuthHandlerDigestTest, AssembleCredentials) {
 }
 
 TEST(HttpAuthHandlerDigest, HandleAnotherChallenge) {
-  scoped_ptr<HttpAuthHandlerDigest::Factory> factory(
+  std::unique_ptr<HttpAuthHandlerDigest::Factory> factory(
       new HttpAuthHandlerDigest::Factory());
-  scoped_ptr<HttpAuthHandler> handler;
+  std::unique_ptr<HttpAuthHandler> handler;
   std::string default_challenge =
       "Digest realm=\"Oblivion\", nonce=\"nonce-value\"";
   GURL origin("intranet.google.com");

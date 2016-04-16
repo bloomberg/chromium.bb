@@ -1411,9 +1411,9 @@ bool HttpResponseHeaders::GetContentRange(int64_t* first_byte_position,
   return true;
 }
 
-scoped_ptr<base::Value> HttpResponseHeaders::NetLogCallback(
+std::unique_ptr<base::Value> HttpResponseHeaders::NetLogCallback(
     NetLogCaptureMode capture_mode) const {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   base::ListValue* headers = new base::ListValue();
   headers->Append(new base::StringValue(EscapeNonASCII(GetStatusLine())));
   size_t iterator = 0;

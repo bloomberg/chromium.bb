@@ -279,9 +279,8 @@ HttpServerPropertiesManager::alternative_service_map() const {
   return http_server_properties_impl_->alternative_service_map();
 }
 
-scoped_ptr<base::Value>
-HttpServerPropertiesManager::GetAlternativeServiceInfoAsValue()
-    const {
+std::unique_ptr<base::Value>
+HttpServerPropertiesManager::GetAlternativeServiceInfoAsValue() const {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   return http_server_properties_impl_->GetAlternativeServiceInfoAsValue();
 }
@@ -490,14 +489,14 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
   ReadSupportsQuic(http_server_properties_dict, addr);
 
   // String is host/port pair of spdy server.
-  scoped_ptr<ServerList> spdy_servers(new ServerList);
-  scoped_ptr<SpdySettingsMap> spdy_settings_map(
+  std::unique_ptr<ServerList> spdy_servers(new ServerList);
+  std::unique_ptr<SpdySettingsMap> spdy_settings_map(
       new SpdySettingsMap(kMaxSpdySettingsHostsToPersist));
-  scoped_ptr<AlternativeServiceMap> alternative_service_map(
+  std::unique_ptr<AlternativeServiceMap> alternative_service_map(
       new AlternativeServiceMap(kMaxAlternateProtocolHostsToPersist));
-  scoped_ptr<ServerNetworkStatsMap> server_network_stats_map(
+  std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map(
       new ServerNetworkStatsMap(kMaxServerNetworkStatsHostsToPersist));
-  scoped_ptr<QuicServerInfoMap> quic_server_info_map(
+  std::unique_ptr<QuicServerInfoMap> quic_server_info_map(
       new QuicServerInfoMap(QuicServerInfoMap::NO_AUTO_EVICT));
 
   if (version < 4) {
@@ -1164,7 +1163,8 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
       alternative_service_info_vector->empty()) {
     return;
   }
-  scoped_ptr<base::ListValue> alternative_service_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> alternative_service_list(
+      new base::ListValue);
   for (const AlternativeServiceInfo& alternative_service_info :
        *alternative_service_info_vector) {
     const AlternativeService alternative_service =

@@ -5,12 +5,12 @@
 #ifndef NET_HTTP_HTTP_NETWORK_LAYER_H_
 #define NET_HTTP_HTTP_NETWORK_LAYER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/net_export.h"
@@ -33,7 +33,7 @@ class NET_EXPORT HttpNetworkLayer
 
   // HttpTransactionFactory methods:
   int CreateTransaction(RequestPriority priority,
-                        scoped_ptr<HttpTransaction>* trans) override;
+                        std::unique_ptr<HttpTransaction>* trans) override;
   HttpCache* GetCache() override;
   HttpNetworkSession* GetSession() override;
 

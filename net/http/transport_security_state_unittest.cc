@@ -183,7 +183,7 @@ void CheckHPKPReport(
     const scoped_refptr<X509Certificate>& served_certificate_chain,
     const scoped_refptr<X509Certificate>& validated_certificate_chain,
     const HashValueVector& known_pins) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(report));
+  std::unique_ptr<base::Value> value(base::JSONReader::Read(report));
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
 

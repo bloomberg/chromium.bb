@@ -29,7 +29,7 @@ TEST(HttpBasicStateTest, UsingProxyCanBeFalse) {
 TEST(HttpBasicStateTest, ReleaseConnectionWorks) {
   ClientSocketHandle* const handle = new ClientSocketHandle;
   HttpBasicState state(handle, false);
-  const scoped_ptr<ClientSocketHandle> released_connection(
+  const std::unique_ptr<ClientSocketHandle> released_connection(
       state.ReleaseConnection());
   EXPECT_EQ(NULL, state.connection());
   EXPECT_EQ(handle, released_connection.get());

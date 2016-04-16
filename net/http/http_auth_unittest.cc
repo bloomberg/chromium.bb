@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/http/http_auth.h"
+
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/http/http_auth.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler.h"
@@ -49,7 +50,7 @@ HttpAuth::AuthorizationResult HandleChallengeResponse(
     bool connection_based,
     const std::string& headers_text,
     std::string* challenge_used) {
-  scoped_ptr<HttpAuthHandlerMock> mock_handler(
+  std::unique_ptr<HttpAuthHandlerMock> mock_handler(
       CreateMockHandler(connection_based));
   std::set<HttpAuth::Scheme> disabled_schemes;
   scoped_refptr<HttpResponseHeaders> headers(
@@ -120,8 +121,8 @@ TEST(HttpAuthTest, ChooseBestChallenge) {
   GURL origin("http://www.example.com");
   std::set<HttpAuth::Scheme> disabled_schemes;
   MockAllowHttpAuthPreferences http_auth_preferences;
-  scoped_ptr<HostResolver> host_resolver(new MockHostResolver());
-  scoped_ptr<HttpAuthHandlerRegistryFactory> http_auth_handler_factory(
+  std::unique_ptr<HostResolver> host_resolver(new MockHostResolver());
+  std::unique_ptr<HttpAuthHandlerRegistryFactory> http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
   http_auth_handler_factory->SetHttpAuthPreferences(kNegotiateAuthScheme,
                                                     &http_auth_preferences);
@@ -134,7 +135,7 @@ TEST(HttpAuthTest, ChooseBestChallenge) {
         HeadersFromResponseText(headers_with_status_line));
 
     SSLInfo null_ssl_info;
-    scoped_ptr<HttpAuthHandler> handler;
+    std::unique_ptr<HttpAuthHandler> handler;
     HttpAuth::ChooseBestChallenge(http_auth_handler_factory.get(), *headers,
                                   null_ssl_info, HttpAuth::AUTH_SERVER, origin,
                                   disabled_schemes, BoundNetLog(), &handler);

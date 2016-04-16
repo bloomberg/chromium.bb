@@ -136,11 +136,11 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
   HttpResponseInfo response_;
 
   scoped_refptr<GrowableIOBuffer> parser_buf_;
-  scoped_ptr<HttpStreamParser> http_stream_parser_;
+  std::unique_ptr<HttpStreamParser> http_stream_parser_;
   scoped_refptr<IOBuffer> drain_buf_;
 
   // Stores the underlying socket.
-  scoped_ptr<ClientSocketHandle> transport_;
+  std::unique_ptr<ClientSocketHandle> transport_;
 
   // The hostname and port of the endpoint.  This is not necessarily the one
   // specified by the URL, due to Alternate-Protocol or fixed testing ports.

@@ -4,6 +4,7 @@
 
 #include "net/http/http_network_transaction.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -71,14 +71,14 @@ namespace net {
 
 namespace {
 
-scoped_ptr<base::Value> NetLogSSLVersionFallbackCallback(
+std::unique_ptr<base::Value> NetLogSSLVersionFallbackCallback(
     const GURL* url,
     int net_error,
     SSLFailureState ssl_failure_state,
     uint16_t version_before,
     uint16_t version_after,
     NetLogCaptureMode /* capture_mode */) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host_and_port", GetHostAndPort(*url));
   dict->SetInteger("net_error", net_error);
   dict->SetInteger("ssl_failure_state", ssl_failure_state);
@@ -87,11 +87,11 @@ scoped_ptr<base::Value> NetLogSSLVersionFallbackCallback(
   return std::move(dict);
 }
 
-scoped_ptr<base::Value> NetLogSSLCipherFallbackCallback(
+std::unique_ptr<base::Value> NetLogSSLCipherFallbackCallback(
     const GURL* url,
     int net_error,
     NetLogCaptureMode /* capture_mode */) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host_and_port", GetHostAndPort(*url));
   dict->SetInteger("net_error", net_error);
   return std::move(dict);

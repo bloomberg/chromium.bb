@@ -4,7 +4,8 @@
 
 #include "net/http/http_request_headers.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -171,7 +172,7 @@ TEST(HttpRequestHeaders, ToNetLogParamAndBackAgain) {
   headers.SetHeader("A", "a");
   std::string request_line("GET /stuff");
 
-  scoped_ptr<base::Value> event_param(headers.NetLogCallback(
+  std::unique_ptr<base::Value> event_param(headers.NetLogCallback(
       &request_line, NetLogCaptureMode::IncludeCookiesAndCredentials()));
   HttpRequestHeaders headers2;
   std::string request_line2;

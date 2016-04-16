@@ -213,7 +213,8 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
   }
 
   MockPrefDelegate* pref_delegate_;  // Owned by HttpServerPropertiesManager.
-  scoped_ptr<TestingHttpServerPropertiesManager> http_server_props_manager_;
+  std::unique_ptr<TestingHttpServerPropertiesManager>
+      http_server_props_manager_;
   base::Time one_day_from_now_;
 
  private:
@@ -1112,7 +1113,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
 }
 
 TEST_P(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
-  scoped_ptr<base::Value> server_value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> server_value = base::JSONReader::Read(
       "{\"alternative_service\":[{\"port\":443,\"protocol_str\":\"npn-h2\"},"
       "{\"port\":123,\"protocol_str\":\"quic\","
       "\"expiration\":\"9223372036854775807\"},{\"host\":\"example.org\","
@@ -1227,7 +1228,8 @@ TEST_P(HttpServerPropertiesManagerTest,
 
 // Test that expired alternative service entries on disk are ignored.
 TEST_P(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
-  scoped_ptr<base::ListValue> alternative_service_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> alternative_service_list(
+      new base::ListValue);
   base::DictionaryValue* expired_dict = new base::DictionaryValue;
   expired_dict->SetString("protocol_str", "npn-h2");
   expired_dict->SetString("host", "expired.example.com");

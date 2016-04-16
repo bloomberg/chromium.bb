@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/http/http_auth_handler_basic.h"
+
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
-#include "net/http/http_auth_handler_basic.h"
 #include "net/http/http_request_info.h"
 #include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +37,7 @@ TEST(HttpAuthHandlerBasicTest, GenerateAuthToken) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string challenge = "Basic realm=\"Atlantis\"";
     SSLInfo null_ssl_info;
-    scoped_ptr<HttpAuthHandler> basic;
+    std::unique_ptr<HttpAuthHandler> basic;
     EXPECT_EQ(OK, factory.CreateAuthHandlerFromString(
                       challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
                       BoundNetLog(), &basic));
@@ -90,7 +91,7 @@ TEST(HttpAuthHandlerBasicTest, HandleAnotherChallenge) {
   GURL origin("http://www.example.com");
   HttpAuthHandlerBasic::Factory factory;
   SSLInfo null_ssl_info;
-  scoped_ptr<HttpAuthHandler> basic;
+  std::unique_ptr<HttpAuthHandler> basic;
   EXPECT_EQ(OK, factory.CreateAuthHandlerFromString(
                     tests[0].challenge, HttpAuth::AUTH_SERVER, null_ssl_info,
                     origin, BoundNetLog(), &basic));
@@ -191,7 +192,7 @@ TEST(HttpAuthHandlerBasicTest, InitFromChallenge) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string challenge = tests[i].challenge;
     SSLInfo null_ssl_info;
-    scoped_ptr<HttpAuthHandler> basic;
+    std::unique_ptr<HttpAuthHandler> basic;
     int rv = factory.CreateAuthHandlerFromString(
         challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin, BoundNetLog(),
         &basic);

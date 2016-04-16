@@ -5,10 +5,10 @@
 #ifndef NET_HTTP_HTTP_AUTH_HANDLER_MOCK_H_
 #define NET_HTTP_HTTP_AUTH_HANDLER_MOCK_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -50,10 +50,10 @@ class HttpAuthHandlerMock : public HttpAuthHandler {
                           CreateReason reason,
                           int nonce_count,
                           const BoundNetLog& net_log,
-                          scoped_ptr<HttpAuthHandler>* handler) override;
+                          std::unique_ptr<HttpAuthHandler>* handler) override;
 
    private:
-    std::vector<scoped_ptr<HttpAuthHandler>>
+    std::vector<std::unique_ptr<HttpAuthHandler>>
         handlers_[HttpAuth::AUTH_NUM_TARGETS];
     bool do_init_from_challenge_;
   };
