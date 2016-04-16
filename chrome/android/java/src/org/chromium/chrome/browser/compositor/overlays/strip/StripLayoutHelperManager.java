@@ -257,6 +257,19 @@ public class StripLayoutHelperManager implements SceneOverlay {
     }
 
     @Override
+    public boolean onBackPressed() {
+        return false;
+    }
+
+    @Override
+    public void onHideLayout() {}
+
+    @Override
+    public boolean handlesTabCreating() {
+        return false;
+    }
+
+    @Override
     public void tabStateInitialized() {
         updateModelSwitcherButton();
     }

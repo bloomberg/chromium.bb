@@ -463,6 +463,9 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
         mUpdateHost.startHiding(nextTabId, hintAtTabSelection);
         mIsHiding = true;
         mNextTabId = nextTabId;
+        for (int i = 0; i < mSceneOverlays.size(); i++) {
+            mSceneOverlays.get(i).onHideLayout();
+        }
     }
 
     /**
@@ -738,6 +741,10 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @return Whether or not the layout consumed the event.
      */
     public boolean onBackPressed() {
+        for (int i = 0; i < mSceneOverlays.size(); i++) {
+            // If the back button was consumed by any overlays, return true.
+            if (mSceneOverlays.get(i).onBackPressed()) return true;
+        }
         return false;
     }
 
@@ -1070,6 +1077,15 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @return Whether the layout is handling the model updates when a tab is creating.
      */
     public boolean handlesTabCreating() {
+        if (mLayoutTabs == null || mLayoutTabs.length != 1) return false;
+        for (int i = 0; i < mSceneOverlays.size(); i++) {
+            if (mSceneOverlays.get(i).handlesTabCreating()) {
+                // Prevent animation from happening if the overlay handles creation.
+                startHiding(mLayoutTabs[0].getId(), false);
+                doneHiding();
+                return true;
+            }
+        }
         return false;
     }
 

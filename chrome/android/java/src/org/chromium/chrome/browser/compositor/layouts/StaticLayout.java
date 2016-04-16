@@ -191,7 +191,7 @@ public class StaticLayout extends ContextualSearchSupportedLayout {
 
     @Override
     public boolean handlesTabCreating() {
-        return mHandlesTabLifecycles;
+        return super.handlesTabCreating() || mHandlesTabLifecycles;
     }
 
     @Override

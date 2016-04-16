@@ -62,6 +62,22 @@ public interface SceneOverlay {
     boolean updateOverlay(long time, long dt);
 
     /**
+     * Notification that the system back button was pressed.
+     * @return True if system back button press was consumed by this overlay.
+     */
+    boolean onBackPressed();
+
+    /**
+     * A notification to the overlay that the containing layout is being hidden.
+     */
+    void onHideLayout();
+
+    /**
+     * @return True if this overlay handles tab creation.
+     */
+    boolean handlesTabCreating();
+
+    /**
      * Notify the a title has changed.
      *
      * @param tabId     The id of the tab that has changed.
