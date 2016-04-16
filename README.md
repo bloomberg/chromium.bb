@@ -6,7 +6,7 @@ This includes:
 
 * Header files for various languages.
 * JSON files describing the grammar for the SPIR-V core instruction set,
-  and for the GLSL.std.450 and OpenCL extended instruction sets.
+  and for the GLSL.std.450 extended instruction set.
 * The XML registry file.
 
 Under the [include](include) directory, header files are provided according to
