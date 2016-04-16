@@ -220,6 +220,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', 'intel'], bug=1312)  # ANGLE bug id. See also 598910
     self.Fail('conformance/glsl/bugs/sampler-array-using-loop-index.html',
         ['linux', 'intel', 'opengl'], bug=598924)
+    self.Fail('conformance/uniforms/gl-uniform-arrays.html',
+        ['linux', 'debug', ('intel', 0x412)], bug=604140)
 
     # Android failures
     self.Fail('deqp/data/gles2/shaders/constants.html',
