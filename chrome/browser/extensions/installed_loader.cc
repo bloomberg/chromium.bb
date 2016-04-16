@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
-#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -423,30 +422,14 @@ void InstalledLoader::RecordExtensionsMetrics() {
                                 NUM_BACKGROUND_PAGE_TYPES);
 
       if (GetBackgroundPageType(extension) == EVENT_PAGE) {
-        size_t num_registered_events =
-            EventRouter::Get(extension_service_->profile())
-                ->GetRegisteredEvents(extension->id())
-                .size();
         // Count extension event pages with no registered events. Either the
         // event page is badly designed, or there may be a bug where the event
         // page failed to start after an update (crbug.com/469361).
-        if (num_registered_events == 0u) {
+        if (EventRouter::Get(extension_service_->profile())->
+                GetRegisteredEvents(extension->id()).size() == 0) {
           ++eventless_event_pages_count;
           VLOG(1) << "Event page without registered event listeners: "
                   << extension->id() << " " << extension->name();
-        }
-        // Count the number of event listeners the Enhanced Bookmarks Manager
-        // has for crbug.com/469361, but only if it's using an event page (not
-        // necessarily the case). This should always be > 0, because that's how
-        // the bookmarks extension works, but Chrome may have a bug - it has in
-        // the past. In fact, this metric may generally be useful for tracking
-        // the frequency of event page bugs.
-        std::string hashed_id =
-            crx_file::id_util::HashedIdInHex(extension->id());
-        if (hashed_id == "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2") {
-          UMA_HISTOGRAM_CUSTOM_COUNTS(
-              "Extensions.EnhancedBookmarksManagerNumEventListeners",
-              num_registered_events, 1, 10, 10);
         }
       }
     }

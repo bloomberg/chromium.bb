@@ -13162,6 +13162,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.EnhancedBookmarksManagerNumEventListeners">
+  <obsolete>
+    Obsolete since the enhanced bookmarks manager is no longer using an event
+    page.
+  </obsolete>
   <owner>wittman@chromium.org</owner>
   <summary>
     The number of event listeners the Enhanced Bookmarks Manager has, measured
