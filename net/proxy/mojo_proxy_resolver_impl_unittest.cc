@@ -115,7 +115,7 @@ class MockProxyResolverV8Tracing : public ProxyResolverV8Tracing {
                       ProxyInfo* results,
                       const CompletionCallback& callback,
                       ProxyResolver::RequestHandle* request,
-                      scoped_ptr<Bindings> bindings) override;
+                      std::unique_ptr<Bindings> bindings) override;
   void CancelRequest(ProxyResolver::RequestHandle request_handle) override;
   LoadState GetLoadState(ProxyResolver::RequestHandle request) const override;
 
@@ -134,7 +134,7 @@ void MockProxyResolverV8Tracing::GetProxyForURL(
     ProxyInfo* results,
     const CompletionCallback& callback,
     ProxyResolver::RequestHandle* request,
-    scoped_ptr<Bindings> bindings) {
+    std::unique_ptr<Bindings> bindings) {
   pending_requests_.push_back(Request());
   auto& pending_request = pending_requests_.back();
   pending_request.url = url;
@@ -175,7 +175,7 @@ void MockProxyResolverV8Tracing::WaitForCancel() {
 class MojoProxyResolverImplTest : public testing::Test {
  protected:
   void SetUp() override {
-    scoped_ptr<MockProxyResolverV8Tracing> mock_resolver(
+    std::unique_ptr<MockProxyResolverV8Tracing> mock_resolver(
         new MockProxyResolverV8Tracing);
     mock_proxy_resolver_ = mock_resolver.get();
     resolver_impl_.reset(new MojoProxyResolverImpl(std::move(mock_resolver)));
@@ -184,7 +184,7 @@ class MojoProxyResolverImplTest : public testing::Test {
 
   MockProxyResolverV8Tracing* mock_proxy_resolver_;
 
-  scoped_ptr<MojoProxyResolverImpl> resolver_impl_;
+  std::unique_ptr<MojoProxyResolverImpl> resolver_impl_;
   interfaces::ProxyResolver* resolver_;
 };
 
@@ -296,7 +296,7 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrlMultiple) {
 
 TEST_F(MojoProxyResolverImplTest, DestroyClient) {
   interfaces::ProxyResolverRequestClientPtr client_ptr;
-  scoped_ptr<TestRequestClient> client(
+  std::unique_ptr<TestRequestClient> client(
       new TestRequestClient(mojo::GetProxy(&client_ptr)));
 
   resolver_->GetProxyForUrl("http://example.com", std::move(client_ptr));

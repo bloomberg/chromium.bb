@@ -12,6 +12,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -114,12 +115,12 @@ class Job : public base::RefCountedThreadSafe<Job>,
   // |params| is non-owned. It contains the parameters for this Job, and must
   // outlive it.
   Job(const Params* params,
-      scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings);
+      std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings);
 
   // Called from origin thread.
   void StartCreateV8Resolver(
       const scoped_refptr<ProxyResolverScriptData>& script_data,
-      scoped_ptr<ProxyResolverV8>* resolver,
+      std::unique_ptr<ProxyResolverV8>* resolver,
       const CompletionCallback& callback);
 
   // Called from origin thread.
@@ -233,7 +234,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
   // Initialized on origin thread and then accessed from both threads.
   const Params* const params_;
 
-  scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings_;
+  std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings_;
 
   // The callback to run (on the origin thread) when the Job finishes.
   // Should only be accessed from origin thread.
@@ -268,7 +269,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
   // -------------------------------------------------------
 
   scoped_refptr<ProxyResolverScriptData> script_data_;
-  scoped_ptr<ProxyResolverV8>* resolver_out_;
+  std::unique_ptr<ProxyResolverV8>* resolver_out_;
 
   // -------------------------------------------------------
   // State specific to GET_PROXY_FOR_URL.
@@ -329,9 +330,9 @@ class Job : public base::RefCountedThreadSafe<Job>,
 class ProxyResolverV8TracingImpl : public ProxyResolverV8Tracing,
                                    public base::NonThreadSafe {
  public:
-  ProxyResolverV8TracingImpl(scoped_ptr<base::Thread> thread,
-                             scoped_ptr<ProxyResolverV8> resolver,
-                             scoped_ptr<Job::Params> job_params);
+  ProxyResolverV8TracingImpl(std::unique_ptr<base::Thread> thread,
+                             std::unique_ptr<ProxyResolverV8> resolver,
+                             std::unique_ptr<Job::Params> job_params);
 
   ~ProxyResolverV8TracingImpl() override;
 
@@ -340,16 +341,16 @@ class ProxyResolverV8TracingImpl : public ProxyResolverV8Tracing,
                       ProxyInfo* results,
                       const CompletionCallback& callback,
                       ProxyResolver::RequestHandle* request,
-                      scoped_ptr<Bindings> bindings) override;
+                      std::unique_ptr<Bindings> bindings) override;
   void CancelRequest(ProxyResolver::RequestHandle request) override;
   LoadState GetLoadState(ProxyResolver::RequestHandle request) const override;
 
  private:
   // The worker thread on which the ProxyResolverV8 will be run.
-  scoped_ptr<base::Thread> thread_;
-  scoped_ptr<ProxyResolverV8> v8_resolver_;
+  std::unique_ptr<base::Thread> thread_;
+  std::unique_ptr<ProxyResolverV8> v8_resolver_;
 
-  scoped_ptr<Job::Params> job_params_;
+  std::unique_ptr<Job::Params> job_params_;
 
   // The number of outstanding (non-cancelled) jobs.
   int num_outstanding_callbacks_;
@@ -358,7 +359,7 @@ class ProxyResolverV8TracingImpl : public ProxyResolverV8Tracing,
 };
 
 Job::Job(const Job::Params* params,
-         scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings)
+         std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings)
     : origin_runner_(base::ThreadTaskRunnerHandle::Get()),
       params_(params),
       bindings_(std::move(bindings)),
@@ -370,7 +371,7 @@ Job::Job(const Job::Params* params,
 
 void Job::StartCreateV8Resolver(
     const scoped_refptr<ProxyResolverScriptData>& script_data,
-    scoped_ptr<ProxyResolverV8>* resolver,
+    std::unique_ptr<ProxyResolverV8>* resolver,
     const CompletionCallback& callback) {
   CheckIsOnOriginThread();
 
@@ -584,7 +585,7 @@ int Job::ExecuteProxyResolver() {
 
   switch (operation_) {
     case CREATE_V8_RESOLVER: {
-      scoped_ptr<ProxyResolverV8> resolver;
+      std::unique_ptr<ProxyResolverV8> resolver;
       result = ProxyResolverV8::Create(script_data_, this, &resolver);
       if (result == OK)
         *resolver_out_ = std::move(resolver);
@@ -1057,9 +1058,9 @@ void Job::DispatchAlertOrErrorOnOriginThread(bool is_alert,
 }
 
 ProxyResolverV8TracingImpl::ProxyResolverV8TracingImpl(
-    scoped_ptr<base::Thread> thread,
-    scoped_ptr<ProxyResolverV8> resolver,
-    scoped_ptr<Job::Params> job_params)
+    std::unique_ptr<base::Thread> thread,
+    std::unique_ptr<ProxyResolverV8> resolver,
+    std::unique_ptr<Job::Params> job_params)
     : thread_(std::move(thread)),
       v8_resolver_(std::move(resolver)),
       job_params_(std::move(job_params)),
@@ -1081,7 +1082,7 @@ void ProxyResolverV8TracingImpl::GetProxyForURL(
     ProxyInfo* results,
     const CompletionCallback& callback,
     ProxyResolver::RequestHandle* request,
-    scoped_ptr<Bindings> bindings) {
+    std::unique_ptr<Bindings> bindings) {
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
 
@@ -1112,10 +1113,10 @@ class ProxyResolverV8TracingFactoryImpl : public ProxyResolverV8TracingFactory {
 
   void CreateProxyResolverV8Tracing(
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings,
-      scoped_ptr<ProxyResolverV8Tracing>* resolver,
+      std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
+      std::unique_ptr<ProxyResolverV8Tracing>* resolver,
       const CompletionCallback& callback,
-      scoped_ptr<ProxyResolverFactory::Request>* request) override;
+      std::unique_ptr<ProxyResolverFactory::Request>* request) override;
 
  private:
   class CreateJob;
@@ -1131,9 +1132,9 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
     : public ProxyResolverFactory::Request {
  public:
   CreateJob(ProxyResolverV8TracingFactoryImpl* factory,
-            scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings,
+            std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
             const scoped_refptr<ProxyResolverScriptData>& pac_script,
-            scoped_ptr<ProxyResolverV8Tracing>* resolver_out,
+            std::unique_ptr<ProxyResolverV8Tracing>* resolver_out,
             const CompletionCallback& callback)
       : factory_(factory),
         thread_(new base::Thread("Proxy Resolver")),
@@ -1195,11 +1196,11 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
   }
 
   ProxyResolverV8TracingFactoryImpl* factory_;
-  scoped_ptr<base::Thread> thread_;
-  scoped_ptr<Job::Params> job_params_;
+  std::unique_ptr<base::Thread> thread_;
+  std::unique_ptr<Job::Params> job_params_;
   scoped_refptr<Job> create_resolver_job_;
-  scoped_ptr<ProxyResolverV8> v8_resolver_;
-  scoped_ptr<ProxyResolverV8Tracing>* resolver_out_;
+  std::unique_ptr<ProxyResolverV8> v8_resolver_;
+  std::unique_ptr<ProxyResolverV8Tracing>* resolver_out_;
   const CompletionCallback callback_;
   int num_outstanding_callbacks_;
 
@@ -1217,11 +1218,11 @@ ProxyResolverV8TracingFactoryImpl::~ProxyResolverV8TracingFactoryImpl() {
 
 void ProxyResolverV8TracingFactoryImpl::CreateProxyResolverV8Tracing(
     const scoped_refptr<ProxyResolverScriptData>& pac_script,
-    scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings,
-    scoped_ptr<ProxyResolverV8Tracing>* resolver,
+    std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
+    std::unique_ptr<ProxyResolverV8Tracing>* resolver,
     const CompletionCallback& callback,
-    scoped_ptr<ProxyResolverFactory::Request>* request) {
-  scoped_ptr<CreateJob> job(
+    std::unique_ptr<ProxyResolverFactory::Request>* request) {
+  std::unique_ptr<CreateJob> job(
       new CreateJob(this, std::move(bindings), pac_script, resolver, callback));
   jobs_.insert(job.get());
   *request = std::move(job);
@@ -1236,9 +1237,9 @@ void ProxyResolverV8TracingFactoryImpl::RemoveJob(
 }  // namespace
 
 // static
-scoped_ptr<ProxyResolverV8TracingFactory>
+std::unique_ptr<ProxyResolverV8TracingFactory>
 ProxyResolverV8TracingFactory::Create() {
-  return make_scoped_ptr(new ProxyResolverV8TracingFactoryImpl());
+  return base::WrapUnique(new ProxyResolverV8TracingFactoryImpl());
 }
 
 const char kHistogramPacResultForStrippedUrl[] = "Net.PacResultForStrippedUrl";

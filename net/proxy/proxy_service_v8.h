@@ -5,7 +5,8 @@
 #ifndef NET_PROXY_PROXY_SERVICE_V8_H_
 #define NET_PROXY_PROXY_SERVICE_V8_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "net/base/net_export.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
 
@@ -36,10 +37,10 @@ class ProxyService;
 // # multi-threading model. In order for this to be safe to use, *ALL* the
 // # other V8's running in the process must use v8::Locker.
 // ##########################################################################
-NET_EXPORT scoped_ptr<ProxyService> CreateProxyServiceUsingV8ProxyResolver(
-    scoped_ptr<ProxyConfigService> proxy_config_service,
+NET_EXPORT std::unique_ptr<ProxyService> CreateProxyServiceUsingV8ProxyResolver(
+    std::unique_ptr<ProxyConfigService> proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
-    scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
+    std::unique_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,
     NetLog* net_log,
     NetworkDelegate* network_delegate);

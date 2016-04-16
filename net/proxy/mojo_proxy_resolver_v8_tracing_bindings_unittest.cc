@@ -35,8 +35,9 @@ class MojoProxyResolverV8TracingBindingsTest : public testing::Test {
                   interfaces::HostResolverRequestClientPtr client) {}
 
  protected:
-  scoped_ptr<MojoProxyResolverV8TracingBindings<
-      MojoProxyResolverV8TracingBindingsTest>> bindings_;
+  std::unique_ptr<MojoProxyResolverV8TracingBindings<
+      MojoProxyResolverV8TracingBindingsTest>>
+      bindings_;
 
   std::vector<std::string> alerts_;
   std::vector<std::pair<int, std::string>> errors_;

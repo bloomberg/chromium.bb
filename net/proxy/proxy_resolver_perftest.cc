@@ -112,7 +112,7 @@ class PacPerfSuiteRunner {
   void RunTest(const std::string& script_name,
                const PacQuery* queries,
                int queries_len) {
-    scoped_ptr<ProxyResolver> resolver;
+    std::unique_ptr<ProxyResolver> resolver;
     if (!factory_->expects_pac_bytes()) {
       GURL pac_url = test_server_.GetURL(std::string("/") + script_name);
       int rv = factory_->CreateProxyResolver(
@@ -160,7 +160,7 @@ class PacPerfSuiteRunner {
   }
 
   // Read the PAC script from disk and initialize the proxy resolver with it.
-  scoped_ptr<ProxyResolver> LoadPacScriptAndCreateResolver(
+  std::unique_ptr<ProxyResolver> LoadPacScriptAndCreateResolver(
       const std::string& script_name) {
     base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
@@ -179,7 +179,7 @@ class PacPerfSuiteRunner {
       return nullptr;
 
     // Load the PAC script into the ProxyResolver.
-    scoped_ptr<ProxyResolver> resolver;
+    std::unique_ptr<ProxyResolver> resolver;
     int rv = factory_->CreateProxyResolver(
         ProxyResolverScriptData::FromUTF8(file_contents), &resolver,
         CompletionCallback(), nullptr);
@@ -227,8 +227,8 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
 
 class ProxyResolverV8Wrapper : public ProxyResolver {
  public:
-  ProxyResolverV8Wrapper(scoped_ptr<ProxyResolverV8> resolver,
-                         scoped_ptr<MockJSBindings> bindings)
+  ProxyResolverV8Wrapper(std::unique_ptr<ProxyResolverV8> resolver,
+                         std::unique_ptr<MockJSBindings> bindings)
       : resolver_(std::move(resolver)), bindings_(std::move(bindings)) {}
 
   int GetProxyForURL(const GURL& url,
@@ -247,8 +247,8 @@ class ProxyResolverV8Wrapper : public ProxyResolver {
   }
 
  private:
-  scoped_ptr<ProxyResolverV8> resolver_;
-  scoped_ptr<MockJSBindings> bindings_;
+  std::unique_ptr<ProxyResolverV8> resolver_;
+  std::unique_ptr<MockJSBindings> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8Wrapper);
 };
@@ -258,11 +258,11 @@ class ProxyResolverV8Factory : public ProxyResolverFactory {
   ProxyResolverV8Factory() : ProxyResolverFactory(true) {}
   int CreateProxyResolver(
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      scoped_ptr<ProxyResolver>* resolver,
+      std::unique_ptr<ProxyResolver>* resolver,
       const net::CompletionCallback& callback,
-      scoped_ptr<Request>* request) override {
-    scoped_ptr<ProxyResolverV8> v8_resolver;
-    scoped_ptr<MockJSBindings> js_bindings_(new MockJSBindings);
+      std::unique_ptr<Request>* request) override {
+    std::unique_ptr<ProxyResolverV8> v8_resolver;
+    std::unique_ptr<MockJSBindings> js_bindings_(new MockJSBindings);
     int result =
         ProxyResolverV8::Create(pac_script, js_bindings_.get(), &v8_resolver);
     if (result == OK) {

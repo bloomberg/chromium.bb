@@ -108,8 +108,8 @@ class RealFetchTester {
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(30));
   }
 
-  scoped_ptr<URLRequestContext> context_;
-  scoped_ptr<DhcpProxyScriptFetcherWin> fetcher_;
+  std::unique_ptr<URLRequestContext> context_;
+  std::unique_ptr<DhcpProxyScriptFetcherWin> fetcher_;
   bool finished_;
   base::string16 pac_text_;
   base::OneShotTimer timeout_;
@@ -308,7 +308,7 @@ class MockDhcpProxyScriptFetcherWin : public DhcpProxyScriptFetcherWin {
                                    int result,
                                    base::string16 pac_script,
                                    base::TimeDelta fetch_delay) {
-    scoped_ptr<DummyDhcpProxyScriptAdapterFetcher> adapter_fetcher(
+    std::unique_ptr<DummyDhcpProxyScriptAdapterFetcher> adapter_fetcher(
         new DummyDhcpProxyScriptAdapterFetcher(url_request_context(),
                                                GetTaskRunner()));
     adapter_fetcher->Configure(
@@ -416,7 +416,7 @@ class FetcherClient {
     return fetcher_.GetTaskRunner();
   }
 
-  scoped_ptr<URLRequestContext> context_;
+  std::unique_ptr<URLRequestContext> context_;
   MockDhcpProxyScriptFetcherWin fetcher_;
   bool finished_;
   int result_;
@@ -427,7 +427,7 @@ class FetcherClient {
 // the ReuseFetcher test at the bottom.
 void TestNormalCaseURLConfiguredOneAdapter(FetcherClient* client) {
   TestURLRequestContext context;
-  scoped_ptr<DummyDhcpProxyScriptAdapterFetcher> adapter_fetcher(
+  std::unique_ptr<DummyDhcpProxyScriptAdapterFetcher> adapter_fetcher(
       new DummyDhcpProxyScriptAdapterFetcher(&context,
                                              client->GetTaskRunner()));
   adapter_fetcher->Configure(true, OK, L"bingo", 1);
@@ -588,7 +588,7 @@ TEST(DhcpProxyScriptFetcherWin, ShortCircuitLessPreferredAdapters) {
 
 void TestImmediateCancel(FetcherClient* client) {
   TestURLRequestContext context;
-  scoped_ptr<DummyDhcpProxyScriptAdapterFetcher> adapter_fetcher(
+  std::unique_ptr<DummyDhcpProxyScriptAdapterFetcher> adapter_fetcher(
       new DummyDhcpProxyScriptAdapterFetcher(&context,
                                              client->GetTaskRunner()));
   adapter_fetcher->Configure(true, OK, L"bingo", 1);

@@ -5,9 +5,10 @@
 #ifndef NET_PROXY_PROXY_RESOLVER_V8_TRACING_WRAPPER_H_
 #define NET_PROXY_PROXY_RESOLVER_V8_TRACING_WRAPPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_resolver_factory.h"
@@ -32,29 +33,29 @@ class NET_EXPORT ProxyResolverFactoryV8TracingWrapper
   ProxyResolverFactoryV8TracingWrapper(
       HostResolver* host_resolver,
       NetLog* net_log,
-      const base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>&
+      const base::Callback<std::unique_ptr<ProxyResolverErrorObserver>()>&
           error_observer_factory);
   ~ProxyResolverFactoryV8TracingWrapper() override;
 
   // ProxyResolverFactory override.
   int CreateProxyResolver(
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      scoped_ptr<ProxyResolver>* resolver,
+      std::unique_ptr<ProxyResolver>* resolver,
       const CompletionCallback& callback,
-      scoped_ptr<Request>* request) override;
+      std::unique_ptr<Request>* request) override;
 
  private:
   void OnProxyResolverCreated(
-      scoped_ptr<scoped_ptr<ProxyResolverV8Tracing>> v8_resolver,
-      scoped_ptr<ProxyResolver>* resolver,
+      std::unique_ptr<std::unique_ptr<ProxyResolverV8Tracing>> v8_resolver,
+      std::unique_ptr<ProxyResolver>* resolver,
       const CompletionCallback& callback,
-      scoped_ptr<ProxyResolverErrorObserver> error_observer,
+      std::unique_ptr<ProxyResolverErrorObserver> error_observer,
       int error);
 
-  scoped_ptr<ProxyResolverV8TracingFactory> factory_impl_;
+  std::unique_ptr<ProxyResolverV8TracingFactory> factory_impl_;
   HostResolver* const host_resolver_;
   NetLog* const net_log_;
-  const base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>
+  const base::Callback<std::unique_ptr<ProxyResolverErrorObserver>()>
       error_observer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactoryV8TracingWrapper);

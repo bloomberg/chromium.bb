@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -62,14 +63,15 @@ class RequestContext : public URLRequestContext {
  public:
   RequestContext() : storage_(this) {
     ProxyConfig no_proxy;
-    storage_.set_host_resolver(scoped_ptr<HostResolver>(new MockHostResolver));
-    storage_.set_cert_verifier(make_scoped_ptr(new MockCertVerifier));
+    storage_.set_host_resolver(
+        std::unique_ptr<HostResolver>(new MockHostResolver));
+    storage_.set_cert_verifier(base::WrapUnique(new MockCertVerifier));
     storage_.set_transport_security_state(
-        make_scoped_ptr(new TransportSecurityState));
+        base::WrapUnique(new TransportSecurityState));
     storage_.set_proxy_service(ProxyService::CreateFixed(no_proxy));
     storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
     storage_.set_http_server_properties(
-        scoped_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
+        std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
 
     HttpNetworkSession::Params params;
     params.host_resolver = host_resolver();
@@ -79,15 +81,15 @@ class RequestContext : public URLRequestContext {
     params.ssl_config_service = ssl_config_service();
     params.http_server_properties = http_server_properties();
     storage_.set_http_network_session(
-        make_scoped_ptr(new HttpNetworkSession(params)));
-    storage_.set_http_transaction_factory(make_scoped_ptr(
+        base::WrapUnique(new HttpNetworkSession(params)));
+    storage_.set_http_transaction_factory(base::WrapUnique(
         new HttpCache(storage_.http_network_session(),
                       HttpCache::DefaultBackend::InMemory(0), false)));
-    scoped_ptr<URLRequestJobFactoryImpl> job_factory =
-        make_scoped_ptr(new URLRequestJobFactoryImpl());
+    std::unique_ptr<URLRequestJobFactoryImpl> job_factory =
+        base::WrapUnique(new URLRequestJobFactoryImpl());
 #if !defined(DISABLE_FILE_SUPPORT)
     job_factory->SetProtocolHandler("file",
-                                    make_scoped_ptr(new FileProtocolHandler(
+                                    base::WrapUnique(new FileProtocolHandler(
                                         base::ThreadTaskRunnerHandle::Get())));
 #endif
     storage_.set_job_factory(std::move(job_factory));

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "mojo/common/url_type_converters.h"
 #include "net/base/net_errors.h"
@@ -47,7 +48,7 @@ class MojoProxyResolverImpl::Job {
 };
 
 MojoProxyResolverImpl::MojoProxyResolverImpl(
-    scoped_ptr<ProxyResolverV8Tracing> resolver)
+    std::unique_ptr<ProxyResolverV8Tracing> resolver)
     : resolver_(std::move(resolver)) {}
 
 MojoProxyResolverImpl::~MojoProxyResolverImpl() {
@@ -89,8 +90,8 @@ void MojoProxyResolverImpl::Job::Start() {
   resolver_->resolver_->GetProxyForURL(
       url_, &result_, base::Bind(&Job::GetProxyDone, base::Unretained(this)),
       &request_handle_,
-      make_scoped_ptr(new MojoProxyResolverV8TracingBindings<
-                      interfaces::ProxyResolverRequestClient>(client_.get())));
+      base::WrapUnique(new MojoProxyResolverV8TracingBindings<
+                       interfaces::ProxyResolverRequestClient>(client_.get())));
   client_.set_connection_error_handler(base::Bind(
       &MojoProxyResolverImpl::Job::OnConnectionError, base::Unretained(this)));
 }

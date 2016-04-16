@@ -22,7 +22,7 @@ class MojoProxyResolverFactoryImpl : public interfaces::ProxyResolverFactory {
   explicit MojoProxyResolverFactoryImpl(
       mojo::InterfaceRequest<interfaces::ProxyResolverFactory> request);
   MojoProxyResolverFactoryImpl(
-      scoped_ptr<ProxyResolverV8TracingFactory> proxy_resolver_factory,
+      std::unique_ptr<ProxyResolverV8TracingFactory> proxy_resolver_factory,
       mojo::InterfaceRequest<interfaces::ProxyResolverFactory> request);
 
   ~MojoProxyResolverFactoryImpl() override;
@@ -38,7 +38,8 @@ class MojoProxyResolverFactoryImpl : public interfaces::ProxyResolverFactory {
 
   void RemoveJob(Job* job);
 
-  const scoped_ptr<ProxyResolverV8TracingFactory> proxy_resolver_impl_factory_;
+  const std::unique_ptr<ProxyResolverV8TracingFactory>
+      proxy_resolver_impl_factory_;
   mojo::StrongBinding<interfaces::ProxyResolverFactory> binding_;
 
   std::set<Job*> jobs_;

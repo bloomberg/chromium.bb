@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -63,22 +64,22 @@ scoped_refptr<ProxyResolverScriptData> LoadScriptData(const char* filename) {
   return ProxyResolverScriptData::FromUTF8(file_contents);
 }
 
-scoped_ptr<ProxyResolverErrorObserver> ReturnErrorObserver(
-    scoped_ptr<ProxyResolverErrorObserver> error_observer) {
+std::unique_ptr<ProxyResolverErrorObserver> ReturnErrorObserver(
+    std::unique_ptr<ProxyResolverErrorObserver> error_observer) {
   return error_observer;
 }
 
-scoped_ptr<ProxyResolver> CreateResolver(
+std::unique_ptr<ProxyResolver> CreateResolver(
     NetLog* net_log,
     HostResolver* host_resolver,
-    scoped_ptr<ProxyResolverErrorObserver> error_observer,
+    std::unique_ptr<ProxyResolverErrorObserver> error_observer,
     const char* filename) {
-  scoped_ptr<ProxyResolver> resolver;
+  std::unique_ptr<ProxyResolver> resolver;
   ProxyResolverFactoryV8TracingWrapper factory(
       host_resolver, net_log,
       base::Bind(&ReturnErrorObserver, base::Passed(&error_observer)));
   TestCompletionCallback callback;
-  scoped_ptr<ProxyResolverFactory::Request> request;
+  std::unique_ptr<ProxyResolverFactory::Request> request;
   int rv = factory.CreateProxyResolver(LoadScriptData(filename), &resolver,
                                        callback.callback(), &request);
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -122,8 +123,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Simple) {
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  scoped_ptr<ProxyResolver> resolver = CreateResolver(
-      &log, &host_resolver, make_scoped_ptr(error_observer), "simple.js");
+  std::unique_ptr<ProxyResolver> resolver = CreateResolver(
+      &log, &host_resolver, base::WrapUnique(error_observer), "simple.js");
 
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
@@ -153,8 +154,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, JavascriptError) {
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  scoped_ptr<ProxyResolver> resolver = CreateResolver(
-      &log, &host_resolver, make_scoped_ptr(error_observer), "error.js");
+  std::unique_ptr<ProxyResolver> resolver = CreateResolver(
+      &log, &host_resolver, base::WrapUnique(error_observer), "error.js");
 
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
@@ -201,8 +202,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyAlerts) {
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  scoped_ptr<ProxyResolver> resolver =
-      CreateResolver(&log, &host_resolver, make_scoped_ptr(error_observer),
+  std::unique_ptr<ProxyResolver> resolver =
+      CreateResolver(&log, &host_resolver, base::WrapUnique(error_observer),
                      "too_many_alerts.js");
 
   TestCompletionCallback callback;
@@ -249,8 +250,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyEmptyAlerts) {
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  scoped_ptr<ProxyResolver> resolver =
-      CreateResolver(&log, &host_resolver, make_scoped_ptr(error_observer),
+  std::unique_ptr<ProxyResolver> resolver =
+      CreateResolver(&log, &host_resolver, base::WrapUnique(error_observer),
                      "too_many_empty_alerts.js");
 
   TestCompletionCallback callback;
@@ -307,8 +308,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Dns) {
                                                  "122.133.144.155");
   host_resolver.rules()->AddRule("*", "133.122.100.200");
 
-  scoped_ptr<ProxyResolver> resolver = CreateResolver(
-      &log, &host_resolver, make_scoped_ptr(error_observer), "dns.js");
+  std::unique_ptr<ProxyResolver> resolver = CreateResolver(
+      &log, &host_resolver, base::WrapUnique(error_observer), "dns.js");
 
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
@@ -371,8 +372,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, DnsChecksCache) {
   host_resolver.rules()->AddRule("foopy", "166.155.144.11");
   host_resolver.rules()->AddRule("*", "122.133.144.155");
 
-  scoped_ptr<ProxyResolver> resolver = CreateResolver(
-      &log, &host_resolver, make_scoped_ptr(error_observer), "simple_dns.js");
+  std::unique_ptr<ProxyResolver> resolver = CreateResolver(
+      &log, &host_resolver, base::WrapUnique(error_observer), "simple_dns.js");
 
   TestCompletionCallback callback1;
   TestCompletionCallback callback2;
@@ -423,8 +424,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous1) {
   host_resolver.rules()->AddRule("crazy4", "133.199.111.4");
   host_resolver.rules()->AddRule("*", "122.133.144.155");
 
-  scoped_ptr<ProxyResolver> resolver =
-      CreateResolver(&log, &host_resolver, make_scoped_ptr(error_observer),
+  std::unique_ptr<ProxyResolver> resolver =
+      CreateResolver(&log, &host_resolver, base::WrapUnique(error_observer),
                      "global_sideffects1.js");
 
   TestCompletionCallback callback;
@@ -477,8 +478,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous2) {
   host_resolver.rules()->AddRule("host4", "166.155.144.44");
   host_resolver.rules()->AddRule("*", "122.133.144.155");
 
-  scoped_ptr<ProxyResolver> resolver =
-      CreateResolver(&log, &host_resolver, make_scoped_ptr(error_observer),
+  std::unique_ptr<ProxyResolver> resolver =
+      CreateResolver(&log, &host_resolver, base::WrapUnique(error_observer),
                      "global_sideffects2.js");
 
   TestCompletionCallback callback;
@@ -515,8 +516,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, InfiniteDNSSequence) {
   host_resolver.rules()->AddRule("host*", "166.155.144.11");
   host_resolver.rules()->AddRule("*", "122.133.144.155");
 
-  scoped_ptr<ProxyResolver> resolver =
-      CreateResolver(&log, &host_resolver, make_scoped_ptr(error_observer),
+  std::unique_ptr<ProxyResolver> resolver =
+      CreateResolver(&log, &host_resolver, base::WrapUnique(error_observer),
                      "global_sideffects3.js");
 
   TestCompletionCallback callback;
@@ -560,8 +561,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, InfiniteDNSSequence2) {
   host_resolver.rules()->AddRule("host*", "166.155.144.11");
   host_resolver.rules()->AddRule("*", "122.133.144.155");
 
-  scoped_ptr<ProxyResolver> resolver =
-      CreateResolver(&log, &host_resolver, make_scoped_ptr(error_observer),
+  std::unique_ptr<ProxyResolver> resolver =
+      CreateResolver(&log, &host_resolver, base::WrapUnique(error_observer),
                      "global_sideffects4.js");
 
   TestCompletionCallback callback;
@@ -595,8 +596,8 @@ void DnsDuringInitHelper(bool synchronous_host_resolver) {
   host_resolver.rules()->AddRule("host1", "91.13.12.1");
   host_resolver.rules()->AddRule("host2", "91.13.12.2");
 
-  scoped_ptr<ProxyResolver> resolver =
-      CreateResolver(&log, &host_resolver, make_scoped_ptr(error_observer),
+  std::unique_ptr<ProxyResolver> resolver =
+      CreateResolver(&log, &host_resolver, base::WrapUnique(error_observer),
                      "dns_during_init.js");
 
   // Initialization did 2 dnsResolves.
@@ -662,8 +663,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelAll) {
 
   host_resolver.rules()->AddSimulatedFailure("*");
 
-  scoped_ptr<ProxyResolver> resolver = CreateResolver(
-      nullptr, &host_resolver, make_scoped_ptr(error_observer), "dns.js");
+  std::unique_ptr<ProxyResolver> resolver = CreateResolver(
+      nullptr, &host_resolver, base::WrapUnique(error_observer), "dns.js");
 
   const size_t kNumRequests = 5;
   ProxyInfo proxy_info[kNumRequests];
@@ -690,8 +691,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelSome) {
 
   host_resolver.rules()->AddSimulatedFailure("*");
 
-  scoped_ptr<ProxyResolver> resolver = CreateResolver(
-      nullptr, &host_resolver, make_scoped_ptr(error_observer), "dns.js");
+  std::unique_ptr<ProxyResolver> resolver = CreateResolver(
+      nullptr, &host_resolver, base::WrapUnique(error_observer), "dns.js");
 
   ProxyInfo proxy_info1;
   ProxyInfo proxy_info2;
@@ -721,8 +722,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhilePendingCompletionTask) {
 
   host_resolver.rules()->AddSimulatedFailure("*");
 
-  scoped_ptr<ProxyResolver> resolver = CreateResolver(
-      nullptr, &host_resolver, make_scoped_ptr(error_observer), "error.js");
+  std::unique_ptr<ProxyResolver> resolver = CreateResolver(
+      nullptr, &host_resolver, base::WrapUnique(error_observer), "error.js");
 
   ProxyInfo proxy_info1;
   ProxyInfo proxy_info2;
@@ -823,8 +824,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
   BlockableHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  scoped_ptr<ProxyResolver> resolver = CreateResolver(
-      nullptr, &host_resolver, make_scoped_ptr(error_observer), "dns.js");
+  std::unique_ptr<ProxyResolver> resolver = CreateResolver(
+      nullptr, &host_resolver, base::WrapUnique(error_observer), "dns.js");
 
   ProxyInfo proxy_info1;
   ProxyInfo proxy_info2;
@@ -874,8 +875,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhileBlockedInNonBlockingDns) {
   BlockableHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  scoped_ptr<ProxyResolver> resolver = CreateResolver(
-      nullptr, &host_resolver, make_scoped_ptr(error_observer), "dns.js");
+  std::unique_ptr<ProxyResolver> resolver = CreateResolver(
+      nullptr, &host_resolver, base::WrapUnique(error_observer), "dns.js");
 
   ProxyInfo proxy_info;
   ProxyResolver::RequestHandle request;
@@ -898,8 +899,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhileBlockedInNonBlockingDns2) {
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  scoped_ptr<ProxyResolver> resolver = CreateResolver(
-      nullptr, &host_resolver, make_scoped_ptr(error_observer), "dns.js");
+  std::unique_ptr<ProxyResolver> resolver = CreateResolver(
+      nullptr, &host_resolver, base::WrapUnique(error_observer), "dns.js");
 
   ProxyInfo proxy_info;
   ProxyResolver::RequestHandle request;
@@ -927,10 +928,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
   ProxyResolverFactoryV8TracingWrapper factory(
       &host_resolver, nullptr,
       base::Bind(&ReturnErrorObserver,
-                 base::Passed(make_scoped_ptr(error_observer))));
+                 base::Passed(base::WrapUnique(error_observer))));
 
-  scoped_ptr<ProxyResolver> resolver;
-  scoped_ptr<ProxyResolverFactory::Request> request;
+  std::unique_ptr<ProxyResolver> resolver;
+  std::unique_ptr<ProxyResolverFactory::Request> request;
   int rv = factory.CreateProxyResolver(LoadScriptData("dns_during_init.js"),
                                        &resolver, base::Bind(&CrashCallback),
                                        &request);
@@ -947,13 +948,13 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
   BlockableHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  scoped_ptr<ProxyResolver> resolver;
-  scoped_ptr<ProxyResolverFactory::Request> request;
+  std::unique_ptr<ProxyResolver> resolver;
+  std::unique_ptr<ProxyResolverFactory::Request> request;
   {
     ProxyResolverFactoryV8TracingWrapper factory(
         &host_resolver, nullptr,
         base::Bind(&ReturnErrorObserver,
-                   base::Passed(make_scoped_ptr(error_observer))));
+                   base::Passed(base::WrapUnique(error_observer))));
 
     int rv = factory.CreateProxyResolver(LoadScriptData("dns_during_init.js"),
                                          &resolver, base::Bind(&CrashCallback),
@@ -971,10 +972,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, ErrorLoadingScript) {
   ProxyResolverFactoryV8TracingWrapper factory(
       &host_resolver, nullptr,
       base::Bind(&ReturnErrorObserver,
-                 base::Passed(make_scoped_ptr(error_observer))));
+                 base::Passed(base::WrapUnique(error_observer))));
 
-  scoped_ptr<ProxyResolver> resolver;
-  scoped_ptr<ProxyResolverFactory::Request> request;
+  std::unique_ptr<ProxyResolver> resolver;
+  std::unique_ptr<ProxyResolverFactory::Request> request;
   TestCompletionCallback callback;
   int rv =
       factory.CreateProxyResolver(LoadScriptData("error_on_load.js"), &resolver,
@@ -995,8 +996,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Terminate) {
   host_resolver.rules()->AddRule("host1", "182.111.0.222");
   host_resolver.rules()->AddRule("host2", "111.33.44.55");
 
-  scoped_ptr<ProxyResolver> resolver = CreateResolver(
-      &log, &host_resolver, make_scoped_ptr(error_observer), "terminate.js");
+  std::unique_ptr<ProxyResolver> resolver = CreateResolver(
+      &log, &host_resolver, base::WrapUnique(error_observer), "terminate.js");
 
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
@@ -1041,32 +1042,32 @@ TEST_F(ProxyResolverV8TracingWrapperTest, MultipleResolvers) {
   host_resolver0.rules()->AddRuleForAddressFamily("*", ADDRESS_FAMILY_IPV4,
                                                   "122.133.144.155");
   host_resolver0.rules()->AddRule("*", "133.122.100.200");
-  scoped_ptr<ProxyResolver> resolver0 =
+  std::unique_ptr<ProxyResolver> resolver0 =
       CreateResolver(nullptr, &host_resolver0,
-                     make_scoped_ptr(new MockErrorObserver), "dns.js");
+                     base::WrapUnique(new MockErrorObserver), "dns.js");
 
   // ------------------------
   // Setup resolver1
   // ------------------------
-  scoped_ptr<ProxyResolver> resolver1 =
+  std::unique_ptr<ProxyResolver> resolver1 =
       CreateResolver(nullptr, &host_resolver0,
-                     make_scoped_ptr(new MockErrorObserver), "dns.js");
+                     base::WrapUnique(new MockErrorObserver), "dns.js");
 
   // ------------------------
   // Setup resolver2
   // ------------------------
-  scoped_ptr<ProxyResolver> resolver2 =
+  std::unique_ptr<ProxyResolver> resolver2 =
       CreateResolver(nullptr, &host_resolver0,
-                     make_scoped_ptr(new MockErrorObserver), "simple.js");
+                     base::WrapUnique(new MockErrorObserver), "simple.js");
 
   // ------------------------
   // Setup resolver3
   // ------------------------
   MockHostResolver host_resolver3;
   host_resolver3.rules()->AddRule("foo", "166.155.144.33");
-  scoped_ptr<ProxyResolver> resolver3 =
+  std::unique_ptr<ProxyResolver> resolver3 =
       CreateResolver(nullptr, &host_resolver3,
-                     make_scoped_ptr(new MockErrorObserver), "simple_dns.js");
+                     base::WrapUnique(new MockErrorObserver), "simple_dns.js");
 
   // ------------------------
   // Queue up work for each resolver (which will be running in parallel).

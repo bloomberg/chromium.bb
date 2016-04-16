@@ -5,9 +5,10 @@
 #ifndef NET_PROXY_PROXY_RESOLVER_FACTORY_MOJO_H_
 #define NET_PROXY_PROXY_RESOLVER_FACTORY_MOJO_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy/proxy_resolver_factory.h"
@@ -26,7 +27,7 @@ class ProxyResolverFactoryMojo : public ProxyResolverFactory {
   ProxyResolverFactoryMojo(
       MojoProxyResolverFactory* mojo_proxy_factory,
       HostResolver* host_resolver,
-      const base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>&
+      const base::Callback<std::unique_ptr<ProxyResolverErrorObserver>()>&
           error_observer_factory,
       NetLog* net_log);
   ~ProxyResolverFactoryMojo() override;
@@ -34,16 +35,16 @@ class ProxyResolverFactoryMojo : public ProxyResolverFactory {
   // ProxyResolverFactory override.
   int CreateProxyResolver(
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      scoped_ptr<ProxyResolver>* resolver,
+      std::unique_ptr<ProxyResolver>* resolver,
       const CompletionCallback& callback,
-      scoped_ptr<Request>* request) override;
+      std::unique_ptr<Request>* request) override;
 
  private:
   class Job;
 
   MojoProxyResolverFactory* const mojo_proxy_factory_;
   HostResolver* const host_resolver_;
-  const base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>
+  const base::Callback<std::unique_ptr<ProxyResolverErrorObserver>()>
       error_observer_factory_;
   NetLog* const net_log_;
 

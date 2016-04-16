@@ -5,7 +5,8 @@
 #ifndef NET_PROXY_PROXY_SERVICE_MOJO_H_
 #define NET_PROXY_PROXY_SERVICE_MOJO_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
 
 namespace net {
@@ -34,11 +35,11 @@ class ProxyService;
 // |host_resolver| points to the host resolving dependency the PAC script
 // should use for any DNS queries. It must remain valid throughout the
 // lifetime of the ProxyService.
-scoped_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
+std::unique_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
     MojoProxyResolverFactory* mojo_proxy_factory,
-    scoped_ptr<ProxyConfigService> proxy_config_service,
+    std::unique_ptr<ProxyConfigService> proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
-    scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
+    std::unique_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,
     NetLog* net_log,
     NetworkDelegate* network_delegate);
@@ -51,10 +52,10 @@ scoped_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
 // # multi-threading model. In order for this to be safe to use, *ALL* the
 // # other V8's running in the process must use v8::Locker.
 // ##########################################################################
-scoped_ptr<ProxyService> CreateProxyServiceUsingMojoInProcess(
-    scoped_ptr<ProxyConfigService> proxy_config_service,
+std::unique_ptr<ProxyService> CreateProxyServiceUsingMojoInProcess(
+    std::unique_ptr<ProxyConfigService> proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
-    scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
+    std::unique_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,
     NetLog* net_log,
     NetworkDelegate* network_delegate);

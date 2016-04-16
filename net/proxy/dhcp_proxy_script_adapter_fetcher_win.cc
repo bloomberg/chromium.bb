@@ -231,7 +231,7 @@ std::string DhcpProxyScriptAdapterFetcher::GetPacURLFromDhcp(
   // The maximum message size is typically 4096 bytes on Windows per
   // http://support.microsoft.com/kb/321592
   DWORD result_buffer_size = 4096;
-  scoped_ptr<BYTE, base::FreeDeleter> result_buffer;
+  std::unique_ptr<BYTE, base::FreeDeleter> result_buffer;
   int retry_count = 0;
   DWORD res = NO_ERROR;
   do {

@@ -132,7 +132,7 @@ class ProxyResolverV8Test : public testing::Test {
 
  private:
   MockJSBindings js_bindings_;
-  scoped_ptr<ProxyResolverV8> resolver_;
+  std::unique_ptr<ProxyResolverV8> resolver_;
 };
 
 // Doesn't really matter what these values are for many of the tests.

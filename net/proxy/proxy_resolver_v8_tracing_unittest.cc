@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -106,8 +107,8 @@ class MockBindings {
     waiter_.WaitForEvent(EVENT_ERROR);
   }
 
-  scoped_ptr<ProxyResolverV8Tracing::Bindings> CreateBindings() {
-    return make_scoped_ptr(new ForwardingBindings(this));
+  std::unique_ptr<ProxyResolverV8Tracing::Bindings> CreateBindings() {
+    return base::WrapUnique(new ForwardingBindings(this));
   }
 
  private:
@@ -152,14 +153,14 @@ class MockBindings {
   EventWaiter<Event> waiter_;
 };
 
-scoped_ptr<ProxyResolverV8Tracing> CreateResolver(
-    scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings,
+std::unique_ptr<ProxyResolverV8Tracing> CreateResolver(
+    std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
     const char* filename) {
-  scoped_ptr<ProxyResolverV8Tracing> resolver;
-  scoped_ptr<ProxyResolverV8TracingFactory> factory(
+  std::unique_ptr<ProxyResolverV8Tracing> resolver;
+  std::unique_ptr<ProxyResolverV8TracingFactory> factory(
       ProxyResolverV8TracingFactory::Create());
   TestCompletionCallback callback;
-  scoped_ptr<ProxyResolverFactory::Request> request;
+  std::unique_ptr<ProxyResolverFactory::Request> request;
   factory->CreateProxyResolverV8Tracing(LoadScriptData(filename),
                                         std::move(bindings), &resolver,
                                         callback.callback(), &request);
@@ -172,7 +173,7 @@ TEST_F(ProxyResolverV8TracingTest, Simple) {
   MockCachingHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "simple.js");
 
   TestCompletionCallback callback;
@@ -200,7 +201,7 @@ TEST_F(ProxyResolverV8TracingTest, AlertUrl) {
   MockCachingHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "alert_url.js");
 
   TestCompletionCallback callback;
@@ -230,7 +231,7 @@ TEST_F(ProxyResolverV8TracingTest, JavascriptError) {
   MockCachingHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "error.js");
 
   TestCompletionCallback callback;
@@ -259,7 +260,7 @@ TEST_F(ProxyResolverV8TracingTest, TooManyAlerts) {
   MockCachingHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "too_many_alerts.js");
 
   TestCompletionCallback callback;
@@ -299,7 +300,7 @@ TEST_F(ProxyResolverV8TracingTest, TooManyEmptyAlerts) {
   MockCachingHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver = CreateResolver(
+  std::unique_ptr<ProxyResolverV8Tracing> resolver = CreateResolver(
       mock_bindings.CreateBindings(), "too_many_empty_alerts.js");
 
   TestCompletionCallback callback;
@@ -349,7 +350,7 @@ TEST_F(ProxyResolverV8TracingTest, Dns) {
       "*", ADDRESS_FAMILY_IPV4, "122.133.144.155");
   host_resolver.rules()->AddRule("*", "133.122.100.200");
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "dns.js");
 
   TestCompletionCallback callback;
@@ -403,7 +404,7 @@ TEST_F(ProxyResolverV8TracingTest, DnsChecksCache) {
   host_resolver.rules()->AddRule("foopy", "166.155.144.11");
   host_resolver.rules()->AddRule("*", "122.133.144.155");
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "simple_dns.js");
 
   TestCompletionCallback callback1;
@@ -464,7 +465,7 @@ TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous1) {
   host_resolver.rules()->AddRule("crazy4", "133.199.111.4");
   host_resolver.rules()->AddRule("*", "122.133.144.155");
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "global_sideffects1.js");
 
   TestCompletionCallback callback;
@@ -507,7 +508,7 @@ TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous2) {
   host_resolver.rules()->AddRule("host4", "166.155.144.44");
   host_resolver.rules()->AddRule("*", "122.133.144.155");
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "global_sideffects2.js");
 
   TestCompletionCallback callback;
@@ -542,7 +543,7 @@ TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence) {
   host_resolver.rules()->AddRule("host*", "166.155.144.11");
   host_resolver.rules()->AddRule("*", "122.133.144.155");
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "global_sideffects3.js");
 
   TestCompletionCallback callback;
@@ -585,7 +586,7 @@ TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence2) {
   host_resolver.rules()->AddRule("host*", "166.155.144.11");
   host_resolver.rules()->AddRule("*", "122.133.144.155");
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "global_sideffects4.js");
 
   TestCompletionCallback callback;
@@ -615,7 +616,7 @@ TEST_F(ProxyResolverV8TracingTest, DifferentResultBasedOnUrl) {
   MockCachingHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "return_url_as_proxy.js");
 
   TestCompletionCallback callback;
@@ -644,7 +645,7 @@ TEST_F(ProxyResolverV8TracingTest, ErrorDependingOnUrl) {
   MockCachingHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver = CreateResolver(
+  std::unique_ptr<ProxyResolverV8Tracing> resolver = CreateResolver(
       mock_bindings.CreateBindings(), "error_depending_on_url.js");
 
   TestCompletionCallback callback;
@@ -677,7 +678,7 @@ TEST_F(ProxyResolverV8TracingTest, DnsDependingOnUrl) {
   // Catch-all that will be used for myIpAddress().
   host_resolver.rules()->AddRule("*", "133.122.100.200");
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "dns_depending_on_url.js");
 
   TestCompletionCallback callback;
@@ -707,7 +708,7 @@ void DnsDuringInitHelper(bool synchronous_host_resolver) {
   host_resolver.rules()->AddRule("host1", "91.13.12.1");
   host_resolver.rules()->AddRule("host2", "91.13.12.2");
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "dns_during_init.js");
 
   // Initialization did 2 dnsResolves.
@@ -763,7 +764,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelAll) {
 
   host_resolver.rules()->AddSimulatedFailure("*");
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "dns.js");
 
   const size_t kNumRequests = 5;
@@ -790,7 +791,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelSome) {
 
   host_resolver.rules()->AddSimulatedFailure("*");
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "dns.js");
 
   ProxyInfo proxy_info1;
@@ -819,7 +820,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhilePendingCompletionTask) {
 
   host_resolver.rules()->AddSimulatedFailure("*");
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "error.js");
 
   ProxyInfo proxy_info1;
@@ -922,7 +923,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileOutstandingNonBlockingDns) {
   BlockableHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "dns.js");
 
   ProxyInfo proxy_info1;
@@ -969,7 +970,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileBlockedInNonBlockingDns) {
   BlockableHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "dns.js");
 
   ProxyInfo proxy_info;
@@ -991,7 +992,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileBlockedInNonBlockingDns2) {
   MockCachingHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "dns.js");
 
   ProxyInfo proxy_info;
@@ -1015,10 +1016,10 @@ TEST_F(ProxyResolverV8TracingTest,
   BlockableHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  scoped_ptr<ProxyResolverV8TracingFactory> factory(
+  std::unique_ptr<ProxyResolverV8TracingFactory> factory(
       ProxyResolverV8TracingFactory::Create());
-  scoped_ptr<ProxyResolverV8Tracing> resolver;
-  scoped_ptr<ProxyResolverFactory::Request> request;
+  std::unique_ptr<ProxyResolverV8Tracing> resolver;
+  std::unique_ptr<ProxyResolverFactory::Request> request;
   factory->CreateProxyResolverV8Tracing(
       LoadScriptData("dns_during_init.js"), mock_bindings.CreateBindings(),
       &resolver, base::Bind(&CrashCallback), &request);
@@ -1033,10 +1034,10 @@ TEST_F(ProxyResolverV8TracingTest, DeleteFactoryWhileOutstandingBlockingDns) {
   BlockableHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver;
-  scoped_ptr<ProxyResolverFactory::Request> request;
+  std::unique_ptr<ProxyResolverV8Tracing> resolver;
+  std::unique_ptr<ProxyResolverFactory::Request> request;
   {
-    scoped_ptr<ProxyResolverV8TracingFactory> factory(
+    std::unique_ptr<ProxyResolverV8TracingFactory> factory(
         ProxyResolverV8TracingFactory::Create());
 
     factory->CreateProxyResolverV8Tracing(
@@ -1051,10 +1052,10 @@ TEST_F(ProxyResolverV8TracingTest, ErrorLoadingScript) {
   BlockableHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  scoped_ptr<ProxyResolverV8TracingFactory> factory(
+  std::unique_ptr<ProxyResolverV8TracingFactory> factory(
       ProxyResolverV8TracingFactory::Create());
-  scoped_ptr<ProxyResolverV8Tracing> resolver;
-  scoped_ptr<ProxyResolverFactory::Request> request;
+  std::unique_ptr<ProxyResolverV8Tracing> resolver;
+  std::unique_ptr<ProxyResolverFactory::Request> request;
   TestCompletionCallback callback;
   factory->CreateProxyResolverV8Tracing(
       LoadScriptData("error_on_load.js"), mock_bindings.CreateBindings(),
@@ -1073,7 +1074,7 @@ TEST_F(ProxyResolverV8TracingTest, Terminate) {
   host_resolver.rules()->AddRule("host1", "182.111.0.222");
   host_resolver.rules()->AddRule("host2", "111.33.44.55");
 
-  scoped_ptr<ProxyResolverV8Tracing> resolver =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "terminate.js");
 
   TestCompletionCallback callback;
@@ -1115,19 +1116,19 @@ TEST_F(ProxyResolverV8TracingTest, MultipleResolvers) {
   host_resolver0.rules()->AddRuleForAddressFamily(
       "*", ADDRESS_FAMILY_IPV4, "122.133.144.155");
   host_resolver0.rules()->AddRule("*", "133.122.100.200");
-  scoped_ptr<ProxyResolverV8Tracing> resolver0 =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver0 =
       CreateResolver(mock_bindings0.CreateBindings(), "dns.js");
 
   // ------------------------
   // Setup resolver1
   // ------------------------
-  scoped_ptr<ProxyResolverV8Tracing> resolver1 =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver1 =
       CreateResolver(mock_bindings0.CreateBindings(), "dns.js");
 
   // ------------------------
   // Setup resolver2
   // ------------------------
-  scoped_ptr<ProxyResolverV8Tracing> resolver2 =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver2 =
       CreateResolver(mock_bindings0.CreateBindings(), "simple.js");
 
   // ------------------------
@@ -1136,7 +1137,7 @@ TEST_F(ProxyResolverV8TracingTest, MultipleResolvers) {
   MockHostResolver host_resolver3;
   MockBindings mock_bindings3(&host_resolver3);
   host_resolver3.rules()->AddRule("foo", "166.155.144.33");
-  scoped_ptr<ProxyResolverV8Tracing> resolver3 =
+  std::unique_ptr<ProxyResolverV8Tracing> resolver3 =
       CreateResolver(mock_bindings3.CreateBindings(), "simple_dns.js");
 
   // ------------------------

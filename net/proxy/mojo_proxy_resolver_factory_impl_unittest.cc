@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/test_completion_callback.h"
@@ -32,7 +33,7 @@ class FakeProxyResolver : public ProxyResolverV8Tracing {
                       ProxyInfo* results,
                       const CompletionCallback& callback,
                       ProxyResolver::RequestHandle* request,
-                      scoped_ptr<Bindings> bindings) override {}
+                      std::unique_ptr<Bindings> bindings) override {}
 
   void CancelRequest(ProxyResolver::RequestHandle request) override {}
 
@@ -53,7 +54,7 @@ enum Event {
 class TestProxyResolverFactory : public ProxyResolverV8TracingFactory {
  public:
   struct PendingRequest {
-    scoped_ptr<ProxyResolverV8Tracing>* resolver;
+    std::unique_ptr<ProxyResolverV8Tracing>* resolver;
     CompletionCallback callback;
   };
 
@@ -62,10 +63,10 @@ class TestProxyResolverFactory : public ProxyResolverV8TracingFactory {
 
   void CreateProxyResolverV8Tracing(
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings,
-      scoped_ptr<ProxyResolverV8Tracing>* resolver,
+      std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
+      std::unique_ptr<ProxyResolverV8Tracing>* resolver,
       const CompletionCallback& callback,
-      scoped_ptr<ProxyResolverFactory::Request>* request) override {
+      std::unique_ptr<ProxyResolverFactory::Request>* request) override {
     requests_handled_++;
     waiter_->NotifyEvent(RESOLVER_CREATED);
     EXPECT_EQ(base::ASCIIToUTF16(kScriptData), pac_script->utf16());
@@ -87,7 +88,7 @@ class TestProxyResolverFactory : public ProxyResolverV8TracingFactory {
  private:
   EventWaiter<Event>* waiter_;
   size_t requests_handled_ = 0;
-  scoped_ptr<PendingRequest> pending_request_;
+  std::unique_ptr<PendingRequest> pending_request_;
 };
 
 }  // namespace
@@ -98,7 +99,7 @@ class MojoProxyResolverFactoryImplTest
  public:
   void SetUp() override {
     mock_factory_ = new TestProxyResolverFactory(&waiter_);
-    new MojoProxyResolverFactoryImpl(make_scoped_ptr(mock_factory_),
+    new MojoProxyResolverFactoryImpl(base::WrapUnique(mock_factory_),
                                      mojo::GetProxy(&factory_));
   }
 
@@ -119,7 +120,7 @@ class MojoProxyResolverFactoryImplTest
                   interfaces::HostResolverRequestClientPtr client) override {}
 
  protected:
-  scoped_ptr<TestProxyResolverFactory> mock_factory_owner_;
+  std::unique_ptr<TestProxyResolverFactory> mock_factory_owner_;
   TestProxyResolverFactory* mock_factory_;
   interfaces::ProxyResolverFactoryPtr factory_;
 

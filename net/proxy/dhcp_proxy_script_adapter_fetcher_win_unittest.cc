@@ -162,9 +162,9 @@ class FetcherClient {
   }
 
   TestCompletionCallback callback_;
-  scoped_ptr<URLRequestContext> url_request_context_;
+  std::unique_ptr<URLRequestContext> url_request_context_;
   scoped_refptr<base::SequencedWorkerPool> worker_pool_;
-  scoped_ptr<MockDhcpProxyScriptAdapterFetcher> fetcher_;
+  std::unique_ptr<MockDhcpProxyScriptAdapterFetcher> fetcher_;
   base::string16 pac_text_;
 };
 

@@ -329,7 +329,7 @@ class ProxyScriptDeciderQuickCheckTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<ProxyScriptDecider> decider_;
+  std::unique_ptr<ProxyScriptDecider> decider_;
   MockHostResolver resolver_;
   Rules rules_;
   Rules::Rule rule_;
@@ -768,7 +768,8 @@ TEST(ProxyScriptDeciderTest, DhcpCancelledByDestructor) {
   Rules rules;
   RuleBasedProxyScriptFetcher fetcher(&rules);
 
-  scoped_ptr<AsyncFailDhcpFetcher> dhcp_fetcher(new AsyncFailDhcpFetcher());
+  std::unique_ptr<AsyncFailDhcpFetcher> dhcp_fetcher(
+      new AsyncFailDhcpFetcher());
 
   ProxyConfig config;
   config.set_auto_detect(true);

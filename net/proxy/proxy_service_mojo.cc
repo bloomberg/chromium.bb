@@ -4,10 +4,11 @@
 
 #include "net/proxy/proxy_service_mojo.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/dns/mojo_host_resolver_impl.h"
 #include "net/interfaces/proxy_resolver_service.mojom.h"
@@ -22,11 +23,11 @@
 
 namespace net {
 
-scoped_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
+std::unique_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
     MojoProxyResolverFactory* mojo_proxy_factory,
-    scoped_ptr<ProxyConfigService> proxy_config_service,
+    std::unique_ptr<ProxyConfigService> proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
-    scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
+    std::unique_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,
     NetLog* net_log,
     NetworkDelegate* network_delegate) {
@@ -35,9 +36,9 @@ scoped_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
   DCHECK(dhcp_proxy_script_fetcher);
   DCHECK(host_resolver);
 
-  scoped_ptr<ProxyService> proxy_service(new ProxyService(
+  std::unique_ptr<ProxyService> proxy_service(new ProxyService(
       std::move(proxy_config_service),
-      make_scoped_ptr(new ProxyResolverFactoryMojo(
+      base::WrapUnique(new ProxyResolverFactoryMojo(
           mojo_proxy_factory, host_resolver,
           base::Bind(&NetworkDelegateErrorObserver::Create, network_delegate,
                      base::ThreadTaskRunnerHandle::Get()),
@@ -51,10 +52,10 @@ scoped_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
   return proxy_service;
 }
 
-scoped_ptr<ProxyService> CreateProxyServiceUsingMojoInProcess(
-    scoped_ptr<ProxyConfigService> proxy_config_service,
+std::unique_ptr<ProxyService> CreateProxyServiceUsingMojoInProcess(
+    std::unique_ptr<ProxyConfigService> proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
-    scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
+    std::unique_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,
     NetLog* net_log,
     NetworkDelegate* network_delegate) {

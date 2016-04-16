@@ -4,12 +4,12 @@
 
 #include "net/proxy/dhcp_proxy_script_fetcher_win.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/free_deleter.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "net/base/net_errors.h"
@@ -176,7 +176,7 @@ void DhcpProxyScriptFetcherWin::OnGetCandidateAdapterNamesDone(
   for (std::set<std::string>::const_iterator it = adapter_names.begin();
        it != adapter_names.end();
        ++it) {
-    scoped_ptr<DhcpProxyScriptAdapterFetcher> fetcher(
+    std::unique_ptr<DhcpProxyScriptAdapterFetcher> fetcher(
         ImplCreateAdapterFetcher());
     fetcher->Fetch(
         *it, base::Bind(&DhcpProxyScriptFetcherWin::OnFetcherDone,
@@ -318,7 +318,7 @@ bool DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(
   // The GetAdaptersAddresses MSDN page recommends using a size of 15000 to
   // avoid reallocation.
   ULONG adapters_size = 15000;
-  scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> adapters;
+  std::unique_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> adapters;
   ULONG error = ERROR_SUCCESS;
   int num_tries = 0;
 

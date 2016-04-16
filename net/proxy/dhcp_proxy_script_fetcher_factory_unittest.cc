@@ -13,7 +13,7 @@ namespace {
 TEST(DhcpProxyScriptFetcherFactoryTest, DoNothingWhenDisabled) {
   DhcpProxyScriptFetcherFactory factory;
   factory.set_enabled(false);
-  scoped_ptr<DhcpProxyScriptFetcher> fetcher(factory.Create(NULL));
+  std::unique_ptr<DhcpProxyScriptFetcher> fetcher(factory.Create(NULL));
   EXPECT_EQ("", fetcher->GetFetcherName());
 }
 
@@ -22,8 +22,9 @@ TEST(DhcpProxyScriptFetcherFactoryTest, WindowsFetcherOnWindows) {
   DhcpProxyScriptFetcherFactory factory;
   factory.set_enabled(true);
 
-  scoped_ptr<TestURLRequestContext> context(new TestURLRequestContext());
-  scoped_ptr<DhcpProxyScriptFetcher> fetcher(factory.Create(context.get()));
+  std::unique_ptr<TestURLRequestContext> context(new TestURLRequestContext());
+  std::unique_ptr<DhcpProxyScriptFetcher> fetcher(
+      factory.Create(context.get()));
   EXPECT_EQ("win", fetcher->GetFetcherName());
 }
 #endif  // defined(OS_WIN)

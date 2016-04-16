@@ -27,7 +27,7 @@ InProcessMojoProxyResolverFactory::InProcessMojoProxyResolverFactory() {
 InProcessMojoProxyResolverFactory::~InProcessMojoProxyResolverFactory() =
     default;
 
-scoped_ptr<base::ScopedClosureRunner>
+std::unique_ptr<base::ScopedClosureRunner>
 InProcessMojoProxyResolverFactory::CreateResolver(
     const mojo::String& pac_script,
     mojo::InterfaceRequest<interfaces::ProxyResolver> req,

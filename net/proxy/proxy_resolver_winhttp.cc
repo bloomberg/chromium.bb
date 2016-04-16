@@ -218,9 +218,9 @@ ProxyResolverFactoryWinHttp::ProxyResolverFactoryWinHttp()
 
 int ProxyResolverFactoryWinHttp::CreateProxyResolver(
     const scoped_refptr<ProxyResolverScriptData>& pac_script,
-    scoped_ptr<ProxyResolver>* resolver,
+    std::unique_ptr<ProxyResolver>* resolver,
     const CompletionCallback& callback,
-    scoped_ptr<Request>* request) {
+    std::unique_ptr<Request>* request) {
   resolver->reset(new ProxyResolverWinHttp(pac_script));
   return OK;
 }

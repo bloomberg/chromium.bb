@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 
 namespace net {
@@ -74,20 +75,19 @@ MockAsyncProxyResolver::MockAsyncProxyResolver() {
 MockAsyncProxyResolverFactory::Request::Request(
     MockAsyncProxyResolverFactory* factory,
     const scoped_refptr<ProxyResolverScriptData>& script_data,
-    scoped_ptr<ProxyResolver>* resolver,
+    std::unique_ptr<ProxyResolver>* resolver,
     const CompletionCallback& callback)
     : factory_(factory),
       script_data_(script_data),
       resolver_(resolver),
-      callback_(callback) {
-}
+      callback_(callback) {}
 
 MockAsyncProxyResolverFactory::Request::~Request() {
 }
 
 void MockAsyncProxyResolverFactory::Request::CompleteNow(
     int rv,
-    scoped_ptr<ProxyResolver> resolver) {
+    std::unique_ptr<ProxyResolver> resolver) {
   *resolver_ = std::move(resolver);
 
   // RemovePendingRequest may remove the last external reference to |this|.
@@ -101,7 +101,7 @@ void MockAsyncProxyResolverFactory::Request::CompleteNowWithForwarder(
     int rv,
     ProxyResolver* resolver) {
   DCHECK(resolver);
-  CompleteNow(rv, make_scoped_ptr(new ForwardingProxyResolver(resolver)));
+  CompleteNow(rv, base::WrapUnique(new ForwardingProxyResolver(resolver)));
 }
 
 void MockAsyncProxyResolverFactory::Request::FactoryDestroyed() {
@@ -132,9 +132,9 @@ MockAsyncProxyResolverFactory::MockAsyncProxyResolverFactory(
 
 int MockAsyncProxyResolverFactory::CreateProxyResolver(
     const scoped_refptr<ProxyResolverScriptData>& pac_script,
-    scoped_ptr<ProxyResolver>* resolver,
+    std::unique_ptr<ProxyResolver>* resolver,
     const net::CompletionCallback& callback,
-    scoped_ptr<ProxyResolverFactory::Request>* request_handle) {
+    std::unique_ptr<ProxyResolverFactory::Request>* request_handle) {
   scoped_refptr<Request> request =
       new Request(this, pac_script, resolver, callback);
   pending_requests_.push_back(request);

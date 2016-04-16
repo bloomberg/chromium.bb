@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/mojo_proxy_resolver_impl.h"
@@ -23,7 +24,7 @@ namespace {
 class MojoProxyResolverHolder {
  public:
   MojoProxyResolverHolder(
-      scoped_ptr<ProxyResolverV8Tracing> proxy_resolver_impl,
+      std::unique_ptr<ProxyResolverV8Tracing> proxy_resolver_impl,
       mojo::InterfaceRequest<interfaces::ProxyResolver> request);
 
  private:
@@ -37,7 +38,7 @@ class MojoProxyResolverHolder {
 };
 
 MojoProxyResolverHolder::MojoProxyResolverHolder(
-    scoped_ptr<ProxyResolverV8Tracing> proxy_resolver_impl,
+    std::unique_ptr<ProxyResolverV8Tracing> proxy_resolver_impl,
     mojo::InterfaceRequest<interfaces::ProxyResolver> request)
     : mojo_proxy_resolver_(std::move(proxy_resolver_impl)),
       binding_(&mojo_proxy_resolver_, std::move(request)) {
@@ -67,10 +68,10 @@ class MojoProxyResolverFactoryImpl::Job {
   void OnProxyResolverCreated(int error);
 
   MojoProxyResolverFactoryImpl* const parent_;
-  scoped_ptr<ProxyResolverV8Tracing> proxy_resolver_impl_;
+  std::unique_ptr<ProxyResolverV8Tracing> proxy_resolver_impl_;
   mojo::InterfaceRequest<interfaces::ProxyResolver> proxy_request_;
   ProxyResolverV8TracingFactory* factory_;
-  scoped_ptr<net::ProxyResolverFactory::Request> request_;
+  std::unique_ptr<net::ProxyResolverFactory::Request> request_;
   interfaces::ProxyResolverFactoryRequestClientPtr client_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(Job);
@@ -91,8 +92,8 @@ MojoProxyResolverFactoryImpl::Job::Job(
                  base::Unretained(this)));
   factory_->CreateProxyResolverV8Tracing(
       pac_script,
-      make_scoped_ptr(new MojoProxyResolverV8TracingBindings<
-                      interfaces::ProxyResolverFactoryRequestClient>(
+      base::WrapUnique(new MojoProxyResolverV8TracingBindings<
+                       interfaces::ProxyResolverFactoryRequestClient>(
           client_ptr_.get())),
       &proxy_resolver_impl_,
       base::Bind(&MojoProxyResolverFactoryImpl::Job::OnProxyResolverCreated,
@@ -119,7 +120,7 @@ void MojoProxyResolverFactoryImpl::Job::OnProxyResolverCreated(int error) {
 }
 
 MojoProxyResolverFactoryImpl::MojoProxyResolverFactoryImpl(
-    scoped_ptr<ProxyResolverV8TracingFactory> proxy_resolver_factory,
+    std::unique_ptr<ProxyResolverV8TracingFactory> proxy_resolver_factory,
     mojo::InterfaceRequest<interfaces::ProxyResolverFactory> request)
     : proxy_resolver_impl_factory_(std::move(proxy_resolver_factory)),
       binding_(this, std::move(request)) {}

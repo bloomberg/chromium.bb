@@ -7,10 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "net/base/net_export.h"
 
@@ -58,7 +59,7 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 {
   // Constructs a ProxyResolverV8.
   static int Create(const scoped_refptr<ProxyResolverScriptData>& script_data,
                     JSBindings* bindings,
-                    scoped_ptr<ProxyResolverV8>* resolver);
+                    std::unique_ptr<ProxyResolverV8>* resolver);
 
   ~ProxyResolverV8();
 
@@ -73,9 +74,9 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 {
   // Context holds the Javascript state for the PAC script.
   class Context;
 
-  explicit ProxyResolverV8(scoped_ptr<Context> context);
+  explicit ProxyResolverV8(std::unique_ptr<Context> context);
 
-  scoped_ptr<Context> context_;
+  std::unique_ptr<Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8);
 };

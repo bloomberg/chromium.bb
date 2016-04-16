@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
@@ -18,11 +19,11 @@ namespace net {
 namespace {
 
 // Returns event parameters for a PAC error message (line number + message).
-scoped_ptr<base::Value> NetLogErrorCallback(
+std::unique_ptr<base::Value> NetLogErrorCallback(
     int line_number,
     const base::string16* message,
     NetLogCaptureMode /* capture_mode */) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("line_number", line_number);
   dict->SetString("message", *message);
   return std::move(dict);
@@ -80,10 +81,10 @@ class BindingsImpl : public ProxyResolverV8Tracing::Bindings {
 class ProxyResolverV8TracingWrapper : public ProxyResolver {
  public:
   ProxyResolverV8TracingWrapper(
-      scoped_ptr<ProxyResolverV8Tracing> resolver_impl,
+      std::unique_ptr<ProxyResolverV8Tracing> resolver_impl,
       NetLog* net_log,
       HostResolver* host_resolver,
-      scoped_ptr<ProxyResolverErrorObserver> error_observer);
+      std::unique_ptr<ProxyResolverErrorObserver> error_observer);
 
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
@@ -96,19 +97,19 @@ class ProxyResolverV8TracingWrapper : public ProxyResolver {
   LoadState GetLoadState(RequestHandle request) const override;
 
  private:
-  scoped_ptr<ProxyResolverV8Tracing> resolver_impl_;
+  std::unique_ptr<ProxyResolverV8Tracing> resolver_impl_;
   NetLog* net_log_;
   HostResolver* host_resolver_;
-  scoped_ptr<ProxyResolverErrorObserver> error_observer_;
+  std::unique_ptr<ProxyResolverErrorObserver> error_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8TracingWrapper);
 };
 
 ProxyResolverV8TracingWrapper::ProxyResolverV8TracingWrapper(
-    scoped_ptr<ProxyResolverV8Tracing> resolver_impl,
+    std::unique_ptr<ProxyResolverV8Tracing> resolver_impl,
     NetLog* net_log,
     HostResolver* host_resolver,
-    scoped_ptr<ProxyResolverErrorObserver> error_observer)
+    std::unique_ptr<ProxyResolverErrorObserver> error_observer)
     : resolver_impl_(std::move(resolver_impl)),
       net_log_(net_log),
       host_resolver_(host_resolver),
@@ -122,8 +123,8 @@ int ProxyResolverV8TracingWrapper::GetProxyForURL(
     const BoundNetLog& net_log) {
   resolver_impl_->GetProxyForURL(
       url, results, callback, request,
-      make_scoped_ptr(new BindingsImpl(error_observer_.get(), host_resolver_,
-                                       net_log_, net_log)));
+      base::WrapUnique(new BindingsImpl(error_observer_.get(), host_resolver_,
+                                        net_log_, net_log)));
   return ERR_IO_PENDING;
 }
 
@@ -141,35 +142,35 @@ LoadState ProxyResolverV8TracingWrapper::GetLoadState(
 ProxyResolverFactoryV8TracingWrapper::ProxyResolverFactoryV8TracingWrapper(
     HostResolver* host_resolver,
     NetLog* net_log,
-    const base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>&
+    const base::Callback<std::unique_ptr<ProxyResolverErrorObserver>()>&
         error_observer_factory)
     : ProxyResolverFactory(true),
       factory_impl_(ProxyResolverV8TracingFactory::Create()),
       host_resolver_(host_resolver),
       net_log_(net_log),
-      error_observer_factory_(error_observer_factory) {
-}
+      error_observer_factory_(error_observer_factory) {}
 
 ProxyResolverFactoryV8TracingWrapper::~ProxyResolverFactoryV8TracingWrapper() =
     default;
 
 int ProxyResolverFactoryV8TracingWrapper::CreateProxyResolver(
     const scoped_refptr<ProxyResolverScriptData>& pac_script,
-    scoped_ptr<ProxyResolver>* resolver,
+    std::unique_ptr<ProxyResolver>* resolver,
     const CompletionCallback& callback,
-    scoped_ptr<Request>* request) {
-  scoped_ptr<scoped_ptr<ProxyResolverV8Tracing>> v8_resolver(
-      new scoped_ptr<ProxyResolverV8Tracing>);
-  scoped_ptr<ProxyResolverErrorObserver> error_observer =
+    std::unique_ptr<Request>* request) {
+  std::unique_ptr<std::unique_ptr<ProxyResolverV8Tracing>> v8_resolver(
+      new std::unique_ptr<ProxyResolverV8Tracing>);
+  std::unique_ptr<ProxyResolverErrorObserver> error_observer =
       error_observer_factory_.Run();
   // Note: Argument evaluation order is unspecified, so make copies before
   // passing |v8_resolver| and |error_observer|.
-  scoped_ptr<ProxyResolverV8Tracing>* v8_resolver_local = v8_resolver.get();
+  std::unique_ptr<ProxyResolverV8Tracing>* v8_resolver_local =
+      v8_resolver.get();
   ProxyResolverErrorObserver* error_observer_local = error_observer.get();
   factory_impl_->CreateProxyResolverV8Tracing(
       pac_script,
-      make_scoped_ptr(new BindingsImpl(error_observer_local, host_resolver_,
-                                       net_log_, BoundNetLog())),
+      base::WrapUnique(new BindingsImpl(error_observer_local, host_resolver_,
+                                        net_log_, BoundNetLog())),
       v8_resolver_local,
       base::Bind(&ProxyResolverFactoryV8TracingWrapper::OnProxyResolverCreated,
                  base::Unretained(this), base::Passed(&v8_resolver), resolver,
@@ -179,10 +180,10 @@ int ProxyResolverFactoryV8TracingWrapper::CreateProxyResolver(
 }
 
 void ProxyResolverFactoryV8TracingWrapper::OnProxyResolverCreated(
-    scoped_ptr<scoped_ptr<ProxyResolverV8Tracing>> v8_resolver,
-    scoped_ptr<ProxyResolver>* resolver,
+    std::unique_ptr<std::unique_ptr<ProxyResolverV8Tracing>> v8_resolver,
+    std::unique_ptr<ProxyResolver>* resolver,
     const CompletionCallback& callback,
-    scoped_ptr<ProxyResolverErrorObserver> error_observer,
+    std::unique_ptr<ProxyResolverErrorObserver> error_observer,
     int error) {
   if (error == OK) {
     resolver->reset(new ProxyResolverV8TracingWrapper(

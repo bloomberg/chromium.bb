@@ -5,9 +5,10 @@
 #ifndef NET_PROXY_PROXY_RESOLVER_V8_TRACING_H_
 #define NET_PROXY_PROXY_RESOLVER_V8_TRACING_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_resolver_factory.h"
@@ -56,7 +57,7 @@ class NET_EXPORT ProxyResolverV8Tracing {
                               ProxyInfo* results,
                               const CompletionCallback& callback,
                               ProxyResolver::RequestHandle* request,
-                              scoped_ptr<Bindings> bindings) = 0;
+                              std::unique_ptr<Bindings> bindings) = 0;
 
   // Cancels |request|.
   virtual void CancelRequest(ProxyResolver::RequestHandle request) = 0;
@@ -78,12 +79,12 @@ class NET_EXPORT ProxyResolverV8TracingFactory {
 
   virtual void CreateProxyResolverV8Tracing(
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings,
-      scoped_ptr<ProxyResolverV8Tracing>* resolver,
+      std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
+      std::unique_ptr<ProxyResolverV8Tracing>* resolver,
       const CompletionCallback& callback,
-      scoped_ptr<ProxyResolverFactory::Request>* request) = 0;
+      std::unique_ptr<ProxyResolverFactory::Request>* request) = 0;
 
-  static scoped_ptr<ProxyResolverV8TracingFactory> Create();
+  static std::unique_ptr<ProxyResolverV8TracingFactory> Create();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8TracingFactory);
