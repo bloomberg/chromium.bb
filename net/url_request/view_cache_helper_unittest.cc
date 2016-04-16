@@ -4,6 +4,7 @@
 
 #include "net/url_request/view_cache_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -31,7 +32,7 @@ class TestURLRequestContext : public URLRequestContext {
 };
 
 TestURLRequestContext::TestURLRequestContext()
-    : cache_(make_scoped_ptr(new MockNetworkLayer()),
+    : cache_(base::WrapUnique(new MockNetworkLayer()),
              HttpCache::DefaultBackend::InMemory(0),
              true) {
   set_http_transaction_factory(&cache_);

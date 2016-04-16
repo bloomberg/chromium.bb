@@ -97,7 +97,7 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
   // Callback after data is asynchronously read from the file into |buf|.
   void DidRead(scoped_refptr<IOBuffer> buf, int result);
 
-  scoped_ptr<FileStream> stream_;
+  std::unique_ptr<FileStream> stream_;
   FileMetaInfo meta_info_;
   const scoped_refptr<base::TaskRunner> file_task_runner_;
 

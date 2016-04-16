@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 

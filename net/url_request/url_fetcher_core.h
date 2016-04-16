@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
@@ -16,7 +17,6 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/host_port_pair.h"
@@ -111,7 +111,7 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   void SaveResponseToTemporaryFile(
       scoped_refptr<base::SequencedTaskRunner> file_task_runner);
   void SaveResponseWithWriter(
-      scoped_ptr<URLFetcherResponseWriter> response_writer);
+      std::unique_ptr<URLFetcherResponseWriter> response_writer);
   HttpResponseHeaders* GetResponseHeaders() const;
   HostPortPair GetSocketAddress() const;
   bool WasFetchedViaProxy() const;
@@ -240,7 +240,7 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   // Task runner for upload file access.
   scoped_refptr<base::TaskRunner> upload_file_task_runner_;
-  scoped_ptr<URLRequest> request_;   // The actual request this wraps
+  std::unique_ptr<URLRequest> request_;  // The actual request this wraps
   int load_flags_;                   // Flags for the load operation
   int response_code_;                // HTTP status code for the request
   scoped_refptr<IOBuffer> buffer_;
@@ -277,10 +277,10 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   // Used to write to |chunked_stream|, even after ownership has been passed to
   // the URLRequest. Continues to be valid even after the request deletes its
   // upload data.
-  scoped_ptr<ChunkedUploadDataStream::Writer> chunked_stream_writer_;
+  std::unique_ptr<ChunkedUploadDataStream::Writer> chunked_stream_writer_;
 
   // Temporary storage of ChunkedUploadDataStream, before request is created.
-  scoped_ptr<ChunkedUploadDataStream> chunked_stream_;
+  std::unique_ptr<ChunkedUploadDataStream> chunked_stream_;
 
   // Used to determine how long to wait before making a request or doing a
   // retry.
@@ -305,7 +305,7 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   bool was_cancelled_;
 
   // Writer object to write response to the destination like file and string.
-  scoped_ptr<URLFetcherResponseWriter> response_writer_;
+  std::unique_ptr<URLFetcherResponseWriter> response_writer_;
 
   // By default any server-initiated redirects are automatically followed. If
   // this flag is set to true, however, a redirect will halt the fetch and call
@@ -339,7 +339,7 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
 
   // Timer to poll the progress of uploading for POST and PUT requests.
   // When crbug.com/119629 is fixed, scoped_ptr is not necessary here.
-  scoped_ptr<base::RepeatingTimer> upload_progress_checker_timer_;
+  std::unique_ptr<base::RepeatingTimer> upload_progress_checker_timer_;
   // Number of bytes sent so far.
   int64_t current_upload_bytes_;
   // Number of bytes received so far.

@@ -4,7 +4,9 @@
 
 #include "net/url_request/url_request_context_builder.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
@@ -39,7 +41,7 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
                         CreateReason reason,
                         int nonce_count,
                         const BoundNetLog& net_log,
-                        scoped_ptr<HttpAuthHandler>* handler) override {
+                        std::unique_ptr<HttpAuthHandler>* handler) override {
     handler->reset();
 
     return challenge->scheme() == supported_scheme_
@@ -58,7 +60,7 @@ class URLRequestContextBuilderTest : public PlatformTest {
     test_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-    builder_.set_proxy_config_service(make_scoped_ptr(
+    builder_.set_proxy_config_service(base::WrapUnique(
         new ProxyConfigServiceFixed(ProxyConfig::CreateDirect())));
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
   }
@@ -70,9 +72,9 @@ class URLRequestContextBuilderTest : public PlatformTest {
 TEST_F(URLRequestContextBuilderTest, DefaultSettings) {
   ASSERT_TRUE(test_server_.Start());
 
-  scoped_ptr<URLRequestContext> context(builder_.Build());
+  std::unique_ptr<URLRequestContext> context(builder_.Build());
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request(context->CreateRequest(
+  std::unique_ptr<URLRequest> request(context->CreateRequest(
       test_server_.GetURL("/echoheader?Foo"), DEFAULT_PRIORITY, &delegate));
   request->set_method("GET");
   request->SetExtraRequestHeaderByName("Foo", "Bar", false);
@@ -85,9 +87,9 @@ TEST_F(URLRequestContextBuilderTest, UserAgent) {
   ASSERT_TRUE(test_server_.Start());
 
   builder_.set_user_agent("Bar");
-  scoped_ptr<URLRequestContext> context(builder_.Build());
+  std::unique_ptr<URLRequestContext> context(builder_.Build());
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request(
+  std::unique_ptr<URLRequest> request(
       context->CreateRequest(test_server_.GetURL("/echoheader?User-Agent"),
                              DEFAULT_PRIORITY, &delegate));
   request->set_method("GET");
@@ -98,8 +100,8 @@ TEST_F(URLRequestContextBuilderTest, UserAgent) {
 
 TEST_F(URLRequestContextBuilderTest, DefaultHttpAuthHandlerFactory) {
   GURL gurl("www.google.com");
-  scoped_ptr<HttpAuthHandler> handler;
-  scoped_ptr<URLRequestContext> context(builder_.Build());
+  std::unique_ptr<HttpAuthHandler> handler;
+  std::unique_ptr<URLRequestContext> context(builder_.Build());
   SSLInfo null_ssl_info;
 
   // Verify that the default basic handler is present
@@ -112,10 +114,10 @@ TEST_F(URLRequestContextBuilderTest, DefaultHttpAuthHandlerFactory) {
 TEST_F(URLRequestContextBuilderTest, CustomHttpAuthHandlerFactory) {
   GURL gurl("www.google.com");
   const int kBasicReturnCode = OK;
-  scoped_ptr<HttpAuthHandler> handler;
-  builder_.SetHttpAuthHandlerFactory(make_scoped_ptr(
+  std::unique_ptr<HttpAuthHandler> handler;
+  builder_.SetHttpAuthHandlerFactory(base::WrapUnique(
       new MockHttpAuthHandlerFactory("ExtraScheme", kBasicReturnCode)));
-  scoped_ptr<URLRequestContext> context(builder_.Build());
+  std::unique_ptr<URLRequestContext> context(builder_.Build());
   SSLInfo null_ssl_info;
   // Verify that a handler is returned for a custom scheme.
   EXPECT_EQ(kBasicReturnCode,

@@ -5,11 +5,11 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_INTERCEPTING_JOB_FACTORY_H_
 #define NET_URL_REQUEST_URL_REQUEST_INTERCEPTING_JOB_FACTORY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -33,8 +33,8 @@ class NET_EXPORT URLRequestInterceptingJobFactory
     : public URLRequestJobFactory {
  public:
   URLRequestInterceptingJobFactory(
-      scoped_ptr<URLRequestJobFactory> job_factory,
-      scoped_ptr<URLRequestInterceptor> interceptor);
+      std::unique_ptr<URLRequestJobFactory> job_factory,
+      std::unique_ptr<URLRequestInterceptor> interceptor);
   ~URLRequestInterceptingJobFactory() override;
 
   // URLRequestJobFactory implementation
@@ -57,8 +57,8 @@ class NET_EXPORT URLRequestInterceptingJobFactory
   bool IsSafeRedirectTarget(const GURL& location) const override;
 
  private:
-  scoped_ptr<URLRequestJobFactory> job_factory_;
-  scoped_ptr<URLRequestInterceptor> interceptor_;
+  std::unique_ptr<URLRequestJobFactory> job_factory_;
+  std::unique_ptr<URLRequestInterceptor> interceptor_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestInterceptingJobFactory);
 };

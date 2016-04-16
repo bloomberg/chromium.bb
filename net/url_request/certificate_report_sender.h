@@ -5,12 +5,12 @@
 #ifndef NET_URL_REQUEST_CERTIFICATE_REPORT_SENDER_H_
 #define NET_URL_REQUEST_CERTIFICATE_REPORT_SENDER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/http/transport_security_state.h"
 #include "net/url_request/url_request.h"
 

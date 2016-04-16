@@ -101,7 +101,7 @@ class NET_EXPORT ViewCacheHelper {
   const URLRequestContext* context_;
   disk_cache::Backend* disk_cache_;
   disk_cache::Entry* entry_;
-  scoped_ptr<disk_cache::Backend::Iterator> iter_;
+  std::unique_ptr<disk_cache::Backend::Iterator> iter_;
   scoped_refptr<IOBuffer> buf_;
   int buf_len_;
   int index_;

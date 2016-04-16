@@ -12,21 +12,23 @@ namespace net {
 URLFetcher::~URLFetcher() {}
 
 // static
-scoped_ptr<URLFetcher> URLFetcher::Create(const GURL& url,
-                                          URLFetcher::RequestType request_type,
-                                          URLFetcherDelegate* d) {
+std::unique_ptr<URLFetcher> URLFetcher::Create(
+    const GURL& url,
+    URLFetcher::RequestType request_type,
+    URLFetcherDelegate* d) {
   return URLFetcher::Create(0, url, request_type, d);
 }
 
 // static
-scoped_ptr<URLFetcher> URLFetcher::Create(int id,
-                                          const GURL& url,
-                                          URLFetcher::RequestType request_type,
-                                          URLFetcherDelegate* d) {
+std::unique_ptr<URLFetcher> URLFetcher::Create(
+    int id,
+    const GURL& url,
+    URLFetcher::RequestType request_type,
+    URLFetcherDelegate* d) {
   URLFetcherFactory* factory = URLFetcherImpl::factory();
-  return factory
-             ? factory->CreateURLFetcher(id, url, request_type, d)
-             : scoped_ptr<URLFetcher>(new URLFetcherImpl(url, request_type, d));
+  return factory ? factory->CreateURLFetcher(id, url, request_type, d)
+                 : std::unique_ptr<URLFetcher>(
+                       new URLFetcherImpl(url, request_type, d));
 }
 
 // static

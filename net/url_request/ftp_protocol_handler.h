@@ -5,9 +5,10 @@
 #ifndef NET_URL_REQUEST_FTP_PROTOCOL_HANDLER_H_
 #define NET_URL_REQUEST_FTP_PROTOCOL_HANDLER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace net {
@@ -31,7 +32,7 @@ class NET_EXPORT FtpProtocolHandler :
   friend class FtpTestURLRequestContext;
 
   FtpTransactionFactory* ftp_transaction_factory_;
-  scoped_ptr<FtpAuthCache> ftp_auth_cache_;
+  std::unique_ptr<FtpAuthCache> ftp_auth_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(FtpProtocolHandler);
 };

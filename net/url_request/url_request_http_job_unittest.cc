@@ -7,10 +7,11 @@
 #include <stdint.h>
 
 #include <cstddef>
+#include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "net/base/auth.h"
@@ -61,7 +62,7 @@ class URLRequestHttpJobTest : public ::testing::Test {
     // The |test_job_factory_| takes ownership of the interceptor.
     test_job_interceptor_ = new TestJobInterceptor();
     EXPECT_TRUE(test_job_factory_.SetProtocolHandler(
-        url::kHttpScheme, make_scoped_ptr(test_job_interceptor_)));
+        url::kHttpScheme, base::WrapUnique(test_job_interceptor_)));
     context_.set_job_factory(&test_job_factory_);
 
     context_.Init();
@@ -98,7 +99,7 @@ class URLRequestHttpJobTest : public ::testing::Test {
   }
 
   void EnableSdch() {
-    context_.SetSdchManager(scoped_ptr<SdchManager>(new SdchManager));
+    context_.SetSdchManager(std::unique_ptr<SdchManager>(new SdchManager));
   }
 
   MockNetworkLayer network_layer_;
@@ -109,7 +110,7 @@ class URLRequestHttpJobTest : public ::testing::Test {
 
   TestURLRequestContext context_;
   TestDelegate delegate_;
-  scoped_ptr<URLRequest> req_;
+  std::unique_ptr<URLRequest> req_;
 };
 
 class URLRequestHttpJobWithMockSocketsTest : public ::testing::Test {
@@ -125,7 +126,7 @@ class URLRequestHttpJobWithMockSocketsTest : public ::testing::Test {
   MockClientSocketFactory socket_factory_;
   TestNetworkDelegate network_delegate_;
   URLRequestBackoffManager manager_;
-  scoped_ptr<TestURLRequestContext> context_;
+  std::unique_ptr<TestURLRequestContext> context_;
 };
 
 const char kSimpleGetMockWrite[] =
@@ -148,7 +149,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
       GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
@@ -177,7 +178,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
       GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
@@ -208,7 +209,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestContentLengthFailedRequest) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
       GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
@@ -240,7 +241,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
       GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   delegate.set_cancel_in_received_data(true);
@@ -288,7 +289,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   socket_factory_.AddSocketDataProvider(&final_socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
       GURL("http://www.redirect.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
@@ -320,7 +321,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
       GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   delegate.set_cancel_in_response_started(true);
@@ -345,7 +346,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
       GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
@@ -378,7 +379,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeader) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate1;
-  scoped_ptr<URLRequest> request1 = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request1 = context_->CreateRequest(
       GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate1);
 
   request1->Start();
@@ -392,7 +393,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeader) {
 
   // Issue another request, and backoff logic should apply.
   TestDelegate delegate2;
-  scoped_ptr<URLRequest> request2 = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request2 = context_->CreateRequest(
       GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate2);
 
   request2->Start();
@@ -441,7 +442,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderUserGesture) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate1;
-  scoped_ptr<URLRequest> request1 = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request1 = context_->CreateRequest(
       GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate1);
 
   request1->Start();
@@ -455,7 +456,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderUserGesture) {
 
   // Issue a user-initiated request, backoff logic should not apply.
   TestDelegate delegate2;
-  scoped_ptr<URLRequest> request2 = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request2 = context_->CreateRequest(
       GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate2);
   request2->SetLoadFlags(request2->load_flags() | LOAD_MAYBE_USER_GESTURE);
 
@@ -483,7 +484,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderNotSecure) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
       GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
@@ -517,7 +518,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderCachedResponse) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate1;
-  scoped_ptr<URLRequest> request1 = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request1 = context_->CreateRequest(
       GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate1);
 
   request1->Start();
@@ -532,7 +533,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderCachedResponse) {
   // Backoff logic does not apply to a second request, since it is fetched
   // from cache.
   TestDelegate delegate2;
-  scoped_ptr<URLRequest> request2 = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request2 = context_->CreateRequest(
       GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate2);
 
   request2->Start();
@@ -550,7 +551,7 @@ TEST_F(URLRequestHttpJobTest, TestCancelWhileReadingCookies) {
   context.Init();
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request = context.CreateRequest(
+  std::unique_ptr<URLRequest> request = context.CreateRequest(
       GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
@@ -564,7 +565,8 @@ TEST_F(URLRequestHttpJobTest, TestCancelWhileReadingCookies) {
 // Make sure that SetPriority actually sets the URLRequestHttpJob's
 // priority, before start.  Other tests handle the after start case.
 TEST_F(URLRequestHttpJobTest, SetPriorityBasic) {
-  scoped_ptr<TestURLRequestHttpJob> job(new TestURLRequestHttpJob(req_.get()));
+  std::unique_ptr<TestURLRequestHttpJob> job(
+      new TestURLRequestHttpJob(req_.get()));
   EXPECT_EQ(DEFAULT_PRIORITY, job->priority());
 
   job->SetPriority(LOWEST);
@@ -578,7 +580,7 @@ TEST_F(URLRequestHttpJobTest, SetPriorityBasic) {
 // transaction on start.
 TEST_F(URLRequestHttpJobTest, SetTransactionPriorityOnStart) {
   test_job_interceptor_->set_main_intercept_job(
-      make_scoped_ptr(new TestURLRequestHttpJob(req_.get())));
+      base::WrapUnique(new TestURLRequestHttpJob(req_.get())));
   req_->SetPriority(LOW);
 
   EXPECT_FALSE(network_layer_.last_transaction());
@@ -593,7 +595,7 @@ TEST_F(URLRequestHttpJobTest, SetTransactionPriorityOnStart) {
 // its transaction.
 TEST_F(URLRequestHttpJobTest, SetTransactionPriority) {
   test_job_interceptor_->set_main_intercept_job(
-      make_scoped_ptr(new TestURLRequestHttpJob(req_.get())));
+      base::WrapUnique(new TestURLRequestHttpJob(req_.get())));
   req_->SetPriority(LOW);
   req_->Start();
   ASSERT_TRUE(network_layer_.last_transaction());
@@ -608,7 +610,7 @@ TEST_F(URLRequestHttpJobTest, SdchAdvertisementGet) {
   EnableSdch();
   req_->set_method("GET");  // Redundant with default.
   test_job_interceptor_->set_main_intercept_job(
-      make_scoped_ptr(new TestURLRequestHttpJob(req_.get())));
+      base::WrapUnique(new TestURLRequestHttpJob(req_.get())));
   req_->Start();
   EXPECT_TRUE(TransactionAcceptsSdchEncoding());
 }
@@ -618,7 +620,7 @@ TEST_F(URLRequestHttpJobTest, SdchAdvertisementPost) {
   EnableSdch();
   req_->set_method("POST");
   test_job_interceptor_->set_main_intercept_job(
-      make_scoped_ptr(new TestURLRequestHttpJob(req_.get())));
+      base::WrapUnique(new TestURLRequestHttpJob(req_.get())));
   req_->Start();
   EXPECT_FALSE(TransactionAcceptsSdchEncoding());
 }
@@ -638,7 +640,7 @@ class MockSdchObserver : public SdchObserver {
 class URLRequestHttpJobWithSdchSupportTest : public ::testing::Test {
  protected:
   URLRequestHttpJobWithSdchSupportTest() : context_(true) {
-    scoped_ptr<HttpNetworkSession::Params> params(
+    std::unique_ptr<HttpNetworkSession::Params> params(
         new HttpNetworkSession::Params);
     context_.set_http_network_session_params(std::move(params));
     context_.set_client_socket_factory(&socket_factory_);
@@ -678,7 +680,7 @@ TEST_F(URLRequestHttpJobWithSdchSupportTest, GetDictionary) {
   EXPECT_CALL(sdch_observer,
               OnGetDictionary(url, GURL("http://example.com/sdch.dict")));
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request =
+  std::unique_ptr<URLRequest> request =
       context_.CreateRequest(url, DEFAULT_PRIORITY, &delegate);
   request->Start();
   base::RunLoop().RunUntilIdle();
@@ -687,7 +689,7 @@ TEST_F(URLRequestHttpJobWithSdchSupportTest, GetDictionary) {
 
   // Second response should be from cache without notification of SdchObserver
   TestDelegate delegate2;
-  scoped_ptr<URLRequest> request2 =
+  std::unique_ptr<URLRequest> request2 =
       context_.CreateRequest(url, DEFAULT_PRIORITY, &delegate2);
   request2->Start();
   base::RunLoop().RunUntilIdle();
@@ -702,7 +704,7 @@ class URLRequestHttpJobWithBrotliSupportTest : public ::testing::Test {
  protected:
   URLRequestHttpJobWithBrotliSupportTest()
       : context_(new TestURLRequestContext(true)) {
-    scoped_ptr<HttpNetworkSession::Params> params(
+    std::unique_ptr<HttpNetworkSession::Params> params(
         new HttpNetworkSession::Params);
     params->enable_brotli = true;
     context_->set_http_network_session_params(std::move(params));
@@ -711,7 +713,7 @@ class URLRequestHttpJobWithBrotliSupportTest : public ::testing::Test {
   }
 
   MockClientSocketFactory socket_factory_;
-  scoped_ptr<TestURLRequestContext> context_;
+  std::unique_ptr<TestURLRequestContext> context_;
 };
 
 TEST_F(URLRequestHttpJobWithBrotliSupportTest, NoBrotliAdvertisementOverHttp) {
@@ -724,7 +726,7 @@ TEST_F(URLRequestHttpJobWithBrotliSupportTest, NoBrotliAdvertisementOverHttp) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
       GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
   request->Start();
   base::RunLoop().RunUntilIdle();
@@ -759,7 +761,7 @@ TEST_F(URLRequestHttpJobWithBrotliSupportTest, BrotliAdvertisement) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request = context_->CreateRequest(
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
       GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate);
   request->Start();
   base::RunLoop().RunUntilIdle();
@@ -805,7 +807,7 @@ class URLRequestHttpJobWebSocketTest
   }
 
   TestDelegate delegate_;
-  scoped_ptr<URLRequest> req_;
+  std::unique_ptr<URLRequest> req_;
 };
 
 class MockCreateHelper : public WebSocketHandshakeStreamBase::CreateHelper {
@@ -813,7 +815,7 @@ class MockCreateHelper : public WebSocketHandshakeStreamBase::CreateHelper {
   // GoogleMock does not appear to play nicely with move-only types like
   // scoped_ptr, so this forwarding method acts as a workaround.
   WebSocketHandshakeStreamBase* CreateBasicStream(
-      scoped_ptr<ClientSocketHandle> connection,
+      std::unique_ptr<ClientSocketHandle> connection,
       bool using_proxy) override {
     // Discard the arguments since we don't need them anyway.
     return CreateBasicStreamMock();
@@ -907,8 +909,8 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   HttpStream* RenewStreamForAuth() override { return nullptr; }
 
   // Fake implementation of WebSocketHandshakeStreamBase method(s)
-  scoped_ptr<WebSocketStream> Upgrade() override {
-    return scoped_ptr<WebSocketStream>();
+  std::unique_ptr<WebSocketStream> Upgrade() override {
+    return std::unique_ptr<WebSocketStream>();
   }
 
  private:
@@ -923,7 +925,7 @@ TEST_F(URLRequestHttpJobWebSocketTest, RejectedWithoutCreateHelper) {
 }
 
 TEST_F(URLRequestHttpJobWebSocketTest, CreateHelperPassedThrough) {
-  scoped_ptr<MockCreateHelper> create_helper(
+  std::unique_ptr<MockCreateHelper> create_helper(
       new ::testing::StrictMock<MockCreateHelper>());
   FakeWebSocketHandshakeStream* fake_handshake_stream(
       new FakeWebSocketHandshakeStream);

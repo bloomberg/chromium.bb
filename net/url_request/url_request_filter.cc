@@ -49,7 +49,7 @@ URLRequestFilter* URLRequestFilter::GetInstance() {
 void URLRequestFilter::AddHostnameInterceptor(
     const std::string& scheme,
     const std::string& hostname,
-    scoped_ptr<URLRequestInterceptor> interceptor) {
+    std::unique_ptr<URLRequestInterceptor> interceptor) {
   DCHECK(OnMessageLoopForInterceptorAddition());
   DCHECK_EQ(0u, hostname_interceptor_map_.count(make_pair(scheme, hostname)));
   hostname_interceptor_map_[make_pair(scheme, hostname)] =
@@ -81,7 +81,7 @@ void URLRequestFilter::RemoveHostnameHandler(const std::string& scheme,
 
 bool URLRequestFilter::AddUrlInterceptor(
     const GURL& url,
-    scoped_ptr<URLRequestInterceptor> interceptor) {
+    std::unique_ptr<URLRequestInterceptor> interceptor) {
   DCHECK(OnMessageLoopForInterceptorAddition());
   if (!url.is_valid())
     return false;

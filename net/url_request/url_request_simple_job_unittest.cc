@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/url_request/url_request_simple_job.h"
+
+#include <memory>
+
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/sequenced_worker_pool_owner.h"
@@ -13,7 +17,6 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-#include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -87,7 +90,7 @@ class CancelAfterFirstReadURLRequestDelegate : public TestDelegate {
   void WaitUntilHeadersReceived() const { run_loop_->Run(); }
 
  private:
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(CancelAfterFirstReadURLRequestDelegate);
 };
@@ -123,7 +126,7 @@ class URLRequestSimpleJobTest : public ::testing::Test {
                              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
         context_(true) {
     job_factory_.SetProtocolHandler(
-        "data", make_scoped_ptr(new SimpleJobProtocolHandler(task_runner_)));
+        "data", base::WrapUnique(new SimpleJobProtocolHandler(task_runner_)));
     context_.set_job_factory(&job_factory_);
     context_.Init();
 
@@ -147,7 +150,7 @@ class URLRequestSimpleJobTest : public ::testing::Test {
   TestURLRequestContext context_;
   URLRequestJobFactoryImpl job_factory_;
   TestDelegate delegate_;
-  scoped_ptr<URLRequest> request_;
+  std::unique_ptr<URLRequest> request_;
 };
 
 }  // namespace

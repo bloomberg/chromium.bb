@@ -38,7 +38,7 @@ CertificateReportSender::~CertificateReportSender() {
 
 void CertificateReportSender::Send(const GURL& report_uri,
                                    const std::string& report) {
-  scoped_ptr<URLRequest> url_request =
+  std::unique_ptr<URLRequest> url_request =
       request_context_->CreateRequest(report_uri, DEFAULT_PRIORITY, this);
 
   int load_flags =
@@ -50,7 +50,7 @@ void CertificateReportSender::Send(const GURL& report_uri,
 
   url_request->set_method("POST");
 
-  scoped_ptr<UploadElementReader> reader(
+  std::unique_ptr<UploadElementReader> reader(
       UploadOwnedBytesElementReader::CreateWithString(report));
   url_request->set_upload(
       ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));

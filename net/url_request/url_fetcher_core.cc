@@ -288,19 +288,19 @@ void URLFetcherCore::SaveResponseToFileAtPath(
     const base::FilePath& file_path,
     scoped_refptr<base::SequencedTaskRunner> file_task_runner) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
-  SaveResponseWithWriter(scoped_ptr<URLFetcherResponseWriter>(
+  SaveResponseWithWriter(std::unique_ptr<URLFetcherResponseWriter>(
       new URLFetcherFileWriter(file_task_runner, file_path)));
 }
 
 void URLFetcherCore::SaveResponseToTemporaryFile(
     scoped_refptr<base::SequencedTaskRunner> file_task_runner) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
-  SaveResponseWithWriter(scoped_ptr<URLFetcherResponseWriter>(
+  SaveResponseWithWriter(std::unique_ptr<URLFetcherResponseWriter>(
       new URLFetcherFileWriter(file_task_runner, base::FilePath())));
 }
 
 void URLFetcherCore::SaveResponseWithWriter(
-    scoped_ptr<URLFetcherResponseWriter> response_writer) {
+    std::unique_ptr<URLFetcherResponseWriter> response_writer) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   response_writer_ = std::move(response_writer);
 }
@@ -594,21 +594,19 @@ void URLFetcherCore::StartURLRequest() {
                                          upload_content_type_);
       }
       if (!upload_content_.empty()) {
-        scoped_ptr<UploadElementReader> reader(new UploadBytesElementReader(
-            upload_content_.data(), upload_content_.size()));
+        std::unique_ptr<UploadElementReader> reader(
+            new UploadBytesElementReader(upload_content_.data(),
+                                         upload_content_.size()));
         request_->set_upload(
             ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
       } else if (!upload_file_path_.empty()) {
-        scoped_ptr<UploadElementReader> reader(
-            new UploadFileElementReader(upload_file_task_runner_.get(),
-                                        upload_file_path_,
-                                        upload_range_offset_,
-                                        upload_range_length_,
-                                        base::Time()));
+        std::unique_ptr<UploadElementReader> reader(new UploadFileElementReader(
+            upload_file_task_runner_.get(), upload_file_path_,
+            upload_range_offset_, upload_range_length_, base::Time()));
         request_->set_upload(
             ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
       } else if (!upload_stream_factory_.is_null()) {
-        scoped_ptr<UploadDataStream> stream = upload_stream_factory_.Run();
+        std::unique_ptr<UploadDataStream> stream = upload_stream_factory_.Run();
         DCHECK(stream);
         request_->set_upload(std::move(stream));
       }

@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/url_request/url_request_throttler_manager.h"
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
@@ -18,6 +17,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
+#include "net/url_request/url_request_throttler_manager.h"
 #include "net/url_request/url_request_throttler_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -174,7 +174,7 @@ class URLRequestThrottlerEntryTest : public testing::Test {
   scoped_refptr<MockURLRequestThrottlerEntry> entry_;
 
   TestURLRequestContext context_;
-  scoped_ptr<URLRequest> request_;
+  std::unique_ptr<URLRequest> request_;
 };
 
 void URLRequestThrottlerEntryTest::SetUp() {
@@ -355,7 +355,7 @@ class URLRequestThrottlerManagerTest : public testing::Test {
 
   // context_ must be declared before request_.
   TestURLRequestContext context_;
-  scoped_ptr<URLRequest> request_;
+  std::unique_ptr<URLRequest> request_;
 };
 
 TEST_F(URLRequestThrottlerManagerTest, IsUrlStandardised) {

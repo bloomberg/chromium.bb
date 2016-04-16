@@ -6,6 +6,7 @@
 #define COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_INFO_FETCHER_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"

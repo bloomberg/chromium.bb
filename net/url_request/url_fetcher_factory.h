@@ -14,7 +14,7 @@ class URLFetcherDelegate;
 // URLFetcher. Factory is intended for testing.
 class URLFetcherFactory {
  public:
-  virtual scoped_ptr<URLFetcher> CreateURLFetcher(
+  virtual std::unique_ptr<URLFetcher> CreateURLFetcher(
       int id,
       const GURL& url,
       URLFetcher::RequestType request_type,

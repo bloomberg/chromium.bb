@@ -4,6 +4,7 @@
 
 #include "net/url_request/url_request_file_dir_job.h"
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -11,7 +12,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
@@ -106,7 +106,7 @@ TEST_F(URLRequestFileDirTest, ListCompletionOnNoPending) {
   ASSERT_TRUE(directory.CreateUniqueTempDir());
   TestJobFactory factory(directory.path());
   context_.set_job_factory(&factory);
-  scoped_ptr<URLRequest> request(context_.CreateRequest(
+  std::unique_ptr<URLRequest> request(context_.CreateRequest(
       FilePathToFileURL(
           directory.path().AppendASCII("this_path_does_not_exist")),
       DEFAULT_PRIORITY, &delegate_));
@@ -139,7 +139,7 @@ TEST_F(URLRequestFileDirTest, DirectoryWithASingleFileSync) {
   TestJobFactory factory(directory.path());
   context_.set_job_factory(&factory);
 
-  scoped_ptr<URLRequest> request(context_.CreateRequest(
+  std::unique_ptr<URLRequest> request(context_.CreateRequest(
       FilePathToFileURL(path), DEFAULT_PRIORITY, &delegate_));
   request->Start();
   EXPECT_TRUE(request->is_pending());
@@ -175,7 +175,7 @@ TEST_F(URLRequestFileDirTest, DirectoryWithASingleFileAsync) {
   context_.set_job_factory(&factory);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request(context_.CreateRequest(
+  std::unique_ptr<URLRequest> request(context_.CreateRequest(
       FilePathToFileURL(path), DEFAULT_PRIORITY, &delegate));
   request->Start();
   EXPECT_TRUE(request->is_pending());
@@ -207,7 +207,7 @@ TEST_F(URLRequestFileDirTest, DirectoryWithAFileAndSubdirectory) {
   context_.set_job_factory(&factory);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request(context_.CreateRequest(
+  std::unique_ptr<URLRequest> request(context_.CreateRequest(
       FilePathToFileURL(path), DEFAULT_PRIORITY, &delegate));
   request->Start();
   EXPECT_TRUE(request->is_pending());
@@ -233,7 +233,7 @@ TEST_F(URLRequestFileDirTest, EmptyDirectory) {
   context_.set_job_factory(&factory);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request(context_.CreateRequest(
+  std::unique_ptr<URLRequest> request(context_.CreateRequest(
       FilePathToFileURL(directory.path()), DEFAULT_PRIORITY, &delegate));
   request->Start();
   EXPECT_TRUE(request->is_pending());

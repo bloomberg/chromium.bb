@@ -5,12 +5,12 @@
 #ifndef NET_URL_REQUEST_URL_FETCHER_RESPONSE_WRITER_H_
 #define NET_URL_REQUEST_URL_FETCHER_RESPONSE_WRITER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
@@ -131,7 +131,7 @@ class NET_EXPORT URLFetcherFileWriter : public URLFetcherResponseWriter {
   // True when this instance is responsible to delete the file at |file_path_|.
   bool owns_file_;
 
-  scoped_ptr<FileStream> file_stream_;
+  std::unique_ptr<FileStream> file_stream_;
 
   // Callbacks are created for use with base::FileUtilProxy.
   base::WeakPtrFactory<URLFetcherFileWriter> weak_factory_;

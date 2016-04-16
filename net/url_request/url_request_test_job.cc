@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -111,9 +112,9 @@ std::string URLRequestTestJob::test_error_headers() {
 }
 
 // static
-scoped_ptr<URLRequestJobFactory::ProtocolHandler>
+std::unique_ptr<URLRequestJobFactory::ProtocolHandler>
 URLRequestTestJob::CreateProtocolHandler() {
-  return make_scoped_ptr(new TestJobProtocolHandler());
+  return base::WrapUnique(new TestJobProtocolHandler());
 }
 
 URLRequestTestJob::URLRequestTestJob(URLRequest* request,

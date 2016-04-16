@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -151,17 +152,18 @@ class ContainerURLRequestContext : public URLRequestContext {
   }
 
   void set_transport_security_persister(
-      scoped_ptr<TransportSecurityPersister> transport_security_persister) {
+      std::unique_ptr<TransportSecurityPersister>
+          transport_security_persister) {
     transport_security_persister_ = std::move(transport_security_persister);
   }
 
  private:
   // The thread should be torn down last.
-  scoped_ptr<base::Thread> file_thread_;
+  std::unique_ptr<base::Thread> file_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
   URLRequestContextStorage storage_;
-  scoped_ptr<TransportSecurityPersister> transport_security_persister_;
+  std::unique_ptr<TransportSecurityPersister> transport_security_persister_;
 
   DISALLOW_COPY_AND_ASSIGN(ContainerURLRequestContext);
 };
@@ -248,18 +250,19 @@ void URLRequestContextBuilder::SetSpdyAndQuicEnabled(bool spdy_enabled,
 }
 
 void URLRequestContextBuilder::SetCertVerifier(
-    scoped_ptr<CertVerifier> cert_verifier) {
+    std::unique_ptr<CertVerifier> cert_verifier) {
   cert_verifier_ = std::move(cert_verifier);
 }
 
 void URLRequestContextBuilder::SetInterceptors(
-    std::vector<scoped_ptr<URLRequestInterceptor>> url_request_interceptors) {
+    std::vector<std::unique_ptr<URLRequestInterceptor>>
+        url_request_interceptors) {
   url_request_interceptors_ = std::move(url_request_interceptors);
 }
 
 void URLRequestContextBuilder::SetCookieAndChannelIdStores(
-    scoped_ptr<CookieStore> cookie_store,
-    scoped_ptr<ChannelIDService> channel_id_service) {
+    std::unique_ptr<CookieStore> cookie_store,
+    std::unique_ptr<ChannelIDService> channel_id_service) {
   cookie_store_set_by_client_ = true;
   // If |cookie_store| is NULL, |channel_id_service| must be NULL too.
   DCHECK(cookie_store || !channel_id_service);
@@ -274,27 +277,27 @@ void URLRequestContextBuilder::SetFileTaskRunner(
 
 void URLRequestContextBuilder::SetProtocolHandler(
     const std::string& scheme,
-    scoped_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler) {
+    std::unique_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler) {
   DCHECK(protocol_handler);
   protocol_handlers_[scheme] = std::move(protocol_handler);
 }
 
 void URLRequestContextBuilder::SetHttpAuthHandlerFactory(
-    scoped_ptr<HttpAuthHandlerFactory> factory) {
+    std::unique_ptr<HttpAuthHandlerFactory> factory) {
   http_auth_handler_factory_ = std::move(factory);
 }
 
 void URLRequestContextBuilder::SetHttpServerProperties(
-    scoped_ptr<HttpServerProperties> http_server_properties) {
+    std::unique_ptr<HttpServerProperties> http_server_properties) {
   http_server_properties_ = std::move(http_server_properties);
 }
 
-scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
-  scoped_ptr<ContainerURLRequestContext> context(
+std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
+  std::unique_ptr<ContainerURLRequestContext> context(
       new ContainerURLRequestContext(file_task_runner_));
   URLRequestContextStorage* storage = context->storage();
 
-  storage->set_http_user_agent_settings(make_scoped_ptr(
+  storage->set_http_user_agent_settings(base::WrapUnique(
       new StaticHttpUserAgentSettings(accept_language_, user_agent_)));
 
   if (!network_delegate_)
@@ -306,7 +309,7 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     // builder or resulting context.
     context->set_net_log(net_log_);
   } else {
-    storage->set_net_log(make_scoped_ptr(new NetLog));
+    storage->set_net_log(base::WrapUnique(new NetLog));
   }
 
   if (!host_resolver_) {
@@ -344,10 +347,11 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     storage->set_cookie_store(std::move(cookie_store_));
     storage->set_channel_id_service(std::move(channel_id_service_));
   } else {
-    scoped_ptr<CookieStore> cookie_store(new CookieMonster(nullptr, nullptr));
+    std::unique_ptr<CookieStore> cookie_store(
+        new CookieMonster(nullptr, nullptr));
     // TODO(mmenke):  This always creates a file thread, even when it ends up
     // not being used.  Consider lazily creating the thread.
-    scoped_ptr<ChannelIDService> channel_id_service(new ChannelIDService(
+    std::unique_ptr<ChannelIDService> channel_id_service(new ChannelIDService(
         new DefaultChannelIDStore(NULL), context->GetFileTaskRunner()));
     cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
     storage->set_cookie_store(std::move(cookie_store));
@@ -355,14 +359,15 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (sdch_enabled_) {
-    storage->set_sdch_manager(scoped_ptr<net::SdchManager>(new SdchManager()));
+    storage->set_sdch_manager(
+        std::unique_ptr<net::SdchManager>(new SdchManager()));
   }
 
   storage->set_transport_security_state(
-      make_scoped_ptr(new TransportSecurityState()));
+      base::WrapUnique(new TransportSecurityState()));
   if (!transport_security_persister_path_.empty()) {
     context->set_transport_security_persister(
-        make_scoped_ptr<TransportSecurityPersister>(
+        base::WrapUnique<TransportSecurityPersister>(
             new TransportSecurityPersister(context->transport_security_state(),
                                            transport_security_persister_path_,
                                            context->GetFileTaskRunner(),
@@ -373,7 +378,7 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     storage->set_http_server_properties(std::move(http_server_properties_));
   } else {
     storage->set_http_server_properties(
-        scoped_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
+        std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
   }
 
   if (cert_verifier_) {
@@ -384,12 +389,12 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   if (throttling_enabled_) {
     storage->set_throttler_manager(
-        make_scoped_ptr(new URLRequestThrottlerManager()));
+        base::WrapUnique(new URLRequestThrottlerManager()));
   }
 
   if (backoff_enabled_) {
     storage->set_backoff_manager(
-        make_scoped_ptr(new URLRequestBackoffManager()));
+        base::WrapUnique(new URLRequestBackoffManager()));
   }
 
   HttpNetworkSession::Params network_session_params;
@@ -445,11 +450,11 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   storage->set_http_network_session(
-      make_scoped_ptr(new HttpNetworkSession(network_session_params)));
+      base::WrapUnique(new HttpNetworkSession(network_session_params)));
 
-  scoped_ptr<HttpTransactionFactory> http_transaction_factory;
+  std::unique_ptr<HttpTransactionFactory> http_transaction_factory;
   if (http_cache_enabled_) {
-    scoped_ptr<HttpCache::BackendFactory> http_cache_backend;
+    std::unique_ptr<HttpCache::BackendFactory> http_cache_backend;
     if (http_cache_params_.type != HttpCacheParams::IN_MEMORY) {
       BackendType backend_type =
           http_cache_params_.type == HttpCacheParams::DISK
@@ -482,13 +487,13 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   if (data_enabled_)
     job_factory->SetProtocolHandler("data",
-                                    make_scoped_ptr(new DataProtocolHandler));
+                                    base::WrapUnique(new DataProtocolHandler));
 
 #if !defined(DISABLE_FILE_SUPPORT)
   if (file_enabled_) {
     job_factory->SetProtocolHandler(
-        "file",
-        make_scoped_ptr(new FileProtocolHandler(context->GetFileTaskRunner())));
+        "file", base::WrapUnique(
+                    new FileProtocolHandler(context->GetFileTaskRunner())));
   }
 #endif  // !defined(DISABLE_FILE_SUPPORT)
 
@@ -497,12 +502,12 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     ftp_transaction_factory_.reset(
         new FtpNetworkLayer(context->host_resolver()));
     job_factory->SetProtocolHandler(
-        "ftp", make_scoped_ptr(
+        "ftp", base::WrapUnique(
                    new FtpProtocolHandler(ftp_transaction_factory_.get())));
   }
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 
-  scoped_ptr<net::URLRequestJobFactory> top_job_factory(job_factory);
+  std::unique_ptr<net::URLRequestJobFactory> top_job_factory(job_factory);
   if (!url_request_interceptors_.empty()) {
     // Set up interceptors in the reverse order.
 

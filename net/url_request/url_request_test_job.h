@@ -107,7 +107,7 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   RequestPriority priority() const { return priority_; }
 
   // Create a protocol handler for callers that don't subclass.
-  static scoped_ptr<URLRequestJobFactory::ProtocolHandler>
+  static std::unique_ptr<URLRequestJobFactory::ProtocolHandler>
   CreateProtocolHandler();
 
   // Job functions

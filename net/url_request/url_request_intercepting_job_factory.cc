@@ -12,8 +12,8 @@
 namespace net {
 
 URLRequestInterceptingJobFactory::URLRequestInterceptingJobFactory(
-    scoped_ptr<URLRequestJobFactory> job_factory,
-    scoped_ptr<URLRequestInterceptor> interceptor)
+    std::unique_ptr<URLRequestJobFactory> job_factory,
+    std::unique_ptr<URLRequestInterceptor> interceptor)
     : job_factory_(std::move(job_factory)),
       interceptor_(std::move(interceptor)) {}
 

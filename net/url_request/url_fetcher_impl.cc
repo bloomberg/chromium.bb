@@ -139,7 +139,7 @@ void URLFetcherImpl::SaveResponseToTemporaryFile(
 }
 
 void URLFetcherImpl::SaveResponseWithWriter(
-    scoped_ptr<URLFetcherResponseWriter> response_writer) {
+    std::unique_ptr<URLFetcherResponseWriter> response_writer) {
   core_->SaveResponseWithWriter(std::move(response_writer));
 }
 

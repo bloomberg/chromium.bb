@@ -15,7 +15,9 @@
 #define NET_URL_REQUEST_URL_REQUEST_CONTEXT_BUILDER_H_
 
 #include <stdint.h>
+
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -24,7 +26,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
@@ -122,10 +123,10 @@ class NET_EXPORT URLRequestContextBuilder {
   // These functions are mutually exclusive.  The ProxyConfigService, if
   // set, will be used to construct a ProxyService.
   void set_proxy_config_service(
-      scoped_ptr<ProxyConfigService> proxy_config_service) {
+      std::unique_ptr<ProxyConfigService> proxy_config_service) {
     proxy_config_service_ = std::move(proxy_config_service);
   }
-  void set_proxy_service(scoped_ptr<ProxyService> proxy_service) {
+  void set_proxy_service(std::unique_ptr<ProxyService> proxy_service) {
     proxy_service_ = std::move(proxy_service);
   }
 
@@ -162,7 +163,7 @@ class NET_EXPORT URLRequestContextBuilder {
   // A ProtocolHandler already exists for |scheme| will be overwritten.
   void SetProtocolHandler(
       const std::string& scheme,
-      scoped_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler);
+      std::unique_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler);
 
   // Unlike the other setters, the builder does not take ownership of the
   // NetLog.
@@ -171,20 +172,20 @@ class NET_EXPORT URLRequestContextBuilder {
   void set_net_log(NetLog* net_log) { net_log_ = net_log; }
 
   // By default host_resolver is constructed with CreateDefaultResolver.
-  void set_host_resolver(scoped_ptr<HostResolver> host_resolver) {
+  void set_host_resolver(std::unique_ptr<HostResolver> host_resolver) {
     host_resolver_ = std::move(host_resolver);
   }
 
   // Uses BasicNetworkDelegate by default. Note that calling Build will unset
   // any custom delegate in builder, so this must be called each time before
   // Build is called.
-  void set_network_delegate(scoped_ptr<NetworkDelegate> delegate) {
+  void set_network_delegate(std::unique_ptr<NetworkDelegate> delegate) {
     network_delegate_ = std::move(delegate);
   }
 
   // Temporarily stores a ProxyDelegate. Ownership is transferred to
   // UrlRequestContextStorage during Build.
-  void set_proxy_delegate(scoped_ptr<ProxyDelegate> delegate) {
+  void set_proxy_delegate(std::unique_ptr<ProxyDelegate> delegate) {
     proxy_delegate_ = std::move(delegate);
   }
 
@@ -194,7 +195,8 @@ class NET_EXPORT URLRequestContextBuilder {
   // URLRequestContext. Note that since Build will transfer ownership, the
   // custom factory will be unset and this must be called before the next Build
   // to set another custom one.
-  void SetHttpAuthHandlerFactory(scoped_ptr<HttpAuthHandlerFactory> factory);
+  void SetHttpAuthHandlerFactory(
+      std::unique_ptr<HttpAuthHandlerFactory> factory);
 
   // By default HttpCache is enabled with a default constructed HttpCacheParams.
   void EnableHttpCache(const HttpCacheParams& params);
@@ -291,10 +293,10 @@ class NET_EXPORT URLRequestContextBuilder {
     backoff_enabled_ = backoff_enabled;
   }
 
-  void SetCertVerifier(scoped_ptr<CertVerifier> cert_verifier);
+  void SetCertVerifier(std::unique_ptr<CertVerifier> cert_verifier);
 
-  void SetInterceptors(
-      std::vector<scoped_ptr<URLRequestInterceptor>> url_request_interceptors);
+  void SetInterceptors(std::vector<std::unique_ptr<URLRequestInterceptor>>
+                           url_request_interceptors);
 
   // Override the default in-memory cookie store and channel id service.
   // If both |cookie_store| and |channel_id_service| are NULL, CookieStore and
@@ -306,8 +308,8 @@ class NET_EXPORT URLRequestContextBuilder {
   // multiple channel-id stores (or used both with and without a channel id
   // store).
   void SetCookieAndChannelIdStores(
-      scoped_ptr<CookieStore> cookie_store,
-      scoped_ptr<ChannelIDService> channel_id_service);
+      std::unique_ptr<CookieStore> cookie_store,
+      std::unique_ptr<ChannelIDService> channel_id_service);
 
   // Sets the task runner used to perform file operations. If not set, one will
   // be created.
@@ -324,9 +326,9 @@ class NET_EXPORT URLRequestContextBuilder {
   // Sets a specific HttpServerProperties for use in the
   // URLRequestContext rather than creating a default HttpServerPropertiesImpl.
   void SetHttpServerProperties(
-      scoped_ptr<HttpServerProperties> http_server_properties);
+      std::unique_ptr<HttpServerProperties> http_server_properties);
 
-  scoped_ptr<URLRequestContext> Build();
+  std::unique_ptr<URLRequestContext> Build();
 
  private:
   std::string accept_language_;
@@ -352,21 +354,21 @@ class NET_EXPORT URLRequestContextBuilder {
   HttpNetworkSessionParams http_network_session_params_;
   base::FilePath transport_security_persister_path_;
   NetLog* net_log_;
-  scoped_ptr<HostResolver> host_resolver_;
-  scoped_ptr<ChannelIDService> channel_id_service_;
-  scoped_ptr<ProxyConfigService> proxy_config_service_;
-  scoped_ptr<ProxyService> proxy_service_;
-  scoped_ptr<NetworkDelegate> network_delegate_;
-  scoped_ptr<ProxyDelegate> proxy_delegate_;
-  scoped_ptr<CookieStore> cookie_store_;
+  std::unique_ptr<HostResolver> host_resolver_;
+  std::unique_ptr<ChannelIDService> channel_id_service_;
+  std::unique_ptr<ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<NetworkDelegate> network_delegate_;
+  std::unique_ptr<ProxyDelegate> proxy_delegate_;
+  std::unique_ptr<CookieStore> cookie_store_;
 #if !defined(DISABLE_FTP_SUPPORT)
-  scoped_ptr<FtpTransactionFactory> ftp_transaction_factory_;
+  std::unique_ptr<FtpTransactionFactory> ftp_transaction_factory_;
 #endif
-  scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
-  scoped_ptr<CertVerifier> cert_verifier_;
-  std::vector<scoped_ptr<URLRequestInterceptor>> url_request_interceptors_;
-  scoped_ptr<HttpServerProperties> http_server_properties_;
-  std::map<std::string, scoped_ptr<URLRequestJobFactory::ProtocolHandler>>
+  std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
+  std::unique_ptr<CertVerifier> cert_verifier_;
+  std::vector<std::unique_ptr<URLRequestInterceptor>> url_request_interceptors_;
+  std::unique_ptr<HttpServerProperties> http_server_properties_;
+  std::map<std::string, std::unique_ptr<URLRequestJobFactory::ProtocolHandler>>
       protocol_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextBuilder);

@@ -24,7 +24,7 @@ URLRequestJobFactoryImpl::~URLRequestJobFactoryImpl() {}
 
 bool URLRequestJobFactoryImpl::SetProtocolHandler(
     const std::string& scheme,
-    scoped_ptr<ProtocolHandler> protocol_handler) {
+    std::unique_ptr<ProtocolHandler> protocol_handler) {
   DCHECK(CalledOnValidThread());
 
   if (!protocol_handler) {

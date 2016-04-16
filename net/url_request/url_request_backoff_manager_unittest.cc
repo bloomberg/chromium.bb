@@ -4,7 +4,8 @@
 
 #include "net/url_request/url_request_backoff_manager.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "net/http/http_response_headers.h"
@@ -30,7 +31,7 @@ class URLRequestBackoffManagerTest : public testing::Test {
     manager_->UpdateWithResponse(url, headers.get(), request_time);
   }
 
-  scoped_ptr<URLRequestBackoffManager> manager_;
+  std::unique_ptr<URLRequestBackoffManager> manager_;
 };
 }  // namespace
 

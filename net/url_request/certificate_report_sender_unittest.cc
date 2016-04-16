@@ -227,7 +227,7 @@ TEST_F(CertificateReportSenderTest, PendingRequestGetsDeleted) {
 
   EXPECT_EQ(0u, network_delegate_.num_requests());
 
-  scoped_ptr<CertificateReportSender> reporter(new CertificateReportSender(
+  std::unique_ptr<CertificateReportSender> reporter(new CertificateReportSender(
       context(), CertificateReportSender::DO_NOT_SEND_COOKIES));
   reporter->Send(url, kDummyReport);
   reporter.reset();

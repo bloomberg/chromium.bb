@@ -4,7 +4,8 @@
 
 #include "net/url_request/url_request_job.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/run_loop.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_transaction_test_util.h"
@@ -152,7 +153,7 @@ TEST(URLRequestJob, TransactionNotifiedWhenDone) {
   context.set_http_transaction_factory(&network_layer);
 
   TestDelegate d;
-  scoped_ptr<URLRequest> req(
+  std::unique_ptr<URLRequest> req(
       context.CreateRequest(GURL(kGZip_Transaction.url), DEFAULT_PRIORITY, &d));
   AddMockTransaction(&kGZip_Transaction);
 
@@ -172,7 +173,7 @@ TEST(URLRequestJob, SyncTransactionNotifiedWhenDone) {
   context.set_http_transaction_factory(&network_layer);
 
   TestDelegate d;
-  scoped_ptr<URLRequest> req(
+  std::unique_ptr<URLRequest> req(
       context.CreateRequest(GURL(kGZip_Transaction.url), DEFAULT_PRIORITY, &d));
   MockTransaction transaction(kGZip_Transaction);
   transaction.test_mode = TEST_MODE_SYNC_ALL;
@@ -195,7 +196,7 @@ TEST(URLRequestJob, SyncSlowTransaction) {
   context.set_http_transaction_factory(&network_layer);
 
   TestDelegate d;
-  scoped_ptr<URLRequest> req(
+  std::unique_ptr<URLRequest> req(
       context.CreateRequest(GURL(kGZip_Transaction.url), DEFAULT_PRIORITY, &d));
   MockTransaction transaction(kGZip_Transaction);
   transaction.test_mode = TEST_MODE_SYNC_ALL | TEST_MODE_SLOW_READ;
@@ -218,7 +219,7 @@ TEST(URLRequestJob, RedirectTransactionNotifiedWhenDone) {
   context.set_http_transaction_factory(&network_layer);
 
   TestDelegate d;
-  scoped_ptr<URLRequest> req(context.CreateRequest(
+  std::unique_ptr<URLRequest> req(context.CreateRequest(
       GURL(kRedirect_Transaction.url), DEFAULT_PRIORITY, &d));
   AddMockTransaction(&kRedirect_Transaction);
 
@@ -241,7 +242,7 @@ TEST(URLRequestJob, TransactionNotCachedWhenNetworkDelegateRedirects) {
   context.set_network_delegate(&network_delegate);
 
   TestDelegate d;
-  scoped_ptr<URLRequest> req(
+  std::unique_ptr<URLRequest> req(
       context.CreateRequest(GURL(kGZip_Transaction.url), DEFAULT_PRIORITY, &d));
   AddMockTransaction(&kGZip_Transaction);
 
@@ -264,7 +265,7 @@ TEST(URLRequestJob, EmptyBodySkipFilter) {
   context.set_http_transaction_factory(&network_layer);
 
   TestDelegate d;
-  scoped_ptr<URLRequest> req(context.CreateRequest(
+  std::unique_ptr<URLRequest> req(context.CreateRequest(
       GURL(kEmptyBodyGzip_Transaction.url), DEFAULT_PRIORITY, &d));
   AddMockTransaction(&kEmptyBodyGzip_Transaction);
 
@@ -288,7 +289,7 @@ TEST(URLRequestJob, InvalidContentGZipTransaction) {
   context.set_http_transaction_factory(&network_layer);
 
   TestDelegate d;
-  scoped_ptr<URLRequest> req(context.CreateRequest(
+  std::unique_ptr<URLRequest> req(context.CreateRequest(
       GURL(kInvalidContentGZip_Transaction.url), DEFAULT_PRIORITY, &d));
   AddMockTransaction(&kInvalidContentGZip_Transaction);
 
@@ -316,7 +317,7 @@ TEST(URLRequestJob, SlowFilterRead) {
   context.set_http_transaction_factory(&network_layer);
 
   TestDelegate d;
-  scoped_ptr<URLRequest> req(context.CreateRequest(
+  std::unique_ptr<URLRequest> req(context.CreateRequest(
       GURL(kGzip_Slow_Transaction.url), DEFAULT_PRIORITY, &d));
   AddMockTransaction(&kGzip_Slow_Transaction);
 
@@ -339,7 +340,7 @@ TEST(URLRequestJob, SlowBrotliRead) {
   context.set_http_transaction_factory(&network_layer);
 
   TestDelegate d;
-  scoped_ptr<URLRequest> req(context.CreateRequest(
+  std::unique_ptr<URLRequest> req(context.CreateRequest(
       GURL(kBrotli_Slow_Transaction.url), DEFAULT_PRIORITY, &d));
   AddMockTransaction(&kBrotli_Slow_Transaction);
 

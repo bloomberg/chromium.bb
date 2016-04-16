@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -74,14 +75,14 @@ void TestURLRequestContext::Init() {
 
   if (!host_resolver())
     context_storage_.set_host_resolver(
-        scoped_ptr<HostResolver>(new MockCachingHostResolver()));
+        std::unique_ptr<HostResolver>(new MockCachingHostResolver()));
   if (!proxy_service())
     context_storage_.set_proxy_service(ProxyService::CreateDirect());
   if (!cert_verifier())
     context_storage_.set_cert_verifier(CertVerifier::CreateDefault());
   if (!transport_security_state())
     context_storage_.set_transport_security_state(
-        make_scoped_ptr(new TransportSecurityState()));
+        base::WrapUnique(new TransportSecurityState()));
   if (!ssl_config_service())
     context_storage_.set_ssl_config_service(new SSLConfigServiceDefaults());
   if (!http_auth_handler_factory()) {
@@ -90,7 +91,7 @@ void TestURLRequestContext::Init() {
   }
   if (!http_server_properties()) {
     context_storage_.set_http_server_properties(
-        scoped_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
+        std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
   }
   if (http_transaction_factory()) {
     // Make sure we haven't been passed an object we're not going to use.
@@ -115,29 +116,29 @@ void TestURLRequestContext::Init() {
     params.net_log = net_log();
     params.channel_id_service = channel_id_service();
     context_storage_.set_http_network_session(
-        make_scoped_ptr(new HttpNetworkSession(params)));
-    context_storage_.set_http_transaction_factory(make_scoped_ptr(
+        base::WrapUnique(new HttpNetworkSession(params)));
+    context_storage_.set_http_transaction_factory(base::WrapUnique(
         new HttpCache(context_storage_.http_network_session(),
                       HttpCache::DefaultBackend::InMemory(0), false)));
   }
   // In-memory cookie store.
   if (!cookie_store()) {
     context_storage_.set_cookie_store(
-        make_scoped_ptr(new CookieMonster(nullptr, nullptr)));
+        base::WrapUnique(new CookieMonster(nullptr, nullptr)));
   }
   // In-memory Channel ID service.
   if (!channel_id_service()) {
-    context_storage_.set_channel_id_service(make_scoped_ptr(
+    context_storage_.set_channel_id_service(base::WrapUnique(
         new ChannelIDService(new DefaultChannelIDStore(nullptr),
                              base::WorkerPool::GetTaskRunner(true))));
   }
   if (!http_user_agent_settings()) {
-    context_storage_.set_http_user_agent_settings(make_scoped_ptr(
+    context_storage_.set_http_user_agent_settings(base::WrapUnique(
         new StaticHttpUserAgentSettings("en-us,fr", std::string())));
   }
   if (!job_factory()) {
     context_storage_.set_job_factory(
-        make_scoped_ptr(new URLRequestJobFactoryImpl()));
+        base::WrapUnique(new URLRequestJobFactoryImpl()));
   }
 }
 
@@ -149,7 +150,7 @@ TestURLRequestContextGetter::TestURLRequestContextGetter(
 
 TestURLRequestContextGetter::TestURLRequestContextGetter(
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
-    scoped_ptr<TestURLRequestContext> context)
+    std::unique_ptr<TestURLRequestContext> context)
     : network_task_runner_(network_task_runner), context_(std::move(context)) {
   DCHECK(network_task_runner_.get());
 }
@@ -655,7 +656,8 @@ URLRequestJob* TestJobInterceptor::MaybeCreateJob(
   return main_intercept_job_.release();
 }
 
-void TestJobInterceptor::set_main_intercept_job(scoped_ptr<URLRequestJob> job) {
+void TestJobInterceptor::set_main_intercept_job(
+    std::unique_ptr<URLRequestJob> job) {
   main_intercept_job_ = std::move(job);
 }
 

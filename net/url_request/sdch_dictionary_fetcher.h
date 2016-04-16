@@ -11,11 +11,11 @@
 #ifndef NET_URL_REQUEST_SDCH_DICTIONARY_FETCHER_H_
 #define NET_URL_REQUEST_SDCH_DICTIONARY_FETCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/sdch_manager.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -99,11 +99,11 @@ class NET_EXPORT SdchDictionaryFetcher : public URLRequest::Delegate,
   bool in_loop_;
 
   // A queue of URLs that are being used to download dictionaries.
-  scoped_ptr<UniqueFetchQueue> fetch_queue_;
+  std::unique_ptr<UniqueFetchQueue> fetch_queue_;
 
   // The request, buffer, and consumer supplied data used for getting
   // the current dictionary.  All are null when a fetch is not in progress.
-  scoped_ptr<URLRequest> current_request_;
+  std::unique_ptr<URLRequest> current_request_;
   scoped_refptr<IOBuffer> buffer_;
   OnDictionaryFetchedCallback current_callback_;
 

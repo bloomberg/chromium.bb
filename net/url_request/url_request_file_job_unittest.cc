@@ -4,10 +4,11 @@
 
 #include "net/url_request/url_request_file_job.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -187,7 +188,7 @@ void URLRequestFileJobEventsTest::RunRequest(const std::string& content,
     TestJobFactory factory(path, &seek_position, &observed_content);
     context_.set_job_factory(&factory);
 
-    scoped_ptr<URLRequest> request(context_.CreateRequest(
+    std::unique_ptr<URLRequest> request(context_.CreateRequest(
         FilePathToFileURL(path), DEFAULT_PRIORITY, &delegate_));
     if (range) {
       ASSERT_GE(range->start, 0);

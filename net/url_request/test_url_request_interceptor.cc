@@ -59,7 +59,7 @@ class TestURLRequestInterceptor::Delegate : public URLRequestInterceptor {
 
   void Register() {
     URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        scheme_, hostname_, scoped_ptr<URLRequestInterceptor>(this));
+        scheme_, hostname_, std::unique_ptr<URLRequestInterceptor>(this));
   }
 
   static void Unregister(const std::string& scheme,

@@ -121,7 +121,7 @@ class SpecifiedResponseJobInterceptor : public URLRequestInterceptor {
   // SpecifiedResponseJobInterceptor (i.e. until Unregister() is called).
   static void RegisterWithFilter(HttpResponseInfo* http_response_info,
                                  const LifecycleCallback& lifecycle_callback) {
-    scoped_ptr<SpecifiedResponseJobInterceptor> interceptor(
+    std::unique_ptr<SpecifiedResponseJobInterceptor> interceptor(
         new SpecifiedResponseJobInterceptor(http_response_info,
                                             lifecycle_callback));
 
@@ -264,9 +264,9 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
   // currently used for ensuring that certain loads are marked only-from-cache.
   int last_load_flags_seen_;
 
-  scoped_ptr<base::RunLoop> run_loop_;
-  scoped_ptr<TestURLRequestContext> context_;
-  scoped_ptr<SdchDictionaryFetcher> fetcher_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<TestURLRequestContext> context_;
+  std::unique_ptr<SdchDictionaryFetcher> fetcher_;
   std::vector<DictionaryAdditions> dictionary_additions_;
 
   // The request_time and response_time fields are filled in by the constructor

@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "net/url_request/url_fetcher_delegate.h"
