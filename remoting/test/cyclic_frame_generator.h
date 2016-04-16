@@ -24,9 +24,9 @@ namespace test {
 class CyclicFrameGenerator
     : public base::RefCountedThreadSafe<CyclicFrameGenerator> {
  public:
-  enum class FrameType {
-    // Frame had no changes.
-    EMPTY,
+  enum class ChangeType {
+    // No changes.
+    NO_CHANGES,
 
     // Whole screen changed.
     FULL,
@@ -35,14 +35,15 @@ class CyclicFrameGenerator
     CURSOR,
   };
 
-  struct FrameInfo {
-    FrameInfo();
-    FrameInfo(int frame_id, FrameType type, base::TimeTicks timestamp);
+  struct ChangeInfo {
+    ChangeInfo();
+    ChangeInfo(ChangeType type, base::TimeTicks timestamp);
 
-    int frame_id = 0;
-    FrameType type = FrameType::EMPTY;
+    ChangeType type = ChangeType::NO_CHANGES;
     base::TimeTicks timestamp;
   };
+
+  typedef std::vector<ChangeInfo> ChangeInfoList;
 
   static scoped_refptr<CyclicFrameGenerator> Create();
 
@@ -60,18 +61,21 @@ class CyclicFrameGenerator
   void SetTickClock(base::TickClock* tick_clock);
 
   // When |draw_barcode| is set to true a barcode is drawn on each generated
-  // frame. This make it possible to call IdentifyFrame() to identify the frame
+  // frame. This makes it possible to call GetChangeList() to identify the frame
   // by its content.
   void set_draw_barcode(bool draw_barcode) { draw_barcode_ = draw_barcode; }
 
   std::unique_ptr<webrtc::DesktopFrame> GenerateFrame(
       webrtc::SharedMemoryFactory* shared_memory_factory);
 
-  FrameType last_frame_type() { return last_frame_type_; }
+  ChangeType last_frame_type() { return last_frame_type_; }
 
-  // Identifies |frame| by its content and returns FrameInfo corresponding to
-  // the frame.
-  FrameInfo IdentifyFrame(webrtc::DesktopFrame* frame);
+  // Identifies |frame| by its content and returns list of ChangeInfo for all
+  // changes between the frame passed to the previous GetChangeList() call and
+  // this one. GetChangeList() must be called for the frames in the order in
+  // which they were received, which is expected to match the order in which
+  // they are generated.
+  ChangeInfoList GetChangeList(webrtc::DesktopFrame* frame);
 
  private:
   ~CyclicFrameGenerator();
@@ -97,13 +101,14 @@ class CyclicFrameGenerator
   // True if the cursor was rendered on the last generated frame.
   bool last_cursor_state_ = false;
 
-  FrameType last_frame_type_ = FrameType::EMPTY;
+  ChangeType last_frame_type_ = ChangeType::NO_CHANGES;
 
   bool draw_barcode_ = false;
 
   base::TimeTicks started_time_;
 
-  std::map<int, FrameInfo> generated_frames_info_;
+  // frame_id of the frame passed to the last GetChangeList() call.
+  int last_identifier_frame_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(CyclicFrameGenerator);
 };

@@ -87,15 +87,15 @@ TEST_P(CodecPerfTest, EncodeLatency) {
       total_bytes += packet->data().size();
 
     switch (frame_generator_->last_frame_type()) {
-      case CyclicFrameGenerator::FrameType::EMPTY:
+      case CyclicFrameGenerator::ChangeType::NO_CHANGES:
         total_latency_empty_frames += latency;
         ++empty_frame_count;
         break;
-      case CyclicFrameGenerator::FrameType::FULL:
+      case CyclicFrameGenerator::ChangeType::FULL:
         total_latency_big_frames += latency;
         ++big_frame_count;
         break;
-      case CyclicFrameGenerator::FrameType::CURSOR:
+      case CyclicFrameGenerator::ChangeType::CURSOR:
         total_latency_small_frames += latency;
         ++small_frame_count;
         break;
