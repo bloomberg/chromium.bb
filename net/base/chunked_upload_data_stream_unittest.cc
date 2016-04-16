@@ -4,9 +4,9 @@
 
 #include "net/base/chunked_upload_data_stream.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -307,8 +307,10 @@ TEST(ChunkedUploadDataStreamTest, RewindWhileReading) {
 
 // Check the behavior of ChunkedUploadDataStream::Writer.
 TEST(ChunkedUploadDataStreamTest, ChunkedUploadDataStreamWriter) {
-  scoped_ptr<ChunkedUploadDataStream> stream(new ChunkedUploadDataStream(0));
-  scoped_ptr<ChunkedUploadDataStream::Writer> writer(stream->CreateWriter());
+  std::unique_ptr<ChunkedUploadDataStream> stream(
+      new ChunkedUploadDataStream(0));
+  std::unique_ptr<ChunkedUploadDataStream::Writer> writer(
+      stream->CreateWriter());
 
   // Write before Init.
   ASSERT_TRUE(writer->AppendData(kTestData, 1, false));

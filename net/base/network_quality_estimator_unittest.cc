@@ -9,6 +9,7 @@
 
 #include <limits>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,7 +17,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -44,7 +44,7 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
  public:
   TestNetworkQualityEstimator(
       const std::map<std::string, std::string>& variation_params,
-      scoped_ptr<net::ExternalEstimateProvider> external_estimate_provider)
+      std::unique_ptr<net::ExternalEstimateProvider> external_estimate_provider)
       : NetworkQualityEstimator(std::move(external_estimate_provider),
                                 variation_params,
                                 true,
@@ -61,7 +61,7 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
       const std::map<std::string, std::string>& variation_params)
       : TestNetworkQualityEstimator(
             variation_params,
-            scoped_ptr<net::ExternalEstimateProvider>()) {}
+            std::unique_ptr<net::ExternalEstimateProvider>()) {}
 
   ~TestNetworkQualityEstimator() override {}
 
@@ -75,9 +75,9 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
   }
 
   // Called by embedded server when a HTTP request is received.
-  scoped_ptr<net::test_server::HttpResponse> HandleRequest(
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
-    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse());
     http_response->set_code(net::HTTP_OK);
     http_response->set_content("hello");
@@ -184,7 +184,7 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   context.set_network_quality_estimator(&estimator);
   context.Init();
 
-  scoped_ptr<URLRequest> request(context.CreateRequest(
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
       estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
   request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME);
   request->Start();
@@ -215,7 +215,7 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
 
   histogram_tester.ExpectTotalCount("NQE.RatioEstimatedToActualRTT.Unknown", 0);
 
-  scoped_ptr<URLRequest> request2(context.CreateRequest(
+  std::unique_ptr<URLRequest> request2(context.CreateRequest(
       estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
   request2->SetLoadFlags(request2->load_flags() | LOAD_MAIN_FRAME);
   request2->Start();
@@ -272,7 +272,7 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
 
   // Push 10 more observations than the maximum buffer size.
   for (size_t i = 0; i < estimator.kMaximumObservationsBufferSize + 10U; ++i) {
-    scoped_ptr<URLRequest> request(context.CreateRequest(
+    std::unique_ptr<URLRequest> request(context.CreateRequest(
         estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
     request->Start();
     base::RunLoop().Run();
@@ -447,7 +447,7 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
 
   // Number of observations are more than the maximum buffer size.
   for (size_t i = 0; i < estimator.kMaximumObservationsBufferSize + 100U; ++i) {
-    scoped_ptr<URLRequest> request(context.CreateRequest(
+    std::unique_ptr<URLRequest> request(context.CreateRequest(
         estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
     request->Start();
     base::RunLoop().Run();
@@ -841,7 +841,7 @@ class InvalidExternalEstimateProvider : public ExternalEstimateProvider {
 TEST(NetworkQualityEstimatorTest, InvalidExternalEstimateProvider) {
   InvalidExternalEstimateProvider* invalid_external_estimate_provider =
       new InvalidExternalEstimateProvider();
-  scoped_ptr<ExternalEstimateProvider> external_estimate_provider(
+  std::unique_ptr<ExternalEstimateProvider> external_estimate_provider(
       invalid_external_estimate_provider);
 
   TestNetworkQualityEstimator estimator(std::map<std::string, std::string>(),
@@ -939,7 +939,7 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProvider) {
   TestExternalEstimateProvider* test_external_estimate_provider =
       new TestExternalEstimateProvider(base::TimeDelta::FromMilliseconds(1),
                                        100);
-  scoped_ptr<ExternalEstimateProvider> external_estimate_provider(
+  std::unique_ptr<ExternalEstimateProvider> external_estimate_provider(
       test_external_estimate_provider);
   std::map<std::string, std::string> variation_params;
   TestNetworkQualityEstimator estimator(variation_params,
@@ -1013,7 +1013,7 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProviderMergeEstimates) {
       new TestExternalEstimateProvider(
           external_estimate_provider_rtt,
           external_estimate_provider_downstream_throughput);
-  scoped_ptr<ExternalEstimateProvider> external_estimate_provider(
+  std::unique_ptr<ExternalEstimateProvider> external_estimate_provider(
       test_external_estimate_provider);
 
   std::map<std::string, std::string> variation_params;
@@ -1038,7 +1038,7 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProviderMergeEstimates) {
   context.set_network_quality_estimator(&estimator);
   context.Init();
 
-  scoped_ptr<URLRequest> request(context.CreateRequest(
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
       estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
   request->Start();
   base::RunLoop().Run();
@@ -1064,13 +1064,13 @@ TEST(NetworkQualityEstimatorTest, TestObservers) {
   EXPECT_EQ(0U, throughput_observer.observations().size());
   base::TimeTicks then = base::TimeTicks::Now();
 
-  scoped_ptr<URLRequest> request(context.CreateRequest(
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
       estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
   request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME);
   request->Start();
   base::RunLoop().Run();
 
-  scoped_ptr<URLRequest> request2(context.CreateRequest(
+  std::unique_ptr<URLRequest> request2(context.CreateRequest(
       estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
   request2->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME);
   request2->Start();
@@ -1100,12 +1100,12 @@ TEST(NetworkQualityEstimatorTest, TestObservers) {
   base::TimeDelta tcp_rtt(base::TimeDelta::FromMilliseconds(1));
   base::TimeDelta quic_rtt(base::TimeDelta::FromMilliseconds(2));
 
-  scoped_ptr<SocketPerformanceWatcher> tcp_watcher =
+  std::unique_ptr<SocketPerformanceWatcher> tcp_watcher =
       estimator.GetSocketPerformanceWatcherFactory()
           ->CreateSocketPerformanceWatcher(
               SocketPerformanceWatcherFactory::PROTOCOL_TCP);
 
-  scoped_ptr<SocketPerformanceWatcher> quic_watcher =
+  std::unique_ptr<SocketPerformanceWatcher> quic_watcher =
       estimator.GetSocketPerformanceWatcherFactory()
           ->CreateSocketPerformanceWatcher(
               SocketPerformanceWatcherFactory::PROTOCOL_QUIC);
@@ -1142,7 +1142,8 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
   TestURLRequestContext context(true);
   context.set_network_quality_estimator(&estimator);
 
-  scoped_ptr<HttpNetworkSession::Params> params(new HttpNetworkSession::Params);
+  std::unique_ptr<HttpNetworkSession::Params> params(
+      new HttpNetworkSession::Params);
   // |estimator| should be notified of TCP RTT observations.
   params->socket_performance_watcher_factory =
       estimator.GetSocketPerformanceWatcherFactory();
@@ -1160,7 +1161,7 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
         ++before_count_tcp_rtt_observations;
     }
 
-    scoped_ptr<URLRequest> request(context.CreateRequest(
+    std::unique_ptr<URLRequest> request(context.CreateRequest(
         estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
     request->Start();
     base::RunLoop().Run();

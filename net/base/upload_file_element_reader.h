@@ -7,13 +7,14 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
@@ -84,7 +85,7 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
   const uint64_t range_offset_;
   const uint64_t range_length_;
   const base::Time expected_modification_time_;
-  scoped_ptr<FileStream> file_stream_;
+  std::unique_ptr<FileStream> file_stream_;
   uint64_t content_length_;
   uint64_t bytes_remaining_;
   base::WeakPtrFactory<UploadFileElementReader> weak_ptr_factory_;

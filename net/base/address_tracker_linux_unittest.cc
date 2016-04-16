@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/base/address_tracker_linux.h"
+
+#include <linux/if.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/spin_wait.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
-#include "net/base/address_tracker_linux.h"
 #include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include <linux/if.h>
 
 #ifndef IFA_F_HOMEADDRESS
 #define IFA_F_HOMEADDRESS 0x10
@@ -113,7 +114,7 @@ class AddressTrackerLinuxTest : public testing::Test {
   }
 
   base::hash_set<std::string> ignored_interfaces_;
-  scoped_ptr<AddressTrackerLinux> tracker_;
+  std::unique_ptr<AddressTrackerLinux> tracker_;
   AddressTrackerLinux::GetInterfaceNameFunction original_get_interface_name_;
 };
 

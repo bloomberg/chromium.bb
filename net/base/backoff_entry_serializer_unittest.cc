@@ -48,13 +48,12 @@ TEST(BackoffEntrySerializerTest, SerializeNoFailures) {
   TestTickClock original_ticks;
   original_ticks.set_now(TimeTicks::Now());
   BackoffEntry original(&base_policy, &original_ticks);
-  scoped_ptr<base::Value> serialized =
+  std::unique_ptr<base::Value> serialized =
       BackoffEntrySerializer::SerializeToValue(original, original_time);
 
-  scoped_ptr<BackoffEntry> deserialized =
-      BackoffEntrySerializer::DeserializeFromValue(*serialized, &base_policy,
-                                                   &original_ticks,
-                                                   original_time);
+  std::unique_ptr<BackoffEntry> deserialized =
+      BackoffEntrySerializer::DeserializeFromValue(
+          *serialized, &base_policy, &original_ticks, original_time);
   ASSERT_TRUE(deserialized.get());
   EXPECT_EQ(original.failure_count(), deserialized->failure_count());
   EXPECT_EQ(original.GetReleaseTime(), deserialized->GetReleaseTime());
@@ -67,15 +66,14 @@ TEST(BackoffEntrySerializerTest, SerializeTimeOffsets) {
   // 2 errors.
   original.InformOfRequest(false);
   original.InformOfRequest(false);
-  scoped_ptr<base::Value> serialized =
+  std::unique_ptr<base::Value> serialized =
       BackoffEntrySerializer::SerializeToValue(original, original_time);
 
   {
     // Test that immediate deserialization round-trips.
-    scoped_ptr<BackoffEntry> deserialized =
-        BackoffEntrySerializer::DeserializeFromValue(*serialized, &base_policy,
-                                                     &original_ticks,
-                                                     original_time);
+    std::unique_ptr<BackoffEntry> deserialized =
+        BackoffEntrySerializer::DeserializeFromValue(
+            *serialized, &base_policy, &original_ticks, original_time);
     ASSERT_TRUE(deserialized.get());
     EXPECT_EQ(original.failure_count(), deserialized->failure_count());
     EXPECT_EQ(original.GetReleaseTime(), deserialized->GetReleaseTime());
@@ -85,10 +83,9 @@ TEST(BackoffEntrySerializerTest, SerializeTimeOffsets) {
     // Test deserialization when wall clock has advanced but TimeTicks::Now()
     // hasn't (e.g. device was rebooted).
     Time later_time = original_time + TimeDelta::FromDays(1);
-    scoped_ptr<BackoffEntry> deserialized =
-        BackoffEntrySerializer::DeserializeFromValue(*serialized, &base_policy,
-                                                     &original_ticks,
-                                                     later_time);
+    std::unique_ptr<BackoffEntry> deserialized =
+        BackoffEntrySerializer::DeserializeFromValue(
+            *serialized, &base_policy, &original_ticks, later_time);
     ASSERT_TRUE(deserialized.get());
     EXPECT_EQ(original.failure_count(), deserialized->failure_count());
     // Remaining backoff duration continues decreasing while device is off.
@@ -105,10 +102,9 @@ TEST(BackoffEntrySerializerTest, SerializeTimeOffsets) {
     // hasn't (e.g. it's an hour later, but a DST change cancelled that out).
     TestTickClock later_ticks;
     later_ticks.set_now(TimeTicks() + TimeDelta::FromDays(1));
-    scoped_ptr<BackoffEntry> deserialized =
-        BackoffEntrySerializer::DeserializeFromValue(*serialized, &base_policy,
-                                                     &later_ticks,
-                                                     original_time);
+    std::unique_ptr<BackoffEntry> deserialized =
+        BackoffEntrySerializer::DeserializeFromValue(
+            *serialized, &base_policy, &later_ticks, original_time);
     ASSERT_TRUE(deserialized.get());
     EXPECT_EQ(original.failure_count(), deserialized->failure_count());
     // According to the wall clock, no time has passed. So remaining backoff
@@ -130,7 +126,7 @@ TEST(BackoffEntrySerializerTest, SerializeTimeOffsets) {
     TestTickClock later_ticks;
     later_ticks.set_now(TimeTicks() + TimeDelta::FromDays(1));
     Time later_time = original_time + TimeDelta::FromDays(1);
-    scoped_ptr<BackoffEntry> deserialized =
+    std::unique_ptr<BackoffEntry> deserialized =
         BackoffEntrySerializer::DeserializeFromValue(*serialized, &base_policy,
                                                      &later_ticks, later_time);
     ASSERT_TRUE(deserialized.get());
@@ -148,10 +144,9 @@ TEST(BackoffEntrySerializerTest, SerializeTimeOffsets) {
     // haven't (e.g. the system clock was fast but they fixed it).
     EXPECT_LT(TimeDelta::FromSeconds(1), original.GetTimeUntilRelease());
     Time earlier_time = original_time - TimeDelta::FromSeconds(1);
-    scoped_ptr<BackoffEntry> deserialized =
-        BackoffEntrySerializer::DeserializeFromValue(*serialized, &base_policy,
-                                                     &original_ticks,
-                                                     earlier_time);
+    std::unique_ptr<BackoffEntry> deserialized =
+        BackoffEntrySerializer::DeserializeFromValue(
+            *serialized, &base_policy, &original_ticks, earlier_time);
     ASSERT_TRUE(deserialized.get());
     EXPECT_EQ(original.failure_count(), deserialized->failure_count());
     // If only the absolute wall clock time was serialized, subtracting the

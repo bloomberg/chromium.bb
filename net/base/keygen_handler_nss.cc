@@ -41,7 +41,7 @@ std::string KeygenHandler::GenKeyAndSignChallenge() {
 }
 
 void KeygenHandler::set_crypto_module_delegate(
-      scoped_ptr<crypto::NSSCryptoModuleDelegate> delegate) {
+    std::unique_ptr<crypto::NSSCryptoModuleDelegate> delegate) {
   crypto_module_delegate_ = std::move(delegate);
 }
 

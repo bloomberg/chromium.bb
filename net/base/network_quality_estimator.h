@@ -10,13 +10,13 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <string>
 #include <tuple>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -109,7 +109,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // related to NetworkQualityEstimator field trial.
   // |external_estimates_provider| may be NULL.
   NetworkQualityEstimator(
-      scoped_ptr<ExternalEstimateProvider> external_estimates_provider,
+      std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
       const std::map<std::string, std::string>& variation_params);
 
   // Construct a NetworkQualityEstimator instance allowing for test
@@ -126,7 +126,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // |kMinRequestDurationMicroseconds| to be used for network quality
   // estimation.
   NetworkQualityEstimator(
-      scoped_ptr<ExternalEstimateProvider> external_estimates_provider,
+      std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
       const std::map<std::string, std::string>& variation_params,
       bool allow_local_host_requests_for_tests,
       bool allow_smaller_responses_for_tests);
@@ -609,13 +609,13 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // ExternalEstimateProvider that provides network quality using operating
   // system APIs. May be NULL.
-  const scoped_ptr<ExternalEstimateProvider> external_estimate_provider_;
+  const std::unique_ptr<ExternalEstimateProvider> external_estimate_provider_;
 
   // Observer lists for round trip times and throughput measurements.
   base::ObserverList<RTTObserver> rtt_observer_list_;
   base::ObserverList<ThroughputObserver> throughput_observer_list_;
 
-  scoped_ptr<SocketPerformanceWatcherFactory> watcher_factory_;
+  std::unique_ptr<SocketPerformanceWatcherFactory> watcher_factory_;
 
   base::ThreadChecker thread_checker_;
 

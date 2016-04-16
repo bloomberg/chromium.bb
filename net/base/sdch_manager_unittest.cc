@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/base/sdch_manager.h"
+
 #include <limits.h>
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_clock.h"
-#include "net/base/sdch_manager.h"
 #include "net/base/sdch_observer.h"
 #include "net/log/net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -116,7 +117,7 @@ class SdchManagerTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<SdchManager> sdch_manager_;
+  std::unique_ptr<SdchManager> sdch_manager_;
 };
 
 static std::string NewSdchDictionary(const std::string& domain) {
@@ -266,9 +267,9 @@ TEST_F(SdchManagerTest, CanUseHTTPSDictionaryOverHTTPSIfEnabled) {
   std::string server_hash;
   sdch_manager()->GenerateHash(dictionary_text, &client_hash, &server_hash);
   SdchProblemCode problem_code;
-  scoped_ptr<SdchManager::DictionarySet> dict_set(
-      sdch_manager()->GetDictionarySetByHash(
-          target_url, server_hash, &problem_code));
+  std::unique_ptr<SdchManager::DictionarySet> dict_set(
+      sdch_manager()->GetDictionarySetByHash(target_url, server_hash,
+                                             &problem_code));
   EXPECT_EQ(SDCH_OK, problem_code);
   EXPECT_TRUE(dict_set.get());
   EXPECT_TRUE(dict_set->GetDictionaryText(server_hash));
@@ -290,9 +291,9 @@ TEST_F(SdchManagerTest, CanNotUseHTTPDictionaryOverHTTPS) {
   std::string server_hash;
   sdch_manager()->GenerateHash(dictionary_text, &client_hash, &server_hash);
   SdchProblemCode problem_code;
-  scoped_ptr<SdchManager::DictionarySet> dict_set(
-      sdch_manager()->GetDictionarySetByHash(
-          target_url, server_hash, &problem_code));
+  std::unique_ptr<SdchManager::DictionarySet> dict_set(
+      sdch_manager()->GetDictionarySetByHash(target_url, server_hash,
+                                             &problem_code));
   EXPECT_FALSE(dict_set.get());
   EXPECT_EQ(SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME, problem_code);
 }
@@ -313,9 +314,9 @@ TEST_F(SdchManagerTest, CanNotUseHTTPSDictionaryOverHTTP) {
   std::string server_hash;
   sdch_manager()->GenerateHash(dictionary_text, &client_hash, &server_hash);
   SdchProblemCode problem_code;
-  scoped_ptr<SdchManager::DictionarySet> dict_set(
-      sdch_manager()->GetDictionarySetByHash(
-          target_url, server_hash, &problem_code));
+  std::unique_ptr<SdchManager::DictionarySet> dict_set(
+      sdch_manager()->GetDictionarySetByHash(target_url, server_hash,
+                                             &problem_code));
   EXPECT_FALSE(dict_set.get());
   EXPECT_EQ(SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME, problem_code);
 }
@@ -465,7 +466,7 @@ TEST_F(SdchManagerTest, CanUseMultipleManagers) {
   // can't get them from the other.
   EXPECT_TRUE(AddSdchDictionary(dictionary_text_1,
                                 GURL("http://" + dictionary_domain_1)));
-  scoped_ptr<SdchManager::DictionarySet> dict_set;
+  std::unique_ptr<SdchManager::DictionarySet> dict_set;
 
   SdchProblemCode problem_code;
   dict_set = sdch_manager()->GetDictionarySetByHash(
@@ -510,7 +511,7 @@ TEST_F(SdchManagerTest, ClearDictionaryData) {
   EXPECT_TRUE(AddSdchDictionary(dictionary_text,
                                 GURL("http://" + dictionary_domain)));
 
-  scoped_ptr<SdchManager::DictionarySet> dict_set;
+  std::unique_ptr<SdchManager::DictionarySet> dict_set;
 
   SdchProblemCode problem_code;
   dict_set = sdch_manager()->GetDictionarySetByHash(
@@ -572,7 +573,7 @@ TEST_F(SdchManagerTest, ExpirationCheckedProperly) {
 
   // It should be visible if looked up by hash whether expired or not.
   SdchProblemCode problem_code;
-  scoped_ptr<SdchManager::DictionarySet> hash_set(
+  std::unique_ptr<SdchManager::DictionarySet> hash_set(
       sdch_manager()->GetDictionarySetByHash(target_gurl, server_hash,
                                              &problem_code));
   ASSERT_TRUE(hash_set);
