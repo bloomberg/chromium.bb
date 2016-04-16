@@ -3032,9 +3032,8 @@
       "operands" : [
         { "kind" : "IdResultType" },
         { "kind" : "IdResult" },
-        { "kind" : "IdRef",          "name" : "'Packet Type'" },
-        { "kind" : "IdRef",          "name" : "'Packet Size'" },
-        { "kind" : "IdRef",          "name" : "'Packet Alignment'" },
+        { "kind" : "LiteralInteger", "name" : "'Packet Size'" },
+        { "kind" : "LiteralInteger", "name" : "'Packet Alignment'" },
         { "kind" : "LiteralInteger", "name" : "'Capacity'" }
       ],
       "capabilities" : [ "PipeStorage" ]
