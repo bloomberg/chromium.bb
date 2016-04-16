@@ -1417,7 +1417,6 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, 
     return webFrame;
 }
 
-
 WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope, WebFrameClient* client)
     : WebLocalFrame(scope)
     , m_frameLoaderClientImpl(FrameLoaderClientImpl::create(this))
@@ -1500,7 +1499,7 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
     if (RuntimeEnabledFeatures::webVREnabled())
         VRController::provideTo(*m_frame, m_client ? m_client->webVRClient() : nullptr);
     if (RuntimeEnabledFeatures::wakeLockEnabled())
-        ScreenWakeLock::provideTo(*m_frame, m_client ? m_client->wakeLockClient() : nullptr);
+        ScreenWakeLock::provideTo(*m_frame, m_client ? m_client->serviceRegistry(): nullptr);
     if (RuntimeEnabledFeatures::audioOutputDevicesEnabled())
         provideAudioOutputDeviceClientTo(*m_frame, AudioOutputDeviceClientImpl::create());
     if (RuntimeEnabledFeatures::installedAppEnabled())

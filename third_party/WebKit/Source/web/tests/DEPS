@@ -8,4 +8,5 @@ include_rules = [
     "+base/test/test_suite.h",
     "+content/test/blink_test_environment.h",
     "+mojo/edk/embedder/embedder.h",
+    "+mojo/public/cpp/bindings",
 ]

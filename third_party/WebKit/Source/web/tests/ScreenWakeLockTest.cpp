@@ -7,13 +7,14 @@
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentInit.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "platform/heap/Handle.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
+#include "public/platform/ServiceRegistry.h"
 #include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
-#include "public/platform/modules/wake_lock/WebWakeLockClient.h"
 #include "public/web/WebCache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
@@ -22,37 +23,56 @@
 namespace {
 
 using blink::ScreenWakeLock;
-using blink::WebWakeLockClient;
+using blink::mojom::wtf::WakeLockService;
+using blink::mojom::wtf::WakeLockServiceRequest;
 
-class TestWebWakeLockClient: public WebWakeLockClient {
+// This class allows connecting service requests to a MockWakeLockService.
+class MockServiceRegistry : public blink::ServiceRegistry {
 public:
-    TestWebWakeLockClient(): m_keepScreenAwake(false) { }
+    MockServiceRegistry() : m_wakeLockStatus(false) {}
+    ~MockServiceRegistry() {}
 
-    void requestKeepScreenAwake(bool keepScreenAwake) override
-    {
-        m_keepScreenAwake = keepScreenAwake;
-    }
+    void connectToRemoteService(const char* name, mojo::ScopedMessagePipeHandle) override;
 
-    bool keepScreenAwake() const { return m_keepScreenAwake; }
+    bool wakeLockStatus() const { return m_wakeLockStatus; }
+    void setWakeLockStatus(bool status) { m_wakeLockStatus = status; }
 
 private:
-    bool m_keepScreenAwake;
+    // A mock WakeLockService used to intercept calls to the mojo methods.
+    class MockWakeLockService : public WakeLockService {
+    public:
+        MockWakeLockService(MockServiceRegistry* registry, WakeLockServiceRequest request)
+            : m_binding(this, std::move(request))
+            , m_registry(registry) {}
+        ~MockWakeLockService() {}
+
+    private:
+        // mojom::WakeLockService
+        void RequestWakeLock() override { m_registry->setWakeLockStatus(true); }
+        void CancelWakeLock() override { m_registry->setWakeLockStatus(false); }
+
+        mojo::Binding<WakeLockService> m_binding;
+        MockServiceRegistry* const m_registry;
+    };
+    scoped_ptr<MockWakeLockService> m_mockWakeLockService;
+
+    bool m_wakeLockStatus;
 };
 
-class TestWebFrameClient: public blink::FrameTestHelpers::TestWebFrameClient {
-public:
-    WebWakeLockClient* wakeLockClient() override
-    {
-        return &m_testWebWakeLockClient;
-    }
+void MockServiceRegistry::connectToRemoteService(const char* name, mojo::ScopedMessagePipeHandle handle)
+{
+    m_mockWakeLockService.reset(
+        new MockWakeLockService(this, mojo::MakeRequest<WakeLockService>(std::move(handle))));
+}
 
-    const TestWebWakeLockClient& testWebWakeLockClient() const
-    {
-        return m_testWebWakeLockClient;
-    }
+// A TestWebFrameClient to allow overriding the serviceRegistry() with a mock.
+class TestWebFrameClient : public blink::FrameTestHelpers::TestWebFrameClient {
+public:
+    ~TestWebFrameClient() override = default;
+    blink::ServiceRegistry* serviceRegistry() override { return &m_serviceRegistry; }
 
 private:
-    TestWebWakeLockClient m_testWebWakeLockClient;
+    MockServiceRegistry m_serviceRegistry;
 };
 
 class ScreenWakeLockTest: public testing::Test {
@@ -70,6 +90,7 @@ protected:
     {
         blink::Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
         blink::WebCache::clear();
+        blink::testing::runPendingTasks();
     }
 
     void loadFrame()
@@ -102,13 +123,15 @@ protected:
 
     bool clientKeepScreenAwake()
     {
-        return m_testWebFrameClient.testWebWakeLockClient().keepScreenAwake();
+        return static_cast<MockServiceRegistry*>(m_testWebFrameClient.serviceRegistry())->wakeLockStatus();
     }
 
     void setKeepAwake(bool keepAwake)
     {
         DCHECK(screen());
         ScreenWakeLock::setKeepAwake(*screen(), keepAwake);
+        // Let the notification sink through the mojo pipes.
+        blink::testing::runPendingTasks();
     }
 
     void show()
@@ -116,6 +139,8 @@ protected:
         DCHECK(m_webViewHelper.webView());
         m_webViewHelper.webView()->setVisibilityState(
             blink::WebPageVisibilityStateVisible, false);
+        // Let the notification sink through the mojo pipes.
+        blink::testing::runPendingTasks();
     }
 
     void hide()
@@ -123,6 +148,8 @@ protected:
         DCHECK(m_webViewHelper.webView());
         m_webViewHelper.webView()->setVisibilityState(
             blink::WebPageVisibilityStateHidden, false);
+        // Let the notification sink through the mojo pipes.
+        blink::testing::runPendingTasks();
     }
 
     // Order of these members is important as we need to make sure that
