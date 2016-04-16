@@ -26,18 +26,19 @@ class DistillabilityDriver
   void SetDelegate(const base::Callback<void(bool, bool)>& delegate);
 
   // content::WebContentsObserver implementation.
-  void RenderProcessGone(base::TerminationStatus status) override;
+  void DidStartProvisionalLoadForFrame(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& validated_url,
+      bool is_error_page,
+      bool is_iframe_srcdoc) override;
 
  private:
   explicit DistillabilityDriver(content::WebContents* web_contents);
   friend class content::WebContentsUserData<DistillabilityDriver>;
   friend class DistillabilityServiceImpl;
 
+  void SetupMojoService();
   void OnDistillability(bool distillable, bool is_last);
-
-  // Removes the observer, clears the WebContents member, and removed mojo
-  // service from registry.
-  void CleanUp();
 
   base::Callback<void(bool, bool)> m_delegate_;
 

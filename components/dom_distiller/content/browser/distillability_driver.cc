@@ -40,14 +40,11 @@ DistillabilityDriver::DistillabilityDriver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       weak_factory_(this) {
-  if (!web_contents) return;
-  web_contents->GetMainFrame()->GetServiceRegistry()->AddService(
-      base::Bind(&DistillabilityDriver::CreateDistillabilityService,
-          weak_factory_.GetWeakPtr()));
+  SetupMojoService();
 }
 
 DistillabilityDriver::~DistillabilityDriver() {
-  CleanUp();
+  content::WebContentsObserver::Observe(nullptr);
 }
 
 void DistillabilityDriver::CreateDistillabilityService(
@@ -65,18 +62,24 @@ void DistillabilityDriver::OnDistillability(
   if (m_delegate_.is_null()) return;
 
   m_delegate_.Run(distillable, is_last);
+
+  if (web_contents() && is_last) {
+    web_contents()->GetMainFrame()->GetServiceRegistry()
+        ->RemoveService<DistillabilityService>();
+  }
 }
 
-void DistillabilityDriver::RenderProcessGone(
-    base::TerminationStatus status) {
-  CleanUp();
+void DistillabilityDriver::DidStartProvisionalLoadForFrame(
+    content::RenderFrameHost* render_frame_host, const GURL& validated_url,
+    bool is_error_page, bool is_iframe_srcdoc) {
+  SetupMojoService();
 }
 
-void DistillabilityDriver::CleanUp() {
+void DistillabilityDriver::SetupMojoService() {
   if (!web_contents()) return;
-  web_contents()->GetMainFrame()->GetServiceRegistry()
-      ->RemoveService<DistillabilityService>();
-  content::WebContentsObserver::Observe(NULL);
+  web_contents()->GetMainFrame()->GetServiceRegistry()->AddService(
+      base::Bind(&DistillabilityDriver::CreateDistillabilityService,
+          weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace dom_distiller
