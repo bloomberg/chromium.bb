@@ -50,21 +50,21 @@ namespace {
 
 const char kExistingEntryKey[] = "existing entry key";
 
-scoped_ptr<disk_cache::BackendImpl> CreateExistingEntryCache(
+std::unique_ptr<disk_cache::BackendImpl> CreateExistingEntryCache(
     const base::Thread& cache_thread,
     base::FilePath& cache_path) {
   net::TestCompletionCallback cb;
 
-  scoped_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
+  std::unique_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
       cache_path, cache_thread.task_runner(), NULL));
   int rv = cache->Init(cb.callback());
   if (cb.GetResult(rv) != net::OK)
-    return scoped_ptr<disk_cache::BackendImpl>();
+    return std::unique_ptr<disk_cache::BackendImpl>();
 
   disk_cache::Entry* entry = NULL;
   rv = cache->CreateEntry(kExistingEntryKey, &entry, cb.callback());
   if (cb.GetResult(rv) != net::OK)
-    return scoped_ptr<disk_cache::BackendImpl>();
+    return std::unique_ptr<disk_cache::BackendImpl>();
   entry->Close();
 
   return cache;
@@ -448,7 +448,7 @@ TEST_F(DiskCacheTest, CreateBackend) {
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
     // Test the private factory method(s).
-    scoped_ptr<disk_cache::Backend> cache;
+    std::unique_ptr<disk_cache::Backend> cache;
     cache = disk_cache::MemBackendImpl::CreateBackend(0, NULL);
     ASSERT_TRUE(cache.get());
     cache.reset();
@@ -491,7 +491,7 @@ TEST_F(DiskCacheBackendTest, CreateBackend_MissingFile) {
   net::TestCompletionCallback cb;
 
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
-  scoped_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
+  std::unique_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
       cache_path_, cache_thread.task_runner(), NULL));
   int rv = cache->Init(cb.callback());
   EXPECT_EQ(net::ERR_FAILED, cb.GetResult(rv));
@@ -584,7 +584,7 @@ TEST_F(DiskCacheBackendTest, MultipleInstancesWithPendingFileIO) {
   ASSERT_TRUE(store.CreateUniqueTempDir());
 
   net::TestCompletionCallback cb;
-  scoped_ptr<disk_cache::Backend> extra_cache;
+  std::unique_ptr<disk_cache::Backend> extra_cache;
   int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
                                           net::CACHE_BACKEND_DEFAULT,
                                           store.path(),
@@ -747,7 +747,7 @@ TEST_F(DiskCacheTest, TruncatedIndex) {
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
   net::TestCompletionCallback cb;
 
-  scoped_ptr<disk_cache::Backend> backend;
+  std::unique_ptr<disk_cache::Backend> backend;
   int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
                                           net::CACHE_BACKEND_BLOCKFILE,
                                           cache_path_,
@@ -1300,7 +1300,7 @@ void DiskCacheBackendTest::BackendEnumerations() {
   Time final = Time::Now();
 
   disk_cache::Entry* entry;
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   int count = 0;
   Time last_modified[kNumEntries];
   Time last_used[kNumEntries];
@@ -1372,7 +1372,7 @@ void DiskCacheBackendTest::BackendEnumerations2() {
   // Make sure that the timestamp is not the same.
   AddDelay();
   ASSERT_EQ(net::OK, OpenEntry(second, &entry1));
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry2));
   EXPECT_EQ(entry2->GetKey(), second);
 
@@ -1453,7 +1453,7 @@ TEST_F(DiskCacheBackendTest, ShaderCacheEnumerationReadData) {
   EXPECT_EQ(kSize, ReadData(entry1, 0, 0, buffer1.get(), kSize));
   entry1->Close();
 
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry2));
   EXPECT_EQ(entry2->GetKey(), second);
   entry2->Close();
@@ -1485,7 +1485,7 @@ void DiskCacheBackendTest::BackendInvalidEntryEnumeration() {
 
   SimulateCrash();
 
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   int count = 0;
   while (iter->OpenNextEntry(&entry) == net::OK) {
     ASSERT_TRUE(NULL != entry);
@@ -1527,7 +1527,8 @@ void DiskCacheBackendTest::BackendFixEnumerators() {
   EXPECT_EQ(kNumEntries, cache_->GetEntryCount());
 
   disk_cache::Entry *entry1, *entry2;
-  scoped_ptr<TestIterator> iter1 = CreateIterator(), iter2 = CreateIterator();
+  std::unique_ptr<TestIterator> iter1 = CreateIterator(),
+                                iter2 = CreateIterator();
   ASSERT_EQ(net::OK, iter1->OpenNextEntry(&entry1));
   ASSERT_TRUE(NULL != entry1);
   entry1->Close();
@@ -1970,7 +1971,7 @@ TEST_F(DiskCacheTest, WrongVersion) {
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
   net::TestCompletionCallback cb;
 
-  scoped_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
+  std::unique_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
       cache_path_, cache_thread.task_runner(), NULL));
   int rv = cache->Init(cb.callback());
   ASSERT_EQ(net::ERR_FAILED, cb.GetResult(rv));
@@ -1986,7 +1987,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlJoin) {
   ASSERT_TRUE(cache_thread.StartWithOptions(
                   base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
-  scoped_ptr<disk_cache::BackendImpl> cache =
+  std::unique_ptr<disk_cache::BackendImpl> cache =
       CreateExistingEntryCache(cache_thread, cache_path_);
   ASSERT_TRUE(cache.get());
   cache.reset();
@@ -1997,7 +1998,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlJoin) {
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
                                          "ExperimentControl");
   net::TestCompletionCallback cb;
-  scoped_ptr<disk_cache::Backend> base_cache;
+  std::unique_ptr<disk_cache::Backend> base_cache;
   int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
                                           net::CACHE_BACKEND_BLOCKFILE,
                                           cache_path_,
@@ -2025,7 +2026,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlRestart) {
   ASSERT_TRUE(cache_thread.StartWithOptions(
                   base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
-  scoped_ptr<disk_cache::BackendImpl> cache =
+  std::unique_ptr<disk_cache::BackendImpl> cache =
       CreateExistingEntryCache(cache_thread, cache_path_);
   ASSERT_TRUE(cache.get());
 
@@ -2061,7 +2062,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlLeave) {
     base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
                                            "ExperimentControl");
 
-    scoped_ptr<disk_cache::BackendImpl> cache =
+    std::unique_ptr<disk_cache::BackendImpl> cache =
         CreateExistingEntryCache(cache_thread, cache_path_);
     ASSERT_TRUE(cache.get());
   }
@@ -2074,7 +2075,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlLeave) {
 
   const int kRestartCount = 5;
   for (int i = 0; i < kRestartCount; ++i) {
-    scoped_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
+    std::unique_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
         cache_path_, cache_thread.task_runner(), NULL));
     int rv = cache->Init(cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
@@ -2151,7 +2152,7 @@ void DiskCacheBackendTest::BackendInvalidEntry3() {
   InitCache();
 
   disk_cache::Entry* entry;
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   while (iter->OpenNextEntry(&entry) == net::OK) {
     entry->Close();
   }
@@ -2296,7 +2297,7 @@ void DiskCacheBackendTest::BackendInvalidEntry7() {
   EXPECT_EQ(1, cache_->GetEntryCount());
 
   // We should delete the cache. The list still has a corrupt node.
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   EXPECT_NE(net::OK, iter->OpenNextEntry(&entry));
   FlushQueueForTest();
   EXPECT_EQ(0, cache_->GetEntryCount());
@@ -2340,7 +2341,7 @@ void DiskCacheBackendTest::BackendInvalidEntry8() {
   EXPECT_EQ(1, cache_->GetEntryCount());
 
   // We should not delete the cache.
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
   entry->Close();
   EXPECT_NE(net::OK, iter->OpenNextEntry(&entry));
@@ -2390,7 +2391,7 @@ void DiskCacheBackendTest::BackendInvalidEntry9(bool eviction) {
   } else {
     // We should detect the problem through the list, but we should not delete
     // the entry, just fail the iteration.
-    scoped_ptr<TestIterator> iter = CreateIterator();
+    std::unique_ptr<TestIterator> iter = CreateIterator();
     EXPECT_NE(net::OK, iter->OpenNextEntry(&entry));
 
     // Now a full iteration will work, and return one entry.
@@ -2467,7 +2468,7 @@ void DiskCacheBackendTest::BackendInvalidEntry10(bool eviction) {
     // Detection order: third -> second -> first.
     // We should detect the problem through the list, but we should not delete
     // the entry.
-    scoped_ptr<TestIterator> iter = CreateIterator();
+    std::unique_ptr<TestIterator> iter = CreateIterator();
     ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
     entry->Close();
     ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
@@ -2534,7 +2535,7 @@ void DiskCacheBackendTest::BackendInvalidEntry11(bool eviction) {
     // Detection order: third -> second.
     // We should detect the problem through the list, but we should not delete
     // the entry, just fail the iteration.
-    scoped_ptr<TestIterator> iter = CreateIterator();
+    std::unique_ptr<TestIterator> iter = CreateIterator();
     ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
     entry->Close();
     EXPECT_NE(net::OK, iter->OpenNextEntry(&entry));
@@ -2622,7 +2623,7 @@ TEST_F(DiskCacheBackendTest, NewEvictionInvalidRankings2) {
 // If the LRU is corrupt, we delete the cache.
 void DiskCacheBackendTest::BackendInvalidRankings() {
   disk_cache::Entry* entry;
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
   entry->Close();
   EXPECT_EQ(2, cache_->GetEntryCount());
@@ -2667,7 +2668,7 @@ TEST_F(DiskCacheBackendTest, NewEvictionInvalidRankingsFailure) {
 // If the LRU is corrupt and we have open entries, we disable the cache.
 void DiskCacheBackendTest::BackendDisable() {
   disk_cache::Entry *entry1, *entry2;
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry1));
 
   EXPECT_NE(net::OK, iter->OpenNextEntry(&entry2));
@@ -2718,7 +2719,7 @@ void DiskCacheBackendTest::BackendDisable2() {
   EXPECT_EQ(8, cache_->GetEntryCount());
 
   disk_cache::Entry* entry;
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   int count = 0;
   while (iter->OpenNextEntry(&entry) == net::OK) {
     ASSERT_TRUE(NULL != entry);
@@ -2766,7 +2767,7 @@ TEST_F(DiskCacheBackendTest, NewEvictionDisableFailure2) {
 // If the index size changes when we disable the cache, we should not crash.
 void DiskCacheBackendTest::BackendDisable3() {
   disk_cache::Entry *entry1, *entry2;
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   EXPECT_EQ(2, cache_->GetEntryCount());
   ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry1));
   entry1->Close();
@@ -2800,7 +2801,7 @@ TEST_F(DiskCacheBackendTest, NewEvictionDisableSuccess3) {
 // If we disable the cache, already open entries should work as far as possible.
 void DiskCacheBackendTest::BackendDisable4() {
   disk_cache::Entry *entry1, *entry2, *entry3, *entry4;
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry1));
 
   char key2[2000];
@@ -2866,7 +2867,7 @@ void DiskCacheBackendTest::BackendDisabledAPI() {
   cache_impl_->SetUnitTestMode();  // Simulate failure restarting the cache.
 
   disk_cache::Entry* entry1, *entry2;
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   EXPECT_EQ(2, cache_->GetEntryCount());
   ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry1));
   entry1->Close();
@@ -2991,7 +2992,7 @@ TEST_F(DiskCacheTest, Backend_UsageStatsTimer) {
   MessageLoopHelper helper;
 
   ASSERT_TRUE(CleanupCacheDir());
-  scoped_ptr<disk_cache::BackendImpl> cache;
+  std::unique_ptr<disk_cache::BackendImpl> cache;
   cache.reset(new disk_cache::BackendImpl(
       cache_path_, base::ThreadTaskRunnerHandle::Get(), NULL));
   ASSERT_TRUE(NULL != cache.get());
@@ -3006,7 +3007,7 @@ TEST_F(DiskCacheTest, Backend_UsageStatsTimer) {
 TEST_F(DiskCacheBackendTest, TimerNotCreated) {
   ASSERT_TRUE(CopyTestCache("wrong_version"));
 
-  scoped_ptr<disk_cache::BackendImpl> cache;
+  std::unique_ptr<disk_cache::BackendImpl> cache;
   cache.reset(new disk_cache::BackendImpl(
       cache_path_, base::ThreadTaskRunnerHandle::Get(), NULL));
   ASSERT_TRUE(NULL != cache.get());
@@ -3158,7 +3159,7 @@ TEST_F(DiskCacheTest, MultipleInstances) {
   net::TestCompletionCallback cb;
 
   const int kNumberOfCaches = 2;
-  scoped_ptr<disk_cache::Backend> cache[kNumberOfCaches];
+  std::unique_ptr<disk_cache::Backend> cache[kNumberOfCaches];
 
   int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
                                           net::CACHE_BACKEND_DEFAULT,
@@ -3625,7 +3626,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationBasics) {
 
   // Check that enumeration returns all entries.
   std::set<std::string> keys_to_match(key_pool);
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   size_t count = 0;
   ASSERT_TRUE(EnumerateAndMatchKeys(-1, iter.get(), &keys_to_match, &count));
   iter.reset();
@@ -3665,7 +3666,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationWhileDoomed) {
 
   // Check that enumeration returns all entries but the doomed one.
   std::set<std::string> keys_to_match(key_pool);
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   size_t count = 0;
   ASSERT_TRUE(EnumerateAndMatchKeys(key_pool.size()/2,
                                     iter.get(),
@@ -3712,7 +3713,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationCorruption) {
 
   // Check that enumeration returns all entries but the corrupt one.
   std::set<std::string> keys_to_match(key_pool);
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   size_t count = 0;
   ASSERT_TRUE(EnumerateAndMatchKeys(-1, iter.get(), &keys_to_match, &count));
   iter.reset();
@@ -3729,7 +3730,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationDestruction) {
   std::set<std::string> key_pool;
   ASSERT_TRUE(CreateSetOfRandomEntries(&key_pool));
 
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   disk_cache::Entry* entry = NULL;
   ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
   EXPECT_TRUE(entry);

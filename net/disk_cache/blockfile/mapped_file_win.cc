@@ -4,9 +4,10 @@
 
 #include "net/disk_cache/blockfile/mapped_file.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/disk_cache/disk_cache.h"
 
 namespace disk_cache {
@@ -29,7 +30,7 @@ void* MappedFile::Init(const base::FilePath& name, size_t size) {
 
   // Make sure we detect hardware failures reading the headers.
   size_t temp_len = size ? size : 4096;
-  scoped_ptr<char[]> temp(new char[temp_len]);
+  std::unique_ptr<char[]> temp(new char[temp_len]);
   if (!Read(temp.get(), temp_len, 0))
     return NULL;
 

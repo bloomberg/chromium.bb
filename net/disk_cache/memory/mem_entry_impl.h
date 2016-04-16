@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/containers/linked_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/log/net_log.h"
@@ -172,7 +172,7 @@ class NET_EXPORT_PRIVATE MemEntryImpl final
                               // entry.
   // Pointer to the parent entry, or nullptr if this entry is a parent entry.
   MemEntryImpl* parent_;
-  scoped_ptr<EntryMap> children_;
+  std::unique_ptr<EntryMap> children_;
 
   base::Time last_modified_;
   base::Time last_used_;

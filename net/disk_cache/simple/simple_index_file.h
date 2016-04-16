@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_export.h"
@@ -122,7 +122,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   // data to be written to a file. Note: the pickle is not in a consistent state
   // immediately after calling this menthod, one needs to call
   // SerializeFinalData to make it ready to write to a file.
-  static scoped_ptr<base::Pickle> Serialize(
+  static std::unique_ptr<base::Pickle> Serialize(
       const SimpleIndexFile::IndexMetadata& index_metadata,
       const SimpleIndex::EntrySet& entries);
 
@@ -153,7 +153,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                               const base::FilePath& cache_directory,
                               const base::FilePath& index_filename,
                               const base::FilePath& temp_index_filename,
-                              scoped_ptr<base::Pickle> pickle,
+                              std::unique_ptr<base::Pickle> pickle,
                               const base::TimeTicks& start_time,
                               bool app_on_background);
 

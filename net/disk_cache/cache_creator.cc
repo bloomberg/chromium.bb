@@ -32,7 +32,7 @@ class CacheCreator {
                uint32_t flags,
                const scoped_refptr<base::SingleThreadTaskRunner>& thread,
                net::NetLog* net_log,
-               scoped_ptr<disk_cache::Backend>* backend,
+               std::unique_ptr<disk_cache::Backend>* backend,
                const net::CompletionCallback& callback);
 
   // Creates the backend.
@@ -53,9 +53,9 @@ class CacheCreator {
   net::BackendType backend_type_;
   uint32_t flags_;
   scoped_refptr<base::SingleThreadTaskRunner> thread_;
-  scoped_ptr<disk_cache::Backend>* backend_;
+  std::unique_ptr<disk_cache::Backend>* backend_;
   net::CompletionCallback callback_;
-  scoped_ptr<disk_cache::Backend> created_cache_;
+  std::unique_ptr<disk_cache::Backend> created_cache_;
   net::NetLog* net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheCreator);
@@ -70,7 +70,7 @@ CacheCreator::CacheCreator(
     uint32_t flags,
     const scoped_refptr<base::SingleThreadTaskRunner>& thread,
     net::NetLog* net_log,
-    scoped_ptr<disk_cache::Backend>* backend,
+    std::unique_ptr<disk_cache::Backend>* backend,
     const net::CompletionCallback& callback)
     : path_(path),
       force_(force),
@@ -164,7 +164,7 @@ int CreateCacheBackend(
     bool force,
     const scoped_refptr<base::SingleThreadTaskRunner>& thread,
     net::NetLog* net_log,
-    scoped_ptr<Backend>* backend,
+    std::unique_ptr<Backend>* backend,
     const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   if (type == net::MEMORY_CACHE) {

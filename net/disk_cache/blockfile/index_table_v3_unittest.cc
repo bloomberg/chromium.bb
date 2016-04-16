@@ -63,9 +63,9 @@ class TestCacheTables {
   base::Time start_time() const { return start_time_; }
 
  private:
-  scoped_ptr<uint64_t[]> main_bitmap_;
-  scoped_ptr<disk_cache::IndexBucket[]> main_table_;
-  scoped_ptr<disk_cache::IndexBucket[]> extra_table_;
+  std::unique_ptr<uint64_t[]> main_bitmap_;
+  std::unique_ptr<disk_cache::IndexBucket[]> main_table_;
+  std::unique_ptr<disk_cache::IndexBucket[]> extra_table_;
   base::Time start_time_;
   int num_bitmap_bytes_;
 
@@ -580,13 +580,13 @@ TEST(DiskCacheIndexTable, Iterations) {
 TEST(DiskCacheIndexTable, Doubling) {
   IndexTable index(NULL);
   int size = 1024;
-  scoped_ptr<TestCacheTables> cache(new TestCacheTables(size));
+  std::unique_ptr<TestCacheTables> cache(new TestCacheTables(size));
   int entry_id = 0;
   disk_cache::CellList entries;
 
   // Go from 1024 to 256k cells.
   for (int resizes = 0; resizes <= 8; resizes++) {
-    scoped_ptr<TestCacheTables> old_cache(std::move(cache));
+    std::unique_ptr<TestCacheTables> old_cache(std::move(cache));
     cache.reset(new TestCacheTables(size));
     cache.get()->CopyFrom(*old_cache.get());
 
@@ -621,7 +621,7 @@ TEST(DiskCacheIndexTable, Doubling) {
 TEST(DiskCacheIndexTable, BucketChains) {
   IndexTable index(NULL);
   int size = 1024;
-  scoped_ptr<TestCacheTables> cache(new TestCacheTables(size));
+  std::unique_ptr<TestCacheTables> cache(new TestCacheTables(size));
   disk_cache::CellList entries;
 
   IndexTableInitData init_data;
@@ -641,7 +641,7 @@ TEST(DiskCacheIndexTable, BucketChains) {
   }
 
   // Double the size.
-  scoped_ptr<TestCacheTables> old_cache(std::move(cache));
+  std::unique_ptr<TestCacheTables> old_cache(std::move(cache));
   cache.reset(new TestCacheTables(size * 2));
   cache.get()->CopyFrom(*old_cache.get());
 

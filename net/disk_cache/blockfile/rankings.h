@@ -8,9 +8,9 @@
 #define NET_DISK_CACHE_BLOCKFILE_RANKINGS_H_
 
 #include <list>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/disk_cache/blockfile/addr.h"
 #include "net/disk_cache/blockfile/mapped_file.h"
 #include "net/disk_cache/blockfile/storage_block.h"
@@ -66,7 +66,7 @@ class Rankings {
   // This class provides a specialized version of scoped_ptr, that calls
   // Rankings whenever a CacheRankingsBlock is deleted, to keep track of cache
   // iterators that may go stale.
-  class ScopedRankingsBlock : public scoped_ptr<CacheRankingsBlock> {
+  class ScopedRankingsBlock : public std::unique_ptr<CacheRankingsBlock> {
    public:
     ScopedRankingsBlock();
     explicit ScopedRankingsBlock(Rankings* rankings);
@@ -84,7 +84,7 @@ class Rankings {
     void reset(CacheRankingsBlock* p = NULL) {
       if (p != get())
         rankings_->FreeRankingsBlock(get());
-      scoped_ptr<CacheRankingsBlock>::reset(p);
+      std::unique_ptr<CacheRankingsBlock>::reset(p);
     }
 
    private:

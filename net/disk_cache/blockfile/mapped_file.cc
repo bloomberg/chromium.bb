@@ -5,8 +5,7 @@
 #include "net/disk_cache/blockfile/mapped_file.h"
 
 #include <algorithm>
-
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace disk_cache {
 
@@ -38,7 +37,7 @@ bool MappedFile::Store(const FileBlock* block,
 
 bool MappedFile::Preload() {
   size_t file_len = GetLength();
-  scoped_ptr<char[]> buf(new char[file_len]);
+  std::unique_ptr<char[]> buf(new char[file_len]);
   if (!Read(buf.get(), file_len, 0))
     return false;
   return true;

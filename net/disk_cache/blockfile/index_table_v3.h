@@ -21,11 +21,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/blockfile/addr.h"
@@ -166,8 +166,8 @@ struct NET_EXPORT_PRIVATE IndexTableInitData {
   IndexBitmap* index_bitmap;
   IndexBucket* main_table;
   IndexBucket* extra_table;
-  scoped_ptr<IndexHeaderV3> backup_header;
-  scoped_ptr<uint32_t[]> backup_bitmap;
+  std::unique_ptr<IndexHeaderV3> backup_header;
+  std::unique_ptr<uint32_t[]> backup_bitmap;
 };
 
 // See the description at the top of this file.
@@ -267,10 +267,10 @@ class NET_EXPORT_PRIVATE IndexTable {
 
   IndexTableBackend* backend_;
   IndexHeaderV3* header_;
-  scoped_ptr<Bitmap> bitmap_;
-  scoped_ptr<Bitmap> backup_bitmap_;
-  scoped_ptr<uint32_t[]> backup_bitmap_storage_;
-  scoped_ptr<IndexHeaderV3> backup_header_;
+  std::unique_ptr<Bitmap> bitmap_;
+  std::unique_ptr<Bitmap> backup_bitmap_;
+  std::unique_ptr<uint32_t[]> backup_bitmap_storage_;
+  std::unique_ptr<IndexHeaderV3> backup_header_;
   IndexBucket* main_table_;
   IndexBucket* extra_table_;
   uint32_t mask_;   // Binary mask to map a hash to the hash table.

@@ -1625,7 +1625,7 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyEnumerationWithSparseEntries) {
   parent_entry->Close();
 
   // Perform the enumerations.
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   disk_cache::Entry* entry = NULL;
   int count = 0;
   while (iter->OpenNextEntry(&entry) == net::OK) {
@@ -2185,7 +2185,8 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyDoomSparseEntry) {
 // way to simulate a race is to execute what we want on the callback.
 class SparseTestCompletionCallback: public net::TestCompletionCallback {
  public:
-  explicit SparseTestCompletionCallback(scoped_ptr<disk_cache::Backend> cache)
+  explicit SparseTestCompletionCallback(
+      std::unique_ptr<disk_cache::Backend> cache)
       : cache_(std::move(cache)) {}
 
  private:
@@ -2194,7 +2195,7 @@ class SparseTestCompletionCallback: public net::TestCompletionCallback {
     TestCompletionCallback::SetResult(result);
   }
 
-  scoped_ptr<disk_cache::Backend> cache_;
+  std::unique_ptr<disk_cache::Backend> cache_;
   DISALLOW_COPY_AND_ASSIGN(SparseTestCompletionCallback);
 };
 
@@ -2351,7 +2352,7 @@ TEST_F(DiskCacheEntryTest, CleanupSparseEntry) {
   entry->Close();
   EXPECT_EQ(4, cache_->GetEntryCount());
 
-  scoped_ptr<TestIterator> iter = CreateIterator();
+  std::unique_ptr<TestIterator> iter = CreateIterator();
   int count = 0;
   std::string child_key[2];
   while (iter->OpenNextEntry(&entry) == net::OK) {

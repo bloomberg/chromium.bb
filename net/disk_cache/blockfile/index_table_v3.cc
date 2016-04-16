@@ -458,7 +458,7 @@ IndexTable::~IndexTable() {
 // table.
 void IndexTable::Init(IndexTableInitData* params) {
   bool growing = header_ != NULL;
-  scoped_ptr<IndexBucket[]> old_extra_table;
+  std::unique_ptr<IndexBucket[]> old_extra_table;
   header_ = &params->index_bitmap->header;
 
   if (params->main_table) {
@@ -528,7 +528,7 @@ void IndexTable::Init(IndexTableInitData* params) {
   if (growing) {
     int old_num_words = (backup_header_.get()->table_len + 31) / 32;
     DCHECK_GE(num_words, old_num_words);
-    scoped_ptr<uint32_t[]> storage(new uint32_t[num_words]);
+    std::unique_ptr<uint32_t[]> storage(new uint32_t[num_words]);
     memcpy(storage.get(), backup_bitmap_storage_.get(),
            old_num_words * sizeof(int32_t));
     memset(storage.get() + old_num_words, 0,
@@ -962,7 +962,7 @@ void IndexTable::MoveCells(IndexBucket* old_extra_table) {
   // in other words 'multiplier' >> 1.
   uint32_t new_bit = (1 << extra_bits_) >> 1;
 
-  scoped_ptr<IndexBucket[]> old_main_table;
+  std::unique_ptr<IndexBucket[]> old_main_table;
   IndexBucket* source_table = main_table_;
   bool upgrade_format = !extra_bits_;
   if (upgrade_format) {

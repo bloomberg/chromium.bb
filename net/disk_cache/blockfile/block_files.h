@@ -9,12 +9,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/blockfile/addr.h"
 #include "net/disk_cache/blockfile/disk_format_base.h"
@@ -157,7 +157,7 @@ class NET_EXPORT_PRIVATE BlockFiles {
   char* zero_buffer_;  // Buffer to speed-up cleaning deleted entries.
   base::FilePath path_;  // Path to the backing folder.
   std::vector<MappedFile*> block_files_;  // The actual files.
-  scoped_ptr<base::ThreadChecker> thread_checker_;
+  std::unique_ptr<base::ThreadChecker> thread_checker_;
 
   FRIEND_TEST_ALL_PREFIXES(DiskCacheTest, BlockFiles_ZeroSizeFile);
   FRIEND_TEST_ALL_PREFIXES(DiskCacheTest, BlockFiles_TruncatedFile);

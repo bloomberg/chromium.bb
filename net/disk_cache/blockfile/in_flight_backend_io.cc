@@ -128,7 +128,7 @@ void BackendIO::OpenNextEntry(Rankings::Iterator* iterator,
   entry_ptr_ = next_entry;
 }
 
-void BackendIO::EndEnumeration(scoped_ptr<Rankings::Iterator> iterator) {
+void BackendIO::EndEnumeration(std::unique_ptr<Rankings::Iterator> iterator) {
   operation_ = OP_END_ENUMERATION;
   scoped_iterator_ = std::move(iterator);
 }
@@ -413,7 +413,7 @@ void InFlightBackendIO::OpenNextEntry(Rankings::Iterator* iterator,
 }
 
 void InFlightBackendIO::EndEnumeration(
-    scoped_ptr<Rankings::Iterator> iterator) {
+    std::unique_ptr<Rankings::Iterator> iterator) {
   scoped_refptr<BackendIO> operation(
       new BackendIO(this, backend_, net::CompletionCallback()));
   operation->EndEnumeration(std::move(iterator));

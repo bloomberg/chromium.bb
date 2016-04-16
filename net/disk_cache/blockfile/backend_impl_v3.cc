@@ -685,8 +685,9 @@ class BackendImplV3::IteratorImpl : public Backend::Iterator {
   void* data_;
 };
 
-scoped_ptr<Backend::Iterator> BackendImplV3::CreateIterator() {
-  return scoped_ptr<Backend::Iterator>(new IteratorImpl(GetBackgroundQueue()));
+std::unique_ptr<Backend::Iterator> BackendImplV3::CreateIterator() {
+  return std::unique_ptr<Backend::Iterator>(
+      new IteratorImpl(GetBackgroundQueue()));
 }
 
 void BackendImplV3::GetStats(StatsItems* stats) {
@@ -795,7 +796,7 @@ bool BackendImplV3::InitStats() {
   if (!file)
     return false;
 
-  scoped_ptr<char[]> data(new char[size]);
+  std::unique_ptr<char[]> data(new char[size]);
   size_t offset = address.start_block() * address.BlockSize() +
                   kBlockHeaderSize;
   if (!file->Read(data.get(), size, offset))
@@ -810,7 +811,7 @@ bool BackendImplV3::InitStats() {
 
 void BackendImplV3::StoreStats() {
   int size = stats_.StorageSize();
-  scoped_ptr<char[]> data(new char[size]);
+  std::unique_ptr<char[]> data(new char[size]);
   Addr address;
   size = stats_.SerializeStats(data.get(), size, &address);
   DCHECK(size);
@@ -1389,7 +1390,7 @@ bool BackendImplV3::CheckIndex() {
     mask_ = data_->header.table_len - 1;
 
   // Load the table into memory with a single read.
-  scoped_ptr<char[]> buf(new char[current_size]);
+  std::unique_ptr<char[]> buf(new char[current_size]);
   return index_->Read(buf.get(), current_size, 0);
 }
 
@@ -1526,8 +1527,8 @@ class BackendImplV3::NotImplementedIterator : public Backend::Iterator {
   }
 };
 
-scoped_ptr<Backend::Iterator> BackendImplV3::CreateIterator() {
-  return scoped_ptr<Iterator>(new NotImplementedIterator());
+std::unique_ptr<Backend::Iterator> BackendImplV3::CreateIterator() {
+  return std::unique_ptr<Iterator>(new NotImplementedIterator());
 }
 
 void BackendImplV3::GetStats(StatsItems* stats) {

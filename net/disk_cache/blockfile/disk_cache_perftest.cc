@@ -163,7 +163,7 @@ TEST_F(DiskCacheTest, CacheBackendPerformance) {
 
   ASSERT_TRUE(CleanupCacheDir());
   net::TestCompletionCallback cb;
-  scoped_ptr<disk_cache::Backend> cache;
+  std::unique_ptr<disk_cache::Backend> cache;
   int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
                                           net::CACHE_BACKEND_BLOCKFILE,
                                           cache_path_,

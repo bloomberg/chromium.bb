@@ -6,12 +6,12 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/hash.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/sha1.h"
 #include "base/strings/stringprintf.h"
@@ -105,7 +105,7 @@ class SimpleIndexTest  : public testing::Test, public SimpleIndexDelegate {
   }
 
   void SetUp() override {
-    scoped_ptr<MockSimpleIndexFile> index_file(new MockSimpleIndexFile());
+    std::unique_ptr<MockSimpleIndexFile> index_file(new MockSimpleIndexFile());
     index_file_ = index_file->AsWeakPtr();
     index_.reset(
         new SimpleIndex(NULL, this, net::DISK_CACHE, std::move(index_file)));
@@ -161,7 +161,7 @@ class SimpleIndexTest  : public testing::Test, public SimpleIndexDelegate {
   int doom_entries_calls() const { return doom_entries_calls_; }
 
   const simple_util::ImmutableArray<uint64_t, 16> hashes_;
-  scoped_ptr<SimpleIndex> index_;
+  std::unique_ptr<SimpleIndex> index_;
   base::WeakPtr<MockSimpleIndexFile> index_file_;
 
   std::vector<uint64_t> last_doom_entry_hashes_;
@@ -207,13 +207,13 @@ TEST_F(SimpleIndexTest, IndexSizeCorrectOnMerge) {
   index()->UpdateEntrySize(hashes_.at<4>(), 4);
   EXPECT_EQ(9U, index()->cache_size_);
   {
-    scoped_ptr<SimpleIndexLoadResult> result(new SimpleIndexLoadResult());
+    std::unique_ptr<SimpleIndexLoadResult> result(new SimpleIndexLoadResult());
     result->did_load = true;
     index()->MergeInitializingSet(std::move(result));
   }
   EXPECT_EQ(9U, index()->cache_size_);
   {
-    scoped_ptr<SimpleIndexLoadResult> result(new SimpleIndexLoadResult());
+    std::unique_ptr<SimpleIndexLoadResult> result(new SimpleIndexLoadResult());
     result->did_load = true;
     const uint64_t new_hash_key = hashes_.at<11>();
     result->entries.insert(

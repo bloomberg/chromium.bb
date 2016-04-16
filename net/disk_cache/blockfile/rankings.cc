@@ -202,9 +202,9 @@ Rankings::ScopedRankingsBlock::ScopedRankingsBlock() : rankings_(NULL) {}
 Rankings::ScopedRankingsBlock::ScopedRankingsBlock(Rankings* rankings)
     : rankings_(rankings) {}
 
-Rankings::ScopedRankingsBlock::ScopedRankingsBlock(
-    Rankings* rankings, CacheRankingsBlock* node)
-    : scoped_ptr<CacheRankingsBlock>(node), rankings_(rankings) {}
+Rankings::ScopedRankingsBlock::ScopedRankingsBlock(Rankings* rankings,
+                                                   CacheRankingsBlock* node)
+    : std::unique_ptr<CacheRankingsBlock>(node), rankings_(rankings) {}
 
 Rankings::Iterator::Iterator() {
   memset(this, 0, sizeof(Iterator));
@@ -827,7 +827,7 @@ int Rankings::CheckListSection(List list, Addr end1, Addr end2, bool forward,
   if (!current.SanityCheckForRankings())
     return ERR_INVALID_HEAD;
 
-  scoped_ptr<CacheRankingsBlock> node;
+  std::unique_ptr<CacheRankingsBlock> node;
   Addr prev_addr(current);
   do {
     node.reset(new CacheRankingsBlock(backend_->File(current), current));

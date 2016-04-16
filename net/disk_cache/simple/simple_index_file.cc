@@ -189,7 +189,7 @@ void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
                                       const base::FilePath& cache_directory,
                                       const base::FilePath& index_filename,
                                       const base::FilePath& temp_index_filename,
-                                      scoped_ptr<base::Pickle> pickle,
+                                      std::unique_ptr<base::Pickle> pickle,
                                       const base::TimeTicks& start_time,
                                       bool app_on_background) {
   DCHECK_EQ(index_filename.DirName().value(),
@@ -274,7 +274,7 @@ void SimpleIndexFile::WriteToDisk(const SimpleIndex::EntrySet& entry_set,
                                   bool app_on_background,
                                   const base::Closure& callback) {
   IndexMetadata index_metadata(entry_set.size(), cache_size);
-  scoped_ptr<base::Pickle> pickle = Serialize(index_metadata, entry_set);
+  std::unique_ptr<base::Pickle> pickle = Serialize(index_metadata, entry_set);
   base::Closure task =
       base::Bind(&SimpleIndexFile::SyncWriteToDisk,
                  cache_type_, cache_directory_, index_file_, temp_index_file_,
@@ -365,10 +365,10 @@ void SimpleIndexFile::SyncLoadFromDisk(const base::FilePath& index_filename,
 }
 
 // static
-scoped_ptr<base::Pickle> SimpleIndexFile::Serialize(
+std::unique_ptr<base::Pickle> SimpleIndexFile::Serialize(
     const SimpleIndexFile::IndexMetadata& index_metadata,
     const SimpleIndex::EntrySet& entries) {
-  scoped_ptr<base::Pickle> pickle(
+  std::unique_ptr<base::Pickle> pickle(
       new base::Pickle(sizeof(SimpleIndexFile::PickleHeader)));
 
   index_metadata.Serialize(pickle.get());

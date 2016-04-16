@@ -689,7 +689,7 @@ bool EntryImplV3::CouldBeSparse() const {
   if (sparse_.get())
     return true;
 
-  scoped_ptr<SparseControl> sparse;
+  std::unique_ptr<SparseControl> sparse;
   sparse.reset(new SparseControl(const_cast<EntryImpl*>(this)));
   return sparse->CouldBeSparse();
 }
@@ -1326,7 +1326,7 @@ int EntryImpl::InitSparseData() {
     return net::OK;
 
   // Use a local variable so that sparse_ never goes from 'valid' to NULL.
-  scoped_ptr<SparseControl> sparse(new SparseControl(this));
+  std::unique_ptr<SparseControl> sparse(new SparseControl(this));
   int result = sparse->Init();
   if (net::OK == result)
     sparse_.swap(sparse);

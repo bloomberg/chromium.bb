@@ -9,10 +9,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace disk_cache {
 namespace {
@@ -21,7 +21,7 @@ struct DirCloser {
   void operator()(DIR* dir) { closedir(dir); }
 };
 
-typedef scoped_ptr<DIR, DirCloser> ScopedDir;
+typedef std::unique_ptr<DIR, DirCloser> ScopedDir;
 
 }  // namespace
 

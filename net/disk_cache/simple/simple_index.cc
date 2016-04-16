@@ -144,7 +144,7 @@ SimpleIndex::SimpleIndex(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread,
     SimpleIndexDelegate* delegate,
     net::CacheType cache_type,
-    scoped_ptr<SimpleIndexFile> index_file)
+    std::unique_ptr<SimpleIndexFile> index_file)
     : delegate_(delegate),
       cache_type_(cache_type),
       cache_size_(0),
@@ -182,7 +182,7 @@ void SimpleIndex::Initialize(base::Time cache_mtime) {
 #endif
 
   SimpleIndexLoadResult* load_result = new SimpleIndexLoadResult();
-  scoped_ptr<SimpleIndexLoadResult> load_result_scoped(load_result);
+  std::unique_ptr<SimpleIndexLoadResult> load_result_scoped(load_result);
   base::Closure reply = base::Bind(
       &SimpleIndex::MergeInitializingSet,
       AsWeakPtr(),
@@ -208,8 +208,9 @@ int SimpleIndex::ExecuteWhenReady(const net::CompletionCallback& task) {
   return net::ERR_IO_PENDING;
 }
 
-scoped_ptr<SimpleIndex::HashList> SimpleIndex::GetEntriesBetween(
-    base::Time initial_time, base::Time end_time) {
+std::unique_ptr<SimpleIndex::HashList> SimpleIndex::GetEntriesBetween(
+    base::Time initial_time,
+    base::Time end_time) {
   DCHECK_EQ(true, initialized_);
 
   if (!initial_time.is_null())
@@ -221,7 +222,7 @@ scoped_ptr<SimpleIndex::HashList> SimpleIndex::GetEntriesBetween(
   const base::Time extended_end_time =
       end_time.is_null() ? base::Time::Max() : end_time;
   DCHECK(extended_end_time >= initial_time);
-  scoped_ptr<HashList> ret_hashes(new HashList());
+  std::unique_ptr<HashList> ret_hashes(new HashList());
   for (EntrySet::iterator it = entries_set_.begin(), end = entries_set_.end();
        it != end; ++it) {
     EntryMetadata& metadata = it->second;
@@ -232,7 +233,7 @@ scoped_ptr<SimpleIndex::HashList> SimpleIndex::GetEntriesBetween(
   return ret_hashes;
 }
 
-scoped_ptr<SimpleIndex::HashList> SimpleIndex::GetAllHashes() {
+std::unique_ptr<SimpleIndex::HashList> SimpleIndex::GetAllHashes() {
   return GetEntriesBetween(base::Time(), base::Time());
 }
 
@@ -395,7 +396,7 @@ void SimpleIndex::UpdateEntryIteratorSize(EntrySet::iterator* it,
 }
 
 void SimpleIndex::MergeInitializingSet(
-    scoped_ptr<SimpleIndexLoadResult> load_result) {
+    std::unique_ptr<SimpleIndexLoadResult> load_result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(load_result->did_load);
 

@@ -61,7 +61,7 @@ class BackendIO : public BackgroundIO {
   void DoomEntriesSince(const base::Time initial_time);
   void CalculateSizeOfAllEntries();
   void OpenNextEntry(Rankings::Iterator* iterator, Entry** next_entry);
-  void EndEnumeration(scoped_ptr<Rankings::Iterator> iterator);
+  void EndEnumeration(std::unique_ptr<Rankings::Iterator> iterator);
   void OnExternalCacheHit(const std::string& key);
   void CloseEntryImpl(EntryImpl* entry);
   void DoomEntryImpl(EntryImpl* entry);
@@ -140,7 +140,7 @@ class BackendIO : public BackgroundIO {
   base::Time initial_time_;
   base::Time end_time_;
   Rankings::Iterator* iterator_;
-  scoped_ptr<Rankings::Iterator> scoped_iterator_;
+  std::unique_ptr<Rankings::Iterator> scoped_iterator_;
   EntryImpl* entry_;
   int index_;
   int offset_;
@@ -180,7 +180,7 @@ class InFlightBackendIO : public InFlightIO {
   void CalculateSizeOfAllEntries(const net::CompletionCallback& callback);
   void OpenNextEntry(Rankings::Iterator* iterator, Entry** next_entry,
                      const net::CompletionCallback& callback);
-  void EndEnumeration(scoped_ptr<Rankings::Iterator> iterator);
+  void EndEnumeration(std::unique_ptr<Rankings::Iterator> iterator);
   void OnExternalCacheHit(const std::string& key);
   void CloseEntryImpl(EntryImpl* entry);
   void DoomEntryImpl(EntryImpl* entry);

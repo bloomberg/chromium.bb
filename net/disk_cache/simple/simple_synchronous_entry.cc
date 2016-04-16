@@ -640,7 +640,7 @@ void SimpleSynchronousEntry::CheckEOFRecord(int index,
 
 void SimpleSynchronousEntry::Close(
     const SimpleEntryStat& entry_stat,
-    scoped_ptr<std::vector<CRCRecord> > crc32s_to_write,
+    std::unique_ptr<std::vector<CRCRecord>> crc32s_to_write,
     net::GrowableIOBuffer* stream_0_data) {
   DCHECK(stream_0_data);
   // Write stream 0 data.
@@ -955,7 +955,7 @@ int SimpleSynchronousEntry::InitializeForOpen(
       return net::ERR_FAILED;
     }
 
-    scoped_ptr<char[]> key(new char[header.key_length]);
+    std::unique_ptr<char[]> key(new char[header.key_length]);
     int key_read_result = files_[i].Read(sizeof(header), key.get(),
                                          header.key_length);
     if (key_read_result != base::checked_cast<int>(header.key_length)) {

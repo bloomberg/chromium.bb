@@ -8,6 +8,8 @@
 #include <cstdlib>
 #include <functional>
 
+#include "base/memory/ptr_util.h"
+
 #if defined(OS_POSIX)
 #include <sys/resource.h>
 #endif
@@ -209,11 +211,11 @@ class SimpleBackendImpl::ActiveEntryProxy
     }
   }
 
-  static scoped_ptr<SimpleEntryImpl::ActiveEntryProxy> Create(
+  static std::unique_ptr<SimpleEntryImpl::ActiveEntryProxy> Create(
       int64_t entry_hash,
       SimpleBackendImpl* backend) {
-    scoped_ptr<SimpleEntryImpl::ActiveEntryProxy>
-        proxy(new ActiveEntryProxy(entry_hash, backend));
+    std::unique_ptr<SimpleEntryImpl::ActiveEntryProxy> proxy(
+        new ActiveEntryProxy(entry_hash, backend));
     return proxy;
   }
 
@@ -250,11 +252,9 @@ int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
   worker_pool_ = g_sequenced_worker_pool.Get().GetTaskRunner();
 
   index_.reset(new SimpleIndex(
-      base::ThreadTaskRunnerHandle::Get(),
-      this,
-      cache_type_,
-      make_scoped_ptr(new SimpleIndexFile(
-          cache_thread_, worker_pool_.get(), cache_type_, path_))));
+      base::ThreadTaskRunnerHandle::Get(), this, cache_type_,
+      base::WrapUnique(new SimpleIndexFile(cache_thread_, worker_pool_.get(),
+                                           cache_type_, path_))));
   index_->ExecuteWhenReady(
       base::Bind(&RecordIndexLoad, cache_type_, base::TimeTicks::Now()));
 
@@ -301,7 +301,7 @@ void SimpleBackendImpl::OnDoomComplete(uint64_t entry_hash) {
 
 void SimpleBackendImpl::DoomEntries(std::vector<uint64_t>* entry_hashes,
                                     const net::CompletionCallback& callback) {
-  scoped_ptr<std::vector<uint64_t>> mass_doom_entry_hashes(
+  std::unique_ptr<std::vector<uint64_t>> mass_doom_entry_hashes(
       new std::vector<uint64_t>());
   mass_doom_entry_hashes->swap(*entry_hashes);
 
@@ -530,12 +530,12 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
 
  private:
   base::WeakPtr<SimpleBackendImpl> backend_;
-  scoped_ptr<std::vector<uint64_t>> hashes_to_enumerate_;
+  std::unique_ptr<std::vector<uint64_t>> hashes_to_enumerate_;
   base::WeakPtrFactory<SimpleIterator> weak_factory_;
 };
 
-scoped_ptr<Backend::Iterator> SimpleBackendImpl::CreateIterator() {
-  return scoped_ptr<Iterator>(new SimpleIterator(AsWeakPtr()));
+std::unique_ptr<Backend::Iterator> SimpleBackendImpl::CreateIterator() {
+  return std::unique_ptr<Iterator>(new SimpleIterator(AsWeakPtr()));
 }
 
 void SimpleBackendImpl::GetStats(base::StringPairs* stats) {
@@ -566,7 +566,7 @@ void SimpleBackendImpl::IndexReadyForDoom(Time initial_time,
     callback.Run(result);
     return;
   }
-  scoped_ptr<std::vector<uint64_t>> removed_key_hashes(
+  std::unique_ptr<std::vector<uint64_t>> removed_key_hashes(
       index_->GetEntriesBetween(initial_time, end_time).release());
   DoomEntries(removed_key_hashes.get(), callback);
 }
@@ -658,7 +658,7 @@ int SimpleBackendImpl::OpenEntryFromHash(uint64_t entry_hash,
 int SimpleBackendImpl::DoomEntryFromHash(uint64_t entry_hash,
                                          const CompletionCallback& callback) {
   Entry** entry = new Entry*();
-  scoped_ptr<Entry*> scoped_entry(entry);
+  std::unique_ptr<Entry*> scoped_entry(entry);
 
   base::hash_map<uint64_t, std::vector<Closure>>::iterator pending_it =
       entries_pending_doom_.find(entry_hash);
@@ -737,7 +737,7 @@ void SimpleBackendImpl::OnEntryOpenedFromKey(
 }
 
 void SimpleBackendImpl::DoomEntriesComplete(
-    scoped_ptr<std::vector<uint64_t>> entry_hashes,
+    std::unique_ptr<std::vector<uint64_t>> entry_hashes,
     const net::CompletionCallback& callback,
     int result) {
   for (const uint64_t& entry_hash : *entry_hashes)

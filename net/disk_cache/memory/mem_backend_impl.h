@@ -39,7 +39,8 @@ class NET_EXPORT_PRIVATE MemBackendImpl final : public Backend {
   // size the cache can grow to. If zero is passed in as max_bytes, the cache
   // will determine the value to use based on the available memory. The returned
   // pointer can be NULL if a fatal error is found.
-  static scoped_ptr<Backend> CreateBackend(int max_bytes, net::NetLog* net_log);
+  static std::unique_ptr<Backend> CreateBackend(int max_bytes,
+                                                net::NetLog* net_log);
 
   // Performs general initialization for this current instance of the cache.
   bool Init();
@@ -89,7 +90,7 @@ class NET_EXPORT_PRIVATE MemBackendImpl final : public Backend {
   int DoomEntriesSince(base::Time initial_time,
                        const CompletionCallback& callback) override;
   int CalculateSizeOfAllEntries(const CompletionCallback& callback) override;
-  scoped_ptr<Iterator> CreateIterator() override;
+  std::unique_ptr<Iterator> CreateIterator() override;
   void GetStats(base::StringPairs* stats) override {}
   void OnExternalCacheHit(const std::string& key) override;
 

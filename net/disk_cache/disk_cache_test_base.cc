@@ -55,7 +55,7 @@ void DiskCacheTest::TearDown() {
 }
 
 DiskCacheTestWithCache::TestIterator::TestIterator(
-    scoped_ptr<disk_cache::Backend::Iterator> iterator)
+    std::unique_ptr<disk_cache::Backend::Iterator> iterator)
     : iterator_(std::move(iterator)) {}
 
 DiskCacheTestWithCache::TestIterator::~TestIterator() {}
@@ -174,9 +174,10 @@ int DiskCacheTestWithCache::CalculateSizeOfAllEntries() {
   return cb.GetResult(rv);
 }
 
-scoped_ptr<DiskCacheTestWithCache::TestIterator>
-    DiskCacheTestWithCache::CreateIterator() {
-  return scoped_ptr<TestIterator>(new TestIterator(cache_->CreateIterator()));
+std::unique_ptr<DiskCacheTestWithCache::TestIterator>
+DiskCacheTestWithCache::CreateIterator() {
+  return std::unique_ptr<TestIterator>(
+      new TestIterator(cache_->CreateIterator()));
 }
 
 void DiskCacheTestWithCache::FlushQueueForTest() {
@@ -312,9 +313,9 @@ void DiskCacheTestWithCache::CreateBackend(uint32_t flags,
 
   if (simple_cache_mode_) {
     net::TestCompletionCallback cb;
-    scoped_ptr<disk_cache::SimpleBackendImpl> simple_backend(
-        new disk_cache::SimpleBackendImpl(
-            cache_path_, size_, type_, runner, NULL));
+    std::unique_ptr<disk_cache::SimpleBackendImpl> simple_backend(
+        new disk_cache::SimpleBackendImpl(cache_path_, size_, type_, runner,
+                                          NULL));
     int rv = simple_backend->Init(cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
     simple_cache_impl_ = simple_backend.get();

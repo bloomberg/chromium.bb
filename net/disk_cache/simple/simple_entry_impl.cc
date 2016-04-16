@@ -200,7 +200,7 @@ SimpleEntryImpl::SimpleEntryImpl(net::CacheType cache_type,
 }
 
 void SimpleEntryImpl::SetActiveEntryProxy(
-    scoped_ptr<ActiveEntryProxy> active_entry_proxy) {
+    std::unique_ptr<ActiveEntryProxy> active_entry_proxy) {
   DCHECK(!active_entry_proxy_);
   active_entry_proxy_.reset(active_entry_proxy.release());
 }
@@ -600,7 +600,7 @@ void SimpleEntryImpl::RunNextOperationIfNeeded() {
                    "EntryOperationsPending", cache_type_,
                    pending_operations_.size(), 0, 100, 20);
   if (!pending_operations_.empty() && state_ != STATE_IO_PENDING) {
-    scoped_ptr<SimpleEntryOperation> operation(
+    std::unique_ptr<SimpleEntryOperation> operation(
         new SimpleEntryOperation(pending_operations_.front()));
     pending_operations_.pop();
     switch (operation->type()) {
@@ -693,10 +693,9 @@ void SimpleEntryImpl::OpenEntryInternal(bool have_index,
   DCHECK(!synchronous_entry_);
   state_ = STATE_IO_PENDING;
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  scoped_ptr<SimpleEntryCreationResults> results(
-      new SimpleEntryCreationResults(
-          SimpleEntryStat(last_used_, last_modified_, data_size_,
-                          sparse_data_size_)));
+  std::unique_ptr<SimpleEntryCreationResults> results(
+      new SimpleEntryCreationResults(SimpleEntryStat(
+          last_used_, last_modified_, data_size_, sparse_data_size_)));
   Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry,
                             cache_type_,
                             path_,
@@ -742,10 +741,9 @@ void SimpleEntryImpl::CreateEntryInternal(bool have_index,
     have_written_[i] = true;
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  scoped_ptr<SimpleEntryCreationResults> results(
-      new SimpleEntryCreationResults(
-          SimpleEntryStat(last_used_, last_modified_, data_size_,
-                          sparse_data_size_)));
+  std::unique_ptr<SimpleEntryCreationResults> results(
+      new SimpleEntryCreationResults(SimpleEntryStat(
+          last_used_, last_modified_, data_size_, sparse_data_size_)));
   Closure task = base::Bind(&SimpleSynchronousEntry::CreateEntry,
                             cache_type_,
                             path_,
@@ -766,8 +764,8 @@ void SimpleEntryImpl::CreateEntryInternal(bool have_index,
 void SimpleEntryImpl::CloseInternal() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   typedef SimpleSynchronousEntry::CRCRecord CRCRecord;
-  scoped_ptr<std::vector<CRCRecord> >
-      crc32s_to_write(new std::vector<CRCRecord>());
+  std::unique_ptr<std::vector<CRCRecord>> crc32s_to_write(
+      new std::vector<CRCRecord>());
 
   net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_CLOSE_BEGIN);
 
@@ -868,11 +866,10 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
   if (!doomed_ && backend_.get())
     backend_->index()->UseIfExists(entry_hash_);
 
-  scoped_ptr<uint32_t> read_crc32(new uint32_t());
-  scoped_ptr<int> result(new int());
-  scoped_ptr<SimpleEntryStat> entry_stat(
-      new SimpleEntryStat(last_used_, last_modified_, data_size_,
-                          sparse_data_size_));
+  std::unique_ptr<uint32_t> read_crc32(new uint32_t());
+  std::unique_ptr<int> result(new int());
+  std::unique_ptr<SimpleEntryStat> entry_stat(new SimpleEntryStat(
+      last_used_, last_modified_, data_size_, sparse_data_size_));
   Closure task = base::Bind(
       &SimpleSynchronousEntry::ReadData, base::Unretained(synchronous_entry_),
       SimpleSynchronousEntry::EntryOperationData(stream_index, offset, buf_len),
@@ -950,9 +947,8 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   AdvanceCrc(buf, offset, buf_len, stream_index);
 
   // |entry_stat| needs to be initialized before modifying |data_size_|.
-  scoped_ptr<SimpleEntryStat> entry_stat(
-      new SimpleEntryStat(last_used_, last_modified_, data_size_,
-                          sparse_data_size_));
+  std::unique_ptr<SimpleEntryStat> entry_stat(new SimpleEntryStat(
+      last_used_, last_modified_, data_size_, sparse_data_size_));
   if (truncate) {
     data_size_[stream_index] = offset + buf_len;
   } else {
@@ -970,7 +966,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   if (stream_index == 1)
     have_written_[0] = true;
 
-  scoped_ptr<int> result(new int());
+  std::unique_ptr<int> result(new int());
   Closure task = base::Bind(
       &SimpleSynchronousEntry::WriteData, base::Unretained(synchronous_entry_),
       SimpleSynchronousEntry::EntryOperationData(stream_index, offset, buf_len,
@@ -1002,8 +998,8 @@ void SimpleEntryImpl::ReadSparseDataInternal(
   DCHECK_EQ(STATE_READY, state_);
   state_ = STATE_IO_PENDING;
 
-  scoped_ptr<int> result(new int());
-  scoped_ptr<base::Time> last_used(new base::Time());
+  std::unique_ptr<int> result(new int());
+  std::unique_ptr<base::Time> last_used(new base::Time());
   Closure task = base::Bind(
       &SimpleSynchronousEntry::ReadSparseData,
       base::Unretained(synchronous_entry_),
@@ -1040,13 +1036,12 @@ void SimpleEntryImpl::WriteSparseDataInternal(
     max_sparse_data_size = max_cache_size / kMaxSparseDataSizeDivisor;
   }
 
-  scoped_ptr<SimpleEntryStat> entry_stat(
-      new SimpleEntryStat(last_used_, last_modified_, data_size_,
-                          sparse_data_size_));
+  std::unique_ptr<SimpleEntryStat> entry_stat(new SimpleEntryStat(
+      last_used_, last_modified_, data_size_, sparse_data_size_));
 
   last_used_ = last_modified_ = base::Time::Now();
 
-  scoped_ptr<int> result(new int());
+  std::unique_ptr<int> result(new int());
   Closure task = base::Bind(
       &SimpleSynchronousEntry::WriteSparseData,
       base::Unretained(synchronous_entry_),
@@ -1072,7 +1067,7 @@ void SimpleEntryImpl::GetAvailableRangeInternal(
   DCHECK_EQ(STATE_READY, state_);
   state_ = STATE_IO_PENDING;
 
-  scoped_ptr<int> result(new int());
+  std::unique_ptr<int> result(new int());
   Closure task = base::Bind(&SimpleSynchronousEntry::GetAvailableRange,
                             base::Unretained(synchronous_entry_),
                             SimpleSynchronousEntry::EntryOperationData(
@@ -1119,7 +1114,7 @@ void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
 void SimpleEntryImpl::CreationOperationComplete(
     const CompletionCallback& completion_callback,
     const base::TimeTicks& start_time,
-    scoped_ptr<SimpleEntryCreationResults> in_results,
+    std::unique_ptr<SimpleEntryCreationResults> in_results,
     Entry** out_entry,
     net::NetLog::EventType end_event_type) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
@@ -1172,7 +1167,7 @@ void SimpleEntryImpl::CreationOperationComplete(
 void SimpleEntryImpl::EntryOperationComplete(
     const CompletionCallback& completion_callback,
     const SimpleEntryStat& entry_stat,
-    scoped_ptr<int> result) {
+    std::unique_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_IO_PENDING, state_);
@@ -1196,9 +1191,9 @@ void SimpleEntryImpl::ReadOperationComplete(
     int stream_index,
     int offset,
     const CompletionCallback& completion_callback,
-    scoped_ptr<uint32_t> read_crc32,
-    scoped_ptr<SimpleEntryStat> entry_stat,
-    scoped_ptr<int> result) {
+    std::unique_ptr<uint32_t> read_crc32,
+    std::unique_ptr<SimpleEntryStat> entry_stat,
+    std::unique_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_IO_PENDING, state_);
@@ -1224,7 +1219,7 @@ void SimpleEntryImpl::ReadOperationComplete(
 
       net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_CHECKSUM_BEGIN);
 
-      scoped_ptr<int> new_result(new int());
+      std::unique_ptr<int> new_result(new int());
       Closure task = base::Bind(&SimpleSynchronousEntry::CheckEOFRecord,
                                 base::Unretained(synchronous_entry_),
                                 stream_index,
@@ -1266,8 +1261,8 @@ void SimpleEntryImpl::ReadOperationComplete(
 void SimpleEntryImpl::WriteOperationComplete(
     int stream_index,
     const CompletionCallback& completion_callback,
-    scoped_ptr<SimpleEntryStat> entry_stat,
-    scoped_ptr<int> result) {
+    std::unique_ptr<SimpleEntryStat> entry_stat,
+    std::unique_ptr<int> result) {
   if (*result >= 0)
     RecordWriteResult(cache_type_, WRITE_RESULT_SUCCESS);
   else
@@ -1286,8 +1281,8 @@ void SimpleEntryImpl::WriteOperationComplete(
 
 void SimpleEntryImpl::ReadSparseOperationComplete(
     const CompletionCallback& completion_callback,
-    scoped_ptr<base::Time> last_used,
-    scoped_ptr<int> result) {
+    std::unique_ptr<base::Time> last_used,
+    std::unique_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
   DCHECK(result);
@@ -1304,8 +1299,8 @@ void SimpleEntryImpl::ReadSparseOperationComplete(
 
 void SimpleEntryImpl::WriteSparseOperationComplete(
     const CompletionCallback& completion_callback,
-    scoped_ptr<SimpleEntryStat> entry_stat,
-    scoped_ptr<int> result) {
+    std::unique_ptr<SimpleEntryStat> entry_stat,
+    std::unique_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
   DCHECK(result);
@@ -1320,7 +1315,7 @@ void SimpleEntryImpl::WriteSparseOperationComplete(
 
 void SimpleEntryImpl::GetAvailableRangeOperationComplete(
     const CompletionCallback& completion_callback,
-    scoped_ptr<int> result) {
+    std::unique_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
   DCHECK(result);
@@ -1346,7 +1341,7 @@ void SimpleEntryImpl::ChecksumOperationComplete(
     int orig_result,
     int stream_index,
     const CompletionCallback& completion_callback,
-    scoped_ptr<int> result) {
+    std::unique_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_IO_PENDING, state_);

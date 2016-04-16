@@ -49,9 +49,9 @@ MemBackendImpl::~MemBackendImpl() {
 }
 
 // static
-scoped_ptr<Backend> MemBackendImpl::CreateBackend(int max_bytes,
-                                                  net::NetLog* net_log) {
-  scoped_ptr<MemBackendImpl> cache(new MemBackendImpl(net_log));
+std::unique_ptr<Backend> MemBackendImpl::CreateBackend(int max_bytes,
+                                                       net::NetLog* net_log) {
+  std::unique_ptr<MemBackendImpl> cache(new MemBackendImpl(net_log));
   cache->SetMaxSize(max_bytes);
   if (cache->Init())
     return std::move(cache);
@@ -242,8 +242,8 @@ class MemBackendImpl::MemIterator final : public Backend::Iterator {
   base::LinkNode<MemEntryImpl>* current_;
 };
 
-scoped_ptr<Backend::Iterator> MemBackendImpl::CreateIterator() {
-  return scoped_ptr<Backend::Iterator>(
+std::unique_ptr<Backend::Iterator> MemBackendImpl::CreateIterator() {
+  return std::unique_ptr<Backend::Iterator>(
       new MemIterator(weak_factory_.GetWeakPtr()));
 }
 

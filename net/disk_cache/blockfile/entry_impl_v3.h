@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/disk_cache/blockfile/disk_format_v3.h"
 #include "net/disk_cache/blockfile/storage_block.h"
 #include "net/disk_cache/disk_cache.h"
@@ -200,10 +200,10 @@ class NET_EXPORT_PRIVATE EntryImplV3
   // Logs this entry to the internal trace buffer.
   void Log(const char* msg);
 
-  scoped_ptr<EntryRecord> entry_;  // Basic record for this entry.
-  scoped_ptr<ShortEntryRecord> short_entry_;  // Valid for evicted entries.
+  std::unique_ptr<EntryRecord> entry_;  // Basic record for this entry.
+  std::unique_ptr<ShortEntryRecord> short_entry_;  // Valid for evicted entries.
   base::WeakPtr<BackendImplV3> backend_;  // Back pointer to the cache.
-  scoped_ptr<UserBuffer> user_buffers_[kNumStreams];  // Stores user data.
+  std::unique_ptr<UserBuffer> user_buffers_[kNumStreams];  // Stores user data.
   mutable std::string key_;           // Copy of the key.
   Addr address_;
   int unreported_size_[kNumStreams];  // Bytes not reported yet to the backend.
@@ -211,7 +211,7 @@ class NET_EXPORT_PRIVATE EntryImplV3
   bool read_only_;
   bool dirty_;                // True if there is something to write.
   bool modified_;
-  // scoped_ptr<SparseControlV3> sparse_;  // Support for sparse entries.
+  // std::unique_ptr<SparseControlV3> sparse_;  // Support for sparse entries.
 
   net::BoundNetLog net_log_;
 

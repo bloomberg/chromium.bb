@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,7 +17,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_export.h"
@@ -176,7 +176,7 @@ class SimpleSynchronousEntry {
   // Close all streams, and add write EOF records to streams indicated by the
   // CRCRecord entries in |crc32s_to_write|.
   void Close(const SimpleEntryStat& entry_stat,
-             scoped_ptr<std::vector<CRCRecord> > crc32s_to_write,
+             std::unique_ptr<std::vector<CRCRecord>> crc32s_to_write,
              net::GrowableIOBuffer* stream_0_data);
 
   const base::FilePath& path() const { return path_; }

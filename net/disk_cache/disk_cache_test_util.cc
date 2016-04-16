@@ -61,7 +61,7 @@ bool DeleteCache(const base::FilePath& path) {
 bool CheckCacheIntegrity(const base::FilePath& path,
                          bool new_eviction,
                          uint32_t mask) {
-  scoped_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
+  std::unique_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
       path, mask, base::ThreadTaskRunnerHandle::Get(), NULL));
   if (!cache.get())
     return false;

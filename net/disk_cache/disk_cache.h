@@ -10,11 +10,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
@@ -59,7 +59,7 @@ NET_EXPORT int CreateCacheBackend(
     bool force,
     const scoped_refptr<base::SingleThreadTaskRunner>& thread,
     net::NetLog* net_log,
-    scoped_ptr<Backend>* backend,
+    std::unique_ptr<Backend>* backend,
     const net::CompletionCallback& callback);
 
 // The root interface for a disk cache instance.
@@ -154,7 +154,7 @@ class NET_EXPORT Backend {
 
   // Returns an iterator which will enumerate all entries of the cache in an
   // undefined order.
-  virtual scoped_ptr<Iterator> CreateIterator() = 0;
+  virtual std::unique_ptr<Iterator> CreateIterator() = 0;
 
   // Return a list of cache statistics.
   virtual void GetStats(base::StringPairs* stats) = 0;
@@ -333,7 +333,7 @@ struct EntryDeleter {
 };
 
 // Automatically closes an entry when it goes out of scope.
-typedef scoped_ptr<Entry, EntryDeleter> ScopedEntryPtr;
+typedef std::unique_ptr<Entry, EntryDeleter> ScopedEntryPtr;
 
 }  // namespace disk_cache
 

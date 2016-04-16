@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,7 +17,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/task_runner.h"
@@ -108,7 +108,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   int DoomEntriesSince(base::Time initial_time,
                        const CompletionCallback& callback) override;
   int CalculateSizeOfAllEntries(const CompletionCallback& callback) override;
-  scoped_ptr<Iterator> CreateIterator() override;
+  std::unique_ptr<Iterator> CreateIterator() override;
   void GetStats(base::StringPairs* stats) override;
   void OnExternalCacheHit(const std::string& key) override;
 
@@ -191,13 +191,13 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   // A callback thunk used by DoomEntries to clear the |entries_pending_doom_|
   // after a mass doom.
-  void DoomEntriesComplete(scoped_ptr<std::vector<uint64_t>> entry_hashes,
+  void DoomEntriesComplete(std::unique_ptr<std::vector<uint64_t>> entry_hashes,
                            const CompletionCallback& callback,
                            int result);
 
   const base::FilePath path_;
   const net::CacheType cache_type_;
-  scoped_ptr<SimpleIndex> index_;
+  std::unique_ptr<SimpleIndex> index_;
   const scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
   scoped_refptr<base::TaskRunner> worker_pool_;
 
