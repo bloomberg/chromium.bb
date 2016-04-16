@@ -119,12 +119,7 @@ public class DeferredStartupHandler {
         }
 
         // Start or stop Physical Web
-        if (PhysicalWeb.shouldStartOnLaunch(application)) {
-            PhysicalWeb.startPhysicalWeb(application);
-            PhysicalWeb.uploadDeferredMetrics(application);
-        } else {
-            PhysicalWeb.stopPhysicalWeb(application);
-        }
+        PhysicalWeb.onChromeStart(application);
 
         mDeferredStartupComplete = true;
     }
