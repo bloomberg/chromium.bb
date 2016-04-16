@@ -6717,6 +6717,65 @@ TEST_P(ParameterizedWebFrameTest, FullscreenResizeWithTinyViewport)
     EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
 }
 
+TEST_P(ParameterizedWebFrameTest, FullscreenRestoreScaleFactorUponExiting)
+{
+    // The purpose of this test is to more precisely simulate the sequence of
+    // resize and switching fullscreen state operations on WebView, with the
+    // interference from Android status bars like a real device does.
+    // This verifies we handle the transition and restore states correctly.
+    WebSize screenSizeMinusStatusBarsMinusUrlBar(598, 303);
+    WebSize screenSizeMinusStatusBars(598, 359);
+    WebSize screenSize(640, 384);
+
+    FakeCompositingWebViewClient client;
+    registerMockedHttpURLLoad("fullscreen_restore_scale_factor.html");
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_restore_scale_factor.html", true, nullptr, &client, &configureAndroid);
+    client.m_screenInfo.rect.width = screenSizeMinusStatusBarsMinusUrlBar.width;
+    client.m_screenInfo.rect.height = screenSizeMinusStatusBarsMinusUrlBar.height;
+    webViewHelper.resize(screenSizeMinusStatusBarsMinusUrlBar);
+    LayoutView* layoutView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutView();
+    EXPECT_EQ(screenSizeMinusStatusBarsMinusUrlBar.width, layoutView->logicalWidth().floor());
+    EXPECT_EQ(screenSizeMinusStatusBarsMinusUrlBar.height, layoutView->logicalHeight().floor());
+    EXPECT_FLOAT_EQ(1.0, webViewImpl->pageScaleFactor());
+    EXPECT_FLOAT_EQ(1.0, webViewImpl->minimumPageScaleFactor());
+    EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
+
+    {
+        Document* document = toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
+        UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
+        Fullscreen::from(*document).requestFullscreen(*document->body(), Fullscreen::PrefixedRequest);
+    }
+
+    webViewImpl->didEnterFullScreen();
+    webViewImpl->updateAllLifecyclePhases();
+    client.m_screenInfo.rect.width = screenSizeMinusStatusBars.width;
+    client.m_screenInfo.rect.height = screenSizeMinusStatusBars.height;
+    webViewHelper.resize(screenSizeMinusStatusBars);
+    client.m_screenInfo.rect.width = screenSize.width;
+    client.m_screenInfo.rect.height = screenSize.height;
+    webViewHelper.resize(screenSize);
+    EXPECT_EQ(screenSize.width, layoutView->logicalWidth().floor());
+    EXPECT_EQ(screenSize.height, layoutView->logicalHeight().floor());
+    EXPECT_FLOAT_EQ(1.0, webViewImpl->pageScaleFactor());
+    EXPECT_FLOAT_EQ(1.0, webViewImpl->minimumPageScaleFactor());
+    EXPECT_FLOAT_EQ(1.0, webViewImpl->maximumPageScaleFactor());
+
+    webViewImpl->didExitFullScreen();
+    webViewImpl->updateAllLifecyclePhases();
+    client.m_screenInfo.rect.width = screenSizeMinusStatusBars.width;
+    client.m_screenInfo.rect.height = screenSizeMinusStatusBars.height;
+    webViewHelper.resize(screenSizeMinusStatusBars);
+    client.m_screenInfo.rect.width = screenSizeMinusStatusBarsMinusUrlBar.width;
+    client.m_screenInfo.rect.height = screenSizeMinusStatusBarsMinusUrlBar.height;
+    webViewHelper.resize(screenSizeMinusStatusBarsMinusUrlBar);
+    EXPECT_EQ(screenSizeMinusStatusBarsMinusUrlBar.width, layoutView->logicalWidth().floor());
+    EXPECT_EQ(screenSizeMinusStatusBarsMinusUrlBar.height, layoutView->logicalHeight().floor());
+    EXPECT_FLOAT_EQ(1.0, webViewImpl->pageScaleFactor());
+    EXPECT_FLOAT_EQ(1.0, webViewImpl->minimumPageScaleFactor());
+    EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
+}
+
 TEST_P(ParameterizedWebFrameTest, LayoutBlockPercentHeightDescendants)
 {
     registerMockedHttpURLLoad("percent-height-descendants.html");

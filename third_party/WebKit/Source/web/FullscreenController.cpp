@@ -32,6 +32,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Fullscreen.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/html/HTMLMediaElement.h"
@@ -189,6 +190,16 @@ void FullscreenController::updatePageScaleConstraints(bool removeConstraints)
     }
     m_webViewImpl->pageScaleConstraintsSet().setFullscreenConstraints(fullscreenConstraints);
     m_webViewImpl->pageScaleConstraintsSet().computeFinalConstraints();
+
+    // Although we called computedFinalConstraints() above, the "final" constraints are not
+    // actually final. They are still subject to scale factor clamping by contents size.
+    // Normally they should be dirtied due to contents size mutation after layout, however the
+    // contents size is not guaranteed to mutate, and the scale factor may remain unclamped.
+    // Just fire the event again to ensure the final constraints pick up the latest contents size.
+    m_webViewImpl->didChangeContentsSize();
+    if (m_webViewImpl->mainFrameImpl() && m_webViewImpl->mainFrameImpl()->frameView())
+        m_webViewImpl->mainFrameImpl()->frameView()->setNeedsLayout();
+
     m_webViewImpl->updateMainFrameLayoutSize();
 }
 
