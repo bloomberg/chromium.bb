@@ -691,14 +691,6 @@ struct weston_backend_config {
 struct weston_backend {
 	void (*destroy)(struct weston_compositor *compositor);
 	void (*restore)(struct weston_compositor *compositor);
-	/* vfunc to create a new output with a given name and config.
-	 * backends not supporting the functionality will set this
-	 * to NULL.
-	 */
-	struct weston_output *
-		(*create_output)(struct weston_compositor *compositor,
-				 const char *name,
-				 struct weston_backend_output_config *config);
 };
 
 struct weston_compositor {
