@@ -56,7 +56,9 @@ class ShortcutsProvider : public AutocompleteProvider,
       const ShortcutsDatabase::Shortcut& shortcut,
       int relevance,
       const AutocompleteInput& input,
-      const base::string16& fixed_up_input_text);
+      const base::string16& fixed_up_input_text,
+      const base::string16 term_string,
+      const WordMap& terms_map);
 
   // Returns a map mapping characters to groups of words from |text| that start
   // with those characters, ordered lexicographically descending so that longer

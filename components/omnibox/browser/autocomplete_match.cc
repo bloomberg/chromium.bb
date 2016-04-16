@@ -270,10 +270,8 @@ bool AutocompleteMatch::MoreRelevant(const AutocompleteMatch& elem1,
 // static
 bool AutocompleteMatch::DestinationsEqual(const AutocompleteMatch& elem1,
                                           const AutocompleteMatch& elem2) {
-  if (elem1.stripped_destination_url.is_empty() &&
-      elem2.stripped_destination_url.is_empty())
-    return false;
-  return elem1.stripped_destination_url == elem2.stripped_destination_url;
+  return !elem1.stripped_destination_url.is_empty() &&
+         (elem1.stripped_destination_url == elem2.stripped_destination_url);
 }
 
 // static

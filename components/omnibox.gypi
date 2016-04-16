@@ -89,6 +89,7 @@
         'omnibox/browser/keyword_extensions_delegate.h',
         'omnibox/browser/keyword_provider.cc',
         'omnibox/browser/keyword_provider.h',
+        'omnibox/browser/match_compare.h',
         'omnibox/browser/omnibox_client.h',
         'omnibox/browser/omnibox_controller.cc',
         'omnibox/browser/omnibox_controller.h',

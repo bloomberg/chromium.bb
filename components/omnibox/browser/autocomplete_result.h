@@ -126,12 +126,11 @@ class AutocompleteResult {
 
   // Sort |matches| by destination, taking into account demotions based on
   // |page_classification| when resolving ties about which of several
-  // duplicates to keep.  The matches are also deduplicated.  If
-  // |set_duplicate_matches| is true, the duplicate matches are stored in the
-  // |duplicate_matches| vector of the corresponding AutocompleteMatch.
-  static void DedupMatchesByDestination(
+  // duplicates to keep.  The matches are also deduplicated. Duplicate matches
+  // are stored in the |duplicate_matches| vector of the corresponding
+  // AutocompleteMatch.
+  static void SortAndDedupMatches(
       metrics::OmniboxEventProto::PageClassification page_classification,
-      bool set_duplicate_matches,
       ACMatches* matches);
 
  private:

@@ -50,6 +50,7 @@ source_set("browser") {
     "keyword_extensions_delegate.h",
     "keyword_provider.cc",
     "keyword_provider.h",
+    "match_compare.h",
     "omnibox_client.h",
     "omnibox_controller.cc",
     "omnibox_controller.h",
