@@ -222,6 +222,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', 'intel', 'opengl'], bug=598924)
     self.Fail('conformance/uniforms/gl-uniform-arrays.html',
         ['linux', 'debug', ('intel', 0x412)], bug=604140)
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['linux', ('intel', 0x412), 'opengl'], bug=586536)
 
     # Android failures
     self.Fail('deqp/data/gles2/shaders/constants.html',
