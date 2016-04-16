@@ -44,6 +44,9 @@ void GpuState::StopThreads() {
 }
 
 void GpuState::InitializeOnGpuThread(base::WaitableEvent* event) {
+#if defined(USE_OZONE)
+  ui::OzonePlatform::InitializeForGPU();
+#endif
   hardware_rendering_available_ = gfx::GLSurface::InitializeOneOff();
   command_buffer_task_runner_ = new CommandBufferTaskRunner;
   driver_manager_.reset(new CommandBufferDriverManager);
@@ -68,9 +71,6 @@ void GpuState::InitializeOnGpuThread(base::WaitableEvent* event) {
   }
   event->Signal();
 
-#if defined(USE_OZONE)
-  ui::OzonePlatform::InitializeForGPU();
-#endif
 }
 
 void GpuState::DestroyGpuSpecificStateOnGpuThread() {
