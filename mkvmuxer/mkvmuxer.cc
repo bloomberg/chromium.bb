@@ -2970,7 +2970,10 @@ bool Segment::Finalize() {
   if (WriteFramesAll() < 0)
     return false;
 
-  if (cluster_list_size_ > 0) {
+  // In kLive mode, call Cluster::Finalize only if |accurate_cluster_duration_|
+  // is set. In all other modes, always call Cluster::Finalize.
+  if ((mode_ == kLive ? accurate_cluster_duration_ : true) &&
+      cluster_list_size_ > 0) {
     // Update last cluster's size
     Cluster* const old_cluster = cluster_list_[cluster_list_size_ - 1];
 
