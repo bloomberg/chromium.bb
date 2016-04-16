@@ -136,7 +136,7 @@ bool ClientSocketHandle::GetLoadTimingInfo(
   return true;
 }
 
-void ClientSocketHandle::SetSocket(scoped_ptr<StreamSocket> s) {
+void ClientSocketHandle::SetSocket(std::unique_ptr<StreamSocket> s) {
   socket_ = std::move(s);
 }
 
@@ -148,7 +148,7 @@ void ClientSocketHandle::OnIOComplete(int result) {
   callback.Run(result);
 }
 
-scoped_ptr<StreamSocket> ClientSocketHandle::PassSocket() {
+std::unique_ptr<StreamSocket> ClientSocketHandle::PassSocket() {
   return std::move(socket_);
 }
 

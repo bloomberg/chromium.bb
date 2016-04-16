@@ -37,7 +37,7 @@ class MockClientSocketPoolManager : public ClientSocketPoolManager {
       const HostPortPair& http_proxy) override;
   SSLClientSocketPool* GetSocketPoolForSSLWithProxy(
       const HostPortPair& proxy_server) override;
-  scoped_ptr<base::Value> SocketPoolInfoToValue() const override;
+  std::unique_ptr<base::Value> SocketPoolInfoToValue() const override;
 
  private:
   typedef internal::OwnedPoolMap<HostPortPair, TransportClientSocketPool*>
@@ -49,8 +49,8 @@ class MockClientSocketPoolManager : public ClientSocketPoolManager {
   typedef internal::OwnedPoolMap<HostPortPair, SSLClientSocketPool*>
       SSLSocketPoolMap;
 
-  scoped_ptr<TransportClientSocketPool> transport_socket_pool_;
-  scoped_ptr<SSLClientSocketPool> ssl_socket_pool_;
+  std::unique_ptr<TransportClientSocketPool> transport_socket_pool_;
+  std::unique_ptr<SSLClientSocketPool> ssl_socket_pool_;
   SOCKSSocketPoolMap socks_socket_pools_;
   HTTPProxySocketPoolMap http_proxy_socket_pools_;
   SSLSocketPoolMap ssl_socket_pools_for_proxies_;

@@ -50,7 +50,7 @@ int TCPServerSocket::GetLocalAddress(IPEndPoint* address) const {
   return socket_.GetLocalAddress(address);
 }
 
-int TCPServerSocket::Accept(scoped_ptr<StreamSocket>* socket,
+int TCPServerSocket::Accept(std::unique_ptr<StreamSocket>* socket,
                             const CompletionCallback& callback) {
   DCHECK(socket);
   DCHECK(!callback.is_null());
@@ -85,9 +85,9 @@ void TCPServerSocket::DetachFromThread() {
 
 int TCPServerSocket::ConvertAcceptedSocket(
     int result,
-    scoped_ptr<StreamSocket>* output_accepted_socket) {
+    std::unique_ptr<StreamSocket>* output_accepted_socket) {
   // Make sure the TCPSocket object is destroyed in any case.
-  scoped_ptr<TCPSocket> temp_accepted_socket(std::move(accepted_socket_));
+  std::unique_ptr<TCPSocket> temp_accepted_socket(std::move(accepted_socket_));
   if (result != OK)
     return result;
 
@@ -98,7 +98,7 @@ int TCPServerSocket::ConvertAcceptedSocket(
 }
 
 void TCPServerSocket::OnAcceptCompleted(
-    scoped_ptr<StreamSocket>* output_accepted_socket,
+    std::unique_ptr<StreamSocket>* output_accepted_socket,
     const CompletionCallback& forward_callback,
     int result) {
   result = ConvertAcceptedSocket(result, output_accepted_socket);

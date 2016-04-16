@@ -79,7 +79,7 @@ class SSLServerSocketNSS : public SSLServerSocket {
  public:
   // See comments on CreateSSLServerSocket for details of how these
   // parameters are used.
-  SSLServerSocketNSS(scoped_ptr<StreamSocket> socket,
+  SSLServerSocketNSS(std::unique_ptr<StreamSocket> socket,
                      X509Certificate* certificate,
                      const crypto::RSAPrivateKey& key,
                      const SSLServerConfig& ssl_server_config);
@@ -187,7 +187,7 @@ class SSLServerSocketNSS : public SSLServerSocket {
   memio_Private* nss_bufs_;
 
   // StreamSocket for sending and receiving data.
-  scoped_ptr<StreamSocket> transport_socket_;
+  std::unique_ptr<StreamSocket> transport_socket_;
 
   // Options for the SSL socket.
   SSLServerConfig ssl_server_config_;
@@ -196,7 +196,7 @@ class SSLServerSocketNSS : public SSLServerSocket {
   scoped_refptr<X509Certificate> cert_;
 
   // Private key used by the server.
-  scoped_ptr<crypto::RSAPrivateKey> key_;
+  std::unique_ptr<crypto::RSAPrivateKey> key_;
 
   State next_handshake_state_;
   bool completed_handshake_;
@@ -205,7 +205,7 @@ class SSLServerSocketNSS : public SSLServerSocket {
 };
 
 SSLServerSocketNSS::SSLServerSocketNSS(
-    scoped_ptr<StreamSocket> transport_socket,
+    std::unique_ptr<StreamSocket> transport_socket,
     X509Certificate* cert,
     const crypto::RSAPrivateKey& key,
     const SSLServerConfig& ssl_server_config)
@@ -946,11 +946,11 @@ int SSLServerSocketNSS::Init() {
 
 }  // namespace
 
-scoped_ptr<SSLServerContext> CreateSSLServerContext(
+std::unique_ptr<SSLServerContext> CreateSSLServerContext(
     X509Certificate* certificate,
     const crypto::RSAPrivateKey& key,
     const SSLServerConfig& ssl_server_config) {
-  return scoped_ptr<SSLServerContext>(
+  return std::unique_ptr<SSLServerContext>(
       new SSLServerContextNSS(certificate, key, ssl_server_config));
 }
 
@@ -966,12 +966,12 @@ SSLServerContextNSS::SSLServerContextNSS(
 
 SSLServerContextNSS::~SSLServerContextNSS() {}
 
-scoped_ptr<SSLServerSocket> SSLServerContextNSS::CreateSSLServerSocket(
-    scoped_ptr<StreamSocket> socket) {
+std::unique_ptr<SSLServerSocket> SSLServerContextNSS::CreateSSLServerSocket(
+    std::unique_ptr<StreamSocket> socket) {
   DCHECK(g_nss_server_sockets_init) << "EnableSSLServerSockets() has not been"
                                     << " called yet!";
 
-  return scoped_ptr<SSLServerSocket>(new SSLServerSocketNSS(
+  return std::unique_ptr<SSLServerSocket>(new SSLServerSocketNSS(
       std::move(socket), cert_.get(), *key_, ssl_server_config_));
 }
 

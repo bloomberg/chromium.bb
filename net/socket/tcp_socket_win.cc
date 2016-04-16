@@ -243,7 +243,7 @@ void TCPSocketWin::Core::WriteDelegate::OnObjectSignaled(
 //-----------------------------------------------------------------------------
 
 TCPSocketWin::TCPSocketWin(
-    scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+    std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     net::NetLog* net_log,
     const net::NetLog::Source& source)
     : socket_(INVALID_SOCKET),
@@ -363,7 +363,7 @@ int TCPSocketWin::Listen(int backlog) {
   return OK;
 }
 
-int TCPSocketWin::Accept(scoped_ptr<TCPSocketWin>* socket,
+int TCPSocketWin::Accept(std::unique_ptr<TCPSocketWin>* socket,
                          IPEndPoint* address,
                          const CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -682,7 +682,7 @@ void TCPSocketWin::EndLoggingMultipleConnectAttempts(int net_error) {
   }
 }
 
-int TCPSocketWin::AcceptInternal(scoped_ptr<TCPSocketWin>* socket,
+int TCPSocketWin::AcceptInternal(std::unique_ptr<TCPSocketWin>* socket,
                                  IPEndPoint* address) {
   SockaddrStorage storage;
   int new_socket = accept(socket_, storage.addr, &storage.addr_len);
@@ -702,7 +702,7 @@ int TCPSocketWin::AcceptInternal(scoped_ptr<TCPSocketWin>* socket,
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, net_error);
     return net_error;
   }
-  scoped_ptr<TCPSocketWin> tcp_socket(
+  std::unique_ptr<TCPSocketWin> tcp_socket(
       new TCPSocketWin(NULL, net_log_.net_log(), net_log_.source()));
   int adopt_result = tcp_socket->AdoptConnectedSocket(new_socket, ip_end_point);
   if (adopt_result != OK) {

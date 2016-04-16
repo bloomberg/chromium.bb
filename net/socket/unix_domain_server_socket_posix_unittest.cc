@@ -4,12 +4,12 @@
 
 #include "net/socket/unix_domain_server_socket_posix.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "net/base/io_buffer.h"
@@ -86,7 +86,7 @@ TEST_F(UnixDomainServerSocketTest, AcceptWithForbiddenUser) {
                                        kUseAbstractNamespace);
   EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
 
-  scoped_ptr<StreamSocket> accepted_socket;
+  std::unique_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             server_socket.Accept(&accepted_socket, accept_callback.callback()));

@@ -55,7 +55,7 @@ class SSLServerSocketOpenSSL : public SSLServerSocket {
  public:
   // See comments on CreateSSLServerSocket for details of how these
   // parameters are used.
-  SSLServerSocketOpenSSL(scoped_ptr<StreamSocket> socket, SSL* ssl);
+  SSLServerSocketOpenSSL(std::unique_ptr<StreamSocket> socket, SSL* ssl);
   ~SSLServerSocketOpenSSL() override;
 
   // SSLServerSocket interface.
@@ -160,7 +160,7 @@ class SSLServerSocketOpenSSL : public SSLServerSocket {
   BIO* transport_bio_;
 
   // StreamSocket for sending and receiving data.
-  scoped_ptr<StreamSocket> transport_socket_;
+  std::unique_ptr<StreamSocket> transport_socket_;
 
   // Certificate for the client.
   scoped_refptr<X509Certificate> client_cert_;
@@ -172,7 +172,7 @@ class SSLServerSocketOpenSSL : public SSLServerSocket {
 };
 
 SSLServerSocketOpenSSL::SSLServerSocketOpenSSL(
-    scoped_ptr<StreamSocket> transport_socket,
+    std::unique_ptr<StreamSocket> transport_socket,
     SSL* ssl)
     : transport_send_busy_(false),
       transport_recv_busy_(false),
@@ -805,7 +805,7 @@ int SSLServerSocketOpenSSL::CertVerifyCallback(X509_STORE_CTX* store_ctx,
   // http://crbug.com/347402
   // The API for Verify supports the parts needed for async completion
   // but is currently expected to complete synchronously.
-  scoped_ptr<ClientCertVerifier::Request> ignore_async;
+  std::unique_ptr<ClientCertVerifier::Request> ignore_async;
   int res =
       verifier->Verify(client_cert.get(), CompletionCallback(), &ignore_async);
   DCHECK_NE(res, ERR_IO_PENDING);
@@ -819,11 +819,11 @@ int SSLServerSocketOpenSSL::CertVerifyCallback(X509_STORE_CTX* store_ctx,
 
 }  // namespace
 
-scoped_ptr<SSLServerContext> CreateSSLServerContext(
+std::unique_ptr<SSLServerContext> CreateSSLServerContext(
     X509Certificate* certificate,
     const crypto::RSAPrivateKey& key,
     const SSLServerConfig& ssl_server_config) {
-  return scoped_ptr<SSLServerContext>(
+  return std::unique_ptr<SSLServerContext>(
       new SSLServerContextOpenSSL(certificate, key, ssl_server_config));
 }
 
@@ -943,10 +943,10 @@ SSLServerContextOpenSSL::SSLServerContextOpenSSL(
 
 SSLServerContextOpenSSL::~SSLServerContextOpenSSL() {}
 
-scoped_ptr<SSLServerSocket> SSLServerContextOpenSSL::CreateSSLServerSocket(
-    scoped_ptr<StreamSocket> socket) {
+std::unique_ptr<SSLServerSocket> SSLServerContextOpenSSL::CreateSSLServerSocket(
+    std::unique_ptr<StreamSocket> socket) {
   SSL* ssl = SSL_new(ssl_ctx_.get());
-  return scoped_ptr<SSLServerSocket>(
+  return std::unique_ptr<SSLServerSocket>(
       new SSLServerSocketOpenSSL(std::move(socket), ssl));
 }
 

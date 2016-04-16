@@ -301,7 +301,7 @@ int TransportConnectJob::DoTransportConnect() {
   helper_.set_next_state(
       TransportConnectJobHelper::STATE_TRANSPORT_CONNECT_COMPLETE);
   // Create a |SocketPerformanceWatcher|, and pass the ownership.
-  scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher;
+  std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher;
   if (socket_performance_watcher_factory_) {
     socket_performance_watcher =
         socket_performance_watcher_factory_->CreateSocketPerformanceWatcher(
@@ -426,7 +426,7 @@ void TransportConnectJob::DoIPv6FallbackTransportConnect() {
   DCHECK(!fallback_addresses_.get());
 
   // Create a |SocketPerformanceWatcher|, and pass the ownership.
-  scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher;
+  std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher;
   if (socket_performance_watcher_factory_) {
     socket_performance_watcher =
         socket_performance_watcher_factory_->CreateSocketPerformanceWatcher(
@@ -505,12 +505,12 @@ void TransportConnectJob::CopyConnectionAttemptsFromSockets() {
   }
 }
 
-scoped_ptr<ConnectJob>
+std::unique_ptr<ConnectJob>
 TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
     const std::string& group_name,
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
-  return scoped_ptr<ConnectJob>(new TransportConnectJob(
+  return std::unique_ptr<ConnectJob>(new TransportConnectJob(
       group_name, request.priority(), request.respect_limits(),
       request.params(), ConnectionTimeout(), client_socket_factory_,
       socket_performance_watcher_factory_, host_resolver_, delegate, net_log_));
@@ -598,7 +598,7 @@ void TransportClientSocketPool::CancelRequest(
 
 void TransportClientSocketPool::ReleaseSocket(
     const std::string& group_name,
-    scoped_ptr<StreamSocket> socket,
+    std::unique_ptr<StreamSocket> socket,
     int id) {
   base_.ReleaseSocket(group_name, std::move(socket), id);
 }
@@ -625,10 +625,10 @@ LoadState TransportClientSocketPool::GetLoadState(
   return base_.GetLoadState(group_name, handle);
 }
 
-scoped_ptr<base::DictionaryValue> TransportClientSocketPool::GetInfoAsValue(
-    const std::string& name,
-    const std::string& type,
-    bool include_nested_pools) const {
+std::unique_ptr<base::DictionaryValue>
+TransportClientSocketPool::GetInfoAsValue(const std::string& name,
+                                          const std::string& type,
+                                          bool include_nested_pools) const {
   return base_.GetInfoAsValue(name, type);
 }
 

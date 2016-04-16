@@ -5,11 +5,11 @@
 #ifndef NET_SOCKET_TRANSPORT_CLIENT_SOCKET_POOL_H_
 #define NET_SOCKET_TRANSPORT_CLIENT_SOCKET_POOL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/host_port_pair.h"
@@ -202,10 +202,10 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
 
   TransportConnectJobHelper helper_;
 
-  scoped_ptr<StreamSocket> transport_socket_;
+  std::unique_ptr<StreamSocket> transport_socket_;
 
-  scoped_ptr<StreamSocket> fallback_transport_socket_;
-  scoped_ptr<AddressList> fallback_addresses_;
+  std::unique_ptr<StreamSocket> fallback_transport_socket_;
+  std::unique_ptr<AddressList> fallback_addresses_;
   base::TimeTicks fallback_connect_start_time_;
   base::OneShotTimer fallback_timer_;
   SocketPerformanceWatcherFactory* socket_performance_watcher_factory_;
@@ -255,7 +255,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
   void CancelRequest(const std::string& group_name,
                      ClientSocketHandle* handle) override;
   void ReleaseSocket(const std::string& group_name,
-                     scoped_ptr<StreamSocket> socket,
+                     std::unique_ptr<StreamSocket> socket,
                      int id) override;
   void FlushWithError(int error) override;
   void CloseIdleSockets() override;
@@ -263,7 +263,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
   int IdleSocketCountInGroup(const std::string& group_name) const override;
   LoadState GetLoadState(const std::string& group_name,
                          const ClientSocketHandle* handle) const override;
-  scoped_ptr<base::DictionaryValue> GetInfoAsValue(
+  std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
       const std::string& type,
       bool include_nested_pools) const override;
@@ -301,7 +301,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
 
     // ClientSocketPoolBase::ConnectJobFactory methods.
 
-    scoped_ptr<ConnectJob> NewConnectJob(
+    std::unique_ptr<ConnectJob> NewConnectJob(
         const std::string& group_name,
         const PoolBase::Request& request,
         ConnectJob::Delegate* delegate) const override;

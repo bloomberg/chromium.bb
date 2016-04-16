@@ -49,7 +49,7 @@ TEST(TCPClientSocketTest, BindLoopbackToLoopback) {
   EXPECT_EQ(ERR_IO_PENDING, socket.Connect(connect_callback.callback()));
 
   TestCompletionCallback accept_callback;
-  scoped_ptr<StreamSocket> accepted_socket;
+  std::unique_ptr<StreamSocket> accepted_socket;
   int result = server.Accept(&accepted_socket, accept_callback.callback());
   if (result == ERR_IO_PENDING)
     result = accept_callback.WaitForResult();
@@ -144,7 +144,7 @@ TEST(TCPClientSocketTest, MAYBE_TestSocketPerformanceWatcher) {
   for (size_t i = 0; i < kNumIPs; ++i)
     ip_list.push_back(IPAddress(72, 14, 213, i));
 
-  scoped_ptr<TestSocketPerformanceWatcher> watcher(
+  std::unique_ptr<TestSocketPerformanceWatcher> watcher(
       new TestSocketPerformanceWatcher());
   TestSocketPerformanceWatcher* watcher_ptr = watcher.get();
 

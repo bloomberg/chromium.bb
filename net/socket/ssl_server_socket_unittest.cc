@@ -375,10 +375,11 @@ class SSLServerSocketTest : public PlatformTest {
     server_socket_.reset();
     channel_1_.reset(new FakeDataChannel());
     channel_2_.reset(new FakeDataChannel());
-    scoped_ptr<ClientSocketHandle> client_connection(new ClientSocketHandle);
-    client_connection->SetSocket(scoped_ptr<StreamSocket>(
+    std::unique_ptr<ClientSocketHandle> client_connection(
+        new ClientSocketHandle);
+    client_connection->SetSocket(std::unique_ptr<StreamSocket>(
         new FakeSocket(channel_1_.get(), channel_2_.get())));
-    scoped_ptr<StreamSocket> server_socket(
+    std::unique_ptr<StreamSocket> server_socket(
         new FakeSocket(channel_2_.get(), channel_1_.get()));
 
     HostPortPair host_and_pair("unittest", 0);
@@ -404,7 +405,8 @@ class SSLServerSocketTest : public PlatformTest {
         ImportCertFromFile(GetTestCertsDirectory(), cert_file_name);
     ASSERT_TRUE(client_ssl_config_.client_cert);
 
-    scoped_ptr<crypto::RSAPrivateKey> key = ReadTestKey(private_key_file_name);
+    std::unique_ptr<crypto::RSAPrivateKey> key =
+        ReadTestKey(private_key_file_name);
     ASSERT_TRUE(key);
 
     client_ssl_config_.client_private_key = WrapOpenSSLPrivateKey(
@@ -441,7 +443,8 @@ class SSLServerSocketTest : public PlatformTest {
     server_ssl_config_.client_cert_verifier = client_cert_verifier_.get();
   }
 
-  scoped_ptr<crypto::RSAPrivateKey> ReadTestKey(const base::StringPiece& name) {
+  std::unique_ptr<crypto::RSAPrivateKey> ReadTestKey(
+      const base::StringPiece& name) {
     base::FilePath certs_dir(GetTestCertsDirectory());
     base::FilePath key_path = certs_dir.AppendASCII(name);
     std::string key_string;
@@ -451,24 +454,24 @@ class SSLServerSocketTest : public PlatformTest {
         reinterpret_cast<const uint8_t*>(key_string.data()),
         reinterpret_cast<const uint8_t*>(key_string.data() +
                                          key_string.length()));
-    scoped_ptr<crypto::RSAPrivateKey> key(
+    std::unique_ptr<crypto::RSAPrivateKey> key(
         crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
     return key;
   }
 #endif
 
-  scoped_ptr<FakeDataChannel> channel_1_;
-  scoped_ptr<FakeDataChannel> channel_2_;
+  std::unique_ptr<FakeDataChannel> channel_1_;
+  std::unique_ptr<FakeDataChannel> channel_2_;
   SSLConfig client_ssl_config_;
   SSLServerConfig server_ssl_config_;
-  scoped_ptr<SSLClientSocket> client_socket_;
-  scoped_ptr<SSLServerSocket> server_socket_;
+  std::unique_ptr<SSLClientSocket> client_socket_;
+  std::unique_ptr<SSLServerSocket> server_socket_;
   ClientSocketFactory* socket_factory_;
-  scoped_ptr<MockCertVerifier> cert_verifier_;
-  scoped_ptr<MockClientCertVerifier> client_cert_verifier_;
-  scoped_ptr<TransportSecurityState> transport_security_state_;
-  scoped_ptr<SSLServerContext> server_context_;
-  scoped_ptr<crypto::RSAPrivateKey> server_private_key_;
+  std::unique_ptr<MockCertVerifier> cert_verifier_;
+  std::unique_ptr<MockClientCertVerifier> client_cert_verifier_;
+  std::unique_ptr<TransportSecurityState> transport_security_state_;
+  std::unique_ptr<SSLServerContext> server_context_;
+  std::unique_ptr<crypto::RSAPrivateKey> server_private_key_;
   scoped_refptr<X509Certificate> server_cert_;
 };
 

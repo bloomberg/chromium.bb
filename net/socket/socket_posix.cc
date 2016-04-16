@@ -142,7 +142,7 @@ int SocketPosix::Listen(int backlog) {
   return OK;
 }
 
-int SocketPosix::Accept(scoped_ptr<SocketPosix>* socket,
+int SocketPosix::Accept(std::unique_ptr<SocketPosix>* socket,
                         const CompletionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(kInvalidSocket, socket_fd_);
@@ -367,7 +367,7 @@ void SocketPosix::OnFileCanWriteWithoutBlocking(int fd) {
   }
 }
 
-int SocketPosix::DoAccept(scoped_ptr<SocketPosix>* socket) {
+int SocketPosix::DoAccept(std::unique_ptr<SocketPosix>* socket) {
   SockaddrStorage new_peer_address;
   int new_socket = HANDLE_EINTR(accept(socket_fd_,
                                        new_peer_address.addr,
@@ -375,7 +375,7 @@ int SocketPosix::DoAccept(scoped_ptr<SocketPosix>* socket) {
   if (new_socket < 0)
     return MapAcceptError(errno);
 
-  scoped_ptr<SocketPosix> accepted_socket(new SocketPosix);
+  std::unique_ptr<SocketPosix> accepted_socket(new SocketPosix);
   int rv = accepted_socket->AdoptConnectedSocket(new_socket, new_peer_address);
   if (rv != OK)
     return rv;

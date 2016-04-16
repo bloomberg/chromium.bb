@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/socket/socks5_client_socket.h"
-
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -16,6 +15,7 @@
 #include "net/log/test_net_log.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/fuzzed_socket.h"
+#include "net/socket/socks5_client_socket.h"
 
 // Fuzzer for Socks5ClientSocket.  Only covers the SOCKS5 greeet and
 // handshake.
@@ -30,11 +30,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   net::BoundTestNetLog bound_test_net_log;
 
   net::TestCompletionCallback callback;
-  scoped_ptr<net::FuzzedSocket> fuzzed_socket(
+  std::unique_ptr<net::FuzzedSocket> fuzzed_socket(
       new net::FuzzedSocket(data, size, bound_test_net_log.bound()));
   CHECK_EQ(net::OK, fuzzed_socket->Connect(callback.callback()));
 
-  scoped_ptr<net::ClientSocketHandle> socket_handle(
+  std::unique_ptr<net::ClientSocketHandle> socket_handle(
       new net::ClientSocketHandle());
   socket_handle->SetSocket(std::move(fuzzed_socket));
 

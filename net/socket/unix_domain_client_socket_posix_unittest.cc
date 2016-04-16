@@ -5,12 +5,13 @@
 #include "net/socket/unix_domain_client_socket_posix.h"
 
 #include <unistd.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -133,7 +134,7 @@ TEST_F(UnixDomainClientSocketTest, Connect) {
                                        kUseAbstractNamespace);
   EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
 
-  scoped_ptr<StreamSocket> accepted_socket;
+  std::unique_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             server_socket.Accept(&accepted_socket, accept_callback.callback()));
@@ -184,7 +185,7 @@ TEST_F(UnixDomainClientSocketTest, ConnectWithSocketDescriptor) {
   // to be sure it hasn't gotten accidentally closed.
   SockaddrStorage addr;
   ASSERT_TRUE(UnixDomainClientSocket::FillAddress(socket_path_, false, &addr));
-  scoped_ptr<SocketPosix> adopter(new SocketPosix);
+  std::unique_ptr<SocketPosix> adopter(new SocketPosix);
   adopter->AdoptConnectedSocket(client_socket_fd, addr);
   UnixDomainClientSocket rewrapped_socket(std::move(adopter));
   EXPECT_TRUE(rewrapped_socket.IsConnected());
@@ -211,7 +212,7 @@ TEST_F(UnixDomainClientSocketTest, ConnectWithAbstractNamespace) {
                                        kUseAbstractNamespace);
   EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
 
-  scoped_ptr<StreamSocket> accepted_socket;
+  std::unique_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             server_socket.Accept(&accepted_socket, accept_callback.callback()));
@@ -256,7 +257,7 @@ TEST_F(UnixDomainClientSocketTest,
 TEST_F(UnixDomainClientSocketTest, DisconnectFromClient) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true), false);
   EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
-  scoped_ptr<StreamSocket> accepted_socket;
+  std::unique_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             server_socket.Accept(&accepted_socket, accept_callback.callback()));
@@ -289,7 +290,7 @@ TEST_F(UnixDomainClientSocketTest, DisconnectFromClient) {
 TEST_F(UnixDomainClientSocketTest, DisconnectFromServer) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true), false);
   EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
-  scoped_ptr<StreamSocket> accepted_socket;
+  std::unique_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             server_socket.Accept(&accepted_socket, accept_callback.callback()));
@@ -322,7 +323,7 @@ TEST_F(UnixDomainClientSocketTest, DisconnectFromServer) {
 TEST_F(UnixDomainClientSocketTest, ReadAfterWrite) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true), false);
   EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
-  scoped_ptr<StreamSocket> accepted_socket;
+  std::unique_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             server_socket.Accept(&accepted_socket, accept_callback.callback()));
@@ -391,7 +392,7 @@ TEST_F(UnixDomainClientSocketTest, ReadAfterWrite) {
 TEST_F(UnixDomainClientSocketTest, ReadBeforeWrite) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true), false);
   EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
-  scoped_ptr<StreamSocket> accepted_socket;
+  std::unique_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             server_socket.Accept(&accepted_socket, accept_callback.callback()));

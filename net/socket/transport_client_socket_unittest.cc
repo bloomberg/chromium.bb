@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
@@ -85,11 +85,11 @@ class TransportClientSocketTest
   uint16_t listen_port_;
   TestNetLog net_log_;
   ClientSocketFactory* const socket_factory_;
-  scoped_ptr<StreamSocket> sock_;
-  scoped_ptr<StreamSocket> connected_sock_;
+  std::unique_ptr<StreamSocket> sock_;
+  std::unique_ptr<StreamSocket> connected_sock_;
 
  private:
-  scoped_ptr<TCPServerSocket> listen_sock_;
+  std::unique_ptr<TCPServerSocket> listen_sock_;
   bool close_server_socket_on_next_send_;
 };
 
@@ -109,7 +109,7 @@ void TransportClientSocketTest::SetUp() {
 
   AddressList addr;
   // MockHostResolver resolves everything to 127.0.0.1.
-  scoped_ptr<HostResolver> resolver(new MockHostResolver());
+  std::unique_ptr<HostResolver> resolver(new MockHostResolver());
   HostResolver::RequestInfo info(HostPortPair("localhost", listen_port_));
   TestCompletionCallback callback;
   int rv = resolver->Resolve(info, DEFAULT_PRIORITY, &addr, callback.callback(),

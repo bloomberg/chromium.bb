@@ -204,31 +204,32 @@ class MockClientSocketFactory : public ClientSocketFactory {
  public:
   MockClientSocketFactory() : allocation_count_(0) {}
 
-  scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
+  std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       NetLog* net_log,
       const NetLog::Source& source) override {
     NOTREACHED();
-    return scoped_ptr<DatagramClientSocket>();
+    return std::unique_ptr<DatagramClientSocket>();
   }
 
-  scoped_ptr<StreamSocket> CreateTransportClientSocket(
+  std::unique_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
-      scoped_ptr<SocketPerformanceWatcher> /* socket_performance_watcher */,
+      std::unique_ptr<
+          SocketPerformanceWatcher> /* socket_performance_watcher */,
       NetLog* /* net_log */,
       const NetLog::Source& /*source*/) override {
     allocation_count_++;
-    return scoped_ptr<StreamSocket>();
+    return std::unique_ptr<StreamSocket>();
   }
 
-  scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
-      scoped_ptr<ClientSocketHandle> transport_socket,
+  std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<ClientSocketHandle> transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) override {
     NOTIMPLEMENTED();
-    return scoped_ptr<SSLClientSocket>();
+    return std::unique_ptr<SSLClientSocket>();
   }
 
   void ClearSSLSessionCache() override { NOTIMPLEMENTED(); }
@@ -313,8 +314,8 @@ class TestConnectJob : public ConnectJob {
     AddressList ignored;
     client_socket_factory_->CreateTransportClientSocket(ignored, NULL, NULL,
                                                         NetLog::Source());
-    SetSocket(
-        scoped_ptr<StreamSocket>(new MockClientSocket(net_log().net_log())));
+    SetSocket(std::unique_ptr<StreamSocket>(
+        new MockClientSocket(net_log().net_log())));
     switch (job_type_) {
       case kMockJob:
         return DoConnect(true /* successful */, false /* sync */,
@@ -391,7 +392,7 @@ class TestConnectJob : public ConnectJob {
       }
       default:
         NOTREACHED();
-        SetSocket(scoped_ptr<StreamSocket>());
+        SetSocket(std::unique_ptr<StreamSocket>());
         return ERR_FAILED;
     }
   }
@@ -404,7 +405,7 @@ class TestConnectJob : public ConnectJob {
       result = ERR_PROXY_AUTH_REQUESTED;
     } else {
       result = ERR_CONNECTION_FAILED;
-      SetSocket(scoped_ptr<StreamSocket>());
+      SetSocket(std::unique_ptr<StreamSocket>());
     }
 
     if (was_async)
@@ -449,7 +450,7 @@ class TestConnectJobFactory
 
   // ConnectJobFactory implementation.
 
-  scoped_ptr<ConnectJob> NewConnectJob(
+  std::unique_ptr<ConnectJob> NewConnectJob(
       const std::string& group_name,
       const TestClientSocketPoolBase::Request& request,
       ConnectJob::Delegate* delegate) const override {
@@ -459,13 +460,9 @@ class TestConnectJobFactory
       job_type = job_types_->front();
       job_types_->pop_front();
     }
-    return scoped_ptr<ConnectJob>(new TestConnectJob(job_type,
-                                                     group_name,
-                                                     request,
-                                                     timeout_duration_,
-                                                     delegate,
-                                                     client_socket_factory_,
-                                                     net_log_));
+    return std::unique_ptr<ConnectJob>(
+        new TestConnectJob(job_type, group_name, request, timeout_duration_,
+                           delegate, client_socket_factory_, net_log_));
   }
 
   base::TimeDelta ConnectionTimeout() const override {
@@ -530,7 +527,7 @@ class TestClientSocketPool : public ClientSocketPool {
   }
 
   void ReleaseSocket(const std::string& group_name,
-                     scoped_ptr<StreamSocket> socket,
+                     std::unique_ptr<StreamSocket> socket,
                      int id) override {
     base_.ReleaseSocket(group_name, std::move(socket), id);
   }
@@ -560,7 +557,7 @@ class TestClientSocketPool : public ClientSocketPool {
     base_.RemoveHigherLayeredPool(higher_pool);
   }
 
-  scoped_ptr<base::DictionaryValue> GetInfoAsValue(
+  std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
       const std::string& type,
       bool include_nested_pools) const override {
@@ -635,8 +632,8 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
 
   void OnConnectJobComplete(int result, ConnectJob* job) override {
     result_ = result;
-    scoped_ptr<ConnectJob> owned_job(job);
-    scoped_ptr<StreamSocket> socket = owned_job->PassSocket();
+    std::unique_ptr<ConnectJob> owned_job(job);
+    std::unique_ptr<StreamSocket> socket = owned_job->PassSocket();
     // socket.get() should be NULL iff result != OK
     EXPECT_EQ(socket == NULL, result != OK);
     have_result_ = true;
@@ -727,7 +724,7 @@ class ClientSocketPoolBaseTest : public testing::Test {
 
   TestSocketRequest* request(int i) { return test_base_.request(i); }
   size_t requests_size() const { return test_base_.requests_size(); }
-  std::vector<scoped_ptr<TestSocketRequest>>* requests() {
+  std::vector<std::unique_ptr<TestSocketRequest>>* requests() {
     return test_base_.requests();
   }
   size_t completion_count() const { return test_base_.completion_count(); }
@@ -738,7 +735,7 @@ class ClientSocketPoolBaseTest : public testing::Test {
   MockClientSocketFactory client_socket_factory_;
   TestConnectJobFactory* connect_job_factory_;
   scoped_refptr<TestSocketParams> params_;
-  scoped_ptr<TestClientSocketPool> pool_;
+  std::unique_ptr<TestClientSocketPool> pool_;
   ClientSocketPoolTest test_base_;
 };
 
@@ -751,14 +748,10 @@ TEST_F(ClientSocketPoolBaseTest, ConnectJob_NoTimeoutOnSynchronousCompletion) {
       &ignored, CompletionCallback(), DEFAULT_PRIORITY,
       ClientSocketPool::RespectLimits::ENABLED,
       internal::ClientSocketPoolBaseHelper::NORMAL, params_, BoundNetLog());
-  scoped_ptr<TestConnectJob> job(
-      new TestConnectJob(TestConnectJob::kMockJob,
-                         "a",
-                         request,
-                         base::TimeDelta::FromMicroseconds(1),
-                         &delegate,
-                         &client_socket_factory_,
-                         NULL));
+  std::unique_ptr<TestConnectJob> job(
+      new TestConnectJob(TestConnectJob::kMockJob, "a", request,
+                         base::TimeDelta::FromMicroseconds(1), &delegate,
+                         &client_socket_factory_, NULL));
   EXPECT_EQ(OK, job->Connect());
 }
 

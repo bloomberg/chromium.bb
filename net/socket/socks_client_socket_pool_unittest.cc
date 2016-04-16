@@ -83,9 +83,9 @@ class SOCKSClientSocketPoolTest : public testing::Test {
     SocketDataProvider* data_provider() { return data_.get(); }
 
    private:
-    scoped_ptr<StaticSocketDataProvider> data_;
-    scoped_ptr<MockWrite[]> writes_;
-    scoped_ptr<MockRead[]> reads_;
+    std::unique_ptr<StaticSocketDataProvider> data_;
+    std::unique_ptr<MockWrite[]> writes_;
+    std::unique_ptr<MockRead[]> reads_;
   };
 
   SOCKSClientSocketPoolTest()
@@ -111,7 +111,7 @@ class SOCKSClientSocketPoolTest : public testing::Test {
     return test_base_.GetOrderOfRequest(index);
   }
 
-  std::vector<scoped_ptr<TestSocketRequest>>* requests() {
+  std::vector<std::unique_ptr<TestSocketRequest>>* requests() {
     return test_base_.requests();
   }
 

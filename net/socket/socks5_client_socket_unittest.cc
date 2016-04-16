@@ -36,27 +36,28 @@ class SOCKS5ClientSocketTest : public PlatformTest {
  public:
   SOCKS5ClientSocketTest();
   // Create a SOCKSClientSocket on top of a MockSocket.
-  scoped_ptr<SOCKS5ClientSocket> BuildMockSocket(MockRead reads[],
-                                                 size_t reads_count,
-                                                 MockWrite writes[],
-                                                 size_t writes_count,
-                                                 const std::string& hostname,
-                                                 int port,
-                                                 NetLog* net_log);
+  std::unique_ptr<SOCKS5ClientSocket> BuildMockSocket(
+      MockRead reads[],
+      size_t reads_count,
+      MockWrite writes[],
+      size_t writes_count,
+      const std::string& hostname,
+      int port,
+      NetLog* net_log);
 
   void SetUp() override;
 
  protected:
   const uint16_t kNwPort;
   TestNetLog net_log_;
-  scoped_ptr<SOCKS5ClientSocket> user_sock_;
+  std::unique_ptr<SOCKS5ClientSocket> user_sock_;
   AddressList address_list_;
   // Filled in by BuildMockSocket() and owned by its return value
   // (which |user_sock| is set to).
   StreamSocket* tcp_sock_;
   TestCompletionCallback callback_;
-  scoped_ptr<MockHostResolver> host_resolver_;
-  scoped_ptr<SocketDataProvider> data_;
+  std::unique_ptr<MockHostResolver> host_resolver_;
+  std::unique_ptr<SocketDataProvider> data_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SOCKS5ClientSocketTest);
@@ -85,7 +86,7 @@ void SOCKS5ClientSocketTest::SetUp() {
   ASSERT_EQ(OK, rv);
 }
 
-scoped_ptr<SOCKS5ClientSocket> SOCKS5ClientSocketTest::BuildMockSocket(
+std::unique_ptr<SOCKS5ClientSocket> SOCKS5ClientSocketTest::BuildMockSocket(
     MockRead reads[],
     size_t reads_count,
     MockWrite writes[],
@@ -104,11 +105,11 @@ scoped_ptr<SOCKS5ClientSocket> SOCKS5ClientSocketTest::BuildMockSocket(
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(tcp_sock_->IsConnected());
 
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  std::unique_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
   // |connection| takes ownership of |tcp_sock_|, but keep a
   // non-owning pointer to it.
-  connection->SetSocket(scoped_ptr<StreamSocket>(tcp_sock_));
-  return scoped_ptr<SOCKS5ClientSocket>(new SOCKS5ClientSocket(
+  connection->SetSocket(std::unique_ptr<StreamSocket>(tcp_sock_));
+  return std::unique_ptr<SOCKS5ClientSocket>(new SOCKS5ClientSocket(
       std::move(connection),
       HostResolver::RequestInfo(HostPortPair(hostname, port))));
 }

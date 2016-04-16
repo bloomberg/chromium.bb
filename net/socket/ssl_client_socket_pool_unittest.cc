@@ -176,13 +176,13 @@ class SSLClientSocketPoolTest
 
   MockClientSocketFactory socket_factory_;
   MockCachingHostResolver host_resolver_;
-  scoped_ptr<CertVerifier> cert_verifier_;
-  scoped_ptr<TransportSecurityState> transport_security_state_;
-  const scoped_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<CertVerifier> cert_verifier_;
+  std::unique_ptr<TransportSecurityState> transport_security_state_;
+  const std::unique_ptr<ProxyService> proxy_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
-  const scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
+  const std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   HttpServerPropertiesImpl http_server_properties_;
-  const scoped_ptr<HttpNetworkSession> session_;
+  const std::unique_ptr<HttpNetworkSession> session_;
 
   scoped_refptr<TransportSocketParams> direct_transport_socket_params_;
   MockTransportClientSocketPool transport_socket_pool_;
@@ -196,7 +196,7 @@ class SSLClientSocketPoolTest
   HttpProxyClientSocketPool http_proxy_socket_pool_;
 
   SSLConfig ssl_config_;
-  scoped_ptr<SSLClientSocketPool> pool_;
+  std::unique_ptr<SSLClientSocketPool> pool_;
 };
 
 INSTANTIATE_TEST_CASE_P(NextProto,
@@ -794,7 +794,7 @@ TEST_P(SSLClientSocketPoolTest, NeedProxyAuth) {
   EXPECT_FALSE(handle.is_ssl_error());
   const HttpResponseInfo& tunnel_info = handle.ssl_error_response_info();
   EXPECT_EQ(tunnel_info.headers->response_code(), 407);
-  scoped_ptr<ClientSocketHandle> tunnel_handle(
+  std::unique_ptr<ClientSocketHandle> tunnel_handle(
       handle.release_pending_http_proxy_connection());
   EXPECT_TRUE(tunnel_handle->socket());
   EXPECT_FALSE(tunnel_handle->socket()->IsConnected());

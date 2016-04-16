@@ -80,11 +80,11 @@ size_t CiphersCopy(const uint16_t* in, uint16_t* out) {
   }
 }
 
-scoped_ptr<base::Value> NetLogSSLErrorCallback(
+std::unique_ptr<base::Value> NetLogSSLErrorCallback(
     int net_error,
     int ssl_lib_error,
     NetLogCaptureMode /* capture_mode */) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("net_error", net_error);
   if (ssl_lib_error)
     dict->SetInteger("ssl_lib_error", ssl_lib_error);
@@ -157,7 +157,7 @@ class NSSSSLInitSingleton {
         TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
         TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, 0,
     };
-    scoped_ptr<uint16_t[]> ciphers(new uint16_t[num_ciphers]);
+    std::unique_ptr<uint16_t[]> ciphers(new uint16_t[num_ciphers]);
     memcpy(ciphers.get(), ssl_ciphers, sizeof(uint16_t) * num_ciphers);
 
     if (CiphersRemove(chacha_ciphers, ciphers.get(), num_ciphers) &&
@@ -380,12 +380,12 @@ int MapNSSError(PRErrorCode err) {
 // Returns parameters to attach to the NetLog when we receive an error in
 // response to a call to an NSS function.  Used instead of
 // NetLogSSLErrorCallback with events of type TYPE_SSL_NSS_ERROR.
-scoped_ptr<base::Value> NetLogSSLFailedNSSFunctionCallback(
+std::unique_ptr<base::Value> NetLogSSLFailedNSSFunctionCallback(
     const char* function,
     const char* param,
     int ssl_lib_error,
     NetLogCaptureMode /* capture_mode */) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("function", function);
   if (param[0] != '\0')
     dict->SetString("param", param);

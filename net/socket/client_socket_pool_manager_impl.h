@@ -6,12 +6,12 @@
 #define NET_SOCKET_CLIENT_SOCKET_POOL_MANAGER_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <type_traits>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/cert/cert_database.h"
@@ -87,7 +87,7 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
       const HostPortPair& proxy_server) override;
 
   // Creates a Value summary of the state of the socket pools.
-  scoped_ptr<base::Value> SocketPoolInfoToValue() const override;
+  std::unique_ptr<base::Value> SocketPoolInfoToValue() const override;
 
   // CertDatabase::Observer methods:
   void OnCertAdded(const X509Certificate* cert) override;
@@ -118,8 +118,8 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
 
   // Note: this ordering is important.
 
-  scoped_ptr<TransportClientSocketPool> transport_socket_pool_;
-  scoped_ptr<SSLClientSocketPool> ssl_socket_pool_;
+  std::unique_ptr<TransportClientSocketPool> transport_socket_pool_;
+  std::unique_ptr<SSLClientSocketPool> ssl_socket_pool_;
   TransportSocketPoolMap transport_socket_pools_for_socks_proxies_;
   SOCKSSocketPoolMap socks_socket_pools_;
   TransportSocketPoolMap transport_socket_pools_for_http_proxies_;

@@ -139,7 +139,7 @@ void CheckSupportAndMaybeEnableTCPFastOpen(bool user_enabled) {
 }
 
 TCPSocketPosix::TCPSocketPosix(
-    scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+    std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     NetLog* net_log,
     const NetLog::Source& source)
     : socket_performance_watcher_(std::move(socket_performance_watcher)),
@@ -202,7 +202,7 @@ int TCPSocketPosix::Listen(int backlog) {
   return socket_->Listen(backlog);
 }
 
-int TCPSocketPosix::Accept(scoped_ptr<TCPSocketPosix>* tcp_socket,
+int TCPSocketPosix::Accept(std::unique_ptr<TCPSocketPosix>* tcp_socket,
                            IPEndPoint* address,
                            const CompletionCallback& callback) {
   DCHECK(tcp_socket);
@@ -483,20 +483,21 @@ void TCPSocketPosix::EndLoggingMultipleConnectAttempts(int net_error) {
 }
 
 void TCPSocketPosix::SetTickClockForTesting(
-    scoped_ptr<base::TickClock> tick_clock) {
+    std::unique_ptr<base::TickClock> tick_clock) {
   tick_clock_ = std::move(tick_clock);
 }
 
-void TCPSocketPosix::AcceptCompleted(scoped_ptr<TCPSocketPosix>* tcp_socket,
-                                     IPEndPoint* address,
-                                     const CompletionCallback& callback,
-                                     int rv) {
+void TCPSocketPosix::AcceptCompleted(
+    std::unique_ptr<TCPSocketPosix>* tcp_socket,
+    IPEndPoint* address,
+    const CompletionCallback& callback,
+    int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
   callback.Run(HandleAcceptCompleted(tcp_socket, address, rv));
 }
 
 int TCPSocketPosix::HandleAcceptCompleted(
-    scoped_ptr<TCPSocketPosix>* tcp_socket,
+    std::unique_ptr<TCPSocketPosix>* tcp_socket,
     IPEndPoint* address,
     int rv) {
   if (rv == OK)
@@ -512,8 +513,9 @@ int TCPSocketPosix::HandleAcceptCompleted(
   return rv;
 }
 
-int TCPSocketPosix::BuildTcpSocketPosix(scoped_ptr<TCPSocketPosix>* tcp_socket,
-                                        IPEndPoint* address) {
+int TCPSocketPosix::BuildTcpSocketPosix(
+    std::unique_ptr<TCPSocketPosix>* tcp_socket,
+    IPEndPoint* address) {
   DCHECK(accept_socket_);
 
   SockaddrStorage storage;

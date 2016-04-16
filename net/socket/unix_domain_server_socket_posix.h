@@ -8,11 +8,11 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/socket/server_socket.h"
 #include "net/socket/socket_descriptor.h"
@@ -56,7 +56,7 @@ class NET_EXPORT UnixDomainServerSocket : public ServerSocket {
                                uint16_t port,
                                int backlog) override;
   int GetLocalAddress(IPEndPoint* address) const override;
-  int Accept(scoped_ptr<StreamSocket>* socket,
+  int Accept(std::unique_ptr<StreamSocket>* socket,
              const CompletionCallback& callback) override;
 
   // Creates a server socket, binds it to the specified |socket_path| and
@@ -72,7 +72,7 @@ class NET_EXPORT UnixDomainServerSocket : public ServerSocket {
   // A callback to wrap the setting of the out-parameter to Accept().
   // This allows the internal machinery of that call to be implemented in
   // a manner that's agnostic to the caller's desired output.
-  typedef base::Callback<void(scoped_ptr<SocketPosix>)> SetterCallback;
+  typedef base::Callback<void(std::unique_ptr<SocketPosix>)> SetterCallback;
 
   int DoAccept(const SetterCallback& setter_callback,
                const CompletionCallback& callback);
@@ -81,11 +81,11 @@ class NET_EXPORT UnixDomainServerSocket : public ServerSocket {
                        int rv);
   bool AuthenticateAndGetStreamSocket(const SetterCallback& setter_callback);
 
-  scoped_ptr<SocketPosix> listen_socket_;
+  std::unique_ptr<SocketPosix> listen_socket_;
   const AuthCallback auth_callback_;
   const bool use_abstract_namespace_;
 
-  scoped_ptr<SocketPosix> accept_socket_;
+  std::unique_ptr<SocketPosix> accept_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainServerSocket);
 };

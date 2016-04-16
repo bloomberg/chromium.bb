@@ -7,11 +7,11 @@
 #include <stddef.h>
 #include <string.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
@@ -89,7 +89,7 @@ class TCPSocketTest : public PlatformTest {
 
   void TestAcceptAsync() {
     TestCompletionCallback accept_callback;
-    scoped_ptr<TCPSocket> accepted_socket;
+    std::unique_ptr<TCPSocket> accepted_socket;
     IPEndPoint accepted_address;
     ASSERT_EQ(ERR_IO_PENDING,
               socket_.Accept(&accepted_socket, &accepted_address,
@@ -127,14 +127,14 @@ class TCPSocketTest : public PlatformTest {
                             size_t expect_rtt_notification_count) {
     ASSERT_NO_FATAL_FAILURE(SetUpListenIPv4());
 
-    scoped_ptr<base::SimpleTestTickClock> tick_clock(
+    std::unique_ptr<base::SimpleTestTickClock> tick_clock(
         new base::SimpleTestTickClock());
     base::SimpleTestTickClock* tick_clock_ptr = tick_clock.get();
     tick_clock_ptr->SetNowTicks(base::TimeTicks::Now());
 
     TestCompletionCallback connect_callback;
 
-    scoped_ptr<TestSocketPerformanceWatcher> watcher(
+    std::unique_ptr<TestSocketPerformanceWatcher> watcher(
         new TestSocketPerformanceWatcher(should_notify_updated_rtt));
     TestSocketPerformanceWatcher* watcher_ptr = watcher.get();
 
@@ -146,7 +146,7 @@ class TCPSocketTest : public PlatformTest {
     connecting_socket.Connect(local_address_, connect_callback.callback());
 
     TestCompletionCallback accept_callback;
-    scoped_ptr<TCPSocket> accepted_socket;
+    std::unique_ptr<TCPSocket> accepted_socket;
     IPEndPoint accepted_address;
     result = socket_.Accept(&accepted_socket, &accepted_address,
                             accept_callback.callback());
@@ -210,7 +210,7 @@ TEST_F(TCPSocketTest, Accept) {
   connecting_socket.Connect(connect_callback.callback());
 
   TestCompletionCallback accept_callback;
-  scoped_ptr<TCPSocket> accepted_socket;
+  std::unique_ptr<TCPSocket> accepted_socket;
   IPEndPoint accepted_address;
   int result = socket_.Accept(&accepted_socket, &accepted_address,
                               accept_callback.callback());
@@ -256,7 +256,7 @@ TEST_F(TCPSocketTest, Accept2Connections) {
   ASSERT_NO_FATAL_FAILURE(SetUpListenIPv4());
 
   TestCompletionCallback accept_callback;
-  scoped_ptr<TCPSocket> accepted_socket;
+  std::unique_ptr<TCPSocket> accepted_socket;
   IPEndPoint accepted_address;
 
   ASSERT_EQ(ERR_IO_PENDING,
@@ -276,7 +276,7 @@ TEST_F(TCPSocketTest, Accept2Connections) {
   EXPECT_EQ(OK, accept_callback.WaitForResult());
 
   TestCompletionCallback accept_callback2;
-  scoped_ptr<TCPSocket> accepted_socket2;
+  std::unique_ptr<TCPSocket> accepted_socket2;
   IPEndPoint accepted_address2;
 
   int result = socket_.Accept(&accepted_socket2, &accepted_address2,
@@ -309,7 +309,7 @@ TEST_F(TCPSocketTest, AcceptIPv6) {
   connecting_socket.Connect(connect_callback.callback());
 
   TestCompletionCallback accept_callback;
-  scoped_ptr<TCPSocket> accepted_socket;
+  std::unique_ptr<TCPSocket> accepted_socket;
   IPEndPoint accepted_address;
   int result = socket_.Accept(&accepted_socket, &accepted_address,
                               accept_callback.callback());
@@ -335,7 +335,7 @@ TEST_F(TCPSocketTest, ReadWrite) {
   connecting_socket.Connect(local_address_, connect_callback.callback());
 
   TestCompletionCallback accept_callback;
-  scoped_ptr<TCPSocket> accepted_socket;
+  std::unique_ptr<TCPSocket> accepted_socket;
   IPEndPoint accepted_address;
   result = socket_.Accept(&accepted_socket, &accepted_address,
                           accept_callback.callback());

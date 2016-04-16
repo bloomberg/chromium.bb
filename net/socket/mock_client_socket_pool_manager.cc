@@ -87,10 +87,10 @@ SSLClientSocketPool* MockClientSocketPoolManager::GetSocketPoolForSSLWithProxy(
   return NULL;
 }
 
-scoped_ptr<base::Value> MockClientSocketPoolManager::SocketPoolInfoToValue()
-    const {
+std::unique_ptr<base::Value>
+MockClientSocketPoolManager::SocketPoolInfoToValue() const {
   NOTIMPLEMENTED();
-  return scoped_ptr<base::Value>(nullptr);
+  return std::unique_ptr<base::Value>(nullptr);
 }
 
 }  // namespace net

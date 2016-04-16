@@ -100,14 +100,14 @@ class WebSocketTransportClientSocketPoolTest : public ::testing::Test {
 
   TestSocketRequest* request(int i) { return test_base_.request(i); }
 
-  std::vector<scoped_ptr<TestSocketRequest>>* requests() {
+  std::vector<std::unique_ptr<TestSocketRequest>>* requests() {
     return test_base_.requests();
   }
   size_t completion_count() const { return test_base_.completion_count(); }
 
   TestNetLog net_log_;
   scoped_refptr<TransportSocketParams> params_;
-  scoped_ptr<MockHostResolver> host_resolver_;
+  std::unique_ptr<MockHostResolver> host_resolver_;
   MockTransportClientSocketFactory client_socket_factory_;
   WebSocketTransportClientSocketPool pool_;
   ClientSocketPoolTest test_base_;
@@ -463,7 +463,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, LockReleasedOnHandleReset) {
 // The lock on the endpoint is released when a ClientSocketHandle is deleted.
 TEST_F(WebSocketTransportClientSocketPoolTest, LockReleasedOnHandleDelete) {
   TestCompletionCallback callback;
-  scoped_ptr<ClientSocketHandle> handle(new ClientSocketHandle);
+  std::unique_ptr<ClientSocketHandle> handle(new ClientSocketHandle);
   int rv =
       handle->Init("a", params_, LOW, ClientSocketPool::RespectLimits::ENABLED,
                    callback.callback(), &pool_, BoundNetLog());

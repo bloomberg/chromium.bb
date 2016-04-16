@@ -11,8 +11,9 @@
 #include <nss.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/nss_memio.h"
@@ -29,8 +30,8 @@ class SSLServerContextNSS : public SSLServerContext {
                       const SSLServerConfig& ssl_server_config);
   ~SSLServerContextNSS() override;
 
-  scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
-      scoped_ptr<StreamSocket> socket) override;
+  std::unique_ptr<SSLServerSocket> CreateSSLServerSocket(
+      std::unique_ptr<StreamSocket> socket) override;
 
  private:
   // Options for the SSL socket.
@@ -40,7 +41,7 @@ class SSLServerContextNSS : public SSLServerContext {
   scoped_refptr<X509Certificate> cert_;
 
   // Private key used by the server.
-  scoped_ptr<crypto::RSAPrivateKey> key_;
+  std::unique_ptr<crypto::RSAPrivateKey> key_;
 };
 
 }  // namespace net

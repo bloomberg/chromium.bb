@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/log/net_log.h"
@@ -34,8 +35,8 @@ class SSLServerContextOpenSSL : public SSLServerContext {
                           const SSLServerConfig& ssl_server_config);
   ~SSLServerContextOpenSSL() override;
 
-  scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
-      scoped_ptr<StreamSocket> socket) override;
+  std::unique_ptr<SSLServerSocket> CreateSSLServerSocket(
+      std::unique_ptr<StreamSocket> socket) override;
 
  private:
   ScopedSSL_CTX ssl_ctx_;
@@ -47,7 +48,7 @@ class SSLServerContextOpenSSL : public SSLServerContext {
   scoped_refptr<X509Certificate> cert_;
 
   // Private key used by the server.
-  scoped_ptr<crypto::RSAPrivateKey> key_;
+  std::unique_ptr<crypto::RSAPrivateKey> key_;
 };
 
 }  // namespace net

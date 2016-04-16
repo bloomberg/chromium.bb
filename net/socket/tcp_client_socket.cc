@@ -20,7 +20,7 @@ namespace net {
 
 TCPClientSocket::TCPClientSocket(
     const AddressList& addresses,
-    scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+    std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     net::NetLog* net_log,
     const net::NetLog::Source& source)
     : socket_performance_watcher_(socket_performance_watcher.get()),
@@ -33,7 +33,7 @@ TCPClientSocket::TCPClientSocket(
       previously_disconnected_(false),
       total_received_bytes_(0) {}
 
-TCPClientSocket::TCPClientSocket(scoped_ptr<TCPSocket> connected_socket,
+TCPClientSocket::TCPClientSocket(std::unique_ptr<TCPSocket> connected_socket,
                                  const IPEndPoint& peer_address)
     : socket_performance_watcher_(nullptr),
       socket_(std::move(connected_socket)),

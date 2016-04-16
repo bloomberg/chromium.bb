@@ -21,7 +21,8 @@ UnixDomainClientSocket::UnixDomainClientSocket(const std::string& socket_path,
       use_abstract_namespace_(use_abstract_namespace) {
 }
 
-UnixDomainClientSocket::UnixDomainClientSocket(scoped_ptr<SocketPosix> socket)
+UnixDomainClientSocket::UnixDomainClientSocket(
+    std::unique_ptr<SocketPosix> socket)
     : use_abstract_namespace_(false), socket_(std::move(socket)) {}
 
 UnixDomainClientSocket::~UnixDomainClientSocket() {

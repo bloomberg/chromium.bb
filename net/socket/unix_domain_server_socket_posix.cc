@@ -21,13 +21,13 @@ namespace net {
 namespace {
 
 // Intended for use as SetterCallbacks in Accept() helper methods.
-void SetStreamSocket(scoped_ptr<StreamSocket>* socket,
-                     scoped_ptr<SocketPosix> accepted_socket) {
+void SetStreamSocket(std::unique_ptr<StreamSocket>* socket,
+                     std::unique_ptr<SocketPosix> accepted_socket) {
   socket->reset(new UnixDomainClientSocket(std::move(accepted_socket)));
 }
 
 void SetSocketDescriptor(SocketDescriptor* socket,
-                         scoped_ptr<SocketPosix> accepted_socket) {
+                         std::unique_ptr<SocketPosix> accepted_socket) {
   *socket = accepted_socket->ReleaseConnectedSocket();
 }
 
@@ -86,7 +86,7 @@ int UnixDomainServerSocket::BindAndListen(const std::string& socket_path,
     return ERR_ADDRESS_INVALID;
   }
 
-  scoped_ptr<SocketPosix> socket(new SocketPosix);
+  std::unique_ptr<SocketPosix> socket(new SocketPosix);
   int rv = socket->Open(AF_UNIX);
   DCHECK_NE(ERR_IO_PENDING, rv);
   if (rv != OK)
@@ -118,7 +118,7 @@ int UnixDomainServerSocket::GetLocalAddress(IPEndPoint* address) const {
   return ERR_ADDRESS_INVALID;
 }
 
-int UnixDomainServerSocket::Accept(scoped_ptr<StreamSocket>* socket,
+int UnixDomainServerSocket::Accept(std::unique_ptr<StreamSocket>* socket,
                                    const CompletionCallback& callback) {
   DCHECK(socket);
 

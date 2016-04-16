@@ -330,9 +330,9 @@ SSLClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
   return ret.first->second;
 }
 
-scoped_ptr<base::Value> ClientSocketPoolManagerImpl::SocketPoolInfoToValue()
-    const {
-  scoped_ptr<base::ListValue> list(new base::ListValue());
+std::unique_ptr<base::Value>
+ClientSocketPoolManagerImpl::SocketPoolInfoToValue() const {
+  std::unique_ptr<base::ListValue> list(new base::ListValue());
   list->Append(transport_socket_pool_->GetInfoAsValue("transport_socket_pool",
                                                 "transport_socket_pool",
                                                 false));

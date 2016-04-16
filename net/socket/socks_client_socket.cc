@@ -57,7 +57,7 @@ static_assert(sizeof(SOCKS4ServerResponse) == kReadHeaderSize,
               "socks4 server response struct has incorrect size");
 
 SOCKSClientSocket::SOCKSClientSocket(
-    scoped_ptr<ClientSocketHandle> transport_socket,
+    std::unique_ptr<ClientSocketHandle> transport_socket,
     const HostResolver::RequestInfo& req_info,
     RequestPriority priority,
     HostResolver* host_resolver)

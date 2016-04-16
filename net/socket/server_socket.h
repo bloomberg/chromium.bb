@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
@@ -39,7 +39,7 @@ class NET_EXPORT ServerSocket {
 
   // Accepts connection. Callback is called when new connection is
   // accepted.
-  virtual int Accept(scoped_ptr<StreamSocket>* socket,
+  virtual int Accept(std::unique_ptr<StreamSocket>* socket,
                      const CompletionCallback& callback) = 0;
 
  private:

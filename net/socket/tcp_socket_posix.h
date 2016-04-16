@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_callback.h"
@@ -34,7 +35,7 @@ class NET_EXPORT TCPSocketPosix {
   // |socket_performance_watcher| is notified of the performance metrics related
   // to this socket. |socket_performance_watcher| may be null.
   TCPSocketPosix(
-      scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+      std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log,
       const NetLog::Source& source);
   virtual ~TCPSocketPosix();
@@ -46,7 +47,7 @@ class NET_EXPORT TCPSocketPosix {
   int Bind(const IPEndPoint& address);
 
   int Listen(int backlog);
-  int Accept(scoped_ptr<TCPSocketPosix>* socket,
+  int Accept(std::unique_ptr<TCPSocketPosix>* socket,
              IPEndPoint* address,
              const CompletionCallback& callback);
 
@@ -105,7 +106,7 @@ class NET_EXPORT TCPSocketPosix {
   void StartLoggingMultipleConnectAttempts(const AddressList& addresses);
   void EndLoggingMultipleConnectAttempts(int net_error);
 
-  void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
+  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
 
   const BoundNetLog& net_log() const { return net_log_; }
 
@@ -179,14 +180,14 @@ class NET_EXPORT TCPSocketPosix {
     TCP_FASTOPEN_MAX_VALUE
   };
 
-  void AcceptCompleted(scoped_ptr<TCPSocketPosix>* tcp_socket,
+  void AcceptCompleted(std::unique_ptr<TCPSocketPosix>* tcp_socket,
                        IPEndPoint* address,
                        const CompletionCallback& callback,
                        int rv);
-  int HandleAcceptCompleted(scoped_ptr<TCPSocketPosix>* tcp_socket,
+  int HandleAcceptCompleted(std::unique_ptr<TCPSocketPosix>* tcp_socket,
                             IPEndPoint* address,
                             int rv);
-  int BuildTcpSocketPosix(scoped_ptr<TCPSocketPosix>* tcp_socket,
+  int BuildTcpSocketPosix(std::unique_ptr<TCPSocketPosix>* tcp_socket,
                           IPEndPoint* address);
 
   void ConnectCompleted(const CompletionCallback& callback, int rv);
@@ -214,14 +215,14 @@ class NET_EXPORT TCPSocketPosix {
   // Called after the first read completes on a TCP FastOpen socket.
   void UpdateTCPFastOpenStatusAfterRead();
 
-  scoped_ptr<SocketPosix> socket_;
-  scoped_ptr<SocketPosix> accept_socket_;
+  std::unique_ptr<SocketPosix> socket_;
+  std::unique_ptr<SocketPosix> accept_socket_;
 
   // Socket performance statistics (such as RTT) are reported to the
   // |socket_performance_watcher_|. May be nullptr.
-  scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher_;
+  std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher_;
 
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // Minimum interval betweeen consecutive notifications to
   // |socket_performance_watcher_|.

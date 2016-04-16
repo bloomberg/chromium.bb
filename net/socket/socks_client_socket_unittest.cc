@@ -4,10 +4,10 @@
 
 #include "net/socket/socks_client_socket.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/winsock_init.h"
@@ -34,23 +34,26 @@ class SOCKSClientSocketTest : public PlatformTest {
  public:
   SOCKSClientSocketTest();
   // Create a SOCKSClientSocket on top of a MockSocket.
-  scoped_ptr<SOCKSClientSocket> BuildMockSocket(
-      MockRead reads[], size_t reads_count,
-      MockWrite writes[], size_t writes_count,
+  std::unique_ptr<SOCKSClientSocket> BuildMockSocket(
+      MockRead reads[],
+      size_t reads_count,
+      MockWrite writes[],
+      size_t writes_count,
       HostResolver* host_resolver,
-      const std::string& hostname, int port,
+      const std::string& hostname,
+      int port,
       NetLog* net_log);
   void SetUp() override;
 
  protected:
-  scoped_ptr<SOCKSClientSocket> user_sock_;
+  std::unique_ptr<SOCKSClientSocket> user_sock_;
   AddressList address_list_;
   // Filled in by BuildMockSocket() and owned by its return value
   // (which |user_sock| is set to).
   StreamSocket* tcp_sock_;
   TestCompletionCallback callback_;
-  scoped_ptr<MockHostResolver> host_resolver_;
-  scoped_ptr<SocketDataProvider> data_;
+  std::unique_ptr<MockHostResolver> host_resolver_;
+  std::unique_ptr<SocketDataProvider> data_;
 };
 
 SOCKSClientSocketTest::SOCKSClientSocketTest()
@@ -62,7 +65,7 @@ void SOCKSClientSocketTest::SetUp() {
   PlatformTest::SetUp();
 }
 
-scoped_ptr<SOCKSClientSocket> SOCKSClientSocketTest::BuildMockSocket(
+std::unique_ptr<SOCKSClientSocket> SOCKSClientSocketTest::BuildMockSocket(
     MockRead reads[],
     size_t reads_count,
     MockWrite writes[],
@@ -71,7 +74,6 @@ scoped_ptr<SOCKSClientSocket> SOCKSClientSocketTest::BuildMockSocket(
     const std::string& hostname,
     int port,
     NetLog* net_log) {
-
   TestCompletionCallback callback;
   data_.reset(new StaticSocketDataProvider(reads, reads_count,
                                            writes, writes_count));
@@ -83,11 +85,11 @@ scoped_ptr<SOCKSClientSocket> SOCKSClientSocketTest::BuildMockSocket(
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(tcp_sock_->IsConnected());
 
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  std::unique_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
   // |connection| takes ownership of |tcp_sock_|, but keep a
   // non-owning pointer to it.
-  connection->SetSocket(scoped_ptr<StreamSocket>(tcp_sock_));
-  return scoped_ptr<SOCKSClientSocket>(new SOCKSClientSocket(
+  connection->SetSocket(std::unique_ptr<StreamSocket>(tcp_sock_));
+  return std::unique_ptr<SOCKSClientSocket>(new SOCKSClientSocket(
       std::move(connection),
       HostResolver::RequestInfo(HostPortPair(hostname, port)), DEFAULT_PRIORITY,
       host_resolver));
@@ -387,8 +389,8 @@ TEST_F(SOCKSClientSocketTest, FailedDNS) {
 // Calls Disconnect() while a host resolve is in progress. The outstanding host
 // resolve should be cancelled.
 TEST_F(SOCKSClientSocketTest, DisconnectWhileHostResolveInProgress) {
-  scoped_ptr<HangingHostResolverWithCancel> hanging_resolver(
-    new HangingHostResolverWithCancel());
+  std::unique_ptr<HangingHostResolverWithCancel> hanging_resolver(
+      new HangingHostResolverWithCancel());
 
   // Doesn't matter what the socket data is, we will never use it -- garbage.
   MockWrite data_writes[] = { MockWrite(SYNCHRONOUS, "", 0) };
@@ -438,7 +440,7 @@ TEST_F(SOCKSClientSocketTest, NoIPv6) {
 TEST_F(SOCKSClientSocketTest, NoIPv6RealResolver) {
   const char kHostName[] = "::1";
 
-  scoped_ptr<HostResolver> host_resolver(
+  std::unique_ptr<HostResolver> host_resolver(
       HostResolver::CreateSystemResolver(HostResolver::Options(), NULL));
 
   user_sock_ = BuildMockSocket(NULL, 0,

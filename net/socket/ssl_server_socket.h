@@ -5,7 +5,8 @@
 #ifndef NET_SOCKET_SSL_SERVER_SOCKET_H_
 #define NET_SOCKET_SSL_SERVER_SOCKET_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/socket/ssl_socket.h"
@@ -41,8 +42,8 @@ class SSLServerContext {
   //
   // The caller starts the SSL server handshake by calling Handshake on the
   // returned socket.
-  virtual scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
-      scoped_ptr<StreamSocket> socket) = 0;
+  virtual std::unique_ptr<SSLServerSocket> CreateSSLServerSocket(
+      std::unique_ptr<StreamSocket> socket) = 0;
 };
 
 // Configures the underlying SSL library for the use of SSL server sockets.
@@ -62,7 +63,7 @@ NET_EXPORT void EnableSSLServerSockets();
 // It takes a reference to |certificate|.
 // The |key| and |ssl_config| parameters are copied.
 //
-NET_EXPORT scoped_ptr<SSLServerContext> CreateSSLServerContext(
+NET_EXPORT std::unique_ptr<SSLServerContext> CreateSSLServerContext(
     X509Certificate* certificate,
     const crypto::RSAPrivateKey& key,
     const SSLServerConfig& ssl_config);
