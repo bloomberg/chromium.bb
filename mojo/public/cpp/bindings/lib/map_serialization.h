@@ -71,7 +71,7 @@ struct MapSerializer<
       typename RemovePointer<typename GetDataTypeAsArrayElement<S>::Data>::type
           S_Data;
   static size_t GetBaseArraySize(size_t count) {
-    return count * sizeof(StructPointer<S_Data>);
+    return count * sizeof(Pointer<S_Data>);
   }
   static size_t GetItemSize(const S& item, SerializationContext* context) {
     return GetSerializedSize_(item, context);
@@ -91,7 +91,7 @@ struct MapSerializer<U, U_Data, true, true> {
 template <>
 struct MapSerializer<String, String_Data*, false, false> {
   static size_t GetBaseArraySize(size_t count) {
-    return count * sizeof(StringPointer);
+    return count * sizeof(Pointer<String_Data>);
   }
   static size_t GetItemSize(const String& item, SerializationContext* context) {
     return GetSerializedSize_(item, context);

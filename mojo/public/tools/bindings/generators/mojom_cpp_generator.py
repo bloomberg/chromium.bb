@@ -347,14 +347,15 @@ def GetCppConstWrapperType(kind):
 
 def GetCppFieldType(kind):
   if mojom.IsStructKind(kind):
-    return ("mojo::internal::StructPointer<%s>" %
+    return ("mojo::internal::Pointer<%s>" %
         GetNameForKind(kind, internal=True))
   if mojom.IsUnionKind(kind):
     return "%s" % GetNameForKind(kind, internal=True)
   if mojom.IsArrayKind(kind):
-    return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
+    return ("mojo::internal::Pointer<mojo::internal::Array_Data<%s>>" %
+            GetCppType(kind.kind))
   if mojom.IsMapKind(kind):
-    return ("mojo::internal::StructPointer<mojo::internal::Map_Data<%s, %s>>" %
+    return ("mojo::internal::Pointer<mojo::internal::Map_Data<%s, %s>>" %
             (GetCppType(kind.key_kind), GetCppType(kind.value_kind)))
   if mojom.IsInterfaceKind(kind):
     return "mojo::internal::Interface_Data"
@@ -367,7 +368,7 @@ def GetCppFieldType(kind):
   if mojom.IsEnumKind(kind):
     return "int32_t"
   if mojom.IsStringKind(kind):
-    return "mojo::internal::StringPointer"
+    return "mojo::internal::Pointer<mojo::internal::String_Data>"
   return _kind_to_cpp_type[kind]
 
 def GetCppUnionFieldType(kind):
@@ -378,8 +379,7 @@ def GetCppUnionFieldType(kind):
   if mojom.IsEnumKind(kind):
     return "int32_t"
   if mojom.IsUnionKind(kind):
-    return ("mojo::internal::UnionPointer<%s>" %
-        GetNameForKind(kind, internal=True))
+    return ("mojo::internal::Pointer<%s>" % GetNameForKind(kind, internal=True))
   return GetCppFieldType(kind)
 
 def GetUnionGetterReturnType(kind):

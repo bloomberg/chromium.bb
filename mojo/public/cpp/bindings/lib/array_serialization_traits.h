@@ -205,8 +205,7 @@ struct ArraySerializer<MojomType, UserType, ArraySerializerType::POINTER> {
     size_t size =
         sizeof(Data) +
         element_count *
-            sizeof(
-                StructPointer<typename std::remove_pointer<DataElement>::type>);
+            sizeof(Pointer<typename std::remove_pointer<DataElement>::type>);
     for (size_t i = 0; i < element_count; ++i)
       size += GetSerializedSize_(Traits::GetAt(input, i), context);
     return size;
