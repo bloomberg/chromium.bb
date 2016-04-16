@@ -566,6 +566,67 @@ TEST_F(DistillerTest, MultiplePagesDistillationFailure) {
       article_proto_.get(), distiller_data.get(), failed_page_num, kNumPages);
 }
 
+TEST_F(DistillerTest, DistillMultiplePagesFirstEmpty) {
+  base::MessageLoopForUI loop;
+  const size_t kNumPages = 8;
+  std::unique_ptr<MultipageDistillerData> distiller_data =
+      CreateMultipageDistillerDataWithoutImages(kNumPages);
+
+  // The first page has no content.
+  const size_t empty_page_num = 0;
+  distiller_data->content[empty_page_num] = "";
+  std::unique_ptr<base::Value> distilled_value =
+      CreateDistilledValueReturnedFromJS(kTitle, "", vector<int>(),
+      GenerateNextPageUrl(kURL, empty_page_num, kNumPages),
+      GeneratePrevPageUrl(kURL, empty_page_num));
+  // Reset distilled data of the first page.
+  distiller_data->distilled_values.erase(
+      distiller_data->distilled_values.begin() + empty_page_num);
+  distiller_data->distilled_values.insert(
+      distiller_data->distilled_values.begin() + empty_page_num,
+      distilled_value.release());
+
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
+  DistillPage(distiller_data->page_urls[0],
+              CreateMockDistillerPages(distiller_data.get(), 1, 0));
+  base::MessageLoop::current()->RunUntilIdle();
+  // If the first page has no content, stop fetching the next page.
+  EXPECT_EQ(1, article_proto_->pages_size());
+  VerifyArticleProtoMatchesMultipageData(
+      article_proto_.get(), distiller_data.get(), 1, 1);
+}
+
+TEST_F(DistillerTest, DistillMultiplePagesSecondEmpty) {
+  base::MessageLoopForUI loop;
+  const size_t kNumPages = 8;
+  std::unique_ptr<MultipageDistillerData> distiller_data =
+      CreateMultipageDistillerDataWithoutImages(kNumPages);
+
+  // The second page has no content.
+  const size_t empty_page_num = 1;
+  distiller_data->content[empty_page_num] = "";
+  std::unique_ptr<base::Value> distilled_value =
+      CreateDistilledValueReturnedFromJS(kTitle, "", vector<int>(),
+      GenerateNextPageUrl(kURL, empty_page_num, kNumPages),
+      GeneratePrevPageUrl(kURL, empty_page_num));
+  // Reset distilled data of the second page.
+  distiller_data->distilled_values.erase(
+      distiller_data->distilled_values.begin() + empty_page_num);
+  distiller_data->distilled_values.insert(
+      distiller_data->distilled_values.begin() + empty_page_num,
+      distilled_value.release());
+
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
+  DistillPage(distiller_data->page_urls[0],
+              CreateMockDistillerPages(distiller_data.get(), kNumPages, 0));
+  base::MessageLoop::current()->RunUntilIdle();
+
+  VerifyArticleProtoMatchesMultipageData(
+      article_proto_.get(), distiller_data.get(), kNumPages, kNumPages);
+}
+
 TEST_F(DistillerTest, DistillPreviousPage) {
   base::MessageLoopForUI loop;
   const size_t kNumPages = 8;
