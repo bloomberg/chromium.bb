@@ -126,7 +126,7 @@ static bool CreateVideoToolboxSession(const uint8_t* sps, size_t sps_size,
       format.InitializeInto());
   if (status) {
     OSSTATUS_DLOG(WARNING, status)
-        << "Failed to create CMVideoFormatDescription.";
+        << "Failed to create CMVideoFormatDescription";
     return false;
   }
 
@@ -163,7 +163,8 @@ static bool CreateVideoToolboxSession(const uint8_t* sps, size_t sps_size,
       &callback,            // output_callback
       session.InitializeInto());
   if (status) {
-    OSSTATUS_DLOG(WARNING, status) << "Failed to create VTDecompressionSession";
+    OSSTATUS_DLOG(WARNING, status)
+        << "Failed to create VTDecompressionSession";
     return false;
   }
 
@@ -185,8 +186,7 @@ static bool InitializeVideoToolboxInternal() {
     paths[kModuleVt].push_back(FILE_PATH_LITERAL(
         "/System/Library/Frameworks/VideoToolbox.framework/VideoToolbox"));
     if (!InitializeStubs(paths)) {
-      LOG(WARNING) << "Failed to initialize VideoToolbox framework. "
-                   << "Hardware accelerated video decoding will be disabled.";
+      DLOG(WARNING) << "Failed to initialize VideoToolbox framework";
       return false;
     }
   }
@@ -199,8 +199,7 @@ static bool InitializeVideoToolboxInternal() {
   const uint8_t pps_normal[] = {0x68, 0xe9, 0x7b, 0xcb};
   if (!CreateVideoToolboxSession(sps_normal, arraysize(sps_normal), pps_normal,
                                  arraysize(pps_normal), true)) {
-    LOG(WARNING) << "Failed to create hardware VideoToolbox session. "
-                 << "Hardware accelerated video decoding will be disabled.";
+    DLOG(WARNING) << "Failed to create hardware VideoToolbox session";
     return false;
   }
 
@@ -212,8 +211,7 @@ static bool InitializeVideoToolboxInternal() {
   const uint8_t pps_small[] = {0x68, 0xe9, 0x79, 0x72, 0xc0};
   if (!CreateVideoToolboxSession(sps_small, arraysize(sps_small), pps_small,
                                  arraysize(pps_small), false)) {
-    LOG(WARNING) << "Failed to create software VideoToolbox session. "
-                 << "Hardware accelerated video decoding will be disabled.";
+    DLOG(WARNING) << "Failed to create software VideoToolbox session";
     return false;
   }
 
@@ -418,7 +416,7 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
           &kCFTypeDictionaryKeyCallBacks,
           &kCFTypeDictionaryValueCallBacks));
   if (!decoder_config.get()) {
-    DLOG(ERROR) << "Failed to create CFMutableDictionary.";
+    DLOG(ERROR) << "Failed to create CFMutableDictionary";
     NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
     return false;
   }
@@ -432,7 +430,7 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(
       BuildImageConfig(coded_dimensions));
   if (!image_config.get()) {
-    DLOG(ERROR) << "Failed to create decoder image configuration.";
+    DLOG(ERROR) << "Failed to create decoder image configuration";
     NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
     return false;
   }
@@ -962,7 +960,7 @@ bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
       return false;
 
     case TASK_DESTROY:
-      NOTREACHED() << "Can't destroy while in STATE_DECODING.";
+      NOTREACHED() << "Can't destroy while in STATE_DECODING";
       NotifyError(ILLEGAL_STATE, SFT_PLATFORM_ERROR);
       return false;
   }
