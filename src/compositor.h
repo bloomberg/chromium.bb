@@ -684,8 +684,34 @@ struct weston_backend_output_config {
  * passed to the backend's init entry point. The backend will
  * likely want to subclass this in order to handle backend specific
  * data.
+ *
+ * NOTE: Alternate designs were proposed (Feb 2016) for using opaque
+ * structures[1] and for section+key/value getter/setters[2].  The rationale
+ * for selecting the transparent structure design is based on several
+ * assumptions[3] which may require re-evaluating the design choice if they
+ * fail to hold.
+ *
+ * 1: https://lists.freedesktop.org/archives/wayland-devel/2016-February/026989.html
+ * 2: https://lists.freedesktop.org/archives/wayland-devel/2016-February/026929.html
+ * 3: https://lists.freedesktop.org/archives/wayland-devel/2016-February/027228.html
  */
 struct weston_backend_config {
+   /** Major version for the backend-specific config struct
+    *
+    * This version must match exactly what the backend expects, otherwise
+    * the struct is incompatible.
+    */
+   uint32_t struct_version;
+
+   /** Minor version of the backend-specific config struct
+    *
+    * This must be set to sizeof(struct backend-specific config).
+    * If the value here is smaller than what the backend expects, the
+    * extra config members will assume their default values.
+    *
+    * A value greater than what the backend expects is incompatible.
+    */
+   size_t struct_size;
 };
 
 struct weston_backend {
