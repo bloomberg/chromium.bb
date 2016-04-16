@@ -52,6 +52,19 @@ cr.define('media_router_container_filter', function() {
       var fakeSinkList = [];
 
       /**
+       * Simulates pressing the Escape key on |element|.
+       * @param {!HTMLElement} element
+       */
+      var pressEscapeOnElement = function(element) {
+        element.dispatchEvent(new KeyboardEvent('keydown', {
+          'key': 'Escape',
+          'code': 'Escape',
+          'bubbles': true,
+          'cancelable': true
+        }));
+      };
+
+      /**
        * Search text that will match all sinks.
        * @type {?string}
        */
@@ -142,10 +155,50 @@ cr.define('media_router_container_filter', function() {
       test('filter view escape key', function(done) {
         MockInteractions.tap(container.$['sink-search-icon']);
         setTimeout(function() {
-          MockInteractions.pressAndReleaseKeyOn(
-              container, media_router.KEYCODE_ESC);
+          pressEscapeOnElement(container);
           checkCurrentView(media_router.MediaRouterView.SINK_LIST);
           done();
+        });
+      });
+
+      // Tests that pressing the Escape key in the FILTER view when a sink has
+      // keyboard focus returns |container| to the SINK_LIST view and focuses
+      // the correct sink in the list.
+      test('filter view escape key on menu item', function(done) {
+        container.allSinks = fakeSinkList;
+        MockInteractions.tap(container.$['sink-search-icon']);
+        setTimeout(function() {
+          var item =
+              container.$$('#search-results').querySelectorAll('paper-item')[1];
+          item.focus();
+          pressEscapeOnElement(item);
+          checkCurrentView(media_router.MediaRouterView.SINK_LIST);
+          setTimeout(function() {
+            item =
+                container.$['sink-list-view'].querySelectorAll('paper-item')[1];
+            assertTrue(item.focused);
+            done();
+          });
+        });
+      });
+
+      // Tests that pressing the Escape key in the FILTER view when a sink does
+      // not have keyboard focus returns |container| to the SINK_LIST view and
+      // leaves focus where it is.
+      test('filter view escape key on menu item other focus', function(done) {
+        container.allSinks = fakeSinkList;
+        MockInteractions.tap(container.$['sink-search-icon']);
+        setTimeout(function() {
+          var item =
+              container.$$('#search-results').querySelectorAll('paper-item')[1];
+          var closeButton = container.$['container-header'].$['close-button'];
+          closeButton.focus();
+          pressEscapeOnElement(item);
+          checkCurrentView(media_router.MediaRouterView.SINK_LIST);
+          setTimeout(function() {
+            assertTrue(closeButton.focused);
+            done();
+          });
         });
       });
 
@@ -229,8 +282,7 @@ cr.define('media_router_container_filter', function() {
                                                   'sink-list-view']);
                       // Pressing the Escape key in FILTER view should return
                       // |container| to SINK_LIST view and not exit the dialog.
-                      MockInteractions.pressAndReleaseKeyOn(
-                          container, media_router.KEYCODE_ESC);
+                      pressEscapeOnElement(container);
                       setTimeout(function() {
                         checkElementsVisibleWithId(['container-header',
                                                     'sink-search',
@@ -299,8 +351,7 @@ cr.define('media_router_container_filter', function() {
         setTimeout(function() {
           container.$['sink-search-input'].value = searchTextAll;
 
-          MockInteractions.pressAndReleaseKeyOn(
-              container, media_router.KEYCODE_ESC);
+          pressEscapeOnElement(container);
           assertEquals(searchTextAll, container.$['sink-search-input'].value);
           done();
         });

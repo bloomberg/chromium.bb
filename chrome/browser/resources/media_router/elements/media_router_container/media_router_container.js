@@ -382,7 +382,7 @@ Polymer({
     if (!cr.isMac)
       this.$$('#focus-placeholder').remove();
 
-    document.addEventListener('keydown', this.onKeydown_.bind(this));
+    document.addEventListener('keydown', this.onKeydown_.bind(this), true);
     this.setSearchFocusHandlers_();
     this.showSinkList_();
   },
@@ -1119,6 +1119,35 @@ Polymer({
   },
 
   /**
+   * If an element in the search results list has keyboard focus when we are
+   * transitioning from the filter view to the sink list view, give focus to the
+   * same sink in the sink list. Otherwise we leave the keyboard focus where it
+   * is.
+   * @private
+   */
+  maybeUpdateFocusOnFilterViewExit_: function() {
+    var searchSinks = this.$$('#search-results').querySelectorAll('paper-item');
+    var focusedElem = Array.prototype.find.call(searchSinks, function(sink) {
+      return sink.focused;
+    });
+    if (!focusedElem) {
+      return;
+    }
+    var focusedSink =
+        this.$$('#searchResults').itemForElement(focusedElem).sinkItem;
+    setTimeout(function() {
+      var sinkList = this.$$('#sinkList');
+      var sinks = this.$['sink-list-view'].querySelectorAll('paper-item');
+      Array.prototype.some.call(sinks, function(sink) {
+        if (sinkList.itemForElement(sink).id == focusedSink.id) {
+          sink.focus();
+          return true;
+        }
+      });
+    }.bind(this));
+  },
+
+  /**
    * May update |populatedSinkListSeenTimeMs_| depending on |currentView| and
    * |sinksToShow|.
    * Called when |currentView_| or |sinksToShow_| is updated.
@@ -1272,10 +1301,15 @@ Polymer({
     // handled on the C++ side instead of the JS side on non-mac platforms,
     // which uses toolkit-views. Handle the expected behavior on all platforms
     // here.
-    if (e.keyCode == media_router.KEYCODE_ESC && !e.shiftKey &&
+    if (e.key == media_router.KEY_ESC && !e.shiftKey &&
         !e.ctrlKey && !e.altKey && !e.metaKey) {
       // When searching, allow ESC as a mechanism to leave the filter view.
       if (this.isUserSearching_) {
+        // If the user tabbed to an item in the search results, or otherwise has
+        // an item in the list focused, focus will seem to vanish when we
+        // transition back to the sink list. Instead we should move focus to the
+        // appropriate item in the sink list.
+        this.maybeUpdateFocusOnFilterViewExit_();
         this.showSinkList_();
         e.preventDefault();
       } else {

@@ -24,10 +24,10 @@ media_router.CastModeType = {
 };
 
 /**
- * The ESC key maps to keycode '27'.
- * @const {number}
+ * The ESC key maps to KeyboardEvent.key value 'Escape'.
+ * @const {string}
  */
-media_router.KEYCODE_ESC = 27;
+media_router.KEY_ESC = 'Escape';
 
 /**
  * This corresponds to the C++ MediaRouterMetrics
