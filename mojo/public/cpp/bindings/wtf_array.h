@@ -29,9 +29,9 @@ class WTFArray {
   MOVE_ONLY_TYPE_FOR_CPP_03(WTFArray);
 
  public:
-  using Data_ =
-      internal::Array_Data<typename internal::WrapperTraits<T>::DataType>;
-  using ElementType = T;
+  using Data_ = internal::Array_Data<
+      typename internal::GetDataTypeAsArrayElement<T>::Data>;
+  using Element = T;
 
   // Constructs an empty array.
   WTFArray() : is_null_(false) {}

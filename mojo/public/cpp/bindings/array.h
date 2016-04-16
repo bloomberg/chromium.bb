@@ -30,10 +30,10 @@ class Array {
  public:
   using ConstRefType = typename std::vector<T>::const_reference;
   using RefType = typename std::vector<T>::reference;
-  using ElementType = T;
 
-  using Data_ =
-      internal::Array_Data<typename internal::WrapperTraits<T>::DataType>;
+  using Element = T;
+  using Data_ = internal::Array_Data<
+      typename internal::GetDataTypeAsArrayElement<T>::Data>;
 
   using iterator = typename std::vector<T>::iterator;
   using const_iterator = typename std::vector<T>::const_iterator;

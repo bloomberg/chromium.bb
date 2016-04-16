@@ -15,27 +15,29 @@ namespace mojo {
 template <typename E>
 inline size_t GetSerializedSize_(const WTFArray<E>& input,
                                  internal::SerializationContext* context) {
-  return internal::ArraySerializationImpl<WTFArray<E>>::GetSerializedSize(
-      input, context);
+  return internal::ArraySerializationImpl<
+      WTFArray<E>, WTFArray<E>>::GetSerializedSize(input, context);
 }
 
-template <typename E, typename F>
+template <typename E>
 inline void SerializeArray_(
     WTFArray<E> input,
     internal::Buffer* buf,
-    internal::Array_Data<F>** output,
+    typename WTFArray<E>::Data_** output,
     const internal::ArrayValidateParams* validate_params,
     internal::SerializationContext* context) {
-  return internal::ArraySerializationImpl<WTFArray<E>>::template Serialize<F>(
+  return internal::ArraySerializationImpl<WTFArray<E>, WTFArray<E>>::Serialize(
       std::move(input), buf, output, validate_params, context);
 }
 
-template <typename E, typename F>
-inline bool Deserialize_(internal::Array_Data<F>* input,
+template <typename E>
+inline bool Deserialize_(typename WTFArray<E>::Data_* input,
                          WTFArray<E>* output,
                          internal::SerializationContext* context) {
-  return internal::ArraySerializationImpl<WTFArray<E>>::template Deserialize<F>(
-      input, output, context);
+  return internal::ArraySerializationImpl<WTFArray<E>,
+                                          WTFArray<E>>::Deserialize(input,
+                                                                    output,
+                                                                    context);
 }
 
 }  // namespace mojo

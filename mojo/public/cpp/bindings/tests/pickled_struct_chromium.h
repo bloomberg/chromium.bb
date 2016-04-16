@@ -27,7 +27,10 @@ class PickledStructChromium {
  public:
   PickledStructChromium();
   PickledStructChromium(int foo, int bar);
+  PickledStructChromium(PickledStructChromium&& other) = default;
   ~PickledStructChromium();
+
+  PickledStructChromium& operator=(PickledStructChromium&& other) = default;
 
   int foo() const { return foo_; }
   void set_foo(int foo) { foo_ = foo; }

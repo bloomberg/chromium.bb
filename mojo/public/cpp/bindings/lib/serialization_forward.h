@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/array_traits.h"
 #include "mojo/public/cpp/bindings/lib/string_serialization.h"
 #include "mojo/public/cpp/bindings/lib/wtf_string_serialization.h"
 #include "mojo/public/cpp/bindings/map.h"
@@ -80,16 +81,16 @@ template <typename E>
 inline size_t GetSerializedSize_(const Array<E>& input,
                                  internal::SerializationContext* context);
 
-template <typename E, typename F>
+template <typename E>
 inline void SerializeArray_(
     Array<E> input,
     internal::Buffer* buf,
-    internal::Array_Data<F>** output,
+    typename Array<E>::Data_** output,
     const internal::ArrayValidateParams* validate_params,
     internal::SerializationContext* context);
 
-template <typename E, typename F>
-inline bool Deserialize_(internal::Array_Data<F>* input,
+template <typename E>
+inline bool Deserialize_(typename Array<E>::Data_* input,
                          Array<E>* output,
                          internal::SerializationContext* context);
 
@@ -100,16 +101,16 @@ template <typename E>
 inline size_t GetSerializedSize_(const WTFArray<E>& input,
                                  internal::SerializationContext* context);
 
-template <typename E, typename F>
+template <typename E>
 inline void SerializeArray_(
     WTFArray<E> input,
     internal::Buffer* buf,
-    internal::Array_Data<F>** output,
+    typename WTFArray<E>::Data_** output,
     const internal::ArrayValidateParams* validate_params,
     internal::SerializationContext* context);
 
-template <typename E, typename F>
-inline bool Deserialize_(internal::Array_Data<F>* input,
+template <typename E>
+inline bool Deserialize_(typename WTFArray<E>::Data_* input,
                          WTFArray<E>* output,
                          internal::SerializationContext* context);
 

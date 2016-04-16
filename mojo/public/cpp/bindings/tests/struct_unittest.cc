@@ -50,8 +50,10 @@ MultiVersionStructPtr MakeMultiVersionStruct() {
 
 template <typename U, typename T>
 U SerializeAndDeserialize(T input) {
-  typedef typename mojo::internal::WrapperTraits<T>::DataType InputDataType;
-  typedef typename mojo::internal::WrapperTraits<U>::DataType OutputDataType;
+  using InputDataType = typename std::remove_pointer<decltype(
+      std::declval<T>().get())>::type::Data_*;
+  using OutputDataType = typename std::remove_pointer<decltype(
+      std::declval<U>().get())>::type::Data_*;
 
   size_t size = GetSerializedSize_(input, nullptr);
   mojo::internal::FixedBufferForTesting buf(size + 32);

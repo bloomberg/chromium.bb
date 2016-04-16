@@ -35,9 +35,9 @@ class Map {
 
   using ConstIterator = typename std::map<Key, Value>::const_iterator;
 
-  using Data_ =
-      internal::Map_Data<typename internal::WrapperTraits<Key>::DataType,
-                         typename internal::WrapperTraits<Value>::DataType>;
+  using Data_ = internal::Map_Data<
+      typename internal::GetDataTypeAsArrayElement<Key>::Data,
+      typename internal::GetDataTypeAsArrayElement<Value>::Data>;
 
   // Constructs an empty map.
   Map() : is_null_(false) {}

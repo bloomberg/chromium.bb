@@ -15,26 +15,27 @@ namespace mojo {
 template <typename E>
 inline size_t GetSerializedSize_(const Array<E>& input,
                                  internal::SerializationContext* context) {
-  return internal::ArraySerializationImpl<Array<E>>::GetSerializedSize(input,
+  return internal::ArraySerializationImpl<Array<E>,
+                                          Array<E>>::GetSerializedSize(input,
                                                                        context);
 }
 
-template <typename E, typename F>
+template <typename E>
 inline void SerializeArray_(
     Array<E> input,
     internal::Buffer* buf,
-    internal::Array_Data<F>** output,
+    typename Array<E>::Data_** output,
     const internal::ArrayValidateParams* validate_params,
     internal::SerializationContext* context) {
-  return internal::ArraySerializationImpl<Array<E>>::template Serialize<F>(
+  return internal::ArraySerializationImpl<Array<E>, Array<E>>::Serialize(
       std::move(input), buf, output, validate_params, context);
 }
 
-template <typename E, typename F>
-inline bool Deserialize_(internal::Array_Data<F>* input,
+template <typename E>
+inline bool Deserialize_(typename Array<E>::Data_* input,
                          Array<E>* output,
                          internal::SerializationContext* context) {
-  return internal::ArraySerializationImpl<Array<E>>::template Deserialize<F>(
+  return internal::ArraySerializationImpl<Array<E>, Array<E>>::Deserialize(
       input, output, context);
 }
 

@@ -196,8 +196,8 @@ struct ShouldUseNativeSerializer<{{struct|cpp_wrapper_type}}> {
 };
 
 template <>
-struct WrapperTraits<{{struct|cpp_wrapper_type}}> {
-  using DataType = NativeStruct_Data*;
+struct GetDataTypeAsArrayElement<{{struct|cpp_wrapper_type}}> {
+  using Data = NativeStruct_Data*;
 };
 
 }  // namespace internal

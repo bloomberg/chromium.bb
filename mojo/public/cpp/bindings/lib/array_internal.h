@@ -369,14 +369,14 @@ struct ArraySerializationHelper<U, false, true> {
 template <typename T>
 class Array_Data {
  public:
-  typedef ArrayDataTraits<T> Traits;
-  typedef typename Traits::StorageType StorageType;
-  typedef typename Traits::Ref Ref;
-  typedef typename Traits::ConstRef ConstRef;
-  typedef ArraySerializationHelper<T,
-                                   IsHandle<T>::value,
-                                   IsUnionDataType<T>::value>
-      Helper;
+  using Traits = ArrayDataTraits<T>;
+  using StorageType = typename Traits::StorageType;
+  using Ref = typename Traits::Ref;
+  using ConstRef = typename Traits::ConstRef;
+  using Helper = ArraySerializationHelper<T,
+                                          IsHandle<T>::value,
+                                          IsUnionDataType<T>::value>;
+  using Element = T;
 
   // Returns null if |num_elements| or the corresponding storage size cannot be
   // stored in uint32_t.

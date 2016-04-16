@@ -57,16 +57,19 @@ struct MapSerializer<ScopedHandleBase<H>, H, true, false> {
 };
 
 // This template must only apply to pointer mojo entity (structs and arrays).
-// This is done by ensuring that WrapperTraits<S>::DataType is a pointer.
+// This is done by ensuring that GetDataTypeAsArrayElement<S>::Data is a
+// pointer.
 template <typename S>
 struct MapSerializer<
     S,
-    typename EnableIf<IsPointer<typename WrapperTraits<S>::DataType>::value,
-                      typename WrapperTraits<S>::DataType>::type,
+    typename EnableIf<
+        IsPointer<typename GetDataTypeAsArrayElement<S>::Data>::value,
+        typename GetDataTypeAsArrayElement<S>::Data>::type,
     true,
     false> {
   typedef
-      typename RemovePointer<typename WrapperTraits<S>::DataType>::type S_Data;
+      typename RemovePointer<typename GetDataTypeAsArrayElement<S>::Data>::type
+          S_Data;
   static size_t GetBaseArraySize(size_t count) {
     return count * sizeof(StructPointer<S_Data>);
   }
@@ -76,7 +79,7 @@ struct MapSerializer<
 };
 
 template <typename U, typename U_Data>
-struct MapSerializer<U, U_Data*, true, true> {
+struct MapSerializer<U, U_Data, true, true> {
   static size_t GetBaseArraySize(size_t count) {
     return count * sizeof(U_Data);
   }
@@ -104,8 +107,9 @@ inline size_t GetSerializedSize_(const Map<MapKey, MapValue>& input,
                                  internal::SerializationContext* context) {
   if (!input)
     return 0;
-  typedef typename internal::WrapperTraits<MapKey>::DataType DataKey;
-  typedef typename internal::WrapperTraits<MapValue>::DataType DataValue;
+  typedef typename internal::GetDataTypeAsArrayElement<MapKey>::Data DataKey;
+  typedef
+      typename internal::GetDataTypeAsArrayElement<MapValue>::Data DataValue;
 
   size_t count = input.size();
   size_t struct_overhead = sizeof(mojo::internal::Map_Data<DataKey, DataValue>);

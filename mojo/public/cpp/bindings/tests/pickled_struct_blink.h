@@ -32,7 +32,10 @@ class PickledStructBlink {
  public:
   PickledStructBlink();
   PickledStructBlink(int foo, int bar);
+  PickledStructBlink(PickledStructBlink&& other) = default;
   ~PickledStructBlink();
+
+  PickledStructBlink& operator=(PickledStructBlink&& other) = default;
 
   int foo() const { return foo_; }
   void set_foo(int foo) {
