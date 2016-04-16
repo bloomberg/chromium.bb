@@ -1415,7 +1415,7 @@ scoped_ptr<base::Value> HttpResponseHeaders::NetLogCallback(
     NetLogCaptureMode capture_mode) const {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   base::ListValue* headers = new base::ListValue();
-  headers->Append(new base::StringValue(GetStatusLine()));
+  headers->Append(new base::StringValue(EscapeNonASCII(GetStatusLine())));
   size_t iterator = 0;
   std::string name;
   std::string value;
