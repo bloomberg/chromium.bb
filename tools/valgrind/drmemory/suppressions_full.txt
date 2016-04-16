@@ -1831,8 +1831,8 @@ KERNELBASE.dll!DuplicateHandle
 KERNEL32.dll!DuplicateHandle
 base.dll!base::SharedMemory::ShareToProcessCommon
 gl_wrapper.dll!gl::GLImageSharedMemory::Initialize
-content.dll!content::GpuChannel::CreateImageForGpuMemoryBuffer
-content.dll!content::GpuCommandBufferStub::OnCreateImage
+*!*::GpuChannel::CreateImageForGpuMemoryBuffer
+*!*::GpuCommandBufferStub::OnCreateImage
 
 HANDLE LEAK
 name=https://crbug.com/481305
