@@ -2015,10 +2015,10 @@
    bug_340752
    Memcheck:Uninitialized
    ...
-   fun:_ZN5blink4Heap19checkAndMarkPointerEPNS_7VisitorEPh
+   fun:_ZN5blink10ThreadHeap19checkAndMarkPointerEPNS_7VisitorEPh
    fun:_ZN5blink11ThreadState10visitStackEPNS_7VisitorE
    ...
-   fun:_ZN5blink4Heap14collectGarbageENS_7BlinkGC10StackState*
+   fun:_ZN5blink10ThreadHeap14collectGarbageENS_7BlinkGC10StackState*
 }
 {
    bug_342591
