@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_SURFACES_DIRECT_OUTPUT_SURFACE_H_
 #define COMPONENTS_MUS_SURFACES_DIRECT_OUTPUT_SURFACE_H_
 
+#include <memory>
+
 #include "cc/output/output_surface.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "components/mus/surfaces/surfaces_context_provider.h"
@@ -30,7 +32,7 @@ class DirectOutputSurface : public cc::OutputSurface,
   void OnVSyncParametersUpdated(int64_t timebase, int64_t interval) override;
 
  private:
-  scoped_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
+  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 };
 
