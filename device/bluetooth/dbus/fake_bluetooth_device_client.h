@@ -147,6 +147,17 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
                             uint16_t transmit_power,
                             uint16_t max_transmit_power);
 
+  // Test specific functions:
+  // Remove all test devices from this client.
+  void RemoveAllDevices();
+
+  // Create a test Bluetooth LE device with the given properties.
+  void CreateTestDevice(const dbus::ObjectPath& adapter_path,
+                        const std::string name,
+                        const std::string alias,
+                        const std::string device_address,
+                        const std::vector<std::string>& service_uuids);
+
   void set_delay_start_discovery(bool value) { delay_start_discovery_ = value; }
 
   static const char kTestPinCode[];

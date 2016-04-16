@@ -36,6 +36,7 @@ class SequencedTaskRunner;
 
 namespace device {
 class BluetoothSocketThread;
+class BluetoothTestBlueZ;
 }  // namespace device
 
 namespace bluez {
@@ -160,6 +161,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   friend class BluetoothBlueZTest_Shutdown_OnStartDiscoveryError_Test;
   friend class BluetoothBlueZTest_Shutdown_OnStopDiscovery_Test;
   friend class BluetoothBlueZTest_Shutdown_OnStopDiscoveryError_Test;
+  friend class device::BluetoothTestBlueZ;
 
   // typedef for callback parameters that are passed to AddDiscoverySession
   // and RemoveDiscoverySession. This is used to queue incoming requests while

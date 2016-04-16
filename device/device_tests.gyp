@@ -115,6 +115,8 @@
             'bluetooth/bluetooth_bluez_unittest.cc',
             'bluetooth/bluetooth_gatt_bluez_unittest.cc',
             'bluetooth/bluetooth_socket_bluez_unittest.cc',
+            'bluetooth/test/bluetooth_test_bluez.cc',
+            'bluetooth/test/bluetooth_test_bluez.h',
           ],
         }],
         ['OS=="android"', {

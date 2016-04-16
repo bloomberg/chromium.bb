@@ -26,6 +26,8 @@
 #include "device/bluetooth/test/bluetooth_test_mac.h"
 #elif defined(OS_WIN)
 #include "device/bluetooth/test/bluetooth_test_win.h"
+#elif defined(OS_CHROMEOS) || defined(OS_LINUX)
+#include "device/bluetooth/test/bluetooth_test_bluez.h"
 #endif
 
 using device::BluetoothDevice;
@@ -547,7 +549,6 @@ TEST_F(BluetoothTest, NoPermissions) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Discovers a device.
 TEST_F(BluetoothTest, DiscoverLowEnergyDevice) {
   if (!PlatformSupportsLowEnergy()) {
@@ -564,9 +565,7 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDevice) {
   BluetoothDevice* device = adapter_->GetDevice(observer.last_device_address());
   EXPECT_TRUE(device);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Discovers the same device multiple times.
 TEST_F(BluetoothTest, DiscoverLowEnergyDeviceTwice) {
   if (!PlatformSupportsLowEnergy()) {
@@ -590,7 +589,6 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceTwice) {
   EXPECT_EQ(0, observer.device_added_count());
   EXPECT_EQ(1u, adapter_->GetDevices().size());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Discovers a device, and then again with new Service UUIDs.
@@ -643,7 +641,6 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Discovers multiple devices when addresses vary.
 TEST_F(BluetoothTest, DiscoverMultipleLowEnergyDevices) {
   if (!PlatformSupportsLowEnergy()) {
@@ -660,7 +657,6 @@ TEST_F(BluetoothTest, DiscoverMultipleLowEnergyDevices) {
   EXPECT_EQ(2, observer.device_added_count());
   EXPECT_EQ(2u, adapter_->GetDevices().size());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID)
 TEST_F(BluetoothTest, TogglePowerFakeAdapter) {

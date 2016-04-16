@@ -1672,4 +1672,39 @@ void FakeBluetoothDeviceClient::DisconnectionCallback(
   }
 }
 
+void FakeBluetoothDeviceClient::RemoveAllDevices() {
+  device_list_.clear();
+}
+
+void FakeBluetoothDeviceClient::CreateTestDevice(
+    const dbus::ObjectPath& adapter_path,
+    const std::string name,
+    const std::string alias,
+    const std::string device_address,
+    const std::vector<std::string>& service_uuids) {
+  // Create a random device path.
+  dbus::ObjectPath device_path;
+  do {
+    device_path = dbus::ObjectPath(adapter_path.value() + "/dev" +
+                                   base::RandBytesAsString(10));
+  } while (std::find(device_list_.begin(), device_list_.end(), device_path) !=
+           device_list_.end());
+
+  std::unique_ptr<Properties> properties(
+      new Properties(base::Bind(&FakeBluetoothDeviceClient::OnPropertyChanged,
+                                base::Unretained(this), device_path)));
+  properties->adapter.ReplaceValue(adapter_path);
+
+  properties->address.ReplaceValue(device_address);
+  properties->name.ReplaceValue(name);
+  properties->alias.ReplaceValue(alias);
+
+  properties->uuids.ReplaceValue(service_uuids);
+
+  properties_map_.insert(std::make_pair(device_path, std::move(properties)));
+  device_list_.push_back(device_path);
+  FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
+                    DeviceAdded(device_path));
+}
+
 }  // namespace bluez

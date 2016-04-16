@@ -136,21 +136,21 @@ BluetoothDevice* BluetoothTestWin::DiscoverLowEnergyDevice(int device_ordinal) {
   std::string service_uuid_2;
 
   switch (device_ordinal) {
-    case 1: {
+    case 1:
       service_uuid_1 = kTestUUIDGenericAccess;
       service_uuid_2 = kTestUUIDGenericAttribute;
-    } break;
-    case 2: {
+      break;
+    case 2:
       service_uuid_1 = kTestUUIDImmediateAlert;
       service_uuid_2 = kTestUUIDLinkLoss;
-    } break;
-    case 3: {
+      break;
+    case 3:
       device_name = kTestDeviceNameEmpty;
-    } break;
-    case 4: {
+      break;
+    case 4:
       device_name = kTestDeviceNameEmpty;
       device_address = kTestDeviceAddress2;
-    } break;
+      break;
   }
 
   win::BLEDevice* simulated_device = fake_bt_le_wrapper_->SimulateBLEDevice(
