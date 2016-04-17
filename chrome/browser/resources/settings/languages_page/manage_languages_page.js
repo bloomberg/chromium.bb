@@ -32,14 +32,19 @@ Polymer({
      *           undefined}
      */
     availableLanguages_: Array,
-  },
 
-  /** @private {!LanguageHelper} */
-  languageHelper_: LanguageHelperImpl.getInstance(),
+    /** @private {!LanguageHelper} */
+    languageHelper_: Object,
+  },
 
   observers: [
     'enabledLanguagesChanged_(languages.enabledLanguages.*)',
   ],
+
+  /** @override */
+  created: function() {
+     this.languageHelper_ = LanguageHelperImpl.getInstance();
+  },
 
   /**
    * Handler for removing a language.

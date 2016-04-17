@@ -30,11 +30,17 @@ Polymer({
      * @type {LanguageInfo|undefined}
      */
     detail: Object,
+
+    /** @private {!LanguageHelper} */
+    languageHelper_: Object,
   },
 
-  /** @private {!LanguageHelper} */
-  languageHelper_: LanguageHelperImpl.getInstance(),
+  /** @override */
+  created: function() {
+     this.languageHelper_ = LanguageHelperImpl.getInstance();
+  },
 
+  /** @override */
   ready: function() {
     // In a CrOS multi-user session, the primary user controls the UI language.
     if (this.isSecondaryUser_()) {

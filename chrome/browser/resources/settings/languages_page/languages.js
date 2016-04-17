@@ -77,11 +77,18 @@ SettingsLanguagesSingletonElement = Polymer({
       type: Object,
       notify: true,
     },
-  },
 
-  /** @type {!LanguageSettingsPrivate} */
-  languageSettingsPrivate: languageSettings.languageSettingsPrivateApiForTest ||
-      /** @type {!LanguageSettingsPrivate} */(chrome.languageSettingsPrivate),
+    /**
+     * PromiseResolver to be resolved when the singleton has been initialized.
+     * @private {!PromiseResolver}
+     */
+    resolver_: {
+      type: Object,
+      value: function() {
+        return new PromiseResolver();
+      },
+    },
+  },
 
   /**
    * Hash map of languages.supportedLanguages using language codes as keys for
@@ -98,45 +105,42 @@ SettingsLanguagesSingletonElement = Polymer({
   enabledLanguageMap_: {},
 
   observers: [
-    'preferredLanguagesPrefChanged_(prefs.' +
-        preferredLanguagesPrefName + '.value)',
-    'spellCheckDictionariesPrefChanged_(prefs.spellcheck.dictionaries.value.*)',
-    'translateLanguagesPrefChanged_(prefs.translate_blocked_languages.value.*)',
+    'preferredLanguagesPrefChanged_(' +
+        'prefs.' + preferredLanguagesPrefName + '.value, ' +
+        'languages)',
+    'spellCheckDictionariesPrefChanged_(' +
+        'prefs.spellcheck.dictionaries.value.*, ' +
+        'languages)',
+    'translateLanguagesPrefChanged_(' +
+        'prefs.translate_blocked_languages.value.*,' +
+        'languages)',
   ],
 
   /** @override */
   created: function() {
-    var languageList;
-    var translateTarget;
+    this.languageSettingsPrivate =
+        languageSettings.languageSettingsPrivateApiForTest ||
+        /** @type {!LanguageSettingsPrivate} */(chrome.languageSettingsPrivate);
 
-    /**
-     * Promise to be resolved when the languages singleton has been initialized.
-     * @type {!Promise}
-     */
-    this.initialized = Promise.all([
+    var promises = [
       // Wait until prefs are initialized before creating the model, so we can
       // include information about enabled languages.
       CrSettingsPrefs.initialized,
 
       // Get the language list.
       new Promise(function(resolve) {
-        this.languageSettingsPrivate.getLanguageList(function(list) {
-          languageList = list;
-          resolve();
-        });
+        this.languageSettingsPrivate.getLanguageList(resolve);
       }.bind(this)),
 
       // Get the translate target language.
       new Promise(function(resolve) {
-        this.languageSettingsPrivate.getTranslateTargetLanguage(
-            function(targetLanguageCode) {
-              translateTarget = targetLanguageCode;
-              resolve();
-            });
+        this.languageSettingsPrivate.getTranslateTargetLanguage(resolve);
       }.bind(this)),
-    ]).then(function() {
-      this.createModel_(languageList, translateTarget);
-      this.initialized_ = true;
+    ];
+
+    Promise.all(promises).then(function(results) {
+       this.createModel_(results[1], results[2]);
+       this.resolver_.resolve(undefined /* unused */);
     }.bind(this));
   },
 
@@ -145,9 +149,6 @@ SettingsLanguagesSingletonElement = Polymer({
    * @private
    */
   preferredLanguagesPrefChanged_: function() {
-    if (!this.initialized_)
-      return;
-
     var enabledLanguages =
         this.getEnabledLanguages_(this.languages.translateTarget);
 
@@ -166,9 +167,6 @@ SettingsLanguagesSingletonElement = Polymer({
    * @private
    */
   spellCheckDictionariesPrefChanged_: function() {
-    if (!this.initialized_)
-      return;
-
     var spellCheckMap = this.makeMapFromArray_(/** @type {!Array<string>} */(
         this.getPref('spellcheck.dictionaries').value));
     for (var i = 0; i < this.languages.enabledLanguages.length; i++) {
@@ -180,9 +178,6 @@ SettingsLanguagesSingletonElement = Polymer({
 
   /** @private */
   translateLanguagesPrefChanged_: function() {
-    if (!this.initialized_)
-      return;
-
     var translateBlockedPref = this.getPref('translate_blocked_languages');
     var translateBlockedMap = this.makeMapFromArray_(
         /** @type {!Array<string>} */(translateBlockedPref.value));
@@ -289,6 +284,11 @@ SettingsLanguagesSingletonElement = Polymer({
   // LanguageHelper implementation.
   // TODO(michaelpg): replace duplicate docs with @override once b/24294625
   // is fixed.
+
+  /** @return {!Promise} */
+  whenReady: function() {
+    return this.resolver_.promise;
+  },
 
 <if expr="chromeos or is_win">
   /**
@@ -410,7 +410,7 @@ SettingsLanguagesSingletonElement = Polymer({
    * @param {boolean} enable
    */
   toggleSpellCheck: function(languageCode, enable) {
-    if (!this.initialized_)
+    if (!this.languages)
       return;
 
     if (enable) {
@@ -471,16 +471,6 @@ Polymer({
 
   properties: {
     /**
-     * Singleton element created at startup which provides the languages model.
-     * @type {SettingsLanguagesSingletonElement}
-     */
-    singleton_: {
-      type: Object,
-      value: languageSettings.languageSettingsPrivateApiForTest ?
-             undefined : LanguageHelperImpl.getInstance(),
-    },
-
-    /**
      * A reference to the languages model from the singleton, exposed as a
      * read-only property so hosts can bind to it, but not change it.
      * @type {LanguagesModel|undefined}
@@ -493,13 +483,14 @@ Polymer({
   },
 
   ready: function() {
-    this.singleton_.initialized.then(function() {
+    var singleton = /** @type {!SettingsLanguagesSingletonElement} */
+        (LanguageHelperImpl.getInstance());
+    singleton.whenReady().then(function() {
       // Set the 'languages' property to reference the singleton's model.
-      this._setLanguages(this.singleton_.languages);
+      this._setLanguages(singleton.languages);
       // Listen for changes to the singleton's languages property, so we know
       // when to notify hosts of changes to (our reference to) the property.
-      this.listen(
-          this.singleton_, 'languages-changed', 'singletonLanguagesChanged_');
+      this.listen(singleton, 'languages-changed', 'singletonLanguagesChanged_');
     }.bind(this));
   },
 

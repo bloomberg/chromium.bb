@@ -45,6 +45,9 @@ var LanguageHelper = function() {};
 
 LanguageHelper.prototype = {
 
+  /** @return {!Promise} */
+  whenReady: assertNotReached,
+
 <if expr="chromeos or is_win">
   /**
    * Sets the prospective UI language to the chosen language. This won't affect

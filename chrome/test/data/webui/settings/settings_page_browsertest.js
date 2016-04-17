@@ -76,6 +76,33 @@ SettingsPageBrowserTest.prototype = {
     return undefined;
   },
 
+  /** @return {!SettingsRouterElement} The <settings-router> for the page. */
+  getRouter: function() {
+    var router = document.querySelector('cr-settings').$$('settings-ui')
+        .$$('settings-router');
+    assert(!!router);
+    return router;
+  },
+
+  /**
+   * @return {boolean} True if the router's state is a root page, e.g. Basic.
+   */
+  isAtRoot: function() {
+    var router = this.getRouter();
+    return router.section == '' && router.subpage.length == 0;
+  },
+
+  /** Navigates to the current root page, e.g. Basic. */
+  backToRoot: function() {
+    var router = document.querySelector('cr-settings').$$('settings-ui')
+        .$$('settings-router');
+    router.currentRoute = {
+      page: router.currentRoute.page,
+      section: '',
+      subpage: [],
+    };
+  },
+
   /**
    * Verifies the section has a visible #main element and that any possible
    * sub-pages are hidden.

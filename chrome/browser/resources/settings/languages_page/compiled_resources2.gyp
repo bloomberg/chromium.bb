@@ -8,6 +8,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:promise_resolver',
         '<(EXTERNS_GYP):chrome_send',
         '<(EXTERNS_GYP):language_settings_private',
         '<(INTERFACES_GYP):language_settings_private_interface',

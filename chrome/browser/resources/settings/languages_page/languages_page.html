@@ -30,7 +30,8 @@
           <div class="start">
             <div i18n-content="languagesListTitle"></div>
             <div class="secondary">
-              [[getProspectiveUILanguageName_(prefs.intl.app_locale.value)]]
+              [[getProspectiveUILanguageName_(
+                    languages, prefs.intl.app_locale.value)]]
             </div>
           </div>
           <cr-expand-button expanded="{{languagesOpened_}}">

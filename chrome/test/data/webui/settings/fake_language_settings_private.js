@@ -8,6 +8,18 @@
  */
 cr.define('settings', function() {
   /**
+   * Returns a function that calls assertNotReached with the given name.
+   * Necessary to include the callee in the stack trace.
+   * @param {string} name
+   * @return {function()}
+   */
+  function wrapAssertNotReached(name) {
+    return function() {
+      assertNotReached('Not implemented in fake: ' + name);
+    };
+  }
+
+  /**
    * Fake of the chrome.languageSettingsPrivate API.
    * @constructor
    * @implements {LanguageSettingsPrivate}
@@ -104,25 +116,26 @@ cr.define('settings', function() {
      *     !chrome.languageSettingsPrivate.SpellcheckDictionaryStatus>):void}
      *     callback
      */
-    getSpellcheckDictionaryStatuses: assertNotReached,
+    getSpellcheckDictionaryStatuses:
+        wrapAssertNotReached('getSpellcheckDictionaryStatuses'),
 
     /**
      * Gets the custom spell check words, in sorted order.
      * @param {function(!Array<string>):void} callback
      */
-    getSpellcheckWords: assertNotReached,
+    getSpellcheckWords: wrapAssertNotReached('getSpellcheckWords'),
 
     /**
      * Adds a word to the custom dictionary.
      * @param {string} word
      */
-    addSpellcheckWord: assertNotReached,
+    addSpellcheckWord: wrapAssertNotReached('addSpellcheckWord'),
 
     /**
      * Removes a word from the custom dictionary.
      * @param {string} word
      */
-    removeSpellcheckWord: assertNotReached,
+    removeSpellcheckWord: wrapAssertNotReached('removeSpellcheckWord'),
 
     /**
      * Gets the translate target language (in most cases, the display locale).
@@ -138,21 +151,21 @@ cr.define('settings', function() {
      * @param {function(!chrome.languageSettingsPrivate.InputMethodLists):void}
      *     callback
      */
-    getInputMethodLists: assertNotReached,
+    getInputMethodLists: wrapAssertNotReached('getInputMethodLists'),
 
     /**
      * Adds the input method to the current user's list of enabled input
      * methods, enabling the input method for the current user. Chrome OS only.
      * @param {string} inputMethodId
      */
-    addInputMethod: assertNotReached,
+    addInputMethod: wrapAssertNotReached('addInputMethod'),
 
     /**
      * Removes the input method from the current user's list of enabled input
      * methods, disabling the input method for the current user. Chrome OS only.
      * @param {string} inputMethodId
      */
-    removeInputMethod: assertNotReached,
+    removeInputMethod: wrapAssertNotReached('removeInputMethod'),
 
     /**
      * Called when the pref for the dictionaries used for spell checking changes

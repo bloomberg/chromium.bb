@@ -61,10 +61,15 @@ Polymer({
      * @private
      */
     detailLanguage_: Object,
+
+    /** @private {!LanguageHelper} */
+    languageHelper_: Object,
   },
 
-  /** @private {!LanguageHelper} */
-  languageHelper_: LanguageHelperImpl.getInstance(),
+  /** @override */
+  created: function() {
+     this.languageHelper_ = LanguageHelperImpl.getInstance();
+  },
 
   /**
    * Handler for clicking a language on the main page, which selects the

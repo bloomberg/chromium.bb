@@ -17,121 +17,7 @@ GEN_INCLUDE([ROOT_PATH +
 var languageSettings = languageSettings || {};
 
 /**
- * Test class for settings-languages-singleton.
- * @constructor
- * @extends {PolymerTest}
- */
-function SettingsLanguagesSingletonBrowserTest() {
-}
-
-SettingsLanguagesSingletonBrowserTest.prototype = {
-  __proto__: PolymerTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://md-settings/languages_page/languages.html',
-
-  /** @override */
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    '../fake_chrome_event.js',
-    'fake_language_settings_private.js',
-    'fake_settings_private.js'
-  ]),
-
-  /** @type {LanguageSettingsPrivate} */
-  languageSettingsPrivateApi: undefined,
-
-  /** @override */
-  runAccessibilityChecks: false,
-
-  /** @override */
-  preLoad: function() {
-    PolymerTest.prototype.preLoad.call(this);
-    this.languageSettingsPrivateApi =
-        new settings.FakeLanguageSettingsPrivate();
-    cr.exportPath('languageSettings').languageSettingsPrivateApiForTest =
-        this.languageSettingsPrivateApi;
-  },
-};
-
-// Tests settings-languages-singleton.
-TEST_F('SettingsLanguagesSingletonBrowserTest', 'LanguagesSingleton',
-       function() {
-  var settingsPrefs;
-  var fakePrefs = [{
-    key: 'intl.app_locale',
-    type: chrome.settingsPrivate.PrefType.STRING,
-    value: 'en-US',
-  }, {
-    key: 'intl.accept_languages',
-    type: chrome.settingsPrivate.PrefType.STRING,
-    value: 'en-US,sw',
-  }, {
-    key: 'spellcheck.dictionaries',
-    type: chrome.settingsPrivate.PrefType.LIST,
-    value: ['en-US'],
-  }, {
-    key: 'translate_blocked_languages',
-    type: chrome.settingsPrivate.PrefType.LIST,
-    value: ['en-US'],
-  }];
-  if (cr.isChromeOS) {
-    fakePrefs.push({
-      key: 'settings.language.preferred_languages',
-      type: chrome.settingsPrivate.PrefType.STRING,
-      value: 'en-US,sw',
-    });
-  }
-
-  var self = this;
-  suite('LanguagesSingleton', function() {
-    var languageHelper;
-
-    suiteSetup(function() {
-      CrSettingsPrefs.deferInitialization = true;
-      settingsPrefs = document.createElement('settings-prefs');
-      assertTrue(!!settingsPrefs);
-      var fakeApi = new settings.FakeSettingsPrivate(fakePrefs);
-      settingsPrefs.initializeForTesting(fakeApi);
-
-      self.languageSettingsPrivateApi.setSettingsPrefs(settingsPrefs);
-      languageHelper = LanguageHelperImpl.getInstance();
-      return languageHelper.initialized;
-    });
-
-    test('languages model', function() {
-      for (var i = 0; i < self.languageSettingsPrivateApi.languages.length;
-           i++) {
-        assertEquals(self.languageSettingsPrivateApi.languages[i].code,
-                     languageHelper.languages.supportedLanguages[i].code);
-      }
-      assertEquals('en-US',
-                   languageHelper.languages.enabledLanguages[0].language.code);
-      assertEquals('sw',
-                   languageHelper.languages.enabledLanguages[1].language.code);
-      assertEquals('en', languageHelper.languages.translateTarget);
-
-      // TODO(michaelpg): Test other aspects of the model.
-    });
-
-    test('modifying languages', function() {
-      assertTrue(languageHelper.isLanguageEnabled('en-US'));
-      assertTrue(languageHelper.isLanguageEnabled('sw'));
-      assertFalse(languageHelper.isLanguageEnabled('en-CA'));
-
-      languageHelper.enableLanguage('en-CA');
-      assertTrue(languageHelper.isLanguageEnabled('en-CA'));
-      languageHelper.disableLanguage('sw');
-      assertFalse(languageHelper.isLanguageEnabled('sw'));
-
-      // TODO(michaelpg): Test other modifications.
-    });
-  });
-
-  mocha.run();
-});
-
-/**
- * Test class for settings-languages-page.
+ * Test class for settings-languages-page UI.
  * @constructor
  * @extends {SettingsPageBrowserTest}
  */
@@ -167,47 +53,57 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
 
     var advanced = this.getPage('advanced');
 
+    var languagesSection;
+    var languagesPage;
     suiteSetup(function() {
       advanced.set('pageVisibility.languages', true);
       Polymer.dom.flush();
 
-      return LanguageHelperImpl.getInstance().initialized;
-    });
-
-    test('languages page', function(done) {
-      var languagesSection = this.getSection(advanced, 'languages');
+      languagesSection = this.getSection(advanced, 'languages');
       assertTrue(!!languagesSection);
-      var languagesPage =
-          languagesSection.querySelector('settings-languages-page');
+      languagesPage = languagesSection.querySelector('settings-languages-page');
       assertTrue(!!languagesPage);
 
+      return LanguageHelperImpl.getInstance().whenReady();
+    }.bind(this));
+
+    teardown(function(done) {
+      if (this.isAtRoot())
+        return done();
+      this.backToRoot();
+      setTimeout(done);
+    }.bind(this));
+
+    test('manage languages', function() {
       var manageLanguagesButton =
           languagesPage.$.languagesCollapse.querySelector('.list-button');
       MockInteractions.tap(manageLanguagesButton);
       assertTrue(!!languagesPage.$$('settings-manage-languages-page'));
+    });
 
-      // TODO(michaelpg): figure out why setTimeout is necessary, only after
-      // opening the first subpage.
-      setTimeout(function() {
-        var languageButton = languagesPage.$.languagesCollapse.querySelector(
-            '.list-item paper-icon-button[icon=settings]');
-        assertTrue(!!languageButton);
-        MockInteractions.tap(languageButton);
+    test('language detail', function() {
+      var languageButton = languagesPage.$.languagesCollapse.querySelector(
+          '.list-item paper-icon-button[icon=settings]');
+      assertTrue(!!languageButton);
+      MockInteractions.tap(languageButton);
 
-        assertTrue(!!languagesPage.root.querySelector(
-            'settings-language-detail-page'));
+      var languageDetailPage = languagesPage.$$(
+          'settings-language-detail-page');
+      assertTrue(!!languageDetailPage);
+      assertEquals('en-US', languageDetailPage.detail.language.code);
+    });
 
-        var spellCheckCollapse = languagesPage.$.spellCheckCollapse;
-        assertEquals(cr.isMac, !spellCheckCollapse);
-        if (!cr.isMac) {
-          var spellCheckButton = spellCheckCollapse.querySelector(
-              '.list-button');
-          MockInteractions.tap(spellCheckButton);
-          assertTrue(!!languagesPage.$$('settings-edit-dictionary-page'));
-        }
-        done();
-      }.bind(this));
-    }.bind(this));
+    test('spellcheck', function() {
+      var spellCheckCollapse = languagesPage.$.spellCheckCollapse;
+      var spellCheckSettingsExist = !!spellCheckCollapse;
+      if (cr.isMac) {
+        assertFalse(spellCheckSettingsExist);
+      } else {
+        assertTrue(spellCheckSettingsExist);
+        MockInteractions.tap(spellCheckCollapse.querySelector('.list-button'));
+        assertTrue(!!languagesPage.$$('settings-edit-dictionary-page'));
+      }
+    });
   }.bind(this));
 
   // TODO(michaelpg): Test more aspects of the languages UI.
