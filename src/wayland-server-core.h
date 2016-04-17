@@ -26,14 +26,14 @@
 #ifndef WAYLAND_SERVER_CORE_H
 #define WAYLAND_SERVER_CORE_H
 
-#ifdef  __cplusplus
-extern "C" {
-#endif
-
 #include <sys/types.h>
 #include <stdint.h>
 #include "wayland-util.h"
 #include "wayland-version.h"
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
 
 enum {
 	WL_EVENT_READABLE = 0x01,
