@@ -1423,13 +1423,13 @@ emit_header(struct protocol *protocol, enum side side)
 	printf("#ifndef %s_%s_PROTOCOL_H\n"
 	       "#define %s_%s_PROTOCOL_H\n"
 	       "\n"
+	       "#include <stdint.h>\n"
+	       "#include <stddef.h>\n"
+	       "#include \"%s\"\n\n"
 	       "#ifdef  __cplusplus\n"
 	       "extern \"C\" {\n"
 	       "#endif\n"
 	       "\n"
-	       "#include <stdint.h>\n"
-	       "#include <stddef.h>\n"
-	       "#include \"%s\"\n\n"
 	       "struct wl_client;\n"
 	       "struct wl_resource;\n\n",
 	       protocol->uppercase_name, s,
