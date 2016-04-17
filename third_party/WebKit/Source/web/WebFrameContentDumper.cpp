@@ -7,6 +7,7 @@
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/Serialization.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTreeAsText.h"
@@ -27,6 +28,9 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
 
     if (!frame->view())
         return;
+
+    DCHECK(!frame->view()->needsLayout());
+    DCHECK(!document->needsLayoutTreeUpdate());
 
     // Select the document body.
     if (document->body()) {
@@ -88,7 +92,7 @@ WebString WebFrameContentDumper::deprecatedDumpFrameTreeAsText(WebLocalFrame* fr
 
 WebString WebFrameContentDumper::dumpWebViewAsText(WebView* webView, size_t maxChars)
 {
-    ASSERT(webView);
+    DCHECK(webView);
     webView->updateAllLifecyclePhases();
     return WebFrameContentDumper::deprecatedDumpFrameTreeAsText(webView->mainFrame()->toWebLocalFrame(), maxChars);
 }
