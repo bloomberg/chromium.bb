@@ -79,7 +79,6 @@
       '../catalog/store.cc',
       '../catalog/store.h',
       '../catalog/types.h',
-      'loader.h',
       'connect_params.cc',
       'connect_params.h',
       'connect_util.cc',
@@ -109,7 +108,7 @@
     'target_name': 'mojo_shell_unittests',
     'type': 'executable',
     'sources': [
-      'tests/loader_unittest.cc',
+      'tests/placeholder_unittest.cc',
     ],
     'dependencies': [
       'shell_lib',

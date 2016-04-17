@@ -14,10 +14,6 @@ group("tests") {
 }
 
 test("mojo_shell_unittests") {
-  sources = [
-    "loader_unittest.cc",
-  ]
-
   deps = [
     ":interfaces",
     "//base",

@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/shell/connect_params.h"
-#include "services/shell/loader.h"
 #include "services/shell/native_runner.h"
 #include "services/shell/public/cpp/capabilities.h"
 #include "services/shell/public/cpp/identity.h"
@@ -54,8 +53,7 @@ class Shell : public ShellClient {
   // implementations of NativeRunner, e.g. for in or out-of-process execution.
   // See native_runner.h and RunNativeApplication().
   // |file_task_runner| provides access to a thread to perform file copy
-  // operations on. This may be null only in testing environments where
-  // applications are loaded via Loader implementations.
+  // operations on.
   Shell(std::unique_ptr<NativeRunnerFactory> native_runner_factory,
         mojom::ShellClientPtr catalog);
   ~Shell() override;
@@ -74,15 +72,6 @@ class Shell : public ShellClient {
   // the Shell's embedder to register itself with the shell. This must only be
   // called once.
   mojom::ShellClientRequest InitInstanceForEmbedder(const std::string& name);
-
-  // Sets the default Loader to be used if not overridden by SetLoaderForName().
-  void set_default_loader(std::unique_ptr<Loader> loader) {
-    default_loader_ = std::move(loader);
-  }
-
-  // Sets a Loader to be used for a specific name.
-  void SetLoaderForName(std::unique_ptr<Loader> loader,
-                        const std::string& name);
 
  private:
   class Instance;
@@ -147,23 +136,9 @@ class Shell : public ShellClient {
                          mojom::ShellClientPtr client,
                          mojom::ResolveResultPtr result);
 
-  // Tries to load |target| with an Loader. Returns true if one was registered
-  // and it was loaded, in which case |request| is taken.
-  bool LoadWithLoader(const Identity& target,
-                      mojom::ShellClientRequest* request);
-
-  // Returns the appropriate loader for |name|, or the default loader if there
-  // is no loader configured for the name.
-  Loader* GetLoaderForName(const std::string& name);
-
   base::WeakPtr<Shell> GetWeakPtr();
 
   void CleanupRunner(NativeRunner* runner);
-
-  // Loader management.
-  // Loaders are chosen in the order they are listed here.
-  std::map<std::string, Loader*> name_to_loader_;
-  std::unique_ptr<Loader> default_loader_;
 
   std::map<Identity, Instance*> identity_to_instance_;
 
