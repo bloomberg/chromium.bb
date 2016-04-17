@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.SysUtils;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -19,6 +20,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObserver;
+import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -315,6 +317,10 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         if (info != null && !info.isPanelShowRecorded()) {
             info.setIsPanelShowRecorded(true);
             recordPanelVisibilityForNavigation(true);
+            if (LibraryLoader.isInitialized()) {
+                RapporServiceBridge.sampleDomainAndRegistryFromURL(
+                        "DomDistiller.PromptPanel", info.getUrl());
+            }
         }
     }
 

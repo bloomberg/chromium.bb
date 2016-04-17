@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManagerDelegate;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
+import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -246,6 +247,11 @@ public class ReaderModePanel extends OverlayPanel {
         if (!mTimerRunning && animatingToOpenState) {
             mStartTime = System.currentTimeMillis();
             mTimerRunning = true;
+            if (mManagerDelegate != null) {
+                String url = mManagerDelegate.getBasePageWebContents().getUrl();
+                RapporServiceBridge.sampleDomainAndRegistryFromURL(
+                        "DomDistiller.OpenPanel", url);
+            }
         } else if (mTimerRunning && !animatingToOpenState) {
             onTimerEnded();
         }
