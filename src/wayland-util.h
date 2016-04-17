@@ -31,14 +31,14 @@
 #ifndef WAYLAND_UTIL_H
 #define WAYLAND_UTIL_H
 
-#ifdef  __cplusplus
-extern "C" {
-#endif
-
 #include <math.h>
 #include <stddef.h>
 #include <inttypes.h>
 #include <stdarg.h>
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
 
 /* GCC visibility */
 #if defined(__GNUC__) && __GNUC__ >= 4
