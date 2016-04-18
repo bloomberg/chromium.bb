@@ -71,6 +71,7 @@ public:
 
     static unsigned tagForParserCache(CachedMetadataHandler*);
     static unsigned tagForCodeCache(CachedMetadataHandler*);
+    static void setCacheTimeStamp(CachedMetadataHandler*);
 
 
     // Utiltiies for calling functions added to the V8 extras binding object.

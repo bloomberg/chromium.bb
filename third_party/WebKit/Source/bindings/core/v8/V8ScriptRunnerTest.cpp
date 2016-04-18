@@ -61,6 +61,10 @@ public:
     {
         return V8ScriptRunner::tagForCodeCache(cacheHandler);
     }
+    void setCacheTimeStamp(CachedMetadataHandler* cacheHandler)
+    {
+        V8ScriptRunner::setCacheTimeStamp(cacheHandler);
+    }
 
     bool compileScript(V8CacheOptions cacheOptions)
     {
@@ -125,9 +129,8 @@ TEST_F(V8ScriptRunnerTest, parseOption)
 TEST_F(V8ScriptRunnerTest, codeOption)
 {
     setResource();
+    setCacheTimeStamp(cacheHandler());
 
-    // Compile twice, since 'code' has a probation period before it caches.
-    EXPECT_TRUE(compileScript(V8CacheOptionsCode));
     EXPECT_TRUE(compileScript(V8CacheOptionsCode));
 
     EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForParserCache(cacheHandler())));

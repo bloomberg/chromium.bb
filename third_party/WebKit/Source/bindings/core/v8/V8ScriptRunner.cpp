@@ -204,15 +204,6 @@ unsigned cacheTag(CacheTagKind kind, CachedMetadataHandler* cacheHandler)
     return (v8CacheDataVersion | kind) + StringHash::hash(cacheHandler->encoding());
 }
 
-// Store a timestamp to the cache as hint.
-void setCacheTimeStamp(CachedMetadataHandler* cacheHandler)
-{
-    double now = WTF::currentTime();
-    unsigned tag = cacheTag(CacheTagTimeStamp, cacheHandler);
-    cacheHandler->clearCachedMetadata(CachedMetadataHandler::CacheLocally);
-    cacheHandler->setCachedMetadata(tag, reinterpret_cast<char*>(&now), sizeof(now), CachedMetadataHandler::SendToPlatform);
-}
-
 // Check previously stored timestamp.
 bool isResourceHotForCaching(CachedMetadataHandler* cacheHandler, int hotHours)
 {
@@ -254,7 +245,7 @@ v8::MaybeLocal<v8::Script> postStreamCompile(V8CacheOptions cacheOptions, Cached
 
     case V8CacheOptionsDefault:
     case V8CacheOptionsCode:
-        setCacheTimeStamp(cacheHandler);
+        V8ScriptRunner::setCacheTimeStamp(cacheHandler);
         break;
 
     case V8CacheOptionsNone:
@@ -312,7 +303,7 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedM
         if (codeCache)
             return bind(compileAndConsumeCache, cacheHandler, codeCacheTag, v8::ScriptCompiler::kConsumeCodeCache);
         if (!isResourceHotForCaching(cacheHandler, hotHours)) {
-            setCacheTimeStamp(cacheHandler);
+            V8ScriptRunner::setCacheTimeStamp(cacheHandler);
             return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
         }
         return bind(compileAndProduceCache, cacheHandler, codeCacheTag, v8::ScriptCompiler::kProduceCodeCache, CachedMetadataHandler::SendToPlatform);
@@ -522,6 +513,15 @@ unsigned V8ScriptRunner::tagForParserCache(CachedMetadataHandler* cacheHandler)
 unsigned V8ScriptRunner::tagForCodeCache(CachedMetadataHandler* cacheHandler)
 {
     return cacheTag(CacheTagCode, cacheHandler);
+}
+
+// Store a timestamp to the cache as hint.
+void V8ScriptRunner::setCacheTimeStamp(CachedMetadataHandler* cacheHandler)
+{
+    double now = WTF::currentTime();
+    unsigned tag = cacheTag(CacheTagTimeStamp, cacheHandler);
+    cacheHandler->clearCachedMetadata(CachedMetadataHandler::CacheLocally);
+    cacheHandler->setCachedMetadata(tag, reinterpret_cast<char*>(&now), sizeof(now), CachedMetadataHandler::SendToPlatform);
 }
 
 } // namespace blink
