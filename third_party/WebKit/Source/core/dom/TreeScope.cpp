@@ -47,7 +47,7 @@
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMapElement.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "wtf/Vector.h"
@@ -230,7 +230,7 @@ HitTestResult hitTestInDocument(const Document* document, int x, int y, const Hi
         return HitTestResult();
 
     HitTestResult result(request, hitPoint);
-    document->layoutView()->hitTest(result);
+    document->layoutViewItem().hitTest(result);
     return result;
 }
 
@@ -298,7 +298,7 @@ HeapVector<Member<Element>> TreeScope::elementsFromPoint(int x, int y) const
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased | HitTestRequest::PenetratingList);
     HitTestResult result(request, hitPoint);
-    document.layoutView()->hitTest(result);
+    document.layoutViewItem().hitTest(result);
 
     return elementsFromHitTestResult(result);
 }
