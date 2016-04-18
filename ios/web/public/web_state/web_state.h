@@ -39,6 +39,7 @@ namespace web {
 class BrowserState;
 class NavigationManager;
 class WebInterstitial;
+class WebStateDelegate;
 class WebStateObserver;
 class WebStatePolicyDecider;
 class WebStateWeakPtrFactory;
@@ -83,6 +84,10 @@ class WebState : public base::SupportsUserData {
           ImageDownloadCallback;
 
   ~WebState() override {}
+
+  // Gets/Sets the delegate.
+  virtual WebStateDelegate* GetDelegate() = 0;
+  virtual void SetDelegate(WebStateDelegate* delegate) = 0;
 
   // The view containing the contents of the current web page. If the view has
   // been purged due to low memory, this will recreate it. It is up to the

@@ -14,6 +14,7 @@
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
+#include "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/web_state/web_state_policy_decider.h"
 #import "ios/web/test/web_test.h"
@@ -104,6 +105,27 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
   bool did_stop_loading_called_;
   bool page_loaded_called_with_success_;
   bool web_state_destroyed_called_;
+};
+
+// Test delegate to check that the WebStateDelegate methods are called as
+// expected.
+class TestWebStateDelegate : public WebStateDelegate {
+ public:
+  TestWebStateDelegate() : load_progress_changed_called_(false) {}
+
+  // Methods returning true if the corresponding WebStateObserver method has
+  // been called.
+  bool load_progress_changed_called() const {
+    return load_progress_changed_called_;
+  }
+
+ private:
+  // WebStateObserver implementation:
+  void LoadProgressChanged(WebState* source, double progress) override {
+    load_progress_changed_called_ = true;
+  }
+
+  bool load_progress_changed_called_;
 };
 
 // Test observer to check that the WebStateObserver methods are called as
@@ -342,6 +364,17 @@ TEST_F(WebStateTest, ObserverTest) {
   EXPECT_TRUE(observer->web_state_destroyed_called());
 
   EXPECT_EQ(nullptr, observer->web_state());
+}
+
+// Tests that WebStateDelegate methods appropriately called.
+TEST_F(WebStateTest, DelegateTest) {
+  TestWebStateDelegate delegate;
+  web_state_->SetDelegate(&delegate);
+
+  // Test that LoadProgressChanged() is called.
+  EXPECT_FALSE(delegate.load_progress_changed_called());
+  web_state_->SendChangeLoadProgress(0.0);
+  EXPECT_TRUE(delegate.load_progress_changed_called());
 }
 
 // Verifies that GlobalWebStateObservers are called when expected.

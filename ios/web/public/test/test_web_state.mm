@@ -17,6 +17,12 @@ UIView* TestWebState::GetView() {
   return nullptr;
 }
 
+WebStateDelegate* TestWebState::GetDelegate() {
+  return nil;
+}
+
+void TestWebState::SetDelegate(WebStateDelegate* delegate) {}
+
 BrowserState* TestWebState::GetBrowserState() const {
   return nullptr;
 }

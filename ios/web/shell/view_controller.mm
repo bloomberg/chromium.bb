@@ -17,6 +17,7 @@
 #import "ios/net/empty_nsurlcache.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/shell/shell_browser_state.h"
 #include "ios/web/web_state/ui/crw_web_controller.h"
@@ -29,10 +30,11 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
 
 using web::NavigationManager;
 
-@interface ViewController ()<CRWWebStateObserver> {
+@interface ViewController ()<CRWWebStateDelegate, CRWWebStateObserver> {
   web::BrowserState* _browserState;
   std::unique_ptr<web::WebStateImpl> _webState;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
+  std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
 
   base::mac::ObjCPropertyReleaser _propertyReleaser_ViewController;
 }
@@ -115,6 +117,8 @@ using web::NavigationManager;
 
   _webStateObserver.reset(
       new web::WebStateObserverBridge(_webState.get(), self));
+  _webStateDelegate.reset(new web::WebStateDelegateBridge(self));
+  _webState->SetDelegate(_webStateDelegate.get());
 
   UIView* view = _webState->GetView();
   [view setFrame:[_containerView bounds]];

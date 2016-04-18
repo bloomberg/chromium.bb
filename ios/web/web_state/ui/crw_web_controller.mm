@@ -4956,10 +4956,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)webViewEstimatedProgressDidChange {
-  if ([self.delegate
+  if ([self isBeingDestroyed])
+    return;
+
+  self.webStateImpl->SendChangeLoadProgress([_webView estimatedProgress]);
+  if ([_delegate
           respondsToSelector:@selector(webController:didUpdateProgress:)]) {
-    [self.delegate webController:self
-               didUpdateProgress:[self.webView estimatedProgress]];
+    [_delegate webController:self
+           didUpdateProgress:[_webView estimatedProgress]];
   }
 }
 

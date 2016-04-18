@@ -19,6 +19,7 @@
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_state/credential.h"
 #include "ios/web/public/web_state/ui/crw_content_view.h"
+#include "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
@@ -33,7 +34,8 @@
 namespace web {
 
 WebStateImpl::WebStateImpl(BrowserState* browser_state)
-    : is_loading_(false),
+    : delegate_(nullptr),
+      is_loading_(false),
       is_being_destroyed_(false),
       facade_delegate_(nullptr),
       web_controller_(nil),
@@ -65,6 +67,22 @@ WebStateImpl::~WebStateImpl() {
   DCHECK(script_command_callbacks_.empty());
   if (request_tracker_.get())
     CloseRequestTracker();
+  SetDelegate(nullptr);
+}
+
+WebStateDelegate* WebStateImpl::GetDelegate() {
+  return delegate_;
+}
+
+void WebStateImpl::SetDelegate(WebStateDelegate* delegate) {
+  if (delegate == delegate_)
+    return;
+  if (delegate_)
+    delegate_->Detach(this);
+  delegate_ = delegate;
+  if (delegate_) {
+    delegate_->Attach(this);
+  }
 }
 
 void WebStateImpl::AddObserver(WebStateObserver* observer) {
@@ -377,6 +395,12 @@ void WebStateImpl::ClearTransientContentView() {
     FOR_EACH_OBSERVER(WebStateObserver, observers_, InsterstitialDismissed());
   }
   [web_controller_ clearTransientContentView];
+}
+
+void WebStateImpl::SendChangeLoadProgress(double progress) {
+  if (delegate_) {
+    delegate_->LoadProgressChanged(this, progress);
+  }
 }
 
 WebUIIOS* WebStateImpl::CreateWebUIIOS(const GURL& url) {

@@ -41,6 +41,7 @@ struct FaviconURL;
 struct LoadCommittedDetails;
 class NavigationManager;
 class WebInterstitialImpl;
+class WebStateDelegate;
 class WebStateFacadeDelegate;
 class WebStatePolicyDecider;
 class WebUIIOS;
@@ -215,6 +216,8 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   NSString* GetRequestGroupID();
 
   // WebState:
+  WebStateDelegate* GetDelegate() override;
+  void SetDelegate(WebStateDelegate* delegate) override;
   UIView* GetView() override;
   BrowserState* GetBrowserState() const override;
   void OpenURL(const WebState::OpenURLParams& params) override;
@@ -250,6 +253,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Called to dismiss the currently-displayed transient content view.
   void ClearTransientContentView();
 
+  // Notifies the delegate that the load progress was updated.
+  void SendChangeLoadProgress(double progress);
+
   // NavigationManagerDelegate:
   void NavigateToPendingEntry() override;
   void LoadURLWithParams(const NavigationManager::WebLoadParams&) override;
@@ -277,6 +283,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Returns true if |web_controller_| has been set.
   bool Configured() const;
+
+  // Delegate, not owned by this object.
+  WebStateDelegate* delegate_;
 
   // Stores whether the web state is currently loading a page.
   bool is_loading_;
