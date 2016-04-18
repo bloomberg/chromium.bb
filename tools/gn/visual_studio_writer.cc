@@ -5,6 +5,7 @@
 #include "tools/gn/visual_studio_writer.h"
 
 #include <algorithm>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <set>
@@ -211,8 +212,6 @@ VisualStudioWriter::VisualStudioWriter(const BuildSettings* build_settings,
 }
 
 VisualStudioWriter::~VisualStudioWriter() {
-  STLDeleteContainerPointers(projects_.begin(), projects_.end());
-  STLDeleteContainerPointers(folders_.begin(), folders_.end());
 }
 
 // static
@@ -281,7 +280,8 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
   // Sort projects so they appear always in the same order in solution file.
   // Otherwise solution file is rewritten and reloaded by Visual Studio.
   std::sort(writer.projects_.begin(), writer.projects_.end(),
-            [](const SolutionEntry* a, const SolutionEntry* b) {
+            [](const std::unique_ptr<SolutionProject>& a,
+               const std::unique_ptr<SolutionProject>& b) {
               return a->path < b->path;
             });
 
@@ -310,7 +310,7 @@ bool VisualStudioWriter::WriteProjectFiles(const Target* target, Err* err) {
   base::FilePath vcxproj_path = build_settings_->GetFullPath(target_file);
   std::string vcxproj_path_str = FilePathToUTF8(vcxproj_path);
 
-  projects_.push_back(new SolutionProject(
+  projects_.emplace_back(new SolutionProject(
       project_name, vcxproj_path_str,
       MakeGuid(vcxproj_path_str, kGuidSeedProject),
       FilePathToUTF8(build_settings_->GetFullPath(target->label().dir())),
@@ -648,14 +648,14 @@ void VisualStudioWriter::WriteSolutionFileContents(
   out << "# " << version_string_ << std::endl;
 
   SourceDir solution_dir(FilePathToUTF8(solution_dir_path));
-  for (const SolutionEntry* folder : folders_) {
+  for (const std::unique_ptr<SolutionEntry>& folder : folders_) {
     out << "Project(\"" << kGuidTypeFolder << "\") = \"(" << folder->name
         << ")\", \"" << RebasePath(folder->path, solution_dir) << "\", \""
         << folder->guid << "\"" << std::endl;
     out << "EndProject" << std::endl;
   }
 
-  for (const SolutionEntry* project : projects_) {
+  for (const std::unique_ptr<SolutionProject>& project : projects_) {
     out << "Project(\"" << kGuidTypeProject << "\") = \"" << project->name
         << "\", \"" << RebasePath(project->path, solution_dir) << "\", \""
         << project->guid << "\"" << std::endl;
@@ -673,7 +673,7 @@ void VisualStudioWriter::WriteSolutionFileContents(
 
   out << "\tGlobalSection(ProjectConfigurationPlatforms) = postSolution"
       << std::endl;
-  for (const SolutionProject* project : projects_) {
+  for (const std::unique_ptr<SolutionProject>& project : projects_) {
     const std::string project_config_mode =
         config_mode_prefix + project->config_platform;
     out << "\t\t" << project->guid << '.' << config_mode
@@ -688,13 +688,13 @@ void VisualStudioWriter::WriteSolutionFileContents(
   out << "\tEndGlobalSection" << std::endl;
 
   out << "\tGlobalSection(NestedProjects) = preSolution" << std::endl;
-  for (const SolutionEntry* folder : folders_) {
+  for (const std::unique_ptr<SolutionEntry>& folder : folders_) {
     if (folder->parent_folder) {
       out << "\t\t" << folder->guid << " = " << folder->parent_folder->guid
           << std::endl;
     }
   }
-  for (const SolutionEntry* project : projects_) {
+  for (const std::unique_ptr<SolutionProject>& project : projects_) {
     out << "\t\t" << project->guid << " = " << project->parent_folder->guid
         << std::endl;
   }
@@ -708,7 +708,7 @@ void VisualStudioWriter::ResolveSolutionFolders() {
 
   // Get all project directories. Create solution folder for each directory.
   std::map<base::StringPiece, SolutionEntry*> processed_paths;
-  for (SolutionProject* project : projects_) {
+  for (const std::unique_ptr<SolutionProject>& project : projects_) {
     base::StringPiece folder_path = project->label_dir_path;
     if (IsSlash(folder_path[folder_path.size() - 1]))
       folder_path = folder_path.substr(0, folder_path.size() - 1);
@@ -717,12 +717,12 @@ void VisualStudioWriter::ResolveSolutionFolders() {
       project->parent_folder = it->second;
     } else {
       std::string folder_path_str = folder_path.as_string();
-      SolutionEntry* folder = new SolutionEntry(
+      std::unique_ptr<SolutionEntry> folder(new SolutionEntry(
           FindLastDirComponent(SourceDir(folder_path)).as_string(),
-          folder_path_str, MakeGuid(folder_path_str, kGuidSeedFolder));
-      folders_.push_back(folder);
-      project->parent_folder = folder;
-      processed_paths[folder_path] = folder;
+          folder_path_str, MakeGuid(folder_path_str, kGuidSeedFolder)));
+      project->parent_folder = folder.get();
+      processed_paths[folder_path] = folder.get();
+      folders_.push_back(std::move(folder));
 
       if (root_folder_path_.empty()) {
         root_folder_path_ = folder_path_str;
@@ -751,38 +751,42 @@ void VisualStudioWriter::ResolveSolutionFolders() {
 
   // Create also all parent folders up to |root_folder_path_|.
   SolutionFolders additional_folders;
-  for (SolutionEntry* folder : folders_) {
-    if (folder->path == root_folder_path_)
+  for (const std::unique_ptr<SolutionEntry>& solution_folder : folders_) {
+    if (solution_folder->path == root_folder_path_)
       continue;
 
+    SolutionEntry* folder = solution_folder.get();
     base::StringPiece parent_path;
     while ((parent_path = FindParentDir(&folder->path)) != root_folder_path_) {
       auto it = processed_paths.find(parent_path);
       if (it != processed_paths.end()) {
         folder = it->second;
       } else {
-        folder = new SolutionEntry(
+        std::unique_ptr<SolutionEntry> new_folder(new SolutionEntry(
             FindLastDirComponent(SourceDir(parent_path)).as_string(),
             parent_path.as_string(),
-            MakeGuid(parent_path.as_string(), kGuidSeedFolder));
-        additional_folders.push_back(folder);
-        processed_paths[parent_path] = folder;
+            MakeGuid(parent_path.as_string(), kGuidSeedFolder)));
+        processed_paths[parent_path] = new_folder.get();
+        folder = new_folder.get();
+        additional_folders.push_back(std::move(new_folder));
       }
     }
   }
-  folders_.insert(folders_.end(), additional_folders.begin(),
-                  additional_folders.end());
+  folders_.insert(folders_.end(),
+                  std::make_move_iterator(additional_folders.begin()),
+                  std::make_move_iterator(additional_folders.end()));
 
   // Sort folders by path.
   std::sort(folders_.begin(), folders_.end(),
-            [](const SolutionEntry* a, const SolutionEntry* b) {
+            [](const std::unique_ptr<SolutionEntry>& a,
+               const std::unique_ptr<SolutionEntry>& b) {
               return a->path < b->path;
             });
 
   // Match subfolders with their parents. Since |folders_| are sorted by path we
   // know that parent folder always precedes its children in vector.
-  SolutionFolders parents;
-  for (SolutionEntry* folder : folders_) {
+  std::vector<SolutionEntry*> parents;
+  for (const std::unique_ptr<SolutionEntry>& folder : folders_) {
     while (!parents.empty()) {
       if (base::StartsWith(folder->path, parents.back()->path,
                            base::CompareCase::SENSITIVE)) {
@@ -792,7 +796,7 @@ void VisualStudioWriter::ResolveSolutionFolders() {
         parents.pop_back();
       }
     }
-    parents.push_back(folder);
+    parents.push_back(folder.get());
   }
 }
 

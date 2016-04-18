@@ -31,22 +31,22 @@ TEST_F(VisualStudioWriterTest, ResolveSolutionFolders) {
 
   std::string path =
       MakeTestPath("/foo/chromium/src/out/Debug/obj/base/base.vcxproj");
-  writer.projects_.push_back(new VisualStudioWriter::SolutionProject(
+  writer.projects_.emplace_back(new VisualStudioWriter::SolutionProject(
       "base", path, MakeGuid(path, "project"),
       MakeTestPath("/foo/chromium/src/base"), "Win32"));
 
   path = MakeTestPath("/foo/chromium/src/out/Debug/obj/tools/gn/gn.vcxproj");
-  writer.projects_.push_back(new VisualStudioWriter::SolutionProject(
+  writer.projects_.emplace_back(new VisualStudioWriter::SolutionProject(
       "gn", path, MakeGuid(path, "project"),
       MakeTestPath("/foo/chromium/src/tools/gn"), "Win32"));
 
   path = MakeTestPath("/foo/chromium/src/out/Debug/obj/chrome/chrome.vcxproj");
-  writer.projects_.push_back(new VisualStudioWriter::SolutionProject(
+  writer.projects_.emplace_back(new VisualStudioWriter::SolutionProject(
       "chrome", path, MakeGuid(path, "project"),
       MakeTestPath("/foo/chromium/src/chrome"), "Win32"));
 
   path = MakeTestPath("/foo/chromium/src/out/Debug/obj/base/bar.vcxproj");
-  writer.projects_.push_back(new VisualStudioWriter::SolutionProject(
+  writer.projects_.emplace_back(new VisualStudioWriter::SolutionProject(
       "bar", path, MakeGuid(path, "project"),
       MakeTestPath("/foo/chromium/src/base"), "Win32"));
 
@@ -71,12 +71,12 @@ TEST_F(VisualStudioWriterTest, ResolveSolutionFolders) {
   ASSERT_EQ("gn", writer.folders_[3]->name);
   ASSERT_EQ(MakeTestPath("/foo/chromium/src/tools/gn"),
             writer.folders_[3]->path);
-  ASSERT_EQ(writer.folders_[2], writer.folders_[3]->parent_folder);
+  ASSERT_EQ(writer.folders_[2].get(), writer.folders_[3]->parent_folder);
 
-  ASSERT_EQ(writer.folders_[0], writer.projects_[0]->parent_folder);
-  ASSERT_EQ(writer.folders_[3], writer.projects_[1]->parent_folder);
-  ASSERT_EQ(writer.folders_[1], writer.projects_[2]->parent_folder);
-  ASSERT_EQ(writer.folders_[0], writer.projects_[3]->parent_folder);
+  ASSERT_EQ(writer.folders_[0].get(), writer.projects_[0]->parent_folder);
+  ASSERT_EQ(writer.folders_[3].get(), writer.projects_[1]->parent_folder);
+  ASSERT_EQ(writer.folders_[1].get(), writer.projects_[2]->parent_folder);
+  ASSERT_EQ(writer.folders_[0].get(), writer.projects_[3]->parent_folder);
 }
 
 TEST_F(VisualStudioWriterTest, ResolveSolutionFolders_AbsPath) {
@@ -85,24 +85,24 @@ TEST_F(VisualStudioWriterTest, ResolveSolutionFolders_AbsPath) {
 
   std::string path =
       MakeTestPath("/foo/chromium/src/out/Debug/obj/base/base.vcxproj");
-  writer.projects_.push_back(new VisualStudioWriter::SolutionProject(
+  writer.projects_.emplace_back(new VisualStudioWriter::SolutionProject(
       "base", path, MakeGuid(path, "project"),
       MakeTestPath("/foo/chromium/src/base"), "Win32"));
 
   path = MakeTestPath("/foo/chromium/src/out/Debug/obj/tools/gn/gn.vcxproj");
-  writer.projects_.push_back(new VisualStudioWriter::SolutionProject(
+  writer.projects_.emplace_back(new VisualStudioWriter::SolutionProject(
       "gn", path, MakeGuid(path, "project"),
       MakeTestPath("/foo/chromium/src/tools/gn"), "Win32"));
 
   path = MakeTestPath(
       "/foo/chromium/src/out/Debug/obj/ABS_PATH/C/foo/bar/bar.vcxproj");
-  writer.projects_.push_back(new VisualStudioWriter::SolutionProject(
+  writer.projects_.emplace_back(new VisualStudioWriter::SolutionProject(
       "bar", path, MakeGuid(path, "project"), MakeTestPath("/foo/bar"),
       "Win32"));
 
   path = MakeTestPath(
       "/foo/chromium/src/out/Debug/obj/ABS_PATH/C/foo/bar/baz/baz.vcxproj");
-  writer.projects_.push_back(new VisualStudioWriter::SolutionProject(
+  writer.projects_.emplace_back(new VisualStudioWriter::SolutionProject(
       "baz", path, MakeGuid(path, "project"), MakeTestPath("/foo/bar/baz"),
       "Win32"));
 
@@ -118,7 +118,7 @@ TEST_F(VisualStudioWriterTest, ResolveSolutionFolders_AbsPath) {
 
   ASSERT_EQ("baz", writer.folders_[1]->name);
   ASSERT_EQ(MakeTestPath("/foo/bar/baz"), writer.folders_[1]->path);
-  ASSERT_EQ(writer.folders_[0], writer.folders_[1]->parent_folder);
+  ASSERT_EQ(writer.folders_[0].get(), writer.folders_[1]->parent_folder);
 
   ASSERT_EQ("chromium", writer.folders_[2]->name);
   ASSERT_EQ(MakeTestPath("/foo/chromium"), writer.folders_[2]->path);
@@ -126,23 +126,23 @@ TEST_F(VisualStudioWriterTest, ResolveSolutionFolders_AbsPath) {
 
   ASSERT_EQ("src", writer.folders_[3]->name);
   ASSERT_EQ(MakeTestPath("/foo/chromium/src"), writer.folders_[3]->path);
-  ASSERT_EQ(writer.folders_[2], writer.folders_[3]->parent_folder);
+  ASSERT_EQ(writer.folders_[2].get(), writer.folders_[3]->parent_folder);
 
   ASSERT_EQ("base", writer.folders_[4]->name);
   ASSERT_EQ(MakeTestPath("/foo/chromium/src/base"), writer.folders_[4]->path);
-  ASSERT_EQ(writer.folders_[3], writer.folders_[4]->parent_folder);
+  ASSERT_EQ(writer.folders_[3].get(), writer.folders_[4]->parent_folder);
 
   ASSERT_EQ("tools", writer.folders_[5]->name);
   ASSERT_EQ(MakeTestPath("/foo/chromium/src/tools"), writer.folders_[5]->path);
-  ASSERT_EQ(writer.folders_[3], writer.folders_[5]->parent_folder);
+  ASSERT_EQ(writer.folders_[3].get(), writer.folders_[5]->parent_folder);
 
   ASSERT_EQ("gn", writer.folders_[6]->name);
   ASSERT_EQ(MakeTestPath("/foo/chromium/src/tools/gn"),
             writer.folders_[6]->path);
-  ASSERT_EQ(writer.folders_[5], writer.folders_[6]->parent_folder);
+  ASSERT_EQ(writer.folders_[5].get(), writer.folders_[6]->parent_folder);
 
-  ASSERT_EQ(writer.folders_[4], writer.projects_[0]->parent_folder);
-  ASSERT_EQ(writer.folders_[6], writer.projects_[1]->parent_folder);
-  ASSERT_EQ(writer.folders_[0], writer.projects_[2]->parent_folder);
-  ASSERT_EQ(writer.folders_[1], writer.projects_[3]->parent_folder);
+  ASSERT_EQ(writer.folders_[4].get(), writer.projects_[0]->parent_folder);
+  ASSERT_EQ(writer.folders_[6].get(), writer.projects_[1]->parent_folder);
+  ASSERT_EQ(writer.folders_[0].get(), writer.projects_[2]->parent_folder);
+  ASSERT_EQ(writer.folders_[1].get(), writer.projects_[3]->parent_folder);
 }

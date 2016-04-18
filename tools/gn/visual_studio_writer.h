@@ -6,6 +6,7 @@
 #define TOOLS_GN_VISUAL_STUDIO_WRITER_H_
 
 #include <iosfwd>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -77,8 +78,8 @@ class VisualStudioWriter {
     std::string config_platform;
   };
 
-  using SolutionProjects = std::vector<SolutionProject*>;
-  using SolutionFolders = std::vector<SolutionEntry*>;
+  using SolutionProjects = std::vector<std::unique_ptr<SolutionProject>>;
+  using SolutionFolders = std::vector<std::unique_ptr<SolutionEntry>>;
 
   VisualStudioWriter(const BuildSettings* build_settings,
                      const char* config_platform,
