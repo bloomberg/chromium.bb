@@ -387,17 +387,21 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   // menu is about to be displayed at the start of a tracking session.)
   zoom_level_observer_.reset();
   toolbar_actions_bar_observer_.reset();
+  // Make sure to reset() the BrowserActionsController since the view will also
+  // be destroyed. If a new one's needed, it'll be created when we create the
+  // model in -menuNeedsUpdate:.
+  browserActionsController_.reset();
   UMA_HISTOGRAM_TIMES("Toolbar.AppMenuTimeToAction",
                       base::TimeTicks::Now() - menuOpenTime_);
   menuOpenTime_ = base::TimeTicks();
 }
 
 - (void)menuNeedsUpdate:(NSMenu*)menu {
+  // We should never have a BrowserActionsController before creating the menu.
+  DCHECK(!browserActionsController_.get());
+
   // First empty out the menu and create a new model.
   [self removeAllItems:menu];
-  // Delete the BrowserActionsController; if a new one's needed, it'll be
-  // created as we add items to the menu.
-  browserActionsController_.reset();
   [self createModel];
   [menu setMinimumWidth:0];
 
