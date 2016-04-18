@@ -33,7 +33,7 @@ class GLCopyTexImage2DWorkaroundTest : public testing::TestWithParam<GLenum> {
       command_line.AppendSwitchASCII(
           switches::kGpuDriverBugWorkarounds,
           base::IntToString(gpu::USE_INTERMEDIARY_FOR_COPY_TEXTURE_IMAGE));
-      gl_.InitializeWithCommandLine(GLManager::Options(), &command_line);
+      gl_.InitializeWithCommandLine(GLManager::Options(), command_line);
       gl_.set_use_iosurface_memory_buffers(true);
       DCHECK(gl_.workarounds().use_intermediary_for_copy_texture_image);
   }

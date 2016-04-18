@@ -71,7 +71,8 @@ class TextureManagerTest : public GpuServiceTest {
     // enabled without FeatureInfo::EnableES3Validators().
     base::CommandLine command_line(0, nullptr);
     command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
-    feature_info_ = new FeatureInfo(command_line);
+    GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
+    feature_info_ = new FeatureInfo(command_line, gpu_driver_bug_workaround);
   }
 
   ~TextureManagerTest() override {}

@@ -14,6 +14,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -230,11 +231,12 @@ scoped_ptr<gfx::GpuMemoryBuffer> GLManager::CreateGpuMemoryBuffer(
 }
 
 void GLManager::Initialize(const GLManager::Options& options) {
-  InitializeWithCommandLine(options, nullptr);
+  InitializeWithCommandLine(options, *base::CommandLine::ForCurrentProcess());
 }
 
-void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
-                                          base::CommandLine* command_line) {
+void GLManager::InitializeWithCommandLine(
+    const GLManager::Options& options,
+    const base::CommandLine& command_line) {
   const int32_t kCommandBufferSize = 1024 * 1024;
   const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
   const size_t kMinTransferBufferSize = 1 * 256 * 1024;
@@ -287,11 +289,10 @@ void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
 
   attrib_helper.Serialize(&attribs);
 
-  DCHECK(!command_line || !context_group);
   if (!context_group) {
-    scoped_refptr<gles2::FeatureInfo> feature_info;
-    if (command_line)
-      feature_info = new gles2::FeatureInfo(*command_line);
+    GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
+    scoped_refptr<gles2::FeatureInfo> feature_info =
+        new gles2::FeatureInfo(command_line, gpu_driver_bug_workaround);
     context_group = new gles2::ContextGroup(
         gpu_preferences_, mailbox_manager_.get(), NULL,
         new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
@@ -463,7 +464,7 @@ void GLManager::Destroy() {
   }
 }
 
-const gpu::gles2::FeatureInfo::Workarounds& GLManager::workarounds() const {
+const GpuDriverBugWorkarounds& GLManager::workarounds() const {
   return decoder_->GetContextGroup()->feature_info()->workarounds();
 }
 
