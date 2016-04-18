@@ -902,6 +902,22 @@ bool LayerTreeHost::UpdateLayers() {
   return result || next_commit_forces_redraw_;
 }
 
+LayerListIterator<Layer> LayerTreeHost::begin() {
+  return LayerListIterator<Layer>(root_layer_.get());
+}
+
+LayerListIterator<Layer> LayerTreeHost::end() {
+  return LayerListIterator<Layer>(nullptr);
+}
+
+LayerListReverseIterator<Layer> LayerTreeHost::rbegin() {
+  return LayerListReverseIterator<Layer>(root_layer_.get());
+}
+
+LayerListReverseIterator<Layer> LayerTreeHost::rend() {
+  return LayerListReverseIterator<Layer>(nullptr);
+}
+
 void LayerTreeHost::DidCompletePageScaleAnimation() {
   did_complete_scale_animation_ = true;
 }
