@@ -97,7 +97,7 @@ TEST_F(WorkerEntityTrackerTest, FromCommitRequest) {
   ASSERT_TRUE(entity_->HasPendingCommit());
   sync_pb::SyncEntity pb_entity;
   int64_t sequence_number = 0;
-  entity_->PrepareCommitProto(&pb_entity, &sequence_number);
+  entity_->PopulateCommitProto(&pb_entity, &sequence_number);
   EXPECT_EQ(kSequenceNumber, sequence_number);
   EXPECT_EQ(kServerId, pb_entity.id_string());
   EXPECT_EQ(kClientTagHash, pb_entity.client_defined_unique_tag());

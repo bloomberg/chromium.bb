@@ -237,8 +237,8 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
       sync_pb::SyncEntity* commit_entity = commit_entities.Add();
       int64_t sequence_number = -1;
 
-      entity->PrepareCommitProto(commit_entity, &sequence_number);
-      HelpInitializeCommitEntity(commit_entity);
+      entity->PopulateCommitProto(commit_entity, &sequence_number);
+      AdjustCommitProto(commit_entity);
       sequence_numbers.push_back(sequence_number);
 
       space_remaining--;
@@ -301,13 +301,12 @@ bool ModelTypeWorker::CanCommitItems() const {
   return true;
 }
 
-void ModelTypeWorker::HelpInitializeCommitEntity(
-    sync_pb::SyncEntity* sync_entity) {
+void ModelTypeWorker::AdjustCommitProto(sync_pb::SyncEntity* sync_entity) {
   DCHECK(CanCommitItems());
 
   // Initial commits need our help to generate a client ID.
-  if (!sync_entity->has_id_string()) {
-    DCHECK_EQ(kUncommittedVersion, sync_entity->version());
+  if (sync_entity->version() == kUncommittedVersion) {
+    DCHECK(!sync_entity->has_id_string());
     // TODO(stanisc): This is incorrect for bookmarks for two reasons:
     // 1) Won't be able to match previously committed bookmarks to the ones
     //    with server ID.
@@ -316,6 +315,9 @@ void ModelTypeWorker::HelpInitializeCommitEntity(
     //    would result in a duplication.
     // We should generate client ID on the frontend side instead.
     sync_entity->set_id_string(base::GenerateGUID());
+    sync_entity->set_version(0);
+  } else {
+    DCHECK(sync_entity->has_id_string());
   }
 
   // Encrypt the specifics and hide the title if necessary.

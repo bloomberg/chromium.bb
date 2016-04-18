@@ -31,8 +31,9 @@ bool WorkerEntityTracker::HasPendingCommit() const {
   return !!pending_commit_;
 }
 
-void WorkerEntityTracker::PrepareCommitProto(sync_pb::SyncEntity* commit_entity,
-                                             int64_t* sequence_number) const {
+void WorkerEntityTracker::PopulateCommitProto(
+    sync_pb::SyncEntity* commit_entity,
+    int64_t* sequence_number) const {
   DCHECK(HasPendingCommit());
   DCHECK(!client_tag_hash_.empty());
 

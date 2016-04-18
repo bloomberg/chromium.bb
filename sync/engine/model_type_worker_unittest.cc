@@ -698,7 +698,7 @@ TEST_F(ModelTypeWorkerTest, SimpleCommit) {
   ASSERT_TRUE(HasCommitEntityOnServer("tag1"));
   const sync_pb::SyncEntity& entity = GetLatestCommitEntityOnServer("tag1");
   EXPECT_FALSE(entity.id_string().empty());
-  EXPECT_EQ(kUncommittedVersion, entity.version());
+  EXPECT_EQ(0, entity.version());
   EXPECT_NE(0, entity.mtime());
   EXPECT_NE(0, entity.ctime());
   EXPECT_FALSE(entity.name().empty());

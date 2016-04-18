@@ -113,11 +113,10 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
   // settings in a good state.
   bool CanCommitItems() const;
 
-  // Initializes the parts of a commit entity that are the responsibility of
-  // this class, and not the WorkerEntityTracker. Some fields, like the
-  // client-assigned ID, can only be set by an entity with knowledge of the
-  // entire data type's state.
-  void HelpInitializeCommitEntity(sync_pb::SyncEntity* commit_entity);
+  // Takes |commit_entity| populated from fields of WorkerEntityTracker and
+  // adjusts some fields before committing to server. Adjustments include
+  // generating client-assigned ID, encrypting data, etc.
+  void AdjustCommitProto(sync_pb::SyncEntity* commit_entity);
 
   // Attempts to decrypt encrypted updates stored in the EntityMap. If
   // successful, will remove the update from the its tracker and forward

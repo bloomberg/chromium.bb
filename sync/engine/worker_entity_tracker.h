@@ -45,8 +45,8 @@ class SYNC_EXPORT WorkerEntityTracker {
 
   // Populates a sync_pb::SyncEntity for a commit.  Also sets the
   // |sequence_number|, so we can track it throughout the commit process.
-  void PrepareCommitProto(sync_pb::SyncEntity* commit_entity,
-                          int64_t* sequence_number) const;
+  void PopulateCommitProto(sync_pb::SyncEntity* commit_entity,
+                           int64_t* sequence_number) const;
 
   // Updates this entity with data from the latest version that the
   // model asked us to commit.  May clobber state related to the
