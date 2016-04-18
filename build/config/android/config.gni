@@ -40,9 +40,10 @@ if (is_android) {
         "//third_party/android_tools:google_play_services_default_resources"
   }
 
+  webview_public_framework_jar =
+      "//third_party/android_platform/webview/frameworks_6.0.jar"
   if (!defined(webview_framework_jar)) {
-    webview_framework_jar =
-        "//third_party/android_platform/webview/frameworks_6.0.jar"
+    webview_framework_jar = webview_public_framework_jar
   }
 
   declare_args() {
