@@ -8,6 +8,8 @@ from core import path_util
 from core import perf_benchmark
 from page_sets import google_pages
 
+from benchmarks import v8_helper
+
 from measurements import v8_detached_context_age_in_gc
 from measurements import v8_gc_times
 import page_sets
@@ -21,16 +23,13 @@ from telemetry.web_perf.metrics import smoothness
 from telemetry.web_perf.metrics import memory_timeline
 
 
-def EnableIgnition(options):
-  existing_js_flags = []
-  for extra_arg in options.extra_browser_args:
-    if extra_arg.startswith('--js-flags='):
-      existing_js_flags.extend(shlex.split(extra_arg[len('--js-flags='):]))
-  options.AppendExtraBrowserArgs([
-      # This overrides any existing --js-flags, hence we have to include the
-      # previous flags as well.
-      '--js-flags=--ignition %s' % (' '.join(existing_js_flags))
-  ])
+def CreateV8TimelineBasedMeasurementOptions():
+  category_filter = tracing_category_filter.CreateMinimalOverheadFilter()
+  category_filter.AddIncludedCategory('v8')
+  category_filter.AddIncludedCategory('blink.console')
+  options = timeline_based_measurement.Options(category_filter)
+  options.SetTimelineBasedMetric('executionMetric')
+  return options
 
 
 @benchmark.Disabled('win')        # crbug.com/416502
@@ -143,12 +142,7 @@ class V8TodoMVC(perf_benchmark.PerfBenchmark):
   page_set = page_sets.TodoMVCPageSet
 
   def CreateTimelineBasedMeasurementOptions(self):
-    category_filter = tracing_category_filter.CreateMinimalOverheadFilter()
-    category_filter.AddIncludedCategory('v8')
-    category_filter.AddIncludedCategory('blink.console')
-    options = timeline_based_measurement.Options(category_filter)
-    options.SetTimelineBasedMetric('executionMetric')
-    return options
+    return CreateV8TimelineBasedMeasurementOptions()
 
   @classmethod
   def Name(cls):
@@ -159,46 +153,20 @@ class V8TodoMVC(perf_benchmark.PerfBenchmark):
     return True
 
 
-@benchmark.Disabled('reference')  # https://crbug.com/598096
-class V8TodoMVCIgnition(perf_benchmark.PerfBenchmark):
+# Disabled on reference builds because they don't support the new
+# Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
+@benchmark.Disabled('reference')
+class V8TodoMVCIgnition(V8TodoMVC):
   """Measures V8 Execution metrics on the TodoMVC examples using ignition."""
   page_set = page_sets.TodoMVCPageSet
 
   def SetExtraBrowserOptions(self, options):
-    EnableIgnition(options)
-
-  def CreateTimelineBasedMeasurementOptions(self):
-    category_filter = tracing_category_filter.CreateMinimalOverheadFilter()
-    category_filter.AddIncludedCategory('v8')
-    category_filter.AddIncludedCategory('blink.console')
-    options = timeline_based_measurement.Options(category_filter)
-    options.SetTimelineBasedMetric('executionMetric')
-    return options
+    super(V8TodoMVCIgnition, self).SetExtraBrowserOptions(options)
+    v8_helper.EnableIgnition(options)
 
   @classmethod
   def Name(cls):
     return 'v8.todomvc-ignition'
-
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return True
-
-
-# Disabled on reference builds because they don't support the new
-# Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
-@benchmark.Disabled('reference')  # crbug.com/579546
-class V8InfiniteScrollIgnition(_InfiniteScrollBenchmark):
-  """Measures V8 GC metrics using Ignition."""
-
-  page_set = page_sets.InfiniteScrollPageSet
-
-  def SetExtraBrowserOptions(self, options):
-    _InfiniteScrollBenchmark.SetExtraBrowserOptions(self,options)
-    EnableIgnition(options)
-
-  @classmethod
-  def Name(cls):
-    return 'v8.infinite_scroll-ignition'
 
 
 # Disabled on reference builds because they don't support the new
@@ -213,6 +181,21 @@ class V8InfiniteScroll(_InfiniteScrollBenchmark):
   @classmethod
   def Name(cls):
     return 'v8.infinite_scroll'
+
+
+# Disabled on reference builds because they don't support the new
+# Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
+@benchmark.Disabled('reference')  # crbug.com/579546
+class V8InfiniteScrollIgnition(V8InfiniteScroll):
+  """Measures V8 GC metrics using Ignition."""
+
+  def SetExtraBrowserOptions(self, options):
+    super(V8InfiniteScrollIgnition, self).SetExtraBrowserOptions(options)
+    v8_helper.EnableIgnition(options)
+
+  @classmethod
+  def Name(cls):
+    return 'v8.infinite_scroll-ignition'
 
 
 @benchmark.Enabled('android')
@@ -237,13 +220,7 @@ class V8Adword(perf_benchmark.PerfBenchmark):
   """Measures V8 Execution metrics on the Adword page."""
 
   def CreateTimelineBasedMeasurementOptions(self):
-
-    category_filter = tracing_category_filter.CreateMinimalOverheadFilter()
-    category_filter.AddIncludedCategory('v8')
-    category_filter.AddIncludedCategory('blink.console')
-    options = timeline_based_measurement.Options(category_filter)
-    options.SetTimelineBasedMetric('executionMetric')
-    return options
+    return CreateV8TimelineBasedMeasurementOptions()
 
   def CreateStorySet(self, options):
     """Creates the instance of StorySet used to run the benchmark.
