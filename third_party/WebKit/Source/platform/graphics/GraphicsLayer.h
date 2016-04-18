@@ -177,6 +177,7 @@ public:
     void setFilterQuality(SkFilterQuality);
 
     // Some GraphicsLayers paint only the foreground or the background content
+    GraphicsLayerPaintingPhase paintingPhase() const { return m_paintingPhase; }
     void setPaintingPhase(GraphicsLayerPaintingPhase);
 
     void setNeedsDisplay();
