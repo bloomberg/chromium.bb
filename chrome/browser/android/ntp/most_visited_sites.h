@@ -37,22 +37,41 @@ class PrefRegistrySyncable;
 class PopularSites;
 class Profile;
 
+// The observer to be notified when the list of most visited sites changes.
+class MostVisitedSitesObserver {
+ public:
+  virtual ~MostVisitedSitesObserver() {}
+
+  virtual void OnMostVisitedURLsAvailable(
+      const std::vector<base::string16>& titles,
+      const std::vector<std::string>& urls,
+      const std::vector<std::string>& whitelist_icon_paths) = 0;
+  virtual void OnPopularURLsAvailable(
+      const std::vector<std::string>& urls,
+      const std::vector<std::string>& favicon_urls,
+      const std::vector<std::string>& large_icon_urls) = 0;
+};
+
 // Provides the list of most visited sites and their thumbnails to Java.
 class MostVisitedSites : public history::TopSitesObserver,
                          public SupervisedUserServiceObserver {
  public:
   explicit MostVisitedSites(Profile* profile);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+
+  // Java methods
+
   void SetMostVisitedURLsObserver(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_observer,
       jint num_sites);
-  void GetURLThumbnail(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj,
-                       const base::android::JavaParamRef<jstring>& url,
-                       const base::android::JavaParamRef<jobject>& j_callback);
 
+  void GetURLThumbnail(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& url,
+      const base::android::JavaParamRef<jobject>& j_callback);
   void AddOrRemoveBlacklistedUrl(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -67,6 +86,18 @@ class MostVisitedSites : public history::TopSitesObserver,
       const base::android::JavaParamRef<jobject>& obj,
       jint index,
       jint tile_type);
+
+  // C++ methods
+
+  void SetMostVisitedURLsObserver(
+      std::unique_ptr<MostVisitedSitesObserver> observer, int num_sites);
+
+  using ThumbnailCallback = base::Callback<
+      void(bool /* is_local_thumbnail */, const SkBitmap* /* bitmap */)>;
+  void GetURLThumbnail(const GURL& url, const ThumbnailCallback& callback);
+  void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
+  void RecordTileTypeMetrics(const std::vector<int>& tile_types);
+  void RecordOpenedMostVisitedItem(int index, int tile_type);
 
   // SupervisedUserServiceObserver implementation.
   void OnURLFilterChanged() override;
@@ -173,7 +204,7 @@ class MostVisitedSites : public history::TopSitesObserver,
       SuggestionsVector* src_suggestions,
       SuggestionsVector* dst_suggestions);
 
-  // Notifies the Java side observer about the availability of suggestions.
+  // Notifies the observer about the availability of suggestions.
   // Also records impressions UMA if not done already.
   void NotifyMostVisitedURLsObserver();
 
@@ -182,14 +213,14 @@ class MostVisitedSites : public history::TopSitesObserver,
   // Runs on the UI Thread.
   void OnLocalThumbnailFetched(
       const GURL& url,
-      std::unique_ptr<base::android::ScopedJavaGlobalRef<jobject>> j_callback,
+      const ThumbnailCallback& callback,
       std::unique_ptr<SkBitmap> bitmap);
 
   // Callback for when the thumbnail lookup is complete.
   // Runs on the UI Thread.
   void OnObtainedThumbnail(
       bool is_local_thumbnail,
-      std::unique_ptr<base::android::ScopedJavaGlobalRef<jobject>> j_callback,
+      const ThumbnailCallback& callback,
       const GURL& url,
       const SkBitmap* bitmap);
 
@@ -207,8 +238,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   // The profile whose most visited sites will be queried.
   Profile* profile_;
 
-  // The observer to be notified when the list of most visited sites changes.
-  base::android::ScopedJavaGlobalRef<jobject> observer_;
+  std::unique_ptr<MostVisitedSitesObserver> observer_;
 
   // The maximum number of most visited sites to return.
   int num_sites_;

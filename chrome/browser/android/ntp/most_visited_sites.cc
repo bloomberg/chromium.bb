@@ -162,6 +162,40 @@ bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
   return url1.host() == url2.host() && url1.path() == url2.path();
 }
 
+class JavaObserverBridge : public MostVisitedSitesObserver {
+ public:
+  JavaObserverBridge(JNIEnv* env, const JavaParamRef<jobject>& obj)
+      : observer_(env, obj) {}
+
+  void OnMostVisitedURLsAvailable(
+      const std::vector<base::string16>& titles,
+      const std::vector<std::string>& urls,
+      const std::vector<std::string>& whitelist_icon_paths) override {
+    JNIEnv* env = AttachCurrentThread();
+    DCHECK_EQ(titles.size(), urls.size());
+    Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
+        env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),
+        ToJavaArrayOfStrings(env, urls).obj(),
+        ToJavaArrayOfStrings(env, whitelist_icon_paths).obj());
+  }
+
+  void OnPopularURLsAvailable(
+      const std::vector<std::string>& urls,
+      const std::vector<std::string>& favicon_urls,
+      const std::vector<std::string>& large_icon_urls) override {
+    JNIEnv* env = AttachCurrentThread();
+    Java_MostVisitedURLsObserver_onPopularURLsAvailable(
+        env, observer_.obj(), ToJavaArrayOfStrings(env, urls).obj(),
+        ToJavaArrayOfStrings(env, favicon_urls).obj(),
+        ToJavaArrayOfStrings(env, large_icon_urls).obj());
+  }
+
+ private:
+  ScopedJavaGlobalRef<jobject> observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(JavaObserverBridge);
+};
+
 }  // namespace
 
 MostVisitedSites::Suggestion::Suggestion() : provider_index(-1) {}
@@ -215,7 +249,15 @@ void MostVisitedSites::SetMostVisitedURLsObserver(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_observer,
     jint num_sites) {
-  observer_.Reset(env, j_observer);
+  SetMostVisitedURLsObserver(
+      std::unique_ptr<MostVisitedSitesObserver>(
+          new JavaObserverBridge(env, j_observer)),
+      num_sites);
+}
+
+void MostVisitedSites::SetMostVisitedURLsObserver(
+      std::unique_ptr<MostVisitedSitesObserver> observer, int num_sites) {
+  observer_ = std::move(observer);
   num_sites_ = num_sites;
 
   if (ShouldShowPopularSites() &&
@@ -256,30 +298,39 @@ void MostVisitedSites::SetMostVisitedURLsObserver(
   suggestions_service->FetchSuggestionsData();
 }
 
+static void CallJavaWithBitmap(
+    std::unique_ptr<ScopedJavaGlobalRef<jobject>> j_callback,
+    bool is_local_thumbnail,
+    const SkBitmap* bitmap);
+
 void MostVisitedSites::GetURLThumbnail(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_url,
     const JavaParamRef<jobject>& j_callback_obj) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::unique_ptr<ScopedJavaGlobalRef<jobject>> j_callback(
-      new ScopedJavaGlobalRef<jobject>());
-  j_callback->Reset(env, j_callback_obj);
-
+      new ScopedJavaGlobalRef<jobject>(env, j_callback_obj));
+  auto callback = base::Bind(&CallJavaWithBitmap, base::Passed(&j_callback));
   GURL url(ConvertJavaStringToUTF8(env, j_url));
+  GetURLThumbnail(url, callback);
+}
+
+void MostVisitedSites::GetURLThumbnail(
+    const GURL& url,
+    const ThumbnailCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<TopSites> top_sites(TopSitesFactory::GetForProfile(profile_));
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&MaybeFetchLocalThumbnail, url, top_sites),
       base::Bind(&MostVisitedSites::OnLocalThumbnailFetched,
-                 weak_ptr_factory_.GetWeakPtr(), url,
-                 base::Passed(&j_callback)));
+                 weak_ptr_factory_.GetWeakPtr(), url, callback));
 }
 
 void MostVisitedSites::OnLocalThumbnailFetched(
     const GURL& url,
-    std::unique_ptr<ScopedJavaGlobalRef<jobject>> j_callback,
+    const ThumbnailCallback& callback,
     std::unique_ptr<SkBitmap> bitmap) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!bitmap.get()) {
@@ -301,26 +352,31 @@ void MostVisitedSites::OnLocalThumbnailFetched(
         return suggestions_service->GetPageThumbnailWithURL(
             url, it->thumbnail_url,
             base::Bind(&MostVisitedSites::OnObtainedThumbnail,
-                       weak_ptr_factory_.GetWeakPtr(), false,
-                       base::Passed(&j_callback)));
+                       weak_ptr_factory_.GetWeakPtr(), false, callback));
       }
     }
     if (mv_source_ == SUGGESTIONS_SERVICE) {
       return suggestions_service->GetPageThumbnail(
           url, base::Bind(&MostVisitedSites::OnObtainedThumbnail,
-                          weak_ptr_factory_.GetWeakPtr(), false,
-                          base::Passed(&j_callback)));
+                          weak_ptr_factory_.GetWeakPtr(), false, callback));
     }
   }
-  OnObtainedThumbnail(true, std::move(j_callback), url, bitmap.get());
+  OnObtainedThumbnail(true, callback, url, bitmap.get());
 }
 
 void MostVisitedSites::OnObtainedThumbnail(
     bool is_local_thumbnail,
-    std::unique_ptr<ScopedJavaGlobalRef<jobject>> j_callback,
+    const ThumbnailCallback& callback,
     const GURL& url,
     const SkBitmap* bitmap) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  callback.Run(is_local_thumbnail, bitmap);
+}
+
+static void CallJavaWithBitmap(
+    std::unique_ptr<ScopedJavaGlobalRef<jobject>> j_callback,
+    bool is_local_thumbnail,
+    const SkBitmap* bitmap) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_bitmap;
   if (bitmap)
@@ -335,7 +391,11 @@ void MostVisitedSites::AddOrRemoveBlacklistedUrl(
     const JavaParamRef<jstring>& j_url,
     jboolean add_url) {
   GURL url(ConvertJavaStringToUTF8(env, j_url));
+  AddOrRemoveBlacklistedUrl(url, add_url);
+}
 
+void MostVisitedSites::AddOrRemoveBlacklistedUrl(
+    const GURL& url, bool add_url) {
   // Always blacklist in the local TopSites.
   scoped_refptr<TopSites> top_sites = TopSitesFactory::GetForProfile(profile_);
   if (top_sites) {
@@ -363,7 +423,11 @@ void MostVisitedSites::RecordTileTypeMetrics(
   std::vector<int> tile_types;
   base::android::JavaIntArrayToIntVector(env, jtile_types, &tile_types);
   DCHECK_EQ(current_suggestions_.size(), tile_types.size());
+  RecordTileTypeMetrics(tile_types);
+}
 
+void MostVisitedSites::RecordTileTypeMetrics(
+    const std::vector<int>& tile_types) {
   int counts_per_type[NUM_TILE_TYPES] = {0};
   for (size_t i = 0; i < tile_types.size(); ++i) {
     int tile_type = tile_types[i];
@@ -387,6 +451,10 @@ void MostVisitedSites::RecordOpenedMostVisitedItem(
     const JavaParamRef<jobject>& obj,
     jint index,
     jint tile_type) {
+  RecordOpenedMostVisitedItem(index, tile_type);
+}
+
+void MostVisitedSites::RecordOpenedMostVisitedItem(int index, int tile_type) {
   DCHECK_GE(index, 0);
   DCHECK_LT(index, static_cast<int>(current_suggestions_.size()));
   std::string histogram = base::StringPrintf(
@@ -804,7 +872,7 @@ void MostVisitedSites::NotifyMostVisitedURLsObserver() {
     recorded_uma_ = true;
   }
 
-  if (observer_.is_null())
+  if (!observer_)
     return;
 
   std::vector<base::string16> titles;
@@ -817,12 +885,8 @@ void MostVisitedSites::NotifyMostVisitedURLsObserver() {
     urls.push_back(suggestion->url.spec());
     whitelist_icon_paths.push_back(suggestion->whitelist_icon_path.value());
   }
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK_EQ(titles.size(), urls.size());
-  Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
-      env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),
-      ToJavaArrayOfStrings(env, urls).obj(),
-      ToJavaArrayOfStrings(env, whitelist_icon_paths).obj());
+
+  observer_->OnMostVisitedURLsAvailable(titles, urls, whitelist_icon_paths);
 }
 
 void MostVisitedSites::OnPopularSitesAvailable(bool success) {
@@ -833,7 +897,7 @@ void MostVisitedSites::OnPopularSitesAvailable(bool success) {
     return;
   }
 
-  if (observer_.is_null())
+  if (!observer_)
     return;
 
   std::vector<std::string> urls;
@@ -844,11 +908,7 @@ void MostVisitedSites::OnPopularSitesAvailable(bool success) {
     favicon_urls.push_back(popular_site.favicon_url.spec());
     large_icon_urls.push_back(popular_site.large_icon_url.spec());
   }
-  JNIEnv* env = AttachCurrentThread();
-  Java_MostVisitedURLsObserver_onPopularURLsAvailable(
-      env, observer_.obj(), ToJavaArrayOfStrings(env, urls).obj(),
-      ToJavaArrayOfStrings(env, favicon_urls).obj(),
-      ToJavaArrayOfStrings(env, large_icon_urls).obj());
+  observer_->OnPopularURLsAvailable(urls, favicon_urls, large_icon_urls);
   QueryMostVisitedURLs();
 }
 
