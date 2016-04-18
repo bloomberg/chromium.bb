@@ -599,6 +599,16 @@ std::pair<Element*, String> CanvasRenderingContext2D::getControlAndIdIfHitRegion
     return std::make_pair(nullptr, String());
 }
 
+String CanvasRenderingContext2D::getIdFromControl(const Element* element)
+{
+    if (hitRegionsCount() <= 0)
+        return String();
+
+    if (HitRegion* hitRegion = m_hitRegionManager->getHitRegionByControl(element))
+        return hitRegion->id();
+    return String();
+}
+
 String CanvasRenderingContext2D::textAlign() const
 {
     return textAlignName(state().getTextAlign());

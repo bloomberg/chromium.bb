@@ -103,6 +103,7 @@ public:
     virtual void setFont(const String&) { }
     virtual void styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle) { }
     virtual std::pair<Element*, String> getControlAndIdIfHitRegionExists(const LayoutPoint& location) { ASSERT_NOT_REACHED(); return std::make_pair(nullptr, String()); }
+    virtual String getIdFromControl(const Element* element) { return String(); }
 
     // WebGL-specific interface
     virtual bool is3d() const { return false; }

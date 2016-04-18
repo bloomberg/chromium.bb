@@ -4,8 +4,10 @@
 
 #include "core/input/PointerEventManager.h"
 
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/events/MouseEvent.h"
+#include "core/html/HTMLCanvasElement.h"
 #include "core/input/EventHandler.h"
 
 namespace blink {
@@ -56,6 +58,25 @@ WebInputEventResult dispatchMouseEvent(
         return EventHandler::toWebInputEventResult(dispatchResult);
     }
     return WebInputEventResult::NotHandled;
+}
+
+PlatformMouseEvent mouseEventWithRegion(Node* node, const PlatformMouseEvent& mouseEvent)
+{
+    if (!node->isElementNode())
+        return mouseEvent;
+
+    Element* element = toElement(node);
+    if (!element->isInCanvasSubtree())
+        return mouseEvent;
+
+    HTMLCanvasElement* canvas = Traversal<HTMLCanvasElement>::firstAncestorOrSelf(*element);
+    // In this case, the event target is canvas and mouse rerouting doesn't happen.
+    if (canvas == element)
+        return mouseEvent;
+    String region = canvas->getIdFromControl(element);
+    PlatformMouseEvent newMouseEvent = mouseEvent;
+    newMouseEvent.setRegion(region);
+    return newMouseEvent;
 }
 
 } // namespace
@@ -152,7 +173,9 @@ void PointerEventManager::sendNodeTransitionEvents(
                 pointerEvent, EventTypeNames::pointerout, enteredTarget));
         } else {
             dispatchMouseEvent(exitedTarget,
-                EventTypeNames::mouseout, mouseEvent, enteredTarget);
+                EventTypeNames::mouseout,
+                mouseEventWithRegion(exitedTarget->toNode(), mouseEvent),
+                enteredTarget);
         }
     }
 
@@ -221,8 +244,9 @@ void PointerEventManager::sendNodeTransitionEvents(
                 !exitedNodeHasCapturingAncestor);
         } else {
             dispatchMouseEvent(exitedAncestors[j].get(),
-                EventTypeNames::mouseleave, mouseEvent, enteredTarget,
-                0, !exitedNodeHasCapturingAncestor);
+                EventTypeNames::mouseleave,
+                mouseEventWithRegion(exitedTarget->toNode(), mouseEvent),
+                enteredTarget, 0, !exitedNodeHasCapturingAncestor);
         }
     }
 

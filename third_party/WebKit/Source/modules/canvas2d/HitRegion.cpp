@@ -66,7 +66,7 @@ void HitRegionManager::removeHitRegionById(const String& id)
         removeHitRegion(getHitRegionById(id));
 }
 
-void HitRegionManager::removeHitRegionByControl(Element* control)
+void HitRegionManager::removeHitRegionByControl(const Element* control)
 {
     removeHitRegion(getHitRegionByControl(control));
 }
@@ -104,7 +104,7 @@ HitRegion* HitRegionManager::getHitRegionById(const String& id) const
     return m_hitRegionIdMap.get(id);
 }
 
-HitRegion* HitRegionManager::getHitRegionByControl(Element* control) const
+HitRegion* HitRegionManager::getHitRegionByControl(const Element* control) const
 {
     if (control)
         return m_hitRegionControlMap.get(control);

@@ -1118,4 +1118,11 @@ std::pair<Element*, String> HTMLCanvasElement::getControlAndIdIfHitRegionExists(
     return std::make_pair(nullptr, String());
 }
 
+String HTMLCanvasElement::getIdFromControl(const Element* element)
+{
+    if (m_context)
+        return m_context->getIdFromControl(element);
+    return String();
+}
+
 } // namespace blink

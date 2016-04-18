@@ -109,10 +109,8 @@ async_test(function() {
     { type: 'mousemove', target: button, region: 'button' },
     { type: 'mousedown', target: button, region: 'button' },
     { type: 'mouseup', target: button, region: 'button' },
-    // TODO(zino): The expected value of region should be "button" instead of
-    // null in case of mouseout/mouseleave. Please see http://crbug.com/592992.
-    { type: 'mouseout', target: button, region: null },
-    { type: 'mouseleave', target: button, region: null },
+    { type: 'mouseout', target: button, region: 'button' },
+    { type: 'mouseleave', target: button, region: 'button' },
     { type: 'touchstart', target: button, region: 'button' },
     { type: 'touchend', target: button, region: 'button' },
   ];
@@ -145,6 +143,53 @@ async_test(function() {
   assert_event_array_equivalent(actual, expected);
   this.done();
 }, 'Rerouting mouse/touch event test');
+
+async_test(function() {
+  context.rect(1, 1, 50, 50);
+  context.fill();
+  context.addHitRegion({ control: button });
+
+  var expected = [
+    { type: 'mouseover', target: button, region: null },
+    { type: 'mouseenter', target: button, region: null },
+    { type: 'mousemove', target: button, region: null },
+    { type: 'mousemove', target: button, region: null },
+    { type: 'mousedown', target: button, region: null },
+    { type: 'mouseup', target: button, region: null },
+    { type: 'mouseout', target: button, region: null },
+    { type: 'mouseleave', target: button, region: null },
+    { type: 'touchstart', target: button, region: null },
+    { type: 'touchend', target: button, region: null },
+  ];
+  var actual = [];
+
+  button.addEventListener('mouseover', e => actual.push(e));
+  button.addEventListener('mouseenter', e => actual.push(e));
+  button.addEventListener('mousemove', e => actual.push(e));
+  button.addEventListener('mousedown', e => actual.push(e));
+  button.addEventListener('mouseup', e => actual.push(e));
+  button.addEventListener('mouseout', e => actual.push(e));
+  button.addEventListener('mouseleave', e => actual.push(e));
+  button.addEventListener('touchstart', e => actual.push(e));
+  button.addEventListener('touchend', e => actual.push(e));
+
+  if (eventSender) {
+    eventSender.mouseMoveTo(0, 0);
+    eventSender.mouseMoveTo(10, 10);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+    eventSender.mouseMoveTo(60, 60);
+
+    eventSender.clearTouchPoints();
+    eventSender.addTouchPoint(10, 10);
+    eventSender.touchStart();
+    eventSender.releaseTouchPoint(0);
+    eventSender.touchEnd();
+  }
+
+  assert_event_array_equivalent(actual, expected);
+  this.done();
+}, 'Rerouting mouse/touch event test but the id of hit region is unset.');
 
 async_test(function() {
   context.clearRect(0, 0, 400, 400);
