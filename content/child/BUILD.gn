@@ -12,6 +12,7 @@ source_set("child") {
   # (i.e. not content/browser or content/common) and only if they're inside the
   # content component (i.e. not content/test or content/shell).
   visibility = [
+    ":*",
     "//content/gpu/*",
     "//content/ppapi_plugin/*",
     "//content/public/child:child_sources",
@@ -84,4 +85,14 @@ source_set("child") {
     "//content:content_implementation",
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
+}
+
+# See comment at the top of //content/BUILD.gn for how this works.
+group("for_content_tests") {
+  visibility = [ "//content/test/*" ]
+  if (!is_component_build) {
+    public_deps = [
+      ":child",
+    ]
+  }
 }

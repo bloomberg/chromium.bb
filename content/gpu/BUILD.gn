@@ -46,6 +46,7 @@ source_set("gpu_sources") {
     "//base/third_party/dynamic_annotations",
     "//components/tracing",
     "//content:export",
+    "//content/child",
     "//content/common",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",

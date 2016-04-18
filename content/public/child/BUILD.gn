@@ -33,11 +33,8 @@ source_set("child_sources") {
 
   configs += [ "//content:content_implementation" ]
 
-  public_deps = [
-    "//content/child",
-  ]
-
   deps = [
+    "//content/child",  # Must not be public_deps!
     "//content/public/common:common_sources",
     "//gin",
   ]

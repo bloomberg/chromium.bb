@@ -37,6 +37,7 @@ source_set("renderer") {
     "//components/scheduler:scheduler",
     "//components/url_formatter",
     "//content:resources",
+    "//content/child",
     "//content/common",
     "//content/gpu:gpu_sources",
     "//content/public/child:child_sources",
