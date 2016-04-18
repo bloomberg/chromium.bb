@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "cc/animation/animation_events.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer_animation_delegate.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -93,9 +92,9 @@ TEST(LayerAnimationSequenceTest, SingleThreadedElement) {
     sequence.Progress(start_time, &delegate);
     EXPECT_FLOAT_EQ(start, sequence.last_progressed_fraction());
     effective_start = start_time + delta;
-    sequence.OnThreadedAnimationStarted(cc::AnimationEvent(
-        cc::AnimationEvent::STARTED, 0, sequence.animation_group_id(),
-        cc::TargetProperty::OPACITY, effective_start));
+    sequence.OnThreadedAnimationStarted(effective_start,
+                                        cc::TargetProperty::OPACITY,
+                                        sequence.animation_group_id());
     sequence.Progress(effective_start + delta/2, &delegate);
     EXPECT_FLOAT_EQ(middle, sequence.last_progressed_fraction());
     EXPECT_TRUE(sequence.IsFinished(effective_start + delta));
@@ -147,9 +146,9 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
     EXPECT_FLOAT_EQ(0.0, sequence.last_progressed_fraction());
     opacity_effective_start = start_time + delta;
     EXPECT_EQ(starting_group_id, sequence.animation_group_id());
-    sequence.OnThreadedAnimationStarted(cc::AnimationEvent(
-        cc::AnimationEvent::STARTED, 0, sequence.animation_group_id(),
-        cc::TargetProperty::OPACITY, opacity_effective_start));
+    sequence.OnThreadedAnimationStarted(opacity_effective_start,
+                                        cc::TargetProperty::OPACITY,
+                                        sequence.animation_group_id());
     sequence.Progress(opacity_effective_start + delta/2, &delegate);
     EXPECT_FLOAT_EQ(0.5, sequence.last_progressed_fraction());
     sequence.Progress(opacity_effective_start + delta, &delegate);
@@ -175,9 +174,9 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
     EXPECT_FLOAT_EQ(0.0, sequence.last_progressed_fraction());
     transform_effective_start = opacity_effective_start + 3 * delta;
     EXPECT_NE(starting_group_id, sequence.animation_group_id());
-    sequence.OnThreadedAnimationStarted(cc::AnimationEvent(
-        cc::AnimationEvent::STARTED, 0, sequence.animation_group_id(),
-        cc::TargetProperty::TRANSFORM, transform_effective_start));
+    sequence.OnThreadedAnimationStarted(transform_effective_start,
+                                        cc::TargetProperty::TRANSFORM,
+                                        sequence.animation_group_id());
     sequence.Progress(transform_effective_start + delta/2, &delegate);
     EXPECT_FLOAT_EQ(0.5, sequence.last_progressed_fraction());
     EXPECT_TRUE(sequence.IsFinished(transform_effective_start + delta));

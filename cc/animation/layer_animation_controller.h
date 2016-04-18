@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
-#include "cc/animation/layer_animation_event_observer.h"
+#include "cc/animation/animation_events.h"
 #include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -119,8 +119,6 @@ class CC_EXPORT LayerAnimationController
       bool needs_pending_value_observations) {
     needs_pending_value_observations_ = needs_pending_value_observations;
   }
-
-  void SetEventObserver(LayerAnimationEventObserver* observer);
 
   void set_value_provider(LayerAnimationValueProvider* provider) {
     value_provider_ = provider;
@@ -249,7 +247,6 @@ class CC_EXPORT LayerAnimationController
 
   base::TimeTicks last_tick_time_;
 
-  LayerAnimationEventObserver* event_observer_;
   LayerAnimationValueObserver* value_observer_;
   LayerAnimationValueProvider* value_provider_;
   AnimationDelegate* layer_animation_delegate_;

@@ -212,17 +212,19 @@ void LayerAnimationSequence::RemoveObserver(LayerAnimationObserver* observer) {
 }
 
 void LayerAnimationSequence::OnThreadedAnimationStarted(
-    const cc::AnimationEvent& event) {
-  if (elements_.empty() || event.group_id != animation_group_id_)
+    base::TimeTicks monotonic_time,
+    cc::TargetProperty::Type target_property,
+    int group_id) {
+  if (elements_.empty() || group_id != animation_group_id_)
     return;
 
   size_t current_index = last_element_ % elements_.size();
   LayerAnimationElement::AnimatableProperties element_properties =
     elements_[current_index]->properties();
   LayerAnimationElement::AnimatableProperty event_property =
-      LayerAnimationElement::ToAnimatableProperty(event.target_property);
+      LayerAnimationElement::ToAnimatableProperty(target_property);
   DCHECK(element_properties & event_property);
-  elements_[current_index]->set_effective_start_time(event.monotonic_time);
+  elements_[current_index]->set_effective_start_time(monotonic_time);
 }
 
 void LayerAnimationSequence::OnScheduled() {

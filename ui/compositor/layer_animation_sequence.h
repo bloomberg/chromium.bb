@@ -18,10 +18,6 @@
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/layer_animation_element.h"
 
-namespace cc {
-struct AnimationEvent;
-}
-
 namespace ui {
 
 class LayerAnimationDelegate;
@@ -120,7 +116,9 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   void RemoveObserver(LayerAnimationObserver* observer);
 
   // Called when a threaded animation is actually started.
-  void OnThreadedAnimationStarted(const cc::AnimationEvent& event);
+  void OnThreadedAnimationStarted(base::TimeTicks monotonic_time,
+                                  cc::TargetProperty::Type target_property,
+                                  int group_id);
 
   // Called when the animator schedules this sequence.
   void OnScheduled();

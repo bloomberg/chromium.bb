@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "cc/animation/animation_events.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_delegate.h"
@@ -372,11 +371,10 @@ TEST(LayerAnimatorTest, ScheduleThreadedAnimationThatCanRunImmediately) {
   base::TimeTicks start_time = test_controller.animator()->last_step_time();
   base::TimeTicks effective_start = start_time + delta;
 
-  test_controller.animator()->OnThreadedAnimationStarted(cc::AnimationEvent(
-      cc::AnimationEvent::STARTED, 0,
+  test_controller.animator()->OnThreadedAnimationStarted(
+      effective_start, cc::TargetProperty::OPACITY,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
-          ->animation_group_id(),
-      cc::TargetProperty::OPACITY, effective_start));
+          ->animation_group_id());
 
   animator->Step(effective_start + delta / 2);
 
@@ -481,11 +479,10 @@ TEST(LayerAnimatorTest, ScheduleThreadedAndNonThreadedAnimations) {
   base::TimeTicks start_time = test_controller.animator()->last_step_time();
   base::TimeTicks effective_start = start_time + delta;
 
-  test_controller.animator()->OnThreadedAnimationStarted(cc::AnimationEvent(
-      cc::AnimationEvent::STARTED, 0,
+  test_controller.animator()->OnThreadedAnimationStarted(
+      effective_start, cc::TargetProperty::OPACITY,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
-          ->animation_group_id(),
-      cc::TargetProperty::OPACITY, effective_start));
+          ->animation_group_id());
 
   animator->Step(effective_start + delta / 2);
 
@@ -742,11 +739,10 @@ TEST(LayerAnimatorTest, StartThreadedAnimationThatCanRunImmediately) {
   base::TimeTicks start_time = test_controller.animator()->last_step_time();
   base::TimeTicks effective_start = start_time + delta;
 
-  test_controller.animator()->OnThreadedAnimationStarted(cc::AnimationEvent(
-      cc::AnimationEvent::STARTED, 0,
+  test_controller.animator()->OnThreadedAnimationStarted(
+      effective_start, cc::TargetProperty::OPACITY,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
-          ->animation_group_id(),
-      cc::TargetProperty::OPACITY, effective_start));
+          ->animation_group_id());
 
   animator->Step(effective_start + delta / 2);
 
@@ -866,11 +862,10 @@ TEST(LayerAnimatorTest, PreemptThreadedByImmediatelyAnimatingToNewTarget) {
   base::TimeTicks start_time = test_controller.animator()->last_step_time();
   base::TimeTicks effective_start = start_time + delta;
 
-  test_controller.animator()->OnThreadedAnimationStarted(cc::AnimationEvent(
-      cc::AnimationEvent::STARTED, 0,
+  test_controller.animator()->OnThreadedAnimationStarted(
+      effective_start, cc::TargetProperty::OPACITY,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
-          ->animation_group_id(),
-      cc::TargetProperty::OPACITY, effective_start));
+          ->animation_group_id());
 
   animator->Step(effective_start + delta / 2);
 
@@ -889,11 +884,10 @@ TEST(LayerAnimatorTest, PreemptThreadedByImmediatelyAnimatingToNewTarget) {
 
   base::TimeTicks second_effective_start = effective_start + delta;
 
-  test_controller.animator()->OnThreadedAnimationStarted(cc::AnimationEvent(
-      cc::AnimationEvent::STARTED, 0,
+  test_controller.animator()->OnThreadedAnimationStarted(
+      second_effective_start, cc::TargetProperty::OPACITY,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
-          ->animation_group_id(),
-      cc::TargetProperty::OPACITY, second_effective_start));
+          ->animation_group_id());
 
   animator->Step(second_effective_start + delta / 2);
 
@@ -1189,11 +1183,10 @@ TEST(LayerAnimatorTest, MultiPreemptThreadedByImmediatelyAnimatingToNewTarget) {
   base::TimeTicks start_time = test_controller.animator()->last_step_time();
   base::TimeTicks effective_start = start_time + delta;
 
-  test_controller.animator()->OnThreadedAnimationStarted(cc::AnimationEvent(
-      cc::AnimationEvent::STARTED, 0,
+  test_controller.animator()->OnThreadedAnimationStarted(
+      effective_start, cc::TargetProperty::OPACITY,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
-          ->animation_group_id(),
-      cc::TargetProperty::OPACITY, effective_start));
+          ->animation_group_id());
 
   animator->Step(effective_start + delta / 2);
 
@@ -1217,11 +1210,10 @@ TEST(LayerAnimatorTest, MultiPreemptThreadedByImmediatelyAnimatingToNewTarget) {
 
   base::TimeTicks second_effective_start = effective_start + delta;
 
-  test_controller.animator()->OnThreadedAnimationStarted(cc::AnimationEvent(
-      cc::AnimationEvent::STARTED, 0,
+  test_controller.animator()->OnThreadedAnimationStarted(
+      second_effective_start, cc::TargetProperty::OPACITY,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
-          ->animation_group_id(),
-      cc::TargetProperty::OPACITY, second_effective_start));
+          ->animation_group_id());
 
   animator->Step(second_effective_start + delta / 2);
 
@@ -1459,22 +1451,20 @@ TEST(LayerAnimatorTest, ThreadedCyclicSequences) {
   base::TimeTicks start_time = test_controller.animator()->last_step_time();
   base::TimeTicks effective_start = start_time + delta;
 
-  test_controller.animator()->OnThreadedAnimationStarted(cc::AnimationEvent(
-      cc::AnimationEvent::STARTED, 0,
+  test_controller.animator()->OnThreadedAnimationStarted(
+      effective_start, cc::TargetProperty::OPACITY,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
-          ->animation_group_id(),
-      cc::TargetProperty::OPACITY, effective_start));
+          ->animation_group_id());
 
   animator->Step(effective_start + delta);
   EXPECT_TRUE(test_controller.animator()->is_animating());
   EXPECT_FLOAT_EQ(delegate.GetOpacityForAnimation(), target_opacity);
 
   base::TimeTicks second_effective_start = effective_start + 2 * delta;
-  test_controller.animator()->OnThreadedAnimationStarted(cc::AnimationEvent(
-      cc::AnimationEvent::STARTED, 0,
+  test_controller.animator()->OnThreadedAnimationStarted(
+      second_effective_start, cc::TargetProperty::OPACITY,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
-          ->animation_group_id(),
-      cc::TargetProperty::OPACITY, second_effective_start));
+          ->animation_group_id());
 
   animator->Step(second_effective_start + delta);
 
@@ -1482,22 +1472,20 @@ TEST(LayerAnimatorTest, ThreadedCyclicSequences) {
   EXPECT_FLOAT_EQ(delegate.GetOpacityForAnimation(), start_opacity);
 
   base::TimeTicks third_effective_start = second_effective_start + 2 * delta;
-  test_controller.animator()->OnThreadedAnimationStarted(cc::AnimationEvent(
-      cc::AnimationEvent::STARTED, 0,
+  test_controller.animator()->OnThreadedAnimationStarted(
+      third_effective_start, cc::TargetProperty::OPACITY,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
-          ->animation_group_id(),
-      cc::TargetProperty::OPACITY, third_effective_start));
+          ->animation_group_id());
 
   animator->Step(third_effective_start + delta);
   EXPECT_TRUE(test_controller.animator()->is_animating());
   EXPECT_FLOAT_EQ(delegate.GetOpacityForAnimation(), target_opacity);
 
   base::TimeTicks fourth_effective_start = third_effective_start + 2 * delta;
-  test_controller.animator()->OnThreadedAnimationStarted(cc::AnimationEvent(
-      cc::AnimationEvent::STARTED, 0,
+  test_controller.animator()->OnThreadedAnimationStarted(
+      fourth_effective_start, cc::TargetProperty::OPACITY,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
-          ->animation_group_id(),
-      cc::TargetProperty::OPACITY, fourth_effective_start));
+          ->animation_group_id());
 
   // Skip ahead by a lot.
   animator->Step(fourth_effective_start + 1000 * delta);
@@ -1506,11 +1494,10 @@ TEST(LayerAnimatorTest, ThreadedCyclicSequences) {
   EXPECT_FLOAT_EQ(delegate.GetOpacityForAnimation(), target_opacity);
 
   base::TimeTicks fifth_effective_start = fourth_effective_start + 1001 * delta;
-  test_controller.animator()->OnThreadedAnimationStarted(cc::AnimationEvent(
-      cc::AnimationEvent::STARTED, 0,
+  test_controller.animator()->OnThreadedAnimationStarted(
+      fifth_effective_start, cc::TargetProperty::OPACITY,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
-          ->animation_group_id(),
-      cc::TargetProperty::OPACITY, fifth_effective_start));
+          ->animation_group_id());
 
   // Skip ahead by a lot.
   animator->Step(fifth_effective_start + 999 * delta);

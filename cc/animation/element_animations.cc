@@ -143,11 +143,6 @@ Animation* ElementAnimations::GetAnimationById(int animation_id) const {
   return layer_animation_controller_->GetAnimationById(animation_id);
 }
 
-void ElementAnimations::SetEventObserver(
-    LayerAnimationEventObserver* observer) {
-  layer_animation_controller_->SetEventObserver(observer);
-}
-
 void ElementAnimations::OnFilterAnimated(LayerTreeType tree_type,
                                          const FilterOperations& filters) {
   DCHECK(layer_id());

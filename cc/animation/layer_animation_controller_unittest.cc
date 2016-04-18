@@ -1208,64 +1208,6 @@ TEST(LayerAnimationControllerTest,
   EXPECT_EQ(start_time, delegate.start_time());
 }
 
-class FakeLayerAnimationEventObserver : public LayerAnimationEventObserver {
- public:
-  FakeLayerAnimationEventObserver() : start_time_(base::TimeTicks()) {}
-
-  void OnAnimationStarted(const AnimationEvent& event) override {
-    start_time_ = event.monotonic_time;
-  }
-
-  TimeTicks start_time() { return start_time_; }
-
- private:
-  TimeTicks start_time_;
-};
-
-// Tests that specified start times are sent to the event observers
-TEST(LayerAnimationControllerTest, SpecifiedStartTimesAreSentToEventObservers) {
-  FakeLayerAnimationValueObserver dummy_impl;
-  scoped_refptr<LayerAnimationController> controller_impl(
-      LayerAnimationController::Create(0));
-  controller_impl->set_value_observer(&dummy_impl);
-  controller_impl->set_needs_active_value_observations(true);
-
-  FakeLayerAnimationValueObserver dummy;
-  scoped_refptr<LayerAnimationController> controller(
-      LayerAnimationController::Create(0));
-  controller->set_value_observer(&dummy);
-  controller->set_needs_active_value_observations(true);
-
-  FakeLayerAnimationEventObserver observer;
-  controller->SetEventObserver(&observer);
-
-  int animation_id =
-      AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
-
-  const TimeTicks start_time = TicksFromSecondsF(123);
-  controller->GetAnimation(TargetProperty::OPACITY)->set_start_time(start_time);
-
-  controller->PushAnimationUpdatesTo(controller_impl.get());
-  controller_impl->ActivateAnimations();
-
-  EXPECT_TRUE(controller_impl->GetAnimationById(animation_id));
-  EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
-            controller_impl->GetAnimationById(animation_id)->run_state());
-
-  AnimationEvents events;
-  controller_impl->Animate(kInitialTickTime);
-  controller_impl->UpdateState(true, &events);
-
-  // Synchronize the start times.
-  EXPECT_EQ(1u, events.events_.size());
-  controller->NotifyAnimationStarted(events.events_[0]);
-
-  // Validate start time on the event observer.
-  EXPECT_EQ(start_time, observer.start_time());
-
-  controller->SetEventObserver(nullptr);
-}
-
 // Tests animations that are waiting for a synchronized start time do not
 // finish.
 TEST(LayerAnimationControllerTest,

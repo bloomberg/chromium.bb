@@ -50,9 +50,9 @@ void LayerAnimatorTestController::StartThreadedAnimationsIfNeeded() {
         element->effective_start_time() != base::TimeTicks())
       continue;
 
-    animator_->OnThreadedAnimationStarted(cc::AnimationEvent(
-        cc::AnimationEvent::STARTED, 0, element->animation_group_id(),
-        threaded_properties[i], base::TimeTicks::Now()));
+    animator_->OnThreadedAnimationStarted(base::TimeTicks::Now(),
+                                          threaded_properties[i],
+                                          element->animation_group_id());
   }
 }
 

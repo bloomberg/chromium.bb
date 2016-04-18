@@ -90,8 +90,6 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations>,
   // Returns the active animation for the given unique animation id.
   Animation* GetAnimationById(int animation_id) const;
 
-  void SetEventObserver(LayerAnimationEventObserver* observer);
-
  private:
   friend class base::RefCounted<ElementAnimations>;
 

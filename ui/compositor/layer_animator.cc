@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
@@ -196,13 +195,11 @@ void LayerAnimator::AttachLayerToAnimationPlayer(int layer_id) {
   else
     DCHECK_EQ(animation_player_->layer_id(), layer_id);
 
-  if (animation_player_->element_animations())
-    animation_player_->element_animations()->SetEventObserver(this);
+  animation_player_->set_layer_animation_delegate(this);
 }
 
 void LayerAnimator::DetachLayerFromAnimationPlayer() {
-  if (animation_player_->element_animations())
-    animation_player_->element_animations()->SetEventObserver(nullptr);
+  animation_player_->set_layer_animation_delegate(nullptr);
 
   if (animation_player_->layer_id())
     animation_player_->DetachLayer();
@@ -405,23 +402,26 @@ void LayerAnimator::RemoveObserver(LayerAnimationObserver* observer) {
 }
 
 void LayerAnimator::OnThreadedAnimationStarted(
-    const cc::AnimationEvent& event) {
+    base::TimeTicks monotonic_time,
+    cc::TargetProperty::Type target_property,
+    int group_id) {
   LayerAnimationElement::AnimatableProperty property =
-    LayerAnimationElement::ToAnimatableProperty(event.target_property);
+      LayerAnimationElement::ToAnimatableProperty(target_property);
 
   RunningAnimation* running = GetRunningAnimation(property);
   if (!running)
     return;
   DCHECK(running->is_sequence_alive());
 
-  if (running->sequence()->animation_group_id() != event.group_id)
+  if (running->sequence()->animation_group_id() != group_id)
     return;
 
-  running->sequence()->OnThreadedAnimationStarted(event);
+  running->sequence()->OnThreadedAnimationStarted(monotonic_time,
+                                                  target_property, group_id);
   if (!running->sequence()->waiting_for_group_start())
     return;
 
-  base::TimeTicks start_time = event.monotonic_time;
+  base::TimeTicks start_time = monotonic_time;
 
   running->sequence()->set_waiting_for_group_start(false);
 
@@ -432,7 +432,7 @@ void LayerAnimator::OnThreadedAnimationStarted(
        iter != running_animations_.end(); ++iter) {
     // Ensure that each sequence is only Started once, regardless of the
     // number of sequences in the group that have threaded first elements.
-    if (((*iter).sequence()->animation_group_id() == event.group_id) &&
+    if (((*iter).sequence()->animation_group_id() == group_id) &&
         !(*iter).sequence()->IsFirstElementThreaded() &&
         (*iter).sequence()->waiting_for_group_start()) {
       (*iter).sequence()->set_start_time(start_time);
@@ -952,8 +952,11 @@ LayerAnimatorCollection* LayerAnimator::GetLayerAnimatorCollection() {
   return delegate_ ? delegate_->GetLayerAnimatorCollection() : NULL;
 }
 
-void LayerAnimator::OnAnimationStarted(const cc::AnimationEvent& event) {
-  OnThreadedAnimationStarted(event);
+void LayerAnimator::NotifyAnimationStarted(
+    base::TimeTicks monotonic_time,
+    cc::TargetProperty::Type target_property,
+    int group) {
+  OnThreadedAnimationStarted(monotonic_time, target_property, group);
 }
 
 LayerAnimator::RunningAnimation::RunningAnimation(

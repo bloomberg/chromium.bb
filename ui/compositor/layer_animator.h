@@ -15,7 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "cc/animation/layer_animation_event_observer.h"
+#include "cc/animation/animation_delegate.h"
+#include "cc/animation/target_property.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_threaded_animation_delegate.h"
@@ -56,7 +57,7 @@ class ScopedLayerAnimationSettings;
 class COMPOSITOR_EXPORT LayerAnimator
     : public base::RefCounted<LayerAnimator>,
       public LayerThreadedAnimationDelegate,
-      NON_EXPORTED_BASE(public cc::LayerAnimationEventObserver) {
+      NON_EXPORTED_BASE(public cc::AnimationDelegate) {
  public:
   enum PreemptionStrategy {
     IMMEDIATELY_SET_NEW_TARGET,
@@ -196,7 +197,9 @@ class COMPOSITOR_EXPORT LayerAnimator
   void RemoveObserver(LayerAnimationObserver* observer);
 
   // Called when a threaded animation is actually started.
-  void OnThreadedAnimationStarted(const cc::AnimationEvent& event);
+  void OnThreadedAnimationStarted(base::TimeTicks monotonic_time,
+                                  cc::TargetProperty::Type target_property,
+                                  int group_id);
 
   // This determines how implicit animations will be tweened. This has no
   // effect on animations that are explicitly started or scheduled. The default
@@ -339,8 +342,21 @@ class COMPOSITOR_EXPORT LayerAnimator
 
   LayerAnimatorCollection* GetLayerAnimatorCollection();
 
-  // LayerAnimationEventObserver
-  void OnAnimationStarted(const cc::AnimationEvent& event) override;
+  // cc::AnimationDelegate implementation.
+  void NotifyAnimationStarted(base::TimeTicks monotonic_time,
+                              cc::TargetProperty::Type target_property,
+                              int group_id) override;
+  void NotifyAnimationFinished(base::TimeTicks monotonic_time,
+                               cc::TargetProperty::Type target_property,
+                               int group_id) override {}
+  void NotifyAnimationAborted(base::TimeTicks monotonic_time,
+                              cc::TargetProperty::Type target_property,
+                              int group_id) override {}
+  void NotifyAnimationTakeover(
+      base::TimeTicks monotonic_time,
+      cc::TargetProperty::Type target_property,
+      double animation_start_time,
+      std::unique_ptr<cc::AnimationCurve> curve) override {}
 
   // Implementation of LayerThreadedAnimationDelegate.
   void AddThreadedAnimation(std::unique_ptr<cc::Animation> animation) override;

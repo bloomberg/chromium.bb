@@ -56,7 +56,6 @@
         'animation/keyframed_animation_curve.h',
         'animation/layer_animation_controller.cc',
         'animation/layer_animation_controller.h',
-        'animation/layer_animation_event_observer.h',
         'animation/layer_animation_value_observer.h',
         'animation/layer_animation_value_provider.h',
         'animation/scroll_offset_animation_curve.cc',
