@@ -364,6 +364,7 @@ imported/web-platform-tests/html/dom/reflection-text.html [ Skip ]
 imported/web-platform-tests/html/browsers/browsing-the-web/read-text/load-text-plain.html [ Skip ]
 
 # crbug.com/498120: Using absolute URL links.
+imported/web-platform-tests/dom/events/EventTarget-dispatchEvent.html [ Skip ]
 imported/web-platform-tests/html/browsers/history/the-location-interface/location-stringifier.html [ Skip ]
 imported/web-platform-tests/html/dom/documents/dom-tree-accessors/document.title-07.html [ Skip ]
 imported/web-platform-tests/html/dom/documents/dom-tree-accessors/Document.currentScript.sub.html [ Skip ]
