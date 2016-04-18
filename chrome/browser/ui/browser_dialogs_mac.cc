@@ -5,13 +5,22 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "chrome/common/chrome_switches.h"
+
+const base::Feature kMacViewsWebUIDialogs {
+  "MacViewsWebUIDialogs", base::FEATURE_DISABLED_BY_DEFAULT
+};
 
 namespace chrome {
 
 bool ToolkitViewsDialogsEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableMacViewsDialogs);
+}
+
+bool ToolkitViewsWebUIDialogsEnabled() {
+  return base::FeatureList::IsEnabled(kMacViewsWebUIDialogs);
 }
 
 }  // namespace chrome

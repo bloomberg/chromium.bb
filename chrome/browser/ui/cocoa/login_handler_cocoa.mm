@@ -134,7 +134,7 @@ class LoginHandlerMac : public LoginHandler,
 // static
 LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
                                    net::URLRequest* request) {
-  if (chrome::ToolkitViewsDialogsEnabled())
+  if (chrome::ToolkitViewsWebUIDialogsEnabled())
     return chrome::CreateLoginHandlerViews(auth_info, request);
   return new LoginHandlerMac(auth_info, request);
 }
