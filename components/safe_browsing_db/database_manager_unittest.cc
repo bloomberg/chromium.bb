@@ -1,0 +1,134 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <stddef.h>
+
+#include <string>
+#include <vector>
+
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
+#include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing_db/test_database_manager.h"
+#include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+
+using content::BrowserThread;
+
+namespace safe_browsing {
+
+namespace {
+
+// A TestV4GetHashProtocolManager that returns fixed responses from the
+// Safe Browsing server for testing purpose.
+class TestV4GetHashProtocolManager : public V4GetHashProtocolManager {
+ public:
+  TestV4GetHashProtocolManager(
+      net::URLRequestContextGetter* request_context_getter,
+      const V4ProtocolConfig& config)
+      : V4GetHashProtocolManager(request_context_getter, config) {}
+
+  ~TestV4GetHashProtocolManager() override {}
+
+  void GetFullHashesWithApis(const std::vector<SBPrefix>& prefixes,
+                             FullHashCallback callback) override {
+    prefixes_ = prefixes;
+    callback.Run(full_hashes_, base::TimeDelta::FromMinutes(0));
+  }
+
+  // Prepare the GetFullHash results for the next request.
+  void AddGetFullHashResponse(const SBFullHashResult& full_hash_result) {
+    full_hashes_.push_back(full_hash_result);
+  }
+
+  // Returns the prefixes that were sent in the last request.
+  const std::vector<SBPrefix>& GetRequestPrefixes() { return prefixes_; }
+
+ private:
+  std::vector<SBPrefix> prefixes_;
+  std::vector<SBFullHashResult> full_hashes_;
+};
+
+// Factory that creates test protocol manager instances.
+class TestV4GetHashProtocolManagerFactory :
+    public V4GetHashProtocolManagerFactory {
+ public:
+  TestV4GetHashProtocolManagerFactory() : pm_(NULL) {}
+  ~TestV4GetHashProtocolManagerFactory() override {}
+
+  V4GetHashProtocolManager* CreateProtocolManager(
+      net::URLRequestContextGetter* request_context_getter,
+      const V4ProtocolConfig& config) override {
+    pm_ = new TestV4GetHashProtocolManager(request_context_getter, config);
+    return pm_;
+  }
+
+ private:
+  // Owned by the SafeBrowsingDatabaseManager.
+  TestV4GetHashProtocolManager* pm_;
+};
+
+class TestClient : public SafeBrowsingDatabaseManager::Client {
+ public:
+  TestClient() {}
+  ~TestClient() override {}
+
+  void OnCheckApiBlacklistUrlResult(const GURL& url,
+                                    const ThreatMetadata& metadata) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestClient);
+};
+
+}  // namespace
+
+class SafeBrowsingDatabaseManagerTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    TestV4GetHashProtocolManagerFactory get_hash_pm_factory;
+    V4GetHashProtocolManager::RegisterFactory(&get_hash_pm_factory);
+
+    db_manager_ = new TestSafeBrowsingDatabaseManager();
+    db_manager_->StartOnIOThread(NULL, V4ProtocolConfig());
+  }
+
+  void TearDown() override {
+    base::RunLoop().RunUntilIdle();
+    db_manager_->StopOnIOThread(false);
+  }
+
+  scoped_refptr<SafeBrowsingDatabaseManager> db_manager_;
+
+ private:
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+};
+
+TEST_F(SafeBrowsingDatabaseManagerTest, CheckApiBlacklistUrlWrongScheme) {
+  TestClient client;
+  const GURL url("file://example.txt");
+  EXPECT_TRUE(db_manager_->CheckApiBlacklistUrl(url, &client));
+}
+
+TEST_F(SafeBrowsingDatabaseManagerTest, CheckApiBlacklistUrlPrefixes) {
+  TestClient client;
+  const GURL url("https://www.example.com/more");
+  // Generated from the sorted output of UrlToFullHashes in util.h.
+  std::vector<SBPrefix> expected_prefixes =
+      {1237562338, 2871045197, 3553205461, 3766933875};
+
+  EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
+  std::vector<SBPrefix> prefixes = static_cast<TestV4GetHashProtocolManager*>(
+      db_manager_->v4_get_hash_protocol_manager_)->GetRequestPrefixes();
+  EXPECT_EQ(expected_prefixes.size(), prefixes.size());
+  for (unsigned int i = 0; i < prefixes.size(); ++i) {
+    EXPECT_EQ(expected_prefixes[i], prefixes[i]);
+  }
+}
+
+}  // namespace safe_browsing

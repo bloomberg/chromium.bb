@@ -21,7 +21,8 @@ struct V4ProtocolConfig;
 
 // This is a non-pure-virtual implementation of the SafeBrowsingDatabaseManager
 // interface.  It's used in tests by overriding only the functions that get
-// called, and it'll complain if you call one that isn't overriden.
+// called, and it'll complain if you call one that isn't overriden. The
+// non-abstract methods in the base class are not overridden.
 class TestSafeBrowsingDatabaseManager
     : public SafeBrowsingDatabaseManager {
  public:
@@ -47,11 +48,6 @@ class TestSafeBrowsingDatabaseManager
   bool IsMalwareKillSwitchOn() override;
   bool IsCsdWhitelistKillSwitchOn() override;
   void CancelCheck(Client* client) override;
-  void CheckApiBlacklistUrl(const GURL& url, Client* client) override;
-  void StartOnIOThread(
-      net::URLRequestContextGetter* request_context_getter,
-      const V4ProtocolConfig& config) override;
-  void StopOnIOThread(bool shutdown) override;
 
  protected:
   ~TestSafeBrowsingDatabaseManager() override {};
