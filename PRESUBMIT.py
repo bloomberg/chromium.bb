@@ -373,7 +373,7 @@ def _CheckNoIOStreamInHeaders(input_api, output_api):
       files.append(f)
 
   if len(files):
-    return [ output_api.PresubmitError(
+    return [output_api.PresubmitError(
         'Do not #include <iostream> in header files, since it inserts static '
         'initialization into every file including the header. Instead, '
         '#include <ostream>. See http://crbug.com/94794',
@@ -479,6 +479,20 @@ def _CheckUmaHistogramChanges(input_api, output_api):
     'been modified and the associated histogram name has no match in either '
     '%s or the modifications of it:' % (histograms_xml_path),  problems)]
 
+def _CheckFlakyTestUsage(input_api, output_api):
+  """Check that FlakyTest annotation is our own instead of the android one"""
+  pattern = input_api.re.compile(r'import android.test.FlakyTest;')
+  files = []
+  for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
+    if f.LocalPath().endswith('Test.java'):
+      if pattern.search(input_api.ReadFile(f)):
+        files.append(f)
+  if len(files):
+    return [output_api.PresubmitError(
+      'Use org.chromium.base.test.util.FlakyTest instead of '
+      'android.test.FlakyTest',
+      files)]
+  return []
 
 def _CheckNoNewWStrings(input_api, output_api):
   """Checks to make sure we don't introduce use of wstrings."""
@@ -1655,7 +1669,7 @@ def _CheckSingletonInHeaders(input_api, output_api):
           break
 
   if files:
-    return [ output_api.PresubmitError(
+    return [output_api.PresubmitError(
         'Found base::Singleton<T> in the following header files.\n' +
         'Please move them to an appropriate source file so that the ' +
         'template gets instantiated in a single compilation unit.',
@@ -1796,6 +1810,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoAbbreviationInPngFileName(input_api, output_api))
   results.extend(_CheckForInvalidOSMacros(input_api, output_api))
   results.extend(_CheckForInvalidIfDefinedMacros(input_api, output_api))
+  results.extend(_CheckFlakyTestUsage(input_api, output_api))
   # TODO(danakj): Remove this when base/move.h is removed.
   results.extend(_CheckForUsingPass(input_api, output_api))
   results.extend(_CheckAddedDepsHaveTargetApprovals(input_api, output_api))
