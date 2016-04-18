@@ -19,7 +19,6 @@
 namespace media {
 
 class Demuxer;
-class DemuxerStream;
 class Renderer;
 class VideoFrame;
 
@@ -156,15 +155,6 @@ class MEDIA_EXPORT Pipeline {
 
   virtual void SetCdm(CdmContext* cdm_context,
                       const CdmAttachedCB& cdm_attached_cb) = 0;
-
-  // Notifies pipeline that the set of enabled audio streams/tracks has changed.
-  virtual void OnEnabledAudioStreamsChanged(
-      const std::vector<const DemuxerStream*>& enabledAudioStreams) {}
-
-  // Notifies pipeline that the selected video stream has changed. The input
-  // parameter |selectedVideoStream| can be null, which means video is disabled.
-  virtual void OnSelectedVideoStreamChanged(
-      const DemuxerStream* selectedVideoStream) {}
 };
 
 }  // namespace media

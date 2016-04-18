@@ -18,7 +18,6 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer.h"
-#include "media/base/media_tracks.h"
 #include "media/base/pipeline.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
@@ -115,10 +114,6 @@ class MockDemuxer : public Demuxer {
   MOCK_CONST_METHOD0(GetStartTime, base::TimeDelta());
   MOCK_CONST_METHOD0(GetTimelineOffset, base::Time());
   MOCK_CONST_METHOD0(GetMemoryUsage, int64_t());
-
-  MOCK_METHOD2(OnTrackIdsAssigned,
-               void(const MediaTracks&, const std::vector<unsigned>&));
-  MOCK_CONST_METHOD1(GetDemuxerStreamByTrackId, const DemuxerStream*(unsigned));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDemuxer);

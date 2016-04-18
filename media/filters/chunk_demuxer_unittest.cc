@@ -82,22 +82,12 @@ const int kVideoTrackSizeWidth = 8;
 const int kVideoTrackEntryHeaderSize =
     kVideoTrackSizeOffset + kVideoTrackSizeWidth;
 
-// Track numbers AKA bytestream track ids. Bytestream track ids might change
-// within a single playback session if there is only one track of a given type.
 const int kVideoTrackNum = 1;
 const int kAudioTrackNum = 2;
 const int kTextTrackNum = 3;
 const int kAlternateVideoTrackNum = 4;
 const int kAlternateAudioTrackNum = 5;
 const int kAlternateTextTrackNum = 6;
-
-// These value represent externally assigned track ids (for example track ids
-// assigned by blink). Not to be confused with bytestream track ids above. The
-// main difference is that these track ids must stay the same for the duration
-// of the playback session, whereas track numbers / bytestream track ids might
-// change in subsequent init segments.
-const int kVideoTrackId = 10;
-const int kAudioTrackId = 11;
 
 const int kAudioBlockDuration = 23;
 const int kVideoBlockDuration = 33;
@@ -1410,18 +1400,6 @@ class ChunkDemuxerTest : public ::testing::Test {
     DCHECK(tracks.get());
     DCHECK_GT(tracks->tracks().size(), 0u);
 
-    std::vector<unsigned> track_ids;
-    for (const auto& track : tracks->tracks()) {
-      if (track->type() == MediaTrack::Audio) {
-        track_ids.push_back(kAudioTrackId);
-      } else if (track->type() == MediaTrack::Video) {
-        track_ids.push_back(kVideoTrackId);
-      } else {
-        NOTREACHED();
-      }
-    }
-    demuxer_->OnTrackIdsAssigned(*tracks.get(), track_ids);
-
     InitSegmentReceivedMock(tracks);
   }
 
@@ -1621,8 +1599,6 @@ TEST_F(ChunkDemuxerTest, AudioVideoTrackIdsChange) {
   DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
   ASSERT_TRUE(audio_stream);
   ASSERT_TRUE(video_stream);
-  ASSERT_EQ(audio_stream, demuxer_->GetDemuxerStreamByTrackId(kAudioTrackId));
-  ASSERT_EQ(video_stream, demuxer_->GetDemuxerStreamByTrackId(kVideoTrackId));
 
   AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "0K 23K", 23),
                      MuxedStreamInfo(kVideoTrackNum, "0K 30", 30));
@@ -1636,8 +1612,6 @@ TEST_F(ChunkDemuxerTest, AudioVideoTrackIdsChange) {
   CheckExpectedRanges("{ [0,92) }");
   CheckExpectedBuffers(audio_stream, "0K 23K 46K 69K");
   CheckExpectedBuffers(video_stream, "0K 30 60K");
-  ASSERT_EQ(audio_stream, demuxer_->GetDemuxerStreamByTrackId(kAudioTrackId));
-  ASSERT_EQ(video_stream, demuxer_->GetDemuxerStreamByTrackId(kVideoTrackId));
 
   ShutdownDemuxer();
 }

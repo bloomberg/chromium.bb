@@ -20,13 +20,12 @@ using base::TimeDelta;
 
 class ChunkDemuxerStream;
 class FrameProcessor;
-class MediaTrack;
 
 // Contains state belonging to a source id.
 class MEDIA_EXPORT MediaSourceState {
  public:
   // Callback signature used to create ChunkDemuxerStreams.
-  typedef base::Callback<ChunkDemuxerStream*(const MediaTrack&)>
+  typedef base::Callback<ChunkDemuxerStream*(DemuxerStream::Type)>
       CreateDemuxerStreamCB;
 
   typedef base::Callback<void(ChunkDemuxerStream*, const TextTrackConfig&)>
@@ -190,6 +189,8 @@ class MEDIA_EXPORT MediaSourceState {
 
   // The object used to parse appended data.
   scoped_ptr<StreamParser> stream_parser_;
+
+  scoped_ptr<MediaTracks> media_tracks_;
 
   ChunkDemuxerStream* audio_;  // Not owned by |this|.
   ChunkDemuxerStream* video_;  // Not owned by |this|.

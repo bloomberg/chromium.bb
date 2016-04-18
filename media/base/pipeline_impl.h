@@ -111,10 +111,6 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
   PipelineStatistics GetStatistics() const override;
   void SetCdm(CdmContext* cdm_context,
               const CdmAttachedCB& cdm_attached_cb) override;
-  void OnEnabledAudioStreamsChanged(
-      const std::vector<const DemuxerStream*>& enabledAudioStreams) override;
-  void OnSelectedVideoStreamChanged(
-      const DemuxerStream* selectedVideoStream) override;
 
  private:
   friend class MediaLog;

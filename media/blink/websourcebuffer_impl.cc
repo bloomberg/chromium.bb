@@ -189,8 +189,6 @@ void WebSourceBufferImpl::InitSegmentReceived(scoped_ptr<MediaTracks> tracks) {
 
   std::vector<blink::WebMediaPlayer::TrackId> blinkTrackIds =
       client_->initializationSegmentReceived(trackInfoVector);
-
-  demuxer_->OnTrackIdsAssigned(*tracks.get(), blinkTrackIds);
 }
 
 }  // namespace media

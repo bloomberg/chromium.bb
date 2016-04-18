@@ -63,10 +63,6 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   base::TimeDelta GetMediaTime() final;
   bool HasAudio() final;
   bool HasVideo() final;
-  void OnEnabledAudioStreamsChanged(
-      const std::vector<const DemuxerStream*>& enabledAudioStreams) final;
-  void OnSelectedVideoStreamChanged(
-      const DemuxerStream* selectedVideoStream) final;
 
   // Helper functions for testing purposes. Must be called before Initialize().
   void DisableUnderflowForTesting();
@@ -154,9 +150,6 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
 
   scoped_ptr<AudioRenderer> audio_renderer_;
   scoped_ptr<VideoRenderer> video_renderer_;
-
-  bool audio_stream_currently_disabled_ = false;
-  float audio_volume_ = 1.0f;
 
   // Renderer-provided time source used to control playback.
   TimeSource* time_source_;

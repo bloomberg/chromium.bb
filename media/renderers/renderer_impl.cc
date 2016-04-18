@@ -205,16 +205,8 @@ void RendererImpl::SetVolume(float volume) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  audio_volume_ = volume;
-  if (!audio_renderer_)
-    return;
-
-  if (audio_stream_currently_disabled_) {
-    DVLOG(1) << "SetVolume ignored since audio stream is currently disabled.";
-    return;
-  }
-
-  audio_renderer_->SetVolume(volume);
+  if (audio_renderer_)
+    audio_renderer_->SetVolume(volume);
 }
 
 base::TimeDelta RendererImpl::GetMediaTime() {
@@ -231,52 +223,6 @@ bool RendererImpl::HasAudio() {
 bool RendererImpl::HasVideo() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return video_renderer_ != NULL;
-}
-
-void RendererImpl::OnEnabledAudioStreamsChanged(
-    const std::vector<const DemuxerStream*>& enabledAudioStreams) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DemuxerStream* audio_stream =
-      demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
-
-  bool audio_stream_enabled = false;
-  for (const DemuxerStream* demuxer_stream : enabledAudioStreams) {
-    DCHECK_EQ(demuxer_stream->type(), DemuxerStream::AUDIO);
-    DCHECK_EQ(demuxer_stream, audio_stream);
-    audio_stream_enabled = true;
-  }
-
-  // TODO(servolk,wolenetz): Need to find a way to completely disable audio
-  // (i.e. stop audio decoder and switch video to wall clock) when audio stream
-  // is disabled, but for now just set volume to 0. crbug.com/599709
-  if (audio_renderer_) {
-    if (audio_stream_enabled && audio_stream_currently_disabled_) {
-      DVLOG(3) << __FUNCTION__ << " enabled audio. SetVolume=" << audio_volume_;
-      audio_stream_currently_disabled_ = false;
-      audio_renderer_->SetVolume(audio_volume_);
-    } else if (!audio_stream_enabled) {
-      DVLOG(3) << __FUNCTION__ << " disabled audio. SetVolume=0";
-      DCHECK(!audio_stream_currently_disabled_);
-      audio_stream_currently_disabled_ = true;
-      audio_renderer_->SetVolume(0);
-    }
-  }
-}
-
-void RendererImpl::OnSelectedVideoStreamChanged(
-    const DemuxerStream* selectedVideoStream) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DemuxerStream* video_stream =
-      demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
-  if (selectedVideoStream) {
-    DVLOG(3) << __FUNCTION__ << " selectedVideoStream=" << selectedVideoStream;
-    DCHECK_EQ(selectedVideoStream->type(), DemuxerStream::VIDEO);
-    CHECK_EQ(selectedVideoStream, video_stream);
-  } else {
-    DVLOG(3) << __FUNCTION__ << " selectedVideoStream=none";
-    // TODO(servolk,wolenetz): Need to find a way to stop video decoding and
-    // rendering when the video stream is deselected. crbug.com/599709
-  }
 }
 
 void RendererImpl::DisableUnderflowForTesting() {

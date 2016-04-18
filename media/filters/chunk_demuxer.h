@@ -19,7 +19,6 @@
 #include "media/base/byte_queue.h"
 #include "media/base/demuxer.h"
 #include "media/base/demuxer_stream.h"
-#include "media/base/media_tracks.h"
 #include "media/base/ranges.h"
 #include "media/base/stream_parser.h"
 #include "media/filters/media_source_state.h"
@@ -209,15 +208,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   void SetTracksWatcher(const std::string& id,
                         const MediaTracksUpdatedCB& tracks_updated_cb);
 
-  // Notifies the demuxer that track ids has been assigned to a media tracks.
-  void OnTrackIdsAssigned(const MediaTracks& tracks,
-                          const std::vector<unsigned>& track_ids) override;
-
-  // Finds a DemuxerStream corresponding to the given blink |track_id|. Note
-  // that the input track id is blink track id and not bytestream track id.
-  const DemuxerStream* GetDemuxerStreamByTrackId(
-      unsigned track_id) const override;
-
   // Removed an ID & associated resources that were previously added with
   // AddId().
   void RemoveId(const std::string& id);
@@ -328,10 +318,10 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // MediaSourceState callbacks.
   void OnSourceInitDone(const StreamParser::InitParameters& params);
 
-  // Creates a DemuxerStream for the specified |media_track|.
+  // Creates a DemuxerStream for the specified |type|.
   // Returns a new ChunkDemuxerStream instance if a stream of this type
   // has not been created before. Returns NULL otherwise.
-  ChunkDemuxerStream* CreateDemuxerStream(const MediaTrack& media_track);
+  ChunkDemuxerStream* CreateDemuxerStream(DemuxerStream::Type type);
 
   void OnNewTextTrack(ChunkDemuxerStream* text_stream,
                       const TextTrackConfig& config);
@@ -394,8 +384,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Counter to ensure that we do not transition too early to INITIALIZED.
   // Incremented in AddId(), decremented in OnSourceInitDone().
   int pending_source_init_done_count_;
-
-  MediaTracks::TrackIdToDemuxStreamMap track_id_to_demux_stream_;
 
   base::TimeDelta duration_;
 

@@ -67,7 +67,7 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
       EncryptedMediaInitDataCB;
 
   // Notifies demuxer clients that media track configuration has been updated
-  // (e.g. the initial stream metadata has been parsed successfully, or a new
+  // (e.g. the inital stream metadata has been parsed successfully, or a new
   // init segment has been parsed successfully in MSE case).
   typedef base::Callback<void(scoped_ptr<MediaTracks>)> MediaTracksUpdatedCB;
 
@@ -133,18 +133,6 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
 
   // Returns the memory usage in bytes for the demuxer.
   virtual int64_t GetMemoryUsage() const = 0;
-
-  // Notifies the demuxer that blink track ids have been assigned to |tracks|.
-  // The |track_ids| collection must contain blink track ids in the same
-  // sequence as media tracks in |tracks|. The collection sizes must be the
-  // same.
-  virtual void OnTrackIdsAssigned(const MediaTracks& tracks,
-                                  const std::vector<unsigned>& track_ids) = 0;
-
-  // Finds a DemuxerStream corresponding to the given blink |track_id|. Note
-  // that the input track id is blink track id and not bytestream track id.
-  virtual const DemuxerStream* GetDemuxerStreamByTrackId(
-      unsigned track_id) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Demuxer);

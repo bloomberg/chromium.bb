@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include <sstream>
 #include <string>
 #include <utility>
 
@@ -564,45 +563,6 @@ bool WebMediaPlayerImpl::hasAudio() const {
   return pipeline_metadata_.has_audio;
 }
 
-void WebMediaPlayerImpl::enabledAudioTracksChanged(
-    const blink::WebVector<blink::WebMediaPlayer::TrackId>& enabledTrackIds) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  CHECK(demuxer_.get());
-
-  std::vector<const DemuxerStream*> enabledAudioStreams;
-  std::stringstream trackIdsStr;
-  for (const auto& trackId : enabledTrackIds) {
-    const DemuxerStream* s = demuxer_->GetDemuxerStreamByTrackId(trackId);
-    CHECK(s);
-    enabledAudioStreams.push_back(s);
-    trackIdsStr << trackId << " ";
-  }
-  MEDIA_LOG(INFO, media_log_)
-      << "WebMediaPlayerImpl::enabledAudioTracksChanged enabledTrackIds="
-      << trackIdsStr.str();
-  pipeline_.OnEnabledAudioStreamsChanged(enabledAudioStreams);
-}
-
-void WebMediaPlayerImpl::selectedVideoTrackChanged(
-    blink::WebMediaPlayer::TrackId* selectedTrackId) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  CHECK(demuxer_.get());
-
-  const DemuxerStream* selectedVideoStream = nullptr;
-  if (selectedTrackId) {
-    selectedVideoStream = demuxer_->GetDemuxerStreamByTrackId(*selectedTrackId);
-    CHECK(selectedVideoStream);
-    MEDIA_LOG(INFO, media_log_)
-        << "WebMediaPlayerImpl::selectedVideoTrackChanged selectedTrackId="
-        << *selectedTrackId << " selectedVideoStream=" << selectedVideoStream;
-  } else {
-    MEDIA_LOG(INFO, media_log_) << "WebMediaPlayerImpl::"
-                                   "selectedVideoTrackChanged "
-                                   "selectedTrackId=none";
-  }
-  pipeline_.OnSelectedVideoStreamChanged(selectedVideoStream);
-}
-
 blink::WebSize WebMediaPlayerImpl::naturalSize() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -866,7 +826,6 @@ void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
   DCHECK(!chunk_demuxer_);
 
   // Report the media track information to blink.
-  std::vector<blink::WebMediaPlayer::TrackId> blinkTrackIds;
   for (const auto& track : tracks->tracks()) {
     if (track->type() == MediaTrack::Audio) {
       auto track_id = client_->addAudioTrack(
@@ -875,7 +834,7 @@ void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
           blink::WebString::fromUTF8(track->label()),
           blink::WebString::fromUTF8(track->language()),
           /*enabled*/ true);
-      blinkTrackIds.push_back(track_id);
+      (void)track_id;
     } else if (track->type() == MediaTrack::Video) {
       auto track_id = client_->addVideoTrack(
           blink::WebString::fromUTF8(track->id()),
@@ -883,14 +842,12 @@ void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
           blink::WebString::fromUTF8(track->label()),
           blink::WebString::fromUTF8(track->language()),
           /*selected*/ true);
-      blinkTrackIds.push_back(track_id);
+      (void)track_id;
     } else {
       // Text tracks are not supported through this code path yet.
       NOTREACHED();
     }
   }
-
-  demuxer_->OnTrackIdsAssigned(*tracks.get(), blinkTrackIds);
 }
 
 void WebMediaPlayerImpl::OnWaitingForDecryptionKey() {
