@@ -1915,6 +1915,7 @@ fuzzer_test("net_http_stream_parser_fuzzer") {
     "//base",
     "//net",
   ]
+  dict = "data/http/http.dict"
 }
 
 fuzzer_test("net_ftp_ctrl_response_fuzzer") {
@@ -1983,6 +1984,7 @@ fuzzer_test("net_http_proxy_client_socket_fuzzer") {
     "//base",
     "//net",
   ]
+  dict = "data/http/http.dict"
 }
 
 fuzzer_test("net_quic_crypto_framer_parse_message_fuzzer") {
