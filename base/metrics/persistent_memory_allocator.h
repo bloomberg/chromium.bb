@@ -118,6 +118,10 @@ class BASE_EXPORT PersistentMemoryAllocator {
     size_t free;
   };
 
+  enum : Reference {
+    kReferenceNull = 0  // A common "null" reference value.
+  };
+
   enum : uint32_t {
     kTypeIdAny = 0  // Match any type-id inside GetAsObject().
   };
@@ -284,7 +288,6 @@ class BASE_EXPORT PersistentMemoryAllocator {
   struct BlockHeader;
   static const uint32_t kAllocAlignment;
   static const Reference kReferenceQueue;
-  static const Reference kReferenceNull;
 
   // The shared metadata is always located at the top of the memory segment.
   // These convenience functions eliminate constant casting of the base

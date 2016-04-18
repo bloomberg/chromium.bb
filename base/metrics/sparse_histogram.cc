@@ -74,7 +74,7 @@ HistogramBase* SparseHistogram::FactoryGet(const std::string& name,
 
 // static
 std::unique_ptr<HistogramBase> SparseHistogram::PersistentCreate(
-    PersistentMemoryAllocator* allocator,
+    PersistentHistogramAllocator* allocator,
     const std::string& name,
     HistogramSamples::Metadata* meta,
     HistogramSamples::Metadata* logged_meta) {
@@ -165,7 +165,7 @@ SparseHistogram::SparseHistogram(const std::string& name)
       samples_(new SampleMap(HashMetricName(name))),
       logged_samples_(new SampleMap(samples_->id())) {}
 
-SparseHistogram::SparseHistogram(PersistentMemoryAllocator* allocator,
+SparseHistogram::SparseHistogram(PersistentHistogramAllocator* allocator,
                                  const std::string& name,
                                  HistogramSamples::Metadata* meta,
                                  HistogramSamples::Metadata* logged_meta)

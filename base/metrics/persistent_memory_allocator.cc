@@ -116,8 +116,6 @@ struct PersistentMemoryAllocator::SharedMetadata {
 const PersistentMemoryAllocator::Reference
     PersistentMemoryAllocator::kReferenceQueue =
         offsetof(SharedMetadata, queue);
-const PersistentMemoryAllocator::Reference
-    PersistentMemoryAllocator::kReferenceNull = 0;
 
 PersistentMemoryAllocator::Iterator::Iterator(
     const PersistentMemoryAllocator* allocator)
