@@ -133,12 +133,12 @@ class CONTENT_EXPORT CompositorImpl
   scoped_refptr<cc::Layer> subroot_layer_;
 
   // Destruction order matters here:
+  std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   base::ObserverList<VSyncObserver, true> observer_list_;
   std::unique_ptr<cc::LayerTreeHost> host_;
   ui::ResourceManagerImpl resource_manager_;
 
   std::unique_ptr<cc::OnscreenDisplayClient> display_client_;
-  std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
 
   gfx::Size size_;
   bool has_transparent_background_;

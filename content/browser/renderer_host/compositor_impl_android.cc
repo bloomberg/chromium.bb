@@ -255,8 +255,8 @@ CompositorImpl::CreateSurfaceIdAllocator() {
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
     : root_layer_(cc::Layer::Create()),
-      resource_manager_(root_window),
       surface_id_allocator_(CreateSurfaceIdAllocator()),
+      resource_manager_(root_window),
       has_transparent_background_(false),
       device_scale_factor_(1),
       window_(NULL),
