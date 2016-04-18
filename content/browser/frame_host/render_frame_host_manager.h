@@ -704,11 +704,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   void DiscardUnusedFrame(
       std::unique_ptr<RenderFrameHostImpl> render_frame_host);
 
-  // Holds |render_frame_host| until it can be deleted when its swap out ACK
-  // arrives.
-  void MoveToPendingDeleteHosts(
-      std::unique_ptr<RenderFrameHostImpl> render_frame_host);
-
   // Helper method to terminate the pending RenderFrameHost. The frame may be
   // deleted immediately, or it may be kept around in hopes of later reuse.
   void CancelPending();
