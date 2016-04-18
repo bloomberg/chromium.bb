@@ -236,7 +236,10 @@ void InitializeMojoIPCChannel() {
   platform_channel.reset(mojo::edk::PlatformHandle(
       base::GlobalDescriptors::GetInstance()->Get(kMojoIPCChannel)));
 #endif
-  CHECK(platform_channel.is_valid());
+  // Mojo isn't supported on all child process types.
+  // TODO(crbug.com/604282): Support Mojo in the remaining processes.
+  if (!platform_channel.is_valid())
+    return;
   mojo::edk::SetParentPipeHandle(std::move(platform_channel));
 }
 
