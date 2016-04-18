@@ -806,8 +806,7 @@
       'filepath': 'third_party/tcmalloc'
     },
     'telemetry': {
-      'filepath': 'tools/perf/|'\
-                  'tools/telemetry/'
+      'filepath': 'tools/perf/'
     },
     'tests': {
       'filepath': 'apitest|unittest|browsertest|uitest|chrome/test/',
