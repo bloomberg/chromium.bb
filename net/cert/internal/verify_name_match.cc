@@ -253,7 +253,7 @@ bool VerifyNameMatchInternal(const der::Input& a,
   // RDNs, for each RDN in DN1 there is a matching RDN in DN2, and the matching
   // RDNs appear in the same order in both DNs.
 
-  // First just check if the inputs have the same number of RDNs:
+  // As an optimization, first just compare the number of RDNs:
   der::Parser a_rdn_sequence_counter(a);
   der::Parser b_rdn_sequence_counter(b);
   while (a_rdn_sequence_counter.HasMore() && b_rdn_sequence_counter.HasMore()) {
@@ -270,7 +270,7 @@ bool VerifyNameMatchInternal(const der::Input& a,
   if (match_type == EXACT_MATCH && a_rdn_sequence_counter.HasMore())
     return false;
 
-  // Same number of RDNs, now check if they match.
+  // Verify that RDNs in |a| and |b| match.
   der::Parser a_rdn_sequence(a);
   der::Parser b_rdn_sequence(b);
   while (a_rdn_sequence.HasMore() && b_rdn_sequence.HasMore()) {
