@@ -113,7 +113,8 @@ public:
     void stop() final;
     bool hasPendingActivity() const final;
 
-    AudioDestinationNode* destination() const { return m_destinationNode.get(); }
+    // Cannnot be called from the audio thread.
+    AudioDestinationNode* destination() const;
 
     size_t currentSampleFrame() const
     {
