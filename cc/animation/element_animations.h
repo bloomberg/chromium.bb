@@ -13,6 +13,7 @@
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/layer_animation_controller.h"
+#include "cc/animation/layer_animation_value_observer.h"
 #include "cc/animation/layer_animation_value_provider.h"
 #include "cc/base/cc_export.h"
 
@@ -37,6 +38,7 @@ enum class LayerTreeType;
 // This is a CC counterpart for blink::ElementAnimations (in 1:1 relationship).
 // No pointer to/from respective blink::ElementAnimations object for now.
 class CC_EXPORT ElementAnimations : public AnimationDelegate,
+                                    public LayerAnimationValueObserver,
                                     public LayerAnimationValueProvider {
  public:
   static std::unique_ptr<ElementAnimations> Create(AnimationHost* host);
@@ -56,11 +58,11 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
   void LayerRegistered(int layer_id, LayerTreeType tree_type);
   void LayerUnregistered(int layer_id, LayerTreeType tree_type);
 
-  bool has_active_value_observer_for_testing() const {
-    return !!active_value_observer_;
+  bool needs_active_value_observations() const {
+    return layer_animation_controller_->needs_active_value_observations();
   }
-  bool has_pending_value_observer_for_testing() const {
-    return !!pending_value_observer_;
+  bool needs_pending_value_observations() const {
+    return layer_animation_controller_->needs_pending_value_observations();
   }
 
   void AddPlayer(AnimationPlayer* player);
@@ -96,15 +98,17 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
 
   explicit ElementAnimations(AnimationHost* host);
 
-  void SetFilterMutated(LayerTreeType tree_type,
-                        const FilterOperations& filters);
-  void SetOpacityMutated(LayerTreeType tree_type, float opacity);
-  void SetTransformMutated(LayerTreeType tree_type,
-                           const gfx::Transform& transform);
-  void SetScrollOffsetMutated(LayerTreeType tree_type,
-                              const gfx::ScrollOffset& scroll_offset);
-  void SetTransformIsPotentiallyAnimatingChanged(LayerTreeType tree_type,
-                                                 bool is_animating);
+  // LayerAnimationValueObserver implementation.
+  void OnFilterAnimated(LayerTreeType tree_type,
+                        const FilterOperations& filters) override;
+  void OnOpacityAnimated(LayerTreeType tree_type, float opacity) override;
+  void OnTransformAnimated(LayerTreeType tree_type,
+                           const gfx::Transform& transform) override;
+  void OnScrollOffsetAnimated(LayerTreeType tree_type,
+                              const gfx::ScrollOffset& scroll_offset) override;
+  void OnAnimationWaitingForDeletion() override;
+  void OnTransformIsPotentiallyAnimatingChanged(LayerTreeType tree_type,
+                                                bool is_animating) override;
 
   void CreateActiveValueObserver();
   void DestroyActiveValueObserver();
@@ -131,10 +135,6 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
   gfx::ScrollOffset ScrollOffsetForAnimation() const override;
 
   std::unique_ptr<PlayersList> players_list_;
-
-  class ValueObserver;
-  std::unique_ptr<ValueObserver> active_value_observer_;
-  std::unique_ptr<ValueObserver> pending_value_observer_;
 
   // LAC is owned by ElementAnimations (1:1 relationship).
   scoped_refptr<LayerAnimationController> layer_animation_controller_;

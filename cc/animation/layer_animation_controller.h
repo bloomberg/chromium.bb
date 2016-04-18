@@ -101,8 +101,25 @@ class CC_EXPORT LayerAnimationController
   void NotifyAnimationPropertyUpdate(const AnimationEvent& event);
   void NotifyAnimationTakeover(const AnimationEvent& event);
 
-  void AddValueObserver(LayerAnimationValueObserver* observer);
-  void RemoveValueObserver(LayerAnimationValueObserver* observer);
+  void set_value_observer(LayerAnimationValueObserver* observer) {
+    value_observer_ = observer;
+  }
+
+  bool needs_active_value_observations() const {
+    return needs_active_value_observations_;
+  }
+  bool needs_pending_value_observations() const {
+    return needs_pending_value_observations_;
+  }
+
+  void set_needs_active_value_observations(
+      bool needs_active_value_observations) {
+    needs_active_value_observations_ = needs_active_value_observations;
+  }
+  void set_needs_pending_value_observations(
+      bool needs_pending_value_observations) {
+    needs_pending_value_observations_ = needs_pending_value_observations;
+  }
 
   void AddEventObserver(LayerAnimationEventObserver* observer);
   void RemoveEventObserver(LayerAnimationEventObserver* observer);
@@ -235,12 +252,13 @@ class CC_EXPORT LayerAnimationController
 
   base::TimeTicks last_tick_time_;
 
-  base::ObserverList<LayerAnimationValueObserver> value_observers_;
   base::ObserverList<LayerAnimationEventObserver> event_observers_;
-
+  LayerAnimationValueObserver* value_observer_;
   LayerAnimationValueProvider* value_provider_;
-
   AnimationDelegate* layer_animation_delegate_;
+
+  bool needs_active_value_observations_;
+  bool needs_pending_value_observations_;
 
   // Only try to start animations when new animations are added or when the
   // previous attempt at starting animations failed to start all animations.

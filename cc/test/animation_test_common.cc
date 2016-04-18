@@ -211,30 +211,50 @@ float FakeFloatTransition::GetValue(base::TimeDelta time) const {
   return (1.0 - progress) * from_ + progress * to_;
 }
 
+gfx::ScrollOffset FakeLayerAnimationValueProvider::ScrollOffsetForAnimation()
+    const {
+  return scroll_offset_;
+}
+
 FakeLayerAnimationValueObserver::FakeLayerAnimationValueObserver()
-    : opacity_(0.0f),
-      animation_waiting_for_deletion_(false),
-      transform_is_animating_(false) {}
+    : animation_waiting_for_deletion_(false) {
+  opacity_[ToIndex(LayerTreeType::ACTIVE)] = 0.0f;
+  opacity_[ToIndex(LayerTreeType::PENDING)] = 0.0f;
+
+  transform_is_animating_[ToIndex(LayerTreeType::ACTIVE)] = false;
+  transform_is_animating_[ToIndex(LayerTreeType::PENDING)] = false;
+}
 
 FakeLayerAnimationValueObserver::~FakeLayerAnimationValueObserver() {}
 
-void FakeLayerAnimationValueObserver::OnFilterAnimated(
-    const FilterOperations& filters) {
-  filters_ = filters;
+int FakeLayerAnimationValueObserver::ToIndex(LayerTreeType tree_type) {
+  int index = static_cast<int>(tree_type);
+  DCHECK_GE(index, 0);
+  DCHECK_LE(index, 1);
+  return index;
 }
 
-void FakeLayerAnimationValueObserver::OnOpacityAnimated(float opacity) {
-  opacity_ = opacity;
+void FakeLayerAnimationValueObserver::OnFilterAnimated(
+    LayerTreeType tree_type,
+    const FilterOperations& filters) {
+  filters_[ToIndex(tree_type)] = filters;
+}
+
+void FakeLayerAnimationValueObserver::OnOpacityAnimated(LayerTreeType tree_type,
+                                                        float opacity) {
+  opacity_[ToIndex(tree_type)] = opacity;
 }
 
 void FakeLayerAnimationValueObserver::OnTransformAnimated(
+    LayerTreeType tree_type,
     const gfx::Transform& transform) {
-  transform_ = transform;
+  transform_[ToIndex(tree_type)] = transform;
 }
 
 void FakeLayerAnimationValueObserver::OnScrollOffsetAnimated(
+    LayerTreeType tree_type,
     const gfx::ScrollOffset& scroll_offset) {
-  scroll_offset_ = scroll_offset;
+  scroll_offset_[ToIndex(tree_type)] = scroll_offset;
 }
 
 void FakeLayerAnimationValueObserver::OnAnimationWaitingForDeletion() {
@@ -242,21 +262,9 @@ void FakeLayerAnimationValueObserver::OnAnimationWaitingForDeletion() {
 }
 
 void FakeLayerAnimationValueObserver::OnTransformIsPotentiallyAnimatingChanged(
+    LayerTreeType tree_type,
     bool is_animating) {
-  transform_is_animating_ = is_animating;
-}
-
-bool FakeLayerAnimationValueObserver::IsActive() const {
-  return true;
-}
-
-bool FakeInactiveLayerAnimationValueObserver::IsActive() const {
-  return false;
-}
-
-gfx::ScrollOffset FakeLayerAnimationValueProvider::ScrollOffsetForAnimation()
-    const {
-  return scroll_offset_;
+  transform_is_animating_[ToIndex(tree_type)] = is_animating;
 }
 
 std::unique_ptr<AnimationCurve> FakeFloatTransition::Clone() const {

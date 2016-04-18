@@ -40,8 +40,8 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   ElementAnimations* element_animations = player_->element_animations();
   EXPECT_TRUE(element_animations);
 
-  EXPECT_TRUE(element_animations->has_active_value_observer_for_testing());
-  EXPECT_FALSE(element_animations->has_pending_value_observer_for_testing());
+  EXPECT_TRUE(element_animations->needs_active_value_observations());
+  EXPECT_FALSE(element_animations->needs_pending_value_observations());
 
   host_->PushPropertiesTo(host_impl_);
 
@@ -51,16 +51,13 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
       player_impl_->element_animations();
   EXPECT_TRUE(element_animations_impl);
 
-  EXPECT_FALSE(
-      element_animations_impl->has_active_value_observer_for_testing());
-  EXPECT_TRUE(
-      element_animations_impl->has_pending_value_observer_for_testing());
+  EXPECT_FALSE(element_animations_impl->needs_active_value_observations());
+  EXPECT_TRUE(element_animations_impl->needs_pending_value_observations());
 
   // Create the layer in the impl active tree.
   client_impl_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
-  EXPECT_TRUE(element_animations_impl->has_active_value_observer_for_testing());
-  EXPECT_TRUE(
-      element_animations_impl->has_pending_value_observer_for_testing());
+  EXPECT_TRUE(element_animations_impl->needs_active_value_observations());
+  EXPECT_TRUE(element_animations_impl->needs_pending_value_observations());
 
   EXPECT_TRUE(client_impl_.IsLayerInTree(layer_id_, LayerTreeType::ACTIVE));
   EXPECT_TRUE(client_impl_.IsLayerInTree(layer_id_, LayerTreeType::PENDING));
@@ -68,38 +65,32 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   // kill layer on main thread.
   client_.UnregisterLayer(layer_id_, LayerTreeType::ACTIVE);
   EXPECT_EQ(element_animations, player_->element_animations());
-  EXPECT_FALSE(element_animations->has_active_value_observer_for_testing());
-  EXPECT_FALSE(element_animations->has_pending_value_observer_for_testing());
+  EXPECT_FALSE(element_animations->needs_active_value_observations());
+  EXPECT_FALSE(element_animations->needs_pending_value_observations());
 
   // Sync doesn't detach LayerImpl.
   host_->PushPropertiesTo(host_impl_);
   EXPECT_EQ(element_animations_impl, player_impl_->element_animations());
-  EXPECT_TRUE(element_animations_impl->has_active_value_observer_for_testing());
-  EXPECT_TRUE(
-      element_animations_impl->has_pending_value_observer_for_testing());
+  EXPECT_TRUE(element_animations_impl->needs_active_value_observations());
+  EXPECT_TRUE(element_animations_impl->needs_pending_value_observations());
 
   // Kill layer on impl thread in pending tree.
   client_impl_.UnregisterLayer(layer_id_, LayerTreeType::PENDING);
   EXPECT_EQ(element_animations_impl, player_impl_->element_animations());
-  EXPECT_TRUE(element_animations_impl->has_active_value_observer_for_testing());
-  EXPECT_FALSE(
-      element_animations_impl->has_pending_value_observer_for_testing());
+  EXPECT_TRUE(element_animations_impl->needs_active_value_observations());
+  EXPECT_FALSE(element_animations_impl->needs_pending_value_observations());
 
   // Kill layer on impl thread in active tree.
   client_impl_.UnregisterLayer(layer_id_, LayerTreeType::ACTIVE);
   EXPECT_EQ(element_animations_impl, player_impl_->element_animations());
-  EXPECT_FALSE(
-      element_animations_impl->has_active_value_observer_for_testing());
-  EXPECT_FALSE(
-      element_animations_impl->has_pending_value_observer_for_testing());
+  EXPECT_FALSE(element_animations_impl->needs_active_value_observations());
+  EXPECT_FALSE(element_animations_impl->needs_pending_value_observations());
 
   // Sync doesn't change anything.
   host_->PushPropertiesTo(host_impl_);
   EXPECT_EQ(element_animations_impl, player_impl_->element_animations());
-  EXPECT_FALSE(
-      element_animations_impl->has_active_value_observer_for_testing());
-  EXPECT_FALSE(
-      element_animations_impl->has_pending_value_observer_for_testing());
+  EXPECT_FALSE(element_animations_impl->needs_active_value_observations());
+  EXPECT_FALSE(element_animations_impl->needs_pending_value_observations());
 
   player_->DetachLayer();
   EXPECT_FALSE(player_->element_animations());
@@ -121,8 +112,8 @@ TEST_F(ElementAnimationsTest, AttachToNotYetCreatedLayer) {
   ElementAnimations* element_animations = player_->element_animations();
   EXPECT_TRUE(element_animations);
 
-  EXPECT_FALSE(element_animations->has_active_value_observer_for_testing());
-  EXPECT_FALSE(element_animations->has_pending_value_observer_for_testing());
+  EXPECT_FALSE(element_animations->needs_active_value_observations());
+  EXPECT_FALSE(element_animations->needs_pending_value_observations());
 
   host_->PushPropertiesTo(host_impl_);
 
@@ -130,26 +121,21 @@ TEST_F(ElementAnimationsTest, AttachToNotYetCreatedLayer) {
       player_impl_->element_animations();
   EXPECT_TRUE(element_animations_impl);
 
-  EXPECT_FALSE(
-      element_animations_impl->has_active_value_observer_for_testing());
-  EXPECT_FALSE(
-      element_animations_impl->has_pending_value_observer_for_testing());
+  EXPECT_FALSE(element_animations_impl->needs_active_value_observations());
+  EXPECT_FALSE(element_animations_impl->needs_pending_value_observations());
 
   // Create layer.
   client_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
-  EXPECT_TRUE(element_animations->has_active_value_observer_for_testing());
-  EXPECT_FALSE(element_animations->has_pending_value_observer_for_testing());
+  EXPECT_TRUE(element_animations->needs_active_value_observations());
+  EXPECT_FALSE(element_animations->needs_pending_value_observations());
 
   client_impl_.RegisterLayer(layer_id_, LayerTreeType::PENDING);
-  EXPECT_FALSE(
-      element_animations_impl->has_active_value_observer_for_testing());
-  EXPECT_TRUE(
-      element_animations_impl->has_pending_value_observer_for_testing());
+  EXPECT_FALSE(element_animations_impl->needs_active_value_observations());
+  EXPECT_TRUE(element_animations_impl->needs_pending_value_observations());
 
   client_impl_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
-  EXPECT_TRUE(element_animations_impl->has_active_value_observer_for_testing());
-  EXPECT_TRUE(
-      element_animations_impl->has_pending_value_observer_for_testing());
+  EXPECT_TRUE(element_animations_impl->needs_active_value_observations());
+  EXPECT_TRUE(element_animations_impl->needs_pending_value_observations());
 }
 
 TEST_F(ElementAnimationsTest, AddRemovePlayers) {

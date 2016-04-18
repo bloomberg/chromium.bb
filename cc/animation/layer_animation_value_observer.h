@@ -6,6 +6,7 @@
 #define CC_ANIMATION_LAYER_ANIMATION_VALUE_OBSERVER_H_
 
 #include "cc/base/cc_export.h"
+#include "cc/trees/mutator_host_client.h"
 
 namespace gfx {
 class ScrollOffset;
@@ -20,14 +21,17 @@ class CC_EXPORT LayerAnimationValueObserver {
  public:
   virtual ~LayerAnimationValueObserver() {}
 
-  virtual void OnFilterAnimated(const FilterOperations& filters) = 0;
-  virtual void OnOpacityAnimated(float opacity) = 0;
-  virtual void OnTransformAnimated(const gfx::Transform& transform) = 0;
+  virtual void OnFilterAnimated(LayerTreeType tree_type,
+                                const FilterOperations& filters) = 0;
+  virtual void OnOpacityAnimated(LayerTreeType tree_type, float opacity) = 0;
+  virtual void OnTransformAnimated(LayerTreeType tree_type,
+                                   const gfx::Transform& transform) = 0;
   virtual void OnScrollOffsetAnimated(
+      LayerTreeType tree_type,
       const gfx::ScrollOffset& scroll_offset) = 0;
   virtual void OnAnimationWaitingForDeletion() = 0;
-  virtual void OnTransformIsPotentiallyAnimatingChanged(bool is_animating) = 0;
-  virtual bool IsActive() const = 0;
+  virtual void OnTransformIsPotentiallyAnimatingChanged(LayerTreeType tree_type,
+                                                        bool is_animating) = 0;
 };
 
 }  // namespace cc

@@ -81,39 +81,48 @@ class FakeLayerAnimationValueObserver : public LayerAnimationValueObserver {
   FakeLayerAnimationValueObserver();
   ~FakeLayerAnimationValueObserver() override;
 
-  // LayerAnimationValueObserver implementation
-  void OnFilterAnimated(const FilterOperations& filters) override;
-  void OnOpacityAnimated(float opacity) override;
-  void OnTransformAnimated(const gfx::Transform& transform) override;
-  void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override;
+  // LayerAnimationValueObserver implementation.
+  void OnFilterAnimated(LayerTreeType tree_type,
+                        const FilterOperations& filters) override;
+  void OnOpacityAnimated(LayerTreeType tree_type, float opacity) override;
+  void OnTransformAnimated(LayerTreeType tree_type,
+                           const gfx::Transform& transform) override;
+  void OnScrollOffsetAnimated(LayerTreeType tree_type,
+                              const gfx::ScrollOffset& scroll_offset) override;
   void OnAnimationWaitingForDeletion() override;
-  void OnTransformIsPotentiallyAnimatingChanged(bool is_animating) override;
-  bool IsActive() const override;
+  void OnTransformIsPotentiallyAnimatingChanged(LayerTreeType tree_type,
+                                                bool is_animating) override;
 
-  const FilterOperations& filters() const { return filters_; }
-  float opacity() const  { return opacity_; }
-  const gfx::Transform& transform() const { return transform_; }
-  gfx::ScrollOffset scroll_offset() { return scroll_offset_; }
+  const FilterOperations& filters(LayerTreeType tree_type) const {
+    return filters_[ToIndex(tree_type)];
+  }
+  float opacity(LayerTreeType tree_type) const {
+    return opacity_[ToIndex(tree_type)];
+  }
+  const gfx::Transform& transform(LayerTreeType tree_type) const {
+    return transform_[ToIndex(tree_type)];
+  }
+  gfx::ScrollOffset scroll_offset(LayerTreeType tree_type) {
+    return scroll_offset_[ToIndex(tree_type)];
+  }
 
   bool animation_waiting_for_deletion() {
     return animation_waiting_for_deletion_;
   }
 
-  bool transform_is_animating() { return transform_is_animating_; }
+  bool transform_is_animating(LayerTreeType tree_type) {
+    return transform_is_animating_[ToIndex(tree_type)];
+  }
 
  private:
-  FilterOperations filters_;
-  float opacity_;
-  gfx::Transform transform_;
-  gfx::ScrollOffset scroll_offset_;
-  bool animation_waiting_for_deletion_;
-  bool transform_is_animating_;
-};
+  static int ToIndex(LayerTreeType tree_type);
 
-class FakeInactiveLayerAnimationValueObserver
-    : public FakeLayerAnimationValueObserver {
- public:
-  bool IsActive() const override;
+  FilterOperations filters_[2];
+  float opacity_[2];
+  gfx::Transform transform_[2];
+  gfx::ScrollOffset scroll_offset_[2];
+  bool animation_waiting_for_deletion_;
+  bool transform_is_animating_[2];
 };
 
 class FakeLayerAnimationValueProvider : public LayerAnimationValueProvider {

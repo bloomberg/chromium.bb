@@ -8,53 +8,9 @@
 #include "base/memory/ptr_util.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_player.h"
-#include "cc/animation/layer_animation_value_observer.h"
 #include "cc/trees/mutator_host_client.h"
 
 namespace cc {
-
-class ElementAnimations::ValueObserver : public LayerAnimationValueObserver {
- public:
-  ValueObserver(ElementAnimations* element_animation, LayerTreeType tree_type)
-      : element_animations_(element_animation), tree_type_(tree_type) {
-    DCHECK(element_animations_);
-  }
-
-  // LayerAnimationValueObserver implementation.
-  void OnFilterAnimated(const FilterOperations& filters) override {
-    element_animations_->SetFilterMutated(tree_type_, filters);
-  }
-
-  void OnOpacityAnimated(float opacity) override {
-    element_animations_->SetOpacityMutated(tree_type_, opacity);
-  }
-
-  void OnTransformAnimated(const gfx::Transform& transform) override {
-    element_animations_->SetTransformMutated(tree_type_, transform);
-  }
-
-  void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override {
-    element_animations_->SetScrollOffsetMutated(tree_type_, scroll_offset);
-  }
-
-  void OnAnimationWaitingForDeletion() override {
-    // TODO(loyso): See Layer::OnAnimationWaitingForDeletion. But we always do
-    // PushProperties for AnimationTimelines for now.
-  }
-
-  void OnTransformIsPotentiallyAnimatingChanged(bool is_animating) override {
-    element_animations_->SetTransformIsPotentiallyAnimatingChanged(
-        tree_type_, is_animating);
-  }
-
-  bool IsActive() const override { return tree_type_ == LayerTreeType::ACTIVE; }
-
- private:
-  ElementAnimations* element_animations_;
-  const LayerTreeType tree_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(ValueObserver);
-};
 
 std::unique_ptr<ElementAnimations> ElementAnimations::Create(
     AnimationHost* host) {
@@ -79,6 +35,7 @@ void ElementAnimations::CreateLayerAnimationController(int layer_id) {
       animation_host_->GetAnimationControllerForId(layer_id);
   layer_animation_controller_->SetAnimationHost(animation_host_);
   layer_animation_controller_->set_layer_animation_delegate(this);
+  layer_animation_controller_->set_value_observer(this);
   layer_animation_controller_->set_value_provider(this);
 
   DCHECK(animation_host_->mutator_host_client());
@@ -93,16 +50,17 @@ void ElementAnimations::CreateLayerAnimationController(int layer_id) {
 void ElementAnimations::DestroyLayerAnimationController() {
   DCHECK(animation_host_);
 
-  if (active_value_observer_)
-    SetTransformIsPotentiallyAnimatingChanged(LayerTreeType::ACTIVE, false);
-  if (pending_value_observer_)
-    SetTransformIsPotentiallyAnimatingChanged(LayerTreeType::PENDING, false);
+  if (needs_active_value_observations())
+    OnTransformIsPotentiallyAnimatingChanged(LayerTreeType::ACTIVE, false);
+  if (needs_pending_value_observations())
+    OnTransformIsPotentiallyAnimatingChanged(LayerTreeType::PENDING, false);
 
   DestroyPendingValueObserver();
   DestroyActiveValueObserver();
 
   if (layer_animation_controller_) {
     layer_animation_controller_->remove_value_provider(this);
+    layer_animation_controller_->set_value_observer(nullptr);
     layer_animation_controller_->remove_layer_animation_delegate(this);
     layer_animation_controller_->SetAnimationHost(nullptr);
     layer_animation_controller_ = nullptr;
@@ -113,13 +71,10 @@ void ElementAnimations::LayerRegistered(int layer_id, LayerTreeType tree_type) {
   DCHECK(layer_animation_controller_);
   DCHECK_EQ(layer_animation_controller_->id(), layer_id);
 
-  if (tree_type == LayerTreeType::ACTIVE) {
-    if (!active_value_observer_)
-      CreateActiveValueObserver();
-  } else {
-    if (!pending_value_observer_)
-      CreatePendingValueObserver();
-  }
+  if (tree_type == LayerTreeType::ACTIVE)
+    layer_animation_controller_->set_needs_active_value_observations(true);
+  else
+    layer_animation_controller_->set_needs_pending_value_observations(true);
 }
 
 void ElementAnimations::LayerUnregistered(int layer_id,
@@ -198,7 +153,7 @@ void ElementAnimations::RemoveEventObserver(
   layer_animation_controller_->RemoveEventObserver(observer);
 }
 
-void ElementAnimations::SetFilterMutated(LayerTreeType tree_type,
+void ElementAnimations::OnFilterAnimated(LayerTreeType tree_type,
                                          const FilterOperations& filters) {
   DCHECK(layer_id());
   DCHECK(animation_host());
@@ -207,7 +162,7 @@ void ElementAnimations::SetFilterMutated(LayerTreeType tree_type,
       layer_id(), tree_type, filters);
 }
 
-void ElementAnimations::SetOpacityMutated(LayerTreeType tree_type,
+void ElementAnimations::OnOpacityAnimated(LayerTreeType tree_type,
                                           float opacity) {
   DCHECK(layer_id());
   DCHECK(animation_host());
@@ -216,7 +171,7 @@ void ElementAnimations::SetOpacityMutated(LayerTreeType tree_type,
       layer_id(), tree_type, opacity);
 }
 
-void ElementAnimations::SetTransformMutated(LayerTreeType tree_type,
+void ElementAnimations::OnTransformAnimated(LayerTreeType tree_type,
                                             const gfx::Transform& transform) {
   DCHECK(layer_id());
   DCHECK(animation_host());
@@ -225,7 +180,7 @@ void ElementAnimations::SetTransformMutated(LayerTreeType tree_type,
       layer_id(), tree_type, transform);
 }
 
-void ElementAnimations::SetScrollOffsetMutated(
+void ElementAnimations::OnScrollOffsetAnimated(
     LayerTreeType tree_type,
     const gfx::ScrollOffset& scroll_offset) {
   DCHECK(layer_id());
@@ -235,7 +190,12 @@ void ElementAnimations::SetScrollOffsetMutated(
       layer_id(), tree_type, scroll_offset);
 }
 
-void ElementAnimations::SetTransformIsPotentiallyAnimatingChanged(
+void ElementAnimations::OnAnimationWaitingForDeletion() {
+  // TODO(loyso): See Layer::OnAnimationWaitingForDeletion. But we always do
+  // PushProperties for AnimationTimelines for now.
+}
+
+void ElementAnimations::OnTransformIsPotentiallyAnimatingChanged(
     LayerTreeType tree_type,
     bool is_animating) {
   DCHECK(layer_id());
@@ -249,32 +209,24 @@ void ElementAnimations::SetTransformIsPotentiallyAnimatingChanged(
 
 void ElementAnimations::CreateActiveValueObserver() {
   DCHECK(layer_animation_controller_);
-  DCHECK(!active_value_observer_);
-  active_value_observer_ =
-      base::WrapUnique(new ValueObserver(this, LayerTreeType::ACTIVE));
-  layer_animation_controller_->AddValueObserver(active_value_observer_.get());
+  DCHECK(!needs_active_value_observations());
+  layer_animation_controller_->set_needs_active_value_observations(true);
 }
 
 void ElementAnimations::DestroyActiveValueObserver() {
-  if (layer_animation_controller_ && active_value_observer_)
-    layer_animation_controller_->RemoveValueObserver(
-        active_value_observer_.get());
-  active_value_observer_ = nullptr;
+  if (layer_animation_controller_)
+    layer_animation_controller_->set_needs_active_value_observations(false);
 }
 
 void ElementAnimations::CreatePendingValueObserver() {
   DCHECK(layer_animation_controller_);
-  DCHECK(!pending_value_observer_);
-  pending_value_observer_ =
-      base::WrapUnique(new ValueObserver(this, LayerTreeType::PENDING));
-  layer_animation_controller_->AddValueObserver(pending_value_observer_.get());
+  DCHECK(!needs_pending_value_observations());
+  layer_animation_controller_->set_needs_pending_value_observations(true);
 }
 
 void ElementAnimations::DestroyPendingValueObserver() {
-  if (layer_animation_controller_ && pending_value_observer_)
-    layer_animation_controller_->RemoveValueObserver(
-        pending_value_observer_.get());
-  pending_value_observer_ = nullptr;
+  if (layer_animation_controller_)
+    layer_animation_controller_->set_needs_pending_value_observations(false);
 }
 
 void ElementAnimations::NotifyAnimationStarted(

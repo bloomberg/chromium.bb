@@ -28,8 +28,11 @@ LayerAnimationController::LayerAnimationController(int id)
     : host_(0),
       id_(id),
       is_active_(false),
+      value_observer_(nullptr),
       value_provider_(nullptr),
       layer_animation_delegate_(nullptr),
+      needs_active_value_observations_(false),
+      needs_pending_value_observations_(false),
       needs_to_start_animations_(false),
       scroll_offset_animation_was_interrupted_(false),
       potentially_animating_transform_for_active_observers_(false),
@@ -483,17 +486,6 @@ void LayerAnimationController::NotifyAnimationPropertyUpdate(
     default:
       NOTREACHED();
   }
-}
-
-void LayerAnimationController::AddValueObserver(
-    LayerAnimationValueObserver* observer) {
-  if (!value_observers_.HasObserver(observer))
-    value_observers_.AddObserver(observer);
-}
-
-void LayerAnimationController::RemoveValueObserver(
-    LayerAnimationValueObserver* observer) {
-  value_observers_.RemoveObserver(observer);
 }
 
 void LayerAnimationController::AddEventObserver(
@@ -1182,114 +1174,84 @@ void LayerAnimationController::NotifyObserversOpacityAnimated(
     float opacity,
     bool notify_active_observers,
     bool notify_pending_observers) {
-  if (value_observers_.might_have_observers()) {
-    base::ObserverListBase<LayerAnimationValueObserver>::Iterator it(
-        &value_observers_);
-    LayerAnimationValueObserver* obs;
-    while ((obs = it.GetNext()) != nullptr) {
-      if ((notify_active_observers && notify_pending_observers) ||
-          (notify_active_observers && obs->IsActive()) ||
-          (notify_pending_observers && !obs->IsActive()))
-        obs->OnOpacityAnimated(opacity);
-    }
-  }
+  if (!value_observer_)
+    return;
+  if (notify_active_observers && needs_active_value_observations())
+    value_observer_->OnOpacityAnimated(LayerTreeType::ACTIVE, opacity);
+  if (notify_pending_observers && needs_pending_value_observations())
+    value_observer_->OnOpacityAnimated(LayerTreeType::PENDING, opacity);
 }
 
 void LayerAnimationController::NotifyObserversTransformAnimated(
     const gfx::Transform& transform,
     bool notify_active_observers,
     bool notify_pending_observers) {
-  if (value_observers_.might_have_observers()) {
-    base::ObserverListBase<LayerAnimationValueObserver>::Iterator it(
-        &value_observers_);
-    LayerAnimationValueObserver* obs;
-    while ((obs = it.GetNext()) != nullptr) {
-      if ((notify_active_observers && notify_pending_observers) ||
-          (notify_active_observers && obs->IsActive()) ||
-          (notify_pending_observers && !obs->IsActive()))
-        obs->OnTransformAnimated(transform);
-    }
-  }
+  if (!value_observer_)
+    return;
+  if (notify_active_observers && needs_active_value_observations())
+    value_observer_->OnTransformAnimated(LayerTreeType::ACTIVE, transform);
+  if (notify_pending_observers && needs_pending_value_observations())
+    value_observer_->OnTransformAnimated(LayerTreeType::PENDING, transform);
 }
 
 void LayerAnimationController::NotifyObserversFilterAnimated(
     const FilterOperations& filters,
     bool notify_active_observers,
     bool notify_pending_observers) {
-  if (value_observers_.might_have_observers()) {
-    base::ObserverListBase<LayerAnimationValueObserver>::Iterator it(
-        &value_observers_);
-    LayerAnimationValueObserver* obs;
-    while ((obs = it.GetNext()) != nullptr) {
-      if ((notify_active_observers && notify_pending_observers) ||
-          (notify_active_observers && obs->IsActive()) ||
-          (notify_pending_observers && !obs->IsActive()))
-        obs->OnFilterAnimated(filters);
-    }
-  }
+  if (!value_observer_)
+    return;
+  if (notify_active_observers && needs_active_value_observations())
+    value_observer_->OnFilterAnimated(LayerTreeType::ACTIVE, filters);
+  if (notify_pending_observers && needs_pending_value_observations())
+    value_observer_->OnFilterAnimated(LayerTreeType::PENDING, filters);
 }
 
 void LayerAnimationController::NotifyObserversScrollOffsetAnimated(
     const gfx::ScrollOffset& scroll_offset,
     bool notify_active_observers,
     bool notify_pending_observers) {
-  if (value_observers_.might_have_observers()) {
-    base::ObserverListBase<LayerAnimationValueObserver>::Iterator it(
-        &value_observers_);
-    LayerAnimationValueObserver* obs;
-    while ((obs = it.GetNext()) != nullptr) {
-      if ((notify_active_observers && notify_pending_observers) ||
-          (notify_active_observers && obs->IsActive()) ||
-          (notify_pending_observers && !obs->IsActive()))
-        obs->OnScrollOffsetAnimated(scroll_offset);
-    }
-  }
+  if (!value_observer_)
+    return;
+  if (notify_active_observers && needs_active_value_observations())
+    value_observer_->OnScrollOffsetAnimated(LayerTreeType::ACTIVE,
+                                            scroll_offset);
+  if (notify_pending_observers && needs_pending_value_observations())
+    value_observer_->OnScrollOffsetAnimated(LayerTreeType::PENDING,
+                                            scroll_offset);
 }
 
 void LayerAnimationController::NotifyObserversAnimationWaitingForDeletion() {
-  FOR_EACH_OBSERVER(LayerAnimationValueObserver,
-                    value_observers_,
-                    OnAnimationWaitingForDeletion());
+  if (value_observer_)
+    value_observer_->OnAnimationWaitingForDeletion();
 }
 
 void LayerAnimationController::
     NotifyObserversTransformIsPotentiallyAnimatingChanged(
         bool notify_active_observers,
         bool notify_pending_observers) {
-  if (value_observers_.might_have_observers()) {
-    base::ObserverListBase<LayerAnimationValueObserver>::Iterator it(
-        &value_observers_);
-    LayerAnimationValueObserver* obs;
-    while ((obs = it.GetNext()) != nullptr) {
-      if (notify_active_observers && obs->IsActive())
-        obs->OnTransformIsPotentiallyAnimatingChanged(
-            potentially_animating_transform_for_active_observers_);
-      else if (notify_pending_observers && !obs->IsActive())
-        obs->OnTransformIsPotentiallyAnimatingChanged(
-            potentially_animating_transform_for_pending_observers_);
-    }
-  }
+  if (!value_observer_)
+    return;
+  if (notify_active_observers && needs_active_value_observations())
+    value_observer_->OnTransformIsPotentiallyAnimatingChanged(
+        LayerTreeType::ACTIVE,
+        potentially_animating_transform_for_active_observers_);
+  if (notify_pending_observers && needs_pending_value_observations())
+    value_observer_->OnTransformIsPotentiallyAnimatingChanged(
+        LayerTreeType::PENDING,
+        potentially_animating_transform_for_pending_observers_);
 }
 
 bool LayerAnimationController::HasValueObserver() {
-  if (value_observers_.might_have_observers()) {
-    base::ObserverListBase<LayerAnimationValueObserver>::Iterator it(
-        &value_observers_);
-    return it.GetNext() != nullptr;
-  }
-  return false;
+  if (!value_observer_)
+    return false;
+  return needs_active_value_observations() ||
+         needs_pending_value_observations();
 }
 
 bool LayerAnimationController::HasActiveValueObserver() {
-  if (value_observers_.might_have_observers()) {
-    base::ObserverListBase<LayerAnimationValueObserver>::Iterator it(
-        &value_observers_);
-    LayerAnimationValueObserver* obs;
-    while ((obs = it.GetNext()) != nullptr)
-      if (obs->IsActive())
-        return true;
-  }
-  return false;
+  if (!value_observer_)
+    return false;
+  return needs_active_value_observations();
 }
 
 }  // namespace cc
