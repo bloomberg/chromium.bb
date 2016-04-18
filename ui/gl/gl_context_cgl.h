@@ -8,6 +8,7 @@
 #include <OpenGL/CGLTypes.h>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gl/gl_context.h"
 
 namespace gfx {
@@ -29,6 +30,7 @@ class GLContextCGL : public GLContextReal {
   void OnSetSwapInterval(int interval) override;
   void SetSafeToForceGpuSwitch() override;
   bool ForceGpuSwitchIfNeeded() override;
+  gl::YUVToRGBConverter* GetYUVToRGBConverter() override;
 
  protected:
   ~GLContextCGL() override;
@@ -39,6 +41,7 @@ class GLContextCGL : public GLContextReal {
 
   void* context_;
   GpuPreference gpu_preference_;
+  scoped_ptr<gl::YUVToRGBConverter> yuv_to_rgb_converter_;
 
   CGLPixelFormatObj discrete_pixelformat_;
 

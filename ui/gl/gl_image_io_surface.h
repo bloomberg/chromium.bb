@@ -87,10 +87,6 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   gfx::GenericSharedMemoryId io_surface_id_;
   base::ThreadChecker thread_checker_;
 
-  // GL state to support 420v IOSurface conversion to RGB. This is retained
-  // to avoid re-creating the necessary GL programs every frame.
-  scoped_refptr<RGBConverter> rgb_converter_;
-
   DISALLOW_COPY_AND_ASSIGN(GLImageIOSurface);
 };
 

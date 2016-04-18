@@ -92,6 +92,10 @@ std::string GLContext::GetGLRenderer() {
   return std::string(renderer ? renderer : "");
 }
 
+gl::YUVToRGBConverter* GLContext::GetYUVToRGBConverter() {
+  return nullptr;
+}
+
 bool GLContext::HasExtension(const char* name) {
   std::string extensions = GetExtensions();
   extensions += " ";

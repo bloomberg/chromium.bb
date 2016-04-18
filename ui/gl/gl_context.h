@@ -17,6 +17,10 @@
 #include "ui/gl/gl_state_restorer.h"
 #include "ui/gl/gpu_preference.h"
 
+namespace gl {
+class YUVToRGBConverter;
+}  // namespace gl
+
 namespace gpu {
 class GLContextVirtual;
 }  // namespace gpu
@@ -28,7 +32,6 @@ class GPUTiming;
 class GPUTimingClient;
 class VirtualGLApi;
 struct GLVersionInfo;
-
 
 // Encapsulates an OpenGL context, hiding platform specific management.
 class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
@@ -126,6 +129,9 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   // Returns the GL renderer string. The context must be current.
   virtual std::string GetGLRenderer();
+
+  // Returns a helper structure to convert YUV textures to RGB textures.
+  virtual gl::YUVToRGBConverter* GetYUVToRGBConverter();
 
  protected:
   virtual ~GLContext();

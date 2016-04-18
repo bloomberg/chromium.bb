@@ -243,6 +243,8 @@
             'gl_image_io_surface.h',
             'scoped_cgl.cc',
             'scoped_cgl.h',
+            'yuv_to_rgb_converter.cc',
+            'yuv_to_rgb_converter.h',
           ],
           'link_settings': {
             'libraries': [

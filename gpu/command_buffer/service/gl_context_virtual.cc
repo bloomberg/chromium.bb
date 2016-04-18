@@ -106,6 +106,10 @@ void GLContextVirtual::SetUnbindFboOnMakeCurrent() {
   shared_context_->SetUnbindFboOnMakeCurrent();
 }
 
+gl::YUVToRGBConverter* GLContextVirtual::GetYUVToRGBConverter() {
+  return shared_context_->GetYUVToRGBConverter();
+}
+
 GLContextVirtual::~GLContextVirtual() {
   Destroy();
 }

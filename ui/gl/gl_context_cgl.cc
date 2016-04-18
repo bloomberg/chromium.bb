@@ -16,6 +16,8 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_switching_manager.h"
+#include "ui/gl/scoped_cgl.h"
+#include "ui/gl/yuv_to_rgb_converter.h"
 
 namespace gfx {
 
@@ -136,6 +138,10 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
 }
 
 void GLContextCGL::Destroy() {
+  if (yuv_to_rgb_converter_) {
+    gfx::ScopedCGLSetCurrentContext(static_cast<CGLContextObj>(context_));
+    yuv_to_rgb_converter_.reset();
+  }
   if (discrete_pixelformat_) {
     if (base::MessageLoop::current() != nullptr) {
       // Delay releasing the pixel format for 10 seconds to reduce the number of
@@ -193,6 +199,12 @@ bool GLContextCGL::ForceGpuSwitchIfNeeded() {
     }
   }
   return true;
+}
+
+gl::YUVToRGBConverter* GLContextCGL::GetYUVToRGBConverter() {
+  if (!yuv_to_rgb_converter_)
+    yuv_to_rgb_converter_.reset(new gl::YUVToRGBConverter);
+  return yuv_to_rgb_converter_.get();
 }
 
 bool GLContextCGL::MakeCurrent(GLSurface* surface) {
