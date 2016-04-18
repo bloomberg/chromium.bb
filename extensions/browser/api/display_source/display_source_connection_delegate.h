@@ -41,14 +41,14 @@ class DisplaySourceConnectionDelegate : public KeyedService {
 
     // Sends a control message to the connected sink.
     // If an error occurs 'Observer::OnConnectionError' is invoked.
-    virtual void SendMessage(const std::string& message) const = 0;
+    virtual void SendMessage(const std::string& message) = 0;
 
     // Sets a callback to receive control messages from the connected sink.
     // This method should only be called once in the lifetime of each
     // Connection object.
     // If an error occurs 'Observer::OnConnectionError' is invoked.
     virtual void SetMessageReceivedCallback(
-        const StringCallback& callback) const = 0;
+        const StringCallback& callback) = 0;
 
    protected:
     Connection();
@@ -90,7 +90,7 @@ class DisplaySourceConnectionDelegate : public KeyedService {
 
   // Returns the Connection object representing the current
   // connection to the sink or NULL if there is no current connection.
-  virtual const Connection* connection() const = 0;
+  virtual Connection* connection() = 0;
 
   // Queries the list of currently available sinks.
   virtual void GetAvailableSinks(const SinkInfoListCallback& sinks_callback,

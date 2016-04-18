@@ -7,8 +7,9 @@ var errorReported = false;
 var testStartSessionErrorReport = function() {
   function onSessionError(errorSinkId, errorMessage){
     chrome.test.assertEq(1, errorSinkId);
-    chrome.test.assertEq('timeout_error', errorMessage.type);
-    chrome.test.assertEq('Sink became unresponsive', errorMessage.description);
+    chrome.test.assertEq('media_pipeline_error', errorMessage.type);
+    chrome.test.assertEq('Failed to initialize media pipeline for the session',
+        errorMessage.description);
     errorReported = true;
   };
   chrome.displaySource.onSessionErrorOccured.addListener(onSessionError);
@@ -22,9 +23,23 @@ var testStartSessionErrorReport = function() {
 
   chrome.tabs.getCurrent(function(tab) {
     var sink_id = 1;
+
+    // If the test case does not provide height, width and frame properties,
+    // the captured stream is 640x480 30 fps by default.
+    // But WiFi Display requires 60 fps for this resolution.
+    // Thus, min and max frame rates should be explicitly defined.
+
+    var video_constraints = {
+          mandatory: {
+              minFrameRate: 60,
+              maxFrameRate: 60
+          }
+       };
+
     var constraints = {
         audio: false,
         video: true,
+        videoConstraints: video_constraints,
     };
 
     function onStream(stream) {
