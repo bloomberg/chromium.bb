@@ -245,6 +245,7 @@ void Args::SetSystemVarsLocked(Scope* dest) const {
   static const char kX86[] = "x86";
   static const char kX64[] = "x64";
   static const char kArm[] = "arm";
+  static const char kMips[] = "mipsel";
   const char* arch = nullptr;
 
   // Set the host CPU architecture based on the underlying OS, not
@@ -256,6 +257,8 @@ void Args::SetSystemVarsLocked(Scope* dest) const {
     arch = kX64;
   else if (os_arch.substr(3) == "arm")
     arch = kArm;
+  else if (os_arch == "mips")
+    arch = kMips;
   else
     CHECK(false) << "OS architecture not handled.";
 
