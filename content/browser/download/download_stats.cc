@@ -320,6 +320,21 @@ const base::FilePath::CharType* kDangerousFileTypes[] = {
   FILE_PATH_LITERAL(".zip"),
   FILE_PATH_LITERAL(".zipx"),
   FILE_PATH_LITERAL(".zpaq"),
+  FILE_PATH_LITERAL(".cdr"),
+  FILE_PATH_LITERAL(".dart"),
+  FILE_PATH_LITERAL(".dc42"),
+  FILE_PATH_LITERAL(".diskcopy42"),
+  FILE_PATH_LITERAL(".dmg"),
+  FILE_PATH_LITERAL(".dmgpart"),
+  FILE_PATH_LITERAL(".dvdr"),
+  FILE_PATH_LITERAL(".img"),
+  FILE_PATH_LITERAL(".imgpart"),
+  FILE_PATH_LITERAL(".ndif"),
+  FILE_PATH_LITERAL(".smi"),
+  FILE_PATH_LITERAL(".sparsebundle"),
+  FILE_PATH_LITERAL(".sparseimage"),
+  FILE_PATH_LITERAL(".toast"),
+  FILE_PATH_LITERAL(".udif"),
 };
 
 // Maps extensions to their matching UMA histogram int value.

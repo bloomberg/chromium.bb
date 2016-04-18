@@ -498,6 +498,23 @@ const struct FileType {
 
     // Automator Workflow.
     {"workflow", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
+    // Executable file extensions for Mac.
+    {"cdr", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"dart", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"dc42", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"diskcopy42", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"dmg", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"dmgpart", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"dvdr", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"img", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"imgpart", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"ndif", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"smi", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"sparsebundle", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"sparseimage", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"toast", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"udif", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 #endif
 
   // Package management formats. OS_WIN package formats are handled above.

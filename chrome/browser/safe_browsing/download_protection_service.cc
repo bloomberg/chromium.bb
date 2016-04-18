@@ -355,7 +355,31 @@ class DownloadProtectionService::CheckClientDownloadRequest
                item_->GetTargetFilePath().MatchesExtension(
                    FILE_PATH_LITERAL(".iso")) ||
                item_->GetTargetFilePath().MatchesExtension(
-                   FILE_PATH_LITERAL(".smi"))) {
+                   FILE_PATH_LITERAL(".smi")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".cdr")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".dart")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".dc42")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".diskcopy42")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".dmgpart")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".dvdr")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".imgpart")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".ndif")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".sparsebundle")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".sparseimage")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".toast")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".udif"))) {
       StartExtractDmgFeatures();
 #endif
     } else {

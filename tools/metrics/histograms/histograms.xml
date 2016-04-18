@@ -65922,6 +65922,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="244" label="zip"/>
   <int value="245" label="zipx"/>
   <int value="246" label="zpaq"/>
+  <int value="247" label="cdr"/>
+  <int value="248" label="dart"/>
+  <int value="249" label="dc42"/>
+  <int value="250" label="diskcopy42"/>
+  <int value="251" label="dmg"/>
+  <int value="252" label="dmgpart"/>
+  <int value="253" label="dvdr"/>
+  <int value="254" label="img"/>
+  <int value="255" label="imgpart"/>
+  <int value="256" label="ndif"/>
+  <int value="257" label="smi"/>
+  <int value="258" label="sparsebundle"/>
+  <int value="259" label="sparseimage"/>
+  <int value="260" label="toast"/>
+  <int value="261" label="udif"/>
 </enum>
 
 <enum name="DownloadItem.DangerType" type="int">
@@ -82697,6 +82712,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="246" label="SEARCH_MS"/>
   <int value="247" label="IMG"/>
   <int value="248" label="SMI"/>
+  <int value="249" label="SPARSEBUNDLE"/>
+  <int value="250" label="SPARSEIMAGE"/>
+  <int value="251" label="CDR"/>
+  <int value="252" label="DMGPART"/>
+  <int value="253" label="DVDR"/>
+  <int value="254" label="DART"/>
+  <int value="255" label="DC42"/>
+  <int value="256" label="DISKCOPY42"/>
+  <int value="257" label="IMGPART"/>
+  <int value="258" label="NDIF"/>
+  <int value="259" label="UDIF"/>
+  <int value="260" label="TOAST"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary" type="int">

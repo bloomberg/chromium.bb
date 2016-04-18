@@ -270,7 +270,18 @@ enum SBClientDownloadExtensions {
   EXTENSION_SEARCH_MS,
   EXTENSION_IMG,
   EXTENSION_SMI,
-
+  EXTENSION_SPARSEBUNDLE,
+  EXTENSION_SPARSEIMAGE,
+  EXTENSION_CDR,
+  EXTENSION_DMGPART,
+  EXTENSION_DVDR,
+  EXTENSION_DART,
+  EXTENSION_DC42,
+  EXTENSION_DISKCOPY42,
+  EXTENSION_IMGPART,
+  EXTENSION_NDIF,
+  EXTENSION_UDIF,
+  EXTENSION_TOAST,
   // New values go above this one.
   EXTENSION_MAX
 };
@@ -309,6 +320,7 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".bz2"), EXTENSION_BZ2, true, true},
     {FILE_PATH_LITERAL(".bzip2"), EXTENSION_BZIP2, true, true},
     {FILE_PATH_LITERAL(".cab"), EXTENSION_CAB, true, true},
+    {FILE_PATH_LITERAL(".cdr"), EXTENSION_CDR, true, false},
     {FILE_PATH_LITERAL(".cfg"), EXTENSION_CFG, true, false},
     {FILE_PATH_LITERAL(".chi"), EXTENSION_CHI, true, false},
     {FILE_PATH_LITERAL(".chm"), EXTENSION_CHM, true, false},
@@ -321,11 +333,16 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".crt"), EXTENSION_CRT, true, false},
     {FILE_PATH_LITERAL(".crx"), EXTENSION_CRX, true, false},
     {FILE_PATH_LITERAL(".csh"), EXTENSION_CSH, true, false},
+    {FILE_PATH_LITERAL(".dart"), EXTENSION_DART, true, false},
+    {FILE_PATH_LITERAL(".dc42"), EXTENSION_DC42, true, false},
     {FILE_PATH_LITERAL(".deb"), EXTENSION_DEB, true, false},
     {FILE_PATH_LITERAL(".dex"), EXTENSION_DEX, true, false},
+    {FILE_PATH_LITERAL(".diskcopy42"), EXTENSION_DISKCOPY42, true, false},
     {FILE_PATH_LITERAL(".dll"), EXTENSION_DLL, true, false},
     {FILE_PATH_LITERAL(".dmg"), EXTENSION_DMG, true, false},
+    {FILE_PATH_LITERAL(".dmgpart"), EXTENSION_DMGPART, true, false},
     {FILE_PATH_LITERAL(".drv"), EXTENSION_DRV, true, false},
+    {FILE_PATH_LITERAL(".dvdr"), EXTENSION_DVDR, true, false},
     {FILE_PATH_LITERAL(".efi"), EXTENSION_EFI, true, false},
     {FILE_PATH_LITERAL(".eml"), EXTENSION_EML, true, false},
     {FILE_PATH_LITERAL(".exe"), EXTENSION_EXE, true, false},
@@ -342,6 +359,7 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".hta"), EXTENSION_HTA, true, false},
     {FILE_PATH_LITERAL(".htt"), EXTENSION_HTT, true, false},
     {FILE_PATH_LITERAL(".img"), EXTENSION_IMG, true, false},
+    {FILE_PATH_LITERAL(".imgpart"), EXTENSION_IMGPART, true, false},
     {FILE_PATH_LITERAL(".inf"), EXTENSION_INF, true, false},
     {FILE_PATH_LITERAL(".ini"), EXTENSION_INI, true, false},
     {FILE_PATH_LITERAL(".ins"), EXTENSION_INS, true, false},
@@ -398,6 +416,7 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".msi"), EXTENSION_MSI, true, false},
     {FILE_PATH_LITERAL(".msp"), EXTENSION_MSP, true, false},
     {FILE_PATH_LITERAL(".mst"), EXTENSION_MST, true, false},
+    {FILE_PATH_LITERAL(".ndif"), EXTENSION_NDIF, true, false},
     {FILE_PATH_LITERAL(".ntfs"), EXTENSION_NTFS, true, true},
     {FILE_PATH_LITERAL(".ocx"), EXTENSION_OCX, true, false},
     {FILE_PATH_LITERAL(".ops"), EXTENSION_OPS, true, false},
@@ -478,6 +497,8 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".shs"), EXTENSION_SHS, true, false},
     {FILE_PATH_LITERAL(".slp"), EXTENSION_SLP, true, true},
     {FILE_PATH_LITERAL(".smi"), EXTENSION_SMI, true, false},
+    {FILE_PATH_LITERAL(".sparsebundle"), EXTENSION_SPARSEBUNDLE, true, false},
+    {FILE_PATH_LITERAL(".sparseimage"), EXTENSION_SPARSEIMAGE, true, false},
     {FILE_PATH_LITERAL(".spl"), EXTENSION_SPL, true, false},
     {FILE_PATH_LITERAL(".squashfs"), EXTENSION_SQUASHFS, true, true},
     {FILE_PATH_LITERAL(".svg"), EXTENSION_SVG, true, false},
@@ -490,12 +511,14 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".tbz2"), EXTENSION_TBZ2, true, true},
     {FILE_PATH_LITERAL(".tcsh"), EXTENSION_TCSH, true, false},
     {FILE_PATH_LITERAL(".tgz"), EXTENSION_TGZ, true, true},
+    {FILE_PATH_LITERAL(".toast"), EXTENSION_TOAST, true, false},
     {FILE_PATH_LITERAL(".torrent"), EXTENSION_TORRENT, true, false},
     {FILE_PATH_LITERAL(".tpz"), EXTENSION_TPZ, true, true},
     {FILE_PATH_LITERAL(".txz"), EXTENSION_TXZ, true, true},
     {FILE_PATH_LITERAL(".tz"), EXTENSION_TZ, true, true},
     {FILE_PATH_LITERAL(".u3p"), EXTENSION_U3P, false, false},  // UMA only.
     {FILE_PATH_LITERAL(".udf"), EXTENSION_UDF, true, true},
+    {FILE_PATH_LITERAL(".udif"), EXTENSION_UDIF, true, false},
     {FILE_PATH_LITERAL(".url"), EXTENSION_URL, true, false},
     {FILE_PATH_LITERAL(".uu"), EXTENSION_UU, true, true},
     {FILE_PATH_LITERAL(".uue"), EXTENSION_UUE, true, true},
@@ -601,7 +624,19 @@ ClientDownloadRequest::DownloadType GetDownloadType(
            file.MatchesExtension(FILE_PATH_LITERAL(".pkg")) ||
            file.MatchesExtension(FILE_PATH_LITERAL(".smi")) ||
            file.MatchesExtension(FILE_PATH_LITERAL(".osx")) ||
-           file.MatchesExtension(FILE_PATH_LITERAL(".app")))
+           file.MatchesExtension(FILE_PATH_LITERAL(".app")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".cdr")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".dmgpart")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".dvdr")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".dart")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".dc42")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".diskcopy42")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".imgpart")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".ndif")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".udif")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".toast")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".sparsebundle")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".sparseimage")))
     return ClientDownloadRequest::MAC_EXECUTABLE;
   else if (IsArchiveFile(file))
     return ClientDownloadRequest::ARCHIVE;
