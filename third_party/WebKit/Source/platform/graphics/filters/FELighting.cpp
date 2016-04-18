@@ -58,14 +58,14 @@ FloatRect FELighting::mapPaintRect(const FloatRect& rect, bool) const
     return result;
 }
 
-PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     if (!m_lightSource)
         return createTransparentBlack(builder);
 
     SkImageFilter::CropRect rect = getCropRect();
     Color lightColor = adaptColorToOperatingColorSpace(m_lightingColor);
-    RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
+    sk_sp<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
     switch (m_lightSource->type()) {
     case LS_DISTANT: {
         DistantLightSource* distantLightSource = static_cast<DistantLightSource*>(m_lightSource.get());
@@ -73,16 +73,16 @@ PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder& 
         float elevationRad = deg2rad(distantLightSource->elevation());
         const SkPoint3 direction = SkPoint3::Make(cosf(azimuthRad) * cosf(elevationRad), sinf(azimuthRad) * cosf(elevationRad), sinf(elevationRad));
         if (m_specularConstant > 0)
-            return adoptRef(SkLightingImageFilter::CreateDistantLitSpecular(direction, lightColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input.get(), &rect));
-        return adoptRef(SkLightingImageFilter::CreateDistantLitDiffuse(direction, lightColor.rgb(), m_surfaceScale, m_diffuseConstant, input.get(), &rect));
+            return SkLightingImageFilter::MakeDistantLitSpecular(direction, lightColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, std::move(input), &rect);
+        return SkLightingImageFilter::MakeDistantLitDiffuse(direction, lightColor.rgb(), m_surfaceScale, m_diffuseConstant, std::move(input), &rect);
     }
     case LS_POINT: {
         PointLightSource* pointLightSource = static_cast<PointLightSource*>(m_lightSource.get());
         const FloatPoint3D position = pointLightSource->position();
         const SkPoint3 skPosition = SkPoint3::Make(position.x(), position.y(), position.z());
         if (m_specularConstant > 0)
-            return adoptRef(SkLightingImageFilter::CreatePointLitSpecular(skPosition, lightColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input.get(), &rect));
-        return adoptRef(SkLightingImageFilter::CreatePointLitDiffuse(skPosition, lightColor.rgb(), m_surfaceScale, m_diffuseConstant, input.get(), &rect));
+            return SkLightingImageFilter::MakePointLitSpecular(skPosition, lightColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, std::move(input), &rect);
+        return SkLightingImageFilter::MakePointLitDiffuse(skPosition, lightColor.rgb(), m_surfaceScale, m_diffuseConstant, std::move(input), &rect);
     }
     case LS_SPOT: {
         SpotLightSource* spotLightSource = static_cast<SpotLightSource*>(m_lightSource.get());
@@ -93,8 +93,8 @@ PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder& 
         if (!limitingConeAngle || limitingConeAngle > 90 || limitingConeAngle < -90)
             limitingConeAngle = 90;
         if (m_specularConstant > 0)
-            return adoptRef(SkLightingImageFilter::CreateSpotLitSpecular(location, target, specularExponent, limitingConeAngle, lightColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input.get(), &rect));
-        return adoptRef(SkLightingImageFilter::CreateSpotLitDiffuse(location, target, specularExponent, limitingConeAngle, lightColor.rgb(), m_surfaceScale, m_diffuseConstant, input.get(), &rect));
+            return SkLightingImageFilter::MakeSpotLitSpecular(location, target, specularExponent, limitingConeAngle, lightColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, std::move(input), &rect);
+        return SkLightingImageFilter::MakeSpotLitDiffuse(location, target, specularExponent, limitingConeAngle, lightColor.rgb(), m_surfaceScale, m_diffuseConstant, std::move(input), &rect);
     }
     default:
         ASSERT_NOT_REACHED();

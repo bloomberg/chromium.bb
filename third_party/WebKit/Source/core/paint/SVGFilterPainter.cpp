@@ -50,7 +50,7 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
     m_paintController->commitNewDisplayItems();
     m_paintController->paintArtifact().replay(*context);
 
-    sourceGraphic->setPicture(context->endRecording());
+    sourceGraphic->setPicture(toSkSp(context->endRecording()));
 
     // Content is cached by the source graphic so temporaries can be freed.
     m_paintController = nullptr;
@@ -67,7 +67,7 @@ static void paintFilteredContent(const LayoutObject& object, GraphicsContext& co
     filterData->m_state = FilterData::PaintingFilter;
 
     SkiaImageFilterBuilder builder;
-    RefPtr<SkImageFilter> imageFilter = builder.build(filterData->filter->lastEffect(), ColorSpaceDeviceRGB);
+    sk_sp<SkImageFilter> imageFilter = builder.build(filterData->filter->lastEffect(), ColorSpaceDeviceRGB);
     FloatRect boundaries = filterData->filter->filterRegion();
     context.save();
 
@@ -90,11 +90,11 @@ static void paintFilteredContent(const LayoutObject& object, GraphicsContext& co
         AffineTransform shearAndRotate = scaleAndTranslate.inverse();
         shearAndRotate.multiply(ctm);
         context.concatCTM(shearAndRotate.inverse());
-        imageFilter = builder.buildTransform(shearAndRotate, imageFilter.get());
+        imageFilter = builder.buildTransform(shearAndRotate, std::move(imageFilter));
     }
 #endif
 
-    context.beginLayer(1, SkXfermode::kSrcOver_Mode, &boundaries, ColorFilterNone, imageFilter.get());
+    context.beginLayer(1, SkXfermode::kSrcOver_Mode, &boundaries, ColorFilterNone, std::move(imageFilter));
     context.endLayer();
     context.restore();
 

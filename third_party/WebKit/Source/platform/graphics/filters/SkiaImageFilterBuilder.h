@@ -48,14 +48,14 @@ class PLATFORM_EXPORT SkiaImageFilterBuilder {
 public:
     ~SkiaImageFilterBuilder();
 
-    PassRefPtr<SkImageFilter> build(FilterEffect*, ColorSpace, bool requiresPMColorValidation = true);
+    sk_sp<SkImageFilter> build(FilterEffect*, ColorSpace, bool requiresPMColorValidation = true);
     void buildFilterOperations(const FilterOperations&, CompositorFilterOperations*);
-    PassRefPtr<SkImageFilter> buildTransform(const AffineTransform&, SkImageFilter* input);
+    sk_sp<SkImageFilter> buildTransform(const AffineTransform&, sk_sp<SkImageFilter> input);
 
-    PassRefPtr<SkImageFilter> transformColorSpace(
-        SkImageFilter* input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);
+    sk_sp<SkImageFilter> transformColorSpace(
+        sk_sp<SkImageFilter> input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);
 
-    PassRefPtr<SkImageFilter> buildBoxReflectFilter(const BoxReflection&, PassRefPtr<SkImageFilter> input);
+    sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection&, sk_sp<SkImageFilter> input);
 };
 
 } // namespace blink

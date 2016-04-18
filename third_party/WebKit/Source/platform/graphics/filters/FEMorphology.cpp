@@ -93,15 +93,15 @@ FloatRect FEMorphology::mapRect(const FloatRect& rect, bool) const
     return result;
 }
 
-PassRefPtr<SkImageFilter> FEMorphology::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEMorphology::createImageFilter(SkiaImageFilterBuilder& builder)
 {
-    RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
+    sk_sp<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
     SkScalar radiusX = SkFloatToScalar(getFilter()->applyHorizontalScale(m_radiusX));
     SkScalar radiusY = SkFloatToScalar(getFilter()->applyVerticalScale(m_radiusY));
     SkImageFilter::CropRect rect = getCropRect();
     if (m_type == FEMORPHOLOGY_OPERATOR_DILATE)
-        return adoptRef(SkDilateImageFilter::Create(radiusX, radiusY, input.get(), &rect));
-    return adoptRef(SkErodeImageFilter::Create(radiusX, radiusY, input.get(), &rect));
+        return SkDilateImageFilter::Make(radiusX, radiusY, std::move(input), &rect);
+    return SkErodeImageFilter::Make(radiusX, radiusY, std::move(input), &rect);
 }
 
 static TextStream& operator<<(TextStream& ts, const MorphologyOperatorType& type)

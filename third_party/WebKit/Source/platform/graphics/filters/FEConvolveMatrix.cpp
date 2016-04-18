@@ -136,12 +136,12 @@ bool FEConvolveMatrix::parametersValid() const
     return true;
 }
 
-PassRefPtr<SkImageFilter> FEConvolveMatrix::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEConvolveMatrix::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     if (!parametersValid())
         return createTransparentBlack(builder);
 
-    RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
+    sk_sp<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
     SkISize kernelSize(SkISize::Make(m_kernelSize.width(), m_kernelSize.height()));
     // parametersValid() above checks that the kernel area fits in int.
     int numElements = safeCast<int>(m_kernelSize.area());
@@ -154,7 +154,7 @@ PassRefPtr<SkImageFilter> FEConvolveMatrix::createImageFilter(SkiaImageFilterBui
     for (int i = 0; i < numElements; ++i)
         kernel[i] = SkFloatToScalar(m_kernelMatrix[numElements - 1 - i]);
     SkImageFilter::CropRect cropRect = getCropRect();
-    return adoptRef(SkMatrixConvolutionImageFilter::Create(kernelSize, kernel.get(), gain, bias, target, tileMode, convolveAlpha, input.get(), &cropRect));
+    return SkMatrixConvolutionImageFilter::Make(kernelSize, kernel.get(), gain, bias, target, tileMode, convolveAlpha, std::move(input), &cropRect);
 }
 
 static TextStream& operator<<(TextStream& ts, const EdgeModeType& type)

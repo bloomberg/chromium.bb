@@ -122,7 +122,7 @@ void CanvasRenderingContext2DState::fontsNeedUpdate(CSSFontSelector* fontSelecto
     m_font.update(fontSelector);
     // FIXME: We only really need to invalidate the resolved filter if the font
     // update above changed anything and the filter uses font-dependent units.
-    m_resolvedFilter.clear();
+    m_resolvedFilter.reset();
 }
 
 DEFINE_TRACE(CanvasRenderingContext2DState)
@@ -263,7 +263,7 @@ void CanvasRenderingContext2DState::setFont(const Font& font, CSSFontSelector* s
     selector->registerForInvalidationCallbacks(this);
     // FIXME: We only really need to invalidate the resolved filter if it
     // uses font-relative units.
-    m_resolvedFilter.clear();
+    m_resolvedFilter.reset();
 }
 
 const Font& CanvasRenderingContext2DState::font() const
@@ -344,7 +344,7 @@ bool CanvasRenderingContext2DState::hasFilter(Element* styleResolutionHost, cons
 
 void CanvasRenderingContext2DState::clearResolvedFilter() const
 {
-    m_resolvedFilter.clear();
+    m_resolvedFilter.reset();
 }
 
 SkDrawLooper* CanvasRenderingContext2DState::emptyDrawLooper() const
@@ -381,7 +381,7 @@ SkImageFilter* CanvasRenderingContext2DState::shadowOnlyImageFilter() const
 {
     if (!m_shadowOnlyImageFilter) {
         double sigma = skBlurRadiusToSigma(m_shadowBlur);
-        m_shadowOnlyImageFilter = adoptRef(SkDropShadowImageFilter::Create(m_shadowOffset.width(), m_shadowOffset.height(), sigma, sigma, m_shadowColor, SkDropShadowImageFilter::kDrawShadowOnly_ShadowMode));
+        m_shadowOnlyImageFilter = SkDropShadowImageFilter::Make(m_shadowOffset.width(), m_shadowOffset.height(), sigma, sigma, m_shadowColor, SkDropShadowImageFilter::kDrawShadowOnly_ShadowMode, nullptr);
     }
     return m_shadowOnlyImageFilter.get();
 }
@@ -390,7 +390,7 @@ SkImageFilter* CanvasRenderingContext2DState::shadowAndForegroundImageFilter() c
 {
     if (!m_shadowAndForegroundImageFilter) {
         double sigma = skBlurRadiusToSigma(m_shadowBlur);
-        m_shadowAndForegroundImageFilter = adoptRef(SkDropShadowImageFilter::Create(m_shadowOffset.width(), m_shadowOffset.height(), sigma, sigma, m_shadowColor, SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode));
+        m_shadowAndForegroundImageFilter = SkDropShadowImageFilter::Make(m_shadowOffset.width(), m_shadowOffset.height(), sigma, sigma, m_shadowColor, SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode, nullptr);
     }
     return m_shadowAndForegroundImageFilter.get();
 }
@@ -399,8 +399,8 @@ void CanvasRenderingContext2DState::shadowParameterChanged()
 {
     m_shadowOnlyDrawLooper.clear();
     m_shadowAndForegroundDrawLooper.clear();
-    m_shadowOnlyImageFilter.clear();
-    m_shadowAndForegroundImageFilter.clear();
+    m_shadowOnlyImageFilter.reset();
+    m_shadowAndForegroundImageFilter.reset();
 }
 
 void CanvasRenderingContext2DState::setShadowOffsetX(double x)
@@ -430,7 +430,7 @@ void CanvasRenderingContext2DState::setShadowColor(SkColor shadowColor)
 void CanvasRenderingContext2DState::setFilter(CSSValue* filterValue)
 {
     m_filterValue = filterValue;
-    m_resolvedFilter.clear();
+    m_resolvedFilter.reset();
 }
 
 void CanvasRenderingContext2DState::setGlobalComposite(SkXfermode::Mode mode)

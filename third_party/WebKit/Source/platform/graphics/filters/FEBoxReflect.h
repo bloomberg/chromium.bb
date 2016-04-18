@@ -22,7 +22,7 @@ public:
     // FilterEffect implementation
     FloatRect mapRect(const FloatRect&, bool forward = true) const final;
     TextStream& externalRepresentation(TextStream&, int indentation) const final;
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) final;
+    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) final;
 
 private:
     FEBoxReflect(Filter*, const BoxReflection&);

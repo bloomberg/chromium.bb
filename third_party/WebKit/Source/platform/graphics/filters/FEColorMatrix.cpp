@@ -160,12 +160,12 @@ bool FEColorMatrix::affectsTransparentPixels()
     return m_type == FECOLORMATRIX_TYPE_MATRIX && m_values.size() >= kColorMatrixSize && m_values[19] > 0;
 }
 
-PassRefPtr<SkImageFilter> FEColorMatrix::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEColorMatrix::createImageFilter(SkiaImageFilterBuilder& builder)
 {
-    RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
+    sk_sp<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
     sk_sp<SkColorFilter> filter = createColorFilter(m_type, m_values);
     SkImageFilter::CropRect rect = getCropRect();
-    return adoptRef(SkColorFilterImageFilter::Create(filter.get(), input.get(), &rect));
+    return SkColorFilterImageFilter::Make(std::move(filter), std::move(input), &rect);
 }
 
 static TextStream& operator<<(TextStream& ts, const ColorMatrixType& type)

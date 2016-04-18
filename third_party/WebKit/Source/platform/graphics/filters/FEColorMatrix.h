@@ -54,7 +54,7 @@ public:
 private:
     FEColorMatrix(Filter*, ColorMatrixType, const Vector<float>&);
 
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
 
     bool affectsTransparentPixels() override;
 

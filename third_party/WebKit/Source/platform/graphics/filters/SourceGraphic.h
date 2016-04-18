@@ -39,15 +39,15 @@ public:
     FilterEffectType getFilterEffectType() const override { return FilterEffectTypeSourceInput; }
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
 
-    void setPicture(PassRefPtr<const SkPicture>);
+    void setPicture(sk_sp<SkPicture>);
     void setSourceRect(const IntRect&);
 
 private:
     explicit SourceGraphic(Filter*);
 
-    RefPtr<const SkPicture> m_picture;
+    sk_sp<SkPicture> m_picture;
     IntRect m_sourceRect;
 };
 

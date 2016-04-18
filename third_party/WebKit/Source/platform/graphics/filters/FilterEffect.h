@@ -82,8 +82,8 @@ public:
     FloatRect maxEffectRect() const { return m_maxEffectRect; }
     void setMaxEffectRect(const FloatRect& maxEffectRect) { m_maxEffectRect = maxEffectRect; }
 
-    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&);
-    virtual PassRefPtr<SkImageFilter> createImageFilterWithoutValidation(SkiaImageFilterBuilder&);
+    virtual sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&);
+    virtual sk_sp<SkImageFilter> createImageFilterWithoutValidation(SkiaImageFilterBuilder&);
 
     // Mapping a rect forwards determines which which destination pixels a
     // given source rect would affect. Mapping a rect backwards determines
@@ -146,7 +146,7 @@ public:
     virtual bool mayProduceInvalidPreMultipliedPixels() { return false; }
 
     SkImageFilter* getImageFilter(ColorSpace, bool requiresPMColorValidation) const;
-    void setImageFilter(ColorSpace, bool requiresPMColorValidation, PassRefPtr<SkImageFilter>);
+    void setImageFilter(ColorSpace, bool requiresPMColorValidation, sk_sp<SkImageFilter>);
 
     bool originTainted() const { return m_originTainted; }
     void setOriginTainted() { m_originTainted = true; }
@@ -156,7 +156,7 @@ public:
 protected:
     FilterEffect(Filter*);
 
-    PassRefPtr<SkImageFilter> createTransparentBlack(SkiaImageFilterBuilder&) const;
+    sk_sp<SkImageFilter> createTransparentBlack(SkiaImageFilterBuilder&) const;
 
     Color adaptColorToOperatingColorSpace(const Color& deviceColor);
 
@@ -196,7 +196,7 @@ private:
 
     ColorSpace m_operatingColorSpace;
 
-    RefPtr<SkImageFilter> m_imageFilters[4];
+    sk_sp<SkImageFilter> m_imageFilters[4];
 };
 
 } // namespace blink

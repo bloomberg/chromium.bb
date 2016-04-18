@@ -40,7 +40,7 @@ public:
 private:
     FEBlend(Filter*, WebBlendMode);
 
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
 
     WebBlendMode m_mode;
 };

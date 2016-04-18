@@ -191,27 +191,27 @@ SkXfermode::Mode toXfermode(CompositeOperationType mode)
     }
 }
 
-PassRefPtr<SkImageFilter> FEComposite::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEComposite::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     return createImageFilterInternal(builder, true);
 }
 
-PassRefPtr<SkImageFilter> FEComposite::createImageFilterWithoutValidation(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEComposite::createImageFilterWithoutValidation(SkiaImageFilterBuilder& builder)
 {
     return createImageFilterInternal(builder, false);
 }
 
-PassRefPtr<SkImageFilter> FEComposite::createImageFilterInternal(SkiaImageFilterBuilder& builder, bool requiresPMColorValidation)
+sk_sp<SkImageFilter> FEComposite::createImageFilterInternal(SkiaImageFilterBuilder& builder, bool requiresPMColorValidation)
 {
-    RefPtr<SkImageFilter> foreground(builder.build(inputEffect(0), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
-    RefPtr<SkImageFilter> background(builder.build(inputEffect(1), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
+    sk_sp<SkImageFilter> foreground(builder.build(inputEffect(0), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
+    sk_sp<SkImageFilter> background(builder.build(inputEffect(1), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
     SkImageFilter::CropRect cropRect = getCropRect();
     sk_sp<SkXfermode> mode;
     if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC)
         mode = SkArithmeticMode::Make(SkFloatToScalar(m_k1), SkFloatToScalar(m_k2), SkFloatToScalar(m_k3), SkFloatToScalar(m_k4), requiresPMColorValidation);
     else
         mode = SkXfermode::Make(toXfermode(m_type));
-    return fromSkSp(SkXfermodeImageFilter::Make(std::move(mode), background.get(), foreground.get(), &cropRect));
+    return SkXfermodeImageFilter::Make(std::move(mode), std::move(background), std::move(foreground), &cropRect);
 }
 
 static TextStream& operator<<(TextStream& ts, const CompositeOperationType& type)

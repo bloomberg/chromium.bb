@@ -18,7 +18,7 @@ public:
     FilterEffectType getFilterEffectType() const override { return FilterEffectTypeSourceInput; }
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
 
 private:
     PaintFilterEffect(Filter*, const SkPaint&);

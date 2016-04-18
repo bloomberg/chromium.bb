@@ -14,7 +14,7 @@ void BeginFilterDisplayItem::replay(GraphicsContext& context) const
     FloatRect imageFilterBounds(FloatPoint(), m_bounds.size());
     context.save();
     context.translate(m_bounds.x(), m_bounds.y());
-    context.beginLayer(1, SkXfermode::kSrcOver_Mode, &imageFilterBounds, ColorFilterNone, m_imageFilter.get());
+    context.beginLayer(1, SkXfermode::kSrcOver_Mode, &imageFilterBounds, ColorFilterNone, m_imageFilter);
     context.translate(-m_bounds.x(), -m_bounds.y());
 }
 

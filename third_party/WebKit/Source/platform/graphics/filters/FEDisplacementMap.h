@@ -57,7 +57,7 @@ public:
 private:
     FEDisplacementMap(Filter*, ChannelSelectorType xChannelSelector, ChannelSelectorType yChannelSelector, float);
 
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
 
     ChannelSelectorType m_xChannelSelector;
     ChannelSelectorType m_yChannelSelector;

@@ -107,13 +107,13 @@ FloatRect FEGaussianBlur::determineAbsolutePaintRect(const FloatRect& originalRe
     return outputRect;
 }
 
-PassRefPtr<SkImageFilter> FEGaussianBlur::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEGaussianBlur::createImageFilter(SkiaImageFilterBuilder& builder)
 {
-    RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
+    sk_sp<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
     float stdX = getFilter()->applyHorizontalScale(m_stdX);
     float stdY = getFilter()->applyVerticalScale(m_stdY);
     SkImageFilter::CropRect rect = getCropRect();
-    return adoptRef(SkBlurImageFilter::Create(SkFloatToScalar(stdX), SkFloatToScalar(stdY), input.get(), &rect));
+    return SkBlurImageFilter::Make(SkFloatToScalar(stdX), SkFloatToScalar(stdY), std::move(input), &rect);
 }
 
 TextStream& FEGaussianBlur::externalRepresentation(TextStream& ts, int indent) const

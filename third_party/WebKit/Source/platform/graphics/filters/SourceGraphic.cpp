@@ -49,9 +49,9 @@ FloatRect SourceGraphic::determineAbsolutePaintRect(const FloatRect& requestedRe
     return srcRect;
 }
 
-void SourceGraphic::setPicture(PassRefPtr<const SkPicture> picture)
+void SourceGraphic::setPicture(sk_sp<SkPicture> picture)
 {
-    m_picture = picture;
+    m_picture = std::move(picture);
 }
 
 void SourceGraphic::setSourceRect(const IntRect& sourceRect)
@@ -59,12 +59,12 @@ void SourceGraphic::setSourceRect(const IntRect& sourceRect)
     m_sourceRect = sourceRect;
 }
 
-PassRefPtr<SkImageFilter> SourceGraphic::createImageFilter(SkiaImageFilterBuilder&)
+sk_sp<SkImageFilter> SourceGraphic::createImageFilter(SkiaImageFilterBuilder&)
 {
     if (!m_picture)
         return nullptr;
 
-    return adoptRef(SkPictureImageFilter::Create(m_picture.get(), m_picture->cullRect()));
+    return SkPictureImageFilter::Make(m_picture, m_picture->cullRect());
 }
 
 TextStream& SourceGraphic::externalRepresentation(TextStream& ts, int indent) const

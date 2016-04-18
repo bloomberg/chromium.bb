@@ -68,9 +68,9 @@ protected:
 private:
     FEComposite(Filter*, const CompositeOperationType&, float, float, float, float);
 
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
-    PassRefPtr<SkImageFilter> createImageFilterWithoutValidation(SkiaImageFilterBuilder&) override;
-    PassRefPtr<SkImageFilter> createImageFilterInternal(SkiaImageFilterBuilder&, bool requiresPMColorValidation);
+    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilterWithoutValidation(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilterInternal(SkiaImageFilterBuilder&, bool requiresPMColorValidation);
 
     CompositeOperationType m_type;
     float m_k1;

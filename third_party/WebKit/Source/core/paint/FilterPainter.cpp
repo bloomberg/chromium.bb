@@ -38,7 +38,7 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
 
     SkiaImageFilterBuilder builder;
     lastEffect->determineFilterPrimitiveSubregion(MapRectForward);
-    RefPtr<SkImageFilter> imageFilter = builder.build(lastEffect, ColorSpaceDeviceRGB);
+    sk_sp<SkImageFilter> imageFilter = builder.build(lastEffect, ColorSpaceDeviceRGB);
     if (!imageFilter)
         return;
 
@@ -76,7 +76,7 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
             visualBounds.moveBy(-offsetFromRoot);
             layer.convertFromFlowThreadToVisualBoundingBoxInAncestor(paintingInfo.rootLayer, visualBounds);
         }
-        context.getPaintController().createAndAppend<BeginFilterDisplayItem>(*m_layoutObject, imageFilter, FloatRect(visualBounds), compositorFilterOperations.release());
+        context.getPaintController().createAndAppend<BeginFilterDisplayItem>(*m_layoutObject, std::move(imageFilter), FloatRect(visualBounds), compositorFilterOperations.release());
     }
 
     m_filterInProgress = true;

@@ -34,10 +34,9 @@ TextStream& FEBoxReflect::externalRepresentation(TextStream& ts, int indent) con
     return ts;
 }
 
-PassRefPtr<SkImageFilter> FEBoxReflect::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEBoxReflect::createImageFilter(SkiaImageFilterBuilder& builder)
 {
-    RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
-    return SkiaImageFilterBuilder().buildBoxReflectFilter(m_reflection, input.release());
+    return SkiaImageFilterBuilder().buildBoxReflectFilter(m_reflection, builder.build(inputEffect(0), operatingColorSpace()));
 }
 
 } // namespace blink

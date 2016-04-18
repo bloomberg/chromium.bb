@@ -153,7 +153,7 @@ TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const
     return ts;
 }
 
-PassRefPtr<SkImageFilter> FEImage::createImageFilterForLayoutObject(const LayoutObject& layoutObject)
+sk_sp<SkImageFilter> FEImage::createImageFilterForLayoutObject(const LayoutObject& layoutObject)
 {
     FloatRect dstRect = filterPrimitiveSubregion();
 
@@ -177,18 +177,16 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForLayoutObject(const Layout
         TransformRecorder transformRecorder(filterPicture.context(), layoutObject, transform);
         SVGPaintContext::paintSubtree(filterPicture.context(), &layoutObject);
     }
-    RefPtr<const SkPicture> recording = filterPicture.endRecording();
 
-    RefPtr<SkImageFilter> result = adoptRef(SkPictureImageFilter::Create(recording.get(), dstRect));
-    return result.release();
+    return SkPictureImageFilter::Make(toSkSp(filterPicture.endRecording()), dstRect);
 }
 
-PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     if (auto* layoutObject = referencedLayoutObject())
         return createImageFilterForLayoutObject(*layoutObject);
 
-    RefPtr<SkImage> image = m_image ? m_image->imageForCurrentFrame() : nullptr;
+    sk_sp<SkImage> image = m_image ? toSkSp(m_image->imageForCurrentFrame()) : nullptr;
     if (!image) {
         // "A href reference that is an empty image (zero width or zero height), that fails
         // to download, is non-existent, or that cannot be displayed (e.g. because it is
@@ -202,7 +200,7 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder& bui
 
     m_preserveAspectRatio->transformRect(dstRect, srcRect);
 
-    return adoptRef(SkImageSource::Create(image.get(), srcRect, dstRect, kHigh_SkFilterQuality));
+    return SkImageSource::Make(std::move(image), srcRect, dstRect, kHigh_SkFilterQuality);
 }
 
 } // namespace blink

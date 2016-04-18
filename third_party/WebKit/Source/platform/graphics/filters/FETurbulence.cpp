@@ -146,7 +146,7 @@ sk_sp<SkShader> FETurbulence::createShader() const
             stitchTiles() ? &size : 0);
 }
 
-PassRefPtr<SkImageFilter> FETurbulence::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FETurbulence::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     if (m_baseFrequencyX < 0 || m_baseFrequencyY < 0)
         return createTransparentBlack(builder);
@@ -154,7 +154,7 @@ PassRefPtr<SkImageFilter> FETurbulence::createImageFilter(SkiaImageFilterBuilder
     SkPaint paint;
     paint.setShader(createShader());
     SkImageFilter::CropRect rect = getCropRect();
-    return adoptRef(SkPaintImageFilter::Create(paint, &rect));
+    return SkPaintImageFilter::Make(paint, &rect);
 }
 
 static TextStream& operator<<(TextStream& ts, const TurbulenceType& type)

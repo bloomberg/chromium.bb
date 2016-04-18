@@ -128,16 +128,16 @@ bool FEComponentTransfer::affectsTransparentPixels()
     return 255 * intercept >= 1;
 }
 
-PassRefPtr<SkImageFilter> FEComponentTransfer::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEComponentTransfer::createImageFilter(SkiaImageFilterBuilder& builder)
 {
-    RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
+    sk_sp<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
 
     unsigned char rValues[256], gValues[256], bValues[256], aValues[256];
     getValues(rValues, gValues, bValues, aValues);
 
     SkImageFilter::CropRect cropRect = getCropRect();
     sk_sp<SkColorFilter> colorFilter = SkTableColorFilter::MakeARGB(aValues, rValues, gValues, bValues);
-    return adoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), input.get(), &cropRect));
+    return SkColorFilterImageFilter::Make(std::move(colorFilter), std::move(input), &cropRect);
 }
 
 void FEComponentTransfer::getValues(unsigned char rValues[256], unsigned char gValues[256], unsigned char bValues[256], unsigned char aValues[256])

@@ -39,18 +39,15 @@ FEMerge* FEMerge::create(Filter* filter)
     return new FEMerge(filter);
 }
 
-PassRefPtr<SkImageFilter> FEMerge::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEMerge::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     unsigned size = numberOfEffectInputs();
 
-    OwnPtr<RefPtr<SkImageFilter>[]> inputRefs = adoptArrayPtr(new RefPtr<SkImageFilter>[size]);
-    OwnPtr<SkImageFilter*[]> inputs = adoptArrayPtr(new SkImageFilter*[size]);
-    for (unsigned i = 0; i < size; ++i) {
+    OwnPtr<sk_sp<SkImageFilter>[]> inputRefs = adoptArrayPtr(new sk_sp<SkImageFilter>[size]);
+    for (unsigned i = 0; i < size; ++i)
         inputRefs[i] = builder.build(inputEffect(i), operatingColorSpace());
-        inputs[i] = inputRefs[i].get();
-    }
     SkImageFilter::CropRect rect = getCropRect();
-    return adoptRef(SkMergeImageFilter::Create(inputs.get(), size, 0, &rect));
+    return SkMergeImageFilter::Make(inputRefs.get(), size, 0, &rect);
 }
 
 TextStream& FEMerge::externalRepresentation(TextStream& ts, int indent) const

@@ -44,7 +44,7 @@ protected:
         SpecularLighting
     };
 
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
 
     FloatRect mapPaintRect(const FloatRect&, bool forward = true) const final;
     bool affectsTransparentPixels() override { return true; }

@@ -88,10 +88,10 @@ void CompositorFilterOperations::appendSaturatingBrightnessFilter(float amount)
         cc::FilterOperation::CreateSaturatingBrightnessFilter(amount));
 }
 
-void CompositorFilterOperations::appendReferenceFilter(SkImageFilter* imageFilter)
+void CompositorFilterOperations::appendReferenceFilter(sk_sp<SkImageFilter> imageFilter)
 {
     m_filterOperations.Append(
-        cc::FilterOperation::CreateReferenceFilter(skia::SharePtr(imageFilter)));
+        cc::FilterOperation::CreateReferenceFilter(skia::SharePtr(std::move(imageFilter))));
 }
 
 void CompositorFilterOperations::clear()

@@ -195,8 +195,8 @@ private:
     mutable RefPtr<SkDrawLooper> m_emptyDrawLooper;
     mutable RefPtr<SkDrawLooper> m_shadowOnlyDrawLooper;
     mutable RefPtr<SkDrawLooper> m_shadowAndForegroundDrawLooper;
-    mutable RefPtr<SkImageFilter> m_shadowOnlyImageFilter;
-    mutable RefPtr<SkImageFilter> m_shadowAndForegroundImageFilter;
+    mutable sk_sp<SkImageFilter> m_shadowOnlyImageFilter;
+    mutable sk_sp<SkImageFilter> m_shadowAndForegroundImageFilter;
 
     double m_globalAlpha;
     AffineTransform m_transform;
@@ -208,7 +208,7 @@ private:
 
     String m_unparsedFilter;
     Member<CSSValue> m_filterValue;
-    mutable RefPtr<SkImageFilter> m_resolvedFilter;
+    mutable sk_sp<SkImageFilter> m_resolvedFilter;
 
     // Text state.
     TextAlign m_textAlign;

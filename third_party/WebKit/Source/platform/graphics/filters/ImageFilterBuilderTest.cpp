@@ -72,7 +72,7 @@ protected:
 
         // Get SkImageFilter resulting tree
         SkiaImageFilterBuilder builder;
-        RefPtr<SkImageFilter> filter = builder.build(referenceFilter->lastEffect(), ColorSpaceDeviceRGB);
+        sk_sp<SkImageFilter> filter = builder.build(referenceFilter->lastEffect(), ColorSpaceDeviceRGB);
 
         // Let's check that the resulting tree looks like this :
         //      ColorSpace (Linear->Device) : CS (L->D)

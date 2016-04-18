@@ -253,7 +253,7 @@ void GraphicsContext::concat(const SkMatrix& matrix)
     m_canvas->concat(matrix);
 }
 
-void GraphicsContext::beginLayer(float opacity, SkXfermode::Mode xfermode, const FloatRect* bounds, ColorFilter colorFilter, SkImageFilter* imageFilter)
+void GraphicsContext::beginLayer(float opacity, SkXfermode::Mode xfermode, const FloatRect* bounds, ColorFilter colorFilter, sk_sp<SkImageFilter> imageFilter)
 {
     if (contextDisabled())
         return;
@@ -262,7 +262,7 @@ void GraphicsContext::beginLayer(float opacity, SkXfermode::Mode xfermode, const
     layerPaint.setAlpha(static_cast<unsigned char>(opacity * 255));
     layerPaint.setXfermodeMode(xfermode);
     layerPaint.setColorFilter(toSkSp(WebCoreColorFilterToSkiaColorFilter(colorFilter)));
-    layerPaint.setImageFilter(imageFilter);
+    layerPaint.setImageFilter(std::move(imageFilter));
 
     if (bounds) {
         SkRect skBounds = *bounds;
@@ -331,7 +331,7 @@ void GraphicsContext::drawPicture(const SkPicture* picture)
     m_canvas->drawPicture(picture);
 }
 
-void GraphicsContext::compositePicture(SkPicture* picture, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode op)
+void GraphicsContext::compositePicture(PassRefPtr<SkPicture> picture, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode op)
 {
     if (contextDisabled() || !picture)
         return;
@@ -345,8 +345,7 @@ void GraphicsContext::compositePicture(SkPicture* picture, const FloatRect& dest
     SkMatrix pictureTransform;
     pictureTransform.setRectToRect(sourceBounds, skBounds, SkMatrix::kFill_ScaleToFit);
     m_canvas->concat(pictureTransform);
-    RefPtr<SkImageFilter> pictureFilter = adoptRef(SkPictureImageFilter::CreateForLocalSpace(picture, sourceBounds, static_cast<SkFilterQuality>(imageInterpolationQuality())));
-    picturePaint.setImageFilter(pictureFilter.get());
+    picturePaint.setImageFilter(SkPictureImageFilter::MakeForLocalSpace(toSkSp(picture), sourceBounds, static_cast<SkFilterQuality>(imageInterpolationQuality())));
     m_canvas->saveLayer(&sourceBounds, &picturePaint);
     m_canvas->restore();
     m_canvas->restore();

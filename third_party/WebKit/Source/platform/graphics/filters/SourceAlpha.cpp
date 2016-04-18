@@ -46,9 +46,9 @@ FloatRect SourceAlpha::determineAbsolutePaintRect(const FloatRect& requestedRect
     return inputEffect(0)->determineAbsolutePaintRect(requestedRect);
 }
 
-PassRefPtr<SkImageFilter> SourceAlpha::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> SourceAlpha::createImageFilter(SkiaImageFilterBuilder& builder)
 {
-    RefPtr<SkImageFilter> sourceGraphic(builder.build(inputEffect(0), operatingColorSpace()));
+    sk_sp<SkImageFilter> sourceGraphic(builder.build(inputEffect(0), operatingColorSpace()));
     SkScalar matrix[20] = {
         0, 0, 0, 0, 0,
         0, 0, 0, 0, 0,
@@ -56,7 +56,7 @@ PassRefPtr<SkImageFilter> SourceAlpha::createImageFilter(SkiaImageFilterBuilder&
         0, 0, 0, SK_Scalar1, 0
     };
     sk_sp<SkColorFilter> colorFilter = SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
-    return adoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), sourceGraphic.get()));
+    return SkColorFilterImageFilter::Make(std::move(colorFilter), std::move(sourceGraphic));
 }
 
 TextStream& SourceAlpha::externalRepresentation(TextStream& ts, int indent) const

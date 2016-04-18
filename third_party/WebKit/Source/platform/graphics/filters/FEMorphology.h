@@ -52,7 +52,7 @@ public:
 private:
     FEMorphology(Filter*, MorphologyOperatorType, float radiusX, float radiusY);
 
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
 
     MorphologyOperatorType m_type;
     float m_radiusX;

@@ -18,9 +18,9 @@ namespace blink {
 
 class PLATFORM_EXPORT BeginFilterDisplayItem final : public PairedBeginDisplayItem {
 public:
-    BeginFilterDisplayItem(const DisplayItemClient& client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds, PassOwnPtr<CompositorFilterOperations> filterOperations = nullptr)
+    BeginFilterDisplayItem(const DisplayItemClient& client, sk_sp<SkImageFilter> imageFilter, const FloatRect& bounds, PassOwnPtr<CompositorFilterOperations> filterOperations = nullptr)
         : PairedBeginDisplayItem(client, BeginFilter, sizeof(*this))
-        , m_imageFilter(imageFilter)
+        , m_imageFilter(std::move(imageFilter))
         , m_webFilterOperations(std::move(filterOperations))
         , m_bounds(bounds) { }
 
@@ -42,7 +42,7 @@ private:
 #endif
 
     // FIXME: m_imageFilter should be replaced with m_webFilterOperations when copying data to the compositor.
-    RefPtr<SkImageFilter> m_imageFilter;
+    sk_sp<SkImageFilter> m_imageFilter;
     OwnPtr<CompositorFilterOperations> m_webFilterOperations;
     const FloatRect m_bounds;
 };

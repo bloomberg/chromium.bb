@@ -109,16 +109,16 @@ static SkDisplacementMapEffect::ChannelSelectorType toSkiaMode(ChannelSelectorTy
     }
 }
 
-PassRefPtr<SkImageFilter> FEDisplacementMap::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEDisplacementMap::createImageFilter(SkiaImageFilterBuilder& builder)
 {
-    RefPtr<SkImageFilter> color = builder.build(inputEffect(0), operatingColorSpace());
-    RefPtr<SkImageFilter> displ = builder.build(inputEffect(1), operatingColorSpace());
+    sk_sp<SkImageFilter> color = builder.build(inputEffect(0), operatingColorSpace());
+    sk_sp<SkImageFilter> displ = builder.build(inputEffect(1), operatingColorSpace());
     SkDisplacementMapEffect::ChannelSelectorType typeX = toSkiaMode(m_xChannelSelector);
     SkDisplacementMapEffect::ChannelSelectorType typeY = toSkiaMode(m_yChannelSelector);
     SkImageFilter::CropRect cropRect = getCropRect();
     // FIXME : Only applyHorizontalScale is used and applyVerticalScale is ignored
     // This can be fixed by adding a 2nd scale parameter to SkDisplacementMapEffect
-    return adoptRef(SkDisplacementMapEffect::Create(typeX, typeY, SkFloatToScalar(getFilter()->applyHorizontalScale(m_scale)), displ.get(), color.get(), &cropRect));
+    return SkDisplacementMapEffect::Make(typeX, typeY, SkFloatToScalar(getFilter()->applyHorizontalScale(m_scale)), std::move(displ), std::move(color), &cropRect);
 }
 
 static TextStream& operator<<(TextStream& ts, const ChannelSelectorType& type)

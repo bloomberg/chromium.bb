@@ -26,9 +26,9 @@ PaintFilterEffect* PaintFilterEffect::create(Filter* filter, const SkPaint& pain
     return new PaintFilterEffect(filter, paint);
 }
 
-PassRefPtr<SkImageFilter> PaintFilterEffect::createImageFilter(SkiaImageFilterBuilder&)
+sk_sp<SkImageFilter> PaintFilterEffect::createImageFilter(SkiaImageFilterBuilder&)
 {
-    return adoptRef(SkPaintImageFilter::Create(m_paint, nullptr));
+    return SkPaintImageFilter::Make(m_paint, nullptr);
 }
 
 TextStream& PaintFilterEffect::externalRepresentation(TextStream& ts, int indent) const

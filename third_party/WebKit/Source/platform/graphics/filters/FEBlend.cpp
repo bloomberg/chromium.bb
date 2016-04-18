@@ -55,13 +55,13 @@ bool FEBlend::setBlendMode(WebBlendMode mode)
     return true;
 }
 
-PassRefPtr<SkImageFilter> FEBlend::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEBlend::createImageFilter(SkiaImageFilterBuilder& builder)
 {
-    RefPtr<SkImageFilter> foreground(builder.build(inputEffect(0), operatingColorSpace()));
-    RefPtr<SkImageFilter> background(builder.build(inputEffect(1), operatingColorSpace()));
+    sk_sp<SkImageFilter> foreground(builder.build(inputEffect(0), operatingColorSpace()));
+    sk_sp<SkImageFilter> background(builder.build(inputEffect(1), operatingColorSpace()));
     sk_sp<SkXfermode> mode(SkXfermode::Make(WebCoreCompositeToSkiaComposite(CompositeSourceOver, m_mode)));
     SkImageFilter::CropRect cropRect = getCropRect();
-    return fromSkSp(SkXfermodeImageFilter::Make(std::move(mode), background.get(), foreground.get(), &cropRect));
+    return SkXfermodeImageFilter::Make(std::move(mode), std::move(background), std::move(foreground), &cropRect);
 }
 
 TextStream& FEBlend::externalRepresentation(TextStream& ts, int indent) const

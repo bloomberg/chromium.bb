@@ -38,8 +38,7 @@ public:
     void appendZoomFilter(float amount, int inset);
     void appendSaturatingBrightnessFilter(float amount);
 
-    // This grabs a ref on the passed-in filter.
-    void appendReferenceFilter(SkImageFilter*);
+    void appendReferenceFilter(sk_sp<SkImageFilter>);
 
     void clear();
     bool isEmpty() const;
