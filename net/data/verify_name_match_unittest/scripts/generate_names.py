@@ -330,5 +330,46 @@ type=OID:countryName
 value=PRINTABLESTRING:"US"
 """, "valid-minimal")
 
+  # Single Name that exercises all of the string types, unicode (basic and
+  # supplemental planes), whitespace collapsing, case folding, as well as SET
+  # sorting.
+  n = NameGenerator()
+  rdn1 = n.add_rdn()
+  rdn1.add_attr('countryName', 'PRINTABLESTRING', 'AA')
+  rdn1.add_attr('stateOrProvinceName', 'T61STRING', '  AbCd  Ef  ')
+  rdn1.add_attr('localityName', 'UTF8', "  Ab\xe6\x9d\xb1\xe4\xba\xac ",
+                "FORMAT:UTF8")
+  rdn1.add_attr('organizationName',
+                'BMPSTRING', " aB  \xe6\x9d\xb1\xe4\xba\xac  cD ",
+                "FORMAT:UTF8")
+  rdn1.add_attr('organizationalUnitName', 'UNIVERSALSTRING',
+                " \xf0\x9d\x90\x80  A  bC ", "FORMAT:UTF8")
+  rdn1.add_attr('domainComponent', 'IA5STRING', 'eXaMpLe')
+  rdn2 = n.add_rdn()
+  rdn2.add_attr('localityName', 'UTF8', "AAA")
+  rdn2.add_attr('localityName', 'BMPSTRING', "aaa")
+  rdn3 = n.add_rdn()
+  rdn3.add_attr('localityName', 'PRINTABLESTRING', "cCcC")
+  generate(n, "unicode-mixed-unnormalized")
+  # Expected normalized version of above.
+  n = NameGenerator()
+  rdn1 = n.add_rdn()
+  rdn1.add_attr('countryName', 'UTF8', 'aa')
+  rdn1.add_attr('stateOrProvinceName', 'T61STRING', '  AbCd  Ef  ')
+  rdn1.add_attr('localityName', 'UTF8', "ab\xe6\x9d\xb1\xe4\xba\xac",
+                "FORMAT:UTF8")
+  rdn1.add_attr('organizationName', 'UTF8', "ab \xe6\x9d\xb1\xe4\xba\xac cd",
+                "FORMAT:UTF8")
+  rdn1.add_attr('organizationalUnitName', 'UTF8', "\xf0\x9d\x90\x80 a bc",
+                "FORMAT:UTF8")
+  rdn1.add_attr('domainComponent', 'UTF8', 'example')
+  rdn2 = n.add_rdn()
+  rdn2.add_attr('localityName', 'UTF8', "aaa")
+  rdn2.add_attr('localityName', 'UTF8', "aaa")
+  rdn3 = n.add_rdn()
+  rdn3.add_attr('localityName', 'UTF8', "cccc")
+  generate(n, "unicode-mixed-normalized")
+
+
 if __name__ == '__main__':
   main()
