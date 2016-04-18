@@ -52,6 +52,7 @@
 #include "platform/Logging.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
@@ -307,7 +308,7 @@ void DOMWebSocket::connect(const String& url, const Vector<String>& protocols, E
         return;
     }
 
-    if (!Platform::current()->portAllowed(m_url)) {
+    if (!isPortAllowedForScheme(m_url)) {
         m_state = CLOSED;
         exceptionState.throwSecurityError("The port " + String::number(m_url.port()) + " is not allowed.");
         return;

@@ -58,7 +58,6 @@
 #include "net/base/data_url.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
-#include "net/base/port_util.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebMemoryDumpProvider.h"
@@ -456,15 +455,6 @@ bool BlinkPlatformImpl::isReservedIPAddress(
   if (!net::ParseURLHostnameToAddress(host.utf8(), &address))
     return false;
   return address.IsReserved();
-}
-
-bool BlinkPlatformImpl::portAllowed(const blink::WebURL& url) const {
-  GURL gurl = GURL(url);
-  // Return true for URLs without a port specified.  This is needed to let
-  // through non-network schemes that don't go over the network.
-  if (!gurl.has_port())
-    return true;
-  return net::IsPortAllowedForScheme(gurl.EffectiveIntPort(), gurl.scheme());
 }
 
 bool BlinkPlatformImpl::parseMultipartHeadersFromBody(

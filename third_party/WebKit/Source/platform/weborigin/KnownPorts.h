@@ -39,6 +39,9 @@ PLATFORM_EXPORT bool isDefaultPortForProtocol(unsigned short port, const WTF::St
 // Returns 0 for unknown protocols. |protocol| must be lower case.
 PLATFORM_EXPORT unsigned short defaultPortForProtocol(const WTF::String& protocol);
 
+// Returns true if the port of the |url| is allowed for the scheme of the |url|.
+PLATFORM_EXPORT bool isPortAllowedForScheme(const KURL&);
+
 } // namespace blink
 
 #endif // KnownPorts_h

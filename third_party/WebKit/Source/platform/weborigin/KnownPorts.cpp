@@ -26,6 +26,11 @@
 
 #include "platform/weborigin/KnownPorts.h"
 
+#include "net/base/port_util.h"
+#include "platform/weborigin/KURL.h"
+#include "wtf/text/StringUTF8Adaptor.h"
+#include "wtf/text/WTFString.h"
+
 namespace blink {
 
 bool isDefaultPortForProtocol(unsigned short port, const WTF::String& protocol)
@@ -58,6 +63,20 @@ unsigned short defaultPortForProtocol(const WTF::String& protocol)
         return 990;
 
     return 0;
+}
+
+bool isPortAllowedForScheme(const KURL& url)
+{
+    // Returns true for URLs without a port specified. This is needed to let
+    // through non-network schemes that don't go over the network.
+    if (!url.hasPort())
+        return true;
+    String protocol = url.protocol().isNull() ? "" : url.protocol().lower();
+    unsigned short effectivePort = url.port();
+    if (!effectivePort)
+        effectivePort = defaultPortForProtocol(protocol);
+    StringUTF8Adaptor utf8(protocol);
+    return net::IsPortAllowedForScheme(effectivePort, std::string(utf8.data(), utf8.length()));
 }
 
 } // namespace blink

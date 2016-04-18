@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KnownPorts.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,5 +67,27 @@ TEST(KnownPortsTest, DefaultPortForProtocol)
         EXPECT_EQ(test.port, defaultPortForProtocol(test.protocol));
 }
 
+TEST(KnownPortsTest, IsPortAllowedForScheme)
+{
+    struct TestCase {
+        const char* url;
+        const bool isAllowed;
+    } inputs[] = {
+        // Allowed ones.
+        { "http://example.com", true },
+        { "file://example.com", true },
+        { "file://example.com:87", true },
+        { "ftp://example.com:21", true },
+        { "http://example.com:80", true },
+        { "http://example.com:8889", true },
+
+        // Disallowed ones.
+        { "ftp://example.com:87", false },
+        { "ws://example.com:21", false },
+    };
+
+    for (const TestCase& test : inputs)
+        EXPECT_EQ(test.isAllowed, isPortAllowedForScheme(KURL(ParsedURLString, test.url)));
+}
 
 } // namespace blink
