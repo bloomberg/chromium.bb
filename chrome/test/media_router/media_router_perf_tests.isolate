@@ -15,6 +15,7 @@
           '--output-dir=${ISOLATED_OUTDIR}',
         ],
         'files': [
+          'internal/',
           '<(PRODUCT_DIR)/mr_extension/release/',
           '../../../third_party/catapult/',
           '../../../tools/perf/',
