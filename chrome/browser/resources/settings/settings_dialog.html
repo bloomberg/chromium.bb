@@ -9,8 +9,10 @@
     <style include="paper-dialog-shared-styles"></style>
     <style>
       .body-content {
+        display: flex;
+        flex-direction: column;
         font-size: 1em;
-        margin: 20px 0;
+        min-height: 120px;
       }
 
       .dialog-content {
@@ -27,28 +29,37 @@
 
       .top-row {
         align-items: center;
-        border-bottom: 1px solid var(--paper-grey-300);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.14);
         display: flex;
-        padding-bottom: 5px;
-        padding-top: 5px;
+        min-height: 52px;
+      }
+
+      paper-icon-button {
+        height: 20px;
+        margin: 16px;
+        padding: 0;
+        width: 20px;
       }
 
       :host {
         max-width: 800px;
-        min-width: 500px;
+        min-width: 512px;
         overflow: auto;
       }
 
       :host ::content .body {
-        margin-bottom: 35px;
+        flex: 1;
+        margin: 12px 0 24px 0;
       }
 
       :host ::content .button-container {
         display: flex;
         justify-content: flex-end;
+        margin-bottom: 12px;
       }
 
       :host ::content .button-container .cancel-button {
+        -webkit-margin-end: 8px;
         color: var(--paper-grey-600);
         font-weight: 500;
       }
@@ -71,7 +82,7 @@
 
       :host ::content .title {
         flex: 1;
-        font-size: 1.13em;
+        font-size: 114.28%; /* (16px / 14px) * 100 */
       }
 
       :host ::content .title,
