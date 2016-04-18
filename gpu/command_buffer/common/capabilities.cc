@@ -84,6 +84,7 @@ Capabilities::Capabilities()
       surfaceless(false),
       flips_vertically(false),
       msaa_is_slow(false),
+      chromium_image_rgb_emulation(false),
       major_version(2),
       minor_version(0) {}
 
