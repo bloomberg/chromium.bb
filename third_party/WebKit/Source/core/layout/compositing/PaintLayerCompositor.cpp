@@ -659,8 +659,8 @@ PaintLayerCompositor* PaintLayerCompositor::frameContentsCompositor(LayoutPart* 
 
     HTMLFrameOwnerElement* element = toHTMLFrameOwnerElement(layoutObject->node());
     if (Document* contentDocument = element->contentDocument()) {
-        if (LayoutView* view = contentDocument->layoutView())
-            return view->compositor();
+        if (LayoutViewItem view = contentDocument->layoutViewItem())
+            return view.compositor();
     }
     return nullptr;
 }
