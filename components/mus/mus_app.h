@@ -26,6 +26,10 @@
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/client_native_pixmap_factory.h"
+#endif
+
 namespace shell {
 class Connector;
 }
@@ -114,6 +118,10 @@ class MandolineUIServicesApp
   PendingRequests pending_requests_;
 
   UserIdToUserState user_id_to_user_state_;
+
+#if defined(USE_OZONE)
+  scoped_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(MandolineUIServicesApp);
 };

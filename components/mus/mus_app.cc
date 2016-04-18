@@ -127,6 +127,8 @@ void MandolineUIServicesApp::Initialize(shell::Connector* connector,
   platform_display_init_params_.surfaces_state = new SurfacesState;
 
   base::PlatformThread::SetName("mus");
+  tracing_.Initialize(connector, identity.name());
+  TRACE_EVENT0("mus", "MandolineUIServicesApp::Initialize started");
 
 #if defined(USE_X11)
   XInitThreads();
@@ -149,6 +151,11 @@ void MandolineUIServicesApp::Initialize(shell::Connector* connector,
   // TODO(kylechar): We might not always want a US keyboard layout.
   ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
       ->SetCurrentLayoutByName("us");
+  client_native_pixmap_factory_ = ui::ClientNativePixmapFactory::Create();
+  ui::ClientNativePixmapFactory::SetInstance(
+      client_native_pixmap_factory_.get());
+
+  DCHECK(ui::ClientNativePixmapFactory::GetInstance());
 #endif
 
 // TODO(rjkroege): Enter sandbox here before we start threads in GpuState
@@ -163,8 +170,6 @@ void MandolineUIServicesApp::Initialize(shell::Connector* connector,
   platform_display_init_params_.gpu_state = new GpuState();
   window_server_.reset(
       new ws::WindowServer(this, platform_display_init_params_.surfaces_state));
-
-  tracing_.Initialize(connector, identity.name());
 }
 
 bool MandolineUIServicesApp::AcceptConnection(Connection* connection) {
