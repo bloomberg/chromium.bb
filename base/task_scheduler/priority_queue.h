@@ -33,6 +33,8 @@ class BASE_EXPORT PriorityQueue {
     SequenceAndSortKey(scoped_refptr<Sequence> sequence,
                        const SequenceSortKey& sort_key);
 
+    SequenceAndSortKey(const SequenceAndSortKey& other);
+
     ~SequenceAndSortKey();
 
     // Returns true if this is a null SequenceAndSortKey.
