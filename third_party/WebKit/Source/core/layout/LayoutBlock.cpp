@@ -1629,13 +1629,12 @@ bool LayoutBlock::hitTestChildren(HitTestResult& result, const HitTestLocation& 
     // TODO(pdr): We should also check for css clip in the !isSelfPaintingLayer
     //            case, similar to overflow clip below.
     if (hasOverflowClip() && !hasSelfPaintingLayer()) {
+        if (!locationInContainer.intersects(overflowClipRect(accumulatedOffset, IncludeOverlayScrollbarSize)))
+            return false;
         if (style()->hasBorderRadius()) {
             LayoutRect borderRect = borderBoxRect();
             borderRect.moveBy(accumulatedOffset);
             if (!locationInContainer.intersects(style()->getRoundedInnerBorderFor(borderRect)))
-                return false;
-        } else {
-            if (!locationInContainer.intersects(overflowClipRect(accumulatedOffset, IncludeOverlayScrollbarSize)))
                 return false;
         }
     }

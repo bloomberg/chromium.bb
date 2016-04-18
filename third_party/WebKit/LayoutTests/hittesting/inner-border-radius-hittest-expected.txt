@@ -21,4 +21,6 @@ PASS document.elementFromPoint(x + 80, y + 80).id is 'roundedBoxWithScrollbarsCh
 PASS document.elementFromPoint(x + 230, y + 230).id is 'roundedBoxWithScrollbarsChild'
 PASS document.elementFromPoint(x + 265, y + 265).id is 'roundedBoxWithScrollbars'
 PASS document.elementFromPoint(x + 275, y + 275).id is 'container'
+PASS document.elementFromPoint(x + 150, y + 240).id is 'roundedBoxWithScrollbars'
+PASS document.elementFromPoint(x + 240, y + 150).id is 'roundedBoxWithScrollbars'
 

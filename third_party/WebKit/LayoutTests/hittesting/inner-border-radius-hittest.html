@@ -11,13 +11,13 @@ function test() {
     // At top-left corner, inside outer border radius.
     shouldBe("document.elementFromPoint(x + 35, y + 35).id", "'roundedBoxWithoutScrollbars'");
     shouldBe("document.elementFromPoint(x + 60, y + 60).id", "'roundedBoxWithoutScrollbars'");
-    // At top-left corner, insider inner border radius.
+    // At top-left corner, inside inner border radius.
     shouldBe("document.elementFromPoint(x + 68, y + 68).id", "'roundedBoxChildWithoutScrollbars'");
     // At top-left corner, fully inside border.
     shouldBe("document.elementFromPoint(x + 80, y + 80).id", "'roundedBoxChildWithoutScrollbars'");
     // At bottom-right corner, inside inner border radius.
     shouldBe("document.elementFromPoint(x + 230, y + 230).id", "'roundedBoxChildWithoutScrollbars'");
-    // At bottom-right corner, insider inner border radius.
+    // At bottom-right corner, inside inner border radius.
     shouldBe("document.elementFromPoint(x + 240, y + 240).id", "'roundedBoxWithoutScrollbars'");
     shouldBe("document.elementFromPoint(x + 265, y + 265).id", "'roundedBoxWithoutScrollbars'");
     // At bottom-right corner, outside the outer border radius.
@@ -31,16 +31,20 @@ function test() {
     // At top-left corner with scrollbars, inside outer border radius.
     shouldBe("document.elementFromPoint(x + 35, y + 35).id", "'roundedBoxWithScrollbars'");
     shouldBe("document.elementFromPoint(x + 60, y + 60).id", "'roundedBoxWithScrollbars'");
-    // At top-left corner with scrollbars, insider inner border radius.
+    // At top-left corner with scrollbars, inside inner border radius.
     shouldBe("document.elementFromPoint(x + 68, y + 68).id", "'roundedBoxWithScrollbarsChild'");
     // At top-left corner with scrollbars, fully inside border.
     shouldBe("document.elementFromPoint(x + 80, y + 80).id", "'roundedBoxWithScrollbarsChild'");
     // At bottom-right corner with scrollbars, inside inner border radius.
     shouldBe("document.elementFromPoint(x + 230, y + 230).id", "'roundedBoxWithScrollbarsChild'");
-    // At bottom-right corner with scrollbars, insider inner border radius.
+    // At bottom-right corner with scrollbars, inside inner border radius.
     shouldBe("document.elementFromPoint(x + 265, y + 265).id", "'roundedBoxWithScrollbars'");
     // At bottom-right corner with scrollbars, outside the outer border radius.
     shouldBe("document.elementFromPoint(x + 275, y + 275).id", "'container'");
+    // At bottom-center on scrollbar and inside inner border radius.
+    shouldBe("document.elementFromPoint(x + 150, y + 240).id", "'roundedBoxWithScrollbars'");
+    // At center-right on scrollbar and inside inner border radius.
+    shouldBe("document.elementFromPoint(x + 240, y + 150).id", "'roundedBoxWithScrollbars'");
 }
 </script>
 <style>
