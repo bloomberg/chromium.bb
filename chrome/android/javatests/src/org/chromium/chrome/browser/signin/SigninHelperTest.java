@@ -23,6 +23,7 @@ public class SigninHelperTest extends InstrumentationTestCase {
     private MockAccountManager mAccountManager;
     private AdvancedMockContext mContext;
     private MockChangeEventChecker mEventChecker;
+    private SigninHelper mSigninHelper;
 
     @Override
     public void setUp() {
@@ -32,41 +33,43 @@ public class SigninHelperTest extends InstrumentationTestCase {
         // Mock out the account manager on the device.
         mAccountManager = new MockAccountManager(mContext, getInstrumentation().getContext());
         AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
+        SigninHelper.initializeForTests(mContext);
+        mSigninHelper = SigninHelper.get(mContext);
     }
 
     @SmallTest
     public void testAccountsChangedPref() {
         assertEquals("Should never return true before the pref has ever been set.",
-                false, SigninHelper.checkAndClearAccountsChangedPref(mContext));
+                false, mSigninHelper.checkAndClearAccountsChangedPref());
         assertEquals("Should never return true before the pref has ever been set.",
-                false, SigninHelper.checkAndClearAccountsChangedPref(mContext));
+                false, mSigninHelper.checkAndClearAccountsChangedPref());
 
         // Mark the pref as set.
-        SigninHelper.markAccountsChangedPref(mContext);
+        mSigninHelper.markAccountsChangedPref();
 
         assertEquals("Should return true first time after marking accounts changed",
-                true, SigninHelper.checkAndClearAccountsChangedPref(mContext));
+                true, mSigninHelper.checkAndClearAccountsChangedPref());
         assertEquals("Should only return true first time after marking accounts changed",
-                false, SigninHelper.checkAndClearAccountsChangedPref(mContext));
+                false, mSigninHelper.checkAndClearAccountsChangedPref());
         assertEquals("Should only return true first time after marking accounts changed",
-                false, SigninHelper.checkAndClearAccountsChangedPref(mContext));
+                false, mSigninHelper.checkAndClearAccountsChangedPref());
 
         // Mark the pref as set again.
-        SigninHelper.markAccountsChangedPref(mContext);
+        mSigninHelper.markAccountsChangedPref();
 
         assertEquals("Should return true first time after marking accounts changed",
-                true, SigninHelper.checkAndClearAccountsChangedPref(mContext));
+                true, mSigninHelper.checkAndClearAccountsChangedPref());
         assertEquals("Should only return true first time after marking accounts changed",
-                false, SigninHelper.checkAndClearAccountsChangedPref(mContext));
+                false, mSigninHelper.checkAndClearAccountsChangedPref());
         assertEquals("Should only return true first time after marking accounts changed",
-                false, SigninHelper.checkAndClearAccountsChangedPref(mContext));
+                false, mSigninHelper.checkAndClearAccountsChangedPref());
     }
 
     @SmallTest
     public void testSimpleAccountRename() {
         setSignedInAccountName("A");
         mEventChecker.insertRenameEvent("A", "B");
-        SigninHelper.updateAccountRenameData(mContext, mEventChecker);
+        mSigninHelper.updateAccountRenameData(mEventChecker);
         assertEquals("B", getNewSignedInAccountName());
     }
 
@@ -75,7 +78,7 @@ public class SigninHelperTest extends InstrumentationTestCase {
     public void testNotSignedInAccountRename() {
         setSignedInAccountName("A");
         mEventChecker.insertRenameEvent("B", "C");
-        SigninHelper.updateAccountRenameData(mContext, mEventChecker);
+        mSigninHelper.updateAccountRenameData(mEventChecker);
         assertEquals(null, getNewSignedInAccountName());
     }
 
@@ -83,10 +86,10 @@ public class SigninHelperTest extends InstrumentationTestCase {
     public void testSimpleAccountRenameTwice() {
         setSignedInAccountName("A");
         mEventChecker.insertRenameEvent("A", "B");
-        SigninHelper.updateAccountRenameData(mContext, mEventChecker);
+        mSigninHelper.updateAccountRenameData(mEventChecker);
         assertEquals("B", getNewSignedInAccountName());
         mEventChecker.insertRenameEvent("B", "C");
-        SigninHelper.updateAccountRenameData(mContext, mEventChecker);
+        mSigninHelper.updateAccountRenameData(mEventChecker);
         assertEquals("C", getNewSignedInAccountName());
     }
 
@@ -95,7 +98,7 @@ public class SigninHelperTest extends InstrumentationTestCase {
         setSignedInAccountName("A");
         mEventChecker.insertRenameEvent("B", "C");
         mEventChecker.insertRenameEvent("C", "D");
-        SigninHelper.updateAccountRenameData(mContext, mEventChecker);
+        mSigninHelper.updateAccountRenameData(mEventChecker);
         assertEquals(null, getNewSignedInAccountName());
     }
 
@@ -107,7 +110,7 @@ public class SigninHelperTest extends InstrumentationTestCase {
         mEventChecker.insertRenameEvent("Y", "X"); // Unrelated.
         mEventChecker.insertRenameEvent("B", "C");
         mEventChecker.insertRenameEvent("C", "D");
-        SigninHelper.updateAccountRenameData(mContext, mEventChecker);
+        mSigninHelper.updateAccountRenameData(mEventChecker);
         assertEquals("D", getNewSignedInAccountName());
     }
 
@@ -123,7 +126,7 @@ public class SigninHelperTest extends InstrumentationTestCase {
         Account account = AccountManagerHelper.createAccountFromName("D");
         AccountHolder accountHolder = AccountHolder.create().account(account).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder);
-        SigninHelper.updateAccountRenameData(mContext, mEventChecker);
+        mSigninHelper.updateAccountRenameData(mEventChecker);
         assertEquals("D", getNewSignedInAccountName());
     }
 
@@ -136,6 +139,6 @@ public class SigninHelperTest extends InstrumentationTestCase {
     }
 
     private String getNewSignedInAccountName() {
-        return SigninHelper.getNewSignedInAccountName(mContext);
+        return mSigninHelper.getNewSignedInAccountName();
     }
 }
