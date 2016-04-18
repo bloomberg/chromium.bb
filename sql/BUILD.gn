@@ -72,7 +72,7 @@ source_set("redirection_header") {
 bundle_data("sql_unittests_bundle_data") {
   testonly = true
   sources = [
-    "test/data",
+    "test/data/recovery_387868",
   ]
   outputs = [
     "{{bundle_resources_dir}}/" +
