@@ -280,12 +280,25 @@ TEST_F(TabStripControllerTest, CorrectTitleAndToolTipTextFromSetTabTitle) {
   TabController* const tabController = [tab controller];
   WebContents* const contents = model_->GetActiveWebContents();
 
+  // For the duration of the test, assume the tab has been hovered. This adds a
+  // subview containing the actual source of the tooltip.
+  [controller_ setHoveredTab:tab];
+  // Note -[NSView hitTest:] takes superview coordinates. Then, find a spot that
+  // is outside the mask image, but inside the tab.
+  NSPoint centerPoint = NSMakePoint(5, NSMidY([tab bounds]));
+  NSPoint hitPoint = [tab convertPoint:centerPoint
+                                toView:[tab_strip_ superview]];
+  NSView* toolTipView = [tab_strip_ hitTest:hitPoint];
+  EXPECT_TRUE(toolTipView);
+  EXPECT_NE(toolTipView, tab);
+
   // Initially, tab title and tooltip text are equivalent.
   EXPECT_EQ(TabAlertState::NONE,
             chrome::GetTabAlertStateForContents(contents));
   [controller_ setTabTitle:tabController withContents:contents];
   NSString* const baseTitle = [tabController title];
   EXPECT_NSEQ(baseTitle, [tabController toolTip]);
+  EXPECT_NSEQ([tabController toolTip], [toolTipView toolTip]);
 
   // Simulate the start of tab video capture.  Tab title remains the same, but
   // the tooltip text should include the following appended: 1) a line break;
@@ -303,6 +316,7 @@ TEST_F(TabStripControllerTest, CorrectTitleAndToolTipTextFromSetTabTitle) {
   [controller_ setTabTitle:tabController withContents:contents];
   EXPECT_NSEQ(baseTitle, [tabController title]);
   NSString* const toolTipText = [tabController toolTip];
+  EXPECT_NSEQ(toolTipText, [toolTipView toolTip]);
   if ([baseTitle length] > 0) {
     EXPECT_TRUE(NSEqualRanges(NSMakeRange(0, [baseTitle length]),
                               [toolTipText rangeOfString:baseTitle]));
@@ -321,6 +335,7 @@ TEST_F(TabStripControllerTest, CorrectTitleAndToolTipTextFromSetTabTitle) {
   [controller_ setTabTitle:tabController withContents:contents];
   EXPECT_NSEQ(baseTitle, [tabController title]);
   EXPECT_NSEQ(baseTitle, [tabController toolTip]);
+  EXPECT_NSEQ(baseTitle, [toolTipView toolTip]);
 }
 
 TEST_F(TabStripControllerTest, TabCloseDuringDrag) {

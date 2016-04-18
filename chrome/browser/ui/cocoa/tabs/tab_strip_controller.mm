@@ -1221,9 +1221,11 @@ private:
     title = l10n_util::GetStringUTF16(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
   [tab setTitle:base::SysUTF16ToNSString(title)];
 
-  const base::string16& toolTip = chrome::AssembleTabTooltipText(
-      title, [self alertStateForContents:contents]);
-  [tab setToolTip:base::SysUTF16ToNSString(toolTip)];
+  NSString* toolTip = base::SysUTF16ToNSString(chrome::AssembleTabTooltipText(
+      title, [self alertStateForContents:contents]));
+  [tab setToolTip:toolTip];
+  if ([tab tabView] == hoveredTab_)
+    [toolTipView_ setToolTip:toolTip];
 }
 
 // Called when a notification is received from the model to insert a new tab
@@ -1888,8 +1890,8 @@ private:
     [toolTipView_ setFrame:[newHoveredTab frame]];
     if (![toolTipView_ superview]) {
       [tabStripView_ addSubview:toolTipView_
-                     positioned:NSWindowBelow
-                     relativeTo:nil];
+                     positioned:NSWindowAbove
+                     relativeTo:dragBlockingView_];
     }
   }
 }
