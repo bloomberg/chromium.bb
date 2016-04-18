@@ -51,14 +51,6 @@ const char kSourceLanguageQueryName[] = "sl";
 // Used in kReportLanguageDetectionErrorURL to specify the page URL.
 const char kUrlQueryName[] = "u";
 
-// Notifies |g_callback_list_| of translate errors.
-void NotifyTranslateError(const TranslateErrorDetails& details) {
-  if (!g_callback_list_)
-    return;
-
-  g_callback_list_->Notify(details);
-}
-
 }  // namespace
 
 TranslateManager::~TranslateManager() {}
@@ -296,6 +288,20 @@ void TranslateManager::DoTranslatePage(const std::string& translate_script,
       page_seq_no_, translate_script, source_lang, target_lang);
 }
 
+// Notifies |g_callback_list_| of translate errors.
+void TranslateManager::NotifyTranslateError(TranslateErrors::Type error_type) {
+  if (!g_callback_list_ || error_type == TranslateErrors::NONE ||
+      translate_driver_->IsOffTheRecord()) {
+    return;
+  }
+
+  TranslateErrorDetails error_details;
+  error_details.time = base::Time::Now();
+  error_details.url = translate_driver_->GetLastCommittedURL();
+  error_details.error = error_type;
+  g_callback_list_->Notify(error_details);
+}
+
 void TranslateManager::PageTranslated(const std::string& source_lang,
                                       const std::string& target_lang,
                                       TranslateErrors::Type error_type) {
@@ -313,15 +319,7 @@ void TranslateManager::PageTranslated(const std::string& source_lang,
                                      target_lang,
                                      error_type,
                                      false);
-
-  if (error_type != TranslateErrors::NONE &&
-      !translate_driver_->IsOffTheRecord()) {
-    TranslateErrorDetails error_details;
-    error_details.time = base::Time::Now();
-    error_details.url = translate_driver_->GetLastCommittedURL();
-    error_details.error = error_type;
-    NotifyTranslateError(error_details);
-  }
+  NotifyTranslateError(error_type);
 }
 
 void TranslateManager::OnTranslateScriptFetchComplete(
@@ -345,13 +343,7 @@ void TranslateManager::OnTranslateScriptFetchComplete(
         target_lang,
         TranslateErrors::NETWORK,
         false);
-    if (!translate_driver_->IsOffTheRecord()) {
-      TranslateErrorDetails error_details;
-      error_details.time = base::Time::Now();
-      error_details.url = translate_driver_->GetLastCommittedURL();
-      error_details.error = TranslateErrors::NETWORK;
-      NotifyTranslateError(error_details);
-    }
+    NotifyTranslateError(TranslateErrors::NETWORK);
   }
 }
 

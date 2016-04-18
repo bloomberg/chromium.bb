@@ -108,6 +108,9 @@ class TranslateManager {
                        const std::string& source_lang,
                        const std::string& target_lang);
 
+  // Notifies all registered callbacks of translate errors.
+  void NotifyTranslateError(TranslateErrors::Type error_type);
+
   // Called when the Translate script has been fetched.
   // Initiates the translation.
   void OnTranslateScriptFetchComplete(const std::string& source_lang,
