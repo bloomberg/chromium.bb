@@ -495,8 +495,8 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
 }
 
 // Per http://crbug.com/603744, MaxSessionsAndRecenty fails intermittently on
-// windows and linux.
-#if defined(OS_WIN) || defined(OS_LINUX)
+// windows, linux and mac.
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_MaxSessionsAndRecency DISABLED_MaxSessionsAndRecency
 #else
 #define MAYBE_MaxSessionsAndRecency MaxSessionsAndRecency
