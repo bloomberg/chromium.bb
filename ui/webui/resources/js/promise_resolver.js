@@ -21,7 +21,7 @@
  * @template T
  */
 function PromiseResolver() {
-  /** @private {function(T): void} */
+  /** @private {function(T=): void} */
   this.resolve_;
 
   /** @private {function(*=): void} */
@@ -39,7 +39,7 @@ PromiseResolver.prototype = {
   get promise() { return this.promise_; },
   set promise(p) { assertNotReached(); },
 
-  /** @return {function(T): void} */
+  /** @return {function(T=): void} */
   get resolve() { return this.resolve_; },
   set resolve(r) { assertNotReached(); },
 

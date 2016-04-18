@@ -140,7 +140,7 @@ SettingsLanguagesSingletonElement = Polymer({
 
     Promise.all(promises).then(function(results) {
        this.createModel_(results[1], results[2]);
-       this.resolver_.resolve(undefined /* unused */);
+       this.resolver_.resolve();
     }.bind(this));
   },
 
