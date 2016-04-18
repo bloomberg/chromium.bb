@@ -184,6 +184,7 @@ android_apk("remoting_host_apk") {
   android_manifest = "host/AndroidManifest.xml"
   native_libs = [ "libremoting_host_jni.so" ]
   java_files = [
+    "host/src/org/chromium/chromoting/host/RemotingApplication.java",
     "host/src/org/chromium/chromoting/host/MainActivity.java",
     "host/src/org/chromium/chromoting/host/jni/Host.java",
   ]

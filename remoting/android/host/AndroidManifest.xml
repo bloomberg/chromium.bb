@@ -9,6 +9,7 @@
     package="org.chromium.chromoting.host">
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="23"/>
     <application android:label="CRD Host"
+        android:name="org.chromium.chromoting.host.RemotingApplication"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         android:allowBackup="false">
         <activity android:name="org.chromium.chromoting.host.MainActivity"

@@ -38,7 +38,6 @@ import org.chromium.chromoting.help.HelpContext;
 import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.Client;
 import org.chromium.chromoting.jni.ConnectionListener;
-import org.chromium.chromoting.jni.JniInterface;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -276,9 +275,6 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
         navigationDrawer.addView(switcherView, 0);
-
-        // Bring native components online.
-        JniInterface.loadLibrary(this);
     }
 
     @Override

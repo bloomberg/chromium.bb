@@ -18,16 +18,14 @@ public class Host {
     // Pointer to the C++ object, cast to a |long|.
     private long mNativeJniHost;
 
-    private static boolean sLoaded;
-
-    // Called once from the main Activity. Loads and initializes the native
-    // code.
+    /**
+     * To be called once from the Application context singleton. Loads and initializes the native
+     * code. Called on the UI thread.
+     * @param context The Application context.
+     */
     public static void loadLibrary(Context context) {
-        if (sLoaded) return;
-
         System.loadLibrary("remoting_host_jni");
-        ContextUtils.initApplicationContext(context.getApplicationContext());
-        sLoaded = true;
+        ContextUtils.initApplicationContext(context);
     }
 
     public Host() {

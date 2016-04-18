@@ -8,8 +8,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
-import org.chromium.chromoting.host.jni.Host;
-
 /**
  * Main screen of the Chromoting Host application.
  */
@@ -18,8 +16,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        Host.loadLibrary(this);
 
         setContentView(R.layout.main);
 

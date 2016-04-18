@@ -19,24 +19,16 @@ import java.nio.ByteBuffer;
  */
 @JNINamespace("remoting")
 public class JniInterface {
-    /*
-     * Library-loading state machine.
-     */
-    /** Whether the library has been loaded. Accessed on the UI thread. */
-    private static boolean sLoaded = false;
-
     /**
-     * To be called once from the main Activity. Loads and initializes the native code.
-     * Called on the UI thread.
+     * To be called once from the Application context singleton. Loads and initializes the native
+     * code. Called on the UI thread.
+     * @param context The Application context.
      */
     public static void loadLibrary(Context context) {
-        if (sLoaded) return;
-
         System.loadLibrary("remoting_client_jni");
 
-        ContextUtils.initApplicationContext(context.getApplicationContext());
+        ContextUtils.initApplicationContext(context);
         nativeLoadNative();
-        sLoaded = true;
     }
 
     /** Performs the native portion of the initialization. */
