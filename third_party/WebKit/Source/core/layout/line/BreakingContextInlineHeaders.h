@@ -660,10 +660,12 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     float lastSpaceWordSpacing = 0;
     float wordSpacingForWordMeasurement = 0;
 
+    float widthFromLastBreakingOpportunity = m_width.uncommittedWidth();
     float charWidth = 0;
     // Auto-wrapping text should wrap in the middle of a word only if it could not wrap before the word,
     // which is only possible if the word is the first thing on the line, that is, if |w| is zero.
     bool breakWords = m_currentStyle->breakWords() && ((m_autoWrap && !m_width.committedWidth()) || m_currWS == PRE);
+    bool midWordBreak = false;
     bool breakAll = m_currentStyle->wordBreak() == BreakAllWordBreak && m_autoWrap;
     bool keepAll = m_currentStyle->wordBreak() == KeepAllWordBreak && m_autoWrap;
     bool prohibitBreakInside = m_currentStyle->hasTextCombine() && layoutText.isCombineText() && LineLayoutTextCombine(layoutText).isCombined();
@@ -726,13 +728,25 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
         bool applyWordSpacing = false;
 
+        // Determine if we should try breaking in the middle of a word.
+        if (breakWords && !midWordBreak && !U16_IS_TRAIL(c)) {
+            widthFromLastBreakingOpportunity += charWidth;
+            bool midWordBreakIsBeforeSurrogatePair = U16_IS_LEAD(c) && m_current.offset() + 1 < layoutText.textLength() && U16_IS_TRAIL(layoutText.uncheckedCharacterAt(m_current.offset() + 1));
+            charWidth = textWidth(layoutText, m_current.offset(), midWordBreakIsBeforeSurrogatePair ? 2 : 1, font, m_width.committedWidth() + widthFromLastBreakingOpportunity, m_collapseWhiteSpace);
+            // Measure up to 2em overflow since ligatures/kerning can shorten
+            // the width as we add more characters. rewindToMidWordBreak() can
+            // measure the accurate mid-word break point then.
+            midWordBreak = m_width.committedWidth() + widthFromLastBreakingOpportunity + charWidth > m_width.availableWidth()
+                + 2 * font.getFontDescription().computedSize();
+        }
+
         // Determine if we are in the whitespace between words.
         int nextBreakablePosition = m_current.nextBreakablePosition();
         bool betweenWords = c == newlineCharacter || (m_currWS != PRE && !m_atStart && m_layoutTextInfo.m_lineBreakIterator.isBreakable(m_current.offset(), nextBreakablePosition, lineBreakType));
         m_current.setNextBreakablePosition(nextBreakablePosition);
 
         // If we're in the middle of a word or at the start of a new one and can't break there, then continue to the next character.
-        if (!betweenWords) {
+        if (!betweenWords && !midWordBreak) {
             if (m_ignoringSpaces) {
                 // Stop ignoring spaces and begin at this
                 // new point.
@@ -771,7 +785,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         WordMeasurement& wordMeasurement = calculateWordWidth(wordMeasurements, layoutText, lastSpace, lastWidthMeasurement, wordSpacingForWordMeasurement, font, wordTrailingSpaceWidth, c);
         lastWidthMeasurement += lastSpaceWordSpacing;
 
-        bool midWordBreak = false;
+        midWordBreak = false;
         if (canBreakMidWord && !m_width.fitsOnLine(lastWidthMeasurement)
             && rewindToMidWordBreak(layoutText, style, font, breakAll, wordMeasurement)) {
             lastWidthMeasurement = wordMeasurement.width;
@@ -816,6 +830,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         // opportunity to break after a word.
         if (m_autoWrap && betweenWords) {
             m_width.commit();
+            widthFromLastBreakingOpportunity = 0;
             m_lineBreak.moveTo(m_current.getLineLayoutItem(), m_current.offset(), m_current.nextBreakablePosition());
             breakWords = false;
             canBreakMidWord = breakAll;
@@ -856,7 +871,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     float lastWidthMeasurement = 0;
     wordMeasurement.startOffset = lastSpace;
     wordMeasurement.endOffset = m_current.offset();
-    bool midWordBreak = false;
+    midWordBreak = false;
     if (!m_ignoringSpaces) {
         lastWidthMeasurement = textWidth(layoutText, lastSpace, m_current.offset() - lastSpace, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, &wordMeasurement.glyphBounds);
         wordMeasurement.width = lastWidthMeasurement + wordSpacingForWordMeasurement;

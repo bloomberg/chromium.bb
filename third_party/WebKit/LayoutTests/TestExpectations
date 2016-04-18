@@ -514,7 +514,6 @@ crbug.com/600618 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Failur
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
 # Use crbug.com/490511 for untriaged failures.
-crbug.com/490511 imported/web-platform-tests/dom/nodes/Document-contentType/contentType/contenttype_txt.html [ Timeout ]
 crbug.com/490511 [ Linux Win ] imported/web-platform-tests/html/rendering/bindings/the-input-element-as-a-text-entry-widget/unrecognized-type-should-fallback-as-text-type.html [ Failure ]
 crbug.com/526898 imported/web-platform-tests/html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-x.xhtml [ Failure ]
 crbug.com/108417 imported/web-platform-tests/html/rendering/non-replaced-elements/tables/table-border-1.html [ Failure ]
