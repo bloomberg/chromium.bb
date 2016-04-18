@@ -53,6 +53,16 @@ public class PhysicalWebUma {
     private static final String TOTAL_URLS_REFRESH_COUNTS =
             "PhysicalWeb.TotalUrls.OnRefresh";
     private static final String ACTIVITY_REFERRALS = "PhysicalWeb.ActivityReferral";
+    private static final String PHYSICAL_WEB_STATE = "PhysicalWeb.State";
+    private static final String LAUNCH_FROM_PREFERENCES = "LaunchFromPreferences";
+    private static final String LAUNCH_FROM_DIAGNOSTICS = "LaunchFromDiagnostics";
+    private static final String BLUETOOTH = "Bluetooth";
+    private static final String DATA_CONNECTION = "DataConnection";
+    private static final String LOCATION_PERMISSION = "LocationPermission";
+    private static final String LOCATION_SERVICES = "LocationServices";
+    private static final String PREFERENCE = "Preference";
+    private static final int BOOLEAN_BOUNDARY = 2;
+    private static final int TRISTATE_BOUNDARY = 3;
     private static boolean sUploadAllowed = false;
 
     /**
@@ -173,27 +183,53 @@ public class PhysicalWebUma {
      *     histograms.xml.
      */
     public static void onActivityReferral(Context context, int referer) {
-        if (sUploadAllowed) {
-            RecordHistogram.recordEnumeratedHistogram(
-                    ACTIVITY_REFERRALS, referer, ListUrlsActivity.REFERER_BOUNDARY);
-        } else {
-            storeValue(context, ACTIVITY_REFERRALS, referer);
-        }
-        long delay;
+        handleEnum(context, ACTIVITY_REFERRALS, referer, ListUrlsActivity.REFERER_BOUNDARY);
         switch (referer) {
             case ListUrlsActivity.NOTIFICATION_REFERER:
-                delay = UrlManager.getInstance(context).getTimeSinceNotificationUpdate();
-                handleTime(context, STANDARD_NOTIFICATION_PRESS_DELAYS, delay,
+                handleTime(context, STANDARD_NOTIFICATION_PRESS_DELAYS,
+                        UrlManager.getInstance(context).getTimeSinceNotificationUpdate(),
                         TimeUnit.MILLISECONDS);
                 break;
             case ListUrlsActivity.OPTIN_REFERER:
-                delay = UrlManager.getInstance(context).getTimeSinceNotificationUpdate();
-                handleTime(context, OPT_IN_NOTIFICATION_PRESS_DELAYS, delay,
+                handleTime(context, OPT_IN_NOTIFICATION_PRESS_DELAYS,
+                        UrlManager.getInstance(context).getTimeSinceNotificationUpdate(),
                         TimeUnit.MILLISECONDS);
+                break;
+            case ListUrlsActivity.PREFERENCE_REFERER:
+                recordPhysicalWebState(context, LAUNCH_FROM_PREFERENCES);
+                break;
+            case ListUrlsActivity.DIAGNOSTICS_REFERER:
+                recordPhysicalWebState(context, LAUNCH_FROM_DIAGNOSTICS);
                 break;
             default:
                 break;
         }
+    }
+
+    /**
+     * Calculate a Physical Web state.
+     * The Physical Web state includes:
+     * - The location provider
+     * - The location permission
+     * - The bluetooth status
+     * - The data connection status
+     * - The Physical Web preference status
+     */
+    public static void recordPhysicalWebState(Context context, String actionName) {
+        handleEnum(context, createStateString(LOCATION_SERVICES, actionName),
+                Utils.isLocationServicesEnabled(context) ? 1 : 0, BOOLEAN_BOUNDARY);
+        handleEnum(context, createStateString(LOCATION_PERMISSION, actionName),
+                Utils.isLocationPermissionGranted(context) ? 1 : 0, BOOLEAN_BOUNDARY);
+        handleEnum(context, createStateString(BLUETOOTH, actionName),
+                Utils.getBluetoothEnabledStatus(context), TRISTATE_BOUNDARY);
+        handleEnum(context, createStateString(DATA_CONNECTION, actionName),
+                Utils.isDataConnectionActive(context) ? 1 : 0, BOOLEAN_BOUNDARY);
+        int preferenceState = 2;
+        if (!PhysicalWeb.isOnboarding(context)) {
+            preferenceState = PhysicalWeb.isPhysicalWebPreferenceEnabled(context) ? 1 : 0;
+        }
+        handleEnum(context, createStateString(PREFERENCE, actionName),
+                preferenceState, TRISTATE_BOUNDARY);
     }
 
     /**
@@ -210,6 +246,10 @@ public class PhysicalWebUma {
         if (prefs.getBoolean(HAS_DEFERRED_METRICS_KEY, false)) {
             AsyncTask.THREAD_POOL_EXECUTOR.execute(new UmaUploader(prefs));
         }
+    }
+
+    private static String createStateString(String stateName, String actionName) {
+        return PHYSICAL_WEB_STATE + "." + stateName + "." + actionName;
     }
 
     private static void storeAction(Context context, String key) {
@@ -256,6 +296,14 @@ public class PhysicalWebUma {
         }
     }
 
+    private static void handleEnum(Context context, String key, int value, int boundary) {
+        if (sUploadAllowed) {
+            RecordHistogram.recordEnumeratedHistogram(key, value, boundary);
+        } else {
+            storeValue(context, key, value);
+        }
+    }
+
     private static class UmaUploader implements Runnable {
         SharedPreferences mPrefs;
 
@@ -282,6 +330,22 @@ public class PhysicalWebUma {
             uploadCounts(TOTAL_URLS_INITIAL_COUNTS);
             uploadCounts(TOTAL_URLS_REFRESH_COUNTS);
             uploadEnums(ACTIVITY_REFERRALS, ListUrlsActivity.REFERER_BOUNDARY);
+            uploadEnums(createStateString(LOCATION_SERVICES, LAUNCH_FROM_DIAGNOSTICS),
+                    BOOLEAN_BOUNDARY);
+            uploadEnums(createStateString(LOCATION_PERMISSION, LAUNCH_FROM_DIAGNOSTICS),
+                    BOOLEAN_BOUNDARY);
+            uploadEnums(createStateString(BLUETOOTH, LAUNCH_FROM_DIAGNOSTICS), TRISTATE_BOUNDARY);
+            uploadEnums(createStateString(DATA_CONNECTION, LAUNCH_FROM_DIAGNOSTICS),
+                    BOOLEAN_BOUNDARY);
+            uploadEnums(createStateString(PREFERENCE, LAUNCH_FROM_DIAGNOSTICS), TRISTATE_BOUNDARY);
+            uploadEnums(createStateString(LOCATION_SERVICES, LAUNCH_FROM_PREFERENCES),
+                    BOOLEAN_BOUNDARY);
+            uploadEnums(createStateString(LOCATION_PERMISSION, LAUNCH_FROM_PREFERENCES),
+                    BOOLEAN_BOUNDARY);
+            uploadEnums(createStateString(BLUETOOTH, LAUNCH_FROM_PREFERENCES), TRISTATE_BOUNDARY);
+            uploadEnums(createStateString(DATA_CONNECTION, LAUNCH_FROM_PREFERENCES),
+                    BOOLEAN_BOUNDARY);
+            uploadEnums(createStateString(PREFERENCE, LAUNCH_FROM_PREFERENCES), TRISTATE_BOUNDARY);
             removePref(HAS_DEFERRED_METRICS_KEY);
         }
 
