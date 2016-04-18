@@ -93,6 +93,18 @@ void TestURLRequestContext::Init() {
     context_storage_.set_http_server_properties(
         std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
   }
+  // In-memory cookie store.
+  if (!cookie_store()) {
+    context_storage_.set_cookie_store(
+        base::WrapUnique(new CookieMonster(nullptr, nullptr)));
+  }
+  // In-memory Channel ID service.  Must be created before the
+  // HttpNetworkSession.
+  if (!channel_id_service()) {
+    context_storage_.set_channel_id_service(base::WrapUnique(
+        new ChannelIDService(new DefaultChannelIDStore(nullptr),
+                             base::WorkerPool::GetTaskRunner(true))));
+  }
   if (http_transaction_factory()) {
     // Make sure we haven't been passed an object we're not going to use.
     EXPECT_FALSE(client_socket_factory_);
@@ -120,17 +132,6 @@ void TestURLRequestContext::Init() {
     context_storage_.set_http_transaction_factory(base::WrapUnique(
         new HttpCache(context_storage_.http_network_session(),
                       HttpCache::DefaultBackend::InMemory(0), false)));
-  }
-  // In-memory cookie store.
-  if (!cookie_store()) {
-    context_storage_.set_cookie_store(
-        base::WrapUnique(new CookieMonster(nullptr, nullptr)));
-  }
-  // In-memory Channel ID service.
-  if (!channel_id_service()) {
-    context_storage_.set_channel_id_service(base::WrapUnique(
-        new ChannelIDService(new DefaultChannelIDStore(nullptr),
-                             base::WorkerPool::GetTaskRunner(true))));
   }
   if (!http_user_agent_settings()) {
     context_storage_.set_http_user_agent_settings(base::WrapUnique(
