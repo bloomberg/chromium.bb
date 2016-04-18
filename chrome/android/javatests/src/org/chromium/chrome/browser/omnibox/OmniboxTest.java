@@ -9,7 +9,6 @@ import static org.chromium.chrome.test.util.OmniboxTestUtils.buildSuggestionMap;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.support.v4.view.ViewCompat;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Selection;
@@ -24,6 +23,7 @@ import android.widget.TextView;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -534,11 +534,10 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     /**
-     * crbug.com/414353
      * Test to verify security-icon "lock or globe" on visiting http and secured Urls.
      * @EnormousTest
      */
-    @FlakyTest
+    @FlakyTest(message = "crbug.com/414353")
     public void testSecurityIcon() throws InterruptedException {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
                 getInstrumentation().getContext(), Environment.getExternalStorageDirectory());

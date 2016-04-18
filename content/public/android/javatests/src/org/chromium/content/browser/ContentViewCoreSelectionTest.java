@@ -8,12 +8,12 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.input.ChromiumBaseInputConnection;
 import org.chromium.content.browser.input.ImeTestUtils;
@@ -131,9 +131,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     /*
     @SmallTest
     @Feature({"TextInput"})
-    https://crbug.com/592428
     */
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/592428")
     public void testPastePopupNotShownOnLongPressingNonEmptyInput() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
@@ -146,9 +145,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     /*
     @SmallTest
     @Feature({"TextInput"})
-    https://crbug.com/592428
     */
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/592428")
     public void testPastePopupClearedOnTappingEmptyInput() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
@@ -160,9 +158,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     /*
     @SmallTest
     @Feature({"TextInput"})
-    https://crbug.com/592428
     */
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/592428")
     public void testPastePopupClearedOnTappingNonEmptyInput() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
@@ -174,9 +171,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     /*
     @SmallTest
     @Feature({"TextInput"})
-    https://crbug.com/592428
     */
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/592428")
     public void testPastePopupClearedOnTappingOutsideInput() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
@@ -188,9 +184,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     /*
     @SmallTest
     @Feature({"TextInput"})
-    https://crbug.com/592428
     */
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/592428")
     public void testPastePopupClearedOnLongPressingOutsideInput() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
@@ -202,9 +197,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     /*
     @SmallTest
     @Feature({"TextInput"})
-    https://crbug.com/592428
     */
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/592428")
     public void testPastePopupNotShownOnLongPressingDisabledInput() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
@@ -218,9 +212,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     /*
     @SmallTest
     @Feature({"TextInput"})
-    https://crbug.com/592428
     */
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/592428")
     public void testPastePopupDismissedOnDestroy() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
@@ -520,9 +513,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     /*
     @SmallTest
     @Feature({"TextInput"})
-    https://crbug.com/592428
     */
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/592428")
     public void testSelectActionBarPasswordPaste() throws Exception {
         copyStringToClipboard("SamplePassword2");
 

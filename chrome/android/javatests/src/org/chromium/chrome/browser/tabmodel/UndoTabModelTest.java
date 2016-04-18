@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -997,7 +997,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * @throws InterruptedException
      */
     @MediumTest
-    @FlakyTest // crbug.com/592969
+    @FlakyTest(message = "crbug.com/592969")
     public void testOutOfOrder2() throws InterruptedException {
         TabModel model = getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = getActivity().getTabCreator(false);

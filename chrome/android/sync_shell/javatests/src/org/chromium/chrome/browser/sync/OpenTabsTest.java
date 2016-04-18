@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -93,9 +93,8 @@ public class OpenTabsTest extends SyncTestBase {
     // Test syncing multiple open tabs from client to server.
     @LargeTest
     @Feature({"Sync"})
-    https://crbug.com/592437
     */
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/592437")
     public void testUploadMultipleOpenTabs() throws Exception {
         loadUrl(URL);
         loadUrlInNewTab(URL2);
@@ -108,9 +107,8 @@ public class OpenTabsTest extends SyncTestBase {
     // Test syncing an open tab from client to server.
     @LargeTest
     @Feature({"Sync"})
-    https://crbug.com/592437
     */
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/592437")
     public void testUploadAndCloseOpenTab() throws Exception {
         loadUrl(URL);
         // Can't have zero tabs, so we have to open two to test closing one.

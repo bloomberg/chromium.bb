@@ -2241,6 +2241,7 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/util/DisabledTest.java",
       "test/android/javatests/src/org/chromium/base/test/util/EnormousTest.java",
       "test/android/javatests/src/org/chromium/base/test/util/Feature.java",
+      "test/android/javatests/src/org/chromium/base/test/util/FlakyTest.java",
       "test/android/javatests/src/org/chromium/base/test/util/InMemorySharedPreferences.java",
       "test/android/javatests/src/org/chromium/base/test/util/InstrumentationUtils.java",
       "test/android/javatests/src/org/chromium/base/test/util/IntegrationTest.java",

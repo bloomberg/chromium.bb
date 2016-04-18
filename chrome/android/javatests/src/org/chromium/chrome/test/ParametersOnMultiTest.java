@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.test;
 
-import android.test.FlakyTest;
 import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.EnormousTest;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.parameter.Parameter;
 import org.chromium.base.test.util.parameter.ParameterizedTest;

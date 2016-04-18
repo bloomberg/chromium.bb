@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
 import android.view.View;
@@ -20,6 +19,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -624,10 +624,9 @@ public class DocumentModeTest extends DocumentModeTestBase {
      * URL in the Intent.
      */
     /*
-     * Bug: http://crbug/554487
      * @MediumTest
      */
-    @FlakyTest
+    @FlakyTest(message = "http://crbug/554487")
     public void testBehemothUrlWindowOpen() throws Exception {
         Intent lastIntent = performNewWindowTest(
                 HUGE_URL_PAGE, "behemoth URL page", true, "behemoth result", true);

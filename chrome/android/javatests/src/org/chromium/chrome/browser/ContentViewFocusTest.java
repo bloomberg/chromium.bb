@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser;
 
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -78,9 +78,8 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
      * @MediumTest
      * @Feature({"TabContents"})
      * @Restriction(RESTRICTION_TYPE_PHONE)
-     * Bug: http://crbug.com/172473
      */
-    @FlakyTest
+    @FlakyTest(message = "http://crbug.com/172473")
     public void testHideSelectionOnPhoneTabSwiping() throws Exception {
         // Setup
         ChromeTabUtils.newTabsFromMenu(getInstrumentation(), getActivity(), 2);

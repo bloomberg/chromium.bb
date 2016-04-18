@@ -5,12 +5,12 @@
 package org.chromium.net;
 
 import android.os.ConditionVariable;
-import android.test.FlakyTest;
 import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.net.TestUrlRequestCallback.FailureType;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.test.FailurePhase;
@@ -1519,9 +1519,8 @@ public class CronetUrlRequestTest extends CronetTestBase {
     /*
     @SmallTest
     @Feature({"Cronet"})
-    https://crbug.com/592444
     */
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/592444")
     public void testFailures() throws Exception {
         throwOrCancel(FailureType.CANCEL_SYNC, ResponseStep.ON_RECEIVED_REDIRECT,
                 false, false);

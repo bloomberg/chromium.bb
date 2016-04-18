@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.video;
 
 import android.os.Environment;
-import android.test.FlakyTest;
 import android.view.KeyEvent;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -46,9 +46,8 @@ public class FullscreenVideoTest extends ChromeActivityTestCaseBase<ChromeActivi
      * exit fullscreen mode without changing its URL.
      *
      * @MediumTest
-     * crbug.com/458368.
      */
-    @FlakyTest
+    @FlakyTest(message = "crbug.com/458368")
     public void testExitFullscreenNotifiesTabObservers() throws InterruptedException {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
                 getInstrumentation().getContext(), Environment.getExternalStorageDirectory());

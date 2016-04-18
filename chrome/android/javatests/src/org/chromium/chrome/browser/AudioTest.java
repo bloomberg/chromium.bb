@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser;
 
 import android.os.Environment;
-import android.test.FlakyTest;
 
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
@@ -41,12 +41,11 @@ public class AudioTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     /**
      * Test playing a small mp3 audio file.
-     * http://crbug.com/331122
      * @Feature({"Media", "Media-Audio", "Main"})
      * @MediumTest
      */
     // TODO(jbudorick): Attempt to reenable this after the server switch has stabilized.
-    @FlakyTest
+    @FlakyTest(message = "crbug.com/331122")
     public void testPlayMp3() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         TabTitleObserver titleObserver = new TabTitleObserver(tab, "ready_to_play");

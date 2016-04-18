@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.test.util;
 
-import android.test.FlakyTest;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.EnormousTest;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -67,8 +67,7 @@ public class ChromeSigninUtilsTest extends InstrumentationTestCase {
                 mSigninUtil.isExistingGoogleAccountOnOs(GOOGLE_ACCOUNT_USERNAME));
     }
 
-    // https://crbug.com/517849
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/517849")
     @EnormousTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
     public void testIsSignedInOnGoogleOS() {
@@ -94,8 +93,7 @@ public class ChromeSigninUtilsTest extends InstrumentationTestCase {
                 mSigninUtil.isExistingGoogleAccountOnOs(GOOGLE_ACCOUNT_USERNAME));
     }
 
-    // https://crbug.com/517849
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/517849")
     @EnormousTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
     public void testIsSignedInOnAppAndGoogleOS() {
@@ -110,8 +108,7 @@ public class ChromeSigninUtilsTest extends InstrumentationTestCase {
                 mSigninUtil.isExistingGoogleAccountOnOs(GOOGLE_ACCOUNT_USERNAME));
     }
 
-    // https://crbug.com/517849
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/517849")
     @EnormousTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
     public void testIsSignedInOnFakeOSandGoogleOS() {
@@ -126,8 +123,7 @@ public class ChromeSigninUtilsTest extends InstrumentationTestCase {
                 mSigninUtil.isExistingGoogleAccountOnOs(GOOGLE_ACCOUNT_USERNAME));
     }
 
-    // https://crbug.com/517849
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/517849")
     @EnormousTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
     public void testIsSignedInOnAppAndFakeOSandGoogleOS() {

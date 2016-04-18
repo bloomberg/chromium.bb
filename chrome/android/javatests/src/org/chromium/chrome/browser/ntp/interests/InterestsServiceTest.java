@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.ntp.interests;
 
 import android.accounts.Account;
 import android.content.Context;
-import android.test.FlakyTest;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ntp.interests.InterestsService.Interest;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.AccountTrackerService;
@@ -90,11 +90,10 @@ public class InterestsServiceTest extends NativeLibraryTestBase {
     }
 
     /**
-     * http://crbug.com/585173
      * @SmallTest
      * @Feature({"NewTabPage"})
      */
-    @FlakyTest
+    @FlakyTest(message = "http://crbug.com/585173")
     public void testEmptyInterests() throws Exception {
         String response = "{\n"
                 + "  \"interests\": []\n"
@@ -106,11 +105,10 @@ public class InterestsServiceTest extends NativeLibraryTestBase {
     }
 
     /**
-     * http://crbug.com/585173
      * @SmallTest
      * @Feature({"NewTabPage"})
      */
-    @FlakyTest
+    @FlakyTest(message = "http://crbug.com/585173")
     public void testInterests() throws Exception {
         String response = "{\n"
                 + "  \"interests\": [\n"
@@ -138,7 +136,7 @@ public class InterestsServiceTest extends NativeLibraryTestBase {
      * @SmallTest
      * @Feature({"NewTabPage"})
      */
-    @FlakyTest
+    @FlakyTest(message = "http://crbug.com/585173")
     public void testBadlyFormedInterests() throws Exception {
         String response = "{\n"
                 + "  \"interests\": [";
@@ -148,11 +146,10 @@ public class InterestsServiceTest extends NativeLibraryTestBase {
     }
 
     /**
-     * http://crbug.com/585173
      * @SmallTest
      * @Feature({"NewTabPage"})
      */
-    @FlakyTest
+    @FlakyTest(message = "http://crbug.com/585173")
     public void testEmptyResponse() throws Exception {
         Interest[] result = serveResponseAndRequestInterests("");
 

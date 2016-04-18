@@ -11,12 +11,12 @@ import android.content.ContextWrapper;
 import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.Looper;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.net.CronetEngine.UrlRequestInfo;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -342,9 +342,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @SuppressWarnings("deprecation")
-    https://crbug.com/592444
     */
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/592444")
     public void testRequestFinishedListenerFailedRequest() throws Exception {
         String connectionRefusedUrl = "http://127.0.0.1:3";
         mTestFramework = startCronetTestFramework();
@@ -557,9 +556,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     /*
     @SmallTest
     @Feature({"Cronet"})
-    https://crbug.com/592444
     */
-    @FlakyTest
+    @FlakyTest(message = "https://crbug.com/592444")
     public void testShutdownAfterError() throws Exception {
         mTestFramework = startCronetTestFramework();
         TestUrlRequestCallback callback = new ShutdownTestUrlRequestCallback();
