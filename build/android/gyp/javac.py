@@ -351,13 +351,16 @@ def main(argv):
     javac_cmd.extend(['-XDignore.symbol.file'])
 
   classpath_inputs = options.bootclasspath
-  # TODO(agrieve): Remove this .TOC heuristic once GYP is no more.
-  if options.classpath and not options.classpath[0].endswith('.interface.jar'):
-    for path in options.classpath:
-      if os.path.exists(path + '.TOC'):
-        classpath_inputs.append(path + '.TOC')
-      else:
-        classpath_inputs.append(path)
+  if options.classpath:
+    if options.classpath[0].endswith('.interface.jar'):
+      classpath_inputs.extend(options.classpath)
+    else:
+      # TODO(agrieve): Remove this .TOC heuristic once GYP is no more.
+      for path in options.classpath:
+        if os.path.exists(path + '.TOC'):
+          classpath_inputs.append(path + '.TOC')
+        else:
+          classpath_inputs.append(path)
 
   # Compute the list of paths that when changed, we need to rebuild.
   input_paths = classpath_inputs + options.java_srcjars + java_files
