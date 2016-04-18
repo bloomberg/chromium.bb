@@ -250,11 +250,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         ApplicationInitialization.enableFullscreenFlags(
                 getResources(), this, getControlContainerHeightResource());
-        // TODO(twellington): Remove this work around when the underlying bug is fixed.
-        //                    See crbug.com/583099.
-        if (!Build.VERSION.CODENAME.equals("N")) {
-            getWindow().setBackgroundDrawable(getBackgroundDrawable());
-        }
+        getWindow().setBackgroundDrawable(getBackgroundDrawable());
         mWindowAndroid = ((ChromeApplication) getApplicationContext())
                 .createActivityWindowAndroid(this);
         mWindowAndroid.restoreInstanceState(getSavedInstanceState());
