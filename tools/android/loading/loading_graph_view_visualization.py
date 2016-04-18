@@ -2,8 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Visualize a loading_graph_view.LoadingGraphView."""
+"""Visualize a loading_graph_view.LoadingGraphView.
 
+When executed as a script, takes a loading trace and generates a png of the
+loading graph."""
+
+import activity_lens
 import request_track
 
 
@@ -167,3 +171,28 @@ class LoadingGraphViewVisualization(object):
     from_request_id = edge.from_node.request.request_id
     to_request_id = edge.to_node.request.request_id
     return '"%s" -> "%s" %s;\n' % (from_request_id, to_request_id, arrow)
+
+def main(trace_file):
+  import subprocess
+
+  import loading_graph_view
+  import loading_trace
+  import request_dependencies_lens
+
+  trace = loading_trace.LoadingTrace.FromJsonFile(trace_file)
+  dependencies_lens = request_dependencies_lens.RequestDependencyLens(trace)
+  activity = activity_lens.ActivityLens(trace)
+  graph_view = loading_graph_view.LoadingGraphView(trace, dependencies_lens,
+                                                   activity=activity)
+  visualization = LoadingGraphViewVisualization(graph_view)
+
+  dotfile = trace_file + '.dot'
+  pngfile = trace_file + '.png'
+  with file(dotfile, 'w') as output:
+    visualization.OutputDot(output)
+  subprocess.check_call(['dot', '-Tpng', dotfile, '-o', pngfile])
+
+
+if __name__ == '__main__':
+  import sys
+  main(sys.argv[1])
