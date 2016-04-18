@@ -484,4 +484,14 @@ class UrlManager {
             NotificationManagerProxy notificationManager) {
         mNotificationManager = notificationManager;
     }
+
+    @VisibleForTesting
+    static void clearPrefsForTesting(Context context) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .remove(PREFS_VERSION_KEY)
+                .remove(PREFS_NEARBY_URLS_KEY)
+                .remove(PREFS_RESOLVED_URLS_KEY)
+                .remove(PREFS_NOTIFICATION_UPDATE_TIMESTAMP)
+                .apply();
+    }
 }

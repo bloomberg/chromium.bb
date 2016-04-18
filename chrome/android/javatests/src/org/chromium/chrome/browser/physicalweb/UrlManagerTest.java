@@ -40,6 +40,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         mSharedPreferences.edit().putInt(PREF_PHYSICAL_WEB, PHYSICAL_WEB_ON).apply();
+        UrlManager.clearPrefsForTesting(context);
         mUrlManager = new UrlManager(context);
         mMockPwsClient = new MockPwsClient();
         mUrlManager.overridePwsClientForTesting(mMockPwsClient);
