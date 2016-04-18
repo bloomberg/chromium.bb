@@ -78,6 +78,16 @@ group("All") {
   ]
 }
 
+# TODO(GYP): This target exists for compatibility with GYP for the builders.
+# For now, this builds everything. We should decide if we want to build less.
+group("chromium_builder_tests") {
+  testonly = true
+
+  deps = [
+    ":All",
+  ]
+}
+
 # The "both_gn_and_gyp" target should reflect every target that is built
 # in both the GN and GYP builds, and ideally it should match the
 # "both_gn_and_gyp" target in build/gn_migration.gypi line-for-line.
