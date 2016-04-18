@@ -44,18 +44,27 @@
     }                                                                     \
   } while (0)
 
+static INLINE void NaClAssertOpFailMessage(uintptr_t lhs,
+                                           uintptr_t rhs,
+                                           const char *lhs_expr,
+                                           const char *rhs_expr,
+                                           const char *comparison_op,
+                                           int source_line,
+                                           const char *source_file) {
+  fprintf(stderr,
+          "Error at line %d, %s:\n"
+          "Error: %s %s %s is FALSE\n",
+          source_line, source_file, lhs_expr, comparison_op, rhs_expr);
+  fprintf(stderr,
+          "got 0x%08" NACL_PRIxPTR " (%" NACL_PRIdPTR "); "
+          "comparison value 0x%08" NACL_PRIxPTR " (%" NACL_PRIdPTR ")\n",
+          lhs, lhs, rhs, rhs);
+}
+
 #define ASSERT_OP_THUNK(lhs, op, rhs, slhs, srhs, thunk) do {             \
     if (!((lhs) op (rhs))) {                                              \
-      fprintf(stderr,                                                     \
-              "Error at line %d, %s:\n"                                   \
-              "Error: %s "#op" %s"                                        \
-              " is FALSE\n",                                              \
-              __LINE__, __FILE__, slhs, srhs);                            \
-      fprintf(stderr,                                                     \
-              "got 0x%08" NACL_PRIxPTR " (%" NACL_PRIdPTR "); "           \
-              "comparison value 0x%08" NACL_PRIxPTR " (%" NACL_PRIdPTR" )\n", \
-              (uintptr_t) (lhs), (uintptr_t) (lhs),                       \
-              (uintptr_t) (rhs), (uintptr_t) (rhs));                      \
+      NaClAssertOpFailMessage((uintptr_t) (lhs), (uintptr_t) (rhs),       \
+                              slhs, srhs, #op, __LINE__, __FILE__);       \
       thunk;                                                              \
       printf("FAIL\n");                                                   \
       exit(1);                                                            \
