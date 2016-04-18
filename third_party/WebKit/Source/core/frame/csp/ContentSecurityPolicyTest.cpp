@@ -197,4 +197,17 @@ TEST_F(ContentSecurityPolicyTest, ReportURIInMeta)
     EXPECT_FALSE(directiveList->reportEndpoints().isEmpty());
 }
 
+// Tests that object-src directives are applied to a request to load a
+// plugin, but not to subresource requests that the plugin itself
+// makes. https://crbug.com/603952
+TEST_F(ContentSecurityPolicyTest, ObjectSrc)
+{
+    KURL url(KURL(), "https://example.test");
+    csp->bindToExecutionContext(document.get());
+    csp->didReceiveHeader("object-src 'none';", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta);
+    EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextObject, url, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextEmbed, url, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(csp->allowRequest(WebURLRequest::RequestContextPlugin, url, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
+}
+
 } // namespace blink

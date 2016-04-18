@@ -554,7 +554,6 @@ bool ContentSecurityPolicy::allowRequest(WebURLRequest::RequestContext context, 
         return allowConnectToSource(url, redirectStatus, reportingStatus);
     case WebURLRequest::RequestContextEmbed:
     case WebURLRequest::RequestContextObject:
-    case WebURLRequest::RequestContextPlugin:
         return allowObjectFromSource(url, redirectStatus, reportingStatus);
     case WebURLRequest::RequestContextFavicon:
     case WebURLRequest::RequestContextImage:
@@ -585,6 +584,7 @@ bool ContentSecurityPolicy::allowRequest(WebURLRequest::RequestContext context, 
     case WebURLRequest::RequestContextInternal:
     case WebURLRequest::RequestContextLocation:
     case WebURLRequest::RequestContextPing:
+    case WebURLRequest::RequestContextPlugin:
     case WebURLRequest::RequestContextPrefetch:
     case WebURLRequest::RequestContextSubresource:
     case WebURLRequest::RequestContextUnspecified:
