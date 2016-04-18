@@ -404,7 +404,7 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     }
 
     private void recordEndOfSessionUMA() {
-        long remotePlaybackStoppedTimestampMs = SystemClock.uptimeMillis();
+        long remotePlaybackStoppedTimestampMs = SystemClock.elapsedRealtime();
 
         // There was no media element ever...
         if (mMediaElementAttachedTimestampMs == 0) return;
@@ -473,12 +473,12 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     public void setMediaStateListener(MediaStateListener mediaStateListener) {
         if (mMediaStateListener != null && mediaStateListener == null
                     && mMediaElementAttachedTimestampMs != 0) {
-            mMediaElementDetachedTimestampMs = SystemClock.uptimeMillis();
+            mMediaElementDetachedTimestampMs = SystemClock.elapsedRealtime();
         } else if (mMediaStateListener == null && mediaStateListener != null) {
             // We're switching the videos so let's record the UMA for the previous one.
             if (mMediaElementDetachedTimestampMs != 0) recordEndOfSessionUMA();
 
-            mMediaElementAttachedTimestampMs = SystemClock.uptimeMillis();
+            mMediaElementAttachedTimestampMs = SystemClock.elapsedRealtime();
             mMediaElementDetachedTimestampMs = 0;
         }
 
