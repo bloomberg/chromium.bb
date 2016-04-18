@@ -1002,7 +1002,7 @@ class Browser : public TabStripModelObserver,
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
 
-  std::unique_ptr<ValidationMessageBubble> validation_message_bubble_;
+  base::WeakPtr<ValidationMessageBubble> validation_message_bubble_;
 
   SigninViewController signin_view_controller_;
 

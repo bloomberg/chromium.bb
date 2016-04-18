@@ -7,7 +7,20 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+
+const int kWindowMinWidth = 64;
+const int kWindowMaxWidth = 256;
+const int kIconTextMargin = 8;
+const int kTextVerticalMargin = 4;
+
+}  // namespace
 
 ValidationMessageBubbleView::ValidationMessageBubbleView(
     content::WebContents* web_contents,
@@ -15,30 +28,75 @@ ValidationMessageBubbleView::ValidationMessageBubbleView(
     const base::string16& main_text,
     const base::string16& sub_text) {
   content::RenderWidgetHostView* rwhv = web_contents->GetRenderWidgetHostView();
+  set_parent_window(rwhv->GetNativeView());
+
+  set_can_activate(false);
+  set_arrow(views::BubbleBorder::TOP_LEFT);
   const gfx::Rect anchor_in_screen =
       anchor_in_root_view + rwhv->GetViewBounds().origin().OffsetFromOrigin();
-  delegate_ = new ValidationMessageBubbleDelegate(
-      anchor_in_screen, main_text, sub_text, this);
-  delegate_->set_parent_window(rwhv->GetNativeView());
-  views::BubbleDelegateView::CreateBubble(delegate_);
-  delegate_->GetWidget()->ShowInactive();
+  SetAnchorRect(anchor_in_screen);
+
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  views::ImageView* icon = new views::ImageView();
+  icon->SetImage(*bundle.GetImageSkiaNamed(IDR_INPUT_ALERT));
+  icon->SizeToPreferredSize();
+  AddChildView(icon);
+
+  views::Label* label = new views::Label(
+      main_text, bundle.GetFontList(ui::ResourceBundle::MediumFont));
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  int text_start_x = icon->bounds().right() + kIconTextMargin;
+  int min_available = kWindowMinWidth - text_start_x;
+  int max_available = kWindowMaxWidth - text_start_x;
+  int label_width = label->GetPreferredSize().width();
+  label->SetMultiLine(true);
+  AddChildView(label);
+
+  views::Label* sub_label = nullptr;
+  if (!sub_text.empty()) {
+    sub_label = new views::Label(sub_text);
+    sub_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label_width = std::max(label_width, sub_label->GetPreferredSize().width());
+    sub_label->SetMultiLine(true);
+    AddChildView(sub_label);
+  }
+
+  label_width = std::min(std::max(label_width, min_available), max_available);
+  label->SetBounds(text_start_x, 0,
+                   label_width, label->GetHeightForWidth(label_width));
+  int content_bottom = label->height();
+
+  if (sub_label) {
+    sub_label->SetBounds(text_start_x,
+                         content_bottom + kTextVerticalMargin,
+                         label_width,
+                         sub_label->GetHeightForWidth(label_width));
+    content_bottom += kTextVerticalMargin + sub_label->height();
+  }
+
+  size_ = gfx::Size(text_start_x + label_width, content_bottom);
+
+  views::BubbleDialogDelegateView::CreateBubble(this)->ShowInactive();
 }
 
 ValidationMessageBubbleView::~ValidationMessageBubbleView() {
-  if (delegate_)
-    delegate_->Close();
+}
+
+gfx::Size ValidationMessageBubbleView::GetPreferredSize() const {
+  return size_;
+}
+
+int ValidationMessageBubbleView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 void ValidationMessageBubbleView::SetPositionRelativeToAnchor(
     content::RenderWidgetHost* widget_host,
     const gfx::Rect& anchor_in_root_view) {
-  if (!delegate_)
-    return;
-  delegate_->SetPositionRelativeToAnchor(
-      anchor_in_root_view +
+  SetAnchorRect(anchor_in_root_view +
       widget_host->GetView()->GetViewBounds().origin().OffsetFromOrigin());
 }
 
-void ValidationMessageBubbleView::WindowClosing() {
-  delegate_ = NULL;
+void ValidationMessageBubbleView::CloseValidationMessage() {
+  GetWidget()->Close();
 }

@@ -1276,7 +1276,8 @@ void Browser::ShowValidationMessage(content::WebContents* web_contents,
 }
 
 void Browser::HideValidationMessage(content::WebContents* web_contents) {
-  validation_message_bubble_.reset();
+  if (validation_message_bubble_)
+    validation_message_bubble_->CloseValidationMessage();
 }
 
 void Browser::MoveValidationMessage(content::WebContents* web_contents,

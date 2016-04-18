@@ -74,10 +74,10 @@ void TabDialogsViews::HideManagePasswordsBubble() {
     ManagePasswordsBubbleView::CloseCurrentBubble();
 }
 
-std::unique_ptr<ValidationMessageBubble> TabDialogsViews::ShowValidationMessage(
+base::WeakPtr<ValidationMessageBubble> TabDialogsViews::ShowValidationMessage(
     const gfx::Rect& anchor_in_root_view,
     const base::string16& main_text,
     const base::string16& sub_text) {
-  return base::WrapUnique(new ValidationMessageBubbleView(
-      web_contents_, anchor_in_root_view, main_text, sub_text));
+  return (new ValidationMessageBubbleView(
+      web_contents_, anchor_in_root_view, main_text, sub_text))->AsWeakPtr();
 }

@@ -2519,8 +2519,6 @@
       'browser/ui/views/translate/translate_icon_view.h',
       'browser/ui/views/update_recommended_message_box.cc',
       'browser/ui/views/update_recommended_message_box.h',
-      'browser/ui/views/validation_message_bubble_delegate.cc',
-      'browser/ui/views/validation_message_bubble_delegate.h',
       'browser/ui/views/validation_message_bubble_view.cc',
       'browser/ui/views/validation_message_bubble_view.h',
       'browser/ui/views/web_contents_modal_dialog_manager_views.cc',

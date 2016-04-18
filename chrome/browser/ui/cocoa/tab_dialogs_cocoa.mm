@@ -68,10 +68,10 @@ void TabDialogsCocoa::HideManagePasswordsBubble() {
   // The bubble is closed when it loses the focus.
 }
 
-std::unique_ptr<ValidationMessageBubble> TabDialogsCocoa::ShowValidationMessage(
+base::WeakPtr<ValidationMessageBubble> TabDialogsCocoa::ShowValidationMessage(
     const gfx::Rect& anchor_in_root_view,
     const base::string16& main_text,
     const base::string16& sub_text) {
-  return base::WrapUnique(new ValidationMessageBubbleCocoa(
-      web_contents_, anchor_in_root_view, main_text, sub_text));
+  return (new ValidationMessageBubbleCocoa(
+      web_contents_, anchor_in_root_view, main_text, sub_text))->AsWeakPtr();
 }

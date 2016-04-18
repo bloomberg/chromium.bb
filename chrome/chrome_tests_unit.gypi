@@ -1385,7 +1385,6 @@
       'browser/ui/views/toolbar/toolbar_action_view_unittest.cc',
       'browser/ui/views/toolbar/toolbar_actions_bar_bubble_views_unittest.cc',
       'browser/ui/views/translate/translate_bubble_view_unittest.cc',
-      'browser/ui/views/validation_message_bubble_delegate_unittest.cc',
     ],
     'chrome_unit_tests_win_sources': [
       'app/chrome_dll.rc',

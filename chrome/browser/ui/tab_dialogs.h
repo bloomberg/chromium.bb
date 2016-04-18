@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
@@ -63,7 +64,7 @@ class TabDialogs : public base::SupportsUserData::Data {
   virtual void ShowManagePasswordsBubble(bool user_action) = 0;
   virtual void HideManagePasswordsBubble() = 0;
 
-  virtual std::unique_ptr<ValidationMessageBubble> ShowValidationMessage(
+  virtual base::WeakPtr<ValidationMessageBubble> ShowValidationMessage(
       const gfx::Rect& anchor_in_root_view,
       const base::string16& main_text,
       const base::string16& sub_text) = 0;

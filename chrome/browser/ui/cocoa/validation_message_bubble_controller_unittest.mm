@@ -40,5 +40,4 @@ TEST(ValidationMessageBubbleControllerTest, FrameSize) {
   EXPECT_GT(NSHeight(shortMainLongSubFrame), NSHeight(shortMainMediumSubFrame));
 }
 
-}
-
+}  // namespace

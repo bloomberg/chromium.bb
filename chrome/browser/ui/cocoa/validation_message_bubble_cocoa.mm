@@ -167,12 +167,15 @@ ValidationMessageBubbleCocoa::ValidationMessageBubbleCocoa(
          subText:sub_text] retain]);
 }
 
-ValidationMessageBubbleCocoa::~ValidationMessageBubbleCocoa() {
-  [controller_ close];
-}
+ValidationMessageBubbleCocoa::~ValidationMessageBubbleCocoa() {}
 
 void ValidationMessageBubbleCocoa::SetPositionRelativeToAnchor(
     content::RenderWidgetHost* widget_host,
     const gfx::Rect& anchor_in_root_view) {
   [controller_ setAnchorPoint:GetAnchorPoint(widget_host, anchor_in_root_view)];
+}
+
+void ValidationMessageBubbleCocoa::CloseValidationMessage() {
+  [controller_ close];
+  delete this;
 }
