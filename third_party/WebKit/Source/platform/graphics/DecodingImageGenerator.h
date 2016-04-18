@@ -56,7 +56,7 @@ public:
     void setCanYUVDecode(bool yes) { m_canYUVDecode = yes; }
 
 protected:
-    SkData* onRefEncodedData() override;
+    SkData* onRefEncodedData(GrContext* ctx) override;
 
     bool onGetPixels(const SkImageInfo&, void* pixels, size_t rowBytes, SkPMColor table[], int* tableCount) override;
 

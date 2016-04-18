@@ -49,7 +49,7 @@ DecodingImageGenerator::~DecodingImageGenerator()
 {
 }
 
-SkData* DecodingImageGenerator::onRefEncodedData()
+SkData* DecodingImageGenerator::onRefEncodedData(GrContext* ctx)
 {
     TRACE_EVENT0("blink", "DecodingImageGenerator::refEncodedData");
 
