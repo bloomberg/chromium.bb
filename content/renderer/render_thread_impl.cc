@@ -2044,7 +2044,8 @@ RenderThreadImpl::SharedWorkerContextProvider() {
   bool shared_worker_context_provider_lost = false;
   if (shared_worker_context_provider_) {
     // Note: If context is lost, delete reference after releasing the lock.
-    base::AutoLock lock(*shared_worker_context_provider_->GetLock());
+    cc::ContextProvider::ScopedContextLock lock(
+        shared_worker_context_provider_.get());
     if (shared_worker_context_provider_->ContextGL()
             ->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
       shared_worker_context_provider_lost = true;
