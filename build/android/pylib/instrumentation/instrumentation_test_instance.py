@@ -276,9 +276,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._test_runner = self._test_apk.GetInstrumentationName()
 
     self._package_info = None
-    package_under_test = self._apk_under_test.GetPackageName()
     for package_info in constants.PACKAGE_INFO.itervalues():
-      if package_under_test == package_info.package:
+      if self._test_package == package_info.test_package:
         self._package_info = package_info
     if not self._package_info:
       logging.warning('Unable to find package info for %s', self._test_package)
