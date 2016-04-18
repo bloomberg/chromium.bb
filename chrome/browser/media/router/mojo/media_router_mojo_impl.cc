@@ -604,8 +604,7 @@ void MediaRouterMojoImpl::DoCreateRoute(
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool off_the_record) {
-  std::string presentation_id("mr_");
-  presentation_id += base::GenerateGUID();
+  std::string presentation_id = MediaRouterBase::CreatePresentationId();
   DVLOG_WITH_INSTANCE(1) << "DoCreateRoute " << source_id << "=>" << sink_id
                          << ", presentation ID: " << presentation_id;
 
@@ -644,8 +643,7 @@ void MediaRouterMojoImpl::DoConnectRouteByRouteId(
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool off_the_record) {
-  std::string presentation_id("mr_");
-  presentation_id += base::GenerateGUID();
+  std::string presentation_id = MediaRouterBase::CreatePresentationId();
   DVLOG_WITH_INSTANCE(1) << "DoConnectRouteByRouteId " << source_id
                          << ", route ID: " << route_id
                          << ", presentation ID: " << presentation_id;

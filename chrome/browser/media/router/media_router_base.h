@@ -39,6 +39,9 @@ class MediaRouterBase : public MediaRouter {
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            PresentationConnectionStateChangedCallbackRemoved);
 
+  // Generates a unique presentation id. Shared between Android and desktop.
+  static std::string CreatePresentationId();
+
   void NotifyPresentationConnectionStateChange(
       const MediaRoute::Id& route_id,
       content::PresentationConnectionState state);

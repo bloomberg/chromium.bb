@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/media_router_base.h"
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -48,6 +49,11 @@ void MediaRouterBase::OnOffTheRecordProfileShutdown() {
     const MediaRoute::Id route_id = *route_ids_it++;
     TerminateRoute(route_id);
   }
+}
+
+// static
+std::string MediaRouterBase::CreatePresentationId() {
+  return "mr_" + base::GenerateGUID();
 }
 
 void MediaRouterBase::NotifyPresentationConnectionStateChange(

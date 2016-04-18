@@ -88,10 +88,7 @@ void MediaRouterAndroid::CreateRoute(
     return;
   }
 
-  // TODO(avayvod): unify presentation id generation code between platforms.
-  // https://crbug.com/522239
-  std::string presentation_id("mr_");
-  presentation_id += base::GenerateGUID();
+  std::string presentation_id = MediaRouterBase::CreatePresentationId();
 
   int tab_id = -1;
   TabAndroid* tab = web_contents
@@ -118,8 +115,6 @@ void MediaRouterAndroid::CreateRoute(
   ScopedJavaLocalRef<jstring> jorigin =
           base::android::ConvertUTF8ToJavaString(env, origin.spec());
 
-  // TODO(avayvod): Pass the off_the_record flag to Android.
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=588239
   Java_ChromeMediaRouter_createRoute(
       env,
       java_media_router_.obj(),
