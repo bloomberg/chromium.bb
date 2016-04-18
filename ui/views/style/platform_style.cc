@@ -37,6 +37,7 @@ const SkColor kStyleButtonShadowColor = SK_ColorWHITE;
 const int PlatformStyle::kMinLabelButtonWidth = 70;
 const int PlatformStyle::kMinLabelButtonHeight = 33;
 const bool PlatformStyle::kDefaultLabelButtonHasBoldFont = true;
+const bool PlatformStyle::kTextfieldDragVerticallyDragsToEnd = false;
 
 // static
 gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,

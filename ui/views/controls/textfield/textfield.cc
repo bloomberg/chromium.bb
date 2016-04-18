@@ -40,6 +40,7 @@
 #include "ui/views/metrics.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/painter.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
@@ -1746,7 +1747,18 @@ void Textfield::MoveCursorTo(const gfx::Point& point, bool select) {
 
 void Textfield::SelectThroughLastDragLocation() {
   OnBeforeUserAction();
-  model_->MoveCursorTo(last_drag_location_, true);
+
+  const bool drags_to_end = PlatformStyle::kTextfieldDragVerticallyDragsToEnd;
+  if (drags_to_end && last_drag_location_.y() < 0) {
+    model_->MoveCursor(gfx::BreakType::LINE_BREAK,
+                       gfx::VisualCursorDirection::CURSOR_LEFT, true);
+  } else if (drags_to_end && last_drag_location_.y() > height()) {
+    model_->MoveCursor(gfx::BreakType::LINE_BREAK,
+                       gfx::VisualCursorDirection::CURSOR_RIGHT, true);
+  } else {
+    model_->MoveCursorTo(last_drag_location_, true);
+  }
+
   if (aggregated_clicks_ == 1) {
     model_->SelectWord();
     // Expand the selection so the initially selected word remains selected.

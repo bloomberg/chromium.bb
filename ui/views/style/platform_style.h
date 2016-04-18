@@ -34,6 +34,10 @@ class VIEWS_EXPORT PlatformStyle {
   // Whether dialog-default buttons are given a bold font style.
   static const bool kDefaultLabelButtonHasBoldFont;
 
+  // Whether dragging vertically above or below a textfield's bounds selects to
+  // the left or right end of the text from the cursor, respectively.
+  static const bool kTextfieldDragVerticallyDragsToEnd;
+
   // Creates an ImageSkia containing the image to use for the combobox arrow.
   // The |is_enabled| argument is true if the control the arrow is for is
   // enabled, and false if the control is disabled. The |style| argument is the

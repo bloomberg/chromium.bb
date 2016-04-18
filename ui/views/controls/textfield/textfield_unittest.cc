@@ -39,6 +39,7 @@
 #include "ui/views/controls/textfield/textfield_model.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
@@ -634,6 +635,44 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     EXPECT_TRUE(menu->IsEnabledAt(7 /* SELECT ALL */));
   }
 
+  void PressLeftMouseButton(int extra_flags) {
+    ui::MouseEvent click(ui::ET_MOUSE_PRESSED, mouse_position_, mouse_position_,
+                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                         ui::EF_LEFT_MOUSE_BUTTON | extra_flags);
+    textfield_->OnMousePressed(click);
+  }
+
+  void PressLeftMouseButton() {
+    PressLeftMouseButton(0);
+  }
+
+  void ReleaseLeftMouseButton() {
+    ui::MouseEvent release(ui::ET_MOUSE_RELEASED, mouse_position_,
+                           mouse_position_, ui::EventTimeForNow(),
+                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+    textfield_->OnMouseReleased(release);
+  }
+
+  void ClickLeftMouseButton(int extra_flags) {
+    PressLeftMouseButton(extra_flags);
+    ReleaseLeftMouseButton();
+  }
+
+  void ClickLeftMouseButton() {
+    ClickLeftMouseButton(0);
+  }
+
+  void DragMouseTo(const gfx::Point& where) {
+    mouse_position_ = where;
+    ui::MouseEvent drag(ui::ET_MOUSE_DRAGGED, where, where,
+                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+    textfield_->OnMouseDragged(drag);
+  }
+
+  // Textfield does not listen to OnMouseMoved, so this function does not send
+  // an event when it updates the cursor position.
+  void MoveMouseTo(const gfx::Point& where) { mouse_position_ = where; }
+
   // We need widget to populate wrapper class.
   Widget* widget_;
 
@@ -654,6 +693,8 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   int on_after_user_action_;
 
  private:
+  // Position of the mouse for synthetic mouse events.
+  gfx::Point mouse_position_;
   ui::ClipboardType copied_to_clipboard_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
   DISALLOW_COPY_AND_ASSIGN(TextfieldTest);
@@ -1073,10 +1114,8 @@ TEST_F(TextfieldTest, FocusTraversalTest) {
   // Test if clicking on textfield view sets the focus.
   widget_->GetFocusManager()->AdvanceFocus(true);
   EXPECT_EQ(3, GetFocusedView()->id());
-  ui::MouseEvent click(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                       ui::EF_LEFT_MOUSE_BUTTON);
-  textfield_->OnMousePressed(click);
+  MoveMouseTo(gfx::Point());
+  ClickLeftMouseButton();
   EXPECT_EQ(1, GetFocusedView()->id());
 
   // Tab/Shift+Tab should also cycle focus, not insert a tab character.
@@ -1125,33 +1164,20 @@ TEST_F(TextfieldTest, ContextMenuDisplayTest) {
 TEST_F(TextfieldTest, DoubleAndTripleClickTest) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
-  ui::MouseEvent click(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                       ui::EF_LEFT_MOUSE_BUTTON);
-  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
-  ui::MouseEvent double_click(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                              ui::EventTimeForNow(),
-                              ui::EF_LEFT_MOUSE_BUTTON | ui::EF_IS_DOUBLE_CLICK,
-                              ui::EF_LEFT_MOUSE_BUTTON);
 
   // Test for double click.
-  textfield_->OnMousePressed(click);
-  textfield_->OnMouseReleased(release);
+  MoveMouseTo(gfx::Point());
+  ClickLeftMouseButton();
   EXPECT_TRUE(textfield_->GetSelectedText().empty());
-  textfield_->OnMousePressed(double_click);
-  textfield_->OnMouseReleased(release);
+  ClickLeftMouseButton(ui::EF_IS_DOUBLE_CLICK);
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
 
   // Test for triple click.
-  textfield_->OnMousePressed(click);
-  textfield_->OnMouseReleased(release);
+  ClickLeftMouseButton();
   EXPECT_STR_EQ("hello world", textfield_->GetSelectedText());
 
   // Another click should reset back to double click.
-  textfield_->OnMousePressed(click);
-  textfield_->OnMouseReleased(release);
+  ClickLeftMouseButton();
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
 }
 
@@ -1162,37 +1188,68 @@ TEST_F(TextfieldTest, DragToSelect) {
   const int kEnd = 500;
   gfx::Point start_point(kStart, 0);
   gfx::Point end_point(kEnd, 0);
-  ui::MouseEvent click_a(ui::ET_MOUSE_PRESSED, start_point, start_point,
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
-  ui::MouseEvent click_b(ui::ET_MOUSE_PRESSED, end_point, end_point,
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
-  ui::MouseEvent drag_left(ui::ET_MOUSE_DRAGGED, gfx::Point(), gfx::Point(),
-                           ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
-  ui::MouseEvent drag_right(ui::ET_MOUSE_DRAGGED, end_point, end_point,
-                            ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
-  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, end_point, end_point,
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
-  textfield_->OnMousePressed(click_a);
+
+  MoveMouseTo(start_point);
+  PressLeftMouseButton();
   EXPECT_TRUE(textfield_->GetSelectedText().empty());
+
   // Check that dragging left selects the beginning of the string.
-  textfield_->OnMouseDragged(drag_left);
+  DragMouseTo(gfx::Point());
   base::string16 text_left = textfield_->GetSelectedText();
   EXPECT_STR_EQ("hello", text_left);
+
   // Check that dragging right selects the rest of the string.
-  textfield_->OnMouseDragged(drag_right);
+  DragMouseTo(end_point);
   base::string16 text_right = textfield_->GetSelectedText();
   EXPECT_STR_EQ(" world", text_right);
+
   // Check that releasing in the same location does not alter the selection.
-  textfield_->OnMouseReleased(release);
+  ReleaseLeftMouseButton();
   EXPECT_EQ(text_right, textfield_->GetSelectedText());
+
   // Check that dragging from beyond the text length works too.
-  textfield_->OnMousePressed(click_b);
-  textfield_->OnMouseDragged(drag_left);
-  textfield_->OnMouseReleased(release);
+  MoveMouseTo(end_point);
+  PressLeftMouseButton();
+  DragMouseTo(gfx::Point());
+  ReleaseLeftMouseButton();
   EXPECT_EQ(textfield_->text(), textfield_->GetSelectedText());
+}
+
+// This test checks that dragging above the textfield selects to the beginning
+// and dragging below the textfield selects to the end, but only on platforms
+// where that is the expected behavior.
+TEST_F(TextfieldTest, DragUpOrDownSelectsToEnd) {
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16("hello world"));
+  const base::string16 expected_up = base::ASCIIToUTF16(
+      PlatformStyle::kTextfieldDragVerticallyDragsToEnd ? "hello" : "lo");
+  const base::string16 expected_down = base::ASCIIToUTF16(
+      PlatformStyle::kTextfieldDragVerticallyDragsToEnd ? " world" : " w");
+  const int kStartX = GetCursorPositionX(5);
+  const int kDownX = GetCursorPositionX(7);
+  const int kUpX = GetCursorPositionX(3);
+  gfx::Point start_point(kStartX, 0);
+  gfx::Point down_point(kDownX, 500);
+  gfx::Point up_point(kUpX, -500);
+
+  MoveMouseTo(start_point);
+  PressLeftMouseButton();
+  DragMouseTo(up_point);
+  ReleaseLeftMouseButton();
+  EXPECT_EQ(textfield_->GetSelectedText(), expected_up);
+
+  // Click at |up_point|. This is important because drags do not count as clicks
+  // for the purpose of double-click detection, so if this test doesn't click
+  // somewhere other than |start_point| before the code below runs, the second
+  // click at |start_point| will be interpreted as a double-click instead of the
+  // start of a drag.
+  ClickLeftMouseButton();
+
+  MoveMouseTo(start_point);
+  PressLeftMouseButton();
+  DragMouseTo(down_point);
+  ReleaseLeftMouseButton();
+  EXPECT_EQ(textfield_->GetSelectedText(), expected_down);
 }
 
 #if defined(OS_WIN)
@@ -1277,11 +1334,9 @@ TEST_F(TextfieldTest, DragAndDrop_InitiateDrag) {
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
             textfield_->GetDragOperationsForView(NULL, kStringPoint));
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
+  MoveMouseTo(kStringPoint);
+  PressLeftMouseButton();
   // Ensure that textfields only initiate drag operations inside the selection.
-  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, kStringPoint, kStringPoint,
-                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                             ui::EF_LEFT_MOUSE_BUTTON);
-  textfield_->OnMousePressed(press_event);
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
             textfield_->GetDragOperationsForView(NULL, gfx::Point()));
   EXPECT_FALSE(textfield_->CanStartDragForView(NULL, gfx::Point(),
@@ -1308,17 +1363,13 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheRight) {
   // Start dragging "ello".
   textfield_->SelectRange(gfx::Range(1, 5));
   gfx::Point point(GetCursorPositionX(3), 0);
-  ui::MouseEvent click_a(ui::ET_MOUSE_PRESSED, point, point,
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
-  textfield_->OnMousePressed(click_a);
-  EXPECT_TRUE(textfield_->CanStartDragForView(textfield_, click_a.location(),
-                                              gfx::Point()));
-  operations = textfield_->GetDragOperationsForView(textfield_,
-                                                    click_a.location());
+  MoveMouseTo(point);
+  PressLeftMouseButton();
+  EXPECT_TRUE(textfield_->CanStartDragForView(textfield_, point, point));
+  operations = textfield_->GetDragOperationsForView(textfield_, point);
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY,
             operations);
-  textfield_->WriteDragDataForView(NULL, click_a.location(), &data);
+  textfield_->WriteDragDataForView(nullptr, point, &data);
   EXPECT_TRUE(data.GetString(&string));
   EXPECT_EQ(textfield_->GetSelectedText(), string);
   EXPECT_TRUE(textfield_->GetDropFormats(&formats, &format_types));
@@ -1362,17 +1413,13 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheLeft) {
   // Start dragging " worl".
   textfield_->SelectRange(gfx::Range(5, 10));
   gfx::Point point(GetCursorPositionX(7), 0);
-  ui::MouseEvent click_a(ui::ET_MOUSE_PRESSED, point, point,
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
-  textfield_->OnMousePressed(click_a);
-  EXPECT_TRUE(textfield_->CanStartDragForView(textfield_, click_a.location(),
-                                              gfx::Point()));
-  operations = textfield_->GetDragOperationsForView(textfield_,
-                                                    click_a.location());
+  MoveMouseTo(point);
+  PressLeftMouseButton();
+  EXPECT_TRUE(textfield_->CanStartDragForView(textfield_, point, gfx::Point()));
+  operations = textfield_->GetDragOperationsForView(textfield_, point);
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY,
             operations);
-  textfield_->WriteDragDataForView(NULL, click_a.location(), &data);
+  textfield_->WriteDragDataForView(nullptr, point, &data);
   EXPECT_TRUE(data.GetString(&string));
   EXPECT_EQ(textfield_->GetSelectedText(), string);
   EXPECT_TRUE(textfield_->GetDropFormats(&formats, &format_types));
@@ -1410,12 +1457,10 @@ TEST_F(TextfieldTest, DragAndDrop_Canceled) {
   // Start dragging "worl".
   textfield_->SelectRange(gfx::Range(6, 10));
   gfx::Point point(GetCursorPositionX(8), 0);
-  ui::MouseEvent click(ui::ET_MOUSE_PRESSED, point, point,
-                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                       ui::EF_LEFT_MOUSE_BUTTON);
-  textfield_->OnMousePressed(click);
+  MoveMouseTo(point);
+  PressLeftMouseButton();
   ui::OSExchangeData data;
-  textfield_->WriteDragDataForView(NULL, click.location(), &data);
+  textfield_->WriteDragDataForView(nullptr, point, &data);
   EXPECT_TRUE(textfield_->CanDrop(data));
   // Drag the text over somewhere valid, outside the current selection.
   gfx::Point drop_point(GetCursorPositionX(2), 0);
@@ -1424,14 +1469,8 @@ TEST_F(TextfieldTest, DragAndDrop_Canceled) {
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE, textfield_->OnDragUpdated(drop));
   // "Cancel" the drag, via move and release over the selection, and OnDragDone.
   gfx::Point drag_point(GetCursorPositionX(9), 0);
-  ui::MouseEvent drag(ui::ET_MOUSE_DRAGGED, drag_point, drag_point,
-                      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
-  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, drag_point, drag_point,
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
-  textfield_->OnMouseDragged(drag);
-  textfield_->OnMouseReleased(release);
-  textfield_->OnDragDone();
+  DragMouseTo(drag_point);
+  ReleaseLeftMouseButton();
   EXPECT_EQ(ASCIIToUTF16("hello world"), textfield_->text());
 }
 
@@ -2205,16 +2244,12 @@ TEST_F(TextfieldTest, KeepInitiallySelectedWord) {
   MouseClick(middle_cursor, 0);
   const gfx::Point middle(middle_cursor.x(),
                           middle_cursor.y() + middle_cursor.height() / 2);
-  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, middle, middle,
-                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                             ui::EF_LEFT_MOUSE_BUTTON);
-  textfield_->OnMousePressed(press_event);
+  MoveMouseTo(middle);
+  PressLeftMouseButton();
   EXPECT_EQ(gfx::Range(4, 7), textfield_->GetSelectedRange());
 
   // Drag the mouse to the beginning of the textfield.
-  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, beginning, beginning,
-                            ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
-  textfield_->OnMouseDragged(drag_event);
+  DragMouseTo(beginning);
   EXPECT_EQ(gfx::Range(7, 0), textfield_->GetSelectedRange());
 }
 
