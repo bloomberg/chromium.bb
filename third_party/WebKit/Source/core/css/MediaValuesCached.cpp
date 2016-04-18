@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/api/LayoutViewItem.h"
 
 namespace blink {
 
@@ -19,7 +20,7 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(Document& docume
     // TODO(hiroshige): Clean up |frame->view()| conditions.
     ASSERT(!frame || frame->view());
     if (frame && frame->view()) {
-        ASSERT(frame->document() && frame->document()->layoutView());
+        ASSERT(frame->document() && !frame->document()->layoutViewItem().isNull());
 
         // In case that frame is missing (e.g. for images that their document does not have a frame)
         // We simply leave the MediaValues object with the default MediaValuesCachedData values.
