@@ -268,7 +268,7 @@ ChildThreadImpl::Options::Builder::InBrowserProcess(
     const InProcessChildThreadParams& params) {
   options_.browser_process_io_runner = params.io_runner();
   options_.channel_name = params.channel_name();
-  options_.in_process_message_pipe_handle = params.handle();
+  options_.in_process_ipc_token = params.ipc_token();
   options_.in_process_application_token = params.application_token();
   return *this;
 }
@@ -338,15 +338,18 @@ scoped_refptr<base::SequencedTaskRunner> ChildThreadImpl::GetIOTaskRunner() {
 }
 
 void ChildThreadImpl::ConnectChannel(bool use_mojo_channel,
-                                     mojo::ScopedMessagePipeHandle handle) {
+                                     const std::string& ipc_token) {
   bool create_pipe_now = true;
   if (use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
+    mojo::ScopedMessagePipeHandle handle;
     if (!IsInBrowserProcess()) {
       DCHECK(!handle.is_valid());
       handle = mojo::edk::CreateChildMessagePipe(
           base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
               switches::kMojoChannelToken));
+    } else {
+      handle = mojo::edk::CreateChildMessagePipe(ipc_token);
     }
     DCHECK(handle.is_valid());
     channel_->Init(IPC::ChannelMojo::CreateClientFactory(std::move(handle)),
@@ -393,7 +396,7 @@ void ChildThreadImpl::Init(const Options& options) {
     UMA_HISTOGRAM_TIMES("Mojo.Shell.ChildConnectionTime", timer.Elapsed());
   }
 
-  mojo_application_.reset(new MojoApplication(GetIOTaskRunner()));
+  mojo_application_.reset(new MojoApplication());
   std::string mojo_application_token;
   if (!IsInBrowserProcess()) {
     mojo_application_token =
@@ -469,9 +472,7 @@ void ChildThreadImpl::Init(const Options& options) {
     channel_->AddFilter(startup_filter);
   }
 
-  ConnectChannel(
-      options.use_mojo_channel,
-      mojo::MakeScopedHandle(options.in_process_message_pipe_handle));
+  ConnectChannel(options.use_mojo_channel, options.in_process_ipc_token);
   IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
   if (broker && !broker->IsPrivilegedBroker())
     broker->RegisterBrokerCommunicationChannel(channel_.get());
@@ -613,9 +614,6 @@ std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
 }
 
 bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
-  if (mojo_application_->OnMessageReceived(msg))
-    return true;
-
   // Resource responses are sent to the resource dispatcher.
   if (resource_dispatcher_->OnMessageReceived(msg))
     return true;

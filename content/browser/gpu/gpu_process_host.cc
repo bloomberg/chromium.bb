@@ -43,6 +43,7 @@
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
@@ -537,8 +538,8 @@ bool GpuProcessHost::Init() {
   if (channel_id.empty())
     return false;
 
-  if (!SetupMojo())
-    return false;
+  DCHECK(!mojo_application_host_);
+  mojo_application_host_.reset(new MojoApplicationHost);
 
   gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
   if (in_process_) {
@@ -546,7 +547,8 @@ bool GpuProcessHost::Init() {
     DCHECK(g_gpu_main_thread_factory);
     in_process_gpu_thread_.reset(
         g_gpu_main_thread_factory(InProcessChildThreadParams(
-            channel_id, base::MessageLoop::current()->task_runner()),
+            channel_id, base::MessageLoop::current()->task_runner(),
+            std::string(), mojo_application_host_->GetToken()),
             gpu_preferences));
     base::Thread::Options options;
 #if defined(OS_WIN)
@@ -567,12 +569,6 @@ bool GpuProcessHost::Init() {
     return false;
 
   return true;
-}
-
-bool GpuProcessHost::SetupMojo() {
-  DCHECK(!mojo_application_host_);
-  mojo_application_host_.reset(new MojoApplicationHost);
-  return mojo_application_host_->Init();
 }
 
 void GpuProcessHost::RouteOnUIThread(const IPC::Message& message) {
@@ -898,14 +894,6 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 void GpuProcessHost::OnProcessLaunched() {
   UMA_HISTOGRAM_TIMES("GPU.GPUProcessLaunchTime",
                       base::TimeTicks::Now() - init_start_time_);
-
-  base::ProcessHandle handle;
-  if (in_process_)
-    handle = base::GetCurrentProcessHandle();
-  else
-    handle = process_->GetData().handle;
-
-  mojo_application_host_->Activate(this, handle);
 }
 
 void GpuProcessHost::OnProcessLaunchFailed() {
@@ -977,6 +965,8 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id,
 #endif
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
+  cmd_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
+                              mojo_application_host_->GetToken());
 
 #if defined(OS_WIN)
   if (GetContentClient()->browser()->ShouldUseWindowsPrefetchArgument())
