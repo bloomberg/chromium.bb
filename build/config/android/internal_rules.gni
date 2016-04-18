@@ -93,7 +93,7 @@ template("android_lint") {
         "--jar-path",
         rebase_path(invoker.jar_path, root_build_dir),
         "--java-files=$_rebased_java_files",
-        "--classpath=@FileArg($_rebased_build_config:javac:classpath)",
+        "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)",
       ]
     }
   }

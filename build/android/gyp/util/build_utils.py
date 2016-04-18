@@ -337,9 +337,6 @@ def MergeZips(output, inputs, exclude_patterns=None, path_transform=None):
           # Ignore directories.
           if info.filename[-1] == '/':
             continue
-          # Don't validate CRCs. ijar sets them all to 0.
-          if hasattr(info, 'CRC'):
-            del info.CRC
           dst_name = path_transform(info.filename, in_file)
           already_added = dst_name in added_names
           if not already_added and not MatchesGlob(dst_name, exclude_patterns):
