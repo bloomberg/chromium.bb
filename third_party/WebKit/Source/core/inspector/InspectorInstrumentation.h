@@ -31,36 +31,15 @@
 #ifndef InspectorInstrumentation_h
 #define InspectorInstrumentation_h
 
-#include "bindings/core/v8/ScriptString.h"
 #include "core/CoreExport.h"
-#include "core/animation/Animation.h"
-#include "core/css/CSSSelector.h"
-#include "core/css/CSSStyleDeclaration.h"
-#include "core/css/CSSStyleSheet.h"
-#include "core/dom/CharacterData.h"
-#include "core/dom/Element.h"
-#include "core/dom/ExecutionContext.h"
-#include "core/events/NodeEventContext.h"
+#include "core/dom/Document.h"
+#include "core/dom/Node.h"
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/ConsoleAPITypes.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutImage.h"
-#include "core/page/ChromeClient.h"
-#include "platform/network/EncodedFormData.h"
-#include "platform/network/ResourceRequest.h"
-#include "platform/network/WebSocketHandshakeRequest.h"
-#include "platform/network/WebSocketHandshakeResponse.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
-class Document;
-class EventTarget;
-class ExecutionContext;
 class InstrumentingAgents;
-class ThreadableLoaderClient;
 class WorkerGlobalScope;
-class WorkerInspectorProxy;
 
 #define FAST_RETURN_IF_NO_FRONTENDS(value) if (!hasFrontends()) return value;
 
@@ -110,49 +89,15 @@ inline bool hasFrontends() { return acquireLoad(&FrontendCounter::s_frontendCoun
 CORE_EXPORT void registerInstrumentingAgents(InstrumentingAgents*);
 CORE_EXPORT void unregisterInstrumentingAgents(InstrumentingAgents*);
 
-// Called from generated instrumentation code.
-CORE_EXPORT InstrumentingAgents* instrumentingAgentsFor(LocalFrame*);
-InstrumentingAgents* instrumentingAgentsFor(EventTarget*);
-InstrumentingAgents* instrumentingAgentsFor(ExecutionContext*);
-InstrumentingAgents* instrumentingAgentsFor(Document&);
-InstrumentingAgents* instrumentingAgentsFor(Document*);
-InstrumentingAgents* instrumentingAgentsFor(LayoutObject*);
-InstrumentingAgents* instrumentingAgentsFor(Node*);
-InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
-
-// Helper for the one above.
-CORE_EXPORT InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext*);
-
 CORE_EXPORT extern const char kInspectorEmulateNetworkConditionsClientId[];
 
-}  // namespace InspectorInstrumentation
+// Called from generated instrumentation code.
+CORE_EXPORT InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
+CORE_EXPORT InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext*);
 
-namespace InstrumentationEvents {
-extern const char PaintSetup[];
-extern const char Paint[];
-extern const char Layer[];
-extern const char RequestMainThreadFrame[];
-extern const char BeginFrame[];
-extern const char DrawFrame[];
-extern const char ActivateLayerTree[];
-extern const char EmbedderCallback[];
-};
-
-namespace InstrumentationEventArguments {
-extern const char FrameId[];
-extern const char LayerId[];
-extern const char LayerTreeId[];
-extern const char PageId[];
-extern const char CallbackName[];
-};
-
-namespace InspectorInstrumentation {
-
-inline InstrumentingAgents* instrumentingAgentsFor(ExecutionContext* context)
+inline InstrumentingAgents* instrumentingAgentsFor(LocalFrame* frame)
 {
-    if (!context)
-        return 0;
-    return context->isDocument() ? instrumentingAgentsFor(*toDocument(context)) : instrumentingAgentsForNonDocumentContext(context);
+    return frame ? frame->instrumentingAgents() : nullptr;
 }
 
 inline InstrumentingAgents* instrumentingAgentsFor(Document& document)
@@ -165,28 +110,27 @@ inline InstrumentingAgents* instrumentingAgentsFor(Document& document)
 
 inline InstrumentingAgents* instrumentingAgentsFor(Document* document)
 {
-    return document ? instrumentingAgentsFor(*document) : 0;
+    return document ? instrumentingAgentsFor(*document) : nullptr;
 }
 
-inline InstrumentingAgents* instrumentingAgentsFor(CSSStyleSheet* styleSheet)
+inline InstrumentingAgents* instrumentingAgentsFor(ExecutionContext* context)
 {
-    return styleSheet ? instrumentingAgentsFor(styleSheet->ownerDocument()) : 0;
+    if (!context)
+        return nullptr;
+    return context->isDocument() ? instrumentingAgentsFor(*toDocument(context)) : instrumentingAgentsForNonDocumentContext(context);
 }
 
 inline InstrumentingAgents* instrumentingAgentsFor(Node* node)
 {
-    return node ? instrumentingAgentsFor(node->document()) : 0;
+    return node ? instrumentingAgentsFor(node->document()) : nullptr;
 }
 
-inline InstrumentingAgents* instrumentingAgentsFor(CSSStyleDeclaration* declaration)
+inline InstrumentingAgents* instrumentingAgentsFor(EventTarget* eventTarget)
 {
-    return declaration ? instrumentingAgentsFor(declaration->parentStyleSheet()) : 0;
+    return eventTarget ? instrumentingAgentsFor(eventTarget->getExecutionContext()) : nullptr;
 }
 
 } // namespace InspectorInstrumentation
-
-InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope*);
-
 } // namespace blink
 
 #include "core/InspectorInstrumentationInl.h"

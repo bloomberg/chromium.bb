@@ -63,6 +63,8 @@ public:
     ~WorkerInspectorController();
     DECLARE_TRACE();
 
+    InstrumentingAgents* instrumentingAgents() const { return m_instrumentingAgents.get(); }
+
     void connectFrontend();
     void disconnectFrontend();
     void dispatchMessageFromFrontend(const String&);
@@ -70,7 +72,6 @@ public:
 
 private:
     WorkerInspectorController(WorkerGlobalScope*, PassOwnPtr<V8InspectorSession>);
-    friend InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope*);
 
     // InspectorRuntimeAgent::Client implementation.
     void resumeStartup() override;

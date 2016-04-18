@@ -65,7 +65,16 @@
 
 interface InspectorInstrumentation {
 
+#include "core/animation/Animation.h"
+#include "core/dom/CharacterData.h"
 #include "core/dom/PseudoElement.h"
+#include "core/page/ChromeClient.h"
+
+class ThreadableLoaderClient;
+class WebSocketHandshakeRequest;
+class WebSocketHandshakeResponse;
+class WorkerInspectorProxy;
+class XMLHttpRequest;
 
     // We should call PageDebuggerAgent method first otherwise this method resets script cache and removes scripts executed by other agents.
     [PageRuntime, Page, Animation]
@@ -144,7 +153,7 @@ interface InspectorInstrumentation {
     void didResizeMainFrame(LocalFrame*);
 
     [LayerTree, Inline=FastReturn]
-    void didPaint([Keep] LayoutObject*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
+    void didPaint(LocalFrame*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
 
     [Resource, Inline=FastReturn]
     InspectorInstrumentationCookie willRecalculateStyle([Keep] Document*);

@@ -168,70 +168,24 @@ void unregisterInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
     instrumentingAgentsSet().remove(instrumentingAgents);
 }
 
-InstrumentingAgents* instrumentingAgentsFor(LocalFrame* frame)
-{
-    return frame ? frame->instrumentingAgents() : nullptr;
-}
-
-InstrumentingAgents* instrumentingAgentsFor(EventTarget* eventTarget)
-{
-    if (!eventTarget)
-        return 0;
-    return instrumentingAgentsFor(eventTarget->getExecutionContext());
-}
-
-InstrumentingAgents* instrumentingAgentsFor(LayoutObject* layoutObject)
-{
-    return instrumentingAgentsFor(layoutObject->frame());
-}
-
 InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope* workerGlobalScope)
 {
     if (!workerGlobalScope)
-        return 0;
-    return instrumentationForWorkerGlobalScope(workerGlobalScope);
+        return nullptr;
+    if (WorkerInspectorController* controller = workerGlobalScope->workerInspectorController())
+        return controller->instrumentingAgents();
+    return nullptr;
 }
 
 InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext* context)
 {
     if (context->isWorkerGlobalScope())
-        return instrumentationForWorkerGlobalScope(toWorkerGlobalScope(context));
-
-    if (context->isWorkletGlobalScope()) {
-        LocalFrame* frame = toMainThreadWorkletGlobalScope(context)->frame();
-        if (frame)
-            return instrumentingAgentsFor(frame);
-    }
-
-    return 0;
+        return instrumentingAgentsFor(toWorkerGlobalScope(context));
+    if (context->isWorkletGlobalScope())
+        return instrumentingAgentsFor(toMainThreadWorkletGlobalScope(context)->frame());
+    return nullptr;
 }
 
 } // namespace InspectorInstrumentation
-
-namespace InstrumentationEvents {
-const char PaintSetup[] = "PaintSetup";
-const char Paint[] = "Paint";
-const char Layer[] = "Layer";
-const char RequestMainThreadFrame[] = "RequestMainThreadFrame";
-const char BeginFrame[] = "BeginFrame";
-const char ActivateLayerTree[] = "ActivateLayerTree";
-const char DrawFrame[] = "DrawFrame";
-const char EmbedderCallback[] = "EmbedderCallback";
-};
-
-namespace InstrumentationEventArguments {
-const char FrameId[] = "frameId";
-const char LayerId[] = "layerId";
-const char LayerTreeId[] = "layerTreeId";
-const char PageId[] = "pageId";
-const char CallbackName[] = "callbackName";
-};
-
-InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope* workerGlobalScope)
-{
-    if (WorkerInspectorController* controller = workerGlobalScope->workerInspectorController())
-        return controller->m_instrumentingAgents.get();
-    return 0;
-}
 
 } // namespace blink
