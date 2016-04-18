@@ -137,6 +137,10 @@ class DownloadProtectionService {
   ClientDownloadRequestSubscription RegisterClientDownloadRequestCallback(
       const ClientDownloadRequestCallback& callback);
 
+  double whitelist_sample_rate() const {
+    return whitelist_sample_rate_;
+  }
+
  protected:
   // Enum to keep track why a particular download verdict was chosen.
   // This is used to keep some stats around.
@@ -173,7 +177,9 @@ class DownloadProtectionService {
   friend class DownloadProtectionServiceTest;
 
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
-                           CheckClientDownloadWhitelistedUrl);
+                           CheckClientDownloadWhitelistedUrlWithoutSampling);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
+                           CheckClientDownloadWhitelistedUrlWithSampling);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientDownloadValidateRequest);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
@@ -245,6 +251,9 @@ class DownloadProtectionService {
   // List of 8-byte hashes that are blacklisted manually by flag.
   // Normally empty.
   std::set<std::string> manual_blacklist_hashes_;
+
+  // Rate of whitelisted downloads we sample to send out download ping.
+  double whitelist_sample_rate_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadProtectionService);
 };

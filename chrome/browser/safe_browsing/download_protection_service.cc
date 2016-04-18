@@ -17,6 +17,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/rand_util.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -70,6 +71,8 @@ using content::BrowserThread;
 
 namespace {
 static const int64_t kDownloadRequestTimeoutMs = 7000;
+// We sample 1% of whitelisted downloads to still send out download pings.
+static const double kWhitelistDownloadSampleRate = 0.01;
 }  // namespace
 
 namespace safe_browsing {
@@ -294,6 +297,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
         finished_(false),
         type_(ClientDownloadRequest::WIN_EXECUTABLE),
         start_time_(base::TimeTicks::Now()),
+        is_extended_reporting_(false),
+        is_incognito_(false),
         weakptr_factory_(this) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     item_->AddObserver(this);
@@ -303,6 +308,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
     DVLOG(2) << "Starting SafeBrowsing download check for: "
              << item_->DebugString(true);
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (item_->GetBrowserContext()) {
+      Profile* profile =
+          Profile::FromBrowserContext(item_->GetBrowserContext());
+      is_extended_reporting_ = profile &&
+             profile->GetPrefs()->GetBoolean(
+                 prefs::kSafeBrowsingExtendedReportingEnabled);
+      is_incognito_ = item_->GetBrowserContext()->IsOffTheRecord();
+    }
     // TODO(noelutz): implement some cache to make sure we don't issue the same
     // request over and over again if a user downloads the same binary multiple
     // times.
@@ -709,6 +722,11 @@ class DownloadProtectionService::CheckClientDownloadRequest
                               WHITELIST_TYPE_MAX);
   }
 
+  virtual bool ShouldSampleWhitelistedDownload() {
+    return service_ && is_extended_reporting_ && !is_incognito_ &&
+        base::RandDouble() < service_->whitelist_sample_rate();
+  }
+
   void CheckWhitelists() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -722,23 +740,37 @@ class DownloadProtectionService::CheckClientDownloadRequest
     if (url.is_valid() && database_manager_->MatchDownloadWhitelistUrl(url)) {
       DVLOG(2) << url << " is on the download whitelist.";
       RecordCountOfWhitelistedDownload(URL_WHITELIST);
-      // TODO(grt): Continue processing without uploading so that
-      // ClientDownloadRequest callbacks can be run even for this type of safe
-      // download.
-      PostFinishTask(SAFE, REASON_WHITELISTED_URL);
-      return;
+      if (ShouldSampleWhitelistedDownload()) {
+        // We currently sample 1% url whitelisted downloads from users who opted
+        // in extended reporting and are not in incognito mode.
+        skipped_url_whitelist_ = true;
+      } else {
+        // TODO(grt): Continue processing without uploading so that
+        // ClientDownloadRequest callbacks can be run even for this type of safe
+        // download.
+        PostFinishTask(SAFE, REASON_WHITELISTED_URL);
+        return;
+      }
     }
 
+    bool should_sample_for_certificate = ShouldSampleWhitelistedDownload();
     if (signature_info_.trusted()) {
       for (int i = 0; i < signature_info_.certificate_chain_size(); ++i) {
         if (CertificateChainIsWhitelisted(
                 signature_info_.certificate_chain(i))) {
           RecordCountOfWhitelistedDownload(SIGNATURE_WHITELIST);
-          // TODO(grt): Continue processing without uploading so that
-          // ClientDownloadRequest callbacks can be run even for this type of
-          // safe download.
-          PostFinishTask(SAFE, REASON_TRUSTED_EXECUTABLE);
-          return;
+          if (should_sample_for_certificate) {
+            // We currently sample 1% url whitelisted downloads from user who
+            // opted in extended reporting.
+            skipped_certificate_whitelist_ = true;
+            break;
+          } else {
+            // TODO(grt): Continue processing without uploading so that
+            // ClientDownloadRequest callbacks can be run even for this type of
+            // safe download.
+            PostFinishTask(SAFE, REASON_TRUSTED_EXECUTABLE);
+            return;
+          }
         }
       }
     }
@@ -819,17 +851,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // before sending it.
     if (!service_)
       return;
-    bool is_extended_reporting = false;
-    if (item_->GetBrowserContext()) {
-      Profile* profile =
-          Profile::FromBrowserContext(item_->GetBrowserContext());
-      is_extended_reporting = profile &&
-                              profile->GetPrefs()->GetBoolean(
-                                  prefs::kSafeBrowsingExtendedReportingEnabled);
-    }
 
     ClientDownloadRequest request;
-    if (is_extended_reporting) {
+    if (is_extended_reporting_) {
       request.mutable_population()->set_user_population(
           ChromeUserPopulation::EXTENDED_REPORTING);
     } else {
@@ -839,6 +863,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
     request.set_url(SanitizeUrl(item_->GetUrlChain().back()));
     request.mutable_digests()->set_sha256(item_->GetHash());
     request.set_length(item_->GetReceivedBytes());
+    if (skipped_url_whitelist_)
+      request.set_skipped_url_whitelist(true);
+    if (skipped_certificate_whitelist_)
+      request.set_skipped_certificate_whitelist(true);
     for (size_t i = 0; i < item_->GetUrlChain().size(); ++i) {
       ClientDownloadRequest::Resource* resource = request.add_resources();
       resource->set_url(SanitizeUrl(item_->GetUrlChain()[i]));
@@ -1057,6 +1085,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
   base::TimeTicks start_time_;  // Used for stats.
   base::TimeTicks timeout_start_time_;
   base::TimeTicks request_start_time_;
+  bool skipped_url_whitelist_;
+  bool skipped_certificate_whitelist_;
+  bool is_extended_reporting_;
+  bool is_incognito_;
   base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequest);
@@ -1071,7 +1103,8 @@ DownloadProtectionService::DownloadProtectionService(
       download_request_timeout_ms_(kDownloadRequestTimeoutMs),
       feedback_service_(
           new DownloadFeedbackService(request_context_getter_.get(),
-                                      BrowserThread::GetBlockingPool())) {
+                                      BrowserThread::GetBlockingPool())),
+      whitelist_sample_rate_(kWhitelistDownloadSampleRate) {
   if (sb_service) {
     ui_manager_ = sb_service->ui_manager();
     database_manager_ = sb_service->database_manager();
