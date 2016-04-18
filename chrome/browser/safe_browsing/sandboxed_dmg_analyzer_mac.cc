@@ -58,14 +58,15 @@ void SandboxedDMGAnalyzer::OpenDMGFile() {
 void SandboxedDMGAnalyzer::StartAnalysis() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  utility_process_host_ =
+  content::UtilityProcessHost* utility_process_host =
       content::UtilityProcessHost::Create(this,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))
-      ->AsWeakPtr();
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 
-  utility_process_host_->SetName(l10n_util::GetStringUTF16(
+  utility_process_host->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_SAFE_BROWSING_ZIP_FILE_ANALYZER_NAME));
-  utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);
+  utility_process_host->Send(
+      new ChromeUtilityMsg_AnalyzeDmgFileForDownloadProtection(
+          IPC::TakePlatformFileForTransit(std::move(file_))));
 }
 
 void SandboxedDMGAnalyzer::OnProcessCrashed(int exit_code) {
@@ -79,21 +80,12 @@ void SandboxedDMGAnalyzer::OnProcessLaunchFailed() {
 bool SandboxedDMGAnalyzer::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SandboxedDMGAnalyzer, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ProcessStarted,
-                        OnUtilityProcessStarted)
     IPC_MESSAGE_HANDLER(
         ChromeUtilityHostMsg_AnalyzeDmgFileForDownloadProtection_Finished,
         OnAnalysisFinished)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void SandboxedDMGAnalyzer::OnUtilityProcessStarted() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  utility_process_host_->Send(
-      new ChromeUtilityMsg_AnalyzeDmgFileForDownloadProtection(
-          IPC::TakePlatformFileForTransit(std::move(file_))));
 }
 
 void SandboxedDMGAnalyzer::OnAnalysisFinished(

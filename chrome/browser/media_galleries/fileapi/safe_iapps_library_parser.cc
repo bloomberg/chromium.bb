@@ -65,27 +65,8 @@ void SafeIAppsLibraryParser::StartProcessOnIOThread() {
       UtilityProcessHost::Create(this, task_runner.get())->AsWeakPtr();
   utility_process_host_->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_MEDIA_LIBRARY_FILE_CHECKER_NAME));
-  // Wait for the startup notification before sending the main IPC to the
-  // utility process, so that we can dup the file handle.
-  utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);
-  parser_state_ = PINGED_UTILITY_PROCESS_STATE;
-}
-
-void SafeIAppsLibraryParser::OnUtilityProcessStarted() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (parser_state_ != PINGED_UTILITY_PROCESS_STATE)
-    return;
-
-  if (utility_process_host_->GetData().handle == base::kNullProcessHandle) {
-    DLOG(ERROR) << "Child process handle is null";
-    OnError();
-    return;
-  }
-
-  if (!itunes_callback_.is_null()) {
-    utility_process_host_->Send(new ChromeUtilityMsg_ParseITunesLibraryXmlFile(
-        IPC::TakePlatformFileForTransit(std::move(library_file_))));
-  }
+  utility_process_host_->Send(new ChromeUtilityMsg_ParseITunesLibraryXmlFile(
+      IPC::TakePlatformFileForTransit(std::move(library_file_))));
 
   parser_state_ = STARTED_PARSING_STATE;
 }
@@ -123,8 +104,6 @@ bool SafeIAppsLibraryParser::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SafeIAppsLibraryParser, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ProcessStarted,
-                        OnUtilityProcessStarted)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_GotITunesLibrary,
                         OnGotITunesLibrary)
     IPC_MESSAGE_UNHANDLED(handled = false)

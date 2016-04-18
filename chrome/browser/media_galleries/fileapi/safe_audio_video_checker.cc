@@ -35,7 +35,7 @@ void SafeAudioVideoChecker::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (state_ != INITIAL_STATE)
     return;
-  state_ = PINGED_STATE;
+  state_ = STARTED_STATE;
 
   if (!file_.IsValid()) {
     callback_.Run(base::File::FILE_ERROR_SECURITY);
@@ -43,31 +43,24 @@ void SafeAudioVideoChecker::Start() {
     return;
   }
 
-  utility_process_host_ = content::UtilityProcessHost::Create(
-      this, base::ThreadTaskRunnerHandle::Get())->AsWeakPtr();
-  utility_process_host_->SetName(l10n_util::GetStringUTF16(
-      IDS_UTILITY_PROCESS_MEDIA_FILE_CHECKER_NAME));
-  utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);
-}
-
-SafeAudioVideoChecker::~SafeAudioVideoChecker() {}
-
-void SafeAudioVideoChecker::OnProcessStarted() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (state_ != PINGED_STATE)
-    return;
-  state_ = STARTED_STATE;
-
   IPC::PlatformFileForTransit file_for_transit =
       IPC::TakePlatformFileForTransit(std::move(file_));
   if (file_for_transit == IPC::InvalidPlatformFileForTransit()) {
     OnCheckingFinished(false /* valid? */);
     return;
   }
+
+  utility_process_host_ = content::UtilityProcessHost::Create(
+      this, base::ThreadTaskRunnerHandle::Get())->AsWeakPtr();
+  utility_process_host_->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_MEDIA_FILE_CHECKER_NAME));
+
   const int64_t kFileDecodeTimeInMS = 250;
   utility_process_host_->Send(new ChromeUtilityMsg_CheckMediaFile(
       kFileDecodeTimeInMS, file_for_transit));
 }
+
+SafeAudioVideoChecker::~SafeAudioVideoChecker() {}
 
 void SafeAudioVideoChecker::OnCheckingFinished(bool valid) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -86,8 +79,6 @@ void SafeAudioVideoChecker::OnProcessCrashed(int exit_code) {
 bool SafeAudioVideoChecker::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SafeAudioVideoChecker, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ProcessStarted,
-        OnProcessStarted)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_CheckMediaFile_Finished,
         OnCheckingFinished)
     IPC_MESSAGE_UNHANDLED(handled = false)

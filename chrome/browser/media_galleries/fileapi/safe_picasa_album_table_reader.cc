@@ -71,20 +71,7 @@ void SafePicasaAlbumTableReader::StartWorkOnIOThread() {
       ->AsWeakPtr();
   utility_process_host_->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_MEDIA_LIBRARY_FILE_CHECKER_NAME));
-  // Wait for the startup notification before sending the main IPC to the
-  // utility process, so that we can dup the file handle.
-  utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);
-  parser_state_ = PINGED_UTILITY_PROCESS_STATE;
-}
 
-void SafePicasaAlbumTableReader::OnProcessStarted() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (parser_state_ != PINGED_UTILITY_PROCESS_STATE)
-    return;
-
-  if (utility_process_host_->GetData().handle == base::kNullProcessHandle) {
-    DLOG(ERROR) << "Child process handle is null";
-  }
   AlbumTableFilesForTransit files_for_transit;
   files_for_transit.indicator_file = IPC::TakePlatformFileForTransit(
       std::move(album_table_files_.indicator_file));
@@ -129,8 +116,6 @@ bool SafePicasaAlbumTableReader::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SafePicasaAlbumTableReader, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ProcessStarted,
-                        OnProcessStarted)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParsePicasaPMPDatabase_Finished,
                         OnParsePicasaPMPDatabaseFinished)
     IPC_MESSAGE_UNHANDLED(handled = false)

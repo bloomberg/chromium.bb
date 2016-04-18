@@ -59,10 +59,6 @@ class SandboxedZipAnalyzer : public content::UtilityProcessHostClient {
   // Launches the utility process.  Must run on the IO thread.
   void StartProcessOnIOThread();
 
-  // Notification that the utility process is running, and we can now get its
-  // process handle.
-  void OnUtilityProcessStarted();
-
   // Notification from the utility process that the zip file has been analyzed,
   // with the given results.  Runs on the IO thread.
   void OnAnalyzeZipFileFinished(const zip_analyzer::Results& results);

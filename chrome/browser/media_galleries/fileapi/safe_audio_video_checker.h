@@ -34,15 +34,11 @@ class SafeAudioVideoChecker : public content::UtilityProcessHostClient {
  private:
   enum State {
     INITIAL_STATE,
-    PINGED_STATE,
     STARTED_STATE,
     FINISHED_STATE
   };
 
   ~SafeAudioVideoChecker() override;
-
-  // Starts validation once the utility process has been started.
-  virtual void OnProcessStarted();
 
   // Notification of the result from the utility process.
   void OnCheckingFinished(bool valid);

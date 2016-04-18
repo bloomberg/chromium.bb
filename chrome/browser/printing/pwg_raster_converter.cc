@@ -130,7 +130,6 @@ class PwgUtilityProcessHostClient : public content::UtilityProcessHostClient {
   ~PwgUtilityProcessHostClient() override;
 
   // Message handlers.
-  void OnProcessStarted();
   void OnSucceeded();
   void OnFailed();
 
@@ -145,7 +144,6 @@ class PwgUtilityProcessHostClient : public content::UtilityProcessHostClient {
   PdfRenderSettings settings_;
   PwgRasterSettings bitmap_settings_;
   PWGRasterConverter::ResultCallback callback_;
-  base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
 
   DISALLOW_COPY_AND_ASSIGN(PwgUtilityProcessHostClient);
 };
@@ -180,7 +178,6 @@ bool PwgUtilityProcessHostClient::OnMessageReceived(
   const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PwgUtilityProcessHostClient, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ProcessStarted, OnProcessStarted)
     IPC_MESSAGE_HANDLER(
         ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Succeeded, OnSucceeded)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Failed,
@@ -188,19 +185,6 @@ bool PwgUtilityProcessHostClient::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void PwgUtilityProcessHostClient::OnProcessStarted() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!utility_process_host_) {
-    RunCallbackOnUIThread(false);
-    return;
-  }
-
-  utility_process_host_->Send(new ChromeUtilityMsg_RenderPDFPagesToPWGRaster(
-      files_->GetPdfForProcess(), settings_, bitmap_settings_,
-      files_->GetPwgForProcess()));
-  utility_process_host_.reset();
 }
 
 void PwgUtilityProcessHostClient::OnSucceeded() {
@@ -226,12 +210,14 @@ void PwgUtilityProcessHostClient::OnFilesReadyOnUIThread() {
 
 void PwgUtilityProcessHostClient::StartProcessOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  utility_process_host_ =
+  content::UtilityProcessHost* utility_process_host =
       content::UtilityProcessHost::Create(
-          this, base::MessageLoop::current()->task_runner())->AsWeakPtr();
-  utility_process_host_->SetName(l10n_util::GetStringUTF16(
+          this, base::MessageLoop::current()->task_runner());
+  utility_process_host->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_PWG_RASTER_CONVERTOR_NAME));
-  utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);
+  utility_process_host->Send(new ChromeUtilityMsg_RenderPDFPagesToPWGRaster(
+      files_->GetPdfForProcess(), settings_, bitmap_settings_,
+      files_->GetPwgForProcess()));
 }
 
 void PwgUtilityProcessHostClient::RunCallback(bool success) {

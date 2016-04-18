@@ -161,7 +161,6 @@ bool ChromeContentUtilityClient::OnMessageReceived(
                         OnPatchFileBsdiff)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_PatchFileCourgette,
                         OnPatchFileCourgette)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_StartupPing, OnStartupPing)
 #if defined(FULL_SAFE_BROWSING)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
                         OnAnalyzeZipFileForDownloadProtection)
@@ -276,11 +275,6 @@ void ChromeContentUtilityClient::OnPatchFileCourgette(
     Send(new ChromeUtilityHostMsg_PatchFile_Finished(patch_status));
   }
   ReleaseProcessIfNeeded();
-}
-
-void ChromeContentUtilityClient::OnStartupPing() {
-  Send(new ChromeUtilityHostMsg_ProcessStarted);
-  // Don't release the process, we assume further messages are on the way.
 }
 
 #if defined(FULL_SAFE_BROWSING)

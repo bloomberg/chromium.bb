@@ -45,7 +45,6 @@ class SafePicasaAlbumTableReader : public content::UtilityProcessHostClient {
  private:
   enum ParserState {
     INITIAL_STATE,
-    PINGED_UTILITY_PROCESS_STATE,
     STARTED_PARSING_STATE,
     FINISHED_PARSING_STATE,
   };
@@ -55,11 +54,6 @@ class SafePicasaAlbumTableReader : public content::UtilityProcessHostClient {
 
   // Launches the utility process.  Must run on the IO thread.
   void StartWorkOnIOThread();
-
-  // Notification that the utility process is running, and we can now get its
-  // process handle.
-  // Runs on the IO thread.
-  void OnProcessStarted();
 
   // Notification from the utility process when it finshes parsing the PMP
   // database. This is received even if PMP parsing fails.

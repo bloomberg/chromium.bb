@@ -154,7 +154,6 @@ class PdfToEmfUtilityProcessHostClient
   bool Send(IPC::Message* msg);
 
   // Message handlers.
-  void OnProcessStarted();
   void OnPageCount(int page_count);
   void OnPageDone(bool success, float scale_factor);
 
@@ -167,7 +166,6 @@ class PdfToEmfUtilityProcessHostClient
   // Used to suppress callbacks after PdfToEmfConverterImpl is deleted.
   base::WeakPtr<PdfToEmfConverterImpl> converter_;
   PdfRenderSettings settings_;
-  scoped_refptr<base::RefCountedMemory> data_;
 
   // Document loaded callback.
   PdfToEmfConverter::StartCallback start_callback_;
@@ -301,7 +299,6 @@ void PdfToEmfUtilityProcessHostClient::Start(
                                        start_callback));
     return;
   }
-  data_ = data;
 
   // Store callback before any OnFailed() call to make it called on failure.
   start_callback_ = start_callback;
@@ -314,17 +311,7 @@ void PdfToEmfUtilityProcessHostClient::Start(
           this, base::MessageLoop::current()->task_runner())->AsWeakPtr();
   utility_process_host_->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_EMF_CONVERTOR_NAME));
-  // Should reply with OnProcessStarted().
-  Send(new ChromeUtilityMsg_StartupPing);
-}
 
-void PdfToEmfUtilityProcessHostClient::OnProcessStarted() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!utility_process_host_)
-    return OnFailed();
-
-  scoped_refptr<base::RefCountedMemory> data = data_;
-  data_ = NULL;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,
       FROM_HERE,
@@ -446,7 +433,6 @@ bool PdfToEmfUtilityProcessHostClient::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PdfToEmfUtilityProcessHostClient, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ProcessStarted, OnProcessStarted)
     IPC_MESSAGE_HANDLER(
         ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageCount, OnPageCount)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageDone,

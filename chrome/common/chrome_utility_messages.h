@@ -164,11 +164,6 @@ IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_CreateZipFile,
                      base::FileDescriptor /* dest_fd */)
 #endif  // defined(OS_CHROMEOS)
 
-// Requests the utility process to respond with a
-// ChromeUtilityHostMsg_ProcessStarted message once it has started.  This may
-// be used if the host process needs a handle to the running utility process.
-IPC_MESSAGE_CONTROL0(ChromeUtilityMsg_StartupPing)
-
 #if defined(FULL_SAFE_BROWSING)
 // Tells the utility process to analyze a zip file for malicious download
 // protection, providing a file that can be used temporarily to analyze binaries
@@ -232,9 +227,6 @@ IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_CreateZipFile_Succeeded)
 // Reply when an error occured in creating the zip file.
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_CreateZipFile_Failed)
 #endif  // defined(OS_CHROMEOS)
-
-// Reply when the utility process has started.
-IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_ProcessStarted)
 
 #if defined(FULL_SAFE_BROWSING)
 // Reply when a zip file has been analyzed for malicious download protection.

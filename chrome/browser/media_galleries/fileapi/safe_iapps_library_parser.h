@@ -48,7 +48,6 @@ class SafeIAppsLibraryParser : public content::UtilityProcessHostClient {
  private:
   enum ParserState {
     INITIAL_STATE,
-    PINGED_UTILITY_PROCESS_STATE,
     STARTED_PARSING_STATE,
     FINISHED_PARSING_STATE,
   };
@@ -61,11 +60,6 @@ class SafeIAppsLibraryParser : public content::UtilityProcessHostClient {
 
   // Launches the utility process.  Must run on the IO thread.
   void StartProcessOnIOThread();
-
-  // Notification that the utility process is running, and we can now get its
-  // process handle.
-  // Runs on the IO thread.
-  void OnUtilityProcessStarted();
 
   // Notification from the utility process when it finishes parsing the
   // iTunes XML. Runs on the IO thread.

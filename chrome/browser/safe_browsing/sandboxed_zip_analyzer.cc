@@ -112,8 +112,6 @@ void SandboxedZipAnalyzer::OnProcessLaunchFailed() {
 bool SandboxedZipAnalyzer::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SandboxedZipAnalyzer, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ProcessStarted,
-                        OnUtilityProcessStarted)
     IPC_MESSAGE_HANDLER(
         ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished,
         OnAnalyzeZipFileFinished)
@@ -130,13 +128,6 @@ void SandboxedZipAnalyzer::StartProcessOnIOThread() {
       ->AsWeakPtr();
   utility_process_host_->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_SAFE_BROWSING_ZIP_FILE_ANALYZER_NAME));
-  utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);
-  // Wait for the startup notification before sending the main IPC to the
-  // utility process, so that we can dup the file handle.
-}
-
-void SandboxedZipAnalyzer::OnUtilityProcessStarted() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   utility_process_host_->Send(
       new ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection(
           IPC::TakePlatformFileForTransit(std::move(zip_file_)),
