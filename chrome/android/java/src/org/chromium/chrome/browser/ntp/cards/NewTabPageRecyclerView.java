@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.content.Context;
+import android.graphics.PointF;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -19,19 +21,8 @@ import android.view.inputmethod.InputConnection;
  * New Tab page receives focus when clicked.
  */
 public class NewTabPageRecyclerView extends RecyclerView {
-    /**
-     * Listener for scroll changes.
-     */
-    public interface OnScrollListener {
-        /**
-         * Triggered when the scroll changes.  See ScrollView#onScrollChanged for more
-         * details.
-         */
-        void onScrollChanged(int l, int t, int oldl, int oldt);
-    }
-
     private GestureDetector mGestureDetector;
-    private OnScrollListener mOnScrollListener;
+    private LinearLayoutManagerWithSmoothScroller mLayoutManager;
 
     /**
      * Constructor needed to inflate from XML.
@@ -48,7 +39,12 @@ public class NewTabPageRecyclerView extends RecyclerView {
                         return retVal;
                     }
                 });
-        setLayoutManager(new LinearLayoutManager(getContext()));
+        mLayoutManager = new LinearLayoutManagerWithSmoothScroller(getContext());
+        setLayoutManager(mLayoutManager);
+    }
+
+    public boolean isFirstItemVisible() {
+        return mLayoutManager.findFirstVisibleItemPosition() == 0;
     }
 
     @Override
@@ -66,20 +62,6 @@ public class NewTabPageRecyclerView extends RecyclerView {
         return super.onTouchEvent(ev);
     }
 
-    /**
-     * Sets the listener to be notified of scroll changes.
-     * @param listener The listener to be updated on scroll changes.
-     */
-    public void setOnScrollListener(OnScrollListener listener) {
-        mOnScrollListener = listener;
-    }
-
-    @Override
-    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-        super.onScrollChanged(l, t, oldl, oldt);
-        if (mOnScrollListener != null) mOnScrollListener.onScrollChanged(l, t, oldl, oldt);
-    }
-
     @Override
     public void focusableViewAvailable(View v) {
         // To avoid odd jumps during NTP animation transitions, we do not attempt to give focus
@@ -90,8 +72,36 @@ public class NewTabPageRecyclerView extends RecyclerView {
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        // Fixes lanscape transitions when unfocusing the URL bar: crbug.com/288546
+        // Fixes landscape transitions when unfocusing the URL bar: crbug.com/288546
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
         return super.onCreateInputConnection(outAttrs);
+    }
+
+    private static class LinearLayoutManagerWithSmoothScroller extends LinearLayoutManager {
+        private final Context mContext;
+
+        public LinearLayoutManagerWithSmoothScroller(Context context) {
+            super(context);
+            mContext = context;
+        }
+
+        @Override
+        public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state,
+                                           int position) {
+            LinearSmoothScroller scroller = new LinearSmoothScroller(mContext) {
+                @Override
+                public PointF computeScrollVectorForPosition(int targetPosition) {
+                    return LinearLayoutManagerWithSmoothScroller.this
+                            .computeScrollVectorForPosition(targetPosition);
+                }
+
+                @Override
+                protected int getVerticalSnapPreference() {
+                    return SNAP_TO_START;
+                }
+            };
+            scroller.setTargetPosition(position);
+            startSmoothScroll(scroller);
+        }
     }
 }

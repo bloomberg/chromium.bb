@@ -415,8 +415,15 @@ public class NewTabPageView extends FrameLayout
         // percentage if some basic view properties are sane.
         View wrapperView = mUseCardsUi ? mRecyclerView : mScrollView;
         if (wrapperView.getHeight() != 0 && mSearchBoxView.getTop() != 0) {
-            int scrollY = getVerticalScroll();
-            percentage = Math.max(0f, Math.min(1f, scrollY / (float) mSearchBoxView.getTop()));
+            // getVerticalScroll is valid only for the RecyclerView if the first item is visible.
+            // Luckily, if the first item is not visible, we know the toolbar transition should
+            // be 100%.
+            if (mUseCardsUi && !mRecyclerView.isFirstItemVisible()) {
+                percentage = 1f;
+            } else {
+                int scrollY = getVerticalScroll();
+                percentage = Math.max(0f, Math.min(1f, scrollY / (float) mSearchBoxView.getTop()));
+            }
         }
 
         updateVisualsForToolbarTransition(percentage);
@@ -427,10 +434,61 @@ public class NewTabPageView extends FrameLayout
     }
 
     private void initializeSearchBoxRecyclerViewScrollHandling() {
+        final Runnable mSnapScrollRunnable = new Runnable() {
+            @Override
+            public void run() {
+                assert mPendingSnapScroll;
+
+                // These calculations only work if the first item is visible (since
+                // computeVerticalScrollOffset only takes into account visible items).
+                // Luckily, we only need to perform the calculations if the first item is visible.
+                if (!mRecyclerView.isFirstItemVisible()) return;
+                int currentScroll = mRecyclerView.computeVerticalScrollOffset();
+
+                // Scroll to hide all of content view off the top of the page.
+                // We subtract mContentView.getPaddingTop() to offset the contents below the
+                // search box.
+                int targetScroll = mContentView.getHeight() - mContentView.getPaddingTop();
+
+                if (currentScroll > 0 && currentScroll < targetScroll) {
+                    if (currentScroll < mSearchBoxView.getTop()) {
+                        // Scroll to the top.
+                        mRecyclerView.smoothScrollBy(0, -currentScroll);
+                    } else {
+                        // Scroll to the articles.
+                        mRecyclerView.smoothScrollBy(0, targetScroll - currentScroll);
+                    }
+                }
+
+                mPendingSnapScroll = false;
+            }
+        };
+
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (mPendingSnapScroll) {
+                    mRecyclerView.removeCallbacks(mSnapScrollRunnable);
+                    mRecyclerView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
+                }
                 updateSearchBoxOnScroll();
+            }
+        });
+
+        mRecyclerView.setOnTouchListener(new OnTouchListener() {
+            @Override
+            @SuppressLint("ClickableViewAccessibility")
+            public boolean onTouch(View v, MotionEvent event) {
+                mRecyclerView.removeCallbacks(mSnapScrollRunnable);
+
+                if (event.getActionMasked() == MotionEvent.ACTION_CANCEL
+                        || event.getActionMasked() == MotionEvent.ACTION_UP) {
+                    mPendingSnapScroll = true;
+                    mRecyclerView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
+                } else {
+                    mPendingSnapScroll = false;
+                }
+                return false;
             }
         });
     }
@@ -462,7 +520,6 @@ public class NewTabPageView extends FrameLayout
             @Override
             @SuppressLint("ClickableViewAccessibility")
             public boolean onTouch(View v, MotionEvent event) {
-                if (mScrollView.getHandler() == null) return false;
                 mScrollView.removeCallbacks(mSnapScrollRunnable);
 
                 if (event.getActionMasked() == MotionEvent.ACTION_CANCEL
