@@ -11,6 +11,8 @@
         },
         "win_AMD64": {
           "local_paths": [
+            "../../../out/Debug_x64/crashpad_database_util.exe",
+            "../../../out/Release_x64/crashpad_database_util.exe",
             "../../../out/Debug/crashpad_database_util.exe",
             "../../../out/Release/crashpad_database_util.exe"
           ]
@@ -49,11 +51,6 @@
     },
     "generate_breakpad_symbols": {
       "file_info": {
-        "win_AMD64": {
-          "local_paths": [
-            "../../../components/crash/content/tools/generate_breakpad_symbols.py"
-          ]
-        },
         "mac_x86_64": {
           "local_paths": [
             "../../../components/crash/content/tools/generate_breakpad_symbols.py"
