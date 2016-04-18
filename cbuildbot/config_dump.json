@@ -2083,9 +2083,25 @@
                     "-chrome_internal"
                 ],
                 "vm_tests": []
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "lulu-cheets"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "lulu-cheets-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: lulu, gandof, buddy)",
+        "description": "Full Builds; Group config (boards: lulu, gandof, buddy, lulu-cheets)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -2129,10 +2145,21 @@
                 "name": "buddy-release",
                 "unittests": null,
                 "vm_tests": []
+            },
+            {
+                "_template": "cheets-release",
+                "boards": [
+                    "lulu-cheets"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "lulu-cheets-release",
+                "unittests": null,
+                "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: lulu, gandof, buddy)",
-        "important": true
+        "description": "Release Builds (canary) (internal); Group config (boards: lulu, gandof, buddy, lulu-cheets)"
     },
     "auron-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -4433,6 +4460,173 @@
             "-chrome_internal"
         ]
     },
+    "celes-cheets-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "celes-cheets"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "celes-cheets-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "celes-cheets"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "celes-cheets-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "celes-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "celes-cheets-full": {
+        "_template": "full",
+        "boards": [
+            "celes-cheets"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "celes-cheets-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "celes-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "celes-cheets-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "celes-cheets"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "celes-cheets-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "celes-cheets"
+        ]
+    },
+    "celes-cheets-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "celes-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "celes-cheets-release": {
+        "_template": "cheets-release",
+        "boards": [
+            "celes-cheets"
+        ],
+        "vm_tests": []
+    },
+    "celes-cheets-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "celes-cheets"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "celes-cheets"
+                ],
+                "grouped": true,
+                "name": "celes-cheets-release-afdo-generate",
+                "vm_tests": []
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "celes-cheets"
+                ],
+                "grouped": true,
+                "name": "celes-cheets-release-afdo-use",
+                "vm_tests": []
+            }
+        ],
+        "vm_tests": []
+    },
+    "celes-cheets-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "celes-cheets"
+        ],
+        "vm_tests": []
+    },
+    "celes-cheets-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "celes-cheets"
+        ],
+        "vm_tests": []
+    },
+    "celes-cheets-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "celes-cheets"
+        ],
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "celes-cheets-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "celes-cheets"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "celes-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [
@@ -4586,6 +4780,173 @@
         "useflags": [
             "-chrome_internal"
         ]
+    },
+    "chell-cheets-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "chell-cheets"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "chell-cheets-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "chell-cheets"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "chell-cheets-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "chell-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "chell-cheets-full": {
+        "_template": "full",
+        "boards": [
+            "chell-cheets"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "chell-cheets-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "chell-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "chell-cheets-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "chell-cheets"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "chell-cheets-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "chell-cheets"
+        ]
+    },
+    "chell-cheets-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "chell-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "chell-cheets-release": {
+        "_template": "cheets-release",
+        "boards": [
+            "chell-cheets"
+        ],
+        "vm_tests": []
+    },
+    "chell-cheets-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "chell-cheets"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "chell-cheets"
+                ],
+                "grouped": true,
+                "name": "chell-cheets-release-afdo-generate",
+                "vm_tests": []
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "chell-cheets"
+                ],
+                "grouped": true,
+                "name": "chell-cheets-release-afdo-use",
+                "vm_tests": []
+            }
+        ],
+        "vm_tests": []
+    },
+    "chell-cheets-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "chell-cheets"
+        ],
+        "vm_tests": []
+    },
+    "chell-cheets-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "chell-cheets"
+        ],
+        "vm_tests": []
+    },
+    "chell-cheets-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "chell-cheets"
+        ],
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "chell-cheets-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "chell-cheets"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "chell-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -7776,9 +8137,25 @@
                 "useflags": [
                     "-chrome_internal"
                 ]
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "chell-cheets"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "chell-cheets-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: cave)",
+        "description": "Full Builds; Group config (boards: cave, chell-cheets)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -7798,9 +8175,21 @@
                 ],
                 "grouped": true,
                 "name": "cave-release"
+            },
+            {
+                "_template": "cheets-release",
+                "boards": [
+                    "chell-cheets"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "chell-cheets-release",
+                "unittests": null,
+                "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: cave)"
+        "description": "Release Builds (canary) (internal); Group config (boards: cave, chell-cheets)"
     },
     "glados-cheets-android-pfq": {
         "_template": "android-pfq",
@@ -11676,6 +12065,173 @@
                 "name": "x86-alex-toolchain-llvm"
             }
         ]
+    },
+    "lulu-cheets-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "lulu-cheets"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "lulu-cheets-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "lulu-cheets"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "lulu-cheets-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "lulu-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "lulu-cheets-full": {
+        "_template": "full",
+        "boards": [
+            "lulu-cheets"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "lulu-cheets-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "lulu-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "lulu-cheets-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "lulu-cheets"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "lulu-cheets-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "lulu-cheets"
+        ]
+    },
+    "lulu-cheets-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "lulu-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "lulu-cheets-release": {
+        "_template": "cheets-release",
+        "boards": [
+            "lulu-cheets"
+        ],
+        "vm_tests": []
+    },
+    "lulu-cheets-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "lulu-cheets"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "lulu-cheets"
+                ],
+                "grouped": true,
+                "name": "lulu-cheets-release-afdo-generate",
+                "vm_tests": []
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "lulu-cheets"
+                ],
+                "grouped": true,
+                "name": "lulu-cheets-release-afdo-use",
+                "vm_tests": []
+            }
+        ],
+        "vm_tests": []
+    },
+    "lulu-cheets-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "lulu-cheets"
+        ],
+        "vm_tests": []
+    },
+    "lulu-cheets-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "lulu-cheets"
+        ],
+        "vm_tests": []
+    },
+    "lulu-cheets-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "lulu-cheets"
+        ],
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "lulu-cheets-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "lulu-cheets"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "lulu-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -20327,6 +20883,53 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "strago-d-full-group": {
+        "_template": "full",
+        "boards": [
+            "celes-cheets"
+        ],
+        "child_configs": [
+            {
+                "_template": "full",
+                "boards": [
+                    "celes-cheets"
+                ],
+                "grouped": true,
+                "name": "celes-cheets-full",
+                "prebuilts": "public",
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
+            }
+        ],
+        "description": "Full Builds; Group config (boards: celes-cheets)",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "strago-d-release-group": {
+        "_template": "cheets-release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "celes-cheets"
+        ],
+        "child_configs": [
+            {
+                "_template": "cheets-release",
+                "boards": [
+                    "celes-cheets"
+                ],
+                "grouped": true,
+                "name": "celes-cheets-release",
+                "vm_tests": []
+            }
+        ],
+        "description": "Cheets release builders; Group config (boards: celes-cheets)",
+        "vm_tests": []
     },
     "strago-depthcharge-firmware": {
         "_template": "depthcharge-firmware",

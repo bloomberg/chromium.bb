@@ -6,6 +6,7 @@ arm-generic_freon-chromium-pfq
 [auron-b-release-group]
   buddy-release
   gandof-release
+  lulu-cheets-release
   lulu-release
 auron-paladin
 [auron-release-group]
@@ -46,6 +47,7 @@ falco-paladin
 gale-release
 [glados-b-release-group]
   cave-release
+  chell-cheets-release
 glados-cheets-android-pfq
 glados-paladin
 [glados-release-group]
@@ -179,6 +181,8 @@ stout-paladin
   edgar-release
   setzer-release
   umaro-release
+[strago-d-release-group]
+  celes-cheets-release
 strago-paladin
 [strago-release-group]
   celes-release

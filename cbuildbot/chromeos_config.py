@@ -404,7 +404,9 @@ _x86_internal_release_boards = frozenset([
     'candy',
     'cave',
     'celes',
+    'celes-cheets',
     'chell',
+    'chell-cheets',
     'cid',
     'clapper',
     'cranky',
@@ -433,6 +435,7 @@ _x86_internal_release_boards = frozenset([
     'leon',
     'link',
     'lulu',
+    'lulu-cheets',
     'lumpy',
     'mccloud',
     'monroe',
@@ -534,6 +537,9 @@ _cheets_boards = frozenset([
     'samus-cheets',
     'smaug-cheets',
     'veyron_minnie-cheets',
+    'celes-cheets',
+    'chell-cheets',
+    'lulu-cheets',
 ])
 
 _lakitu_boards = frozenset([
@@ -574,6 +580,9 @@ _no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
     'oak-cheets',
     'samus-cheets',
     'smaug-cheets',
+    'celes-cheets',
+    'chell-cheets',
+    'lulu-cheets',
 ))
 
 # This is a list of configs that should be included on the main waterfall, but
@@ -615,12 +624,14 @@ _waterfall_config_map = {
         'veyron_rialto-chrome-pfq',
 
         # Experimental Canaries (Group)
+        'auron-b-release-group',
         'glados-release-group',
         'glados-b-release-group',
         'gru-release-group',
         'oak-release-group',
         'storm-release-group',
         'strago-c-release-group',
+        'strago-d-release-group',
         'veyron-c-release-group',
 
         # Experimental Canaries
@@ -2486,6 +2497,21 @@ def GetConfig():
   )
 
   site_config.Add(
+      'celes-cheets-release', cheets_release,
+      _base_configs['celes-cheets'],
+  )
+
+  site_config.Add(
+      'chell-cheets-release', cheets_release,
+      _base_configs['chell-cheets'],
+  )
+
+  site_config.Add(
+      'lulu-cheets-release', cheets_release,
+      _base_configs['lulu-cheets'],
+  )
+
+  site_config.Add(
       'veyron_minnie-cheets-release', cheets_release,
       _base_configs['veyron_minnie-cheets'],
   )
@@ -2792,7 +2818,9 @@ def GetConfig():
       'auron-b', 'lulu', (
           'gandof',
           'buddy',
+          'lulu-cheets',
       ),
+      important=False,
   )
 
   # veyron-based boards
@@ -2863,6 +2891,12 @@ def GetConfig():
       important=False,
   )
 
+  _AddGroupConfig(
+      'strago-d', 'celes-cheets', (
+      ),
+      important=False,
+  )
+
   # oak-based boards
   _AddGroupConfig(
       'oak', 'oak', (
@@ -2882,7 +2916,9 @@ def GetConfig():
   )
 
   _AddGroupConfig(
-      'glados-b', 'cave',
+      'glados-b', 'cave', (
+          'chell-cheets',
+      ),
       important=False,
   )
 
