@@ -4,6 +4,8 @@
 
 #include "base/task_scheduler/task_traits.h"
 
+#include <stddef.h>
+
 #include <ostream>
 
 namespace base {
@@ -35,6 +37,10 @@ TaskTraits& TaskTraits::WithShutdownBehavior(
 }
 
 bool TaskTraits::operator==(const TaskTraits& other) const {
+  static_assert(sizeof(TaskTraits) ==
+                    offsetof(TaskTraits, shutdown_behavior_) +
+                        sizeof(TaskTraits::shutdown_behavior_),
+                "TaskTraits members changed. Update operator==.");
   return with_file_io_ == other.with_file_io_ && priority_ == other.priority_ &&
          shutdown_behavior_ == other.shutdown_behavior_;
 }
