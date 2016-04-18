@@ -47,6 +47,7 @@
 #include "net/base/filename_util.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -533,14 +534,17 @@ void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
 }
 
 void WebContentsViewAura::EndDrag(blink::WebDragOperationsMask ops) {
-  aura::Window* root_window = GetNativeView()->GetRootWindow();
-  gfx::Point screen_loc = gfx::Screen::GetScreen()->GetCursorScreenPoint();
-  gfx::Point client_loc = screen_loc;
-  RenderViewHost* rvh = web_contents_->GetRenderViewHost();
-  aura::Window* window = rvh->GetWidget()->GetView()->GetNativeView();
-  aura::Window::ConvertPointToTarget(root_window, window, &client_loc);
   if (!web_contents_)
     return;
+
+  aura::Window* window = GetContentNativeView();
+  gfx::Point screen_loc = gfx::Screen::GetScreen()->GetCursorScreenPoint();
+  gfx::Point client_loc = screen_loc;
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(window->GetRootWindow());
+  if (screen_position_client)
+      screen_position_client->ConvertPointFromScreen(window, &client_loc);
+
   web_contents_->DragSourceEndedAt(client_loc.x(), client_loc.y(),
       screen_loc.x(), screen_loc.y(), ops);
 }
