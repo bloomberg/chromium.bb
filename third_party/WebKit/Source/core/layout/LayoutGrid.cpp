@@ -1969,17 +1969,15 @@ LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child, GridSizi
     case GridAxisCenter: {
         size_t childEndLine = rowsSpan.endLine();
         LayoutUnit endOfRow = m_rowPositions[childEndLine];
-        // m_rowPositions include gutters so we need to subtract them to get the actual end position for a given
-        // row (this does not have to be done for the last track as there are no more m_rowPositions after it)
+        // m_rowPositions include distribution offset (because of content alignment) and gutters
+        // so we need to subtract them to get the actual end position for a given row
+        // (this does not have to be done for the last track as there are no more m_columnPositions after it).
         LayoutUnit trackGap = guttersSize(ForRows, 2);
-        if (childEndLine < m_rowPositions.size() - 1)
+        if (childEndLine < m_rowPositions.size() - 1) {
             endOfRow -= trackGap;
-        LayoutUnit childBreadth = child.logicalHeight() + child.marginLogicalHeight();
-        // The track's start and end lines may be not adjacent because of content alignment, so we assume the stored
-        // lines are all start plus a content-alignment distribution offset.
-        // We must subtract last line's offset because is not part of the track the items belongs to.
-        if (childEndLine - childStartLine > 1 && childEndLine < m_rowPositions.size() - 1)
             endOfRow -= m_offsetBetweenRows;
+        }
+        LayoutUnit childBreadth = child.logicalHeight() + child.marginLogicalHeight();
         OverflowAlignment overflow = child.styleRef().resolvedAlignment(styleRef(), ItemPositionStretch).overflow();
         LayoutUnit offsetFromStartPosition = computeOverflowAlignmentOffset(overflow, endOfRow - startOfRow, childBreadth);
         return startPosition + (axisPosition == GridAxisEnd ? offsetFromStartPosition : offsetFromStartPosition / 2);
@@ -2006,17 +2004,15 @@ LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child, GridSizingD
     case GridAxisCenter: {
         size_t childEndLine = columnsSpan.endLine();
         LayoutUnit endOfColumn = m_columnPositions[childEndLine];
-        // m_columnPositions include gutters so we need to subtract them to get the actual end position for a given
-        // column (this does not have to be done for the last track as there are no more m_columnPositions after it)
+        // m_columnPositions include distribution offset (because of content alignment) and gutters
+        // so we need to subtract them to get the actual end position for a given column
+        // (this does not have to be done for the last track as there are no more m_columnPositions after it).
         LayoutUnit trackGap = guttersSize(ForColumns, 2);
-        if (childEndLine < m_columnPositions.size() - 1)
+        if (childEndLine < m_columnPositions.size() - 1) {
             endOfColumn -= trackGap;
-        LayoutUnit childBreadth = child.logicalWidth() + child.marginLogicalWidth();
-        // The track's start and end lines may be not adjacent because of content alignment, so we assume the stored
-        // lines are all start plus a content-alignment distribution offset.
-        // We must subtract last line's offset because is not part of the track the items belongs to.
-        if (childEndLine - childStartLine > 1 && childEndLine < m_columnPositions.size() - 1)
             endOfColumn -= m_offsetBetweenColumns;
+        }
+        LayoutUnit childBreadth = child.logicalWidth() + child.marginLogicalWidth();
         LayoutUnit offsetFromStartPosition = computeOverflowAlignmentOffset(child.styleRef().justifySelfOverflowAlignment(), endOfColumn - startOfColumn, childBreadth);
         return startPosition + (axisPosition == GridAxisEnd ? offsetFromStartPosition : offsetFromStartPosition / 2);
     }
