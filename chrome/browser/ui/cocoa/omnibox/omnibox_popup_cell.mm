@@ -104,29 +104,11 @@ NSAttributedString* CreateAnswerStringHelper(const base::string16& text,
                                              bool is_bold) {
   NSDictionary* answer_style = nil;
   switch (style_type) {
-    case SuggestionAnswer::ANSWER:
-      answer_style = @{
-        NSForegroundColorAttributeName : ContentTextColor(),
-        NSFontAttributeName : LargeFont()
-      };
-      break;
-    case SuggestionAnswer::HEADLINE:
-      answer_style = @{
-        NSForegroundColorAttributeName : DimTextColor(),
-        NSFontAttributeName : LargeFont()
-      };
-      break;
     case SuggestionAnswer::TOP_ALIGNED:
       answer_style = @{
         NSForegroundColorAttributeName : DimTextColor(),
         NSFontAttributeName : LargeSuperscriptFont(),
         NSSuperscriptAttributeName : @1
-      };
-      break;
-    case SuggestionAnswer::DESCRIPTION:
-      answer_style = @{
-        NSForegroundColorAttributeName : DimTextColor(),
-        NSFontAttributeName : FieldFont()
       };
       break;
     case SuggestionAnswer::DESCRIPTION_NEGATIVE:
@@ -138,42 +120,6 @@ NSAttributedString* CreateAnswerStringHelper(const base::string16& text,
     case SuggestionAnswer::DESCRIPTION_POSITIVE:
       answer_style = @{
         NSForegroundColorAttributeName : PositiveTextColor(),
-        NSFontAttributeName : LargeSuperscriptFont()
-      };
-      break;
-    case SuggestionAnswer::MORE_INFO:
-      answer_style = @{
-        NSForegroundColorAttributeName : DimTextColor(),
-        NSFontAttributeName : SmallFont()
-      };
-      break;
-    case SuggestionAnswer::SUGGESTION:
-      answer_style = @{
-        NSForegroundColorAttributeName : ContentTextColor(),
-        NSFontAttributeName : FieldFont()
-      };
-      break;
-    case SuggestionAnswer::SUGGESTION_POSITIVE:
-      answer_style = @{
-        NSForegroundColorAttributeName : PositiveTextColor(),
-        NSFontAttributeName : FieldFont()
-      };
-      break;
-    case SuggestionAnswer::SUGGESTION_NEGATIVE:
-      answer_style = @{
-        NSForegroundColorAttributeName : NegativeTextColor(),
-        NSFontAttributeName : FieldFont()
-      };
-      break;
-    case SuggestionAnswer::SUGGESTION_LINK:
-      answer_style = @{
-        NSForegroundColorAttributeName : URLTextColor(),
-        NSFontAttributeName : FieldFont()
-      };
-      break;
-    case SuggestionAnswer::STATUS:
-      answer_style = @{
-        NSForegroundColorAttributeName : DimTextColor(),
         NSFontAttributeName : LargeSuperscriptFont()
       };
       break;
@@ -207,6 +153,7 @@ NSAttributedString* CreateAnswerStringHelper(const base::string16& text,
         NSFontAttributeName : FieldFont()
       };
       break;
+    case SuggestionAnswer::SUGGESTION:  // Fall through.
     default:
       answer_style = @{
         NSForegroundColorAttributeName : ContentTextColor (),

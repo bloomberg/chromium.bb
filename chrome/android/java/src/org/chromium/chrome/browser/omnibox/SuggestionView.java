@@ -57,7 +57,7 @@ class SuggestionView extends ViewGroup {
 
     private static final long RELAYOUT_DELAY_MS = 20;
 
-    private static final int TITLE_COLOR_STANDARD_FONT_DARK = 0xFF333333;
+    static final int TITLE_COLOR_STANDARD_FONT_DARK = 0xFF333333;
     private static final int TITLE_COLOR_STANDARD_FONT_LIGHT = 0xFFFFFFFF;
     private static final int URL_COLOR = 0xFF5595FE;
 
