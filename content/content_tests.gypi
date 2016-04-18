@@ -1537,6 +1537,7 @@
       ],
       'sources': [
         'browser/compositor/gl_helper_unittest.cc',
+        'browser/compositor/yuv_readback_unittest.cc',
         'common/gpu/client/gpu_context_tests.h',
         'common/gpu/client/gpu_in_process_context_tests.cc',
         'test/run_all_gl_tests.cc',
