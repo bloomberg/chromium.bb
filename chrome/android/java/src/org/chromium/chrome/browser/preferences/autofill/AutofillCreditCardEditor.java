@@ -192,7 +192,8 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
                 true /* isLocal */, false /* isCached */, mNameText.getText().toString().trim(),
                 cardNumber, "" /* obfuscatedNumber */,
                 String.valueOf(mExpirationMonth.getSelectedItemPosition() + 1),
-                (String) mExpirationYear.getSelectedItem());
+                (String) mExpirationYear.getSelectedItem(), "" /* basicCardPaymentType */,
+                0 /* issuerIconDrawableId */);
 
         PersonalDataManager.getInstance().setCreditCard(card);
     }

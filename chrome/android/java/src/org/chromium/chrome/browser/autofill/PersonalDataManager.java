@@ -11,6 +11,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ResourceId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -270,17 +271,21 @@ public class PersonalDataManager {
         private String mObfuscatedNumber;
         private String mMonth;
         private String mYear;
+        private String mBasicCardPaymentType;
+        private int mIssuerIconDrawableId;
 
         @CalledByNative("CreditCard")
         public static CreditCard create(String guid, String origin, boolean isLocal,
                 boolean isCached, String name, String number, String obfuscatedNumber, String month,
-                String year) {
-            return new CreditCard(
-                    guid, origin, isLocal, isCached, name, number, obfuscatedNumber, month, year);
+                String year, String basicCardPaymentType, int enumeratedIconId) {
+            return new CreditCard(guid, origin, isLocal, isCached, name, number, obfuscatedNumber,
+                    month, year, basicCardPaymentType,
+                    ResourceId.mapToDrawableId(enumeratedIconId));
         }
 
         public CreditCard(String guid, String origin, boolean isLocal, boolean isCached,
-                String name, String number, String obfuscatedNumber, String month, String year) {
+                String name, String number, String obfuscatedNumber, String month, String year,
+                String basicCardPaymentType, int issuerIconDrawableId) {
             mGUID = guid;
             mOrigin = origin;
             mIsLocal = isLocal;
@@ -290,6 +295,8 @@ public class PersonalDataManager {
             mObfuscatedNumber = obfuscatedNumber;
             mMonth = month;
             mYear = year;
+            mBasicCardPaymentType = basicCardPaymentType;
+            mIssuerIconDrawableId = issuerIconDrawableId;
         }
 
         /** TODO(estade): remove this constructor. */
@@ -353,6 +360,14 @@ public class PersonalDataManager {
 
         public boolean getIsCached() {
             return mIsCached;
+        }
+
+        public String getBasicCardPaymentType() {
+            return mBasicCardPaymentType;
+        }
+
+        public int getIssuerIconDrawableId() {
+            return mIssuerIconDrawableId;
         }
 
         @VisibleForTesting

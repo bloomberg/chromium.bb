@@ -12,6 +12,7 @@
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -122,6 +123,32 @@ void PopulateNativeProfileFromJava(
           Java_AutofillProfile_getLanguageCode(env, jprofile.obj())));
 }
 
+// Mapping from Chrome card types to basic card payment spec.
+// https://w3c.github.io/browser-payment-api/specs/basic-card-payment.html#method-id
+// Note that "generic" is not in the spec.
+const struct {
+  const char* card_type;
+  const char* basic_card_payment_type;
+} kBasicCardPaymentTypes[] {
+  {"genericCC", "generic"},
+  {"americanExpressCC", "amex"},
+  {"dinersCC", "diners"},
+  {"discoverCC", "discover"},
+  {"jcbCC", "jcb"},
+  {"masterCardCC", "mastercard"},
+  {"visaCC", "visa"}
+};
+
+// Returns the type of this card according to the basic card payment spec. Will
+// return "generic" for unrecognized card type.
+const char* ConvertToBasicCardPaymentType(const std::string& type) {
+  for (size_t i = 0; i < arraysize(kBasicCardPaymentTypes); ++i) {
+    if (type == kBasicCardPaymentTypes[i].card_type)
+      return kBasicCardPaymentTypes[i].basic_card_payment_type;
+  }
+  return kBasicCardPaymentTypes[0].basic_card_payment_type;
+}
+
 ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
     JNIEnv* env,
     const CreditCard& card) {
@@ -138,7 +165,11 @@ ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
           .obj(),
       ConvertUTF16ToJavaString(env,
                                card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR))
-          .obj());
+          .obj(),
+      ConvertUTF8ToJavaString(env, ConvertToBasicCardPaymentType(card.type()))
+          .obj(),
+      ResourceMapper::MapFromChromiumId(
+          CreditCard::IconResourceId(card.type())));
 }
 
 void PopulateNativeCreditCardFromJava(
