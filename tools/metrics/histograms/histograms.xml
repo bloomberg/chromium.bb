@@ -23600,6 +23600,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Navigation.SchemePerUniqueOrigin" enum="NavigationScheme">
+  <owner>palmer@chromium.org</owner>
+  <owner>felt@chromium.org</owner>
+  <summary>
+    The scheme of the URL for the first main-frame navigation per origin per
+    non-OffTheRecord session.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.SchemePerUniqueOriginOTR" enum="NavigationScheme">
+  <owner>palmer@chromium.org</owner>
+  <owner>felt@chromium.org</owner>
+  <summary>
+    The scheme of the URL for the first main-frame navigation per origin per
+    OffTheRecord session.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.Start.RendererBrowserDifference.Negative"
     units="ms">
   <owner>csharrison@chromium.org</owner>

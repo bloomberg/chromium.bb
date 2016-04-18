@@ -9,7 +9,10 @@ class GURL;
 
 namespace navigation_metrics {
 
-void RecordMainFrameNavigation(const GURL& url, bool is_in_page);
+void RecordMainFrameNavigation(const GURL& url,
+                               bool is_in_page,
+                               bool is_off_the_record,
+                               bool have_already_seen_origin);
 
 }  // namespace navigation_metrics
 
