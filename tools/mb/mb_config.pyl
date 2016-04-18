@@ -557,8 +557,8 @@
       # Windows bots take too long to link w/ full symbols and time out.
       'Win Builder': 'swarming_gyp_release_bot_minimal_symbols_x86',
       'Win Builder (dbg)': 'swarming_gyp_debug_bot_minimal_symbols_x86',
-      'Win x64 Builder': 'swarming_gyp_release_bot_minimal_symbols_x64',
-      'Win x64 Builder (dbg)': 'swarming_gyp_debug_bot_minimal_symbols_x64',
+      'Win x64 Builder': 'swarming_gn_release_bot_minimal_symbols_x64',
+      'Win x64 Builder (dbg)': 'swarming_gn_debug_bot_minimal_symbols_x64',
       'Win x64 GN (dbg)': 'gn_debug_bot_minimal_symbols',
       'Win x64 GN': 'gn_release_bot_minimal_symbols',
       'Win 7 Tests x64 (1)': 'none',
@@ -811,7 +811,7 @@
 
     'tryserver.chromium.win': {
       'win10_chromium_x64_rel_ng':
-        'swarming_gyp_release_trybot_minimal_symbols_x64',
+        'swarming_gn_release_trybot_minimal_symbols_x64',
       'win8_chromium_gn_dbg': 'gn_debug_bot_minimal_symbols_x86',
       'win8_chromium_gn_upload': 'gn_release_bot_minimal_symbols_x86',
       'win8_chromium_ng': 'gn_release_trybot_x86',
@@ -836,7 +836,7 @@
       'win_chromium_variable_webkit_win7_builder': 'findit',
       'win_chromium_variable_webkit_win7_builder_x64': 'findit',
       'win_chromium_x64_rel_ng':
-        'swarming_gyp_release_trybot_minimal_symbols_x64',
+        'swarming_gn_release_trybot_minimal_symbols_x64',
       'win_clang': 'win_clang_debug_bot',
       'win_clang_dbg': 'swarming_gyp_clang_debug_bot_minimal_symbols_x86',
       'win_clang_rel':
@@ -1423,6 +1423,10 @@
 
     'swarming_gn_release_bot': [
       'swarming', 'gn', 'release_bot',
+    ],
+
+    'swarming_gn_release_bot_minimal_symbols_x64': [
+      'swarming', 'gn', 'release_bot_minimal_symbols', 'x64',
     ],
 
     'swarming_gn_release_bot_x64': [
