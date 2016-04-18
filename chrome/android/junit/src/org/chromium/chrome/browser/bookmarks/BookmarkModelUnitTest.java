@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.bookmarks;
 import static org.junit.Assert.assertEquals;
 
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.chrome.browser.offlinepages.ClientId;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -20,7 +21,8 @@ import org.robolectric.annotation.Config;
  * Robolectric tests for {@link BookmarkUtils}.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, application = BaseChromiumApplication.class)
+@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+        shadows = {ShadowMultiDex.class})
 public class BookmarkModelUnitTest {
     @Test
     public void testGetBookmarkIdForOfflineClientIdBadId() {

@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verify;
 import android.content.Context;
 
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -33,7 +34,8 @@ import org.robolectric.annotation.Config;
  * Unit tests for OfflinePageUtils.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, application = BaseChromiumApplication.class)
+@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+        shadows = {ShadowMultiDex.class})
 public class OfflinePageTabObserverTest {
     // Using a null tab, as it cannot be mocked. TabHelper will help return proper mocked responses.
     private static final Tab TAB = null;

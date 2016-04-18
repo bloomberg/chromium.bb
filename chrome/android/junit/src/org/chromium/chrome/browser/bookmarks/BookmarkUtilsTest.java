@@ -12,7 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.BaseChromiumApplication;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -31,7 +31,8 @@ import org.robolectric.annotation.Config;
  * Robolectric tests for {@link BookmarkUtils}.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, application = BaseChromiumApplication.class)
+@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+        shadows = {ShadowMultiDex.class})
 public class BookmarkUtilsTest {
     @Mock private Context mContext;
     @Mock private BookmarkModel mBookmarkModel;
@@ -42,13 +43,8 @@ public class BookmarkUtilsTest {
         MockitoAnnotations.initMocks(this);
     }
 
-
-    /*
-    * @Test
-    * @Feature({"Bookmark"})
-    * Bug=crbug.com/604025
-    */
-    @DisabledTest
+    @Test
+    @Feature({"Bookmark"})
     public void testStartEditActivityWithoutWebContents() {
         BookmarkId bookmarkId = new BookmarkId(12345L, BookmarkType.NORMAL);
         BookmarkUtils.startEditActivity(mContext, bookmarkId, null /* webContents */);

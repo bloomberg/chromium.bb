@@ -19,6 +19,7 @@ import static org.mockito.Mockito.verify;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.MultipleOfflinePageItemCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
@@ -40,7 +41,8 @@ import java.util.Set;
  * Unit tests for OfflinePageUtils.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, application = BaseChromiumApplication.class)
+@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+        shadows = {ShadowMultiDex.class})
 public class OfflinePageBridgeTest {
     private OfflinePageBridge mBridge;
 

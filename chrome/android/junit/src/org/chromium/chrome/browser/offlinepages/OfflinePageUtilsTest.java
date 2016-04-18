@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import android.os.Environment;
 
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
@@ -31,7 +32,7 @@ import java.io.File;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         application = BaseChromiumApplication.class,
-        shadows = { OfflinePageUtilsTest.WrappedEnvironment.class })
+        shadows = { OfflinePageUtilsTest.WrappedEnvironment.class, ShadowMultiDex.class })
 public class OfflinePageUtilsTest {
 
     @Mock private File mMockDataDirectory;
