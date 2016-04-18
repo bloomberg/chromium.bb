@@ -19,23 +19,28 @@ class TaskSchedulerSequenceTest : public testing::Test {
       : task_a_owned_(
             new Task(FROM_HERE,
                      Closure(),
-                     TaskTraits().WithPriority(TaskPriority::BACKGROUND))),
+                     TaskTraits().WithPriority(TaskPriority::BACKGROUND),
+                     TimeTicks())),
         task_b_owned_(
             new Task(FROM_HERE,
                      Closure(),
-                     TaskTraits().WithPriority(TaskPriority::USER_VISIBLE))),
+                     TaskTraits().WithPriority(TaskPriority::USER_VISIBLE),
+                     TimeTicks())),
         task_c_owned_(
             new Task(FROM_HERE,
                      Closure(),
-                     TaskTraits().WithPriority(TaskPriority::USER_BLOCKING))),
+                     TaskTraits().WithPriority(TaskPriority::USER_BLOCKING),
+                     TimeTicks())),
         task_d_owned_(
             new Task(FROM_HERE,
                      Closure(),
-                     TaskTraits().WithPriority(TaskPriority::USER_BLOCKING))),
+                     TaskTraits().WithPriority(TaskPriority::USER_BLOCKING),
+                     TimeTicks())),
         task_e_owned_(
             new Task(FROM_HERE,
                      Closure(),
-                     TaskTraits().WithPriority(TaskPriority::BACKGROUND))),
+                     TaskTraits().WithPriority(TaskPriority::BACKGROUND),
+                     TimeTicks())),
         task_a_(task_a_owned_.get()),
         task_b_(task_b_owned_.get()),
         task_c_(task_c_owned_.get()),

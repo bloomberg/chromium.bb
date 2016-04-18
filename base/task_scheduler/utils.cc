@@ -33,7 +33,8 @@ bool PostTaskToExecutor(const tracked_objects::Location& posted_from,
   // TODO(fdoray): Support delayed tasks.
   DCHECK(delay.is_zero());
 
-  std::unique_ptr<Task> task(new Task(posted_from, closure, traits));
+  std::unique_ptr<Task> task(
+      new Task(posted_from, closure, traits, TimeTicks()));
 
   if (!task_tracker->WillPostTask(task.get()))
     return false;

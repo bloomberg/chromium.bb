@@ -118,7 +118,7 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t>,
       std::unique_ptr<Task> task(new Task(
           FROM_HERE, Bind(&TaskSchedulerWorkerThreadTest::RunTaskCallback,
                           Unretained(this)),
-          TaskTraits()));
+          TaskTraits(), TimeTicks()));
       EXPECT_TRUE(task_tracker_.WillPostTask(task.get()));
       sequence->PushTask(std::move(task));
     }

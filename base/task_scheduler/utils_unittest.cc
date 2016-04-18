@@ -75,7 +75,7 @@ TEST(TaskSchedulerPostTaskToExecutorTest, PostTaskNotAllowed) {
 TEST(TaskSchedulerAddTaskToSequenceAndPriorityQueueTest,
      PostTaskInEmptySequence) {
   std::unique_ptr<Task> task(
-      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits()));
+      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeTicks()));
   const Task* task_raw = task.get();
   scoped_refptr<Sequence> sequence(new Sequence);
   PriorityQueue priority_queue;
@@ -99,14 +99,14 @@ TEST(TaskSchedulerAddTaskToSequenceAndPriorityQueueTest,
 TEST(TaskSchedulerAddTaskToSequenceAndPriorityQueueTest,
      PostTaskInNonEmptySequence) {
   std::unique_ptr<Task> task(
-      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits()));
+      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeTicks()));
   const Task* task_raw = task.get();
   scoped_refptr<Sequence> sequence(new Sequence);
   PriorityQueue priority_queue;
 
   // Add an initial task in |sequence|.
-  sequence->PushTask(
-      WrapUnique(new Task(FROM_HERE, Bind(&DoNothing), TaskTraits())));
+  sequence->PushTask(WrapUnique(
+      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeTicks())));
 
   // Post |task|.
   EXPECT_FALSE(AddTaskToSequenceAndPriorityQueue(std::move(task), sequence,

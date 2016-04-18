@@ -9,11 +9,12 @@ namespace internal {
 
 Task::Task(const tracked_objects::Location& posted_from,
            const Closure& task,
-           const TaskTraits& traits)
+           const TaskTraits& traits,
+           const TimeTicks& delayed_run_time)
     : PendingTask(posted_from,
                   task,
-                  TimeTicks(),  // No delayed run time.
-                  false),       // Not nestable.
+                  delayed_run_time,
+                  false),  // Not nestable.
       traits(traits) {}
 
 Task::~Task() = default;

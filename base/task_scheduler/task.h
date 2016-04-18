@@ -18,9 +18,14 @@ namespace internal {
 // A task is a unit of work inside the task scheduler. Support for tracing and
 // profiling inherited from PendingTask.
 struct BASE_EXPORT Task : public PendingTask {
+  // |posted_from| is the site the task was posted from. |task| is the closure
+  // to run. |traits| is metadata about the task. |delayed_run_time| is the time
+  // at which the task should be run (null TimeTicks if the task can run
+  // immediately).
   Task(const tracked_objects::Location& posted_from,
        const Closure& task,
-       const TaskTraits& traits);
+       const TaskTraits& traits,
+       const TimeTicks& delayed_run_time);
   ~Task();
 
   // The TaskTraits of this task.
