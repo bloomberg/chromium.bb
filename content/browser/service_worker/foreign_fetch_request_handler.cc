@@ -67,6 +67,11 @@ void ForeignFetchRequestHandler::InitializeHandler(
     return;
   }
 
+  if (request->initiator().IsSameOriginWith(url::Origin(request->url())))
+    return;
+  if (ServiceWorkerUtils::IsMainResourceType(resource_type))
+    return;
+
   // Any more precise checks to see if the request should be intercepted are
   // asynchronous, so just create our handler in all cases.
   std::unique_ptr<ForeignFetchRequestHandler> handler(

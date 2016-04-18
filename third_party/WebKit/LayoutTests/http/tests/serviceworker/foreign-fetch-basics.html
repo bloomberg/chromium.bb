@@ -1,27 +1,56 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/get-host-info.js"></script>
 <script src="resources/test-helpers.js"></script>
 <body>
 <script>
+var host_info = get_host_info();
+
 function worker_for_origins(origins) {
-  var worker = 'resources/foreign-fetch-worker.js?';
-  return worker + encodeURIComponent(JSON.stringify(origins));
+  var worker = 'foreign-fetch-worker.js?';
+  var params = {origins: origins, relscopes: ['/intercept']};
+  return worker + encodeURIComponent(JSON.stringify(params));
+}
+
+function worker_for_scopes(relative_scopes) {
+  var worker = 'foreign-fetch-worker.js?';
+  var params = {relscopes: relative_scopes};
+  return worker + encodeURIComponent(JSON.stringify(params));
+}
+
+function install_cross_origin_worker(t, worker, scope) {
+  return with_iframe(host_info.HTTPS_REMOTE_ORIGIN +
+                     '/serviceworker/resources/install-worker-helper.html')
+    .then(frame => new Promise((resolve, reject) => {
+        var channel = new MessageChannel();
+        frame.contentWindow.postMessage({worker: worker,
+                                         options: {scope: scope},
+                                         port: channel.port1},
+                                        '*', [channel.port1]);
+        channel.port2.onmessage = reply => {
+            if (reply.data == 'success') resolve();
+            else reject(reply.data);
+          };
+      }));
+}
+
+function intercepted_url(scope) {
+  return host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' +
+         scope + '/intercept/foo?basic';
+}
+
+function non_intercepted_url(scope) {
+  return host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' +
+         scope + '/foo?basic';
 }
 
 promise_test(t => {
-    var scope = 'resources/foreign-fetch/scope';
-    return service_worker_unregister_and_register(
-        t, worker_for_origins(['*']), scope)
-      .then(r => {
-          add_completion_callback(() => r.unregister());
-          return wait_for_state(t, r.installing, 'activated');
-        })
-      .then(() => fetch(scope + '/foo'))
-      .then(response => {
-          assert_equals(response.status, 404);
-          return fetch(scope + '/intercept/foo');
-        })
+    var scope = 'foreign-fetch/scope/wildcard';
+    return install_cross_origin_worker(t, worker_for_origins(['*']), scope)
+      .then(() => promise_rejects(t, new TypeError(),
+                                  fetch(non_intercepted_url(scope))))
+      .then(() => fetch(intercepted_url(scope)))
       .then(response => response.text())
       .then(response_text => {
           assert_equals(response_text, 'Foreign Fetch');
@@ -29,14 +58,10 @@ promise_test(t => {
   }, 'Service Worker intercepts fetches in scope with wildcard origin.');
 
 promise_test(t => {
-    var scope = 'resources/foreign-fetch/scope/match-origin';
-    return service_worker_unregister_and_register(
+    var scope = 'foreign-fetch/scope/match-origin';
+    return install_cross_origin_worker(
         t, worker_for_origins([location.origin]), scope)
-      .then(r => {
-          add_completion_callback(() => r.unregister());
-          return wait_for_state(t, r.installing, 'activated');
-        })
-      .then(() => fetch(scope + '/intercept/foo'))
+      .then(() => fetch(intercepted_url(scope)))
       .then(response => response.text())
       .then(response_text => {
           assert_equals(response_text, 'Foreign Fetch');
@@ -44,33 +69,53 @@ promise_test(t => {
   }, 'Service Worker intercepts fetches in scope with explicit origin.');
 
 promise_test(t => {
-    var scope = 'resources/foreign-fetch/scope/nomatch-origin';
-    return service_worker_unregister_and_register(
+    var scope = 'foreign-fetch/scope/nomatch-origin';
+    return install_cross_origin_worker(
         t, worker_for_origins(['https://example.com']), scope)
-      .then(r => {
-          add_completion_callback(() => r.unregister());
-          return wait_for_state(t, r.installing, 'activated');
-        })
-      .then(() => fetch(scope + '/intercept/foo'))
-      .then(response => {
-          assert_equals(response.status, 404);
-        });
+      .then(() => promise_rejects(t, new TypeError(),
+                                  fetch(non_intercepted_url(scope))));
   }, 'Service Worker doesn\'t intercept fetches with non matching origin.');
 
 promise_test(t => {
-    var scope = 'resources/foreign-fetch/scope/origin-list';
-    return service_worker_unregister_and_register(
+    var scope = 'foreign-fetch/scope/origin-list';
+    return install_cross_origin_worker(
         t, worker_for_origins([location.origin, 'https://example.com']), scope)
-      .then(r => {
-          add_completion_callback(() => r.unregister());
-          return wait_for_state(t, r.installing, 'activated');
-        })
-      .then(() => fetch(scope + '/intercept/foo'))
+      .then(() => fetch(intercepted_url(scope)))
       .then(response => response.text())
       .then(response_text => {
           assert_equals(response_text, 'Foreign Fetch');
         });
   }, 'Service Worker intercepts fetches in scope with explicit origin list.');
+
+promise_test(t => {
+    var scope = 'resources/foreign-fetch/same-origin';
+    return service_worker_unregister_and_register(
+        t, 'resources/' + worker_for_origins(['*']), scope)
+      .then(r => {
+          add_completion_callback(() => r.unregister());
+          return wait_for_state(t, r.installing, 'activated');
+        })
+      .then(() => fetch(scope + '/intercept/foo?basic'))
+      .then(response => {
+          assert_equals(response.status, 404);
+        });
+  }, 'Service Worker does not intercept same origin fetches.');
+
+promise_test(t => {
+    var scope = 'reply-to-message.html?onmessage';
+    var remote_url =
+        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+    return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
+      .then(() => with_iframe(remote_url))
+      .then(frame => new Promise(resolve => {
+          var channel = new MessageChannel();
+          frame.contentWindow.postMessage('ping', '*', [channel.port1]);
+          channel.port2.onmessage = reply => resolve(reply.data);
+        }))
+      .then(reply => {
+          assert_equals(reply, 'ping');
+        });
+  }, 'Service Worker does not intercept navigations.');
 
 </script>
 </body>
