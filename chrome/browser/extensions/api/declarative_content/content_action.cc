@@ -39,6 +39,7 @@ const char kInvalidIconDictionary[] =
     "ImageData2}";
 const char kInvalidInstanceTypeError[] =
     "An action has an invalid instanceType: %s";
+const char kMissingInstanceTypeError[] = "Action is missing instanceType";
 const char kMissingParameter[] = "Missing parameter is required: %s";
 const char kNoPageAction[] =
     "Can't use declarativeContent.ShowPageAction without a page action";
@@ -424,8 +425,10 @@ std::unique_ptr<ContentAction> ContentAction::Create(
   const base::DictionaryValue* action_dict = NULL;
   std::string instance_type;
   if (!(json_action.GetAsDictionary(&action_dict) &&
-        action_dict->GetString(keys::kInstanceType, &instance_type)))
+        action_dict->GetString(keys::kInstanceType, &instance_type))) {
+    *error = kMissingInstanceTypeError;
     return std::unique_ptr<ContentAction>();
+  }
 
   ContentActionFactory& factory = g_content_action_factory.Get();
   std::map<std::string, ContentActionFactory::FactoryMethod>::iterator

@@ -326,6 +326,57 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
       << "Removing the matching element should hide the page action again.";
 }
 
+// Test that adds two rules pointing to single action instance.
+// Regression test for http://crbug.com/574149.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, ReusedActionInstance) {
+  ext_dir_.WriteManifest(kDeclarativeContentManifest);
+  ext_dir_.WriteFile(
+      FILE_PATH_LITERAL("background.js"),
+      "var declarative = chrome.declarative;\n"
+      "\n"
+      "var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;\n"
+      "var ShowPageAction = chrome.declarativeContent.ShowPageAction;\n"
+      "var actionInstance = new ShowPageAction();\n"
+      "\n"
+      "var rule1 = {\n"
+      "  conditions: [new PageStateMatcher({\n"
+      "                   pageUrl: {hostPrefix: \"test1\"}})],\n"
+      "  actions: [actionInstance]\n"
+      "};\n"
+      "var rule2 = {\n"
+      "  conditions: [new PageStateMatcher({\n"
+      "                   pageUrl: {hostPrefix: \"test\"}})],\n"
+      "  actions: [actionInstance]\n"
+      "};\n"
+      "\n"
+      "var testEvent = chrome.declarativeContent.onPageChanged;\n"
+      "\n"
+      "testEvent.removeRules(undefined, function() {\n"
+      "  testEvent.addRules([rule1, rule2], function() {\n"
+      "    chrome.test.sendMessage(\"ready\");\n"
+      "  });\n"
+      "});\n");
+  ExtensionTestMessageListener ready("ready", false);
+  const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
+  ASSERT_TRUE(extension);
+  const ExtensionAction* page_action =
+      ExtensionActionManager::Get(browser()->profile())
+          ->GetPageAction(*extension);
+  ASSERT_TRUE(page_action);
+
+  ASSERT_TRUE(ready.WaitUntilSatisfied());
+  content::WebContents* const tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  const int tab_id = ExtensionTabUtil::GetTabId(tab);
+
+  // This navigation matches both rules.
+  NavigateInRenderer(tab, GURL("http://test1/"));
+
+  // Because the declarative rules were reusing action instance, addRules will
+  // fail and the page action won't be visible.
+  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+}
+
 // Tests that the rules are evaluated at the time they are added or removed.
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, RulesEvaluatedOnAddRemove) {
   ext_dir_.WriteManifest(kDeclarativeContentManifest);

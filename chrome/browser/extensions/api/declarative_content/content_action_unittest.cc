@@ -76,14 +76,14 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
   error.clear();
   result = ContentAction::Create(
       NULL, NULL, *ParseJson("[]"), &error);
-  EXPECT_EQ("", error);
+  EXPECT_THAT(error, HasSubstr("missing instanceType"));
   EXPECT_FALSE(result.get());
 
   // Test missing instanceType element.
   error.clear();
   result = ContentAction::Create(
       NULL, NULL, *ParseJson("{}"), &error);
-  EXPECT_EQ("", error);
+  EXPECT_THAT(error, HasSubstr("missing instanceType"));
   EXPECT_FALSE(result.get());
 
   // Test wrong instanceType element.
