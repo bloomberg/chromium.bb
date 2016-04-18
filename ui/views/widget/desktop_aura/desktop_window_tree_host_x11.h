@@ -259,10 +259,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Is the window mapped to the screen?
   bool window_mapped_;
 
-  // Keeps track of whether we have ever mapped/withdrawn this
-  // window. Debugging information in trying to track down crbug.com/381732.
-  bool x_map_window_was_called_ = false;
-
   // The bounds of |xwindow_|.
   gfx::Rect bounds_in_pixels_;
 

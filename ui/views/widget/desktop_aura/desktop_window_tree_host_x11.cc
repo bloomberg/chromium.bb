@@ -1653,7 +1653,6 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
                     1);
   }
 
-  x_map_window_was_called_ = true;
   XMapWindow(xdisplay_, xwindow_);
 
   // We now block until our window is mapped. Some X11 APIs will crash and
@@ -1662,7 +1661,6 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
   if (ui::X11EventSource::GetInstance())
     ui::X11EventSource::GetInstance()->BlockUntilWindowMapped(xwindow_);
   window_mapped_ = true;
-  x_map_window_was_called_ = false;
 
   UpdateMinAndMaxSize();
 
@@ -1885,10 +1883,6 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       break;
     }
     case MapNotify: {
-      CHECK(x_map_window_was_called_)
-          << "Received MapNotify event despite never calling XMapWindow(). "
-          << "(This is debugging state for crbug.com/381732.)";
-
       FOR_EACH_OBSERVER(DesktopWindowTreeHostObserverX11,
                         observer_list_,
                         OnWindowMapped(xwindow_));
