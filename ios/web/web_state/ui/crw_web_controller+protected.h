@@ -100,12 +100,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Called before loading current URL in WebView.
 - (void)willLoadCurrentURLInWebView;
 
-// Loads request for the URL of the current navigation item. Subclasses may
-// choose to build a new NSURLRequest and call |loadRequest| on the underlying
-// web view, or use native web view navigation where possible (for example,
-// going back and forward through the history stack).
-- (void)loadRequestForCurrentNavigationItem;
-
 // Called when web view process has been terminated.
 - (void)webViewWebProcessDidCrash;
 

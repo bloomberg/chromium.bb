@@ -594,6 +594,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)isCurrentNavigationItemPOST;
 // Returns whether the given navigation is triggered by a user link click.
 - (BOOL)isLinkNavigation:(WKNavigationType)navigationType;
+// Returns YES if the given WKBackForwardListItem is valid to use for
+// navigation.
+- (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item;
 
 // Finds all the scrollviews in the view hierarchy and makes sure they do not
 // interfere with scroll to top when tapping the statusbar.
@@ -678,6 +681,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Returns YES if there is currently a requested but uncommitted load for
 // |targetURL|.
 - (BOOL)isLoadRequestPendingForURL:(const GURL&)targetURL;
+// Loads request for the URL of the current navigation item. Subclasses may
+// choose to build a new NSURLRequest and call |loadRequest| on the underlying
+// web view, or use native web view navigation where possible (for example,
+// going back and forward through the history stack).
+- (void)loadRequestForCurrentNavigationItem;
 
 // Handlers for JavaScript messages. |message| contains a JavaScript command and
 // data relevant to the message, and |context| contains contextual information
@@ -1406,6 +1414,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
+- (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item {
+  // The current back-forward list item MUST be in the WKWebView's back-forward
+  // list to be valid.
+  WKBackForwardList* list = [self.webView backForwardList];
+  return list.currentItem == item ||
+         [list.forwardList indexOfObject:item] != NSNotFound ||
+         [list.backList indexOfObject:item] != NSNotFound;
+}
+
 - (void)injectEarlyInjectionScripts {
   DCHECK(self.webView);
   if (![_earlyScriptManager hasBeenInjected]) {
@@ -1704,11 +1721,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self ensureWebViewCreated];
 
   [self loadRequestForCurrentNavigationItem];
-}
-
-- (void)loadRequestForCurrentNavigationItem {
-  // Handled differently by UIWebView and WKWebView subclasses.
-  NOTIMPLEMENTED();
 }
 
 - (void)updatePendingNavigationInfoFromNavigationAction:
@@ -5226,6 +5238,89 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   web::NavigationItem* pendingItem =
       self.webState->GetNavigationManager()->GetPendingItem();
   return pendingItem && pendingItem->GetURL() == targetURL;
+}
+
+- (void)loadRequestForCurrentNavigationItem {
+  DCHECK(self.webView && !self.nativeController);
+  DCHECK([self currentSessionEntry]);
+  // If a load is kicked off on a WKWebView with a frame whose size is {0, 0} or
+  // that has a negative dimension for a size, rendering issues occur that
+  // manifest in erroneous scrolling and tap handling (crbug.com/574996,
+  // crbug.com/577793).
+  DCHECK_GT(CGRectGetWidth(self.webView.frame), 0.0);
+  DCHECK_GT(CGRectGetHeight(self.webView.frame), 0.0);
+
+  web::WKBackForwardListItemHolder* holder =
+      [self currentBackForwardListItemHolder];
+  BOOL isFormResubmission =
+      (holder->navigation_type() == WKNavigationTypeFormResubmitted ||
+       holder->navigation_type() == WKNavigationTypeFormSubmitted);
+  web::NavigationItemImpl* currentItem =
+      [self currentSessionEntry].navigationItemImpl;
+  NSData* POSTData = currentItem->GetPostData();
+  NSMutableURLRequest* request = [self requestForCurrentNavigationItem];
+
+  // If the request has POST data and is not a form resubmission, configure and
+  // run the POST request.
+  if (POSTData.length && !isFormResubmission) {
+    [request setHTTPMethod:@"POST"];
+    [request setHTTPBody:POSTData];
+    [request setAllHTTPHeaderFields:[self currentHTTPHeaders]];
+    [self registerLoadRequest:[self currentNavigationURL]
+                     referrer:[self currentSessionEntryReferrer]
+                   transition:[self currentTransition]];
+    [self loadPOSTRequest:request];
+    return;
+  }
+
+  ProceduralBlock defaultNavigationBlock = ^{
+    [self registerLoadRequest:[self currentNavigationURL]
+                     referrer:[self currentSessionEntryReferrer]
+                   transition:[self currentTransition]];
+    [self loadRequest:request];
+  };
+
+  // If there is no corresponding WKBackForwardListItem, or the item is not in
+  // the current WKWebView's back-forward list, navigating using WKWebView API
+  // is not possible. In this case, fall back to the default navigation
+  // mechanism.
+  if (!holder->back_forward_list_item() ||
+      ![self isBackForwardListItemValid:holder->back_forward_list_item()]) {
+    defaultNavigationBlock();
+    return;
+  }
+
+  ProceduralBlock webViewNavigationBlock = ^{
+    // If the current navigation URL is the same as the URL of the visible
+    // page, that means the user requested a reload. |goToBackForwardListItem|
+    // will be a no-op when it is passed the current back forward list item,
+    // so |reload| must be explicitly called.
+    [self registerLoadRequest:[self currentNavigationURL]
+                     referrer:[self currentSessionEntryReferrer]
+                   transition:[self currentTransition]];
+    if ([self currentNavigationURL] == net::GURLWithNSURL([self.webView URL])) {
+      [self.webView reload];
+    } else {
+      [self.webView goToBackForwardListItem:holder->back_forward_list_item()];
+    }
+  };
+
+  // If the request is not a form submission or resubmission, or the user
+  // doesn't need to confirm the load, then continue right away.
+
+  if (!isFormResubmission ||
+      currentItem->ShouldSkipResubmitDataConfirmation()) {
+    webViewNavigationBlock();
+    return;
+  }
+
+  // If the request is form submission or resubmission, then prompt the
+  // user before proceeding.
+  DCHECK(isFormResubmission);
+  [self.delegate webController:self
+      onFormResubmissionForRequest:nil
+                     continueBlock:webViewNavigationBlock
+                       cancelBlock:defaultNavigationBlock];
 }
 
 #pragma mark -
