@@ -39,17 +39,18 @@ CastMojoMediaApplication::CastMojoMediaApplication(
 
 CastMojoMediaApplication::~CastMojoMediaApplication() {}
 
-void CastMojoMediaApplication::Initialize(shell::Connector* connector,
-                                          const shell::Identity& identity,
+void CastMojoMediaApplication::Initialize(::shell::Connector* connector,
+                                          const ::shell::Identity& identity,
                                           uint32_t /* id */) {}
 
-bool CastMojoMediaApplication::AcceptConnection(shell::Connection* connection) {
+bool CastMojoMediaApplication::AcceptConnection(
+    ::shell::Connection* connection) {
   connection->AddInterface<::media::interfaces::ServiceFactory>(this);
   return true;
 }
 
 void CastMojoMediaApplication::Create(
-    shell::Connection* connection,
+    ::shell::Connection* connection,
     mojo::InterfaceRequest<::media::interfaces::ServiceFactory> request) {
   // Create the app refcount here on the application task runner so that
   // 1. It is bound to the application task runner, which in turn will

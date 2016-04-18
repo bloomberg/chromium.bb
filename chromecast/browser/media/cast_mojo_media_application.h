@@ -27,8 +27,8 @@ namespace media {
 class CastMojoMediaClient;
 
 class CastMojoMediaApplication
-    : public shell::ShellClient,
-      public shell::InterfaceFactory<::media::interfaces::ServiceFactory> {
+    : public ::shell::ShellClient,
+      public ::shell::InterfaceFactory<::media::interfaces::ServiceFactory> {
  public:
   CastMojoMediaApplication(
       std::unique_ptr<CastMojoMediaClient> mojo_media_client,
@@ -36,21 +36,21 @@ class CastMojoMediaApplication
   ~CastMojoMediaApplication() final;
 
  private:
-  // shell::ShellClient implementation.
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
+  // ::shell::ShellClient implementation.
+  void Initialize(::shell::Connector* connector,
+                  const ::shell::Identity& identity,
                   uint32_t id) final;
-  bool AcceptConnection(shell::Connection* connection) final;
+  bool AcceptConnection(::shell::Connection* connection) final;
 
-  // shell::InterfaceFactory<interfaces::ServiceFactory> implementation.
-  void Create(shell::Connection* connection,
+  // ::shell::InterfaceFactory<interfaces::ServiceFactory> implementation.
+  void Create(::shell::Connection* connection,
               mojo::InterfaceRequest<::media::interfaces::ServiceFactory>
                   request) final;
 
   std::unique_ptr<CastMojoMediaClient> mojo_media_client_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<::media::MediaLog> media_log_;
-  shell::MessageLoopRefFactory ref_factory_;
+  ::shell::MessageLoopRefFactory ref_factory_;
 };
 
 }  // namespace media
