@@ -48,13 +48,13 @@ def _CopyCDBToOutput(output_dir, target_arch):
   directory, which is created if it does not exist. The output
   directory, and target architecture that should be copied, are
   passed. Supported values for the target architecture are the GYP
-  values "ia32" and "x64".
+  values "ia32" and "x64" and the GN values "x86" and "x64".
   """
   if not os.path.isdir(output_dir):
     os.makedirs(output_dir)
   vs_toolchain.SetEnvironmentAndGetRuntimeDllDirs()
   win_sdk_dir = os.path.normpath(os.environ['WINDOWSSDKDIR'])
-  if target_arch == 'ia32':
+  if target_arch == 'ia32' or target_arch == 'x86':
     src_arch = 'x86'
   elif target_arch == 'x64':
     src_arch = 'x64'
