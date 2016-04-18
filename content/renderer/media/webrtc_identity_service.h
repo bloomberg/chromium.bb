@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/media/webrtc_identity_messages.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -20,7 +20,7 @@ namespace content {
 // This class handles WebRTC DTLS identity requests by sending IPC messages to
 // the browser process. Only one request is sent to the browser at a time; other
 // requests are queued and have to wait for the outstanding request to complete.
-class CONTENT_EXPORT WebRTCIdentityService : public RenderProcessObserver {
+class CONTENT_EXPORT WebRTCIdentityService : public RenderThreadObserver {
  public:
   typedef base::Callback<
       void(const std::string& certificate, const std::string& private_key)>
@@ -61,7 +61,7 @@ class CONTENT_EXPORT WebRTCIdentityService : public RenderProcessObserver {
  protected:
   // For unittest to override.
   virtual bool Send(IPC::Message* message);
-  // RenderProcessObserver implementation. Protected for testing.
+  // RenderThreadObserver implementation. Protected for testing.
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
  private:

@@ -11,7 +11,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
-#include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
+#include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
@@ -21,7 +21,7 @@ LayoutTestRenderFrameObserver::LayoutTestRenderFrameObserver(
     RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
   render_frame->GetWebFrame()->setContentSettingsClient(
-      LayoutTestRenderProcessObserver::GetInstance()
+      LayoutTestRenderThreadObserver::GetInstance()
           ->test_interfaces()
           ->TestRunner()
           ->GetWebContentSettings());
@@ -46,7 +46,7 @@ bool LayoutTestRenderFrameObserver::OnMessageReceived(
 
 void LayoutTestRenderFrameObserver::OnLayoutDumpRequest() {
   std::string dump =
-      LayoutTestRenderProcessObserver::GetInstance()
+      LayoutTestRenderThreadObserver::GetInstance()
           ->test_interfaces()
           ->TestRunner()
           ->DumpLayout(render_frame()->GetWebFrame());
@@ -55,7 +55,7 @@ void LayoutTestRenderFrameObserver::OnLayoutDumpRequest() {
 
 void LayoutTestRenderFrameObserver::OnReplicateLayoutTestRuntimeFlagsChanges(
     const base::DictionaryValue& changed_layout_test_runtime_flags) {
-  LayoutTestRenderProcessObserver::GetInstance()
+  LayoutTestRenderThreadObserver::GetInstance()
       ->test_interfaces()
       ->TestRunner()
       ->ReplicateLayoutTestRuntimeFlagsChanges(
@@ -66,7 +66,7 @@ void LayoutTestRenderFrameObserver::OnReplicateTestConfiguration(
     const ShellTestConfiguration& test_config,
     const base::DictionaryValue&
         accumulated_layout_test_runtime_flags_changes) {
-  LayoutTestRenderProcessObserver::GetInstance()
+  LayoutTestRenderThreadObserver::GetInstance()
       ->main_test_runner()
       ->OnReplicateTestConfiguration(test_config);
 
@@ -76,7 +76,7 @@ void LayoutTestRenderFrameObserver::OnReplicateTestConfiguration(
 
 void LayoutTestRenderFrameObserver::OnSetTestConfiguration(
     const ShellTestConfiguration& test_config) {
-  LayoutTestRenderProcessObserver::GetInstance()
+  LayoutTestRenderThreadObserver::GetInstance()
       ->main_test_runner()
       ->OnSetTestConfiguration(test_config);
 }

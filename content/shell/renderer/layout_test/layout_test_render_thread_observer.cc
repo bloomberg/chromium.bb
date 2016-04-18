@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
+#include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
 
 #include "base/command_line.h"
 #include "components/test_runner/event_sender.h"
@@ -27,16 +27,16 @@ using blink::WebRuntimeFeatures;
 namespace content {
 
 namespace {
-LayoutTestRenderProcessObserver* g_instance = NULL;
+LayoutTestRenderThreadObserver* g_instance = NULL;
 }
 
 // static
-LayoutTestRenderProcessObserver*
-LayoutTestRenderProcessObserver::GetInstance() {
+LayoutTestRenderThreadObserver*
+LayoutTestRenderThreadObserver::GetInstance() {
   return g_instance;
 }
 
-LayoutTestRenderProcessObserver::LayoutTestRenderProcessObserver()
+LayoutTestRenderThreadObserver::LayoutTestRenderThreadObserver()
     : main_test_runner_(NULL),
       test_delegate_(NULL) {
   CHECK(!g_instance);
@@ -66,31 +66,31 @@ LayoutTestRenderProcessObserver::LayoutTestRenderProcessObserver()
   }
 }
 
-LayoutTestRenderProcessObserver::~LayoutTestRenderProcessObserver() {
+LayoutTestRenderThreadObserver::~LayoutTestRenderThreadObserver() {
   CHECK(g_instance == this);
   g_instance = NULL;
 }
 
-void LayoutTestRenderProcessObserver::SetTestDelegate(
+void LayoutTestRenderThreadObserver::SetTestDelegate(
     test_runner::WebTestDelegate* delegate) {
   test_interfaces_->SetDelegate(delegate);
   test_delegate_ = delegate;
 }
 
-void LayoutTestRenderProcessObserver::SetMainWindow(RenderView* view) {
+void LayoutTestRenderThreadObserver::SetMainWindow(RenderView* view) {
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(view);
   test_interfaces_->SetWebView(view->GetWebView(), test_runner->proxy());
   main_test_runner_ = test_runner;
 }
 
-void LayoutTestRenderProcessObserver::OnRenderProcessShutdown() {
+void LayoutTestRenderThreadObserver::OnRenderProcessShutdown() {
   test_interfaces_.reset();
 }
 
-bool LayoutTestRenderProcessObserver::OnControlMessageReceived(
+bool LayoutTestRenderThreadObserver::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(LayoutTestRenderProcessObserver, message)
+  IPC_BEGIN_MESSAGE_MAP(LayoutTestRenderThreadObserver, message)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SetWebKitSourceDir, OnSetWebKitSourceDir)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -98,7 +98,7 @@ bool LayoutTestRenderProcessObserver::OnControlMessageReceived(
   return handled;
 }
 
-void LayoutTestRenderProcessObserver::OnSetWebKitSourceDir(
+void LayoutTestRenderThreadObserver::OnSetWebKitSourceDir(
     const base::FilePath& webkit_source_dir) {
   webkit_source_dir_ = webkit_source_dir;
 }

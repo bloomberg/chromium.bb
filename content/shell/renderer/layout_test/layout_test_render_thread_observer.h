@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_PROCESS_OBSERVER_H_
-#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_PROCESS_OBSERVER_H_
+#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_THREAD_OBSERVER_H_
+#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_THREAD_OBSERVER_H_
 
 #include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 #include "ipc/ipc_platform_file.h"
 
 namespace blink {
@@ -27,17 +27,17 @@ namespace content {
 class RenderView;
 class BlinkTestRunner;
 
-class LayoutTestRenderProcessObserver : public RenderProcessObserver {
+class LayoutTestRenderThreadObserver : public RenderThreadObserver {
  public:
-  static LayoutTestRenderProcessObserver* GetInstance();
+  static LayoutTestRenderThreadObserver* GetInstance();
 
-  LayoutTestRenderProcessObserver();
-  ~LayoutTestRenderProcessObserver() override;
+  LayoutTestRenderThreadObserver();
+  ~LayoutTestRenderThreadObserver() override;
 
   void SetTestDelegate(test_runner::WebTestDelegate* delegate);
   void SetMainWindow(RenderView* view);
 
-  // RenderProcessObserver implementation.
+  // RenderThreadObserver implementation.
   void OnRenderProcessShutdown() override;
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
@@ -60,9 +60,9 @@ class LayoutTestRenderProcessObserver : public RenderProcessObserver {
 
   base::FilePath webkit_source_dir_;
 
-  DISALLOW_COPY_AND_ASSIGN(LayoutTestRenderProcessObserver);
+  DISALLOW_COPY_AND_ASSIGN(LayoutTestRenderThreadObserver);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_PROCESS_OBSERVER_H_
+#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_THREAD_OBSERVER_H_

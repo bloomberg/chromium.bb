@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/renderer/cast_render_process_observer.h"
+#include "chromecast/renderer/cast_render_thread_observer.h"
 
 #include "build/build_config.h"
 #include "chromecast/renderer/media/capabilities_message_filter.h"
@@ -12,18 +12,18 @@
 namespace chromecast {
 namespace shell {
 
-CastRenderProcessObserver::CastRenderProcessObserver() {
+CastRenderThreadObserver::CastRenderThreadObserver() {
   content::RenderThread* thread = content::RenderThread::Get();
   thread->AddObserver(this);
   CreateCustomFilters();
 }
 
-CastRenderProcessObserver::~CastRenderProcessObserver() {
-  // CastRenderProcessObserver outlives content::RenderThread.
+CastRenderThreadObserver::~CastRenderThreadObserver() {
+  // CastRenderThreadObserver outlives content::RenderThread.
   // No need to explicitly call RemoveObserver in teardown.
 }
 
-void CastRenderProcessObserver::CreateCustomFilters() {
+void CastRenderThreadObserver::CreateCustomFilters() {
   content::RenderThread* thread = content::RenderThread::Get();
 #if !defined(OS_ANDROID)
   cma_message_filter_proxy_ =
@@ -34,7 +34,7 @@ void CastRenderProcessObserver::CreateCustomFilters() {
   thread->AddFilter(capabilities_message_filter_.get());
 }
 
-void CastRenderProcessObserver::OnRenderProcessShutdown() {
+void CastRenderThreadObserver::OnRenderProcessShutdown() {
   content::RenderThread* thread = content::RenderThread::Get();
 #if !defined(OS_ANDROID)
   if (cma_message_filter_proxy_.get()) {

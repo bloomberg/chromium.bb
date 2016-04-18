@@ -15,7 +15,7 @@
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/chrome_render_process_observer.h"
+#include "chrome/renderer/chrome_render_thread_observer.h"
 #include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
 #include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
 #include "chrome/renderer/extensions/resource_request_policy.h"
@@ -126,7 +126,7 @@ ChromeExtensionsRendererClient* ChromeExtensionsRendererClient::GetInstance() {
 }
 
 bool ChromeExtensionsRendererClient::IsIncognitoProcess() const {
-  return ChromeRenderProcessObserver::is_incognito_process();
+  return ChromeRenderThreadObserver::is_incognito_process();
 }
 
 int ChromeExtensionsRendererClient::GetLowestIsolatedWorldId() const {

@@ -16,7 +16,7 @@
 #include "components/error_page/renderer/net_error_helper_core.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 
 class GURL;
 
@@ -42,7 +42,7 @@ struct ErrorPageParams;
 class NetErrorHelper
     : public content::RenderFrameObserver,
       public content::RenderFrameObserverTracker<NetErrorHelper>,
-      public content::RenderProcessObserver,
+      public content::RenderThreadObserver,
       public error_page::NetErrorHelperCore::Delegate,
       public NetErrorPageController::Delegate {
  public:
@@ -65,7 +65,7 @@ class NetErrorHelper
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // RenderProcessObserver implementation.
+  // RenderThreadObserver implementation.
   void NetworkStateChanged(bool online) override;
 
   // Initializes |error_html| with the HTML of an error page in response to

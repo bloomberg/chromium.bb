@@ -9,19 +9,19 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "components/visitedlink/common/visitedlink_common.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 
 namespace visitedlink {
 
 // Reads the link coloring database provided by the master. There can be any
 // number of slaves reading the same database.
 class VisitedLinkSlave : public VisitedLinkCommon,
-                         public content::RenderProcessObserver {
+                         public content::RenderThreadObserver {
  public:
   VisitedLinkSlave();
   ~VisitedLinkSlave() override;
 
-  // RenderProcessObserver implementation.
+  // RenderThreadObserver implementation.
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // Message handlers.

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
@@ -40,7 +40,7 @@ class RenderThread;
 // sends it to the browser process, and handles messages
 // from the browser process.
 class CONTENT_EXPORT PeerConnectionTracker
-    : public RenderProcessObserver,
+    : public RenderThreadObserver,
       public base::SupportsWeakPtr<PeerConnectionTracker> {
  public:
   PeerConnectionTracker();
@@ -58,7 +58,7 @@ class CONTENT_EXPORT PeerConnectionTracker
     ACTION_CREATE_ANSWER
   };
 
-  // RenderProcessObserver implementation.
+  // RenderThreadObserver implementation.
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
   //

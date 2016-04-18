@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/public/child/worker_thread.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"

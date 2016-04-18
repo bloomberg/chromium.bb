@@ -86,7 +86,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/bluetooth/bluetooth_message_filter.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
@@ -849,7 +849,7 @@ RenderThreadImpl::~RenderThreadImpl() {
 
 void RenderThreadImpl::Shutdown() {
   FOR_EACH_OBSERVER(
-      RenderProcessObserver, observers_, OnRenderProcessShutdown());
+      RenderThreadObserver, observers_, OnRenderProcessShutdown());
 
   if (memory_observer_) {
     message_loop()->RemoveTaskObserver(memory_observer_.get());
@@ -1109,11 +1109,11 @@ void RenderThreadImpl::RemoveFilter(IPC::MessageFilter* filter) {
   channel()->RemoveFilter(filter);
 }
 
-void RenderThreadImpl::AddObserver(RenderProcessObserver* observer) {
+void RenderThreadImpl::AddObserver(RenderThreadObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void RenderThreadImpl::RemoveObserver(RenderProcessObserver* observer) {
+void RenderThreadImpl::RemoveObserver(RenderThreadObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -1402,7 +1402,7 @@ void RenderThreadImpl::IdleHandler() {
     idle_timer_.Stop();
   }
 
-  FOR_EACH_OBSERVER(RenderProcessObserver, observers_, IdleNotification());
+  FOR_EACH_OBSERVER(RenderThreadObserver, observers_, IdleNotification());
 }
 
 int64_t RenderThreadImpl::GetIdleNotificationDelayInMs() const {
@@ -1729,8 +1729,8 @@ void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {
 }
 
 bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
-  base::ObserverListBase<RenderProcessObserver>::Iterator it(&observers_);
-  RenderProcessObserver* observer;
+  base::ObserverListBase<RenderThreadObserver>::Iterator it(&observers_);
+  RenderThreadObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
     if (observer->OnControlMessageReceived(msg))
       return true;
@@ -1907,7 +1907,7 @@ void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
   blink::resetPluginCache(reload_pages);
   blink_platform_impl_->set_plugin_refresh_allowed(true);
 
-  FOR_EACH_OBSERVER(RenderProcessObserver, observers_, PluginListChanged());
+  FOR_EACH_OBSERVER(RenderThreadObserver, observers_, PluginListChanged());
 }
 #endif
 
@@ -1917,7 +1917,7 @@ void RenderThreadImpl::OnNetworkConnectionChanged(
   bool online = type != net::NetworkChangeNotifier::CONNECTION_NONE;
   WebNetworkStateNotifier::setOnLine(online);
   FOR_EACH_OBSERVER(
-      RenderProcessObserver, observers_, NetworkStateChanged(online));
+      RenderThreadObserver, observers_, NetworkStateChanged(online));
   WebNetworkStateNotifier::setWebConnection(
       NetConnectionTypeToWebConnectionType(type), max_bandwidth_mbps);
 }

@@ -10,8 +10,8 @@ source_set("renderer") {
     "cast_content_renderer_client.h",
     "cast_media_load_deferrer.cc",
     "cast_media_load_deferrer.h",
-    "cast_render_process_observer.cc",
-    "cast_render_process_observer.h",
+    "cast_render_thread_observer.cc",
+    "cast_render_thread_observer.h",
     "key_systems_cast.cc",
     "key_systems_cast.h",
   ]

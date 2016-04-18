@@ -11,7 +11,7 @@
 
 namespace content {
 
-class LayoutTestRenderProcessObserver;
+class LayoutTestRenderThreadObserver;
 class MockWebClipboardImpl;
 
 class LayoutTestContentRendererClient : public ShellContentRendererClient {
@@ -38,7 +38,7 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
       override;
 
  private:
-  std::unique_ptr<LayoutTestRenderProcessObserver> shell_observer_;
+  std::unique_ptr<LayoutTestRenderThreadObserver> shell_observer_;
   std::unique_ptr<MockWebClipboardImpl> clipboard_;
 };
 

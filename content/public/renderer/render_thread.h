@@ -38,7 +38,7 @@ class Extension;
 
 namespace content {
 
-class RenderProcessObserver;
+class RenderThreadObserver;
 class ResourceDispatcherDelegate;
 class ServiceRegistry;
 
@@ -68,8 +68,8 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   virtual void RemoveFilter(IPC::MessageFilter* filter) = 0;
 
   // Add/remove observers for the process.
-  virtual void AddObserver(RenderProcessObserver* observer) = 0;
-  virtual void RemoveObserver(RenderProcessObserver* observer) = 0;
+  virtual void AddObserver(RenderThreadObserver* observer) = 0;
+  virtual void RemoveObserver(RenderThreadObserver* observer) = 0;
 
   // Set the ResourceDispatcher delegate object for this process.
   virtual void SetResourceDispatcherDelegate(

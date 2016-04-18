@@ -18,7 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 #include "extensions/common/event_filter.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
@@ -67,7 +67,7 @@ struct Message;
 
 // Dispatches extension control messages sent to the renderer and stores
 // renderer extension related state.
-class Dispatcher : public content::RenderProcessObserver,
+class Dispatcher : public content::RenderThreadObserver,
                    public UserScriptSetManager::Observer {
  public:
   explicit Dispatcher(DispatcherDelegate* delegate);
@@ -153,7 +153,7 @@ class Dispatcher : public content::RenderProcessObserver,
   FRIEND_TEST_ALL_PREFIXES(RendererPermissionsPolicyDelegateTest,
                            CannotScriptWebstore);
 
-  // RenderProcessObserver implementation:
+  // RenderThreadObserver implementation:
   bool OnControlMessageReceived(const IPC::Message& message) override;
   void IdleNotification() override;
   void OnRenderProcessShutdown() override;

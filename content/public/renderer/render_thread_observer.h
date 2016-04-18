@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_RENDERER_RENDER_PROCESS_OBSERVER_H_
-#define CONTENT_PUBLIC_RENDERER_RENDER_PROCESS_OBSERVER_H_
+#ifndef CONTENT_PUBLIC_RENDERER_RENDER_THREAD_OBSERVER_H_
+#define CONTENT_PUBLIC_RENDERER_RENDER_THREAD_OBSERVER_H_
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
@@ -16,10 +16,10 @@ namespace content {
 
 // Base class for objects that want to filter control IPC messages and get
 // notified of events.
-class CONTENT_EXPORT RenderProcessObserver {
+class CONTENT_EXPORT RenderThreadObserver {
  public:
-  RenderProcessObserver() {}
-  virtual ~RenderProcessObserver() {}
+  RenderThreadObserver() {}
+  virtual ~RenderThreadObserver() {}
 
   // Allows filtering of control messages.
   virtual bool OnControlMessageReceived(const IPC::Message& message);
@@ -36,9 +36,9 @@ class CONTENT_EXPORT RenderProcessObserver {
   virtual void NetworkStateChanged(bool online) {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RenderProcessObserver);
+  DISALLOW_COPY_AND_ASSIGN(RenderThreadObserver);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_RENDERER_RENDER_PROCESS_OBSERVER_H_
+#endif  // CONTENT_PUBLIC_RENDERER_RENDER_THREAD_OBSERVER_H_

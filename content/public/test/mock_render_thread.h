@@ -59,8 +59,8 @@ class MockRenderThread : public RenderThread {
   int GenerateRoutingID() override;
   void AddFilter(IPC::MessageFilter* filter) override;
   void RemoveFilter(IPC::MessageFilter* filter) override;
-  void AddObserver(RenderProcessObserver* observer) override;
-  void RemoveObserver(RenderProcessObserver* observer) override;
+  void AddObserver(RenderThreadObserver* observer) override;
+  void RemoveObserver(RenderThreadObserver* observer) override;
   void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) override;
   void RecordAction(const base::UserMetricsAction& action) override;
@@ -107,7 +107,7 @@ class MockRenderThread : public RenderThread {
   // Dispatches control messages to observers.
   bool OnControlMessageReceived(const IPC::Message& msg);
 
-  base::ObserverList<RenderProcessObserver>& observers() { return observers_; }
+  base::ObserverList<RenderThreadObserver>& observers() { return observers_; }
 
  protected:
   // This function operates as a regular IPC listener. Subclasses
@@ -155,7 +155,7 @@ class MockRenderThread : public RenderThread {
   std::vector<scoped_refptr<IPC::MessageFilter> > filters_;
 
   // Observers to notify.
-  base::ObserverList<RenderProcessObserver> observers_;
+  base::ObserverList<RenderThreadObserver> observers_;
 
   cc::TestSharedBitmapManager shared_bitmap_manager_;
   std::unique_ptr<ServiceRegistry> service_registry_;

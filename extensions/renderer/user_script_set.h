@@ -14,7 +14,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/observer_list.h"
-#include "content/public/renderer/render_process_observer.h"
 #include "extensions/common/user_script.h"
 
 class GURL;

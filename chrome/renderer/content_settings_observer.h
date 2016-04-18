@@ -136,7 +136,7 @@ class ContentSettingsObserver
 
   // A pointer to content setting rules stored by the renderer. Normally, the
   // |RendererContentSettingRules| object is owned by
-  // |ChromeRenderProcessObserver|. In the tests it is owned by the caller of
+  // |ChromeRenderThreadObserver|. In the tests it is owned by the caller of
   // |SetContentSettingRules|.
   const RendererContentSettingRules* content_setting_rules_;
 

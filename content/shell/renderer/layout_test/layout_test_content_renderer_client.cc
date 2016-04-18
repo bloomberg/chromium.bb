@@ -12,7 +12,7 @@
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_proxy.h"
 #include "components/test_runner/web_test_runner.h"
-#include "components/web_cache/renderer/web_cache_render_process_observer.h"
+#include "components/web_cache/renderer/web_cache_render_thread_observer.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_view.h"
@@ -21,7 +21,7 @@
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
 #include "content/shell/renderer/layout_test/layout_test_render_frame_observer.h"
-#include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
+#include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
 #include "content/shell/renderer/layout_test/test_media_stream_renderer_factory.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "content/test/mock_webclipboard_impl.h"
@@ -55,20 +55,20 @@ void WebTestProxyCreated(RenderView* render_view,
   test_runner->set_proxy(proxy);
   proxy->set_delegate(test_runner);
 
-  if (!LayoutTestRenderProcessObserver::GetInstance()->test_delegate()) {
-    LayoutTestRenderProcessObserver::GetInstance()->SetTestDelegate(
+  if (!LayoutTestRenderThreadObserver::GetInstance()->test_delegate()) {
+    LayoutTestRenderThreadObserver::GetInstance()->SetTestDelegate(
         test_runner);
   }
-  proxy->set_view_test_client(LayoutTestRenderProcessObserver::GetInstance()
+  proxy->set_view_test_client(LayoutTestRenderThreadObserver::GetInstance()
                                   ->test_interfaces()
                                   ->CreateWebViewTestClient(proxy));
   proxy->SetInterfaces(
-      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces());
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces());
 }
 
 void WebFrameTestProxyCreated(RenderFrame* render_frame,
                               test_runner::WebFrameTestProxyBase* proxy) {
-  proxy->set_test_client(LayoutTestRenderProcessObserver::GetInstance()
+  proxy->set_test_client(LayoutTestRenderThreadObserver::GetInstance()
                              ->test_interfaces()
                              ->CreateWebFrameTestClient());
 }
@@ -85,7 +85,7 @@ LayoutTestContentRendererClient::~LayoutTestContentRendererClient() {
 
 void LayoutTestContentRendererClient::RenderThreadStarted() {
   ShellContentRendererClient::RenderThreadStarted();
-  shell_observer_.reset(new LayoutTestRenderProcessObserver());
+  shell_observer_.reset(new LayoutTestRenderThreadObserver());
 }
 
 void LayoutTestContentRendererClient::RenderFrameCreated(
@@ -104,15 +104,15 @@ void LayoutTestContentRendererClient::RenderViewCreated(
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
   test_runner->Reset(false /* for_new_test */);
 
-  LayoutTestRenderProcessObserver::GetInstance()
+  LayoutTestRenderThreadObserver::GetInstance()
       ->test_interfaces()
       ->TestRunner()
       ->InitializeWebViewWithMocks(render_view->GetWebView());
 
   test_runner::WebTestDelegate* delegate =
-      LayoutTestRenderProcessObserver::GetInstance()->test_delegate();
+      LayoutTestRenderThreadObserver::GetInstance()->test_delegate();
   if (delegate == static_cast<test_runner::WebTestDelegate*>(test_runner))
-    LayoutTestRenderProcessObserver::GetInstance()->SetMainWindow(render_view);
+    LayoutTestRenderThreadObserver::GetInstance()->SetMainWindow(render_view);
 }
 
 WebMediaStreamCenter*
@@ -120,7 +120,7 @@ LayoutTestContentRendererClient::OverrideCreateWebMediaStreamCenter(
     WebMediaStreamCenterClient* client) {
 #if defined(ENABLE_WEBRTC)
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   return interfaces->CreateMediaStreamCenter(client);
 #else
   return NULL;
@@ -132,7 +132,7 @@ LayoutTestContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient* client) {
 #if defined(ENABLE_WEBRTC)
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   return interfaces->CreateWebRTCPeerConnectionHandler(client);
 #else
   return NULL;
@@ -143,7 +143,7 @@ WebMIDIAccessor*
 LayoutTestContentRendererClient::OverrideCreateMIDIAccessor(
     WebMIDIAccessorClient* client) {
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   return interfaces->CreateMIDIAccessor(client);
 }
 
@@ -151,7 +151,7 @@ WebAudioDevice*
 LayoutTestContentRendererClient::OverrideCreateAudioDevice(
     double sample_rate) {
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   return interfaces->CreateAudioDevice(sample_rate);
 }
 
@@ -162,7 +162,7 @@ WebClipboard* LayoutTestContentRendererClient::OverrideWebClipboard() {
 }
 
 WebThemeEngine* LayoutTestContentRendererClient::OverrideThemeEngine() {
-  return LayoutTestRenderProcessObserver::GetInstance()
+  return LayoutTestRenderThreadObserver::GetInstance()
       ->test_interfaces()
       ->ThemeEngine();
 }
@@ -171,7 +171,7 @@ std::unique_ptr<blink::WebAppBannerClient>
 LayoutTestContentRendererClient::CreateAppBannerClient(
     RenderFrame* render_frame) {
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   return interfaces->CreateAppBannerClient();
 }
 

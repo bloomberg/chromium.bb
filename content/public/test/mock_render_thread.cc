@@ -11,7 +11,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/common/view_messages.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"
@@ -111,11 +111,11 @@ void MockRenderThread::RemoveFilter(IPC::MessageFilter* filter) {
   NOTREACHED() << "filter to be removed not found";
 }
 
-void MockRenderThread::AddObserver(RenderProcessObserver* observer) {
+void MockRenderThread::AddObserver(RenderThreadObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void MockRenderThread::RemoveObserver(RenderProcessObserver* observer) {
+void MockRenderThread::RemoveObserver(RenderThreadObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -220,8 +220,8 @@ void MockRenderThread::OnCreateChildFrame(
 }
 
 bool MockRenderThread::OnControlMessageReceived(const IPC::Message& msg) {
-  base::ObserverListBase<RenderProcessObserver>::Iterator it(&observers_);
-  RenderProcessObserver* observer;
+  base::ObserverListBase<RenderThreadObserver>::Iterator it(&observers_);
+  RenderThreadObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
     if (observer->OnControlMessageReceived(msg))
       return true;

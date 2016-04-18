@@ -11,13 +11,13 @@
 #include "chrome/renderer/plugins/power_saver_info.h"
 #include "components/plugins/renderer/loadable_plugin_placeholder.h"
 #include "content/public/renderer/context_menu_client.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 
 enum class ChromeViewHostMsg_GetPluginInfo_Status;
 
 class ChromePluginPlaceholder final
     : public plugins::LoadablePluginPlaceholder,
-      public content::RenderProcessObserver,
+      public content::RenderThreadObserver,
       public content::ContextMenuClient,
       public gin::Wrappable<ChromePluginPlaceholder> {
  public:
@@ -68,7 +68,7 @@ class ChromePluginPlaceholder final
   v8::Local<v8::Value> GetV8Handle(v8::Isolate* isolate) override;
   void ShowContextMenu(const blink::WebMouseEvent&) override;
 
-  // content::RenderProcessObserver methods:
+  // content::RenderThreadObserver methods:
   void PluginListChanged() override;
 
   // content::ContextMenuClient methods:

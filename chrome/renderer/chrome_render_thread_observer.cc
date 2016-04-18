@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/chrome_render_process_observer.h"
+#include "chrome/renderer/chrome_render_thread_observer.h"
 
 #include <stddef.h>
 
@@ -132,7 +132,7 @@ static const int kWaitForWorkersStatsTimeoutMS = 20;
 class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
  public:
   ResourceUsageReporterImpl(
-      base::WeakPtr<ChromeRenderProcessObserver> observer,
+      base::WeakPtr<ChromeRenderThreadObserver> observer,
       mojo::InterfaceRequest<mojom::ResourceUsageReporter> req)
       : workers_to_go_(0),
         binding_(this, std::move(req)),
@@ -222,7 +222,7 @@ class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
   mojo::Callback<void(mojom::ResourceUsageDataPtr)> callback_;
   int workers_to_go_;
   mojo::StrongBinding<mojom::ResourceUsageReporter> binding_;
-  base::WeakPtr<ChromeRenderProcessObserver> observer_;
+  base::WeakPtr<ChromeRenderThreadObserver> observer_;
 
   base::WeakPtrFactory<ResourceUsageReporterImpl> weak_factory_;
 
@@ -230,16 +230,16 @@ class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
 };
 
 void CreateResourceUsageReporter(
-    base::WeakPtr<ChromeRenderProcessObserver> observer,
+    base::WeakPtr<ChromeRenderThreadObserver> observer,
     mojo::InterfaceRequest<mojom::ResourceUsageReporter> request) {
   new ResourceUsageReporterImpl(observer, std::move(request));
 }
 
 }  // namespace
 
-bool ChromeRenderProcessObserver::is_incognito_process_ = false;
+bool ChromeRenderThreadObserver::is_incognito_process_ = false;
 
-ChromeRenderProcessObserver::ChromeRenderProcessObserver()
+ChromeRenderThreadObserver::ChromeRenderThreadObserver()
     : weak_factory_(this) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -276,9 +276,9 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
       native_scheme);
 }
 
-ChromeRenderProcessObserver::~ChromeRenderProcessObserver() {}
+ChromeRenderThreadObserver::~ChromeRenderThreadObserver() {}
 
-void ChromeRenderProcessObserver::InitFieldTrialObserving(
+void ChromeRenderThreadObserver::InitFieldTrialObserving(
     const base::CommandLine& command_line) {
   // Set up initial set of crash dump data for field trials in this renderer.
   variations::SetVariationListCrashKeys();
@@ -306,10 +306,10 @@ void ChromeRenderProcessObserver::InitFieldTrialObserving(
   }
 }
 
-bool ChromeRenderProcessObserver::OnControlMessageReceived(
+bool ChromeRenderThreadObserver::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ChromeRenderProcessObserver, message)
+  IPC_BEGIN_MESSAGE_MAP(ChromeRenderThreadObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsIncognitoProcess,
                         OnSetIsIncognitoProcess)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
@@ -320,17 +320,17 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
   return handled;
 }
 
-void ChromeRenderProcessObserver::OnSetIsIncognitoProcess(
+void ChromeRenderThreadObserver::OnSetIsIncognitoProcess(
     bool is_incognito_process) {
   is_incognito_process_ = is_incognito_process;
 }
 
-void ChromeRenderProcessObserver::OnSetContentSettingRules(
+void ChromeRenderThreadObserver::OnSetContentSettingRules(
     const RendererContentSettingRules& rules) {
   content_setting_rules_ = rules;
 }
 
-void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
+void ChromeRenderThreadObserver::OnSetFieldTrialGroup(
     const std::string& field_trial_name,
     const std::string& group_name,
     base::ProcessId sender_pid) {
@@ -367,11 +367,11 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
 }
 
 const RendererContentSettingRules*
-ChromeRenderProcessObserver::content_setting_rules() const {
+ChromeRenderThreadObserver::content_setting_rules() const {
   return &content_setting_rules_;
 }
 
-void ChromeRenderProcessObserver::OnFieldTrialGroupFinalized(
+void ChromeRenderThreadObserver::OnFieldTrialGroupFinalized(
     const std::string& trial_name,
     const std::string& group_name) {
   content::RenderThread::Get()->Send(

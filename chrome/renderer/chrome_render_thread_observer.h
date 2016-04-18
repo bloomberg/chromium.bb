@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_CHROME_RENDER_PROCESS_OBSERVER_H_
-#define CHROME_RENDERER_CHROME_RENDER_PROCESS_OBSERVER_H_
+#ifndef CHROME_RENDERER_CHROME_RENDER_THREAD_OBSERVER_H_
+#define CHROME_RENDERER_CHROME_RENDER_THREAD_OBSERVER_H_
 
 #include <memory>
 #include <string>
@@ -15,7 +15,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/process/process.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 
 class GURL;
 struct ContentSettings;
@@ -32,16 +32,16 @@ class ResourceDispatcherDelegate;
 // a RenderView) for Chrome specific messages that the content layer doesn't
 // happen.  If a few messages are related, they should probably have their own
 // observer.
-class ChromeRenderProcessObserver : public content::RenderProcessObserver,
+class ChromeRenderThreadObserver : public content::RenderThreadObserver,
                                     public base::FieldTrialList::Observer {
  public:
-  ChromeRenderProcessObserver();
-  ~ChromeRenderProcessObserver() override;
+  ChromeRenderThreadObserver();
+  ~ChromeRenderThreadObserver() override;
 
   static bool is_incognito_process() { return is_incognito_process_; }
 
   // Returns a pointer to the content setting rules owned by
-  // |ChromeRenderProcessObserver|.
+  // |ChromeRenderThreadObserver|.
   const RendererContentSettingRules* content_setting_rules() const;
 
  private:
@@ -49,7 +49,7 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver,
   // of any field trials that might have already been activated.
   void InitFieldTrialObserving(const base::CommandLine& command_line);
 
-  // content::RenderProcessObserver:
+  // content::RenderThreadObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // base::FieldTrialList::Observer:
@@ -69,9 +69,9 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver,
   std::unique_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
   RendererContentSettingRules content_setting_rules_;
 
-  base::WeakPtrFactory<ChromeRenderProcessObserver> weak_factory_;
+  base::WeakPtrFactory<ChromeRenderThreadObserver> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessObserver);
+  DISALLOW_COPY_AND_ASSIGN(ChromeRenderThreadObserver);
 };
 
-#endif  // CHROME_RENDERER_CHROME_RENDER_PROCESS_OBSERVER_H_
+#endif  // CHROME_RENDERER_CHROME_RENDER_THREAD_OBSERVER_H_

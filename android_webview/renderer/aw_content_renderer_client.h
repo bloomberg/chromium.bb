@@ -9,7 +9,7 @@
 
 #include <stddef.h>
 
-#include "android_webview/renderer/aw_render_process_observer.h"
+#include "android_webview/renderer/aw_render_thread_observer.h"
 #include "base/compiler_specific.h"
 
 namespace visitedlink {
@@ -52,7 +52,7 @@ class AwContentRendererClient : public content::ContentRendererClient {
       blink::WebPageVisibilityState* override_state) override;
 
  private:
-  std::unique_ptr<AwRenderProcessObserver> aw_render_process_observer_;
+  std::unique_ptr<AwRenderThreadObserver> aw_render_thread_observer_;
   std::unique_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
   const bool disable_page_visibility_;
 };

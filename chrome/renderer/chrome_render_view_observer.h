@@ -25,7 +25,7 @@ struct WebWindowFeatures;
 }
 
 namespace web_cache {
-class WebCacheRenderProcessObserver;
+class WebCacheRenderThreadObserver;
 }
 
 // This class holds the Chrome specific parts of RenderView, and has the same
@@ -35,8 +35,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   // translate_helper can be NULL.
   ChromeRenderViewObserver(
       content::RenderView* render_view,
-      web_cache::WebCacheRenderProcessObserver*
-          web_cache_render_process_observer);
+      web_cache::WebCacheRenderThreadObserver*
+          web_cache_render_thread_observer);
   ~ChromeRenderViewObserver() override;
 
  private:
@@ -67,7 +67,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   std::vector<base::string16> webui_javascript_;
 
   // Owned by ChromeContentRendererClient and outlive us.
-  web_cache::WebCacheRenderProcessObserver* web_cache_render_process_observer_;
+  web_cache::WebCacheRenderThreadObserver* web_cache_render_thread_observer_;
 
   // true if webview is overlayed with grey color.
   bool webview_visually_deemphasized_;

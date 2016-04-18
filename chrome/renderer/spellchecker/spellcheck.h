@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/renderer/spellchecker/custom_dictionary_engine.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 
 struct SpellCheckBDictLanguage;
 class SpellcheckLanguage;
@@ -37,7 +37,7 @@ class Message;
 // See http://crbug.com/73699.
 // Shared spellchecking logic/data for a RenderProcess. All RenderViews use
 // this object to perform spellchecking tasks.
-class SpellCheck : public content::RenderProcessObserver,
+class SpellCheck : public content::RenderThreadObserver,
                    public base::SupportsWeakPtr<SpellCheck> {
  public:
   // TODO(groby): I wonder if this can be private, non-mac only.
@@ -121,7 +121,7 @@ class SpellCheck : public content::RenderProcessObserver,
        const std::vector<std::vector<base::string16>>& suggestions_list,
        std::vector<base::string16>* optional_suggestions);
 
-  // RenderProcessObserver implementation:
+  // RenderThreadObserver implementation:
    bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // Message handlers.

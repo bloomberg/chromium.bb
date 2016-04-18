@@ -53,7 +53,7 @@ PhishingClassifierFilter* PhishingClassifierFilter::Create() {
 }
 
 PhishingClassifierFilter::PhishingClassifierFilter()
-    : RenderProcessObserver() {}
+    : RenderThreadObserver() {}
 
 PhishingClassifierFilter::~PhishingClassifierFilter() {}
 

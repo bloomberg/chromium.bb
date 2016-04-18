@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 
 namespace content {
 
-bool RenderProcessObserver::OnControlMessageReceived(
+bool RenderThreadObserver::OnControlMessageReceived(
     const IPC::Message& message) {
   return false;
 }

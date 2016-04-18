@@ -11,7 +11,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 
 namespace web_cache {
-class WebCacheRenderProcessObserver;
+class WebCacheRenderThreadObserver;
 }
 
 namespace content {
@@ -31,7 +31,7 @@ class ShellContentRendererClient : public ContentRendererClient {
   bool IsPluginAllowedToUseDevChannelAPIs() override;
 
  private:
-  std::unique_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;
+  std::unique_ptr<web_cache::WebCacheRenderThreadObserver> web_cache_observer_;
 };
 
 }  // namespace content

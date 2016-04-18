@@ -7,7 +7,7 @@
 #include "base/lazy_instance.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/search_urls.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace {

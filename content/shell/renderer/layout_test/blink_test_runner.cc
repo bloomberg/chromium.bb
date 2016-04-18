@@ -51,7 +51,7 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
-#include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
+#include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
 #include "content/shell/renderer/layout_test/leak_detector.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_capturer_source.h"
@@ -316,7 +316,7 @@ WebURL BlinkTestRunner::RewriteLayoutTestsURL(const std::string& utf8_url) {
     return WebURL(GURL(utf8_url));
 
   base::FilePath replace_path =
-      LayoutTestRenderProcessObserver::GetInstance()->webkit_source_dir()
+      LayoutTestRenderThreadObserver::GetInstance()->webkit_source_dir()
           .Append(FILE_PATH_LITERAL("LayoutTests/"));
 #if defined(OS_WIN)
   std::string utf8_path = base::WideToUTF8(replace_path.value());
@@ -551,7 +551,7 @@ void BlinkTestRunner::TestFinished() {
     return;
   }
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   interfaces->SetTestIsRunning(false);
   if (interfaces->TestRunner()->ShouldDumpBackForwardList()) {
     SyncNavigationStateVisitor visitor;
@@ -722,7 +722,7 @@ bool BlinkTestRunner::AddMediaStreamAudioSourceAndTrack(
 
 void BlinkTestRunner::DidClearWindowObject(WebLocalFrame* frame) {
   WebTestingSupport::injectInternalsObject(frame);
-  LayoutTestRenderProcessObserver::GetInstance()->test_interfaces()->BindTo(
+  LayoutTestRenderThreadObserver::GetInstance()->test_interfaces()->BindTo(
       frame);
 }
 
@@ -745,10 +745,10 @@ bool BlinkTestRunner::OnMessageReceived(const IPC::Message& message) {
 void BlinkTestRunner::Navigate(const GURL& url) {
   focus_on_next_commit_ = true;
   if (!is_main_window_ &&
-      LayoutTestRenderProcessObserver::GetInstance()->main_test_runner() ==
+      LayoutTestRenderThreadObserver::GetInstance()->main_test_runner() ==
           this) {
     test_runner::WebTestInterfaces* interfaces =
-        LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+        LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
     interfaces->SetTestIsRunning(true);
     interfaces->ConfigureForTestWithURL(GURL(), false);
     ForceResizeRenderView(render_view(), WebSize(800, 600));
@@ -796,7 +796,7 @@ void BlinkTestRunner::Reset(bool for_new_test) {
 
 void BlinkTestRunner::CaptureDump() {
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   TRACE_EVENT0("shell", "BlinkTestRunner::CaptureDump");
 
   if (interfaces->TestRunner()->ShouldDumpAsAudio()) {
@@ -827,7 +827,7 @@ void BlinkTestRunner::CaptureDump() {
 
 void BlinkTestRunner::OnLayoutDumpCompleted(std::string completed_layout_dump) {
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   if (interfaces->TestRunner()->ShouldDumpBackForwardList()) {
     for (WebView* web_view : interfaces->GetWindowList())
       completed_layout_dump.append(DumpHistoryForWindow(web_view));
@@ -840,7 +840,7 @@ void BlinkTestRunner::OnLayoutDumpCompleted(std::string completed_layout_dump) {
 
 void BlinkTestRunner::CaptureDumpContinued() {
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   if (test_config_.enable_pixel_dumping &&
       interfaces->TestRunner()->ShouldGeneratePixelResults() &&
       !interfaces->TestRunner()->ShouldDumpAsAudio()) {
@@ -910,7 +910,7 @@ void BlinkTestRunner::OnReplicateTestConfiguration(
   is_main_window_ = true;
 
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   interfaces->SetTestIsRunning(true);
   interfaces->ConfigureForTestWithURL(params.test_url,
                                       params.enable_pixel_dumping);
@@ -923,7 +923,7 @@ void BlinkTestRunner::OnSetTestConfiguration(
   ForceResizeRenderView(
       render_view(),
       WebSize(params.initial_size.width(), params.initial_size.height()));
-  LayoutTestRenderProcessObserver::GetInstance()
+  LayoutTestRenderThreadObserver::GetInstance()
       ->test_interfaces()
       ->TestRunner()
       ->SetFocus(render_view()->GetWebView(), true);
@@ -940,7 +940,7 @@ void BlinkTestRunner::OnSessionHistory(
 }
 
 void BlinkTestRunner::OnReset() {
-  LayoutTestRenderProcessObserver::GetInstance()->test_interfaces()->ResetAll();
+  LayoutTestRenderThreadObserver::GetInstance()->test_interfaces()->ResetAll();
   Reset(true /* for_new_test */);
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.

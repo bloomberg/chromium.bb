@@ -7,7 +7,7 @@
 #include "blimp/common/compositor/blimp_image_serialization_processor.h"
 #include "blimp/engine/mojo/blob_channel.mojom.h"
 #include "blimp/engine/renderer/engine_image_serialization_processor.h"
-#include "components/web_cache/renderer/web_cache_render_process_observer.h"
+#include "components/web_cache/renderer/web_cache_render_thread_observer.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_thread.h"
 
@@ -30,7 +30,7 @@ BlimpContentRendererClient::BlimpContentRendererClient() {}
 BlimpContentRendererClient::~BlimpContentRendererClient() {}
 
 void BlimpContentRendererClient::RenderThreadStarted() {
-  web_cache_observer_.reset(new web_cache::WebCacheRenderProcessObserver());
+  web_cache_observer_.reset(new web_cache::WebCacheRenderThreadObserver());
   image_serialization_processor_.reset(
       new EngineImageSerializationProcessor(GetConnectedBlobChannel()));
 }

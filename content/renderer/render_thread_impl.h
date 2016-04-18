@@ -116,7 +116,7 @@ class P2PSocketDispatcher;
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
 class RasterWorkerPool;
-class RenderProcessObserver;
+class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class RendererDemuxerAndroid;
 class RendererGpuVideoAcceleratorFactories;
@@ -180,8 +180,8 @@ class CONTENT_EXPORT RenderThreadImpl
   int GenerateRoutingID() override;
   void AddFilter(IPC::MessageFilter* filter) override;
   void RemoveFilter(IPC::MessageFilter* filter) override;
-  void AddObserver(RenderProcessObserver* observer) override;
-  void RemoveObserver(RenderProcessObserver* observer) override;
+  void AddObserver(RenderThreadObserver* observer) override;
+  void RemoveObserver(RenderThreadObserver* observer) override;
   void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) override;
   std::unique_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
@@ -645,7 +645,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
 
-  base::ObserverList<RenderProcessObserver> observers_;
+  base::ObserverList<RenderThreadObserver> observers_;
 
   scoped_refptr<ContextProviderCommandBuffer> shared_worker_context_provider_;
 

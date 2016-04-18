@@ -8,13 +8,13 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 #include "ipc/ipc_message.h"
 
 namespace guest_view {
 
 // Dispatcher used to route messages to GuestViewContainer.
-class GuestViewContainerDispatcher : public content::RenderProcessObserver {
+class GuestViewContainerDispatcher : public content::RenderThreadObserver {
  public:
   GuestViewContainerDispatcher();
   ~GuestViewContainerDispatcher() override;
@@ -24,7 +24,7 @@ class GuestViewContainerDispatcher : public content::RenderProcessObserver {
   virtual bool HandlesMessage(const IPC::Message& message);
 
  private:
-  // content::RenderProcessObserver implementation.
+  // content::RenderThreadObserver implementation.
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
   DISALLOW_COPY_AND_ASSIGN(GuestViewContainerDispatcher);

@@ -62,8 +62,8 @@ AwContentRendererClient::~AwContentRendererClient() {
 
 void AwContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
-  aw_render_process_observer_.reset(new AwRenderProcessObserver);
-  thread->AddObserver(aw_render_process_observer_.get());
+  aw_render_thread_observer_.reset(new AwRenderThreadObserver);
+  thread->AddObserver(aw_render_thread_observer_.get());
 
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
   thread->AddObserver(visited_link_slave_.get());

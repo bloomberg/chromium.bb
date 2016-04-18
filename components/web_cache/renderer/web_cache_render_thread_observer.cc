@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/web_cache/renderer/web_cache_render_process_observer.h"
+#include "components/web_cache/renderer/web_cache_render_thread_observer.h"
 
 #include <limits>
 
@@ -14,23 +14,23 @@
 
 namespace web_cache {
 
-WebCacheRenderProcessObserver::WebCacheRenderProcessObserver()
+WebCacheRenderThreadObserver::WebCacheRenderThreadObserver()
     : clear_cache_state_(kInit) {
   content::ServiceRegistry* service_registry =
       content::RenderThread::Get()->GetServiceRegistry();
   service_registry->AddService(base::Bind(
-      &WebCacheRenderProcessObserver::BindRequest, base::Unretained(this)));
+      &WebCacheRenderThreadObserver::BindRequest, base::Unretained(this)));
 }
 
-WebCacheRenderProcessObserver::~WebCacheRenderProcessObserver() {
+WebCacheRenderThreadObserver::~WebCacheRenderThreadObserver() {
 }
 
-void WebCacheRenderProcessObserver::BindRequest(
+void WebCacheRenderThreadObserver::BindRequest(
     mojo::InterfaceRequest<mojom::WebCache> web_cache_request) {
   bindings_.AddBinding(this, std::move(web_cache_request));
 }
 
-void WebCacheRenderProcessObserver::ExecutePendingClearCache() {
+void WebCacheRenderThreadObserver::ExecutePendingClearCache() {
   switch (clear_cache_state_) {
     case kInit:
       clear_cache_state_ = kNavigate_Pending;
@@ -44,7 +44,7 @@ void WebCacheRenderProcessObserver::ExecutePendingClearCache() {
   }
 }
 
-void WebCacheRenderProcessObserver::SetCacheCapacities(
+void WebCacheRenderThreadObserver::SetCacheCapacities(
     uint64_t min_dead_capacity,
     uint64_t max_dead_capacity,
     uint64_t capacity64) {
@@ -56,7 +56,7 @@ void WebCacheRenderProcessObserver::SetCacheCapacities(
                                  capacity);
 }
 
-void WebCacheRenderProcessObserver::ClearCache(bool on_navigation) {
+void WebCacheRenderThreadObserver::ClearCache(bool on_navigation) {
   if (!on_navigation) {
     blink::WebCache::clear();
     return;

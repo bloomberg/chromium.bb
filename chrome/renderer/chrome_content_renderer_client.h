@@ -20,7 +20,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "v8/include/v8.h"
 
-class ChromeRenderProcessObserver;
+class ChromeRenderThreadObserver;
 #if defined(ENABLE_PRINT_PREVIEW)
 class ChromePDFPrintClient;
 #endif
@@ -59,7 +59,7 @@ class VisitedLinkSlave;
 }
 
 namespace web_cache {
-class WebCacheRenderProcessObserver;
+class WebCacheRenderThreadObserver;
 }
 
 namespace blink {
@@ -196,8 +196,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                             blink::WebPluginParams* params);
 #endif
 
-  std::unique_ptr<ChromeRenderProcessObserver> chrome_observer_;
-  std::unique_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;
+  std::unique_ptr<ChromeRenderThreadObserver> chrome_observer_;
+  std::unique_ptr<web_cache::WebCacheRenderThreadObserver> web_cache_observer_;
 
   std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;

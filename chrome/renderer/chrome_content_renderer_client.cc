@@ -35,7 +35,7 @@
 #include "chrome/renderer/banners/app_banner_client.h"
 #include "chrome/renderer/benchmarking_extension.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
-#include "chrome/renderer/chrome_render_process_observer.h"
+#include "chrome/renderer/chrome_render_thread_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/external_extension.h"
@@ -77,7 +77,7 @@
 #include "components/startup_metric_utils/common/startup_metric_messages.h"
 #include "components/version_info/version_info.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
-#include "components/web_cache/renderer/web_cache_render_process_observer.h"
+#include "components/web_cache/renderer/web_cache_render_thread_observer.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -331,8 +331,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   thread->Send(new StartupMetricHostMsg_RecordRendererMainEntryTime(
       main_entry_time_));
 
-  chrome_observer_.reset(new ChromeRenderProcessObserver());
-  web_cache_observer_.reset(new web_cache::WebCacheRenderProcessObserver());
+  chrome_observer_.reset(new ChromeRenderThreadObserver());
+  web_cache_observer_.reset(new web_cache::WebCacheRenderThreadObserver());
 
 #if defined(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->RenderThreadStarted();

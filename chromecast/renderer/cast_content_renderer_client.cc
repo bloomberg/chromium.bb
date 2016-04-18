@@ -14,7 +14,7 @@
 #include "chromecast/crash/cast_crash_keys.h"
 #include "chromecast/media/base/media_caps.h"
 #include "chromecast/renderer/cast_media_load_deferrer.h"
-#include "chromecast/renderer/cast_render_process_observer.h"
+#include "chromecast/renderer/cast_render_thread_observer.h"
 #include "chromecast/renderer/key_systems_cast.h"
 #include "chromecast/renderer/media/chromecast_media_renderer_factory.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
@@ -59,7 +59,7 @@ void CastContentRendererClient::RenderThreadStarted() {
     }
   }
 
-  cast_observer_.reset(new CastRenderProcessObserver());
+  cast_observer_.reset(new CastRenderThreadObserver());
 
   prescient_networking_dispatcher_.reset(
       new network_hints::PrescientNetworkingDispatcher());

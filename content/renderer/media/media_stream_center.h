@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
-#include "content/public/renderer/render_process_observer.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"

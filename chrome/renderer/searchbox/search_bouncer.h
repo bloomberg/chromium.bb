@@ -9,7 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 #include "url/gurl.h"
 
 namespace IPC {
@@ -18,7 +18,7 @@ class Message;
 
 // SearchBouncer tracks a set of URLs which should be transferred back to the
 // browser process for potential reassignment to an Instant renderer process.
-class SearchBouncer : public content::RenderProcessObserver {
+class SearchBouncer : public content::RenderThreadObserver {
  public:
   SearchBouncer();
   ~SearchBouncer() override;
@@ -38,7 +38,7 @@ class SearchBouncer : public content::RenderProcessObserver {
  private:
   FRIEND_TEST_ALL_PREFIXES(SearchBouncerTest, SetSearchURLs);
 
-  // From RenderProcessObserver:
+  // From RenderThreadObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // URLs to bounce back to the browser.

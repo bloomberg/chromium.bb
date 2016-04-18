@@ -14,7 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/observer_list.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/user_script.h"
 #include "extensions/renderer/user_script_set.h"
@@ -39,7 +39,7 @@ class ScriptInjection;
 //                         only programmatically-declared scripts, instantiated
 //                         when an extension first creates a declarative rule
 //                         that would, if triggered, request a script injection.
-class UserScriptSetManager : public content::RenderProcessObserver {
+class UserScriptSetManager : public content::RenderThreadObserver {
  public:
   // Like a UserScriptSet::Observer, but automatically subscribes to all sets
   // associated with the manager.
@@ -84,7 +84,7 @@ class UserScriptSetManager : public content::RenderProcessObserver {
   // Map for per-extension sets that may be defined programmatically.
   typedef std::map<HostID, linked_ptr<UserScriptSet> > UserScriptSetMap;
 
-  // content::RenderProcessObserver implementation.
+  // content::RenderThreadObserver implementation.
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
   UserScriptSet* GetProgrammaticScriptsByHostID(const HostID& host_id);

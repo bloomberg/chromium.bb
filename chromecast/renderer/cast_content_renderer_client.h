@@ -21,7 +21,7 @@ class PrescientNetworkingDispatcher;
 
 namespace chromecast {
 namespace shell {
-class CastRenderProcessObserver;
+class CastRenderThreadObserver;
 
 class CastContentRendererClient : public content::ContentRendererClient {
  public:
@@ -53,7 +53,7 @@ class CastContentRendererClient : public content::ContentRendererClient {
  private:
   std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;
-  std::unique_ptr<CastRenderProcessObserver> cast_observer_;
+  std::unique_ptr<CastRenderThreadObserver> cast_observer_;
   const bool allow_hidden_media_playback_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentRendererClient);
