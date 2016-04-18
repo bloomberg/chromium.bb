@@ -4,12 +4,11 @@
 
 package org.chromium.android_webview;
 
+import android.graphics.Canvas;
 import android.view.ViewGroup;
 
-import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.common.CleanupReference;
 
 /**
  * Manages state associated with the Android render thread and the draw functor
@@ -20,8 +19,6 @@ import org.chromium.content.common.CleanupReference;
  */
 @JNINamespace("android_webview")
 class AwGLFunctor {
-    private static final String TAG = "AwGLFunctor";
-
     private static final class DestroyRunnable implements Runnable {
         private final long mNativeAwGLFunctor;
 
@@ -34,35 +31,27 @@ class AwGLFunctor {
         }
     }
 
-    private long mNativeAwGLFunctor;
-    private CleanupReference mCleanupReference;
-    private AwContents.NativeGLDelegate mNativeGLDelegate;
-    private ViewGroup mContainerView;
+    private final long mNativeAwGLFunctor;
+    private final DestroyRunnable mDestroyRunnable;
+    private final AwContents.NativeGLDelegate mNativeGLDelegate;
+    private final ViewGroup mContainerView;
+    private final Runnable mFunctorReleasedCallback;
 
-    public AwGLFunctor() {
+    public AwGLFunctor(AwContents.NativeGLDelegate nativeGLDelegate, ViewGroup containerView) {
         mNativeAwGLFunctor = nativeCreate(this);
-        mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwGLFunctor));
-    }
-
-    public void onAttachedToWindow(
-            AwContents.NativeGLDelegate nativeGLDelegate, ViewGroup containerView) {
+        mDestroyRunnable = new DestroyRunnable(mNativeAwGLFunctor);
         mNativeGLDelegate = nativeGLDelegate;
         mContainerView = containerView;
-    }
-
-    public void onDetachedFromWindow() {
-        deleteHardwareRenderer();
-        mNativeGLDelegate = null;
-        mContainerView = null;
-    }
-
-    public void destroy() {
-        if (mCleanupReference != null) {
-            mNativeGLDelegate = null;
-            mContainerView = null;
-            mCleanupReference.cleanupNow();
-            mCleanupReference = null;
-            mNativeAwGLFunctor = 0;
+        if (mNativeGLDelegate.supportsDrawGLFunctorReleasedCallback()) {
+            mFunctorReleasedCallback = new Runnable() {
+                @Override
+                public void run() {
+                    // Deliberate no-op. This Runnable is holding a strong reference back to the
+                    // AwGLFunctor, which serves its purpose for now.
+                }
+            };
+        } else {
+            mFunctorReleasedCallback = null;
         }
     }
 
@@ -71,35 +60,34 @@ class AwGLFunctor {
     }
 
     public long getNativeAwGLFunctor() {
-        assert mNativeAwGLFunctor != 0;
         return mNativeAwGLFunctor;
+    }
+
+    public Runnable getDestroyRunnable() {
+        return mDestroyRunnable;
+    }
+
+    public boolean requestDrawGLForCanvas(Canvas canvas) {
+        return mNativeGLDelegate.requestDrawGL(
+                canvas, false, mContainerView, mFunctorReleasedCallback);
     }
 
     @CalledByNative
     private boolean requestDrawGL(boolean waitForCompletion) {
-        if (mNativeGLDelegate == null) {
-            return false;
-        }
-        return mNativeGLDelegate.requestDrawGL(null, waitForCompletion, mContainerView);
+        return mNativeGLDelegate.requestDrawGL(null, waitForCompletion, mContainerView, null);
     }
 
     @CalledByNative
     private void detachFunctorFromView() {
-        if (mNativeGLDelegate != null) {
-            mNativeGLDelegate.detachGLFunctor();
-            mContainerView.invalidate();
-        } else {
-            Log.w(TAG, "Unable to detach functor from view. Already detached.");
-        }
+        mNativeGLDelegate.detachGLFunctor();
+        mContainerView.invalidate();
     }
 
     public void deleteHardwareRenderer() {
-        assert mNativeAwGLFunctor != 0;
         nativeDeleteHardwareRenderer(mNativeAwGLFunctor);
     }
 
     public long getAwDrawGLViewContext() {
-        assert mNativeAwGLFunctor != 0;
         return nativeGetAwDrawGLViewContext(mNativeAwGLFunctor);
     }
 

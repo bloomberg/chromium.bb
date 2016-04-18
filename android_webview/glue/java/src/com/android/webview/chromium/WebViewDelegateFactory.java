@@ -59,8 +59,14 @@ class WebViewDelegateFactory {
         void invokeDrawGlFunctor(
                 View containerView, long nativeDrawGLFunctor, boolean waitForCompletion);
 
-        /** @see android.webkit.WebViewDelegate#callDrawGlFunction */
+        /** @see android.webkit.WebViewDelegate#callDrawGlFunction. Available API level 23 and
+         * below.
+         */
         void callDrawGlFunction(Canvas canvas, long nativeDrawGLFunctor);
+
+        /** @see android.webkit.WebViewDelegate#callDrawGlFunction. Available above API level 23
+         * only. */
+        void callDrawGlFunction(Canvas canvas, long nativeDrawGLFunctor, Runnable releasedRunnable);
 
         /** @see android.webkit.WebViewDelegate#detachDrawGlFunctor */
         void detachDrawGlFunctor(View containerView, long nativeDrawGLFunctor);
@@ -141,6 +147,12 @@ class WebViewDelegateFactory {
         @Override
         public void callDrawGlFunction(Canvas canvas, long nativeDrawGLFunctor) {
             mDelegate.callDrawGlFunction(canvas, nativeDrawGLFunctor);
+        }
+
+        @Override
+        public void callDrawGlFunction(
+                Canvas canvas, long nativeDrawGLFunctor, Runnable releasedRunnable) {
+            throw new RuntimeException("Call not supported");
         }
 
         @Override
@@ -302,6 +314,12 @@ class WebViewDelegateFactory {
             } catch (Exception e) {
                 throw new RuntimeException("Invalid reflection", e);
             }
+        }
+
+        @Override
+        public void callDrawGlFunction(
+                Canvas canvas, long nativeDrawGLFunctor, Runnable releasedRunnable) {
+            throw new RuntimeException("Call not supported");
         }
 
         @Override
