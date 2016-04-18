@@ -249,11 +249,16 @@ def CreateArchiveFile(options, staging_dir, current_version, prev_version):
               ': \\\n')
       f.write('  ' + ' \\\n  '.join(path_fixup(x) for x in g_archive_inputs))
 
+  # It is important to use abspath to create the path to the directory because
+  # if you use a relative path without any .. sequences then 7za.exe uses the
+  # entire relative path as part of the file paths in the archive. If you have
+  # a .. sequence or an absolute path then only the last directory is stored as
+  # part of the file paths in the archive, which is what we want.
   cmd = [lzma_exec,
          'a',
          '-t7z',
          archive_file,
-         os.path.join(staging_dir, CHROME_DIR),
+         os.path.abspath(os.path.join(staging_dir, CHROME_DIR)),
          '-mx0',]
   # There doesnt seem to be any way in 7za.exe to override existing file so
   # we always delete before creating a new one.
@@ -602,7 +607,7 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
 
 
 def main(options):
-  """Main method that reads input file, creates archive file and write
+  """Main method that reads input file, creates archive file and writes
   resource input file.
   """
   current_version = BuildVersion(options.build_dir)
