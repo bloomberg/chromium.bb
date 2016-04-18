@@ -40,63 +40,63 @@ public class ConnectivityCheckerTest extends ConnectivityCheckerTestBase {
     @MediumTest
     @Feature({"Feedback"})
     public void testNoContentShouldWorkSystemStack() throws Exception {
-        executeTest(GENERATE_204_URL, ConnectivityCheckResult.CONNECTED, TIMEOUT_MS, true);
+        executeTest(mGenerate204Url, ConnectivityCheckResult.CONNECTED, TIMEOUT_MS, true);
     }
 
     @MediumTest
     @Feature({"Feedback"})
     public void testNoContentShouldWorkChromeStack() throws Exception {
-        executeTest(GENERATE_204_URL, ConnectivityCheckResult.CONNECTED, TIMEOUT_MS, false);
+        executeTest(mGenerate204Url, ConnectivityCheckResult.CONNECTED, TIMEOUT_MS, false);
     }
 
     @MediumTest
     @Feature({"Feedback"})
     public void testSlowNoContentShouldNotWorkSystemStack() throws Exception {
         // Force quick timeout. The server will wait TIMEOUT_MS, so this triggers well before.
-        executeTest(GENERATE_204_SLOW_URL, ConnectivityCheckResult.TIMEOUT, 100, true);
+        executeTest(mGenerateSlowUrl, ConnectivityCheckResult.TIMEOUT, 100, true);
     }
 
     @MediumTest
     @Feature({"Feedback"})
     public void testSlowNoContentShouldNotWorkChromeStack() throws Exception {
         // Force quick timeout. The server will wait TIMEOUT_MS, so this triggers well before.
-        executeTest(GENERATE_204_SLOW_URL, ConnectivityCheckResult.TIMEOUT, 100, false);
+        executeTest(mGenerateSlowUrl, ConnectivityCheckResult.TIMEOUT, 100, false);
     }
 
     @MediumTest
     @Feature({"Feedback"})
     public void testHttpOKShouldFailSystemStack() throws Exception {
-        executeTest(GENERATE_200_URL, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, true);
+        executeTest(mGenerate200Url, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, true);
     }
 
     @MediumTest
     @Feature({"Feedback"})
     public void testHttpOKShouldFailChromeStack() throws Exception {
-        executeTest(GENERATE_200_URL, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, false);
+        executeTest(mGenerate200Url, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, false);
     }
 
     @MediumTest
     @Feature({"Feedback"})
     public void testMovedTemporarilyShouldFailSystemStack() throws Exception {
-        executeTest(GENERATE_302_URL, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, true);
+        executeTest(mGenerate302Url, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, true);
     }
 
     @MediumTest
     @Feature({"Feedback"})
     public void testMovedTemporarilyShouldFailChromeStack() throws Exception {
-        executeTest(GENERATE_302_URL, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, false);
+        executeTest(mGenerate302Url, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, false);
     }
 
     @MediumTest
     @Feature({"Feedback"})
     public void testNotFoundShouldFailSystemStack() throws Exception {
-        executeTest(GENERATE_404_URL, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, true);
+        executeTest(mGenerate404Url, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, true);
     }
 
     @MediumTest
     @Feature({"Feedback"})
     public void testNotFoundShouldFailChromeStack() throws Exception {
-        executeTest(GENERATE_404_URL, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, false);
+        executeTest(mGenerate404Url, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, false);
     }
 
     @MediumTest

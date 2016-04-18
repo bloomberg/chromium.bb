@@ -38,8 +38,7 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
                     public ConnectivityTask call() {
                         // Intentionally make HTTPS-connection fail which should result in
                         // NOT_CONNECTED.
-                        ConnectivityChecker.overrideUrlsForTest(GENERATE_204_URL,
-                                GENERATE_404_URL);
+                        ConnectivityChecker.overrideUrlsForTest(mGenerate204Url, mGenerate404Url);
                         return ConnectivityTask.create(Profile.getLastUsedProfile(), TIMEOUT_MS,
                                 null);
                     }
@@ -99,7 +98,7 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
             @Override
             public void run() {
                 // Intentionally make HTTPS-connection fail which should result in NOT_CONNECTED.
-                ConnectivityChecker.overrideUrlsForTest(GENERATE_204_URL, GENERATE_404_URL);
+                ConnectivityChecker.overrideUrlsForTest(mGenerate204Url, mGenerate404Url);
                 ConnectivityTask.create(Profile.getLastUsedProfile(), TIMEOUT_MS, callback);
             }
         });
@@ -129,8 +128,7 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
             @Override
             public void run() {
                 // Intentionally make HTTPS connections slow which should result in TIMEOUT.
-                ConnectivityChecker.overrideUrlsForTest(GENERATE_204_URL,
-                        GENERATE_204_SLOW_URL);
+                ConnectivityChecker.overrideUrlsForTest(mGenerate204Url, mGenerateSlowUrl);
                 ConnectivityTask.create(Profile.getLastUsedProfile(), checkTimeoutMs, callback);
             }
         });
@@ -153,8 +151,8 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
                     public ConnectivityTask call() {
                         // Intentionally make HTTPS connections slow which should result in
                         // UNKNOWN.
-                        ConnectivityChecker.overrideUrlsForTest(GENERATE_204_URL,
-                                GENERATE_204_SLOW_URL);
+                        ConnectivityChecker.overrideUrlsForTest(mGenerate204Url,
+                                mGenerateSlowUrl);
                         return ConnectivityTask.create(Profile.getLastUsedProfile(), TIMEOUT_MS,
                                 null);
                     }
