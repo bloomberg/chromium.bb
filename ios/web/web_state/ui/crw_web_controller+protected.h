@@ -12,7 +12,6 @@
 #include <memory>
 
 #include "base/containers/mru_cache.h"
-#import "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "ios/web/net/cert_host_pair.h"
 #import "ios/web/net/crw_cert_verification_controller.h"
@@ -82,28 +81,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 #pragma mark -
 
-// A container object for any navigation information that is only available
-// during pre-commit delegate callbacks, and thus must be held until the
-// navigation commits and the informatino can be used.
-@interface CRWWebControllerPendingNavigationInfo : NSObject {
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_CRWWebControllerPendingNavigationInfo;
-}
-// The referrer for the page.
-@property(nonatomic, copy) NSString* referrer;
-// The MIME type for the page.
-@property(nonatomic, copy) NSString* MIMEType;
-// The navigation type for the load.
-@property(nonatomic, assign) WKNavigationType navigationType;
-// Whether the pending navigation has been directly cancelled before the
-// navigation is committed.
-// Cancelled navigations should be simply discarded without handling any
-// specific error.
-@property(nonatomic, assign) BOOL cancelled;
-@end
-
-#pragma mark -
-
 // Category for methods used or implemented by implementation subclasses of
 // CRWWebController.
 @interface CRWWebController (
@@ -125,8 +102,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // change.
 @property(nonatomic, readonly) BOOL interactionRegisteredSinceLastURLChange;
 
-- (CRWWebControllerPendingNavigationInfo*)pendingNavigationInfo;
-
 // Sets _documentURL to newURL, and updates any relevant state information.
 - (void)setDocumentURL:(const GURL&)newURL;
 
@@ -147,9 +122,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // web view, or use native web view navigation where possible (for example,
 // going back and forward through the history stack).
 - (void)loadRequestForCurrentNavigationItem;
-
-// Cancels any load in progress in the web view.
-- (void)abortWebLoad;
 
 // Called when web view process has been terminated.
 - (void)webViewWebProcessDidCrash;
@@ -237,10 +209,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Last URL change registered for load request.
 @property(nonatomic, readonly) GURL lastRegisteredRequestURL;
 
-// Pending information for an in-progress page navigation.
-@property(nonatomic, readonly)
-    CRWWebControllerPendingNavigationInfo* pendingNavigationInfo;
-
 // Returns YES if the object is being deallocated.
 @property(nonatomic, readonly) BOOL isBeingDestroyed;
 
@@ -284,9 +252,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // changed (e.g. view's background color). Web controller adds |webView| to its
 // content view.
 - (void)webViewDidChange;
-
-// Aborts any load for both the web view and web controller.
-- (void)abortLoad;
 
 // Returns the URL that the navigation system believes should be currently
 // active.

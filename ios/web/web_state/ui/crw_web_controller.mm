@@ -197,6 +197,44 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 }
 }  // namespace
 
+#pragma mark -
+
+// A container object for any navigation information that is only available
+// during pre-commit delegate callbacks, and thus must be held until the
+// navigation commits and the informatino can be used.
+@interface CRWWebControllerPendingNavigationInfo : NSObject {
+  base::mac::ObjCPropertyReleaser
+      _propertyReleaser_CRWWebControllerPendingNavigationInfo;
+}
+// The referrer for the page.
+@property(nonatomic, copy) NSString* referrer;
+// The MIME type for the page.
+@property(nonatomic, copy) NSString* MIMEType;
+// The navigation type for the load.
+@property(nonatomic, assign) WKNavigationType navigationType;
+// Whether the pending navigation has been directly cancelled before the
+// navigation is committed.
+// Cancelled navigations should be simply discarded without handling any
+// specific error.
+@property(nonatomic, assign) BOOL cancelled;
+@end
+
+@implementation CRWWebControllerPendingNavigationInfo
+@synthesize referrer = _referrer;
+@synthesize MIMEType = _MIMEType;
+@synthesize navigationType = _navigationType;
+@synthesize cancelled = _cancelled;
+
+- (instancetype)init {
+  if ((self = [super init])) {
+    _propertyReleaser_CRWWebControllerPendingNavigationInfo.Init(
+        self, [CRWWebControllerPendingNavigationInfo class]);
+    _navigationType = WKNavigationTypeOther;
+  }
+  return self;
+}
+@end
+
 @interface CRWWebController ()<CRWNativeContentDelegate,
                                CRWSSLStatusUpdaterDataSource,
                                CRWSSLStatusUpdaterDelegate,
@@ -442,6 +480,10 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Internal implementation of reload. Reloads without notifying the delegate.
 // Most callers should use -reload instead.
 - (void)reloadInternal;
+// Aborts any load for both the web view and web controller.
+- (void)abortLoad;
+// Cancels any load in progress in the web view.
+- (void)abortWebLoad;
 // If YES, the page should be closed if it successfully redirects to a native
 // application, for example if a new tab redirects to the App Store.
 - (BOOL)shouldClosePageOnNativeApplicationLoad;
@@ -683,6 +725,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Handles 'window.history.go' message.
 - (BOOL)handleWindowHistoryGoMessage:(base::DictionaryValue*)message
                              context:(NSDictionary*)context;
+
+// Called when a load ends in an error.
+// TODO(stuartmorgan): Figure out if there's actually enough shared logic that
+// this makes sense. At the very least remove inMainFrame since that only makes
+// sense for UIWebView.
+- (void)handleLoadError:(NSError*)error inMainFrame:(BOOL)inMainFrame;
 
 // Handles cancelled load in WKWebView (error with NSURLErrorCancelled code).
 - (void)handleCancelledError:(NSError*)error;
@@ -1502,8 +1550,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Get the navigation type from the last main frame load request, and try to
   // map that to a PageTransition.
   WKNavigationType navigationType =
-      self.pendingNavigationInfo ? [self.pendingNavigationInfo navigationType]
-                                 : WKNavigationTypeOther;
+      _pendingNavigationInfo ? [_pendingNavigationInfo navigationType]
+                             : WKNavigationTypeOther;
   ui::PageTransition transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
   switch (navigationType) {
     case WKNavigationTypeLinkActivated:
@@ -1727,8 +1775,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [self currentBackForwardListItemHolder];
 
   WKNavigationType navigationType =
-      self.pendingNavigationInfo ? [self.pendingNavigationInfo navigationType]
-                                 : WKNavigationTypeOther;
+      _pendingNavigationInfo ? [_pendingNavigationInfo navigationType]
+                             : WKNavigationTypeOther;
   holder->set_back_forward_list_item(
       [self.webView backForwardList].currentItem);
   holder->set_navigation_type(navigationType);
@@ -1737,8 +1785,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // as part of this pending load. It will be nil when doing a fast
   // back/forward navigation, for instance, because the callback that would
   // populate it is not called in that flow.
-  if ([self.pendingNavigationInfo MIMEType])
-    holder->set_mime_type([self.pendingNavigationInfo MIMEType]);
+  if ([_pendingNavigationInfo MIMEType])
+    holder->set_mime_type([_pendingNavigationInfo MIMEType]);
 }
 
 - (void)loadNativeViewWithSuccess:(BOOL)loadSuccess {
@@ -2004,6 +2052,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self reloadInternal];
 }
 
+- (void)abortLoad {
+  [self abortWebLoad];
+  _certVerificationErrors->Clear();
+  [self loadCancelled];
+}
+
+- (void)abortWebLoad {
+  [_webView stopLoading];
+  [_pendingNavigationInfo setCancelled:YES];
+}
+
 - (void)loadCancelled {
   [_passKitDownloader cancelPendingDownload];
 
@@ -2034,12 +2093,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     case web::PAGE_LOADED:
       break;
   }
-}
-
-- (void)abortLoad {
-  [self abortWebLoad];
-  _certVerificationErrors->Clear();
-  [self loadCancelled];
 }
 
 - (void)prepareForGoBack {
@@ -3247,6 +3300,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)handleLoadError:(NSError*)error inMainFrame:(BOOL)inMainFrame {
+  NSString* MIMEType = [_pendingNavigationInfo MIMEType];
+  if ([_passKitDownloader isMIMETypePassKitType:MIMEType])
+    return;
   if ([error code] == NSURLErrorUnsupportedURL)
     return;
   // In cases where a Plug-in handles the load do not take any further action.
@@ -4675,7 +4731,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (allowLoad) {
     allowLoad = self.webStateImpl->ShouldAllowRequest(request);
     if (!allowLoad && navigationAction.targetFrame.mainFrame) {
-      [self.pendingNavigationInfo setCancelled:YES];
+      [_pendingNavigationInfo setCancelled:YES];
     }
   }
 
@@ -4710,11 +4766,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     allowNavigation =
         self.webStateImpl->ShouldAllowResponse(navigationResponse.response);
     if (!allowNavigation && navigationResponse.isForMainFrame) {
-      [self.pendingNavigationInfo setCancelled:YES];
+      [_pendingNavigationInfo setCancelled:YES];
     }
   }
   if ([self.passKitDownloader
-          isMIMETypePassKitType:[self.pendingNavigationInfo MIMEType]]) {
+          isMIMETypePassKitType:[_pendingNavigationInfo MIMEType]]) {
     GURL URL = net::GURLWithNSURL(navigationResponse.response.URL);
     [self.passKitDownloader downloadPassKitFileWithURL:URL];
   }
@@ -4797,7 +4853,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   // Handle load cancellation for directly cancelled navigations without
   // handling their potential errors. Otherwise, handle the error.
-  if ([self.pendingNavigationInfo cancelled]) {
+  if ([_pendingNavigationInfo cancelled]) {
     [self loadCancelled];
   } else {
     error = WKWebViewErrorWithSource(error, PROVISIONAL_LOAD);
@@ -5225,10 +5281,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (GURL)lastRegisteredRequestURL {
   return _lastRegisteredRequestURL;
-}
-
-- (CRWWebControllerPendingNavigationInfo*)pendingNavigationInfo {
-  return _pendingNavigationInfo;
 }
 
 - (void)simulateLoadRequestWithURL:(const GURL&)URL {

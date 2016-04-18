@@ -42,22 +42,6 @@
 #include "net/ssl/ssl_info.h"
 #include "url/url_constants.h"
 
-@implementation CRWWebControllerPendingNavigationInfo
-@synthesize referrer = _referrer;
-@synthesize MIMEType = _MIMEType;
-@synthesize navigationType = _navigationType;
-@synthesize cancelled = _cancelled;
-
-- (instancetype)init {
-  if ((self = [super init])) {
-    _propertyReleaser_CRWWebControllerPendingNavigationInfo.Init(
-        self, [CRWWebControllerPendingNavigationInfo class]);
-    _navigationType = WKNavigationTypeOther;
-  }
-  return self;
-}
-@end
-
 #pragma mark -
 
 @interface CRWWKWebViewWebController () {
@@ -223,11 +207,6 @@
   return [super URLForHistoryNavigationFromItem:fromItem toItem:toItem];
 }
 
-- (void)abortWebLoad {
-  [self.webView stopLoading];
-  [self.pendingNavigationInfo setCancelled:YES];
-}
-
 - (void)applyWebViewScrollZoomScaleFromZoomState:
     (const web::PageZoomState&)zoomState {
   // After rendering a web page, WKWebView keeps the |minimumZoomScale| and
@@ -242,14 +221,6 @@
   if (zoomScale > self.webScrollView.maximumZoomScale)
     zoomScale = self.webScrollView.maximumZoomScale;
   self.webScrollView.zoomScale = zoomScale;
-}
-
-// Override |handleLoadError| to check for PassKit case.
-- (void)handleLoadError:(NSError*)error inMainFrame:(BOOL)inMainFrame {
-  NSString* MIMEType = [self.pendingNavigationInfo MIMEType];
-  if ([self.passKitDownloader isMIMETypePassKitType:MIMEType])
-    return;
-  [super handleLoadError:error inMainFrame:inMainFrame];
 }
 
 #pragma mark Private methods
