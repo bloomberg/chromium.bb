@@ -22,7 +22,9 @@ from telemetry.internal.backends.chrome_inspector import websocket
 import common_util
 
 
-DEFAULT_TIMEOUT_SECONDS = 10 # seconds
+DEFAULT_TIMEOUT_SECONDS = 10
+
+_WEBSOCKET_TIMEOUT_SECONDS = 10
 
 
 class DevToolsConnectionException(Exception):
@@ -177,7 +179,7 @@ class DevToolsConnection(object):
     request = {'method': method}
     if params:
       request['params'] = params
-    return self._ws.SyncRequest(request)
+    return self._ws.SyncRequest(request, timeout=_WEBSOCKET_TIMEOUT_SECONDS)
 
   def SendAndIgnoreResponse(self, method, params=None):
     """Issues a request to the DevTools server, do not wait for the response.
@@ -370,7 +372,8 @@ class DevToolsConnection(object):
         break
     assert self._target_descriptor['url'] == 'about:blank'
     self._ws = inspector_websocket.InspectorWebsocket()
-    self._ws.Connect(self._target_descriptor['webSocketDebuggerUrl'])
+    self._ws.Connect(self._target_descriptor['webSocketDebuggerUrl'],
+                     timeout=_WEBSOCKET_TIMEOUT_SECONDS)
 
 
 class Listener(object):
