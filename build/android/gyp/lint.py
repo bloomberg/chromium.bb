@@ -21,7 +21,7 @@ _SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                          '..', '..', '..'))
 
 
-def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
+def _OnStaleMd5(lint_path, config_path, processed_config_path,
                 manifest_path, result_path, product_dir, sources, jar_path,
                 cache_dir, android_sdk_version, resource_dir=None,
                 classpath=None, can_fail_build=False, silent=False):
@@ -76,13 +76,6 @@ def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
           if error_line:
             print >> sys.stderr, error_line.encode('utf-8')
     return len(issues)
-
-  # Need to include all sources when a resource_dir is set so that resources are
-  # not marked as unused.
-  # TODO(agrieve): Figure out how IDEs do incremental linting.
-  if not resource_dir and changes.AddedOrModifiedOnly():
-    changed_paths = set(changes.IterChangedPaths())
-    sources = [s for s in sources if s in changed_paths]
 
   with build_utils.TempDir() as temp_dir:
     _ProcessConfigFile()
@@ -310,23 +303,22 @@ def main():
     output_paths = [ args.result_path ]
 
     build_utils.CallAndWriteDepfileIfStale(
-        lambda changes: _OnStaleMd5(changes, args.lint_path,
-                                    args.config_path,
-                                    args.processed_config_path,
-                                    args.manifest_path, args.result_path,
-                                    args.product_dir, sources,
-                                    args.jar_path,
-                                    args.cache_dir,
-                                    args.android_sdk_version,
-                                    resource_dir=args.resource_dir,
-                                    classpath=classpath,
-                                    can_fail_build=args.can_fail_build,
-                                    silent=args.silent),
+        lambda: _OnStaleMd5(args.lint_path,
+                            args.config_path,
+                            args.processed_config_path,
+                            args.manifest_path, args.result_path,
+                            args.product_dir, sources,
+                            args.jar_path,
+                            args.cache_dir,
+                            args.android_sdk_version,
+                            resource_dir=args.resource_dir,
+                            classpath=classpath,
+                            can_fail_build=args.can_fail_build,
+                            silent=args.silent),
         args,
         input_paths=input_paths,
         input_strings=input_strings,
         output_paths=output_paths,
-        pass_changes=True,
         depfile_deps=classpath)
 
 
