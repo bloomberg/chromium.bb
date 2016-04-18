@@ -119,7 +119,7 @@ void ExtensionPopup::Observe(int type,
         GetWidget()->Close();
       break;
     default:
-      NOTREACHED() << L"Received unexpected notification";
+      NOTREACHED() << "Received unexpected notification";
   }
 }
 

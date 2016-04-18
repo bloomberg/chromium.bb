@@ -225,7 +225,7 @@ void ExtensionDialog::Observe(int type,
         observer_->ExtensionTerminated(this);
       break;
     default:
-      NOTREACHED() << L"Received unexpected notification";
+      NOTREACHED() << "Received unexpected notification";
       break;
   }
 }

@@ -441,7 +441,7 @@ void FindBarView::ButtonPressed(
           FindBarController::kKeepResultsInFindBox);
       break;
     default:
-      NOTREACHED() << L"Unknown button";
+      NOTREACHED() << "Unknown button";
       break;
   }
 }

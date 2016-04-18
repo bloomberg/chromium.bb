@@ -7,26 +7,25 @@
 #include <ostream>
 
 #include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
 #include "ui/views/view.h"
 
 namespace views {
 namespace {
 void PrintViewHierarchyImp(const View* view,
                            int indent,
-                           std::wostringstream* out) {
+                           std::ostringstream* out) {
   int ind = indent;
   while (ind-- > 0)
-    *out << L' ';
-  *out << base::UTF8ToWide(view->GetClassName());
-  *out << L' ';
+    *out << ' ';
+  *out << view->GetClassName();
+  *out << ' ';
   *out << view->id();
-  *out << L' ';
-  *out << view->x() << L"," << view->y() << L",";
-  *out << view->bounds().right() << L"," << view->bounds().bottom();
-  *out << L' ';
+  *out << ' ';
+  *out << view->x() << "," << view->y() << ",";
+  *out << view->bounds().right() << "," << view->bounds().bottom();
+  *out << ' ';
   *out << view;
-  *out << L'\n';
+  *out << '\n';
 
   for (int i = 0, count = view->child_count(); i < count; ++i)
     PrintViewHierarchyImp(view->child_at(i), indent + 2, out);
@@ -34,18 +33,18 @@ void PrintViewHierarchyImp(const View* view,
 
 void PrintFocusHierarchyImp(const View* view,
                             int indent,
-                            std::wostringstream* out) {
+                            std::ostringstream* out) {
   int ind = indent;
   while (ind-- > 0)
-    *out << L' ';
-  *out << base::UTF8ToWide(view->GetClassName());
-  *out << L' ';
-  *out << view->id();
-  *out << L' ';
+    *out << ' ';
   *out << view->GetClassName();
-  *out << L' ';
+  *out << ' ';
+  *out << view->id();
+  *out << ' ';
+  *out << view->GetClassName();
+  *out << ' ';
   *out << view;
-  *out << L'\n';
+  *out << '\n';
 
   if (view->child_count() > 0)
     PrintFocusHierarchyImp(view->child_at(0), indent + 2, out);
@@ -57,16 +56,16 @@ void PrintFocusHierarchyImp(const View* view,
 }  // namespace
 
 void PrintViewHierarchy(const View* view) {
-  std::wostringstream out;
-  out << L"View hierarchy:\n";
+  std::ostringstream out;
+  out << "View hierarchy:\n";
   PrintViewHierarchyImp(view, 0, &out);
   // Error so users in the field can generate and upload logs.
   LOG(ERROR) << out.str();
 }
 
 void PrintFocusHierarchy(const View* view) {
-  std::wostringstream out;
-  out << L"Focus hierarchy:\n";
+  std::ostringstream out;
+  out << "Focus hierarchy:\n";
   PrintFocusHierarchyImp(view, 0, &out);
   // Error so users in the field can generate and upload logs.
   LOG(ERROR) << out.str();
