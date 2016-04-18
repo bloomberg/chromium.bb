@@ -226,8 +226,14 @@ void DomDistillerViewerSourceBrowserTest::ViewSingleDistilledPage(
   EXPECT_EQ(expected_mime_type, contents_after_nav->GetContentsMimeType());
 }
 
+#if defined(OS_LINUX)
+// Flaky on Ubuntu-12.04 bots: https://crbug.com/604362
+#define MAYBE_TestBadUrlErrorPage DISABLED_TestBadUrlErrorPage
+#else
+#define MAYBE_TestBadUrlErrorPage TestBadUrlErrorPage
+#endif
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       TestBadUrlErrorPage) {
+                       MAYBE_TestBadUrlErrorPage) {
   GURL url("chrome-distiller://bad");
 
   // Navigate to a distiller URL.
@@ -266,8 +272,15 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   ViewSingleDistilledPage(url, "text/css");
 }
 
+
+#if defined(OS_LINUX)
+// Flaky on Ubuntu-12.04 bots: https://crbug.com/604362
+#define MAYBE_EmptyURLShouldNotCrash DISABLED_EmptyURLShouldNotCrash
+#else
+#define MAYBE_EmptyURLShouldNotCrash EmptyURLShouldNotCrash
+#endif
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       EmptyURLShouldNotCrash) {
+                       MAYBE_EmptyURLShouldNotCrash) {
   // This is a bogus URL, so no distillation will happen.
   expect_distillation_ = false;
   expect_distiller_page_ = false;
@@ -502,9 +515,17 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefChange) {
   PrefTest(false);
 }
 
-IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefChangeError) {
+#if defined(OS_LINUX)
+// Flaky on Ubuntu-12.04 bots: https://crbug.com/604362
+#define MAYBE_PrefChangeError DISABLED_PrefChangeError
+#else
+#define MAYBE_PrefChangeError PrefChangeError
+#endif
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
+                       MAYBE_PrefChangeError) {
   PrefTest(true);
 }
+
 
 void DomDistillerViewerSourceBrowserTest::PrefTest(bool is_error_page) {
   GURL url;
