@@ -64,6 +64,8 @@ group("telemetry_chrome_test") {
         "$root_out_dir/blink_web.dll.pdb",
         "$root_out_dir/content.dll.pdb",
       ]
+    } else {
+      data += [ "$root_out_dir/chrome_child.dll.pdb" ]
     }
   }
 }
