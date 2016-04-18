@@ -419,7 +419,7 @@ private:
 
     TextTrackContainer& ensureTextTrackContainer();
 
-    void* preDispatchEventHandler(Event*) final;
+    EventDispatchHandlingState* preDispatchEventHandler(Event*) final;
 
     void changeNetworkStateFromLoadingToIdle();
 

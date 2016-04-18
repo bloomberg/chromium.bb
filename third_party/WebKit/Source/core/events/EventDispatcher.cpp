@@ -119,7 +119,7 @@ DispatchEventResult EventDispatcher::dispatch()
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(m_event->target());
     TRACE_EVENT1("devtools.timeline", "EventDispatch", "data", InspectorEventDispatchEvent::data(*m_event));
-    void* preDispatchEventHandlerResult;
+    EventDispatchHandlingState* preDispatchEventHandlerResult = nullptr;
     if (dispatchEventPreProcess(preDispatchEventHandlerResult) == ContinueDispatching) {
         if (dispatchEventAtCapturing() == ContinueDispatching) {
             if (dispatchEventAtTarget() == ContinueDispatching)
@@ -137,7 +137,7 @@ DispatchEventResult EventDispatcher::dispatch()
     return EventTarget::dispatchEventResult(*m_event);
 }
 
-inline EventDispatchContinuation EventDispatcher::dispatchEventPreProcess(void*& preDispatchEventHandlerResult)
+inline EventDispatchContinuation EventDispatcher::dispatchEventPreProcess(EventDispatchHandlingState*& preDispatchEventHandlerResult)
 {
     // Give the target node a chance to do some work before DOM event handlers get a crack.
     preDispatchEventHandlerResult = m_node->preDispatchEventHandler(m_event.get());
@@ -193,7 +193,7 @@ inline void EventDispatcher::dispatchEventAtBubbling()
     }
 }
 
-inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHandlerResult)
+inline void EventDispatcher::dispatchEventPostProcess(EventDispatchHandlingState* preDispatchEventHandlerResult)
 {
     m_event->setTarget(EventPath::eventTargetRespectingTargetRules(*m_node));
     m_event->setCurrentTarget(nullptr);

@@ -34,6 +34,7 @@
 #define InputTypeView_h
 
 #include "core/CoreExport.h"
+#include "core/events/EventDispatcher.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFocusType.h"
 #include "wtf/Allocator.h"
@@ -54,9 +55,9 @@ class LayoutObject;
 class ComputedStyle;
 class TouchEvent;
 
-struct ClickHandlingState final : public GarbageCollected<ClickHandlingState> {
+class ClickHandlingState final : public EventDispatchHandlingState {
 public:
-    DECLARE_TRACE();
+    DECLARE_VIRTUAL_TRACE();
 
     bool checked;
     bool indeterminate;

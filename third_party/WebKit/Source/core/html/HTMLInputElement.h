@@ -328,8 +328,8 @@ private:
     void resetImpl() final;
     bool supportsAutofocus() const final;
 
-    void* preDispatchEventHandler(Event*) final;
-    void postDispatchEventHandler(Event*, void* dataFromPreDispatch) final;
+    EventDispatchHandlingState* preDispatchEventHandler(Event*) final;
+    void postDispatchEventHandler(Event*, EventDispatchHandlingState*) final;
 
     bool isURLAttribute(const Attribute&) const final;
     bool hasLegalLinkAttribute(const QualifiedName&) const final;

@@ -80,7 +80,7 @@ public:
 
 private:
     explicit MediaControlOverlayEnclosureElement(MediaControls&);
-    void* preDispatchEventHandler(Event*) override;
+    EventDispatchHandlingState* preDispatchEventHandler(Event*) override;
 };
 
 // ----------------------------

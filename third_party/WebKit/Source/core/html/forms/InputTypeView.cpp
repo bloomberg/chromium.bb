@@ -229,6 +229,7 @@ AXObject* InputTypeView::popupRootAXObject()
 DEFINE_TRACE(ClickHandlingState)
 {
     visitor->trace(checkedRadioButton);
+    EventDispatchHandlingState::trace(visitor);
 }
 
 } // namespace blink

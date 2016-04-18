@@ -1156,8 +1156,7 @@ void HTMLInputElement::setValueFromRenderer(const String& value)
     setAutofilled(false);
 }
 
-// TODO(Oilpan): It's nasty to return a void* pointer. Return ClickHandlingState* instead.
-void* HTMLInputElement::preDispatchEventHandler(Event* event)
+EventDispatchHandlingState* HTMLInputElement::preDispatchEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::textInput && m_inputTypeView->shouldSubmitImplicitly(event)) {
         event->stopPropagation();
@@ -1170,12 +1169,11 @@ void* HTMLInputElement::preDispatchEventHandler(Event* event)
     return m_inputTypeView->willDispatchClick();
 }
 
-void HTMLInputElement::postDispatchEventHandler(Event* event, void* dataFromPreDispatch)
+void HTMLInputElement::postDispatchEventHandler(Event* event, EventDispatchHandlingState* state)
 {
-    ClickHandlingState* state = static_cast<ClickHandlingState*>(dataFromPreDispatch);
     if (!state)
         return;
-    m_inputTypeView->didDispatchClick(event, *state);
+    m_inputTypeView->didDispatchClick(event, *static_cast<ClickHandlingState*>(state));
 }
 
 void HTMLInputElement::defaultEventHandler(Event* evt)

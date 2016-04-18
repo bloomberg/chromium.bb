@@ -225,7 +225,7 @@ MediaControlOverlayEnclosureElement* MediaControlOverlayEnclosureElement::create
     return enclosure;
 }
 
-void* MediaControlOverlayEnclosureElement::preDispatchEventHandler(Event* event)
+EventDispatchHandlingState* MediaControlOverlayEnclosureElement::preDispatchEventHandler(Event* event)
 {
     // When the media element is clicked or touched we want to make the overlay cast button visible
     // (if the other requirements are right) even if JavaScript is doing its own handling of the event.

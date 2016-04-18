@@ -3510,7 +3510,7 @@ void HTMLMediaElement::configureTextTrackDisplay()
     updateTextTrackDisplay();
 }
 
-void* HTMLMediaElement::preDispatchEventHandler(Event* event)
+EventDispatchHandlingState* HTMLMediaElement::preDispatchEventHandler(Event* event)
 {
     if (event && event->type() == EventTypeNames::webkitfullscreenchange)
         configureMediaControls();

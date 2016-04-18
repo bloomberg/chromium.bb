@@ -37,9 +37,15 @@ namespace blink {
 class Event;
 class EventDispatchMediator;
 class FrameView;
+class EventDispatchHandlingState;
 class Node;
 class NodeEventContext;
 class WindowEventContext;
+
+class EventDispatchHandlingState : public GarbageCollected<EventDispatchHandlingState> {
+public:
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
+};
 
 enum EventDispatchContinuation {
     ContinueDispatching,
@@ -61,11 +67,11 @@ public:
 private:
     EventDispatcher(Node&, Event*);
 
-    EventDispatchContinuation dispatchEventPreProcess(void*& preDispatchEventHandlerResult);
+    EventDispatchContinuation dispatchEventPreProcess(EventDispatchHandlingState*&);
     EventDispatchContinuation dispatchEventAtCapturing();
     EventDispatchContinuation dispatchEventAtTarget();
     void dispatchEventAtBubbling();
-    void dispatchEventPostProcess(void* preDispatchEventHandlerResult);
+    void dispatchEventPostProcess(EventDispatchHandlingState*);
 
     Member<Node> m_node;
     Member<Event> m_event;
