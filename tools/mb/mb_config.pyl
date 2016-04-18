@@ -621,11 +621,9 @@
     },
 
     'tryserver.chromium.android': {
-      'android_amp': 'tbd',
-      'android_archive_rel_ng': 'tbd',
-      'android_coverage': 'tbd',
-      'android_swarming_rel': 'tbd',
-
+      'android_archive_rel_ng': 'android_gn_release_trybot',
+      'android_coverage': 'android_gn_debug_trybot_java_coverage',
+      'android_swarming_rel': 'swarming_android_gn_release_trybot',
       'android_arm64_dbg_recipe': 'swarming_android_gyp_debug_trybot_arm64',
       'android_blink_rel': 'swarming_android_gyp_release_trybot',
       'android_chromium_gn_compile_dbg': 'android_gn_debug_trybot',
@@ -991,6 +989,10 @@
       'android', 'gn', 'debug_static_bot', 'arm64',
     ],
 
+    'android_gn_debug_trybot_java_coverage': [
+      'android', 'gn', 'debug_trybot', 'java_coverage',
+    ],
+
     'android_without_codecs_gyp_release_bot_minimal_symbols': [
       'android_without_codecs', 'gyp', 'release_bot_minimal_symbols',
     ],
@@ -1243,6 +1245,10 @@
 
     'swarming_android_gyp_debug_trybot_arm64': [
       'swarming', 'android', 'gyp', 'debug_trybot', 'arm64',
+    ],
+
+    'swarming_android_gn_release_trybot': [
+      'swarming', 'android', 'gn', 'release_trybot',
     ],
 
     'swarming_android_gyp_release_bot_minimal_symbols': [
@@ -1750,6 +1756,10 @@
     },
 
     'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },
+
+    'java_coverage': {
+      'gn_args': 'emma_coverage=true emma_filter="org.chromium.*"',
+    },
 
     'ubsan_security': { 'gn_args': 'is_ubsan_security=true' },
 
