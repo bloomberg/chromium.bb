@@ -216,17 +216,6 @@ source_set("test_support") {
   }
 }
 
-bundle_data("google_apis_unittests_bundle_data") {
-  testonly = true
-  sources = [
-    "test",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
-}
-
 test("google_apis_unittests") {
   sources = [
     "gaia/gaia_auth_fetcher_unittest.cc",
@@ -250,7 +239,6 @@ test("google_apis_unittests") {
 
   deps = [
     ":google_apis",
-    ":google_apis_unittests_bundle_data",
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",
