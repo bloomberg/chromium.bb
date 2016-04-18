@@ -1,6 +1,4 @@
-// Copyright 2001,2007 Alan Donovan. All rights reserved.
-//
-// Author: Alan Donovan <adonovan@google.com>
+// Copyright 2015 The Bazel Authors. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,8 +30,8 @@ bool verbose = false;
 
 // Reads a JVM class from classdata_in (of the specified length), and
 // writes out a simplified class to classdata_out, advancing the
-// pointer.
-void StripClass(u1 *&classdata_out, const u1 *classdata_in, size_t in_length);
+// pointer. Returns true if the class should be kept.
+bool StripClass(u1*& classdata_out, const u1* classdata_in, size_t in_length);
 
 const char* CLASS_EXTENSION = ".class";
 const size_t CLASS_EXTENSION_LENGTH = strlen(CLASS_EXTENSION);
@@ -76,11 +74,17 @@ void JarStripperProcessor::Process(const char* filename, const u4 attr,
   if (verbose) {
     fprintf(stderr, "INFO: StripClass: %s\n", filename);
   }
-  u1 *q = builder->NewFile(filename, 0);
-  u1 *classdata_out = q;
-  StripClass(q, data, size);  // actually process it
-  size_t out_length = q - classdata_out;
+  u1* buf = reinterpret_cast<u1*>(malloc(size));
+  u1* classdata_out = buf;
+  if (!StripClass(buf, data, size)) {
+    free(classdata_out);
+    return;
+  }
+  u1* q = builder->NewFile(filename, 0);
+  size_t out_length = buf - classdata_out;
+  memcpy(q, classdata_out, out_length);
   builder->FinishFile(out_length);
+  free(classdata_out);
 }
 
 // Opens "file_in" (a .jar file) for reading, and writes an interface

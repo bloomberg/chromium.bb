@@ -10,9 +10,15 @@ if (current_toolchain == host_toolchain) {
       "classfile.cc",
       "common.h",
       "ijar.cc",
+      "mapped_file.h",
       "zip.cc",
       "zip.h",
     ]
+    if (is_win) {
+      sources += [ "mapped_file_windows.cc" ]
+    } else {
+      sources += [ "mapped_file_unix.cc" ]
+    }
 
     # Always build release since this is a build tool.
     if (is_debug) {

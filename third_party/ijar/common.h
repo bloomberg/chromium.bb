@@ -1,6 +1,4 @@
-// Copyright 2001,2007 Alan Donovan. All rights reserved.
-//
-// Author: Alan Donovan <adonovan@google.com>
+// Copyright 2015 The Bazel Authors. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -61,6 +59,13 @@ inline u4 get_u4le(const u1 *&p) {
     return x;
 }
 
+inline u8 get_u8le(const u1 *&p) {
+  u4 lo = get_u4le(p);
+  u4 hi = get_u4le(p);
+  u8 x = ((u8)hi << 32) | lo;
+  return x;
+}
+
 inline void put_u1(u1 *&p, u1 x) {
     *p++ = x;
 }
@@ -87,6 +92,11 @@ inline void put_u4le(u1 *&p, u4 x) {
     *p++ = (x >> 8) & 0xff;
     *p++ = (x >> 16) & 0xff;
     *p++ = x >> 24;
+}
+
+inline void put_u8le(u1 *&p, u8 x) {
+  put_u4le(p, x & 0xffffffff);
+  put_u4le(p, (x >> 32) & 0xffffffff);
 }
 
 // Copy n bytes from src to p, and advance p.
