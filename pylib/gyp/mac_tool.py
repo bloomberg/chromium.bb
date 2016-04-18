@@ -639,7 +639,7 @@ class MacTool(object):
     return data
 
 def NextGreaterPowerOf2(x):
-  return 2**(x-1).bit_length()
+  return 2**(x).bit_length()
 
 def WriteHmap(output_name, filelist):
   """Generates a header map based on |filelist|.

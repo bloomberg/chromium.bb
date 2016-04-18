@@ -10,6 +10,8 @@
       'mac_bundle': 1,
       'sources': [
         'iOSFramework/iOSFramework.h',
+        'iOSFramework/Thing.h',
+        'iOSFramework/Thing.m',
       ],
       'link_settings': {
         'libraries': [
@@ -18,7 +20,9 @@
         ],
       },
       'mac_framework_headers': [
+        # Using two headers here tests mac_tool.py NextGreaterPowerOf2.
         'iOSFramework/iOSFramework.h',
+        'iOSFramework/Thing.h',
       ],
       'mac_framework_dirs': [
         '$(SDKROOT)/../../Library/Frameworks',

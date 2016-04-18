@@ -27,6 +27,9 @@ if sys.platform == 'darwin' and TestMac.Xcode.Version()>="0700":
       'iOSFramework.framework/Headers/iOSFramework.h',
       chdir='framework')
   test.built_file_must_exist(
+      'iOSFramework.framework/Headers/Thing.h',
+      chdir='framework')
+  test.built_file_must_exist(
       'iOSFramework.framework/iOSFramework',
       chdir='framework')
 
