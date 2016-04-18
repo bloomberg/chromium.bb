@@ -607,7 +607,10 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 }
 
 - (void)removeViewForAction:(ToolbarActionViewController*)action {
-  BrowserActionButton* button = [self buttonForId:action->GetId()];
+  // We're about to remove the button view from the container as well as from
+  // |buttons_|, so make sure we retain a reference.
+  base::scoped_nsobject<BrowserActionButton> button =
+      [[self buttonForId:action->GetId()] retain];
 
   // Note: We remove the button from the view and the buttons list first because
   // destroying it (or calling -onRemoved) can cause redraws, and we don't want
