@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -41,8 +42,13 @@ public class BookmarkUtilsTest {
         MockitoAnnotations.initMocks(this);
     }
 
-    @Test
-    @Feature({"Bookmark"})
+
+    /*
+    * @Test
+    * @Feature({"Bookmark"})
+    * Bug=crbug.com/604025
+    */
+    @DisabledTest
     public void testStartEditActivityWithoutWebContents() {
         BookmarkId bookmarkId = new BookmarkId(12345L, BookmarkType.NORMAL);
         BookmarkUtils.startEditActivity(mContext, bookmarkId, null /* webContents */);
