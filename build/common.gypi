@@ -3563,11 +3563,6 @@
               'NS_BLOCK_ASSERTIONS=1',
             ],
           }],
-          # Force disable blink assertions on Cast device builds (overriding DCHECK_ALWAYS_ON)
-          # Only defined for Release builds (NDEBUG), otherwise blink won't compile.
-          ['chromecast==1 and OS=="linux" and is_cast_desktop_build==0', {
-            'defines': ['ENABLE_ASSERT=0'],
-          }],
         ],
       },
       #

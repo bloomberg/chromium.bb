@@ -17,10 +17,6 @@ declare_args() {
   # garbage-collection infrastructure during compilation.
   blink_gc_plugin = true
 
-  # If true, force blink asserts to be off in a release build.  When false,
-  # blink asserts in release build may be controlled by DCHECK_ALWAYS_ON.
-  blink_asserts_off_in_release = false
-
   # If true, doesn't compile debug symbols into webcore reducing the
   # size of the binary and increasing the speed of gdb.
   remove_webcore_debug_symbols = false
@@ -90,9 +86,6 @@ if (use_openmax_dl_fft) {
 
 if (use_default_render_theme) {
   feature_defines_list += [ "WTF_USE_DEFAULT_RENDER_THEME=1" ]
-}
-if (blink_asserts_off_in_release && !is_debug) {
-  feature_defines_list += [ "ENABLE_ASSERT=0" ]
 }
 if (blink_logging_always_on) {
   feature_defines_list += [ "LOG_DISABLED=0" ]
