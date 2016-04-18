@@ -4,45 +4,42 @@
 
 #include "cc/layers/layer_list_iterator.h"
 
-#include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 
 namespace cc {
 
-template <typename LayerType>
-LayerListIterator<LayerType>::LayerListIterator(LayerType* root_layer)
+LayerListIterator::LayerListIterator(LayerImpl* root_layer)
     : current_layer_(root_layer) {
   DCHECK(!root_layer || !root_layer->parent());
   list_indices_.push_back(0);
 }
 
-template <typename LayerType>
-LayerListIterator<LayerType>::LayerListIterator(
-    const LayerListIterator<LayerType>& other) = default;
+LayerListIterator::LayerListIterator(const LayerListIterator& other) = default;
 
-template <typename LayerType>
-LayerListIterator<LayerType>::~LayerListIterator() {}
+LayerListIterator::~LayerListIterator() {}
 
-template <typename LayerType>
-LayerListIterator<LayerType>& LayerListIterator<LayerType>::operator++() {
+LayerListIterator& LayerListIterator::operator++() {
   // case 0: done
   if (!current_layer_)
     return *this;
 
   // case 1: descend.
-  if (!current_layer_->children().empty()) {
-    current_layer_ = current_layer_->child_at(0);
+  const LayerImplList& current_list = current_layer_->children();
+  if (!current_list.empty()) {
+    current_layer_ = current_list[0];
     list_indices_.push_back(0);
     return *this;
   }
 
-  for (LayerType* parent = current_layer_->parent(); parent;
+  for (LayerImpl* parent = current_layer_->parent(); parent;
        parent = parent->parent()) {
     // We now try and advance in some list of siblings.
+    const LayerImplList& sibling_list = parent->children();
+
     // case 2: Advance to a sibling.
-    if (list_indices_.back() + 1 < parent->children().size()) {
+    if (list_indices_.back() + 1 < sibling_list.size()) {
       ++list_indices_.back();
-      current_layer_ = parent->child_at(list_indices_.back());
+      current_layer_ = sibling_list[list_indices_.back()];
       return *this;
     }
 
@@ -54,58 +51,48 @@ LayerListIterator<LayerType>& LayerListIterator<LayerType>::operator++() {
   return *this;
 }
 
-template <typename LayerType>
-LayerListReverseIterator<LayerType>::LayerListReverseIterator(
-    LayerType* root_layer)
-    : LayerListIterator<LayerType>(root_layer) {
+LayerListReverseIterator::LayerListReverseIterator(LayerImpl* root_layer)
+    : LayerListIterator(root_layer) {
   DescendToRightmostInSubtree();
 }
 
-template <typename LayerType>
-LayerListReverseIterator<LayerType>::~LayerListReverseIterator() {}
+LayerListReverseIterator::~LayerListReverseIterator() {}
 
 // We will only support prefix increment.
-template <typename LayerType>
-LayerListIterator<LayerType>& LayerListReverseIterator<LayerType>::
-operator++() {
+LayerListIterator& LayerListReverseIterator::operator++() {
   // case 0: done
-  if (!current_layer())
+  if (!current_layer_)
     return *this;
 
   // case 1: we're the leftmost sibling.
-  if (!list_indices().back()) {
-    list_indices().pop_back();
-    this->current_layer_ = current_layer()->parent();
+  if (!list_indices_.back()) {
+    list_indices_.pop_back();
+    current_layer_ = current_layer_->parent();
     return *this;
   }
 
   // case 2: we're not the leftmost sibling. In this case, we want to move one
   // sibling over, and then descend to the rightmost descendant in that subtree.
-  CHECK(current_layer()->parent());
-  --list_indices().back();
-  this->current_layer_ =
-      current_layer()->parent()->child_at(list_indices().back());
+  CHECK(current_layer_->parent());
+  --list_indices_.back();
+  const LayerImplList& parent_list = current_layer_->parent()->children();
+  current_layer_ = parent_list[list_indices_.back()];
   DescendToRightmostInSubtree();
   return *this;
 }
 
-template <typename LayerType>
-void LayerListReverseIterator<LayerType>::DescendToRightmostInSubtree() {
-  if (!current_layer())
+void LayerListReverseIterator::DescendToRightmostInSubtree() {
+  if (!current_layer_)
     return;
 
-  if (current_layer()->children().empty())
+  const LayerImplList& current_list = current_layer_->children();
+  if (current_list.empty())
     return;
 
-  size_t last_index = current_layer()->children().size() - 1;
-  this->current_layer_ = current_layer()->child_at(last_index);
-  list_indices().push_back(last_index);
+  size_t last_index = current_list.size() - 1;
+  current_layer_ = current_list[last_index];
+  list_indices_.push_back(last_index);
   DescendToRightmostInSubtree();
 }
-
-template class LayerListIterator<Layer>;
-template class LayerListIterator<LayerImpl>;
-template class LayerListReverseIterator<Layer>;
-template class LayerListReverseIterator<LayerImpl>;
 
 }  // namespace cc

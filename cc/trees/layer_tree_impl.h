@@ -154,10 +154,10 @@ class CC_EXPORT LayerTreeImpl {
 
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
 
-  LayerListIterator<LayerImpl> begin();
-  LayerListIterator<LayerImpl> end();
-  LayerListReverseIterator<LayerImpl> rbegin();
-  LayerListReverseIterator<LayerImpl> rend();
+  LayerListIterator begin();
+  LayerListIterator end();
+  LayerListReverseIterator rbegin();
+  LayerListReverseIterator rend();
 
   // TODO(thakis): Consider marking this CC_EXPORT once we understand
   // http://crbug.com/575700 better.
