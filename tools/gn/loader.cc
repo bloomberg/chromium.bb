@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/stl_util.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/err.h"
 #include "tools/gn/filesystem_utils.h"
@@ -106,8 +105,6 @@ LoaderImpl::LoaderImpl(const BuildSettings* build_settings)
 }
 
 LoaderImpl::~LoaderImpl() {
-  STLDeleteContainerPairSecondPointers(toolchain_records_.begin(),
-                                       toolchain_records_.end());
 }
 
 void LoaderImpl::Load(const SourceFile& file,
@@ -120,13 +117,14 @@ void LoaderImpl::Load(const SourceFile& file,
     return;  // Already in set, so this file was already loaded or schedulerd.
 
   if (toolchain_records_.empty()) {
-    // Nothing loaded, need to load the default build config. The intial load
+    // Nothing loaded, need to load the default build config. The initial load
     // should not specify a toolchain.
     DCHECK(toolchain_name.is_null());
 
-    ToolchainRecord* record =
-        new ToolchainRecord(build_settings_, Label(), Label());
-    toolchain_records_[Label()] = record;
+    std::unique_ptr<ToolchainRecord> new_record(
+        new ToolchainRecord(build_settings_, Label(), Label()));
+    ToolchainRecord* record = new_record.get();
+    toolchain_records_[Label()] = std::move(new_record);
 
     // The default build config is no dependent on the toolchain definition,
     // since we need to load the build config before we know what the default
@@ -135,22 +133,24 @@ void LoaderImpl::Load(const SourceFile& file,
 
     record->waiting_on_me.push_back(SourceFileAndOrigin(file, origin));
     ScheduleLoadBuildConfig(&record->settings, Scope::KeyValueMap());
+
     return;
   }
 
   ToolchainRecord* record;
   if (toolchain_name.is_null())
-    record = toolchain_records_[default_toolchain_label_];
+    record = toolchain_records_[default_toolchain_label_].get();
   else
-    record = toolchain_records_[toolchain_name];
+    record = toolchain_records_[toolchain_name].get();
 
   if (!record) {
     DCHECK(!default_toolchain_label_.is_null());
 
     // No reference to this toolchain found yet, make one.
-    record = new ToolchainRecord(build_settings_, toolchain_name,
-                                 default_toolchain_label_);
-    toolchain_records_[toolchain_name] = record;
+    std::unique_ptr<ToolchainRecord> new_record(new ToolchainRecord(
+        build_settings_, toolchain_name, default_toolchain_label_));
+    record = new_record.get();
+    toolchain_records_[toolchain_name] = std::move(new_record);
 
     // Schedule a load of the toolchain using the default one.
     Load(BuildFileForLabel(toolchain_name), origin, default_toolchain_label_);
@@ -163,12 +163,13 @@ void LoaderImpl::Load(const SourceFile& file,
 }
 
 void LoaderImpl::ToolchainLoaded(const Toolchain* toolchain) {
-  ToolchainRecord* record = toolchain_records_[toolchain->label()];
+  ToolchainRecord* record = toolchain_records_[toolchain->label()].get();
   if (!record) {
     DCHECK(!default_toolchain_label_.is_null());
-    record = new ToolchainRecord(build_settings_, toolchain->label(),
-                                 default_toolchain_label_);
-    toolchain_records_[toolchain->label()] = record;
+    std::unique_ptr<ToolchainRecord> new_record(new ToolchainRecord(
+        build_settings_, toolchain->label(), default_toolchain_label_));
+    record = new_record.get();
+    toolchain_records_[toolchain->label()] = std::move(new_record);
   }
   record->is_toolchain_loaded = true;
 
@@ -356,8 +357,10 @@ void LoaderImpl::DidLoadBuildConfig(const Label& label) {
     CHECK(empty_label != toolchain_records_.end());
 
     // Fix up the toolchain record.
-    record = empty_label->second;
-    toolchain_records_[label] = record;
+    std::unique_ptr<ToolchainRecord> moved_record =
+        std::move(empty_label->second);
+    record = moved_record.get();
+    toolchain_records_[label] = std::move(moved_record);
     toolchain_records_.erase(empty_label);
 
     // Save the default toolchain label.
@@ -383,7 +386,7 @@ void LoaderImpl::DidLoadBuildConfig(const Label& label) {
       }
     }
   } else {
-    record = found_toolchain->second;
+    record = found_toolchain->second.get();
   }
 
   DCHECK(!record->is_config_loaded);

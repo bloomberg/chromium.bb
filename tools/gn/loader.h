@@ -6,6 +6,7 @@
 #define TOOLS_GN_LOADER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/callback.h"
@@ -173,8 +174,7 @@ class LoaderImpl : public Loader {
   Label default_toolchain_label_;
 
   // Records for the build config file loads.
-  // Owning pointers.
-  typedef std::map<Label, ToolchainRecord*> ToolchainRecordMap;
+  typedef std::map<Label, std::unique_ptr<ToolchainRecord>> ToolchainRecordMap;
   ToolchainRecordMap toolchain_records_;
 };
 
