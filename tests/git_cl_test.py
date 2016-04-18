@@ -809,13 +809,17 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'rietveld.cc'],), '')
         ]
     # Add cc from watch list.
-    if ref_suffix == '':
-      ref_suffix = '%cc=joe@example.com'
-    else:
-      ref_suffix += ',cc=joe@example.com'
+    # TODO(tandrii): bring this back after http://crbug.com/604377.
+    # if ref_suffix == '':
+    #   ref_suffix = '%cc=joe@example.com'
+    # else:
+    #   ref_suffix += ',cc=joe@example.com'
     if reviewers:
-      ref_suffix += ',' + ','.join('r=%s' % email
-                                   for email in sorted(reviewers))
+      if ref_suffix:
+        ref_suffix += ','
+      else:
+        ref_suffix = '%'
+      ref_suffix += ','.join('r=%s' % email for email in sorted(reviewers))
     calls += [
         ((['git', 'push', 'origin',
            ref_to_push + ':refs/for/refs/heads/master' + ref_suffix],),

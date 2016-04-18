@@ -2453,7 +2453,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       cc.extend(options.cc)
     cc = filter(None, cc)
     if cc:
-      refspec_opts.extend('cc=' + email.strip() for email in cc)
+      # refspec_opts.extend('cc=' + email.strip() for email in cc)
+      # TODO(tandrii): enable this back. http://crbug.com/604377
+      print('WARNING: Gerrit doesn\'t yet support cc-ing arbitrary emails.\n'
+            '         Ignoring cc-ed emails. See http://crbug.com/604377.')
 
     if change_desc.get_reviewers():
       refspec_opts.extend('r=' + email.strip()
