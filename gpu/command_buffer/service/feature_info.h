@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
-#include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/gpu_export.h"
 
 namespace base {
@@ -90,15 +90,27 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool ext_read_format_bgra;
   };
 
-  FeatureInfo();
+  struct Workarounds {
+    Workarounds();
+
+#define GPU_OP(type, name) bool name;
+    GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
+
+    // Note: 0 here means use driver limit.
+    GLint max_texture_size;
+    GLint max_cube_map_texture_size;
+    GLint max_fragment_uniform_vectors;
+    GLint max_varying_vectors;
+    GLint max_vertex_uniform_vectors;
+    GLint max_copy_texture_chromium_size;
+  };
 
   // Constructor with workarounds taken from the current process's CommandLine
-  explicit FeatureInfo(
-      const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds);
+  FeatureInfo();
 
   // Constructor with workarounds taken from |command_line|
-  FeatureInfo(const base::CommandLine& command_line,
-              const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds);
+  FeatureInfo(const base::CommandLine& command_line);
 
   // Initializes the feature information. Needs a current GL context.
   bool Initialize(ContextType context_type,
@@ -123,7 +135,9 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     return feature_flags_;
   }
 
-  const GpuDriverBugWorkarounds& workarounds() const { return workarounds_; }
+  const Workarounds& workarounds() const {
+    return workarounds_;
+  }
 
   const DisallowedFeatures& disallowed_features() const {
     return disallowed_features_;
@@ -174,7 +188,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   FeatureFlags feature_flags_;
 
   // Flags for Workarounds.
-  const GpuDriverBugWorkarounds workarounds_;
+  Workarounds workarounds_;
 
   // Whether the command line switch kEnableUnsafeES3APIs is passed in.
   bool enable_unsafe_es3_apis_switch_;

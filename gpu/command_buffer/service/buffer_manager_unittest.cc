@@ -248,9 +248,9 @@ class BufferManagerMemoryTrackerTest : public BufferManagerTestBase {
 class BufferManagerClientSideArraysTest : public BufferManagerTestBase {
  protected:
   void SetUp() override {
-    GpuDriverBugWorkarounds gpu_driver_bug_workarounds;
-    gpu_driver_bug_workarounds.use_client_side_arrays_for_stream_buffers = true;
-    feature_info_ = new FeatureInfo(gpu_driver_bug_workarounds);
+    feature_info_ = new FeatureInfo();
+    feature_info_->workarounds_.use_client_side_arrays_for_stream_buffers =
+      true;
     SetUpBase(NULL, feature_info_.get(), "");
   }
 

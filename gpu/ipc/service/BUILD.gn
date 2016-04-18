@@ -55,7 +55,6 @@ source_set("ipc_service_sources") {
   deps = [
     "//gpu/command_buffer/common:common_sources",
     "//gpu/command_buffer/service:service_sources",
-    "//gpu/config:config_sources",
     "//gpu/ipc/common:ipc_common_sources",
   ]
   libs = []

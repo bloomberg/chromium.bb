@@ -4,7 +4,6 @@
 
 #include "gpu/gles2_conform_support/egl/display.h"
 
-#include "base/command_line.h"
 #include "gpu/gles2_conform_support/egl/config.h"
 #include "gpu/gles2_conform_support/egl/context.h"
 #include "gpu/gles2_conform_support/egl/surface.h"
@@ -16,8 +15,7 @@ Display::Display()
     : is_initialized_(false),
       next_create_window_surface_creates_pbuffer_(false),
       window_surface_pbuffer_width_(0),
-      window_surface_pbuffer_height_(0),
-      gpu_driver_bug_workarounds_(base::CommandLine::ForCurrentProcess()) {}
+      window_surface_pbuffer_height_(0) {}
 
 Display::~Display() {
   surfaces_.clear();

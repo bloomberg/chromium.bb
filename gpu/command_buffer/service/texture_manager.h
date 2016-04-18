@@ -649,7 +649,7 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
 struct DecoderTextureState {
   // total_texture_upload_time automatically initialized to 0 in default
   // constructor.
-  explicit DecoderTextureState(const GpuDriverBugWorkarounds& workarounds)
+  explicit DecoderTextureState(const FeatureInfo::Workarounds& workarounds)
       : tex_image_failed(false),
         texture_upload_count(0),
         texsubimage_faster_than_teximage(

@@ -21,7 +21,6 @@ namespace mus {
 GpuState::GpuState()
     : gpu_thread_("gpu_thread"),
       control_thread_("gpu_command_buffer_control"),
-      gpu_driver_bug_workarounds_(base::CommandLine::ForCurrentProcess()),
       hardware_rendering_available_(false) {
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   gpu_thread_.Start();

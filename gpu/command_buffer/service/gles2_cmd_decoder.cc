@@ -1882,7 +1882,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
     return feature_info_->feature_flags();
   }
 
-  const GpuDriverBugWorkarounds& workarounds() const {
+  const FeatureInfo::Workarounds& workarounds() const {
     return feature_info_->workarounds();
   }
 
@@ -12984,7 +12984,7 @@ error::Error GLES2DecoderImpl::HandleGetRequestableExtensionsCHROMIUM(
       *static_cast<const gles2::cmds::GetRequestableExtensionsCHROMIUM*>(
           cmd_data);
   Bucket* bucket = CreateBucket(c.bucket_id);
-  scoped_refptr<FeatureInfo> info(new FeatureInfo(workarounds()));
+  scoped_refptr<FeatureInfo> info(new FeatureInfo());
   DisallowedFeatures disallowed_features = feature_info_->disallowed_features();
   disallowed_features.AllowExtensions();
   info->Initialize(feature_info_->context_type(), disallowed_features);

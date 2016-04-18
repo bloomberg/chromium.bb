@@ -188,17 +188,15 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
 
   SetupMockGLBehaviors();
 
-  scoped_refptr<FeatureInfo> feature_info = new FeatureInfo;
-  if (command_line) {
-    GpuDriverBugWorkarounds gpu_driver_bug_workaround(command_line);
-    feature_info = new FeatureInfo(*command_line, gpu_driver_bug_workaround);
-  }
-
-  group_ = scoped_refptr<ContextGroup>(new ContextGroup(
-      gpu_preferences_, NULL, memory_tracker_,
-      new ShaderTranslatorCache(gpu_preferences_),
-      new FramebufferCompletenessCache, feature_info, new SubscriptionRefSet,
-      new ValueStateMap, normalized_init.bind_generates_resource));
+  scoped_refptr<FeatureInfo> feature_info;
+  if (command_line)
+    feature_info = new FeatureInfo(*command_line);
+  group_ = scoped_refptr<ContextGroup>(
+      new ContextGroup(gpu_preferences_, NULL, memory_tracker_,
+                       new ShaderTranslatorCache(gpu_preferences_),
+                       new FramebufferCompletenessCache, feature_info.get(),
+                       new SubscriptionRefSet, new ValueStateMap,
+                       normalized_init.bind_generates_resource));
   bool use_default_textures = normalized_init.bind_generates_resource;
 
   InSequence sequence;

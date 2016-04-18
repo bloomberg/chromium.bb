@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "gpu/config/gpu_driver_bug_workarounds.h"
 
 namespace egl {
 
@@ -35,10 +34,6 @@ class Display {
 
   // A function for windowless GTF tests.
   void SetNextCreateWindowSurfaceCreatesPBuffer(EGLint width, EGLint height);
-
-  const gpu::GpuDriverBugWorkarounds& gpu_driver_bug_workarounds() const {
-    return gpu_driver_bug_workarounds_;
-  }
 
   EGLBoolean Initialize(ThreadState* ts, EGLint* major, EGLint* minor);
   EGLBoolean Terminate(ThreadState* ts);
@@ -106,8 +101,6 @@ class Display {
   bool next_create_window_surface_creates_pbuffer_;
   EGLint window_surface_pbuffer_width_;
   EGLint window_surface_pbuffer_height_;
-
-  const gpu::GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

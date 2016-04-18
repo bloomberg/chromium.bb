@@ -80,6 +80,50 @@ class StringSet {
   std::set<std::string> string_set_;
 };
 
+// Process a string of wordaround type IDs (seperated by ',') and set up
+// the corresponding Workaround flags.
+void StringToWorkarounds(
+    const std::string& types, FeatureInfo::Workarounds* workarounds) {
+  DCHECK(workarounds);
+  for (const base::StringPiece& piece :
+       base::SplitStringPiece(
+           types, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    int number = 0;
+    bool succeed = base::StringToInt(piece, &number);
+    DCHECK(succeed);
+    switch (number) {
+#define GPU_OP(type, name)    \
+  case gpu::type:             \
+    workarounds->name = true; \
+    break;
+      GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
+      default:
+        NOTIMPLEMENTED();
+    }
+  }
+  if (workarounds->max_texture_size_limit_4096)
+    workarounds->max_texture_size = 4096;
+  if (workarounds->max_cube_map_texture_size_limit_4096)
+    workarounds->max_cube_map_texture_size = 4096;
+  if (workarounds->max_cube_map_texture_size_limit_1024)
+    workarounds->max_cube_map_texture_size = 1024;
+  if (workarounds->max_cube_map_texture_size_limit_512)
+    workarounds->max_cube_map_texture_size = 512;
+
+  if (workarounds->max_fragment_uniform_vectors_32)
+    workarounds->max_fragment_uniform_vectors = 32;
+  if (workarounds->max_varying_vectors_16)
+    workarounds->max_varying_vectors = 16;
+  if (workarounds->max_vertex_uniform_vectors_256)
+    workarounds->max_vertex_uniform_vectors = 256;
+
+  if (workarounds->max_copy_texture_chromium_size_1048576)
+    workarounds->max_copy_texture_chromium_size = 1048576;
+  if (workarounds->max_copy_texture_chromium_size_262144)
+    workarounds->max_copy_texture_chromium_size = 262144;
+}
+
 }  // anonymous namespace.
 
 FeatureInfo::FeatureFlags::FeatureFlags()
@@ -137,24 +181,25 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       ext_blend_func_extended(false),
       ext_read_format_bgra(false) {}
 
+FeatureInfo::Workarounds::Workarounds() :
+#define GPU_OP(type, name) name(false),
+    GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
+    max_texture_size(0),
+    max_cube_map_texture_size(0),
+    max_fragment_uniform_vectors(0),
+    max_varying_vectors(0),
+    max_vertex_uniform_vectors(0),
+    max_copy_texture_chromium_size(0) {
+}
+
 FeatureInfo::FeatureInfo() {
   InitializeBasicState(base::CommandLine::InitializedForCurrentProcess()
                            ? base::CommandLine::ForCurrentProcess()
                            : nullptr);
 }
 
-FeatureInfo::FeatureInfo(
-    const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds)
-    : workarounds_(gpu_driver_bug_workarounds) {
-  InitializeBasicState(base::CommandLine::InitializedForCurrentProcess()
-                           ? base::CommandLine::ForCurrentProcess()
-                           : nullptr);
-}
-
-FeatureInfo::FeatureInfo(
-    const base::CommandLine& command_line,
-    const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds)
-    : workarounds_(gpu_driver_bug_workarounds) {
+FeatureInfo::FeatureInfo(const base::CommandLine& command_line) {
   InitializeBasicState(&command_line);
 }
 
@@ -162,6 +207,11 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   if (!command_line)
     return;
 
+  if (command_line->HasSwitch(switches::kGpuDriverBugWorkarounds)) {
+    std::string types = command_line->GetSwitchValueASCII(
+        switches::kGpuDriverBugWorkarounds);
+    StringToWorkarounds(types, &workarounds_);
+  }
   feature_flags_.enable_shader_name_hashing =
       !command_line->HasSwitch(switches::kDisableShaderNameHashing);
 

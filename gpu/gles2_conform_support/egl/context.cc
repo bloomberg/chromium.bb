@@ -258,13 +258,11 @@ bool Context::CreateService(gfx::GLSurface* gl_surface) {
   if (!command_buffer->Initialize())
     return false;
 
-  scoped_refptr<gpu::gles2::FeatureInfo> feature_info =
-      new gpu::gles2::FeatureInfo(display_->gpu_driver_bug_workarounds());
   scoped_refptr<gpu::gles2::ContextGroup> group(new gpu::gles2::ContextGroup(
       gpu_preferences_, nullptr, nullptr,
       new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
-      new gpu::gles2::FramebufferCompletenessCache, feature_info, nullptr,
-      nullptr, true));
+      new gpu::gles2::FramebufferCompletenessCache, nullptr, nullptr, nullptr,
+      true));
 
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder(
       gpu::gles2::GLES2Decoder::Create(group.get()));

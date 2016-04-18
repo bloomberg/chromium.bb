@@ -101,15 +101,13 @@ class FeatureInfoTest
     GpuServiceTest::SetUpWithGLVersion(version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), extensions, renderer, version);
-    GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
-    info_ = new FeatureInfo(command_line, gpu_driver_bug_workaround);
+    info_ = new FeatureInfo(command_line);
     info_->InitializeForTesting();
   }
 
   void SetupWithCommandLine(const base::CommandLine& command_line) {
     GpuServiceTest::SetUp();
-    GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
-    info_ = new FeatureInfo(command_line, gpu_driver_bug_workaround);
+    info_ = new FeatureInfo(command_line);
   }
 
   void SetupInitExpectationsWithCommandLine(
@@ -118,8 +116,7 @@ class FeatureInfoTest
     GpuServiceTest::SetUpWithGLVersion("2.0", extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), extensions, "", "");
-    GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
-    info_ = new FeatureInfo(command_line, gpu_driver_bug_workaround);
+    info_ = new FeatureInfo(command_line);
     info_->InitializeForTesting();
   }
 
