@@ -6,6 +6,7 @@
 
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 ChooserBubbleController::ChooserBubbleController(
@@ -15,6 +16,11 @@ ChooserBubbleController::ChooserBubbleController(
       owning_frame_(owner) {}
 
 ChooserBubbleController::~ChooserBubbleController() {}
+
+url::Origin ChooserBubbleController::GetOrigin() const {
+  return const_cast<content::RenderFrameHost*>(owning_frame_)
+      ->GetLastCommittedOrigin();
+}
 
 void ChooserBubbleController::OpenHelpCenterUrl() const {
   browser_->OpenURL(content::OpenURLParams(

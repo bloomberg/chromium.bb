@@ -14607,7 +14607,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     <if expr="not is_android and not is_ios">
       <!-- Chooser Bubble Prompt -->
       <message name="IDS_CHOOSER_BUBBLE_PROMPT" desc="The label that is used to introduce chooser details to the user in a popup.">
-        This site wants to connect to:
+        <ph name="Origin">$1<ex>www.google.com</ex></ph> wants to connect to:
       </message>
       <!-- Chooser Bubble No Devices Found Prompt -->
       <message name="IDS_CHOOSER_BUBBLE_NO_DEVICES_FOUND_PROMPT" desc="The label that is used to inform user that no devices found in the chooser popup.">

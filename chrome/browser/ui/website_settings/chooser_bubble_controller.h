@@ -14,6 +14,10 @@
 class Browser;
 class GURL;
 
+namespace url {
+class Origin;
+}
+
 // Subclass ChooserBubbleController to implement a chooser bubble, which has
 // some introductory text and a list of options that users can pick one of.
 // Create an instance of your subclass and pass it to
@@ -52,6 +56,9 @@ class ChooserBubbleController : public BubbleDelegate {
    protected:
     virtual ~Observer() {}
   };
+
+  // Return the origin URL to be displayed on the bubble title.
+  url::Origin GetOrigin() const;
 
   // Open help center URL.
   void OpenHelpCenterUrl() const;

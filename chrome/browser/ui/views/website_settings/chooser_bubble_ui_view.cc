@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
@@ -38,6 +39,7 @@
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/window/dialog_client_view.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -189,7 +191,9 @@ bool ChooserBubbleUiViewDelegate::ShouldShowWindowTitle() const {
 }
 
 base::string16 ChooserBubbleUiViewDelegate::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_CHOOSER_BUBBLE_PROMPT);
+  return l10n_util::GetStringFUTF16(
+      IDS_CHOOSER_BUBBLE_PROMPT,
+      base::ASCIIToUTF16(controller_->GetOrigin().Serialize()));
 }
 
 base::string16 ChooserBubbleUiViewDelegate::GetDialogButtonLabel(
