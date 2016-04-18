@@ -109,7 +109,7 @@ public class DummyPlayer implements MediaPlayer.OnPreparedListener,
             // when seeking is completed)
             item.setDuration(mMediaPlayer.getDuration());
             item.setPosition(mSeekToPos > 0 ? mSeekToPos : mMediaPlayer.getCurrentPosition());
-            item.setTimestamp(SystemClock.uptimeMillis());
+            item.setTimestamp(SystemClock.elapsedRealtime());
         }
     }
 

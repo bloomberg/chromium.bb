@@ -33,7 +33,7 @@ final class MediaItem {
         mItemId = iid;
         mUri = uri;
         mUpdateReceiver = pi;
-        setTimestamp(SystemClock.uptimeMillis());
+        setTimestamp(SystemClock.elapsedRealtime());
     }
 
     public void setRemoteItemId(String riid) {
