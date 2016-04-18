@@ -10,19 +10,16 @@ import time
 import subprocess
 import sys
 
-from gcloud import storage
-from gcloud.exceptions import NotFound
-from oauth2client.client import GoogleCredentials
-
 # NOTE: The parent directory needs to be first in sys.path to avoid conflicts
 # with catapult modules that have colliding names, as catapult inserts itself
 # into the path as the second element. This is an ugly and fragile hack.
 sys.path.insert(0,
     os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 import controller
+from google_storage_accessor import GoogleStorageAccessor
 import loading_trace
-import options
 from loading_trace_database import LoadingTraceDatabase
+import options
 
 
 class ServerApp(object):
@@ -40,12 +37,9 @@ class ServerApp(object):
     self._tasks_lock = threading.Lock()  # Protects _tasks and _failed_tasks.
     self._initial_task_count = -1
     self._start_time = None
-    print 'Initializing credentials'
-    self._credentials = GoogleCredentials.get_application_default()
     print 'Reading configuration'
     with open(configuration_file) as config_json:
        config = json.load(config_json)
-       self._project_name = config['project_name']
 
        # Separate the cloud storage path into the bucket and the base path under
        # the bucket.
@@ -58,6 +52,8 @@ class ServerApp(object):
            self._base_path_in_bucket += '/'
 
        self._src_path = config['src_path']
+       self._google_storage_accessor = GoogleStorageAccessor(
+           project_name=config['project_name'], bucket_name=self._bucket_name)
 
     # Initialize the global options that will be used during trace generation.
     options.OPTIONS.ParseArgs([])
@@ -66,46 +62,6 @@ class ServerApp(object):
   def _IsProcessingTasks(self):
     """Returns True if the application is currently processing tasks."""
     return self._thread is not None and self._thread.is_alive()
-
-  def _GetStorageClient(self):
-    return storage.Client(project = self._project_name,
-                          credentials = self._credentials)
-
-  def _GetStorageBucket(self, storage_client):
-    return storage_client.get_bucket(self._bucket_name)
-
-  def _UploadFile(self, filename_src, filename_dest):
-    """Uploads a file to Google Cloud Storage
-
-    Args:
-      filename_src: name of the local file
-      filename_dest: name of the file in Google Cloud Storage
-
-    Returns:
-      The URL of the file in Google Cloud Storage.
-    """
-    client = self._GetStorageClient()
-    bucket = self._GetStorageBucket(client)
-    blob = bucket.blob(filename_dest)
-    with open(filename_src) as file_src:
-      blob.upload_from_file(file_src)
-    return blob.public_url
-
-  def _UploadString(self, data_string, filename_dest):
-    """Uploads a string to Google Cloud Storage
-
-    Args:
-      data_string: the contents of the file to be uploaded
-      filename_dest: name of the file in Google Cloud Storage
-
-    Returns:
-      The URL of the file in Google Cloud Storage.
-    """
-    client = self._GetStorageClient()
-    bucket = self._GetStorageBucket(client)
-    blob = bucket.blob(filename_dest)
-    blob.upload_from_string(data_string)
-    return blob.public_url
 
   def _GenerateTrace(self, url, emulate_device, emulate_network, filename,
                      log_filename):
@@ -210,7 +166,8 @@ class ServerApp(object):
         if trace_metadata['succeeded']:
           print 'Uploading: %s' % remote_filename
           remote_trace_location = traces_dir + remote_filename
-          self._UploadFile(local_filename, remote_trace_location)
+          self._google_storage_accessor.UploadFile(local_filename,
+                                           remote_trace_location)
           full_cloud_storage_path = ('gs://' + self._bucket_name + '/' +
               remote_trace_location)
           trace_database.AddTrace(full_cloud_storage_path, trace_metadata)
@@ -220,21 +177,25 @@ class ServerApp(object):
           self._failed_tasks.append({ "url": url, "repeat": repeat})
           self._tasks_lock.release()
           if os.path.isfile(local_filename):
-            self._UploadFile(local_filename, failures_dir + remote_filename)
+            self._google_storage_accessor.UploadFile(local_filename,
+                                            failures_dir + remote_filename)
         print 'Uploading log'
-        self._UploadFile(log_filename, logs_dir + remote_filename)
+        self._google_storage_accessor.UploadFile(log_filename,
+                                         logs_dir + remote_filename)
       # Pop once task is finished, for accurate status tracking.
       self._tasks_lock.acquire()
       url = self._tasks.pop()
       self._tasks_lock.release()
 
-    self._UploadString(json.dumps(trace_database.ToJsonDict(), indent=2),
-                       traces_dir + 'trace_database.json')
+    self._google_storage_accessor.UploadString(
+        json.dumps(trace_database.ToJsonDict(), indent=2),
+        traces_dir + 'trace_database.json')
 
     if len(self._failed_tasks) > 0:
       print 'Uploading failing URLs'
-      self._UploadString(json.dumps(self._failed_tasks, indent=2),
-                         failures_dir + 'failures.json')
+      self._google_storage_accessor.UploadString(
+          json.dumps(self._failed_tasks, indent=2),
+          failures_dir + 'failures.json')
 
   def _SetTaskList(self, http_body):
     """Sets the list of tasks and starts processing them
