@@ -647,6 +647,7 @@ weston_compositor_log_capabilities(struct weston_compositor *compositor)
 {
 	unsigned i;
 	int yes;
+	struct timespec res;
 
 	weston_log("Compositor capabilities:\n");
 	for (i = 0; i < ARRAY_LENGTH(capability_strings); i++) {
@@ -659,6 +660,14 @@ weston_compositor_log_capabilities(struct weston_compositor *compositor)
 	weston_log_continue(STAMP_SPACE "presentation clock: %s, id %d\n",
 			    clock_name(compositor->presentation_clock),
 			    compositor->presentation_clock);
+
+	if (clock_getres(compositor->presentation_clock, &res) == 0)
+		weston_log_continue(STAMP_SPACE
+				"presentation clock resolution: %d.%09ld s\n",
+				(int)res.tv_sec, res.tv_nsec);
+	else
+		weston_log_continue(STAMP_SPACE
+				"presentation clock resolution: N/A\n");
 }
 
 static void
