@@ -75,10 +75,28 @@ class NTPSnippetsService : public KeyedService {
 
   // Fetches snippets from the server and adds them to the current ones.
   void FetchSnippets();
+  // Fetches snippets from the server for specified hosts (overriding
+  // suggestions from the suggestion service) and adds them to the current ones.
+  void FetchSnippetsFromHosts(const std::set<std::string>& hosts);
+
+  // Deletes all currently stored snippets.
+  void ClearSnippets();
 
   // Discards the snippet with the given |url|, if it exists. Returns true iff
   // a snippet was discarded.
   bool DiscardSnippet(const GURL& url);
+
+  // Returns the lists of snippets previously discarded by the user (that are
+  // not expired yet).
+  const NTPSnippetStorage& discarded_snippets() const {
+    return discarded_snippets_;
+  }
+
+  // Clears the lists of snippets previously discarded by the user.
+  void ClearDiscardedSnippets();
+
+  // Returns the lists of suggestion hosts the snippets are restricted to.
+  std::set<std::string> GetSuggestionsHosts() const;
 
   // Observer accessors.
   void AddObserver(NTPSnippetsServiceObserver* observer);
@@ -106,8 +124,6 @@ class NTPSnippetsService : public KeyedService {
   void OnJsonParsed(const std::string& snippets_json,
                     scoped_ptr<base::Value> parsed);
   void OnJsonError(const std::string& snippets_json, const std::string& error);
-
-  void FetchSnippetsImpl(const std::set<std::string>& hosts);
 
   // Expects a top-level dictionary containing a "recos" list, which will be
   // passed to LoadFromListValue().

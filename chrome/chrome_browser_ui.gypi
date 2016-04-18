@@ -501,6 +501,10 @@
       'browser/ui/webui/popular_sites_internals_message_handler.h',
       'browser/ui/webui/popular_sites_internals_ui.cc',
       'browser/ui/webui/popular_sites_internals_ui.h',
+      'browser/ui/webui/snippets_internals_message_handler.cc',
+      'browser/ui/webui/snippets_internals_message_handler.h',
+      'browser/ui/webui/snippets_internals_ui.cc',
+      'browser/ui/webui/snippets_internals_ui.h',
     ],
     # Cross-platform ash sources.
     'chrome_browser_ui_ash_sources': [

@@ -251,6 +251,7 @@ extern const char kChromeUISandboxHost[];
 extern const char kChromeUIContextualSearchPromoHost[];
 extern const char kChromeUIPhysicalWebHost[];
 extern const char kChromeUIPopularSitesInternalsHost[];
+extern const char kChromeUISnippetsInternalsHost[];
 #endif
 
 #if defined(OS_CHROMEOS)

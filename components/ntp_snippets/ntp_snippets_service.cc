@@ -68,7 +68,7 @@ base::TimeDelta GetFetchingIntervalFallback() {
 }
 
 // Extracts the hosts from |suggestions| and returns them in a set.
-std::set<std::string> GetSuggestionsHosts(
+std::set<std::string> GetSuggestionsHostsImpl(
     const SuggestionsProfile& suggestions) {
   std::set<std::string> hosts;
   for (int i = 0; i < suggestions.suggestions_size(); ++i) {
@@ -182,12 +182,37 @@ void NTPSnippetsService::Shutdown() {
 }
 
 void NTPSnippetsService::FetchSnippets() {
+  FetchSnippetsFromHosts(GetSuggestionsHosts());
+}
+
+void NTPSnippetsService::FetchSnippetsFromHosts(
+    const std::set<std::string>& hosts) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDontRestrict)) {
+    snippets_fetcher_->FetchSnippets(std::set<std::string>());
+    return;
+  }
+  if (!hosts.empty())
+    snippets_fetcher_->FetchSnippets(hosts);
+}
+
+void NTPSnippetsService::ClearSnippets() {
+  snippets_.clear();
+
+  StoreSnippetsToPrefs();
+
+  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
+                    NTPSnippetsServiceLoaded());
+}
+
+std::set<std::string> NTPSnippetsService::GetSuggestionsHosts() const {
   // |suggestions_service_| can be null in tests.
   if (!suggestions_service_)
-    return;
+    return std::set<std::string>();
 
-  FetchSnippetsImpl(GetSuggestionsHosts(
-      suggestions_service_->GetSuggestionsDataFromCache()));
+  // TODO(treib) this should just call GetSnippetHostsFromPrefs
+  return GetSuggestionsHostsImpl(
+      suggestions_service_->GetSuggestionsDataFromCache());
 }
 
 bool NTPSnippetsService::DiscardSnippet(const GURL& url) {
@@ -201,7 +226,15 @@ bool NTPSnippetsService::DiscardSnippet(const GURL& url) {
   snippets_.erase(it);
   StoreDiscardedSnippetsToPrefs();
   StoreSnippetsToPrefs();
+  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
+                    NTPSnippetsServiceLoaded());
   return true;
+}
+
+void NTPSnippetsService::ClearDiscardedSnippets() {
+  discarded_snippets_.clear();
+  StoreDiscardedSnippetsToPrefs();
+  FetchSnippets();
 }
 
 void NTPSnippetsService::AddObserver(NTPSnippetsServiceObserver* observer) {
@@ -215,7 +248,7 @@ void NTPSnippetsService::RemoveObserver(NTPSnippetsServiceObserver* observer) {
 
 void NTPSnippetsService::OnSuggestionsChanged(
     const SuggestionsProfile& suggestions) {
-  std::set<std::string> hosts = GetSuggestionsHosts(suggestions);
+  std::set<std::string> hosts = GetSuggestionsHostsImpl(suggestions);
   if (hosts == GetSnippetHostsFromPrefs())
     return;
 
@@ -233,7 +266,7 @@ void NTPSnippetsService::OnSuggestionsChanged(
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceLoaded());
 
-  FetchSnippetsImpl(hosts);
+  FetchSnippetsFromHosts(hosts);
 }
 
 void NTPSnippetsService::OnSnippetsDownloaded(
@@ -254,17 +287,6 @@ void NTPSnippetsService::OnJsonParsed(const std::string& snippets_json,
 void NTPSnippetsService::OnJsonError(const std::string& snippets_json,
                                      const std::string& error) {
   LOG(WARNING) << "Received invalid JSON (" << error << "): " << snippets_json;
-}
-
-void NTPSnippetsService::FetchSnippetsImpl(
-    const std::set<std::string>& hosts) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDontRestrict)) {
-    snippets_fetcher_->FetchSnippets(std::set<std::string>());
-    return;
-  }
-  if (!hosts.empty())
-    snippets_fetcher_->FetchSnippets(hosts);
 }
 
 bool NTPSnippetsService::LoadFromValue(const base::Value& value) {

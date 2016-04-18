@@ -184,6 +184,16 @@ TEST_F(NTPSnippetsServiceTest, Full) {
   }
 }
 
+TEST_F(NTPSnippetsServiceTest, Clear) {
+  std::string json_str(GetTestJson());
+
+  LoadFromJSONString(json_str);
+  EXPECT_EQ(service()->size(), 1u);
+
+  service()->ClearSnippets();
+  EXPECT_EQ(service()->size(), 0u);
+}
+
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {
   SetExpectJsonParseSuccess(false);
   LoadFromJSONString(GetInvalidJson());
@@ -237,6 +247,31 @@ TEST_F(NTPSnippetsServiceTest, Discard) {
   CreateSnippetsService();
   LoadFromJSONString(json_str);
   EXPECT_EQ(0u, service()->size());
+
+  // The snippet can be added again after clearing discarded snippets.
+  service()->ClearDiscardedSnippets();
+  EXPECT_EQ(0u, service()->size());
+  LoadFromJSONString(json_str);
+  EXPECT_EQ(1u, service()->size());
+}
+
+TEST_F(NTPSnippetsServiceTest, GetDiscarded) {
+  std::string json_str(
+      "{ \"recos\": [ { \"contentInfo\": { \"url\" : \"http://site.com\" }}]}");
+  LoadFromJSONString(json_str);
+
+  // For the test, we need the snippet to get discarded.
+  ASSERT_TRUE(service()->DiscardSnippet(GURL("http://site.com")));
+  const NTPSnippetsService::NTPSnippetStorage& snippets =
+      service()->discarded_snippets();
+  EXPECT_EQ(1u, snippets.size());
+  for (auto& snippet : snippets) {
+    EXPECT_EQ(GURL("http://site.com"), snippet->url());
+  }
+
+  // There should be no discarded snippet after clearing the list.
+  service()->ClearDiscardedSnippets();
+  EXPECT_EQ(0u, service()->discarded_snippets().size());
 }
 
 TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {

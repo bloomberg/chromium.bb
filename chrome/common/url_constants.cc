@@ -268,6 +268,7 @@ const char kChromeUISandboxHost[] = "sandbox";
 const char kChromeUIContextualSearchPromoHost[] = "contextual-search-promo";
 const char kChromeUIPhysicalWebHost[] = "physical-web";
 const char kChromeUIPopularSitesInternalsHost[] = "popular-sites-internals";
+const char kChromeUISnippetsInternalsHost[] = "snippets-internals";
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -655,6 +656,7 @@ const char* const kChromeHostURLs[] = {
 #if defined(OS_ANDROID)
   kChromeUINetExportHost,
   kChromeUIPopularSitesInternalsHost,
+  kChromeUISnippetsInternalsHost,
 #else  // non-mobile
   kChromeUICopresenceHost,
 #endif
