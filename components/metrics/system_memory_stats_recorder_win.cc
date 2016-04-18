@@ -39,7 +39,7 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
       break;
     }
     default:
-      NOTREACHED() << L"Received unexpected notification";
+      NOTREACHED() << "Received unexpected notification";
       break;
   }
 }
