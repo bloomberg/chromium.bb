@@ -406,10 +406,6 @@ bool LayoutTheme::isControlStyled(const ComputedStyle& style) const
     case TextFieldPart:
         return style.hasAuthorBackground() || style.hasAuthorBorder() || style.boxShadow();
 
-    case SliderHorizontalPart:
-    case SliderVerticalPart:
-        return style.boxShadow();
-
     default:
         return false;
     }
