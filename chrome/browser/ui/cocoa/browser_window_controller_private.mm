@@ -465,7 +465,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)configurePresentationModeController {
-  BOOL fullscreenForTab = [self isFullscreenForTabContent];
+  BOOL fullscreenForTab = [self isFullscreenForTabContentOrExtension];
   BOOL kioskMode =
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
   BOOL showDropdown =
@@ -849,7 +849,7 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)adjustUIForEnteringFullscreen {
   fullscreen_mac::SlidingStyle style;
-  if ([self isFullscreenForTabContent]) {
+  if ([self isFullscreenForTabContentOrExtension]) {
     style = fullscreen_mac::OMNIBOX_TABS_NONE;
   } else if (enteringPresentationMode_ || ![self shouldShowFullscreenToolbar]) {
     style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
@@ -1245,10 +1245,11 @@ willPositionSheet:(NSWindow*)sheet
   return nil;
 }
 
-- (BOOL)isFullscreenForTabContent {
-  return browser_->exclusive_access_manager()
-                 ->fullscreen_controller()
-                 ->IsWindowFullscreenForTabOrPending();
+- (BOOL)isFullscreenForTabContentOrExtension {
+  FullscreenController* controller =
+      browser_->exclusive_access_manager()->fullscreen_controller();
+  return controller->IsWindowFullscreenForTabOrPending() ||
+         controller->IsExtensionFullscreenOrPending();
 }
 
 @end  // @implementation BrowserWindowController(Private)

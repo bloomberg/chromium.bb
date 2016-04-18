@@ -197,8 +197,8 @@ class WebContents;
 // it when we are entering fullscreen.
 - (void)adjustUIForEnteringFullscreen;
 
-// Returns YES if the fullscreen is for tab content.
-- (BOOL)isFullscreenForTabContent;
+// Returns YES if the fullscreen is for tab content or an extension.
+- (BOOL)isFullscreenForTabContentOrExtension;
 
 #endif
 
