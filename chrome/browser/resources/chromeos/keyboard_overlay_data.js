@@ -15861,6 +15861,7 @@ var keyboardOverlayData = {
     'f4<>SEARCH': 'keyboardOverlayFullScreenKeyLabel',
     'f5<>CTRL<>SEARCH': 'keyboardOverlayTakeScreenshot',
     'f5<>CTRL<>SEARCH<>SHIFT': 'keyboardOverlayScreenshotRegion',
+    'f5<>ALT<>CTRL<>SEARCH' : 'keyboardOverlayScreenshotWindow',
     'f5<>SEARCH': 'keyboardOverlaySwitchWinKeyLabel',
     'f6<>ALT<>SEARCH': 'keyboardOverlayDecreaseKeyBrightness',
     'f6<>ALT<>CTRL<>SEARCH': 'keyboardOverlayMagnifierDecreaseZoom',
