@@ -57,7 +57,8 @@ TEST(FilterOperationsTest, mapRectDropShadow)
 TEST(FilterOperationsTest, mapRectBoxReflect)
 {
     FilterOperations ops;
-    ops.operations().append(BoxReflectFilterOperation::create(VerticalReflection, 100));
+    ops.operations().append(BoxReflectFilterOperation::create(
+        BoxReflection(BoxReflection::VerticalReflection, 100)));
     EXPECT_TRUE(ops.hasFilterThatMovesPixels());
 
     // original IntRect(0, 0, 10, 10) + reflection IntRect(90, 90, 10, 10)
@@ -70,7 +71,8 @@ TEST(FilterOperationsTest, mapRectDropShadowAndBoxReflect)
     // important that the bounds be filtered in the correct order.
     FilterOperations ops;
     ops.operations().append(DropShadowFilterOperation::create(IntPoint(100, 200), 0, Color::black));
-    ops.operations().append(BoxReflectFilterOperation::create(VerticalReflection, 50));
+    ops.operations().append(BoxReflectFilterOperation::create(
+        BoxReflection(BoxReflection::VerticalReflection, 50)));
     EXPECT_TRUE(ops.hasFilterThatMovesPixels());
     EXPECT_EQ(FloatRect(0, -160, 110, 370),
         ops.mapRect(FloatRect(0, 0, 10, 10)));

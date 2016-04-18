@@ -173,13 +173,6 @@ enum WindRule {
     RULE_EVENODD = SkPath::kEvenOdd_FillType
 };
 
-enum ReflectionDirection {
-    // Vertically flipped (to appear above or below).
-    VerticalReflection,
-    // Horizontally flipped (to appear to the left or right).
-    HorizontalReflection,
-};
-
 PLATFORM_EXPORT String compositeOperatorName(CompositeOperator, WebBlendMode);
 PLATFORM_EXPORT bool parseCompositeAndBlendOperator(const String&, CompositeOperator&, WebBlendMode&);
 

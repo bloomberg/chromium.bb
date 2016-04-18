@@ -34,11 +34,11 @@
 #include "platform/heap/Handle.h"
 
 class SkImageFilter;
-class SkMatrix;
 
 namespace blink {
 
 class AffineTransform;
+class BoxReflection;
 class FilterEffect;
 class FilterOperations;
 class Image;
@@ -55,9 +55,7 @@ public:
     PassRefPtr<SkImageFilter> transformColorSpace(
         SkImageFilter* input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);
 
-    SkMatrix matrixForBoxReflectFilter(ReflectionDirection, float offset);
-    PassRefPtr<SkImageFilter> buildBoxReflectFilter(
-        ReflectionDirection, float offset, Image* maskImage, SkImageFilter* input);
+    PassRefPtr<SkImageFilter> buildBoxReflectFilter(const BoxReflection&, PassRefPtr<SkImageFilter> input);
 };
 
 } // namespace blink

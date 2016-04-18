@@ -6,7 +6,7 @@
 #define FEBoxReflect_h
 
 #include "platform/PlatformExport.h"
-#include "platform/graphics/GraphicsTypes.h"
+#include "platform/graphics/BoxReflection.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
@@ -14,7 +14,10 @@ namespace blink {
 // Used to implement the -webkit-box-reflect property as a filter.
 class PLATFORM_EXPORT FEBoxReflect final : public FilterEffect {
 public:
-    static FEBoxReflect* create(Filter*, ReflectionDirection, float offset);
+    static FEBoxReflect* create(Filter* filter, const BoxReflection& reflection)
+    {
+        return new FEBoxReflect(filter, reflection);
+    }
 
     // FilterEffect implementation
     FloatRect mapRect(const FloatRect&, bool forward = true) const final;
@@ -22,11 +25,10 @@ public:
     PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) final;
 
 private:
-    FEBoxReflect(Filter*, ReflectionDirection, float offset);
+    FEBoxReflect(Filter*, const BoxReflection&);
     ~FEBoxReflect() final;
 
-    ReflectionDirection m_reflectionDirection;
-    float m_offset;
+    BoxReflection m_reflection;
 };
 
 } // namespace blink

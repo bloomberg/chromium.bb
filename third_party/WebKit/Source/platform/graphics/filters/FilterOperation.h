@@ -28,8 +28,8 @@
 
 #include "platform/Length.h"
 #include "platform/PlatformExport.h"
+#include "platform/graphics/BoxReflection.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
@@ -322,13 +322,12 @@ DEFINE_FILTER_OPERATION_TYPE_CASTS(DropShadowFilterOperation, DROP_SHADOW);
 
 class PLATFORM_EXPORT BoxReflectFilterOperation : public FilterOperation {
 public:
-    static BoxReflectFilterOperation* create(ReflectionDirection direction, float offset)
+    static BoxReflectFilterOperation* create(const BoxReflection& reflection)
     {
-        return new BoxReflectFilterOperation(direction, offset);
+        return new BoxReflectFilterOperation(reflection);
     }
 
-    ReflectionDirection direction() const { return m_direction; }
-    float offset() const { return m_offset; }
+    const BoxReflection& reflection() const { return m_reflection; }
 
     bool affectsOpacity() const override { return true; }
     bool movesPixels() const override { return true; }
@@ -338,15 +337,13 @@ private:
     FilterOperation* blend(const FilterOperation* from, double progress) const override;
     bool operator==(const FilterOperation&) const override;
 
-    BoxReflectFilterOperation(ReflectionDirection direction, float offset)
+    BoxReflectFilterOperation(const BoxReflection& reflection)
         : FilterOperation(BOX_REFLECT)
-        , m_direction(direction)
-        , m_offset(offset)
+        , m_reflection(reflection)
     {
     }
 
-    ReflectionDirection m_direction;
-    float m_offset;
+    BoxReflection m_reflection;
 };
 DEFINE_FILTER_OPERATION_TYPE_CASTS(BoxReflectFilterOperation, BOX_REFLECT);
 

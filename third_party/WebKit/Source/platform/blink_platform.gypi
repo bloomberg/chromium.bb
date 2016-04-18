@@ -550,6 +550,8 @@
       'graphics/BitmapImage.h',
       'graphics/BitmapImageMetrics.cpp',
       'graphics/BitmapImageMetrics.h',
+      'graphics/BoxReflection.cpp',
+      'graphics/BoxReflection.h',
       'graphics/Canvas2DImageBufferSurface.h',
       'graphics/Canvas2DLayerBridge.cpp',
       'graphics/Canvas2DLayerBridge.h',

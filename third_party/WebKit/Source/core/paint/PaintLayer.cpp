@@ -2647,23 +2647,23 @@ FilterOperations PaintLayer::computeFilterOperations(const ComputedStyle& style)
         // TODO(jbroman): Incorporate the mask image.
         const auto* reflectStyle = style.boxReflect();
         FloatRect frameRect(toLayoutBox(layoutObject())->frameRect());
-        ReflectionDirection direction = VerticalReflection;
+        BoxReflection::ReflectionDirection direction = BoxReflection::VerticalReflection;
         float offset = 0;
         switch (reflectStyle->direction()) {
         case ReflectionAbove:
-            direction = VerticalReflection;
+            direction = BoxReflection::VerticalReflection;
             offset = -floatValueForLength(reflectStyle->offset(), frameRect.height());
             break;
         case ReflectionBelow:
-            direction = VerticalReflection;
+            direction = BoxReflection::VerticalReflection;
             offset = 2 * frameRect.height() + floatValueForLength(reflectStyle->offset(), frameRect.height());
             break;
         case ReflectionLeft:
-            direction = HorizontalReflection;
+            direction = BoxReflection::HorizontalReflection;
             offset = -floatValueForLength(reflectStyle->offset(), frameRect.width());
             break;
         case ReflectionRight:
-            direction = HorizontalReflection;
+            direction = BoxReflection::HorizontalReflection;
             offset = 2 * frameRect.width() + floatValueForLength(reflectStyle->offset(), frameRect.width());
             break;
         }
@@ -2674,9 +2674,10 @@ FilterOperations PaintLayer::computeFilterOperations(const ComputedStyle& style)
         // SkLocalMatrixImageFilter, but simpler).
         // The rect used here should match the one used in FilterPainter.
         LayoutRect filterInputBounds = physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint());
-        offset -= 2 * (direction == VerticalReflection ? filterInputBounds.y() : filterInputBounds.x()).toFloat();
+        offset -= 2 * (direction == BoxReflection::VerticalReflection ? filterInputBounds.y() : filterInputBounds.x()).toFloat();
 
-        filterOperations.operations().append(BoxReflectFilterOperation::create(direction, offset));
+        BoxReflection reflection(direction, offset);
+        filterOperations.operations().append(BoxReflectFilterOperation::create(reflection));
     }
     return computeFilterOperationsHandleReferenceFilters(filterOperations, style.effectiveZoom(), enclosingNode());
 }

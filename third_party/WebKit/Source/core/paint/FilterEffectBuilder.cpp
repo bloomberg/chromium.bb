@@ -231,7 +231,7 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
         }
         case FilterOperation::BOX_REFLECT: {
             BoxReflectFilterOperation* boxReflectOperation = toBoxReflectFilterOperation(filterOperation);
-            effect = FEBoxReflect::create(parentFilter, boxReflectOperation->direction(), boxReflectOperation->offset());
+            effect = FEBoxReflect::create(parentFilter, boxReflectOperation->reflection());
             break;
         }
         default:

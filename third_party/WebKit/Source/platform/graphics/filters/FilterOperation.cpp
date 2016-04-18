@@ -192,17 +192,7 @@ FilterOperation* DropShadowFilterOperation::blend(const FilterOperation* from, d
 
 FloatRect BoxReflectFilterOperation::mapRect(const FloatRect& rect) const
 {
-    // Reflection about any line is self-inverse, so this matrix works for both
-    // forward and reverse mapping.
-    SkMatrix flipMatrix = SkiaImageFilterBuilder().matrixForBoxReflectFilter(
-        m_direction, m_offset);
-
-    SkRect reflection(rect);
-    flipMatrix.mapRect(&reflection);
-
-    FloatRect result = rect;
-    result.unite(reflection);
-    return result;
+    return m_reflection.mapRect(rect);
 }
 
 FilterOperation* BoxReflectFilterOperation::blend(const FilterOperation* from, double progress) const
@@ -216,7 +206,7 @@ bool BoxReflectFilterOperation::operator==(const FilterOperation& o) const
     if (!isSameType(o))
         return false;
     const auto& other = static_cast<const BoxReflectFilterOperation&>(o);
-    return m_direction == other.m_direction && m_offset == other.m_offset;
+    return m_reflection == other.m_reflection;
 }
 
 } // namespace blink
