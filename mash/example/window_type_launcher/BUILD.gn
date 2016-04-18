@@ -24,6 +24,7 @@ executable("window_type_launcher") {
     "//base:base_static",
     "//build/config/sanitizers:deps",
     "//components/mus/public/interfaces",
+    "//mash/public/interfaces",
     "//mash/session/public/interfaces",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
@@ -54,7 +55,7 @@ copy("window_type_launcher_resources") {
     "$root_out_dir/views_mus_resources.pak",
   ]
   outputs = [
-    "$root_out_dir/window_type_launcher_exe_res/resources/views_mus_resources.pak",
+    "$root_out_dir/Mojo Applications/window_type_launcher_exe/resources/views_mus_resources.pak",
   ]
   deps = [
     "//ui/views/mus:resources",

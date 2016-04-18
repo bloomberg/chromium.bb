@@ -6,8 +6,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
-    "catalog.mojom",
-    "entry.mojom",
-    "resolver.mojom",
+    "launchable.mojom",
   ]
 }

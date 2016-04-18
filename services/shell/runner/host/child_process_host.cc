@@ -125,6 +125,7 @@ void ChildProcessHost::DidStart(const ProcessReadyCallback& callback) {
   } else {
     LOG(ERROR) << "Failed to start child process";
     mojo_ipc_channel_.reset();
+    callback.Run(base::kNullProcessId);
   }
 }
 

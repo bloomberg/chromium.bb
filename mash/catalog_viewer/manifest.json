@@ -1,5 +1,9 @@
 {
+  "manifest_version":  1,
   "name": "mojo:catalog_viewer",
   "display_name": "Catalog Viewer",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {
+    "provided": { "launchable": ["mash::mojom::Launchable"] },
+    "required": { "*": { "interfaces": [ "*" ] } }
+  }
 }

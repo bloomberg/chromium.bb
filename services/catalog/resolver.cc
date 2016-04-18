@@ -14,11 +14,11 @@
 namespace catalog {
 namespace {
 
-void AddEntryToMap(const Entry& entry,
-                   mojo::Map<mojo::String, mojom::CatalogEntryPtr>* map) {
-  mojom::CatalogEntryPtr entry_ptr(mojom::CatalogEntry::New());
+void AddEntry(const Entry& entry, mojo::Array<mojom::EntryPtr>* ary) {
+  mojom::EntryPtr entry_ptr(mojom::Entry::New());
+  entry_ptr->name = entry.name();
   entry_ptr->display_name = entry.display_name();
-  (*map)[entry.name()] = std::move(entry_ptr);
+  ary->push_back(std::move(entry_ptr));
 }
 
 }  // namespace
@@ -68,9 +68,13 @@ void Resolver::CacheReady(EntryCache* cache) {
 ////////////////////////////////////////////////////////////////////////////////
 // Resolver, mojom::Resolver:
 
-void Resolver::ResolveInterfaces(mojo::Array<mojo::String> interfaces,
-                                 const ResolveInterfacesCallback& callback) {
-  // TODO(beng): implement.
+void Resolver::ResolveClass(const mojo::String& clazz,
+                            const ResolveClassCallback& callback) {
+  mojo::Array<mojom::EntryPtr> entries;
+  for (const auto& entry : *system_catalog_)
+    if (entry.second->ProvidesClass(clazz))
+      entries.push_back(mojom::Entry::From(*entry.second));
+  callback.Run(std::move(entries));
 }
 
 void Resolver::ResolveMIMEType(const mojo::String& mime_type,
@@ -120,11 +124,11 @@ void Resolver::GetEntries(mojo::Array<mojo::String> names,
                           const GetEntriesCallback& callback) {
   DCHECK(system_catalog_);
 
-  mojo::Map<mojo::String, mojom::CatalogEntryPtr> entries;
+  mojo::Array<mojom::EntryPtr> entries;
   if (names.is_null()) {
     // TODO(beng): user catalog.
     for (const auto& entry : *system_catalog_)
-      AddEntryToMap(*entry.second, &entries);
+      AddEntry(*entry.second, &entries);
   } else {
     std::vector<mojo::String> names_vec = names.PassStorage();
     for (const std::string& name : names_vec) {
@@ -134,7 +138,7 @@ void Resolver::GetEntries(mojo::Array<mojo::String> names,
         entry = (*system_catalog_)[name].get();
       else
         continue;
-      AddEntryToMap(*entry, &entries);
+      AddEntry(*entry, &entries);
     }
   }
   callback.Run(std::move(entries));

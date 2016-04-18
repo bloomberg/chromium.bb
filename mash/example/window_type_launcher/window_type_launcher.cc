@@ -165,8 +165,10 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
                                public views::MenuDelegate,
                                public views::ContextMenuController {
  public:
-  explicit WindowTypeLauncherView(shell::Connector* connector)
-      : connector_(connector),
+  explicit WindowTypeLauncherView(WindowTypeLauncher* window_type_launcher,
+                                  shell::Connector* connector)
+      : window_type_launcher_(window_type_launcher),
+        connector_(connector),
         create_button_(
             new views::LabelButton(this, base::ASCIIToUTF16("Create Window"))),
         panel_button_(
@@ -250,7 +252,9 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
     AddViewToLayout(layout, show_web_notification_);
     set_context_menu_controller(this);
   }
-  ~WindowTypeLauncherView() override {}
+  ~WindowTypeLauncherView() override {
+    window_type_launcher_->RemoveWindow(GetWidget());
+  }
 
  private:
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
@@ -354,6 +358,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
     }
   }
 
+  WindowTypeLauncher* window_type_launcher_;
   shell::Connector* connector_;
   views::LabelButton* create_button_;
   views::LabelButton* panel_button_;
@@ -380,21 +385,44 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
 WindowTypeLauncher::WindowTypeLauncher() {}
 WindowTypeLauncher::~WindowTypeLauncher() {}
 
+void WindowTypeLauncher::RemoveWindow(views::Widget* window) {
+  auto it = std::find(windows_.begin(), windows_.end(), window);
+  DCHECK(it != windows_.end());
+  windows_.erase(it);
+  if (windows_.empty())
+    base::MessageLoop::current()->QuitWhenIdle();
+}
+
 void WindowTypeLauncher::Initialize(shell::Connector* connector,
                                     const shell::Identity& identity,
                                     uint32_t id) {
+  connector_ = connector;
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
 
   views::WindowManagerConnection::Create(connector);
-
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.delegate = new WindowTypeLauncherView(connector);
-  widget->Init(params);
-  widget->Show();
 }
 
-bool WindowTypeLauncher::ShellConnectionLost() {
-  base::MessageLoop::current()->QuitWhenIdle();
-  return false;
+bool WindowTypeLauncher::AcceptConnection(shell::Connection* connection) {
+  connection->AddInterface<mash::mojom::Launchable>(this);
+  return true;
+}
+
+void WindowTypeLauncher::Launch(uint32_t what, mash::mojom::LaunchMode how) {
+  bool reuse = how == mash::mojom::LaunchMode::REUSE ||
+               how == mash::mojom::LaunchMode::DEFAULT;
+  if (reuse && !windows_.empty()) {
+    windows_.back()->Activate();
+    return;
+  }
+  views::Widget* window = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.delegate = new WindowTypeLauncherView(this, connector_);
+  window->Init(params);
+  window->Show();
+  windows_.push_back(window);
+}
+
+void WindowTypeLauncher::Create(shell::Connection* connection,
+                                mash::mojom::LaunchableRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }

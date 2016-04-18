@@ -4,11 +4,9 @@
 
 module catalog.mojom;
 
-struct CatalogEntry {
-  string display_name;
-};
+import "services/catalog/public/interfaces/entry.mojom";
 
 interface Catalog {
   // If |names| is null, all available entries are returned.
-  GetEntries(array<string>? names) => (map<string, CatalogEntry> entries);
+  GetEntries(array<string>? names) => (array<Entry> entries);
 };

@@ -186,7 +186,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
   void WindowClosing() override {
     instance_ = NULL;
     if (operation_ == QUIT_ON_CLOSE)
-      base::MessageLoopForUI::current()->QuitWhenIdle();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
   gfx::Size GetPreferredSize() const override { return gfx::Size(800, 300); }
 

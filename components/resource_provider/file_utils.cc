@@ -49,13 +49,6 @@ base::FilePath GetPathForApplicationName(const std::string& application_name) {
   if (end_of_name != std::string::npos)
     path.erase(path.begin() + end_of_name, path.end());
 
-  // TODO(beng): I'm adding this because there is a collision between the
-  //             executable name in the exe dir and the resource package dir on
-  //             non-Windows systems. Arbitrary exes should probably load their
-  //             resources themselves rather than use resource provider.
-  if (is_exe)
-    path += "_res";
-
   if (!IsPathNameValid(path))
     return base::FilePath();
 

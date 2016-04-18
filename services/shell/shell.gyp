@@ -9,6 +9,7 @@
     'variables': {
       'mojom_files': [
         '../catalog/public/interfaces/catalog.mojom',
+        '../catalog/public/interfaces/entry.mojom',
         '../catalog/public/interfaces/resolver.mojom',
         'public/interfaces/capabilities.mojom',
         'public/interfaces/connector.mojom',

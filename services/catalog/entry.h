@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "services/catalog/public/interfaces/entry.mojom.h"
 #include "services/shell/public/cpp/capabilities.h"
 
 namespace base {
@@ -32,6 +33,8 @@ class Entry {
   // caller must assume ownership of the tree of Entrys by enumerating
   // applications().
   static scoped_ptr<Entry> Deserialize(const base::DictionaryValue& value);
+
+  bool ProvidesClass(const std::string& clazz) const;
 
   bool operator==(const Entry& other) const;
   bool operator<(const Entry& other) const;
@@ -71,6 +74,12 @@ template <>
 struct TypeConverter<shell::mojom::ResolveResultPtr, catalog::Entry> {
   static shell::mojom::ResolveResultPtr Convert(const catalog::Entry& input);
 };
-}
+
+template<>
+struct TypeConverter<catalog::mojom::EntryPtr, catalog::Entry> {
+  static catalog::mojom::EntryPtr Convert(const catalog::Entry& input);
+};
+
+}  // namespace mojo
 
 #endif  // SERVICES_CATALOG_ENTRY_H_

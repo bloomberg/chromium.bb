@@ -41,9 +41,11 @@ class TaskViewerContents : public views::WidgetDelegateView,
                            public views::ButtonListener,
                            public shell::mojom::InstanceListener {
  public:
-  TaskViewerContents(shell::mojom::InstanceListenerRequest request,
+  TaskViewerContents(TaskViewer* task_viewer,
+                     shell::mojom::InstanceListenerRequest request,
                      catalog::mojom::CatalogPtr catalog)
-      : binding_(this, std::move(request)),
+      : task_viewer_(task_viewer),
+        binding_(this, std::move(request)),
         catalog_(std::move(catalog)),
         table_view_(nullptr),
         table_view_parent_(nullptr),
@@ -67,7 +69,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
   }
   ~TaskViewerContents() override {
     table_view_->SetModel(nullptr);
-    base::MessageLoop::current()->QuitWhenIdle();
+    task_viewer_->RemoveWindow(GetWidget());
   }
 
  private:
@@ -207,14 +209,15 @@ class TaskViewerContents : public views::WidgetDelegateView,
     instances_.push_back(base::WrapUnique(new InstanceInfo(id, url, pid)));
   }
 
-  void OnGotCatalogEntries(
-      mojo::Map<mojo::String, catalog::mojom::CatalogEntryPtr> entries) {
+  void OnGotCatalogEntries(mojo::Array<catalog::mojom::EntryPtr> entries) {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
-      auto entry_it = entries.find((*it)->url);
-      if (entry_it != entries.end()) {
-        (*it)->name = entry_it->second->display_name;
-        observer_->OnItemsChanged(
-            static_cast<int>(it - instances_.begin()), 1);
+      for (auto& entry : entries) {
+        if (entry->name == (*it)->url) {
+          (*it)->name = entry->display_name;
+          observer_->OnItemsChanged(
+              static_cast<int>(it - instances_.begin()), 1);
+          break;
+        }
       }
     }
   }
@@ -251,6 +254,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
     return columns;
   }
 
+  TaskViewer* task_viewer_;
   mojo::Binding<shell::mojom::InstanceListener> binding_;
   catalog::mojom::CatalogPtr catalog_;
 
@@ -271,29 +275,58 @@ class TaskViewerContents : public views::WidgetDelegateView,
 TaskViewer::TaskViewer() {}
 TaskViewer::~TaskViewer() {}
 
+void TaskViewer::RemoveWindow(views::Widget* widget) {
+  auto it = std::find(windows_.begin(), windows_.end(), widget);
+  DCHECK(it != windows_.end());
+  windows_.erase(it);
+  if (windows_.empty())
+    base::MessageLoop::current()->QuitWhenIdle();
+}
+
 void TaskViewer::Initialize(shell::Connector* connector,
                             const shell::Identity& identity,
                             uint32_t id) {
+  connector_ = connector;
   tracing_.Initialize(connector, identity.name());
 
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
   views::WindowManagerConnection::Create(connector);
+}
+
+bool TaskViewer::AcceptConnection(shell::Connection* connection) {
+  connection->AddInterface<mojom::Launchable>(this);
+  return true;
+}
+
+void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
+  bool reuse = how == mojom::LaunchMode::REUSE ||
+               how == mojom::LaunchMode::DEFAULT;
+  if (reuse && !windows_.empty()) {
+    windows_.back()->Activate();
+    return;
+  }
 
   shell::mojom::ShellPtr shell;
-  connector->ConnectToInterface("mojo:shell", &shell);
+  connector_->ConnectToInterface("mojo:shell", &shell);
 
   shell::mojom::InstanceListenerPtr listener;
   shell::mojom::InstanceListenerRequest request = GetProxy(&listener);
   shell->AddInstanceListener(std::move(listener));
 
   catalog::mojom::CatalogPtr catalog;
-  connector->ConnectToInterface("mojo:catalog", &catalog);
+  connector_->ConnectToInterface("mojo:catalog", &catalog);
 
   TaskViewerContents* task_viewer = new TaskViewerContents(
-      std::move(request), std::move(catalog));
+      this, std::move(request), std::move(catalog));
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
       task_viewer, nullptr, gfx::Rect(10, 10, 500, 500));
   window->Show();
+  windows_.push_back(window);
+}
+
+void TaskViewer::Create(shell::Connection* connection,
+                        mojom::LaunchableRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace task_viewer

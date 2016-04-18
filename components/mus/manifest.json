@@ -1,7 +1,7 @@
 {
   "manifest_version":  1,
   "name": "mojo:mus",
-  "display_name": "Mandoline UI Services",
+  "display_name": "UI Service",
   "capabilities": {
     "required": {
       "*": { "interfaces": [ "*" ] },

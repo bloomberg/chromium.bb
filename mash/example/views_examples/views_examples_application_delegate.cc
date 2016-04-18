@@ -22,14 +22,23 @@ void ViewsExamplesApplicationDelegate::Initialize(
     uint32_t id) {
   tracing_.Initialize(connector, identity.name());
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
-
   views::WindowManagerConnection::Create(connector);
-
-  views::examples::ShowExamplesWindow(views::examples::DO_NOTHING_ON_CLOSE,
-                                      nullptr, nullptr);
 }
 
 bool ViewsExamplesApplicationDelegate::AcceptConnection(
     shell::Connection* connection) {
-  return false;
+  connection->AddInterface<mash::mojom::Launchable>(this);
+  return true;
+}
+
+void ViewsExamplesApplicationDelegate::Launch(uint32_t what,
+                                              mash::mojom::LaunchMode how) {
+  views::examples::ShowExamplesWindow(views::examples::QUIT_ON_CLOSE,
+                                      nullptr, nullptr);
+}
+
+void ViewsExamplesApplicationDelegate::Create(
+    shell::Connection* connection,
+    mash::mojom::LaunchableRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }

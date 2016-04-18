@@ -120,7 +120,7 @@ class Shell::Instance : public mojom::Connector,
       allow_any_application_(capability_spec.required.count("*") == 1),
       pid_receiver_binding_(this),
       weak_factory_(this) {
-    if (identity_.name() == kShellName)
+    if (identity_.name() == kShellName || identity_.name() == kCatalogName)
       pid_ = base::Process::Current().Pid();
     DCHECK_NE(mojom::kInvalidInstanceID, id_);
   }
@@ -376,6 +376,10 @@ class Shell::Instance : public mojom::Connector,
   }
 
   void PIDAvailable(base::ProcessId pid) {
+    if (pid == base::kNullProcessId) {
+      shell_->OnInstanceError(this);
+      return;
+    }
     pid_ = pid;
     shell_->NotifyPIDAvailable(id_, pid_);
   }

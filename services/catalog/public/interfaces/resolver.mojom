@@ -4,12 +4,14 @@
 
 module catalog.mojom;
 
+import "services/catalog/public/interfaces/entry.mojom";
+
 // Resolves various things to Mojo names that can be passed to mojo::Shell's
 // ConnectToApplication().
 interface Resolver {
-  // Returns the mojo: name of the service that exports to the caller every
-  // interface in |interfaces|.
-  ResolveInterfaces(array<string> interfaces) => (string resolved_mojo_name);
+  // Returns the entry(ies) for applications that export to the caller the
+  // specified class.
+  ResolveClass(string clazz) => (array<Entry> entries);
 
   // Returns the mojo: name of the service that will handle content of type
   // |mime_type|.

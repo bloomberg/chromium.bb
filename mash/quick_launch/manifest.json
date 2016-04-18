@@ -1,5 +1,9 @@
 {
+  "manifest_version":  1,
   "name": "mojo:quick_launch",
-  "display_name": "Quick Launch",
-  "capabilities": { "*": ["*"] }
+  "display_name": "Quick Launch Bar",
+  "capabilities": {
+    "provided": { "launchable": ["mash::mojom::Launchable"] },
+    "required": { "*": { "interfaces": [ "*" ] } }
+  }
 }

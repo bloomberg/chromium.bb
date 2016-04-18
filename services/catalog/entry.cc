@@ -200,6 +200,10 @@ scoped_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
   return entry;
 }
 
+bool Entry::ProvidesClass(const std::string& clazz) const {
+  return capabilities_.provided.find(clazz) != capabilities_.provided.end();
+}
+
 bool Entry::operator==(const Entry& other) const {
   return other.name_ == name_ && other.qualifier_ == qualifier_ &&
          other.display_name_ == display_name_ &&
@@ -228,6 +232,16 @@ shell::mojom::ResolveResultPtr
   result->capabilities =
       shell::mojom::CapabilitySpec::From(input.capabilities());
   result->package_url = mojo::util::FilePathToFileURL(package.path()).spec();
+  return result;
+}
+
+// static
+catalog::mojom::EntryPtr
+    TypeConverter<catalog::mojom::EntryPtr, catalog::Entry>::Convert(
+        const catalog::Entry& input) {
+  catalog::mojom::EntryPtr result(catalog::mojom::Entry::New());
+  result->name = input.name();
+  result->display_name = input.display_name();
   return result;
 }
 

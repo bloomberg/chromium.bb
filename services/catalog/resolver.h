@@ -43,8 +43,8 @@ class Resolver : public mojom::Resolver,
       std::map<std::string, std::pair<std::string, std::string>>;
 
   // mojom::Resolver:
-  void ResolveInterfaces(mojo::Array<mojo::String> interfaces,
-                         const ResolveInterfacesCallback& callback) override;
+  void ResolveClass(const mojo::String& clazz,
+                    const ResolveClassCallback& callback) override;
   void ResolveMIMEType(const mojo::String& mime_type,
                        const ResolveMIMETypeCallback& callback) override;
   void ResolveProtocolScheme(

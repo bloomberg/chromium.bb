@@ -35,8 +35,10 @@ using shell::mojom::InstanceInfoPtr;
 class CatalogViewerContents : public views::WidgetDelegateView,
                               public ui::TableModel {
  public:
-  CatalogViewerContents(catalog::mojom::CatalogPtr catalog)
-      : catalog_(std::move(catalog)),
+  CatalogViewerContents(CatalogViewer* catalog_viewer,
+                        catalog::mojom::CatalogPtr catalog)
+      : catalog_viewer_(catalog_viewer),
+        catalog_(std::move(catalog)),
         table_view_(nullptr),
         table_view_parent_(nullptr),
         observer_(nullptr),
@@ -57,7 +59,7 @@ class CatalogViewerContents : public views::WidgetDelegateView,
   }
   ~CatalogViewerContents() override {
     table_view_->SetModel(nullptr);
-    base::MessageLoop::current()->QuitWhenIdle();
+    catalog_viewer_->RemoveWindow(GetWidget());
   }
 
  private:
@@ -115,11 +117,10 @@ class CatalogViewerContents : public views::WidgetDelegateView,
     observer_ = observer;
   }
 
-  void OnGotCatalogEntries(
-      mojo::Map<mojo::String, catalog::mojom::CatalogEntryPtr> entries) {
+  void OnGotCatalogEntries(mojo::Array<catalog::mojom::EntryPtr> entries) {
     entries_.clear();
     for (auto& entry : entries)
-      entries_.push_back(Entry(entry.second->display_name, entry.first));
+      entries_.push_back(Entry(entry->display_name, entry->name));
     observer_->OnModelChanged();
   }
 
@@ -147,6 +148,7 @@ class CatalogViewerContents : public views::WidgetDelegateView,
     return columns;
   }
 
+  CatalogViewer* catalog_viewer_;
   catalog::mojom::CatalogPtr catalog_;
 
   views::TableView* table_view_;
@@ -165,21 +167,49 @@ class CatalogViewerContents : public views::WidgetDelegateView,
 CatalogViewer::CatalogViewer() {}
 CatalogViewer::~CatalogViewer() {}
 
+void CatalogViewer::RemoveWindow(views::Widget* window) {
+  auto it = std::find(windows_.begin(), windows_.end(), window);
+  DCHECK(it != windows_.end());
+  windows_.erase(it);
+  if (windows_.empty())
+    base::MessageLoop::current()->QuitWhenIdle();
+}
+
 void CatalogViewer::Initialize(shell::Connector* connector,
                                const shell::Identity& identity,
                                uint32_t id) {
+  connector_ = connector;
   tracing_.Initialize(connector, identity.name());
 
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
   views::WindowManagerConnection::Create(connector);
+}
 
+bool CatalogViewer::AcceptConnection(shell::Connection* connection) {
+  connection->AddInterface<mojom::Launchable>(this);
+  return true;
+}
+
+void CatalogViewer::Launch(uint32_t what, mojom::LaunchMode how) {
+  bool reuse = how == mojom::LaunchMode::REUSE ||
+               how == mojom::LaunchMode::DEFAULT;
+  if (reuse && !windows_.empty()) {
+    windows_.back()->Activate();
+    return;
+  }
   catalog::mojom::CatalogPtr catalog;
-  connector->ConnectToInterface("mojo:catalog", &catalog);
+  connector_->ConnectToInterface("mojo:catalog", &catalog);
 
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
-      new CatalogViewerContents(std::move(catalog)), nullptr,
+      new CatalogViewerContents(this, std::move(catalog)), nullptr,
       gfx::Rect(25, 25, 500, 600));
   window->Show();
+  windows_.push_back(window);
+}
+
+void CatalogViewer::Create(shell::Connection* connection,
+                           mojom::LaunchableRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace catalog_viewer

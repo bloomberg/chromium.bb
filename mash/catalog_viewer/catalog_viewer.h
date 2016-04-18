@@ -10,26 +10,46 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "mash/public/interfaces/launchable.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 
 namespace views {
 class AuraInit;
+class Widget;
 }
 
 namespace mash {
 namespace catalog_viewer {
 
-class CatalogViewer : public shell::ShellClient {
+class CatalogViewer : public shell::ShellClient,
+                      public mojom::Launchable,
+                      public shell::InterfaceFactory<mojom::Launchable> {
  public:
   CatalogViewer();
   ~CatalogViewer() override;
+
+  void RemoveWindow(views::Widget* window);
 
  private:
   // shell::ShellClient:
   void Initialize(shell::Connector* connector,
                   const shell::Identity& identity,
                   uint32_t id) override;
+  bool AcceptConnection(shell::Connection* connection) override;
+
+  // mojom::Launchable:
+  void Launch(uint32_t what, mojom::LaunchMode how) override;
+
+  // shell::InterfaceFactory<mojom::Launchable>:
+  void Create(shell::Connection* connection,
+              mojom::LaunchableRequest request) override;
+
+
+  shell::Connector* connector_ = nullptr;
+  mojo::BindingSet<mojom::Launchable> bindings_;
+  std::vector<views::Widget*> windows_;
 
   mojo::TracingImpl tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
