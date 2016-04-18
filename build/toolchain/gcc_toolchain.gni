@@ -475,6 +475,7 @@ template("clang_toolchain") {
                              "toolchain_cpu",
                              "toolchain_os",
                              "use_gold",
+                             "strip",
                            ])
   }
 }
