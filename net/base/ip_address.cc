@@ -13,6 +13,10 @@
 
 namespace {
 
+// The prefix for IPv6 mapped IPv4 addresses.
+// https://tools.ietf.org/html/rfc4291#section-2.5.5.2
+const uint8_t kIPv4MappedPrefix[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF};
+
 bool IPAddressPrefixCheck(const std::vector<uint8_t>& ip_address,
                           const unsigned char* ip_prefix,
                           size_t prefix_length_in_bits) {
@@ -152,7 +156,7 @@ bool IPAddress::IsZero() const {
 }
 
 bool IPAddress::IsIPv4MappedIPv6() const {
-  return net::IsIPv4Mapped(ip_address_);
+  return IsIPv6() && IPAddressStartsWith(*this, kIPv4MappedPrefix);
 }
 
 std::string IPAddress::ToString() const {
@@ -222,11 +226,23 @@ std::string IPAddressToPackedString(const IPAddress& address) {
 }
 
 IPAddress ConvertIPv4ToIPv4MappedIPv6(const IPAddress& address) {
-  return IPAddress(ConvertIPv4NumberToIPv6Number(address.bytes()));
+  DCHECK(address.IsIPv4());
+  // IPv4-mapped addresses are formed by:
+  // <80 bits of zeros>  + <16 bits of ones> + <32-bit IPv4 address>.
+  std::vector<uint8_t> bytes;
+  bytes.reserve(16);
+  bytes.insert(bytes.end(), std::begin(kIPv4MappedPrefix),
+               std::end(kIPv4MappedPrefix));
+  bytes.insert(bytes.end(), address.bytes().begin(), address.bytes().end());
+  return IPAddress(bytes);
 }
 
 IPAddress ConvertIPv4MappedIPv6ToIPv4(const IPAddress& address) {
-  return IPAddress(ConvertIPv4MappedToIPv4(address.bytes()));
+  DCHECK(address.IsIPv4MappedIPv6());
+
+  return IPAddress(std::vector<uint8_t>(
+      address.bytes().begin() + arraysize(kIPv4MappedPrefix),
+      address.bytes().end()));
 }
 
 bool IPAddressMatchesPrefix(const IPAddress& ip_address,

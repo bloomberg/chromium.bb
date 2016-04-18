@@ -82,43 +82,6 @@ TEST(IpAddressNumberTest, ParseIPLiteralToNumber_IPv6) {
   EXPECT_EQ("1:abcd::3:4:ff", IPAddressToString(number));
 }
 
-// Test mapping an IPv4 address to an IPv6 address.
-TEST(IpAddressNumberTest, ConvertIPv4NumberToIPv6Number) {
-  IPAddressNumber ipv4_number;
-  EXPECT_TRUE(ParseIPLiteralToNumber("192.168.0.1", &ipv4_number));
-
-  IPAddressNumber ipv6_number =
-      ConvertIPv4NumberToIPv6Number(ipv4_number);
-
-  // ::ffff:192.168.0.1
-  EXPECT_EQ("0,0,0,0,0,0,0,0,0,0,255,255,192,168,0,1",
-            DumpIPNumber(ipv6_number));
-  EXPECT_EQ("::ffff:c0a8:1", IPAddressToString(ipv6_number));
-}
-
-TEST(IpAddressNumberTest, IsIPv4Mapped) {
-  IPAddressNumber ipv4_number;
-  EXPECT_TRUE(ParseIPLiteralToNumber("192.168.0.1", &ipv4_number));
-  EXPECT_FALSE(IsIPv4Mapped(ipv4_number));
-
-  IPAddressNumber ipv6_number;
-  EXPECT_TRUE(ParseIPLiteralToNumber("::1", &ipv6_number));
-  EXPECT_FALSE(IsIPv4Mapped(ipv6_number));
-
-  IPAddressNumber ipv4mapped_number;
-  EXPECT_TRUE(ParseIPLiteralToNumber("::ffff:0101:1", &ipv4mapped_number));
-  EXPECT_TRUE(IsIPv4Mapped(ipv4mapped_number));
-}
-
-TEST(IpAddressNumberTest, ConvertIPv4MappedToIPv4) {
-  IPAddressNumber ipv4mapped_number;
-  EXPECT_TRUE(ParseIPLiteralToNumber("::ffff:0101:1", &ipv4mapped_number));
-  IPAddressNumber expected;
-  EXPECT_TRUE(ParseIPLiteralToNumber("1.1.0.1", &expected));
-  IPAddressNumber result = ConvertIPv4MappedToIPv4(ipv4mapped_number);
-  EXPECT_EQ(expected, result);
-}
-
 }  // anonymous namespace
 
 }  // namespace net
