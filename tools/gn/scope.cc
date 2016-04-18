@@ -5,7 +5,7 @@
 #include "tools/gn/scope.h"
 
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/template.h"
 
@@ -64,8 +64,6 @@ Scope::Scope(const Scope* parent)
 }
 
 Scope::~Scope() {
-  STLDeleteContainerPairSecondPointers(target_defaults_.begin(),
-                                       target_defaults_.end());
 }
 
 const Value* Scope::GetValue(const base::StringPiece& ident,
@@ -315,12 +313,9 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
       }
     }
 
-    // Be careful to delete any pointer we're about to clobber.
-    Scope** dest_scope = &dest->target_defaults_[current_name];
-    if (*dest_scope)
-      delete *dest_scope;
-    *dest_scope = new Scope(settings_);
-    pair.second->NonRecursiveMergeTo(*dest_scope, options, node_for_err,
+    std::unique_ptr<Scope>& dest_scope = dest->target_defaults_[current_name];
+    dest_scope = base::WrapUnique(new Scope(settings_));
+    pair.second->NonRecursiveMergeTo(dest_scope.get(), options, node_for_err,
                                      "<SHOULDN'T HAPPEN>", err);
   }
 
@@ -412,19 +407,19 @@ Scope* Scope::MakeTargetDefaults(const std::string& target_type) {
   if (GetTargetDefaults(target_type))
     return nullptr;
 
-  Scope** dest = &target_defaults_[target_type];
-  if (*dest) {
+  std::unique_ptr<Scope>& dest = target_defaults_[target_type];
+  if (dest) {
     NOTREACHED();  // Already set.
-    return *dest;
+    return dest.get();
   }
-  *dest = new Scope(settings_);
-  return *dest;
+  dest = base::WrapUnique(new Scope(settings_));
+  return dest.get();
 }
 
 const Scope* Scope::GetTargetDefaults(const std::string& target_type) const {
   NamedScopeMap::const_iterator found = target_defaults_.find(target_type);
   if (found != target_defaults_.end())
-    return found->second;
+    return found->second.get();
   if (containing())
     return containing()->GetTargetDefaults(target_type);
   return nullptr;

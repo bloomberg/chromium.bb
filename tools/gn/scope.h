@@ -333,10 +333,9 @@ class Scope {
       RecordMap;
   RecordMap values_;
 
-  // Owning pointers. Note that this can't use string pieces since the names
-  // are constructed from Values which might be deallocated before this goes
-  // out of scope.
-  typedef base::hash_map<std::string, Scope*> NamedScopeMap;
+  // Note that this can't use string pieces since the names are constructed from
+  // Values which might be deallocated before this goes out of scope.
+  typedef base::hash_map<std::string, std::unique_ptr<Scope>> NamedScopeMap;
   NamedScopeMap target_defaults_;
 
   // Null indicates not set and that we should fallback to the containing
