@@ -439,6 +439,88 @@
       <arg name="height" type="int"/>
     </request>
 
+    <request name="set_max_size">
+      <description summary="set the maximum size">
+	Set a maximum size for the window.
+
+	The client can specify a maximum size so that the compositor does
+	not try to configure the window beyond this size.
+
+	The width and height arguments are in window geometry coordinates.
+	See set_window_geometry.
+
+	Values set in this way are double-buffered. They will get applied
+	on the next commit.
+
+	The compositor can use this information to allow or disallow
+	different states like maximize or fullscreen and draw accurate
+	animations.
+
+	Similarly, a tiling window manager may use this information to
+	place and resize client windows in a more effective way.
+
+	The client should not rely on the compositor to obey the maximum
+	size. The compositor may decide to ignore the values set by the
+	client and request a larger size.
+
+	If never set, or a value of zero in the request, means that the
+	client has no expected maximum size in the given dimension.
+	As a result, a client wishing to reset the maximum size
+	to an unspecified state can use zero for width and height in the
+	request.
+
+	Requesting a maximum size to be smaller than the minimum size of
+	a surface is illegal and will result in a protocol error.
+
+	The width and height must be greater than or equal to zero. Using
+	strictly negative values for width and height will result in a
+	protocol error.
+      </description>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </request>
+
+    <request name="set_min_size">
+      <description summary="set the minimum size">
+	Set a minimum size for the window.
+
+	The client can specify a minimum size so that the compositor does
+	not try to configure the window below this size.
+
+	The width and height arguments are in window geometry coordinates.
+	See set_window_geometry.
+
+	Values set in this way are double-buffered. They will get applied
+	on the next commit.
+
+	The compositor can use this information to allow or disallow
+	different states like maximize or fullscreen and draw accurate
+	animations.
+
+	Similarly, a tiling window manager may use this information to
+	place and resize client windows in a more effective way.
+
+	The client should not rely on the compositor to obey the minimum
+	size. The compositor may decide to ignore the values set by the
+	client and request a smaller size.
+
+	If never set, or a value of zero in the request, means that the
+	client has no expected minimum size in the given dimension.
+	As a result, a client wishing to reset the minimum size
+	to an unspecified state can use zero for width and height in the
+	request.
+
+	Requesting a minimum size to be larger than the maximum size of
+	a surface is illegal and will result in a protocol error.
+
+	The width and height must be greater than or equal to zero. Using
+	strictly negative values for width and height will result in a
+	protocol error.
+      </description>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </request>
+
     <request name="set_maximized">
       <description summary="maximize the window">
 	Maximize the surface.
