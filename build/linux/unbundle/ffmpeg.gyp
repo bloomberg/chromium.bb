@@ -41,6 +41,17 @@
           'USE_SYSTEM_FFMPEG',
         ],
       },
+      'variables': {
+        'headers_root_path': '.',
+        'header_filenames': [
+          'libavcodec/avcodec.h',
+          'libavformat/avformat.h',
+          'libavutil/imgutils.h',
+        ],
+      },
+      'includes': [
+        '../../build/shim_headers.gypi',
+      ],
       'link_settings': {
         'ldflags': [
           '<!@(pkg-config --libs-only-L --libs-only-other libavcodec libavformat libavutil)',
