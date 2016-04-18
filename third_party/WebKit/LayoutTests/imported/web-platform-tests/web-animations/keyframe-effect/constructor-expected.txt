@@ -69,6 +69,18 @@ FAIL a KeyframeEffectReadOnly can be constructed with a Keyframe sequence where 
 FAIL a KeyframeEffectReadOnly constructed with a Keyframe sequence where lesser shorthand precedes greater shorthand roundtrips KeyframeEffectReadOnly is not defined
 FAIL a KeyframeEffectReadOnly can be constructed with a Keyframe sequence where greater shorthand precedes lesser shorthand KeyframeEffectReadOnly is not defined
 FAIL a KeyframeEffectReadOnly constructed with a Keyframe sequence where greater shorthand precedes lesser shorthand roundtrips KeyframeEffectReadOnly is not defined
+FAIL Invalid easing [a blank easing] in KeyframeSequence should be thrown assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target, su..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
+FAIL Invalid easing [an unrecognized easing] in KeyframeSequence should be thrown assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target, su..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
+FAIL Invalid easing [an 'initial' easing] in KeyframeSequence should be thrown assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target, su..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
+FAIL Invalid easing [an 'inherit' easing] in KeyframeSequence should be thrown assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target, su..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
+FAIL Invalid easing [a variable easing] in KeyframeSequence should be thrown assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target, su..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
+FAIL Invalid easing [a multi-value easing] in KeyframeSequence should be thrown assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target, su..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
 FAIL a KeyframeEffectReadOnly constructed without any KeyframeEffectOptions object KeyframeEffectReadOnly is not defined
 FAIL a KeyframeEffectReadOnly constructed by an empty KeyframeEffectOptions object KeyframeEffectReadOnly is not defined
 FAIL a KeyframeEffectReadOnly constructed by a normal KeyframeEffectOptions object KeyframeEffectReadOnly is not defined
@@ -77,9 +89,6 @@ FAIL a KeyframeEffectReadOnly constructed by +Infinity KeyframeEffectReadOnly is
 FAIL a KeyframeEffectReadOnly constructed by an Infinity duration KeyframeEffectReadOnly is not defined
 FAIL a KeyframeEffectReadOnly constructed by an auto duration KeyframeEffectReadOnly is not defined
 FAIL a KeyframeEffectReadOnly constructed by an Infinity iterations KeyframeEffectReadOnly is not defined
-FAIL a KeyframeEffectReadOnly constructed by a negative Infinity iterations KeyframeEffectReadOnly is not defined
-FAIL a KeyframeEffectReadOnly constructed by a NaN iterations KeyframeEffectReadOnly is not defined
-FAIL a KeyframeEffectReadOnly constructed by a negative iterations KeyframeEffectReadOnly is not defined
 FAIL a KeyframeEffectReadOnly constructed by an auto fill KeyframeEffectReadOnly is not defined
 FAIL a KeyframeEffectReadOnly constructed by a forwards fill KeyframeEffectReadOnly is not defined
 FAIL Invalid KeyframeEffectReadOnly option by -Infinity assert_throws: function "function () {
@@ -101,6 +110,33 @@ FAIL Invalid KeyframeEffectReadOnly option by a negative duration assert_throws:
       new KeyframeEffectReadOnly(target,
   ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
 FAIL Invalid KeyframeEffectReadOnly option by a string duration assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by a negative Infinity iterations assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by a NaN iterations assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by a negative iterations assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by a blank easing assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by an unrecognized easing assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by an 'initial' easing assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by an 'inherit' easing assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by a variable easing assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by a multi-value easing assert_throws: function "function () {
       new KeyframeEffectReadOnly(target,
   ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
 PASS KeyframeEffect constructor creates an AnimationEffectTiming timing object 

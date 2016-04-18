@@ -7,9 +7,6 @@ FAIL values of getComputedTiming() when a KeyframeEffectReadOnly is constructed 
 FAIL values of getComputedTiming() when a KeyframeEffectReadOnly is constructed by an Infinity duration KeyframeEffectReadOnly is not defined
 FAIL values of getComputedTiming() when a KeyframeEffectReadOnly is constructed by an auto duration KeyframeEffectReadOnly is not defined
 FAIL values of getComputedTiming() when a KeyframeEffectReadOnly is constructed by an Infinity iterations KeyframeEffectReadOnly is not defined
-FAIL values of getComputedTiming() when a KeyframeEffectReadOnly is constructed by a negative Infinity iterations KeyframeEffectReadOnly is not defined
-FAIL values of getComputedTiming() when a KeyframeEffectReadOnly is constructed by a NaN iterations KeyframeEffectReadOnly is not defined
-FAIL values of getComputedTiming() when a KeyframeEffectReadOnly is constructed by a negative iterations KeyframeEffectReadOnly is not defined
 FAIL values of getComputedTiming() when a KeyframeEffectReadOnly is constructed by an auto fill KeyframeEffectReadOnly is not defined
 FAIL values of getComputedTiming() when a KeyframeEffectReadOnly is constructed by a forwards fill KeyframeEffectReadOnly is not defined
 FAIL getComputedTiming().activeDuration for an empty KeyframeEffectOptions object KeyframeEffectReadOnly is not defined
@@ -27,7 +24,6 @@ FAIL getComputedTiming().activeDuration for an infinite duration and zero iterat
 FAIL getComputedTiming().activeDuration for an infinite duration and fractional iteration count KeyframeEffectReadOnly is not defined
 FAIL getComputedTiming().activeDuration for an infinite duration and infinite iteration count KeyframeEffectReadOnly is not defined
 FAIL getComputedTiming().activeDuration for an infinite duration and zero iteration count KeyframeEffectReadOnly is not defined
-FAIL getComputedTiming().activeDuration for a non-zero duration and invalid iteration count KeyframeEffectReadOnly is not defined
 FAIL getComputedTiming().endTime for an empty KeyframeEffectOptions object KeyframeEffectReadOnly is not defined
 FAIL getComputedTiming().endTime for a non-zero duration and default iteration count KeyframeEffectReadOnly is not defined
 FAIL getComputedTiming().endTime for a non-zero duration and non-default iteration count KeyframeEffectReadOnly is not defined

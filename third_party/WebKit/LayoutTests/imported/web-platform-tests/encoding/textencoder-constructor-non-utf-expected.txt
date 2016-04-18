@@ -1,0 +1,82 @@
+This is a testharness.js-based test.
+PASS Encoding argument supported for decode: utf-8 
+PASS Encoding argument not considered for encode: utf-8 
+PASS Encoding argument supported for decode: ibm866 
+FAIL Encoding argument not considered for encode: ibm866 Failed to construct 'TextEncoder': The encoding provided ('ibm866') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-8859-2 
+FAIL Encoding argument not considered for encode: iso-8859-2 Failed to construct 'TextEncoder': The encoding provided ('iso-8859-2') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-8859-3 
+FAIL Encoding argument not considered for encode: iso-8859-3 Failed to construct 'TextEncoder': The encoding provided ('iso-8859-3') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-8859-4 
+FAIL Encoding argument not considered for encode: iso-8859-4 Failed to construct 'TextEncoder': The encoding provided ('iso-8859-4') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-8859-5 
+FAIL Encoding argument not considered for encode: iso-8859-5 Failed to construct 'TextEncoder': The encoding provided ('iso-8859-5') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-8859-6 
+FAIL Encoding argument not considered for encode: iso-8859-6 Failed to construct 'TextEncoder': The encoding provided ('iso-8859-6') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-8859-7 
+FAIL Encoding argument not considered for encode: iso-8859-7 Failed to construct 'TextEncoder': The encoding provided ('iso-8859-7') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-8859-8 
+FAIL Encoding argument not considered for encode: iso-8859-8 Failed to construct 'TextEncoder': The encoding provided ('iso-8859-8') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-8859-8-i 
+FAIL Encoding argument not considered for encode: iso-8859-8-i Failed to construct 'TextEncoder': The encoding provided ('iso-8859-8-i') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-8859-10 
+FAIL Encoding argument not considered for encode: iso-8859-10 Failed to construct 'TextEncoder': The encoding provided ('iso-8859-10') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-8859-13 
+FAIL Encoding argument not considered for encode: iso-8859-13 Failed to construct 'TextEncoder': The encoding provided ('iso-8859-13') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-8859-14 
+FAIL Encoding argument not considered for encode: iso-8859-14 Failed to construct 'TextEncoder': The encoding provided ('iso-8859-14') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-8859-15 
+FAIL Encoding argument not considered for encode: iso-8859-15 Failed to construct 'TextEncoder': The encoding provided ('iso-8859-15') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-8859-16 
+FAIL Encoding argument not considered for encode: iso-8859-16 Failed to construct 'TextEncoder': The encoding provided ('iso-8859-16') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: koi8-r 
+FAIL Encoding argument not considered for encode: koi8-r Failed to construct 'TextEncoder': The encoding provided ('koi8-r') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: koi8-u 
+FAIL Encoding argument not considered for encode: koi8-u Failed to construct 'TextEncoder': The encoding provided ('koi8-u') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: macintosh 
+FAIL Encoding argument not considered for encode: macintosh Failed to construct 'TextEncoder': The encoding provided ('macintosh') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: windows-874 
+FAIL Encoding argument not considered for encode: windows-874 Failed to construct 'TextEncoder': The encoding provided ('windows-874') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: windows-1250 
+FAIL Encoding argument not considered for encode: windows-1250 Failed to construct 'TextEncoder': The encoding provided ('windows-1250') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: windows-1251 
+FAIL Encoding argument not considered for encode: windows-1251 Failed to construct 'TextEncoder': The encoding provided ('windows-1251') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: windows-1252 
+FAIL Encoding argument not considered for encode: windows-1252 Failed to construct 'TextEncoder': The encoding provided ('windows-1252') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: windows-1253 
+FAIL Encoding argument not considered for encode: windows-1253 Failed to construct 'TextEncoder': The encoding provided ('windows-1253') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: windows-1254 
+FAIL Encoding argument not considered for encode: windows-1254 Failed to construct 'TextEncoder': The encoding provided ('windows-1254') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: windows-1255 
+FAIL Encoding argument not considered for encode: windows-1255 Failed to construct 'TextEncoder': The encoding provided ('windows-1255') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: windows-1256 
+FAIL Encoding argument not considered for encode: windows-1256 Failed to construct 'TextEncoder': The encoding provided ('windows-1256') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: windows-1257 
+FAIL Encoding argument not considered for encode: windows-1257 Failed to construct 'TextEncoder': The encoding provided ('windows-1257') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: windows-1258 
+FAIL Encoding argument not considered for encode: windows-1258 Failed to construct 'TextEncoder': The encoding provided ('windows-1258') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: x-mac-cyrillic 
+FAIL Encoding argument not considered for encode: x-mac-cyrillic Failed to construct 'TextEncoder': The encoding provided ('x-mac-cyrillic') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: gbk 
+FAIL Encoding argument not considered for encode: gbk Failed to construct 'TextEncoder': The encoding provided ('gbk') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: gb18030 
+FAIL Encoding argument not considered for encode: gb18030 Failed to construct 'TextEncoder': The encoding provided ('gb18030') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: big5 
+FAIL Encoding argument not considered for encode: big5 Failed to construct 'TextEncoder': The encoding provided ('big5') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: euc-jp 
+FAIL Encoding argument not considered for encode: euc-jp Failed to construct 'TextEncoder': The encoding provided ('euc-jp') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: iso-2022-jp 
+FAIL Encoding argument not considered for encode: iso-2022-jp Failed to construct 'TextEncoder': The encoding provided ('iso-2022-jp') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: shift_jis 
+FAIL Encoding argument not considered for encode: shift_jis Failed to construct 'TextEncoder': The encoding provided ('shift_jis') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+PASS Encoding argument supported for decode: euc-kr 
+FAIL Encoding argument not considered for encode: euc-kr Failed to construct 'TextEncoder': The encoding provided ('euc-kr') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+FAIL Encoding argument not considered for encode: replacement Failed to construct 'TextEncoder': The encoding label provided ('replacement') is invalid.
+PASS Encoding argument supported for decode: utf-16be 
+FAIL Encoding argument not considered for encode: utf-16be assert_equals: expected "utf-8" but got "utf-16be"
+PASS Encoding argument supported for decode: utf-16le 
+FAIL Encoding argument not considered for encode: utf-16le assert_equals: expected "utf-8" but got "utf-16le"
+PASS Encoding argument supported for decode: x-user-defined 
+FAIL Encoding argument not considered for encode: x-user-defined Failed to construct 'TextEncoder': The encoding provided ('x-user-defined') is not one of 'utf-8', 'utf-16', or 'utf-16be'.
+Harness: the test ran to completion.
+

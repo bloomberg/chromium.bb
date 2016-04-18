@@ -14,12 +14,12 @@ PASS classList[index] must be undefined for out-of-range index
 PASS classList[index] must be undefined for negative index 
 FAIL className should contain initial markup whitespace assert_equals: expected " " but got ""
 PASS classList should contain initial markup whitespace 
-PASS .contains(empty_string) must throw a SYNTAX_ERR 
+FAIL .contains(empty_string) must return false Failed to execute 'contains' on 'DOMTokenList': The token provided must not be empty.
 PASS .add(empty_string) must throw a SYNTAX_ERR 
 PASS .remove(empty_string) must throw a SYNTAX_ERR 
 PASS .toggle(empty_string) must throw a SYNTAX_ERR 
 FAIL .replace with empty_string must throw a SYNTAX_ERR assert_throws: function "function () { elem.classList.replace('', 'foo'); }" threw object "TypeError: elem.classList.replace is not a function" that is not a DOMException SYNTAX_ERR: property "code" is equal to undefined, expected 12
-PASS .contains(string_with_spaces) must throw an INVALID_CHARACTER_ERR 
+FAIL .contains(string_with_spaces) must return false Failed to execute 'contains' on 'DOMTokenList': The token provided ('a b') contains HTML space characters, which are not valid in tokens.
 PASS .add(string_with_spaces) must throw an INVALID_CHARACTER_ERR 
 PASS .remove(string_with_spaces) must throw an INVALID_CHARACTER_ERR 
 PASS .toggle(string_with_spaces) must throw an INVALID_CHARACTER_ERR 

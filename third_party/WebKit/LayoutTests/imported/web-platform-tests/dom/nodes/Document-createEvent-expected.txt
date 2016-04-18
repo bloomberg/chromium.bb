@@ -74,207 +74,227 @@ PASS createEvent('UIEVENTS') should be initialized correctly.
 PASS Should throw NOT_SUPPORTED_ERR for unrecognized arguments 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "AnimationEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "AnimationEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "AnimationEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "AnimationPlayerEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "AnimationPlayerEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "AnimationPlayerEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ApplicationCacheErrorEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ApplicationCacheErrorEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ApplicationCacheErrorEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "AudioProcessingEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "AudioProcessingEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "AudioProcessingEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "AutocompleteErrorEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "AutocompleteErrorEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "AutocompleteErrorEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "BeforeInstallPromptEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "BeforeInstallPromptEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "BeforeInstallPromptEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "BeforeUnloadEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "BeforeUnloadEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "BeforeUnloadEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "BlobEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "BlobEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "BlobEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ClipboardEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ClipboardEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ClipboardEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "CloseEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "CloseEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "CloseEvents" 
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "CommandEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "CommandEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "CompositionEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "CompositionEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "CompositionEvents" 
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "DataContainerEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "DataContainerEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "DeviceLightEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "DeviceLightEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "DeviceLightEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "DeviceMotionEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "DeviceMotionEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "DeviceMotionEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "DeviceOrientationEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "DeviceOrientationEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "DeviceOrientationEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "DragEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "DragEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "DragEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ErrorEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ErrorEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ErrorEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ExtendableEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ExtendableEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ExtendableEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ExtendableMessageEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ExtendableMessageEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ExtendableMessageEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "FetchEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "FetchEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "FetchEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "FocusEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "FocusEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "FocusEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "FontFaceSetLoadEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "FontFaceSetLoadEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "FontFaceSetLoadEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "GamepadEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "GamepadEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "GamepadEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "GeofencingEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "GeofencingEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "GeofencingEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "HashChangeEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "HashChangeEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "HashChangeEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "IDBVersionChangeEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "IDBVersionChangeEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "IDBVersionChangeEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "InstallEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "InstallEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "InstallEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "KeyEvent" 
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "KeyEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "KeyEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "MIDIConnectionEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MIDIConnectionEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MIDIConnectionEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "MIDIMessageEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MIDIMessageEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MIDIMessageEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "MediaEncryptedEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MediaEncryptedEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MediaEncryptedEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "MediaKeyEvent" 
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MediaKeyEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MediaKeyEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "MediaKeyMessageEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MediaKeyMessageEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MediaKeyMessageEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "MediaQueryListEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MediaQueryListEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MediaQueryListEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "MediaStreamEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MediaStreamEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MediaStreamEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "MediaStreamTrackEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MediaStreamTrackEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MediaStreamTrackEvents" 
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "MouseScrollEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MouseScrollEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "MutationEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-FAIL Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MutationEvent" assert_throws: function "function () {
+FAIL Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "MutationEvents" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "NotificationEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "NotificationEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "NotificationEvents" 
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "NotifyPaintEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "NotifyPaintEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "OfflineAudioCompletionEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "OfflineAudioCompletionEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "OfflineAudioCompletionEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "OrientationEvent" 
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "OrientationEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "OrientationEvents" 
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PageTransition" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PageTransitions" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PageTransitionEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PageTransitionEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PageTransitionEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PointerEvent" 
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PointerEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PointerEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PopStateEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PopStateEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PopStateEvents" 
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PopUpEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PopUpEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PresentationConnectionAvailableEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PresentationConnectionAvailableEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PresentationConnectionAvailableEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PresentationConnectionCloseEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PresentationConnectionCloseEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PresentationConnectionCloseEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ProgressEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ProgressEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ProgressEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PromiseRejectionEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PromiseRejectionEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PromiseRejectionEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PushEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PushEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PushEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "RTCDTMFToneChangeEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "RTCDTMFToneChangeEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "RTCDTMFToneChangeEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "RTCDataChannelEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "RTCDataChannelEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "RTCDataChannelEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "RTCIceCandidateEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "RTCIceCandidateEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "RTCIceCandidateEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "RelatedEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "RelatedEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "RelatedEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ResourceProgressEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ResourceProgressEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ResourceProgressEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "SVGEvent" 
-FAIL Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SVGEvent" assert_throws: function "function () {
+FAIL Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SVGEvents" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "SVGZoomEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-FAIL Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SVGZoomEvent" assert_throws: function "function () {
+FAIL Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SVGZoomEvents" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ScrollAreaEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ScrollAreaEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "SecurityPolicyViolationEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SecurityPolicyViolationEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SecurityPolicyViolationEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ServicePortConnectEvent" 
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ServicePortConnectEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ServicePortConnectEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ServiceWorkerMessageEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ServiceWorkerMessageEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ServiceWorkerMessageEvents" 
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "SimpleGestureEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SimpleGestureEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "SpeechRecognitionError" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SpeechRecognitionError" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SpeechRecognitionErrors" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "SpeechRecognitionEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SpeechRecognitionEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SpeechRecognitionEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "SpeechSynthesisEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SpeechSynthesisEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SpeechSynthesisEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "StorageEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "StorageEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "StorageEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "SyncEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SyncEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SyncEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "TextEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "TextEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "TextEvents" 
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "TimeEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "TimeEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "TrackEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "TrackEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "TrackEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "TransitionEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "TransitionEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "TransitionEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "WebGLContextEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "WebGLContextEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "WebGLContextEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "WebKitAnimationEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "WebKitAnimationEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "WebKitAnimationEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "WebKitTransitionEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "WebKitTransitionEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "WebKitTransitionEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "WheelEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
-PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "WheelEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "WheelEvents" 
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "XULCommandEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "XULCommandEvents" 
 Harness: the test ran to completion.
 

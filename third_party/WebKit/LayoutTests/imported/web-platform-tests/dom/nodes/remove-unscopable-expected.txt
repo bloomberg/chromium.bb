@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL remove() should be unscopable Cannot read property 'remove' of undefined
+Harness: the test ran to completion.
+

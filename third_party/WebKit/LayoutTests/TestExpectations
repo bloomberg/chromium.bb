@@ -520,27 +520,13 @@ crbug.com/526898 imported/web-platform-tests/html/rendering/non-replaced-element
 crbug.com/108417 imported/web-platform-tests/html/rendering/non-replaced-elements/tables/table-border-1.html [ Failure ]
 crbug.com/490511 imported/web-platform-tests/html/rendering/non-replaced-elements/the-hr-element-0/color.html [ Failure Pass ]
 crbug.com/490511 imported/web-platform-tests/html/rendering/non-replaced-elements/the-hr-element-0/width.html [ Failure Pass ]
+crbug.com/490511 imported/web-platform-tests/html/rendering/replaced-elements/embedded-content-rendering-rules/canvas-fallback.html [ Failure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure ]
 crbug.com/525889 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/compile-error-in-setInterval.html [ Failure ]
 crbug.com/525889 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/compile-error-in-setTimeout.html [ Failure ]
 crbug.com/525889 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/runtime-error-in-setInterval.html [ Failure ]
 crbug.com/525889 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/runtime-error-in-setTimeout.html [ Failure ]
-
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-010.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/events/event-dispatch/test-003.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/events/retargeting-relatedtarget/test-003.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/html-elements-and-their-shadow-trees/test-001.html [ Failure Crash ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/html-elements-and-their-shadow-trees/test-002.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/html-elements-and-their-shadow-trees/test-003.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/html-elements-and-their-shadow-trees/test-004.html  [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/custom-pseudo-elements/test-001.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/styles/css-variables/test-001.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/styles/test-003.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/styles/test-010.html [ Failure Crash ]
-crbug.com/413731 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/ranges-and-selections/test-002.html [ Failure Crash ]
 
 crbug.com/602483 fast/repaint/delete-into-nested-block.html [ Pass Failure ]
 
@@ -550,12 +536,6 @@ crbug.com/552532 [ Win10 ] plugins/focus.html [ Pass Crash ]
 crbug.com/552532 [ Win10 ] plugins/tabindex.html [ Pass Crash ]
 
 crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
-
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/lower-boundary-encapsulation/test-004.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-001.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/ownerdocument-002.html [ Failure ]
-crbug.com/505364 crbug.com/520616 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]
 
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.html [ Skip ]
@@ -584,6 +564,11 @@ crbug.com/404597 fast/forms/long-text-in-input.html [ Failure ]
 crbug.com/404597 fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 crbug.com/404597 [ Win ] fast/selectors/007a.html [ Pass Failure ]
 
+# Web Components related tests (Shadow DOM, Custom Elements) failures.
+crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/styles/test-003.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/focus-navigation/test-002.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/focus-navigation/test-003.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/focus-navigation/test-004.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
 
 crbug.com/517840 imported/web-platform-tests/webrtc/rtcpeerconnection/rtcpeerconnection-idl.html [ Failure Timeout ]
@@ -1525,7 +1510,6 @@ crbug.com/601166 [ Mac10.9 ]  ietestcenter/css3/text/textshadow-003.htm [ Failur
 crbug.com/601166 [ Mac10.9 ]  ietestcenter/css3/text/textshadow-004.htm [ Failure ]
 
 crbug.com/600261 imported/web-platform-tests/mediacapture-streams/GUM-deny.html [ Failure ]
-crbug.com/600261 imported/web-platform-tests/mediacapture-streams/MediaDevices-getUserMedia.html [ Failure ]
 crbug.com/600261 imported/web-platform-tests/mediacapture-streams/MediaStream-MediaElement-srcObject.html [ Failure ]
 
 crbug.com/593679 virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ NeedsManualRebaseline ]
@@ -1538,4 +1522,3 @@ crbug.com/600248 imported/web-platform-tests/web-animations/keyframe-effect/getC
 crbug.com/600248 imported/web-platform-tests/web-animations/keyframe-effect/getComputedTiming-currentIteration.html [ Crash Failure ]
 crbug.com/600248 imported/web-platform-tests/web-animations/animation-effect-timing/endDelay.html [ Failure ]
 crbug.com/600248 imported/web-platform-tests/web-animations/animation/constructor.html [ Failure Timeout ]
-crbug.com/600248 imported/web-platform-tests/web-animations/animation-node/idlharness.html [ Failure Timeout ]

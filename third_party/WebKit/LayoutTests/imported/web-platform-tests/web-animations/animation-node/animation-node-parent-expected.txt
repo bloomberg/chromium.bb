@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL AnimationNode.parent is null if animation node does not have a parent animation group Animation is not defined
-FAIL AnimationNode.parent returns parent animation group of this animation node AnimationGroup is not defined
-FAIL AnimationNode.parent returns parent animation group of this animation node. The group has several children nodes AnimationGroup is not defined
-Harness: the test ran to completion.
-

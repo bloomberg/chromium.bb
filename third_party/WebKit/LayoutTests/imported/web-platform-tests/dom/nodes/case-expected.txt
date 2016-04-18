@@ -2,27 +2,27 @@ This is a testharness.js-based test.
 PASS createElement abc 
 PASS setAttribute abc 
 PASS getAttribute abc 
-PASS getElementsByTagName a:abc 
+FAIL getElementsByTagName a:abc assert_array_equals: lengths differ, expected 0 got 3
 PASS getElementsByTagName abc 
 PASS createElement Abc 
 PASS setAttribute Abc 
 PASS getAttribute Abc 
-PASS getElementsByTagName a:Abc 
+FAIL getElementsByTagName a:Abc assert_array_equals: lengths differ, expected 0 got 3
 PASS getElementsByTagName Abc 
 PASS createElement ABC 
 PASS setAttribute ABC 
 PASS getAttribute ABC 
-PASS getElementsByTagName a:ABC 
+FAIL getElementsByTagName a:ABC assert_array_equals: lengths differ, expected 0 got 3
 PASS getElementsByTagName ABC 
 PASS createElement ä 
 PASS setAttribute ä 
 PASS getAttribute ä 
-PASS getElementsByTagName a:ä 
+FAIL getElementsByTagName a:ä assert_array_equals: lengths differ, expected 0 got 3
 PASS getElementsByTagName ä 
 FAIL createElement Ä assert_equals: expected "Ä" but got "ä"
 FAIL setAttribute Ä assert_equals: expected "Ä" but got "ä"
 PASS getAttribute Ä 
-FAIL getElementsByTagName a:Ä assert_array_equals: property 0, expected Element node <Ä></Ä> but got Element node <ä></ä>
+FAIL getElementsByTagName a:Ä assert_array_equals: lengths differ, expected 0 got 3
 FAIL getElementsByTagName Ä assert_array_equals: property 0, expected Element node <Ä></Ä> but got Element node <ä></ä>
 PASS createElementNS http://www.w3.org/1999/xhtml,abc,abc 
 PASS setAttributeNS http://www.w3.org/1999/xhtml,abc,abc 
