@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/balsa/balsa_visitor_interface.h"
 #include "net/tools/flip_server/constants.h"
@@ -78,7 +78,7 @@ class FileData {
   const std::string& body() { return body_; }
 
  private:
-  scoped_ptr<BalsaHeaders> headers_;
+  std::unique_ptr<BalsaHeaders> headers_;
   std::string filename_;
   std::string body_;
 
@@ -114,7 +114,7 @@ class MemCacheIter {
 
 class MemoryCache {
  public:
-  using Files = std::map<std::string, scoped_ptr<FileData>>;
+  using Files = std::map<std::string, std::unique_ptr<FileData>>;
 
  public:
   MemoryCache();

@@ -5,11 +5,11 @@
 #ifndef NET_CERT_NET_CERT_NET_FETCHER_H_
 #define NET_CERT_NET_CERT_NET_FETCHER_H_
 
+#include <memory>
 #include <set>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
@@ -33,19 +33,19 @@ class NET_EXPORT CertNetFetcherImpl : public CertNetFetcher {
   // Deletion implicitly cancels any outstanding requests.
   ~CertNetFetcherImpl() override;
 
-  WARN_UNUSED_RESULT scoped_ptr<Request> FetchCaIssuers(
+  WARN_UNUSED_RESULT std::unique_ptr<Request> FetchCaIssuers(
       const GURL& url,
       int timeout_milliseconds,
       int max_response_bytes,
       const FetchCallback& callback) override;
 
-  WARN_UNUSED_RESULT scoped_ptr<Request> FetchCrl(
+  WARN_UNUSED_RESULT std::unique_ptr<Request> FetchCrl(
       const GURL& url,
       int timeout_milliseconds,
       int max_response_bytes,
       const FetchCallback& callback) override;
 
-  WARN_UNUSED_RESULT scoped_ptr<Request> FetchOcsp(
+  WARN_UNUSED_RESULT std::unique_ptr<Request> FetchOcsp(
       const GURL& url,
       int timeout_milliseconds,
       int max_response_bytes,
@@ -70,8 +70,8 @@ class NET_EXPORT CertNetFetcherImpl : public CertNetFetcher {
   // Completion of the request will never occur synchronously. In other words it
   // is guaranteed that |callback| will only be invoked once the Fetch*() method
   // has returned.
-  WARN_UNUSED_RESULT scoped_ptr<Request> Fetch(
-      scoped_ptr<RequestParams> request_params,
+  WARN_UNUSED_RESULT std::unique_ptr<Request> Fetch(
+      std::unique_ptr<RequestParams> request_params,
       const FetchCallback& callback);
 
   // Finds a job with a matching RequestPararms or returns nullptr if there was
@@ -80,7 +80,7 @@ class NET_EXPORT CertNetFetcherImpl : public CertNetFetcher {
 
   // Removes |job| from the in progress jobs and transfers ownership to the
   // caller.
-  scoped_ptr<Job> RemoveJob(Job* job);
+  std::unique_ptr<Job> RemoveJob(Job* job);
 
   // Indicates which Job is currently executing inside of OnJobCompleted().
   void SetCurrentlyCompletingJob(Job* job);

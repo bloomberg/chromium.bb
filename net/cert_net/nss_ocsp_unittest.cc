@@ -88,7 +88,7 @@ class NssHttpTest : public ::testing::Test {
 
     // Ownership of |handler| is transferred to the URLRequestFilter, but
     // hold onto the original pointer in order to access |request_count()|.
-    scoped_ptr<AiaResponseHandler> handler(
+    std::unique_ptr<AiaResponseHandler> handler(
         new AiaResponseHandler(kAiaHeaders, file_contents));
     handler_ = handler.get();
 
@@ -121,7 +121,7 @@ class NssHttpTest : public ::testing::Test {
   TestURLRequestContext context_;
   AiaResponseHandler* handler_;
   scoped_refptr<CertVerifyProc> verify_proc_;
-  scoped_ptr<CertVerifier> verifier_;
+  std::unique_ptr<CertVerifier> verifier_;
 };
 
 // Tests that when using NSS to verify certificates, and IO is enabled,
@@ -140,7 +140,7 @@ TEST_F(NssHttpTest, TestAia) {
 
   CertVerifyResult verify_result;
   TestCompletionCallback test_callback;
-  scoped_ptr<CertVerifier::Request> request;
+  std::unique_ptr<CertVerifier::Request> request;
 
   int flags = CertVerifier::VERIFY_CERT_IO_ENABLED;
   int error = verifier()->Verify(

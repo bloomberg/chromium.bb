@@ -5,8 +5,9 @@
 #ifndef NET_TOOLS_FLIP_SERVER_RING_BUFFER_H__
 #define NET_TOOLS_FLIP_SERVER_RING_BUFFER_H__
 
+#include <memory>
+
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/tools/balsa/buffer_interface.h"
 
 namespace net {
@@ -97,7 +98,7 @@ class RingBuffer : public BufferInterface {
   int set_write_idx(int idx) { return write_idx_ = idx; }
 
  private:
-  scoped_ptr<char[]> buffer_;
+  std::unique_ptr<char[]> buffer_;
   int buffer_size_;
   int bytes_used_;
   int read_idx_;

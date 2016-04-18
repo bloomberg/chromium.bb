@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/mock_browsing_data_cookie_helper.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "net/cookies/cookie_options.h"

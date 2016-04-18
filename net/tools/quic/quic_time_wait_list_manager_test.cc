@@ -219,7 +219,7 @@ TEST_F(QuicTimeWaitListManagerTest, CheckStatelessConnectionIdInTimeWait) {
 }
 
 TEST_F(QuicTimeWaitListManagerTest, SendVersionNegotiationPacket) {
-  scoped_ptr<QuicEncryptedPacket> packet(
+  std::unique_ptr<QuicEncryptedPacket> packet(
       QuicFramer::BuildVersionNegotiationPacket(connection_id_,
                                                 QuicSupportedVersions()));
   EXPECT_CALL(writer_,
@@ -374,7 +374,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id));
   AddConnectionId(connection_id);
   QuicPacketNumber packet_number = 234;
-  scoped_ptr<QuicEncryptedPacket> packet(
+  std::unique_ptr<QuicEncryptedPacket> packet(
       ConstructEncryptedPacket(connection_id, packet_number));
   // Let first write through.
   EXPECT_CALL(writer_,
@@ -400,7 +400,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(other_connection_id));
   AddConnectionId(other_connection_id);
   QuicPacketNumber other_packet_number = 23423;
-  scoped_ptr<QuicEncryptedPacket> other_packet(
+  std::unique_ptr<QuicEncryptedPacket> other_packet(
       ConstructEncryptedPacket(other_connection_id, other_packet_number));
   EXPECT_CALL(writer_, WritePacket(_, _, _, _, _)).Times(0);
   EXPECT_CALL(visitor_, OnWriteBlocked(&time_wait_list_manager_));

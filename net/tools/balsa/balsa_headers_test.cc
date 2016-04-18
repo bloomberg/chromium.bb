@@ -5,10 +5,10 @@
 #include "net/tools/balsa/balsa_headers.h"
 
 #include <iterator>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/tools/balsa/balsa_enums.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,8 +25,8 @@ class BalsaBufferTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<BalsaBuffer> buffer_;
-  scoped_ptr<BalsaBuffer> anotherBuffer_;
+  std::unique_ptr<BalsaBuffer> buffer_;
+  std::unique_ptr<BalsaBuffer> anotherBuffer_;
 };
 
 namespace {
@@ -36,7 +36,7 @@ class BalsaHeadersTest: public ::testing::Test {
   void SetUp() override { headers_.reset(new BalsaHeaders); }
 
  protected:
-  scoped_ptr<BalsaHeaders> headers_;
+  std::unique_ptr<BalsaHeaders> headers_;
 };
 
 class StringBuffer {

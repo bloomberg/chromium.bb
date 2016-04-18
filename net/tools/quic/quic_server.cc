@@ -93,7 +93,7 @@ void QuicServer::Initialize() {
 
   QuicEpollClock clock(&epoll_server_);
 
-  scoped_ptr<CryptoHandshakeMessage> scfg(crypto_config_.AddDefaultConfig(
+  std::unique_ptr<CryptoHandshakeMessage> scfg(crypto_config_.AddDefaultConfig(
       QuicRandom::GetInstance(), &clock, crypto_config_options_));
 }
 

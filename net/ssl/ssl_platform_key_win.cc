@@ -351,7 +351,7 @@ scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
   // transferred.
   CHECK_EQ(must_free, TRUE);
 
-  scoped_ptr<ThreadedSSLPrivateKey::Delegate> delegate;
+  std::unique_ptr<ThreadedSSLPrivateKey::Delegate> delegate;
   if (key_spec == CERT_NCRYPT_KEY_SPEC) {
     delegate.reset(new SSLPlatformKeyCNG(prov_or_key, key_type, max_length));
   } else {

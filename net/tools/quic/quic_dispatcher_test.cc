@@ -230,10 +230,10 @@ class QuicDispatcherTest : public ::testing::Test {
                      QuicPacketNumberLength packet_number_length,
                      QuicPacketNumber packet_number) {
     QuicVersionVector versions(SupportedVersions(version));
-    scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
+    std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
         connection_id, has_version_flag, false, false, 0, packet_number, data,
         connection_id_length, packet_number_length, &versions));
-    scoped_ptr<QuicReceivedPacket> received_packet(
+    std::unique_ptr<QuicReceivedPacket> received_packet(
         ConstructReceivedPacket(*packet, helper_.GetClock()->Now()));
 
     data_ = string(packet->data(), packet->length());
@@ -358,9 +358,9 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   packet.public_header.version_flag = false;
   packet.rejected_packet_number = 19191;
   packet.nonce_proof = 132232;
-  scoped_ptr<QuicEncryptedPacket> encrypted(
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
       QuicFramer::BuildPublicResetPacket(packet));
-  scoped_ptr<QuicReceivedPacket> received(
+  std::unique_ptr<QuicReceivedPacket> received(
       ConstructReceivedPacket(*encrypted, helper_.GetClock()->Now()));
   EXPECT_CALL(*session1_, OnConnectionClosed(QUIC_PUBLIC_RESET, _,
                                              ConnectionCloseSource::FROM_PEER))

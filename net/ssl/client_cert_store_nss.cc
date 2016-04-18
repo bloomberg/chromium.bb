@@ -8,13 +8,13 @@
 #include <ssl.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/worker_pool.h"
 #include "crypto/nss_crypto_module_delegate.h"
@@ -32,7 +32,8 @@ ClientCertStoreNSS::~ClientCertStoreNSS() {}
 void ClientCertStoreNSS::GetClientCerts(const SSLCertRequestInfo& request,
                                          CertificateList* selected_certs,
                                          const base::Closure& callback) {
-  scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate;
+  std::unique_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
+      password_delegate;
   if (!password_delegate_factory_.is_null()) {
     password_delegate.reset(
         password_delegate_factory_.Run(request.host_and_port));
@@ -114,7 +115,8 @@ void ClientCertStoreNSS::FilterCertsOnWorkerThread(
 }
 
 void ClientCertStoreNSS::GetAndFilterCertsOnWorkerThread(
-    scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate,
+    std::unique_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
+        password_delegate,
     const SSLCertRequestInfo* request,
     CertificateList* selected_certs) {
   CertificateList platform_certs;
@@ -124,7 +126,8 @@ void ClientCertStoreNSS::GetAndFilterCertsOnWorkerThread(
 
 // static
 void ClientCertStoreNSS::GetPlatformCertsOnWorkerThread(
-    scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate,
+    std::unique_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
+        password_delegate,
     net::CertificateList* certs) {
   CERTCertList* found_certs =
       CERT_FindUserCertsByUsage(CERT_GetDefaultCertDB(), certUsageSSLClient,

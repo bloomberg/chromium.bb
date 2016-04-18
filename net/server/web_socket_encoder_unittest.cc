@@ -12,7 +12,7 @@ namespace net {
 
 TEST(WebSocketEncoderHandshakeTest, EmptyRequestShouldBeRejected) {
   WebSocketDeflateParameters params;
-  scoped_ptr<WebSocketEncoder> server =
+  std::unique_ptr<WebSocketEncoder> server =
       WebSocketEncoder::CreateServer("", &params);
 
   EXPECT_FALSE(server);
@@ -21,7 +21,7 @@ TEST(WebSocketEncoderHandshakeTest, EmptyRequestShouldBeRejected) {
 TEST(WebSocketEncoderHandshakeTest,
      CreateServerWithoutClientMaxWindowBitsParameter) {
   WebSocketDeflateParameters params;
-  scoped_ptr<WebSocketEncoder> server =
+  std::unique_ptr<WebSocketEncoder> server =
       WebSocketEncoder::CreateServer("permessage-deflate", &params);
 
   ASSERT_TRUE(server);
@@ -32,7 +32,7 @@ TEST(WebSocketEncoderHandshakeTest,
 TEST(WebSocketEncoderHandshakeTest,
      CreateServerWithServerNoContextTakeoverParameter) {
   WebSocketDeflateParameters params;
-  scoped_ptr<WebSocketEncoder> server = WebSocketEncoder::CreateServer(
+  std::unique_ptr<WebSocketEncoder> server = WebSocketEncoder::CreateServer(
       "permessage-deflate; server_no_context_takeover", &params);
   ASSERT_TRUE(server);
   EXPECT_TRUE(server->deflate_enabled());
@@ -42,7 +42,7 @@ TEST(WebSocketEncoderHandshakeTest,
 
 TEST(WebSocketEncoderHandshakeTest, FirstExtensionShouldBeChosen) {
   WebSocketDeflateParameters params;
-  scoped_ptr<WebSocketEncoder> server = WebSocketEncoder::CreateServer(
+  std::unique_ptr<WebSocketEncoder> server = WebSocketEncoder::CreateServer(
       "permessage-deflate; server_no_context_takeover,"
       "permessage-deflate; server_max_window_bits=15",
       &params);
@@ -55,7 +55,7 @@ TEST(WebSocketEncoderHandshakeTest, FirstExtensionShouldBeChosen) {
 
 TEST(WebSocketEncoderHandshakeTest, FirstValidExtensionShouldBeChosen) {
   WebSocketDeflateParameters params;
-  scoped_ptr<WebSocketEncoder> server = WebSocketEncoder::CreateServer(
+  std::unique_ptr<WebSocketEncoder> server = WebSocketEncoder::CreateServer(
       "permessage-deflate; Xserver_no_context_takeover,"
       "permessage-deflate; server_max_window_bits=15",
       &params);
@@ -68,7 +68,7 @@ TEST(WebSocketEncoderHandshakeTest, FirstValidExtensionShouldBeChosen) {
 
 TEST(WebSocketEncoderHandshakeTest, AllExtensionsAreUnknownOrMalformed) {
   WebSocketDeflateParameters params;
-  scoped_ptr<WebSocketEncoder> server =
+  std::unique_ptr<WebSocketEncoder> server =
       WebSocketEncoder::CreateServer("unknown, permessage-deflate; x", &params);
 
   ASSERT_TRUE(server);
@@ -87,8 +87,8 @@ class WebSocketEncoderTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<WebSocketEncoder> server_;
-  scoped_ptr<WebSocketEncoder> client_;
+  std::unique_ptr<WebSocketEncoder> server_;
+  std::unique_ptr<WebSocketEncoder> client_;
 };
 
 class WebSocketEncoderCompressionTest : public WebSocketEncoderTest {
@@ -108,8 +108,8 @@ class WebSocketEncoderCompressionTest : public WebSocketEncoderTest {
 };
 
 TEST_F(WebSocketEncoderTest, DeflateDisabledEncoder) {
-  scoped_ptr<WebSocketEncoder> server = WebSocketEncoder::CreateServer();
-  scoped_ptr<WebSocketEncoder> client = WebSocketEncoder::CreateClient("");
+  std::unique_ptr<WebSocketEncoder> server = WebSocketEncoder::CreateServer();
+  std::unique_ptr<WebSocketEncoder> client = WebSocketEncoder::CreateClient("");
 
   ASSERT_TRUE(server);
   ASSERT_TRUE(client);

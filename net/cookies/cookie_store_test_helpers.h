@@ -89,9 +89,10 @@ class DelayedCookieMonster : public CookieStore {
 
   void FlushStore(const base::Closure& callback) override;
 
-  scoped_ptr<CookieStore::CookieChangedSubscription>
-  AddCallbackForCookie(const GURL& url, const std::string& name,
-                       const CookieChangedCallback& callback) override;
+  std::unique_ptr<CookieStore::CookieChangedSubscription> AddCallbackForCookie(
+      const GURL& url,
+      const std::string& name,
+      const CookieChangedCallback& callback) override;
 
   bool IsEphemeral() override;
 
@@ -116,7 +117,7 @@ class DelayedCookieMonster : public CookieStore {
 
   friend class base::RefCountedThreadSafe<DelayedCookieMonster>;
 
-  scoped_ptr<CookieMonster> cookie_monster_;
+  std::unique_ptr<CookieMonster> cookie_monster_;
 
   bool did_run_;
   bool result_;

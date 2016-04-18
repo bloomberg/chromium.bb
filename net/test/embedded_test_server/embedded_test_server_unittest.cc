@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -167,16 +168,16 @@ class EmbeddedTestServerTest
 
   // Handles |request| sent to |path| and returns the response per |content|,
   // |content type|, and |code|. Saves the request URL for verification.
-  scoped_ptr<HttpResponse> HandleRequest(const std::string& path,
-                                         const std::string& content,
-                                         const std::string& content_type,
-                                         HttpStatusCode code,
-                                         const HttpRequest& request) {
+  std::unique_ptr<HttpResponse> HandleRequest(const std::string& path,
+                                              const std::string& content,
+                                              const std::string& content_type,
+                                              HttpStatusCode code,
+                                              const HttpRequest& request) {
     request_relative_url_ = request.relative_url;
 
     GURL absolute_url = server_->GetURL(request.relative_url);
     if (absolute_url.path() == path) {
-      scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
+      std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
       http_response->set_code(code);
       http_response->set_content(content);
       http_response->set_content_type(content_type);
@@ -193,7 +194,7 @@ class EmbeddedTestServerTest
   base::Thread io_thread_;
   scoped_refptr<TestURLRequestContextGetter> request_context_getter_;
   TestConnectionListener connection_listener_;
-  scoped_ptr<EmbeddedTestServer> server_;
+  std::unique_ptr<EmbeddedTestServer> server_;
 };
 
 TEST_P(EmbeddedTestServerTest, GetBaseURL) {
@@ -243,7 +244,7 @@ TEST_P(EmbeddedTestServerTest, RegisterRequestHandler) {
                  HTTP_OK));
   ASSERT_TRUE(server_->Start());
 
-  scoped_ptr<URLFetcher> fetcher =
+  std::unique_ptr<URLFetcher> fetcher =
       URLFetcher::Create(server_->GetURL("/test?q=foo"), URLFetcher::GET, this);
   fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->Start();
@@ -264,7 +265,7 @@ TEST_P(EmbeddedTestServerTest, ServeFilesFromDirectory) {
       src_dir.AppendASCII("net").AppendASCII("data"));
   ASSERT_TRUE(server_->Start());
 
-  scoped_ptr<URLFetcher> fetcher =
+  std::unique_ptr<URLFetcher> fetcher =
       URLFetcher::Create(server_->GetURL("/test.html"), URLFetcher::GET, this);
   fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->Start();
@@ -279,7 +280,7 @@ TEST_P(EmbeddedTestServerTest, ServeFilesFromDirectory) {
 TEST_P(EmbeddedTestServerTest, DefaultNotFoundResponse) {
   ASSERT_TRUE(server_->Start());
 
-  scoped_ptr<URLFetcher> fetcher = URLFetcher::Create(
+  std::unique_ptr<URLFetcher> fetcher = URLFetcher::Create(
       server_->GetURL("/non-existent"), URLFetcher::GET, this);
   fetcher->SetRequestContext(request_context_getter_.get());
 
@@ -296,7 +297,7 @@ TEST_P(EmbeddedTestServerTest, ConnectionListenerAccept) {
   net::AddressList address_list;
   EXPECT_TRUE(server_->GetAddressList(&address_list));
 
-  scoped_ptr<StreamSocket> socket =
+  std::unique_ptr<StreamSocket> socket =
       ClientSocketFactory::GetDefaultFactory()->CreateTransportClientSocket(
           address_list, NULL, &net_log, NetLog::Source());
   TestCompletionCallback callback;
@@ -311,7 +312,7 @@ TEST_P(EmbeddedTestServerTest, ConnectionListenerAccept) {
 TEST_P(EmbeddedTestServerTest, ConnectionListenerRead) {
   ASSERT_TRUE(server_->Start());
 
-  scoped_ptr<URLFetcher> fetcher = URLFetcher::Create(
+  std::unique_ptr<URLFetcher> fetcher = URLFetcher::Create(
       server_->GetURL("/non-existent"), URLFetcher::GET, this);
   fetcher->SetRequestContext(request_context_getter_.get());
 
@@ -345,13 +346,13 @@ TEST_P(EmbeddedTestServerTest, ConcurrentFetches) {
                  HTTP_NOT_FOUND));
   ASSERT_TRUE(server_->Start());
 
-  scoped_ptr<URLFetcher> fetcher1 =
+  std::unique_ptr<URLFetcher> fetcher1 =
       URLFetcher::Create(server_->GetURL("/test1"), URLFetcher::GET, this);
   fetcher1->SetRequestContext(request_context_getter_.get());
-  scoped_ptr<URLFetcher> fetcher2 =
+  std::unique_ptr<URLFetcher> fetcher2 =
       URLFetcher::Create(server_->GetURL("/test2"), URLFetcher::GET, this);
   fetcher2->SetRequestContext(request_context_getter_.get());
-  scoped_ptr<URLFetcher> fetcher3 =
+  std::unique_ptr<URLFetcher> fetcher3 =
       URLFetcher::Create(server_->GetURL("/test3"), URLFetcher::GET, this);
   fetcher3->SetRequestContext(request_context_getter_.get());
 
@@ -423,8 +424,9 @@ class InfiniteResponse : public BasicHttpResponse {
   DISALLOW_COPY_AND_ASSIGN(InfiniteResponse);
 };
 
-scoped_ptr<HttpResponse> HandleInfiniteRequest(const HttpRequest& request) {
-  return make_scoped_ptr(new InfiniteResponse);
+std::unique_ptr<HttpResponse> HandleInfiniteRequest(
+    const HttpRequest& request) {
+  return base::WrapUnique(new InfiniteResponse);
 }
 }
 
@@ -440,7 +442,7 @@ TEST_P(EmbeddedTestServerTest, CloseDuringWrite) {
       &HandlePrefixedRequest, "/infinite", base::Bind(&HandleInfiniteRequest)));
   ASSERT_TRUE(server_->Start());
 
-  scoped_ptr<URLRequest> request = context.CreateRequest(
+  std::unique_ptr<URLRequest> request = context.CreateRequest(
       server_->GetURL("/infinite"), DEFAULT_PRIORITY, &cancel_delegate);
   request->Start();
   cancel_delegate.WaitUntilDone();
@@ -534,7 +536,7 @@ class EmbeddedTestServerThreadingTestDelegate
     ASSERT_TRUE(io_thread.StartWithOptions(thread_options));
     io_thread_runner = io_thread.task_runner();
 
-    scoped_ptr<base::MessageLoop> loop;
+    std::unique_ptr<base::MessageLoop> loop;
     if (message_loop_present_on_initialize_)
       loop.reset(new base::MessageLoopForIO);
 
@@ -548,7 +550,7 @@ class EmbeddedTestServerThreadingTestDelegate
     if (!loop)
       loop.reset(new base::MessageLoopForIO);
 
-    scoped_ptr<URLFetcher> fetcher =
+    std::unique_ptr<URLFetcher> fetcher =
         URLFetcher::Create(server.GetURL("/test?q=foo"), URLFetcher::GET, this);
     fetcher->SetRequestContext(
         new TestURLRequestContextGetter(loop->task_runner()));

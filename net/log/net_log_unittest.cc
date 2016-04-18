@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "base/values.h"
@@ -38,13 +39,15 @@ int CaptureModeToInt(NetLogCaptureMode capture_mode) {
   return -1;
 }
 
-scoped_ptr<base::Value> CaptureModeToValue(NetLogCaptureMode capture_mode) {
-  return make_scoped_ptr(
+std::unique_ptr<base::Value> CaptureModeToValue(
+    NetLogCaptureMode capture_mode) {
+  return base::WrapUnique(
       new base::FundamentalValue(CaptureModeToInt(capture_mode)));
 }
 
-scoped_ptr<base::Value> NetCaptureModeCallback(NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+std::unique_ptr<base::Value> NetCaptureModeCallback(
+    NetLogCaptureMode capture_mode) {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("capture_mode", CaptureModeToValue(capture_mode));
   return std::move(dict);
 }
@@ -130,8 +133,8 @@ class LoggingObserver : public NetLog::ThreadSafeObserver {
   }
 
   void OnAddEntry(const NetLog::Entry& entry) override {
-    scoped_ptr<base::DictionaryValue> dict =
-        base::DictionaryValue::From(make_scoped_ptr(entry.ToValue()));
+    std::unique_ptr<base::DictionaryValue> dict =
+        base::DictionaryValue::From(base::WrapUnique(entry.ToValue()));
     ASSERT_TRUE(dict);
     values_.push_back(std::move(dict));
   }
@@ -142,7 +145,7 @@ class LoggingObserver : public NetLog::ThreadSafeObserver {
   }
 
  private:
-  std::vector<scoped_ptr<base::DictionaryValue>> values_;
+  std::vector<std::unique_ptr<base::DictionaryValue>> values_;
 };
 
 void AddEvent(NetLog* net_log) {

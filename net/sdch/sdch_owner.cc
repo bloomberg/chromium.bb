@@ -10,6 +10,7 @@
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
@@ -79,7 +80,7 @@ class ValueMapPrefStorage : public SdchOwner::PrefStorage {
     *result = &storage_;
     return true;
   }
-  void SetValue(scoped_ptr<base::DictionaryValue> value) override {
+  void SetValue(std::unique_ptr<base::DictionaryValue> value) override {
     storage_.Clear();
     storage_.MergeDictionary(value.get());
   }
@@ -119,10 +120,10 @@ base::DictionaryValue* GetPersistentStoreDictionaryMap(
 // above schema, removing anything previously in the store under
 // kPreferenceName.
 void InitializePrefStore(SdchOwner::PrefStorage* store) {
-  scoped_ptr<base::DictionaryValue> empty_store(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> empty_store(new base::DictionaryValue);
   empty_store->SetInteger(kVersionKey, kVersion);
   empty_store->Set(kDictionariesKey,
-                   make_scoped_ptr(new base::DictionaryValue));
+                   base::WrapUnique(new base::DictionaryValue));
   store->SetValue(std::move(empty_store));
 }
 
@@ -338,7 +339,8 @@ SdchOwner::~SdchOwner() {
   }
 }
 
-void SdchOwner::EnablePersistentStorage(scoped_ptr<PrefStorage> pref_store) {
+void SdchOwner::EnablePersistentStorage(
+    std::unique_ptr<PrefStorage> pref_store) {
   DCHECK(!external_pref_store_);
   DCHECK(pref_store);
   external_pref_store_ = std::move(pref_store);
@@ -483,7 +485,7 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
   total_dictionary_bytes_ += dictionary_text.size();
 
   // Record the addition in the pref store.
-  scoped_ptr<base::DictionaryValue> dictionary_description(
+  std::unique_ptr<base::DictionaryValue> dictionary_description(
       new base::DictionaryValue());
   dictionary_description->SetString(kDictionaryUrlKey, dictionary_url.spec());
   dictionary_description->SetDouble(kDictionaryLastUsedKey,
@@ -640,7 +642,7 @@ void SdchOwner::OnPrefStorageInitializationComplete(bool succeeded) {
   in_memory_pref_store_ = nullptr;
 }
 
-void SdchOwner::SetClockForTesting(scoped_ptr<base::Clock> clock) {
+void SdchOwner::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
   clock_ = std::move(clock);
 }
 
@@ -663,7 +665,7 @@ bool SdchOwner::HasDictionaryFromURLForTesting(const GURL& url) const {
 }
 
 void SdchOwner::SetFetcherForTesting(
-    scoped_ptr<SdchDictionaryFetcher> fetcher) {
+    std::unique_ptr<SdchDictionaryFetcher> fetcher) {
   fetcher_ = std::move(fetcher);
 }
 

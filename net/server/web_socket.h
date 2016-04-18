@@ -5,10 +5,10 @@
 #ifndef NET_SERVER_WEB_SOCKET_H_
 #define NET_SERVER_WEB_SOCKET_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 
 namespace net {
@@ -40,7 +40,7 @@ class WebSocket final {
 
   HttpServer* const server_;
   HttpConnection* const connection_;
-  scoped_ptr<WebSocketEncoder> encoder_;
+  std::unique_ptr<WebSocketEncoder> encoder_;
   bool closed_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocket);

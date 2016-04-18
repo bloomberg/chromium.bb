@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/tools/gdig/file_net_log.h"
+
 #include <stdio.h>
+
+#include <memory>
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "net/tools/gdig/file_net_log.h"
 
 namespace net {
 
@@ -27,7 +29,7 @@ void FileNetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
   const char* source = NetLog::SourceTypeToString(entry.source().type);
   const char* type = NetLog::EventTypeToString(entry.type());
 
-  scoped_ptr<base::Value> param_value(entry.ParametersToValue());
+  std::unique_ptr<base::Value> param_value(entry.ParametersToValue());
   std::string params;
   if (param_value.get() != NULL) {
     JSONStringValueSerializer serializer(&params);

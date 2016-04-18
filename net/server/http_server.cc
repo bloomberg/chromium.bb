@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -29,7 +30,7 @@
 
 namespace net {
 
-HttpServer::HttpServer(scoped_ptr<ServerSocket> server_socket,
+HttpServer::HttpServer(std::unique_ptr<ServerSocket> server_socket,
                        HttpServer::Delegate* delegate)
     : server_socket_(std::move(server_socket)),
       delegate_(delegate),
@@ -239,7 +240,7 @@ int HttpServer::HandleReadResult(HttpConnection* connection, int rv) {
 
     if (request.HasHeaderValue("connection", "upgrade")) {
       connection->SetWebSocket(
-          make_scoped_ptr(new WebSocket(this, connection)));
+          base::WrapUnique(new WebSocket(this, connection)));
       read_buf->DidConsume(pos);
       delegate_->OnWebSocketRequest(connection->id(), request);
       if (HasClosedConnection(connection))

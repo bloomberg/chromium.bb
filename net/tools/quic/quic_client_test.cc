@@ -65,7 +65,7 @@ TEST(QuicClientTest, DoNotLeakFDs) {
   // in additional FDs being opened.
   const int kNumClients = 50;
   for (int i = 0; i < kNumClients; ++i) {
-    scoped_ptr<QuicClient> client(
+    std::unique_ptr<QuicClient> client(
         CreateAndInitializeQuicClient(&eps, net::test::kTestPort + i));
 
     // Initializing the client will create a new FD.
@@ -84,7 +84,7 @@ TEST(QuicClientTest, CreateAndCleanUpUDPSockets) {
   EpollServer eps;
   int number_of_open_fds = NumOpenFDs();
 
-  scoped_ptr<QuicClient> client(
+  std::unique_ptr<QuicClient> client(
       CreateAndInitializeQuicClient(&eps, net::test::kTestPort));
   EXPECT_EQ(number_of_open_fds + 1, NumOpenFDs());
   // Create more UDP sockets.

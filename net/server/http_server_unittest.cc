@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/server/http_server.h"
+
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -16,8 +19,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -34,7 +37,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
-#include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_server_socket.h"
@@ -173,7 +175,7 @@ class TestHttpClient {
 
   scoped_refptr<IOBufferWithSize> read_buffer_;
   scoped_refptr<DrainableIOBuffer> write_buffer_;
-  scoped_ptr<TCPClientSocket> socket_;
+  std::unique_ptr<TCPClientSocket> socket_;
   int connect_result_;
 };
 
@@ -185,7 +187,7 @@ class HttpServerTest : public testing::Test,
   HttpServerTest() : quit_after_request_count_(0) {}
 
   void SetUp() override {
-    scoped_ptr<ServerSocket> server_socket(
+    std::unique_ptr<ServerSocket> server_socket(
         new TCPServerSocket(NULL, NetLog::Source()));
     server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
     server_.reset(new HttpServer(std::move(server_socket), this));
@@ -232,13 +234,13 @@ class HttpServerTest : public testing::Test,
     return requests_[request_index].second;
   }
 
-  void HandleAcceptResult(scoped_ptr<StreamSocket> socket) {
+  void HandleAcceptResult(std::unique_ptr<StreamSocket> socket) {
     server_->accepted_socket_.reset(socket.release());
     server_->HandleAcceptResult(OK);
   }
 
  protected:
-  scoped_ptr<HttpServer> server_;
+  std::unique_ptr<HttpServer> server_;
   IPEndPoint server_address_;
   base::Closure run_loop_quit_func_;
   std::vector<std::pair<HttpServerRequestInfo, int> > requests_;
@@ -423,7 +425,7 @@ TEST_F(HttpServerTest, RequestWithTooLargeBody) {
 
   scoped_refptr<URLRequestContextGetter> request_context_getter(
       new TestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get()));
-  scoped_ptr<URLFetcher> fetcher =
+  std::unique_ptr<URLFetcher> fetcher =
       URLFetcher::Create(GURL(base::StringPrintf("http://127.0.0.1:%d/test",
                                                  server_address_.port())),
                          URLFetcher::GET, &delegate);
@@ -568,7 +570,7 @@ class MockStreamSocket : public StreamSocket {
 
 TEST_F(HttpServerTest, RequestWithBodySplitAcrossPackets) {
   MockStreamSocket* socket = new MockStreamSocket();
-  HandleAcceptResult(make_scoped_ptr<StreamSocket>(socket));
+  HandleAcceptResult(base::WrapUnique<StreamSocket>(socket));
   std::string body("body");
   std::string request_text = base::StringPrintf(
       "GET /test HTTP/1.1\r\n"

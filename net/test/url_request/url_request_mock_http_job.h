@@ -7,11 +7,11 @@
 #ifndef NET_TEST_URL_REQUEST_URL_REQUEST_MOCK_HTTP_JOB_H_
 #define NET_TEST_URL_REQUEST_URL_REQUEST_MOCK_HTTP_JOB_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_file_job.h"
 #include "url/gurl.h"
 
@@ -55,14 +55,14 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
   // URLRequestMockHTTPJob's responding like an HTTP server. |base_path| is the
   // file path leading to the root of the directory to use as the root of the
   // HTTP server.
-  static scoped_ptr<URLRequestInterceptor> CreateInterceptor(
+  static std::unique_ptr<URLRequestInterceptor> CreateInterceptor(
       const base::FilePath& base_path,
       const scoped_refptr<base::SequencedWorkerPool>& worker_pool);
 
   // Returns a URLRequestJobFactory::ProtocolHandler that serves
   // URLRequestMockHTTPJob's responding like an HTTP server. It responds to all
   // requests with the contents of |file|.
-  static scoped_ptr<URLRequestInterceptor> CreateInterceptorForSingleFile(
+  static std::unique_ptr<URLRequestInterceptor> CreateInterceptorForSingleFile(
       const base::FilePath& file,
       const scoped_refptr<base::SequencedWorkerPool>& worker_pool);
 

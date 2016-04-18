@@ -104,7 +104,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
 
  protected:
   base::MessageLoop main_loop_;
-  scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
+  std::unique_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
   base::WaitableEvent loaded_event_;
   base::WaitableEvent key_loaded_event_;
   std::vector<CanonicalCookie*> cookies_;

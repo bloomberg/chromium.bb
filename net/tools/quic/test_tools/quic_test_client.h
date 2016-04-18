@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
@@ -233,7 +233,7 @@ class QuicTestClient : public test::SimpleClient,
   bool HaveActiveStream();
 
   EpollServer epoll_server_;
-  scoped_ptr<MockableQuicClient> client_;  // The actual client
+  std::unique_ptr<MockableQuicClient> client_;  // The actual client
   QuicSpdyClientStream* stream_;
 
   QuicRstStreamErrorCode stream_error_;

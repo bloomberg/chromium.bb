@@ -142,7 +142,7 @@ class NetworkChangeNotifierAndroid::DnsConfigServiceThread
 
   const DnsConfig* dns_config_for_testing_;
   const base::Time creation_time_;
-  scoped_ptr<internal::DnsConfigServicePosix> dns_config_service_;
+  std::unique_ptr<internal::DnsConfigServicePosix> dns_config_service_;
   // Used to detect tunnel state changes.
   internal::AddressTrackerLinux address_tracker_;
 

@@ -16,6 +16,7 @@
 #include <map>
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "net/tools/balsa/balsa_frame.h"
 #include "net/tools/balsa/balsa_headers.h"
@@ -230,7 +231,7 @@ void MemoryCache::InsertFile(FileData* file_data) {
     it->second.reset(file_data);
   } else {
     files_.insert(
-        std::make_pair(file_data->filename(), make_scoped_ptr(file_data)));
+        std::make_pair(file_data->filename(), base::WrapUnique(file_data)));
   }
 }
 

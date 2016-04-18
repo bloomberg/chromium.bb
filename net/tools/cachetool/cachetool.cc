@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include <iostream>
+#include <memory>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/io_buffer.h"
@@ -25,7 +25,7 @@ namespace {
 
 // Print all of a cache's keys to stdout.
 bool ListKeys(Backend* cache_backend) {
-  scoped_ptr<Backend::Iterator> entry_iterator =
+  std::unique_ptr<Backend::Iterator> entry_iterator =
       cache_backend->CreateIterator();
   Entry* entry = nullptr;
   net::TestCompletionCallback cb;
@@ -152,7 +152,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  scoped_ptr<Backend> cache_backend;
+  std::unique_ptr<Backend> cache_backend;
   net::TestCompletionCallback cb;
   int rv = disk_cache::CreateCacheBackend(
       net::DISK_CACHE, backend_type, cache_path, INT_MAX, false,

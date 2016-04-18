@@ -5,9 +5,10 @@
 #ifndef NET_SSL_CLIENT_CERT_STORE_NSS_H_
 #define NET_SSL_CLIENT_CERT_STORE_NSS_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/ssl/client_cert_store.h"
 
@@ -48,13 +49,13 @@ class NET_EXPORT ClientCertStoreNSS : public ClientCertStore {
   // |certs|. |password_delegate| is used to unlock slots if required.
   // Must be called from a worker thread.
   static void GetPlatformCertsOnWorkerThread(
-      scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
+      std::unique_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
           password_delegate,
       net::CertificateList* certs);
 
  private:
   void GetAndFilterCertsOnWorkerThread(
-      scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
+      std::unique_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
           password_delegate,
       const SSLCertRequestInfo* request,
       CertificateList* selected_certs);

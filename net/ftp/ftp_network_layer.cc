@@ -4,6 +4,7 @@
 
 #include "net/ftp/ftp_network_layer.h"
 
+#include "base/memory/ptr_util.h"
 #include "net/ftp/ftp_network_session.h"
 #include "net/ftp/ftp_network_transaction.h"
 #include "net/socket/client_socket_factory.h"
@@ -18,11 +19,11 @@ FtpNetworkLayer::FtpNetworkLayer(HostResolver* host_resolver)
 FtpNetworkLayer::~FtpNetworkLayer() {
 }
 
-scoped_ptr<FtpTransaction> FtpNetworkLayer::CreateTransaction() {
+std::unique_ptr<FtpTransaction> FtpNetworkLayer::CreateTransaction() {
   if (suspended_)
-    return scoped_ptr<FtpTransaction>();
+    return std::unique_ptr<FtpTransaction>();
 
-  return make_scoped_ptr(new FtpNetworkTransaction(
+  return base::WrapUnique(new FtpNetworkTransaction(
       session_->host_resolver(), ClientSocketFactory::GetDefaultFactory()));
 }
 

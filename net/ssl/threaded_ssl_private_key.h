@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/ssl/ssl_private_key.h"
@@ -52,7 +52,7 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  ThreadedSSLPrivateKey(scoped_ptr<Delegate> delegate,
+  ThreadedSSLPrivateKey(std::unique_ptr<Delegate> delegate,
                         scoped_refptr<base::TaskRunner> task_runner);
 
   // SSLPrivateKey implementation.

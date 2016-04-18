@@ -6,9 +6,10 @@
 
 #include <errno.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/crypto/crypto_protocol.h"
@@ -68,7 +69,7 @@ class QuicTimeWaitListManager::QueuedPacket {
  private:
   const IPEndPoint server_address_;
   const IPEndPoint client_address_;
-  scoped_ptr<QuicEncryptedPacket> packet_;
+  std::unique_ptr<QuicEncryptedPacket> packet_;
 
   DISALLOW_COPY_AND_ASSIGN(QueuedPacket);
 };

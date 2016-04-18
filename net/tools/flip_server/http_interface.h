@@ -125,7 +125,7 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
   void GetOutput() override;
 
  private:
-  scoped_ptr<BalsaFrame> http_framer_;
+  std::unique_ptr<BalsaFrame> http_framer_;
   BalsaHeaders headers_;
   uint32_t stream_id_;
   int32_t server_idx_;

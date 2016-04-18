@@ -4,11 +4,12 @@
 
 #include "net/log/net_log_util.h"
 
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -25,7 +26,7 @@ namespace {
 
 // Make sure GetNetConstants doesn't crash.
 TEST(NetLogUtil, GetNetConstants) {
-  scoped_ptr<base::Value> constants(GetNetConstants());
+  std::unique_ptr<base::Value> constants(GetNetConstants());
 }
 
 // Make sure GetNetInfo doesn't crash when called on contexts with and without
@@ -36,7 +37,7 @@ TEST(NetLogUtil, GetNetInfo) {
 
   // Get NetInfo when there's no cache backend (It's only created on first use).
   EXPECT_FALSE(http_cache->GetCurrentBackend());
-  scoped_ptr<base::DictionaryValue> net_info_without_cache(
+  std::unique_ptr<base::DictionaryValue> net_info_without_cache(
       GetNetInfo(&context, NET_INFO_ALL_SOURCES));
   EXPECT_FALSE(http_cache->GetCurrentBackend());
   EXPECT_GT(net_info_without_cache->size(), 0u);
@@ -46,7 +47,7 @@ TEST(NetLogUtil, GetNetInfo) {
   EXPECT_EQ(OK, context.http_transaction_factory()->GetCache()->GetBackend(
                     &backend, TestCompletionCallback().callback()));
   EXPECT_TRUE(http_cache->GetCurrentBackend());
-  scoped_ptr<base::DictionaryValue> net_info_with_cache(
+  std::unique_ptr<base::DictionaryValue> net_info_with_cache(
       GetNetInfo(&context, NET_INFO_ALL_SOURCES));
   EXPECT_GT(net_info_with_cache->size(), 0u);
 
@@ -64,7 +65,7 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsOneContext) {
   context.Init();
   TestDelegate delegate;
   for (size_t num_requests = 0; num_requests < 5; ++num_requests) {
-    std::vector<scoped_ptr<URLRequest>> requests;
+    std::vector<std::unique_ptr<URLRequest>> requests;
     for (size_t i = 0; i < num_requests; ++i) {
       requests.push_back(context.CreateRequest(GURL("about:life"),
                                                DEFAULT_PRIORITY, &delegate));
@@ -89,11 +90,11 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsMultipleContexts) {
   TestDelegate delegate;
   for (size_t num_requests = 0; num_requests < 5; ++num_requests) {
     NetLog net_log;
-    std::vector<scoped_ptr<TestURLRequestContext>> contexts;
-    std::vector<scoped_ptr<URLRequest>> requests;
+    std::vector<std::unique_ptr<TestURLRequestContext>> contexts;
+    std::vector<std::unique_ptr<URLRequest>> requests;
     std::set<URLRequestContext*> context_set;
     for (size_t i = 0; i < num_requests; ++i) {
-      contexts.push_back(make_scoped_ptr(new TestURLRequestContext(true)));
+      contexts.push_back(base::WrapUnique(new TestURLRequestContext(true)));
       contexts[i]->set_net_log(&net_log);
       contexts[i]->Init();
       context_set.insert(contexts[i].get());

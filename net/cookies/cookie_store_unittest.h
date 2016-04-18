@@ -42,7 +42,7 @@ const char kValidCookieLine[] = "A=B; path=/";
 // The CookieStoreTestTraits must have the following members:
 // struct CookieStoreTestTraits {
 //   // Factory function. Will be called at most once per test.
-//   static scoped_ptr<CookieStore> Create();
+//   static std::unique_ptr<CookieStore> Create();
 //
 //   // The cookie store supports cookies with the exclude_httponly() option.
 //   static const bool supports_http_only;
@@ -319,8 +319,8 @@ class CookieStoreTest : public testing::Test {
   const CookieURLHelper http_foo_com_;
   const CookieURLHelper http_bar_com_;
 
-  scoped_ptr<base::WeakPtrFactory<base::MessageLoop> > weak_factory_;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::WeakPtrFactory<base::MessageLoop>> weak_factory_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
  private:
   // Returns a set of strings of type "name=value". Fails in case of duplicate.
@@ -332,7 +332,7 @@ class CookieStoreTest : public testing::Test {
     return tokens;
   }
 
-  scoped_ptr<CookieStore> cookie_store_;
+  std::unique_ptr<CookieStore> cookie_store_;
 };
 
 TYPED_TEST_CASE_P(CookieStoreTest);

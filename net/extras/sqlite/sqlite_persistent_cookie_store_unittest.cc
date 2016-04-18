@@ -48,7 +48,7 @@ class CookieCryptor : public CookieCryptoDelegate {
   bool should_encrypt_;
 
  private:
-  scoped_ptr<crypto::SymmetricKey> key_;
+  std::unique_ptr<crypto::SymmetricKey> key_;
   crypto::Encryptor encryptor_;
 };
 
@@ -199,14 +199,14 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
+  std::unique_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
   base::WaitableEvent loaded_event_;
   base::WaitableEvent key_loaded_event_;
   base::WaitableEvent db_thread_event_;
   CanonicalCookieVector cookies_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLitePersistentCookieStore> store_;
-  scoped_ptr<CookieCryptor> cookie_crypto_delegate_;
+  std::unique_ptr<CookieCryptor> cookie_crypto_delegate_;
 };
 
 TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {

@@ -43,7 +43,7 @@ class TestNetLog : public NetLog {
   // The underlying observer class that does all the work.
   class Observer;
 
-  scoped_ptr<Observer> observer_;
+  std::unique_ptr<Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetLog);
 };

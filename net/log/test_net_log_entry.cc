@@ -16,7 +16,7 @@ TestNetLogEntry::TestNetLogEntry(NetLog::EventType type,
                                  const base::TimeTicks& time,
                                  NetLog::Source source,
                                  NetLog::EventPhase phase,
-                                 scoped_ptr<base::DictionaryValue> params)
+                                 std::unique_ptr<base::DictionaryValue> params)
     : type(type),
       time(time),
       source(source),

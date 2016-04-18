@@ -4,6 +4,7 @@
 
 #include "net/log/trace_net_log_observer.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_buffer.h"
@@ -75,7 +75,7 @@ class TraceNetLogObserverTest : public testing::Test {
     trace_buffer_.AddFragment(events_str->data());
     trace_buffer_.Finish();
 
-    scoped_ptr<base::Value> trace_value;
+    std::unique_ptr<base::Value> trace_value;
     trace_value = base::JSONReader::Read(
         json_output_.json_output,
         base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN);
@@ -109,9 +109,10 @@ class TraceNetLogObserverTest : public testing::Test {
     trace_net_log_observer_.reset(trace_net_log_observer);
   }
 
-  static scoped_ptr<base::ListValue> FilterNetLogTraceEvents(
+  static std::unique_ptr<base::ListValue> FilterNetLogTraceEvents(
       const base::ListValue& trace_events) {
-    scoped_ptr<base::ListValue> filtered_trace_events(new base::ListValue());
+    std::unique_ptr<base::ListValue> filtered_trace_events(
+        new base::ListValue());
     for (size_t i = 0; i < trace_events.GetSize(); i++) {
       const base::DictionaryValue* dict = NULL;
       if (!trace_events.GetDictionary(i, &dict)) {
@@ -140,11 +141,11 @@ class TraceNetLogObserverTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<base::ListValue> trace_events_;
+  std::unique_ptr<base::ListValue> trace_events_;
   base::trace_event::TraceResultBuffer trace_buffer_;
   base::trace_event::TraceResultBuffer::SimpleOutput json_output_;
   TestNetLog net_log_;
-  scoped_ptr<TraceNetLogObserver> trace_net_log_observer_;
+  std::unique_ptr<TraceNetLogObserver> trace_net_log_observer_;
 };
 
 TEST_F(TraceNetLogObserverTest, TracingNotEnabled) {

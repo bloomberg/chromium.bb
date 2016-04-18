@@ -4,6 +4,8 @@
 
 #include "net/test/python_utils.h"
 
+#include <memory>
+
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/environment.h"
@@ -11,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
@@ -24,7 +25,7 @@
 const char kPythonPathEnv[] = "PYTHONPATH";
 
 void AppendToPythonPath(const base::FilePath& dir) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string old_path;
   std::string dir_path;
 #if defined(OS_WIN)

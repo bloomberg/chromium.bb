@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -44,16 +44,16 @@ const char kKb[] = "kB";
 
 struct CacheSpec {
  public:
-  static scoped_ptr<CacheSpec> Parse(const std::string& spec_string) {
+  static std::unique_ptr<CacheSpec> Parse(const std::string& spec_string) {
     std::vector<std::string> tokens = base::SplitString(
         spec_string, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (tokens.size() != 3)
-      return scoped_ptr<CacheSpec>();
+      return std::unique_ptr<CacheSpec>();
     if (tokens[0] != kBlockFileBackendType && tokens[0] != kSimpleBackendType)
-      return scoped_ptr<CacheSpec>();
+      return std::unique_ptr<CacheSpec>();
     if (tokens[1] != kDiskCacheType && tokens[1] != kAppCacheType)
-      return scoped_ptr<CacheSpec>();
-    return scoped_ptr<CacheSpec>(new CacheSpec(
+      return std::unique_ptr<CacheSpec>();
+    return std::unique_ptr<CacheSpec>(new CacheSpec(
         tokens[0] == kBlockFileBackendType ? net::CACHE_BACKEND_BLOCKFILE
                                            : net::CACHE_BACKEND_SIMPLE,
         tokens[1] == kDiskCacheType ? net::DISK_CACHE : net::APP_CACHE,
@@ -85,9 +85,9 @@ void SetSuccessCodeOnCompletion(base::RunLoop* run_loop,
   run_loop->Quit();
 }
 
-scoped_ptr<Backend> CreateAndInitBackend(const CacheSpec& spec) {
-  scoped_ptr<Backend> result;
-  scoped_ptr<Backend> backend;
+std::unique_ptr<Backend> CreateAndInitBackend(const CacheSpec& spec) {
+  std::unique_ptr<Backend> result;
+  std::unique_ptr<Backend> backend;
   bool succeeded = false;
   base::RunLoop run_loop;
   const net::CompletionCallback callback = base::Bind(
@@ -223,10 +223,10 @@ uint64_t GetMemoryConsumption() {
   return total_size;
 }
 
-bool CacheMemTest(const std::vector<scoped_ptr<CacheSpec>>& specs) {
-  std::vector<scoped_ptr<Backend>> backends;
+bool CacheMemTest(const std::vector<std::unique_ptr<CacheSpec>>& specs) {
+  std::vector<std::unique_ptr<Backend>> backends;
   for (const auto& it : specs) {
-    scoped_ptr<Backend> backend = CreateAndInitBackend(*it);
+    std::unique_ptr<Backend> backend = CreateAndInitBackend(*it);
     if (!backend)
       return false;
     std::cout << "Number of entries in " << it->path.LossyDisplayName() << " : "
@@ -252,8 +252,8 @@ void PrintUsage(std::ostream* stream) {
 }
 
 bool ParseAndStoreSpec(const std::string& spec_str,
-                       std::vector<scoped_ptr<CacheSpec>>* specs) {
-  scoped_ptr<CacheSpec> spec = CacheSpec::Parse(spec_str);
+                       std::vector<std::unique_ptr<CacheSpec>>* specs) {
+  std::unique_ptr<CacheSpec> spec = CacheSpec::Parse(spec_str);
   if (!spec) {
     PrintUsage(&std::cerr);
     return false;
@@ -280,7 +280,7 @@ bool Main(int argc, char** argv) {
     PrintUsage(&std::cerr);
     return false;
   }
-  std::vector<scoped_ptr<CacheSpec>> specs;
+  std::vector<std::unique_ptr<CacheSpec>> specs;
   const std::string spec_str_1 = command_line.GetSwitchValueASCII("spec-1");
   if (!ParseAndStoreSpec(spec_str_1, &specs))
     return false;

@@ -6,9 +6,10 @@
 
 #include <openssl/evp.h>
 #include <openssl/x509.h>
-#include <algorithm>
 
-#include "base/memory/scoped_ptr.h"
+#include <algorithm>
+#include <memory>
+
 #include "base/memory/singleton.h"
 #include "net/cert/x509_certificate.h"
 

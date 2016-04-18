@@ -5,8 +5,8 @@
 #include "net/tools/balsa/balsa_frame.h"
 
 #include <iterator>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/tools/balsa/balsa_enums.h"
 #include "net/tools/balsa/balsa_headers.h"
@@ -66,9 +66,9 @@ class BalsaFrameTest : public ::testing::Test {
   };
 
  protected:
-  scoped_ptr<BalsaFrame> frame_;
-  scoped_ptr<BalsaHeaders> frame_headers_;
-  scoped_ptr<Visitor> visitor_;
+  std::unique_ptr<BalsaFrame> frame_;
+  std::unique_ptr<BalsaHeaders> frame_headers_;
+  std::unique_ptr<Visitor> visitor_;
 };
 
 TEST_F(BalsaFrameTest, EmptyFrame) {

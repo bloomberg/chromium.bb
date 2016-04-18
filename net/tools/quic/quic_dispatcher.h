@@ -8,12 +8,12 @@
 #ifndef NET_TOOLS_QUIC_QUIC_DISPATCHER_H_
 #define NET_TOOLS_QUIC_QUIC_DISPATCHER_H_
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/crypto/quic_compressed_certs_cache.h"
@@ -235,19 +235,19 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   SessionMap session_map_;
 
   // Entity that manages connection_ids in time wait state.
-  scoped_ptr<QuicTimeWaitListManager> time_wait_list_manager_;
+  std::unique_ptr<QuicTimeWaitListManager> time_wait_list_manager_;
 
   // The list of closed but not-yet-deleted sessions.
   std::vector<QuicServerSessionBase*> closed_session_list_;
 
   // The helper used for all connections.
-  scoped_ptr<QuicConnectionHelperInterface> helper_;
+  std::unique_ptr<QuicConnectionHelperInterface> helper_;
 
   // An alarm which deletes closed sessions.
-  scoped_ptr<QuicAlarm> delete_sessions_alarm_;
+  std::unique_ptr<QuicAlarm> delete_sessions_alarm_;
 
   // The writer to write to the socket with.
-  scoped_ptr<QuicPacketWriter> writer_;
+  std::unique_ptr<QuicPacketWriter> writer_;
 
   // This vector contains QUIC versions which we currently support.
   // This should be ordered such that the highest supported version is the first

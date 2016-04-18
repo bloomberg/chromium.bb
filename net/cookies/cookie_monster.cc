@@ -46,6 +46,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <set>
 
 #include "base/bind.h"
@@ -53,7 +54,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
@@ -977,7 +978,7 @@ const char* const CookieMonster::kDefaultCookieableSchemes[] = {"http", "https",
 const int CookieMonster::kDefaultCookieableSchemesCount =
     arraysize(kDefaultCookieableSchemes);
 
-scoped_ptr<CookieStore::CookieChangedSubscription>
+std::unique_ptr<CookieStore::CookieChangedSubscription>
 CookieMonster::AddCallbackForCookie(const GURL& gurl,
                                     const std::string& name,
                                     const CookieChangedCallback& callback) {
@@ -1036,7 +1037,7 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
     last_time_seen_ = actual_creation_time;
   }
 
-  scoped_ptr<CanonicalCookie> cc(CanonicalCookie::Create(
+  std::unique_ptr<CanonicalCookie> cc(CanonicalCookie::Create(
       url, name, value, domain, path, actual_creation_time, expiration_time,
       secure, http_only, same_site, enforce_strict_secure, priority));
 
@@ -1718,7 +1719,7 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
     last_time_seen_ = creation_time;
   }
 
-  scoped_ptr<CanonicalCookie> cc(
+  std::unique_ptr<CanonicalCookie> cc(
       CanonicalCookie::Create(url, cookie_line, creation_time, options));
 
   if (!cc.get()) {
@@ -1728,7 +1729,7 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
   return SetCanonicalCookie(std::move(cc), options);
 }
 
-bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie> cc,
+bool CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
                                        const CookieOptions& options) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -1786,7 +1787,7 @@ bool CookieMonster::SetCanonicalCookies(const CookieList& list) {
   options.set_include_httponly();
 
   for (const auto& cookie : list) {
-    if (!SetCanonicalCookie(make_scoped_ptr(new CanonicalCookie(cookie)),
+    if (!SetCanonicalCookie(base::WrapUnique(new CanonicalCookie(cookie)),
                             options)) {
       return false;
     }

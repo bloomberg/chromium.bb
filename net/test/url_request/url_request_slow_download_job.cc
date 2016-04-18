@@ -72,16 +72,16 @@ void URLRequestSlowDownloadJob::AddUrlHandler() {
   URLRequestFilter* filter = URLRequestFilter::GetInstance();
   filter->AddUrlInterceptor(
       GURL(kUnknownSizeUrl),
-      scoped_ptr<URLRequestInterceptor>(new Interceptor()));
+      std::unique_ptr<URLRequestInterceptor>(new Interceptor()));
   filter->AddUrlInterceptor(
       GURL(kKnownSizeUrl),
-      scoped_ptr<URLRequestInterceptor>(new Interceptor()));
+      std::unique_ptr<URLRequestInterceptor>(new Interceptor()));
   filter->AddUrlInterceptor(
       GURL(kFinishDownloadUrl),
-      scoped_ptr<URLRequestInterceptor>(new Interceptor()));
+      std::unique_ptr<URLRequestInterceptor>(new Interceptor()));
   filter->AddUrlInterceptor(
       GURL(kErrorDownloadUrl),
-      scoped_ptr<URLRequestInterceptor>(new Interceptor()));
+      std::unique_ptr<URLRequestInterceptor>(new Interceptor()));
 }
 
 // static

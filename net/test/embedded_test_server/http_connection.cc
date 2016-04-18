@@ -12,7 +12,7 @@
 namespace net {
 namespace test_server {
 
-HttpConnection::HttpConnection(scoped_ptr<StreamSocket> socket,
+HttpConnection::HttpConnection(std::unique_ptr<StreamSocket> socket,
                                const HandleRequestCallback& callback)
     : socket_(std::move(socket)),
       callback_(callback),

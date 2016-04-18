@@ -217,9 +217,9 @@ HttpRequestParser::ParseResult HttpRequestParser::ParseContent() {
   return WAITING;
 }
 
-scoped_ptr<HttpRequest> HttpRequestParser::GetRequest() {
+std::unique_ptr<HttpRequest> HttpRequestParser::GetRequest() {
   DCHECK_EQ(STATE_ACCEPTED, state_);
-  scoped_ptr<HttpRequest> result = std::move(http_request_);
+  std::unique_ptr<HttpRequest> result = std::move(http_request_);
 
   // Prepare for parsing a new request.
   state_ = STATE_HEADERS;

@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -127,16 +127,16 @@ class SpawnerCommunicator : public URLRequest::Delegate {
   const uint16_t port_;
 
   // Helper to add |port_| to the list of the globally explicitly allowed ports.
-  scoped_ptr<ScopedPortException> allowed_port_;
+  std::unique_ptr<ScopedPortException> allowed_port_;
 
   // The next ID to use for |cur_request_| (monotonically increasing).
   int next_id_;
 
   // Request context used by |cur_request_|.
-  scoped_ptr<URLRequestContext> context_;
+  std::unique_ptr<URLRequestContext> context_;
 
   // The current (in progress) request, or NULL.
-  scoped_ptr<URLRequest> cur_request_;
+  std::unique_ptr<URLRequest> cur_request_;
 
   // Only gets/sets |is_running_| on user's thread to avoid race-condition.
   bool is_running_;

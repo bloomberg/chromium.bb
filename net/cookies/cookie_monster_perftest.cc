@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -35,7 +35,7 @@ class CookieMonsterTest : public testing::Test {
   CookieMonsterTest() : message_loop_(new base::MessageLoopForIO()) {}
 
  private:
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 };
 
 class BaseCallback {
@@ -121,7 +121,7 @@ TEST(ParsedCookieTest, TestParseBigCookies) {
 }
 
 TEST_F(CookieMonsterTest, TestAddCookiesOnSingleHost) {
-  scoped_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
   std::vector<std::string> cookies;
   for (int i = 0; i < kNumCookies; i++) {
     cookies.push_back(base::StringPrintf("a%03d=b", i));
@@ -154,7 +154,7 @@ TEST_F(CookieMonsterTest, TestAddCookiesOnSingleHost) {
 }
 
 TEST_F(CookieMonsterTest, TestAddCookieOnManyHosts) {
-  scoped_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
   std::string cookie(kCookieLine);
   std::vector<GURL> gurls;  // just wanna have ffffuunnn
   for (int i = 0; i < kNumCookies; ++i) {
@@ -187,7 +187,7 @@ TEST_F(CookieMonsterTest, TestAddCookieOnManyHosts) {
 }
 
 TEST_F(CookieMonsterTest, TestDomainTree) {
-  scoped_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
   GetCookiesCallback getCookiesCallback;
   SetCookieCallback setCookieCallback;
   const char domain_cookie_format_tree[] = "a=b; domain=%s";
@@ -240,7 +240,7 @@ TEST_F(CookieMonsterTest, TestDomainTree) {
 }
 
 TEST_F(CookieMonsterTest, TestDomainLine) {
-  scoped_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
   SetCookieCallback setCookieCallback;
   GetCookiesCallback getCookiesCallback;
   std::vector<std::string> domain_list;
@@ -301,7 +301,7 @@ TEST_F(CookieMonsterTest, TestImport) {
 
   store->SetLoadExpectation(true, initial_cookies);
 
-  scoped_ptr<CookieMonster> cm(new CookieMonster(store.get(), nullptr));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(store.get(), nullptr));
 
   // Import will happen on first access.
   GURL gurl("www.google.com");
@@ -315,7 +315,7 @@ TEST_F(CookieMonsterTest, TestImport) {
 }
 
 TEST_F(CookieMonsterTest, TestGetKey) {
-  scoped_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
   base::PerfTimeLogger timer("Cookie_monster_get_key");
   for (int i = 0; i < kNumCookies; i++)
     cm->GetKey("www.google.com");
@@ -371,7 +371,7 @@ TEST_F(CookieMonsterTest, TestGCTimes) {
   };
   for (int ci = 0; ci < static_cast<int>(arraysize(test_cases)); ++ci) {
     const TestCase& test_case(test_cases[ci]);
-    scoped_ptr<CookieMonster> cm = CreateMonsterFromStoreForGC(
+    std::unique_ptr<CookieMonster> cm = CreateMonsterFromStoreForGC(
         test_case.num_cookies, test_case.num_old_cookies, 0, 0,
         CookieMonster::kSafeFromGlobalPurgeDays * 2);
 

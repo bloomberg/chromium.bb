@@ -5,9 +5,9 @@
 #ifndef NET_LOG_NET_LOG_UTIL_H_
 #define NET_LOG_NET_LOG_UTIL_H_
 
+#include <memory>
 #include <set>
 
-#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log.h"
 
@@ -32,7 +32,7 @@ enum NetInfoSource {
 // Utility methods for creating NetLog dumps.
 
 // Create a dictionary containing a legend for net/ constants.
-NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetConstants();
+NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetConstants();
 
 // Retrieves a dictionary containing information about the current state of
 // |context|.  |info_sources| is a set of NetInfoSources OR'd together,
@@ -40,7 +40,7 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetConstants();
 // one top-level entry to the returned dictionary.
 //
 // May only be called on |context|'s thread.
-NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
+NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
     URLRequestContext* context,
     int info_sources);
 

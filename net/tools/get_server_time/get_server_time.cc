@@ -11,6 +11,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <memory>
 #include <string>
 
 #include "base/at_exit.h"
@@ -21,8 +22,8 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -119,7 +120,7 @@ class PrintingLogObserver : public net::NetLog::ThreadSafeObserver {
         net::NetLog::EventTypeToString(entry.type());
     const char* const event_phase =
         net::NetLog::EventPhaseToString(entry.phase());
-    scoped_ptr<base::Value> params(entry.ParametersToValue());
+    std::unique_ptr<base::Value> params(entry.ParametersToValue());
     std::string params_str;
     if (params.get()) {
       base::JSONWriter::Write(*params, &params_str);
@@ -135,8 +136,8 @@ class PrintingLogObserver : public net::NetLog::ThreadSafeObserver {
 };
 
 // Builds a URLRequestContext assuming there's only a single loop.
-scoped_ptr<net::URLRequestContext>
-BuildURLRequestContext(net::NetLog* net_log) {
+std::unique_ptr<net::URLRequestContext> BuildURLRequestContext(
+    net::NetLog* net_log) {
   net::URLRequestContextBuilder builder;
 #if defined(OS_LINUX)
   // On Linux, use a fixed ProxyConfigService, since the default one
@@ -144,9 +145,9 @@ BuildURLRequestContext(net::NetLog* net_log) {
   //
   // TODO(akalin): Remove this once http://crbug.com/146421 is fixed.
   builder.set_proxy_config_service(
-      make_scoped_ptr(new net::ProxyConfigServiceFixed(net::ProxyConfig())));
+      base::WrapUnique(new net::ProxyConfigServiceFixed(net::ProxyConfig())));
 #endif
-  scoped_ptr<net::URLRequestContext> context(builder.Build());
+  std::unique_ptr<net::URLRequestContext> context(builder.Build());
   context->set_net_log(net_log);
   return context;
 }
@@ -230,9 +231,9 @@ int main(int argc, char* argv[]) {
                                 net::NetLogCaptureMode::IncludeSocketBytes());
 
   QuitDelegate delegate;
-  scoped_ptr<net::URLFetcher> fetcher =
+  std::unique_ptr<net::URLFetcher> fetcher =
       net::URLFetcher::Create(url, net::URLFetcher::HEAD, &delegate);
-  scoped_ptr<net::URLRequestContext> url_request_context(
+  std::unique_ptr<net::URLRequestContext> url_request_context(
       BuildURLRequestContext(&net_log));
   fetcher->SetRequestContext(
       // Since there's only a single thread, there's no need to worry

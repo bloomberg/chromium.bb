@@ -7,10 +7,10 @@
 
 #include <openssl/evp.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"

@@ -150,7 +150,7 @@ int HttpConnection::QueuedWriteIOBuffer::GetSizeToWrite() const {
   return pending_data_.front().size() - consumed;
 }
 
-HttpConnection::HttpConnection(int id, scoped_ptr<StreamSocket> socket)
+HttpConnection::HttpConnection(int id, std::unique_ptr<StreamSocket> socket)
     : id_(id),
       socket_(std::move(socket)),
       read_buf_(new ReadIOBuffer()),
@@ -159,7 +159,7 @@ HttpConnection::HttpConnection(int id, scoped_ptr<StreamSocket> socket)
 HttpConnection::~HttpConnection() {
 }
 
-void HttpConnection::SetWebSocket(scoped_ptr<WebSocket> web_socket) {
+void HttpConnection::SetWebSocket(std::unique_ptr<WebSocket> web_socket) {
   DCHECK(!web_socket_);
   web_socket_ = std::move(web_socket);
 }

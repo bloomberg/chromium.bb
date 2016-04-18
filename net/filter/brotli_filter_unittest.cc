@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/filter/brotli_filter.h"
+
+#include <memory>
+
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "net/base/io_buffer.h"
-#include "net/filter/brotli_filter.h"
 #include "net/filter/mock_filter_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -135,7 +137,7 @@ class BrotliUnitTest : public PlatformTest {
   const char* encoded_buffer() const { return encoded_buffer_.data(); }
   int encoded_len() const { return static_cast<int>(encoded_buffer_.size()); }
 
-  scoped_ptr<Filter> filter_;
+  std::unique_ptr<Filter> filter_;
 
  private:
   MockFilterContext filter_context_;

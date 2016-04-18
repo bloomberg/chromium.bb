@@ -27,7 +27,7 @@ class FlipMemoryCacheTest : public ::testing::Test {
   FlipMemoryCacheTest() : mem_cache_(new MemoryCacheWithFakeReadToString) {}
 
  protected:
-  scoped_ptr<MemoryCacheWithFakeReadToString> mem_cache_;
+  std::unique_ptr<MemoryCacheWithFakeReadToString> mem_cache_;
 };
 
 TEST_F(FlipMemoryCacheTest, EmptyCache) {

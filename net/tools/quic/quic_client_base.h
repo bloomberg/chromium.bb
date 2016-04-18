@@ -8,10 +8,10 @@
 #ifndef NET_TOOLS_QUIC_QUIC_CLIENT_BASE_H_
 #define NET_TOOLS_QUIC_QUIC_CLIENT_BASE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "net/log/net_log.h"
 #include "net/quic/crypto/crypto_handshake.h"
@@ -199,14 +199,14 @@ class QuicClientBase {
   QuicCryptoClientConfig crypto_config_;
 
   // Helper to be used by created connections. Needs to outlive |session_|.
-  scoped_ptr<QuicConnectionHelperInterface> helper_;
+  std::unique_ptr<QuicConnectionHelperInterface> helper_;
 
   // Writer used to actually send packets to the wire. Needs to outlive
   // |session_|.
-  scoped_ptr<QuicPacketWriter> writer_;
+  std::unique_ptr<QuicPacketWriter> writer_;
 
   // Session which manages streams.
-  scoped_ptr<QuicClientSession> session_;
+  std::unique_ptr<QuicClientSession> session_;
 
   // This vector contains QUIC versions which we currently support.
   // This should be ordered such that the highest supported version is the first

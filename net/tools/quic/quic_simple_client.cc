@@ -100,7 +100,7 @@ QuicSimpleClient::QuicDataToResend::~QuicDataToResend() {
 }
 
 bool QuicSimpleClient::CreateUDPSocket() {
-  scoped_ptr<UDPClientSocket> socket(
+  std::unique_ptr<UDPClientSocket> socket(
       new UDPClientSocket(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
                           &net_log_, NetLog::Source()));
 

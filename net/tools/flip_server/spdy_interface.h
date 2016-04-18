@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/tools/balsa/balsa_headers.h"
@@ -218,7 +218,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   void GetOutput() override;
 
  private:
-  scoped_ptr<BufferedSpdyFramer> buffered_spdy_framer_;
+  std::unique_ptr<BufferedSpdyFramer> buffered_spdy_framer_;
   bool valid_spdy_session_;  // True if we have seen valid data on this session.
                              // Use this to fail fast when junk is sent to our
                              // port.

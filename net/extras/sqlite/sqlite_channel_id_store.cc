@@ -4,6 +4,7 @@
 
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -14,7 +15,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -83,7 +83,8 @@ class SQLiteChannelIDStore::Backend
   }
 
   void LoadInBackground(
-      std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>* channel_ids);
+      std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>>*
+          channel_ids);
 
   // Database upgrade statements.
   bool EnsureDatabaseVersion();
@@ -126,7 +127,7 @@ class SQLiteChannelIDStore::Backend
   void KillDatabase();
 
   const base::FilePath path_;
-  scoped_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Connection> db_;
   sql::MetaTable meta_table_;
 
   typedef std::list<PendingOperation*> PendingOperationsList;
@@ -149,11 +150,12 @@ void SQLiteChannelIDStore::Backend::Load(
     const LoadedCallback& loaded_callback) {
   // This function should be called only once per instance.
   DCHECK(!db_.get());
-  scoped_ptr<std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>>
+  std::unique_ptr<
+      std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>>>
       channel_ids(
-          new std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>());
-  std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>* channel_ids_ptr =
-      channel_ids.get();
+          new std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>>());
+  std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>>*
+      channel_ids_ptr = channel_ids.get();
 
   background_task_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -162,7 +164,8 @@ void SQLiteChannelIDStore::Backend::Load(
 }
 
 void SQLiteChannelIDStore::Backend::LoadInBackground(
-    std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>* channel_ids) {
+    std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>>*
+        channel_ids) {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   // This method should be called only once per instance.
@@ -222,13 +225,13 @@ void SQLiteChannelIDStore::Backend::LoadInBackground(
     std::vector<uint8_t> private_key_from_db, public_key_from_db;
     smt.ColumnBlobAsVector(1, &private_key_from_db);
     smt.ColumnBlobAsVector(2, &public_key_from_db);
-    scoped_ptr<crypto::ECPrivateKey> key(
+    std::unique_ptr<crypto::ECPrivateKey> key(
         crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
             ChannelIDService::kEPKIPassword, private_key_from_db,
             public_key_from_db));
     if (!key)
       continue;
-    scoped_ptr<DefaultChannelIDStore::ChannelID> channel_id(
+    std::unique_ptr<DefaultChannelIDStore::ChannelID> channel_id(
         new DefaultChannelIDStore::ChannelID(
             smt.ColumnString(0),  // host
             base::Time::FromInternalValue(smt.ColumnInt64(3)), std::move(key)));
@@ -412,7 +415,7 @@ void SQLiteChannelIDStore::Backend::BatchOperation(
   static const size_t kCommitAfterBatchSize = 512;
 
   // We do a full copy of the cert here, and hopefully just here.
-  scoped_ptr<PendingOperation> po(new PendingOperation(op, channel_id));
+  std::unique_ptr<PendingOperation> po(new PendingOperation(op, channel_id));
 
   PendingOperationsList::size_type num_pending;
   {
@@ -447,7 +450,7 @@ void SQLiteChannelIDStore::Backend::PrunePendingOperationsForDeletes(
         server_identifiers.end();
 
     if (remove) {
-      scoped_ptr<PendingOperation> po(*it);
+      std::unique_ptr<PendingOperation> po(*it);
       it = pending_.erase(it);
       --num_pending_;
     } else {
@@ -489,7 +492,7 @@ void SQLiteChannelIDStore::Backend::Commit() {
   for (PendingOperationsList::iterator it = ops.begin(); it != ops.end();
        ++it) {
     // Free the certs as we commit them to the database.
-    scoped_ptr<PendingOperation> po(*it);
+    std::unique_ptr<PendingOperation> po(*it);
     switch (po->op()) {
       case PendingOperation::CHANNEL_ID_ADD: {
         add_statement.Reset(true);

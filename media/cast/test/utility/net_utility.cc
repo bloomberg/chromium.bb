@@ -4,6 +4,7 @@
 
 #include "media/cast/test/utility/net_utility.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/udp/udp_server_socket.h"

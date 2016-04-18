@@ -99,7 +99,7 @@ void QuicSimpleServer::Initialize() {
         kInitialSessionFlowControlWindow);
   }
 
-  scoped_ptr<CryptoHandshakeMessage> scfg(crypto_config_.AddDefaultConfig(
+  std::unique_ptr<CryptoHandshakeMessage> scfg(crypto_config_.AddDefaultConfig(
       helper_->GetRandomGenerator(), helper_->GetClock(),
       QuicCryptoServerConfig::ConfigOptions()));
 }
@@ -107,7 +107,7 @@ void QuicSimpleServer::Initialize() {
 QuicSimpleServer::~QuicSimpleServer() {}
 
 int QuicSimpleServer::Listen(const IPEndPoint& address) {
-  scoped_ptr<UDPServerSocket> socket(
+  std::unique_ptr<UDPServerSocket> socket(
       new UDPServerSocket(&net_log_, NetLog::Source()));
 
   socket->AllowAddressReuse();

@@ -5,10 +5,11 @@
 #ifndef NET_TEST_EMBEDDED_TEST_SERVER_HTTP_CONNECTION_H_
 #define NET_TEST_EMBEDDED_TEST_SERVER_HTTP_CONNECTION_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/completion_callback.h"
@@ -28,14 +29,14 @@ class HttpResponse;
 // Calblack called when a request is parsed. Response should be sent
 // using HttpConnection::SendResponse() on the |connection| argument.
 typedef base::Callback<void(HttpConnection* connection,
-                            scoped_ptr<HttpRequest> request)>
+                            std::unique_ptr<HttpRequest> request)>
     HandleRequestCallback;
 
 // Wraps the connection socket. Accepts incoming data and sends responses.
 // If a valid request is parsed, then |callback_| is invoked.
 class HttpConnection {
  public:
-  HttpConnection(scoped_ptr<StreamSocket> socket,
+  HttpConnection(std::unique_ptr<StreamSocket> socket,
                  const HandleRequestCallback& callback);
   ~HttpConnection();
 
@@ -61,7 +62,7 @@ class HttpConnection {
 
   base::WeakPtr<HttpConnection> GetWeakPtr();
 
-  scoped_ptr<StreamSocket> socket_;
+  std::unique_ptr<StreamSocket> socket_;
   const HandleRequestCallback callback_;
   HttpRequestParser request_parser_;
   scoped_refptr<IOBufferWithSize> read_buf_;

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -182,9 +183,9 @@ void URLRequestMockDataJob::AddUrlHandlerForHostname(
   // Add |hostname| to URLRequestFilter for HTTP and HTTPS.
   URLRequestFilter* filter = URLRequestFilter::GetInstance();
   filter->AddHostnameInterceptor("http", hostname,
-                                 make_scoped_ptr(new MockJobInterceptor()));
+                                 base::WrapUnique(new MockJobInterceptor()));
   filter->AddHostnameInterceptor("https", hostname,
-                                 make_scoped_ptr(new MockJobInterceptor()));
+                                 base::WrapUnique(new MockJobInterceptor()));
 }
 
 // static

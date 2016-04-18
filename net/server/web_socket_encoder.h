@@ -5,10 +5,10 @@
 #ifndef NET_SERVER_WEB_SOCKET_ENCODER_H_
 #define NET_SERVER_WEB_SOCKET_ENCODER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/server/web_socket.h"
 #include "net/websockets/websocket_deflater.h"
@@ -25,14 +25,14 @@ class WebSocketEncoder final {
   ~WebSocketEncoder();
 
   // Creates and returns an encoder for a server without extensions.
-  static scoped_ptr<WebSocketEncoder> CreateServer();
+  static std::unique_ptr<WebSocketEncoder> CreateServer();
   // Creates and returns an encoder.
   // |extensions| is the value of a Sec-WebSocket-Extensions header.
   // Returns nullptr when there is an error.
-  static scoped_ptr<WebSocketEncoder> CreateServer(
+  static std::unique_ptr<WebSocketEncoder> CreateServer(
       const std::string& extensions,
       WebSocketDeflateParameters* params);
-  static scoped_ptr<WebSocketEncoder> CreateClient(
+  static std::unique_ptr<WebSocketEncoder> CreateClient(
       const std::string& response_extensions);
 
   WebSocket::ParseResult DecodeFrame(const base::StringPiece& frame,
@@ -51,15 +51,15 @@ class WebSocketEncoder final {
   };
 
   WebSocketEncoder(Type type,
-                   scoped_ptr<WebSocketDeflater> deflater,
-                   scoped_ptr<WebSocketInflater> inflater);
+                   std::unique_ptr<WebSocketDeflater> deflater,
+                   std::unique_ptr<WebSocketInflater> inflater);
 
   bool Inflate(std::string* message);
   bool Deflate(const std::string& message, std::string* output);
 
   Type type_;
-  scoped_ptr<WebSocketDeflater> deflater_;
-  scoped_ptr<WebSocketInflater> inflater_;
+  std::unique_ptr<WebSocketDeflater> deflater_;
+  std::unique_ptr<WebSocketInflater> inflater_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketEncoder);
 };

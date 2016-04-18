@@ -95,7 +95,7 @@ int main(int argc, const char* argv[]) {
     return -1;
   }
 
-  scoped_ptr<net::SpawnedTestServer> test_server;
+  std::unique_ptr<net::SpawnedTestServer> test_server;
   if (net::SpawnedTestServer::UsingSSL(server_type)) {
     test_server.reset(
         new net::SpawnedTestServer(server_type, ssl_options, doc_root));

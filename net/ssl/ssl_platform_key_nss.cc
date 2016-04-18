@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/ssl/ssl_platform_key.h"
-
 #include <keyhi.h>
 #include <openssl/bn.h>
 #include <openssl/ecdsa.h>
 #include <openssl/rsa.h>
 #include <pk11pub.h>
 #include <prerror.h>
+
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_openssl_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_key_store.h"
+#include "net/ssl/ssl_platform_key.h"
 #include "net/ssl/ssl_platform_key_task_runner.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/threaded_ssl_private_key.h"
@@ -182,7 +183,7 @@ scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
       return nullptr;
   }
   return make_scoped_refptr(new ThreadedSSLPrivateKey(
-      make_scoped_ptr(new SSLPlatformKeyNSS(type, std::move(key))),
+      base::WrapUnique(new SSLPlatformKeyNSS(type, std::move(key))),
       GetSSLPlatformKeyTaskRunner()));
 }
 

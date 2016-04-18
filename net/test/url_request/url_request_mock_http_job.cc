@@ -120,19 +120,19 @@ GURL URLRequestMockHTTPJob::GetMockHttpsUrl(const std::string& path) {
 }
 
 // static
-scoped_ptr<URLRequestInterceptor> URLRequestMockHTTPJob::CreateInterceptor(
+std::unique_ptr<URLRequestInterceptor> URLRequestMockHTTPJob::CreateInterceptor(
     const base::FilePath& base_path,
     const scoped_refptr<base::SequencedWorkerPool>& worker_pool) {
-  return scoped_ptr<URLRequestInterceptor>(
+  return std::unique_ptr<URLRequestInterceptor>(
       new MockJobInterceptor(base_path, false, worker_pool));
 }
 
 // static
-scoped_ptr<URLRequestInterceptor>
+std::unique_ptr<URLRequestInterceptor>
 URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
     const base::FilePath& file,
     const scoped_refptr<base::SequencedWorkerPool>& worker_pool) {
-  return scoped_ptr<URLRequestInterceptor>(
+  return std::unique_ptr<URLRequestInterceptor>(
       new MockJobInterceptor(file, true, worker_pool));
 }
 

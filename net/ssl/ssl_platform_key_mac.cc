@@ -4,23 +4,24 @@
 
 #include "net/ssl/ssl_platform_key.h"
 
-#include <openssl/ecdsa.h>
-#include <openssl/obj.h>
-#include <openssl/rsa.h>
-
-#include <Security/cssm.h>
 #include <Security/SecBase.h>
 #include <Security/SecCertificate.h>
 #include <Security/SecIdentity.h>
 #include <Security/SecKey.h>
+#include <Security/cssm.h>
+#include <openssl/ecdsa.h>
+#include <openssl/obj.h>
+#include <openssl/rsa.h>
+
+#include <memory>
 
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_policy.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "crypto/mac_security_services_lock.h"
@@ -242,7 +243,7 @@ scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
     return nullptr;
   }
   return make_scoped_refptr(new ThreadedSSLPrivateKey(
-      make_scoped_ptr(new SSLPlatformKeyMac(private_key.get(), cssm_key)),
+      base::WrapUnique(new SSLPlatformKeyMac(private_key.get(), cssm_key)),
       GetSSLPlatformKeyTaskRunner()));
 }
 

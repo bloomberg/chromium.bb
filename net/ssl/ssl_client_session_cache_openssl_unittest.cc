@@ -6,6 +6,7 @@
 
 #include <openssl/ssl.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "net/ssl/scoped_openssl_types.h"
@@ -146,7 +147,7 @@ TEST(SSLClientSessionCacheOpenSSLTest, Expiration) {
   config.timeout = kTimeout;
   SSLClientSessionCacheOpenSSL cache(config);
   base::SimpleTestClock* clock = new base::SimpleTestClock;
-  cache.SetClockForTesting(make_scoped_ptr(clock));
+  cache.SetClockForTesting(base::WrapUnique(clock));
 
   // Add |kNumEntries - 1| entries.
   for (size_t i = 0; i < kNumEntries - 1; i++) {
@@ -194,7 +195,7 @@ TEST(SSLClientSessionCacheOpenSSLTest, LookupExpirationCheck) {
   config.timeout = kTimeout;
   SSLClientSessionCacheOpenSSL cache(config);
   base::SimpleTestClock* clock = new base::SimpleTestClock;
-  cache.SetClockForTesting(make_scoped_ptr(clock));
+  cache.SetClockForTesting(base::WrapUnique(clock));
 
   // Insert an entry into the session cache.
   ScopedSSL_SESSION session(SSL_SESSION_new());

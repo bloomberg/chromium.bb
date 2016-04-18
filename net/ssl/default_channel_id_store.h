@@ -6,6 +6,7 @@
 #define NET_SSL_DEFAULT_CHANNEL_ID_STORE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_export.h"
@@ -49,9 +49,9 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
 
   // ChannelIDStore implementation.
   int GetChannelID(const std::string& server_identifier,
-                   scoped_ptr<crypto::ECPrivateKey>* key_result,
+                   std::unique_ptr<crypto::ECPrivateKey>* key_result,
                    const GetChannelIDCallback& callback) override;
-  void SetChannelID(scoped_ptr<ChannelID> channel_id) override;
+  void SetChannelID(std::unique_ptr<ChannelID> channel_id) override;
   void DeleteChannelID(const std::string& server_identifier,
                        const base::Closure& callback) override;
   void DeleteAllCreatedBetween(base::Time delete_begin,
@@ -95,21 +95,21 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
   void InitStore();
 
   // Callback for backing store loading completion.
-  void OnLoaded(scoped_ptr<std::vector<scoped_ptr<ChannelID>>> certs);
+  void OnLoaded(std::unique_ptr<std::vector<std::unique_ptr<ChannelID>>> certs);
 
   // Syncronous methods which do the actual work. Can only be called after
   // initialization is complete.
-  void SyncSetChannelID(scoped_ptr<ChannelID> channel_id);
+  void SyncSetChannelID(std::unique_ptr<ChannelID> channel_id);
   void SyncDeleteChannelID(const std::string& server_identifier);
   void SyncDeleteAllCreatedBetween(base::Time delete_begin,
                                    base::Time delete_end);
   void SyncGetAllChannelIDs(ChannelIDList* channel_id_list);
 
   // Add |task| to |waiting_tasks_|.
-  void EnqueueTask(scoped_ptr<Task> task);
+  void EnqueueTask(std::unique_ptr<Task> task);
   // If already initialized, run |task| immediately. Otherwise add it to
   // |waiting_tasks_|.
-  void RunOrEnqueueTask(scoped_ptr<Task> task);
+  void RunOrEnqueueTask(std::unique_ptr<Task> task);
 
   // Deletes the channel id for the specified server, if such a channel id
   // exists, from the in-memory store. Deletes it from |store_| if |store_|
@@ -118,7 +118,7 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
 
   // Adds the channel id to the in-memory store and adds it to |store_| if
   // |store_| is not NULL.
-  void InternalInsertChannelID(scoped_ptr<ChannelID> channel_id);
+  void InternalInsertChannelID(std::unique_ptr<ChannelID> channel_id);
 
   // Indicates whether the channel id store has been initialized. This happens
   // lazily in InitIfNecessary().
@@ -129,7 +129,7 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
   bool loaded_;
 
   // Tasks that are waiting to be run once we finish loading.
-  std::vector<scoped_ptr<Task>> waiting_tasks_;
+  std::vector<std::unique_ptr<Task>> waiting_tasks_;
   base::TimeTicks waiting_tasks_start_time_;
 
   scoped_refptr<PersistentStore> store_;
@@ -147,7 +147,8 @@ typedef base::RefCountedThreadSafe<DefaultChannelIDStore::PersistentStore>
 class NET_EXPORT DefaultChannelIDStore::PersistentStore
     : public RefcountedPersistentStore {
  public:
-  typedef base::Callback<void(scoped_ptr<std::vector<scoped_ptr<ChannelID>>>)>
+  typedef base::Callback<void(
+      std::unique_ptr<std::vector<std::unique_ptr<ChannelID>>>)>
       LoadedCallback;
 
   // Initializes the store and retrieves the existing channel_ids. This will be

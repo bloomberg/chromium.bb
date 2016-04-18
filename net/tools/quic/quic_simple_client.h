@@ -10,11 +10,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -220,10 +220,10 @@ class QuicSimpleClient : public QuicClientBase,
   int local_port_;
 
   // UDP socket connected to the server.
-  scoped_ptr<UDPClientSocket> socket_;
+  std::unique_ptr<UDPClientSocket> socket_;
 
   // Listens for full responses.
-  scoped_ptr<ResponseListener> response_listener_;
+  std::unique_ptr<ResponseListener> response_listener_;
 
   // Tracks if the client is initialized to connect.
   bool initialized_;
@@ -255,7 +255,7 @@ class QuicSimpleClient : public QuicClientBase,
   // The log used for the sockets.
   NetLog net_log_;
 
-  scoped_ptr<QuicChromiumPacketReader> packet_reader_;
+  std::unique_ptr<QuicChromiumPacketReader> packet_reader_;
 
   bool packet_reader_started_;
 

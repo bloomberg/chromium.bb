@@ -6,12 +6,12 @@
 #define NET_TEST_EMBEDDED_TEST_SERVER_REQUEST_HANDLER_UTIL_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -34,7 +34,7 @@ using RequestQuery = std::map<std::string, std::vector<std::string>>;
 bool ShouldHandle(const HttpRequest& request, const std::string& prefix_path);
 
 // Calls |handler| if the |request| URL starts with |prefix|.
-scoped_ptr<HttpResponse> HandlePrefixedRequest(
+std::unique_ptr<HttpResponse> HandlePrefixedRequest(
     const std::string& prefix,
     const EmbeddedTestServer::HandleRequestCallback& handler,
     const HttpRequest& request);
@@ -54,8 +54,9 @@ void GetFilePathWithReplacements(const std::string& original_path,
                                  std::string* replacement_path);
 
 // Handles |request| by serving a file from under |server_root|.
-scoped_ptr<HttpResponse> HandleFileRequest(const base::FilePath& server_root,
-                                           const HttpRequest& request);
+std::unique_ptr<HttpResponse> HandleFileRequest(
+    const base::FilePath& server_root,
+    const HttpRequest& request);
 
 }  // namespace test_server
 }  // namespace net

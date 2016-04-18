@@ -5,12 +5,12 @@
 #ifndef NET_SSL_CLIENT_KEY_STORE_H_
 #define NET_SSL_CLIENT_KEY_STORE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "net/base/net_export.h"
 

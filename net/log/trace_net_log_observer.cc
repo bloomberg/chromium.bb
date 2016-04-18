@@ -5,12 +5,13 @@
 #include "net/log/trace_net_log_observer.h"
 
 #include <stdio.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "net/log/net_log.h"
@@ -24,7 +25,7 @@ const char kNetLogTracingCategory[] = "netlog";
 
 class TracedValue : public base::trace_event::ConvertableToTraceFormat {
  public:
-  explicit TracedValue(scoped_ptr<base::Value> value)
+  explicit TracedValue(std::unique_ptr<base::Value> value)
       : value_(std::move(value)) {}
 
  private:
@@ -41,7 +42,7 @@ class TracedValue : public base::trace_event::ConvertableToTraceFormat {
   }
 
  private:
-  scoped_ptr<base::Value> value_;
+  std::unique_ptr<base::Value> value_;
 };
 
 }  // namespace
@@ -55,14 +56,14 @@ TraceNetLogObserver::~TraceNetLogObserver() {
 }
 
 void TraceNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
-  scoped_ptr<base::Value> params(entry.ParametersToValue());
+  std::unique_ptr<base::Value> params(entry.ParametersToValue());
   switch (entry.phase()) {
     case NetLog::PHASE_BEGIN:
       TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
           kNetLogTracingCategory, NetLog::EventTypeToString(entry.type()),
           entry.source().id, "source_type",
           NetLog::SourceTypeToString(entry.source().type), "params",
-          scoped_ptr<base::trace_event::ConvertableToTraceFormat>(
+          std::unique_ptr<base::trace_event::ConvertableToTraceFormat>(
               new TracedValue(std::move(params))));
       break;
     case NetLog::PHASE_END:
@@ -70,7 +71,7 @@ void TraceNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
           kNetLogTracingCategory, NetLog::EventTypeToString(entry.type()),
           entry.source().id, "source_type",
           NetLog::SourceTypeToString(entry.source().type), "params",
-          scoped_ptr<base::trace_event::ConvertableToTraceFormat>(
+          std::unique_ptr<base::trace_event::ConvertableToTraceFormat>(
               new TracedValue(std::move(params))));
       break;
     case NetLog::PHASE_NONE:
@@ -78,7 +79,7 @@ void TraceNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
           kNetLogTracingCategory, NetLog::EventTypeToString(entry.type()),
           entry.source().id, "source_type",
           NetLog::SourceTypeToString(entry.source().type), "params",
-          scoped_ptr<base::trace_event::ConvertableToTraceFormat>(
+          std::unique_ptr<base::trace_event::ConvertableToTraceFormat>(
               new TracedValue(std::move(params))));
       break;
   }

@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
   }
 
   net::MockFilterContext filter_context;
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, filter_context));
+  std::unique_ptr<Filter> filter(Filter::Factory(filter_types, filter_context));
   if (!filter) {
     std::cerr << "Couldn't create the decoder." << std::endl;
     return 1;

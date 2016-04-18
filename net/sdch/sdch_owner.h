@@ -70,7 +70,7 @@ class NET_EXPORT SdchOwner : public SdchObserver {
     // Gets or sets the value in the preferences store.
     virtual bool GetValue(const base::DictionaryValue** result) const = 0;
     virtual bool GetMutableValue(base::DictionaryValue** result) = 0;
-    virtual void SetValue(scoped_ptr<base::DictionaryValue> value) = 0;
+    virtual void SetValue(std::unique_ptr<base::DictionaryValue> value) = 0;
 
     // Notifies the storage system that a value was changed via mutating the
     // result of GetMutableValue().
@@ -98,7 +98,7 @@ class NET_EXPORT SdchOwner : public SdchObserver {
 
   // Enables use of pref persistence. Ownership of the storage will be passed.
   // This routine may only be called once per SdchOwner instance.
-  void EnablePersistentStorage(scoped_ptr<PrefStorage> pref_store);
+  void EnablePersistentStorage(std::unique_ptr<PrefStorage> pref_store);
 
   // Defaults to kMaxTotalDictionarySize.
   void SetMaxTotalDictionarySize(size_t max_total_dictionary_size);
@@ -131,7 +131,7 @@ class NET_EXPORT SdchOwner : public SdchObserver {
                            const BoundNetLog& net_log,
                            bool was_from_cache);
 
-  void SetClockForTesting(scoped_ptr<base::Clock> clock);
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
   // Returns the total number of dictionaries loaded.
   int GetDictionaryCountForTesting() const;
@@ -139,7 +139,7 @@ class NET_EXPORT SdchOwner : public SdchObserver {
   // Returns whether this SdchOwner has dictionary from |url| loaded.
   bool HasDictionaryFromURLForTesting(const GURL& url) const;
 
-  void SetFetcherForTesting(scoped_ptr<SdchDictionaryFetcher> fetcher);
+  void SetFetcherForTesting(std::unique_ptr<SdchDictionaryFetcher> fetcher);
 
  private:
   // For each active dictionary, stores local info.
@@ -215,11 +215,11 @@ class NET_EXPORT SdchOwner : public SdchObserver {
       int use_count, DictionaryFate fate);
 
   net::SdchManager* manager_;
-  scoped_ptr<net::SdchDictionaryFetcher> fetcher_;
+  std::unique_ptr<net::SdchDictionaryFetcher> fetcher_;
 
   size_t total_dictionary_bytes_;
 
-  scoped_ptr<base::Clock> clock_;
+  std::unique_ptr<base::Clock> clock_;
 
   size_t max_total_dictionary_size_;
   size_t min_space_for_dictionary_fetch_;
@@ -239,8 +239,8 @@ class NET_EXPORT SdchOwner : public SdchObserver {
   //   be freed, and pref_store_ will point to the external one.
   // * |pref_store_| holds an unowned pointer to the currently
   //   active pref store (one of the preceding two).
-  scoped_ptr<PrefStorage> in_memory_pref_store_;
-  scoped_ptr<PrefStorage> external_pref_store_;
+  std::unique_ptr<PrefStorage> in_memory_pref_store_;
+  std::unique_ptr<PrefStorage> external_pref_store_;
   PrefStorage* pref_store_;
 
   // The use counts of dictionaries when they were loaded from the persistent

@@ -5,10 +5,10 @@
 #ifndef NET_LOG_TEST_NET_LOG_ENTRY_H_
 #define NET_LOG_TEST_NET_LOG_ENTRY_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/log/net_log.h"
 
@@ -31,7 +31,7 @@ struct TestNetLogEntry {
                   const base::TimeTicks& time,
                   NetLog::Source source,
                   NetLog::EventPhase phase,
-                  scoped_ptr<base::DictionaryValue> params);
+                  std::unique_ptr<base::DictionaryValue> params);
   // Copy constructor needed to store in a std::vector because of the
   // scoped_ptr.
   TestNetLogEntry(const TestNetLogEntry& entry);
@@ -62,7 +62,7 @@ struct TestNetLogEntry {
   base::TimeTicks time;
   NetLog::Source source;
   NetLog::EventPhase phase;
-  scoped_ptr<base::DictionaryValue> params;
+  std::unique_ptr<base::DictionaryValue> params;
 };
 
 }  // namespace net

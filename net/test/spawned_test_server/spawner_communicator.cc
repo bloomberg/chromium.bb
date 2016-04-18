@@ -190,7 +190,7 @@ void SpawnerCommunicator::SendCommandAndWaitForResultOnIOThread(
     cur_request_->set_method("GET");
   } else {
     cur_request_->set_method("POST");
-    scoped_ptr<UploadElementReader> reader(
+    std::unique_ptr<UploadElementReader> reader(
         UploadOwnedBytesElementReader::CreateWithString(post_data));
     cur_request_->set_upload(
         ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
@@ -340,7 +340,8 @@ bool SpawnerCommunicator::StartServer(const std::string& arguments,
     return false;
 
   // Check whether the data returned from spawner server is JSON-formatted.
-  scoped_ptr<base::Value> value = base::JSONReader::Read(server_return_data);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::Read(server_return_data);
   if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "Invalid server data: " << server_return_data.c_str();
     return false;

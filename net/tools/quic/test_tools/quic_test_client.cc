@@ -52,7 +52,7 @@ class RecordingProofVerifier : public ProofVerifier {
                               const string& signature,
                               const ProofVerifyContext* context,
                               string* error_details,
-                              scoped_ptr<ProofVerifyDetails>* details,
+                              std::unique_ptr<ProofVerifyDetails>* details,
                               ProofVerifierCallback* callback) override {
     common_name_.clear();
     if (certs.empty()) {
@@ -311,7 +311,7 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
   // CHECK(message.body_chunks().empty())
   //      << "HTTPMessage::body_chunks not supported";
 
-  scoped_ptr<BalsaHeaders> munged_headers(MungeHeaders(message.headers()));
+  std::unique_ptr<BalsaHeaders> munged_headers(MungeHeaders(message.headers()));
   ssize_t ret = GetOrCreateStreamAndSendRequest(
       (munged_headers.get() ? munged_headers.get() : message.headers()),
       message.body(), message.has_complete_message(), nullptr);

@@ -274,7 +274,7 @@ TEST_F(BaseNetworkChangeNotifierAndroidTest,
             delegate_.GetCurrentConnectionType());
   // Instantiate another delegate to validate that it uses the actual
   // connection type at construction.
-  scoped_ptr<NetworkChangeNotifierDelegateAndroid> other_delegate(
+  std::unique_ptr<NetworkChangeNotifierDelegateAndroid> other_delegate(
       new NetworkChangeNotifierDelegateAndroid());
   EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
             other_delegate->GetCurrentConnectionType());
@@ -314,7 +314,7 @@ class NetworkChangeNotifierAndroidTest
   NetworkChangeNotifierObserver other_connection_type_observer_;
   NetworkChangeNotifier::DisableForTest disable_for_test_;
   DnsConfig dns_config_;
-  scoped_ptr<NetworkChangeNotifierAndroid> notifier_;
+  std::unique_ptr<NetworkChangeNotifierAndroid> notifier_;
 };
 
 class NetworkChangeNotifierDelegateAndroidTest

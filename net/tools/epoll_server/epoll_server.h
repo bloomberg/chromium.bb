@@ -11,6 +11,7 @@
 #include <sys/queue.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -36,7 +37,6 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include <sys/epoll.h>
 
 namespace net {
@@ -940,7 +940,7 @@ class EpollServer {
   // The callback registered to the fds below.  As the purpose of their
   // registration is to wake the epoll server it just clears the pipe and
   // returns.
-  scoped_ptr<ReadPipeCallback> wake_cb_;
+  std::unique_ptr<ReadPipeCallback> wake_cb_;
 
   // A pipe owned by the epoll server.  The server will be registered to listen
   // on read_fd_ and can be woken by Wake() which writes to write_fd_.

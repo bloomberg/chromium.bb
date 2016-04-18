@@ -13,12 +13,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 
@@ -168,7 +168,7 @@ class MockCookieMonsterDelegate : public CookieMonsterDelegate {
 };
 
 // Helper to build a single CanonicalCookie.
-scoped_ptr<CanonicalCookie> BuildCanonicalCookie(
+std::unique_ptr<CanonicalCookie> BuildCanonicalCookie(
     const GURL& url,
     const std::string& cookie_line,
     const base::Time& creation_time);
@@ -223,7 +223,7 @@ class MockSimplePersistentCookieStore
 // will be marked secure and non-secure, respectively. Do two SetCookies().
 // Return whether each of the two SetCookies() took longer than |gc_perf_micros|
 // to complete, and how many cookie were left in the store afterwards.
-scoped_ptr<CookieMonster> CreateMonsterFromStoreForGC(
+std::unique_ptr<CookieMonster> CreateMonsterFromStoreForGC(
     int num_secure_cookies,
     int num_old_secure_cookies,
     int num_non_secure_cookies,

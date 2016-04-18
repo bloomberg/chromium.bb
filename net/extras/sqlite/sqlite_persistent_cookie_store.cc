@@ -5,6 +5,7 @@
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/bind.h"
@@ -15,7 +16,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"
@@ -242,7 +242,7 @@ class SQLitePersistentCookieStore::Backend
                               bool success);
 
   const base::FilePath path_;
-  scoped_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Connection> db_;
   sql::MetaTable meta_table_;
 
   typedef std::list<PendingOperation*> PendingOperationsList;
@@ -819,7 +819,7 @@ void SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
     } else {
       value = smt.ColumnString(3);
     }
-    scoped_ptr<CanonicalCookie> cc(new CanonicalCookie(
+    std::unique_ptr<CanonicalCookie> cc(new CanonicalCookie(
         // The "source" URL is not used with persisted cookies.
         GURL(),                                        // Source
         smt.ColumnString(2),                           // name
@@ -1081,7 +1081,7 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
   DCHECK(!background_task_runner_->RunsTasksOnCurrentThread());
 
   // We do a full copy of the cookie here, and hopefully just here.
-  scoped_ptr<PendingOperation> po(new PendingOperation(op, cc));
+  std::unique_ptr<PendingOperation> po(new PendingOperation(op, cc));
 
   PendingOperationsList::size_type num_pending;
   {
@@ -1144,7 +1144,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
   for (PendingOperationsList::iterator it = ops.begin(); it != ops.end();
        ++it) {
     // Free the cookies as we commit them to the database.
-    scoped_ptr<PendingOperation> po(*it);
+    std::unique_ptr<PendingOperation> po(*it);
     switch (po->op()) {
       case PendingOperation::COOKIE_ADD:
         add_smt.Reset(true);

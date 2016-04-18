@@ -5,12 +5,12 @@
 #ifndef NET_SSL_CLIENT_CERT_STORE_UNITTEST_INL_H_
 #define NET_SSL_CLIENT_CERT_STORE_UNITTEST_INL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/test_data_directory.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/test/cert_test_util.h"

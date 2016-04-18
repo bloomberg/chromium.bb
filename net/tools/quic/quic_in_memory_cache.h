@@ -227,7 +227,7 @@ class QuicInMemoryCache {
   ResponseMap responses_;
 
   // The default response for cache misses, if set.
-  scoped_ptr<Response> default_response_;
+  std::unique_ptr<Response> default_response_;
 
   // A map from request URL to associated server push responses (if any).
   std::multimap<std::string, ServerPushInfo> server_push_resources_;

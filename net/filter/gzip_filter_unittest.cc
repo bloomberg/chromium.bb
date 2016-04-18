@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/filter/gzip_filter.h"
+
 #include <fstream>
+#include <memory>
 #include <ostream>
 
 #include "base/bit_cast.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "net/base/io_buffer.h"
-#include "net/filter/gzip_filter.h"
 #include "net/filter/mock_filter_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -233,7 +234,7 @@ class GZipUnitTest : public PlatformTest {
   const char* source_buffer() const { return source_buffer_.data(); }
   int source_len() const { return static_cast<int>(source_buffer_.size()); }
 
-  scoped_ptr<Filter> filter_;
+  std::unique_ptr<Filter> filter_;
 
   std::string source_buffer_;
 

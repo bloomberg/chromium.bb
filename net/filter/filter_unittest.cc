@@ -149,9 +149,9 @@ TEST(FilterTest, Gzip) {
 // Make sure a series of three pass-through filters copies the data cleanly.
 // Regression test for http://crbug.com/418975.
 TEST(FilterTest, ThreeFilterChain) {
-  scoped_ptr<PassThroughFilter> filter1(new PassThroughFilter);
-  scoped_ptr<PassThroughFilter> filter2(new PassThroughFilter);
-  scoped_ptr<PassThroughFilter> filter3(new PassThroughFilter);
+  std::unique_ptr<PassThroughFilter> filter1(new PassThroughFilter);
+  std::unique_ptr<PassThroughFilter> filter2(new PassThroughFilter);
+  std::unique_ptr<PassThroughFilter> filter3(new PassThroughFilter);
 
   filter1->InitBuffer(32 * 1024);
   filter2->InitBuffer(32 * 1024);

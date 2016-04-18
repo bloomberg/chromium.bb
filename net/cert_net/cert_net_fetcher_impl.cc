@@ -11,6 +11,7 @@
 #include "base/containers/linked_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
@@ -146,7 +147,8 @@ bool CertNetFetcherImpl::RequestParams::operator<(
 // the pending requests for it.
 class CertNetFetcherImpl::Job : public URLRequest::Delegate {
  public:
-  Job(scoped_ptr<RequestParams> request_params, CertNetFetcherImpl* parent);
+  Job(std::unique_ptr<RequestParams> request_params,
+      CertNetFetcherImpl* parent);
   ~Job() override;
 
   // Cancels the job and all requests attached to it. No callbacks will be
@@ -158,7 +160,7 @@ class CertNetFetcherImpl::Job : public URLRequest::Delegate {
   // Create a request and attaches it to the job. When the job completes it will
   // notify the request of completion through OnJobCompleted. Note that the Job
   // does NOT own the request.
-  scoped_ptr<Request> CreateRequest(const FetchCallback& callback);
+  std::unique_ptr<Request> CreateRequest(const FetchCallback& callback);
 
   // Removes |request| from the job.
   void DetachRequest(RequestImpl* request);
@@ -206,13 +208,13 @@ class CertNetFetcherImpl::Job : public URLRequest::Delegate {
   RequestList requests_;
 
   // The input parameters for starting a URLRequest.
-  scoped_ptr<RequestParams> request_params_;
+  std::unique_ptr<RequestParams> request_params_;
 
   // The URLRequest response information.
   std::vector<uint8_t> response_body_;
   Error result_net_error_;
 
-  scoped_ptr<URLRequest> url_request_;
+  std::unique_ptr<URLRequest> url_request_;
   scoped_refptr<IOBuffer> read_buffer_;
 
   // Used to timeout the job when the URLRequest takes too long. This timer is
@@ -230,7 +232,7 @@ CertNetFetcherImpl::RequestImpl::~RequestImpl() {
     job_->DetachRequest(this);
 }
 
-CertNetFetcherImpl::Job::Job(scoped_ptr<RequestParams> request_params,
+CertNetFetcherImpl::Job::Job(std::unique_ptr<RequestParams> request_params,
                              CertNetFetcherImpl* parent)
     : request_params_(std::move(request_params)),
       result_net_error_(ERR_IO_PENDING),
@@ -257,15 +259,15 @@ void CertNetFetcherImpl::Job::Cancel() {
   Stop();
 }
 
-scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::Job::CreateRequest(
+std::unique_ptr<CertNetFetcher::Request> CertNetFetcherImpl::Job::CreateRequest(
     const FetchCallback& callback) {
-  scoped_ptr<RequestImpl> request(new RequestImpl(this, callback));
+  std::unique_ptr<RequestImpl> request(new RequestImpl(this, callback));
   requests_.Append(request.get());
   return std::move(request);
 }
 
 void CertNetFetcherImpl::Job::DetachRequest(RequestImpl* request) {
-  scoped_ptr<Job> delete_this;
+  std::unique_ptr<Job> delete_this;
 
   request->RemoveFromList();
 
@@ -411,7 +413,7 @@ void CertNetFetcherImpl::Job::OnJobCompleted() {
   //   * The parent CertNetFetcherImpl may be deleted
   //   * Requests in this job may be cancelled
 
-  scoped_ptr<Job> delete_this = parent_->RemoveJob(this);
+  std::unique_ptr<Job> delete_this = parent_->RemoveJob(this);
   parent_->SetCurrentlyCompletingJob(this);
 
   while (!requests_.empty()) {
@@ -437,12 +439,12 @@ CertNetFetcherImpl::~CertNetFetcherImpl() {
     currently_completing_job_->Cancel();
 }
 
-scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::FetchCaIssuers(
+std::unique_ptr<CertNetFetcher::Request> CertNetFetcherImpl::FetchCaIssuers(
     const GURL& url,
     int timeout_milliseconds,
     int max_response_bytes,
     const FetchCallback& callback) {
-  scoped_ptr<RequestParams> request_params(new RequestParams);
+  std::unique_ptr<RequestParams> request_params(new RequestParams);
 
   request_params->url = url;
   request_params->http_method = HTTP_METHOD_GET;
@@ -453,12 +455,12 @@ scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::FetchCaIssuers(
   return Fetch(std::move(request_params), callback);
 }
 
-scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::FetchCrl(
+std::unique_ptr<CertNetFetcher::Request> CertNetFetcherImpl::FetchCrl(
     const GURL& url,
     int timeout_milliseconds,
     int max_response_bytes,
     const FetchCallback& callback) {
-  scoped_ptr<RequestParams> request_params(new RequestParams);
+  std::unique_ptr<RequestParams> request_params(new RequestParams);
 
   request_params->url = url;
   request_params->http_method = HTTP_METHOD_GET;
@@ -469,12 +471,12 @@ scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::FetchCrl(
   return Fetch(std::move(request_params), callback);
 }
 
-scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::FetchOcsp(
+std::unique_ptr<CertNetFetcher::Request> CertNetFetcherImpl::FetchOcsp(
     const GURL& url,
     int timeout_milliseconds,
     int max_response_bytes,
     const FetchCallback& callback) {
-  scoped_ptr<RequestParams> request_params(new RequestParams);
+  std::unique_ptr<RequestParams> request_params(new RequestParams);
 
   request_params->url = url;
   request_params->http_method = HTTP_METHOD_GET;
@@ -490,8 +492,8 @@ bool CertNetFetcherImpl::JobComparator::operator()(const Job* job1,
   return job1->request_params() < job2->request_params();
 }
 
-scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::Fetch(
-    scoped_ptr<RequestParams> request_params,
+std::unique_ptr<CertNetFetcher::Request> CertNetFetcherImpl::Fetch(
+    std::unique_ptr<RequestParams> request_params,
     const FetchCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -528,11 +530,12 @@ CertNetFetcherImpl::Job* CertNetFetcherImpl::FindJob(
   return nullptr;
 }
 
-scoped_ptr<CertNetFetcherImpl::Job> CertNetFetcherImpl::RemoveJob(Job* job) {
+std::unique_ptr<CertNetFetcherImpl::Job> CertNetFetcherImpl::RemoveJob(
+    Job* job) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool erased_job = jobs_.erase(job) == 1;
   CHECK(erased_job);
-  return make_scoped_ptr(job);
+  return base::WrapUnique(job);
 }
 
 void CertNetFetcherImpl::SetCurrentlyCompletingJob(Job* job) {

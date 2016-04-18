@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 class Browser;

@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/extras/sqlite/sqlite_channel_id_store.h"
+
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/asn1_util.h"
-#include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/test/cert_test_util.h"
@@ -29,8 +31,8 @@ const base::FilePath::CharType kTestChannelIDFilename[] =
 
 class SQLiteChannelIDStoreTest : public testing::Test {
  public:
-  void Load(
-      std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>* channel_ids) {
+  void Load(std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>>*
+                channel_ids) {
     base::RunLoop run_loop;
     store_->Load(base::Bind(&SQLiteChannelIDStoreTest::OnLoaded,
                             base::Unretained(this),
@@ -42,8 +44,8 @@ class SQLiteChannelIDStoreTest : public testing::Test {
 
   void OnLoaded(
       base::RunLoop* run_loop,
-      scoped_ptr<std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>>
-          channel_ids) {
+      std::unique_ptr<std::vector<
+          std::unique_ptr<DefaultChannelIDStore::ChannelID>>> channel_ids) {
     channel_ids_.swap(*channel_ids);
     run_loop->Quit();
   }
@@ -51,7 +53,7 @@ class SQLiteChannelIDStoreTest : public testing::Test {
  protected:
   static void ReadTestKeyAndCert(std::string* key_data,
                                  std::string* cert_data,
-                                 scoped_ptr<crypto::ECPrivateKey>* key) {
+                                 std::unique_ptr<crypto::ECPrivateKey>* key) {
     base::FilePath key_path =
         GetTestCertsDirectory().AppendASCII("unittest.originbound.key.der");
     base::FilePath cert_path =
@@ -105,30 +107,30 @@ class SQLiteChannelIDStoreTest : public testing::Test {
     store_ = new SQLiteChannelIDStore(
         temp_dir_.path().Append(kTestChannelIDFilename),
         base::ThreadTaskRunnerHandle::Get());
-    std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
+    std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
     Load(&channel_ids);
     ASSERT_EQ(0u, channel_ids.size());
     // Make sure the store gets written at least once.
     google_key_.reset(crypto::ECPrivateKey::Create());
     store_->AddChannelID(DefaultChannelIDStore::ChannelID(
         "google.com", base::Time::FromInternalValue(1),
-        make_scoped_ptr(google_key_->Copy())));
+        base::WrapUnique(google_key_->Copy())));
   }
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLiteChannelIDStore> store_;
-  std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids_;
-  scoped_ptr<crypto::ECPrivateKey> google_key_;
+  std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>> channel_ids_;
+  std::unique_ptr<crypto::ECPrivateKey> google_key_;
 };
 
 // Test if data is stored as expected in the SQLite database.
 TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
-  scoped_ptr<crypto::ECPrivateKey> foo_key(crypto::ECPrivateKey::Create());
+  std::unique_ptr<crypto::ECPrivateKey> foo_key(crypto::ECPrivateKey::Create());
   store_->AddChannelID(DefaultChannelIDStore::ChannelID(
       "foo.com", base::Time::FromInternalValue(3),
-      make_scoped_ptr(foo_key->Copy())));
+      base::WrapUnique(foo_key->Copy())));
 
-  std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
+  std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
   // Replace the store effectively destroying the current one and forcing it
   // to write its data to disk. Then we can see if after loading it again it
   // is still there.
@@ -182,9 +184,9 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
 TEST_F(SQLiteChannelIDStoreTest, TestDeleteAll) {
   store_->AddChannelID(DefaultChannelIDStore::ChannelID(
       "foo.com", base::Time::FromInternalValue(3),
-      make_scoped_ptr(crypto::ECPrivateKey::Create())));
+      base::WrapUnique(crypto::ECPrivateKey::Create())));
 
-  std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
+  std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
   // Replace the store effectively destroying the current one and forcing it
   // to write its data to disk. Then we can see if after loading it again it
   // is still there.
@@ -231,7 +233,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
 
   std::string key_data;
   std::string cert_data;
-  scoped_ptr<crypto::ECPrivateKey> key;
+  std::unique_ptr<crypto::ECPrivateKey> key;
   ASSERT_NO_FATAL_FAILURE(ReadTestKeyAndCert(&key_data, &cert_data, &key));
 
   // Create a version 1 database.
@@ -266,7 +268,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
+    std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
     store_ = new SQLiteChannelIDStore(v1_db_path,
                                       base::ThreadTaskRunnerHandle::Get());
 
@@ -299,7 +301,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
 
   std::string key_data;
   std::string cert_data;
-  scoped_ptr<crypto::ECPrivateKey> key;
+  std::unique_ptr<crypto::ECPrivateKey> key;
   ASSERT_NO_FATAL_FAILURE(ReadTestKeyAndCert(&key_data, &cert_data, &key));
 
   // Create a version 2 database.
@@ -338,7 +340,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
+    std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
     store_ = new SQLiteChannelIDStore(v2_db_path,
                                       base::ThreadTaskRunnerHandle::Get());
 
@@ -375,7 +377,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
 
   std::string key_data;
   std::string cert_data;
-  scoped_ptr<crypto::ECPrivateKey> key;
+  std::unique_ptr<crypto::ECPrivateKey> key;
   ASSERT_NO_FATAL_FAILURE(ReadTestKeyAndCert(&key_data, &cert_data, &key));
 
   // Create a version 3 database.
@@ -416,7 +418,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
+    std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
     store_ = new SQLiteChannelIDStore(v3_db_path,
                                       base::ThreadTaskRunnerHandle::Get());
 
@@ -453,7 +455,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV4) {
 
   std::string key_data;
   std::string cert_data;
-  scoped_ptr<crypto::ECPrivateKey> key;
+  std::unique_ptr<crypto::ECPrivateKey> key;
   ASSERT_NO_FATAL_FAILURE(ReadTestKeyAndCert(&key_data, &cert_data, &key));
 
   // Create a version 4 database.
@@ -510,7 +512,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV4) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
+    std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
     store_ = new SQLiteChannelIDStore(v4_db_path,
                                       base::ThreadTaskRunnerHandle::Get());
 

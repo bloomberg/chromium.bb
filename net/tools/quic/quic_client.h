@@ -10,11 +10,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -261,7 +261,7 @@ class QuicClient : public QuicClientBase,
   linked_hash_map<int, IPEndPoint> fd_address_map_;
 
   // Listens for full responses.
-  scoped_ptr<ResponseListener> response_listener_;
+  std::unique_ptr<ResponseListener> response_listener_;
 
   // Tracks if the client is initialized to connect.
   bool initialized_;
@@ -297,7 +297,7 @@ class QuicClient : public QuicClientBase,
   //
   // TODO(rtenneti): Chromium code doesn't use |packet_reader_|. Add support for
   // QuicPacketReader
-  scoped_ptr<QuicPacketReader> packet_reader_;
+  std::unique_ptr<QuicPacketReader> packet_reader_;
 
   std::unique_ptr<ClientQuicDataToResend> push_promise_data_to_resend_;
 

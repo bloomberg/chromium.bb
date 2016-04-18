@@ -205,13 +205,13 @@ void DelayedCookieMonster::FlushStore(const base::Closure& callback) {
   ADD_FAILURE();
 }
 
-scoped_ptr<CookieStore::CookieChangedSubscription>
+std::unique_ptr<CookieStore::CookieChangedSubscription>
 DelayedCookieMonster::AddCallbackForCookie(
     const GURL& url,
     const std::string& name,
     const CookieChangedCallback& callback) {
   ADD_FAILURE();
-  return scoped_ptr<CookieStore::CookieChangedSubscription>();
+  return std::unique_ptr<CookieStore::CookieChangedSubscription>();
 }
 
 bool DelayedCookieMonster::IsEphemeral() {

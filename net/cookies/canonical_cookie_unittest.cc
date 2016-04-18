@@ -4,7 +4,8 @@
 
 #include "net/cookies/canonical_cookie.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/test/histogram_tester.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
@@ -49,7 +50,7 @@ TEST(CanonicalCookieTest, Create) {
   base::Time creation_time = base::Time::Now();
   CookieOptions options;
 
-  scoped_ptr<CanonicalCookie> cookie(
+  std::unique_ptr<CanonicalCookie> cookie(
       CanonicalCookie::Create(url, "A=2", creation_time, options));
   EXPECT_EQ(url.GetOrigin(), cookie->Source());
   EXPECT_EQ("A", cookie->Name());
@@ -126,7 +127,7 @@ TEST(CanonicalCookieTest, Create) {
 TEST(CanonicalCookieTest, CreateInvalidSameSite) {
   GURL url("http://www.example.com/test/foo.html");
   base::Time now = base::Time::Now();
-  scoped_ptr<CanonicalCookie> cookie;
+  std::unique_ptr<CanonicalCookie> cookie;
   CookieOptions options;
 
   // Invalid 'SameSite' attribute values.
@@ -147,7 +148,7 @@ TEST(CanonicalCookieTest, EmptyExpiry) {
 
   std::string cookie_line =
       "ACSTM=20130308043820420042; path=/; domain=ipdl.inpit.go.jp; Expires=";
-  scoped_ptr<CanonicalCookie> cookie(
+  std::unique_ptr<CanonicalCookie> cookie(
       CanonicalCookie::Create(url, cookie_line, creation_time, options));
   EXPECT_TRUE(cookie.get());
   EXPECT_FALSE(cookie->IsPersistent());
@@ -185,14 +186,14 @@ TEST(CanonicalCookieTest, IsEquivalent) {
   CookieSameSite same_site(CookieSameSite::NO_RESTRICTION);
 
   // Test that a cookie is equivalent to itself.
-  scoped_ptr<CanonicalCookie> cookie(new CanonicalCookie(
+  std::unique_ptr<CanonicalCookie> cookie(new CanonicalCookie(
       url, cookie_name, cookie_value, cookie_domain, cookie_path, creation_time,
       expiration_time, last_access_time, secure, httponly, same_site,
       COOKIE_PRIORITY_MEDIUM));
   EXPECT_TRUE(cookie->IsEquivalent(*cookie));
 
   // Test that two identical cookies are equivalent.
-  scoped_ptr<CanonicalCookie> other_cookie(new CanonicalCookie(
+  std::unique_ptr<CanonicalCookie> other_cookie(new CanonicalCookie(
       url, cookie_name, cookie_value, cookie_domain, cookie_path, creation_time,
       expiration_time, last_access_time, secure, httponly, same_site,
       COOKIE_PRIORITY_MEDIUM));
@@ -275,14 +276,14 @@ TEST(CanonicalCookieTest, IsEquivalentForSecureCookieMatching) {
   CookieSameSite same_site(CookieSameSite::NO_RESTRICTION);
 
   // Test that a cookie is equivalent to itself.
-  scoped_ptr<CanonicalCookie> cookie(new CanonicalCookie(
+  std::unique_ptr<CanonicalCookie> cookie(new CanonicalCookie(
       url, cookie_name, cookie_value, cookie_domain, cookie_path, creation_time,
       expiration_time, last_access_time, secure, httponly, same_site,
       COOKIE_PRIORITY_MEDIUM));
   EXPECT_TRUE(cookie->IsEquivalentForSecureCookieMatching(*cookie));
 
   // Test that two identical cookies are equivalent.
-  scoped_ptr<CanonicalCookie> other_cookie(new CanonicalCookie(
+  std::unique_ptr<CanonicalCookie> other_cookie(new CanonicalCookie(
       url, cookie_name, cookie_value, cookie_domain, cookie_path, creation_time,
       expiration_time, last_access_time, secure, httponly, same_site,
       COOKIE_PRIORITY_MEDIUM));
@@ -364,7 +365,7 @@ TEST(CanonicalCookieTest, IsDomainMatch) {
   base::Time creation_time = base::Time::Now();
   CookieOptions options;
 
-  scoped_ptr<CanonicalCookie> cookie(
+  std::unique_ptr<CanonicalCookie> cookie(
       CanonicalCookie::Create(url, "A=2", creation_time, options));
   EXPECT_TRUE(cookie->IsHostCookie());
   EXPECT_TRUE(cookie->IsDomainMatch("www.example.com"));
@@ -395,7 +396,7 @@ TEST(CanonicalCookieTest, IsOnPath) {
   base::Time creation_time = base::Time::Now();
   CookieOptions options;
 
-  scoped_ptr<CanonicalCookie> cookie(CanonicalCookie::Create(
+  std::unique_ptr<CanonicalCookie> cookie(CanonicalCookie::Create(
       GURL("http://www.example.com"), "A=2", creation_time, options));
   EXPECT_TRUE(cookie->IsOnPath("/"));
   EXPECT_TRUE(cookie->IsOnPath("/test"));
@@ -417,7 +418,7 @@ TEST(CanonicalCookieTest, IncludeForRequestURL) {
   base::Time creation_time = base::Time::Now();
   CookieOptions options;
 
-  scoped_ptr<CanonicalCookie> cookie(
+  std::unique_ptr<CanonicalCookie> cookie(
       CanonicalCookie::Create(url, "A=2", creation_time, options));
   EXPECT_TRUE(cookie->IncludeForRequestURL(url, options));
   EXPECT_TRUE(cookie->IncludeForRequestURL(
@@ -460,7 +461,7 @@ TEST(CanonicalCookieTest, IncludeSameSiteForSameSiteURL) {
   GURL url("https://example.test");
   base::Time creation_time = base::Time::Now();
   CookieOptions options;
-  scoped_ptr<CanonicalCookie> cookie;
+  std::unique_ptr<CanonicalCookie> cookie;
 
   // `SameSite=Strict` cookies are included for a URL only if the options'
   // SameSiteCookieMode is INCLUDE_STRICT_AND_LAX.
@@ -497,11 +498,11 @@ TEST(CanonicalCookieTest, PartialCompare) {
   GURL url("http://www.example.com");
   base::Time creation_time = base::Time::Now();
   CookieOptions options;
-  scoped_ptr<CanonicalCookie> cookie(
+  std::unique_ptr<CanonicalCookie> cookie(
       CanonicalCookie::Create(url, "a=b", creation_time, options));
-  scoped_ptr<CanonicalCookie> cookie_different_path(
+  std::unique_ptr<CanonicalCookie> cookie_different_path(
       CanonicalCookie::Create(url, "a=b; path=/foo", creation_time, options));
-  scoped_ptr<CanonicalCookie> cookie_different_value(
+  std::unique_ptr<CanonicalCookie> cookie_different_value(
       CanonicalCookie::Create(url, "a=c", creation_time, options));
 
   // Cookie is equivalent to itself.
@@ -524,11 +525,11 @@ TEST(CanonicalCookieTest, FullCompare) {
   GURL url("http://www.example.com");
   base::Time creation_time = base::Time::Now();
   CookieOptions options;
-  scoped_ptr<CanonicalCookie> cookie(
+  std::unique_ptr<CanonicalCookie> cookie(
       CanonicalCookie::Create(url, "a=b", creation_time, options));
-  scoped_ptr<CanonicalCookie> cookie_different_path(
+  std::unique_ptr<CanonicalCookie> cookie_different_path(
       CanonicalCookie::Create(url, "a=b; path=/foo", creation_time, options));
-  scoped_ptr<CanonicalCookie> cookie_different_value(
+  std::unique_ptr<CanonicalCookie> cookie_different_value(
       CanonicalCookie::Create(url, "a=c", creation_time, options));
 
   // Cookie is equivalent to itself.
@@ -638,13 +639,13 @@ TEST(CanonicalCookieTest, EnforceSecureCookiesRequireSecureScheme) {
   CookieOptions options;
   options.set_enforce_strict_secure();
 
-  scoped_ptr<CanonicalCookie> http_cookie_no_secure(
+  std::unique_ptr<CanonicalCookie> http_cookie_no_secure(
       CanonicalCookie::Create(http_url, "a=b", creation_time, options));
-  scoped_ptr<CanonicalCookie> http_cookie_secure(
+  std::unique_ptr<CanonicalCookie> http_cookie_secure(
       CanonicalCookie::Create(http_url, "a=b; Secure", creation_time, options));
-  scoped_ptr<CanonicalCookie> https_cookie_no_secure(
+  std::unique_ptr<CanonicalCookie> https_cookie_no_secure(
       CanonicalCookie::Create(https_url, "a=b", creation_time, options));
-  scoped_ptr<CanonicalCookie> https_cookie_secure(CanonicalCookie::Create(
+  std::unique_ptr<CanonicalCookie> https_cookie_secure(CanonicalCookie::Create(
       https_url, "a=b; Secure", creation_time, options));
 
   EXPECT_TRUE(http_cookie_no_secure.get());
@@ -652,19 +653,19 @@ TEST(CanonicalCookieTest, EnforceSecureCookiesRequireSecureScheme) {
   EXPECT_TRUE(https_cookie_no_secure.get());
   EXPECT_TRUE(https_cookie_secure.get());
 
-  scoped_ptr<CanonicalCookie> http_cookie_no_secure_extended(
+  std::unique_ptr<CanonicalCookie> http_cookie_no_secure_extended(
       CanonicalCookie::Create(
           http_url, "a", "b", "", "", creation_time, creation_time, false,
           false, CookieSameSite::STRICT_MODE, true, COOKIE_PRIORITY_DEFAULT));
-  scoped_ptr<CanonicalCookie> http_cookie_secure_extended(
+  std::unique_ptr<CanonicalCookie> http_cookie_secure_extended(
       CanonicalCookie::Create(
           http_url, "a", "b", "", "", creation_time, creation_time, true, false,
           CookieSameSite::STRICT_MODE, true, COOKIE_PRIORITY_DEFAULT));
-  scoped_ptr<CanonicalCookie> https_cookie_no_secure_extended(
+  std::unique_ptr<CanonicalCookie> https_cookie_no_secure_extended(
       CanonicalCookie::Create(
           https_url, "a", "b", "", "", creation_time, creation_time, false,
           false, CookieSameSite::STRICT_MODE, true, COOKIE_PRIORITY_DEFAULT));
-  scoped_ptr<CanonicalCookie> https_cookie_secure_extended(
+  std::unique_ptr<CanonicalCookie> https_cookie_secure_extended(
       CanonicalCookie::Create(
           https_url, "a", "b", "", "", creation_time, creation_time, true,
           false, CookieSameSite::STRICT_MODE, true, COOKIE_PRIORITY_DEFAULT));

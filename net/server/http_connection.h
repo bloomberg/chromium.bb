@@ -5,12 +5,12 @@
 #ifndef NET_SERVER_HTTP_CONNECTION_H_
 #define NET_SERVER_HTTP_CONNECTION_H_
 
+#include <memory>
 #include <queue>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/io_buffer.h"
 
 namespace net {
@@ -110,7 +110,7 @@ class HttpConnection {
     DISALLOW_COPY_AND_ASSIGN(QueuedWriteIOBuffer);
   };
 
-  HttpConnection(int id, scoped_ptr<StreamSocket> socket);
+  HttpConnection(int id, std::unique_ptr<StreamSocket> socket);
   ~HttpConnection();
 
   int id() const { return id_; }
@@ -119,15 +119,15 @@ class HttpConnection {
   QueuedWriteIOBuffer* write_buf() const { return write_buf_.get(); }
 
   WebSocket* web_socket() const { return web_socket_.get(); }
-  void SetWebSocket(scoped_ptr<WebSocket> web_socket);
+  void SetWebSocket(std::unique_ptr<WebSocket> web_socket);
 
  private:
   const int id_;
-  const scoped_ptr<StreamSocket> socket_;
+  const std::unique_ptr<StreamSocket> socket_;
   const scoped_refptr<ReadIOBuffer> read_buf_;
   const scoped_refptr<QueuedWriteIOBuffer> write_buf_;
 
-  scoped_ptr<WebSocket> web_socket_;
+  std::unique_ptr<WebSocket> web_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpConnection);
 };

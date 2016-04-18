@@ -6,10 +6,12 @@
 
 #include <openssl/digest.h>
 #include <openssl/evp.h>
+
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "crypto/scoped_openssl_types.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/ssl_platform_key_task_runner.h"
@@ -121,7 +123,7 @@ scoped_refptr<SSLPrivateKey> WrapOpenSSLPrivateKey(crypto::ScopedEVP_PKEY key) {
       return nullptr;
   }
   return make_scoped_refptr(new ThreadedSSLPrivateKey(
-      make_scoped_ptr(new TestSSLPlatformKey(std::move(key), type)),
+      base::WrapUnique(new TestSSLPlatformKey(std::move(key), type)),
       GetSSLPlatformKeyTaskRunner()));
 }
 

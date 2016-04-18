@@ -5,7 +5,8 @@
 #ifndef NET_FTP_FTP_TRANSACTION_FACTORY_H_
 #define NET_FTP_FTP_TRANSACTION_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "net/base/net_export.h"
 
 namespace net {
@@ -18,7 +19,7 @@ class NET_EXPORT FtpTransactionFactory {
   virtual ~FtpTransactionFactory() {}
 
   // Creates a FtpTransaction object.
-  virtual scoped_ptr<FtpTransaction> CreateTransaction() = 0;
+  virtual std::unique_ptr<FtpTransaction> CreateTransaction() = 0;
 
   // Suspends the creation of new transactions. If |suspend| is false, creation
   // of new transactions is resumed.

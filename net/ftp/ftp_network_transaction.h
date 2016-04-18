@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/auth.h"
 #include "net/dns/host_resolver.h"
@@ -213,7 +213,7 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
   // User buffer passed to the Read method for control socket.
   scoped_refptr<IOBuffer> read_ctrl_buf_;
 
-  scoped_ptr<FtpCtrlResponseBuffer> ctrl_response_buffer_;
+  std::unique_ptr<FtpCtrlResponseBuffer> ctrl_response_buffer_;
 
   scoped_refptr<IOBuffer> read_data_buf_;
   int read_data_buf_len_;
@@ -249,8 +249,8 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
 
   ClientSocketFactory* socket_factory_;
 
-  scoped_ptr<StreamSocket> ctrl_socket_;
-  scoped_ptr<StreamSocket> data_socket_;
+  std::unique_ptr<StreamSocket> ctrl_socket_;
+  std::unique_ptr<StreamSocket> data_socket_;
 
   State next_state_;
 

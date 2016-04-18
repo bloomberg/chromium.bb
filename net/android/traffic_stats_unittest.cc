@@ -32,7 +32,7 @@ TEST(TrafficStatsAndroidTest, BasicsTest) {
   TestDelegate test_delegate;
   TestURLRequestContext context(false);
 
-  scoped_ptr<URLRequest> request(
+  std::unique_ptr<URLRequest> request(
       context.CreateRequest(embedded_test_server.GetURL("/echo.html"),
                             DEFAULT_PRIORITY, &test_delegate));
   request->Start();
@@ -65,7 +65,7 @@ TEST(TrafficStatsAndroidTest, UIDBasicsTest) {
   TestDelegate test_delegate;
   TestURLRequestContext context(false);
 
-  scoped_ptr<URLRequest> request(
+  std::unique_ptr<URLRequest> request(
       context.CreateRequest(embedded_test_server.GetURL("/echo.html"),
                             DEFAULT_PRIORITY, &test_delegate));
   request->Start();

@@ -5,8 +5,8 @@
 #include "net/tools/flip_server/http_interface.h"
 
 #include <list>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "net/tools/balsa/balsa_enums.h"
@@ -100,12 +100,12 @@ class FlipHttpSMTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<MockSMInterface> mock_another_interface_;
-  scoped_ptr<MemoryCache> memory_cache_;
-  scoped_ptr<FlipAcceptor> acceptor_;
-  scoped_ptr<EpollServer> epoll_server_;
-  scoped_ptr<MockSMConnection> connection_;
-  scoped_ptr<HttpSM> interface_;
+  std::unique_ptr<MockSMInterface> mock_another_interface_;
+  std::unique_ptr<MemoryCache> memory_cache_;
+  std::unique_ptr<FlipAcceptor> acceptor_;
+  std::unique_ptr<EpollServer> epoll_server_;
+  std::unique_ptr<MockSMConnection> connection_;
+  std::unique_ptr<HttpSM> interface_;
 };
 
 class FlipHttpSMProxyTest : public FlipHttpSMTest {
@@ -147,7 +147,7 @@ TEST_F(FlipHttpSMTest, AddToOutputOrder) {
 }
 
 TEST_F(FlipHttpSMTest, InitSMInterface) {
-  scoped_ptr<MockSMInterface> mock(new MockSMInterface);
+  std::unique_ptr<MockSMInterface> mock(new MockSMInterface);
   {
     InSequence s;
     EXPECT_CALL(*mock_another_interface_, SendEOF(_));

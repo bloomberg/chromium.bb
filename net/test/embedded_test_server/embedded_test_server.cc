@@ -131,7 +131,7 @@ void EmbeddedTestServer::InitializeSSLServerContext() {
   std::vector<uint8_t> key_vector;
   key_vector.assign(pem_tokenizer.data().begin(), pem_tokenizer.data().end());
 
-  scoped_ptr<crypto::RSAPrivateKey> server_key(
+  std::unique_ptr<crypto::RSAPrivateKey> server_key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
   context_ =
       CreateSSLServerContext(GetCertificate().get(), *server_key, ssl_config_);
@@ -167,10 +167,10 @@ void EmbeddedTestServer::ShutdownOnIOThread() {
 }
 
 void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
-                                       scoped_ptr<HttpRequest> request) {
+                                       std::unique_ptr<HttpRequest> request) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
 
-  scoped_ptr<HttpResponse> response;
+  std::unique_ptr<HttpResponse> response;
 
   for (const auto& handler : request_handlers_) {
     response = handler.Run(*request);
@@ -189,7 +189,8 @@ void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
   if (!response) {
     LOG(WARNING) << "Request not handled. Returning 404: "
                  << request->relative_url;
-    scoped_ptr<BasicHttpResponse> not_found_response(new BasicHttpResponse);
+    std::unique_ptr<BasicHttpResponse> not_found_response(
+        new BasicHttpResponse);
     not_found_response->set_code(HTTP_NOT_FOUND);
     response = std::move(not_found_response);
   }
@@ -295,8 +296,8 @@ void EmbeddedTestServer::RegisterDefaultHandler(
   default_request_handlers_.push_back(callback);
 }
 
-scoped_ptr<StreamSocket> EmbeddedTestServer::DoSSLUpgrade(
-    scoped_ptr<StreamSocket> connection) {
+std::unique_ptr<StreamSocket> EmbeddedTestServer::DoSSLUpgrade(
+    std::unique_ptr<StreamSocket> connection) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
 
   return context_->CreateSSLServerSocket(std::move(connection));
@@ -327,7 +328,8 @@ void EmbeddedTestServer::OnHandshakeDone(HttpConnection* connection, int rv) {
     DidClose(connection);
 }
 
-void EmbeddedTestServer::HandleAcceptResult(scoped_ptr<StreamSocket> socket) {
+void EmbeddedTestServer::HandleAcceptResult(
+    std::unique_ptr<StreamSocket> socket) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
   if (connection_listener_)
     connection_listener_->AcceptedSocket(*socket);
@@ -419,7 +421,7 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWait(
   //
   // To handle this situation, create temporary message loop to support the
   // PostTaskAndReply operation if the current thread as no message loop.
-  scoped_ptr<base::MessageLoop> temporary_loop;
+  std::unique_ptr<base::MessageLoop> temporary_loop;
   if (!base::MessageLoop::current())
     temporary_loop.reset(new base::MessageLoop());
 

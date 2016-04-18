@@ -5,10 +5,11 @@
 #ifndef NET_ANDROID_NETWORK_CHANGE_NOTIFIER_ANDROID_H_
 #define NET_ANDROID_NETWORK_CHANGE_NOTIFIER_ANDROID_H_
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/android/network_change_notifier_delegate_android.h"
 #include "net/base/network_change_notifier.h"
 
@@ -92,7 +93,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
   static NetworkChangeCalculatorParams NetworkChangeCalculatorParamsAndroid();
 
   NetworkChangeNotifierDelegateAndroid* const delegate_;
-  scoped_ptr<DnsConfigServiceThread> dns_config_service_thread_;
+  std::unique_ptr<DnsConfigServiceThread> dns_config_service_thread_;
   bool force_network_handles_supported_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierAndroid);

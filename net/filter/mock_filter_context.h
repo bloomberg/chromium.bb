@@ -6,11 +6,12 @@
 #define NET_FILTER_MOCK_FILTER_CONTEXT_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/sdch_manager.h"
 #include "net/filter/filter.h"
 #include "net/log/net_log.h"
@@ -30,7 +31,7 @@ class MockFilterContext : public FilterContext {
   void SetRequestTime(const base::Time time) { request_time_ = time; }
   void SetCached(bool is_cached) { is_cached_content_ = is_cached; }
   void SetResponseCode(int response_code) { response_code_ = response_code; }
-  void SetSdchResponse(scoped_ptr<SdchManager::DictionarySet> handle) {
+  void SetSdchResponse(std::unique_ptr<SdchManager::DictionarySet> handle) {
     dictionaries_handle_ = std::move(handle);
   }
   URLRequestContext* GetModifiableURLRequestContext() const {
@@ -74,10 +75,10 @@ class MockFilterContext : public FilterContext {
   GURL gurl_;
   base::Time request_time_;
   bool is_cached_content_;
-  scoped_ptr<SdchManager::DictionarySet> dictionaries_handle_;
+  std::unique_ptr<SdchManager::DictionarySet> dictionaries_handle_;
   bool ok_to_call_get_url_;
   int response_code_;
-  scoped_ptr<URLRequestContext> context_;
+  std::unique_ptr<URLRequestContext> context_;
   BoundNetLog net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFilterContext);

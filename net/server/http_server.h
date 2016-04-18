@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/http/http_status_code.h"
 
@@ -48,7 +48,7 @@ class HttpServer {
   // listening, but not accepting.  This constructor schedules accepting
   // connections asynchronously in case when |delegate| is not ready to get
   // callbacks yet.
-  HttpServer(scoped_ptr<ServerSocket> server_socket,
+  HttpServer(std::unique_ptr<ServerSocket> server_socket,
              HttpServer::Delegate* delegate);
   ~HttpServer();
 
@@ -109,8 +109,8 @@ class HttpServer {
   // Whether or not Close() has been called during delegate callback processing.
   bool HasClosedConnection(HttpConnection* connection);
 
-  const scoped_ptr<ServerSocket> server_socket_;
-  scoped_ptr<StreamSocket> accepted_socket_;
+  const std::unique_ptr<ServerSocket> server_socket_;
+  std::unique_ptr<StreamSocket> accepted_socket_;
   HttpServer::Delegate* const delegate_;
 
   int last_id_;

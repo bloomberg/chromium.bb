@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/cookies/cookie_store.h"
+
+#include <memory>
 #include <vector>
 
 #include "base/time/time.h"
-#include "net/cookies/cookie_store.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,7 +20,7 @@ namespace {
 // Helper for testing BuildCookieLine
 void MatchCookieLineToVector(
     const std::string& line,
-    const std::vector<scoped_ptr<CanonicalCookie>>& cookies) {
+    const std::vector<std::unique_ptr<CanonicalCookie>>& cookies) {
   // Test the std::vector<CanonicalCookie> variant
   // ('CookieMonster::CookieList'):
   std::vector<CanonicalCookie> list;
@@ -38,7 +39,7 @@ void MatchCookieLineToVector(
 } // namespace
 
 TEST(CookieStoreBaseTest, BuildCookieLine) {
-  std::vector<scoped_ptr<CanonicalCookie>> cookies;
+  std::vector<std::unique_ptr<CanonicalCookie>> cookies;
   GURL url("https://example.com/");
   CookieOptions options;
   base::Time now = base::Time::Now();

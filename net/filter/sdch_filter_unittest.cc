@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/filter/sdch_filter.h"
+
 #include <limits.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bit_cast.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "net/base/io_buffer.h"
@@ -19,7 +21,6 @@
 #include "net/base/sdch_manager.h"
 #include "net/base/sdch_observer.h"
 #include "net/filter/mock_filter_context.h"
-#include "net/filter/sdch_filter.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_http_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,8 +103,8 @@ class SdchFilterTest : public testing::Test {
   const std::string vcdiff_compressed_data_;
   const std::string expanded_;  // Desired final, decompressed data.
 
-  scoped_ptr<SdchManager> sdch_manager_;
-  scoped_ptr<MockFilterContext> filter_context_;
+  std::unique_ptr<SdchManager> sdch_manager_;
+  std::unique_ptr<MockFilterContext> filter_context_;
 };
 
 TEST_F(SdchFilterTest, Hashing) {
@@ -132,7 +133,7 @@ static bool FilterTestData(const std::string& source,
   CHECK_GT(input_block_length, 0u);
   Filter::FilterStatus status(Filter::FILTER_NEED_MORE_DATA);
   size_t source_index = 0;
-  scoped_ptr<char[]> output_buffer(new char[output_buffer_length]);
+  std::unique_ptr<char[]> output_buffer(new char[output_buffer_length]);
   size_t input_amount = std::min(input_block_length,
       static_cast<size_t>(filter->stream_buffer_size()));
 
@@ -188,7 +189,8 @@ TEST_F(SdchFilterTest, EmptyInputOk) {
   char output_buffer[20];
   std::string url_string("http://ignore.com");
   filter_context()->SetURL(GURL(url_string));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   // With no input data, try to read output.
   int output_bytes_or_buffer_size = sizeof(output_buffer);
@@ -208,7 +210,8 @@ TEST_F(SdchFilterTest, SparseContextOk) {
   char output_buffer[20];
   std::string url_string("http://ignore.com");
   filter_context()->SetURL(GURL(url_string));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   // With no input data, try to read output.
   int output_bytes_or_buffer_size = sizeof(output_buffer);
@@ -235,7 +238,8 @@ TEST_F(SdchFilterTest, PassThroughWhenTentative) {
   filter_context()->SetResponseCode(200);
   std::string url_string("http://ignore.com");
   filter_context()->SetURL(GURL(url_string));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   // Supply enough data to force a pass-through mode..
   std::string non_gzip_content("not GZIPed data");
@@ -274,7 +278,8 @@ TEST_F(SdchFilterTest, RefreshBadReturnCode) {
   filter_context()->SetMimeType("text/html");
   std::string url_string("http://ignore.com");
   filter_context()->SetURL(GURL(url_string));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   // Supply enough data to force a pass-through mode, which means we have
   // provided more than 9 characters that can't be a dictionary hash.
@@ -315,7 +320,8 @@ TEST_F(SdchFilterTest, ErrorOnBadReturnCode) {
   filter_context()->SetMimeType("anything");
   std::string url_string("http://ignore.com");
   filter_context()->SetURL(GURL(url_string));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   // Supply enough data to force a pass-through mode, which means we have
   // provided more than 9 characters that can't be a dictionary hash.
@@ -350,7 +356,8 @@ TEST_F(SdchFilterTest, ErrorOnBadReturnCodeWithHtml) {
   filter_context()->SetMimeType("text/html");
   std::string url_string("http://ignore.com");
   filter_context()->SetURL(GURL(url_string));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   // Supply enough data to force a pass-through mode, which means we have
   // provided more than 9 characters that can't be a dictionary hash.
@@ -386,7 +393,8 @@ TEST_F(SdchFilterTest, BasicBadDictionary) {
   char output_buffer[20];
   std::string url_string("http://ignore.com");
   filter_context()->SetURL(GURL(url_string));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   // Supply bogus data (which doesn't yet specify a full dictionary hash).
   // Dictionary hash is 8 characters followed by a null.
@@ -471,7 +479,8 @@ TEST_F(SdchFilterTest, BasicDictionary) {
 
   SetupFilterContextWithGURL(url);
 
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   size_t feed_block_size = 100;
   size_t output_block_size = 100;
@@ -508,7 +517,8 @@ TEST_F(SdchFilterTest, NoDecodeHttps) {
 
   GURL filter_context_gurl("https://" + kSampleDomain);
   SetupFilterContextWithGURL(GURL("https://" + kSampleDomain));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   const size_t feed_block_size(100);
   const size_t output_block_size(100);
@@ -538,7 +548,8 @@ TEST_F(SdchFilterTest, NoDecodeFtp) {
   filter_types.push_back(Filter::FILTER_TYPE_SDCH);
 
   SetupFilterContextWithGURL(GURL("ftp://" + kSampleDomain));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   const size_t feed_block_size(100);
   const size_t output_block_size(100);
@@ -564,7 +575,8 @@ TEST_F(SdchFilterTest, NoDecodeFileColon) {
   filter_types.push_back(Filter::FILTER_TYPE_SDCH);
 
   SetupFilterContextWithGURL(GURL("file://" + kSampleDomain));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   const size_t feed_block_size(100);
   const size_t output_block_size(100);
@@ -590,7 +602,8 @@ TEST_F(SdchFilterTest, NoDecodeAboutColon) {
   filter_types.push_back(Filter::FILTER_TYPE_SDCH);
 
   SetupFilterContextWithGURL(GURL("about://" + kSampleDomain));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   const size_t feed_block_size(100);
   const size_t output_block_size(100);
@@ -616,7 +629,8 @@ TEST_F(SdchFilterTest, NoDecodeJavaScript) {
   filter_types.push_back(Filter::FILTER_TYPE_SDCH);
 
   SetupFilterContextWithGURL(GURL("javascript://" + kSampleDomain));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   const size_t feed_block_size(100);
   const size_t output_block_size(100);
@@ -642,7 +656,8 @@ TEST_F(SdchFilterTest, CanStillDecodeHttp) {
   filter_types.push_back(Filter::FILTER_TYPE_SDCH);
 
   SetupFilterContextWithGURL(GURL("http://" + kSampleDomain));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   const size_t feed_block_size(100);
   const size_t output_block_size(100);
@@ -679,7 +694,8 @@ TEST_F(SdchFilterTest, CrossDomainDictionaryUse) {
   // This tests SdchManager::CanSet().
   GURL wrong_domain_url("http://www.wrongdomain.com");
   SetupFilterContextWithGURL(wrong_domain_url);
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types,  *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   size_t feed_block_size = 100;
   size_t output_block_size = 100;
@@ -719,7 +735,8 @@ TEST_F(SdchFilterTest, DictionaryPathValidation) {
 
   // Test decode the path data, arriving from a valid path.
   SetupFilterContextWithGURL(GURL(url_string + path));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   size_t feed_block_size = 100;
   size_t output_block_size = 100;
@@ -771,7 +788,8 @@ TEST_F(SdchFilterTest, DictionaryPortValidation) {
 
   // Test decode the port data, arriving from a valid port.
   SetupFilterContextWithGURL(GURL(url_string + ":" + port));
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   size_t feed_block_size = 100;
   size_t output_block_size = 100;
@@ -828,7 +846,7 @@ static std::string gzip_compress(const std::string &input) {
 
   // Assume we can compress into similar buffer (add 100 bytes to be sure).
   size_t gzip_compressed_length = zlib_stream.avail_in + 100;
-  scoped_ptr<char[]> gzip_compressed(new char[gzip_compressed_length]);
+  std::unique_ptr<char[]> gzip_compressed(new char[gzip_compressed_length]);
   zlib_stream.next_out = bit_cast<Bytef*>(gzip_compressed.get());
   zlib_stream.avail_out = gzip_compressed_length;
 
@@ -900,9 +918,8 @@ TEST_F(SdchFilterTest, FilterChaining) {
   CHECK_GT(kLargeInputBufferSize, sdch_compressed.size());
   CHECK_GT(kLargeInputBufferSize, expanded_.size());
   SetupFilterContextWithGURL(url);
-  scoped_ptr<Filter> filter(
-      SdchFilterChainingTest::Factory(filter_types, *filter_context(),
-                                      kLargeInputBufferSize));
+  std::unique_ptr<Filter> filter(SdchFilterChainingTest::Factory(
+      filter_types, *filter_context(), kLargeInputBufferSize));
   EXPECT_EQ(static_cast<int>(kLargeInputBufferSize),
             filter->stream_buffer_size());
 
@@ -985,7 +1002,8 @@ TEST_F(SdchFilterTest, DefaultGzipIfSdch) {
   EXPECT_EQ(filter_types[1], Filter::FILTER_TYPE_GZIP_HELPING_SDCH);
 
   // First try with a large buffer (larger than test input, or compressed data).
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   // Verify that chained filter is waiting for data.
   char tiny_output_buffer[10];
@@ -1042,7 +1060,8 @@ TEST_F(SdchFilterTest, AcceptGzipSdchIfGzip) {
   EXPECT_EQ(filter_types[2], Filter::FILTER_TYPE_GZIP);
 
   // First try with a large buffer (larger than test input, or compressed data).
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   // Verify that chained filter is waiting for data.
   char tiny_output_buffer[10];
@@ -1096,7 +1115,8 @@ TEST_F(SdchFilterTest, DefaultSdchGzipIfEmpty) {
   EXPECT_EQ(filter_types[1], Filter::FILTER_TYPE_GZIP_HELPING_SDCH);
 
   // First try with a large buffer (larger than test input, or compressed data).
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   // Verify that chained filter is waiting for data.
   char tiny_output_buffer[10];
@@ -1156,7 +1176,8 @@ TEST_F(SdchFilterTest, AcceptGzipGzipSdchIfGzip) {
   EXPECT_EQ(filter_types[2], Filter::FILTER_TYPE_GZIP);
 
   // First try with a large buffer (larger than test input, or compressed data).
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   // Verify that chained filter is waiting for data.
   char tiny_output_buffer[10];
@@ -1196,7 +1217,8 @@ TEST_F(SdchFilterTest, UnexpectedDictionary) {
 
   std::vector<Filter::FilterType> filter_types;
   filter_types.push_back(Filter::FILTER_TYPE_SDCH);
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   // Setup another dictionary, expired. Don't add it to the filter context.
   // Delete stored dictionaries first to handle platforms which only
@@ -1213,7 +1235,7 @@ TEST_F(SdchFilterTest, UnexpectedDictionary) {
   SdchManager::GenerateHash(expired_dictionary, &client_hash, &server_hash);
 
   SdchProblemCode problem_code;
-  scoped_ptr<SdchManager::DictionarySet> hash_set(
+  std::unique_ptr<SdchManager::DictionarySet> hash_set(
       sdch_manager_->GetDictionarySetByHash(url, server_hash, &problem_code));
   ASSERT_TRUE(hash_set);
   ASSERT_EQ(SDCH_OK, problem_code);
@@ -1281,7 +1303,8 @@ TEST_F(SdchFilterTest, DictionaryUsedSignaled) {
 
   SetupFilterContextWithGURL(url);
 
-  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  std::unique_ptr<Filter> filter(
+      Filter::Factory(filter_types, *filter_context()));
 
   size_t feed_block_size = 100;
   size_t output_block_size = 100;

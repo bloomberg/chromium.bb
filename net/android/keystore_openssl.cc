@@ -13,11 +13,12 @@
 #include <openssl/rsa.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/android/build_info.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "crypto/openssl_util.h"
 #include "net/android/keystore.h"
 #include "net/android/legacy_openssl.h"
@@ -330,7 +331,7 @@ crypto::ScopedEVP_PKEY CreateRsaPkeyWrapper(
     return nullptr;
   }
 
-  scoped_ptr<KeyExData> ex_data(new KeyExData);
+  std::unique_ptr<KeyExData> ex_data(new KeyExData);
   ex_data->private_key.Reset(nullptr, private_key);
   if (ex_data->private_key.is_null()) {
     LOG(ERROR) << "Could not create global JNI reference";
@@ -500,7 +501,7 @@ crypto::ScopedEVP_PKEY GetEcdsaPkeyWrapper(jobject private_key) {
     return nullptr;
   }
 
-  scoped_ptr<KeyExData> ex_data(new KeyExData);
+  std::unique_ptr<KeyExData> ex_data(new KeyExData);
   ex_data->private_key.Reset(nullptr, private_key);
   if (ex_data->private_key.is_null()) {
     LOG(ERROR) << "Can't create global JNI reference";

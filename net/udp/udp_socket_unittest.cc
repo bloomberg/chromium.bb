@@ -159,7 +159,7 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   IPEndPoint bind_address;
   CreateUDPAddress("127.0.0.1", kPort, &bind_address);
   TestNetLog server_log;
-  scoped_ptr<UDPServerSocket> server(
+  std::unique_ptr<UDPServerSocket> server(
       new UDPServerSocket(&server_log, NetLog::Source()));
 #if defined(OS_WIN)
   if (use_nonblocking_io)
@@ -173,7 +173,7 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   IPEndPoint server_address;
   CreateUDPAddress("127.0.0.1", kPort, &server_address);
   TestNetLog client_log;
-  scoped_ptr<UDPClientSocket> client(
+  std::unique_ptr<UDPClientSocket> client(
       new UDPClientSocket(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
                           &client_log, NetLog::Source()));
 #if defined(OS_WIN)
@@ -287,9 +287,9 @@ TEST_F(UDPSocketTest, Broadcast) {
   CreateUDPAddress("0.0.0.0", kPort, &listen_address);
 
   TestNetLog server1_log, server2_log;
-  scoped_ptr<UDPServerSocket> server1(
+  std::unique_ptr<UDPServerSocket> server1(
       new UDPServerSocket(&server1_log, NetLog::Source()));
-  scoped_ptr<UDPServerSocket> server2(
+  std::unique_ptr<UDPServerSocket> server2(
       new UDPServerSocket(&server2_log, NetLog::Source()));
   server1->AllowAddressReuse();
   server1->AllowBroadcast();
@@ -380,11 +380,8 @@ TEST_F(UDPSocketTest, ConnectRandomBind) {
       base::Bind(&TestPrng::GetNext, base::Unretained(&test_prng));
 
   // Create a socket with random binding policy and connect.
-  scoped_ptr<UDPClientSocket> test_socket(
-      new UDPClientSocket(DatagramSocket::RANDOM_BIND,
-                          rand_int_cb,
-                          NULL,
-                          NetLog::Source()));
+  std::unique_ptr<UDPClientSocket> test_socket(new UDPClientSocket(
+      DatagramSocket::RANDOM_BIND, rand_int_cb, NULL, NetLog::Source()));
   EXPECT_EQ(OK, test_socket->Connect(peer_address));
 
   // Make sure that the last port number in the |used_ports| was used.
@@ -412,11 +409,9 @@ TEST_F(UDPSocketTest, MAYBE_ConnectFail) {
   IPEndPoint peer_address;
   CreateUDPAddress("0.0.0.0", 53, &peer_address);
 
-  scoped_ptr<UDPSocket> socket(
-      new UDPSocket(DatagramSocket::RANDOM_BIND,
-                    base::Bind(&PrivilegedRand),
-                    NULL,
-                    NetLog::Source()));
+  std::unique_ptr<UDPSocket> socket(new UDPSocket(DatagramSocket::RANDOM_BIND,
+                                                  base::Bind(&PrivilegedRand),
+                                                  NULL, NetLog::Source()));
   int rv = socket->Open(peer_address.GetFamily());
   EXPECT_EQ(OK, rv);
   rv = socket->Connect(peer_address);

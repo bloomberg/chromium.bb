@@ -884,7 +884,7 @@ class FtpNetworkTransactionTest
       MockRead(mock_data.c_str()),
     };
 
-    scoped_ptr<StaticSocketDataProvider> data_socket(
+    std::unique_ptr<StaticSocketDataProvider> data_socket(
         new StaticSocketDataProvider(data_reads, arraysize(data_reads), NULL,
                                      0));
     mock_socket_factory_.AddSocketDataProvider(data_socket.get());
@@ -928,7 +928,7 @@ class FtpNetworkTransactionTest
     ExecuteTransaction(ctrl_socket, request, expected_result);
   }
 
-  scoped_ptr<MockHostResolver> host_resolver_;
+  std::unique_ptr<MockHostResolver> host_resolver_;
   MockClientSocketFactory mock_socket_factory_;
   FtpNetworkTransaction transaction_;
   TestCompletionCallback callback_;

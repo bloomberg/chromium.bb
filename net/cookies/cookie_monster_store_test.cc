@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -123,7 +124,7 @@ void MockCookieMonsterDelegate::OnCookieChanged(
 MockCookieMonsterDelegate::~MockCookieMonsterDelegate() {
 }
 
-scoped_ptr<CanonicalCookie> BuildCanonicalCookie(
+std::unique_ptr<CanonicalCookie> BuildCanonicalCookie(
     const GURL& url,
     const std::string& cookie_line,
     const base::Time& creation_time) {
@@ -151,7 +152,7 @@ void AddCookieToList(const GURL& url,
                      const std::string& cookie_line,
                      const base::Time& creation_time,
                      std::vector<CanonicalCookie*>* out_list) {
-  scoped_ptr<CanonicalCookie> cookie(
+  std::unique_ptr<CanonicalCookie> cookie(
       BuildCanonicalCookie(url, cookie_line, creation_time));
 
   out_list->push_back(cookie.release());
@@ -219,7 +220,7 @@ void MockSimplePersistentCookieStore::Flush(const base::Closure& callback) {
 void MockSimplePersistentCookieStore::SetForceKeepSessionState() {
 }
 
-scoped_ptr<CookieMonster> CreateMonsterFromStoreForGC(
+std::unique_ptr<CookieMonster> CreateMonsterFromStoreForGC(
     int num_secure_cookies,
     int num_old_secure_cookies,
     int num_non_secure_cookies,
@@ -258,7 +259,7 @@ scoped_ptr<CookieMonster> CreateMonsterFromStoreForGC(
     store->AddCookie(cc);
   }
 
-  return make_scoped_ptr(new CookieMonster(store.get(), nullptr));
+  return base::WrapUnique(new CookieMonster(store.get(), nullptr));
 }
 
 MockSimplePersistentCookieStore::~MockSimplePersistentCookieStore() {

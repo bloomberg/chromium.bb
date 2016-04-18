@@ -88,8 +88,8 @@ class QuicSpdyClientStreamTest : public ::testing::Test {
   QuicClientPushPromiseIndex push_promise_index_;
 
   MockQuicClientSession session_;
-  scoped_ptr<QuicSpdyClientStream> stream_;
-  scoped_ptr<StreamVisitor> stream_visitor_;
+  std::unique_ptr<QuicSpdyClientStream> stream_;
+  std::unique_ptr<StreamVisitor> stream_visitor_;
   BalsaHeaders headers_;
   string headers_string_;
   string body_;
