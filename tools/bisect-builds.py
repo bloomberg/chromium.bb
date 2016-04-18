@@ -21,7 +21,7 @@ ASAN_BASE_URL = ('http://commondatastorage.googleapis.com'
                  '/chromium-browser-asan')
 
 # GS bucket name.
-GS_BUCKET_NAME = 'chrome-unsigned/desktop-W15K3Y'
+GS_BUCKET_NAME = 'chrome-unsigned/desktop-5c0tCh'
 
 # Base URL for downloading official builds.
 GOOGLE_APIS_URL = 'commondatastorage.googleapis.com'
