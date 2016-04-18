@@ -252,6 +252,7 @@ justify
 -webkit-right
 -webkit-center
 -webkit-match-parent
+-internal-center
 //
 // text-justify
 //

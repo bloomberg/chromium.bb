@@ -290,7 +290,8 @@ td, th {
 }
 
 th {
-    font-weight: bold
+    font-weight: bold;
+    text-align: -internal-center
 }
 
 caption {

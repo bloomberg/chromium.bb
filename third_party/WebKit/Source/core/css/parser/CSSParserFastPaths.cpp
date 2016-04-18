@@ -463,9 +463,9 @@ CSSValue* CSSParserFastPaths::parseColor(const String& string, CSSParserMode par
     return cssValuePool().createColorValue(color);
 }
 
-bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID)
+bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID, CSSParserMode parserMode)
 {
-    if (valueID == CSSValueInvalid)
+    if (valueID == CSSValueInvalid || !isValueAllowedInMode(valueID, parserMode))
         return false;
 
     switch (propertyId) {
@@ -584,7 +584,7 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
     case CSSPropertyTableLayout: // auto | fixed
         return valueID == CSSValueAuto || valueID == CSSValueFixed;
     case CSSPropertyTextAlign:
-        return (valueID >= CSSValueWebkitAuto && valueID <= CSSValueWebkitMatchParent) || valueID == CSSValueStart || valueID == CSSValueEnd;
+        return (valueID >= CSSValueWebkitAuto && valueID <= CSSValueInternalCenter) || valueID == CSSValueStart || valueID == CSSValueEnd;
     case CSSPropertyTextAlignLast:
         // auto | start | end | left | right | center | justify
         return (valueID >= CSSValueLeft && valueID <= CSSValueJustify) || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueAuto;
@@ -828,7 +828,7 @@ bool CSSParserFastPaths::isKeywordPropertyID(CSSPropertyID propertyId)
     }
 }
 
-static CSSValue* parseKeywordValue(CSSPropertyID propertyId, const String& string)
+static CSSValue* parseKeywordValue(CSSPropertyID propertyId, const String& string, CSSParserMode parserMode)
 {
     ASSERT(!string.isEmpty());
 
@@ -854,7 +854,7 @@ static CSSValue* parseKeywordValue(CSSPropertyID propertyId, const String& strin
         return cssValuePool().createInheritedValue();
     if (valueID == CSSValueInitial)
         return cssValuePool().createExplicitInitialValue();
-    if (CSSParserFastPaths::isValidKeywordPropertyAndValue(propertyId, valueID))
+    if (CSSParserFastPaths::isValidKeywordPropertyAndValue(propertyId, valueID, parserMode))
         return cssValuePool().createIdentifierValue(valueID);
     return nullptr;
 }
@@ -1027,7 +1027,7 @@ CSSValue* CSSParserFastPaths::maybeParseValue(CSSPropertyID propertyID, const St
         return length;
     if (isColorPropertyID(propertyID))
         return parseColor(string, parserMode);
-    if (CSSValue* keyword = parseKeywordValue(propertyID, string))
+    if (CSSValue* keyword = parseKeywordValue(propertyID, string, parserMode))
         return keyword;
     if (CSSValue* transform = parseSimpleTransform(propertyID, string))
         return transform;

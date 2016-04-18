@@ -315,10 +315,6 @@ void StyleAdjuster::adjustStyleForHTMLElement(ComputedStyle& style, const Comput
         return;
 
     if (isHTMLTableCellElement(element)) {
-        // FIXME: We shouldn't be overriding start/-webkit-auto like this. Do it in html.css instead.
-        // Table headers with a text-align of -webkit-auto will change the text-align to center.
-        if (element.hasTagName(thTag) && style.textAlign() == TASTART)
-            style.setTextAlign(CENTER);
         if (style.whiteSpace() == KHTML_NOWRAP) {
             // Figure out if we are really nowrapping or if we should just
             // use normal instead. If the width of the cell is fixed, then

@@ -25,7 +25,7 @@ public:
 
     // Properties handled here shouldn't be explicitly handled in CSSPropertyParser
     static bool isKeywordPropertyID(CSSPropertyID);
-    static bool isValidKeywordPropertyAndValue(CSSPropertyID, CSSValueID);
+    static bool isValidKeywordPropertyAndValue(CSSPropertyID, CSSValueID, CSSParserMode);
 
     static CSSValue* parseColor(const String&, CSSParserMode);
 };

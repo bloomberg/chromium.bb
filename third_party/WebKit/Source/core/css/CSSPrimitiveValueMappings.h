@@ -1978,6 +1978,8 @@ template<> inline ETextAlign CSSPrimitiveValue::convertTo() const
         return TASTART;
     case CSSValueEnd:
         return TAEND;
+    case CSSValueInternalCenter:
+        return CENTER;
     default:
         return static_cast<ETextAlign>(m_value.valueID - CSSValueLeft);
     }

@@ -412,8 +412,14 @@ void StyleBuilderFunctions::applyValueCSSPropertySnapHeight(StyleResolverState& 
 void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->isValueID() && primitiveValue->getValueID() != CSSValueWebkitMatchParent)
-        state.style()->setTextAlign(primitiveValue->convertTo<ETextAlign>());
+    if (primitiveValue->isValueID() && primitiveValue->getValueID() != CSSValueWebkitMatchParent) {
+        // Special case for th elements - UA stylesheet text-align does not apply if parent's computed value for text-align is not its initial value
+        // https://html.spec.whatwg.org/multipage/rendering.html#tables-2
+        if (primitiveValue->getValueID() == CSSValueInternalCenter && state.parentStyle()->textAlign() != ComputedStyle::initialTextAlign())
+            state.style()->setTextAlign(state.parentStyle()->textAlign());
+        else
+            state.style()->setTextAlign(primitiveValue->convertTo<ETextAlign>());
+    }
     else if (state.parentStyle()->textAlign() == TASTART)
         state.style()->setTextAlign(state.parentStyle()->isLeftToRightDirection() ? LEFT : RIGHT);
     else if (state.parentStyle()->textAlign() == TAEND)
