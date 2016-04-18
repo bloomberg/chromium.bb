@@ -1660,16 +1660,6 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
   // asynchronous.
   if (ui::X11EventSource::GetInstance())
     ui::X11EventSource::GetInstance()->BlockUntilWindowMapped(xwindow_);
-  window_mapped_ = true;
-
-  UpdateMinAndMaxSize();
-
-  // Some WMs only respect maximize hints after the window has been mapped.
-  // Check whether we need to re-do a maximization.
-  if (should_maximize_after_map_) {
-    Maximize();
-    should_maximize_after_map_ = false;
-  }
 }
 
 void DesktopWindowTreeHostX11::SetWindowTransparency() {
@@ -1883,9 +1873,21 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       break;
     }
     case MapNotify: {
+      window_mapped_ = true;
+
       FOR_EACH_OBSERVER(DesktopWindowTreeHostObserverX11,
                         observer_list_,
                         OnWindowMapped(xwindow_));
+
+      UpdateMinAndMaxSize();
+
+      // Some WMs only respect maximize hints after the window has been mapped.
+      // Check whether we need to re-do a maximization.
+      if (should_maximize_after_map_) {
+        Maximize();
+        should_maximize_after_map_ = false;
+      }
+
       break;
     }
     case UnmapNotify: {
