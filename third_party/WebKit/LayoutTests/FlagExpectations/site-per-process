@@ -1,24 +1,27 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
-# https://crbug.com/584984 - crash in content::NavigationEntryImpl::SetBindings
-http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Crash ]
-
 # https://crbug.com/582494 - [sigsegv / av] blink::Document::styleEngine.
 http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Crash ]
 
-# Uninvestigated failures (https://crbug.com/495132 is fixed):
-http/tests/history/cross-origin-redirect-on-back.html [ Timeout Crash ]
+# https://crbug.com/602818 - Incorrect process transfer for blob URL
+http/tests/fileapi/blob-url-in-subframe.html [ Timeout ]
+
+# https://crbug.com/584984 - Check failed: bindings_ == kInvalidBindings || bindings_ == bindings
 http/tests/inspector-enabled/console-log-before-frame-navigation.html [ Crash ]
 http/tests/inspector/change-iframe-src.html [ Crash ]
 http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Crash Failure ]
-http/tests/security/cross-frame-access-document-direct.html [ Crash Timeout ]
 http/tests/security/frameNavigation/xss-ALLOWED-targeted-subframe-navigation-change.html [ Crash Timeout ]
-http/tests/security/referrer-policy-origin-when-crossorigin-is-crossorigin.html [ Crash Timeout ]
-http/tests/security/xssAuditor/anchor-url-dom-write-location-inline-event.html [ Crash ]
+http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Crash ]
 http/tests/security/xssAuditor/anchor-url-dom-write-location-inline-event-null-char.html [ Crash Timeout ]
+http/tests/security/xssAuditor/anchor-url-dom-write-location-inline-event.html [ Crash ]
 http/tests/security/xssAuditor/dom-write-location-inline-event.html [ Crash ]
 http/tests/serviceworker/windowclient-navigate.html [ Crash ]
+
+# Uninvestigated timeouts (possibly variants of https://crbug.com/584984)
+http/tests/history/cross-origin-redirect-on-back.html [ Timeout Crash ]
+http/tests/security/cross-frame-access-document-direct.html [ Crash Timeout ]
+http/tests/security/referrer-policy-origin-when-crossorigin-is-crossorigin.html [ Crash Timeout ]
 
 # https://crbug.com/582289 - dumpResourceLoadCallbacks test flag is not replicated into OOPIFs.
 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny.html [ Failure ]
