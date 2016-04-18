@@ -35,7 +35,11 @@ protected:
 class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
     WTF_MAKE_NONCOPYABLE(RecordingImageBufferSurface); USING_FAST_MALLOC(RecordingImageBufferSurface);
 public:
-    RecordingImageBufferSurface(const IntSize&, PassOwnPtr<RecordingImageBufferFallbackSurfaceFactory> fallbackFactory, OpacityMode = NonOpaque);
+    // If the fallbackFactory is null the buffer surface should only be used
+    // for one frame and should not be used for any operations which need a
+    // raster surface, (i.e. writePixels).
+    // Only #getPicture should be used to access the resulting frame.
+    RecordingImageBufferSurface(const IntSize&, PassOwnPtr<RecordingImageBufferFallbackSurfaceFactory> fallbackFactory = nullptr, OpacityMode = NonOpaque);
     ~RecordingImageBufferSurface() override;
 
     // Implementation of ImageBufferSurface interfaces

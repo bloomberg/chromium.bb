@@ -70,6 +70,8 @@ bool RecordingImageBufferSurface::writePixels(const SkImageInfo& origInfo, const
 
 void RecordingImageBufferSurface::fallBackToRasterCanvas(FallbackReason reason)
 {
+    ASSERT(m_fallbackFactory);
+
     if (m_fallbackSurface) {
         ASSERT(!m_currentFrame);
         return;
@@ -178,6 +180,8 @@ PassRefPtr<SkPicture> RecordingImageBufferSurface::getPicture()
     bool canUsePicture = finalizeFrameInternal(&fallbackReason);
     m_imageBuffer->didFinalizeFrame();
 
+    ASSERT(canUsePicture || m_fallbackFactory);
+
     if (canUsePicture) {
         return m_previousFrame;
     }
@@ -262,7 +266,7 @@ bool RecordingImageBufferSurface::finalizeFrameInternal(FallbackReason* fallback
         return false;
     }
 
-    if (m_currentFrame->getRecordingCanvas()->getSaveCount() > ExpensiveCanvasHeuristicParameters::ExpensiveRecordingStackDepth) {
+    if (m_fallbackFactory && m_currentFrame->getRecordingCanvas()->getSaveCount() > ExpensiveCanvasHeuristicParameters::ExpensiveRecordingStackDepth) {
         *fallbackReason = FallbackReasonRunawayStateStack;
         return false;
     }
