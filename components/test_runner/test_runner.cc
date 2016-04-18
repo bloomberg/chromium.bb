@@ -1852,6 +1852,7 @@ void TestRunner::DumpPixelsAsync(
 
 void TestRunner::ReplicateLayoutTestRuntimeFlagsChanges(
     const base::DictionaryValue& changed_values) {
+  DCHECK(test_is_running_);
   layout_test_runtime_flags_.tracked_dictionary().ApplyUntrackedChanges(
       changed_values);
 }

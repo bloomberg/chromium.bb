@@ -1,7 +1,7 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
-# https://crbug.com/584984 - Recent, uninvestigated yet regression.
+# https://crbug.com/584984 - crash in content::NavigationEntryImpl::SetBindings
 http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Crash ]
 
 # https://crbug.com/582494 - [sigsegv / av] blink::Document::styleEngine.
@@ -50,9 +50,6 @@ http/tests/security/xssAuditor/full-block-script-tag-cross-domain.html [ Failure
 http/tests/security/xssAuditor/full-block-post-from-iframe.html [ Failure ]
 http/tests/security/xssAuditor/xss-protection-parsing-01.html [ Failure ]
 
-# https://crbug.com/582522 - extra mixedContent checks reported with --site-per-process
-http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
-
 # https://crbug.com/582176 - InspectorTest.changeExecutionContext doesn't like OOPIFs.
 http/tests/inspector/console-cd-completions.html [ Failure ]
 http/tests/inspector/console-cd.html [ Failure ]
@@ -60,13 +57,15 @@ http/tests/inspector/console-cd.html [ Failure ]
 # https://crbug.com/554119 - Popup menu is in the wrong location.
 http/tests/webfont/popup-menu-load-webfont-after-open.html [ Failure ]
 
-# https://crbug.com/582525 - testRunner.setAllowDisplayOfInsecureContent is not replicated to OOPIFs.
-http/tests/security/mixedContent/active-subresource-in-http-iframe-not-blocked.https.html [ Failure Timeout ]
+# https://crbug.com/602493 - Layout tests harness doesn't support history dump across OOPIFs
+http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Crash ]
+
+# https://crbug.com/582522 - extra mixedContent checks reported with --site-per-process
+# https://crbug.com/602497 - Inconsistent console messages about mixed content,
+#                            when running with or without --site-per-process
+http/tests/security/mixedContent/active-subresource-in-http-iframe-not-blocked.https.html [ Failure ]
+http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
 http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
-http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure Crash ]
-http/tests/security/mixedContent/insecure-image-in-main-frame-allowed.html [ Failure ]
-http/tests/security/mixedContent/insecure-script-in-main-frame-allowed.html [ Failure ]
-http/tests/security/referrer-policy-conflicting-policies.html [ Failure ]
 
 # https://crbug.com/585171 - iframe restored from history should be excluded from performance entries.
 http/tests/misc/resource-timing-iframe-restored-from-history.html [ Failure Timeout ]

@@ -45,6 +45,7 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
+#include "content/shell/common/layout_test/layout_test_messages.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
@@ -379,7 +380,7 @@ void BlinkTestController::OpenURL(const GURL& url) {
                          gfx::Size());
 }
 
-void BlinkTestController::TestFinishedInSecondaryRenderer() {
+void BlinkTestController::OnTestFinishedInSecondaryRenderer() {
   RenderViewHost* render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
   render_view_host->Send(
@@ -446,8 +447,6 @@ bool BlinkTestController::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(BlinkTestController, message,
                                    render_frame_host)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_LayoutTestRuntimeFlagsChanged,
-                        OnLayoutTestRuntimeFlagsChanged)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_LayoutDumpResponse,
                         OnLayoutDumpResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -608,8 +607,7 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
 
     if (did_send_initial_test_configuration_) {
       frame->Send(new ShellViewMsg_ReplicateTestConfiguration(
-          frame->GetRoutingID(), params,
-          accumulated_layout_test_runtime_flags_changes_));
+          frame->GetRoutingID(), params));
     } else {
       did_send_initial_test_configuration_ = true;
       frame->Send(
@@ -626,6 +624,9 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
       frame->Send(
           new ShellViewMsg_SetupSecondaryRenderer(frame->GetRoutingID()));
     }
+
+    process->Send(new LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges(
+        accumulated_layout_test_runtime_flags_changes_));
   }
 }
 
@@ -697,29 +698,22 @@ void BlinkTestController::OnInitiateLayoutDump() {
 }
 
 void BlinkTestController::OnLayoutTestRuntimeFlagsChanged(
-    RenderFrameHost* sender,
+    int sender_process_host_id,
     const base::DictionaryValue& changed_layout_test_runtime_flags) {
-  // Stash the changes for future renderers.
+  // Stash the accumulated changes for future, not-yet-created renderers.
   accumulated_layout_test_runtime_flags_changes_.MergeDictionary(
       &changed_layout_test_runtime_flags);
 
-  // Only need to send the propagation message once per renderer process.
-  std::set<int> already_covered_process_ids;
+  // Propagate the changes to all the tracked renderer processes.
+  for (RenderProcessHost* process : all_observed_render_process_hosts_) {
+    // Do not propagate the changes back to the process that originated them.
+    // (propagating them back could also clobber subsequent changes in the
+    // originator).
+    if (process->GetID() == sender_process_host_id)
+      continue;
 
-  // No need to propagate the changes back to the process that originated them.
-  // (propagating them back could also clobber subsequent changes in the
-  // originator).
-  already_covered_process_ids.insert(sender->GetProcess()->GetID());
-
-  // Propagate the changes to all the renderer processes associated with the
-  // main window.
-  for (RenderFrameHost* frame : main_window_->web_contents()->GetAllFrames()) {
-    bool inserted_new_item =
-        already_covered_process_ids.insert(frame->GetProcess()->GetID()).second;
-    if (inserted_new_item) {
-      frame->Send(new ShellViewMsg_ReplicateLayoutTestRuntimeFlagsChanges(
-          frame->GetRoutingID(), changed_layout_test_runtime_flags));
-    }
+    process->Send(new LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges(
+        changed_layout_test_runtime_flags));
   }
 }
 

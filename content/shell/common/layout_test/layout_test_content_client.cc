@@ -13,7 +13,6 @@ bool LayoutTestContentClient::CanSendWhileSwappedOut(
   switch (message->type()) {
     // Used in layout tests; handled in BlinkTestController.
     case ShellViewHostMsg_PrintMessage::ID:
-    case ShellViewHostMsg_LayoutTestRuntimeFlagsChanged::ID:
       return true;
 
     default:

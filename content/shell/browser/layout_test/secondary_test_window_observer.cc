@@ -29,7 +29,7 @@ bool SecondaryTestWindowObserver::OnMessageReceived(
 }
 
 void SecondaryTestWindowObserver::OnTestFinishedInSecondaryRenderer() {
-  BlinkTestController::Get()->TestFinishedInSecondaryRenderer();
+  BlinkTestController::Get()->OnTestFinishedInSecondaryRenderer();
 }
 
 void SecondaryTestWindowObserver::RenderFrameCreated(

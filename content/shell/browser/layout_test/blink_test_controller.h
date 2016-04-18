@@ -134,6 +134,12 @@ class BlinkTestController : public base::NonThreadSafe,
   // True if the controller was reset successfully.
   bool ResetAfterLayoutTest();
 
+  // IPC messages forwarded from elsewhere.
+  void OnLayoutTestRuntimeFlagsChanged(
+      int sender_process_host_id,
+      const base::DictionaryValue& changed_layout_test_runtime_flags);
+  void OnTestFinishedInSecondaryRenderer();
+
   // Makes sure that the potentially new renderer associated with |frame| is 1)
   // initialized for the test, 2) kept-up-to-date wrt test flags and 3)
   // monitored for crashes.
@@ -143,7 +149,6 @@ class BlinkTestController : public base::NonThreadSafe,
   void RendererUnresponsive();
   void OverrideWebkitPrefs(WebPreferences* prefs);
   void OpenURL(const GURL& url);
-  void TestFinishedInSecondaryRenderer();
   bool IsMainWindow(WebContents* web_contents) const;
   std::unique_ptr<BluetoothChooser> RunBluetoothChooser(
       RenderFrameHost* frame,
@@ -196,9 +201,6 @@ class BlinkTestController : public base::NonThreadSafe,
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
   void OnInitiateLayoutDump();
-  void OnLayoutTestRuntimeFlagsChanged(
-      RenderFrameHost* sender,
-      const base::DictionaryValue& changed_layout_test_runtime_flags);
   void OnLayoutDumpResponse(RenderFrameHost* sender, const std::string& dump);
   void OnPrintMessage(const std::string& message);
   void OnOverridePreferences(const WebPreferences& prefs);

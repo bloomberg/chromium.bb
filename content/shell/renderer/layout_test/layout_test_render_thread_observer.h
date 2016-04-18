@@ -13,6 +13,10 @@
 #include "content/public/renderer/render_thread_observer.h"
 #include "ipc/ipc_platform_file.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace blink {
 class WebFrame;
 }
@@ -48,6 +52,8 @@ class LayoutTestRenderThreadObserver : public RenderThreadObserver {
  private:
   // Message handlers.
   void OnSetWebKitSourceDir(const base::FilePath& webkit_source_dir);
+  void OnReplicateLayoutTestRuntimeFlagsChanges(
+      const base::DictionaryValue& changed_layout_test_runtime_flags);
 
   test_runner::WebTestDelegate* test_delegate_;
   std::unique_ptr<test_runner::WebTestInterfaces> test_interfaces_;

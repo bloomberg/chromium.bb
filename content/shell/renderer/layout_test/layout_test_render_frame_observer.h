@@ -30,13 +30,8 @@ class LayoutTestRenderFrameObserver : public RenderFrameObserver {
 
  private:
   void OnLayoutDumpRequest();
-  void OnReplicateLayoutTestRuntimeFlagsChanges(
-      const base::DictionaryValue& changed_layout_test_runtime_flags);
   void OnSetTestConfiguration(const ShellTestConfiguration& test_config);
-  void OnReplicateTestConfiguration(
-      const ShellTestConfiguration& test_config,
-      const base::DictionaryValue&
-          accumulated_layout_test_runtime_flags_changes);
+  void OnReplicateTestConfiguration(const ShellTestConfiguration& test_config);
   void OnSetupSecondaryRenderer();
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestRenderFrameObserver);

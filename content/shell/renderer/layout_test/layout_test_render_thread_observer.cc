@@ -7,10 +7,12 @@
 #include "base/command_line.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/web_test_interfaces.h"
+#include "components/test_runner/web_test_runner.h"
 #include "content/common/input/input_event_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/test/layouttest_support.h"
+#include "content/shell/common/layout_test/layout_test_messages.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
@@ -82,6 +84,8 @@ bool LayoutTestRenderThreadObserver::OnControlMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(LayoutTestRenderThreadObserver, message)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SetWebKitSourceDir, OnSetWebKitSourceDir)
+    IPC_MESSAGE_HANDLER(LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges,
+                        OnReplicateLayoutTestRuntimeFlagsChanges)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -91,6 +95,12 @@ bool LayoutTestRenderThreadObserver::OnControlMessageReceived(
 void LayoutTestRenderThreadObserver::OnSetWebKitSourceDir(
     const base::FilePath& webkit_source_dir) {
   webkit_source_dir_ = webkit_source_dir;
+}
+
+void LayoutTestRenderThreadObserver::OnReplicateLayoutTestRuntimeFlagsChanges(
+    const base::DictionaryValue& changed_layout_test_runtime_flags) {
+  test_interfaces()->TestRunner()->ReplicateLayoutTestRuntimeFlagsChanges(
+      changed_layout_test_runtime_flags);
 }
 
 }  // namespace content

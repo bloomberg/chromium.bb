@@ -529,20 +529,8 @@ void BlinkTestRunner::OnLayoutTestRuntimeFlagsChanged(
   if (!is_main_window_)
     return;
 
-  // Message needs to be send via a local frame to eventually reach
-  // WebContentsObserver via OnMessage(..., RenderFrameHost*) overload - this
-  // lets BlinkTestController figure out the originator of the message.
-  RenderFrame* local_frame = nullptr;
-  for (WebFrame* frame = render_view()->GetWebView()->mainFrame(); frame;
-       frame = frame->traverseNext(false)) {
-    if (frame->isWebLocalFrame()) {
-      local_frame = RenderFrame::FromWebFrame(frame);
-      break;
-    }
-  }
-  DCHECK(local_frame);
-  Send(new ShellViewHostMsg_LayoutTestRuntimeFlagsChanged(
-      local_frame->GetRoutingID(), changed_values));
+  RenderThread::Get()->Send(
+      new LayoutTestHostMsg_LayoutTestRuntimeFlagsChanged(changed_values));
 }
 
 void BlinkTestRunner::TestFinished() {

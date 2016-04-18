@@ -15,6 +15,10 @@
 
 class GURL;
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -66,6 +70,8 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
                        const GURL& origin,
                        const GURL& embedding_origin);
   void OnResetPermissions();
+  void OnLayoutTestRuntimeFlagsChanged(
+      const base::DictionaryValue& changed_layout_test_runtime_flags);
 
   int render_process_id_;
 
