@@ -330,18 +330,6 @@ template("ios_framework_bundle") {
       ]
     }
 
-    _framework_public_config = _target_name + "_public_config"
-    config(_framework_public_config) {
-      # TODO(sdefresne): should we have a framework_dirs similar to lib_dirs
-      # and include_dirs to avoid duplicate values on the command-line.
-      common_flags = [ "-F" + rebase_path("$root_out_dir/.", root_out_dir) ]
-      cflags_objc = common_flags
-      cflags_objcc = common_flags
-      ldflags = common_flags
-      lib_dirs = [ root_out_dir ]
-      libs = [ _framework_name ]
-    }
-
     group(_framework_headers_target) {
       deps = [
         ":$_compile_headers_map_target",
@@ -383,13 +371,9 @@ template("ios_framework_bundle") {
                                "public_configs",
                              ])
 
-      deps = [
+      public_deps = [
         ":$_framework_target",
       ]
-      if (!defined(public_configs)) {
-        public_configs = []
-      }
-      public_configs += [ ":$_framework_public_config" ]
     }
   }
 }

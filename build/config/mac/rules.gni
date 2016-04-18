@@ -74,6 +74,19 @@ template("framework_bundle") {
     ]
   }
 
+  _framework_public_config = _target_name + "_public_config"
+  config(_framework_public_config) {
+    # TODO(sdefresne): should we have a framework_dirs similar to lib_dirs
+    # and include_dirs to avoid duplicate values on the command-line.
+    visibility = [ ":$_framework_target" ]
+    common_flags = [ "-F" + rebase_path("$root_out_dir/.", root_out_dir) ]
+    cflags_objc = common_flags
+    cflags_objcc = common_flags
+    ldflags = common_flags
+    lib_dirs = [ root_out_dir ]
+    libs = [ _framework_name ]
+  }
+
   create_bundle(_framework_target) {
     forward_variables_from(invoker,
                            [
@@ -93,6 +106,8 @@ template("framework_bundle") {
       public_deps = []
     }
     public_deps += [ ":$_shared_library_bundle_data" ]
+
+    public_configs = [ ":$_framework_public_config" ]
 
     bundle_root_dir = _framework_root_dir
     bundle_resources_dir = "$bundle_root_dir/Resources"
