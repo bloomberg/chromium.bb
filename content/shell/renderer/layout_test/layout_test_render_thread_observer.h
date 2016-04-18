@@ -24,9 +24,6 @@ class WebTestInterfaces;
 
 namespace content {
 
-class RenderView;
-class BlinkTestRunner;
-
 class LayoutTestRenderThreadObserver : public RenderThreadObserver {
  public:
   static LayoutTestRenderThreadObserver* GetInstance();
@@ -35,7 +32,6 @@ class LayoutTestRenderThreadObserver : public RenderThreadObserver {
   ~LayoutTestRenderThreadObserver() override;
 
   void SetTestDelegate(test_runner::WebTestDelegate* delegate);
-  void SetMainWindow(RenderView* view);
 
   // RenderThreadObserver implementation.
   void OnRenderProcessShutdown() override;
@@ -47,14 +43,12 @@ class LayoutTestRenderThreadObserver : public RenderThreadObserver {
   test_runner::WebTestInterfaces* test_interfaces() const {
     return test_interfaces_.get();
   }
-  BlinkTestRunner* main_test_runner() const { return main_test_runner_; }
   const base::FilePath& webkit_source_dir() const { return webkit_source_dir_; }
 
  private:
   // Message handlers.
   void OnSetWebKitSourceDir(const base::FilePath& webkit_source_dir);
 
-  BlinkTestRunner* main_test_runner_;
   test_runner::WebTestDelegate* test_delegate_;
   std::unique_ptr<test_runner::WebTestInterfaces> test_interfaces_;
 

@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -269,6 +270,8 @@ bool BlinkTestController::PrepareForLayoutTest(
   printer_->reset();
   frame_to_layout_dump_map_.clear();
   render_process_host_observer_.RemoveAll();
+  all_observed_render_process_hosts_.clear();
+  main_window_render_process_hosts_.clear();
   accumulated_layout_test_runtime_flags_changes_.Clear();
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
@@ -492,6 +495,8 @@ void BlinkTestController::WebContentsDestroyed() {
 void BlinkTestController::RenderProcessHostDestroyed(
     RenderProcessHost* render_process_host) {
   render_process_host_observer_.Remove(render_process_host);
+  all_observed_render_process_hosts_.erase(render_process_host);
+  main_window_render_process_hosts_.erase(render_process_host);
 }
 
 void BlinkTestController::RenderProcessExited(
@@ -574,40 +579,53 @@ void BlinkTestController::DiscardMainWindow() {
 
 void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
   RenderProcessHost* process = frame->GetProcess();
+  bool main_window =
+      WebContents::FromRenderFrameHost(frame) == main_window_->web_contents();
 
   // Track pid of the renderer handling the main frame.
-  if (frame->GetParent() == nullptr) {
+  if (main_window && frame->GetParent() == nullptr) {
     base::ProcessHandle process_handle = process->GetHandle();
     if (process_handle != base::kNullProcessHandle)
       current_pid_ = base::GetProcId(process_handle);
   }
 
-  // Does RenderFrameHost map to a RenderFrame in a previously unknown process?
-  if (render_process_host_observer_.IsObserving(process))
-    return;  // No need to do anything more for an already known process.
-  render_process_host_observer_.Add(process);
+  // Is this the 1st time this renderer contains parts of the main test window?
+  if (main_window && !ContainsKey(main_window_render_process_hosts_, process)) {
+    main_window_render_process_hosts_.insert(process);
 
-  // Make sure the new renderer process has a test configuration shared with
-  // other renderers.
-  ShellTestConfiguration params;
-  params.current_working_directory = current_working_directory_;
-  params.temp_path = temp_path_;
-  params.test_url = test_url_;
-  params.enable_pixel_dumping = enable_pixel_dumping_;
-  params.allow_external_pages =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowExternalPages);
-  params.expected_pixel_hash = expected_pixel_hash_;
-  params.initial_size = initial_size_;
+    // Make sure the new renderer process has a test configuration shared with
+    // other renderers.
+    ShellTestConfiguration params;
+    params.current_working_directory = current_working_directory_;
+    params.temp_path = temp_path_;
+    params.test_url = test_url_;
+    params.enable_pixel_dumping = enable_pixel_dumping_;
+    params.allow_external_pages =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kAllowExternalPages);
+    params.expected_pixel_hash = expected_pixel_hash_;
+    params.initial_size = initial_size_;
 
-  if (did_send_initial_test_configuration_) {
-    frame->Send(new ShellViewMsg_ReplicateTestConfiguration(
-        frame->GetRoutingID(), params,
-        accumulated_layout_test_runtime_flags_changes_));
-  } else {
-    did_send_initial_test_configuration_ = true;
-    frame->Send(
-        new ShellViewMsg_SetTestConfiguration(frame->GetRoutingID(), params));
+    if (did_send_initial_test_configuration_) {
+      frame->Send(new ShellViewMsg_ReplicateTestConfiguration(
+          frame->GetRoutingID(), params,
+          accumulated_layout_test_runtime_flags_changes_));
+    } else {
+      did_send_initial_test_configuration_ = true;
+      frame->Send(
+          new ShellViewMsg_SetTestConfiguration(frame->GetRoutingID(), params));
+    }
+  }
+
+  // Is this a previously unknown renderer process?
+  if (!render_process_host_observer_.IsObserving(process)) {
+    render_process_host_observer_.Add(process);
+    all_observed_render_process_hosts_.insert(process);
+
+    if (!main_window) {
+      frame->Send(
+          new ShellViewMsg_SetupSecondaryRenderer(frame->GetRoutingID()));
+    }
   }
 }
 

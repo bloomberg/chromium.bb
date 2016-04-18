@@ -111,8 +111,15 @@ void LayoutTestContentRendererClient::RenderViewCreated(
 
   test_runner::WebTestDelegate* delegate =
       LayoutTestRenderThreadObserver::GetInstance()->test_delegate();
-  if (delegate == static_cast<test_runner::WebTestDelegate*>(test_runner))
-    LayoutTestRenderThreadObserver::GetInstance()->SetMainWindow(render_view);
+  if (delegate == static_cast<test_runner::WebTestDelegate*>(test_runner)) {
+    // TODO(lukasza): Should this instead by done by BlinkTestRunner,
+    // when it gets notified by the browser that it is the main window?
+
+    // Let test_runner layer know what is the main test window.
+    LayoutTestRenderThreadObserver::GetInstance()
+        ->test_interfaces()
+        ->SetWebView(render_view->GetWebView(), proxy);
+  }
 }
 
 WebMediaStreamCenter*

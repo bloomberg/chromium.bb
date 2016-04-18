@@ -744,15 +744,6 @@ bool BlinkTestRunner::OnMessageReceived(const IPC::Message& message) {
 
 void BlinkTestRunner::Navigate(const GURL& url) {
   focus_on_next_commit_ = true;
-  if (!is_main_window_ &&
-      LayoutTestRenderThreadObserver::GetInstance()->main_test_runner() ==
-          this) {
-    test_runner::WebTestInterfaces* interfaces =
-        LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
-    interfaces->SetTestIsRunning(true);
-    interfaces->ConfigureForTestWithURL(GURL(), false);
-    ForceResizeRenderView(render_view(), WebSize(800, 600));
-  }
 }
 
 void BlinkTestRunner::DidCommitProvisionalLoad(WebLocalFrame* frame,
@@ -902,6 +893,16 @@ BlinkTestRunner::GetBluetoothFakeAdapterSetter() {
         mojo::GetProxy(&bluetooth_fake_adapter_setter_));
   }
   return *bluetooth_fake_adapter_setter_;
+}
+
+void BlinkTestRunner::OnSetupSecondaryRenderer() {
+  DCHECK(!is_main_window_);
+
+  test_runner::WebTestInterfaces* interfaces =
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+  interfaces->SetTestIsRunning(true);
+  interfaces->ConfigureForTestWithURL(GURL(), false);
+  ForceResizeRenderView(render_view(), WebSize(800, 600));
 }
 
 void BlinkTestRunner::OnReplicateTestConfiguration(

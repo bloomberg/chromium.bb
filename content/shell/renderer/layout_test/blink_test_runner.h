@@ -170,6 +170,7 @@ class BlinkTestRunner : public RenderViewObserver,
   // Message handlers forwarded by LayoutTestRenderFrameObserver.
   void OnSetTestConfiguration(const ShellTestConfiguration& params);
   void OnReplicateTestConfiguration(const ShellTestConfiguration& params);
+  void OnSetupSecondaryRenderer();
 
  private:
   // Message handlers.

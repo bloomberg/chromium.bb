@@ -38,6 +38,8 @@ bool LayoutTestRenderFrameObserver::OnMessageReceived(
                         OnReplicateTestConfiguration)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SetTestConfiguration,
                         OnSetTestConfiguration)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_SetupSecondaryRenderer,
+                        OnSetupSecondaryRenderer)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -66,8 +68,7 @@ void LayoutTestRenderFrameObserver::OnReplicateTestConfiguration(
     const ShellTestConfiguration& test_config,
     const base::DictionaryValue&
         accumulated_layout_test_runtime_flags_changes) {
-  LayoutTestRenderThreadObserver::GetInstance()
-      ->main_test_runner()
+  BlinkTestRunner::Get(render_frame()->GetRenderView())
       ->OnReplicateTestConfiguration(test_config);
 
   OnReplicateLayoutTestRuntimeFlagsChanges(
@@ -76,9 +77,13 @@ void LayoutTestRenderFrameObserver::OnReplicateTestConfiguration(
 
 void LayoutTestRenderFrameObserver::OnSetTestConfiguration(
     const ShellTestConfiguration& test_config) {
-  LayoutTestRenderThreadObserver::GetInstance()
-      ->main_test_runner()
+  BlinkTestRunner::Get(render_frame()->GetRenderView())
       ->OnSetTestConfiguration(test_config);
+}
+
+void LayoutTestRenderFrameObserver::OnSetupSecondaryRenderer() {
+  BlinkTestRunner::Get(render_frame()->GetRenderView())
+      ->OnSetupSecondaryRenderer();
 }
 
 }  // namespace content

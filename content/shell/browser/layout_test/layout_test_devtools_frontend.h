@@ -41,6 +41,9 @@ class LayoutTestDevToolsFrontend : public ShellDevToolsFrontend {
 
   // WebContentsObserver implementation.
   void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
+  void RenderFrameHostChanged(RenderFrameHost* old_host,
+                              RenderFrameHost* new_host) override;
 
   bool ready_for_test_;
   std::vector<std::pair<int, std::string>> pending_evaluations_;

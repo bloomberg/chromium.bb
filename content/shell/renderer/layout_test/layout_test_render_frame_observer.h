@@ -37,6 +37,7 @@ class LayoutTestRenderFrameObserver : public RenderFrameObserver {
       const ShellTestConfiguration& test_config,
       const base::DictionaryValue&
           accumulated_layout_test_runtime_flags_changes);
+  void OnSetupSecondaryRenderer();
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestRenderFrameObserver);
 };

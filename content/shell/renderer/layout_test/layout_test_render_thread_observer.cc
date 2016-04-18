@@ -5,20 +5,17 @@
 #include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
 
 #include "base/command_line.h"
-#include "components/test_runner/event_sender.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/web_test_interfaces.h"
 #include "content/common/input/input_event_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
-#include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
 using blink::WebFrame;
@@ -37,8 +34,7 @@ LayoutTestRenderThreadObserver::GetInstance() {
 }
 
 LayoutTestRenderThreadObserver::LayoutTestRenderThreadObserver()
-    : main_test_runner_(NULL),
-      test_delegate_(NULL) {
+    : test_delegate_(nullptr) {
   CHECK(!g_instance);
   g_instance = this;
   RenderThread::Get()->AddObserver(this);
@@ -75,12 +71,6 @@ void LayoutTestRenderThreadObserver::SetTestDelegate(
     test_runner::WebTestDelegate* delegate) {
   test_interfaces_->SetDelegate(delegate);
   test_delegate_ = delegate;
-}
-
-void LayoutTestRenderThreadObserver::SetMainWindow(RenderView* view) {
-  BlinkTestRunner* test_runner = BlinkTestRunner::Get(view);
-  test_interfaces_->SetWebView(view->GetWebView(), test_runner->proxy());
-  main_test_runner_ = test_runner;
 }
 
 void LayoutTestRenderThreadObserver::OnRenderProcessShutdown() {

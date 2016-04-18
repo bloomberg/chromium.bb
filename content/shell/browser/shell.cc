@@ -32,7 +32,7 @@
 #include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
 #include "content/shell/browser/layout_test/layout_test_devtools_frontend.h"
 #include "content/shell/browser/layout_test/layout_test_javascript_dialog_manager.h"
-#include "content/shell/browser/layout_test/notify_done_forwarder.h"
+#include "content/shell/browser/layout_test/secondary_test_window_observer.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
@@ -252,7 +252,7 @@ void Shell::AddNewContents(WebContents* source,
                            bool* was_blocked) {
   CreateShell(new_contents, AdjustWindowSize(initial_rect.size()));
   if (switches::IsRunLayoutTestSwitchPresent())
-    NotifyDoneForwarder::CreateForWebContents(new_contents);
+    SecondaryTestWindowObserver::CreateForWebContents(new_contents);
 }
 
 void Shell::GoBackOrForward(int offset) {

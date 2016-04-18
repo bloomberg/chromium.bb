@@ -133,4 +133,15 @@ void LayoutTestDevToolsFrontend::RenderProcessGone(
   BlinkTestController::Get()->DevToolsProcessCrashed();
 }
 
+void LayoutTestDevToolsFrontend::RenderFrameCreated(
+    RenderFrameHost* render_frame_host) {
+  BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
+}
+
+void LayoutTestDevToolsFrontend::RenderFrameHostChanged(
+    RenderFrameHost* old_host,
+    RenderFrameHost* new_host) {
+  BlinkTestController::Get()->HandleNewRenderFrameHost(new_host);
+}
+
 }  // namespace content
