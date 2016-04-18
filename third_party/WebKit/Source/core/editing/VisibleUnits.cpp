@@ -56,6 +56,7 @@
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutItem.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineIterator.h"
@@ -2178,7 +2179,7 @@ VisiblePosition visiblePositionForContentsPoint(const IntPoint& contentsPoint, L
 {
     HitTestRequest request = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping;
     HitTestResult result(request, contentsPoint);
-    frame->document()->layoutView()->hitTest(result);
+    frame->document()->layoutViewItem().hitTest(result);
 
     if (Node* node = result.innerNode())
         return frame->selection().selection().visiblePositionRespectingEditingBoundary(result.localPoint(), node);
