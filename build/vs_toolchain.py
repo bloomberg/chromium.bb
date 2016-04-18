@@ -153,12 +153,14 @@ def _VersionNumber():
 
 
 def _CopyRuntimeImpl(target, source, verbose=True):
-  """Copy |source| to |target| if it doesn't already exist or if it
-  needs to be updated.
+  """Copy |source| to |target| if it doesn't already exist or if it needs to be
+  updated (comparing last modified time as an approximate float match as for
+  some reason the values tend to differ by ~1e-07 despite being copies of the
+  same file... https://crbug.com/603603).
   """
   if (os.path.isdir(os.path.dirname(target)) and
       (not os.path.isfile(target) or
-      os.stat(target).st_mtime != os.stat(source).st_mtime)):
+       abs(os.stat(target).st_mtime - os.stat(source).st_mtime) >= 0.01)):
     if verbose:
       print 'Copying %s to %s...' % (source, target)
     if os.path.exists(target):
@@ -185,7 +187,6 @@ def _CopyRuntime2015(target_dir, source_dir, dll_pattern, suffix):
     source = os.path.join(source_dir, dll)
     _CopyRuntimeImpl(target, source)
   ucrt_src_dir = os.path.join(source_dir, 'api-ms-win-*.dll')
-  print 'Copying %s to %s...' % (ucrt_src_dir, target_dir)
   for ucrt_src_file in glob.glob(ucrt_src_dir):
     file_part = os.path.basename(ucrt_src_file)
     ucrt_dst_file = os.path.join(target_dir, file_part)

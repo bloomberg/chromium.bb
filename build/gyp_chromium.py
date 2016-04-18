@@ -343,7 +343,7 @@ def main():
   # Off we go...
   gyp_rc = gyp.main(args)
 
-  if not use_analyzer:
+  if gyp_rc == 0 and not use_analyzer:
     vs2013_runtime_dll_dirs = vs_toolchain.SetEnvironmentAndGetRuntimeDllDirs()
     if vs2013_runtime_dll_dirs:
       x64_runtime, x86_runtime = vs2013_runtime_dll_dirs
