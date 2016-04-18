@@ -8,17 +8,20 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
+
+using Relation = ContentSettingsPattern::Relation;
 
 namespace {
 
-bool NoopFilter(const GURL& url) {
-  return true;
+bool DontDeleteCookiesFilter(const net::CanonicalCookie& cookie) {
+  return false;
 }
 
 }  // namespace
 
 OriginFilterBuilder::OriginFilterBuilder(Mode mode)
-    : mode_(mode) {
+    : BrowsingDataFilterBuilder(mode) {
 }
 
 OriginFilterBuilder::~OriginFilterBuilder() {
@@ -43,27 +46,53 @@ void OriginFilterBuilder::AddOrigin(const url::Origin& origin) {
   origin_list_.insert(origin);
 }
 
-void OriginFilterBuilder::SetMode(Mode mode) {
-  mode_ = mode;
-}
-
 base::Callback<bool(const GURL&)>
-    OriginFilterBuilder::BuildSameOriginFilter() const {
+    OriginFilterBuilder::BuildGeneralFilter() const {
   std::set<url::Origin>* origins = new std::set<url::Origin>(origin_list_);
   return base::Bind(&OriginFilterBuilder::MatchesURL,
-                    base::Owned(origins), mode_);
+                    base::Owned(origins), mode());
 }
 
-base::Callback<bool(const GURL&)>
-    OriginFilterBuilder::BuildDomainFilter() const {
-  std::set<url::Origin>* origins = new std::set<url::Origin>(origin_list_);
-  return base::Bind(&OriginFilterBuilder::MatchesURLWithSubdomains,
-                    base::Owned(origins), mode_);
+base::Callback<bool(const ContentSettingsPattern& pattern)>
+    OriginFilterBuilder::BuildWebsiteSettingsPatternMatchesFilter() const {
+  std::vector<ContentSettingsPattern>* patterns_from_origins =
+      new std::vector<ContentSettingsPattern>();
+  patterns_from_origins->reserve(origin_list_.size());
+
+  for (const url::Origin& origin : origin_list_) {
+    patterns_from_origins->push_back(
+        ContentSettingsPattern::FromURLNoWildcard(GURL(origin.Serialize())));
+    DCHECK(patterns_from_origins->back().IsValid());
+  }
+
+  return base::Bind(&OriginFilterBuilder::MatchesWebsiteSettingsPattern,
+                    base::Owned(patterns_from_origins), mode());
+}
+
+base::Callback<bool(const net::CanonicalCookie& cookie)>
+OriginFilterBuilder::BuildCookieFilter() const {
+  NOTREACHED() <<
+      "Origin-based deletion is not suitable for cookies. Please use "
+      "different scoping, such as RegistrableDomainFilterBuilder.";
+  return base::Bind(DontDeleteCookiesFilter);
+}
+
+bool OriginFilterBuilder::IsEmpty() const {
+  return origin_list_.empty();
 }
 
 // static
-base::Callback<bool(const GURL&)> OriginFilterBuilder::BuildNoopFilter() {
-  return base::Bind(&NoopFilter);
+bool OriginFilterBuilder::MatchesWebsiteSettingsPattern(
+    std::vector<ContentSettingsPattern>* origin_patterns,
+    Mode mode,
+    const ContentSettingsPattern& pattern) {
+  for (const ContentSettingsPattern& origin : *origin_patterns) {
+    DCHECK(origin.IsValid());
+    Relation relation = pattern.Compare(origin);
+    if (relation == Relation::IDENTITY)
+      return mode == WHITELIST;
+  }
+  return mode != WHITELIST;
 }
 
 // static
@@ -71,41 +100,4 @@ bool OriginFilterBuilder::MatchesURL(
     std::set<url::Origin>* origins, Mode mode, const GURL& url) {
   return ((origins->find(url::Origin(url)) != origins->end()) ==
           (mode == WHITELIST));
-}
-
-// static
-bool OriginFilterBuilder::MatchesURLWithSubdomains(
-    std::set<url::Origin>* origins, Mode mode, const GURL& url) {
-  if (origins->empty())
-    return mode == BLACKLIST;
-
-  // If there is no concept of subdomains, simply delegate to MatchesURL().
-  if (url.HostIsIPAddress())
-    return MatchesURL(origins, mode, url);
-
-  // TODO(msramek): We do not expect filters to be particularly large.
-  // If they are, replace std::set with a trie for faster searching.
-  int port = url.EffectiveIntPort();
-  base::StringPiece host_piece = url.host_piece();
-  for (size_t i = 0; i < host_piece.length(); ++i) {
-    if (i != 0 && host_piece[i - 1] != '.')
-      continue;
-
-    url::Origin origin_with_removed_subdomain =
-        url::Origin::UnsafelyCreateOriginWithoutNormalization(
-            url.scheme_piece(),
-            host_piece.substr(i),
-            port);
-
-    // If we recognize the origin, return true for whitelist and false
-    // for blacklist.
-    if (origins->find(url::Origin(origin_with_removed_subdomain))
-        != origins->end()) {
-      return mode == WHITELIST;
-    }
-  }
-
-  // We do not recognize the URL. Return false for whitelist mode and true
-  // for blacklist mode.
-  return mode == BLACKLIST;
 }

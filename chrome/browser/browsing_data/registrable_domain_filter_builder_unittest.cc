@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
+#include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
 
 #include <algorithm>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "net/cookies/canonical_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -83,10 +85,10 @@ void RunTestCase(
 
 }  // namespace
 
-TEST(BrowsingDataFilterBuilderTest, Noop) {
+TEST(RegistrableDomainFilterBuilderTest, Noop) {
   // An no-op filter matches everything.
   base::Callback<bool(const GURL&)> filter =
-      BrowsingDataFilterBuilder::BuildNoopFilter();
+      RegistrableDomainFilterBuilder::BuildNoopFilter();
 
   TestCase test_cases[] = {
       {"https://www.google.com", true},
@@ -99,12 +101,13 @@ TEST(BrowsingDataFilterBuilderTest, Noop) {
     RunTestCase(test_case, filter);
 }
 
-TEST(BrowsingDataFilterBuilderTest, GURLWhitelist) {
-  BrowsingDataFilterBuilder builder(BrowsingDataFilterBuilder::WHITELIST);
+TEST(RegistrableDomainFilterBuilderTest, GURLWhitelist) {
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
-  base::Callback<bool(const GURL&)> filter = builder.BuildSameDomainFilter();
+  base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
 
   TestCase test_cases[] = {
       // We matche any URL on the specified domains.
@@ -130,12 +133,13 @@ TEST(BrowsingDataFilterBuilderTest, GURLWhitelist) {
     RunTestCase(test_case, filter);
 }
 
-TEST(BrowsingDataFilterBuilderTest, GURLBlacklist) {
-  BrowsingDataFilterBuilder builder(BrowsingDataFilterBuilder::BLACKLIST);
+TEST(RegistrableDomainFilterBuilderTest, GURLBlacklist) {
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::BLACKLIST);
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
-  base::Callback<bool(const GURL&)> filter = builder.BuildSameDomainFilter();
+  base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
 
   TestCase test_cases[] = {
       // We matches any URL that are not on the specified domains.
@@ -161,8 +165,9 @@ TEST(BrowsingDataFilterBuilderTest, GURLBlacklist) {
     RunTestCase(test_case, filter);
 }
 
-TEST(BrowsingDataFilterBuilderTest, WhitelistContentSettings) {
-  BrowsingDataFilterBuilder builder(BrowsingDataFilterBuilder::WHITELIST);
+TEST(RegistrableDomainFilterBuilderTest, WhitelistContentSettings) {
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
@@ -210,8 +215,9 @@ TEST(BrowsingDataFilterBuilderTest, WhitelistContentSettings) {
     RunTestCase(test_case, filter);
 }
 
-TEST(BrowsingDataFilterBuilderTest, BlacklistContentSettings) {
-  BrowsingDataFilterBuilder builder(BrowsingDataFilterBuilder::BLACKLIST);
+TEST(RegistrableDomainFilterBuilderTest, BlacklistContentSettings) {
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::BLACKLIST);
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
@@ -259,13 +265,14 @@ TEST(BrowsingDataFilterBuilderTest, BlacklistContentSettings) {
     RunTestCase(test_case, filter);
 }
 
-TEST(BrowsingDataFilterBuilderTest, MatchesCookiesWhitelist) {
-  BrowsingDataFilterBuilder builder(BrowsingDataFilterBuilder::WHITELIST);
+TEST(RegistrableDomainFilterBuilderTest, MatchesCookiesWhitelist) {
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
   base::Callback<bool(const net::CanonicalCookie&)> filter =
-      builder.BuildDomainCookieFilter();
+      builder.BuildCookieFilter();
 
   TestCase test_cases[] = {
       // Any cookie with the same registerable domain as the origins is matched.
@@ -296,13 +303,14 @@ TEST(BrowsingDataFilterBuilderTest, MatchesCookiesWhitelist) {
     RunTestCase(test_case, filter);
 }
 
-TEST(BrowsingDataFilterBuilderTest, MatchesCookiesBlacklist) {
-  BrowsingDataFilterBuilder builder(BrowsingDataFilterBuilder::BLACKLIST);
+TEST(RegistrableDomainFilterBuilderTest, MatchesCookiesBlacklist) {
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::BLACKLIST);
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
   base::Callback<bool(const net::CanonicalCookie&)> filter =
-      builder.BuildDomainCookieFilter();
+      builder.BuildCookieFilter();
 
   TestCase test_cases[] = {
       // Any cookie that doesn't have the same registerable domain is matched.

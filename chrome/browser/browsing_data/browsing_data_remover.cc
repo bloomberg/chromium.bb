@@ -19,6 +19,7 @@
 #include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
@@ -353,7 +354,11 @@ void BrowsingDataRemover::SetRemoving(bool is_removing) {
 void BrowsingDataRemover::Remove(const TimeRange& time_range,
                                  int remove_mask,
                                  int origin_type_mask) {
-  BrowsingDataFilterBuilder builder(BrowsingDataFilterBuilder::BLACKLIST);
+  // Any instance of BrowsingDataFilterBuilder that |IsEmptyBlacklist()|
+  // is OK to pass here.
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::BLACKLIST);
+  DCHECK(builder.IsEmptyBlacklist());
   RemoveImpl(time_range, remove_mask, builder, origin_type_mask);
 }
 
@@ -361,8 +366,8 @@ void BrowsingDataRemover::RemoveWithFilter(
     const TimeRange& time_range,
     int remove_mask,
     int origin_type_mask,
-    const BrowsingDataFilterBuilder& origin_filter) {
-  RemoveImpl(time_range, remove_mask, origin_filter, origin_type_mask);
+    const BrowsingDataFilterBuilder& filter_builder) {
+  RemoveImpl(time_range, remove_mask, filter_builder, origin_type_mask);
 }
 
 void BrowsingDataRemover::RemoveImpl(
@@ -382,8 +387,8 @@ void BrowsingDataRemover::RemoveImpl(
   remove_mask_ = remove_mask;
   origin_type_mask_ = origin_type_mask;
 
-  base::Callback<bool(const GURL& url)> same_domain_filter =
-      filter_builder.BuildSameDomainFilter();
+  base::Callback<bool(const GURL& url)> filter =
+      filter_builder.BuildGeneralFilter();
   base::Callback<bool(const ContentSettingsPattern& url)> same_pattern_filter =
       filter_builder.BuildWebsiteSettingsPatternMatchesFilter();
 
@@ -614,7 +619,7 @@ void BrowsingDataRemover::RemoveImpl(
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
     content::DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(profile_);
-    download_manager->RemoveDownloadsByURLAndTime(same_domain_filter,
+    download_manager->RemoveDownloadsByURLAndTime(filter,
                                                   delete_begin_, delete_end_);
     DownloadPrefs* download_prefs = DownloadPrefs::FromDownloadManager(
         download_manager);
@@ -658,7 +663,7 @@ void BrowsingDataRemover::RemoveImpl(
           BrowserThread::PostTask(
               BrowserThread::IO, FROM_HERE,
               base::Bind(&ClearCookiesWithPredicateOnIOThread, delete_begin_,
-                         delete_end_, filter_builder.BuildDomainCookieFilter(),
+                         delete_end_, filter_builder.BuildCookieFilter(),
                          base::RetainedRef(std::move(sb_context)),
                          UIThreadTrampoline(
                              base::Bind(&BrowsingDataRemover::OnClearedCookies,
@@ -765,7 +770,7 @@ void BrowsingDataRemover::RemoveImpl(
           base::Bind(&BrowsingDataRemover::OnClearedPasswords,
                      weak_ptr_factory_.GetWeakPtr());
       password_store->RemoveLoginsByURLAndTime(
-          same_domain_filter, delete_begin_, delete_end_, on_cleared_passwords);
+          filter, delete_begin_, delete_end_, on_cleared_passwords);
     }
   }
 
@@ -904,12 +909,11 @@ void BrowsingDataRemover::RemoveImpl(
 
     content::StoragePartition::CookieMatcherFunction cookie_matcher;
     if (!filter_builder.IsEmptyBlacklist()) {
-      cookie_matcher = filter_builder.BuildDomainCookieFilter();
+      cookie_matcher = filter_builder.BuildCookieFilter();
     }
     storage_partition->ClearData(
         storage_partition_remove_mask, quota_storage_remove_mask,
-        base::Bind(&DoesOriginMatchMaskAndUrls, origin_type_mask_,
-                   same_domain_filter),
+        base::Bind(&DoesOriginMatchMaskAndUrls, origin_type_mask_, filter),
         cookie_matcher, delete_begin_, delete_end_,
         base::Bind(&BrowsingDataRemover::OnClearedStoragePartitionData,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -994,7 +998,7 @@ void BrowsingDataRemover::RemoveImpl(
     waiting_for_clear_offline_page_data_ = true;
     offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile_)
         ->DeletePagesByURLPredicate(
-            same_domain_filter,
+            filter,
             base::Bind(&BrowsingDataRemover::OnClearedOfflinePageData,
                        weak_ptr_factory_.GetWeakPtr()));
   }

@@ -29,6 +29,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
+#include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -1201,7 +1202,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveCookieLastHour) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveCookiesDomainBlacklist) {
-  BrowsingDataFilterBuilder filter(BrowsingDataFilterBuilder::BLACKLIST);
+  RegistrableDomainFilterBuilder filter(
+      RegistrableDomainFilterBuilder::BLACKLIST);
   filter.AddRegisterableDomain(kTestRegisterableDomain1);
   filter.AddRegisterableDomain(kTestRegisterableDomain3);
   BlockUntilOriginDataRemoved(BrowsingDataRemover::LAST_HOUR,
@@ -1268,7 +1270,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieForeverWithPredicate) {
 
   tester.AddCookie();
   ASSERT_TRUE(tester.ContainsCookie());
-  BrowsingDataFilterBuilder filter(BrowsingDataFilterBuilder::BLACKLIST);
+  RegistrableDomainFilterBuilder filter(
+      RegistrableDomainFilterBuilder::BLACKLIST);
   filter.AddRegisterableDomain(kTestRegisterableDomain1);
   BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
                               BrowsingDataRemover::REMOVE_COOKIES, filter);
@@ -1277,7 +1280,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieForeverWithPredicate) {
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginTypeMask());
   EXPECT_TRUE(tester.ContainsCookie());
 
-  BrowsingDataFilterBuilder filter2(BrowsingDataFilterBuilder::WHITELIST);
+  RegistrableDomainFilterBuilder filter2(
+      RegistrableDomainFilterBuilder::WHITELIST);
   filter2.AddRegisterableDomain(kTestRegisterableDomain1);
   BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
                               BrowsingDataRemover::REMOVE_COOKIES, filter2);
@@ -1743,7 +1747,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverNeither) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
-  BrowsingDataFilterBuilder builder(BrowsingDataFilterBuilder::WHITELIST);
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
   builder.AddRegisterableDomain(kTestRegisterableDomain1);
   // Remove Origin 1.
   BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
@@ -1915,7 +1920,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedSpecificOrigin) {
   policy->AddProtected(kOrigin1.GetOrigin());
 #endif
 
-  BrowsingDataFilterBuilder builder(BrowsingDataFilterBuilder::WHITELIST);
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
   builder.AddRegisterableDomain(kTestRegisterableDomain1);
 
   // Try to remove kOrigin1. Expect failure.
@@ -2061,7 +2067,8 @@ TEST_F(BrowsingDataRemoverTest, TimeBasedHistoryRemoval) {
   ASSERT_TRUE(tester.HistoryContainsURL(kOrigin1));
   ASSERT_TRUE(tester.HistoryContainsURL(kOrigin2));
 
-  BrowsingDataFilterBuilder builder(BrowsingDataFilterBuilder::BLACKLIST);
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::BLACKLIST);
   BlockUntilOriginDataRemoved(BrowsingDataRemover::LAST_HOUR,
                               BrowsingDataRemover::REMOVE_HISTORY, builder);
 
@@ -2310,9 +2317,10 @@ TEST_F(BrowsingDataRemoverTest, RemoveDownloadsByTimeOnly) {
 
 TEST_F(BrowsingDataRemoverTest, RemoveDownloadsByOrigin) {
   RemoveDownloadsTester tester(GetProfile());
-  BrowsingDataFilterBuilder builder(BrowsingDataFilterBuilder::WHITELIST);
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
   builder.AddRegisterableDomain(kTestRegisterableDomain1);
-  base::Callback<bool(const GURL&)> filter = builder.BuildSameDomainFilter();
+  base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
 
   EXPECT_CALL(
       *tester.download_manager(),
@@ -2346,9 +2354,10 @@ TEST_F(BrowsingDataRemoverTest, RemovePasswordsByTimeOnly) {
 
 TEST_F(BrowsingDataRemoverTest, RemovePasswordsByOrigin) {
   RemovePasswordsTester tester(GetProfile());
-  BrowsingDataFilterBuilder builder(BrowsingDataFilterBuilder::WHITELIST);
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
   builder.AddRegisterableDomain(kTestRegisterableDomain1);
-  base::Callback<bool(const GURL&)> filter = builder.BuildSameDomainFilter();
+  base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
 
   EXPECT_CALL(*tester.store(),
               RemoveLoginsByURLAndTimeImpl(ProbablySameFilter(filter), _, _))
@@ -2399,7 +2408,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveContentSettingsWithBlacklist) {
       new base::DictionaryValue());
 
   // Clear all except for origin1 and origin3.
-  BrowsingDataFilterBuilder filter(BrowsingDataFilterBuilder::BLACKLIST);
+  RegistrableDomainFilterBuilder filter(
+      RegistrableDomainFilterBuilder::BLACKLIST);
   filter.AddRegisterableDomain(kTestRegisterableDomain1);
   filter.AddRegisterableDomain(kTestRegisterableDomain3);
   BlockUntilOriginDataRemoved(BrowsingDataRemover::LAST_HOUR,
