@@ -36,19 +36,14 @@ def _CheckIdenticalFiles(input_api, output_api):
     dirty_files = set(input_api.LocalPaths())
 
     groups = [[
+        'imported/web-platform-tests/resources/testharness.js',
         'resources/testharness.js',
-        'http/tests/resources/testharness.js',
-        'http/tests/w3c/resources/testharness.js',
     ], [
+        'imported/web-platform-tests/resources/testharnessreport.js',
         'resources/testharnessreport.js',
-        'http/tests/resources/testharnessreport.js',
-        'http/tests/w3c/resources/testharnessreport.js',
     ], [
+        'imported/web-platform-tests/resources/idlharness.js',
         'resources/idlharness.js',
-        'http/tests/w3c/resources/idlharness.js',
-    ], [
-        'resources/WebIDLParser.js',
-        'http/tests/w3c/resources/WebIDLParser.js',
     ], [
         'resources/testharness-helpers.js',
         'http/tests/resources/testharness-helpers.js',

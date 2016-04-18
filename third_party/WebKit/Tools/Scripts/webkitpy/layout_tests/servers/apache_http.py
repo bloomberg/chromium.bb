@@ -60,6 +60,7 @@ class ApacheHTTP(server_base.ServerBase):
         document_root = self._filesystem.join(test_dir, "http", "tests")
         js_test_resources_dir = self._filesystem.join(test_dir, "resources")
         forms_test_resources_dir = self._filesystem.join(test_dir, "fast", "forms", "resources")
+        imported_resources_dir = self._filesystem.join(test_dir, "imported", "web-platform-tests", "resources")
         media_resources_dir = self._filesystem.join(test_dir, "media")
         mime_types_path = self._filesystem.join(test_dir, "http", "conf", "mime.types")
         cert_file = self._filesystem.join(test_dir, "http", "conf", "webkit-httpd.pem")
@@ -76,6 +77,9 @@ class ApacheHTTP(server_base.ServerBase):
             '-C', 'ServerRoot "%s"' % server_root,
             '-C', 'DocumentRoot "%s"' % document_root,
             '-c', 'Alias /js-test-resources "%s"' % js_test_resources_dir,
+            '-c', 'AliasMatch ^/resources/testharness([r.].*) "%s/testharness$1"' % imported_resources_dir,
+            '-c', 'Alias /w3c/resources/WebIDLParser.js "%s/webidl2/lib/webidl2.js"' % imported_resources_dir,
+            '-c', 'Alias /w3c/resources "%s"' % imported_resources_dir,
             '-c', 'Alias /forms-test-resources "%s"' % forms_test_resources_dir,
             '-c', 'Alias /media-resources "%s"' % media_resources_dir,
             '-c', 'TypesConfig "%s"' % mime_types_path,
