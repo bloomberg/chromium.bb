@@ -24,7 +24,9 @@
  *
  */
 
-partial interface WorkerGlobalScope {
+[
+    ImplementedAs=GlobalIndexedDB
+] partial interface WorkerGlobalScope {
     [ImplementedAs=indexedDB, DeprecateAs=PrefixedIndexedDB] readonly attribute IDBFactory webkitIndexedDB;
 
     [DeprecateAs=PrefixedIDBCursorConstructor] attribute IDBCursorConstructor webkitIDBCursor;

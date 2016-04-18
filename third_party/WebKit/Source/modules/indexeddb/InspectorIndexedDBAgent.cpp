@@ -41,7 +41,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
 #include "modules/IndexedDBNames.h"
-#include "modules/indexeddb/DOMWindowIndexedDatabase.h"
+#include "modules/indexeddb/GlobalIndexedDB.h"
 #include "modules/indexeddb/IDBCursor.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
 #include "modules/indexeddb/IDBDatabase.h"
@@ -621,7 +621,7 @@ static IDBFactory* assertIDBFactory(ErrorString* errorString, Document* document
         *errorString = "No IndexedDB factory for given frame found";
         return nullptr;
     }
-    IDBFactory* idbFactory = DOMWindowIndexedDatabase::indexedDB(*domWindow);
+    IDBFactory* idbFactory = GlobalIndexedDB::indexedDB(*domWindow);
 
     if (!idbFactory)
         *errorString = "No IndexedDB factory for given frame found";

@@ -25,7 +25,7 @@
  */
 
 [
-    ImplementedAs=DOMWindowIndexedDatabase,
+    ImplementedAs=GlobalIndexedDB
 ] partial interface Window {
     [ImplementedAs=indexedDB, DeprecateAs=PrefixedIndexedDB] readonly attribute IDBFactory webkitIndexedDB;
 
