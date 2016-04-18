@@ -286,27 +286,12 @@ def main():
     logging.fatal(args.dont_even_try)
     return 1
 
-  if args.device:
-    # Retries are annoying when commands fail for legitimate reasons. Might want
-    # to enable them if this is ever used on bots though.
-    device = device_utils.DeviceUtils(
-        args.device, default_retries=0, enable_device_files_cache=True)
-  else:
-    devices = device_utils.DeviceUtils.HealthyDevices(
-        default_retries=0, enable_device_files_cache=True)
-    if not devices:
-      raise device_errors.NoDevicesError()
-    elif len(devices) == 1:
-      device = devices[0]
-    else:
-      all_devices = device_utils.DeviceUtils.parallel(devices)
-      msg = ('More than one device available.\n'
-             'Use --device=SERIAL to select a device.\n'
-             'Available devices:\n')
-      descriptions = all_devices.pMap(lambda d: d.build_description).pGet(None)
-      for d, desc in zip(devices, descriptions):
-        msg += '  %s (%s)\n' % (d, desc)
-      raise Exception(msg)
+  # Retries are annoying when commands fail for legitimate reasons. Might want
+  # to enable them if this is ever used on bots though.
+  device = device_utils.DeviceUtils.HealthyDevices(
+      device_arg=args.device,
+      default_retries=0,
+      enable_device_files_cache=True)[0]
 
   apk = apk_helper.ToHelper(args.apk_path)
   if args.uninstall:

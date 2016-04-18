@@ -54,6 +54,7 @@ def main():
                       help='If set, run test suites under out/Release. '
                            'Default is env var BUILDTYPE or Debug.')
   parser.add_argument('-d', '--device', dest='devices', action='append',
+                      default=[],
                       help='Target device for apk to install on. Enter multiple'
                            ' times for multiple devices.')
   parser.add_argument('--adb-path',
@@ -109,14 +110,8 @@ def main():
   blacklist = (device_blacklist.Blacklist(args.blacklist_file)
                if args.blacklist_file
                else None)
-  devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
-
-  if args.devices:
-    devices = [d for d in devices if d in args.devices]
-    if not devices:
-      raise device_errors.DeviceUnreachableError(args.devices)
-  elif not devices:
-    raise device_errors.NoDevicesError()
+  devices = device_utils.DeviceUtils.HealthyDevices(blacklist=blacklist,
+                                                    device_arg=args.devices)
 
   def blacklisting_install(device):
     try:
