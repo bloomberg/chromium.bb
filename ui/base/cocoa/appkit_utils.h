@@ -42,6 +42,9 @@ UI_BASE_EXPORT void DrawNinePartImage(NSRect frame,
 UI_BASE_EXPORT void WindowTitlebarReceivedDoubleClick(NSWindow* window,
                                                       id sender);
 
+// Whether a force-click event on the touchpad should invoke Quick Look.
+UI_BASE_EXPORT bool ForceClickInvokesQuickLook();
+
 }  // namespace ui
 
 #endif  // UI_BASE_COCOA_APPKIT_UTILS_H

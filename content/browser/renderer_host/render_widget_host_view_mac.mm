@@ -72,6 +72,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
+#import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
@@ -2303,7 +2304,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 }
 
 - (void)forceTouchEvent:(NSEvent*)theEvent {
-  [self quickLookWithEvent:theEvent];
+  if (ui::ForceClickInvokesQuickLook())
+    [self quickLookWithEvent:theEvent];
 }
 
 - (void)shortCircuitScrollWheelEvent:(NSEvent*)event {

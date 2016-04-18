@@ -9,18 +9,26 @@
 
 namespace {
 
-// Gets an NSImage given an image id.
-NSImage* GetImage(int image_id) {
-  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(image_id)
-      .ToNSImage();
-}
-
 // Double-click in window title bar actions.
 enum class DoubleClickAction {
   NONE,
   MINIMIZE,
   MAXIMIZE,
 };
+
+// Values of com.apple.trackpad.forceClick corresponding to "Look up & data
+// detectors" in System Preferences -> Trackpad -> Point & Click.
+enum class ForceTouchAction {
+  NONE = 0,        // Unchecked or set to "Tap with three fingers".
+  QUICK_LOOK = 1,  // Set to "Force Click with one finger".
+};
+
+// Gets an NSImage given an image id.
+NSImage* GetImage(int image_id) {
+  return ui::ResourceBundle::GetSharedInstance()
+      .GetNativeImageNamed(image_id)
+      .ToNSImage();
+}
 
 // The action to take when the user double-clicks in the window title bar.
 DoubleClickAction WindowTitleBarDoubleClickAction() {
@@ -93,6 +101,12 @@ void WindowTitlebarReceivedDoubleClick(NSWindow* window, id sender) {
     case DoubleClickAction::NONE:
       break;
   }
+}
+
+bool ForceClickInvokesQuickLook() {
+  return [[NSUserDefaults standardUserDefaults]
+             integerForKey:@"com.apple.trackpad.forceClick"] ==
+         static_cast<NSInteger>(ForceTouchAction::QUICK_LOOK);
 }
 
 }  // namespace ui
