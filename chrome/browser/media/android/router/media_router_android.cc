@@ -439,6 +439,23 @@ void MediaRouterAndroid::OnRouteClosed(
 
   FOR_EACH_OBSERVER(MediaRoutesObserver, routes_observers_,
       OnRoutesUpdated(active_routes_, std::vector<MediaRoute::Id>()));
+  NotifyPresentationConnectionStateChange(
+      route_id, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+}
+
+void MediaRouterAndroid::OnRouteClosedWithError(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jmedia_route_id,
+    const JavaParamRef<jstring>& jmessage) {
+  MediaRoute::Id route_id = ConvertJavaStringToUTF8(env, jmedia_route_id);
+  std::string message = ConvertJavaStringToUTF8(env, jmessage);
+  NotifyPresentationConnectionClose(
+      route_id,
+      content::PRESENTATION_CONNECTION_CLOSE_REASON_CONNECTION_ERROR,
+      message);
+
+  OnRouteClosed(env, obj, jmedia_route_id);
 }
 
 void MediaRouterAndroid::OnMessageSentResult(JNIEnv* env,

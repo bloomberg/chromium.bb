@@ -38,13 +38,6 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private static final int STATE_LAUNCH_SUCCEEDED = 4;
     private static final int STATE_TERMINATED = 5;
 
-    private static final String ERROR_NEW_ROUTE_LAUNCH_APPLICATION_FAILED =
-            "Launch application failed: %s, %s";
-    private static final String ERROR_NEW_ROUTE_LAUNCH_APPLICATION_FAILED_STATUS =
-            "Launch application failed with status: %s, %d, %s";
-    private static final String ERROR_NEW_ROUTE_CLIENT_CONNECTION_FAILED =
-            "GoogleApiClient connection failed: %d, %b";
-
     private class CastListener extends Cast.Listener {
         private CastSession mSession;
 
@@ -195,8 +188,8 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
                     .setResultCallback(this);
             mState = STATE_LAUNCHING_APPLICATION;
         } catch (Exception e) {
-            reportError(String.format(ERROR_NEW_ROUTE_LAUNCH_APPLICATION_FAILED,
-                    mSource.getApplicationId(), e));
+            Log.e(TAG, "Launch application failed: %s", mSource.getApplicationId(), e);
+            reportError();
         }
     }
 
@@ -216,11 +209,9 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
 
         Status status = result.getStatus();
         if (!status.isSuccess()) {
-            reportError(String.format(
-                    ERROR_NEW_ROUTE_LAUNCH_APPLICATION_FAILED_STATUS,
-                    mSource.getApplicationId(),
-                    status.getStatusCode(),
-                    status.getStatusMessage()));
+            Log.e(TAG, "Launch application failed with status: %s, %d, %s",
+                    mSource.getApplicationId(), status.getStatusCode(), status.getStatusMessage());
+            reportError();
         }
 
         mState = STATE_LAUNCH_SUCCEEDED;
@@ -233,10 +224,9 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     public void onConnectionFailed(ConnectionResult result) {
         if (mState != STATE_CONNECTING_TO_API) throwInvalidState();
 
-        reportError(String.format(
-                ERROR_NEW_ROUTE_CLIENT_CONNECTION_FAILED,
-                result.getErrorCode(),
-                result.hasResolution()));
+        Log.e(TAG, "GoogleApiClient connection failed: %d, %b",
+                result.getErrorCode(), result.hasResolution());
+        reportError();
     }
 
     private GoogleApiClient createApiClient(Cast.Listener listener, Context context) {
@@ -283,11 +273,11 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         terminate();
     }
 
-    private void reportError(String message) {
+    private void reportError() {
         if (mState == STATE_TERMINATED) throwInvalidState();
 
         assert mRouteProvider != null;
-        mRouteProvider.onRouteRequestError(message, mRequestId);
+        mRouteProvider.onLaunchError();
 
         terminate();
     }

@@ -175,9 +175,7 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
     @Override
     public void sendStringMessage(String routeId, String message, int nativeCallbackId) {
         if (mCloseRouteWithErrorOnSend) {
-            // TODO(zqzhang): The method need to notify the router that the connection state has
-            // changed, so PresentationConnection.onclose will be called. See
-            // http://crbug.com/592732
+            mManager.onRouteClosedWithError(routeId, "Sending message failed. Closing the route.");
         } else {
             // Sending a string enclosed by double quotes to behave like JSON.stringify().
             mManager.onMessage(routeId, "\"" + "Pong: " + message + "\"");

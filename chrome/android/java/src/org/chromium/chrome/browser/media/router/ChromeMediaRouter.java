@@ -138,6 +138,14 @@ public class ChromeMediaRouter implements MediaRouteManager {
     }
 
     @Override
+    public void onRouteClosedWithError(String mediaRouteId, String message) {
+        if (mNativeMediaRouterAndroid != 0) {
+            nativeOnRouteClosedWithError(mNativeMediaRouterAndroid, mediaRouteId, message);
+        }
+        mRouteIdsToProviders.remove(mediaRouteId);
+    }
+
+    @Override
     public void onMessageSentResult(boolean success, int callbackId) {
         nativeOnMessageSentResult(mNativeMediaRouterAndroid, success, callbackId);
     }
@@ -369,6 +377,8 @@ public class ChromeMediaRouter implements MediaRouteManager {
     native void nativeOnRouteRequestError(
             long nativeMediaRouterAndroid, String errorText, int createRouteRequestId);
     native void nativeOnRouteClosed(long nativeMediaRouterAndroid, String mediaRouteId);
+    native void nativeOnRouteClosedWithError(
+            long nativeMediaRouterAndroid, String mediaRouteId, String message);
     native void nativeOnMessageSentResult(
             long nativeMediaRouterAndroid, boolean success, int callbackId);
     native void nativeOnMessage(long nativeMediaRouterAndroid, String mediaRouteId, String message);

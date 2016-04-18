@@ -221,9 +221,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         String defaultRequestSessionId = getJavaScriptVariable(
                 webContents, "defaultRequestSessionId");
         assertEquals(sessionId, defaultRequestSessionId);
-        // TODO(zqzhang): The route state change callbacks are not properly called in Android, so
-        // the following script is skipped. See http://crbug.com/592732
-        // executeJavaScriptApi(webContents, TERMINATE_SESSION_SCRIPT);
+        executeJavaScriptApi(webContents, TERMINATE_SESSION_SCRIPT);
     }
 
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
@@ -248,6 +246,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
     @Feature({"MediaRouter"})
     @LargeTest
     public void testOnClose() throws InterruptedException, TimeoutException {
+        MockMediaRouteProvider.Builder.sProvider.setCloseRouteWithErrorOnSend(true);
         loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
@@ -258,10 +257,8 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         executeJavaScriptApi(webContents, CHECK_SESSION_SCRIPT);
         String sessionId = getJavaScriptVariable(webContents, "startedConnection.id");
         assertFalse(sessionId.length() == 0);
-        // TODO(zqzhang): The route state change callbacks are not properly called in Android, so
-        // the following script is skipped. See http://crbug.com/592732
-        // executeJavaScriptApi(webContents,
-        //         SEND_MESSAGE_AND_EXPECT_CONNECTION_CLOSE_ON_ERROR_SCRIPT);
+        executeJavaScriptApi(webContents,
+                SEND_MESSAGE_AND_EXPECT_CONNECTION_CLOSE_ON_ERROR_SCRIPT);
     }
 
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
@@ -317,9 +314,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         String reconnectedSessionId =
                 getJavaScriptVariable(newWebContents, "reconnectedSession.id");
         assertEquals(sessionId, reconnectedSessionId);
-        // TODO(zqzhang): The route state change callbacks are not properly called in Android, so
-        // the following script is skipped. See http://crbug.com/592732
-        // executeJavaScriptApi(webContents, TERMINATE_SESSION_SCRIPT);
+        executeJavaScriptApi(webContents, TERMINATE_SESSION_SCRIPT);
     }
 
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})

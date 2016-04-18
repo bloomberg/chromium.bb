@@ -99,6 +99,13 @@ class MediaRouterAndroid : public MediaRouterBase {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jmedia_route_id);
 
+  // Notifies the media router when the route was closed with an error.
+  void OnRouteClosedWithError(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jmedia_route_id,
+      const base::android::JavaParamRef<jstring>& jmessage);
+
   // Notifies the media router about the result of sending a message.
   void OnMessageSentResult(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,

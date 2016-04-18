@@ -101,8 +101,12 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         return new CastMediaRouteProvider(applicationContext, androidMediaRouter, manager);
     }
 
-    public void onRouteRequestError(String message, int requestId) {
-        mManager.onRouteRequestError(message, requestId);
+    public void onLaunchError() {
+        for (String routeId : mRoutes.keySet()) {
+            mManager.onRouteClosedWithError(routeId, "Launch error");
+        }
+        mRoutes.clear();
+        mClientRecords.clear();
     }
 
     public void onSessionStopAction() {
