@@ -6,7 +6,8 @@
 
 function test()
 {
-    InspectorTest.addConsoleViewSniffer(addMessageSniffer, true);
+    InspectorTest.addSniffer(WebInspector.ConsoleViewMessage.prototype, "_formattedParameterAsNodeForTest", formattedParameter);
+    InspectorTest.addConsoleViewSniffer(messageSniffer, true);
 
     InspectorTest.evaluateInConsole("$x('42')"); // number
     InspectorTest.evaluateInConsole("$x('name(/html)')"); // string
@@ -15,22 +16,28 @@ function test()
     InspectorTest.evaluateInConsole("$x('//a/@href')[0]"); // href, should not throw
     InspectorTest.evaluateInPage("console.log('complete')"); // node iterator
 
-    function addMessageSniffer(uiMessage)
+    var completeMessageReceived = false;
+    function messageSniffer(uiMessage)
     {
         if (uiMessage.toString().indexOf("complete") !== -1) {
-            InspectorTest.expandConsoleMessages(waitForObjects);
+            completeMessageReceived = true;
+            maybeCompleteTest();
         }
     }
 
-    function waitForObjects()
+    var parameterFormatted = false;
+    function formattedParameter()
     {
-        InspectorTest.waitForRemoteObjectsConsoleMessages(dumpConsoleMessages);
+        parameterFormatted = true;
+        maybeCompleteTest();
     }
 
-    function dumpConsoleMessages()
+    function maybeCompleteTest()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        if (parameterFormatted && completeMessageReceived) {
+            InspectorTest.dumpConsoleMessages();
+            InspectorTest.completeTest();
+        }
     }
 }
 
