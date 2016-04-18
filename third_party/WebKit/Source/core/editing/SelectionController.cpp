@@ -454,7 +454,7 @@ void SelectionController::handleMouseDraggedEvent(const MouseEventWithHitTestRes
     if (m_selectionState != SelectionState::ExtendedSelection) {
         HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
         HitTestResult result(request, mouseDownPos);
-        m_frame->document()->layoutView()->hitTest(result);
+        m_frame->document()->layoutViewItem().hitTest(result);
 
         updateSelectionForMouseDrag(result, mousePressNode, dragStartPos, lastKnownMousePosition);
     }
