@@ -30,6 +30,8 @@ static const char kUserNavigatedBeforeBannerShownMessage[] =
     "the user navigated before the banner could be shown";
 static const char kStartURLNotValidMessage[] =
     "start URL in manifest is not valid";
+static const char kManifestDisplayStandaloneFullscreenMessage[] =
+    "manifest display property must be set to 'standalone' or 'fullscreen'";
 static const char kManifestMissingNameOrShortNameMessage[] =
     "one of manifest name or short name must be specified";
 static const char kManifestMissingSuitableIconMessage[] =
@@ -93,6 +95,9 @@ void OutputDeveloperNotShownMessage(content::WebContents* web_contents,
       break;
     case kStartURLNotValid:
       pattern = kStartURLNotValidMessage;
+      break;
+    case kManifestDisplayStandaloneFullscreen:
+      pattern = kManifestDisplayStandaloneFullscreenMessage;
       break;
     case kManifestMissingNameOrShortName:
       pattern = kManifestMissingNameOrShortNameMessage;

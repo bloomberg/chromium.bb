@@ -25,6 +25,7 @@ enum OutputDeveloperMessageCode {
   kNoIconAvailable,
   kUserNavigatedBeforeBannerShown,
   kStartURLNotValid,
+  kManifestDisplayStandaloneFullscreen,
   kManifestMissingNameOrShortName,
   kManifestMissingSuitableIcon,
   kNotLoadedInMainFrame,

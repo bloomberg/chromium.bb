@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebDisplayMode.h"
 
 namespace banners {
 
@@ -23,6 +24,7 @@ class AppBannerDataFetcherUnitTest : public testing::Test {
     manifest.name = ToNullableUTF16("foo");
     manifest.short_name = ToNullableUTF16("bar");
     manifest.start_url = GURL("http://example.com");
+    manifest.display = blink::WebDisplayModeStandalone;
 
     content::Manifest::Icon icon;
     icon.type = ToNullableUTF16("image/png");
@@ -67,6 +69,20 @@ TEST_F(AppBannerDataFetcherUnitTest, ManifestRequiresNameORShortName) {
   EXPECT_FALSE(IsManifestValid(manifest));
 }
 
+TEST_F(AppBannerDataFetcherUnitTest, ManifestRequiresNonEmptyNameORShortName) {
+  content::Manifest manifest = GetValidManifest();
+
+  manifest.name = ToNullableUTF16("");
+  EXPECT_TRUE(IsManifestValid(manifest));
+
+  manifest.name = ToNullableUTF16("foo");
+  manifest.short_name = ToNullableUTF16("");
+  EXPECT_TRUE(IsManifestValid(manifest));
+
+  manifest.name = ToNullableUTF16("");
+  EXPECT_FALSE(IsManifestValid(manifest));
+}
+
 TEST_F(AppBannerDataFetcherUnitTest, ManifestRequiresValidStartURL) {
   content::Manifest manifest = GetValidManifest();
 
@@ -107,6 +123,25 @@ TEST_F(AppBannerDataFetcherUnitTest, ManifestRequiresMinimalSize) {
 
   // The representation of the keyword 'any' should be recognized.
   manifest.icons[0].sizes[1] = gfx::Size(0, 0);
+  EXPECT_TRUE(IsManifestValid(manifest));
+}
+
+TEST_F(AppBannerDataFetcherUnitTest, ManifestDisplayStandaloneFullscreen) {
+  content::Manifest manifest = GetValidManifest();
+
+  manifest.display = blink::WebDisplayModeUndefined;
+  EXPECT_FALSE(IsManifestValid(manifest));
+
+  manifest.display = blink::WebDisplayModeBrowser;
+  EXPECT_FALSE(IsManifestValid(manifest));
+
+  manifest.display = blink::WebDisplayModeMinimalUi;
+  EXPECT_FALSE(IsManifestValid(manifest));
+
+  manifest.display = blink::WebDisplayModeStandalone;
+  EXPECT_TRUE(IsManifestValid(manifest));
+
+  manifest.display = blink::WebDisplayModeFullscreen;
   EXPECT_TRUE(IsManifestValid(manifest));
 }
 

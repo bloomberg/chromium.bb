@@ -27,6 +27,7 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
+#include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
 #include "ui/gfx/screen.h"
 
@@ -460,11 +461,23 @@ bool AppBannerDataFetcher::IsManifestValidForWebApp(
                                    is_debug_mode);
     return false;
   }
-  if (manifest.name.is_null() && manifest.short_name.is_null()) {
+  if ((manifest.name.is_null() || manifest.name.string().empty()) &&
+      (manifest.short_name.is_null() || manifest.short_name.string().empty())) {
     OutputDeveloperNotShownMessage(
         web_contents, kManifestMissingNameOrShortName, is_debug_mode);
     return false;
   }
+
+  // TODO(dominickn,mlamouri): when Chrome supports "minimal-ui", it should be
+  // accepted. If we accept it today, it would fallback to "browser" and make
+  // this check moot. See https://crbug.com/604390
+  if (manifest.display != blink::WebDisplayModeStandalone &&
+      manifest.display != blink::WebDisplayModeFullscreen) {
+    OutputDeveloperNotShownMessage(
+        web_contents, kManifestDisplayStandaloneFullscreen, is_debug_mode);
+    return false;
+  }
+
   if (!DoesManifestContainRequiredIcon(manifest)) {
     OutputDeveloperNotShownMessage(web_contents, kManifestMissingSuitableIcon,
                                    is_debug_mode);
