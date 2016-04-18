@@ -158,7 +158,7 @@ class InspectorNetwork(object):
         'method': 'Network.clearBrowserCache'
         }, timeout)
 
-  def StartMonitoringNetwork(self):
+  def StartMonitoringNetwork(self, timeout=60):
     """Starts monitoring network notifications and recording HTTP responses."""
     self.ClearResponseData()
     self._inspector_websocket.RegisterDomain(
@@ -167,14 +167,14 @@ class InspectorNetwork(object):
     request = {
         'method': 'Network.enable'
         }
-    self._inspector_websocket.SyncRequest(request)
+    self._inspector_websocket.SyncRequest(request, timeout)
 
-  def StopMonitoringNetwork(self):
+  def StopMonitoringNetwork(self, timeout=60):
     """Stops monitoring network notifications and recording HTTP responses."""
     request = {
         'method': 'Network.disable'
         }
-    self._inspector_websocket.SyncRequest(request)
+    self._inspector_websocket.SyncRequest(request, timeout)
     # There may be queued messages that don't appear until the SyncRequest
     # happens. Wait to unregister until after sending the disable command.
     self._inspector_websocket.UnregisterDomain('Network')
