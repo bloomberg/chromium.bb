@@ -75,7 +75,7 @@ bool MultiColumnFragmentainerGroup::recalculateColumnHeight()
             // containing column set, in case there is an outer multicol container that also needs
             // to balance. After having calculated the initial column height, the multicol container
             // needs another layout pass with the column height that we just calculated.
-            InitialColumnHeightFinder initialHeightFinder(*this);
+            InitialColumnHeightFinder initialHeightFinder(columnSet(), logicalTopInFlowThread(), logicalBottomInFlowThread());
             LayoutUnit tallestUnbreakableLogicalHeight = initialHeightFinder.tallestUnbreakableLogicalHeight();
             m_columnSet.propagateTallestUnbreakableLogicalHeight(tallestUnbreakableLogicalHeight);
             newColumnHeight = std::max(initialHeightFinder.initialMinimalBalancedHeight(), tallestUnbreakableLogicalHeight);
@@ -336,7 +336,7 @@ LayoutUnit MultiColumnFragmentainerGroup::rebalanceColumnHeightIfNeeded() const
         return m_columnHeight;
     }
 
-    MinimumSpaceShortageFinder shortageFinder(*this);
+    MinimumSpaceShortageFinder shortageFinder(columnSet(), logicalTopInFlowThread(), logicalBottomInFlowThread());
 
     if (shortageFinder.forcedBreaksCount() + 1 >= m_columnSet.usedColumnCount()) {
         // Too many forced breaks to allow any implicit breaks. Initial balancing should already

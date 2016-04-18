@@ -2,18 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/MultiColumnFragmentainerGroup.h"
+#include "core/layout/LayoutMultiColumnSet.h"
 
 namespace blink {
 
-// A column balancer traverses the portion of the subtree of a flow thread that belongs to a given
-// fragmentainer group, in order to collect certain data to be used for column balancing. This is an
-// abstract class that just walks the subtree and leaves it to subclasses to actualy collect data.
+// A column balancer traverses a portion of the subtree of a flow thread that belongs to one or
+// more fragmentainer groups within one column set, in order to collect certain data to be used for
+// column balancing. This is an abstract class that just walks the subtree and leaves it to
+// subclasses to actually collect data.
 class ColumnBalancer {
 protected:
-    ColumnBalancer(const MultiColumnFragmentainerGroup&);
+    ColumnBalancer(const LayoutMultiColumnSet&, LayoutUnit logicalTopInFlowThread, LayoutUnit logicalBottomInFlowThread);
 
-    const MultiColumnFragmentainerGroup& group() const { return m_group; }
+    const LayoutMultiColumnSet& columnSet() const { return m_columnSet; }
+
+    // The flow thread portion we're examining. It may be that of the entire column set, or just of
+    // a fragmentainer group.
+    const LayoutUnit logicalTopInFlowThread() const { return m_logicalTopInFlowThread; }
+    const LayoutUnit logicalBottomInFlowThread() const { return m_logicalBottomInFlowThread; }
+
+    const MultiColumnFragmentainerGroup& groupAtOffset(LayoutUnit offsetInFlowThread) const
+    {
+        return m_columnSet.fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread);
+    }
+
+    LayoutUnit offsetFromColumnLogicalTop(LayoutUnit offsetInFlowThread) const
+    {
+        return offsetInFlowThread - groupAtOffset(offsetInFlowThread).columnLogicalTopForOffset(offsetInFlowThread);
+    }
 
     // Flow thread offset for the layout object that we're currently examining.
     LayoutUnit flowThreadOffset() const { return m_flowThreadOffset; }
@@ -21,41 +37,42 @@ protected:
     EBreak previousBreakAfterValue() const { return m_previousBreakAfterValue; }
 
     // Return true if the specified offset is at the top of a column, as long as it's not the first
-    // column in the fragmentainer group.
+    // column in the flow thread portion.
     bool isFirstAfterBreak(LayoutUnit flowThreadOffset) const
     {
-        if (flowThreadOffset != m_group.columnLogicalTopForOffset(flowThreadOffset))
-            return false; // Not at the top of a column.
-        // The first column in the fragmentainer group is either not after any break at all, or
-        // after a break that belongs to the previous fragmentainer group.
-        return flowThreadOffset > m_group.logicalTopInFlowThread();
+        if (flowThreadOffset <= m_logicalTopInFlowThread) {
+            // The first column is either not after any break at all, or after a break in a
+            // previous fragmentainer group.
+            return false;
+        }
+        return flowThreadOffset == groupAtOffset(flowThreadOffset).columnLogicalTopForOffset(flowThreadOffset);
     }
 
     bool isLogicalTopWithinBounds(LayoutUnit logicalTopInFlowThread) const
     {
-        return logicalTopInFlowThread >= m_group.logicalTopInFlowThread()
-            && logicalTopInFlowThread < m_group.logicalBottomInFlowThread();
+        return logicalTopInFlowThread >= m_logicalTopInFlowThread
+            && logicalTopInFlowThread < m_logicalBottomInFlowThread;
     }
 
     bool isLogicalBottomWithinBounds(LayoutUnit logicalBottomInFlowThread) const
     {
-        return logicalBottomInFlowThread > m_group.logicalTopInFlowThread()
-            && logicalBottomInFlowThread <= m_group.logicalBottomInFlowThread();
+        return logicalBottomInFlowThread > m_logicalTopInFlowThread
+            && logicalBottomInFlowThread <= m_logicalBottomInFlowThread;
     }
 
     // Examine and collect column balancing data from a layout box that has been found to intersect
-    // with this fragmentainer group. Does not recurse into children. flowThreadOffset() will
-    // return the offset from |box| to the flow thread. Two hooks are provided here. The first one
-    // is called right after entering and before traversing the subtree of the box, and the second
-    // one right after having traversed the subtree.
+    // with the flow thread portion we're examining. Does not recurse into
+    // children. flowThreadOffset() will return the offset from |box| to the flow thread. Two hooks
+    // are provided here. The first one is called right after entering and before traversing the
+    // subtree of the box, and the second one right after having traversed the subtree.
     virtual void examineBoxAfterEntering(const LayoutBox&) = 0;
     virtual void examineBoxBeforeLeaving(const LayoutBox&) = 0;
 
     // Examine and collect column balancing data from a line that has been found to intersect with
-    // this fragmentainer group. Does not recurse into layout objects on that line.
+    // the flow thread portion. Does not recurse into layout objects on that line.
     virtual void examineLine(const RootInlineBox&) = 0;
 
-    // Examine and collect column balancing data for everything in the fragmentainer group. Will
+    // Examine and collect column balancing data for everything in the flow thread portion. Will
     // trigger calls to examineBoxAfterEntering(), examineBoxBeforeLeaving() and examineLine() for
     // interesting boxes and lines.
     void traverse();
@@ -63,7 +80,10 @@ protected:
 private:
     void traverseSubtree(const LayoutBox&);
 
-    const MultiColumnFragmentainerGroup& m_group;
+    const LayoutMultiColumnSet& m_columnSet;
+    const LayoutUnit m_logicalTopInFlowThread;
+    const LayoutUnit m_logicalBottomInFlowThread;
+
     LayoutUnit m_flowThreadOffset;
 
     // The break-after value from the previous in-flow block-level object to be joined with the
@@ -81,7 +101,7 @@ private:
 // of this class, named MinimumSpaceShortageFinder.
 class InitialColumnHeightFinder final : public ColumnBalancer {
 public:
-    InitialColumnHeightFinder(const MultiColumnFragmentainerGroup&);
+    InitialColumnHeightFinder(const LayoutMultiColumnSet&, LayoutUnit logicalTopInFlowThread, LayoutUnit logicalBottomInFlowThread);
 
     LayoutUnit initialMinimalBalancedHeight() const;
 
@@ -171,7 +191,7 @@ private:
 // space shortage after having laid out with the current column height.
 class MinimumSpaceShortageFinder final : public ColumnBalancer {
 public:
-    MinimumSpaceShortageFinder(const MultiColumnFragmentainerGroup&);
+    MinimumSpaceShortageFinder(const LayoutMultiColumnSet&, LayoutUnit logicalTopInFlowThread, LayoutUnit logicalBottomInFlowThread);
 
     LayoutUnit minimumSpaceShortage() const { return m_minimumSpaceShortage; }
     unsigned forcedBreaksCount() const { return m_forcedBreaksCount; }
