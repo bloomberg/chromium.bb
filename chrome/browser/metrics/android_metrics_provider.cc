@@ -57,6 +57,9 @@ void AndroidMetricsProvider::ProvideGeneralMetrics(
   UMA_HISTOGRAM_BOOLEAN(
       "MemoryAndroid.LowRamDevice",
       base::SysInfo::IsLowEndDevice());
+  UMA_HISTOGRAM_BOOLEAN(
+      "Android.MultiWindowMode.Active",
+      chrome::android::GetIsInMultiWindowModeValue());
 }
 
 void AndroidMetricsProvider::OnForegroundActivityChanged(

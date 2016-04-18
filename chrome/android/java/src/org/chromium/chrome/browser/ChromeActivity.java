@@ -87,6 +87,7 @@ import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -634,6 +635,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             LaunchMetrics.commitLaunchMetrics(getActivityTab().getWebContents());
         }
         FeatureUtilities.setCustomTabVisible(isCustomTab());
+        FeatureUtilities.setIsInMultiWindowMode(
+                MultiWindowUtils.getInstance().isInMultiWindowMode(this));
     }
 
     @Override
@@ -1284,6 +1287,25 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void onConfigurationChanged(Configuration newConfig) {
         if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
         super.onConfigurationChanged(newConfig);
+    }
+
+    /**
+     * Called by the system when the activity changes from fullscreen mode to multi-window mode
+     * and visa-versa.
+     * @param isInMultiWindowMode True if the activity is in multi-window mode.
+     */
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
+        if (!isInMultiWindowMode
+                && ApplicationStatus.getStateForActivity(this) == ActivityState.RESUMED) {
+            // Start a new UMA session when exiting multi-window mode if the activity is currently
+            // resumed. When entering multi-window Android recents gains focus, so ChromeActivity
+            // will get a call to onPauseWithNative(), ending the current UMA session. When exiting
+            // multi-window, however, if ChromeActivity is resumed it stays in that state.
+            markSessionEnd();
+            markSessionResume();
+            FeatureUtilities.setIsInMultiWindowMode(
+                    MultiWindowUtils.getInstance().isInMultiWindowMode(this));
+        }
     }
 
     @Override

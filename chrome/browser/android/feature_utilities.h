@@ -26,6 +26,8 @@ RunningModeHistogram GetDocumentModeValue();
 
 CustomTabsVisibilityHistogram GetCustomTabsVisibleValue();
 
+bool GetIsInMultiWindowModeValue();
+
 } // namespace android
 } // namespace chrome
 

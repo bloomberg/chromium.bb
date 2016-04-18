@@ -155,6 +155,14 @@ public class FeatureUtilities {
     }
 
     /**
+     * Records whether the activity is in multi-window mode with native-side feature utilities.
+     * @param isInMultiWindowMode Whether the activity is in Android N multi-window mode.
+     */
+    public static void setIsInMultiWindowMode(boolean isInMultiWindowMode) {
+        nativeSetIsInMultiWindowMode(isInMultiWindowMode);
+    }
+
+    /**
      * Check whether tab switching is enabled for the current context.
      * Note that this may return false if native library is not yet ready.
      * @param context The context
@@ -283,5 +291,6 @@ public class FeatureUtilities {
 
     private static native void nativeSetDocumentModeEnabled(boolean enabled);
     private static native void nativeSetCustomTabVisible(boolean visible);
+    private static native void nativeSetIsInMultiWindowMode(boolean isInMultiWindowMode);
     public static native void nativeSetSqlMmapDisabledByDefault();
 }

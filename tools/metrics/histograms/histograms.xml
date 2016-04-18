@@ -378,6 +378,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.MultiWindowMode.Active" enum="BooleanEnabled">
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Records on every metrics upload whether the activity is running in Android N
+    multi-window mode or not.
+  </summary>
+</histogram>
+
 <histogram name="Android.NTP.Impression" enum="NTPImpressionType">
   <owner>finkm@chromium.org</owner>
   <summary>
