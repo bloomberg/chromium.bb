@@ -328,6 +328,7 @@ void WebContentsObserverSanityChecker::WebContentsDestroyed() {
   web_contents_destroyed_ = true;
   CHECK(ongoing_navigations_.empty());
   CHECK(active_media_players_.empty());
+  CHECK(live_routes_.empty());
 }
 
 void WebContentsObserverSanityChecker::DidStartLoading() {
