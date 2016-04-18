@@ -12,25 +12,42 @@ First, follow the [normal Linux build
 instructions](https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions.md)
 as usual to get a Chromium checkout.
 
-## Running Chromium on your local machine
+## Building and running Chromium with Chromium OS UI on your local machine
 
 If you plan to test the Chromium build on your dev machine and not a
-Chromium OS device run:
+Chromium OS device, run the following in your chromium checkout:
 
-```shell
-export GYP_DEFINES="chromeos=1"
-gclient runhooks
+    $ gn gen out/Default --args='target_os="chromeos"'
+    $ ninja -C out/Default
+
+NOTE: You may wish to replace 'Default' with something like 'Cros' if
+you switch back and forth between Linux and Chromium OS builds, or 'Debug'
+if you want to differentiate between Debug and Release builds (see below)
+or DebugCros or whatever you like.
+
+Now, when you build, you will build with Chromium OS features turned on.
+
+See [GN Build Configuration](https://www.chromium.org/developers/gn-build-configuration)
+for more information about configuring your build.
+
+Some additional options you may wish to set:
+```
+    is_component_build = true
+    use_goma = true
+    is_debug = false  # Release build
+    dcheck_always_on = true  # Enable DCHECK (with is_debug = false)
+    is_official_build = true
+    is_chrome_branded = true
 ```
 
-Now, once you build, you will build with Chromium OS features turned on.
-
-### Notes
+## Notes
 
 When you build Chromium OS Chromium, you'll be using the TOOLKIT\_VIEWS
 front-end just like Windows, so the files you'll probably want are in
 src/ui/views and src/chrome/browser/ui/views.
 
-If chromeos=1 is specified, then toolkit\_views=0 must not be specified.
+When target_os = "chromeos", then toolkit\_views need not (and should not)
+be specified.
 
 The Chromium OS build requires a functioning GL so if you plan on
 testing it through Chromium Remote Desktop you might face drawing
@@ -40,9 +57,6 @@ problems (e.g. Aura window not painting anything). Possible remedies:
 *   --use-gl=osmesa, but it's ultra slow, and you'll have to build
     osmesa yourself.
 *   ... or just don't use Remote Desktop. :)
-
-Note the underscore in the GYP_DEFINES variable name, as people
-sometimes mistakenly write it GYPDEFINES.
 
 To more closely match the UI used on devices, you can install fonts used
 by Chrome OS, such as Roboto, on your Linux distro.
@@ -62,43 +76,7 @@ To specify a logged in user:
 Signing in as a specific user is useful for debugging features like sync
 that require a logged in user.
 
-### Compile Testing Chromium with the Chromium OS SDK (quick version)
+## Compile Testing Chromium with the Chromium OS SDK (quick version)
 
-Note: These instructions are intended for Chromium developers trying to
-diagnose compile issues on Chromium OS, which can block changes in the
-CQ. See the [full
-documentation](http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/building-chromium-browser)
-for more information about building & testing chromium for Chromium OS.
-
-To do a build of Chromium that can run on Chromium OS itself, the Chromium OS
-SDK must be used. The SDK provides all of chromium's dependencies as they are
-distributed with Chromium OS (as opposed to other distributions such as Ubuntu).
-
-To enter the SDK build environment, run the following command (replace the value
-of the `--board` flag with the name of the configuration you want to test).
-
-```shell
-cros chrome-sdk --board=amd64-generic --use-external-config
-```
-
-Once in the SDK build environment, build using the normal linux workflow (except
-for a different build directory):
-
-```shell
-gclient runhooks
-ninja -C out_amd64-generic/Release chromium_builder_tests
-```
-
-The current configurations verified by the CQ are:
-
-  Board Flag | Build Directory | CPU architecture
-  --- | --- | ---
-  amd64-generic | out_amd64-generic | 64-bit Intel
-  x86-generic | out_x86-generic | 32-bit Intel
-  daisy | out_daisy | 32-bit ARM
-
-## Running Chromium on a Chromium OS device
-
-Look at the [Chromium OS
-documentation](http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/building-chromium-browser)
-for the official flow for doing this.
+See [Building Chromium for a Chromium OS device](https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/building-chromium-browser)
+for information about building & testing chromium for Chromium OS.
