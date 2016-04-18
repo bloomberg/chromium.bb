@@ -335,8 +335,8 @@ void OneCopyTileTaskWorkerPool::CopyOnWorkerThread(
       gl->CompressedCopyTextureCHROMIUM(staging_buffer->texture_id,
                                         resource_lock->texture_id());
     } else {
-      int bytes_per_row =
-          (BitsPerPixel(resource->format()) * resource->size().width()) / 8;
+      int bytes_per_row = ResourceUtil::UncheckedWidthInBytes<int>(
+          resource->size().width(), resource->format());
       int chunk_size_in_rows =
           std::max(1, max_bytes_per_copy_operation_ / bytes_per_row);
       // Align chunk size to 4. Required to support compressed texture formats.
