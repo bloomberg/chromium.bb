@@ -293,14 +293,11 @@ void FilterOperation::AsValueInto(base::trace_event::TracedValue* value) const {
       break;
     case FilterOperation::REFERENCE: {
       int count_inputs = 0;
-      bool can_filter_image_gpu = false;
       if (image_filter_) {
         count_inputs = image_filter_->countInputs();
-        can_filter_image_gpu = image_filter_->canFilterImageGPU();
       }
       value->SetBoolean("is_null", !image_filter_);
       value->SetInteger("count_inputs", count_inputs);
-      value->SetBoolean("can_filter_image_gpu", can_filter_image_gpu);
       break;
     }
     case FilterOperation::ALPHA_THRESHOLD: {
