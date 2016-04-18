@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/layer_animation_event_observer.h"
@@ -121,8 +120,7 @@ class CC_EXPORT LayerAnimationController
     needs_pending_value_observations_ = needs_pending_value_observations;
   }
 
-  void AddEventObserver(LayerAnimationEventObserver* observer);
-  void RemoveEventObserver(LayerAnimationEventObserver* observer);
+  void SetEventObserver(LayerAnimationEventObserver* observer);
 
   void set_value_provider(LayerAnimationValueProvider* provider) {
     value_provider_ = provider;
@@ -169,8 +167,7 @@ class CC_EXPORT LayerAnimationController
   // Sets |max_scale| to the maximum scale along any dimension at any
   // destination in active animations. Returns false if the maximum scale cannot
   // be computed.
-  bool MaximumTargetScale(ObserverType event_observers_,
-                          float* max_scale) const;
+  bool MaximumTargetScale(ObserverType observer_type, float* max_scale) const;
 
   // When a scroll animation is removed on the main thread, its compositor
   // thread counterpart continues producing scroll deltas until activation.
@@ -252,7 +249,7 @@ class CC_EXPORT LayerAnimationController
 
   base::TimeTicks last_tick_time_;
 
-  base::ObserverList<LayerAnimationEventObserver> event_observers_;
+  LayerAnimationEventObserver* event_observer_;
   LayerAnimationValueObserver* value_observer_;
   LayerAnimationValueProvider* value_provider_;
   AnimationDelegate* layer_animation_delegate_;

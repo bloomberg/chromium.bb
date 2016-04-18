@@ -196,17 +196,13 @@ void LayerAnimator::AttachLayerToAnimationPlayer(int layer_id) {
   else
     DCHECK_EQ(animation_player_->layer_id(), layer_id);
 
-  if (animation_player_->element_animations()) {
-    animation_player_->element_animations()
-        ->AddEventObserver(this);
-  }
+  if (animation_player_->element_animations())
+    animation_player_->element_animations()->SetEventObserver(this);
 }
 
 void LayerAnimator::DetachLayerFromAnimationPlayer() {
-  if (animation_player_->element_animations()) {
-    animation_player_->element_animations()
-        ->RemoveEventObserver(this);
-  }
+  if (animation_player_->element_animations())
+    animation_player_->element_animations()->SetEventObserver(nullptr);
 
   if (animation_player_->layer_id())
     animation_player_->DetachLayer();

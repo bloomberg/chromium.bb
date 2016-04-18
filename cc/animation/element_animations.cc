@@ -143,14 +143,9 @@ Animation* ElementAnimations::GetAnimationById(int animation_id) const {
   return layer_animation_controller_->GetAnimationById(animation_id);
 }
 
-void ElementAnimations::AddEventObserver(
+void ElementAnimations::SetEventObserver(
     LayerAnimationEventObserver* observer) {
-  layer_animation_controller_->AddEventObserver(observer);
-}
-
-void ElementAnimations::RemoveEventObserver(
-    LayerAnimationEventObserver* observer) {
-  layer_animation_controller_->RemoveEventObserver(observer);
+  layer_animation_controller_->SetEventObserver(observer);
 }
 
 void ElementAnimations::OnFilterAnimated(LayerTreeType tree_type,

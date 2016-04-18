@@ -28,6 +28,7 @@ LayerAnimationController::LayerAnimationController(int id)
     : host_(0),
       id_(id),
       is_active_(false),
+      event_observer_(nullptr),
       value_observer_(nullptr),
       value_provider_(nullptr),
       layer_animation_delegate_(nullptr),
@@ -390,8 +391,8 @@ void LayerAnimationController::SetAnimationHost(AnimationHost* host) {
 void LayerAnimationController::NotifyAnimationStarted(
     const AnimationEvent& event) {
   if (event.is_impl_only) {
-    FOR_EACH_OBSERVER(LayerAnimationEventObserver, event_observers_,
-                      OnAnimationStarted(event));
+    if (event_observer_)
+      event_observer_->OnAnimationStarted(event);
     if (layer_animation_delegate_)
       layer_animation_delegate_->NotifyAnimationStarted(
           event.monotonic_time, event.target_property, event.group_id);
@@ -406,8 +407,8 @@ void LayerAnimationController::NotifyAnimationStarted(
       if (!animations_[i]->has_set_start_time())
         animations_[i]->set_start_time(event.monotonic_time);
 
-      FOR_EACH_OBSERVER(LayerAnimationEventObserver, event_observers_,
-                        OnAnimationStarted(event));
+      if (event_observer_)
+        event_observer_->OnAnimationStarted(event);
       if (layer_animation_delegate_)
         layer_animation_delegate_->NotifyAnimationStarted(
             event.monotonic_time, event.target_property, event.group_id);
@@ -488,15 +489,9 @@ void LayerAnimationController::NotifyAnimationPropertyUpdate(
   }
 }
 
-void LayerAnimationController::AddEventObserver(
+void LayerAnimationController::SetEventObserver(
     LayerAnimationEventObserver* observer) {
-  if (!event_observers_.HasObserver(observer))
-    event_observers_.AddObserver(observer);
-}
-
-void LayerAnimationController::RemoveEventObserver(
-    LayerAnimationEventObserver* observer) {
-  event_observers_.RemoveObserver(observer);
+  event_observer_ = observer;
 }
 
 bool LayerAnimationController::HasFilterAnimationThatInflatesBounds() const {

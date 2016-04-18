@@ -1237,7 +1237,7 @@ TEST(LayerAnimationControllerTest, SpecifiedStartTimesAreSentToEventObservers) {
   controller->set_needs_active_value_observations(true);
 
   FakeLayerAnimationEventObserver observer;
-  controller->AddEventObserver(&observer);
+  controller->SetEventObserver(&observer);
 
   int animation_id =
       AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
@@ -1262,6 +1262,8 @@ TEST(LayerAnimationControllerTest, SpecifiedStartTimesAreSentToEventObservers) {
 
   // Validate start time on the event observer.
   EXPECT_EQ(start_time, observer.start_time());
+
+  controller->SetEventObserver(nullptr);
 }
 
 // Tests animations that are waiting for a synchronized start time do not
