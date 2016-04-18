@@ -52,7 +52,9 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
     stage.board_runattrs.SetParallel(
         'instruction_urls_per_channel', self.INSNS_URLS_PER_CHANNEL)
 
-    self.assertEqual(stage._WaitForPushImage(), self.INSNS_URLS_PER_CHANNEL)
+    self.assertEqual(stage.WaitUntilReady(), True)
+    self.assertEqual(stage.instruction_urls_per_channel,
+                     self.INSNS_URLS_PER_CHANNEL)
 
   def testWaitForPushImageError(self):
     """Test WaitForPushImageError with an error output from pushimage."""
@@ -60,8 +62,7 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
     stage.board_runattrs.SetParallel(
         'instruction_urls_per_channel', None)
 
-    self.assertRaises(release_stages.MissingInstructionException,
-                      stage._WaitForPushImage)
+    self.assertEqual(stage.WaitUntilReady(), False)
 
   def testWaitForSigningResultsSuccess(self):
     """Test that _WaitForSigningResults works when signing works."""
@@ -278,9 +279,7 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testPerformStageSuccess(self):
     """Test that SigningStage works when signing works."""
     stage = self.ConstructStage()
-
-    self.PatchObject(stage, '_WaitForPushImage',
-                     return_value=self.INSNS_URLS_PER_CHANNEL)
+    stage.instruction_urls_per_channel = self.INSNS_URLS_PER_CHANNEL
     self.PatchObject(stage, '_WaitForSigningResults')
 
     stage.PerformStage()

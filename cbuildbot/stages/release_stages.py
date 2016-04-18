@@ -98,6 +98,10 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
     # Used to remember partial results between retries.
     self.signing_results = {}
 
+    # Filled in via WaitUntilReady, Of the form:
+    #   {'channel': ['gs://instruction_uri1', 'gs://signer_instruction_uri2']}
+    self.instruction_urls_per_channel = None
+
   def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
     exc_type, _exc_value, _exc_tb = exc_info
@@ -213,27 +217,6 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
 
     return results_completed
 
-  def _WaitForPushImage(self):
-    """Block until push_image data is ready.
-
-    Returns:
-      Push_image results, expected to be of the form:
-      { 'channel': ['gs://instruction_uri1', 'gs://signer_instruction_uri2'] }
-
-    Raises:
-      MissingInstructionException: If push_image sent us an error, or timed out.
-    """
-    # This call will NEVER time out.
-    instruction_urls_per_channel = self.board_runattrs.GetParallel(
-        'instruction_urls_per_channel', timeout=None)
-
-    # A value of None signals an error in PushImage.
-    if instruction_urls_per_channel is None:
-      raise MissingInstructionException(
-          'ArchiveStage: PushImage failed. No images means no Paygen.')
-
-    return instruction_urls_per_channel
-
   def _WaitForSigningResults(self,
                              instruction_urls_per_channel,
                              channel_notifier=None):
@@ -281,23 +264,38 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
         logging.error('  %s', failure)
       raise SignerFailure(', '.join([str(f) for f in failures]))
 
+  def WaitUntilReady(self):
+    """Block until push_image data is ready.
+
+    Sets self.instruction_urls_per_channel as described in __init__.
+
+    Returns:
+      Boolean that tells if we can run this stage.
+    """
+    # This call will NEVER time out.
+    self.instruction_urls_per_channel = self.board_runattrs.GetParallel(
+        'instruction_urls_per_channel', timeout=None)
+
+    # A value of None signals an error in PushImage.
+    if self.instruction_urls_per_channel is None:
+      # ArchiveStage PushImage failed. Signing won't run at all.
+      self.board_runattrs.SetParallel('signed_images_ready', None)
+      return False
+
+    return True
+
   def PerformStage(self):
     """Do the work of generating our release payloads."""
     # Convert to release tools naming for boards.
     board = self._current_board.replace('_', '-')
     version = self._run.attrs.release_tag
 
-    assert version, "We can't generate payloads without a release_tag."
-    logging.info("Waiting for image uploads for: %s, %s", board, version)
-
-    instruction_urls_per_channel = self._WaitForPushImage()
-
     logging.info("Waiting for image signing for: %s, %s", board, version)
     logging.info("GS errors are a normal part of the polling for results.")
-    self._WaitForSigningResults(instruction_urls_per_channel)
+    self._WaitForSigningResults(self.instruction_urls_per_channel)
 
     # Notify stages blocked on us that images are for the given channel list.
-    channels = instruction_urls_per_channel.keys()
+    channels = self.instruction_urls_per_channel.keys()
     self.board_runattrs.SetParallel('signed_images_ready', channels)
 
 
@@ -360,7 +358,7 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
     logging.info("Generating payloads for: %s, %s", board, version)
 
     # Test to see if the current board has a Paygen configuration. We do
-    # this here, no in the sub-process so we don't have to pass back a
+    # this here, not in the sub-process so we don't have to pass back a
     # failure reason.
     try:
       paygen_build_lib.ValidateBoardConfig(board)
