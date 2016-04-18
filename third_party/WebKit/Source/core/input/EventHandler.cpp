@@ -70,6 +70,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -1902,7 +1903,7 @@ WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& eve
 {
     Document* doc = m_frame->document();
 
-    if (!doc->layoutView())
+    if (doc->layoutViewItem().isNull())
         return WebInputEventResult::NotHandled;
 
     FrameView* view = m_frame->view();
@@ -1913,7 +1914,7 @@ WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& eve
 
     HitTestRequest request(HitTestRequest::ReadOnly);
     HitTestResult result(request, vPoint);
-    doc->layoutView()->hitTest(result);
+    doc->layoutViewItem().hitTest(result);
 
     Node* node = result.innerNode();
     // Wheel events should not dispatch to text nodes.
@@ -2136,14 +2137,14 @@ WebInputEventResult EventHandler::handleGestureScrollEvent(const PlatformGesture
 
     if (!eventTarget) {
         Document* document = m_frame->document();
-        if (!document->layoutView())
+        if (document->layoutViewItem().isNull())
             return WebInputEventResult::NotHandled;
 
         FrameView* view = m_frame->view();
         LayoutPoint viewPoint = view->rootFrameToContents(gestureEvent.position());
         HitTestRequest request(HitTestRequest::ReadOnly);
         HitTestResult result(request, viewPoint);
-        document->layoutView()->hitTest(result);
+        document->layoutViewItem().hitTest(result);
 
         eventTarget = result.innerNode();
 
@@ -2424,7 +2425,7 @@ WebInputEventResult EventHandler::handleGestureScrollEnd(const PlatformGestureEv
 WebInputEventResult EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureEvent)
 {
     Document* document = m_frame->document();
-    if (!document->layoutView())
+    if (document->layoutViewItem().isNull())
         return WebInputEventResult::NotHandled;
 
     FrameView* view = m_frame->view();
