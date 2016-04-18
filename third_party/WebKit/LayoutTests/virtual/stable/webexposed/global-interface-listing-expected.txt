@@ -2876,6 +2876,7 @@ interface IDBKeyRange
     getter upper
     getter upperOpen
     method constructor
+    method includes
 interface IDBObjectStore
     attribute @@toStringTag
     getter autoIncrement
@@ -6213,6 +6214,7 @@ interface webkitIDBKeyRange
     getter upper
     getter upperOpen
     method constructor
+    method includes
 interface webkitIDBObjectStore
     attribute @@toStringTag
     getter autoIncrement

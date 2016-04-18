@@ -38,5 +38,5 @@
     [CallWith=ExecutionContext, RaisesException] static IDBKeyRange upperBound(any bound, optional boolean open = false);
     [CallWith=ExecutionContext, RaisesException] static IDBKeyRange bound(any lower, any upper, optional boolean lowerOpen = false, optional boolean upperOpen = false);
 
-    [CallWith=ExecutionContext, RaisesException, RuntimeEnabled=IndexedDBExperimental] boolean includes(any key);
+    [CallWith=ExecutionContext, RaisesException] boolean includes(any key);
 };
