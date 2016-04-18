@@ -25,6 +25,7 @@ Supported sanitizer configurations are:
 |--------------|----|
 | is_asan=true | enables [Address Sanitizer] to catch problems like buffer overruns. |
 | is_msan=true | enables [Memory Sanitizer] to catch problems like uninitialed reads. |
+| is_ubsan_security=true | enables [Undefined Behavior Sanitizer] to catch undefined behavior like integer overflow. |
 
 
 ## Write Fuzzer Function
@@ -102,6 +103,7 @@ performance and for optimization hints.
 
 [Address Sanitizer]: http://clang.llvm.org/docs/AddressSanitizer.html
 [Memory Sanitizer]: http://clang.llvm.org/docs/MemorySanitizer.html
+[Undefined Behavior Sanitizer]: http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 [url_parse_fuzzer.cc]: https://code.google.com/p/chromium/codesearch#chromium/src/testing/libfuzzer/fuzzers/url_parse_fuzzer.cc
 [ClusterFuzz status]: clusterfuzz.md#Status-Links
 [Efficient Fuzzer Guide]: efficient_fuzzer.md
