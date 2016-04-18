@@ -7,6 +7,11 @@ import("//testing/test.gni")
 component("blimp_common") {
   sources = [
     "blimp_common_export.h",
+    "blob_cache/blob_cache.h",
+    "blob_cache/id_util.cc",
+    "blob_cache/id_util.h",
+    "blob_cache/in_memory_blob_cache.cc",
+    "blob_cache/in_memory_blob_cache.h",
     "compositor/blimp_image_serialization_processor.cc",
     "compositor/blimp_image_serialization_processor.h",
     "compositor/blimp_task_graph_runner.cc",
@@ -37,6 +42,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "blob_cache/in_memory_blob_cache_unittest.cc",
     "create_blimp_message_unittest.cc",
     "logging_unittest.cc",
   ]

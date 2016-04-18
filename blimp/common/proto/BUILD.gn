@@ -26,6 +26,7 @@ proto_library("proto_internal") {
 
   sources = [
     "blimp_message.proto",
+    "blob_cache.proto",
     "compositor.proto",
     "ime.proto",
     "input.proto",
