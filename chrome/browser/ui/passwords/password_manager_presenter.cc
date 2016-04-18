@@ -28,11 +28,13 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
+#include "components/password_manager/core/browser/import/password_importer.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -221,19 +223,9 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
     // is empty). Don't let it crash the browser.
     return;
   }
-  if ((base::TimeTicks::Now() - last_authentication_time_) >
-      base::TimeDelta::FromSeconds(60)) {
-    bool authenticated = true;
-#if defined(OS_WIN)
-    authenticated = password_manager_util_win::AuthenticateUser(
-        password_view_->GetNativeWindow());
-#elif defined(OS_MACOSX)
-    authenticated = password_manager_util_mac::AuthenticateUser();
-#endif
-    if (authenticated)
-      last_authentication_time_ = base::TimeTicks::Now();
-    else
-      return;
+
+  if (!IsUserAuthenticated()) {
+    return;
   }
 
   sync_driver::SyncService* sync_service = nullptr;
@@ -258,6 +250,17 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
       base::UTF16ToUTF8(password_list_[index]->username_value),
       password_list_[index]->password_value);
 #endif
+}
+
+std::vector<scoped_ptr<autofill::PasswordForm>>
+PasswordManagerPresenter::GetAllPasswords() {
+  std::vector<scoped_ptr<autofill::PasswordForm>> ret_val;
+
+  for (const auto& form : password_list_) {
+    ret_val.push_back(make_scoped_ptr(new autofill::PasswordForm(*form)));
+  }
+
+  return ret_val;
 }
 
 const autofill::PasswordForm* PasswordManagerPresenter::GetPassword(
@@ -322,6 +325,26 @@ void PasswordManagerPresenter::SortEntriesAndHideDuplicates(
       duplicates->insert(std::make_pair(previous_key, std::move(pair.second)));
     }
   }
+}
+
+bool PasswordManagerPresenter::IsUserAuthenticated() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#endif
+  if (base::TimeTicks::Now() - last_authentication_time_ >
+      base::TimeDelta::FromSeconds(60)) {
+    bool authenticated = true;
+#if defined(OS_WIN)
+    authenticated = password_manager_util_win::AuthenticateUser(
+        password_view_->GetNativeWindow());
+#elif defined(OS_MACOSX)
+    authenticated = password_manager_util_mac::AuthenticateUser();
+#endif
+    if (authenticated)
+      last_authentication_time_ = base::TimeTicks::Now();
+    return authenticated;
+  }
+  return true;
 }
 
 PasswordManagerPresenter::ListPopulater::ListPopulater(

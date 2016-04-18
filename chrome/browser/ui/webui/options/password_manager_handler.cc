@@ -5,28 +5,39 @@
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/password_manager/core/browser/export/password_exporter.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/experiments.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
@@ -77,8 +88,13 @@ void CopyOriginInfoOfPasswordForm(const autofill::PasswordForm& form,
 
 }  // namespace
 
-PasswordManagerHandler::PasswordManagerHandler()
-    : password_manager_presenter_(this) {}
+PasswordManagerHandler::PasswordManagerHandler() {
+  password_manager_presenter_.reset(new PasswordManagerPresenter(this));
+}
+
+PasswordManagerHandler::PasswordManagerHandler(
+    scoped_ptr<PasswordManagerPresenter> presenter)
+    : password_manager_presenter_(std::move(presenter)) {}
 
 PasswordManagerHandler::~PasswordManagerHandler() {}
 
@@ -109,6 +125,10 @@ void PasswordManagerHandler::GetLocalizedValues(
        IDS_PASSWORDS_PAGE_VIEW_NO_PASSWORDS_DESCRIPTION},
       {"passwordsNoExceptionsDescription",
        IDS_PASSWORDS_PAGE_VIEW_NO_EXCEPTIONS_DESCRIPTION},
+      {"passwordManagerImportPasswordButtonText",
+       IDS_PASSWORD_MANAGER_IMPORT_BUTTON},
+      {"passwordManagerExportPasswordButtonText",
+       IDS_PASSWORD_MANAGER_EXPORT_BUTTON},
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -175,10 +195,25 @@ void PasswordManagerHandler::RegisterMessages() {
       "requestShowPassword",
       base::Bind(&PasswordManagerHandler::HandleRequestShowPassword,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "importPassword",
+      base::Bind(&PasswordManagerHandler::HandlePasswordImport,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "exportPassword",
+      base::Bind(&PasswordManagerHandler::HandlePasswordExport,
+                 base::Unretained(this)));
 }
 
 void PasswordManagerHandler::InitializeHandler() {
-  password_manager_presenter_.Initialize();
+  password_manager_presenter_->Initialize();
+}
+
+void PasswordManagerHandler::InitializePage() {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordImportExport)) {
+    web_ui()->CallJavascriptFunction("PasswordManager.showImportExportButton");
+  }
 }
 
 void PasswordManagerHandler::HandleRemoveSavedPassword(
@@ -186,7 +221,8 @@ void PasswordManagerHandler::HandleRemoveSavedPassword(
   std::string string_value = base::UTF16ToUTF8(ExtractStringValue(args));
   int index;
   if (base::StringToInt(string_value, &index) && index >= 0) {
-    password_manager_presenter_.RemoveSavedPassword(static_cast<size_t>(index));
+    password_manager_presenter_->RemoveSavedPassword(
+        static_cast<size_t>(index));
   }
 }
 
@@ -195,7 +231,7 @@ void PasswordManagerHandler::HandleRemovePasswordException(
   std::string string_value = base::UTF16ToUTF8(ExtractStringValue(args));
   int index;
   if (base::StringToInt(string_value, &index) && index >= 0) {
-    password_manager_presenter_.RemovePasswordException(
+    password_manager_presenter_->RemovePasswordException(
         static_cast<size_t>(index));
   }
 }
@@ -206,7 +242,7 @@ void PasswordManagerHandler::HandleRequestShowPassword(
   if (!ExtractIntegerValue(args, &index))
     NOTREACHED();
 
-  password_manager_presenter_.RequestShowPassword(static_cast<size_t>(index));
+  password_manager_presenter_->RequestShowPassword(static_cast<size_t>(index));
 }
 
 void PasswordManagerHandler::ShowPassword(
@@ -223,7 +259,7 @@ void PasswordManagerHandler::ShowPassword(
 
 void PasswordManagerHandler::HandleUpdatePasswordLists(
     const base::ListValue* args) {
-  password_manager_presenter_.UpdatePasswordLists();
+  password_manager_presenter_->UpdatePasswordLists();
 }
 
 void PasswordManagerHandler::SetPasswordList(
@@ -266,6 +302,118 @@ void PasswordManagerHandler::SetPasswordExceptionList(
 
   web_ui()->CallJavascriptFunction("PasswordManager.setPasswordExceptionsList",
                                    entries);
+}
+
+void PasswordManagerHandler::FileSelected(const base::FilePath& path,
+                                          int index,
+                                          void* params) {
+  switch (static_cast<FileSelectorCaller>(reinterpret_cast<intptr_t>(params))) {
+    case IMPORT_FILE_SELECTED:
+      ImportPasswordFileSelected(path);
+      break;
+    case EXPORT_FILE_SELECTED:
+      ExportPasswordFileSelected(path);
+      break;
+  }
+}
+
+void PasswordManagerHandler::HandlePasswordImport(const base::ListValue* args) {
+#if !defined(OS_ANDROID)  // This is never called on Android.
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
+
+  file_type_info.extensions =
+      password_manager::PasswordImporter::GetSupportedFileExtensions();
+  DCHECK(!file_type_info.extensions.empty() &&
+         !file_type_info.extensions[0].empty());
+  file_type_info.include_all_files = true;
+  ChromeSelectFilePolicy* select_file_policy =
+      new ChromeSelectFilePolicy(web_ui()->GetWebContents());
+  ANNOTATE_LEAKING_OBJECT_PTR(select_file_policy);
+  select_file_dialog_ = ui::SelectFileDialog::Create(this, select_file_policy);
+  select_file_dialog_->SelectFile(
+      ui::SelectFileDialog::SELECT_OPEN_FILE,
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_IMPORT_DIALOG_TITLE),
+      base::FilePath(), &file_type_info, 1, file_type_info.extensions[0][0],
+      web_ui()->GetWebContents()->GetTopLevelNativeWindow(),
+      reinterpret_cast<void*>(IMPORT_FILE_SELECTED));
+#endif
+}
+
+void PasswordManagerHandler::ImportPasswordFileSelected(
+    const base::FilePath& path) {
+  scoped_refptr<ImportPasswordResultConsumer> form_consumer(
+      new ImportPasswordResultConsumer(GetProfile()));
+
+  password_manager::PasswordImporter::Import(
+      path, content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::FILE)
+                .get(),
+      base::Bind(&ImportPasswordResultConsumer::ConsumePassword,
+                 form_consumer));
+}
+
+PasswordManagerHandler::ImportPasswordResultConsumer::
+    ImportPasswordResultConsumer(Profile* profile)
+    : profile_(profile) {}
+
+void PasswordManagerHandler::ImportPasswordResultConsumer::ConsumePassword(
+    password_manager::PasswordImporter::Result result,
+    const std::vector<autofill::PasswordForm>& forms) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.ImportPasswordFromCSVResult", result,
+      password_manager::PasswordImporter::NUM_IMPORT_RESULTS);
+  if (result != password_manager::PasswordImporter::SUCCESS)
+    return;
+
+  UMA_HISTOGRAM_COUNTS("PasswordManager.ImportedPasswordsPerUserInCSV",
+                       forms.size());
+
+  scoped_refptr<password_manager::PasswordStore> store(
+      PasswordStoreFactory::GetForProfile(profile_,
+                                          ServiceAccessType::EXPLICIT_ACCESS));
+  if (store) {
+    for (const autofill::PasswordForm& form : forms) {
+      store->AddLogin(form);
+    }
+  }
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.StorePasswordImportedFromCSVResult",
+                        store);
+}
+
+void PasswordManagerHandler::HandlePasswordExport(const base::ListValue* args) {
+#if !defined(OS_ANDROID)  // This is never called on Android.
+  if (!password_manager_presenter_->IsUserAuthenticated())
+    return;
+
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
+  file_type_info.extensions =
+      password_manager::PasswordExporter::GetSupportedFileExtensions();
+  DCHECK(!file_type_info.extensions.empty() &&
+         !file_type_info.extensions[0].empty());
+  file_type_info.include_all_files = true;
+  ChromeSelectFilePolicy* select_file_policy =
+      new ChromeSelectFilePolicy(web_ui()->GetWebContents());
+  ANNOTATE_LEAKING_OBJECT_PTR(select_file_policy);
+  select_file_dialog_ = ui::SelectFileDialog::Create(this, select_file_policy);
+  select_file_dialog_->SelectFile(
+      ui::SelectFileDialog::SELECT_SAVEAS_FILE,
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EXPORT_DIALOG_TITLE),
+      base::FilePath(), &file_type_info, 1, file_type_info.extensions[0][0],
+      GetNativeWindow(), reinterpret_cast<void*>(EXPORT_FILE_SELECTED));
+#endif
+}
+
+void PasswordManagerHandler::ExportPasswordFileSelected(
+    const base::FilePath& path) {
+  std::vector<scoped_ptr<autofill::PasswordForm>> password_list =
+      password_manager_presenter_->GetAllPasswords();
+  UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
+                       password_list.size());
+  password_manager::PasswordExporter::Export(
+      path, std::move(password_list),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::FILE)
+          .get());
 }
 
 }  // namespace options

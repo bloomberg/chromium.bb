@@ -22,7 +22,7 @@ namespace password_manager {
 //     be converted to LF characters inside quotes.
 //   * Inconsistent number of fields within records is handled gracefully. Extra
 //     fields are ignored. Missing fields will have no corresponding key-value
-//     pair in the record's ColumnNameToValueMap.
+//     pair in the record.
 //   * Repeated columns of the same name are not supported (the last value will
 //     be preserved).
 //

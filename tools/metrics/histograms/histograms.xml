@@ -35110,6 +35110,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.ExportedPasswordsPerUserInCSV">
+  <owner>xunlu@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>The number of passwords exported in CSV format per user.</summary>
+</histogram>
+
 <histogram name="PasswordManager.FilledCredentialWasFromAndroidApp"
     enum="PasswordManagerFilledAndroidCredentials">
   <owner>msramek@chromium.org</owner>
@@ -35148,6 +35154,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     When the generation state of a password was changed, records whether an
     existing form corresponding to the password was found.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.ImportedPasswordsPerUserInCSV">
+  <owner>xunlu@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>The number of passwords imported in CSV format per user</summary>
+</histogram>
+
+<histogram name="PasswordManager.ImportPasswordFromCSVResult"
+    enum="PasswordImportFromCSVResult">
+  <owner>xunlu@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    The response code of successful or failed password import attempt from a CSV
+    file.
   </summary>
 </histogram>
 
@@ -35379,6 +35401,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Smart Lock on Android. Sample is recorded on every profile initialization
     before reconciliation logic is taken place, e.g. when user logs in to
     browser, on a startup of a browser.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.StorePasswordImportedFromCSVResult"
+    enum="BooleanSuccess">
+  <owner>xunlu@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    Whether password manager stored passwords imported from CSV file
+    successfully.
   </summary>
 </histogram>
 
@@ -79181,6 +79213,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="10" label="Generated popup shown (limit once per page)"/>
   <int value="11" label="Editing popup shown (limit once per page)"/>
   <int value="12" label="Generation triggered by autocomplete attributes"/>
+</enum>
+
+<enum name="PasswordImportFromCSVResult" type="int">
+  <int value="0" label="Password import succeeded"/>
+  <int value="1" label="Password import failed due to IO error"/>
+  <int value="2" label="Password import failed due to malformed CSV"/>
+  <int value="3" label="Password import failed due to missing content"/>
+  <int value="4" label="Boundary value"/>
 </enum>
 
 <enum name="PasswordManagerActionsTaken" type="int">

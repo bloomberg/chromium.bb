@@ -46,6 +46,9 @@ const base::Feature kProtectSyncCredential = {
 const base::Feature kProtectSyncCredentialOnReauth = {
     "protect-sync-credential-on-reauth", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPasswordImportExport = {"password-import-export",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 }  // namespace password_manager
