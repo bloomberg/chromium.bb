@@ -142,23 +142,32 @@ RemoteMediaPlayerBridge* RemoteMediaPlayerManager::CreateRemoteMediaPlayer(
   return player;
 }
 
-void RemoteMediaPlayerManager::SwapCurrentPlayer(int player_id) {
-  // Find the remote player
+bool RemoteMediaPlayerManager::SwapCurrentPlayer(int player_id) {
+  // Find the alternative player to swap the current one with.
   auto it = GetAlternativePlayer(player_id);
   if (it == alternative_players_.end())
-    return;
+    return false;
+
   MediaPlayerAndroid* new_player = *it;
   std::unique_ptr<MediaPlayerAndroid> old_player =
       SwapPlayer(player_id, new_player);
+  if (!old_player) {
+    // There's no player to swap with, destroy the alternative player and exit.
+    alternative_players_.erase(it);
+    return false;
+  }
+
   alternative_players_.weak_erase(it);
   alternative_players_.push_back(old_player.release());
+  return true;
 }
 
 void RemoteMediaPlayerManager::SwitchToRemotePlayer(
     int player_id,
     const std::string& casting_message) {
   DCHECK(!IsPlayingRemotely(player_id));
-  SwapCurrentPlayer(player_id);
+  if (!SwapCurrentPlayer(player_id))
+    return;
   players_playing_remotely_.insert(player_id);
   Send(new MediaPlayerMsg_DidMediaPlayerPlay(RoutingID(), player_id));
   Send(new MediaPlayerMsg_ConnectedToRemoteDevice(RoutingID(), player_id,

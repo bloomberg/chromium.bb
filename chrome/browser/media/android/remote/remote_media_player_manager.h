@@ -104,7 +104,7 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
   // playing remotely.
   RemoteMediaPlayerBridge* GetRemotePlayer(int player_id);
 
-  void SwapCurrentPlayer(int player_id);
+  bool SwapCurrentPlayer(int player_id);
 
   void FetchPosterBitmap(int player_id);
 
