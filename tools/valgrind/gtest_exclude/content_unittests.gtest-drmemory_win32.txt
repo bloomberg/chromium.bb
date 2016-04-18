@@ -13,4 +13,4 @@ WebContentsVideoCaptureDeviceTest.VariableResolution_AnyWithinLimits
 WebContentsVideoCaptureDeviceTest.VariableResolution_FixedAspectRatio
 
 # https://crbug.com/604056
-CodecProfiles/RTCVideoDecoderTest.GetVDAErrorCounterForTesting/0
+CodecProfiles/RTCVideoDecoderTest.GetVDAErrorCounterForTesting*
