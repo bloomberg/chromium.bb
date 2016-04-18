@@ -299,10 +299,7 @@ TEST_F(CRWSSLStatusUpdaterTest, HttpsItemDowngrade) {
   nav_manager_->SetSessionController(SessionControllerWithEntry(kHttpsUrl));
   web::NavigationItem* item = nav_manager_->GetLastCommittedItem();
 
-  // Make sure that item change callback was called twice for changing cert_id
-  // and then security_style.
-  [[delegate_ expect] SSLStatusUpdater:ssl_status_updater_
-      didChangeSSLStatusForNavigationItem:item];
+  // Make sure that item change callback was called.
   [[delegate_ expect] SSLStatusUpdater:ssl_status_updater_
       didChangeSSLStatusForNavigationItem:item];
 
@@ -319,12 +316,8 @@ TEST_F(CRWSSLStatusUpdaterTest, HttpsItemDowngrade) {
   EXPECT_EQ(web::SECURITY_STYLE_UNKNOWN, item->GetSSL().security_style);
   EXPECT_FALSE(item->GetSSL().cert_status);
 
-  // Downgrade to http which again triggers SSL Status update.
+  // Downgrade to http.
   item->SetURL(GURL(kHttpUrl));
-  [ssl_status_updater_ updateSSLStatusForNavigationItem:item
-                                           withCertHost:kHostName
-                                              certChain:@[]
-                                   hasOnlySecureContent:YES];
 
   // Reply with calculated cert verification status.
   [data_source_
@@ -332,7 +325,42 @@ TEST_F(CRWSSLStatusUpdaterTest, HttpsItemDowngrade) {
                          securityStyle:web::SECURITY_STYLE_AUTHENTICATED];
 
   // Make sure that security style and content status did change.
-  EXPECT_EQ(web::SECURITY_STYLE_UNAUTHENTICATED, item->GetSSL().security_style);
+  EXPECT_EQ(web::SECURITY_STYLE_UNKNOWN, item->GetSSL().security_style);
+  EXPECT_EQ(web::SSLStatus::NORMAL_CONTENT, item->GetSSL().content_status);
+}
+
+// Tests that SSL status is not changed if navigation item's cert is changed.
+TEST_F(CRWSSLStatusUpdaterTest, CertChanged) {
+  nav_manager_->SetSessionController(SessionControllerWithEntry(kHttpsUrl));
+  web::NavigationItem* item = nav_manager_->GetLastCommittedItem();
+
+  // Make sure that item change callback was called.
+  [[delegate_ expect] SSLStatusUpdater:ssl_status_updater_
+      didChangeSSLStatusForNavigationItem:item];
+
+  [ssl_status_updater_ updateSSLStatusForNavigationItem:item
+                                           withCertHost:kHostName
+                                              certChain:cert_chain_
+                                   hasOnlySecureContent:YES];
+
+  // Make sure that cert verification was requested.
+  EXPECT_TRUE([data_source_ certVerificationRequested]);
+
+  // Make sure that security style and cert status are reset during
+  // verification.
+  EXPECT_EQ(web::SECURITY_STYLE_UNKNOWN, item->GetSSL().security_style);
+  EXPECT_FALSE(item->GetSSL().cert_status);
+
+  // Change the cert.
+  item->GetSSL().cert_id = -1;
+
+  // Reply with calculated cert verification status.
+  [data_source_
+      finishVerificationWithCertStatus:0
+                         securityStyle:web::SECURITY_STYLE_AUTHENTICATED];
+
+  // Make sure that security style and content status did change.
+  EXPECT_EQ(web::SECURITY_STYLE_UNKNOWN, item->GetSSL().security_style);
   EXPECT_EQ(web::SSLStatus::NORMAL_CONTENT, item->GetSSL().content_status);
 }
 

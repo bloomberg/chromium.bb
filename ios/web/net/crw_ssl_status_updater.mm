@@ -153,7 +153,8 @@ using web::SecurityStyle;
         web::CertStore::GetInstance()->StoreCert(cert.get(), self.certGroupID);
     std::string GURLHost = base::SysNSStringToUTF8(host);
     web::SSLStatus& SSLStatus = item->GetSSL();
-    if (SSLStatus.cert_id == certID && item->GetURL().host() == GURLHost) {
+    if (item->GetURL().SchemeIsCryptographic() && SSLStatus.cert_id == certID &&
+        item->GetURL().host() == GURLHost) {
       web::SSLStatus previousSSLStatus = item->GetSSL();
       SSLStatus.cert_status = certStatus;
       SSLStatus.security_style = style;
