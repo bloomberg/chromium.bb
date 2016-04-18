@@ -7,6 +7,7 @@
 #include "ash/keyboard/keyboard_ui.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -60,7 +61,7 @@ void VirtualKeyboardTray::SetShelfAlignment(ShelfAlignment alignment) {
   // Square up the padding if horizontally aligned. Avoid extra padding when
   // vertically aligned as the button would violate the width constraint on the
   // shelf.
-  if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+  if (IsHorizontalAlignment(alignment)) {
     gfx::Insets insets = button_->GetInsets();
     int additional_padding = std::max(0, top_padding - left_padding);
     left_padding += additional_padding;

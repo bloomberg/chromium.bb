@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_locking_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
 #include "base/macros.h"
@@ -56,11 +57,8 @@ class ASH_EXPORT Shelf {
   static Shelf* ForWindow(const aura::Window* window);
 
   void SetAlignment(ShelfAlignment alignment);
-  ShelfAlignment GetAlignment() const;
+  ShelfAlignment alignment() const { return alignment_; }
   bool IsHorizontalAlignment() const;
-
-  // TODO(msw): Remove this accessor, kept temporarily to simplify changes.
-  ShelfAlignment alignment() const { return GetAlignment(); }
 
   // Sets the ShelfAutoHideBehavior. See enum description for details.
   void SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior);
@@ -76,6 +74,7 @@ class ASH_EXPORT Shelf {
   T SelectValueForShelfAlignment(T bottom, T left, T right) const {
     switch (alignment_) {
       case SHELF_ALIGNMENT_BOTTOM:
+      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
         return bottom;
       case SHELF_ALIGNMENT_LEFT:
         return left;
@@ -143,15 +142,13 @@ class ASH_EXPORT Shelf {
  private:
   friend class test::ShelfTestAPI;
 
-  // ShelfView used to display icons.
-  ShelfView* shelf_view_;
-
-  ShelfAlignment alignment_;
-  ShelfAutoHideBehavior auto_hide_behavior_;
-
   ShelfDelegate* delegate_;
-
   ShelfWidget* shelf_widget_;
+  ShelfView* shelf_view_;
+  ShelfLockingManager shelf_locking_manager_;
+
+  ShelfAlignment alignment_ = SHELF_ALIGNMENT_BOTTOM;
+  ShelfAutoHideBehavior auto_hide_behavior_ = SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
 
   DISALLOW_COPY_AND_ASSIGN(Shelf);
 };

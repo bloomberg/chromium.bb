@@ -365,6 +365,15 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   EXPECT_TRUE(window_bounds.x() >= tray_bounds.x());
   EXPECT_TRUE(window_bounds.y() >= tray_bounds.y());
 
+  // Test in locked alignment.
+  manager->SetAlignment(SHELF_ALIGNMENT_BOTTOM_LOCKED);
+  window_bounds = widget->GetWindowBoundsInScreen();
+  tray_bounds = tray->GetBoundsInScreen();
+  EXPECT_TRUE(window_bounds.bottom() >= tray_bounds.bottom());
+  EXPECT_TRUE(window_bounds.right() >= tray_bounds.right());
+  EXPECT_TRUE(window_bounds.x() >= tray_bounds.x());
+  EXPECT_TRUE(window_bounds.y() >= tray_bounds.y());
+
   // Test in the left alignment.
   manager->SetAlignment(SHELF_ALIGNMENT_LEFT);
   window_bounds = widget->GetWindowBoundsInScreen();

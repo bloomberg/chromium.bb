@@ -4,6 +4,7 @@
 
 #include "ash/system/date/tray_date.h"
 
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/date/date_default_view.h"
 #include "ash/system/date/date_view.h"
@@ -95,7 +96,7 @@ void TrayDate::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 void TrayDate::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (time_tray_) {
     ClockLayout clock_layout =
-        alignment == SHELF_ALIGNMENT_BOTTOM ? HORIZONTAL_CLOCK : VERTICAL_CLOCK;
+        IsHorizontalAlignment(alignment) ? HORIZONTAL_CLOCK : VERTICAL_CLOCK;
     time_tray_->UpdateClockLayout(clock_layout);
   }
 }

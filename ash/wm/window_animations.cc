@@ -468,17 +468,12 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
   if (item_rect.width() != 0 || item_rect.height() != 0) {
     if (shelf->shelf_layout_manager()->visibility_state() == SHELF_AUTO_HIDE) {
       gfx::Rect shelf_bounds = shelf->shelf_widget()->GetWindowBoundsInScreen();
-      switch (shelf->alignment()) {
-        case SHELF_ALIGNMENT_BOTTOM:
-          item_rect.set_y(shelf_bounds.y());
-          break;
-        case SHELF_ALIGNMENT_LEFT:
-          item_rect.set_x(shelf_bounds.right());
-          break;
-        case SHELF_ALIGNMENT_RIGHT:
-          item_rect.set_x(shelf_bounds.x());
-          break;
-      }
+      if (shelf->alignment() == SHELF_ALIGNMENT_LEFT)
+        item_rect.set_x(shelf_bounds.right());
+      else if (shelf->alignment() == SHELF_ALIGNMENT_RIGHT)
+        item_rect.set_x(shelf_bounds.x());
+      else
+        item_rect.set_y(shelf_bounds.y());
       return item_rect;
     }
   }

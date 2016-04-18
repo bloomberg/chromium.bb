@@ -14,6 +14,7 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
+#include "ash/shelf/shelf_locking_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -381,10 +382,14 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
   // Open the add user screen if |show| is true, otherwise end it.
   void ShowAddUserScreen(bool show) {
     SetUserAddingScreenRunning(show);
-    ShelfLayoutManager* manager = GetShelfWidget()->shelf_layout_manager();
-    manager->SessionStateChanged(
-        show ? SessionStateDelegate::SESSION_STATE_LOGIN_SECONDARY :
-               SessionStateDelegate::SESSION_STATE_ACTIVE);
+
+    const SessionStateDelegate::SessionState state =
+        show ? SessionStateDelegate::SESSION_STATE_LOGIN_SECONDARY
+             : SessionStateDelegate::SESSION_STATE_ACTIVE;
+    GetShelfWidget()->shelf_layout_manager()->SessionStateChanged(state);
+    test::ShelfTestAPI(GetShelfWidget()->shelf())
+        .shelf_locking_manager()
+        ->SessionStateChanged(state);
   }
 
  private:
@@ -764,7 +769,7 @@ TEST_F(ShelfLayoutManagerTest, SideAlignmentInteractionWithLockScreen) {
   manager->SetAlignment(SHELF_ALIGNMENT_LEFT);
   EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
   LockScreen();
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, manager->GetAlignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM_LOCKED, manager->GetAlignment());
   UnlockScreen();
   EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
 }
@@ -775,7 +780,7 @@ TEST_F(ShelfLayoutManagerTest, SideAlignmentInteractionWithAddUserScreen) {
   manager->SetAlignment(SHELF_ALIGNMENT_LEFT);
   EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
   ShowAddUserScreen(true);
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, manager->GetAlignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM_LOCKED, manager->GetAlignment());
   ShowAddUserScreen(false);
   EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
 }

@@ -141,17 +141,12 @@ class PanelLayoutManagerTest : public test::AshTestBase {
       EXPECT_GE(window_bounds.bottom(), icon_bounds.bottom());
     }
 
-    switch (alignment) {
-      case SHELF_ALIGNMENT_BOTTOM:
-        EXPECT_EQ(shelf_bounds.y(), window_bounds.bottom());
-        break;
-      case SHELF_ALIGNMENT_LEFT:
-        EXPECT_EQ(shelf_bounds.right(), window_bounds.x());
-        break;
-      case SHELF_ALIGNMENT_RIGHT:
-        EXPECT_EQ(shelf_bounds.x(), window_bounds.right());
-        break;
-    }
+    if (alignment == SHELF_ALIGNMENT_LEFT)
+      EXPECT_EQ(shelf_bounds.right(), window_bounds.x());
+    else if (alignment == SHELF_ALIGNMENT_RIGHT)
+      EXPECT_EQ(shelf_bounds.x(), window_bounds.right());
+    else
+      EXPECT_EQ(shelf_bounds.y(), window_bounds.bottom());
   }
 
   void IsCalloutAboveLauncherIcon(aura::Window* panel) {
@@ -170,17 +165,12 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     EXPECT_TRUE(widget->IsVisible());
 
     ShelfAlignment alignment = GetAlignment(panel->GetRootWindow());
-    switch (alignment) {
-      case SHELF_ALIGNMENT_BOTTOM:
-        EXPECT_EQ(panel_bounds.bottom(), callout_bounds.y());
-        break;
-      case SHELF_ALIGNMENT_LEFT:
-        EXPECT_EQ(panel_bounds.x(), callout_bounds.right());
-        break;
-      case SHELF_ALIGNMENT_RIGHT:
-        EXPECT_EQ(panel_bounds.right(), callout_bounds.x());
-        break;
-    }
+    if (alignment == SHELF_ALIGNMENT_LEFT)
+      EXPECT_EQ(panel_bounds.x(), callout_bounds.right());
+    else if (alignment == SHELF_ALIGNMENT_RIGHT)
+      EXPECT_EQ(panel_bounds.right(), callout_bounds.x());
+    else
+      EXPECT_EQ(panel_bounds.bottom(), callout_bounds.y());
 
     if (IsHorizontal(alignment)) {
       EXPECT_NEAR(icon_bounds.CenterPoint().x(),
@@ -220,13 +210,11 @@ class PanelLayoutManagerTest : public test::AshTestBase {
   }
 
   void SetAlignment(aura::Window* root_window, ShelfAlignment alignment) {
-    ash::Shell* shell = ash::Shell::GetInstance();
-    shell->SetShelfAlignment(alignment, root_window);
+    Shelf::ForWindow(root_window)->SetAlignment(alignment);
   }
 
   ShelfAlignment GetAlignment(const aura::Window* root_window) {
-    ash::Shell* shell = ash::Shell::GetInstance();
-    return shell->GetShelfAlignment(root_window);
+    return Shelf::ForWindow(root_window)->alignment();
   }
 
   void SetShelfAutoHideBehavior(aura::Window* window,

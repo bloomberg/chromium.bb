@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/tray_utils.h"
 
+#include "ash/shelf/shelf_util.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -26,11 +27,9 @@ void SetupLabelForTray(views::Label* label) {
 
 void SetTrayImageItemBorder(views::View* tray_view,
                             ShelfAlignment alignment) {
-  if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+  if (IsHorizontalAlignment(alignment)) {
     tray_view->SetBorder(views::Border::CreateEmptyBorder(
-        0,
-        kTrayImageItemHorizontalPaddingBottomAlignment,
-        0,
+        0, kTrayImageItemHorizontalPaddingBottomAlignment, 0,
         kTrayImageItemHorizontalPaddingBottomAlignment));
   } else {
     tray_view->SetBorder(views::Border::CreateEmptyBorder(
@@ -43,11 +42,9 @@ void SetTrayImageItemBorder(views::View* tray_view,
 
 void SetTrayLabelItemBorder(TrayItemView* tray_view,
                             ShelfAlignment alignment) {
-  if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+  if (IsHorizontalAlignment(alignment)) {
     tray_view->SetBorder(views::Border::CreateEmptyBorder(
-        0,
-        kTrayLabelItemHorizontalPaddingBottomAlignment,
-        0,
+        0, kTrayLabelItemHorizontalPaddingBottomAlignment, 0,
         kTrayLabelItemHorizontalPaddingBottomAlignment));
   } else {
     // Center the label for vertical launcher alignment.
@@ -55,10 +52,8 @@ void SetTrayLabelItemBorder(TrayItemView* tray_view,
         (tray_view->GetPreferredSize().width() -
         tray_view->label()->GetPreferredSize().width()) / 2);
     tray_view->SetBorder(views::Border::CreateEmptyBorder(
-        kTrayLabelItemVerticalPaddingVerticalAlignment,
-        horizontal_padding,
-        kTrayLabelItemVerticalPaddingVerticalAlignment,
-        horizontal_padding));
+        kTrayLabelItemVerticalPaddingVerticalAlignment, horizontal_padding,
+        kTrayLabelItemVerticalPaddingVerticalAlignment, horizontal_padding));
   }
 }
 

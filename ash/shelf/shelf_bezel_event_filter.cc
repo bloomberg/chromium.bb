@@ -51,24 +51,11 @@ void ShelfBezelEventFilter::OnGestureEvent(
   }
 }
 
-bool ShelfBezelEventFilter::IsShelfOnBezel(
-    const gfx::Rect& screen,
-    const gfx::Point& point) const{
-  switch (shelf_->GetAlignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-      if (point.y() >= screen.bottom())
-        return true;
-      break;
-    case SHELF_ALIGNMENT_LEFT:
-      if (point.x() <= screen.x())
-        return true;
-      break;
-    case SHELF_ALIGNMENT_RIGHT:
-      if (point.x() >= screen.right())
-        return true;
-      break;
-  }
-  return false;
+bool ShelfBezelEventFilter::IsShelfOnBezel(const gfx::Rect& screen,
+                                           const gfx::Point& point) const {
+  return shelf_->SelectValueForShelfAlignment(point.y() >= screen.bottom(),
+                                              point.x() <= screen.x(),
+                                              point.x() >= screen.right());
 }
 
 }  // namespace ash

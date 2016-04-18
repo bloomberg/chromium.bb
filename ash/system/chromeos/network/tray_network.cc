@@ -6,6 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
@@ -91,7 +92,7 @@ class NetworkTrayView : public TrayItemView,
   }
 
   void UpdateAlignment(ShelfAlignment alignment) {
-    SetLayoutManager(new views::BoxLayout(alignment == SHELF_ALIGNMENT_BOTTOM
+    SetLayoutManager(new views::BoxLayout(IsHorizontalAlignment(alignment)
                                               ? views::BoxLayout::kHorizontal
                                               : views::BoxLayout::kVertical,
                                           0, 0, 0));

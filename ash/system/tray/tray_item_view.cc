@@ -5,6 +5,7 @@
 #include "ash/system/tray/tray_item_view.h"
 
 #include "ash/shelf/shelf_types.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ui/compositor/layer.h"
@@ -85,13 +86,13 @@ int TrayItemView::GetAnimationDurationMS() {
 
 gfx::Size TrayItemView::GetPreferredSize() const {
   gfx::Size size = DesiredSize();
-  if (owner()->system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM)
+  if (IsHorizontalAlignment(owner()->system_tray()->shelf_alignment()))
     size.set_height(kTrayIconHeight);
   else
     size.set_width(kTrayIconWidth);
   if (!animation_.get() || !animation_->is_animating())
     return size;
-  if (owner()->system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+  if (IsHorizontalAlignment(owner()->system_tray()->shelf_alignment())) {
     size.set_width(std::max(1,
         static_cast<int>(size.width() * animation_->GetCurrentValue())));
   } else {
@@ -111,7 +112,7 @@ void TrayItemView::ChildPreferredSizeChanged(views::View* child) {
 
 void TrayItemView::AnimationProgressed(const gfx::Animation* animation) {
   gfx::Transform transform;
-  if (owner()->system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+  if (IsHorizontalAlignment(owner()->system_tray()->shelf_alignment())) {
     transform.Translate(0, animation->CurrentValueBetween(
         static_cast<double>(height()) / 2, 0.));
   } else {

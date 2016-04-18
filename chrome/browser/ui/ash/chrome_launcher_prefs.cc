@@ -132,6 +132,10 @@ const char* AlignmentToPref(ShelfAlignment alignment) {
       return kShelfAlignmentLeft;
     case SHELF_ALIGNMENT_RIGHT:
       return kShelfAlignmentRight;
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      // This should not be a valid preference option for now. We only want to
+      // lock the shelf during login or when adding a user.
+      return nullptr;
   }
   NOTREACHED();
   return nullptr;
@@ -154,8 +158,8 @@ const char* AutoHideBehaviorToPref(ShelfAutoHideBehavior behavior) {
     case SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
       return kShelfAutoHideBehaviorNever;
     case SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
-      // This one should not be a valid preference option for now. We only want
-      // to completely hide it when we run in app mode - or while we temporarily
+      // This should not be a valid preference option for now. We only want to
+      // completely hide it when we run in app mode - or while we temporarily
       // hide the shelf as part of an animation (e.g. the multi user change).
       return nullptr;
   }
@@ -252,6 +256,9 @@ void SetShelfAlignmentPref(PrefService* prefs,
   DCHECK_GE(display_id, 0);
 
   const char* value = AlignmentToPref(alignment);
+  if (!value)
+    return;
+
   SetPerDisplayPref(prefs, display_id, prefs::kShelfAlignment, value);
   if (display_id == gfx::Screen::GetScreen()->GetPrimaryDisplay().id()) {
     // See comment in |kShelfAlignment| as to why we consider two prefs.

@@ -302,7 +302,7 @@ class ShelfViewTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    test::ShellTestApi test_api(Shell::GetInstance());
+    ShellTestApi test_api(Shell::GetInstance());
     model_ = test_api.shelf_model();
     Shelf* shelf = Shelf::ForPrimaryDisplay();
     shelf_view_ = ShelfTestAPI(shelf).shelf_view();
@@ -575,8 +575,8 @@ class ShelfViewTest : public AshTestBase {
     ASSERT_TRUE(test_api_->overflow_bubble() &&
                 test_api_->overflow_bubble()->IsShowing());
 
-    ash::test::ShelfViewTestAPI test_api_for_overflow(
-      test_api_->overflow_bubble()->shelf_view());
+    ShelfViewTestAPI test_api_for_overflow(
+        test_api_->overflow_bubble()->shelf_view());
 
     int total_item_count = model_->item_count();
 
@@ -664,12 +664,11 @@ class ShelfViewTest : public AshTestBase {
 
   void ReplaceShelfDelegate() {
     // Replace ShelfDelegate.
-    test::ShellTestApi shell_test_api(Shell::GetInstance());
+    ShellTestApi shell_test_api(Shell::GetInstance());
     shell_test_api.SetShelfDelegate(NULL);
     shelf_delegate_ = new TestShelfDelegateForShelfView();
     shell_test_api.SetShelfDelegate(shelf_delegate_);
-    test::ShelfTestAPI(Shelf::ForPrimaryDisplay())
-        .SetShelfDelegate(shelf_delegate_);
+    ShelfTestAPI(Shelf::ForPrimaryDisplay()).set_delegate(shelf_delegate_);
     test_api_->SetShelfDelegate(shelf_delegate_);
   }
 
@@ -962,9 +961,8 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
   // Test that any two successive visible icons never overlap in all shelf
   // alignment types.
   const ShelfAlignment kAlignments[] = {
-      SHELF_ALIGNMENT_LEFT,
-      SHELF_ALIGNMENT_RIGHT,
-      SHELF_ALIGNMENT_BOTTOM
+      SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT, SHELF_ALIGNMENT_BOTTOM,
+      SHELF_ALIGNMENT_BOTTOM_LOCKED,
   };
 
   for (ShelfAlignment alignment : kAlignments) {
@@ -987,12 +985,15 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
 // Making sure the overflow bubble arrow correctly tracks with shelf position.
 TEST_F(ShelfViewTest, OverflowArrowForShelfPosition) {
   const ShelfAlignment kAlignments[] = {
-      SHELF_ALIGNMENT_BOTTOM, SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT};
+      SHELF_ALIGNMENT_BOTTOM, SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT,
+      SHELF_ALIGNMENT_BOTTOM_LOCKED,
+  };
 
   // These must match what is expected for each alignment above.
   const views::BubbleBorder::Arrow kArrows[] = {
       views::BubbleBorder::BOTTOM_LEFT, views::BubbleBorder::LEFT_TOP,
-      views::BubbleBorder::RIGHT_TOP};
+      views::BubbleBorder::RIGHT_TOP, views::BubbleBorder::BOTTOM_LEFT,
+  };
 
   for (size_t i = 0; i < arraysize(kAlignments); i++) {
     shelf_view_->shelf()->SetAlignment(kAlignments[i]);
@@ -1653,7 +1654,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
 
   int item_width = test_api_->GetButtonSize() + test_api_->GetButtonSpacing();
   OverflowBubbleView* bubble_view = test_api_->overflow_bubble()->bubble_view();
-  test::OverflowBubbleViewTestAPI bubble_view_api(bubble_view);
+  OverflowBubbleViewTestAPI bubble_view_api(bubble_view);
 
   // Add more buttons until OverflowBubble is scrollable and it has 3 invisible
   // items.

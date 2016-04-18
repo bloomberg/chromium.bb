@@ -13,6 +13,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_navigator.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -41,6 +42,8 @@
 #include "ui/wm/core/easy_resize_window_targeter.h"
 #include "ui/wm/public/activation_client.h"
 
+namespace ash {
+
 namespace {
 // Size of black border at bottom (or side) of shelf.
 const int kNumBlackPixels = 3;
@@ -54,11 +57,11 @@ const int kTimeToUnDimMs = 200;  // Fast in activating.
 // Class used to slightly dim shelf items when maximized and visible.
 class DimmerView : public views::View,
                    public views::WidgetDelegate,
-                   ash::BackgroundAnimatorDelegate {
+                   BackgroundAnimatorDelegate {
  public:
   // If |disable_dimming_animations_for_test| is set, all alpha animations will
   // be performed instantly.
-  DimmerView(ash::ShelfWidget* shelf_widget,
+  DimmerView(ShelfWidget* shelf_widget,
              bool disable_dimming_animations_for_test);
   ~DimmerView() override;
 
@@ -72,7 +75,7 @@ class DimmerView : public views::View,
   views::Widget* GetWidget() override { return View::GetWidget(); }
   const views::Widget* GetWidget() const override { return View::GetWidget(); }
 
-  // ash::BackgroundAnimatorDelegate overrides:
+  // BackgroundAnimatorDelegate overrides:
   void UpdateBackground(int alpha) override {
     alpha_ = alpha;
     SchedulePaint();
@@ -108,8 +111,8 @@ class DimmerView : public views::View,
     DISALLOW_COPY_AND_ASSIGN(DimmerEventFilter);
   };
 
-  // The owning shelf.
-  ash::ShelfWidget* shelf_;
+  // The owning shelf widget.
+  ShelfWidget* shelf_;
 
   // The alpha to use for covering the shelf.
   int alpha_;
@@ -124,7 +127,7 @@ class DimmerView : public views::View,
   bool disable_dimming_animations_for_test_;
 
   // The animator for the background transitions.
-  ash::BackgroundAnimator background_animator_;
+  BackgroundAnimator background_animator_;
 
   // Notification of entering / exiting of the shelf area by mouse.
   std::unique_ptr<DimmerEventFilter> event_filter_;
@@ -132,7 +135,7 @@ class DimmerView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(DimmerView);
 };
 
-DimmerView::DimmerView(ash::ShelfWidget* shelf_widget,
+DimmerView::DimmerView(ShelfWidget* shelf_widget,
                        bool disable_dimming_animations_for_test)
     : shelf_(shelf_widget),
       alpha_(kDimAlpha),
@@ -143,8 +146,7 @@ DimmerView::DimmerView(ash::ShelfWidget* shelf_widget,
   event_filter_.reset(new DimmerEventFilter(this));
   // Make sure it is undimmed at the beginning and then fire off the dimming
   // animation.
-  background_animator_.SetPaintsBackground(false,
-                                           ash::BACKGROUND_CHANGE_IMMEDIATE);
+  background_animator_.SetPaintsBackground(false, BACKGROUND_CHANGE_IMMEDIATE);
   SetHovered(false);
 }
 
@@ -159,8 +161,9 @@ void DimmerView::SetHovered(bool hovered) {
   hovered |= force_hovered_;
   background_animator_.SetDuration(hovered ? kTimeToUnDimMs : kTimeToDimMs);
   background_animator_.SetPaintsBackground(!hovered,
-      disable_dimming_animations_for_test_ ?
-          ash::BACKGROUND_CHANGE_IMMEDIATE : ash::BACKGROUND_CHANGE_ANIMATE);
+                                           disable_dimming_animations_for_test_
+                                               ? BACKGROUND_CHANGE_IMMEDIATE
+                                               : BACKGROUND_CHANGE_ANIMATE);
 }
 
 void DimmerView::ForceUndimming(bool force) {
@@ -177,37 +180,27 @@ void DimmerView::OnPaintBackground(gfx::Canvas* canvas) {
   gfx::ImageSkia shelf_background =
       *rb->GetImageNamed(IDR_ASH_SHELF_DIMMING).ToImageSkia();
 
-  if (shelf_->GetAlignment() != ash::SHELF_ALIGNMENT_BOTTOM) {
+  if (!IsHorizontalAlignment(shelf_->GetAlignment())) {
     shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
-        shelf_background,
-        shelf_->shelf_layout_manager()->SelectValueForShelfAlignment(
-            SkBitmapOperations::ROTATION_90_CW,
-            SkBitmapOperations::ROTATION_90_CW,
-            SkBitmapOperations::ROTATION_270_CW));
+        shelf_background, shelf_->GetAlignment() == SHELF_ALIGNMENT_LEFT
+                              ? SkBitmapOperations::ROTATION_90_CW
+                              : SkBitmapOperations::ROTATION_270_CW);
   }
   paint.setAlpha(alpha_);
-  canvas->DrawImageInt(shelf_background,
-                       0,
-                       0,
-                       shelf_background.width(),
-                       shelf_background.height(),
-                       0,
-                       0,
-                       width(),
-                       height(),
-                       false,
-                       paint);
+  canvas->DrawImageInt(shelf_background, 0, 0, shelf_background.width(),
+                       shelf_background.height(), 0, 0, width(), height(),
+                       false, paint);
 }
 
 DimmerView::DimmerEventFilter::DimmerEventFilter(DimmerView* owner)
     : owner_(owner),
       mouse_inside_(false),
       touch_inside_(false) {
-  ash::Shell::GetInstance()->AddPreTargetHandler(this);
+  Shell::GetInstance()->AddPreTargetHandler(this);
 }
 
 DimmerView::DimmerEventFilter::~DimmerEventFilter() {
-  ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
 void DimmerView::DimmerEventFilter::OnMouseEvent(ui::MouseEvent* event) {
@@ -239,17 +232,14 @@ void DimmerView::DimmerEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   touch_inside_ = touch_inside;
 }
 
-using ash::ShelfLayoutManager;
-
 // ShelfWindowTargeter makes it easier to resize windows with the mouse when the
 // window-edge slightly overlaps with the shelf edge. The targeter also makes it
 // easier to drag the shelf out with touch while it is hidden.
-class ShelfWindowTargeter : public wm::EasyResizeWindowTargeter,
-                            public ash::ShelfLayoutManagerObserver {
+class ShelfWindowTargeter : public ::wm::EasyResizeWindowTargeter,
+                            public ShelfLayoutManagerObserver {
  public:
-  ShelfWindowTargeter(aura::Window* container,
-                      ShelfLayoutManager* shelf)
-      : wm::EasyResizeWindowTargeter(container, gfx::Insets(), gfx::Insets()),
+  ShelfWindowTargeter(aura::Window* container, ShelfLayoutManager* shelf)
+      : ::wm::EasyResizeWindowTargeter(container, gfx::Insets(), gfx::Insets()),
         shelf_(shelf) {
     WillChangeVisibilityState(shelf_->visibility_state());
     shelf_->AddObserver(this);
@@ -262,36 +252,30 @@ class ShelfWindowTargeter : public wm::EasyResizeWindowTargeter,
   }
 
  private:
-  gfx::Insets GetInsetsForAlignment(int distance,
-                                    ash::ShelfAlignment alignment) {
-    switch (alignment) {
-      case ash::SHELF_ALIGNMENT_BOTTOM:
-        return gfx::Insets(distance, 0, 0, 0);
-      case ash::SHELF_ALIGNMENT_LEFT:
-        return gfx::Insets(0, 0, 0, distance);
-      case ash::SHELF_ALIGNMENT_RIGHT:
-        return gfx::Insets(0, distance, 0, 0);
-    }
-    NOTREACHED();
-    return gfx::Insets();
+  gfx::Insets GetInsetsForAlignment(int distance, ShelfAlignment alignment) {
+    if (alignment == SHELF_ALIGNMENT_LEFT)
+      return gfx::Insets(0, 0, 0, distance);
+    if (alignment == SHELF_ALIGNMENT_RIGHT)
+      return gfx::Insets(0, distance, 0, 0);
+    return gfx::Insets(distance, 0, 0, 0);
   }
 
-  // ash::ShelfLayoutManagerObserver:
+  // ShelfLayoutManagerObserver:
   void WillDeleteShelf() override {
     shelf_->RemoveObserver(this);
     shelf_ = NULL;
   }
 
-  void WillChangeVisibilityState(ash::ShelfVisibilityState new_state) override {
+  void WillChangeVisibilityState(ShelfVisibilityState new_state) override {
     gfx::Insets mouse_insets;
     gfx::Insets touch_insets;
-    if (new_state == ash::SHELF_VISIBLE) {
+    if (new_state == SHELF_VISIBLE) {
       // Let clicks at the very top of the shelf through so windows can be
       // resized with the bottom-right corner and bottom edge.
       mouse_insets = GetInsetsForAlignment(
           ShelfLayoutManager::kWorkspaceAreaVisibleInset,
           shelf_->GetAlignment());
-    } else if (new_state == ash::SHELF_AUTO_HIDE) {
+    } else if (new_state == SHELF_AUTO_HIDE) {
       // Extend the touch hit target out a bit to allow users to drag shelf out
       // while hidden.
       touch_insets = GetInsetsForAlignment(
@@ -309,8 +293,6 @@ class ShelfWindowTargeter : public wm::EasyResizeWindowTargeter,
 };
 
 }  // namespace
-
-namespace ash {
 
 // The contents view of the Shelf. This view contains ShelfView and
 // sizes it to the width of the shelf minus the size of the status area.
@@ -467,34 +449,25 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia shelf_background =
       *rb->GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
-  if (SHELF_ALIGNMENT_BOTTOM != shelf_->GetAlignment())
+  const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
+  if (!horizontal) {
     shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
-        shelf_background,
-        shelf_->shelf_layout_manager()->SelectValueForShelfAlignment(
-            SkBitmapOperations::ROTATION_90_CW,
-            SkBitmapOperations::ROTATION_90_CW,
-            SkBitmapOperations::ROTATION_270_CW));
+        shelf_background, shelf_->GetAlignment() == SHELF_ALIGNMENT_LEFT
+                              ? SkBitmapOperations::ROTATION_90_CW
+                              : SkBitmapOperations::ROTATION_270_CW);
+  }
   const gfx::Rect dock_bounds(shelf_->shelf_layout_manager()->dock_bounds());
   SkPaint paint;
   paint.setAlpha(alpha_);
-  canvas->DrawImageInt(shelf_background,
-                       0,
-                       0,
-                       shelf_background.width(),
-                       shelf_background.height(),
-                       (SHELF_ALIGNMENT_BOTTOM == shelf_->GetAlignment() &&
-                        dock_bounds.x() == 0 && dock_bounds.width() > 0)
-                           ? dock_bounds.width()
-                           : 0,
-                       0,
-                       SHELF_ALIGNMENT_BOTTOM == shelf_->GetAlignment()
-                           ? width() - dock_bounds.width()
-                           : width(),
-                       height(),
-                       false,
-                       paint);
-  if (SHELF_ALIGNMENT_BOTTOM == shelf_->GetAlignment() &&
-      dock_bounds.width() > 0) {
+  canvas->DrawImageInt(
+      shelf_background, 0, 0, shelf_background.width(),
+      shelf_background.height(),
+      (horizontal && dock_bounds.x() == 0 && dock_bounds.width() > 0)
+          ? dock_bounds.width()
+          : 0,
+      0, horizontal ? width() - dock_bounds.width() : width(), height(), false,
+      paint);
+  if (horizontal && dock_bounds.width() > 0) {
     // The part of the shelf background that is in the corner below the docked
     // windows close to the work area is an arched gradient that blends
     // vertically oriented docked background and horizontal shelf.
@@ -504,30 +477,16 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
           shelf_corner, SkBitmapOperations::ROTATION_90_CW);
     }
     canvas->DrawImageInt(
-        shelf_corner,
-        0,
-        0,
-        shelf_corner.width(),
-        shelf_corner.height(),
+        shelf_corner, 0, 0, shelf_corner.width(), shelf_corner.height(),
         dock_bounds.x() > 0 ? dock_bounds.x() : dock_bounds.width() - height(),
-        0,
-        height(),
-        height(),
-        false,
-        paint);
+        0, height(), height(), false, paint);
     // The part of the shelf background that is just below the docked windows
     // is drawn using the last (lowest) 1-pixel tall strip of the image asset.
     // This avoids showing the border 3D shadow between the shelf and the dock.
-    canvas->DrawImageInt(shelf_background,
-                         0,
-                         shelf_background.height() - 1,
-                         shelf_background.width(),
-                         1,
+    canvas->DrawImageInt(shelf_background, 0, shelf_background.height() - 1,
+                         shelf_background.width(), 1,
                          dock_bounds.x() > 0 ? dock_bounds.x() + height() : 0,
-                         0,
-                         dock_bounds.width() - height(),
-                         height(),
-                         false,
+                         0, dock_bounds.width() - height(), height(), false,
                          paint);
   }
   gfx::Rect black_rect =
@@ -728,7 +687,7 @@ bool ShelfWidget::ShelfAlignmentAllowed() {
 
 ShelfAlignment ShelfWidget::GetAlignment() const {
   // TODO(msw): This should not be called before |shelf_| is created.
-  return shelf_ ? shelf_->GetAlignment() : SHELF_ALIGNMENT_BOTTOM;
+  return shelf_ ? shelf_->alignment() : SHELF_ALIGNMENT_BOTTOM_LOCKED;
 }
 
 void ShelfWidget::OnShelfAlignmentChanged() {

@@ -180,7 +180,7 @@ class ShelfButton::BarView : public views::ImageView,
       double animation = animating_ ?
           ShelfButtonAnimation::GetInstance()->GetAnimation() : 1.0;
       double scale = .35 + .65 * animation;
-      if (shelf_->alignment() == SHELF_ALIGNMENT_BOTTOM) {
+      if (shelf_->IsHorizontalAlignment()) {
         int width = base_bounds_.width() * scale;
         bounds.set_width(std::min(width, kIconSize));
         int x_offset = (base_bounds_.width() - bounds.width()) / 2;
@@ -485,19 +485,16 @@ void ShelfButton::UpdateBar() {
     bar_id = IDR_ASH_SHELF_UNDERLINE_RUNNING;
 
   if (bar_id != 0) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    const gfx::ImageSkia* image = rb.GetImageNamed(bar_id).ToImageSkia();
-
     Shelf* shelf = shelf_view_->shelf();
-    if (shelf->alignment() == SHELF_ALIGNMENT_BOTTOM) {
-      bar_->SetImage(*image);
-    } else {
-      bar_->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(
-          *image, shelf->SelectValueForShelfAlignment(
-                      SkBitmapOperations::ROTATION_90_CW,
-                      SkBitmapOperations::ROTATION_90_CW,
-                      SkBitmapOperations::ROTATION_270_CW)));
+    ResourceBundle* rb = &ResourceBundle::GetSharedInstance();
+    gfx::ImageSkia image = *rb->GetImageNamed(bar_id).ToImageSkia();
+    if (!shelf->IsHorizontalAlignment()) {
+      image = gfx::ImageSkiaOperations::CreateRotatedImage(
+          image, shelf->alignment() == SHELF_ALIGNMENT_LEFT
+                     ? SkBitmapOperations::ROTATION_90_CW
+                     : SkBitmapOperations::ROTATION_270_CW);
     }
+    bar_->SetImage(image);
     bar_->SetHorizontalAlignment(shelf->SelectValueForShelfAlignment(
         views::ImageView::CENTER, views::ImageView::LEADING,
         views::ImageView::TRAILING));

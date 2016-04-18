@@ -19,6 +19,7 @@
 #include "ash/shelf/shelf_bezel_event_filter.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -387,6 +388,7 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
       bool correct_direction = false;
       switch (GetAlignment()) {
         case SHELF_ALIGNMENT_BOTTOM:
+        case SHELF_ALIGNMENT_BOTTOM_LOCKED:
         case SHELF_ALIGNMENT_RIGHT:
           correct_direction = gesture_drag_amount_ < 0;
           break;
@@ -491,26 +493,7 @@ void ShelfLayoutManager::OnWindowActivated(
 }
 
 bool ShelfLayoutManager::IsHorizontalAlignment() const {
-  return GetAlignment() == SHELF_ALIGNMENT_BOTTOM;
-}
-
-bool ShelfLayoutManager::IsAlignmentLocked() const {
-  if (state_.is_screen_locked)
-    return true;
-  // The session state becomes active at the start of transitioning to a user
-  // session, however the session is considered blocked until the full UI is
-  // ready. Exit early to allow for proper layout.
-  SessionStateDelegate* session_state_delegate =
-      Shell::GetInstance()->session_state_delegate();
-  if (session_state_delegate->GetSessionState() ==
-      SessionStateDelegate::SESSION_STATE_ACTIVE) {
-    return false;
-  }
-  if (session_state_delegate->IsUserSessionBlocked() ||
-      state_.is_adding_user_screen) {
-    return true;
-  }
-  return false;
+  return ash::IsHorizontalAlignment(GetAlignment());
 }
 
 void ShelfLayoutManager::SetChromeVoxPanelHeight(int height) {
@@ -852,7 +835,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     int shelf_height = target_bounds->shelf_bounds_in_root.height() - translate;
     shelf_height = std::max(shelf_height, kAutoHideSize);
     target_bounds->shelf_bounds_in_root.set_height(shelf_height);
-    if (GetAlignment() == SHELF_ALIGNMENT_BOTTOM) {
+    if (IsHorizontalAlignment()) {
       target_bounds->shelf_bounds_in_root.set_y(
           available_bounds.bottom() - shelf_height);
     }
@@ -1008,7 +991,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     ShelfAlignment alignment = GetAlignment();
     shelf_region.Inset(
         alignment == SHELF_ALIGNMENT_RIGHT ? -kNotificationBubbleGapHeight : 0,
-        alignment == SHELF_ALIGNMENT_BOTTOM ? -kNotificationBubbleGapHeight : 0,
+        IsHorizontalAlignment() ? -kNotificationBubbleGapHeight : 0,
         alignment == SHELF_ALIGNMENT_LEFT ? -kNotificationBubbleGapHeight : 0,
         0);
   }
@@ -1118,9 +1101,6 @@ void ShelfLayoutManager::SessionStateChanged(
 void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
   UpdateVisibilityState();
   LayoutShelf();
-  // The shelf alignment may have changed when it was unlocked.
-  Shell::GetInstance()->OnShelfAlignmentChanged(
-      shelf_->GetNativeWindow()->GetRootWindow());
 }
 
 }  // namespace ash

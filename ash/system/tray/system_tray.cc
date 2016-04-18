@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/audio/tray_audio.h"
@@ -311,15 +312,12 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
   DestroySystemBubble();
   UpdateNotificationBubble();
 
-  for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
-      it != items_.end();
-      ++it) {
-    (*it)->UpdateAfterLoginStatusChange(login_status);
-  }
+  for (SystemTrayItem* item : items_)
+    item->UpdateAfterLoginStatusChange(login_status);
 
   // Items default to SHELF_ALIGNMENT_BOTTOM. Update them if the initial
   // position of the shelf differs.
-  if (shelf_alignment() != SHELF_ALIGNMENT_BOTTOM)
+  if (!IsHorizontalAlignment(shelf_alignment()))
     UpdateAfterShelfAlignmentChange(shelf_alignment());
 
   SetVisible(true);
@@ -327,11 +325,8 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
 }
 
 void SystemTray::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-  for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
-      it != items_.end();
-      ++it) {
-    (*it)->UpdateAfterShelfAlignmentChange(alignment);
-  }
+  for (SystemTrayItem* item : items_)
+    item->UpdateAfterShelfAlignmentChange(alignment);
 }
 
 void SystemTray::SetHideNotifications(bool hide_notifications) {
@@ -422,7 +417,7 @@ base::string16 SystemTray::GetAccessibleNameForTray() {
 
 int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
   // Don't attempt to align the arrow if the shelf is on the left or right.
-  if (shelf_alignment() != SHELF_ALIGNMENT_BOTTOM)
+  if (!IsHorizontalAlignment(shelf_alignment()))
     return TrayBubbleView::InitParams::kArrowDefaultOffset;
 
   std::map<SystemTrayItem*, views::View*>::const_iterator it =
@@ -717,7 +712,7 @@ bool SystemTray::PerformAction(const ui::Event& event) {
     if (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_TAP) {
       const ui::LocatedEvent& located_event =
           static_cast<const ui::LocatedEvent&>(event);
-      if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+      if (IsHorizontalAlignment(shelf_alignment())) {
         gfx::Point point(located_event.x(), 0);
         ConvertPointToWidget(this, &point);
         arrow_offset = point.x();

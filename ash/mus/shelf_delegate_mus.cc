@@ -135,7 +135,7 @@ void ShelfDelegateMus::OnShelfDestroyed(Shelf* shelf) {
 void ShelfDelegateMus::OnShelfAlignmentChanged(Shelf* shelf) {
   SetShelfPreferredSizes(shelf);
   mash::shelf::mojom::Alignment alignment =
-      static_cast<mash::shelf::mojom::Alignment>(shelf->GetAlignment());
+      static_cast<mash::shelf::mojom::Alignment>(shelf->alignment());
   shelf_layout_->SetAlignment(alignment);
 
   observers_.ForAllPtrs(
@@ -191,7 +191,7 @@ void ShelfDelegateMus::AddObserver(
   // Notify the observer of the current state.
   Shelf* shelf = Shelf::ForPrimaryDisplay();
   observer_ptr->OnAlignmentChanged(
-      static_cast<mash::shelf::mojom::Alignment>(shelf->GetAlignment()));
+      static_cast<mash::shelf::mojom::Alignment>(shelf->alignment()));
   observer_ptr->OnAutoHideBehaviorChanged(
       static_cast<mash::shelf::mojom::AutoHideBehavior>(
           shelf->auto_hide_behavior()));

@@ -8,6 +8,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -191,7 +192,7 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   // Inactive users won't have a layout.
   if (!layout_view_)
     return;
-  if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+  if (IsHorizontalAlignment(alignment)) {
     if (avatar_) {
       avatar_->SetBorder(views::Border::NullBorder());
       avatar_->SetCornerRadii(

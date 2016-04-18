@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_item_types.h"
+#include "ash/shelf/shelf_types.h"
 #include "base/strings/string16.h"
 #include "ui/aura/window.h"
 
@@ -53,6 +54,9 @@ ASH_EXPORT void ClearShelfItemDetailsForWindow(aura::Window* window);
 // Returned ShelfItemDetails object is owned by the |window|.
 ASH_EXPORT const ShelfItemDetails* GetShelfItemDetailsForWindow(
     aura::Window* window);
+
+// Returns true if the shelf |alignment| is horizontal.
+ASH_EXPORT bool IsHorizontalAlignment(ShelfAlignment alignment);
 
 }  // namespace ash
 

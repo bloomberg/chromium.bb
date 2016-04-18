@@ -191,6 +191,7 @@ class ASH_EXPORT ShelfLayoutManager
   T SelectValueForShelfAlignment(T bottom, T left, T right) const {
     switch (GetAlignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
+      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
         return bottom;
       case SHELF_ALIGNMENT_LEFT:
         return left;
@@ -208,11 +209,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Is the shelf's alignment horizontal?
   bool IsHorizontalAlignment() const;
-
-  // Returns true when the alignment is locked. This can be caused by the screen
-  // being locked, or when adding a user. Returns false when transitioning to a
-  // user session, and while the session is active.
-  bool IsAlignmentLocked() const;
 
   // Set the height of the ChromeVox panel, which takes away space from the
   // available work area from the top of the screen.

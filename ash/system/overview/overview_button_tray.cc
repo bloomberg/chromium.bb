@@ -6,6 +6,7 @@
 
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_types.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_utils.h"
@@ -107,7 +108,7 @@ void OverviewButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
 }
 
 void OverviewButtonTray::SetIconBorderForShelfAlignment() {
-  if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+  if (IsHorizontalAlignment(shelf_alignment())) {
     icon_->SetBorder(views::Border::CreateEmptyBorder(
         kHorizontalShelfVerticalPadding,
         kHorizontalShelfHorizontalPadding,

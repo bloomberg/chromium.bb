@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/screen_security/screen_tray_item.h"
 
+#include "ash/shelf/shelf_util.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -187,9 +188,9 @@ void ScreenTrayItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
     return;
 
   // Center the item dependent on the orientation of the shelf.
-  views::BoxLayout::Orientation layout =
-      alignment == ash::SHELF_ALIGNMENT_BOTTOM ? views::BoxLayout::kHorizontal
-                                               : views::BoxLayout::kVertical;
+  views::BoxLayout::Orientation layout = IsHorizontalAlignment(alignment)
+                                             ? views::BoxLayout::kHorizontal
+                                             : views::BoxLayout::kVertical;
   tray_view_->SetLayoutManager(new views::BoxLayout(layout, 0, 0, 0));
   tray_view_->Layout();
 }

@@ -65,6 +65,11 @@ TEST_F(ShelfWidgetTest, MAYBE_TestAlignment) {
                           "0,0 400x353");
   }
   {
+    SCOPED_TRACE("Single Locked");
+    TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
+                          SHELF_ALIGNMENT_BOTTOM_LOCKED, "0,0 400x353");
+  }
+  {
     SCOPED_TRACE("Single Right");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
                           SHELF_ALIGNMENT_RIGHT,
@@ -88,6 +93,11 @@ TEST_F(ShelfWidgetTest, MAYBE_TestAlignment) {
                           "0,0 300x253");
   }
   {
+    SCOPED_TRACE("Primary Locked");
+    TestLauncherAlignment(root_windows[0], SHELF_ALIGNMENT_BOTTOM_LOCKED,
+                          "0,0 300x253");
+  }
+  {
     SCOPED_TRACE("Primary Right");
     TestLauncherAlignment(root_windows[0],
                           SHELF_ALIGNMENT_RIGHT,
@@ -103,6 +113,11 @@ TEST_F(ShelfWidgetTest, MAYBE_TestAlignment) {
     SCOPED_TRACE("Secondary Bottom");
     TestLauncherAlignment(root_windows[1],
                           SHELF_ALIGNMENT_BOTTOM,
+                          "300,0 500x453");
+  }
+  {
+    SCOPED_TRACE("Secondary Locked");
+    TestLauncherAlignment(root_windows[1], SHELF_ALIGNMENT_BOTTOM_LOCKED,
                           "300,0 500x453");
   }
   {
@@ -445,6 +460,13 @@ TEST_F(ShelfWidgetTestWithDelegate, CreateAutoHideAlwaysHideShelf) {
   TestCreateShelfWithInitialValues(SHELF_ALIGNMENT_RIGHT,
                                    SHELF_AUTO_HIDE_ALWAYS_HIDDEN, SHELF_HIDDEN,
                                    SHELF_AUTO_HIDE_HIDDEN);
+}
+
+TEST_F(ShelfWidgetTestWithDelegate, CreateLockedShelf) {
+  // The auto hide state 'HIDDEN' is returned for any non-auto-hide behavior.
+  TestCreateShelfWithInitialValues(SHELF_ALIGNMENT_BOTTOM_LOCKED,
+                                   SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+                                   SHELF_VISIBLE, SHELF_AUTO_HIDE_HIDDEN);
 }
 
 }  // namespace ash

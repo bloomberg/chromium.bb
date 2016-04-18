@@ -7,6 +7,7 @@
 #include "ash/ash_export.h"
 #include "ash/ash_switches.h"
 #include "ash/focus_cycler.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/tray_constants.h"
@@ -112,7 +113,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
   SetLayoutManager(layout);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+  if (IsHorizontalAlignment(alignment_)) {
     bool is_first_visible_child = true;
     for (int c = 0; c < child_count(); ++c) {
       views::View* child = child_at(c);

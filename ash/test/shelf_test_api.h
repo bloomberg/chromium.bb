@@ -5,28 +5,25 @@
 #ifndef ASH_TEST_SHELF_TEST_API_H_
 #define ASH_TEST_SHELF_TEST_API_H_
 
+#include "ash/shelf/shelf.h"
 #include "base/macros.h"
 
 namespace ash {
-
-class Shelf;
-class ShelfDelegate;
-class ShelfView;
-
 namespace test {
 
 // Use the api in this class to access private members of Shelf.
 class ShelfTestAPI {
  public:
-  explicit ShelfTestAPI(Shelf* shelf);
+  explicit ShelfTestAPI(Shelf* shelf) : shelf_(shelf) {}
+  ~ShelfTestAPI() {}
 
-  ~ShelfTestAPI();
+  ShelfView* shelf_view() { return shelf_->shelf_view_; }
 
-  // An accessor for |shelf_view|.
-  ShelfView* shelf_view();
+  ShelfLockingManager* shelf_locking_manager() {
+    return &shelf_->shelf_locking_manager_;
+  }
 
-  // Set ShelfDelegate.
-  void SetShelfDelegate(ShelfDelegate* delegate);
+  void set_delegate(ShelfDelegate* delegate) { shelf_->delegate_ = delegate; }
 
  private:
   Shelf* shelf_;

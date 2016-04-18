@@ -6,6 +6,7 @@
 
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_types.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
@@ -357,16 +358,9 @@ CastTrayView::~CastTrayView() {
 
 void CastTrayView::UpdateAlignment(ShelfAlignment alignment) {
   // Center the item dependent on the orientation of the shelf.
-  views::BoxLayout::Orientation layout = views::BoxLayout::kHorizontal;
-  switch (alignment) {
-    case ash::SHELF_ALIGNMENT_BOTTOM:
-      layout = views::BoxLayout::kHorizontal;
-      break;
-    case ash::SHELF_ALIGNMENT_LEFT:
-    case ash::SHELF_ALIGNMENT_RIGHT:
-      layout = views::BoxLayout::kVertical;
-      break;
-  }
+  views::BoxLayout::Orientation layout = IsHorizontalAlignment(alignment)
+                                             ? views::BoxLayout::kVertical
+                                             : views::BoxLayout::kHorizontal;
   SetLayoutManager(new views::BoxLayout(layout, 0, 0, 0));
   Layout();
 }

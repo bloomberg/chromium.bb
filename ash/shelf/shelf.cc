@@ -42,12 +42,10 @@ const char Shelf::kNativeViewName[] = "ShelfView";
 Shelf::Shelf(ShelfModel* shelf_model,
              ShelfDelegate* shelf_delegate,
              ShelfWidget* shelf_widget)
-    : shelf_view_(nullptr),
-      alignment_(SHELF_ALIGNMENT_BOTTOM),
-      auto_hide_behavior_(SHELF_AUTO_HIDE_BEHAVIOR_NEVER),
-      delegate_(shelf_delegate),
-      shelf_widget_(shelf_widget) {
-  shelf_view_ = new ShelfView(shelf_model, delegate_, this);
+    : delegate_(shelf_delegate),
+      shelf_widget_(shelf_widget),
+      shelf_view_(new ShelfView(shelf_model, delegate_, this)),
+      shelf_locking_manager_(this) {
   shelf_view_->Init();
   shelf_widget_->GetContentsView()->AddChildView(shelf_view_);
   shelf_widget_->GetNativeView()->SetName(kNativeViewName);
@@ -81,14 +79,8 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
   // ShelfLayoutManager will resize the shelf.
 }
 
-ShelfAlignment Shelf::GetAlignment() const {
-  // Bottom alignment is forced when the screen is locked or a user gets added.
-  bool locked = shelf_widget_->shelf_layout_manager()->IsAlignmentLocked();
-  return locked ? SHELF_ALIGNMENT_BOTTOM : alignment_;
-}
-
 bool Shelf::IsHorizontalAlignment() const {
-  return alignment_ == SHELF_ALIGNMENT_BOTTOM;
+  return ash::IsHorizontalAlignment(alignment_);
 }
 
 void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {

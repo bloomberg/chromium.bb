@@ -51,11 +51,12 @@ views::BubbleBorder::Arrow GetBubbleArrow(aura::Window* window) {
 gfx::Vector2d GetAnchorPositionOffsetToShelf(const gfx::Rect& button_bounds,
                                              views::Widget* widget) {
   DCHECK(Shell::HasInstance());
-  ShelfAlignment shelf_alignment = Shell::GetInstance()->GetShelfAlignment(
-      widget->GetNativeView()->GetRootWindow());
+  ShelfAlignment shelf_alignment =
+      Shelf::ForWindow(widget->GetNativeView()->GetRootWindow())->alignment();
   gfx::Point anchor(button_bounds.CenterPoint());
   switch (shelf_alignment) {
     case SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
       if (base::i18n::IsRTL()) {
         int screen_width = widget->GetWorkAreaBoundsInScreen().width();
         return gfx::Vector2d(
@@ -253,18 +254,10 @@ gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
       ->GetShelfLayoutManager()
       ->UpdateAutoHideState();
 
-  ShelfAlignment shelf_alignment =
-      Shell::GetInstance()->GetShelfAlignment(root_window);
-  switch (shelf_alignment) {
-    case SHELF_ALIGNMENT_BOTTOM:
-      return gfx::Vector2d(0, kAnimationOffset);
-    case SHELF_ALIGNMENT_LEFT:
-      return gfx::Vector2d(-kAnimationOffset, 0);
-    case SHELF_ALIGNMENT_RIGHT:
-      return gfx::Vector2d(kAnimationOffset, 0);
-  }
-  NOTREACHED();
-  return gfx::Vector2d();
+  return Shelf::ForWindow(root_window)
+      ->SelectValueForShelfAlignment(gfx::Vector2d(0, kAnimationOffset),
+                                     gfx::Vector2d(-kAnimationOffset, 0),
+                                     gfx::Vector2d(kAnimationOffset, 0));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

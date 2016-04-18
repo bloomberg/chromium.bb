@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
 
-#include "ash/shell.h"
+#include "ash/shelf/shelf.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -61,21 +61,9 @@ void SetLocalizedStrings(base::DictionaryValue* localized_strings) {
       "transitionsEnabled",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableFirstRunUITransitions));
-  std::string shelf_alignment;
-  ash::Shell* shell = ash::Shell::GetInstance();
-  switch (shell->GetShelfAlignment(shell->GetPrimaryRootWindow())) {
-    case ash::SHELF_ALIGNMENT_BOTTOM:
-      shelf_alignment = kShelfAlignmentBottom;
-      break;
-    case ash::SHELF_ALIGNMENT_LEFT:
-      shelf_alignment = kShelfAlignmentLeft;
-      break;
-    case ash::SHELF_ALIGNMENT_RIGHT:
-      shelf_alignment = kShelfAlignmentRight;
-      break;
-    default:
-      NOTREACHED() << "Unsupported shelf alignment";
-  }
+  const std::string& shelf_alignment =
+      ash::Shelf::ForPrimaryDisplay()->SelectValueForShelfAlignment(
+          kShelfAlignmentBottom, kShelfAlignmentLeft, kShelfAlignmentRight);
   localized_strings->SetString("shelfAlignment", shelf_alignment);
 }
 

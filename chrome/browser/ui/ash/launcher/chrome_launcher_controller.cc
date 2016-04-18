@@ -1029,7 +1029,7 @@ void ChromeLauncherController::OnShelfDestroyed(ash::Shelf* shelf) {}
 
 void ChromeLauncherController::OnShelfAlignmentChanged(ash::Shelf* shelf) {
   ash::SetShelfAlignmentPref(profile_->GetPrefs(), GetDisplayIDForShelf(shelf),
-                             shelf->GetAlignment());
+                             shelf->alignment());
 }
 
 void ChromeLauncherController::OnShelfAutoHideBehaviorChanged(

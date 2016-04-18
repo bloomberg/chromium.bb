@@ -49,21 +49,11 @@ void AttachedPanelWindowTargeter::UpdateTouchExtend(aura::Window* root_window) {
     return;
 
   DCHECK(panel_layout_manager_->shelf());
-
   gfx::Insets touch(default_touch_extend_);
-  switch (panel_layout_manager_->shelf()->alignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-      touch = gfx::Insets(touch.top(), touch.left(), 0, touch.right());
-      break;
-    case SHELF_ALIGNMENT_LEFT:
-      touch = gfx::Insets(touch.top(), 0, touch.bottom(), touch.right());
-      break;
-    case SHELF_ALIGNMENT_RIGHT:
-      touch = gfx::Insets(touch.top(), touch.left(), touch.bottom(), 0);
-      break;
-  }
-
-  set_touch_extend(touch);
+  set_touch_extend(panel_layout_manager_->shelf()->SelectValueForShelfAlignment(
+      gfx::Insets(touch.top(), touch.left(), 0, touch.right()),
+      gfx::Insets(touch.top(), 0, touch.bottom(), touch.right()),
+      gfx::Insets(touch.top(), touch.left(), touch.bottom(), 0)));
 }
 
 }  // namespace ash

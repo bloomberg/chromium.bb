@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/tray_image_item.h"
 
+#include "ash/shelf/shelf_util.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_utils.h"
@@ -73,16 +74,9 @@ void TrayImageItem::DestroyDetailedView() {
 
 void TrayImageItem::SetItemAlignment(ShelfAlignment alignment) {
   // Center the item dependent on the orientation of the shelf.
-  views::BoxLayout::Orientation layout = views::BoxLayout::kHorizontal;
-  switch (alignment) {
-    case ash::SHELF_ALIGNMENT_BOTTOM:
-      layout = views::BoxLayout::kHorizontal;
-      break;
-    case ash::SHELF_ALIGNMENT_LEFT:
-    case ash::SHELF_ALIGNMENT_RIGHT:
-      layout = views::BoxLayout::kVertical;
-      break;
-  }
+  views::BoxLayout::Orientation layout = IsHorizontalAlignment(alignment)
+                                             ? views::BoxLayout::kHorizontal
+                                             : views::BoxLayout::kVertical;
   tray_view_->SetLayoutManager(new views::BoxLayout(layout, 0, 0, 0));
   tray_view_->Layout();
 }

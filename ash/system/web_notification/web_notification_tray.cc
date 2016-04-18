@@ -8,6 +8,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -218,25 +219,14 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
           message_center_tray_.get(),
           true);
 
-  int max_height = 0;
+  // Assume the status area and bubble bottoms are aligned when vertical.
   aura::Window* status_area_window = status_area_widget()->GetNativeView();
-  switch (GetShelfLayoutManager()->GetAlignment()) {
-    case SHELF_ALIGNMENT_BOTTOM: {
-      gfx::Rect shelf_bounds = GetShelfLayoutManager()->GetIdealBounds();
-      max_height = shelf_bounds.y();
-      break;
-    }
-    case SHELF_ALIGNMENT_LEFT:
-    case SHELF_ALIGNMENT_RIGHT: {
-      // Assume that the bottom line of the status area widget and the bubble
-      // are aligned.
-      max_height = status_area_window->GetBoundsInRootWindow().bottom();
-      break;
-    }
-  }
+  const int max_height =
+      IsHorizontalAlignment(GetShelfLayoutManager()->GetAlignment())
+          ? GetShelfLayoutManager()->GetIdealBounds().y()
+          : status_area_window->GetBoundsInRootWindow().bottom();
 
-  message_center_bubble->SetMaxHeight(std::max(0,
-                                               max_height - kTraySpacing));
+  message_center_bubble->SetMaxHeight(std::max(0, max_height - kTraySpacing));
   if (show_settings)
     message_center_bubble->SetSettingsVisible();
   message_center_bubble_.reset(
