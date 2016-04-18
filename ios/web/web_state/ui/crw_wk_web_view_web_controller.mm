@@ -44,17 +44,7 @@
 
 #pragma mark -
 
-@interface CRWWKWebViewWebController () {
-  // The actual URL of the document object (i.e., the last committed URL).
-  // TODO(crbug.com/549616): Remove this in favor of just updating the
-  // navigation manager and treating that as authoritative. For now, this allows
-  // sharing the flow that's currently in the superclass.
-  GURL _documentURL;
-
-  // YES if the user has interacted with the content area since the last URL
-  // change.
-  BOOL _interactionRegisteredSinceLastURLChange;
-}
+@interface CRWWKWebViewWebController ()
 
 // Returns YES if the given WKBackForwardListItem is valid to use for
 // navigation.
@@ -64,30 +54,7 @@
 
 @implementation CRWWKWebViewWebController
 
-#pragma mark - Protected property implementations
-
-- (GURL)documentURL {
-  return _documentURL;
-}
-
-- (BOOL)interactionRegisteredSinceLastURLChange {
-  return _interactionRegisteredSinceLastURLChange;
-}
-
-// Overridden to track interactions since URL change.
-- (void)setUserInteractionRegistered:(BOOL)flag {
-  [super setUserInteractionRegistered:flag];
-  if (flag)
-    _interactionRegisteredSinceLastURLChange = YES;
-}
-
 #pragma mark Protected method implementations
-
-- (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
-  DCHECK(trustLevel);
-  *trustLevel = web::URLVerificationTrustLevel::kAbsolute;
-  return _documentURL;
-}
 
 // The core.js cannot pass messages back to obj-c  if it is injected
 // to |WEB_VIEW_DOCUMENT| because it does not support iframe creation used
@@ -224,13 +191,6 @@
 }
 
 #pragma mark Private methods
-
-- (void)setDocumentURL:(const GURL&)newURL {
-  if (newURL != _documentURL) {
-    _documentURL = newURL;
-    _interactionRegisteredSinceLastURLChange = NO;
-  }
-}
 
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item {
   // The current back-forward list item MUST be in the WKWebView's back-forward

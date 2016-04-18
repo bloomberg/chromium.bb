@@ -92,23 +92,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Downloader for PassKit files. Lazy initialized.
 @property(nonatomic, readonly) CRWPassKitDownloader* passKitDownloader;
 
-// The actual URL of the document object (i.e., the last committed URL).
-// TODO(crbug.com/549616): Remove this in favor of just updating the
-// navigation manager and treating that as authoritative. For now, this allows
-// sharing the flow that's currently in the superclass.
-@property(nonatomic, readonly) GURL documentURL;
-
-// YES if the user has interacted with the content area since the last URL
-// change.
-@property(nonatomic, readonly) BOOL interactionRegisteredSinceLastURLChange;
-
-// Sets _documentURL to newURL, and updates any relevant state information.
-- (void)setDocumentURL:(const GURL&)newURL;
-
-// Returns the current URL of the web view, and sets |trustLevel| accordingly
-// based on the confidence in the verification.
-- (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel;
-
 // Returns the type of document object loaded in the web view.
 - (web::WebViewDocumentType)webViewDocumentType;
 
@@ -218,10 +201,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 // Returns whether the user is interacting with the page.
 @property(nonatomic, readonly) BOOL userIsInteracting;
-
-// YES if a user interaction has been registered at any time since the page has
-// loaded.
-@property(nonatomic, readwrite) BOOL userInteractionRegistered;
 
 // YES if the web process backing _wkWebView is believed to currently be dead.
 @property(nonatomic, assign) BOOL webProcessIsDead;

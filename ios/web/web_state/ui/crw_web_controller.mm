@@ -269,6 +269,13 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // YES if a user interaction has been registered at any time once the page has
   // loaded.
   BOOL _userInteractionRegistered;
+  // YES if the user has interacted with the content area since the last URL
+  // change.
+  BOOL _interactionRegisteredSinceLastURLChange;
+  // The actual URL of the document object (i.e., the last committed URL).
+  // TODO(crbug.com/549616): Remove this in favor of just updating the
+  // navigation manager and treating that as authoritative.
+  GURL _documentURL;
   // Last URL change reported to webWill/DidStartLoadingURL. Used to detect page
   // location changes (client redirects) in practice.
   GURL _lastRegisteredRequestURL;
@@ -467,6 +474,9 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // controller's BrowserState.
 - (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider;
 
+// Returns the current URL of the web view, and sets |trustLevel| accordingly
+// based on the confidence in the verification.
+- (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel;
 // Returns |YES| if |url| should be loaded in a native view.
 - (BOOL)shouldLoadURLInNativeView:(const GURL&)url;
 // Loads the HTML into the page at the given URL.
@@ -577,6 +587,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Assigns the given URL and state object to the current CRWSessionEntry.
 - (void)replaceStateWithPageURL:(const GURL&)pageUrl
                     stateObject:(NSString*)stateObject;
+// Sets _documentURL to newURL, and updates any relevant state information.
+- (void)setDocumentURL:(const GURL&)newURL;
 // Returns YES if the current navigation item corresponds to a web page
 // loaded by a POST request.
 - (BOOL)isCurrentNavigationItemPOST;
@@ -1365,6 +1377,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self didUpdateHistoryStateWithPageURL:pageUrl];
 }
 
+- (void)setDocumentURL:(const GURL&)newURL {
+  if (newURL != _documentURL) {
+    _documentURL = newURL;
+    _interactionRegisteredSinceLastURLChange = NO;
+  }
+}
+
 - (BOOL)isCurrentNavigationItemPOST {
   // |_pendingNavigationInfo| will be nil if the decidePolicy* delegate methods
   // were not called.
@@ -1572,7 +1591,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       // or may not be the result of user actions. For now, guess based on
       // whether there's been an interaction since the last URL change.
       // TODO(crbug.com/549301): See if this heuristic can be improved.
-      transition = self.interactionRegisteredSinceLastURLChange
+      transition = _interactionRegisteredSinceLastURLChange
                        ? ui::PAGE_TRANSITION_LINK
                        : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
       break;
@@ -1945,6 +1964,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Once a URL has been loaded, any cached-based reconstruction state has
   // either been handled or obsoleted.
   _expectedReconstructionURL = GURL();
+}
+
+- (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
+  DCHECK(trustLevel);
+  *trustLevel = web::URLVerificationTrustLevel::kAbsolute;
+  return _documentURL;
 }
 
 - (BOOL)shouldLoadURLInNativeView:(const GURL&)url {
@@ -3160,6 +3185,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)setUserInteractionRegistered:(BOOL)flag {
   _userInteractionRegistered = flag;
+  if (flag)
+    _interactionRegisteredSinceLastURLChange = YES;
 }
 
 - (BOOL)userInteractionRegistered {
@@ -4376,7 +4403,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                certGroupID:self.certGroupID]);
     [_SSLStatusUpdater setDelegate:self];
   }
-  NSString* host = base::SysUTF8ToNSString(self.documentURL.host());
+  NSString* host = base::SysUTF8ToNSString(_documentURL.host());
   NSArray* certChain = [self.webView certificateChain];
   BOOL hasOnlySecureContent = [self.webView hasOnlySecureContent];
   [_SSLStatusUpdater updateSSLStatusForNavigationItem:currentNavItem
@@ -4882,8 +4909,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // This is the point where the document's URL has actually changed, and
   // pending navigation information should be applied to state information.
   [self setDocumentURL:net::GURLWithNSURL([self.webView URL])];
-  DCHECK(self.documentURL == self.lastRegisteredRequestURL);
-  self.webStateImpl->OnNavigationCommitted(self.documentURL);
+  DCHECK(_documentURL == self.lastRegisteredRequestURL);
+  self.webStateImpl->OnNavigationCommitted(_documentURL);
   [self commitPendingNavigationInfo];
   if ([self currentBackForwardListItemHolder]->navigation_type() ==
       WKNavigationTypeBackForward) {
@@ -4901,7 +4928,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self updateSSLStatusForCurrentNavigationItem];
 
   // Report cases where SSL cert is missing for a secure connection.
-  if (self.documentURL.SchemeIsCryptographic()) {
+  if (_documentURL.SchemeIsCryptographic()) {
     scoped_refptr<net::X509Certificate> cert =
         web::CreateCertFromChain([self.webView certificateChain]);
     UMA_HISTOGRAM_BOOLEAN("WebController.WKWebViewHasCertForSecureConnection",
@@ -5097,7 +5124,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // window.location.href will match the previous URL at this stage, not the web
   // view's current URL.
   if (![self.webView isLoading]) {
-    if (self.documentURL == URL)
+    if (_documentURL == URL)
       return;
     [self URLDidChangeWithoutDocumentChange:URL];
   } else if ([self isKVOChangePotentialSameDocumentNavigationToURL:URL]) {
@@ -5118,7 +5145,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
            // Re-check origin in case navigaton has occured since
            // start of JavaScript evaluation.
            BOOL newURLOriginMatchesDocumentURLOrigin =
-               self.documentURL.GetOrigin() == URL.GetOrigin();
+               _documentURL.GetOrigin() == URL.GetOrigin();
            // Check that the web view URL still matches the new URL.
            // TODO(crbug.com/563568): webViewURLMatchesNewURL check
            // may drop same document URL changes if pending URL
@@ -5128,7 +5155,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                net::GURLWithNSURL([self.webView URL]) == URL;
            // Check that the new URL is different from the current
            // document URL. If not, URL change should not be reported.
-           BOOL URLDidChangeFromDocumentURL = URL != self.documentURL;
+           BOOL URLDidChangeFromDocumentURL = URL != _documentURL;
            if (windowLocationMatchesNewURL &&
                newURLOriginMatchesDocumentURLOrigin &&
                webViewURLMatchesNewURL && URLDidChangeFromDocumentURL) {
@@ -5141,8 +5168,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)isKVOChangePotentialSameDocumentNavigationToURL:(const GURL&)newURL {
   DCHECK([self.webView isLoading]);
   // If the origin changes, it can't be same-document.
-  if (self.documentURL.GetOrigin().is_empty() ||
-      self.documentURL.GetOrigin() != newURL.GetOrigin()) {
+  if (_documentURL.GetOrigin().is_empty() ||
+      _documentURL.GetOrigin() != newURL.GetOrigin()) {
     return NO;
   }
   if (self.loadPhase == web::LOAD_REQUESTED) {
@@ -5150,7 +5177,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // navigation, but it can also happen during a fast-back navigation across
     // a hash change, so that case is potentially a same-document navigation.
     return web::GURLByRemovingRefFromGURL(newURL) ==
-           web::GURLByRemovingRefFromGURL(self.documentURL);
+           web::GURLByRemovingRefFromGURL(_documentURL);
   }
   // If it passes all the checks above, it might be (but there's no guarantee
   // that it is).
@@ -5159,8 +5186,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)URLDidChangeWithoutDocumentChange:(const GURL&)newURL {
   DCHECK(newURL == net::GURLWithNSURL([self.webView URL]));
-  DCHECK_EQ(self.documentURL.host(), newURL.host());
-  DCHECK(self.documentURL != newURL);
+  DCHECK_EQ(_documentURL.host(), newURL.host());
+  DCHECK(_documentURL != newURL);
 
   // If called during window.history.pushState or window.history.replaceState
   // JavaScript evaluation, only update the document URL. This callback does not
@@ -5186,7 +5213,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self setDocumentURL:newURL];
 
   if (!self.changingHistoryState) {
-    [self didStartLoadingURL:self.documentURL updateHistory:YES];
+    [self didStartLoadingURL:_documentURL updateHistory:YES];
     [self updateSSLStatusForCurrentNavigationItem];
     [self didFinishNavigation];
   }
