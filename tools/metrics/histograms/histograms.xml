@@ -19726,6 +19726,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.InputRestartAttemptsMac">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Counts the total number of times an attempt to restart input audio has been
+    done. The value is stored once when a stream is closed and updated when it
+    has been detected that input audio callbacks are not generated as expected.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.InputStartupSuccessMac" enum="BooleanSuccess">
   <owner>henrika@chromium.org</owner>
   <summary>

@@ -642,6 +642,11 @@ void AUAudioInputStream::Close() {
     // only when input audio fails to start.
     UMA_HISTOGRAM_BOOLEAN("Media.Audio.InputBufferSizeWasChangedAudioWorkedMac",
                           buffer_size_was_changed_);
+    // Logs the total number of times RestartAudio() has been called.
+    DVLOG(1) << "Total number of restart attempts: "
+             << total_number_of_restart_attempts_;
+    UMA_HISTOGRAM_COUNTS_1000("Media.Audio.InputRestartAttemptsMac",
+                              total_number_of_restart_attempts_);
     // TODO(henrika): possibly add more values here...
   }
   // Inform the audio manager that we have been closed. This will cause our
@@ -1632,10 +1637,6 @@ void AUAudioInputStream::UpdateCaptureTimestamp(
 void AUAudioInputStream::ReportAndResetStats() {
   if (last_sample_time_ == 0)
     return;  // No stats gathered to report.
-
-  // TODO(henrika): perhaps add this value to UMA stats as well.
-  DVLOG(1) << "Total number of restart attempts: "
-           << total_number_of_restart_attempts_;
 
   // A value of 0 indicates that we got the buffer size we asked for.
   UMA_HISTOGRAM_COUNTS_10000("Media.Audio.Capture.FramesProvided",
