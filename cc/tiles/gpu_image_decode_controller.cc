@@ -77,8 +77,8 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
   }
 
   // Overridden from TileTask:
-  void ScheduleOnOriginThread(TileTaskClient* client) override {}
-  void CompleteOnOriginThread(TileTaskClient* client) override {
+  void ScheduleOnOriginThread(RasterBufferProvider* provider) override {}
+  void CompleteOnOriginThread(RasterBufferProvider* provider) override {
     controller_->DecodeTaskCompleted(image_);
   }
 
@@ -118,8 +118,8 @@ class ImageUploadTaskImpl : public ImageDecodeTask {
     controller_->UploadImage(image_);
   }
 
-  void ScheduleOnOriginThread(TileTaskClient* client) override {}
-  void CompleteOnOriginThread(TileTaskClient* client) override {
+  void ScheduleOnOriginThread(RasterBufferProvider* provider) override {}
+  void CompleteOnOriginThread(RasterBufferProvider* provider) override {
     controller_->UploadTaskCompleted(image_);
   }
 

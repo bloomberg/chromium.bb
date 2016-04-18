@@ -24,7 +24,7 @@ class ResourceProvider;
 
 class CC_EXPORT ZeroCopyTileTaskWorkerPool : public TileTaskWorkerPool,
                                              public TileTaskRunner,
-                                             public TileTaskClient {
+                                             public RasterBufferProvider {
  public:
   ~ZeroCopyTileTaskWorkerPool() override;
 
@@ -43,8 +43,9 @@ class CC_EXPORT ZeroCopyTileTaskWorkerPool : public TileTaskWorkerPool,
   void CheckForCompletedTasks() override;
   ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool GetResourceRequiresSwizzle(bool must_support_alpha) const override;
+  RasterBufferProvider* AsRasterBufferProvider() override;
 
-  // Overridden from TileTaskClient:
+  // Overridden from RasterBufferProvider:
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const Resource* resource,
       uint64_t resource_content_id,

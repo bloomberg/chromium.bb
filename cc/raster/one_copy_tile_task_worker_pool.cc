@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "cc/base/math_util.h"
-#include "cc/raster/raster_buffer.h"
 #include "cc/raster/staging_buffer_pool.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/resource_format.h"
@@ -170,6 +169,10 @@ ResourceFormat OneCopyTileTaskWorkerPool::GetResourceFormat(
 bool OneCopyTileTaskWorkerPool::GetResourceRequiresSwizzle(
     bool must_support_alpha) const {
   return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
+}
+
+RasterBufferProvider* OneCopyTileTaskWorkerPool::AsRasterBufferProvider() {
+  return this;
 }
 
 std::unique_ptr<RasterBuffer> OneCopyTileTaskWorkerPool::AcquireBufferForRaster(

@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/traced_value.h"
-#include "cc/raster/raster_buffer.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/resource.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -139,6 +138,10 @@ ResourceFormat ZeroCopyTileTaskWorkerPool::GetResourceFormat(
 bool ZeroCopyTileTaskWorkerPool::GetResourceRequiresSwizzle(
     bool must_support_alpha) const {
   return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
+}
+
+RasterBufferProvider* ZeroCopyTileTaskWorkerPool::AsRasterBufferProvider() {
+  return this;
 }
 
 std::unique_ptr<RasterBuffer>

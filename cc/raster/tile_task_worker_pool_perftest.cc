@@ -15,7 +15,6 @@
 #include "cc/raster/gpu_rasterizer.h"
 #include "cc/raster/gpu_tile_task_worker_pool.h"
 #include "cc/raster/one_copy_tile_task_worker_pool.h"
-#include "cc/raster/raster_buffer.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
 #include "cc/raster/tile_task_runner.h"
 #include "cc/raster/tile_task_worker_pool.h"
@@ -132,8 +131,10 @@ class PerfImageDecodeTaskImpl : public ImageDecodeTask {
   void RunOnWorkerThread() override {}
 
   // Overridden from TileTask:
-  void ScheduleOnOriginThread(TileTaskClient* client) override {}
-  void CompleteOnOriginThread(TileTaskClient* client) override { Reset(); }
+  void ScheduleOnOriginThread(RasterBufferProvider* provider) override {}
+  void CompleteOnOriginThread(RasterBufferProvider* provider) override {
+    Reset();
+  }
 
   void Reset() {
     did_run_ = false;
@@ -157,12 +158,12 @@ class PerfRasterTaskImpl : public RasterTask {
   void RunOnWorkerThread() override {}
 
   // Overridden from TileTask:
-  void ScheduleOnOriginThread(TileTaskClient* client) override {
+  void ScheduleOnOriginThread(RasterBufferProvider* provider) override {
     // No tile ids are given to support partial updates.
-    raster_buffer_ = client->AcquireBufferForRaster(resource_.get(), 0, 0);
+    raster_buffer_ = provider->AcquireBufferForRaster(resource_.get(), 0, 0);
   }
-  void CompleteOnOriginThread(TileTaskClient* client) override {
-    client->ReleaseBufferForRaster(std::move(raster_buffer_));
+  void CompleteOnOriginThread(RasterBufferProvider* provider) override {
+    provider->ReleaseBufferForRaster(std::move(raster_buffer_));
     Reset();
   }
 

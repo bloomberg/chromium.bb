@@ -16,7 +16,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/traced_value.h"
 #include "cc/playback/raster_source.h"
-#include "cc/raster/raster_buffer.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/resource.h"
 
@@ -131,6 +130,10 @@ ResourceFormat BitmapTileTaskWorkerPool::GetResourceFormat(
 bool BitmapTileTaskWorkerPool::GetResourceRequiresSwizzle(
     bool must_support_alpha) const {
   return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
+}
+
+RasterBufferProvider* BitmapTileTaskWorkerPool::AsRasterBufferProvider() {
+  return this;
 }
 
 std::unique_ptr<RasterBuffer> BitmapTileTaskWorkerPool::AcquireBufferForRaster(

@@ -13,7 +13,6 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/playback/raster_source.h"
 #include "cc/raster/gpu_rasterizer.h"
-#include "cc/raster/raster_buffer.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -166,6 +165,10 @@ bool GpuTileTaskWorkerPool::GetResourceRequiresSwizzle(
     bool must_support_alpha) const {
   // This doesn't require a swizzle because we rasterize to the correct format.
   return false;
+}
+
+RasterBufferProvider* GpuTileTaskWorkerPool::AsRasterBufferProvider() {
+  return this;
 }
 
 void GpuTileTaskWorkerPool::CompleteTasks(const Task::Vector& tasks) {

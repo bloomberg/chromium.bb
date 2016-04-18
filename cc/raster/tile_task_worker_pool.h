@@ -26,7 +26,7 @@ class CC_EXPORT TileTaskWorkerPool {
 
   // Utility function that can be used to call ::ScheduleOnOriginThread() for
   // each task in |graph|.
-  static void ScheduleTasksOnOriginThread(TileTaskClient* client,
+  static void ScheduleTasksOnOriginThread(RasterBufferProvider* provider,
                                           TaskGraph* graph);
 
   // Utility function that will create a temporary bitmap and copy pixels to

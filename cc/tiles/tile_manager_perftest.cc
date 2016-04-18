@@ -37,7 +37,8 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
-class FakeTileTaskRunnerImpl : public TileTaskRunner, public TileTaskClient {
+class FakeTileTaskRunnerImpl : public TileTaskRunner,
+                               public RasterBufferProvider {
  public:
   // Overridden from TileTaskRunner:
   void Shutdown() override {}
@@ -69,8 +70,9 @@ class FakeTileTaskRunnerImpl : public TileTaskRunner, public TileTaskClient {
   bool GetResourceRequiresSwizzle(bool must_support_alpha) const override {
     return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
   }
+  RasterBufferProvider* AsRasterBufferProvider() override { return this; }
 
-  // Overridden from TileTaskClient:
+  // Overridden from RasterBufferProvider:
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const Resource* resource,
       uint64_t new_content_id,

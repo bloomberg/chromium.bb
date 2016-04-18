@@ -1828,7 +1828,7 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
 }
 
 // Fake TileTaskRunner that just no-ops all calls.
-class FakeTileTaskRunner : public TileTaskRunner, public TileTaskClient {
+class FakeTileTaskRunner : public TileTaskRunner, public RasterBufferProvider {
  public:
   FakeTileTaskRunner() {}
   ~FakeTileTaskRunner() override {}
@@ -1842,10 +1842,11 @@ class FakeTileTaskRunner : public TileTaskRunner, public TileTaskClient {
   bool GetResourceRequiresSwizzle(bool must_support_alpha) const override {
     return false;
   }
+  RasterBufferProvider* AsRasterBufferProvider() override { return this; }
 
   void ScheduleTasks(TaskGraph* graph) override {}
 
-  // TileTaskClient methods.
+  // RasterBufferProvider methods.
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const Resource* resource,
       uint64_t resource_content_id,
@@ -1949,7 +1950,7 @@ class VerifyResourceContentIdTileTaskRunner : public FakeTileTaskRunner {
     }
   }
 
-  // TileTaskClient methods.
+  // RasterBufferProvider methods.
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const Resource* resource,
       uint64_t resource_content_id,

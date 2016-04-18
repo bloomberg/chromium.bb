@@ -10,33 +10,18 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "cc/raster/raster_buffer.h"
 #include "cc/raster/task_graph_runner.h"
 #include "cc/resources/resource_format.h"
 
 namespace cc {
-class ImageDecodeTask;
-class RasterTask;
-class Resource;
-class RasterBuffer;
-
-class CC_EXPORT TileTaskClient {
- public:
-  virtual std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
-      const Resource* resource,
-      uint64_t resource_content_id,
-      uint64_t previous_content_id) = 0;
-  virtual void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) = 0;
-
- protected:
-  virtual ~TileTaskClient() {}
-};
 
 class CC_EXPORT TileTask : public Task {
  public:
   typedef std::vector<scoped_refptr<TileTask>> Vector;
 
-  virtual void ScheduleOnOriginThread(TileTaskClient* client) = 0;
-  virtual void CompleteOnOriginThread(TileTaskClient* client) = 0;
+  virtual void ScheduleOnOriginThread(RasterBufferProvider* provider) = 0;
+  virtual void CompleteOnOriginThread(RasterBufferProvider* provider) = 0;
 
   void WillSchedule();
   void DidSchedule();
@@ -115,6 +100,9 @@ class CC_EXPORT TileTaskRunner {
 
   // Determine if the resource requires swizzling.
   virtual bool GetResourceRequiresSwizzle(bool must_support_alpha) const = 0;
+
+  // Downcasting routine for RasterBufferProvider interface.
+  virtual RasterBufferProvider* AsRasterBufferProvider() = 0;
 
  protected:
   // Check if resource format matches output format.

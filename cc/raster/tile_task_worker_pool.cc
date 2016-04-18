@@ -19,8 +19,9 @@ TileTaskWorkerPool::TileTaskWorkerPool() {}
 TileTaskWorkerPool::~TileTaskWorkerPool() {}
 
 // static
-void TileTaskWorkerPool::ScheduleTasksOnOriginThread(TileTaskClient* client,
-                                                     TaskGraph* graph) {
+void TileTaskWorkerPool::ScheduleTasksOnOriginThread(
+    RasterBufferProvider* provider,
+    TaskGraph* graph) {
   TRACE_EVENT0("cc", "TileTaskWorkerPool::ScheduleTasksOnOriginThread");
 
   for (TaskGraph::Node::Vector::iterator it = graph->nodes.begin();
@@ -30,7 +31,7 @@ void TileTaskWorkerPool::ScheduleTasksOnOriginThread(TileTaskClient* client,
 
     if (!task->HasBeenScheduled()) {
       task->WillSchedule();
-      task->ScheduleOnOriginThread(client);
+      task->ScheduleOnOriginThread(provider);
       task->DidSchedule();
     }
   }
