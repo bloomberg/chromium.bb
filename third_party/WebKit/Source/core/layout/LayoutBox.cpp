@@ -4174,7 +4174,7 @@ void LayoutBox::clearLayoutOverflow()
 static bool logicalWidthIsResolvable(const LayoutBox& layoutBox)
 {
     const LayoutBox* box = &layoutBox;
-    while (!box->isLayoutView() && !box->isOutOfFlowPositioned()
+    while (!box->isLayoutView() && !box->isFloatingOrOutOfFlowPositioned()
         && (box->style()->logicalWidth().isAuto() || box->isAnonymousBlock())
         && !box->hasOverrideContainingBlockLogicalWidth())
         box = box->containingBlock();
