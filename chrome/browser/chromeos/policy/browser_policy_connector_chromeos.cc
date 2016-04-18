@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider_impl.h"
+#include "chrome/browser/chromeos/policy/bluetooth_policy_handler.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
@@ -218,6 +219,9 @@ void BrowserPolicyConnectorChromeOS::Init(
               ->managed_network_configuration_handler(),
           chromeos::NetworkHandler::Get()->network_device_handler(),
           chromeos::CrosSettings::Get());
+
+  bluetooth_policy_handler_.reset(
+      new BluetoothPolicyHandler(chromeos::CrosSettings::Get()));
 }
 
 void BrowserPolicyConnectorChromeOS::PreShutdown() {

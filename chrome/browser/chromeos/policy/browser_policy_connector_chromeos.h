@@ -29,6 +29,7 @@ namespace policy {
 class AffiliatedCloudPolicyInvalidator;
 class AffiliatedInvalidationServiceProvider;
 class AffiliatedRemoteCommandsInvalidator;
+class BluetoothPolicyHandler;
 class ConsumerManagementService;
 class DeviceCloudPolicyInitializer;
 class DeviceLocalAccountPolicyService;
@@ -172,6 +173,8 @@ class BrowserPolicyConnectorChromeOS
       device_cloud_policy_invalidator_;
   std::unique_ptr<AffiliatedRemoteCommandsInvalidator>
       device_remote_commands_invalidator_;
+
+  std::unique_ptr<BluetoothPolicyHandler> bluetooth_policy_handler_;
 
   // This policy provider is used on Chrome OS to feed user policy into the
   // global PolicyService instance. This works by installing the cloud policy

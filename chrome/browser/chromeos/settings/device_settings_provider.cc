@@ -457,10 +457,13 @@ void DecodeGenericPolicies(
         policy.display_rotation_default().display_rotation_default());
   }
 
-  new_values_cache->SetBoolean(
-      kAllowBluetooth, policy.has_allow_bluetooth() &&
-                           policy.allow_bluetooth().has_allow_bluetooth() &&
-                           policy.allow_bluetooth().allow_bluetooth());
+  if (policy.has_allow_bluetooth() &&
+      policy.allow_bluetooth().has_allow_bluetooth()) {
+    new_values_cache->SetBoolean(kAllowBluetooth,
+                                 policy.allow_bluetooth().allow_bluetooth());
+  } else {
+    new_values_cache->SetBoolean(kAllowBluetooth, true);
+  }
 
   if (policy.has_quirks_download_enabled() &&
       policy.quirks_download_enabled().has_quirks_download_enabled()) {

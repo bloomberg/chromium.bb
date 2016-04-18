@@ -8351,10 +8351,10 @@
       'name': 'DeviceAllowBluetooth',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:51-'],
+      'supported_on': ['chrome_os:52-'],
       'device_only': True,
       'features': {
-        'dynamic_refresh': True,
+        'dynamic_refresh': False,
       },
       'example_value': True,
       'id': 323,
@@ -8364,7 +8364,9 @@
 
       If this policy is set to true or left unset, the user will be able to enable or disable Bluetooth as he wishes.
 
-      If this policy is set, the user cannot change or override it.''',
+      If this policy is set, the user cannot change or override it.
+
+      After enabling Bluetooth, the device must be rebooted for the changes to take effect (no need to reboot the device when disabling Bluetooth).''',
     },
     {
       'name': 'SuppressUnsupportedOSWarning',
