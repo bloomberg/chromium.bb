@@ -594,6 +594,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                   const std::vector<int32_t>& attribs) override;
   void Destroy(bool have_context) override;
   void SetSurface(const scoped_refptr<gfx::GLSurface>& surface) override;
+  void ReleaseSurface() override;
   void ProduceFrontBuffer(const Mailbox& mailbox) override;
   bool ResizeOffscreenFrameBuffer(const gfx::Size& size) override;
   void UpdateParentTextureInfo();
@@ -3711,6 +3712,7 @@ void GLES2DecoderImpl::DeleteSamplersHelper(
 // }  // anonymous namespace
 
 bool GLES2DecoderImpl::MakeCurrent() {
+  DCHECK(surface_);
   if (!context_.get())
     return false;
 
@@ -4268,9 +4270,20 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
 void GLES2DecoderImpl::SetSurface(
     const scoped_refptr<gfx::GLSurface>& surface) {
   DCHECK(context_->IsCurrent(NULL));
-  DCHECK(surface_.get());
+  DCHECK(surface);
   surface_ = surface;
   RestoreCurrentFramebufferBindings();
+}
+
+void GLES2DecoderImpl::ReleaseSurface() {
+  if (!context_.get())
+    return;
+  if (WasContextLost()) {
+    DLOG(ERROR) << "  GLES2DecoderImpl: Trying to release lost context.";
+    return;
+  }
+  context_->ReleaseCurrent(surface_.get());
+  surface_ = nullptr;
 }
 
 void GLES2DecoderImpl::ProduceFrontBuffer(const Mailbox& mailbox) {
