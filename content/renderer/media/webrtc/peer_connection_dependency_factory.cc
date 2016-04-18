@@ -504,18 +504,6 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
 }
 
 // static
-void PeerConnectionDependencyFactory::SetDefaultCertificate(
-    webrtc::PeerConnectionInterface::RTCConfiguration* config) {
-  if (config->certificates.empty()) {
-    rtc::scoped_ptr<rtc::SSLIdentity> identity(rtc::SSLIdentity::Generate(
-        webrtc::kIdentityName, rtc::KeyParams::ECDSA(rtc::EC_NIST_P256)));
-    rtc::scoped_refptr<rtc::RTCCertificate> certificate =
-        rtc::RTCCertificate::Create(std::move(identity));
-    config->certificates.push_back(certificate);
-  }
-}
-
-// static
 rtc::scoped_refptr<rtc::RTCCertificate>
 PeerConnectionDependencyFactory::GenerateDefaultCertificate() {
   rtc::scoped_ptr<rtc::SSLIdentity> identity(rtc::SSLIdentity::Generate(
