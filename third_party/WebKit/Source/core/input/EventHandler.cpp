@@ -762,8 +762,11 @@ bool EventHandler::logicalScroll(ScrollDirection direction, ScrollGranularity gr
     if (!node)
         node = m_mousePressNode.get();
 
-    if (!node || !node->layoutObject())
+    if ((!node || !node->layoutObject()) && m_frame->view() && m_frame->view()->layoutView())
         node = m_frame->view()->layoutView()->node();
+
+    if (!node)
+        return false;
 
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
