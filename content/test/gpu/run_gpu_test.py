@@ -9,8 +9,8 @@ import subprocess
 import sys
 
 from gpu_tests import path_util
-path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools',
-                               'telemetry')
+
+path_util.SetupTelemetryPaths()
 
 from telemetry import benchmark_runner
 

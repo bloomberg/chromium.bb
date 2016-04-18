@@ -11,10 +11,10 @@ This script DOES NOT run tests. run_gpu_test does that.
 import sys
 
 from gpu_tests import path_util
-import gpu_project_config
 
-path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools',
-                               'telemetry')
+path_util.SetupTelemetryPaths()
+
+import gpu_project_config
 
 from telemetry.testing import unittest_runner
 
