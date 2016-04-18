@@ -94,6 +94,7 @@ public class LocationBarTablet extends LocationBarLayout {
     private float mWidthChangePercent;
     private float mLayoutLeft;
     private float mLayoutRight;
+    private int mToolbarStartPaddingDifference;
 
     /**
      * Constructor used to inflate from XML.
@@ -343,9 +344,13 @@ public class LocationBarTablet extends LocationBarLayout {
      * while width of the location bar gets smaller. There are toolbar buttons that also show at
      * the same time, causing the width of the location bar to change.
      *
+     * @param toolbarStartPaddingDifference The difference in the toolbar's start padding between
+     *                                      the beginning and end of the animation.
      * @return An ArrayList of animators to run.
      */
-    public List<Animator> getShowButtonsWhenUnfocusedAnimators() {
+    public List<Animator> getShowButtonsWhenUnfocusedAnimators(int toolbarStartPaddingDifference) {
+        mToolbarStartPaddingDifference = toolbarStartPaddingDifference;
+
         ArrayList<Animator> animators = new ArrayList<>();
 
         Animator widthChangeAnimator = ObjectAnimator.ofFloat(
@@ -391,9 +396,13 @@ public class LocationBarTablet extends LocationBarLayout {
      * while width of the location bar gets larger. There are toolbar buttons that also hide at the
      * same time, causing the width of the location bar to change.
      *
+     * @param toolbarStartPaddingDifference The difference in the toolbar's start padding between
+     *                                      the beginning and end of the animation.
      * @return An ArrayList of animators to run.
      */
-    public List<Animator> getHideButtonsWhenUnfocusedAnimators() {
+    public List<Animator> getHideButtonsWhenUnfocusedAnimators(int toolbarStartPaddingDifference) {
+        mToolbarStartPaddingDifference = toolbarStartPaddingDifference;
+
         ArrayList<Animator> animators = new ArrayList<>();
 
         Animator widthChangeAnimator =
@@ -463,7 +472,7 @@ public class LocationBarTablet extends LocationBarLayout {
      */
     private void setWidthChangeAnimationPercent(float percent) {
         mWidthChangePercent = percent;
-        float offset = mToolbarButtonsWidth * percent;
+        float offset = (mToolbarButtonsWidth + mToolbarStartPaddingDifference) * percent;
 
         if (LocalizationUtils.isLayoutRtl()) {
             // The location bar's right edge is its regular layout position when toolbar buttons are
