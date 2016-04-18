@@ -107,6 +107,7 @@
             'installer/util/beacons_unittest.cc',
             'installer/util/callback_work_item_unittest.cc',
             'installer/util/channel_info_unittest.cc',
+            'installer/util/conditional_work_item_list_unittest.cc',
             'installer/util/copy_tree_work_item_unittest.cc',
             'installer/util/create_dir_work_item_unittest.cc',
             'installer/util/create_reg_key_work_item_unittest.cc',
@@ -147,6 +148,8 @@
             'installer/util/uninstall_metrics_unittest.cc',
             'installer/util/wmi_unittest.cc',
             'installer/util/work_item_list_unittest.cc',
+            'installer/util/work_item_mocks.cc',
+            'installer/util/work_item_mocks.h',
           ],
           'msvs_settings': {
             'VCManifestTool': {

@@ -293,6 +293,7 @@ if (is_win) {
       "beacons_unittest.cc",
       "callback_work_item_unittest.cc",
       "channel_info_unittest.cc",
+      "conditional_work_item_list_unittest.cc",
       "copy_tree_work_item_unittest.cc",
       "create_dir_work_item_unittest.cc",
       "create_reg_key_work_item_unittest.cc",
@@ -333,6 +334,8 @@ if (is_win) {
       "uninstall_metrics_unittest.cc",
       "wmi_unittest.cc",
       "work_item_list_unittest.cc",
+      "work_item_mocks.cc",
+      "work_item_mocks.h",
     ]
 
     deps = [
