@@ -237,9 +237,18 @@ LayoutTableRow* LayoutTableRow::createAnonymousWithParent(const LayoutObject* pa
     return newRow;
 }
 
+void LayoutTableRow::computeOverflow()
+{
+    clearAllOverflows();
+    addVisualEffectOverflow();
+    for (LayoutTableCell* cell = firstCell(); cell; cell = cell->nextCell())
+        addOverflowFromCell(cell);
+}
+
 void LayoutTableRow::addOverflowFromCell(const LayoutTableCell* cell)
 {
     // Non-row-spanning-cells don't create overflow (they are fully contained within this row).
+    // TODO(crbug.com/603993): This seems incorrect because cell may have visual effect overflow that should be included in this row.
     if (cell->rowSpan() == 1)
         return;
 

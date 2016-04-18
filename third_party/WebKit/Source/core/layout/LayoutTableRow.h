@@ -122,7 +122,7 @@ public:
 
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
-    void addOverflowFromCell(const LayoutTableCell*);
+    void computeOverflow();
 
     const char* name() const override { return "LayoutTableRow"; }
 
@@ -133,6 +133,7 @@ public:
     bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override { return false; }
 
 private:
+    void addOverflowFromCell(const LayoutTableCell*);
     LayoutObjectChildList* virtualChildren() override { return children(); }
     const LayoutObjectChildList* virtualChildren() const override { return children(); }
 

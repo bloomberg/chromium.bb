@@ -1396,6 +1396,8 @@ public:
     // Clears the IsScrollAnchorObject bit, unless any ScrollAnchor still refers to us.
     void maybeClearIsScrollAnchorObject();
 
+    void clearChildNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setChildNeedsOverflowRecalcAfterStyleChange(false); }
+
 protected:
     enum LayoutObjectType {
         LayoutObjectBr,
@@ -1568,7 +1570,6 @@ protected:
     void setIsBackgroundAttachmentFixedObject(bool);
 
     void clearSelfNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setSelfNeedsOverflowRecalcAfterStyleChange(false); }
-    void clearChildNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setChildNeedsOverflowRecalcAfterStyleChange(false); }
     void setShouldInvalidateOverflowForPaint() { m_bitfields.setShouldInvalidateOverflowForPaint(true); }
     void setEverHadLayout() { m_bitfields.setEverHadLayout(true); }
 
@@ -1610,7 +1611,7 @@ private:
 
     // FIXME: This should be 'markContaingBoxChainForOverflowRecalc when we make LayoutBox
     // recomputeOverflow-capable. crbug.com/437012 and crbug.com/434700.
-    inline void markContainingBlocksForOverflowRecalc();
+    inline void markAncestorsForOverflowRecalcIfNeeded();
 
     inline void markAncestorsForPaintInvalidation();
 

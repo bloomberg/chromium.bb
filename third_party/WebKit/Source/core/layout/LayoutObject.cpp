@@ -1893,10 +1893,16 @@ void LayoutObject::firstLineStyleDidChange(const ComputedStyle& oldStyle, const 
         setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::StyleChange);
 }
 
-void LayoutObject::markContainingBlocksForOverflowRecalc()
+void LayoutObject::markAncestorsForOverflowRecalcIfNeeded()
 {
-    for (LayoutBlock* container = containingBlock(); container && !container->childNeedsOverflowRecalcAfterStyleChange(); container = container->containingBlock())
-        container->setChildNeedsOverflowRecalcAfterStyleChange();
+    LayoutObject* object = this;
+    do {
+        // Cell and row need to propagate the flag to their containing section and row as their containing block is the table wrapper.
+        // This enables us to only recompute overflow the modified sections / rows.
+        object = object->isTableCell() || object->isTableRow() ? object->parent() : object->containingBlock();
+        if (object)
+            object->setChildNeedsOverflowRecalcAfterStyleChange();
+    } while (object);
 }
 
 void LayoutObject::setNeedsOverflowRecalcAfterStyleChange()
@@ -1904,7 +1910,7 @@ void LayoutObject::setNeedsOverflowRecalcAfterStyleChange()
     bool neededRecalc = needsOverflowRecalcAfterStyleChange();
     setSelfNeedsOverflowRecalcAfterStyleChange();
     if (!neededRecalc)
-        markContainingBlocksForOverflowRecalc();
+        markAncestorsForOverflowRecalcIfNeeded();
 }
 
 void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
@@ -1972,6 +1978,14 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
     if (diff.transformChanged() && !needsLayout()) {
         if (LayoutBlock* container = containingBlock())
             container->setNeedsOverflowRecalcAfterStyleChange();
+    }
+
+    if (diff.needsRecomputeOverflow() && !needsLayout()) {
+        // TODO(rhogan): Make inlines capable of recomputing overflow too.
+        if (isLayoutBlock())
+            setNeedsOverflowRecalcAfterStyleChange();
+        else
+            setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::StyleChange);
     }
 
     if (diff.needsPaintInvalidationLayer() || updatedDiff.needsPaintInvalidationLayer())
@@ -2084,7 +2098,7 @@ void LayoutObject::styleDidChange(StyleDifference diff, const ComputedStyle* old
 
         // Ditto.
         if (needsOverflowRecalcAfterStyleChange() && oldStyle->position() != m_style->position())
-            markContainingBlocksForOverflowRecalc();
+            markAncestorsForOverflowRecalcIfNeeded();
 
         setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::StyleChange);
     } else if (diff.needsPositionedMovementLayout()) {

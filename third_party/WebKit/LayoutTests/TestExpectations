@@ -554,6 +554,9 @@ crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-ele
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
 
+crbug.com/396825 fast/repaint/outline-change-invalidation.html [ NeedsManualRebaseline ]
+crbug.com/396825 fast/repaint/outline-clip-change.html [ NeedsManualRebaseline ]
+
 crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
 
 # Ref tests that needs investigation.

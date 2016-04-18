@@ -7,8 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [35, 35, 130, 130],
+          "object": "LayoutBlockFlow DIV id='test'",
+          "rect": [8, 8, 75, 75],
           "reason": "style change"
         }
       ]

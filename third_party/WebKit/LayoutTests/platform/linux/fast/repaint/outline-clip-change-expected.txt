@@ -18,15 +18,7 @@
         },
         {
           "object": "InlineTextBox 'Lorem Ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem Ipsum'",
           "reason": "style change"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         },
         {
           "object": "RootInlineBox",

@@ -953,9 +953,6 @@ void LayoutTableSection::layoutRows()
 
     // Set the width of our section now.  The rows will also be this width.
     setLogicalWidth(table()->contentLogicalWidth());
-    m_overflow.clear();
-    m_overflowingCells.clear();
-    m_forceSlowPaintPathWithOverflowingCell = false;
 
     int vspacing = table()->vBorderSpacing();
     unsigned nEffCols = table()->numEffectiveColumns();
@@ -970,8 +967,6 @@ void LayoutTableSection::layoutRows()
             rowLayoutObject->setLogicalWidth(logicalWidth());
             rowLayoutObject->setLogicalHeight(LayoutUnit(m_rowPos[r + 1] - m_rowPos[r] - vspacing));
             rowLayoutObject->updateLayerTransformAfterLayout();
-            rowLayoutObject->clearAllOverflows();
-            rowLayoutObject->addVisualEffectOverflow();
         }
 
         int rowHeightIncreaseForPagination = 0;
@@ -1062,9 +1057,6 @@ void LayoutTableSection::layoutRows()
                 cell->computeOverflow(oldLogicalHeight, false);
             }
 
-            if (rowLayoutObject)
-                rowLayoutObject->addOverflowFromCell(cell);
-
             LayoutSize childOffset(cell->location() - oldCellRect.location());
             if (childOffset.width() || childOffset.height()) {
                 // If the child moved, we have to issue paint invalidations to it as well as any floating/positioned
@@ -1086,6 +1078,8 @@ void LayoutTableSection::layoutRows()
                 }
             }
         }
+        if (rowLayoutObject)
+            rowLayoutObject->computeOverflow();
     }
 
     ASSERT(!needsLayout());
@@ -1107,6 +1101,9 @@ void LayoutTableSection::computeOverflowFromCells(unsigned totalRows, unsigned n
     unsigned totalCellsCount = nEffCols * totalRows;
     unsigned maxAllowedOverflowingCellsCount = totalCellsCount < gMinTableSizeToUseFastPaintPathWithOverflowingCell ? 0 : gMaxAllowedOverflowingCellRatioForFastPaintPath * totalCellsCount;
 
+    m_overflow.clear();
+    m_overflowingCells.clear();
+    m_forceSlowPaintPathWithOverflowingCell = false;
 #if ENABLE(ASSERT)
     bool hasOverflowingCell = false;
 #endif
@@ -1136,6 +1133,36 @@ void LayoutTableSection::computeOverflowFromCells(unsigned totalRows, unsigned n
     }
 
     ASSERT(hasOverflowingCell == this->hasOverflowingCell());
+}
+
+bool LayoutTableSection::recalcChildOverflowAfterStyleChange()
+{
+    ASSERT(childNeedsOverflowRecalcAfterStyleChange());
+    clearChildNeedsOverflowRecalcAfterStyleChange();
+    unsigned totalRows = m_grid.size();
+    unsigned numEffCols = table()->numEffectiveColumns();
+    bool childrenOverflowChanged = false;
+    for (unsigned r = 0; r < totalRows; r++) {
+        LayoutTableRow* rowLayouter = rowLayoutObjectAt(r);
+        if (!rowLayouter || !rowLayouter->childNeedsOverflowRecalcAfterStyleChange())
+            continue;
+        rowLayouter->clearChildNeedsOverflowRecalcAfterStyleChange();
+        bool rowChildrenOverflowChanged = false;
+        for (unsigned c = 0; c < numEffCols; c++) {
+            CellStruct& cs = cellAt(r, c);
+            LayoutTableCell* cell = cs.primaryCell();
+            if (!cell || cs.inColSpan || !cell->needsOverflowRecalcAfterStyleChange())
+                continue;
+            rowChildrenOverflowChanged |= cell->recalcOverflowAfterStyleChange();
+        }
+        if (rowChildrenOverflowChanged)
+            rowLayouter->computeOverflow();
+        childrenOverflowChanged |= rowChildrenOverflowChanged;
+    }
+    // TODO(crbug.com/604136): Add visual overflow from rows too.
+    if (childrenOverflowChanged)
+        computeOverflowFromCells(totalRows, numEffCols);
+    return childrenOverflowChanged;
 }
 
 int LayoutTableSection::calcBlockDirectionOuterBorder(BlockBorderSide side) const

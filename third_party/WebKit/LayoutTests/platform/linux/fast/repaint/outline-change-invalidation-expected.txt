@@ -12,6 +12,11 @@
           "reason": "bounds change"
         },
         {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 108, 789, 5],
+          "reason": "incremental"
+        },
+        {
           "object": "LayoutBlockFlow A id='link'",
           "rect": [30, 83, 767, 30],
           "reason": "style change"
@@ -22,16 +27,9 @@
           "reason": "bounds change"
         },
         {
-          "object": "InlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Lorem Ipsum'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
+          "object": "LayoutBlockFlow BODY",
+          "rect": [792, 16, 5, 97],
+          "reason": "incremental"
         },
         {
           "object": "RootInlineBox",

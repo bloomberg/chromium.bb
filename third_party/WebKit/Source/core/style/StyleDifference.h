@@ -27,6 +27,7 @@ public:
     StyleDifference()
         : m_paintInvalidationType(NoPaintInvalidation)
         , m_layoutType(NoLayout)
+        , m_recomputeOverflow(false)
         , m_propertySpecificDifferences(0)
     { }
 
@@ -66,6 +67,9 @@ public:
     bool needsFullLayout() const { return m_layoutType == FullLayout; }
     void setNeedsFullLayout() { m_layoutType = FullLayout; }
 
+    bool needsRecomputeOverflow() const { return m_recomputeOverflow; }
+    void setNeedsRecomputeOverflow() { m_recomputeOverflow = true; }
+
     bool transformChanged() const { return m_propertySpecificDifferences & TransformChanged; }
     void setTransformChanged() { m_propertySpecificDifferences |= TransformChanged; }
 
@@ -98,7 +102,7 @@ private:
         FullLayout
     };
     unsigned m_layoutType : 2;
-
+    unsigned m_recomputeOverflow : 1;
     unsigned m_propertySpecificDifferences : 6;
 };
 

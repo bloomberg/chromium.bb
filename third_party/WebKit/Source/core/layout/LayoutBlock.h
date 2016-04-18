@@ -269,7 +269,7 @@ public:
 protected:
     bool recalcNormalFlowChildOverflowIfNeeded(LayoutObject*);
 public:
-    bool recalcChildOverflowAfterStyleChange();
+    virtual bool recalcChildOverflowAfterStyleChange();
     bool recalcOverflowAfterStyleChange();
 
     // An example explaining layout tree structure about first-line style:

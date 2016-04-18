@@ -123,6 +123,7 @@ public:
     int calcRowLogicalHeight();
     void layoutRows();
     void computeOverflowFromCells();
+    bool recalcChildOverflowAfterStyleChange();
 
     LayoutTable* table() const { return toLayoutTable(parent()); }
 

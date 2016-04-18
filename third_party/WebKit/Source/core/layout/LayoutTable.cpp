@@ -414,6 +414,19 @@ void LayoutTable::simplifiedNormalFlowLayout()
     }
 }
 
+bool LayoutTable::recalcChildOverflowAfterStyleChange()
+{
+    ASSERT(childNeedsOverflowRecalcAfterStyleChange());
+    clearChildNeedsOverflowRecalcAfterStyleChange();
+    bool childrenOverflowChanged = false;
+    for (LayoutTableSection* section = topSection(); section; section = sectionBelow(section)) {
+        if (!section->childNeedsOverflowRecalcAfterStyleChange())
+            continue;
+        childrenOverflowChanged |= section->recalcChildOverflowAfterStyleChange();
+    }
+    return childrenOverflowChanged;
+}
+
 void LayoutTable::layout()
 {
     ASSERT(needsLayout());

@@ -401,6 +401,7 @@ public:
 protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void simplifiedNormalFlowLayout() override;
+    bool recalcChildOverflowAfterStyleChange() override;
     PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
     void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState&) override;
 

@@ -535,10 +535,6 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
             && *rareNonInheritedData->m_flexibleBox.get() != *other.rareNonInheritedData->m_flexibleBox.get())
             return true;
 
-        // FIXME: We should add an optimized form of layout that just recomputes visual overflow.
-        if (!rareNonInheritedData->shadowDataEquivalent(*other.rareNonInheritedData.get()))
-            return true;
-
         if (!rareNonInheritedData->reflectionDataEquivalent(*other.rareNonInheritedData.get()))
             return true;
 
@@ -659,11 +655,6 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
     if ((visibility() == COLLAPSE) != (other.visibility() == COLLAPSE))
         return true;
 
-    if (!m_background->outline().visuallyEqual(other.m_background->outline())) {
-        // FIXME: We only really need to recompute the overflow but we don't have an optimized layout for it.
-        return true;
-    }
-
     if (hasPseudoStyle(PseudoIdScrollbar) != other.hasPseudoStyle(PseudoIdScrollbar))
         return true;
 
@@ -732,6 +723,9 @@ bool ComputedStyle::diffNeedsPaintInvalidationLayer(const ComputedStyle& other) 
 
 bool ComputedStyle::diffNeedsPaintInvalidationObject(const ComputedStyle& other) const
 {
+    if (!m_background->outline().visuallyEqual(other.m_background->outline()))
+        return true;
+
     if (inherited_flags._visibility != other.inherited_flags._visibility
         || inherited_flags.m_printColorAdjust != other.inherited_flags.m_printColorAdjust
         || inherited_flags._insideLink != other.inherited_flags._insideLink
@@ -750,6 +744,7 @@ bool ComputedStyle::diffNeedsPaintInvalidationObject(const ComputedStyle& other)
         if (rareNonInheritedData->userDrag != other.rareNonInheritedData->userDrag
             || rareNonInheritedData->m_objectFit != other.rareNonInheritedData->m_objectFit
             || rareNonInheritedData->m_objectPosition != other.rareNonInheritedData->m_objectPosition
+            || !rareNonInheritedData->shadowDataEquivalent(*other.rareNonInheritedData.get())
             || !rareNonInheritedData->shapeOutsideDataEquivalent(*other.rareNonInheritedData.get())
             || !rareNonInheritedData->clipPathDataEquivalent(*other.rareNonInheritedData.get())
             || (visitedLinkBorderLeftColor() != other.visitedLinkBorderLeftColor() && borderLeftWidth())
@@ -783,12 +778,18 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
         if (rareNonInheritedData->m_filter != other.rareNonInheritedData->m_filter)
             diff.setFilterChanged();
 
+        if (!rareNonInheritedData->shadowDataEquivalent(*other.rareNonInheritedData.get()))
+            diff.setNeedsRecomputeOverflow();
+
         if (rareNonInheritedData->m_backdropFilter != other.rareNonInheritedData->m_backdropFilter)
             diff.setBackdropFilterChanged();
 
         if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && rareNonInheritedData->m_boxReflect != other.rareNonInheritedData->m_boxReflect)
             diff.setFilterChanged();
     }
+
+    if (!m_background->outline().visuallyEqual(other.m_background->outline()) || !surround->border.visualOverflowEqual(other.surround->border))
+        diff.setNeedsRecomputeOverflow();
 
     if (!diff.needsPaintInvalidation()) {
         if (inherited->color != other.inherited->color
