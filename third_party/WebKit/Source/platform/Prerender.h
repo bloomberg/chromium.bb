@@ -83,7 +83,11 @@ public:
 private:
     Prerender(PrerenderClient*, const KURL&, unsigned relTypes, const Referrer&);
 
-    Member<PrerenderClient> m_client;
+    // The embedder's prerendering support holds on to pending Prerender objects;
+    // those references should not keep the PrerenderClient alive -- if the client
+    // becomes otherwise unreachable it should be GCed (at which point it will
+    // abandon this Prerender object.)
+    WeakMember<PrerenderClient> m_client;
 
     const KURL m_url;
     const unsigned m_relTypes;
