@@ -26,11 +26,12 @@ class AUHALStream;
 // the AudioManager class.
 class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
  public:
-  AudioManagerMac(AudioLogFactory* audio_log_factory);
+  AudioManagerMac(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+      AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetWorkerTaskRunner() override;
   bool HasAudioOutputDevices() override;
   bool HasAudioInputDevices() override;
   void GetAudioInputDeviceNames(AudioDeviceNames* device_names) override;
@@ -117,7 +118,6 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
 
  private:
   void InitializeOnAudioThread();
-  void ShutdownOnAudioThread();
 
   int ChooseBufferSize(bool is_input, int sample_rate);
 
@@ -126,9 +126,6 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   void HandleDeviceChanges();
 
   scoped_ptr<AudioDeviceListenerMac> output_device_listener_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<base::Thread> worker_thread_;
 
   // Track the output sample-rate and the default output device
   // so we can intelligently handle device notifications only when necessary.
@@ -141,8 +138,11 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   class AudioPowerObserver;
   scoped_ptr<AudioPowerObserver> power_observer_;
 
-  // Tracks all constructed input and output streams so they can be stopped at
-  // shutdown.  See ShutdownOnAudioThread() for more details.
+  // Tracks all constructed input and output streams.
+  // TODO(alokp): We used to track these streams to close before destruction.
+  // We no longer close the streams, so we may be able to get rid of these
+  // member variables. They are currently used by MaybeChangeBufferSize().
+  // Investigate if we can remove these.
   std::list<AudioInputStream*> basic_input_streams_;
   std::list<AUAudioInputStream*> low_latency_input_streams_;
   std::list<AUHALStream*> output_streams_;

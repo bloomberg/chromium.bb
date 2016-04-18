@@ -18,7 +18,10 @@ namespace media {
 
 class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
  public:
-  AudioManagerCras(AudioLogFactory* audio_log_factory);
+  AudioManagerCras(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+      AudioLogFactory* audio_log_factory);
 
   // AudioManager implementation.
   bool HasAudioOutputDevices() override;

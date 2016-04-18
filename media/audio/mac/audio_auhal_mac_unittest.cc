@@ -4,9 +4,10 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/test_message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
@@ -35,12 +36,13 @@ class AUHALStreamTest : public testing::Test {
  public:
   AUHALStreamTest()
       : message_loop_(base::MessageLoop::TYPE_UI),
-        manager_(AudioManager::CreateForTesting()) {
+        manager_(AudioManager::CreateForTesting(
+            base::ThreadTaskRunnerHandle::Get())) {
     // Wait for the AudioManager to finish any initialization on the audio loop.
     base::RunLoop().RunUntilIdle();
   }
 
-  ~AUHALStreamTest() override { base::RunLoop().RunUntilIdle(); }
+  ~AUHALStreamTest() override {}
 
   AudioOutputStream* Create() {
     return manager_->MakeAudioOutputStream(
@@ -52,8 +54,8 @@ class AUHALStreamTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
-  scoped_ptr<AudioManager> manager_;
+  base::TestMessageLoop message_loop_;
+  ScopedAudioManagerPtr manager_;
   MockAudioSourceCallback source_;
 
  private:

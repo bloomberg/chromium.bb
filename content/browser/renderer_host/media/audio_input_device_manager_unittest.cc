@@ -13,11 +13,12 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_manager_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,22 +63,16 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    // The test must run on Browser::IO.
-    message_loop_.reset(new base::MessageLoopForIO);
-    io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
-                                           message_loop_.get()));
-    audio_manager_.reset(media::AudioManager::CreateForTesting());
-    // Wait for audio thread initialization to complete.  Otherwise the
-    // enumeration type may not have been set yet.
-    base::WaitableEvent event(false, false);
-    audio_manager_->GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
-        &base::WaitableEvent::Signal, base::Unretained(&event)));
-    event.Wait();
+    audio_manager_ = media::AudioManager::CreateForTesting(
+        base::ThreadTaskRunnerHandle::Get());
+    // Flush the message loop to ensure proper initialization of AudioManager.
+    base::RunLoop().RunUntilIdle();
+
     manager_ = new AudioInputDeviceManager(audio_manager_.get());
     manager_->UseFakeDevice();
     audio_input_listener_.reset(new MockAudioInputDeviceManagerListener());
     manager_->Register(audio_input_listener_.get(),
-                       message_loop_->task_runner().get());
+                       audio_manager_->GetTaskRunner());
 
     // Gets the enumerated device list from the AudioInputDeviceManager.
     manager_->EnumerateDevices(MEDIA_DEVICE_AUDIO_CAPTURE);
@@ -87,19 +82,17 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
         .WillOnce(SaveArg<1>(&devices_));
 
     // Wait until we get the list.
-    message_loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
     manager_->Unregister();
-    io_thread_.reset();
   }
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<BrowserThreadImpl> io_thread_;
+  TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<AudioInputDeviceManager> manager_;
   std::unique_ptr<MockAudioInputDeviceManagerListener> audio_input_listener_;
-  std::unique_ptr<media::AudioManager> audio_manager_;
+  media::ScopedAudioManagerPtr audio_manager_;
   StreamDeviceInfoArray devices_;
 
  private:
@@ -123,7 +116,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenAndCloseDevice) {
                 Opened(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
         .Times(1);
     // Waits for the callback.
-    message_loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     manager_->Close(session_id);
     EXPECT_CALL(*audio_input_listener_,
@@ -131,7 +124,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenAndCloseDevice) {
         .Times(1);
 
     // Waits for the callback.
-    message_loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 }
 
@@ -156,7 +149,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenMultipleDevices) {
         .Times(1);
 
     // Waits for the callback.
-    message_loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Checks if the session_ids are unique.
@@ -174,7 +167,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenMultipleDevices) {
         .Times(1);
 
     // Waits for the callback.
-    message_loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 }
 
@@ -196,7 +189,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenNotExistingDevice) {
       .Times(1);
 
   // Waits for the callback.
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Opens default device twice.
@@ -218,7 +211,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenDeviceTwice) {
               Opened(MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
       .Times(1);
   // Waits for the callback.
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   manager_->Close(first_session_id);
   manager_->Close(second_session_id);
@@ -229,7 +222,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenDeviceTwice) {
               Closed(MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
       .Times(1);
   // Waits for the callback.
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Accesses then closes the sessions after opening the devices.
@@ -251,7 +244,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessAndCloseSession) {
     EXPECT_CALL(*audio_input_listener_,
                 Opened(MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
         .Times(1);
-    message_loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     const StreamDeviceInfo* info = manager_->GetOpenedDeviceInfoById(
         session_id[index]);
@@ -261,7 +254,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessAndCloseSession) {
     EXPECT_CALL(*audio_input_listener_,
                 Closed(MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
         .Times(1);
-    message_loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 }
 
@@ -275,7 +268,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessInvalidSession) {
   EXPECT_CALL(*audio_input_listener_,
               Opened(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Access a non-opened device.
   // This should fail and return an empty StreamDeviceInfo.
@@ -288,7 +281,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessInvalidSession) {
   EXPECT_CALL(*audio_input_listener_,
               Closed(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace content

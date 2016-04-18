@@ -11,8 +11,8 @@
 namespace media {
 
 MockAudioManager::MockAudioManager(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : task_runner_(task_runner) {}
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : AudioManager(task_runner, task_runner) {}
 
 MockAudioManager::~MockAudioManager() {
 }
@@ -61,15 +61,6 @@ media::AudioInputStream* MockAudioManager::MakeAudioInputStream(
     const std::string& device_id) {
   NOTREACHED();
   return NULL;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner> MockAudioManager::GetTaskRunner() {
-  return task_runner_;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-MockAudioManager::GetWorkerTaskRunner() {
-  return task_runner_;
 }
 
 void MockAudioManager::AddOutputDeviceChangeListener(

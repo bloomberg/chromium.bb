@@ -187,7 +187,8 @@ void WaitForEnumeration(base::RunLoop* loop,
 class AudioRendererHostTest : public testing::Test {
  public:
   AudioRendererHostTest() {
-    audio_manager_.reset(media::AudioManager::CreateForTesting());
+    audio_manager_ = media::AudioManager::CreateForTesting(
+        base::ThreadTaskRunnerHandle::Get());
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
@@ -328,7 +329,7 @@ class AudioRendererHostTest : public testing::Test {
   // TestBrowserThreadBundle.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<media::AudioManager> audio_manager_;
+  media::ScopedAudioManagerPtr audio_manager_;
   MockAudioMirroringManager mirroring_manager_;
   scoped_refptr<MockAudioRendererHost> host_;
 

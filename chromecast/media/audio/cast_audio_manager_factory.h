@@ -20,8 +20,10 @@ class CastAudioManagerFactory : public ::media::AudioManagerFactory {
   ~CastAudioManagerFactory() override;
 
   // ::media::AudioManagerFactory overrides.
-  ::media::AudioManager* CreateInstance(
-      ::media::AudioLogFactory* audio_log_factory) override;
+  scoped_ptr<::media::AudioManager, ::media::AudioManagerDeleter>
+  CreateInstance(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                 scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+                 ::media::AudioLogFactory* audio_log_factory) override;
 
  private:
   MediaPipelineBackendManager* const backend_manager_;

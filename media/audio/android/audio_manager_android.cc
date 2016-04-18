@@ -45,12 +45,22 @@ const int kDefaultOutputBufferSize = 2048;
 
 }  // namespace
 
-AudioManager* CreateAudioManager(AudioLogFactory* audio_log_factory) {
-  return new AudioManagerAndroid(audio_log_factory);
+ScopedAudioManagerPtr CreateAudioManager(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+    AudioLogFactory* audio_log_factory) {
+  return ScopedAudioManagerPtr(new AudioManagerAndroid(
+      std::move(task_runner), std::move(worker_task_runner),
+      audio_log_factory));
 }
 
-AudioManagerAndroid::AudioManagerAndroid(AudioLogFactory* audio_log_factory)
-    : AudioManagerBase(audio_log_factory),
+AudioManagerAndroid::AudioManagerAndroid(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+    AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(std::move(task_runner),
+                       std::move(worker_task_runner),
+                       audio_log_factory),
       communication_mode_is_on_(false),
       output_volume_override_set_(false),
       output_volume_override_(0) {
@@ -68,11 +78,13 @@ AudioManagerAndroid::AudioManagerAndroid(AudioLogFactory* audio_log_factory)
 }
 
 AudioManagerAndroid::~AudioManagerAndroid() {
-  // It's safe to post a task here since Shutdown() will wait for all tasks to
-  // complete before returning.
-  GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
-      &AudioManagerAndroid::ShutdownOnAudioThread, base::Unretained(this)));
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   Shutdown();
+
+  DVLOG(2) << "Destroying Java part of the audio manager";
+  Java_AudioManagerAndroid_close(base::android::AttachCurrentThread(),
+                                 j_audio_manager_.obj());
+  j_audio_manager_.Reset();
 }
 
 bool AudioManagerAndroid::HasAudioOutputDevices() {
@@ -335,15 +347,6 @@ void AudioManagerAndroid::InitializeOnAudioThread() {
   Java_AudioManagerAndroid_init(
       base::android::AttachCurrentThread(),
       j_audio_manager_.obj());
-}
-
-void AudioManagerAndroid::ShutdownOnAudioThread() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  DVLOG(2) << "Destroying Java part of the audio manager";
-  Java_AudioManagerAndroid_close(
-      base::android::AttachCurrentThread(),
-      j_audio_manager_.obj());
-  j_audio_manager_.Reset();
 }
 
 void AudioManagerAndroid::SetCommunicationAudioModeOn(bool on) {

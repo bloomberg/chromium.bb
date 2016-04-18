@@ -484,7 +484,7 @@ void AudioRendererHost::OnDeviceAuthorized(int stream_id,
       !media_stream_manager_->audio_output_device_enumerator()
            ->IsCacheEnabled()) {
     base::PostTaskAndReplyWithResult(
-        audio_manager_->GetTaskRunner().get(), FROM_HERE,
+        audio_manager_->GetTaskRunner(), FROM_HERE,
         base::Bind(&GetDefaultDeviceInfoOnDeviceThread, audio_manager_),
         base::Bind(&AudioRendererHost::OnDeviceIDTranslated, this, stream_id,
                    true));

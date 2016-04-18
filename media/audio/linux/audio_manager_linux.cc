@@ -4,6 +4,8 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "media/base/media_switches.h"
+
 #if defined(USE_ALSA)
 #include "media/audio/alsa/audio_manager_alsa.h"
 #else
@@ -15,7 +17,6 @@
 #if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/audio_manager_pulse.h"
 #endif
-#include "media/base/media_switches.h"
 
 namespace media {
 
@@ -26,27 +27,42 @@ enum LinuxAudioIO {
   kAudioIOMax = kCras  // Must always be equal to largest logged entry.
 };
 
-AudioManager* CreateAudioManager(AudioLogFactory* audio_log_factory) {
+ScopedAudioManagerPtr CreateAudioManager(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+    AudioLogFactory* audio_log_factory) {
 #if defined(USE_CRAS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
     UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kCras, kAudioIOMax + 1);
-    return new AudioManagerCras(audio_log_factory);
+    return ScopedAudioManagerPtr(
+        new AudioManagerCras(std::move(task_runner),
+                             std::move(worker_task_runner), audio_log_factory));
   }
 #endif
 
 #if defined(USE_PULSEAUDIO)
-  AudioManager* manager = AudioManagerPulse::Create(audio_log_factory);
-  if (manager) {
+  // Do not move task runners when creating AudioManagerPulse.
+  // If the creation fails, we need to use the task runners to create other
+  // AudioManager implementations.
+  std::unique_ptr<AudioManagerPulse, AudioManagerDeleter> manager(
+      new AudioManagerPulse(task_runner, worker_task_runner,
+                            audio_log_factory));
+  if (manager->Init()) {
     UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kPulse, kAudioIOMax + 1);
-    return manager;
+    return std::move(manager);
   }
+  DVLOG(1) << "PulseAudio is not available on the OS";
 #endif
 
 #if defined(USE_ALSA)
   UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kAlsa, kAudioIOMax + 1);
-  return new AudioManagerAlsa(audio_log_factory);
+  return ScopedAudioManagerPtr(
+      new AudioManagerAlsa(std::move(task_runner),
+                           std::move(worker_task_runner), audio_log_factory));
 #else
-  return new FakeAudioManager(audio_log_factory);
+  return ScopedAudioManagerPtr(
+      new FakeAudioManager(std::move(task_runner),
+                           std::move(worker_task_runner), audio_log_factory));
 #endif
 }
 

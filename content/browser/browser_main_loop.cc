@@ -75,7 +75,6 @@
 #include "content/public/common/result_codes.h"
 #include "device/battery/battery_status_service.h"
 #include "ipc/mojo/scoped_ipc_support.h"
-#include "media/audio/audio_manager.h"
 #include "media/base/media.h"
 #include "media/base/user_input_monitor.h"
 #include "media/midi/midi_manager.h"
@@ -1226,8 +1225,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
   {
     TRACE_EVENT0("startup", "BrowserThreadsStarted::Subsystem:AudioMan");
-    audio_manager_.reset(media::AudioManager::CreateWithHangTimer(
-        MediaInternals::GetInstance(), io_thread_->task_runner()));
+    CreateAudioManager();
   }
 
   {
@@ -1453,6 +1451,36 @@ void BrowserMainLoop::EndStartupTracing() {
       TracingController::CreateFileSink(
           startup_trace_file_,
           base::Bind(OnStoppedStartupTracing, startup_trace_file_)));
+}
+
+void BrowserMainLoop::CreateAudioManager() {
+  DCHECK(!audio_thread_);
+  DCHECK(!audio_manager_);
+  // TODO(alokp): Allow content embedders to override the default
+  // task runners by defining ContentBrowserClient::GetAudioTaskRunner.
+  scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner;
+  scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner;
+  scoped_refptr<base::SingleThreadTaskRunner> monitor_task_runner;
+  audio_thread_.reset(new base::Thread("AudioThread"));
+#if defined(OS_WIN)
+  audio_thread_->init_com_with_mta(true);
+#endif  // defined(OS_WIN)
+  CHECK(audio_thread_->Start());
+#if defined(OS_MACOSX)
+  // On Mac audio task runner must belong to the main thread.
+  // See http://crbug.com/158170.
+  // Since the audio thread is the UI thread, a hang monitor is not
+  // necessary or recommended.
+  audio_task_runner = base::ThreadTaskRunnerHandle::Get();
+  worker_task_runner = audio_thread_->task_runner();
+#else
+  audio_task_runner = audio_thread_->task_runner();
+  worker_task_runner = audio_thread_->task_runner();
+  monitor_task_runner = io_thread_->task_runner();
+#endif  // defined(OS_MACOSX)
+  audio_manager_ = media::AudioManager::Create(
+      std::move(audio_task_runner), std::move(worker_task_runner),
+      std::move(monitor_task_runner), MediaInternals::GetInstance());
 }
 
 }  // namespace content

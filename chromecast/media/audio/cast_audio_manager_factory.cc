@@ -17,9 +17,15 @@ CastAudioManagerFactory::CastAudioManagerFactory(
 
 CastAudioManagerFactory::~CastAudioManagerFactory() {}
 
-::media::AudioManager* CastAudioManagerFactory::CreateInstance(
+scoped_ptr<::media::AudioManager, ::media::AudioManagerDeleter>
+CastAudioManagerFactory::CreateInstance(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
     ::media::AudioLogFactory* audio_log_factory) {
-  return new CastAudioManager(audio_log_factory, backend_manager_);
+  return scoped_ptr<::media::AudioManager, ::media::AudioManagerDeleter>(
+      new CastAudioManager(std::move(task_runner),
+                           std::move(worker_task_runner), audio_log_factory,
+                           backend_manager_));
 }
 
 }  // namespace media

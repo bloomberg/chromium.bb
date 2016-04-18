@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "media/audio/audio_manager.h"
 
 #if defined(USE_AURA)
 namespace aura {
@@ -39,7 +40,6 @@ class ScopedIPCSupport;
 }
 
 namespace media {
-class AudioManager;
 #if defined(OS_WIN)
 class SystemMessageWindowWin;
 #elif defined(OS_LINUX) && defined(USE_UDEV)
@@ -169,6 +169,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   void InitStartupTracingForDuration(const base::CommandLine& command_line);
   void EndStartupTracing();
 
+  void CreateAudioManager();
   bool UsingInProcessGpu() const;
 
   // Quick reference for initialization order:
@@ -260,7 +261,9 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.
   std::unique_ptr<media::UserInputMonitor> user_input_monitor_;
-  std::unique_ptr<media::AudioManager> audio_manager_;
+  // AudioThread needs to outlive |audio_manager_|.
+  std::unique_ptr<base::Thread> audio_thread_;
+  media::ScopedAudioManagerPtr audio_manager_;
 
   std::unique_ptr<media::midi::MidiManager> midi_manager_;
 

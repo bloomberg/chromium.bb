@@ -76,9 +76,9 @@ class AudioManagerHelper : public base::PowerObserver {
   }
 
   void StartHangTimer(
-      const scoped_refptr<base::SingleThreadTaskRunner>& monitor_task_runner) {
+      scoped_refptr<base::SingleThreadTaskRunner> monitor_task_runner) {
     CHECK(!monitor_task_runner_);
-    monitor_task_runner_ = monitor_task_runner;
+    monitor_task_runner_ = std::move(monitor_task_runner);
     base::PowerMonitor::Get()->AddObserver(this);
     failed_pings_ = 0;
     io_task_running_ = audio_task_running_ = true;
@@ -255,14 +255,51 @@ base::LazyInstance<AudioManagerHelper>::Leaky g_helper =
 
 }  // namespace
 
-// Forward declaration of the platform specific AudioManager factory function.
-AudioManager* CreateAudioManager(AudioLogFactory* audio_log_factory);
+void AudioManagerDeleter::operator()(const AudioManager* instance) const {
+  CHECK(instance);
+  // We reset g_last_created here instead of in the destructor of AudioManager
+  // because the destructor runs on the audio thread. We want to always change
+  // g_last_created from the main thread.
+  if (g_last_created == instance) {
+    g_last_created = nullptr;
+  } else {
+    // We create multiple instances of AudioManager only when testing.
+    // We should not encounter this case in production.
+    LOG(WARNING) << "Multiple instances of AudioManager detected";
+  }
 
-AudioManager::AudioManager() {}
+  // AudioManager must be destroyed on the audio thread.
+  if (!instance->GetTaskRunner()->DeleteSoon(FROM_HERE, instance)) {
+    LOG(WARNING) << "Failed to delete AudioManager instance.";
+  }
+}
+
+// Forward declaration of the platform specific AudioManager factory function.
+ScopedAudioManagerPtr CreateAudioManager(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+    AudioLogFactory* audio_log_factory);
+
+AudioManager::AudioManager(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner)
+    : task_runner_(std::move(task_runner)),
+      worker_task_runner_(std::move(worker_task_runner)) {
+  DCHECK(task_runner_);
+  DCHECK(worker_task_runner_);
+
+  if (g_last_created) {
+    // We create multiple instances of AudioManager only when testing.
+    // We should not encounter this case in production.
+    LOG(WARNING) << "Multiple instances of AudioManager detected";
+  }
+  // We always override |g_last_created| irrespective of whether it is already
+  // set or not becuase it represents the last created instance.
+  g_last_created = this;
+}
 
 AudioManager::~AudioManager() {
-  CHECK(!g_last_created || g_last_created == this);
-  g_last_created = nullptr;
+  DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
 // static
@@ -282,37 +319,38 @@ void AudioManager::ResetFactoryForTesting() {
 }
 
 // static
-AudioManager* AudioManager::Create(AudioLogFactory* audio_log_factory) {
-  CHECK(!g_last_created);
-  if (g_audio_manager_factory)
-    g_last_created = g_audio_manager_factory->CreateInstance(audio_log_factory);
-  else
-    g_last_created = CreateAudioManager(audio_log_factory);
+ScopedAudioManagerPtr AudioManager::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> monitor_task_runner,
+    AudioLogFactory* audio_log_factory) {
+  DCHECK(task_runner);
+  DCHECK(worker_task_runner);
+  ScopedAudioManagerPtr manager;
+  if (g_audio_manager_factory) {
+    manager = g_audio_manager_factory->CreateInstance(
+        std::move(task_runner), std::move(worker_task_runner),
+        audio_log_factory);
+  } else {
+    manager =
+        CreateAudioManager(std::move(task_runner),
+                           std::move(worker_task_runner), audio_log_factory);
+  }
 
-  return g_last_created;
-}
-
-// static
-AudioManager* AudioManager::CreateWithHangTimer(
-    AudioLogFactory* audio_log_factory,
-    const scoped_refptr<base::SingleThreadTaskRunner>& monitor_task_runner) {
-  AudioManager* manager = Create(audio_log_factory);
-
-// On OSX the audio thread is the UI thread, for which a hang monitor is not
-// necessary or recommended.
-#if !defined(OS_MACOSX)
-  g_helper.Pointer()->StartHangTimer(monitor_task_runner);
-#endif
+  if (monitor_task_runner)
+    g_helper.Pointer()->StartHangTimer(std::move(monitor_task_runner));
 
   return manager;
 }
 
 // static
-AudioManager* AudioManager::CreateForTesting() {
+ScopedAudioManagerPtr AudioManager::CreateForTesting(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
 #if defined(OS_WIN)
   g_helper.Pointer()->InitializeCOMForTesting();
 #endif
-  return Create(g_helper.Pointer()->fake_log_factory());
+  return Create(task_runner, task_runner, nullptr,
+                g_helper.Pointer()->fake_log_factory());
 }
 
 // static

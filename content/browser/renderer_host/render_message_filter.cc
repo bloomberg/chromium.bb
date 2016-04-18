@@ -247,7 +247,7 @@ base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
 #endif
   // Always query audio device parameters on the audio thread.
   if (message.type() == ViewHostMsg_GetAudioHardwareConfig::ID)
-    return audio_manager_->GetTaskRunner().get();
+    return audio_manager_->GetTaskRunner();
   return NULL;
 }
 

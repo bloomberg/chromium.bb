@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/synchronization/lock.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/audio/audio_io.h"
@@ -96,12 +97,11 @@ struct AudioDelayState {
 // the main thread instead of the audio thread.
 class MockAudioManager : public AudioManagerAnyPlatform {
  public:
-  MockAudioManager() : AudioManagerAnyPlatform(&fake_audio_log_factory_) {}
+  MockAudioManager()
+      : AudioManagerAnyPlatform(base::ThreadTaskRunnerHandle::Get(),
+                                base::ThreadTaskRunnerHandle::Get(),
+                                &fake_audio_log_factory_) {}
   ~MockAudioManager() override {}
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
-    return base::MessageLoop::current()->task_runner();
-  }
 
  private:
   FakeAudioLogFactory fake_audio_log_factory_;
