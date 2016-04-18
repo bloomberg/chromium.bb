@@ -303,9 +303,6 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessBaseSharedMemory) {
     // from it.
     base::SharedMemoryCreateOptions options;
     options.size = 123;
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-    options.type = base::SharedMemoryHandle::POSIX;
-#endif
     base::SharedMemory shared_memory;
     ASSERT_TRUE(shared_memory.Create(options));
     base::SharedMemoryHandle shm_handle = base::SharedMemory::DuplicateHandle(
@@ -385,7 +382,6 @@ TEST_F(EmbedderTest, MultiprocessMachSharedMemory) {
     // buffer from it.
     base::SharedMemoryCreateOptions options;
     options.size = 123;
-    options.type = base::SharedMemoryHandle::MACH;
     base::SharedMemory shared_memory;
     ASSERT_TRUE(shared_memory.Create(options));
     base::SharedMemoryHandle shm_handle = base::SharedMemory::DuplicateHandle(
@@ -460,7 +456,6 @@ TEST_F(EmbedderTest, MultiprocessMixMachAndFds) {
       } else {
         base::SharedMemoryCreateOptions options;
         options.size = kShmSize;
-        options.type = base::SharedMemoryHandle::MACH;
         base::SharedMemory shared_memory;
         ASSERT_TRUE(shared_memory.Create(options));
         base::SharedMemoryHandle shm_handle =
