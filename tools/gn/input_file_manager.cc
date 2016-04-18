@@ -94,9 +94,6 @@ InputFileManager::InputFileManager() {
 
 InputFileManager::~InputFileManager() {
   // Should be single-threaded by now.
-  STLDeleteContainerPairSecondPointers(input_files_.begin(),
-                                       input_files_.end());
-  STLDeleteContainerPointers(dynamic_inputs_.begin(), dynamic_inputs_.end());
 }
 
 bool InputFileManager::AsyncLoadFile(const LocationRange& origin,
@@ -114,18 +111,18 @@ bool InputFileManager::AsyncLoadFile(const LocationRange& origin,
     InputFileMap::const_iterator found = input_files_.find(file_name);
     if (found == input_files_.end()) {
       // New file, schedule load.
-      InputFileData* data = new InputFileData(file_name);
+      std::unique_ptr<InputFileData> data(new InputFileData(file_name));
       data->scheduled_callbacks.push_back(callback);
-      input_files_[file_name] = data;
-
       schedule_this = base::Bind(&InputFileManager::BackgroundLoadFile,
                                  this,
                                  origin,
                                  build_settings,
                                  file_name,
                                  &data->file);
+      input_files_[file_name] = std::move(data);
+
     } else {
-      InputFileData* data = found->second;
+      InputFileData* data = found->second.get();
 
       // Prevent mixing async and sync loads. See SyncLoadFile for discussion.
       if (data->sync_invocation) {
@@ -167,16 +164,17 @@ const ParseNode* InputFileManager::SyncLoadFile(
   InputFileMap::iterator found = input_files_.find(file_name);
   if (found == input_files_.end()) {
     // Haven't seen this file yet, start loading right now.
-    data = new InputFileData(file_name);
+    std::unique_ptr<InputFileData> new_data(new InputFileData(file_name));
+    data = new_data.get();
     data->sync_invocation = true;
-    input_files_[file_name] = data;
+    input_files_[file_name] = std::move(new_data);
 
     base::AutoUnlock unlock(lock_);
     if (!LoadFile(origin, build_settings, file_name, &data->file, err))
       return nullptr;
   } else {
     // This file has either been loaded or is pending loading.
-    data = found->second;
+    data = found->second.get();
 
     if (!data->sync_invocation) {
       // Don't allow mixing of sync and async loads. If an async load is
@@ -231,14 +229,14 @@ void InputFileManager::AddDynamicInput(
     InputFile** file,
     std::vector<Token>** tokens,
     std::unique_ptr<ParseNode>** parse_root) {
-  InputFileData* data = new InputFileData(name);
-  {
-    base::AutoLock lock(lock_);
-    dynamic_inputs_.push_back(data);
-  }
+  std::unique_ptr<InputFileData> data(new InputFileData(name));
   *file = &data->file;
   *tokens = &data->tokens;
   *parse_root = &data->parsed_root;
+  {
+    base::AutoLock lock(lock_);
+    dynamic_inputs_.push_back(std::move(data));
+  }
 }
 
 int InputFileManager::GetInputFileCount() const {
@@ -286,7 +284,7 @@ bool InputFileManager::LoadFile(const LocationRange& origin,
     base::AutoLock lock(lock_);
     DCHECK(input_files_.find(name) != input_files_.end());
 
-    InputFileData* data = input_files_[name];
+    InputFileData* data = input_files_[name].get();
     data->loaded = true;
     if (success) {
       data->tokens.swap(tokens);

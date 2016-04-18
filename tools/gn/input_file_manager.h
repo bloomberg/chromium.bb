@@ -137,7 +137,8 @@ class InputFileManager : public base::RefCountedThreadSafe<InputFileManager> {
   mutable base::Lock lock_;
 
   // Maps repo-relative filenames to the corresponding owned pointer.
-  typedef base::hash_map<SourceFile, InputFileData*> InputFileMap;
+  typedef base::hash_map<SourceFile, std::unique_ptr<InputFileData>>
+      InputFileMap;
   InputFileMap input_files_;
 
   // Tracks all dynamic inputs. The data are holders for memory management
@@ -146,9 +147,7 @@ class InputFileManager : public base::RefCountedThreadSafe<InputFileManager> {
   // charge of the threadsafety requirements.
   //
   // See AddDynamicInput().
-  //
-  // Owning pointers.
-  std::vector<InputFileData*> dynamic_inputs_;
+  std::vector<std::unique_ptr<InputFileData>> dynamic_inputs_;
 
   DISALLOW_COPY_AND_ASSIGN(InputFileManager);
 };
