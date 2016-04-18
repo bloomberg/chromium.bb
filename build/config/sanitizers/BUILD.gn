@@ -33,7 +33,9 @@ group("deps") {
 }
 
 config("sanitizer_options_link_helper") {
-  if (!is_win) {
+  if (is_mac) {
+    ldflags = [ "-Wl,-U,_sanitizer_options_link_helper" ]
+  } else if (!is_win) {
     ldflags = [ "-Wl,-u_sanitizer_options_link_helper" ]
   }
 }
