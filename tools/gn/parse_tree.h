@@ -227,9 +227,11 @@ class BlockNode : public ParseNode {
   void set_end(std::unique_ptr<EndNode> e) { end_ = std::move(e); }
   const EndNode* End() const { return end_.get(); }
 
-  const std::vector<ParseNode*>& statements() const { return statements_; }
+  const std::vector<std::unique_ptr<ParseNode>>& statements() const {
+    return statements_;
+  }
   void append_statement(std::unique_ptr<ParseNode> s) {
-    statements_.push_back(s.release());
+    statements_.push_back(std::move(s));
   }
 
  private:
@@ -238,8 +240,7 @@ class BlockNode : public ParseNode {
   Token begin_token_;
   std::unique_ptr<EndNode> end_;
 
-  // Owning pointers, use unique_ptr when we can use C++11.
-  std::vector<ParseNode*> statements_;
+  std::vector<std::unique_ptr<ParseNode>> statements_;
 
   DISALLOW_COPY_AND_ASSIGN(BlockNode);
 };
@@ -364,9 +365,11 @@ class ListNode : public ParseNode {
   const EndNode* End() const { return end_.get(); }
 
   void append_item(std::unique_ptr<ParseNode> s) {
-    contents_.push_back(s.release());
+    contents_.push_back(std::move(s));
   }
-  const std::vector<const ParseNode*>& contents() const { return contents_; }
+  const std::vector<std::unique_ptr<const ParseNode>>& contents() const {
+    return contents_;
+  }
 
   void SortAsStringsList();
   void SortAsDepsList();
@@ -397,8 +400,7 @@ class ListNode : public ParseNode {
   std::unique_ptr<EndNode> end_;
   bool prefer_multiline_;
 
-  // Owning pointers, use unique_ptr when we can use C++11.
-  std::vector<const ParseNode*> contents_;
+  std::vector<std::unique_ptr<const ParseNode>> contents_;
 
   DISALLOW_COPY_AND_ASSIGN(ListNode);
 };

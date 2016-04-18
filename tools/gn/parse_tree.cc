@@ -297,7 +297,6 @@ BlockNode::BlockNode() {
 }
 
 BlockNode::~BlockNode() {
-  STLDeleteContainerPointers(statements_.begin(), statements_.end());
 }
 
 const BlockNode* BlockNode::AsBlock() const {
@@ -307,7 +306,7 @@ const BlockNode* BlockNode::AsBlock() const {
 Value BlockNode::Execute(Scope* scope, Err* err) const {
   for (size_t i = 0; i < statements_.size() && !err->has_error(); i++) {
     // Check for trying to execute things with no side effects in a block.
-    const ParseNode* cur = statements_[i];
+    const ParseNode* cur = statements_[i].get();
     if (cur->AsList() || cur->AsLiteral() || cur->AsUnaryOp() ||
         cur->AsIdentifier()) {
       *err = cur->MakeErrorDescribing(
@@ -492,7 +491,6 @@ ListNode::ListNode() : prefer_multiline_(false) {
 }
 
 ListNode::~ListNode() {
-  STLDeleteContainerPointers(contents_.begin(), contents_.end());
 }
 
 const ListNode* ListNode::AsList() const {
@@ -547,7 +545,7 @@ void ListNode::SortList(Comparator comparator) {
     bool skip = false;
     for (size_t i = sr.begin; i != sr.end; ++i) {
       // Bails out if any of the nodes are unsupported.
-      const ParseNode* node = contents_[i];
+      const ParseNode* node = contents_[i].get();
       if (!node->AsLiteral() && !node->AsIdentifier() && !node->AsAccessor()) {
         skip = true;
         continue;
@@ -561,15 +559,19 @@ void ListNode::SortList(Comparator comparator) {
     // to determine whether two nodes were initially separated by a blank line
     // or not.
     int start_line = contents_[sr.begin]->GetRange().begin().line_number();
-    const ParseNode* original_first = contents_[sr.begin];
+    const ParseNode* original_first = contents_[sr.begin].get();
     std::sort(contents_.begin() + sr.begin, contents_.begin() + sr.end,
-              comparator);
+              [&comparator](const std::unique_ptr<const ParseNode>& a,
+                            const std::unique_ptr<const ParseNode>& b) {
+                return comparator(a.get(), b.get());
+              });
     // If the beginning of the range had before comments, and the first node
     // moved during the sort, then move its comments to the new head of the
     // range.
-    if (original_first->comments() && contents_[sr.begin] != original_first) {
+    if (original_first->comments() &&
+        contents_[sr.begin].get() != original_first) {
       for (const auto& hc : original_first->comments()->before()) {
-        const_cast<ParseNode*>(contents_[sr.begin])
+        const_cast<ParseNode*>(contents_[sr.begin].get())
             ->comments_mutable()
             ->append_before(hc);
       }
@@ -579,7 +581,7 @@ void ListNode::SortList(Comparator comparator) {
     }
     const ParseNode* prev = nullptr;
     for (size_t i = sr.begin; i != sr.end; ++i) {
-      const ParseNode* node = contents_[i];
+      const ParseNode* node = contents_[i].get();
       DCHECK(node->AsLiteral() || node->AsIdentifier() || node->AsAccessor());
       int line_number =
           prev ? prev->GetRange().end().line_number() + 1 : start_line;
@@ -627,8 +629,8 @@ std::vector<ListNode::SortRange> ListNode::GetSortRanges() const {
   std::vector<SortRange> ranges;
   const ParseNode* prev = nullptr;
   size_t begin = 0;
-  for (size_t i = begin; i < contents_.size(); prev = contents_[i++]) {
-    if (IsSortRangeSeparator(contents_[i], prev)) {
+  for (size_t i = begin; i < contents_.size(); prev = contents_[i++].get()) {
+    if (IsSortRangeSeparator(contents_[i].get(), prev)) {
       if (i > begin) {
         ranges.push_back(SortRange(begin, i));
         // If |i| is an item with an attached comment, then we start the next

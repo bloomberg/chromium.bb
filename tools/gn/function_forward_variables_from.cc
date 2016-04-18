@@ -153,7 +153,7 @@ Value RunForwardVariablesFrom(Scope* scope,
                               const FunctionCallNode* function,
                               const ListNode* args_list,
                               Err* err) {
-  const std::vector<const ParseNode*>& args_vector = args_list->contents();
+  const auto& args_vector = args_list->contents();
   if (args_vector.size() != 2 && args_vector.size() != 3) {
     *err = Err(function, "Wrong number of arguments.",
                "Expecting two or three arguments.");
@@ -166,7 +166,7 @@ Value RunForwardVariablesFrom(Scope* scope,
   // to execute the ParseNode and get the value out if it's not an identifer.
   const IdentifierNode* identifier = args_vector[0]->AsIdentifier();
   if (!identifier) {
-    *err = Err(args_vector[0], "Expected an identifier for the scope.");
+    *err = Err(args_vector[0].get(), "Expected an identifier for the scope.");
     return Value();
   }
 

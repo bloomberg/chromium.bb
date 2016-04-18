@@ -671,7 +671,7 @@ void Parser::TraverseOrder(const ParseNode* root,
       TraverseOrder(binop->right(), pre, post);
     } else if (const BlockNode* block = root->AsBlock()) {
       for (const auto& statement : block->statements())
-        TraverseOrder(statement, pre, post);
+        TraverseOrder(statement.get(), pre, post);
       TraverseOrder(block->End(), pre, post);
     } else if (const ConditionNode* condition = root->AsConditionNode()) {
       TraverseOrder(condition->condition(), pre, post);
@@ -684,7 +684,7 @@ void Parser::TraverseOrder(const ParseNode* root,
       // Nothing.
     } else if (const ListNode* list = root->AsList()) {
       for (const auto& node : list->contents())
-        TraverseOrder(node, pre, post);
+        TraverseOrder(node.get(), pre, post);
       TraverseOrder(list->End(), pre, post);
     } else if (root->AsLiteral()) {
       // Nothing.

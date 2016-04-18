@@ -181,7 +181,7 @@ class Printer {
   // bracket.
   template <class PARSENODE>  // Just for const covariance.
   void Sequence(SequenceStyle style,
-                const std::vector<PARSENODE*>& list,
+                const std::vector<std::unique_ptr<PARSENODE>>& list,
                 const ParseNode* end,
                 bool force_multiline);
 
@@ -194,7 +194,7 @@ class Printer {
   void InitializeSub(Printer* sub);
 
   template <class PARSENODE>
-  bool ListWillBeMultiline(const std::vector<PARSENODE*>& list,
+  bool ListWillBeMultiline(const std::vector<std::unique_ptr<PARSENODE>>& list,
                            const ParseNode* end);
 
   std::string output_;           // Output buffer.
@@ -385,7 +385,7 @@ void Printer::Block(const ParseNode* root) {
 
   size_t i = 0;
   for (const auto& stmt : block->statements()) {
-    Expr(stmt, kPrecedenceLowest, std::string());
+    Expr(stmt.get(), kPrecedenceLowest, std::string());
     Newline();
     if (stmt->comments()) {
       // Why are before() not printed here too? before() are handled inside
@@ -399,8 +399,8 @@ void Printer::Block(const ParseNode* root) {
       }
     }
     if (i < block->statements().size() - 1 &&
-        (ShouldAddBlankLineInBetween(block->statements()[i],
-                                     block->statements()[i + 1]))) {
+        (ShouldAddBlankLineInBetween(block->statements()[i].get(),
+                                     block->statements()[i + 1].get()))) {
       Newline();
     }
     ++i;
@@ -648,7 +648,7 @@ int Printer::Expr(const ParseNode* root,
 
 template <class PARSENODE>
 void Printer::Sequence(SequenceStyle style,
-                       const std::vector<PARSENODE*>& list,
+                       const std::vector<std::unique_ptr<PARSENODE>>& list,
                        const ParseNode* end,
                        bool force_multiline) {
   if (style == kSequenceStyleList)
@@ -665,7 +665,7 @@ void Printer::Sequence(SequenceStyle style,
     // No elements, and not forcing newlines, print nothing.
   } else if (list.size() == 1 && !force_multiline) {
     Print(" ");
-    Expr(list[0], kPrecedenceLowest, std::string());
+    Expr(list[0].get(), kPrecedenceLowest, std::string());
     CHECK(!list[0]->comments() || list[0]->comments()->after().empty());
     Print(" ");
   } else {
@@ -687,11 +687,11 @@ void Printer::Sequence(SequenceStyle style,
       bool body_of_list = i < list.size() - 1 || style == kSequenceStyleList;
       bool want_comma =
           body_of_list && (style == kSequenceStyleList && !x->AsBlockComment());
-      Expr(x, kPrecedenceLowest, want_comma ? "," : std::string());
+      Expr(x.get(), kPrecedenceLowest, want_comma ? "," : std::string());
       CHECK(!x->comments() || x->comments()->after().empty());
       if (body_of_list) {
         if (i < list.size() - 1 &&
-            ShouldAddBlankLineInBetween(list[i], list[i + 1]))
+            ShouldAddBlankLineInBetween(list[i].get(), list[i + 1].get()))
           Newline();
       }
       ++i;
@@ -734,7 +734,7 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
   bool have_block = func_call->block() != nullptr;
   bool force_multiline = false;
 
-  const std::vector<const ParseNode*>& list = func_call->args()->contents();
+  const auto& list = func_call->args()->contents();
   const ParseNode* end = func_call->args()->End();
 
   if (end && end->comments() && !end->comments()->before().empty())
@@ -767,7 +767,7 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
       IndentState(CurrentColumn(), continuation_requires_indent, false));
   int penalty_one_line = 0;
   for (size_t i = 0; i < list.size(); ++i) {
-    penalty_one_line += sub1.Expr(list[i], kPrecedenceLowest,
+    penalty_one_line += sub1.Expr(list[i].get(), kPrecedenceLowest,
                                   i < list.size() - 1 ? ", " : std::string());
   }
   sub1.Print(terminator);
@@ -785,8 +785,9 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
       IndentState(CurrentColumn(), continuation_requires_indent, false));
   int penalty_multiline_start_same_line = 0;
   for (size_t i = 0; i < list.size(); ++i) {
-    penalty_multiline_start_same_line += sub2.Expr(
-        list[i], kPrecedenceLowest, i < list.size() - 1 ? "," : std::string());
+    penalty_multiline_start_same_line +=
+        sub2.Expr(list[i].get(), kPrecedenceLowest,
+                  i < list.size() - 1 ? "," : std::string());
     if (i < list.size() - 1) {
       sub2.Newline();
     }
@@ -807,8 +808,9 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
           std::abs(sub3.CurrentColumn() - start_column) *
           kPenaltyHorizontalSeparation;
     }
-    penalty_multiline_start_next_line += sub3.Expr(
-        list[i], kPrecedenceLowest, i < list.size() - 1 ? "," : std::string());
+    penalty_multiline_start_next_line +=
+        sub3.Expr(list[i].get(), kPrecedenceLowest,
+                  i < list.size() - 1 ? "," : std::string());
     if (i < list.size() - 1) {
       sub3.Newline();
     }
@@ -852,7 +854,7 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
           Newline();
       }
       bool want_comma = i < list.size() - 1 && !x->AsBlockComment();
-      Expr(x, kPrecedenceLowest, want_comma ? "," : std::string());
+      Expr(x.get(), kPrecedenceLowest, want_comma ? "," : std::string());
       CHECK(!x->comments() || x->comments()->after().empty());
       if (i < list.size() - 1) {
         if (!want_comma)
@@ -900,8 +902,9 @@ void Printer::InitializeSub(Printer* sub) {
 }
 
 template <class PARSENODE>
-bool Printer::ListWillBeMultiline(const std::vector<PARSENODE*>& list,
-                                  const ParseNode* end) {
+bool Printer::ListWillBeMultiline(
+    const std::vector<std::unique_ptr<PARSENODE>>& list,
+    const ParseNode* end) {
   if (list.size() > 1)
     return true;
 
