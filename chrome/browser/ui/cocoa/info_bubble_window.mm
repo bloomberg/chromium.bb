@@ -50,7 +50,7 @@ class AppNotificationBridge : public content::NotificationObserver {
         [owner_ appIsTerminating];
         break;
       default:
-        NOTREACHED() << L"Unexpected notification";
+        NOTREACHED() << "Unexpected notification";
     }
   }
 

@@ -151,6 +151,6 @@ void ExtensionActionPlatformDelegateCocoa::Observe(
       break;
     }
     default:
-      NOTREACHED() << L"Unexpected notification";
+      NOTREACHED() << "Unexpected notification";
   }
 }
