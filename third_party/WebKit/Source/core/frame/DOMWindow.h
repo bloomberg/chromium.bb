@@ -5,10 +5,10 @@
 #ifndef DOMWindow_h
 #define DOMWindow_h
 
+#include "bindings/core/v8/Transferables.h"
 #include "core/CoreExport.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowBase64.h"
-#include "core/frame/Location.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollableArea.h"
 
@@ -31,6 +31,7 @@ class FrameRequestCallback;
 class History;
 class IdleRequestCallback;
 class IdleRequestOptions;
+class Location;
 class LocalDOMWindow;
 class MediaQueryList;
 class Navigator;
@@ -39,8 +40,6 @@ class ScrollToOptions;
 class SerializedScriptValue;
 class Storage;
 class StyleMedia;
-
-typedef HeapVector<Member<MessagePort>, 1> MessagePortArray;
 
 class CORE_EXPORT DOMWindow : public EventTargetWithInlineData, public DOMWindowBase64 {
     DEFINE_WRAPPERTYPEINFO();
@@ -185,7 +184,7 @@ public:
     // window[index]...
     DOMWindow* anonymousIndexedGetter(uint32_t) const;
 
-    void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, LocalDOMWindow* source, ExceptionState&);
+    void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray&, const String& targetOrigin, LocalDOMWindow* source, ExceptionState&);
 
     String sanitizedCrossDomainAccessErrorMessage(const LocalDOMWindow* callingWindow) const;
     String crossDomainAccessErrorMessage(const LocalDOMWindow* callingWindow) const;

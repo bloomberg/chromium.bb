@@ -24,8 +24,8 @@ public:
     // be thrown using v8::ThrowException(), and sets |didThrow|. In this case
     // the caller must not invoke any V8 operations until control returns to
     // V8. When serialization is successful, |didThrow| is false.
-    virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, TransferableArray*, WebBlobInfoArray*, ExceptionState&);
-    PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, TransferableArray*, ExceptionState&);
+    virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, Transferables*, WebBlobInfoArray*, ExceptionState&);
+    PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, Transferables*, ExceptionState&);
     PassRefPtr<SerializedScriptValue> createFromWire(const String&);
     PassRefPtr<SerializedScriptValue> createFromWireBytes(const char* data, size_t length);
     PassRefPtr<SerializedScriptValue> create(const String&);
@@ -56,9 +56,9 @@ public:
     }
 
 protected:
-    ScriptValueSerializer::Status doSerialize(v8::Local<v8::Value>, SerializedScriptValueWriter&, TransferableArray*, WebBlobInfoArray*, SerializedScriptValue*, v8::TryCatch&, String& errorMessage, v8::Isolate*);
-    virtual ScriptValueSerializer::Status doSerialize(v8::Local<v8::Value>, SerializedScriptValueWriter&, TransferableArray*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, String& errorMessage, v8::Isolate*);
-    void transferData(SerializedScriptValue*, SerializedScriptValueWriter&, TransferableArray*, ExceptionState&, v8::Isolate*);
+    ScriptValueSerializer::Status doSerialize(v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, SerializedScriptValue*, v8::TryCatch&, String& errorMessage, v8::Isolate*);
+    virtual ScriptValueSerializer::Status doSerialize(v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, String& errorMessage, v8::Isolate*);
+    void transferData(SerializedScriptValue*, SerializedScriptValueWriter&, Transferables*, ExceptionState&, v8::Isolate*);
 
     virtual v8::Local<v8::Value> deserialize(String& data, BlobDataHandleMap& blobDataHandles, ArrayBufferContentsArray*, ImageBitmapContentsArray*, v8::Isolate*, MessagePortArray* messagePorts, const WebBlobInfoArray*);
 

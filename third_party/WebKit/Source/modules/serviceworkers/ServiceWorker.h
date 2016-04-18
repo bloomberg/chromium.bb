@@ -59,7 +59,7 @@ public:
     // Override 'operator new' to enforce allocation of eagerly finalized object.
     DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
 
-    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
+    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray&, ExceptionState&);
 
     String scriptURL() const;
     String state() const;

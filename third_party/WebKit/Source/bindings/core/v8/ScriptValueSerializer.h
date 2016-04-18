@@ -208,7 +208,7 @@ public:
         JSException
     };
 
-    ScriptValueSerializer(SerializedScriptValueWriter&, TransferableArray*, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
+    ScriptValueSerializer(SerializedScriptValueWriter&, const Transferables*, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
     v8::Isolate* isolate() { return m_scriptState->isolate(); }
     v8::Local<v8::Context> context() { return m_scriptState->context(); }
 
@@ -431,6 +431,9 @@ protected:
     uint32_t nextObjectReference() const { return m_nextObjectReference; }
 
 private:
+
+    void copyTransferables(const Transferables&);
+
     RefPtr<ScriptState> m_scriptState;
     SerializedScriptValueWriter& m_writer;
     v8::TryCatch& m_tryCatch;

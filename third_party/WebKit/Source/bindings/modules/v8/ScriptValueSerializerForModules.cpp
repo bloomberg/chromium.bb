@@ -73,7 +73,7 @@ enum AssymetricCryptoKeyType {
 };
 
 
-ScriptValueSerializerForModules::ScriptValueSerializerForModules(SerializedScriptValueWriter& writer, TransferableArray* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
+ScriptValueSerializerForModules::ScriptValueSerializerForModules(SerializedScriptValueWriter& writer, const Transferables* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
     : ScriptValueSerializer(writer, transferables, blobInfo, blobDataHandles, tryCatch, scriptState)
 {
 }

@@ -168,7 +168,7 @@ bool DOMWindow::isSecureContext() const
     return document()->isSecureContext(ExecutionContext::StandardSecureContextCheck);
 }
 
-void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, const String& targetOrigin, LocalDOMWindow* source, ExceptionState& exceptionState)
+void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray& ports, const String& targetOrigin, LocalDOMWindow* source, ExceptionState& exceptionState)
 {
     if (!isCurrentlyDisplayedInFrame())
         return;

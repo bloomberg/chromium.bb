@@ -23,7 +23,7 @@ public:
     // EventTarget
     const AtomicString& interfaceName() const override;
 
-    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue>, const MessagePortArray*, ExceptionState&);
+    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue>, const MessagePortArray&, ExceptionState&);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
     int requestAnimationFrame(FrameRequestCallback*);

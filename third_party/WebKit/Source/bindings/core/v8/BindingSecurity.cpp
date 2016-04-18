@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Location.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"

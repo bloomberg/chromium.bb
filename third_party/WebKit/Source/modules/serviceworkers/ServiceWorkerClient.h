@@ -34,7 +34,7 @@ public:
     String url() const { return m_url; }
     String frameType() const;
     String id() const { return m_uuid; }
-    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
+    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray&, ExceptionState&);
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 

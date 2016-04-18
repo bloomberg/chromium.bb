@@ -842,7 +842,8 @@ TEST_P(ParameterizedWebFrameTest, PostMessageThenDetach)
 
     LocalFrame* frame = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame());
     NonThrowableExceptionState exceptionState;
-    frame->domWindow()->postMessage(SerializedScriptValueFactory::instance().create("message"), 0, "*", frame->localDOMWindow(), exceptionState);
+    MessagePortArray messagePorts;
+    frame->domWindow()->postMessage(SerializedScriptValueFactory::instance().create("message"), messagePorts, "*", frame->localDOMWindow(), exceptionState);
     webViewHelper.reset();
     EXPECT_FALSE(exceptionState.hadException());
 

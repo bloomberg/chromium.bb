@@ -70,7 +70,7 @@ class ScriptValueSerializerForModules final : public ScriptValueSerializer {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ScriptValueSerializerForModules);
 public:
-    ScriptValueSerializerForModules(SerializedScriptValueWriter&, TransferableArray* transferables, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
+    ScriptValueSerializerForModules(SerializedScriptValueWriter&, const Transferables*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, ScriptState*);
 
 private:
     ScriptValueSerializer::StateBase* doSerializeValue(v8::Local<v8::Value>, ScriptValueSerializer::StateBase* next) override;

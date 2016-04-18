@@ -31,7 +31,7 @@ class CORE_EXPORT InProcessWorkerBase : public AbstractWorker, public ActiveScri
 public:
     ~InProcessWorkerBase() override;
 
-    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
+    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray&, ExceptionState&);
     void terminate();
 
     // ActiveDOMObject

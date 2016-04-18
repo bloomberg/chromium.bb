@@ -4,10 +4,7 @@
 
 #include "bindings/core/v8/ScriptValueSerializer.h"
 
-#include "bindings/core/v8/Transferable.h"
-#include "bindings/core/v8/TransferableArrayBuffer.h"
-#include "bindings/core/v8/TransferableImageBitmap.h"
-#include "bindings/core/v8/TransferableMessagePort.h"
+#include "bindings/core/v8/Transferables.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Blob.h"
@@ -689,7 +686,7 @@ static bool isHostObject(v8::Local<v8::Object> object)
     return object->InternalFieldCount();
 }
 
-ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer, TransferableArray* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
+ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer, const Transferables* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
     : m_scriptState(scriptState)
     , m_writer(writer)
     , m_tryCatch(tryCatch)
@@ -700,29 +697,36 @@ ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer
     , m_blobDataHandles(blobDataHandles)
 {
     ASSERT(!tryCatch.HasCaught());
+    if (transferables)
+        copyTransferables(*transferables);
+}
+
+void ScriptValueSerializer::copyTransferables(const Transferables& transferables)
+{
     v8::Local<v8::Object> creationContext = m_scriptState->context()->Global();
-    if (!transferables)
-        return;
-    if (auto* messagePorts = TransferableMessagePort::get(*transferables)) {
-        for (size_t i = 0; i < messagePorts->getArray().size(); i++) {
-            v8::Local<v8::Object> v8MessagePort = toV8Object(messagePorts->getArray().at(i).get(), creationContext, isolate());
-            m_transferredMessagePorts.set(v8MessagePort, i);
-        }
+
+    // Also kept in separate ObjectPools, iterate and copy the contents
+    // of each kind of transferable vector.
+
+    const auto& messagePorts = transferables.messagePorts;
+    for (size_t i = 0; i < messagePorts.size(); ++i) {
+        v8::Local<v8::Object> v8MessagePort = toV8Object(messagePorts[i].get(), creationContext, isolate());
+        m_transferredMessagePorts.set(v8MessagePort, i);
     }
-    if (auto* arrayBuffers = TransferableArrayBuffer::get(*transferables)) {
-        for (size_t i = 0; i < arrayBuffers->getArray().size(); i++)  {
-            v8::Local<v8::Object> v8ArrayBuffer = toV8Object(arrayBuffers->getArray().at(i).get(), creationContext, isolate());
-            // Coalesce multiple occurences of the same buffer to the first index.
-            if (!m_transferredArrayBuffers.contains(v8ArrayBuffer))
-                m_transferredArrayBuffers.set(v8ArrayBuffer, i);
-        }
+
+    const auto& arrayBuffers = transferables.arrayBuffers;
+    for (size_t i = 0; i < arrayBuffers.size(); ++i)  {
+        v8::Local<v8::Object> v8ArrayBuffer = toV8Object(arrayBuffers[i].get(), creationContext, isolate());
+        // Coalesce multiple occurences of the same buffer to the first index.
+        if (!m_transferredArrayBuffers.contains(v8ArrayBuffer))
+            m_transferredArrayBuffers.set(v8ArrayBuffer, i);
     }
-    if (auto* imageBitmaps = TransferableImageBitmap::get(*transferables)) {
-        for (size_t i = 0; i < imageBitmaps->getArray().size(); i++) {
-            v8::Local<v8::Object> v8ImageBitmap = toV8Object(imageBitmaps->getArray().at(i).get(), creationContext, isolate());
-            if (!m_transferredImageBitmaps.contains(v8ImageBitmap))
-                m_transferredImageBitmaps.set(v8ImageBitmap, i);
-        }
+
+    const auto& imageBitmaps = transferables.imageBitmaps;
+    for (size_t i = 0; i < imageBitmaps.size(); ++i) {
+        v8::Local<v8::Object> v8ImageBitmap = toV8Object(imageBitmaps[i].get(), creationContext, isolate());
+        if (!m_transferredImageBitmaps.contains(v8ImageBitmap))
+            m_transferredImageBitmaps.set(v8ImageBitmap, i);
     }
 }
 

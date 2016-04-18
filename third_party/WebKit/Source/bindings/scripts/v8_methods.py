@@ -110,10 +110,10 @@ def method_context(interface, method, is_visible=True):
     is_post_message = 'PostMessage' in extended_attributes
     if is_post_message:
         includes.add('bindings/core/v8/SerializedScriptValueFactory.h')
+        includes.add('bindings/core/v8/Transferables.h')
         includes.add('core/dom/DOMArrayBuffer.h')
         includes.add('core/dom/MessagePort.h')
         includes.add('core/frame/ImageBitmap.h')
-        includes.add('bindings/core/v8/TransferableMessagePort.h')
 
     if 'LenientThis' in extended_attributes:
         raise Exception('[LenientThis] is not supported for operations.')

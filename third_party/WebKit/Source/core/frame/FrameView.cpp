@@ -40,6 +40,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Location.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/Settings.h"
 #include "core/frame/TopControls.h"

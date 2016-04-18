@@ -49,7 +49,7 @@ const AtomicString& ServiceWorker::interfaceName() const
     return EventTargetNames::ServiceWorker;
 }
 
-void ServiceWorker::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
+void ServiceWorker::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray& ports, ExceptionState& exceptionState)
 {
     ServiceWorkerContainerClient* client = ServiceWorkerContainerClient::from(getExecutionContext());
     if (!client || !client->provider()) {

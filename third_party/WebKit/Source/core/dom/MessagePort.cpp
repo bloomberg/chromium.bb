@@ -66,7 +66,7 @@ MessagePort::~MessagePort()
         m_scriptStateForConversion->disposePerContextData();
 }
 
-void MessagePort::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
+void MessagePort::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray& ports, ExceptionState& exceptionState)
 {
     if (!isEntangled())
         return;
@@ -75,18 +75,15 @@ void MessagePort::postMessage(ExecutionContext* context, PassRefPtr<SerializedSc
 
     OwnPtr<MessagePortChannelArray> channels;
     // Make sure we aren't connected to any of the passed-in ports.
-    if (ports) {
-        for (unsigned i = 0; i < ports->size(); ++i) {
-            MessagePort* dataPort = (*ports)[i];
-            if (dataPort == this) {
-                exceptionState.throwDOMException(DataCloneError, "Port at index " + String::number(i) + " contains the source port.");
-                return;
-            }
-        }
-        channels = MessagePort::disentanglePorts(context, ports, exceptionState);
-        if (exceptionState.hadException())
+    for (unsigned i = 0; i < ports.size(); ++i) {
+        if (ports[i] == this) {
+            exceptionState.throwDOMException(DataCloneError, "Port at index " + String::number(i) + " contains the source port.");
             return;
+        }
     }
+    channels = MessagePort::disentanglePorts(context, ports, exceptionState);
+    if (exceptionState.hadException())
+        return;
 
     if (message->containsTransferableArrayBuffer())
         getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "MessagePort cannot send an ArrayBuffer as a transferable object yet. See http://crbug.com/334408"));
@@ -223,18 +220,17 @@ bool MessagePort::hasPendingActivity() const
     return m_started && isEntangled();
 }
 
-PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(ExecutionContext* context, const MessagePortArray* ports, ExceptionState& exceptionState)
+PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(ExecutionContext* context, const MessagePortArray& ports, ExceptionState& exceptionState)
 {
-    if (!ports || !ports->size())
+    if (!ports.size())
         return nullptr;
 
-    // HeapHashSet used to efficiently check for duplicates in the passed-in array.
-    HeapHashSet<Member<MessagePort>> portSet;
+    HeapHashSet<Member<MessagePort>> visited;
 
     // Walk the incoming array - if there are any duplicate ports, or null ports or cloned ports, throw an error (per section 8.3.3 of the HTML5 spec).
-    for (unsigned i = 0; i < ports->size(); ++i) {
-        MessagePort* port = (*ports)[i];
-        if (!port || port->isNeutered() || portSet.contains(port)) {
+    for (unsigned i = 0; i < ports.size(); ++i) {
+        MessagePort* port = ports[i];
+        if (!port || port->isNeutered() || visited.contains(port)) {
             String type;
             if (!port)
                 type = "null";
@@ -245,15 +241,15 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(ExecutionConte
             exceptionState.throwDOMException(DataCloneError, "Port at index "  + String::number(i) + " is " + type + ".");
             return nullptr;
         }
-        portSet.add(port);
+        visited.add(port);
     }
 
     UseCounter::count(context, UseCounter::MessagePortsTransferred);
 
     // Passed-in ports passed validity checks, so we can disentangle them.
-    OwnPtr<MessagePortChannelArray> portArray = adoptPtr(new MessagePortChannelArray(ports->size()));
-    for (unsigned i = 0; i < ports->size(); ++i)
-        (*portArray)[i] = (*ports)[i]->disentangle();
+    OwnPtr<MessagePortChannelArray> portArray = adoptPtr(new MessagePortChannelArray(ports.size()));
+    for (unsigned i = 0; i < ports.size(); ++i)
+        (*portArray)[i] = ports[i]->disentangle();
     return portArray.release();
 }
 
