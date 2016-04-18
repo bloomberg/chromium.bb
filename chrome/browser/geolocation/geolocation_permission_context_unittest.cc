@@ -22,8 +22,10 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
+#include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_context_base.h"
+#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/chrome_switches.h"
@@ -280,8 +282,9 @@ void GeolocationPermissionContextTests::SetUp() {
 #endif
   InfoBarService::CreateForWebContents(web_contents());
   TabSpecificContentSettings::CreateForWebContents(web_contents());
-  geolocation_permission_context_ =
-      GeolocationPermissionContextFactory::GetForProfile(profile());
+  geolocation_permission_context_ = static_cast<GeolocationPermissionContext*>(
+      PermissionManager::Get(profile())->GetPermissionContext(
+          content::PermissionType::GEOLOCATION));
 #if BUILDFLAG(ANDROID_JAVA_UI)
   static_cast<GeolocationPermissionContextAndroid*>(
       geolocation_permission_context_)

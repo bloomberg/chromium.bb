@@ -4,8 +4,8 @@
 
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 
-#include "chrome/browser/notifications/notification_permission_context_factory.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -27,7 +27,7 @@ NotifierStateTrackerFactory::NotifierStateTrackerFactory()
     : BrowserContextKeyedServiceFactory(
           "NotifierStateTracker",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(NotificationPermissionContextFactory::GetInstance());
+  DependsOn(PermissionManagerFactory::GetInstance());
 }
 
 NotifierStateTrackerFactory::~NotifierStateTrackerFactory() {}

@@ -5,13 +5,13 @@
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
 
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/geolocation/geolocation_permission_context.h"
-#include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
+#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -23,9 +23,9 @@ namespace extensions {
 
 namespace {
 
-void CallbackContentSettingWrapper(const base::Callback<void(bool)>& callback,
-                                   ContentSetting content_setting) {
-  callback.Run(content_setting == CONTENT_SETTING_ALLOW);
+void CallbackWrapper(const base::Callback<void(bool)>& callback,
+                     blink::mojom::PermissionStatus status) {
+  callback.Run(status == blink::mojom::PermissionStatus::GRANTED);
 }
 
 }  // anonymous namespace
@@ -183,11 +183,10 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
   // ChromeWebViewPermissionHelperDelegate because this callback is called from
   // ChromeWebViewPermissionHelperDelegate::SetPermission.
   const WebViewPermissionHelper::PermissionResponseCallback
-      permission_callback =
-          base::Bind(&ChromeWebViewPermissionHelperDelegate::
-                         OnGeolocationPermissionResponse,
-                     weak_factory_.GetWeakPtr(), bridge_id,
-                     base::Bind(&CallbackContentSettingWrapper, callback));
+      permission_callback = base::Bind(&ChromeWebViewPermissionHelperDelegate::
+                                           OnGeolocationPermissionResponse,
+                                       weak_factory_.GetWeakPtr(), bridge_id,
+                                       base::Bind(&CallbackWrapper, callback));
   int request_id = web_view_permission_helper()->RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_GEOLOCATION,
       request_info,
@@ -198,7 +197,7 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
 
 void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
     int bridge_id,
-    const base::Callback<void(ContentSetting)>& callback,
+    const base::Callback<void(blink::mojom::PermissionStatus)>& callback,
     bool allow,
     const std::string& user_input) {
   // The <webview> embedder has allowed the permission. We now need to make sure
@@ -206,7 +205,7 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
   RemoveBridgeID(bridge_id);
 
   if (!allow || !web_view_guest()->attached()) {
-    callback.Run(CONTENT_SETTING_BLOCK);
+    callback.Run(blink::mojom::PermissionStatus::DENIED);
     return;
   }
 
@@ -226,13 +225,13 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
 
   Profile* profile = Profile::FromBrowserContext(
       web_view_guest()->browser_context());
-  GeolocationPermissionContextFactory::GetForProfile(profile)->
-      RequestPermission(
-          web_contents,
-          request_id,
-          web_view_guest()->embedder_web_contents()
-          ->GetLastCommittedURL().GetOrigin(),
-          callback);
+  PermissionManager::Get(profile)->RequestPermission(
+      content::PermissionType::GEOLOCATION, web_contents->GetMainFrame(),
+      web_view_guest()
+          ->embedder_web_contents()
+          ->GetLastCommittedURL()
+          .GetOrigin(),
+      callback);
 }
 
 void ChromeWebViewPermissionHelperDelegate::CancelGeolocationPermissionRequest(

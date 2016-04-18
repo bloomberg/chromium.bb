@@ -13,21 +13,22 @@
 #include "base/time/time.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_permission_context.h"
-#include "chrome/browser/notifications/notification_permission_context_factory.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // -----------------------------------------------------------------------------
@@ -400,18 +401,19 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   // This case should succeed because a normal page URL is used.
   std::string script_result;
 
-  NotificationPermissionContext* permission_context =
-      NotificationPermissionContextFactory::GetForProfile(browser()->profile());
-  ASSERT_TRUE(permission_context);
+  PermissionManager* permission_manager =
+      PermissionManager::Get(browser()->profile());
 
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            permission_context->GetPermissionStatus(TestPageUrl(),
-                                                    TestPageUrl()));
+  EXPECT_EQ(blink::mojom::PermissionStatus::ASK,
+            permission_manager->GetPermissionStatus(
+                content::PermissionType::NOTIFICATIONS, TestPageUrl(),
+                TestPageUrl()));
 
   RequestAndAcceptPermission();
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            permission_context->GetPermissionStatus(TestPageUrl(),
-                                                    TestPageUrl()));
+  EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
+            permission_manager->GetPermissionStatus(
+                content::PermissionType::NOTIFICATIONS, TestPageUrl(),
+                TestPageUrl()));
 
   // This case should fail because a file URL is used.
   base::FilePath dir_source_root;
@@ -422,12 +424,14 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), file_url);
 
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            permission_context->GetPermissionStatus(file_url, file_url));
+  EXPECT_EQ(blink::mojom::PermissionStatus::ASK,
+            permission_manager->GetPermissionStatus(
+                content::PermissionType::NOTIFICATIONS, file_url, file_url));
 
   RequestAndAcceptPermission();
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            permission_context->GetPermissionStatus(file_url, file_url))
+  EXPECT_EQ(blink::mojom::PermissionStatus::ASK,
+            permission_manager->GetPermissionStatus(
+                content::PermissionType::NOTIFICATIONS, file_url, file_url))
       << "If this test fails, you may have fixed a bug preventing file origins "
       << "from sending their origin from Blink; if so you need to update the "
       << "display function for notification origins to show the file path.";

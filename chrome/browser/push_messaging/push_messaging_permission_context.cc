@@ -5,8 +5,7 @@
 #include "chrome/browser/push_messaging/push_messaging_permission_context.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/notifications/notification_permission_context.h"
-#include "chrome/browser/notifications/notification_permission_context_factory.h"
+#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,19 +40,16 @@ ContentSetting PushMessagingPermissionContext::GetPermissionStatus(
       PermissionContextBase::GetPermissionStatus(requesting_origin,
                                                  embedding_origin);
 
-  NotificationPermissionContext* notification_context =
-      NotificationPermissionContextFactory::GetForProfile(profile_);
-  DCHECK(notification_context);
+  blink::mojom::PermissionStatus notifications_permission =
+      PermissionManager::Get(profile_)->GetPermissionStatus(
+          content::PermissionType::NOTIFICATIONS, requesting_origin,
+          embedding_origin);
 
-  ContentSetting notifications_permission =
-      notification_context->GetPermissionStatus(requesting_origin,
-                                                embedding_origin);
-
-  if (notifications_permission == CONTENT_SETTING_BLOCK ||
+  if (notifications_permission == blink::mojom::PermissionStatus::DENIED ||
       push_content_setting == CONTENT_SETTING_BLOCK) {
     return CONTENT_SETTING_BLOCK;
   }
-  if (notifications_permission == CONTENT_SETTING_ASK)
+  if (notifications_permission == blink::mojom::PermissionStatus::ASK)
     return CONTENT_SETTING_ASK;
 
   DCHECK(push_content_setting == CONTENT_SETTING_ALLOW ||
@@ -88,12 +84,9 @@ void PushMessagingPermissionContext::DecidePermission(
     return;
   }
 
-  NotificationPermissionContext* notification_context =
-      NotificationPermissionContextFactory::GetForProfile(profile_);
-  DCHECK(notification_context);
-
-  notification_context->RequestPermission(
-      web_contents, id, requesting_origin,
+  PermissionManager::Get(profile_)->RequestPermission(
+      content::PermissionType::NOTIFICATIONS, web_contents->GetMainFrame(),
+      requesting_origin,
       base::Bind(&PushMessagingPermissionContext::DecidePushPermission,
                  weak_factory_ui_thread_.GetWeakPtr(), id, requesting_origin,
                  embedding_origin, callback));
@@ -112,8 +105,10 @@ void PushMessagingPermissionContext::DecidePushPermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const BrowserPermissionCallback& callback,
-    ContentSetting notification_content_setting) {
+    blink::mojom::PermissionStatus notification_status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_NE(notification_status, blink::mojom::PermissionStatus::ASK);
+
   ContentSetting push_content_setting =
       HostContentSettingsMapFactory::GetForProfile(profile_)
           ->GetContentSettingAndMaybeUpdateLastUsage(
@@ -128,10 +123,10 @@ void PushMessagingPermissionContext::DecidePushPermission(
     return;
   }
 
-  if (notification_content_setting != CONTENT_SETTING_ALLOW) {
+  if (notification_status == blink::mojom::PermissionStatus::DENIED) {
     DVLOG(1) << "Notification permission has not been granted.";
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, notification_content_setting);
+                        false /* persist */, CONTENT_SETTING_BLOCK);
     return;
   }
 

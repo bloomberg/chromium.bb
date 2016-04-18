@@ -8,7 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_context_base.h"
-#include "components/content_settings/core/common/content_settings_types.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 class PermissionRequestID;
 class Profile;
@@ -42,11 +42,12 @@ class PushMessagingPermissionContext : public PermissionContextBase {
 
   // Used to decide the permission for push, once the permission for
   // Notification has been granted/denied.
-  void DecidePushPermission(const PermissionRequestID& id,
-                            const GURL& requesting_origin,
-                            const GURL& embedding_origin,
-                            const BrowserPermissionCallback& callback,
-                            ContentSetting notifications_content_setting);
+  void DecidePushPermission(
+      const PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      const BrowserPermissionCallback& callback,
+      blink::mojom::PermissionStatus notifications_status);
 
   Profile* profile_;
 

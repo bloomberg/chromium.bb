@@ -5,7 +5,6 @@
 #include "chrome/browser/permissions/permission_manager_factory.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_context.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,8 +27,6 @@ PermissionManagerFactory::PermissionManagerFactory()
         "PermissionManagerFactory",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(HostContentSettingsMapFactory::GetInstance());
-  for (KeyedServiceBaseFactory* factory : PermissionContext::GetFactories())
-    DependsOn(factory);
 }
 
 PermissionManagerFactory::~PermissionManagerFactory() {

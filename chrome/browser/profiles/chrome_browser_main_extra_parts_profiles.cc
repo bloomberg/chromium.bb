@@ -23,13 +23,11 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/notifications/extension_welcome_notification_factory.h"
-#include "chrome/browser/notifications/notification_permission_context_factory.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 #include "chrome/browser/password_manager/password_manager_setting_migrator_service_factory.h"
@@ -110,9 +108,7 @@
 #endif
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-#include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
-#else
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/cross_device_promo_factory.h"
 #endif
 
@@ -195,10 +191,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(OS_ANDROID)
   chrome::android::DataUseUITabModelFactory::GetInstance();
 #endif
-  GeolocationPermissionContextFactory::GetInstance();
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  ProtectedMediaIdentifierPermissionContextFactory::GetInstance();
-#endif
 #if defined(ENABLE_PRINT_PREVIEW)
   CloudPrintProxyServiceFactory::GetInstance();
 #endif
@@ -210,7 +202,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(ENABLE_EXTENSIONS)
   ExtensionWelcomeNotificationFactory::GetInstance();
 #endif
-  NotificationPermissionContextFactory::GetInstance();
   NotifierStateTrackerFactory::GetInstance();
 #endif  // defined(ENABLE_NOTIFICATIONS)
   dom_distiller::DomDistillerServiceFactory::GetInstance();

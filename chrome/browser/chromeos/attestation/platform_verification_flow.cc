@@ -17,8 +17,7 @@
 #include "chrome/browser/chromeos/attestation/attestation_signed_data.pb.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/media/protected_media_identifier_permission_context.h"
-#include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
+#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/chromeos_switches.h"
@@ -31,6 +30,7 @@
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -38,6 +38,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/cert/x509_certificate.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 namespace {
 
@@ -105,21 +106,20 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
   }
 
   bool IsPermittedByUser(content::WebContents* web_contents) override {
-    ProtectedMediaIdentifierPermissionContext* permission_context =
-        ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(
-            Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-
     // TODO(xhwang): Using delegate_->GetURL() here is not right. The platform
     // verification may be requested by a frame from a different origin. This
     // will be solved when http://crbug.com/454847 is fixed.
     const GURL& requesting_origin = GetURL(web_contents).GetOrigin();
 
     GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
+    blink::mojom::PermissionStatus status =
+        PermissionManager::Get(
+            Profile::FromBrowserContext(web_contents->GetBrowserContext()))
+            ->GetPermissionStatus(
+                content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
+                requesting_origin, embedding_origin);
 
-    ContentSetting content_setting = permission_context->GetPermissionStatus(
-        requesting_origin, embedding_origin);
-
-    return content_setting == CONTENT_SETTING_ALLOW;
+    return status == blink::mojom::PermissionStatus::GRANTED;
   }
 
   bool IsInSupportedMode(content::WebContents* web_contents) override {

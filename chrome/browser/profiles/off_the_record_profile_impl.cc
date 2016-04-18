@@ -60,11 +60,6 @@
 #include "storage/browser/database/database_tracker.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/media/protected_media_identifier_permission_context.h"
-#include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proxy_config/proxy_prefs.h"
 #endif  // defined(OS_ANDROID)

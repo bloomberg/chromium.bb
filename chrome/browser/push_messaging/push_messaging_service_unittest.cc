@@ -13,16 +13,17 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/push_messaging/push_messaging_permission_context.h"
-#include "chrome/browser/push_messaging/push_messaging_permission_context_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/gcm_driver/crypto/gcm_crypto_test_helpers.h"
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/gcm_profile_service.h"
@@ -74,27 +75,6 @@ class PushMessagingTestingProfile : public TestingProfile {
   DISALLOW_COPY_AND_ASSIGN(PushMessagingTestingProfile);
 };
 
-// Implementation of the PushMessagingPermissionContext that always allows usage
-// of Push Messaging, regardless of the actual implementation.
-class FakePushMessagingPermissionContext
-    : public PushMessagingPermissionContext {
- public:
-  explicit FakePushMessagingPermissionContext(Profile* profile)
-      : PushMessagingPermissionContext(profile) {}
-  ~FakePushMessagingPermissionContext() override {}
-
-  ContentSetting GetPermissionStatus(
-      const GURL& requesting_origin,
-      const GURL& embedding_origin) const override {
-    return CONTENT_SETTING_ALLOW;
-  }
-};
-
-scoped_ptr<KeyedService> BuildFakePushMessagingPermissionContext(
-    content::BrowserContext* context) {
-  return scoped_ptr<KeyedService>(
-      new FakePushMessagingPermissionContext(static_cast<Profile*>(context)));
-}
 
 scoped_ptr<KeyedService> BuildFakeGCMProfileService(
     content::BrowserContext* context) {
@@ -106,9 +86,13 @@ scoped_ptr<KeyedService> BuildFakeGCMProfileService(
 class PushMessagingServiceTest : public ::testing::Test {
  public:
   PushMessagingServiceTest() {
-    // Override the permission context factory to always allow Push Messaging.
-    PushMessagingPermissionContextFactory::GetInstance()->SetTestingFactory(
-        &profile_, &BuildFakePushMessagingPermissionContext);
+    // Always allow push notifications in the profile.
+    HostContentSettingsMap* host_content_settings_map =
+        HostContentSettingsMapFactory::GetForProfile(&profile_);
+    host_content_settings_map->SetDefaultContentSetting(
+        CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
+    host_content_settings_map->SetDefaultContentSetting(
+        CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, CONTENT_SETTING_ALLOW);
 
     // Override the GCM Profile service so that we can send fake messages.
     gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(

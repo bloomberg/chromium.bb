@@ -164,28 +164,32 @@ TEST_F(PushMessagingPermissionContextTest, DecidePushPermission) {
   BrowserPermissionCallback callback = base::Bind(DoNothing);
 
   context.DecidePushPermission(request_id, GURL(kOriginA), GURL(kOriginA),
-                               callback, CONTENT_SETTING_DEFAULT);
+                               callback,
+                               blink::mojom::PermissionStatus::DENIED);
   EXPECT_FALSE(context.was_persisted());
   EXPECT_FALSE(context.was_granted());
 
   SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                     CONTENT_SETTING_ALLOW);
   context.DecidePushPermission(request_id, GURL(kOriginA), GURL(kOriginA),
-                               callback, CONTENT_SETTING_ALLOW);
+                               callback,
+                               blink::mojom::PermissionStatus::GRANTED);
   EXPECT_TRUE(context.was_persisted());
   EXPECT_TRUE(context.was_granted());
 
   SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                     CONTENT_SETTING_BLOCK);
   context.DecidePushPermission(request_id, GURL(kOriginA), GURL(kOriginA),
-                               callback, CONTENT_SETTING_ALLOW);
+                               callback,
+                               blink::mojom::PermissionStatus::GRANTED);
   EXPECT_TRUE(context.was_persisted());
   EXPECT_FALSE(context.was_granted());
 
   SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                     CONTENT_SETTING_ASK);
   context.DecidePushPermission(request_id, GURL(kOriginA), GURL(kOriginA),
-                               callback, CONTENT_SETTING_ALLOW);
+                               callback,
+                               blink::mojom::PermissionStatus::GRANTED);
   EXPECT_TRUE(context.was_persisted());
   EXPECT_TRUE(context.was_granted());
 }

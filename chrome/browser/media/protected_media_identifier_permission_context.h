@@ -39,6 +39,7 @@ class ProtectedMediaIdentifierPermissionContext
     : public PermissionContextBase {
  public:
   explicit ProtectedMediaIdentifierPermissionContext(Profile* profile);
+  ~ProtectedMediaIdentifierPermissionContext() override;
 
   // PermissionContextBase implementation.
 #if defined(OS_CHROMEOS)
@@ -55,8 +56,6 @@ class ProtectedMediaIdentifierPermissionContext
                                const PermissionRequestID& id) override;
 
  private:
-  ~ProtectedMediaIdentifierPermissionContext() override;
-
   void UpdateTabContext(const PermissionRequestID& id,
                         const GURL& requesting_frame,
                         bool allowed) override;
