@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -40,7 +41,9 @@ IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, CreationWithNoProfile) {
 
 // Create a window with a particular profile.
 IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, CreationWithProfile) {
-  Profile* lastProfile = [[NSApp delegate] lastProfile];
+  AppController* appController =
+      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+  Profile* lastProfile = [appController lastProfile];
   base::scoped_nsobject<WindowAppleScript> aWindow(
       [[WindowAppleScript alloc] initWithProfile:lastProfile]);
   EXPECT_TRUE(aWindow.get());

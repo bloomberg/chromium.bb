@@ -7,9 +7,11 @@
 #include <Carbon/Carbon.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/foundation_util.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
+#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -141,7 +143,10 @@ class AppNotificationBridge : public content::NotificationObserver {
   if (([event keyCode] == kVK_Escape) ||
       (([event keyCode] == kVK_ANSI_Period) &&
        (([event modifierFlags] & NSCommandKeyMask) != 0))) {
-    [[self windowController] cancel:self];
+    BaseBubbleController* bubbleController =
+        base::mac::ObjCCastStrict<BaseBubbleController>(
+            [self windowController]);
+    [bubbleController cancel:self];
     return YES;
   }
   return [super performKeyEquivalent:event];

@@ -1005,11 +1005,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
   return enable;
 }
 
-// Called when the user picks a menu item when there are no key windows, or when
-// there is no foreground browser window. Calls through to the browser object to
-// execute the command. This assumes that the command is supported and doesn't
-// check, otherwise it should have been disabled in the UI in
-// |-validateUserInterfaceItem:|.
 - (void)commandDispatch:(id)sender {
   Profile* lastProfile = [self safeLastProfileForNewWindows];
 

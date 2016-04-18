@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/history_menu_cocoa_controller.h"
 
+#import "base/mac/foundation_util.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_HISTORY_MENU
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,7 +34,8 @@ using content::Referrer;
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
-  AppController* controller = [NSApp delegate];
+  AppController* controller =
+      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
   return ![controller keyWindowIsModal];
 }
 

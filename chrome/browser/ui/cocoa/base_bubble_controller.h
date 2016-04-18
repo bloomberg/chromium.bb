@@ -88,6 +88,9 @@ class TabStripModelObserverBridge;
         parentWindow:(NSWindow*)parentWindow
           anchoredAt:(NSPoint)anchoredAt;
 
+// Closes the bubble with BUBBLE_CLOSE_CANCELED.
+- (IBAction)cancel:(id)sender;
+
 // Creates an autoreleased horizontal separator view with a given frame. The
 // height of the frame is ignored.
 - (NSBox*)horizontalSeparatorWithFrame:(NSRect)frame;

@@ -5,6 +5,8 @@
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 
 #include "base/logging.h"
+#import "base/mac/foundation_util.h"
+#import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 #import "ui/base/cocoa/user_interface_item_command_handler.h"
 
@@ -78,9 +80,12 @@
   // command handler, defer to AppController.
   if ([item action] == @selector(commandDispatch:) ||
       [item action] == @selector(commandDispatchUsingKeyModifiers:)) {
-    return commandHandler_
-               ? [commandHandler_ validateUserInterfaceItem:item window:self]
-               : [[NSApp delegate] validateUserInterfaceItem:item];
+    if (commandHandler_)
+      return [commandHandler_ validateUserInterfaceItem:item window:self];
+
+    AppController* appController =
+        base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+    return [appController validateUserInterfaceItem:item];
   }
 
   return [super validateUserInterfaceItem:item];

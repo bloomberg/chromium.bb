@@ -437,7 +437,8 @@ class AppControllerMainMenuBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
     HistoryMenuResetAfterProfileDeletion) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  AppController* ac = [NSApp delegate];
+  AppController* ac =
+      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
 
   // Use the existing profile as profile 1.
   Profile* profile1 = browser()->profile();

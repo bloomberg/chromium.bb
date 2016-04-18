@@ -6,13 +6,15 @@
 #include "base/debug/debugger.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
+#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 
-@interface InfoBubbleWindowController : NSWindowController
-- (IBAction)cancel:(id)sender;
+// Mock BaseBubbleController to pick up -cancel:, but don't call the designated
+// initializer in order to test just InfoBubbleWindow.
+@interface InfoBubbleWindowController : BaseBubbleController
 @end
 
 @implementation InfoBubbleWindowController

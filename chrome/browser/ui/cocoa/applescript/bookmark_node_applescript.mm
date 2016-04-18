@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/applescript/bookmark_node_applescript.h"
 
 #include "base/logging.h"
+#import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -114,7 +115,8 @@ using bookmarks::BookmarkNode;
 }
 
 - (BookmarkModel*)bookmarkModel {
-  AppController* appDelegate = [NSApp delegate];
+  AppController* appDelegate =
+      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
 
   Profile* lastProfile = [appDelegate lastProfile];
   if (!lastProfile) {

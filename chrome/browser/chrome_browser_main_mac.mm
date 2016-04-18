@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/mac/bundle_locations.h"
+#import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
@@ -204,6 +205,7 @@ void ChromeBrowserMainPartsMac::PostProfileInit() {
 }
 
 void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {
-  AppController* appController = [NSApp delegate];
+  AppController* appController =
+      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
   [appController didEndMainMessageLoop];
 }

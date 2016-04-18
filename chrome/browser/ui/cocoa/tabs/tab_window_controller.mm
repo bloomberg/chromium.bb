@@ -33,23 +33,15 @@
 @implementation TabWindowOverlayWindow
 
 - (const ui::ThemeProvider*)themeProvider {
-  if ([self parentWindow])
-    return [[[self parentWindow] windowController] themeProvider];
-  return NULL;
+  return [[self parentWindow] themeProvider];
 }
 
 - (ThemedWindowStyle)themedWindowStyle {
-  if ([self parentWindow])
-    return [[[self parentWindow] windowController] themedWindowStyle];
-  return NO;
+  return [[self parentWindow] themedWindowStyle];
 }
 
 - (NSPoint)themeImagePositionForAlignment:(ThemeImageAlignment)alignment {
-  if ([self parentWindow]) {
-    return [[[self parentWindow] windowController]
-        themeImagePositionForAlignment:alignment];
-  }
-  return NSZeroPoint;
+  return [[self parentWindow] themeImagePositionForAlignment:alignment];
 }
 
 @end

@@ -199,9 +199,13 @@
   // command handler, defer to AppController.
   if ([item action] == @selector(commandDispatch:) ||
       [item action] == @selector(commandDispatchUsingKeyModifiers:)) {
-    return commandHandler_
-               ? [commandHandler_ validateUserInterfaceItem:item window:self]
-               : [[NSApp delegate] validateUserInterfaceItem:item];
+    if (commandHandler_)
+      return [commandHandler_ validateUserInterfaceItem:item window:self];
+
+    id appController = [NSApp delegate];
+    DCHECK([appController
+        conformsToProtocol:@protocol(NSUserInterfaceValidations)]);
+    return [appController validateUserInterfaceItem:item];
   }
 
   return [super validateUserInterfaceItem:item];

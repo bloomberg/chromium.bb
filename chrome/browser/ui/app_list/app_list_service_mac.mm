@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
+#import "base/mac/foundation_util.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -441,7 +442,8 @@ bool AppListServiceMac::IsAppListVisible() const {
 void AppListServiceMac::EnableAppList(Profile* initial_profile,
                                       AppListEnableSource enable_source) {
   AppListServiceImpl::EnableAppList(initial_profile, enable_source);
-  AppController* controller = [NSApp delegate];
+  AppController* controller =
+      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
   [controller initAppShimMenuController];
 }
 

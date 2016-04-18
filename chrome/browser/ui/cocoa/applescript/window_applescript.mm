@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -42,7 +43,8 @@
   NSScriptCommand* command = [NSScriptCommand currentCommand];
   NSString* mode = [[[command evaluatedArguments]
       objectForKey:@"KeyDictionary"] objectForKey:@"mode"];
-  AppController* appDelegate = [NSApp delegate];
+  AppController* appDelegate =
+      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
 
   Profile* lastProfile = [appDelegate lastProfile];
 

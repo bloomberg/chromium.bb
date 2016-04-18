@@ -140,6 +140,13 @@ class WorkAreaWatcherObserver;
 // dialogs that are window modal will block the browser.
 - (BOOL)keyWindowIsModal;
 
+// Called when the user picks a menu item when there are no key windows, or when
+// there is no foreground browser window. Calls through to the browser object to
+// execute the command. This assumes that the command is supported and doesn't
+// check, otherwise it should have been disabled in the UI in
+// |-validateUserInterfaceItem:|.
+- (void)commandDispatch:(id)sender;
+
 // Show the preferences window, or bring it to the front if it's already
 // visible.
 - (IBAction)showPreferences:(id)sender;
