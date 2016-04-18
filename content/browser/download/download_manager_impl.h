@@ -203,8 +203,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // DownloadItemImpl already normalizes the string GUID.
   DownloadGuidMap downloads_by_guid_;
 
-  int history_size_;
-
   // True if the download manager has been initialized and requires a shutdown.
   bool shutdown_needed_;
 

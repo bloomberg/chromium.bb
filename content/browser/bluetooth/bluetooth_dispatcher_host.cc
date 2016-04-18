@@ -320,13 +320,11 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
  public:
   RequestDeviceSession(int thread_id,
                        int request_id,
-                       int frame_routing_id,
                        url::Origin origin,
                        const std::vector<BluetoothScanFilter>& filters,
                        const std::vector<BluetoothUUID>& optional_services)
       : thread_id(thread_id),
         request_id(request_id),
-        frame_routing_id(frame_routing_id),
         origin(origin),
         filters(filters),
         optional_services(optional_services) {}
@@ -353,7 +351,6 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
 
   const int thread_id;
   const int request_id;
-  const int frame_routing_id;
   const url::Origin origin;
   const std::vector<BluetoothScanFilter> filters;
   const std::vector<BluetoothUUID> optional_services;
@@ -1045,9 +1042,9 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
 
   // Create storage for the information that backs the chooser, and show the
   // chooser.
-  RequestDeviceSession* const session = new RequestDeviceSession(
-      thread_id, request_id, frame_routing_id, requesting_origin, filters,
-      optional_services_blacklist_filtered);
+  RequestDeviceSession* const session =
+      new RequestDeviceSession(thread_id, request_id, requesting_origin,
+                               filters, optional_services_blacklist_filtered);
   int chooser_id = request_device_sessions_.Add(session);
 
   BluetoothChooser::EventHandler chooser_event_handler =

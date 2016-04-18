@@ -26,8 +26,7 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
       output_delay_ms_(0),
       initialized_(false),
       playing_(false),
-      recording_(false),
-      microphone_volume_(0) {
+      recording_(false) {
   DVLOG(1) << "WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()";
   // This object can be constructed on either the signaling thread or the main
   // thread, so we need to detach these thread checkers here and have them

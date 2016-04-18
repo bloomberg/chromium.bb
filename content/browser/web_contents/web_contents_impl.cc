@@ -4218,7 +4218,6 @@ void WebContentsImpl::DidStopLoading() {
 
     details.reset(new LoadNotificationDetails(
         entry->GetVirtualURL(),
-        entry->GetTransitionType(),
         elapsed,
         &controller_,
         controller_.GetCurrentEntryIndex()));

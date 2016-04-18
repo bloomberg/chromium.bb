@@ -375,8 +375,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       can_compose_inline_(true),
       has_composition_text_(false),
       accept_return_character_(false),
-      last_swapped_software_frame_scale_factor_(1.f),
-      paint_canvas_(NULL),
       synthetic_move_sent_(false),
       cursor_visibility_state_in_renderer_(UNKNOWN),
 #if defined(OS_WIN)

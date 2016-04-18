@@ -80,7 +80,6 @@ class AppCacheInternalsUI : public WebUIController {
 
     base::WeakPtr<AppCacheInternalsUI> appcache_internals_ui_;
     base::WeakPtr<AppCacheServiceImpl> appcache_service_;
-    AppCacheStorage* appcache_storage_;
     base::FilePath partition_path_;
     scoped_refptr<AppCacheStorageReference> disabled_appcache_storage_ref_;
     std::list<ResponseEnquiry> response_enquiries_;

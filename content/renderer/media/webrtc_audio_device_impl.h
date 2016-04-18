@@ -380,9 +380,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // RegisterAudioCallback().
   webrtc::AudioTransport* audio_transport_callback_;
 
-  // Cached value of the current audio delay on the input/capture side.
-  int input_delay_ms_;
-
   // Cached value of the current audio delay on the output/renderer side.
   int output_delay_ms_;
 
@@ -397,10 +394,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   bool initialized_;
   bool playing_;
   bool recording_;
-
-  // Stores latest microphone volume received in a CaptureData() callback.
-  // Range is [0, 255].
-  uint32_t microphone_volume_;
 
   // Buffer used for temporary storage during render callback.
   // It is only accessed by the audio render thread.

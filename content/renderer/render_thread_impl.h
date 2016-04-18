@@ -672,7 +672,6 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_lcd_text_enabled_;
   bool is_distance_field_text_enabled_;
   bool is_zero_copy_enabled_;
-  bool is_one_copy_enabled_;
   bool is_gpu_memory_buffer_compositor_resources_enabled_;
   bool is_partial_raster_enabled_;
   bool is_elastic_overscroll_enabled_;

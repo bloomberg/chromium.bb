@@ -68,7 +68,6 @@ BrowserPlugin::BrowserPlugin(
     : attached_(false),
       render_frame_routing_id_(render_frame->GetRoutingID()),
       container_(nullptr),
-      sad_guest_(nullptr),
       guest_crashed_(false),
       plugin_focused_(false),
       visible_(true),

@@ -62,8 +62,8 @@ CreateTestValidatorOzone() {
 #if defined(USE_OZONE)
   return std::unique_ptr<BrowserCompositorOverlayCandidateValidator>(
       new BrowserCompositorOverlayCandidateValidatorOzone(
-          0, std::unique_ptr<ui::OverlayCandidatesOzone>(
-                 new TestOverlayCandidatesOzone())));
+          std::unique_ptr<ui::OverlayCandidatesOzone>(
+              new TestOverlayCandidatesOzone())));
 #else
   return nullptr;
 #endif  // defined(USE_OZONE)

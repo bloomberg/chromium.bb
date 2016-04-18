@@ -112,7 +112,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   void UpdateWebLayer(blink::WebLayer* layer);
 
   int host_routing_id_;
-  bool opaque_;
 
   gfx::Size buffer_size_;
 

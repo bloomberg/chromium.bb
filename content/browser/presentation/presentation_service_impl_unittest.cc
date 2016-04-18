@@ -192,7 +192,7 @@ class MockPresentationServiceClient : public mojom::PresentationServiceClient {
 
 class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
  public:
-  PresentationServiceImplTest() : default_session_started_count_(0) {}
+  PresentationServiceImplTest() {}
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
@@ -366,7 +366,6 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
       client_binding_;
 
   base::Closure run_loop_quit_closure_;
-  int default_session_started_count_;
 };
 
 TEST_F(PresentationServiceImplTest, ListenForScreenAvailability) {

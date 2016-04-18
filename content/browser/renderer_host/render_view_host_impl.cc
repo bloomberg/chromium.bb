@@ -219,7 +219,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       frames_ref_count_(0),
       delegate_(delegate),
       instance_(static_cast<SiteInstanceImpl*>(instance)),
-      waiting_for_drag_context_response_(false),
       enabled_bindings_(0),
       page_id_(-1),
       is_active_(!swapped_out),

@@ -229,9 +229,6 @@ class CONTENT_EXPORT CacheStorage {
   // The TaskRunner to run file IO on.
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
 
-  // Whether or not to store data in disk or memory.
-  bool memory_only_;
-
   // Performs backend specific operations (memory vs disk).
   std::unique_ptr<CacheLoader> cache_loader_;
 

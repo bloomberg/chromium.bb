@@ -191,7 +191,6 @@ class TracingControllerImpl
   base::trace_event::MemoryDumpCallback pending_memory_dump_callback_;
 
   std::vector<base::trace_event::TracingAgent*> additional_tracing_agents_;
-  int clock_sync_id_;
   int pending_clock_sync_ack_count_;
   base::OneShotTimer clock_sync_timer_;
 

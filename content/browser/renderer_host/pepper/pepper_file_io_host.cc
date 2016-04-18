@@ -110,7 +110,6 @@ PepperFileIOHost::PepperFileIOHost(BrowserPpapiHostImpl* host,
                                    PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       browser_ppapi_host_(host),
-      render_process_host_(NULL),
       file_(BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
                 .get()),
       open_flags_(0),

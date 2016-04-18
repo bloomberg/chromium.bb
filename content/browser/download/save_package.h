@@ -380,9 +380,6 @@ class CONTENT_EXPORT SavePackage
   // Indicates whether the actual saving job is finishing or not.
   bool finished_;
 
-  // Indicates whether a call to Finish() has been scheduled.
-  bool mhtml_finishing_;
-
   // Indicates whether user canceled the saving job.
   bool user_canceled_;
 

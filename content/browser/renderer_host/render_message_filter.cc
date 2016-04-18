@@ -493,8 +493,7 @@ void RenderMessageFilter::OnAllocatedSharedBitmap(
     size_t buffer_size,
     const base::SharedMemoryHandle& handle,
     const cc::SharedBitmapId& id) {
-  bitmap_manager_client_.ChildAllocatedSharedBitmap(buffer_size, handle,
-                                                    PeerHandle(), id);
+  bitmap_manager_client_.ChildAllocatedSharedBitmap(buffer_size, handle, id);
 }
 
 void RenderMessageFilter::OnDeletedSharedBitmap(const cc::SharedBitmapId& id) {

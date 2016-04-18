@@ -73,8 +73,7 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
       background_color_(SK_ColorRED),
       current_scale_factor_(1.f),
       can_lock_compositor_(YES_CAN_LOCK),
-      delegated_frame_evictor_(new DelegatedFrameEvictor(this)),
-      begin_frame_source_(nullptr) {
+      delegated_frame_evictor_(new DelegatedFrameEvictor(this)) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->AddObserver(this);
   id_allocator_ = factory->GetContextFactory()->CreateSurfaceIdAllocator();

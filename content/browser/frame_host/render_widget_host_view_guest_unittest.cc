@@ -138,7 +138,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   cc::SurfaceId last_surface_id_received_;
   gfx::Size last_frame_size_received_;
   float last_scale_factor_received_;
-  float update_scale_factor_received_;
 };
 
 // TODO(wjmaclean): we should restructure RenderWidgetHostViewChildFrameTest to

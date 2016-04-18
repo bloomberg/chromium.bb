@@ -188,7 +188,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   RenderFrameHostManager(
       FrameTreeNode* frame_tree_node,
       RenderFrameHostDelegate* render_frame_delegate,
-      RenderViewHostDelegate* render_view_delegate,
       RenderWidgetHostDelegate* render_widget_delegate,
       Delegate* delegate);
   ~RenderFrameHostManager();
@@ -751,7 +750,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Implemented by the owner of this class.  These delegates are installed into
   // all the RenderFrameHosts that we create.
   RenderFrameHostDelegate* render_frame_delegate_;
-  RenderViewHostDelegate* render_view_delegate_;
   RenderWidgetHostDelegate* render_widget_delegate_;
 
   // Our RenderFrameHost which is responsible for all communication with a child

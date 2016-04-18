@@ -470,7 +470,6 @@ CacheStorage::CacheStorage(
       scheduler_(new CacheStorageScheduler()),
       origin_path_(path),
       cache_task_runner_(cache_task_runner),
-      memory_only_(memory_only),
       quota_manager_proxy_(quota_manager_proxy),
       origin_(origin),
       weak_factory_(this) {

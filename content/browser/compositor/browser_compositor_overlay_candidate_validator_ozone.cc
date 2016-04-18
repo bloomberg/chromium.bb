@@ -29,10 +29,8 @@ static gfx::BufferFormat GetBufferFormat(cc::ResourceFormat overlay_format) {
 
 BrowserCompositorOverlayCandidateValidatorOzone::
     BrowserCompositorOverlayCandidateValidatorOzone(
-        gfx::AcceleratedWidget widget,
         std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates)
-    : widget_(widget),
-      overlay_candidates_(std::move(overlay_candidates)),
+    : overlay_candidates_(std::move(overlay_candidates)),
       software_mirror_active_(false) {}
 
 BrowserCompositorOverlayCandidateValidatorOzone::

@@ -14,14 +14,11 @@
 namespace content {
 
 BrowserCompositorOverlayCandidateValidatorMac::
-    BrowserCompositorOverlayCandidateValidatorMac(
-        gfx::AcceleratedWidget widget)
-    : widget_(widget),
-      software_mirror_active_(false),
+    BrowserCompositorOverlayCandidateValidatorMac()
+    : software_mirror_active_(false),
       ca_layers_disabled_(
           GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
-              gpu::DISABLE_OVERLAY_CA_LAYERS)) {
-}
+              gpu::DISABLE_OVERLAY_CA_LAYERS)) {}
 
 BrowserCompositorOverlayCandidateValidatorMac::
     ~BrowserCompositorOverlayCandidateValidatorMac() {

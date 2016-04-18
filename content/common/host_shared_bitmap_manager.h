@@ -47,7 +47,6 @@ class CONTENT_EXPORT HostSharedBitmapManagerClient {
       base::SharedMemoryHandle* shared_memory_handle);
   void ChildAllocatedSharedBitmap(size_t buffer_size,
                                   const base::SharedMemoryHandle& handle,
-                                  base::ProcessHandle process_handle,
                                   const cc::SharedBitmapId& id);
   void ChildDeletedSharedBitmap(const cc::SharedBitmapId& id);
 
@@ -95,7 +94,6 @@ class CONTENT_EXPORT HostSharedBitmapManager
       base::SharedMemoryHandle* shared_memory_handle);
   bool ChildAllocatedSharedBitmap(size_t buffer_size,
                                   const base::SharedMemoryHandle& handle,
-                                  base::ProcessHandle process_handle,
                                   const cc::SharedBitmapId& id);
   void ChildDeletedSharedBitmap(const cc::SharedBitmapId& id);
 

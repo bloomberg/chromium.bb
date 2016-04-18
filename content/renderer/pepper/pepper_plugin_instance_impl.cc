@@ -507,7 +507,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       gamepad_impl_(new GamepadImpl()),
       uma_private_impl_(NULL),
       plugin_print_interface_(NULL),
-      plugin_graphics_3d_interface_(NULL),
       always_on_top_(false),
       fullscreen_container_(NULL),
       flash_fullscreen_(false),

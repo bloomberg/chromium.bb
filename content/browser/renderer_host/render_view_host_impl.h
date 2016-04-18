@@ -359,10 +359,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // over time.
   scoped_refptr<SiteInstanceImpl> instance_;
 
-  // true if we are currently waiting for a response for drag context
-  // information.
-  bool waiting_for_drag_context_response_;
-
   // A bitwise OR of bindings types that have been enabled for this RenderView.
   // See BindingsPolicy for details.
   int enabled_bindings_;

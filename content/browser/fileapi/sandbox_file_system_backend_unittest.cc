@@ -56,11 +56,9 @@ const struct RootPathFileURITest {
   storage::FileSystemType type;
   const char* origin_url;
   const char* expected_path;
-  const char* virtual_path;
 } kRootPathFileURITestCases[] = {
-      {storage::kFileSystemTypeTemporary, "file:///", "000" PS "t", NULL},
-      {storage::kFileSystemTypePersistent, "file:///", "000" PS "p", NULL},
-};
+    {storage::kFileSystemTypeTemporary, "file:///", "000" PS "t"},
+    {storage::kFileSystemTypePersistent, "file:///", "000" PS "p"}};
 
 void DidOpenFileSystem(base::File::Error* error_out,
                        const GURL& origin_url,

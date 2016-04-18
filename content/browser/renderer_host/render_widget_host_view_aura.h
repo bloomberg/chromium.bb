@@ -592,13 +592,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Current tooltip text.
   base::string16 tooltip_;
 
-  // The size and scale of the last software compositing frame that was swapped.
-  gfx::Size last_swapped_software_frame_size_;
-  float last_swapped_software_frame_scale_factor_;
-
-  // If non-NULL we're in OnPaint() and this is the supplied canvas.
-  gfx::Canvas* paint_canvas_;
-
   // Used to record the last position of the mouse.
   // While the mouse is locked, they store the last known position just as mouse
   // lock was entered.

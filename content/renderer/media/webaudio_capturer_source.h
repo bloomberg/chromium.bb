@@ -88,7 +88,6 @@ class WebAudioCapturerSource : public blink::WebAudioDestinationConsumer {
 
   // Synchronizes HandleCapture() with AudioCapturerSource calls.
   base::Lock lock_;
-  bool started_;
 
   // This object registers with a blink::WebMediaStreamSource. We keep track of
   // that in order to be able to deregister before stopping the audio track.

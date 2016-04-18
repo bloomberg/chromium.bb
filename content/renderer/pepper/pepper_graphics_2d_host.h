@@ -202,7 +202,6 @@ class CONTENT_EXPORT PepperGraphics2DHost
   bool is_running_in_process_;
 
   bool texture_mailbox_modified_;
-  bool is_using_texture_layer_;
 
   // This is a bitmap that was recently released by the compositor and may be
   // used to transfer bytes to the compositor again.

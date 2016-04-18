@@ -985,7 +985,6 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
       use_swiftshader_(false),
       card_blacklisted_(false),
       update_histograms_(true),
-      window_count_(0),
       domain_blocking_enabled_(true),
       owner_(owner),
       gpu_process_accessible_(true),

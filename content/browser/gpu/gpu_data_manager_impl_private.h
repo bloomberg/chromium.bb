@@ -255,9 +255,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // they cause random failures.
   bool update_histograms_;
 
-  // Number of currently open windows, to be used in gpu memory allocation.
-  int window_count_;
-
   DomainBlockMap blocked_domains_;
   mutable std::list<base::Time> timestamps_of_gpu_resets_;
   bool domain_blocking_enabled_;

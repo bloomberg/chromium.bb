@@ -16,8 +16,7 @@ namespace content {
 class CONTENT_EXPORT BrowserCompositorOverlayCandidateValidatorMac
     : public BrowserCompositorOverlayCandidateValidator {
  public:
-  explicit BrowserCompositorOverlayCandidateValidatorMac(
-      gfx::AcceleratedWidget widget);
+  BrowserCompositorOverlayCandidateValidatorMac();
   ~BrowserCompositorOverlayCandidateValidatorMac() override;
 
   // cc::OverlayCandidateValidator implementation.

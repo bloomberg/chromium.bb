@@ -893,7 +893,6 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
   ResourceDispatcherHostTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         use_test_ssl_certificate_(false),
-        old_factory_(NULL),
         send_data_received_acks_(false),
         auto_advance_(false) {
     browser_context_.reset(new TestBrowserContext());
@@ -1189,7 +1188,6 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
   std::string response_data_;
   bool use_test_ssl_certificate_;
   std::string scheme_;
-  net::URLRequest::ProtocolFactory* old_factory_;
   bool send_data_received_acks_;
   std::set<int> child_ids_;
   std::unique_ptr<base::RunLoop> wait_for_request_complete_loop_;

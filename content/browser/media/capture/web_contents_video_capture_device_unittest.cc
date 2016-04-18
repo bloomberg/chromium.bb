@@ -283,8 +283,7 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
                                controller)),
                            delegate,
                            main_frame_routing_id,
-                           swapped_out),
-        controller_(controller) {
+                           swapped_out) {
     // Override the default view installed by TestRenderViewHost; we need
     // our special subclass which has mocked-out tab capture support.
     RenderWidgetHostView* old_view = GetWidget()->GetView();
@@ -293,8 +292,6 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
   }
 
  private:
-  CaptureTestSourceController* controller_;
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(CaptureTestRenderViewHost);
 };
 

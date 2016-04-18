@@ -115,7 +115,6 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
 
   BrowserPpapiHostImpl* browser_ppapi_host_;
 
-  RenderProcessHost* render_process_host_;
   int render_process_id_;
   base::ProcessId resolved_render_process_id_;
 

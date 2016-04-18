@@ -29,8 +29,7 @@ TEST_F(HostSharedBitmapManagerTest, TestCreate) {
   HostSharedBitmapManagerClient client(manager_.get());
   base::SharedMemoryHandle handle;
   bitmap->ShareToProcess(base::GetCurrentProcessHandle(), &handle);
-  client.ChildAllocatedSharedBitmap(size_in_bytes, handle,
-                                    base::GetCurrentProcessHandle(), id);
+  client.ChildAllocatedSharedBitmap(size_in_bytes, handle, id);
 
   std::unique_ptr<cc::SharedBitmap> large_bitmap;
   large_bitmap = manager_->GetSharedBitmapFromId(gfx::Size(1024, 1024), id);
@@ -115,8 +114,7 @@ TEST_F(HostSharedBitmapManagerTest, RemoveProcess) {
   std::unique_ptr<HostSharedBitmapManagerClient> client(
       new HostSharedBitmapManagerClient(manager_.get()));
   bitmap->ShareToProcess(base::GetCurrentProcessHandle(), &handle);
-  client->ChildAllocatedSharedBitmap(size_in_bytes, handle,
-                                     base::GetCurrentProcessHandle(), id);
+  client->ChildAllocatedSharedBitmap(size_in_bytes, handle, id);
 
   std::unique_ptr<cc::SharedBitmap> shared_bitmap;
   shared_bitmap = manager_->GetSharedBitmapFromId(bitmap_size, id);
@@ -147,15 +145,13 @@ TEST_F(HostSharedBitmapManagerTest, AddDuplicate) {
 
   base::SharedMemoryHandle handle;
   bitmap->ShareToProcess(base::GetCurrentProcessHandle(), &handle);
-  client.ChildAllocatedSharedBitmap(size_in_bytes, handle,
-                                    base::GetCurrentProcessHandle(), id);
+  client.ChildAllocatedSharedBitmap(size_in_bytes, handle, id);
 
   std::unique_ptr<base::SharedMemory> bitmap2(new base::SharedMemory());
   bitmap2->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap2->memory(), 0x00, size_in_bytes);
 
-  client.ChildAllocatedSharedBitmap(size_in_bytes, bitmap2->handle(),
-                                    base::GetCurrentProcessHandle(), id);
+  client.ChildAllocatedSharedBitmap(size_in_bytes, bitmap2->handle(), id);
 
   std::unique_ptr<cc::SharedBitmap> shared_bitmap;
   shared_bitmap = manager_->GetSharedBitmapFromId(bitmap_size, id);

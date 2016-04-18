@@ -96,7 +96,6 @@ FrameTree::FrameTree(Navigator* navigator,
       root_(new FrameTreeNode(this,
                               navigator,
                               render_frame_delegate,
-                              render_view_delegate,
                               render_widget_delegate,
                               manager_delegate,
                               // The top-level frame must always be in a
@@ -187,8 +186,8 @@ bool FrameTree::AddFrame(
   FrameTreeNode* added_node = parent->AddChild(
       base::WrapUnique(new FrameTreeNode(
           this, parent->navigator(), render_frame_delegate_,
-          render_view_delegate_, render_widget_delegate_, manager_delegate_,
-          scope, frame_name, frame_unique_name, frame_owner_properties)),
+          render_widget_delegate_, manager_delegate_, scope, frame_name,
+          frame_unique_name, frame_owner_properties)),
       process_id, new_routing_id);
 
   // Set sandbox flags and make them effective immediately, since initial

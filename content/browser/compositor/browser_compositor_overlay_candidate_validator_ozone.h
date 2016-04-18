@@ -20,8 +20,7 @@ namespace content {
 class CONTENT_EXPORT BrowserCompositorOverlayCandidateValidatorOzone
     : public BrowserCompositorOverlayCandidateValidator {
  public:
-  BrowserCompositorOverlayCandidateValidatorOzone(
-      gfx::AcceleratedWidget widget,
+  explicit BrowserCompositorOverlayCandidateValidatorOzone(
       std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates);
   ~BrowserCompositorOverlayCandidateValidatorOzone() override;
 
@@ -34,7 +33,6 @@ class CONTENT_EXPORT BrowserCompositorOverlayCandidateValidatorOzone
   void SetSoftwareMirrorMode(bool enabled) override;
 
  private:
-  gfx::AcceleratedWidget widget_;
   std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates_;
   bool software_mirror_active_;
 

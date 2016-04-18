@@ -29,7 +29,6 @@ class QueuedWebMouseWheelEvent : public MouseWheelEventWithLatencyInfo {
   }
 
  private:
-  bool original_can_scroll_;
   DISALLOW_COPY_AND_ASSIGN(QueuedWebMouseWheelEvent);
 };
 

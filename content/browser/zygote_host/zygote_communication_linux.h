@@ -83,7 +83,6 @@ class CONTENT_EXPORT ZygoteCommunication {
   base::Lock child_tracking_lock_;
   int sandbox_status_;
   bool have_read_sandbox_status_word_;
-  bool use_suid_sandbox_for_adj_oom_score_;
   // Set to true when the zygote is initialized successfully.
   bool init_;
 };

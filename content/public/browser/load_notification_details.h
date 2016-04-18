@@ -17,14 +17,12 @@ namespace content {
 // log page load metrics.
 struct LoadNotificationDetails {
   LoadNotificationDetails(const GURL& url,
-                          ui::PageTransition origin,
                           base::TimeDelta load_time,
                           NavigationController* controller,
                           int session_index)
       : url(url),
         load_time(load_time),
         session_index(session_index),
-        origin(origin),
         controller(controller) {}
 
   // The URL loaded.
@@ -35,9 +33,6 @@ struct LoadNotificationDetails {
 
   // The index of the load within the tab session.
   int session_index;
-
-  // The type of action that caused the load.
-  ui::PageTransition origin;
 
   // The NavigationController for the load.
   NavigationController* controller;

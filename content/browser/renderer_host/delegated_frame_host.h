@@ -317,8 +317,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   std::unique_ptr<content::ReadbackYUVInterface> yuv_readback_pipeline_;
 
   std::unique_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
-
-  cc::BeginFrameSource* begin_frame_source_;
 };
 
 }  // namespace content

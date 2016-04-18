@@ -116,9 +116,7 @@ class MediaStreamDispatcherTest : public ::testing::Test {
   MediaStreamDispatcherTest()
       : dispatcher_(new MediaStreamDispatcherUnderTest()),
         handler_(new MockMediaStreamDispatcherEventHandler),
-        security_origin_("http://test.com"),
-        request_id_(10) {
-  }
+        security_origin_("http://test.com") {}
 
   // Generates a request for a MediaStream and returns the request id that is
   // used in IPC. Use this returned id in CompleteGenerateStream to identify
@@ -178,7 +176,6 @@ class MediaStreamDispatcherTest : public ::testing::Test {
   std::unique_ptr<MediaStreamDispatcherUnderTest> dispatcher_;
   std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler_;
   GURL security_origin_;
-  int request_id_;
 };
 
 }  // namespace
