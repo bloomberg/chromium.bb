@@ -498,12 +498,6 @@ EntryImpl* BackendImpl::OpenEntryImpl(const std::string& key) {
   int64_t use_hours = total_hours - no_use_hours;
 
   if (!cache_entry) {
-    CACHE_UMA(AGE_MS, "OpenTime.Miss", 0, start);
-    CACHE_UMA(COUNTS_10000, "AllOpenBySize.Miss", 0, current_size);
-    CACHE_UMA(HOURS, "AllOpenByTotalHours.Miss", 0,
-              static_cast<base::HistogramBase::Sample>(total_hours));
-    CACHE_UMA(HOURS, "AllOpenByUseHours.Miss", 0,
-              static_cast<base::HistogramBase::Sample>(use_hours));
     stats_.OnEvent(Stats::OPEN_MISS);
     return NULL;
   }
