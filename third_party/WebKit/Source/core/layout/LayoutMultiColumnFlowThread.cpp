@@ -510,7 +510,21 @@ void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(LayoutUnit
 
         // We have run out of columns here, so we need to add at least one more row to hold more
         // columns.
+        LayoutMultiColumnFlowThread* enclosingFlowThread = enclosingFragmentationContext->associatedFlowThread();
         do {
+            if (enclosingFlowThread) {
+                // When we add a new row here, it implicitly means that we're inserting another
+                // column in our enclosing multicol container. That in turn may mean that we've run
+                // out of columns there too. Need to insert additional rows in ancestral multicol
+                // containers before doing it in the descendants, in order to get the height
+                // constraints right down there.
+                const MultiColumnFragmentainerGroup& lastRow = columnSet->lastFragmentainerGroup();
+                // The top offset where where the new fragmentainer group will start in this column
+                // set, converted to the coordinate space of the enclosing multicol container.
+                LayoutUnit logicalOffsetInOuter = lastRow.blockOffsetInEnclosingFragmentationContext() + lastRow.logicalHeight();
+                enclosingFlowThread->appendNewFragmentainerGroupIfNeeded(logicalOffsetInOuter, AssociateWithLatterPage);
+            }
+
             const MultiColumnFragmentainerGroup& newRow = columnSet->appendNewFragmentainerGroup();
             // Zero-height rows should really not occur here, but if it does anyway, break, so that
             // we don't get stuck in an infinite loop.
@@ -518,14 +532,6 @@ void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(LayoutUnit
             if (newRow.logicalHeight() <= 0)
                 break;
         } while (!columnSet->hasFragmentainerGroupForColumnAt(offsetInFlowThread, pageBoundaryRule));
-
-        if (LayoutMultiColumnFlowThread* enclosingFlowThread = enclosingFragmentationContext->associatedFlowThread()) {
-            // When we add a new row here, it implicitly means that we're inserting another column
-            // in our enclosing multicol container. That in turn may mean that we've run out of
-            // columns there too.
-            const MultiColumnFragmentainerGroup& lastRow = columnSet->lastFragmentainerGroup();
-            enclosingFlowThread->appendNewFragmentainerGroupIfNeeded(lastRow.blockOffsetInEnclosingFragmentationContext(), AssociateWithLatterPage);
-        }
     }
 }
 
