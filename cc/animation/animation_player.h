@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
+#include "cc/animation/element_animations.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -56,8 +57,9 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   void SetAnimationTimeline(AnimationTimeline* timeline);
 
   // ElementAnimations object where this player is listed.
-  // ElementAnimations has a reference to shared LayerAnimationController.
-  ElementAnimations* element_animations() const { return element_animations_; }
+  scoped_refptr<ElementAnimations> element_animations() const {
+    return element_animations_;
+  }
 
   void set_layer_animation_delegate(AnimationDelegate* delegate) {
     layer_animation_delegate_ = delegate;
@@ -117,7 +119,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   AnimationHost* animation_host_;
   AnimationTimeline* animation_timeline_;
   // element_animations isn't null if player attached to an element (layer).
-  ElementAnimations* element_animations_;
+  scoped_refptr<ElementAnimations> element_animations_;
   AnimationDelegate* layer_animation_delegate_;
 
   int id_;

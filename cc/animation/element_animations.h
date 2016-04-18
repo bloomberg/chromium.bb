@@ -37,12 +37,12 @@ enum class LayerTreeType;
 // of animation layers.
 // This is a CC counterpart for blink::ElementAnimations (in 1:1 relationship).
 // No pointer to/from respective blink::ElementAnimations object for now.
-class CC_EXPORT ElementAnimations : public AnimationDelegate,
+class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations>,
+                                    public AnimationDelegate,
                                     public LayerAnimationValueObserver,
                                     public LayerAnimationValueProvider {
  public:
-  static std::unique_ptr<ElementAnimations> Create(AnimationHost* host);
-  ~ElementAnimations() override;
+  static scoped_refptr<ElementAnimations> Create(AnimationHost* host);
 
   int layer_id() const {
     return layer_animation_controller_ ? layer_animation_controller_->id() : 0;
@@ -73,7 +73,8 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
   typedef base::LinkNode<AnimationPlayer> PlayersListNode;
   const PlayersList& players_list() const { return *players_list_.get(); }
 
-  void PushPropertiesTo(ElementAnimations* element_animations_impl);
+  void PushPropertiesTo(
+      scoped_refptr<ElementAnimations> element_animations_impl);
 
   void AddAnimation(std::unique_ptr<Animation> animation);
   void PauseAnimation(int animation_id, base::TimeDelta time_offset);
@@ -93,10 +94,13 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
   void RemoveEventObserver(LayerAnimationEventObserver* observer);
 
  private:
+  friend class base::RefCounted<ElementAnimations>;
+
   // TODO(loyso): Erase this when LAC merged into ElementAnimations.
   friend class AnimationHost;
 
   explicit ElementAnimations(AnimationHost* host);
+  ~ElementAnimations() override;
 
   // LayerAnimationValueObserver implementation.
   void OnFilterAnimated(LayerTreeType tree_type,

@@ -61,7 +61,8 @@ class CC_EXPORT AnimationHost {
   void RegisterPlayerForLayer(int layer_id, AnimationPlayer* player);
   void UnregisterPlayerForLayer(int layer_id, AnimationPlayer* player);
 
-  ElementAnimations* GetElementAnimationsForLayerId(int layer_id) const;
+  scoped_refptr<ElementAnimations> GetElementAnimationsForLayerId(
+      int layer_id) const;
 
   // TODO(loyso): Get rid of LayerAnimationController.
   LayerAnimationController* GetControllerForLayerId(int layer_id) const;
@@ -179,11 +180,10 @@ class CC_EXPORT AnimationHost {
 
   void EraseTimeline(scoped_refptr<AnimationTimeline> timeline);
 
-  // TODO(loyso): For now AnimationPlayers share LayerAnimationController object
-  // if they are attached to the same element(layer). Note that Element can
-  // contain many Layers.
+  // AnimationPlayers share ElementAnimations object if they are attached to the
+  // same element(layer). Note that Element can contain many Layers.
   using LayerToElementAnimationsMap =
-      std::unordered_map<int, std::unique_ptr<ElementAnimations>>;
+      std::unordered_map<int, scoped_refptr<ElementAnimations>>;
   LayerToElementAnimationsMap layer_to_element_animations_map_;
 
   // A list of all timelines which this host owns.

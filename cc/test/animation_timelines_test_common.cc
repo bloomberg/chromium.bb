@@ -246,14 +246,14 @@ void AnimationTimelinesTest::AnimateLayersTransferEvents(
 }
 
 AnimationPlayer* AnimationTimelinesTest::GetPlayerForLayerId(int layer_id) {
-  const ElementAnimations* element_animations =
+  const scoped_refptr<ElementAnimations> element_animations =
       host_->GetElementAnimationsForLayerId(layer_id);
   return element_animations ? element_animations->players_list().head()->value()
                             : nullptr;
 }
 
 AnimationPlayer* AnimationTimelinesTest::GetImplPlayerForLayerId(int layer_id) {
-  const ElementAnimations* element_animations =
+  const scoped_refptr<ElementAnimations> element_animations =
       host_impl_->GetElementAnimationsForLayerId(layer_id);
   return element_animations ? element_animations->players_list().head()->value()
                             : nullptr;

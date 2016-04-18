@@ -37,7 +37,8 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   timeline_->AttachPlayer(player_);
   player_->AttachLayer(layer_id_);
 
-  ElementAnimations* element_animations = player_->element_animations();
+  scoped_refptr<ElementAnimations> element_animations =
+      player_->element_animations();
   EXPECT_TRUE(element_animations);
 
   EXPECT_TRUE(element_animations->needs_active_value_observations());
@@ -47,7 +48,7 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
 
   GetImplTimelineAndPlayerByID();
 
-  ElementAnimations* element_animations_impl =
+  scoped_refptr<ElementAnimations> element_animations_impl =
       player_impl_->element_animations();
   EXPECT_TRUE(element_animations_impl);
 
@@ -109,7 +110,8 @@ TEST_F(ElementAnimationsTest, AttachToNotYetCreatedLayer) {
 
   player_->AttachLayer(layer_id_);
 
-  ElementAnimations* element_animations = player_->element_animations();
+  scoped_refptr<ElementAnimations> element_animations =
+      player_->element_animations();
   EXPECT_TRUE(element_animations);
 
   EXPECT_FALSE(element_animations->needs_active_value_observations());
@@ -117,7 +119,7 @@ TEST_F(ElementAnimationsTest, AttachToNotYetCreatedLayer) {
 
   host_->PushPropertiesTo(host_impl_);
 
-  ElementAnimations* element_animations_impl =
+  scoped_refptr<ElementAnimations> element_animations_impl =
       player_impl_->element_animations();
   EXPECT_TRUE(element_animations_impl);
 
@@ -143,7 +145,8 @@ TEST_F(ElementAnimationsTest, AddRemovePlayers) {
   timeline_->AttachPlayer(player_);
   player_->AttachLayer(layer_id_);
 
-  ElementAnimations* element_animations = player_->element_animations();
+  scoped_refptr<ElementAnimations> element_animations =
+      player_->element_animations();
   EXPECT_TRUE(element_animations);
 
   scoped_refptr<AnimationPlayer> player1 =
@@ -164,7 +167,7 @@ TEST_F(ElementAnimationsTest, AddRemovePlayers) {
   host_->PushPropertiesTo(host_impl_);
   GetImplTimelineAndPlayerByID();
 
-  ElementAnimations* element_animations_impl =
+  scoped_refptr<ElementAnimations> element_animations_impl =
       player_impl_->element_animations();
   EXPECT_TRUE(element_animations_impl);
 

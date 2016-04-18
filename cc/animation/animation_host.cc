@@ -206,14 +206,14 @@ void AnimationHost::RemoveAnimationTimeline(
 }
 
 void AnimationHost::RegisterLayer(int layer_id, LayerTreeType tree_type) {
-  ElementAnimations* element_animations =
+  scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForLayerId(layer_id);
   if (element_animations)
     element_animations->LayerRegistered(layer_id, tree_type);
 }
 
 void AnimationHost::UnregisterLayer(int layer_id, LayerTreeType tree_type) {
-  ElementAnimations* element_animations =
+  scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForLayerId(layer_id);
   if (element_animations)
     element_animations->LayerUnregistered(layer_id, tree_type);
@@ -224,14 +224,12 @@ void AnimationHost::RegisterPlayerForLayer(int layer_id,
   DCHECK(layer_id);
   DCHECK(player);
 
-  ElementAnimations* element_animations =
+  scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForLayerId(layer_id);
   if (!element_animations) {
-    auto new_element_animations = ElementAnimations::Create(this);
-    element_animations = new_element_animations.get();
+    element_animations = ElementAnimations::Create(this);
+    layer_to_element_animations_map_[layer_id] = element_animations;
 
-    layer_to_element_animations_map_[layer_id] =
-        std::move(new_element_animations);
     element_animations->CreateLayerAnimationController(layer_id);
   }
 
@@ -244,7 +242,7 @@ void AnimationHost::UnregisterPlayerForLayer(int layer_id,
   DCHECK(layer_id);
   DCHECK(player);
 
-  ElementAnimations* element_animations =
+  scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForLayerId(layer_id);
   DCHECK(element_animations);
   element_animations->RemovePlayer(player);
@@ -252,7 +250,6 @@ void AnimationHost::UnregisterPlayerForLayer(int layer_id,
   if (element_animations->IsEmpty()) {
     element_animations->DestroyLayerAnimationController();
     layer_to_element_animations_map_.erase(layer_id);
-    element_animations = nullptr;
   }
 }
 
@@ -321,17 +318,17 @@ void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
 
   // Secondly, sync properties for created layer animation controllers.
   for (auto& kv : layer_to_element_animations_map_) {
-    ElementAnimations* element_animations = kv.second.get();
-    ElementAnimations* element_animations_impl =
+    const auto& element_animations = kv.second;
+    auto element_animations_impl =
         host_impl->GetElementAnimationsForLayerId(kv.first);
     if (element_animations_impl)
-      element_animations->PushPropertiesTo(element_animations_impl);
+      element_animations->PushPropertiesTo(std::move(element_animations_impl));
   }
 }
 
 LayerAnimationController* AnimationHost::GetControllerForLayerId(
     int layer_id) const {
-  const ElementAnimations* element_animations =
+  const scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForLayerId(layer_id);
   if (!element_animations)
     return nullptr;
@@ -339,12 +336,12 @@ LayerAnimationController* AnimationHost::GetControllerForLayerId(
   return element_animations->layer_animation_controller_.get();
 }
 
-ElementAnimations* AnimationHost::GetElementAnimationsForLayerId(
+scoped_refptr<ElementAnimations> AnimationHost::GetElementAnimationsForLayerId(
     int layer_id) const {
   DCHECK(layer_id);
   auto iter = layer_to_element_animations_map_.find(layer_id);
   return iter == layer_to_element_animations_map_.end() ? nullptr
-                                                        : iter->second.get();
+                                                        : iter->second;
 }
 
 void AnimationHost::SetSupportsScrollAnimations(

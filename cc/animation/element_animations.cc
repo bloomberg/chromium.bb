@@ -12,9 +12,9 @@
 
 namespace cc {
 
-std::unique_ptr<ElementAnimations> ElementAnimations::Create(
+scoped_refptr<ElementAnimations> ElementAnimations::Create(
     AnimationHost* host) {
-  return base::WrapUnique(new ElementAnimations(host));
+  return make_scoped_refptr(new ElementAnimations(host));
 }
 
 ElementAnimations::ElementAnimations(AnimationHost* host)
@@ -103,7 +103,7 @@ bool ElementAnimations::IsEmpty() const {
 }
 
 void ElementAnimations::PushPropertiesTo(
-    ElementAnimations* element_animations_impl) {
+    scoped_refptr<ElementAnimations> element_animations_impl) {
   DCHECK(layer_animation_controller_);
   DCHECK(element_animations_impl->layer_animation_controller_);
 
@@ -191,8 +191,8 @@ void ElementAnimations::OnScrollOffsetAnimated(
 }
 
 void ElementAnimations::OnAnimationWaitingForDeletion() {
-  // TODO(loyso): See Layer::OnAnimationWaitingForDeletion. But we always do
-  // PushProperties for AnimationTimelines for now.
+  // TODO(loyso): Invalidate AnimationHost::SetNeedsPushProperties here.
+  // But we always do PushProperties in AnimationHost for now. crbug.com/604280
 }
 
 void ElementAnimations::OnTransformIsPotentiallyAnimatingChanged(

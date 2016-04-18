@@ -7,7 +7,6 @@
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
-#include "cc/animation/element_animations.h"
 #include "cc/animation/layer_animation_controller.h"
 
 namespace cc {
