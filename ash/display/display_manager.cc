@@ -1259,6 +1259,7 @@ gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
       device_scale_factor, gfx::Rect(bounds_in_native.size()));
   new_display.set_rotation(display_info.GetActiveRotation());
   new_display.set_touch_support(display_info.touch_support());
+  new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
   return new_display;
 }
 
@@ -1274,6 +1275,7 @@ gfx::Display DisplayManager::CreateMirroringDisplayFromDisplayInfoById(
       1.0f, gfx::Rect(origin, gfx::ScaleToFlooredSize(
                                   display_info.size_in_pixel(), scale)));
   new_display.set_touch_support(display_info.touch_support());
+  new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
   return new_display;
 }
 

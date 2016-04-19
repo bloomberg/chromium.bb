@@ -59,6 +59,7 @@ IPC_STRUCT_TRAITS_BEGIN(ui::DisplaySnapshot_Params)
   IPC_STRUCT_TRAITS_MEMBER(native_mode)
   IPC_STRUCT_TRAITS_MEMBER(product_id)
   IPC_STRUCT_TRAITS_MEMBER(string_representation)
+  IPC_STRUCT_TRAITS_MEMBER(maximum_cursor_size)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ui::GammaRampRGBEntry)

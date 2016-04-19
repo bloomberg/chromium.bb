@@ -53,6 +53,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   const DisplayMode* current_mode() const { return current_mode_; }
   const DisplayMode* native_mode() const { return native_mode_; }
   int64_t product_id() const { return product_id_; }
+  const gfx::Size& maximum_cursor_size() const { return maximum_cursor_size_; }
 
   const std::vector<const DisplayMode*>& modes() const { return modes_; }
   const std::vector<uint8_t>& edid() const { return edid_; }
@@ -107,6 +108,9 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
 
   // Combination of manufacturer and product code.
   int64_t product_id_;
+
+  // Maximum supported cursor size on this display.
+  gfx::Size maximum_cursor_size_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplaySnapshot);
 };

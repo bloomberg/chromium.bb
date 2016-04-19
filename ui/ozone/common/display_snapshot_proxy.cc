@@ -48,6 +48,7 @@ DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
   }
 
   product_id_ = params.product_id;
+  maximum_cursor_size_ = params.maximum_cursor_size;
 }
 
 DisplaySnapshotProxy::~DisplaySnapshotProxy() {

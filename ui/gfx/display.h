@@ -148,6 +148,12 @@ class GFX_EXPORT Display final {
   // True if there is an internal display.
   static bool HasInternalDisplay();
 
+  // Maximum cursor size in native pixels.
+  const Size& maximum_cursor_size() const { return maximum_cursor_size_; }
+  void set_maximum_cursor_size(const Size& size) {
+    maximum_cursor_size_ = size;
+  }
+
  private:
   int64_t id_;
   Rect bounds_;
@@ -155,6 +161,7 @@ class GFX_EXPORT Display final {
   float device_scale_factor_;
   Rotation rotation_;
   TouchSupport touch_support_;
+  Size maximum_cursor_size_;
 };
 
 // This is declared here for use in gtest-based unit tests but is defined in

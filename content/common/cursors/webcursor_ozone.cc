@@ -10,8 +10,8 @@
 #include "ui/ozone/public/cursor_factory_ozone.h"
 
 namespace {
-const float kMaxCursorWidth = 64.f;
-const float kMaxCursorHeight = 64.f;
+const int kDefaultMaxCursorWidth = 64;
+const int kDefaultMaxCursorHeight = 64;
 }
 
 namespace content {
@@ -24,10 +24,13 @@ ui::PlatformCursor WebCursor::GetPlatformCursor() {
   ImageFromCustomData(&bitmap);
   gfx::Point hotspot = hotspot_;
 
-  // TODO(spang): Consider allowing larger cursors if the hardware supports it.
   float scale = device_scale_factor_ / custom_scale_;
-  scale = std::min(scale, kMaxCursorWidth / bitmap.width());
-  scale = std::min(scale, kMaxCursorHeight / bitmap.height());
+  DCHECK_LT(0, maximum_cursor_size_.width());
+  DCHECK_LT(0, maximum_cursor_size_.height());
+  scale = std::min(
+      scale, static_cast<float>(maximum_cursor_size_.width()) / bitmap.width());
+  scale = std::min(scale, static_cast<float>(maximum_cursor_size_.height()) /
+                              bitmap.height());
 
   ui::ScaleAndRotateCursorBitmapAndHotpoint(scale, rotation_, &bitmap,
                                             &hotspot);
@@ -39,11 +42,18 @@ ui::PlatformCursor WebCursor::GetPlatformCursor() {
 
 void WebCursor::SetDisplayInfo(const gfx::Display& display) {
   if (rotation_ == display.rotation() &&
-      device_scale_factor_ == display.device_scale_factor())
+      device_scale_factor_ == display.device_scale_factor() &&
+      maximum_cursor_size_ == display.maximum_cursor_size())
     return;
-
   device_scale_factor_ = display.device_scale_factor();
   rotation_ = display.rotation();
+  maximum_cursor_size_ = display.maximum_cursor_size();
+  // TODO(oshima): Identify if it's possible to remove this check here and move
+  // the kDefaultMaxCursor{Width,Height} constants to a single place.
+  // crbug.com/603512
+  if (maximum_cursor_size_.width() == 0 || maximum_cursor_size_.height() == 0)
+    maximum_cursor_size_ =
+        gfx::Size(kDefaultMaxCursorWidth, kDefaultMaxCursorHeight);
   if (platform_cursor_)
     ui::CursorFactoryOzone::GetInstance()->UnrefImageCursor(platform_cursor_);
   platform_cursor_ = NULL;
@@ -55,6 +65,8 @@ void WebCursor::InitPlatformData() {
   platform_cursor_ = NULL;
   device_scale_factor_ = 1.f;
   rotation_ = gfx::Display::ROTATE_0;
+  maximum_cursor_size_ =
+      gfx::Size(kDefaultMaxCursorWidth, kDefaultMaxCursorHeight);
 }
 
 bool WebCursor::SerializePlatformData(base::Pickle* pickle) const {
@@ -84,6 +96,7 @@ void WebCursor::CopyPlatformData(const WebCursor& other) {
     ui::CursorFactoryOzone::GetInstance()->RefImageCursor(platform_cursor_);
 
   device_scale_factor_ = other.device_scale_factor_;
+  maximum_cursor_size_ = other.maximum_cursor_size_;
 }
 
 }  // namespace content

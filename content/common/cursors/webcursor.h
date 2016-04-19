@@ -198,6 +198,7 @@ class CONTENT_EXPORT WebCursor {
 
 #if defined(USE_OZONE)
   gfx::Display::Rotation rotation_;
+  gfx::Size maximum_cursor_size_;
 #endif
 };
 

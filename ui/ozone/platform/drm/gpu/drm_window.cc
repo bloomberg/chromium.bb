@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -25,14 +26,6 @@
 namespace ui {
 
 namespace {
-
-#ifndef DRM_CAP_CURSOR_WIDTH
-#define DRM_CAP_CURSOR_WIDTH 0x8
-#endif
-
-#ifndef DRM_CAP_CURSOR_HEIGHT
-#define DRM_CAP_CURSOR_HEIGHT 0x9
-#endif
 
 void UpdateCursorImage(DrmBuffer* cursor, const SkBitmap& image) {
   SkRect damage;
@@ -228,19 +221,16 @@ void DrmWindow::SetController(HardwareDisplayController* controller) {
 }
 
 void DrmWindow::UpdateCursorBuffers() {
+  TRACE_EVENT0("drm", "DrmWindow::UpdateCursorBuffers");
   if (!controller_) {
     for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
       cursor_buffers_[i] = nullptr;
     }
   } else {
     scoped_refptr<DrmDevice> drm = controller_->GetAllocationDrmDevice();
-
-    uint64_t cursor_width = 64;
-    uint64_t cursor_height = 64;
-    drm->GetCapability(DRM_CAP_CURSOR_WIDTH, &cursor_width);
-    drm->GetCapability(DRM_CAP_CURSOR_HEIGHT, &cursor_height);
-
-    SkImageInfo info = SkImageInfo::MakeN32Premul(cursor_width, cursor_height);
+    gfx::Size max_cursor_size = GetMaximumCursorSize(drm->get_fd());
+    SkImageInfo info = SkImageInfo::MakeN32Premul(max_cursor_size.width(),
+                                                  max_cursor_size.height());
     for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
       cursor_buffers_[i] = new DrmBuffer(drm);
       // Don't register a framebuffer for cursors since they are special (they

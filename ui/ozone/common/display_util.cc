@@ -67,6 +67,7 @@ DisplaySnapshot_Params GetDisplaySnapshotParams(
 
   params.product_id = display.product_id();
   params.string_representation = display.ToString();
+  params.maximum_cursor_size = display.maximum_cursor_size();
 
   return params;
 }

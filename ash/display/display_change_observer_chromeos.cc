@@ -265,6 +265,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
         Shell::GetInstance()
             ->display_configurator()
             ->GetAvailableColorCalibrationProfiles(id));
+    new_info.set_maximum_cursor_size(state->maximum_cursor_size());
   }
 
   AssociateTouchscreens(

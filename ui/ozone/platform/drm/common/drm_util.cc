@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/mman.h>
+#include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <utility>
 
@@ -17,9 +18,20 @@
 #define DRM_MODE_CONNECTOR_DSI 16
 #endif
 
+#if !defined(DRM_CAP_CURSOR_WIDTH)
+#define DRM_CAP_CURSOR_WIDTH 0x8
+#endif
+
+#if !defined(DRM_CAP_CURSOR_HEIGHT)
+#define DRM_CAP_CURSOR_HEIGHT 0x9
+#endif
+
 namespace ui {
 
 namespace {
+
+static const size_t kDefaultCursorWidth = 64;
+static const size_t kDefaultCursorHeight = 64;
 
 bool IsCrtcInUse(uint32_t crtc,
                  const ScopedVector<HardwareDisplayControllerInfo>& displays) {
@@ -172,6 +184,20 @@ bool HasColorCorrectionMatrix(int fd, drmModeCrtc* crtc) {
 
 }  // namespace
 
+gfx::Size GetMaximumCursorSize(int fd) {
+  uint64_t width = 0, height = 0;
+  if (drmGetCap(fd, DRM_CAP_CURSOR_WIDTH, &width)) {
+    PLOG(WARNING) << "Unable to get cursor width capability";
+    return gfx::Size(kDefaultCursorWidth, kDefaultCursorHeight);
+  }
+  if (drmGetCap(fd, DRM_CAP_CURSOR_HEIGHT, &height)) {
+    PLOG(WARNING) << "Unable to get cursor height capability";
+    return gfx::Size(kDefaultCursorWidth, kDefaultCursorHeight);
+  }
+
+  return gfx::Size(width, height);
+}
+
 HardwareDisplayControllerInfo::HardwareDisplayControllerInfo(
     ScopedDrmConnectorPtr connector,
     ScopedDrmCrtcPtr crtc,
@@ -244,6 +270,7 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
       IsAspectPreserving(fd, info->connector());
   params.has_color_correction_matrix =
       HasColorCorrectionMatrix(fd, info->crtc());
+  params.maximum_cursor_size = GetMaximumCursorSize(fd);
 
   ScopedDrmPropertyBlobPtr edid_blob(
       GetDrmPropertyBlob(fd, info->connector(), "EDID"));

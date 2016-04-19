@@ -51,6 +51,7 @@ struct DisplaySnapshot_Params {
   DisplayMode_Params native_mode;
   int64_t product_id = 0;
   std::string string_representation;
+  gfx::Size maximum_cursor_size;
 };
 
 struct OverlayCheck_Params {

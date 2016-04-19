@@ -66,6 +66,8 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format);
 
 int GetFourCCFormatForFramebuffer(gfx::BufferFormat format);
 
+gfx::Size GetMaximumCursorSize(int fd);
+
 }  // namespace ui
 
 #endif  // UI_OZONE_PLATFORM_DRM_COMMON_DRM_UTIL_H_
