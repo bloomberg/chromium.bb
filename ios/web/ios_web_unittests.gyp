@@ -54,7 +54,6 @@
         'web_state/js/common_js_unittest.mm',
         'web_state/js/core_js_unittest.mm',
         'web_state/js/credential_util_unittest.mm',
-        'web_state/js/crw_js_early_script_manager_unittest.mm',
         'web_state/js/crw_js_injection_manager_unittest.mm',
         'web_state/js/crw_js_invoke_parameter_queue_unittest.mm',
         'web_state/js/crw_js_post_request_loader_unittest.mm',

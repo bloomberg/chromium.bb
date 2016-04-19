@@ -266,10 +266,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // changes; the two need to be separated and handled differently.
 - (void)webPageChanged;
 
-// Injects all scripts registered for early injection, as well as the window ID,
-// if necssary. If they are already injected, this is a no-op.
-- (void)injectEarlyInjectionScripts;
-
 // Resets the set of script managers whose scripts have been injected into the
 // current page to an empty list.
 - (void)clearInjectedScriptManagers;

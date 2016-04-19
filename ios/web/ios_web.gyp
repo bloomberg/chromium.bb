@@ -210,8 +210,6 @@
         'web_state/global_web_state_event_tracker.mm',
         'web_state/global_web_state_observer.cc',
         'web_state/js/credential_util.mm',
-        'web_state/js/crw_js_early_script_manager.h',
-        'web_state/js/crw_js_early_script_manager.mm',
         'web_state/js/crw_js_injection_manager.mm',
         'web_state/js/crw_js_injection_receiver.mm',
         'web_state/js/crw_js_invoke_parameter_queue.h',

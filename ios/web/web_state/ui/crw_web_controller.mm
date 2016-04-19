@@ -77,7 +77,6 @@
 #import "ios/web/web_state/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/error_translation_util.h"
 #include "ios/web/web_state/frame_info.h"
-#import "ios/web/web_state/js/crw_js_early_script_manager.h"
 #import "ios/web/web_state/js/crw_js_plugin_placeholder_manager.h"
 #import "ios/web/web_state/js/crw_js_post_request_loader.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
@@ -359,9 +358,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // A set of URLs opened in external applications; stored so that errors
   // from the web view can be identified as resulting from these events.
   base::scoped_nsobject<NSMutableSet> _openedApplicationURL;
-
-  // Object that manages all early script injection into the web view.
-  base::scoped_nsobject<CRWJSEarlyScriptManager> _earlyScriptManager;
 
   // A set of script managers whose scripts have been injected into the current
   // page.
@@ -827,8 +823,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     _defaultURL = GURL(url::kAboutBlankURL);
     _jsInjectionReceiver.reset(
         [[CRWJSInjectionReceiver alloc] initWithEvaluator:self]);
-    _earlyScriptManager.reset([(CRWJSEarlyScriptManager*)[_jsInjectionReceiver
-        instanceOfClass:[CRWJSEarlyScriptManager class]] retain]);
     _windowIDJSManager.reset([(CRWJSWindowIdManager*)[_jsInjectionReceiver
         instanceOfClass:[CRWJSWindowIdManager class]] retain]);
     _lastSeenWindowID.reset();
@@ -1422,17 +1416,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return list.currentItem == item ||
          [list.forwardList indexOfObject:item] != NSNotFound ||
          [list.backList indexOfObject:item] != NSNotFound;
-}
-
-- (void)injectEarlyInjectionScripts {
-  DCHECK(self.webView);
-  if (![_earlyScriptManager hasBeenInjected]) {
-    [_earlyScriptManager inject];
-    // If this assertion fires there has been an error parsing the core.js
-    // object.
-    DCHECK([_earlyScriptManager hasBeenInjected]);
-  }
-  [self injectWindowID];
 }
 
 - (void)clearInjectedScriptManagers {
@@ -2138,7 +2121,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // on by the CRWWebController, so the history stack and state of the
   // CRWWebController is 100% up to date before the stack navigation starts.
   if (self.webView) {
-    [self injectEarlyInjectionScripts];
+    [self injectWindowID];
     [self checkForUnexpectedURLChange];
   }
 
@@ -2457,14 +2440,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Skip evaluation if there's no content (e.g., if what's being injected is
   // an umbrella manager).
   if ([script length]) {
-    // Make sure that CRWJSEarlyScriptManager has been injected.
-    BOOL ealyScriptInjected = [self
-        scriptHasBeenInjectedForClass:[CRWJSEarlyScriptManager class]
-                       presenceBeacon:[_earlyScriptManager presenceBeacon]];
-    if (!ealyScriptInjected &&
-        JSInjectionManagerClass != [CRWJSEarlyScriptManager class]) {
-      [_earlyScriptManager inject];
-    }
     // Every injection except windowID requires windowID check.
     if (JSInjectionManagerClass != [CRWJSWindowIdManager class])
       script = [self scriptByAddingWindowIDCheckForScript:script];
