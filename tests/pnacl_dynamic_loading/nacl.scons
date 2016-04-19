@@ -148,7 +148,8 @@ pll_libc_nonfinal = env.Command(
     [env.File('${LIB_DIR}/libnacl.a'),
      env.File('${NACL_SDK_LIB}/libc.a'),
      env.ComponentObject('libc_entry.c')],
-    '${CC} -shared -Wl,--whole-archive ${SOURCES} -o ${TARGET}')
+    '${CC} -shared -Wl,--whole-archive -Wl,--allow-multiple-definition ' +
+    '${SOURCES} -o ${TARGET}')
 
 pll_libc_finalized = FinalizePso('pll_libc', pll_libc_nonfinal)
 pll_libc = TranslatePso('pll_libc', pll_libc_finalized)
