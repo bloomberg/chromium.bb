@@ -136,12 +136,12 @@ bool FEConvolveMatrix::parametersValid() const
     return true;
 }
 
-sk_sp<SkImageFilter> FEConvolveMatrix::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEConvolveMatrix::createImageFilter()
 {
     if (!parametersValid())
-        return createTransparentBlack(builder);
+        return createTransparentBlack();
 
-    sk_sp<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
+    sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
     SkISize kernelSize(SkISize::Make(m_kernelSize.width(), m_kernelSize.height()));
     // parametersValid() above checks that the kernel area fits in int.
     int numElements = safeCast<int>(m_kernelSize.area());

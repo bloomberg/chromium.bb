@@ -41,7 +41,7 @@ public:
 private:
     FEGaussianBlur(Filter*, float, float);
 
-    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter() override;
 
     float m_stdX;
     float m_stdY;

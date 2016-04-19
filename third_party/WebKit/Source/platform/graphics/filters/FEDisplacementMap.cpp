@@ -109,10 +109,10 @@ static SkDisplacementMapEffect::ChannelSelectorType toSkiaMode(ChannelSelectorTy
     }
 }
 
-sk_sp<SkImageFilter> FEDisplacementMap::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEDisplacementMap::createImageFilter()
 {
-    sk_sp<SkImageFilter> color = builder.build(inputEffect(0), operatingColorSpace());
-    sk_sp<SkImageFilter> displ = builder.build(inputEffect(1), operatingColorSpace());
+    sk_sp<SkImageFilter> color = SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace());
+    sk_sp<SkImageFilter> displ = SkiaImageFilterBuilder::build(inputEffect(1), operatingColorSpace());
     SkDisplacementMapEffect::ChannelSelectorType typeX = toSkiaMode(m_xChannelSelector);
     SkDisplacementMapEffect::ChannelSelectorType typeY = toSkiaMode(m_yChannelSelector);
     SkImageFilter::CropRect cropRect = getCropRect();

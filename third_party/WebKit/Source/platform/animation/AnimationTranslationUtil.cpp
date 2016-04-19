@@ -115,8 +115,7 @@ void toCompositorTransformOperations(const TransformOperations& transformOperati
 
 void toCompositorFilterOperations(const FilterOperations& inOperations, CompositorFilterOperations* outOperations)
 {
-    SkiaImageFilterBuilder builder;
-    builder.buildFilterOperations(inOperations, outOperations);
+    SkiaImageFilterBuilder::buildFilterOperations(inOperations, outOperations);
 }
 
 } // namespace blink

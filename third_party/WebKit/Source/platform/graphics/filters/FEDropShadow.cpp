@@ -65,9 +65,9 @@ FloatRect FEDropShadow::mapRect(const FloatRect& rect, bool forward) const
     return result;
 }
 
-sk_sp<SkImageFilter> FEDropShadow::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEDropShadow::createImageFilter()
 {
-    sk_sp<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
+    sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
     float dx = getFilter()->applyHorizontalScale(m_dx);
     float dy = getFilter()->applyVerticalScale(m_dy);
     float stdX = getFilter()->applyHorizontalScale(m_stdX);

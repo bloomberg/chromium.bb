@@ -191,20 +191,20 @@ SkXfermode::Mode toXfermode(CompositeOperationType mode)
     }
 }
 
-sk_sp<SkImageFilter> FEComposite::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEComposite::createImageFilter()
 {
-    return createImageFilterInternal(builder, true);
+    return createImageFilterInternal(true);
 }
 
-sk_sp<SkImageFilter> FEComposite::createImageFilterWithoutValidation(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEComposite::createImageFilterWithoutValidation()
 {
-    return createImageFilterInternal(builder, false);
+    return createImageFilterInternal(false);
 }
 
-sk_sp<SkImageFilter> FEComposite::createImageFilterInternal(SkiaImageFilterBuilder& builder, bool requiresPMColorValidation)
+sk_sp<SkImageFilter> FEComposite::createImageFilterInternal(bool requiresPMColorValidation)
 {
-    sk_sp<SkImageFilter> foreground(builder.build(inputEffect(0), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
-    sk_sp<SkImageFilter> background(builder.build(inputEffect(1), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
+    sk_sp<SkImageFilter> foreground(SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
+    sk_sp<SkImageFilter> background(SkiaImageFilterBuilder::build(inputEffect(1), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
     SkImageFilter::CropRect cropRect = getCropRect();
     sk_sp<SkXfermode> mode;
     if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC)

@@ -26,7 +26,7 @@ PaintFilterEffect* PaintFilterEffect::create(Filter* filter, const SkPaint& pain
     return new PaintFilterEffect(filter, paint);
 }
 
-sk_sp<SkImageFilter> PaintFilterEffect::createImageFilter(SkiaImageFilterBuilder&)
+sk_sp<SkImageFilter> PaintFilterEffect::createImageFilter()
 {
     return SkPaintImageFilter::Make(m_paint, nullptr);
 }

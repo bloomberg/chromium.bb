@@ -33,7 +33,7 @@ public:
     FloatRect mapRect(const FloatRect&, bool forward = true) const final;
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
-    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter() override;
 
 private:
     FEDropShadow(Filter*, float, float, float, float, const Color&, float);

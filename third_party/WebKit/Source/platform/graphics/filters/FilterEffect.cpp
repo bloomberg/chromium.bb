@@ -189,14 +189,14 @@ FloatRect FilterEffect::determineFilterPrimitiveSubregion(DetermineSubregionFlag
     return subregion;
 }
 
-sk_sp<SkImageFilter> FilterEffect::createImageFilter(SkiaImageFilterBuilder&)
+sk_sp<SkImageFilter> FilterEffect::createImageFilter()
 {
     return nullptr;
 }
 
-sk_sp<SkImageFilter> FilterEffect::createImageFilterWithoutValidation(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FilterEffect::createImageFilterWithoutValidation()
 {
-    return createImageFilter(builder);
+    return createImageFilter();
 }
 
 bool FilterEffect::inputsTaintOrigin() const
@@ -208,7 +208,7 @@ bool FilterEffect::inputsTaintOrigin() const
     return false;
 }
 
-sk_sp<SkImageFilter> FilterEffect::createTransparentBlack(SkiaImageFilterBuilder& builder) const
+sk_sp<SkImageFilter> FilterEffect::createTransparentBlack() const
 {
     SkImageFilter::CropRect rect = getCropRect();
     sk_sp<SkColorFilter> colorFilter = SkColorFilter::MakeModeFilter(0, SkXfermode::kClear_Mode);

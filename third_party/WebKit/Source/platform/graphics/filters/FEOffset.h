@@ -44,7 +44,7 @@ public:
 private:
     FEOffset(Filter*, float dx, float dy);
 
-    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter() override;
 
     float m_dx;
     float m_dy;

@@ -25,7 +25,6 @@
 
 #include "SkColorFilter.h"
 #include "SkColorFilterImageFilter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 
 namespace blink {
@@ -69,10 +68,9 @@ bool FEFlood::setFloodOpacity(float floodOpacity)
     return true;
 }
 
-sk_sp<SkImageFilter> FEFlood::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEFlood::createImageFilter()
 {
     Color color = floodColor().combineWithAlpha(floodOpacity());
-
     SkImageFilter::CropRect rect = getCropRect();
     return SkColorFilterImageFilter::Make(SkColorFilter::MakeModeFilter(color.rgb(), SkXfermode::kSrc_Mode), 0, &rect);
 }

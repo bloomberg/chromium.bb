@@ -46,9 +46,9 @@ FloatRect SourceAlpha::determineAbsolutePaintRect(const FloatRect& requestedRect
     return inputEffect(0)->determineAbsolutePaintRect(requestedRect);
 }
 
-sk_sp<SkImageFilter> SourceAlpha::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> SourceAlpha::createImageFilter()
 {
-    sk_sp<SkImageFilter> sourceGraphic(builder.build(inputEffect(0), operatingColorSpace()));
+    sk_sp<SkImageFilter> sourceGraphic(SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
     SkScalar matrix[20] = {
         0, 0, 0, 0, 0,
         0, 0, 0, 0, 0,

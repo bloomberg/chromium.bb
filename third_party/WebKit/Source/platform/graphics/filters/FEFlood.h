@@ -47,7 +47,7 @@ public:
 private:
     FEFlood(Filter*, const Color&, float);
 
-    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter() override;
 
     Color m_floodColor;
     float m_floodOpacity;

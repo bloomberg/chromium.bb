@@ -40,7 +40,7 @@ public:
 private:
     FETile(Filter*);
 
-    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter() override;
 };
 
 } // namespace blink

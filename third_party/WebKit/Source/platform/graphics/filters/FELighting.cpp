@@ -58,14 +58,14 @@ FloatRect FELighting::mapPaintRect(const FloatRect& rect, bool) const
     return result;
 }
 
-sk_sp<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FELighting::createImageFilter()
 {
     if (!m_lightSource)
-        return createTransparentBlack(builder);
+        return createTransparentBlack();
 
     SkImageFilter::CropRect rect = getCropRect();
     Color lightColor = adaptColorToOperatingColorSpace(m_lightingColor);
-    sk_sp<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
+    sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
     switch (m_lightSource->type()) {
     case LS_DISTANT: {
         DistantLightSource* distantLightSource = static_cast<DistantLightSource*>(m_lightSource.get());

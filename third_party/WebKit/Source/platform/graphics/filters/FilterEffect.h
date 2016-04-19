@@ -41,8 +41,6 @@ class Filter;
 class FilterEffect;
 class TextStream;
 
-class SkiaImageFilterBuilder;
-
 typedef HeapVector<Member<FilterEffect>> FilterEffectVector;
 
 enum FilterEffectType {
@@ -82,8 +80,8 @@ public:
     FloatRect maxEffectRect() const { return m_maxEffectRect; }
     void setMaxEffectRect(const FloatRect& maxEffectRect) { m_maxEffectRect = maxEffectRect; }
 
-    virtual sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&);
-    virtual sk_sp<SkImageFilter> createImageFilterWithoutValidation(SkiaImageFilterBuilder&);
+    virtual sk_sp<SkImageFilter> createImageFilter();
+    virtual sk_sp<SkImageFilter> createImageFilterWithoutValidation();
 
     // Mapping a rect forwards determines which which destination pixels a
     // given source rect would affect. Mapping a rect backwards determines
@@ -156,7 +154,7 @@ public:
 protected:
     FilterEffect(Filter*);
 
-    sk_sp<SkImageFilter> createTransparentBlack(SkiaImageFilterBuilder&) const;
+    sk_sp<SkImageFilter> createTransparentBlack() const;
 
     Color adaptColorToOperatingColorSpace(const Color& deviceColor);
 

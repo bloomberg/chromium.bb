@@ -66,8 +66,7 @@ static void paintFilteredContent(const LayoutObject& object, GraphicsContext& co
 
     filterData->m_state = FilterData::PaintingFilter;
 
-    SkiaImageFilterBuilder builder;
-    sk_sp<SkImageFilter> imageFilter = builder.build(filterData->filter->lastEffect(), ColorSpaceDeviceRGB);
+    sk_sp<SkImageFilter> imageFilter = SkiaImageFilterBuilder::build(filterData->filter->lastEffect(), ColorSpaceDeviceRGB);
     FloatRect boundaries = filterData->filter->filterRegion();
     context.save();
 
@@ -90,7 +89,7 @@ static void paintFilteredContent(const LayoutObject& object, GraphicsContext& co
         AffineTransform shearAndRotate = scaleAndTranslate.inverse();
         shearAndRotate.multiply(ctm);
         context.concatCTM(shearAndRotate.inverse());
-        imageFilter = builder.buildTransform(shearAndRotate, std::move(imageFilter));
+        imageFilter = SkiaImageFilterBuilder::buildTransform(shearAndRotate, std::move(imageFilter));
     }
 #endif
 

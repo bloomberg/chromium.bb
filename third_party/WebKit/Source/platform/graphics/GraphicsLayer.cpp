@@ -1124,17 +1124,15 @@ WebLayer* GraphicsLayer::platformLayer() const
 
 void GraphicsLayer::setFilters(const FilterOperations& filters)
 {
-    SkiaImageFilterBuilder builder;
     OwnPtr<CompositorFilterOperations> webFilters = adoptPtr(CompositorFactory::current().createFilterOperations());
-    builder.buildFilterOperations(filters, webFilters.get());
+    SkiaImageFilterBuilder::buildFilterOperations(filters, webFilters.get());
     m_layer->layer()->setFilters(webFilters->asFilterOperations());
 }
 
 void GraphicsLayer::setBackdropFilters(const FilterOperations& filters)
 {
-    SkiaImageFilterBuilder builder;
     OwnPtr<CompositorFilterOperations> webFilters = adoptPtr(CompositorFactory::current().createFilterOperations());
-    builder.buildFilterOperations(filters, webFilters.get());
+    SkiaImageFilterBuilder::buildFilterOperations(filters, webFilters.get());
     m_layer->layer()->setBackgroundFilters(webFilters->asFilterOperations());
 }
 

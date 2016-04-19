@@ -181,7 +181,7 @@ sk_sp<SkImageFilter> FEImage::createImageFilterForLayoutObject(const LayoutObjec
     return SkPictureImageFilter::Make(toSkSp(filterPicture.endRecording()), dstRect);
 }
 
-sk_sp<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEImage::createImageFilter()
 {
     if (auto* layoutObject = referencedLayoutObject())
         return createImageFilterForLayoutObject(*layoutObject);
@@ -192,7 +192,7 @@ sk_sp<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder& builder)
         // to download, is non-existent, or that cannot be displayed (e.g. because it is
         // not in a supported image format) fills the filter primitive subregion with
         // transparent black."
-        return createTransparentBlack(builder);
+        return createTransparentBlack();
     }
 
     FloatRect srcRect = FloatRect(FloatPoint(), FloatSize(m_image->size()));

@@ -58,7 +58,7 @@ private:
     FEConvolveMatrix(Filter*, const IntSize&, float, float,
         const IntPoint&, EdgeModeType, bool, const Vector<float>&);
 
-    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter() override;
 
     bool parametersValid() const;
 

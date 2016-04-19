@@ -28,7 +28,6 @@
 #include "SkPaintImageFilter.h"
 #include "SkPerlinNoiseShader.h"
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 
 namespace blink {
@@ -146,10 +145,10 @@ sk_sp<SkShader> FETurbulence::createShader() const
             stitchTiles() ? &size : 0);
 }
 
-sk_sp<SkImageFilter> FETurbulence::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FETurbulence::createImageFilter()
 {
     if (m_baseFrequencyX < 0 || m_baseFrequencyY < 0)
-        return createTransparentBlack(builder);
+        return createTransparentBlack();
 
     SkPaint paint;
     paint.setShader(createShader());

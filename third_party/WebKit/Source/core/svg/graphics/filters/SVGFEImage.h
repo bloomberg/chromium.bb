@@ -47,7 +47,7 @@ public:
     void setOperatingColorSpace(ColorSpace) override { }
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
-    sk_sp<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    sk_sp<SkImageFilter> createImageFilter() override;
 
     DECLARE_VIRTUAL_TRACE();
 

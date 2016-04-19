@@ -59,7 +59,7 @@ void SourceGraphic::setSourceRect(const IntRect& sourceRect)
     m_sourceRect = sourceRect;
 }
 
-sk_sp<SkImageFilter> SourceGraphic::createImageFilter(SkiaImageFilterBuilder&)
+sk_sp<SkImageFilter> SourceGraphic::createImageFilter()
 {
     if (!m_picture)
         return nullptr;

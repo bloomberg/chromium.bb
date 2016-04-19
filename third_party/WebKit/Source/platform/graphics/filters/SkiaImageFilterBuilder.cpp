@@ -31,6 +31,7 @@
 #include "SkTableColorFilter.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/graphics/BoxReflection.h"
+#include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/filters/SourceGraphic.h"
@@ -39,12 +40,9 @@
 #include "third_party/skia/include/effects/SkXfermodeImageFilter.h"
 
 namespace blink {
+namespace SkiaImageFilterBuilder {
 
-SkiaImageFilterBuilder::~SkiaImageFilterBuilder()
-{
-}
-
-sk_sp<SkImageFilter> SkiaImageFilterBuilder::build(FilterEffect* effect, ColorSpace colorSpace, bool destinationRequiresValidPreMultipliedPixels)
+sk_sp<SkImageFilter> build(FilterEffect* effect, ColorSpace colorSpace, bool destinationRequiresValidPreMultipliedPixels)
 {
     if (!effect)
         return nullptr;
@@ -55,7 +53,7 @@ sk_sp<SkImageFilter> SkiaImageFilterBuilder::build(FilterEffect* effect, ColorSp
         return sk_ref_sp(filter);
 
     // Note that we may still need the color transform even if the filter is null
-    sk_sp<SkImageFilter> origFilter = requiresPMColorValidation ? effect->createImageFilter(*this) : effect->createImageFilterWithoutValidation(*this);
+    sk_sp<SkImageFilter> origFilter = requiresPMColorValidation ? effect->createImageFilter() : effect->createImageFilterWithoutValidation();
     sk_sp<SkImageFilter> filter = transformColorSpace(origFilter, effect->operatingColorSpace(), colorSpace);
     effect->setImageFilter(colorSpace, requiresPMColorValidation, filter);
     if (filter.get() != origFilter.get())
@@ -63,9 +61,8 @@ sk_sp<SkImageFilter> SkiaImageFilterBuilder::build(FilterEffect* effect, ColorSp
     return filter;
 }
 
-sk_sp<SkImageFilter> SkiaImageFilterBuilder::transformColorSpace(
-    sk_sp<SkImageFilter> input, ColorSpace srcColorSpace, ColorSpace dstColorSpace) {
-
+sk_sp<SkImageFilter> transformColorSpace(sk_sp<SkImageFilter> input, ColorSpace srcColorSpace, ColorSpace dstColorSpace)
+{
     sk_sp<SkColorFilter> colorFilter = toSkSp(ColorSpaceUtilities::createColorSpaceFilter(srcColorSpace, dstColorSpace));
     if (!colorFilter)
         return input;
@@ -73,7 +70,7 @@ sk_sp<SkImageFilter> SkiaImageFilterBuilder::transformColorSpace(
     return SkColorFilterImageFilter::Make(std::move(colorFilter), std::move(input));
 }
 
-void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& operations, CompositorFilterOperations* filters)
+void buildFilterOperations(const FilterOperations& operations, CompositorFilterOperations* filters)
 {
     ColorSpace currentColorSpace = ColorSpaceDeviceRGB;
 
@@ -178,12 +175,12 @@ void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
     }
 }
 
-sk_sp<SkImageFilter> SkiaImageFilterBuilder::buildTransform(const AffineTransform& transform, sk_sp<SkImageFilter> input)
+sk_sp<SkImageFilter> buildTransform(const AffineTransform& transform, sk_sp<SkImageFilter> input)
 {
     return SkImageFilter::MakeMatrixFilter(affineTransformToSkMatrix(transform), kHigh_SkFilterQuality, std::move(input));
 }
 
-sk_sp<SkImageFilter> SkiaImageFilterBuilder::buildBoxReflectFilter(const BoxReflection& reflection, sk_sp<SkImageFilter> input)
+sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection, sk_sp<SkImageFilter> input)
 {
     sk_sp<SkImageFilter> maskedInput = input;
     // TODO(jbroman): If a mask image is provided, mask!
@@ -193,4 +190,5 @@ sk_sp<SkImageFilter> SkiaImageFilterBuilder::buildBoxReflectFilter(const BoxRefl
     return SkXfermodeImageFilter::Make(nullptr, std::move(flipImageFilter), std::move(input), nullptr);
 }
 
+} // namespace SkiaImageFilterBuilder
 } // namespace blink

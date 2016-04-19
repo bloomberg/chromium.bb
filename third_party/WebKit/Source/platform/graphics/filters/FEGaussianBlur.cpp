@@ -107,9 +107,9 @@ FloatRect FEGaussianBlur::determineAbsolutePaintRect(const FloatRect& originalRe
     return outputRect;
 }
 
-sk_sp<SkImageFilter> FEGaussianBlur::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEGaussianBlur::createImageFilter()
 {
-    sk_sp<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
+    sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
     float stdX = getFilter()->applyHorizontalScale(m_stdX);
     float stdY = getFilter()->applyVerticalScale(m_stdY);
     SkImageFilter::CropRect rect = getCropRect();

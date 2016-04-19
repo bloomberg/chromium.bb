@@ -39,13 +39,13 @@ FEMerge* FEMerge::create(Filter* filter)
     return new FEMerge(filter);
 }
 
-sk_sp<SkImageFilter> FEMerge::createImageFilter(SkiaImageFilterBuilder& builder)
+sk_sp<SkImageFilter> FEMerge::createImageFilter()
 {
     unsigned size = numberOfEffectInputs();
 
     OwnPtr<sk_sp<SkImageFilter>[]> inputRefs = adoptArrayPtr(new sk_sp<SkImageFilter>[size]);
     for (unsigned i = 0; i < size; ++i)
-        inputRefs[i] = builder.build(inputEffect(i), operatingColorSpace());
+        inputRefs[i] = SkiaImageFilterBuilder::build(inputEffect(i), operatingColorSpace());
     SkImageFilter::CropRect rect = getCropRect();
     return SkMergeImageFilter::Make(inputRefs.get(), size, 0, &rect);
 }
