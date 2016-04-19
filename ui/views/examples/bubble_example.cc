@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -49,12 +49,14 @@ base::string16 GetArrowName(BubbleBorder::Arrow arrow) {
   return ASCIIToUTF16("INVALID");
 }
 
-class ExampleBubble : public BubbleDelegateView {
+class ExampleBubble : public BubbleDialogDelegateView {
  public:
-   ExampleBubble(View* anchor, BubbleBorder::Arrow arrow)
-       : BubbleDelegateView(anchor, arrow) {}
+  ExampleBubble(View* anchor, BubbleBorder::Arrow arrow)
+      : BubbleDialogDelegateView(anchor, arrow) {}
 
  protected:
+  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
+
   void Init() override {
     SetLayoutManager(new BoxLayout(BoxLayout::kVertical, 50, 50, 0));
     AddChildView(new Label(GetArrowName(arrow())));
@@ -117,7 +119,7 @@ void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == persistent_)
     bubble->set_close_on_deactivate(false);
 
-  BubbleDelegateView::CreateBubble(bubble);
+  BubbleDialogDelegateView::CreateBubble(bubble);
   if (sender == align_to_edge_)
     bubble->SetAlignment(BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
 

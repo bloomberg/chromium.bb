@@ -22,7 +22,7 @@
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #include "ui/views/controls/button/label_button.h"
@@ -234,6 +234,17 @@ class NativeHostHolder {
   std::unique_ptr<NativeViewHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeHostHolder);
+};
+
+// This class gives public access to the protected ctor of
+// BubbleDialogDelegateView.
+class SimpleBubbleView : public BubbleDialogDelegateView {
+ public:
+  SimpleBubbleView() {}
+  ~SimpleBubbleView() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SimpleBubbleView);
 };
 
 // Test visibility states triggered externally.
@@ -1075,15 +1086,15 @@ TEST_F(NativeWidgetMacTest, NativeProperties) {
   EXPECT_FALSE([dialog_widget->GetNativeWindow() canBecomeMainWindow]);
 
   // Create a bubble widget with a parent: also shouldn't get main.
-  BubbleDelegateView* bubble_view = new BubbleDelegateView();
+  BubbleDialogDelegateView* bubble_view = new SimpleBubbleView();
   bubble_view->set_parent_window(regular_widget->GetNativeView());
-  Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_view);
+  Widget* bubble_widget = BubbleDialogDelegateView::CreateBubble(bubble_view);
   EXPECT_TRUE([bubble_widget->GetNativeWindow() canBecomeKeyWindow]);
   EXPECT_FALSE([bubble_widget->GetNativeWindow() canBecomeMainWindow]);
 
   // But a bubble without a parent should still be able to become main.
   Widget* toplevel_bubble_widget =
-      BubbleDelegateView::CreateBubble(new BubbleDelegateView());
+      BubbleDialogDelegateView::CreateBubble(new SimpleBubbleView());
   EXPECT_TRUE([toplevel_bubble_widget->GetNativeWindow() canBecomeKeyWindow]);
   EXPECT_TRUE([toplevel_bubble_widget->GetNativeWindow() canBecomeMainWindow]);
 

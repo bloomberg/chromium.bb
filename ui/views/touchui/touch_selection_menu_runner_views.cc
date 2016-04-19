@@ -16,7 +16,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/box_layout.h"
@@ -37,8 +37,8 @@ const int kEllipsesButtonTag = -1;
 }  // namespace
 
 // A bubble that contains actions available for the selected text. An object of
-// this type, as a BubbleDelegateView, manages its own lifetime.
-class TouchSelectionMenuRunnerViews::Menu : public BubbleDelegateView,
+// this type, as a BubbleDialogDelegateView, manages its own lifetime.
+class TouchSelectionMenuRunnerViews::Menu : public BubbleDialogDelegateView,
                                             public ButtonListener {
  public:
   Menu(TouchSelectionMenuRunnerViews* owner,
@@ -51,7 +51,7 @@ class TouchSelectionMenuRunnerViews::Menu : public BubbleDelegateView,
   static bool IsMenuAvailable(const ui::TouchSelectionMenuClient* client);
 
   // Closes the menu. This will eventually self-destroy the object.
-  void Close();
+  void CloseMenu();
 
  private:
   friend class TouchSelectionMenuRunnerViews::TestApi;
@@ -68,9 +68,10 @@ class TouchSelectionMenuRunnerViews::Menu : public BubbleDelegateView,
   // Helper to disconnect this menu object from its owning menu runner.
   void DisconnectOwner();
 
-  // BubbleDelegateView:
+  // BubbleDialogDelegateView:
   void OnPaint(gfx::Canvas* canvas) override;
   void WindowClosing() override;
+  int GetDialogButtons() const override;
 
   // ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
@@ -86,7 +87,7 @@ TouchSelectionMenuRunnerViews::Menu::Menu(TouchSelectionMenuRunnerViews* owner,
                                           const gfx::Rect& anchor_rect,
                                           const gfx::Size& handle_image_size,
                                           aura::Window* context)
-    : BubbleDelegateView(nullptr, BubbleBorder::BOTTOM_CENTER),
+    : BubbleDialogDelegateView(nullptr, BubbleBorder::BOTTOM_CENTER),
       owner_(owner),
       client_(client) {
   DCHECK(owner_);
@@ -117,7 +118,7 @@ TouchSelectionMenuRunnerViews::Menu::Menu(TouchSelectionMenuRunnerViews* owner,
     adjusted_anchor_rect.Inset(0, 0, 0, -handle_image_size.height());
   SetAnchorRect(adjusted_anchor_rect);
 
-  BubbleDelegateView::CreateBubble(this);
+  BubbleDialogDelegateView::CreateBubble(this);
   GetWidget()->Show();
 }
 
@@ -170,7 +171,7 @@ Button* TouchSelectionMenuRunnerViews::Menu::CreateButton(
   return button;
 }
 
-void TouchSelectionMenuRunnerViews::Menu::Close() {
+void TouchSelectionMenuRunnerViews::Menu::CloseMenu() {
   DisconnectOwner();
   // Closing the widget will self-destroy this object.
   Widget* widget = GetWidget();
@@ -185,7 +186,7 @@ void TouchSelectionMenuRunnerViews::Menu::DisconnectOwner() {
 }
 
 void TouchSelectionMenuRunnerViews::Menu::OnPaint(gfx::Canvas* canvas) {
-  BubbleDelegateView::OnPaint(canvas);
+  BubbleDialogDelegateView::OnPaint(canvas);
 
   // Draw separator bars.
   for (int i = 0; i < child_count() - 1; ++i) {
@@ -198,15 +199,19 @@ void TouchSelectionMenuRunnerViews::Menu::OnPaint(gfx::Canvas* canvas) {
 
 void TouchSelectionMenuRunnerViews::Menu::WindowClosing() {
   DCHECK(!owner_ || owner_->menu_ == this);
-  BubbleDelegateView::WindowClosing();
+  BubbleDialogDelegateView::WindowClosing();
   if (owner_)
     DisconnectOwner();
+}
+
+int TouchSelectionMenuRunnerViews::Menu::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 void TouchSelectionMenuRunnerViews::Menu::ButtonPressed(
     Button* sender,
     const ui::Event& event) {
-  Close();
+  CloseMenu();
   if (sender->tag() != kEllipsesButtonTag)
     client_->ExecuteCommand(sender->tag(), event.flags());
   else
@@ -264,7 +269,7 @@ void TouchSelectionMenuRunnerViews::CloseMenu() {
     return;
 
   // Closing the menu sets |menu_| to nullptr and eventually deletes the object.
-  menu_->Close();
+  menu_->CloseMenu();
   DCHECK(!menu_);
 }
 

@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/test/in_process_context_factory.h"
@@ -88,6 +89,7 @@ int main(int argc, char** argv) {
   aura::Env::GetInstance()->set_context_factory(context_factory.get());
 #endif
   ui::InitializeInputMethodForTesting();
+  ui::MaterialDesignController::Initialize();
 
   {
     views::DesktopTestViewsDelegate views_delegate;

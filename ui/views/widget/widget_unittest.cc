@@ -21,7 +21,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/native_widget_factory.h"
 #include "ui/views/test/test_views.h"
@@ -65,6 +65,21 @@ gfx::Point ConvertPointFromWidgetToView(View* view, const gfx::Point& p) {
 // to call function Widget::CloseNow automatically.
 struct WidgetCloser {
   inline void operator()(Widget* widget) const { widget->CloseNow(); }
+};
+
+class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
+ public:
+  TestBubbleDialogDelegateView(View* anchor)
+      : BubbleDialogDelegateView(anchor, BubbleBorder::NONE),
+        reset_controls_called_(false) {}
+  ~TestBubbleDialogDelegateView() override {}
+
+  bool ShouldShowCloseButton() const override {
+    reset_controls_called_ = true;
+    return true;
+  }
+
+  mutable bool reset_controls_called_;
 };
 
 using WidgetAutoclosePtr = std::unique_ptr<Widget, WidgetCloser>;
@@ -835,11 +850,11 @@ TEST_F(WidgetObserverTest, DestroyBubble) {
   WidgetAutoclosePtr anchor(CreateTopLevelPlatformWidget());
   anchor->Show();
 
-  BubbleDelegateView* bubble_delegate =
-      new BubbleDelegateView(anchor->client_view(), BubbleBorder::NONE);
+  BubbleDialogDelegateView* bubble_delegate =
+      new TestBubbleDialogDelegateView(anchor->client_view());
   {
     WidgetAutoclosePtr bubble_widget(
-        BubbleDelegateView::CreateBubble(bubble_delegate));
+        BubbleDialogDelegateView::CreateBubble(bubble_delegate));
     bubble_widget->Show();
   }
 
@@ -1220,10 +1235,10 @@ TEST_F(WidgetTest, DISABLED_FocusChangesOnBubble) {
   EXPECT_TRUE(contents_view->HasFocus());
 
   // Show a bubble.
-  BubbleDelegateView* bubble_delegate_view =
-      new BubbleDelegateView(contents_view, BubbleBorder::TOP_LEFT);
+  BubbleDialogDelegateView* bubble_delegate_view =
+      new TestBubbleDialogDelegateView(contents_view);
   bubble_delegate_view->SetFocusable(true);
-  BubbleDelegateView::CreateBubble(bubble_delegate_view)->Show();
+  BubbleDialogDelegateView::CreateBubble(bubble_delegate_view)->Show();
   bubble_delegate_view->RequestFocus();
 
   // |contents_view_| should no longer have focus.
@@ -1236,30 +1251,15 @@ TEST_F(WidgetTest, DISABLED_FocusChangesOnBubble) {
   EXPECT_TRUE(contents_view->HasFocus());
 }
 
-class TestBubbleDelegateView : public BubbleDelegateView {
- public:
-  TestBubbleDelegateView(View* anchor)
-      : BubbleDelegateView(anchor, BubbleBorder::NONE),
-        reset_controls_called_(false) {}
-  ~TestBubbleDelegateView() override {}
-
-  bool ShouldShowCloseButton() const override {
-    reset_controls_called_ = true;
-    return true;
-  }
-
-  mutable bool reset_controls_called_;
-};
-
 TEST_F(WidgetTest, BubbleControlsResetOnInit) {
   WidgetAutoclosePtr anchor(CreateTopLevelPlatformWidget());
   anchor->Show();
 
   {
-    TestBubbleDelegateView* bubble_delegate =
-        new TestBubbleDelegateView(anchor->client_view());
+    TestBubbleDialogDelegateView* bubble_delegate =
+        new TestBubbleDialogDelegateView(anchor->client_view());
     WidgetAutoclosePtr bubble_widget(
-        BubbleDelegateView::CreateBubble(bubble_delegate));
+        BubbleDialogDelegateView::CreateBubble(bubble_delegate));
     EXPECT_TRUE(bubble_delegate->reset_controls_called_);
     bubble_widget->Show();
   }
