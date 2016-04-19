@@ -25,6 +25,7 @@ template("test") {
       _output_name = invoker.output_name
     }
 
+    _test_runner_target = "${_output_name}__test_runner_script"
     _wrapper_script_vars = [
       "isolate_file",
       "shard_timeout",
@@ -105,6 +106,16 @@ template("test") {
           install_script_name = "install_${invoker.output_name}"
         }
         deps += [ ":$_library_target" ]
+
+        # TODO(agrieve): Remove this data_dep once bots don't build the _apk
+        #     target (post-GYP).
+        # It's a bit backwards for the apk to depend on the runner script, since
+        # the apk is conceptually a runtime_dep of the script. However, it is
+        # currently necessary because the bots build this _apk target directly
+        # rather than the group() below.
+        data_deps = [
+          ":$_test_runner_target",
+        ]
       }
 
       # Incremental test targets work only for .apks.
