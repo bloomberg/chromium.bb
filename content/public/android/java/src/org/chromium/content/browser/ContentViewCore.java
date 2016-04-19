@@ -3004,6 +3004,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         if (mBrowserAccessibilityManager != null && mRenderCoordinates.hasFrameInfo()) {
             mBrowserAccessibilityManager.notifyFrameInfoInitialized();
         }
+
+        if (mBrowserAccessibilityManager == null) mNativeAccessibilityEnabled = false;
     }
 
     /**

@@ -20,6 +20,7 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/viewport_selection_bound.h"
+#include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/android/gesture_event_type.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
@@ -1389,10 +1390,22 @@ void ContentViewCoreImpl::SetAccessibilityEnabledInternal(bool enabled) {
   BrowserAccessibilityStateImpl* accessibility_state =
       BrowserAccessibilityStateImpl::GetInstance();
   if (enabled) {
-    // This enables accessibility globally unless it was explicitly disallowed
-    // by a command-line flag.
+    // First check if we already have a BrowserAccessibilityManager that
+    // just needs to be connected to the ContentViewCore.
+    if (web_contents_) {
+      BrowserAccessibilityManagerAndroid* manager =
+          static_cast<BrowserAccessibilityManagerAndroid*>(
+              web_contents_->GetRootBrowserAccessibilityManager());
+      if (manager) {
+        manager->SetContentViewCore(GetJavaObject());
+        return;
+      }
+    }
+
+    // Otherwise, enable accessibility globally unless it was
+    // explicitly disallowed by a command-line flag, then enable it for
+    // this WebContents if that succeeded.
     accessibility_state->OnScreenReaderDetected();
-    // If it was actually enabled globally, enable it for this RenderWidget now.
     if (accessibility_state->IsAccessibleBrowser() && web_contents_)
       web_contents_->AddAccessibilityMode(AccessibilityModeComplete);
   } else {
