@@ -1122,6 +1122,7 @@ public:
         V8Document_Anchors_AttributeGetter = 1303,
         V8Document_Applets_AttributeGetter = 1304,
         XMLHttpRequestCrossOriginWithCredentials = 1305,
+        MediaStreamTrackRemote = 1306,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

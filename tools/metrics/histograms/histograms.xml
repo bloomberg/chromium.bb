@@ -71000,6 +71000,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1303" label="V8Document_Anchors_AttributeGetter"/>
   <int value="1304" label="V8Document_Applets_AttributeGetter"/>
   <int value="1305" label="XMLHttpRequestCrossOriginWithCredentials"/>
+  <int value="1306" label="MediaStreamTrackRemote"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
