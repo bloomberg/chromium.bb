@@ -31,8 +31,7 @@ bool NotificationDispatcher::ShouldHandleMessage(
 
 void NotificationDispatcher::OnFilteredMessageReceived(
     const IPC::Message& msg) {
-  NotificationManager::ThreadSpecificInstance(thread_safe_sender(),
-                                              main_thread_task_runner(), this)
+  NotificationManager::ThreadSpecificInstance(thread_safe_sender(), this)
       ->OnMessageReceived(msg);
 }
 

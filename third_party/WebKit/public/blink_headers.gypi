@@ -272,6 +272,7 @@
       "platform/modules/notifications/WebNotificationDelegate.h",
       "platform/modules/notifications/WebNotificationManager.h",
       "platform/modules/notifications/WebNotificationPermission.h",
+      "platform/modules/notifications/WebNotificationResources.h",
       "platform/modules/permissions/WebPermissionClient.h",
       "platform/modules/permissions/WebPermissionObserver.h",
       "platform/modules/permissions/WebPermissionStatus.h",

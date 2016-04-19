@@ -12,12 +12,14 @@
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationData.h"
 #include "modules/notifications/NotificationOptions.h"
+#include "modules/notifications/NotificationResourcesLoader.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/Histogram.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
-#include "public/platform/modules/notifications/WebNotificationManager.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 namespace {
@@ -43,12 +45,21 @@ private:
 
 } // namespace
 
-ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptState* scriptState, ServiceWorkerRegistration& serviceWorkerRegistration, const String& title, const NotificationOptions& options, ExceptionState& exceptionState)
+ServiceWorkerRegistrationNotifications::ServiceWorkerRegistrationNotifications(ExecutionContext* executionContext, ServiceWorkerRegistration* registration)
+    : ContextLifecycleObserver(executionContext), m_registration(registration)
+{
+}
+
+ServiceWorkerRegistrationNotifications::~ServiceWorkerRegistrationNotifications()
+{
+}
+
+ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptState* scriptState, ServiceWorkerRegistration& registration, const String& title, const NotificationOptions& options, ExceptionState& exceptionState)
 {
     ExecutionContext* executionContext = scriptState->getExecutionContext();
 
     // If context object's active worker is null, reject promise with a TypeError exception.
-    if (!serviceWorkerRegistration.active())
+    if (!registration.active())
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "No active registration available on the ServiceWorkerRegistration."));
 
     // If permission for notification's origin is not "granted", reject promise with a TypeError exception, and terminate these substeps.
@@ -67,17 +78,13 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    WebNotificationShowCallbacks* callbacks = new CallbackPromiseAdapter<void, void>(resolver);
+    OwnPtr<WebNotificationShowCallbacks> callbacks = adoptPtr(new CallbackPromiseAdapter<void, void>(resolver));
+    ServiceWorkerRegistrationNotifications::from(executionContext, registration).prepareShow(data, callbacks.release());
 
-    SecurityOrigin* origin = executionContext->getSecurityOrigin();
-    WebNotificationManager* notificationManager = Platform::current()->notificationManager();
-    ASSERT(notificationManager);
-
-    notificationManager->showPersistent(WebSecurityOrigin(origin), data, serviceWorkerRegistration.webRegistration(), callbacks);
     return promise;
 }
 
-ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(ScriptState* scriptState, ServiceWorkerRegistration& serviceWorkerRegistration, const GetNotificationOptions& options)
+ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(ScriptState* scriptState, ServiceWorkerRegistration& registration, const GetNotificationOptions& options)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -87,8 +94,56 @@ ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(ScriptSta
     WebNotificationManager* notificationManager = Platform::current()->notificationManager();
     ASSERT(notificationManager);
 
-    notificationManager->getNotifications(options.tag(), serviceWorkerRegistration.webRegistration(), callbacks);
+    notificationManager->getNotifications(options.tag(), registration.webRegistration(), callbacks);
     return promise;
+}
+
+void ServiceWorkerRegistrationNotifications::contextDestroyed()
+{
+    for (auto loader : m_loaders)
+        loader->stop();
+}
+
+DEFINE_TRACE(ServiceWorkerRegistrationNotifications)
+{
+    visitor->trace(m_registration);
+    visitor->trace(m_loaders);
+    Supplement<ServiceWorkerRegistration>::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
+}
+
+const char* ServiceWorkerRegistrationNotifications::supplementName()
+{
+    return "ServiceWorkerRegistrationNotifications";
+}
+
+ServiceWorkerRegistrationNotifications& ServiceWorkerRegistrationNotifications::from(ExecutionContext* executionContext, ServiceWorkerRegistration& registration)
+{
+    ServiceWorkerRegistrationNotifications* supplement = static_cast<ServiceWorkerRegistrationNotifications*>(Supplement<ServiceWorkerRegistration>::from(registration, supplementName()));
+    if (!supplement) {
+        supplement = new ServiceWorkerRegistrationNotifications(executionContext, &registration);
+        provideTo(registration, supplementName(), supplement);
+    }
+    return *supplement;
+}
+
+void ServiceWorkerRegistrationNotifications::prepareShow(const WebNotificationData& data, PassOwnPtr<WebNotificationShowCallbacks> callbacks)
+{
+    RefPtr<SecurityOrigin> origin = getExecutionContext()->getSecurityOrigin();
+    NotificationResourcesLoader* loader = new NotificationResourcesLoader(bind<NotificationResourcesLoader*>(&ServiceWorkerRegistrationNotifications::didLoadResources, WeakPersistentThisPointer<ServiceWorkerRegistrationNotifications>(this), origin.release(), data, callbacks));
+    m_loaders.add(loader);
+    loader->start(getExecutionContext(), data);
+}
+
+void ServiceWorkerRegistrationNotifications::didLoadResources(PassRefPtr<SecurityOrigin> origin, const WebNotificationData& data, PassOwnPtr<WebNotificationShowCallbacks> callbacks, NotificationResourcesLoader* loader)
+{
+    DCHECK(m_loaders.contains(loader));
+
+    WebNotificationManager* notificationManager = Platform::current()->notificationManager();
+    DCHECK(notificationManager);
+
+    notificationManager->showPersistent(WebSecurityOrigin(origin.get()), data, loader->getResources(), m_registration->webRegistration(), callbacks.leakPtr());
+    m_loaders.remove(loader);
 }
 
 } // namespace blink

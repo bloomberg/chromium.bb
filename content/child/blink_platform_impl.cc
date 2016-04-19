@@ -875,7 +875,6 @@ BlinkPlatformImpl::notificationManager() {
 
   return NotificationManager::ThreadSpecificInstance(
       thread_safe_sender_.get(),
-      main_thread_task_runner_.get(),
       notification_dispatcher_.get());
 }
 

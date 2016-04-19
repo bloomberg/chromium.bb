@@ -9,15 +9,14 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
 #include "content/child/notifications/notification_dispatcher.h"
-#include "content/child/notifications/pending_notifications_tracker.h"
 #include "content/common/platform_notification_messages.h"
 #include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationManager.h"
@@ -37,19 +36,20 @@ class NotificationManager : public blink::WebNotificationManager,
   // calling this leads to construction.
   static NotificationManager* ThreadSpecificInstance(
       ThreadSafeSender* thread_safe_sender,
-      base::SingleThreadTaskRunner* main_thread_task_runner,
       NotificationDispatcher* notification_dispatcher);
 
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  // blink::WebNotificationManager implementation.
-  void show(const blink::WebSecurityOrigin& origin,
-            const blink::WebNotificationData& notification_data,
-            blink::WebNotificationDelegate* delegate) override;
+  void show(
+      const blink::WebSecurityOrigin& origin,
+      const blink::WebNotificationData& notification_data,
+      std::unique_ptr<blink::WebNotificationResources> notification_resources,
+      blink::WebNotificationDelegate* delegate) override;
   void showPersistent(
       const blink::WebSecurityOrigin& origin,
       const blink::WebNotificationData& notification_data,
+      std::unique_ptr<blink::WebNotificationResources> notification_resources,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebNotificationShowCallbacks* callbacks) override;
   void getNotifications(
@@ -70,7 +70,6 @@ class NotificationManager : public blink::WebNotificationManager,
 
  private:
   NotificationManager(ThreadSafeSender* thread_safe_sender,
-                      base::SingleThreadTaskRunner* main_thread_task_runner,
                       NotificationDispatcher* notification_dispatcher);
 
   // IPC message handlers.
@@ -82,33 +81,8 @@ class NotificationManager : public blink::WebNotificationManager,
       int request_id,
       const std::vector<PersistentNotificationInfo>& notification_infos);
 
-  // To be called when a page notification is ready to be displayed. Will
-  // inform the browser process about all available data. The |delegate|,
-  // owned by Blink, will be used to feed back events associated with the
-  // notification to the JavaScript object.
-  void DisplayPageNotification(
-      const blink::WebSecurityOrigin& origin,
-      const blink::WebNotificationData& notification_data,
-      blink::WebNotificationDelegate* delegate,
-      const NotificationResources& notification_resources);
-
-  // To be called when a persistent notification is ready to be displayed. Will
-  // inform the browser process about all available data. The |callbacks| will
-  // be used to inform the Promise pending in Blink that the notification has
-  // been send to the browser process to be displayed.
-  void DisplayPersistentNotification(
-      const blink::WebSecurityOrigin& origin,
-      const blink::WebNotificationData& notification_data,
-      int64_t service_worker_registration_id,
-      std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks,
-      const NotificationResources& notification_resources);
-
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
-
-  // Tracker which stores all pending Notifications, both page and persistent
-  // ones, until all their associated resources have been fetched.
-  PendingNotificationsTracker notifications_tracker_;
 
   // Tracks pending requests for getting a list of notifications.
   IDMap<blink::WebNotificationGetCallbacks, IDMapOwnPointer>

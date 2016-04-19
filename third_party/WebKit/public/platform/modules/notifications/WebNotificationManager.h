@@ -10,6 +10,8 @@
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationPermission.h"
+#include "public/platform/modules/notifications/WebNotificationResources.h"
+#include <memory>
 #include <stdint.h>
 
 namespace blink {
@@ -34,12 +36,12 @@ public:
 
     // Shows a page notification on the user's system. These notifications will have their
     // events delivered to the delegate specified in this call.
-    virtual void show(const WebSecurityOrigin&, const WebNotificationData&, WebNotificationDelegate*) = 0;
+    virtual void show(const WebSecurityOrigin&, const WebNotificationData&, std::unique_ptr<WebNotificationResources>, WebNotificationDelegate*) = 0;
 
     // Shows a persistent notification on the user's system. These notifications will have
     // their events delivered to a Service Worker rather than the object's delegate. Will
     // take ownership of the WebNotificationShowCallbacks object.
-    virtual void showPersistent(const WebSecurityOrigin&, const WebNotificationData&, WebServiceWorkerRegistration*, WebNotificationShowCallbacks*) = 0;
+    virtual void showPersistent(const WebSecurityOrigin&, const WebNotificationData&, std::unique_ptr<WebNotificationResources>, WebServiceWorkerRegistration*, WebNotificationShowCallbacks*) = 0;
 
     // Asynchronously gets the persistent notifications belonging to the Service Worker Registration.
     // If |filterTag| is not an empty string, only the notification with the given tag will be

@@ -649,7 +649,6 @@
       'child/indexed_db/mock_webidbcallbacks.h',
       'child/indexed_db/webidbcursor_impl_unittest.cc',
       'child/notifications/notification_data_conversions_unittest.cc',
-      'child/notifications/pending_notifications_tracker_unittest.cc',
       'child/power_monitor_broadcast_source_unittest.cc',
       'child/resource_dispatcher_unittest.cc',
       'child/service_worker/service_worker_dispatcher_unittest.cc',
