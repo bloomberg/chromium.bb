@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_state.h"
@@ -120,6 +121,8 @@ EnrollmentScreenHandler::~EnrollmentScreenHandler() {
 // EnrollmentScreenHandler, WebUIMessageHandler implementation --
 
 void EnrollmentScreenHandler::RegisterMessages() {
+  AddCallback("toggleFakeEnrollment",
+              &EnrollmentScreenHandler::HandleToggleFakeEnrollment);
   AddCallback("oauthEnrollClose",
               &EnrollmentScreenHandler::HandleClose);
   AddCallback("oauthEnrollCompleteLogin",
@@ -456,6 +459,9 @@ void EnrollmentScreenHandler::HideOfflineMessage(
 }
 
 // EnrollmentScreenHandler, private -----------------------------
+void EnrollmentScreenHandler::HandleToggleFakeEnrollment() {
+  policy::PolicyOAuth2TokenFetcher::UseFakeTokensForTesting();
+}
 
 void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
   DCHECK(controller_);
