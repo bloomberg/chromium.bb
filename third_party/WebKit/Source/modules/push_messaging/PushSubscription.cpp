@@ -9,7 +9,6 @@
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "modules/push_messaging/PushError.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/push_messaging/WebPushProvider.h"
 #include "public/platform/modules/push_messaging/WebPushSubscription.h"
@@ -72,18 +71,15 @@ ScriptPromise PushSubscription::unsubscribe(ScriptState* scriptState)
 
 ScriptValue PushSubscription::toJSONForBinding(ScriptState* scriptState)
 {
+    ASSERT(m_p256dh);
+
     V8ObjectBuilder result(scriptState);
     result.addString("endpoint", endpoint());
 
-    if (RuntimeEnabledFeatures::pushMessagingDataEnabled()) {
-        ASSERT(m_p256dh);
-
-        V8ObjectBuilder keys(scriptState);
-        keys.add("p256dh", WTF::base64URLEncode(static_cast<const char*>(m_p256dh->data()), m_p256dh->byteLength()));
-        keys.add("auth", WTF::base64URLEncode(static_cast<const char*>(m_auth->data()), m_auth->byteLength()));
-
-        result.add("keys", keys);
-    }
+    V8ObjectBuilder keys(scriptState);
+    keys.add("p256dh", WTF::base64URLEncode(static_cast<const char*>(m_p256dh->data()), m_p256dh->byteLength()));
+    keys.add("auth", WTF::base64URLEncode(static_cast<const char*>(m_auth->data()), m_auth->byteLength()));
+    result.add("keys", keys);
 
     return result.scriptValue();
 }

@@ -15,7 +15,7 @@ enum PushEncryptionKeyName {
 ] interface PushSubscription {
     readonly attribute USVString endpoint;
 
-    [RuntimeEnabled=PushMessagingData] ArrayBuffer? getKey(PushEncryptionKeyName name);
+    ArrayBuffer? getKey(PushEncryptionKeyName name);
     [CallWith=ScriptState] Promise<boolean> unsubscribe();
 
     serializer;
