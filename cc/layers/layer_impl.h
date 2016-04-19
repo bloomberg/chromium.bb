@@ -548,11 +548,11 @@ class CC_EXPORT LayerImpl {
 
   virtual gfx::Rect GetEnclosingRectInTargetSpace() const;
 
-  void set_layer_or_descendant_is_drawn(bool layer_or_descendant_is_drawn) {
-    layer_or_descendant_is_drawn_ = layer_or_descendant_is_drawn;
+  void set_scrolls_drawn_descendant(bool scrolls_drawn_descendant) {
+    scrolls_drawn_descendant_ = scrolls_drawn_descendant;
   }
 
-  bool layer_or_descendant_is_drawn() { return layer_or_descendant_is_drawn_; }
+  bool scrolls_drawn_descendant() { return scrolls_drawn_descendant_; }
 
   void set_layer_or_descendant_has_touch_handler(
       bool layer_or_descendant_has_touch_handler) {
@@ -754,7 +754,7 @@ class CC_EXPORT LayerImpl {
 
   std::vector<FrameTimingRequest> frame_timing_requests_;
   bool frame_timing_requests_dirty_;
-  bool layer_or_descendant_is_drawn_;
+  bool scrolls_drawn_descendant_;
   // If true, the layer or one of its descendants has a touch handler.
   bool layer_or_descendant_has_touch_handler_;
 

@@ -528,7 +528,8 @@ ScrollNodeData::ScrollNodeData()
       user_scrollable_horizontal(false),
       user_scrollable_vertical(false),
       element_id(0),
-      transform_id(0) {}
+      transform_id(0),
+      num_drawn_descendants(0) {}
 
 ScrollNodeData::ScrollNodeData(const ScrollNodeData& other) = default;
 

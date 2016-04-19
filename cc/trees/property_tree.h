@@ -306,6 +306,8 @@ struct CC_EXPORT ScrollNodeData {
   bool user_scrollable_vertical;
   int element_id;
   int transform_id;
+  // Number of drawn layers pointing to this node or any of its descendants.
+  int num_drawn_descendants;
 
   bool operator==(const ScrollNodeData& other) const;
 

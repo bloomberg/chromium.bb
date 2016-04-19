@@ -1760,20 +1760,9 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
 
 static bool ScrollsOrScrollbarAnyDrawnRenderSurfaceLayerListMember(
     LayerImpl* layer) {
-  if (!layer->scrollable() && !layer->ToScrollbarLayer())
-    return false;
-  if (layer->layer_or_descendant_is_drawn())
-    return true;
-
-  if (!layer->scroll_children())
-    return false;
-  for (std::set<LayerImpl*>::const_iterator it =
-           layer->scroll_children()->begin();
-       it != layer->scroll_children()->end(); ++it) {
-    if ((*it)->layer_or_descendant_is_drawn())
-      return true;
-  }
-  return false;
+  return layer->scrolls_drawn_descendant() ||
+         (layer->ToScrollbarLayer() &&
+          layer->IsDrawnRenderSurfaceLayerListMember());
 }
 
 struct FindScrollingLayerOrScrollbarLayerFunctor {

@@ -92,7 +92,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       debug_info_(nullptr),
       force_render_surface_(false),
       frame_timing_requests_dirty_(false),
-      layer_or_descendant_is_drawn_(false),
+      scrolls_drawn_descendant_(false),
       layer_or_descendant_has_touch_handler_(false) {
   DCHECK_GT(layer_id_, 0);
 

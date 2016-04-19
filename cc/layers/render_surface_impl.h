@@ -55,7 +55,7 @@ class CC_EXPORT RenderSurfaceImpl {
   }
   float draw_opacity() const { return draw_properties_.draw_opacity; }
 
-  void SetNearestOcclusionImmuneAncestor(RenderSurfaceImpl* surface) {
+  void SetNearestOcclusionImmuneAncestor(const RenderSurfaceImpl* surface) {
     nearest_occlusion_immune_ancestor_ = surface;
   }
   const RenderSurfaceImpl* nearest_occlusion_immune_ancestor() const {
@@ -211,7 +211,7 @@ class CC_EXPORT RenderSurfaceImpl {
 
   // The nearest ancestor target surface that will contain the contents of this
   // surface, and that ignores outside occlusion. This can point to itself.
-  RenderSurfaceImpl* nearest_occlusion_immune_ancestor_;
+  const RenderSurfaceImpl* nearest_occlusion_immune_ancestor_;
 
   std::unique_ptr<DamageTracker> damage_tracker_;
 
