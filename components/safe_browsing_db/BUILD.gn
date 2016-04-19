@@ -219,6 +219,7 @@ source_set("v4_update_protocol_manager") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "database_manager_unittest.cc",
     "prefix_set_unittest.cc",
     "util_unittest.cc",
     "v4_get_hash_protocol_manager_unittest.cc",
@@ -226,14 +227,17 @@ source_set("unit_tests") {
     "v4_update_protocol_manager_unittest.cc",
   ]
   deps = [
+    ":database_manager",
     ":prefix_set",
     ":proto",
+    ":test_database_manager",
     ":util",
     ":v4_get_hash_protocol_manager",
     ":v4_local_database_manager",
     ":v4_protocol_manager_util",
     ":v4_update_protocol_manager",
     "//base",
+    "//content/test:test_support",
     "//net",
     "//net:test_support",
     "//testing/gtest",

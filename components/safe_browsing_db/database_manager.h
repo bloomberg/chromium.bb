@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/safe_browsing_db/hit_report.h"
 #include "components/safe_browsing_db/util.h"
@@ -62,7 +64,6 @@ class SafeBrowsingDatabaseManager
                                           SBThreatType threat_type,
                                           const std::string& threat_hash) {}
   };
-
 
   // Returns true if URL-checking is supported on this build+device.
   // If false, calls to CheckBrowseUrl may dcheck-fail.
@@ -148,15 +149,20 @@ class SafeBrowsingDatabaseManager
   virtual bool IsCsdWhitelistKillSwitchOn() = 0;
 
   // Called on the IO thread to cancel a pending check if the result is no
-  // longer needed.  Also called after the result has been handled.
+  // longer needed.  Also called after the result has been handled. Api checks
+  // are handled separately. To cancel an API check use CancelApiCheck.
   virtual void CancelCheck(Client* client) = 0;
+
+  // TODO(kcarattini): Add a CancelApiCheck method.
 
   // Called on the IO thread to check if the given url has blacklisted APIs.
   // "client" is called asynchronously with the result when it is ready.
   // This method has the same implementation for both the local and remote
   // database managers since it pings Safe Browsing servers directly without
-  // accessing the database at all.
-  virtual void CheckApiBlacklistUrl(const GURL& url, Client* client);
+  // accessing the database at all.  Returns true if we can synchronously
+  // determine that the url is safe. Otherwise it returns false, and "client" is
+  // called asynchronously with the result when it is ready.
+  virtual bool CheckApiBlacklistUrl(const GURL& url, Client* client);
 
   // Called to initialize objects that are used on the io_thread, such as the
   // v4 protocol manager.  This may be called multiple times during the life of
@@ -175,7 +181,35 @@ class SafeBrowsingDatabaseManager
 
   friend class base::RefCountedThreadSafe<SafeBrowsingDatabaseManager>;
 
-  // Created and destroyed via StartonIOThread/StopOnIOThread.
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
+                           CheckApiBlacklistUrlPrefixes);
+
+  // Bundled client info for an API abuse hash prefix check.
+  class SafeBrowsingApiCheck {
+   public:
+    SafeBrowsingApiCheck(const GURL& url,
+                         const std::vector<SBFullHash>& full_hashes,
+                         Client* client);
+    ~SafeBrowsingApiCheck();
+
+   private:
+    GURL url_;
+    std::vector<SBFullHash> full_hashes_;
+    // Not owned.
+    SafeBrowsingDatabaseManager::Client* client_;
+
+    DISALLOW_COPY_AND_ASSIGN(SafeBrowsingApiCheck);
+  };
+
+  // Called on the IO thread wheh the SafeBrowsingProtocolManager has received
+  // the full hash and api results for prefixes of the |url| argument in
+  // CheckApiBlacklistUrl.
+  virtual void HandleGetHashesWithApisResults(
+      std::shared_ptr<SafeBrowsingApiCheck> check,
+      const std::vector<SBFullHashResult>& full_hash_results,
+      const base::TimeDelta& negative_cache_duration);
+
+  // Created and destroyed via StartOnIOThread/StopOnIOThread.
   V4GetHashProtocolManager* v4_get_hash_protocol_manager_;
 };  // class SafeBrowsingDatabaseManager
 
