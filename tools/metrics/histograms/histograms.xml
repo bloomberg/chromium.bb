@@ -93246,6 +93246,14 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Video codec: VP8. QP range: 0-127. Spatial index 1."/>
   <suffix name="Vp8.S2"
       label="Video codec: VP8. QP range: 0-127. Spatial index 2."/>
+  <suffix name="Vp9"
+      label="Video codec: VP9. QP range: 0-255. No spatial layers."/>
+  <suffix name="Vp9.S0"
+      label="Video codec: VP9. QP range: 0-255. Spatial layer 0."/>
+  <suffix name="Vp9.S1"
+      label="Video codec: VP9. QP range: 0-255. Spatial layer 1."/>
+  <suffix name="Vp9.S2"
+      label="Video codec: VP9. QP range: 0-255. Spatial layer 2."/>
   <affected-histogram name="WebRTC.Video.Encoded.Qp"/>
 </histogram_suffixes>
 
