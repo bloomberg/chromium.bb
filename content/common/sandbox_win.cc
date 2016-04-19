@@ -77,6 +77,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"esspd.dll",                   // Samsung Smart Security ESCORT.
   L"googledesktopnetwork3.dll",   // Google Desktop Search v5.
   L"fwhook.dll",                  // PC Tools Firewall Plus.
+  L"guard64.dll",                 // Comodo Internet Security x64.
   L"hookprocesscreation.dll",     // Blumentals Program protector.
   L"hookterminateapis.dll",       // Blumentals and Cyberprinter.
   L"hookprintapis.dll",           // Cyberprinter.
