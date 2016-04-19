@@ -33,8 +33,8 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   void RegisterMessages() override;
 
  private:
-  // Javascript callback to start clearing data.
-  void HandleClearBrowserData(const base::ListValue* value);
+  // Clears browsing data, called by Javascript.
+  void HandleClearBrowsingData(const base::ListValue* value);
 
   // BrowsingDataRemover::Observer implementation.
   // Re-enables clear button once all requested data has been removed.
@@ -45,6 +45,10 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
 
   // If non-null it means removal is in progress.
   BrowsingDataRemover* remover_;
+
+  // The WebUI callback ID of the last performClearBrowserData request. There
+  // can only be one such request in-flight.
+  std::string webui_callback_id_;
 
   // Keeps track of whether clearing LSO data is supported.
   BooleanPrefMember clear_plugin_lso_data_enabled_;

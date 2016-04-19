@@ -303,8 +303,8 @@ TEST_F('CrSettingsCertificateManagerTest', 'CertificateManager', function() {
   certificate_manager_page.registerTests();
   mocha.run();
 });
+GEN('#endif');
 
-GEN('#elif defined(OS_WIN) || defined(OS_MACOSX)');
 /**
  * Test fixture for chrome/browser/resources/settings/privacy_page/.
  * @constructor
@@ -326,9 +326,9 @@ CrSettingsPrivacyPageTest.prototype = {
 };
 
 TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPage', function() {
+  settings_privacy_page.registerTests();
   mocha.run();
 });
-GEN('#endif');
 
 /**
  * Test fixture for chrome/browser/resources/settings/site_settings/.

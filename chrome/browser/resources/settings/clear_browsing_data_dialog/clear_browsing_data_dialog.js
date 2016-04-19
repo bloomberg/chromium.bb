@@ -3,34 +3,19 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview
- * 'settings-clear-browsing-data-page' provides options to delete browsing
- * data that has been cached by chromium.
- *
- * Example:
- *
- *    <iron-animated-pages>
- *      <settings-clear-browsing-data-page prefs="{{prefs}}">
- *      </settings-clear-browsing-data-page>
- *      ... other pages ...
- *    </iron-animated-pages>
+ * @fileoverview 'settings-clear-browsing-data-dialog' allows the user to delete
+ * browsing data that has been cached by Chromium.
  */
 Polymer({
   is: 'settings-clear-browsing-data-dialog',
+
+  behaviors: [WebUIListenerBehavior],
 
   properties: {
     /**
      * Preferences state.
      */
     prefs: {
-      type: Object,
-      notify: true,
-    },
-
-    /**
-     * The current active route.
-     */
-    currentRoute: {
       type: Object,
       notify: true,
     },
@@ -52,37 +37,24 @@ Polymer({
     },
   },
 
+  /** @private {!settings.ClearBrowsingDataBrowserProxy} */
+  browserProxy_: null,
+
+  /** @override */
   ready: function() {
     this.$.clearFrom.menuOptions = this.clearFromOptions_;
-  },
-
-  attached: function() {
-    var self = this;
-    cr.define('SettingsClearBrowserData', function() {
-      return {
-        doneClearing: function() {
-          return self.doneClearing_.apply(self, arguments);
-        },
-        setAllowDeletingHistory: function() {
-          return self.setAllowDeletingHistory_.apply(self, arguments);
-        },
-      };
-    });
-  },
-
-  /** @private */
-  doneClearing_: function() {
-    // TODO(dschuyler): inform the user on whether clearing data was successful.
+    this.addWebUIListener(
+        'browsing-history-pref-changed',
+        this.setAllowDeletingHistory_.bind(this));
+    this.browserProxy_ =
+        settings.ClearBrowsingDataBrowserProxyImpl.getInstance();
   },
 
   /**
-   * @private
    * @param {boolean} allowed Whether the user is allowed to delete histories.
+   * @private
    */
   setAllowDeletingHistory_: function(allowed) {
-    // This is called from c++, protect against poor timing.
-    if (!this.$)
-      return;
     this.$.browsingCheckbox.disabled = !allowed;
     this.$.downloadCheckbox.disabled = !allowed;
     if (!allowed) {
@@ -95,12 +67,12 @@ Polymer({
     this.$.dialog.open();
   },
 
-  /**
-   * @param {!Event} event Tells us whether to perform an action or cancel.
-   * @private
-   */
-  onDialogClosed_: function(event) {
-    if (event.detail.confirmed)
-      chrome.send('performClearBrowserData');
+  /** @private */
+  onClearBrowsingDataTap_: function() {
+    // TODO(dpapad): Show spinner, disable buttons here.
+    this.browserProxy_.clearBrowsingData().then(function() {
+      // TODO(dpapad): Hide spinner, re-enable buttons here.
+      this.$.dialog.close();
+    }.bind(this));
   },
 });

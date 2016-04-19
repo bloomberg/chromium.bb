@@ -244,6 +244,12 @@
                    file="certificate_manager_page/certificates_error_dialog.html"
                    type="chrome_html" />
       </if>
+      <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_BROWSER_PROXY_HTML"
+                 file="clear_browsing_data_dialog/clear_browsing_data_browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_BROWSER_PROXY_JS"
+                 file="clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_HTML"
                  file="clear_browsing_data_dialog/clear_browsing_data_dialog.html"
                  type="chrome_html" />
