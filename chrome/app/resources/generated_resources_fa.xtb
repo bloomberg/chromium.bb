@@ -659,7 +659,6 @@
 <translation id="1962233722219655970">‏این صفحه از برنامه Native Client استفاده می‌کند که روی رایانه شما کار نمی‌کند.</translation>
 <translation id="1965328510789761112">حافظه خصوصی</translation>
 <translation id="1965624977906726414">مجوز خاصی ندارد.</translation>
-<translation id="1968720524450620475">فعال کردن نمادهای عملکرد برای اعلان‌های وب.</translation>
 <translation id="1970746430676306437">مشاهده &amp;اطلاعات صفحه</translation>
 <translation id="197288927597451399">ادامه دادن</translation>
 <translation id="1973491249112991739">دانلود <ph name="PLUGIN_NAME" />  ناموفق بود.</translation>
@@ -1420,7 +1419,6 @@
 <translation id="302014277942214887">شناسه برنامه کاربردی یا نشانی وب فروشگاه وب را وارد کنید.</translation>
 <translation id="3020616530769498629">فعال کردن تازه‌سازی بدون تأیید اعتبار در «کشیدن برای بازخوانی»</translation>
 <translation id="3020990233660977256">شمارهٔ سریال: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">‏وقتی فعال است، نوارابزار هرگز به‌دلیل پیمایش در دستگاه‌هایی که دارای صفحه نمایش حداقل dp &gt;= ۸۰۰ هستند پنهان نمی‌شود. ولی اگر محتوای صفحه به حالت تمام‌صفحه برود نوارابزار همچنان پنهان خواهد شد.</translation>
 <translation id="3021678814754966447">&amp;نمای منبع قاب</translation>
 <translation id="3024374909719388945">استفاده از ساعت ۲۴ ساعته</translation>
 <translation id="3025022340603654002">پیشنهادات را با اولین کلیک موشواره روی عنصر فرم به صورت خودکار تکمیل کنید.</translation>
@@ -1491,7 +1489,6 @@
 <translation id="3117812041123364382">فعال/غیرفعال کردن صفحه‌کلید مجازی شناور.</translation>
 <translation id="3118319026408854581">راهنمای <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">رمزگذاری برای عملیات موردنظر در این دستگاه کافی نیست: «<ph name="DEVICE_NAME" />».</translation>
-<translation id="3121260210578524273">فعال کردن نمادها در دکمه‌های عملکرد برای اعلان‌های وب.</translation>
 <translation id="3121793941267913344">این دستگاه <ph name="IDS_SHORT_PRODUCT_NAME" /> بازنشانی شود</translation>
 <translation id="3122162841865761901">آزمایش‌های ابزار برنامه‌نویس</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2273,6 +2270,7 @@
 <translation id="421017592316736757">باید آنلاین باشید تا به این فایل دسترسی داشته باشید.</translation>
 <translation id="421182450098841253">&amp;نمایش نوار نشانک‌ها</translation>
 <translation id="4212108296677106246">آیا می‌خواهید به "<ph name="CERTIFICATE_NAME" />" به‌عنوان یک ارائه دهنده مجوز اعتماد کنید؟</translation>
+<translation id="42126664696688958">صادر کردن</translation>
 <translation id="42137655013211669">سرور، دسترسی به این منبع را ممنوع کرد.</translation>
 <translation id="4215350869199060536">اوووه، نماد‌های غیرقانونی در نام!</translation>
 <translation id="4215898373199266584">توجه! حالت ناشناس (<ph name="INCOGNITO_MODE_SHORTCUT" />) ممکن است بار بعد در دسترس قرار گیرد.</translation>
@@ -3304,7 +3302,6 @@
 <translation id="577322787686508614">عملیات خواندن در این دستگاه مجاز نیست: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="5774295353725270860">بازکردن برنامه فایل‌ها</translation>
 <translation id="5774515636230743468">اظهارنامه:</translation>
-<translation id="5776006986202016118">این سایت می‌خواهد به این موارد متصل شود:</translation>
 <translation id="577624874850706961">جستجوی کوکی‌ها</translation>
 <translation id="5778550464785688721">‏کنترل کامل دستگاه‌های MIDI</translation>
 <translation id="5780066559993805332">(بهترین)</translation>
@@ -4193,7 +4190,6 @@
 <translation id="7175353351958621980">بارگیری شده از:</translation>
 <translation id="7180611975245234373">بازخوانی</translation>
 <translation id="7180865173735832675">سفارشی کردن</translation>
-<translation id="7184428045150946911">غیرفعال کردن پنهان شدن خودکار نوارابزار در رایانه‌های لوحی بزرگ</translation>
 <translation id="7185690883425432021">وقتی نوار برگه در حالت پشته‌ای است، دکمه‌های بستن را در برگه‌های غیرفعال پنهان می‌کند.</translation>
 <translation id="7186088072322679094">نگه داشتن در نوار ابزار</translation>
 <translation id="719009910964971313">استفاده از دووراک آمریکایی برنامه‌نویس‌ها</translation>

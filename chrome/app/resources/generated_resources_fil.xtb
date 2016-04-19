@@ -662,7 +662,6 @@
 <translation id="1962233722219655970">Gumagamit ang pahinang ito ng Native Client app na hindi gumagana sa iyong computer.</translation>
 <translation id="1965328510789761112">Pribadong memory</translation>
 <translation id="1965624977906726414">Walang espesyal na pahintulot.</translation>
-<translation id="1968720524450620475">I-enable ang mga icon ng pagkilos para sa Mga Notification sa Web.</translation>
 <translation id="1970746430676306437">Tingnan ang &amp;impormasyon ng page</translation>
 <translation id="197288927597451399">Panatilihin</translation>
 <translation id="1973491249112991739">Nabigo ang pag-download ng <ph name="PLUGIN_NAME" />.</translation>
@@ -1426,7 +1425,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="302014277942214887">Maglagay ng application id o URL ng webstore.</translation>
 <translation id="3020616530769498629">I-enable ang hindi nagpapatunay na pag-reload sa pull-to-refresh</translation>
 <translation id="3020990233660977256">Serial Number: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Kapag na-enable, hindi kailanman maitatago ang toolbar dahil sa pag-i-scroll sa mga device na may minimum na screen dp na &gt;= 800. Nakatago pa rin ito kahit na i-fullscreen ang mga content ng page.</translation>
 <translation id="3021678814754966447">&amp;Tingnan ang Pinagmulan ng Frame</translation>
 <translation id="3024374909719388945">Gamitin ang 24-oras na orasan</translation>
 <translation id="3025022340603654002">Magbigay ng mga suhestyon sa autofill sa unang pag-click ng mouse sa isang elemento ng form.</translation>
@@ -1497,7 +1495,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="3117812041123364382">I-enable/I-disable ang lumulutang na virtual na keyboard.</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Help</translation>
 <translation id="3120430004221004537">Hindi sapat ang pag-encrypt para sa isang partikular na operation sa: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="3121260210578524273">I-enable ang mga icon sa mga action button para sa Mga Notification sa Web.</translation>
 <translation id="3121793941267913344">I-reset ang <ph name="IDS_SHORT_PRODUCT_NAME" /> device na ito</translation>
 <translation id="3122162841865761901">Mga eksperimento sa Mga Tool ng Developer</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2280,6 +2277,7 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="421017592316736757">Kailangan kang mag-online upang ma-access ang file na ito.</translation>
 <translation id="421182450098841253">&amp;Ipakita ang Bookmarks Bar</translation>
 <translation id="4212108296677106246">Gusto mo bang pagkatiwalaan ang "<ph name="CERTIFICATE_NAME" />" bilang Certification Authority?</translation>
+<translation id="42126664696688958">I-export</translation>
 <translation id="42137655013211669">Ipinagbabawal ng server ang access sa mapagkukunang ito.</translation>
 <translation id="4215350869199060536">Oops, mayroong mga ilegal na simbolo sa pangalan!</translation>
 <translation id="4215898373199266584">Psst! Maaaring maging kapaki-pakinabang ang mode na incognito (<ph name="INCOGNITO_MODE_SHORTCUT" />) sa susunod.</translation>
@@ -3312,7 +3310,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="577322787686508614">Hindi pinapahintulutan ang read na operation sa: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">App na Buksan ang Mga File</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5776006986202016118">Gustong kumonekta ng site na ito sa:</translation>
 <translation id="577624874850706961">Maghanap ng cookies</translation>
 <translation id="5778550464785688721">Ganap na pagkontrol sa mga MIDI device</translation>
 <translation id="5780066559993805332">(Pinakamahusay)</translation>
@@ -4207,7 +4204,6 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="7175353351958621980">Nag-load mula sa:</translation>
 <translation id="7180611975245234373">I-refresh</translation>
 <translation id="7180865173735832675">I-customize</translation>
-<translation id="7184428045150946911">I-disable ang awtomatikong pagtatago sa toolbar sa malalaking tablet</translation>
 <translation id="7185690883425432021">Itinatago ang mga button para sa pagsasara ng mga hindi aktibong window kapag nasa stacked mode ang tabstrip.</translation>
 <translation id="7186088072322679094">Panatilihin sa Toolbar</translation>
 <translation id="719009910964971313">Keyboard ng US Programmer Dvorak</translation>

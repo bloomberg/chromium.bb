@@ -1572,11 +1572,6 @@ Se l'azione è la sospensione, è possibile configurare separatamente il blocco 
 
           Se la norma "RestoreOnStartup" viene impostata in modo da ripristinare gli URL delle sessioni precedenti, questa norma non verrà rispettata e i cookie verranno memorizzati in modo permanente per i siti.</translation>
 <translation id="7207095846245296855">Forza il filtro SafeSearch di Google</translation>
-<translation id="7213425178181578730">Se questa norma è impostata su false, <ph name="PRODUCT_OS_NAME" /> disattiva il Bluetooth e l'utente non può riattivarlo.
-
-      Se questa norma è impostata su true o non viene affatto impostata, l'utente potrà attivare o disattivare il Bluetooth a seconda delle sue preferenze.
-
-      Se questa norma è impostata, l'utente non può modificarla né eseguirne l'override.</translation>
 <translation id="7216442368414164495">Consenti agli utenti di attivare i rapporti estesi di Navigazione sicura</translation>
 <translation id="7227967227357489766">Consente di definire l'elenco di utenti che possono eseguire l'accesso sul dispositivo. Le voci sono nel formato <ph name="USER_WHITELIST_ENTRY_FORMAT" />, ad esempio <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Per consentire utenti arbitrari su un dominio, le voci devono essere nel formato <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

@@ -660,7 +660,6 @@
 <translation id="1962233722219655970">Denna sida använder en Native Client-app som inte fungerar på din dator.</translation>
 <translation id="1965328510789761112">Privat minne</translation>
 <translation id="1965624977906726414">Har inga speciella behörigheter.</translation>
-<translation id="1968720524450620475">Aktivera åtgärdsikoner för webbaviseringar.</translation>
 <translation id="1970746430676306437">Visa sid&amp;info</translation>
 <translation id="197288927597451399">Behåll</translation>
 <translation id="1973491249112991739">Det gick inte att ladda ned <ph name="PLUGIN_NAME" />.</translation>
@@ -1425,7 +1424,6 @@ hanteraren
 <translation id="302014277942214887">Ange program-ID eller adress till webbutik.</translation>
 <translation id="3020616530769498629">Aktivera återinläsning utan validering vid effekten dra för att uppdatera</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">När funktionen är aktiverad döljs aldrig verktygsfältet vid rullning på skärmar med en lägsta pixeltäthet på &gt;= 800 dp. Däremot döljs det när sidan visas i helskärmsläge.</translation>
 <translation id="3021678814754966447">&amp;Visa ramkälla</translation>
 <translation id="3024374909719388945">Använd 24-timmars klocka</translation>
 <translation id="3025022340603654002">Skapa förslag för Autofyll vid första musklicket på ett formulärelement.</translation>
@@ -1496,7 +1494,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3117812041123364382">Aktivera/inaktivera flytande virtuellt tangentbord</translation>
 <translation id="3118319026408854581">Hjälp för <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Otillräcklig kryptering för angiven åtgärd på: <ph name="DEVICE_NAME" />.</translation>
-<translation id="3121260210578524273">Aktivera ikoner i åtgärdsknappar för webbaviseringar.</translation>
 <translation id="3121793941267913344">Återställ den här <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten</translation>
 <translation id="3122162841865761901">Experiment i utvecklarverktygen</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2278,6 +2275,7 @@ Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="421017592316736757">Du måste vara online för att kunna öppna filen.</translation>
 <translation id="421182450098841253">&amp;Visa bokmärkesfältet</translation>
 <translation id="4212108296677106246">Vill du ange <ph name="CERTIFICATE_NAME" /> som en betrodd certifikatutfärdare?</translation>
+<translation id="42126664696688958">Exportera</translation>
 <translation id="42137655013211669">Åtkomsten till den här resursen blockerades av servern.</translation>
 <translation id="4215350869199060536">Det finns ogiltiga symboler i namnet!</translation>
 <translation id="4215898373199266584">Psst! Inkognitoläge (<ph name="INCOGNITO_MODE_SHORTCUT" />) kanske kan vara bra nästa gång.</translation>
@@ -3310,7 +3308,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="577322787686508614">Läsbehörigheten för åtgärden saknas på: <ph name="DEVICE_NAME" />.</translation>
 <translation id="5774295353725270860">Appen Öppna filer</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5776006986202016118">Webbplatsen vill ansluta till:</translation>
 <translation id="577624874850706961">Sök efter cookies</translation>
 <translation id="5778550464785688721">MIDI-enheter – fullständig kontroll</translation>
 <translation id="5780066559993805332">(Bästa)</translation>
@@ -4201,7 +4198,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="7175353351958621980">Överförd från:</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
 <translation id="7180865173735832675">Anpassa</translation>
-<translation id="7184428045150946911">Inaktivera att verktygsfältet döljs automatiskt på större surfplattor</translation>
 <translation id="7185690883425432021">Döljer stängningsknappen på inaktiva flikar när de är staplade.</translation>
 <translation id="7186088072322679094">Spara i verktygsfältet</translation>
 <translation id="719009910964971313">Dvorak-tangentbord för programmerare i USA</translation>

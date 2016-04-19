@@ -661,7 +661,6 @@
 <translation id="1962233722219655970">Leht kasutab omakliendi rakendust, mis ei tööta teie arvutis.</translation>
 <translation id="1965328510789761112">Privaatmälu</translation>
 <translation id="1965624977906726414">Pole erilubasid.</translation>
-<translation id="1968720524450620475">Luba veebimärguannete toiminguikoonid.</translation>
 <translation id="1970746430676306437">Kuva lehekülje &amp;andmed</translation>
 <translation id="197288927597451399">Jäta alles</translation>
 <translation id="1973491249112991739">Pistikprogrammi <ph name="PLUGIN_NAME" /> allalaadimine ebaõnnestus.</translation>
@@ -1424,7 +1423,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="302014277942214887">Sisestage rakenduse ID või veebipoe URL.</translation>
 <translation id="3020616530769498629">Funktsiooni Tõmba värskendamiseks puhul valideerimiseta uuesti laadimise lubamine</translation>
 <translation id="3020990233660977256">Seerianumber: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Kui see on lubatud, ei peideta tööriistariba kunagi, kui keritakse seadmetes, mille ekraani minimaalne DP on suurem kui 800 või sellega võrdne. See peidetakse siiski juhul, kui lehe sisu kuvatakse täisekraanil.</translation>
 <translation id="3021678814754966447">&amp;Vaata raami allikat</translation>
 <translation id="3024374909719388945">Kasuta 24 h kella</translation>
 <translation id="3025022340603654002">Automaatse täitmise soovitusi tehakse siis, kui vormi elemendil klõpsatakse hiirega esimest korda.</translation>
@@ -1495,7 +1493,6 @@ Lisateabe saamiseks külastage meie <ph name="BEGIN_LINK" />abikeskust<ph name="
 <translation id="3117812041123364382">Hõljuva virtuaalse klaviatuuri lubamine/keelamine.</translation>
 <translation id="3118319026408854581">Toote <ph name="PRODUCT_NAME" /> abi</translation>
 <translation id="3120430004221004537">Ebapiisav krüpteerimine antud toimingu puhul seadmes „<ph name="DEVICE_NAME" />”.</translation>
-<translation id="3121260210578524273">Lubage veebimärguannete puhul toimingunuppude ikoonid.</translation>
 <translation id="3121793941267913344">Toote <ph name="IDS_SHORT_PRODUCT_NAME" /> seadme lähtestamine</translation>
 <translation id="3122162841865761901">Arendaja tööriistade katsed</translation>
 <translation id="3122464029669770682">Protsessor</translation>
@@ -2277,6 +2274,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="421017592316736757">Faili juurde pääsemiseks on vaja võrguühendust.</translation>
 <translation id="421182450098841253">Kuva &amp;järjehoidjariba</translation>
 <translation id="4212108296677106246">Kas soovite usaldada sertifikaati „<ph name="CERTIFICATE_NAME" />” sertifitseerimisorganina?</translation>
+<translation id="42126664696688958">Eksportimine</translation>
 <translation id="42137655013211669">Server keelas juurdepääsu ressursile.</translation>
 <translation id="4215350869199060536">Kahjuks on nimes valed märgid.</translation>
 <translation id="4215898373199266584">Inkognito režiim (<ph name="INCOGNITO_MODE_SHORTCUT" />) võib järgmisel korral kasulikuks osutuda.</translation>
@@ -3308,7 +3306,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="577322787686508614">Lugemistoiming pole seadmes „<ph name="DEVICE_NAME" />” lubatud.</translation>
 <translation id="5774295353725270860">Ava failirakendus</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5776006986202016118">See sait soovib ühendust luua:</translation>
 <translation id="577624874850706961">Otsi küpsiseid</translation>
 <translation id="5778550464785688721">MIDI-seadmete täielik juhtimine</translation>
 <translation id="5780066559993805332">(Parim)</translation>
@@ -4201,7 +4198,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="7175353351958621980">Laaditud:</translation>
 <translation id="7180611975245234373">Värskenda</translation>
 <translation id="7180865173735832675">Kohandamine</translation>
-<translation id="7184428045150946911">Keela tööriistariba automaatne peitmine suurtes tahvelarvutites</translation>
 <translation id="7185690883425432021">Peidab passiivsete vahelehtede sulgemisnupud, kui vahelehe riba on virnastamisrežiimis.</translation>
 <translation id="7186088072322679094">Tööriistaribale jätmine</translation>
 <translation id="719009910964971313">USA programmeerija Dvoraki klaviatuur</translation>
@@ -5108,7 +5104,7 @@ Täislaadimiseks kuluva aja arvutamine</translation>
 <translation id="8545211332741562162">Lubab veebilehtedel kasutada JavaScripti katselisi funktsioone.</translation>
 <translation id="8545575359873600875">Vabandust, teie parooli ei saanud kinnitada. Jälgitava kasutaja haldur on võib-olla hiljuti parooli muutnud. Kui nii, rakendatakse uut parooli järgmisel korral, kui sisse logite. Proovige kasutada oma vana parooli.</translation>
 <translation id="8546306075665861288">Kujutise vahemälu</translation>
-<translation id="854653344619327455">Selle märgistusega ei võimalda lauaarvuti jagamise valimisaken kasutajal valida, kas ta soovib heli jagada.</translation>
+<translation id="854653344619327455">Selle märgistusega ei võimalda töölaua jagamise valimisaken kasutajal valida, kas ta soovib heli jagada.</translation>
 <translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="8548973727659841685">Tähemärk</translation>
 <translation id="855081842937141170">Kinnita vaheleht</translation>

@@ -18,6 +18,7 @@
 <translation id="1240668123557180468">Discover web pages sent by nearby objects. Chrome gathers web pages associated with objects around you, sends them anonymously to a Google service to find the ones most useful to you, then displays them.
 
 You must have Bluetooth and Location turned on in order to use the Physical Web.</translation>
+<translation id="1250508505624960884">Chrome Beta bookmarks</translation>
 <translation id="1254090737195733114">Import data?</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Stop</translation>
@@ -39,9 +40,11 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1445680696957526815">Chrome’s components are incompatible with one another. Chrome may be upgrading, please try again in a few minutes. If the problem continues, try uninstalling and re-installing Chrome.</translation>
 <translation id="1446450296470737166">Allow full control of MIDI devices</translation>
 <translation id="145097072038377568">Turned off in Android Settings</translation>
+<translation id="147006957810816598">You won’t be signed out of your Google account.</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> download failed due to server issues.</translation>
 <translation id="1506061864768559482">Search engine</translation>
 <translation id="1513352483775369820">Bookmarks and web history</translation>
+<translation id="1549000191223877751">Move to other window</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1557201757634521564">Auto-detect encoding</translation>
 <translation id="1592483623187843893">Bookmark saved offline</translation>
@@ -69,8 +72,10 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="194341124344773587">Turn on permission for Chrome in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Save passwords</translation>
 <translation id="1944384637046898011">Encrypt all with Google password as of <ph name="TIME" /></translation>
+<translation id="1959930595721737608">Allow JavaScript on the following site.</translation>
 <translation id="1966710179511230534">Please update your sign-in details.</translation>
 <translation id="1974060860693918893">Advanced</translation>
+<translation id="1984321224716884559">Chrome Dev bookmarks</translation>
 <translation id="1984937141057606926">Allowed, except third-party</translation>
 <translation id="1994173015038366702">Site URL</translation>
 <translation id="2001120796168634316">Save linked page for later</translation>
@@ -80,6 +85,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2079545284768500474">Undo</translation>
 <translation id="2082238445998314030">Result <ph name="RESULT_NUMBER" /> of <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2095887075102408547">When this feature is turned on, Chrome will use Google servers to compress pages that you visit before downloading them. Pages accessed using private connections (HTTPS) or in Incognito tabs will not be optimised or seen by Google.</translation>
+<translation id="2096396629993765042">You won’t be signed out of your Google account. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Auto Sign-in</translation>
 <translation id="2126426811489709554">Powered by Chrome</translation>
 <translation id="213279576345780926">Closed <ph name="TAB_TITLE" /></translation>
@@ -188,6 +194,7 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="360480449234699036">Learn about topics on websites without leaving the page. Touch to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
 
 To adjust your search term, long press to select. To refine your search, slide the panel all the way up and touch the search box.</translation>
+<translation id="3623048332793834136">Chrome Canary bookmarks</translation>
 <translation id="363596933471559332">Automatically sign in to websites using stored credentials. When the feature is off, you’ll be asked for verification every time before signing in to a website.</translation>
 <translation id="3653742808139624888">To get your bookmarks on all your devices, sign in to Chrome</translation>
 <translation id="3656115297268584622">Turn on location in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
@@ -255,6 +262,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4645575059429386691">Managed by your parent</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmarks deleted</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> was added to your Home screen</translation>
+<translation id="4668044310199835006">Work Chrome bookmarks</translation>
 <translation id="4684427112815847243">Sync everything</translation>
 <translation id="4686372254213217147">Original size</translation>
 <translation id="4690286298542128877">Tabs will move to a tab switcher inside Chrome.</translation>
@@ -415,6 +423,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6464825623202322042">This device</translation>
 <translation id="6476911854266661814">Paused “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> download failed due to lack of storage space.</translation>
+<translation id="6541922744811587456">Chrome bookmarks</translation>
 <translation id="654446541061731451">Select a tab to beam</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="656628257199996201">Always translate <ph name="SOURCE_LANGUAGE" /></translation>
@@ -428,6 +437,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6656545060687952787">Chrome needs location access to scan for devices. <ph name="BEGIN_LINK" />Update permissions<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Use a prediction service to show related queries and popular websites as you type in the address bar</translation>
 <translation id="666981079809192359">Chrome Privacy Notice</translation>
+<translation id="6683720003467092441">Allow Background Sync on the following site.</translation>
 <translation id="6697251040310467641">Page saved offline</translation>
 <translation id="6698801883190606802">Manage synced data</translation>
 <translation id="6699351163704950317">All saved pages</translation>
@@ -493,6 +503,9 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7473891865547856676">No Thanks</translation>
 <translation id="7475192538862203634">If you’re seeing this frequently, try these <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Confirm device credential deletion</translation>
+<translation id="7487352416683556407">The selected data has been removed from Chrome and your synced devices.
+
+Your Google account may have other forms of browsing history like searches and activity from other Google services at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Updated <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Please wait…</translation>
 <translation id="7499262814309712782">Sync account</translation>
@@ -596,6 +609,7 @@ You can control the Physical Web in Chrome Settings.</translation>
 <translation id="8737542153238017984">Saved page not available offline. Storage almost full.</translation>
 <translation id="8793430725658173476">Copy url</translation>
 <translation id="8798099450830957504">Default</translation>
+<translation id="8812942424849541387">Control how this works in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> was signed in. Signing in with <ph name="ACCOUNT_EMAIL_NEW" /> will merge synced data like bookmarks between accounts. To keep information separate, clear browsing data in <ph name="BEGIN_LINK" />settings<ph name="END_LINK" />.</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>

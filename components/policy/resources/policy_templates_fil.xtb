@@ -750,7 +750,7 @@
 
       Ang halaga ng patakaran ay dapat tukuyin gamit ang milliseconds. Limitado ang mga halaga sa sakop na 30 segundo hanggang 24 na oras.</translation>
 <translation id="3528000905991875314">Paganahin ang mga kahaliling pahina ng error</translation>
-<translation id="3538538104630456270">Ang nauugnay na setting ay ginamit bago ipinatupad ang muling pagpapatotoo sa pagtingin ng mga password. Mula noon, walang naging epekto ang setting at ang patakaran na ito sa gawi ng Chrome. Sa ngayon, ang kasalukuyang gawi ng Chrome ay parang itinakda ang patakaran na i-disable ang pagpapakita ng mga password sa malinaw na text sa page ng mga setting ng password manager. Ibig sabihin, ang mga page ng setting ay naglalaman lang ng placeholder, at ipapakita lang ng Chrome ang password kapag na-click ng user ang "Ipakita" (at muling nagpatotoo, kung naaangkop). Nasa ibaba ang orihinal na paglalarawan ng patakaran.
+<translation id="3538538104630456270">Ang nauugnay na setting ay ginamit bago ipinatupad ang muling pagpapatotoo sa pagtingin ng mga password. Mula noon, walang naging epekto ang setting at ang patakaran na ito sa gawi ng Chrome. Sa ngayon, ang kasalukuyang gawi ng Chrome ay parang itinakda ang patakaran na i-disable ang pagpapakita ng mga password sa malinaw na text sa page ng mga setting ng password manager. Ibig sabihin, ang mga page ng setting ay naglalaman lang ng placeholder at ipapakita lang ng Chrome ang password kapag na-click ng user ang "Ipakita" (at muling nagpatotoo, kung naaangkop). Nasa ibaba ang orihinal na paglalarawan ng patakaran.
 
           Nakokontrol kung maaaring ipakita ng user ang mga password sa malinaw na text sa password manager.
 
@@ -1772,10 +1772,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung nakatakda ang patakaran na "RestoreOnStartup" na magpanumbalik ng mga URL mula sa mga dating session, hindi susundin ang patakarang ito at permanenteng iiimbak ang cookies para sa mga site na ito.</translation>
 <translation id="7207095846245296855">Puwersahin ang Google SafeSearch</translation>
-<translation id="7213425178181578730">Kung itatakda ang patakarang ito sa false, idi-disable ng <ph name="PRODUCT_OS_NAME" /> ang Bluetooth at hindi na ito muling mae-enable ng user.
-      Kung itatakda ang patakarang ito sa true o hahayaang hindi nakatakda, mae-enable o madi-disable ng user ang Bluetooth kailanman niya gustuhin.
-
-      Kung itatakda ang patakarang ito, hindi na ito mababago o mao-override ng user.</translation>
 <translation id="7216442368414164495">Binibigyang-daan ang mga user na mag-opt in sa pinalawak na pag-uulat sa Ligtas na Pagba-browse</translation>
 <translation id="7227967227357489766">Tinutukoy ang listahan ng mga user na pinapayagang mag-login sa device. Ang mga entry ay nasa anyo ng <ph name="USER_WHITELIST_ENTRY_FORMAT" />, gaya ng <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Upang payagan ang mga arbitrary user sa isang domain, na gumamit ng mga entry na may anyong <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

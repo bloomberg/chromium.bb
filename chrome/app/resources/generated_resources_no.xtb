@@ -658,7 +658,6 @@
 <translation id="1962233722219655970">Denne siden bruker en Native Client-app som ikke fungerer på datamaskinen din.</translation>
 <translation id="1965328510789761112">Privat minne</translation>
 <translation id="1965624977906726414">Har ingen spesielle tillatelser.</translation>
-<translation id="1968720524450620475">Slå på handlingsikonene for nettvarsler.</translation>
 <translation id="1970746430676306437">Vis side&amp;informasjon</translation>
 <translation id="197288927597451399">Behold</translation>
 <translation id="1973491249112991739">Nedlasting av <ph name="PLUGIN_NAME" /> mislyktes.</translation>
@@ -1150,7 +1149,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="267285457822962309">Endre innstillinger som er spesifikke for enheten din og eksterne enheter.</translation>
 <translation id="2673135533890720193">lese nettleserloggen din</translation>
 <translation id="2673589024369449924">Opprett en skrivebordssnarvei for denne brukeren</translation>
-<translation id="2675358154061544447">Svært eksperimentell støtte for gjengivelse av iframes med koblinger til andre nettsteder i separate prosesser. I denne modusen deler dokumenter en gjengivelsesprosess, men bare hvis de er fra samme nettsted.</translation>
+<translation id="2675358154061544447">Svært eksperimentell støtte for gjengivelse av iframes med koblinger til andre nettsteder i separate prosesser. I denne modusen blir gjengivelsesprosesser bare delt mellom dokumenter fra samme nettsted.</translation>
 <translation id="2676946222714718093">Spilles av på</translation>
 <translation id="2678063897982469759">Aktiver på nytt</translation>
 <translation id="2678246812096664977">Alle programtillegg</translation>
@@ -1419,7 +1418,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="302014277942214887">Skriv inn app-ID-en eller nettadressen til nettbutikken.</translation>
 <translation id="3020616530769498629">Slå på ikke-validerende ny innlasting ved «trekk for å laste inn på nytt»</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Når dette er slått på, fører rulling aldri til at verktøyraden skjules på enheter med en dp-verdi for skjermen på minst 800. Den skjules likevel hvis sideinnholdet vises i fullskjerm.</translation>
 <translation id="3021678814754966447">&amp;Vis rammekilde</translation>
 <translation id="3024374909719388945">Bruk 24-timersklokke</translation>
 <translation id="3025022340603654002">Tilby autofyllforslag for det første museklikket på et skjemaelement.</translation>
@@ -1490,7 +1488,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3117812041123364382">Slår det flytende virtuelle tastaturet på/av.</translation>
 <translation id="3118319026408854581">Hjelp for <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Utilstrekkelig kryptering for en angitt operasjon på: «<ph name="DEVICE_NAME" />».</translation>
-<translation id="3121260210578524273">Vis ikoner på handlingsknappene for nettvarsler.</translation>
 <translation id="3121793941267913344">Tilbakestill denne <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten</translation>
 <translation id="3122162841865761901">Eksperimenter i utviklerverktøyene</translation>
 <translation id="3122464029669770682">Prosessor</translation>
@@ -2268,6 +2265,7 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="421017592316736757">Du må ha Internett-tilkobling for å få tilgang til denne filen.</translation>
 <translation id="421182450098841253">&amp;Vis bokmerkerad</translation>
 <translation id="4212108296677106246">Vil du stole på «<ph name="CERTIFICATE_NAME" />» som en sertifiseringsinstans?</translation>
+<translation id="42126664696688958">Eksportér</translation>
 <translation id="42137655013211669">Tilgangen til denne ressursen ble avvist av tjeneren.</translation>
 <translation id="4215350869199060536">Ojsann – det er ulovlige symboler i navnet!</translation>
 <translation id="4215898373199266584">Forresten: Inkognitomodus (<ph name="INCOGNITO_MODE_SHORTCUT" />) kan være hendig neste gang.</translation>
@@ -2440,7 +2438,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4509017836361568632">Slett bilde</translation>
 <translation id="4509345063551561634">Plassering:</translation>
 <translation id="4514542542275172126">Konfigurer en ny administrert bruker</translation>
-<translation id="4514914692061505365">Tving bruk av PNaCls raske Subzero-oversetter for alle pexe-filer.</translation>
+<translation id="4514914692061505365">Tving bruk av den raske PNaCl Subzero-oversetteren for alle pexe-filer.</translation>
 <translation id="4518677423782794009">Krasjer Chrome? Ser du uvanlige oppstartssider, verktøyrader eller uventede annonser du ikke blir kvitt? Eller blir nettleserbruken endret på annen måte? Det kan hende du kan løse problemet ved å kjøre opprydningsverktøyet for Chrome.</translation>
 <translation id="452039078290142656">ukjente enheter fra <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Detaljer</translation>
@@ -3296,7 +3294,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="577322787686508614">Leseoperasjonen er ikke tillatt på: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="5774295353725270860">Åpne Filer-appen</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5776006986202016118">Dette nettstedet vil koble til</translation>
 <translation id="577624874850706961">Søk i informasjonskapsler</translation>
 <translation id="5778550464785688721">Full kontroll av MIDI-enheter</translation>
 <translation id="5780066559993805332">(Best)</translation>
@@ -3946,7 +3943,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6825883775269213504">Russisk</translation>
 <translation id="6827236167376090743">Denne videoen fortsetter å spilles av til Dovre faller.</translation>
 <translation id="6828153365543658583">Begrens pålogging til følgende brukere:</translation>
-<translation id="6828434191343384461">De merkede dataene er fjernet fra Chrome og alle synkroniserte enheter. Det kan hende at Google-kontoen din har andre typer nettlesingslogger, for eksempel for søk og aktivitet fra andre Google-tjenester, på <ph name="BEGIN_LINK" /> history.google.com <ph name="END_LINK" /> .</translation>
+<translation id="6828434191343384461">De valgte dataene er fjernet fra Chrome og alle synkroniserte enheter. Det kan hende at Google-kontoen din har andre typer nettlesingslogger, for eksempel for søk og aktivitet fra andre Google-tjenester, på <ph name="BEGIN_LINK" /> history.google.com <ph name="END_LINK" /> .</translation>
 <translation id="6828860976882136098">Kunne ikke konfigurere automatiske oppdateringer for alle brukerne (feil ved kjøring av forhåndskontroll: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="6829250331733125857">Få hjelp med <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6829270497922309893">Registrer deg for organisasjonen din</translation>
@@ -4185,7 +4182,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7175353351958621980">Lastet fra:</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="7180865173735832675">Tilpass</translation>
-<translation id="7184428045150946911">Slå av automatisk skjuling av verktøylinjen på store nettbrett</translation>
 <translation id="7185690883425432021">Skjuler lukkeknappene på inaktive faner når fanestripen er i stablet modus.</translation>
 <translation id="7186088072322679094">Behold i verktøyraden</translation>
 <translation id="719009910964971313">Amerikansk programmeringstastatur (Dvorak)</translation>

@@ -501,7 +501,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1697068104427956555">प्रतिमेचा चौरस भाग निवडा.</translation>
 <translation id="1697532407822776718">आपण पूर्ण सज्ज आहात!</translation>
-<translation id="1697988819212986149">संदर्भ मेनू आयटम पुढील Google सेवांद्वारे समर्थित Google icon दर्शविते.</translation>
+<translation id="1697988819212986149">Google सेवांद्वारे समर्थित संदर्भ मेनू आयटम पुढे Google चिन्ह दर्शविते.</translation>
 <translation id="1699274548822076330">हे trace-upload-url ध्वजासह संयुक्तपणे वापरण्यासाठी आहे. 
          चेतावणी: सक्षम केले असल्यास, Chrome प्रत्येक नॅव्हिगेशनसाठी कार्यप्रदर्शन डेटा रेकॉर्ड करेल आणि trace-upload-url  ध्वजाद्वारे निर्दिष्ट केलेल्या URL वर अपलोड करेल. ट्रेसमध्ये वैयक्तिकरित्या ओळखता येणाऱ्या माहितीचा (PII) समावेश असू शकतो जसे की आपण भेट देत असलेल्या वेबसाइटची शीर्षके आणि URL.</translation>
 <translation id="1699395855685456105">हार्डवेअर पुनरावृत्ती:</translation>
@@ -660,7 +660,6 @@
 <translation id="1962233722219655970">हे पृष्ठ एक मूळ क्लायंट अ‍ॅप वापरते जो आपल्या संगणकावर कार्य करत नाही.</translation>
 <translation id="1965328510789761112">खासगी मेमरी</translation>
 <translation id="1965624977906726414">यास विशेष परवानग्या नाहीत.</translation>
-<translation id="1968720524450620475">वेब सूचनांसाठी क्रिया चिन्हे सक्षम करा.</translation>
 <translation id="1970746430676306437">पृष्ठ &amp;माहिती पहा</translation>
 <translation id="197288927597451399">ठेवा</translation>
 <translation id="1973491249112991739"><ph name="PLUGIN_NAME" /> डाउनलोड अयशस्वी.</translation>
@@ -1422,7 +1421,6 @@
 <translation id="302014277942214887">अनुप्रयोग id किंवा वेबस्टोअर URL प्रविष्ट करा.</translation>
 <translation id="3020616530769498629">रीफ्रेश करण्‍यासाठी-ओढा वरील प्रमाणित-नसलेले रीलोड सक्षम करा</translation>
 <translation id="3020990233660977256">अनुक्रमांक: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">सक्षम केले असताना, किमान स्क्रीन dp &gt;= 800 असलेल्या डिव्हाइसेसवर स्क्रोल करण्यामुळे टूलबार कधीही लपविला जात नाही. पृष्ठ सामग्री पूर्ण स्क्रीनवर असली तरीही तो लपलेला असेल.</translation>
 <translation id="3021678814754966447">फ्रेम स्त्रोत &amp;पहा</translation>
 <translation id="3024374909719388945">24-तासांचे घड्याळ वापरा</translation>
 <translation id="3025022340603654002">फॉर्म घटकावरील सुरुवातीच्या माउस क्लिक वर स्वयं-भरण सूचना करा.</translation>
@@ -1489,7 +1487,6 @@
 <translation id="3117812041123364382">अस्थायी व्हर्च्युअल कीबोर्ड सक्षम/अक्षम करा.</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> मदत</translation>
 <translation id="3120430004221004537">दिलेल्या ऑपरेशनसाठी यावर अपुरे कूटबद्धीकरण: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="3121260210578524273">वेब सूचनांसाठी क्रिया बटणांमधील चिन्हे सक्षम करा.</translation>
 <translation id="3121793941267913344">हा <ph name="IDS_SHORT_PRODUCT_NAME" /> डिव्हाइस रीसेट करा</translation>
 <translation id="3122162841865761901">विकासक साधने प्रयोग</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2270,6 +2267,7 @@
 <translation id="421017592316736757">या फाइलमध्ये प्रवेश करण्‍यासाठी आपण ऑनलाइन असणे आवश्यक आहे.</translation>
 <translation id="421182450098841253">बुकमार्क बार &amp;दर्शवा</translation>
 <translation id="4212108296677106246">प्रमाणन अधिकृतता म्हणून आपण "<ph name="CERTIFICATE_NAME" />" वर विश्वास ठेवू इच्छिता?</translation>
+<translation id="42126664696688958">निर्यात</translation>
 <translation id="42137655013211669">सर्व्हरद्वारे या स्त्रोतामधील प्रवेश निषिद्ध केला होता.</translation>
 <translation id="4215350869199060536">अरेरे, नावात बेकायदेशीर चिन्हे आहेत!</translation>
 <translation id="4215898373199266584">हं! गुप्त मोड (<ph name="INCOGNITO_MODE_SHORTCUT" />) पुढील वेळी आटोपशीर दिसू शकतो.</translation>
@@ -3302,7 +3300,6 @@
 <translation id="577322787686508614">वाचा ऑपरेशनला यावर परवानगी नाही: " <ph name="DEVICE_NAME" /> ".</translation>
 <translation id="5774295353725270860">फायलीचा अनुप्रयोग उघडा</translation>
 <translation id="5774515636230743468">मॅनिफेस्ट:</translation>
-<translation id="5776006986202016118">ही साइट यास कनेक्ट करू इच्छित आहे:</translation>
 <translation id="577624874850706961">कुकीज शोधा</translation>
 <translation id="5778550464785688721">MIDI डिव्हाइसेस पूर्ण नियंत्रण</translation>
 <translation id="5780066559993805332">(सर्वोत्तम)</translation>
@@ -4192,7 +4189,6 @@
 <translation id="7175353351958621980">येथून लोड केले:</translation>
 <translation id="7180611975245234373">रीफ्रेश करा</translation>
 <translation id="7180865173735832675">सानुकूल करा</translation>
-<translation id="7184428045150946911">मोठ्या टॅब्लेटवर टूलबार स्वयं-लपवा अक्षम करा</translation>
 <translation id="7185690883425432021">टॅबस्ट्रिप स्टॅक केलेल्या मोडमध्ये असते तेव्हा निष्क्रिय टॅबची बंद बटणे लपविते.</translation>
 <translation id="7186088072322679094">टूलबारमध्ये ठेवा</translation>
 <translation id="719009910964971313">यूएस प्रोग्रामर द्वोराक कीबोर्ड</translation>

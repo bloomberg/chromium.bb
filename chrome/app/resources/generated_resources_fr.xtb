@@ -661,7 +661,6 @@
 <translation id="1962233722219655970">Cette page utilise une application cliente native qui ne fonctionne pas sur votre ordinateur.</translation>
 <translation id="1965328510789761112">Mémoire privée</translation>
 <translation id="1965624977906726414">Ne dispose d'aucune autorisation spéciale.</translation>
-<translation id="1968720524450620475">Activer les icônes d'action pour les notifications Web.</translation>
 <translation id="1970746430676306437">Afficher les &amp;infos sur la page</translation>
 <translation id="197288927597451399">Enregistrer</translation>
 <translation id="1973491249112991739">Échec du téléchargement de <ph name="PLUGIN_NAME" />.</translation>
@@ -1423,7 +1422,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="302014277942214887">Saisissez l'identifiant de l'application ou l'URL du Chrome Web Store.</translation>
 <translation id="3020616530769498629">Activer l'actualisation sans validation lors du balayage vers le bas pour actualiser l'affichage</translation>
 <translation id="3020990233660977256">Numéro de série : <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Lorsque cette option est activée, la barre d'outils n'est jamais masquée lors du défilement sur les appareils dont l'affichage de l'écran est supérieur ou égal à 800 pixels. Elle continue cependant d'être masquée si le contenu de la page est affiché en plein écran.</translation>
 <translation id="3021678814754966447">&amp;Afficher le code source du cadre</translation>
 <translation id="3024374909719388945">Utiliser l'horloge au format 24 heures</translation>
 <translation id="3025022340603654002">Propose des suggestions de remplissage automatique lors du clic initial de la souris sur un élément du formulaire.</translation>
@@ -1434,7 +1432,7 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="302781076327338683">Actualiser en ignorant le cache</translation>
 <translation id="3030243755303701754">Un utilisateur supervisé peut naviguer sur le Web sous votre contrôle. En tant que gestionnaire d'un tel utilisateur dans Chrome, vous pouvez :
 
- • autoriser ou interdire certains sites Web,
+ • autoriser ou interdire l'accès à certains sites Web,
  • consulter les sites Web visités par l'utilisateur supervisé, et
  • gérer d'autres paramètres.
 
@@ -1494,7 +1492,6 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3117812041123364382">Activer ou désactiver le clavier virtuel flottant</translation>
 <translation id="3118319026408854581">Aide <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Chiffrement insuffisant pour une opération donnée sur l'appareil <ph name="DEVICE_NAME" />.</translation>
-<translation id="3121260210578524273">Activer les icônes dans les boutons d'action pour les notifications Web.</translation>
 <translation id="3121793941267913344">Réinitialiser cet appareil <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="3122162841865761901">Tests au niveau des outils de développement</translation>
 <translation id="3122464029669770682">UC</translation>
@@ -2276,6 +2273,7 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="421017592316736757">Pour accéder à ce fichier, vous devez être connecté à Internet.</translation>
 <translation id="421182450098841253">&amp;Afficher la barre de favoris</translation>
 <translation id="4212108296677106246">Voulez-vous que "<ph name="CERTIFICATE_NAME" />" soit considérée comme une autorité de certification fiable ?</translation>
+<translation id="42126664696688958">Exporter</translation>
 <translation id="42137655013211669">L'accès à cette ressource est interdit sur ce serveur.</translation>
 <translation id="4215350869199060536">Petit problème… Le nom contient des symboles non autorisés.</translation>
 <translation id="4215898373199266584">Conseil : Le mode navigation privée (<ph name="INCOGNITO_MODE_SHORTCUT" />) pourra vous être utile la prochaine fois.</translation>
@@ -3308,7 +3306,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="577322787686508614">L'opération de lecture n'est pas autorisée sur l'appareil <ph name="DEVICE_NAME" />.</translation>
 <translation id="5774295353725270860">Ouvrir l'application Fichiers</translation>
 <translation id="5774515636230743468">Manifeste :</translation>
-<translation id="5776006986202016118">Ce site tente de se connecter à :</translation>
 <translation id="577624874850706961">Rechercher des cookies</translation>
 <translation id="5778550464785688721">Contrôle total des appareils MIDI</translation>
 <translation id="5780066559993805332">(Idéale)</translation>
@@ -4199,7 +4196,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="7175353351958621980">Chargé depuis :</translation>
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="7180865173735832675">Personnaliser</translation>
-<translation id="7184428045150946911">Désactiver le masquage automatique de la barre d'outils sur les grandes tablettes</translation>
 <translation id="7185690883425432021">Cette option permet de masquer le bouton de fermeture des onglets inactifs lorsque la barre d'onglets est en mode empilé.</translation>
 <translation id="7186088072322679094">Garder dans la barre d'outils</translation>
 <translation id="719009910964971313">Clavier Dvorak américain pour programmeurs</translation>
@@ -5254,7 +5250,7 @@ Calcul de la durée restante</translation>
 <translation id="8737685506611670901">Ouvrir les liens "<ph name="PROTOCOL" />" à la place de "<ph name="REPLACED_HANDLER_TITLE" />"</translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="8741881454555234096">Cette option permet d'affiner la position des gestes pour compenser le fait qu'ils sont moins précis, par rapport à la souris.</translation>
-<translation id="8741995161408053644">Votre compte Google conserve peut- être d'autres formes d'historique de navigation sur la page <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
+<translation id="8741995161408053644">Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8743712320294854924">Afficher les options de saisie développées sur l'étagère.</translation>
 <translation id="874420130893181774">Mode de saisie pinyin traditionnel</translation>
 <translation id="8744525654891896746">Sélectionner un avatar pour cet utilisateur supervisé</translation>

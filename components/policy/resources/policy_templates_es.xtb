@@ -96,7 +96,7 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 <translation id="1359553908012294236">Si se asigna el valor true a esta política o si esta no se configura, <ph name="PRODUCT_NAME" /> habilitará los inicios de sesión como invitado. Los inicios de sesión como invitado son perfiles de <ph name="PRODUCT_NAME" /> en los que todas las ventanas están en modo incógnito.
 
       Si se asigna el valor false a esta política, <ph name="PRODUCT_NAME" /> no permitirá que se inicien los perfiles de invitado.</translation>
-<translation id="1363275621236827384">Habilitar consultas al servidor de Quirks para los perfiles de hardware</translation>
+<translation id="1363275621236827384">Habilitar consultas a Quirks Server para los perfiles de hardware</translation>
 <translation id="1397855852561539316">URL de sugerencia del proveedor de búsquedas predeterminadas</translation>
 <translation id="1398889361882383850">Permite establecer si los sitios web pueden ejecutar complementos automáticamente. La ejecución automática de complementos se puede permitir o denegar para todos los sitios web.
 
@@ -751,7 +751,7 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 
       El valor de la política debe estar especificado en milisegundos. Los valores están fijados en un intervalo de entre 30 segundos y 24 horas.</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
-<translation id="3538538104630456270">La opción asociada se utilizó antes de que se introdujese la nueva autenticación en las contraseñas visibles. Desde entonces, la opción y, por lo tanto, esta política, no han afectado al comportamiento de Chrome. El comportamiento actual de Chrome es el mismo que si se hubiese establecido la política para inhabilitar que se muestren las contraseñas sin cifrar en la página de configuración del Administrador de Contraseñas. Esto significa que la página de configuración incluye un solo marcador de posición y Chrome solo muestra la contraseña cuando el usuario hace clic en Mostrar (y al volver a autenticarse, si procede). A continuación se muestra la descripción original de la política.
+<translation id="3538538104630456270">La opción asociada se utilizó antes de que se introdujese la nueva autenticación para ver las contraseñas. Desde entonces, la opción y, por lo tanto, esta política, no han afectado al comportamiento de Chrome. El comportamiento actual de Chrome es el mismo que si se hubiese establecido la política para inhabilitar que se muestren las contraseñas sin cifrar en la página de configuración del Administrador de Contraseñas. Esto significa que la página de configuración incluye un solo marcador de posición y Chrome solo muestra la contraseña cuando el usuario hace clic en Mostrar (y al volver a autenticarse, si procede). A continuación se muestra la descripción original de la política.
 
           Permite controlar si las contraseñas se pueden mostrar sin cifrar a los usuarios en el Administrador de Contraseñas.
 
@@ -1768,11 +1768,6 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
           Si la política RestoreOnStartup se configura para restaurar las URL de sesiones anteriores, esta política no se respetará y las cookies se almacenarán de forma permanente para estos sitios web.</translation>
 <translation id="7207095846245296855">Forzar Google SafeSearch</translation>
-<translation id="7213425178181578730">Si se asigna el valor False a esta política, <ph name="PRODUCT_OS_NAME" /> inhabilitará la conexión Bluetooth, y el usuario no podrá volver a habilitarla.
-
-      Si se asigna el valor True a esta política o si esta no se configura, el usuario podrá habilitar o inhabilitar la conexión Bluetooth cuando lo desee.
-
-      Si se establece esta política, el usuario no podrá cambiar esta opción ni anularla.</translation>
 <translation id="7216442368414164495">Permitir a los usuarios habilitar los informes ampliados de la función de navegación segura</translation>
 <translation id="7227967227357489766">Permite definir la lista de usuarios con permiso para iniciar sesión en el dispositivo. Las entradas tienen el formato <ph name="USER_WHITELIST_ENTRY_FORMAT" /> (por ejemplo, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />). Para permitir usuarios arbitrarios en un dominio, utiliza entradas del formulario <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
@@ -2265,15 +2260,15 @@ En todas las plataformas, salvo en <ph name="PRODUCT_OS_NAME" />, el modo kiosco
 <translation id="8858642179038618439">Forzar el modo de seguridad de YouTube</translation>
 <translation id="8864975621965365890">Elimina el mensaje de desactivación que aparece cuando <ph name="PRODUCT_FRAME_NAME" /> muestra un sitio.</translation>
 <translation id="8870318296973696995">Página de inicio</translation>
-<translation id="8889588091638298603">El servidor de Quirks proporciona archivos de configuración específicos del hardware, como
+<translation id="8889588091638298603">Quirks Server proporciona archivos de configuración específicos del hardware, como
       los perfiles de pantalla ICC para ajustar la calibración del monitor.
 
       Cuando se asigna el valor false a esta política, el dispositivo no intenta
-      ponerse en contacto con el servidor de Quirks para descargar los archivos de configuración.
+      ponerse en contacto con Quirks Server para descargar los archivos de configuración.
 
       Si se asigna el valor true a esta política o si esta no se configura,
       <ph name="PRODUCT_OS_NAME" /> se pondrá en contacto
-      automáticamente con el servidor de Quirks, descargará los archivos de configuración
+      automáticamente con Quirks Server, descargará los archivos de configuración
       si están disponibles y los almacenará en el dispositivo. Estos archivos
       pueden utilizarse, por ejemplo, para mejorar la calidad de la pantalla de los monitores conectados.</translation>
 <translation id="8905426178924715309">Esta política está obsoleta, utiliza ForceGoogleSafeSearch y ForceYouTubeSafetyMode en su lugar. Esta política se ignorará si están establecidas ForceGoogleSafeSearch o ForceYouTubeSafetyMode.

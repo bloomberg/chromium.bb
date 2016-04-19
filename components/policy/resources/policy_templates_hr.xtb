@@ -82,7 +82,7 @@
 <translation id="1359553908012294236">Ako se pravilo postavi na "True" ili se ne konfigurira, <ph name="PRODUCT_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju profile preglednika <ph name="PRODUCT_NAME" /> u kojima se svi prozori otvaraju u anonimnom načinu.
 
       Ako se pravilo postavi na "False", <ph name="PRODUCT_NAME" /> neće dopustiti pokretanje profila gostiju.</translation>
-<translation id="1363275621236827384">Omogući slanje upita Quirksovu poslužitelju za hardverske profile</translation>
+<translation id="1363275621236827384">Omogući slanje upita na Quirks Server za hardverske profile</translation>
 <translation id="1397855852561539316">Predloženi URL zadanog davatelja usluge pretraživanja</translation>
 <translation id="1398889361882383850">Omogućuje vam da postavite hoće li web-lokacijama biti dopušteno automatsko pokretanje dodataka. Automatsko pokretanje dodataka može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije.
 
@@ -1607,11 +1607,6 @@
 
           Ako se pravilo "RestoreOnStartup" postavi na vraćanje URL-ova iz prethodnih sesija, ovo se pravilo neće poštovati i za te će se web-lokacije kolačići trajno pohranjivati.</translation>
 <translation id="7207095846245296855">Nametni Google sigurno pretraživanje</translation>
-<translation id="7213425178181578730">Ako se to pravilo postavi na False, <ph name="PRODUCT_OS_NAME" /> onemogućit će Bluetooth i korisnik ga neće moći omogućiti.
-
-      Ako se to pravilo postavi na True ili se ne postavi, korisnik će moći omogućiti ili onemogućiti Bluetooth prema želji.
-
-      Ako se to pravilo postavi, korisnik ga ne može promijeniti niti nadjačati.</translation>
 <translation id="7216442368414164495">Omogućivanje korisnicima da se uključe u prošireno izvješćivanje Sigurnog pregledavanja</translation>
 <translation id="7227967227357489766">Definira popis korisnika kojima je dopuštena prijava na uređaj. Unosi su u obliku <ph name="USER_WHITELIST_ENTRY_FORMAT" />, na primjer, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Da bi slučajnim korisnicima bio dopušten pristup domeni, upotrijebite unose u obliku <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
@@ -2055,15 +2050,15 @@
 <translation id="8858642179038618439">Nametni Siguran način rada na YouTubeu</translation>
 <translation id="8864975621965365890">Zaustavlja upit za odbijanje koji se pojavljuje kada web-lokaciju generira <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Početna stranica</translation>
-<translation id="8889588091638298603">Quirksov poslužitelj pruža konfiguracijske datoteke za hardver, primjerice
+<translation id="8889588091638298603">Quirks Server pruža konfiguracijske datoteke za hardver, primjerice
       profile ICC zaslona za kalibriranje monitora.
 
       Kad se to pravilo postavi na "false", uređaj neće pokušavati
-      kontaktirati Quirksov poslužitelj radi preuzimanja konfiguracijskih datoteka.
+      kontaktirati Quirks Server radi preuzimanja konfiguracijskih datoteka.
 
       Ako se pravilo postavi na "true" ili se ne konfigurira,
       operativni sustav <ph name="PRODUCT_OS_NAME" />
-      automatski će kontaktirati Quirksov poslužitelj i preuzeti konfiguracijske datoteke
+      automatski će kontaktirati Quirks Server i preuzeti konfiguracijske datoteke
       ako su dostupne i pohraniti ih na uređaj. Pomoću tih se datoteka, na primjer,
       može poboljšati kvaliteta prikaza priključenih monitora.</translation>
 <translation id="8905426178924715309">To je pravilo obustavljeno, pa umjesto njega upotrijebite "ForceGoogleSafeSearch" i "ForceYouTubeSafetyMode". Pravilo će se zanemariti ako se postave pravila "ForceGoogleSafeSearch" ili "ForceYouTubeSafetyMode".

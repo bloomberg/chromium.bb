@@ -1600,11 +1600,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 
           Falls die Richtlinie "RestoreOnStartup" zur Wiederherstellung von URLs aus vorherigen Sitzungen festgelegt ist, wird diese Richtlinie ignoriert und Cookies werden dauerhaft für die jeweiligen Websites gespeichert.</translation>
 <translation id="7207095846245296855">Google SafeSearch erzwingen</translation>
-<translation id="7213425178181578730">Wenn diese Richtlinie auf "falsch" gesetzt ist, wird Bluetooth von <ph name="PRODUCT_OS_NAME" /> deaktiviert und der Nutzer kann es nicht wieder aktivieren.
-
-      Wenn diese Richtlinie auf "wahr" gesetzt oder gar nicht eingestellt wird, kann der Nutzer Bluetooth nach Belieben aktivieren und deaktivieren.
-
-      Wenn diese Richtlinie eingestellt ist, kann der Nutzer dies nicht außer Kraft setzen.</translation>
 <translation id="7216442368414164495">Ermöglicht Nutzern die Aktivierung erweiterter Berichterstellung bei Verwendung von Safe Browsing</translation>
 <translation id="7227967227357489766">Definiert eine Liste mit Nutzern, die sich auf dem Gerät anmelden dürfen. Die Einträge haben das Format <ph name="USER_WHITELIST_ENTRY_FORMAT" />, zum Beispiel <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Um allen Nutzern in einer Domain die Anmeldung zu erlauben, verwenden Sie Einträge im Format <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

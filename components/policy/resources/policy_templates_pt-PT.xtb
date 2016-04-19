@@ -89,7 +89,7 @@
 <translation id="1359553908012294236">Se esta política for definida como verdadeira ou não for configurada, o <ph name="PRODUCT_NAME" /> permite inícios de sessão de convidados. Os inícios de sessão de convidados são perfis do <ph name="PRODUCT_NAME" /> em que todas as janelas estão no modo de navegação anónima.
 
       Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não permite que os perfis de convidado sejam iniciados.</translation>
-<translation id="1363275621236827384">Ativar consultas ao Servidor Quirks para perfis de hardware</translation>
+<translation id="1363275621236827384">Ativar consultas ao Quirks Server para perfis de hardware</translation>
 <translation id="1397855852561539316">URL de sugestão do fornecedor de pesquisas padrão</translation>
 <translation id="1398889361882383850">Permite-lhe definir se os Websites têm automaticamente permissão para executar plug-ins. Os plug-ins automaticamente em execução podem ser permitidos para todos os Websites ou negados para todos os Websites.
 
@@ -153,6 +153,18 @@
 <translation id="1561424797596341174">Substituições da política para compilações de Depuração do anfitrião de acesso remoto</translation>
 <translation id="1583248206450240930">Utilizar o <ph name="PRODUCT_FRAME_NAME" /> por predefinição</translation>
 <translation id="1608755754295374538">URLs aos quais será concedido acesso a dispositivos de captura de áudio imediatamente</translation>
+<translation id="1613574633990410986">Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e pelas aplicações ARC e impede os utilizadores de alterar as definições de proxy.
+
+      Se optar por nunca utilizar um servidor proxy e estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
+
+      Se optar por detetar automaticamente o servidor proxy, todas as outras opções são ignoradas.
+
+      Para obter exemplos detalhados, aceda a:
+      <ph name="PROXY_HELP_URL" />
+
+      Se ativar esta definição, o <ph name="PRODUCT_NAME" /> e as aplicações ARC ignoram todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
+
+      Se deixar estas políticas por definir, permite que os utilizadores selecionem as definições de proxy conforme pretendam.</translation>
 <translation id="1617235075406854669">Ativar a eliminação do histórico de transferências e do navegador</translation>
 <translation id="1617384279878333801">Ativar adicionar pessoa no gestor de perfis</translation>
 <translation id="1655229863189977773">Definir o tamanho da cache do disco em bytes</translation>
@@ -220,6 +232,15 @@
 <translation id="1865417998205858223">Autorizações principais</translation>
 <translation id="186719019195685253">Ação a executar quando o atraso de inatividade é atingido e estiver a ser utilizada a energia CA</translation>
 <translation id="187819629719252111">Permite aceder a ficheiros locais no computador, ao permitir que o <ph name="PRODUCT_NAME" /> apresente caixas de diálogo de seleção de ficheiros. Se ativar esta definição, os utilizadores poderão abrir caixas de diálogo de seleção de ficheiros normalmente. Se desativar esta definição, sempre que os utilizadores efetuarem uma ação que origine uma caixa de diálogo de seleção de ficheiros (como importar marcadores, carregar ficheiros, guardar links, etc.), aparecerá uma mensagem e assume-se que os utilizadores clicaram em Cancelar na caixa de diálogo. Se esta definição não for definida, os utilizadores poderão abrir as caixas de diálogo de seleção de ficheiros normalmente.</translation>
+<translation id="1879485426724769439">Especifica o fuso horário a utilizar para o dispositivo. Os utilizadores podem substituir o fuso horário especificado da sessão atual. Contudo, quando terminam sessão, este regressa ao fuso horário especificado. Se for fornecido um valor inválido, a política ainda é ativada com "GMT" como alternativa. Se for fornecida uma string vazia, a política é ignorada.
+
+      Se esta política não for utilizada, o fuso horário atualmente ativo permanece em utilização, apesar de os utilizadores poderem alterar o fuso horário e de a alteração ser permanente. Desta forma, uma alteração efetuada por um utilizador afeta o ecrã de início de sessão e todos os outros utilizadores.
+
+      Os novos dispositivos começam com o fuso horário definido como "EUA/Pacífico".
+
+      O formato do valor segue os nomes dos fusos horários na "Base de dados de fuso horário IANA" (consulte "https://en.wikipedia.org/wiki/Tz_database"). Em particular, a maioria dos fusos horários pode ser referida como "continente/grande_cidade" ou "oceano/grande_cidade".
+
+      A definição desta política desativa completamente a resolução automática do fuso horário através da localização do dispositivo. Além disso, substitui a política SystemTimezoneAutomaticDetection.</translation>
 <translation id="1897365952389968758">Permitir que todos os sites executem JavaScript</translation>
 <translation id="193259052151668190">Lista de autorizações de dispositivos USB amovíveis</translation>
 <translation id="1933378685401357864">Imagem de fundo</translation>
@@ -591,6 +612,24 @@
 <translation id="3072847235228302527">Definir os Termos de Utilização para uma conta local do dispositivo</translation>
 <translation id="3096595567015595053">Lista de plug-ins ativados</translation>
 <translation id="3101501961102569744">Escolher como indicar as definições do servidor proxy</translation>
+<translation id="3125884964575432854">Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e pelas aplicações ARC e impede os utilizadores de alterar as definições de proxy.
+
+          Se optar por nunca utilizar um servidor proxy e estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
+
+          Se optar por utilizar as definições de proxy do sistema, todas as outras opções são ignoradas.
+
+          Se optar por detetar automaticamente o servidor proxy, todas as outras opções são ignoradas.
+
+          Se selecionar o modo de servidor proxy fixo, pode especificar outras opções em "Endereço ou URL do servidor proxy" e "Lista separada por vírgulas das regras para ignorar o proxy". As aplicações ARC utilizam apenas o servidor proxy HTTP com a prioridade mais elevada.
+
+          Se optar por utilizar um script de proxy .pac, tem de especificar o URL para o script em "URL para um ficheiro .pac de proxy".
+
+          Para obter exemplos detalhados, aceda a:
+          <ph name="PROXY_HELP_URL" />
+
+          Se ativar esta definição, o <ph name="PRODUCT_NAME" /> e as aplicações ARC ignoram todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
+
+          Se deixar esta política por definir, permite que os utilizadores selecionem as definições de proxy conforme pretendam.</translation>
 <translation id="3153348162326497318">Permite especificar as extensões que NÃO podem ser instaladas pelos utilizadores. Se constarem da lista negra, as extensões já instaladas serão removidas. Um valor de lista negra "*" significa que todas as extensões constam da lista negra, a menos que estejam expressamente indicadas na lista de autorizações. Se esta política não for definida, o utilizador pode instalar qualquer extensão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Esta definição foi removida a partir da versão 29 do <ph name="PRODUCT_NAME" />. A forma recomendada de configurar coleções de extensões/aplicações alojadas na entidade é incluir no alojamento do site os pacotes CRX em ExtensionInstallSources e colocar links de transferência diretos para os pacotes numa página Web. Pode ser criado um iniciador para essa página Web utilizando a política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION" /></translation>
@@ -659,6 +698,20 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não for definida, é utilizado o valor global predefinido para todos os sites, seja a partir da política "DefaultKeygenSetting", se estiver definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="3381968327636295719">Utilizar o navegador anfitrião por predefinição</translation>
+<translation id="3398137877608138703">Permitir ou impedir a captura de vídeo.
+
+      Se esta política estiver ativada ou não estiver configurada (predefinição), é solicitado ao utilizador
+      acesso de captura de vídeo, exceto para os URLs configurados na lista
+      VideoCaptureAllowedUrls, à qual é concedido acesso sem pedido.
+      As aplicações ARC podem aceder à câmara se lhes tiver sido dada
+      autorização.
+
+      Quando esta política está desativada, nunca é solicitado acesso ao utilizador e a captura
+      de vídeo está disponível apenas para os URLs configurados em VideoCaptureAllowedUrls.
+      As aplicações ARC não podem aceder à câmara.
+
+      Além das aplicações ARC, esta política afeta todos os tipos de entrada de vídeo e
+      não apenas a câmara incorporada.</translation>
 <translation id="3417418267404583991">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> irá ativar os inícios de sessão de convidado. Os inícios de sessão de convidado são sessões de utilizadores anónimos e não necessitam de uma palavra-passe.
 
      Se esta política estiver definida como falsa, o <ph name="PRODUCT_OS_NAME" /> não permitirá que sejam iniciadas sessões de convidado.</translation>
@@ -676,6 +729,8 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3478024346823118645">Limpar os dados do utilizador ao terminar sessão</translation>
 <translation id="348495353354674884">Ativar teclado virtual</translation>
 <translation id="3496296378755072552">Gestor de palavras-passe</translation>
+<translation id="349667858031092827">Nunca detetar automaticamente o fuso horário.</translation>
+<translation id="350443680860256679">Configurar ARC</translation>
 <translation id="3504791027627803580">Especifique o URL do motor de pesquisa utilizado para fornecer a pesquisa de imagens. Os pedidos de pesquisa serão enviados através do método GET. Se a política DefaultSearchProviderImageURLPostParams estiver definida, os pedidos de pesquisa de imagens utilizarão, em alternativa, o método POST.
 
           Esta política é opcional. Se não for definida, não será utilizada a pesquisa de imagens.
@@ -692,13 +747,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       O valor da política deverá ser especificado em milissegundos. Os valores estão limitados a um intervalo entre 30 segundos e 24 horas.</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
-<translation id="3538538104630456270">A definição associada era utilizada antes da introdução da reautenticação durante a visualização de palavras-passe. Depois disso, a definição e, consequentemente, esta política deixaram de afetar o comportamento do Chrome. Atualmente, o Chrome comporta-se como se a política estivesse definida para desativar a apresentação das palavras-passe em texto não codificado na página de definições do gestor de palavras-passe. Isto significa que a página de definições inclui apenas um marcador de posição e o Chrome só mostra a palavra-passe depois de o utilizador clicar em "Mostrar" (e efetuar a reautenticação, se aplicável). Segue-se a descrição original da política.
+<translation id="3538538104630456270">A definição associada era utilizada antes de ser introduzida a reautenticação durante a visualização de palavras-passe. Depois disso, a definição e, consequentemente, esta política deixaram de afetar o comportamento do Chrome. Atualmente, o Chrome comporta-se como se a política estivesse definida para desativar a apresentação das palavras-passe em texto simples na página de definições do gestor de palavras-passe. Isto significa que a página de definições inclui apenas um marcador de posição e o Chrome só mostra a palavra-passe depois de o utilizador clicar em "Mostrar" (e efetuar a reautenticação, se aplicável). Segue-se a descrição original da política.
 
-          Controla se os utilizadores podem mostrar palavras-passe em texto não codificado no gestor de palavras-passe.
+          Controla se os utilizadores podem mostrar palavras-passe em texto simples no gestor de palavras-passe.
 
-          Se desativar esta definição, o gestor de palavras-passe não permite mostrar as palavras-passe armazenadas em texto não codificado na janela do gestor.
+          Se desativar esta definição, o gestor de palavras-passe não permite mostrar as palavras-passe armazenadas em texto simples na janela do gestor.
 
-          Se ativar ou não definir esta política, os utilizadores podem ver as palavras-passe em texto não codificado no gestor de palavras-passe.</translation>
+          Se ativar ou não definir esta política, os utilizadores podem ver as palavras-passe em texto simples no gestor de palavras-passe.</translation>
 <translation id="3547954654003013442">Definições de proxy</translation>
 <translation id="3570008976476035109">Bloquear plug-ins nestes sites</translation>
 <translation id="3591584750136265240">Configurar o comportamento de autenticação de início de sessão</translation>
@@ -809,6 +864,22 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se esta política estiver definida como "Manter cookies durante toda a sessão", os cookies são apagados quando a sessão for fechada. Tenha em atenção que se o <ph name="PRODUCT_NAME" /> estiver em execução no "modo de segundo plano", a sessão pode não ser fechada quando a última janela for fechada. Consulte a política "BackgroundModeEnabled" para obter mais informações acerca da configuração deste comportamento.
 
           Se esta política não for definida, "AllowCookies" é utilizada e o utilizador pode alterá-la.</translation>
+<translation id="4098957623809244159">Esta política foi descontinuada. Em alternativa, utilize ProxyMode.
+
+          Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e pelas aplicações ARC e impede os utilizadores de alterar as definições de proxy.
+
+          Se optar por nunca utilizar um servidor proxy e estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
+
+          Se optar por utilizar as definições de proxy do sistema ou detetar automaticamente o servidor proxy, todas as outras opções são ignoradas.
+
+          Se selecionar as definições de proxy manuais, pode especificar outras opções em "Endereço ou URL do servidor proxy", "URL para um ficheiro .pac de proxy" e "Lista separada por vírgulas das regras para ignorar o proxy".
+
+          Para obter exemplos detalhados, aceda a:
+          <ph name="PROXY_HELP_URL" />
+
+          Se ativar esta definição, o <ph name="PRODUCT_NAME" /> ignora todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
+
+          Se deixar esta política por definir, permite que os utilizadores selecionem as definições de proxy conforme pretendam.</translation>
 <translation id="4103289232974211388">Redirecionar para SAML IdP após confirmação do utilizador</translation>
 <translation id="410478022164847452">Especifica o período de tempo sem atividade por parte do utilizador após o qual se realiza a ação de inatividade quando o dispositivo está ligado à eletricidade.
 
@@ -1236,6 +1307,14 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5893553533827140852">Se esta definição estiver ativada, os pedidos de autenticação gnubby serão utilizados com proxy numa ligação de anfitrião remoto.
 
           Se esta definição estiver desativada ou não estiver configurada, os pedidos de autenticação não serão utilizados com proxy.</translation>
+<translation id="5900959132054596599">O <ph name="PRODUCT_NAME" /> e as aplicações ARC ignoram qualquer proxy para a lista de anfitriões fornecida aqui.
+
+          Esta política só é aplicada se tiver selecionado as definições de proxy manuais em "Escolher como especificar as definições do servidor proxy".
+
+          Deixe esta política por definir se tiver selecionado qualquer outro modo para a definição de políticas de proxy.
+
+          Para obter exemplos mais detalhados, aceda a:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Permitir transferências de atualização automática por HTTP</translation>
 <translation id="5921888683953999946">Definir o estado predefinido da funcionalidade de acessibilidade do cursor grande no ecrã de início de sessão.
 
@@ -1377,6 +1456,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="637934607141010488">Comunicar lista de utilizadores do dispositivo que iniciaram sessão recentemente.
 
       Se a política estiver definida como "false", os utilizadores não serão comunicados.</translation>
+<translation id="639009029157091157">Permitir que os utilizadores decidam.</translation>
 <translation id="6392973646875039351">Ativa a funcionalidade de Preenchimento Automático do <ph name="PRODUCT_NAME" /> e permite que os utilizadores preencham automaticamente formulários Web utilizando informações anteriormente armazenadas, como endereços ou dados de cartões de crédito. Se desativar esta definição, os utilizadores não poderão aceder à funcionalidade de Preenchimento Automático. Se ativar esta definição ou não definir qualquer valor, os utilizadores poderão controlar o Preenchimento Automático, o que lhes permitirá configurar perfis de Preenchimento Automático e ligar ou desligar esta funcionalidade conforme pretendam.</translation>
 <translation id="6394350458541421998">Esta política foi removida a partir da versão 29 do <ph name="PRODUCT_OS_NAME" />. Em vez disso, utilize a política PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Terminar a sessão do utilizador</translation>
@@ -1618,11 +1698,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se a política RestoreOnStartup estiver definida para restaurar URLs de sessões anteriores, esta política não é respeitada e os cookies são armazenados permanentemente para esses sites.</translation>
 <translation id="7207095846245296855">Forçar Google Pesquisa segura</translation>
-<translation id="7213425178181578730">Se esta política estiver definida como falsa, o <ph name="PRODUCT_OS_NAME" /> desativa o Bluetooth e o utilizador não pode voltar a ativá-la.
-
-      Se esta política estiver definida para verdadeira ou não estiver definida, o utilizador pode ativar ou desativar o Bluetooth, conforme pretender.
-
-      Se esta política estiver definida, o utilizador não pode alterá-la nem substituí-la.</translation>
 <translation id="7216442368414164495">Permite aos utilizadores optar por receber relatórios alargados de Navegação segura</translation>
 <translation id="7227967227357489766">Define a lista de utilizadores com permissão para iniciar sessão no dispositivo. As entradas são as do formulário <ph name="USER_WHITELIST_ENTRY_FORMAT" />, como <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Para permitir utilizadores arbitrários num domínio, utilize entradas do formulário <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
@@ -1723,6 +1798,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7632724434767231364">Nome da biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Configura o local da aplicação no <ph name="PRODUCT_NAME" /> e impede que os utilizadores o alterem. Se ativar esta definição, o <ph name="PRODUCT_NAME" /> utilizará o local indicado. Se o local configurado não for suportado, será utilizado "en-US". Se esta definição estiver desativada ou não for definida, o <ph name="PRODUCT_NAME" /> utilizará o local preferencial indicado pelo utilizador (se estiver configurado), o local do sistema ou o local alternativo "en-US".</translation>
 <translation id="7651739109954974365">Determina se o roaming de dados deve estar ativado para o aparelho. Se a política estiver definida como verdadeira, o roaming de dados é permitido. Se ficar por configurar ou for definida como falsa, o roaming de dados não estará disponível.</translation>
+<translation id="7667184304362487902">Configura as definições de proxy para o <ph name="PRODUCT_NAME" /> e as aplicações ARC.
+
+      Esta política ainda não está pronta para ser utilizada, por isso, não a utilize.</translation>
 <translation id="76810863974142048">URL onde os clientes de acesso remoto devem obter o respetivo símbolo de autenticação.
 
           Se esta política estiver definida, o anfitrião de acesso remoto exige que os clientes que tentam efetuar a autenticação obtenham um símbolo de autenticação a partir deste URL para estabelecer ligação. Deve utilizá-la em conjunto com a política RemoteAccessHostTokenValidationUrl.
@@ -1791,6 +1869,19 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7842869978353666042">Configurar as opções do Google Drive</translation>
 <translation id="7843525027689416831">Especifica os sinalizadores que devem ser aplicados ao <ph name="PRODUCT_NAME" /> quando este inicia. Os sinalizadores especificados são aplicados apenas no ecrã de início de sessão. Os sinalizadores definidos através desta política não se propagam para as sessões de utilizador.</translation>
 <translation id="7848840259379156480">Permite-lhe configurar o processador de HTML predefinido quando é instalado o <ph name="PRODUCT_FRAME_NAME" />. A predefinição é permitir que o navegador anfitrião efetue o pro, mas, se pretender, pode substituir esta predefinição e fazer com que o <ph name="PRODUCT_FRAME_NAME" /> processe as páginas HTML por predefinição.</translation>
+<translation id="7853178359124471330">Quando esta política está definida, o fluxo da deteção automática do fuso horário é um dos seguintes, consoante o valor da definição:
+
+      Se estiver definida como TimezoneAutomaticDetectionUsersDecide, os utilizadores podem controlar a deteção automática do fuso horário ao utilizar controlos normais em chrome://settings.
+
+      Se estiver definida como TimezoneAutomaticDetectionDisabled, os controlos automáticos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre desativada.
+
+      Se estiver definida como TimezoneAutomaticDetectionIPOnly, os controlos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre ativada. A deteção do fuso horário utiliza o método apenas de IP para resolver a localização.
+
+      Se estiver definida como TimezoneAutomaticDetectionSendWiFiAccessPoints, os controlos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre ativada. A lista de pontos de acesso Wi-Fi visíveis é sempre enviada para o servidor da API de geolocalização, de modo a permitir a deteção precisa do fuso horário.
+
+      Se esta política não estiver definida, o comportamento é o mesmo como se TimezoneAutomaticDetectionUsersDecide estivesse definido.
+
+      Se a política SystemTimezone estiver definida, substitui esta política. Nesse caso, a deteção automática do fuso horário está totalmente desativada.</translation>
 <translation id="7882585827992171421">Esta política está ativa apenas no modo de retalho.
 
       Determina a ID da extensão a utilizar como proteção de ecrã no ecrã de início de sessão. A extensão deve ser parte do AppPack que está configurado para este domínio através da política DeviceAppPack.</translation>
@@ -1828,6 +1919,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se deixar esta política por definir, a definição será ativada.</translation>
 <translation id="8073243368829195">Permite a utilização do Smart Lock</translation>
+<translation id="8074052133552427532">Utilizar sempre a deteção aproximada do fuso horário.</translation>
 <translation id="8099880303030573137">Atraso de inatividade quando o dispositivo está a utilizar a energia da bateria</translation>
 <translation id="8102913158860568230">Predefinição da transmissão em sequência de multimédia</translation>
 <translation id="8104962233214241919">Selecionar automaticamente certificados de cliente para estes Web sites</translation>
@@ -1933,6 +2025,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8424255554404582727">Definir a rotação predefinida do ecrã, aplicada novamente em todos os reinícios</translation>
 <translation id="8426231401662877819">Rodar o ecrã 90 graus para a direita</translation>
 <translation id="8451988835943702790">Utilizar a página Novo separador como página inicial</translation>
+<translation id="8458790683633857482">Especifica um conjunto de políticas que são transmitidas ao tempo de execução ARC. O valor tem de ser um formato JSON válido.</translation>
 <translation id="8465065632133292531">Parâmetros do URL instantâneo que utilize POST</translation>
 <translation id="847472800012384958">Não permitir que os sites mostrem pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2053,9 +2146,12 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política for definida como falsa, nem o utilizador nem quaisquer aplicações ou extensões podem entrar no modo de ecrã inteiro.
 
       Em todas as plataformas, exceto em <ph name="PRODUCT_OS_NAME" />, o modo quiosque está indisponível quando o modo de ecrã inteiro está desativado.</translation>
+<translation id="8795495354632096254">Enviar sempre pontos de acesso Wi-Fi para o servidor durante a resolução do fuso horário.</translation>
 <translation id="8818173863808665831">Comunique a localização geográfica do dispositivo.
 
       Se a política não estiver definida, ou estiver definida como falsa, a localização não será comunicada.</translation>
+<translation id="8818768076343557335">Prever ações na rede em qualquer rede que não seja móvel.
+          (Descontinuada na versão 50, removida na versão 52. Após a versão 52, se estiver definido o valor 1, este é tratado como 0: prever ações na rede em qualquer ligação de rede.)</translation>
 <translation id="8828766846428537606">Configura a página inicial predefinida no <ph name="PRODUCT_NAME" /> e impede que os utilizadores a alterem. As definições da página inicial dos utilizadores só estão totalmente bloqueadas se definir que a página inicial é a página Novo separador ou um URL e que indique um URL para a página inicial. Se não indicar o URL da página inicial, os utilizadores poderão definir a página Novo separador como a página inicial, especificando "chrome://newtab".</translation>
 <translation id="8833109046074170275">Autenticação através do fluxo GAIA predefinido</translation>
 <translation id="8838303810937202360">O <ph name="PRODUCT_OS_NAME" /> coloca em cache aplicações e extensões para instalação por vários utilizadores de um único dispositivo para evitar voltar a transferi-las para cada utilizador.
@@ -2063,15 +2159,15 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8858642179038618439">Forçar o Modo de segurança do YouTube</translation>
 <translation id="8864975621965365890">Suprime o pedido de recusa que aparece quando um site é convertido por <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Página inicial</translation>
-<translation id="8889588091638298603">O Servidor Quirks fornece ficheiros de configuração específicos do hardware, como
+<translation id="8889588091638298603">O Quirks Server fornece ficheiros de configuração específicos do hardware, como
       perfis de visualização ICC para ajustar a calibração do monitor.
 
       Quando esta política está definida como falsa, o dispositivo não tenta
-      contactar o Servidor Quirks para transferir ficheiros de configuração.
+      contactar o Quirks Server para transferir ficheiros de configuração.
 
       Se esta política estiver definida como verdadeira ou não estiver configurada,
       o <ph name="PRODUCT_OS_NAME" />
-      contacta automaticamente o Servidor Quirks, transfere os ficheiros de configuração,
+      contacta automaticamente o Quirks Server, transfere os ficheiros de configuração,
       se estiverem disponíveis, e armazena-os no dispositivo. Estes ficheiros podem
       ser utilizados, por exemplo, para melhorar a qualidade de visualização dos monitores ligados.</translation>
 <translation id="8905426178924715309">Esta política foi descontinuada. Utilize ForceGoogleSafeSearch e ForceYouTubeSafetyMode em alternativa. Esta política é ignorada se as políticas ForceGoogleSafeSearch ou ForceYouTubeSafetyMode forem definidas.
@@ -2115,6 +2211,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="9042911395677044526">Permite que a configuração de rede seja aplicada por utilizador para um aparelho <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especificar se a atividade do vídeo afeta a gestão da energia</translation>
 <translation id="9088433379343318874">Ativar o fornecedor de conteúdos do utilizador supervisionado</translation>
+<translation id="9088444059179765143">Configurar o método de deteção automática do fuso horário</translation>
 <translation id="9096086085182305205">Lista de permissões do servidor de autenticação</translation>
 <translation id="9098553063150791878">Políticas para a autenticação HTTP</translation>
 <translation id="9104138886225968319">Envia impulsos de monitorização ao servidor de gestão para permitir

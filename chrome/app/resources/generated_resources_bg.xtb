@@ -658,7 +658,6 @@
 <translation id="1962233722219655970">Тази страница използва приложение за клиент с директно изпълнение, което не работи на компютъра ви.</translation>
 <translation id="1965328510789761112">Частна памет</translation>
 <translation id="1965624977906726414">Няма специални разрешения.</translation>
-<translation id="1968720524450620475">Активиране на иконите за действия за известията от мрежата.</translation>
 <translation id="1970746430676306437">Преглед на информацията за страни&amp;цата</translation>
 <translation id="197288927597451399">Запазване</translation>
 <translation id="1973491249112991739">Изтеглянето на <ph name="PLUGIN_NAME" /> не бе успешно.</translation>
@@ -1420,7 +1419,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="302014277942214887">Въведете идентификационен номер на приложение или URL адрес на уеб магазин.</translation>
 <translation id="3020616530769498629">Активиране на презареждането без проверка при издърпване надолу за опресняване</translation>
 <translation id="3020990233660977256">Сериен номер: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Когато функцията е активирана, лентата с инструменти ще е винаги видима при превъртане на устройства, чиято минимална плътност на екрана е по-голяма или равна на 800 dp. Лентата ще остане скрита, ако съдържанието на страницата е на цял екран.</translation>
 <translation id="3021678814754966447">&amp;Преглед на изходния код на рамката</translation>
 <translation id="3024374909719388945">Използване на 24-часов часовник</translation>
 <translation id="3025022340603654002">Даване на предложения за автоматично попълване при първото кликване с мишката върху елемент от формуляр.</translation>
@@ -1491,7 +1489,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3117812041123364382">Активиране/деактивиране на плаващата виртуална клавиатура.</translation>
 <translation id="3118319026408854581">Помощ за <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Недостатъчно шифроване за дадена операция на: <ph name="DEVICE_NAME" />.</translation>
-<translation id="3121260210578524273">Активирайте иконите в бутоните за действия за известията от мрежата.</translation>
 <translation id="3121793941267913344">Възстановяване на това устройство с <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="3122162841865761901">Експерименти в инструментите за програмисти</translation>
 <translation id="3122464029669770682">Процесор</translation>
@@ -2272,6 +2269,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="421017592316736757">Трябва да сте онлайн, за да осъществите достъп до този файл.</translation>
 <translation id="421182450098841253">&amp;Показване на лентата на отметките</translation>
 <translation id="4212108296677106246">Искате ли да имате доверие на „<ph name="CERTIFICATE_NAME" />“ като сертифициращ орган?</translation>
+<translation id="42126664696688958">Експортиране</translation>
 <translation id="42137655013211669">Достъпът до този ресурс бе забранен от сървъра.</translation>
 <translation id="4215350869199060536">Ами сега! Името съдържа невалидни символи!</translation>
 <translation id="4215898373199266584">Не забравяйте, че режим „инкогнито“ (<ph name="INCOGNITO_MODE_SHORTCUT" />) може да е полезен следващия път.</translation>
@@ -3304,7 +3302,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="577322787686508614">Операцията за четене не е разрешена на: <ph name="DEVICE_NAME" />.</translation>
 <translation id="5774295353725270860">Отваряне на приложението за файлове</translation>
 <translation id="5774515636230743468">Манифест:</translation>
-<translation id="5776006986202016118">Този сайт иска да се свърже със:</translation>
 <translation id="577624874850706961">Търсене</translation>
 <translation id="5778550464785688721">Пълен контрол над MIDI устройства</translation>
 <translation id="5780066559993805332">(Най-добро)</translation>
@@ -4193,7 +4190,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7175353351958621980">Заредено от:</translation>
 <translation id="7180611975245234373">Опресняване</translation>
 <translation id="7180865173735832675">Персонализиране</translation>
-<translation id="7184428045150946911">Деактивиране на автоматичното скриване на лентата с инструменти на големи таблети</translation>
 <translation id="7185690883425432021">Скрива бутоните за затваряне на неактивните раздели, когато лентата с раздели е в режим на наслагване.</translation>
 <translation id="7186088072322679094">Запазване в лентата с инструменти</translation>
 <translation id="719009910964971313">Американска (Дворак) клавиатура за програмисти</translation>

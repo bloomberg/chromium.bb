@@ -1608,11 +1608,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Jos RestoreOnStartup-käytäntö on määritetty palauttamaan aiempien käyttökertojen URL-osoitteet, tätä käytäntöä ei noudateta, vaan kyseisten sivustojen evästeet tallennetaan pysyvästi.</translation>
 <translation id="7207095846245296855">Pakota Googlen SafeSearch</translation>
-<translation id="7213425178181578730">Jos käytännön arvo on epätosi, <ph name="PRODUCT_OS_NAME" /> poistaa Bluetoothin käytöstä, eikä käyttäjä voi ottaa sitä käyttöön.
-
-      Jos käytännön arvo on tosi tai sitä ei aseteta, käyttäjä voi halutessaan ottaa Bluetoothin käyttöön tai poistaa sen käytöstä.
-
-      Jos käytäntö on asetettu, käyttäjä ei voi muuttaa tai ohittaa sitä.</translation>
 <translation id="7216442368414164495">Anna käyttäjien sallia Selaussuojan laajempi raportointi</translation>
 <translation id="7227967227357489766">Määrittää luettelon käyttäjistä, jotka voivat kirjautua laitteeseen. Merkinnät määritetään muodossa <ph name="USER_WHITELIST_ENTRY_FORMAT" />, esimerkiksi <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Voit sallia toimialueen kaikkien käyttäjien kirjautumisen merkintätavalla <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

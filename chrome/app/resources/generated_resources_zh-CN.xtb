@@ -658,7 +658,6 @@
 <translation id="1962233722219655970">此页使用了您的计算机不支持的 Native Client 应用。</translation>
 <translation id="1965328510789761112">专用内存</translation>
 <translation id="1965624977906726414">无需特殊权限。</translation>
-<translation id="1968720524450620475">为网络通知启用操作图标。</translation>
 <translation id="1970746430676306437">查看网页信息(&amp;I)</translation>
 <translation id="197288927597451399">保留</translation>
 <translation id="1973491249112991739"><ph name="PLUGIN_NAME" /> 下载失败。</translation>
@@ -1418,7 +1417,6 @@
 <translation id="302014277942214887">请输入应用 ID 或网上应用店网址。</translation>
 <translation id="3020616530769498629">启用“不必验证即可重新加载（下拉即可刷新）”</translation>
 <translation id="3020990233660977256">序列号：<ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">当此项处于启用状态时，在最低屏幕 dp 不低于 800 的设备上，工具栏在用户滚动网页时将不会隐藏。但如果网页内容以全屏模式显示，工具栏仍会隐藏。</translation>
 <translation id="3021678814754966447">查看框架的源代码(&amp;V)</translation>
 <translation id="3024374909719388945">使用24小时制</translation>
 <translation id="3025022340603654002">在表单元素上点击一下鼠标，即自动填充建议的内容。</translation>
@@ -1426,7 +1424,7 @@
 <translation id="3025729795978504041">右键点击上方的按钮，即可查看其他用户。</translation>
 <translation id="3026050830483105579">无限精彩，尽在其中。</translation>
 <translation id="302620147503052030">显示按钮</translation>
-<translation id="302781076327338683">重新加载（忽略缓存）</translation>
+<translation id="302781076327338683">忽略缓存重新加载</translation>
 <translation id="3030243755303701754">受监管用户可以在您的指导下浏览网页。作为 Chrome 中受监管用户的管理员，您可以：
 
  • 允许或禁止受监管用户访问某些网站；
@@ -1489,7 +1487,6 @@
 <translation id="3117812041123364382">启用/停用浮动虚拟键盘。</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" />帮助</translation>
 <translation id="3120430004221004537">“<ph name="DEVICE_NAME" />”上某项指定操作的加密强度不足。</translation>
-<translation id="3121260210578524273">为网络通知启用操作按钮中的图标。</translation>
 <translation id="3121793941267913344">重置这台<ph name="IDS_SHORT_PRODUCT_NAME" />设备</translation>
 <translation id="3122162841865761901">开发者工具实验性功能</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2267,6 +2264,7 @@
 <translation id="421017592316736757">您必须在线访问此文件。</translation>
 <translation id="421182450098841253">显示书签栏(&amp;S)</translation>
 <translation id="4212108296677106246">您要信任“<ph name="CERTIFICATE_NAME" />”并将其作为证书授权中心吗？</translation>
+<translation id="42126664696688958">导出</translation>
 <translation id="42137655013211669">服务器禁止访问此资源。</translation>
 <translation id="4215350869199060536">糟糕，名称中包含非法符号！</translation>
 <translation id="4215898373199266584">嘘！下次您可以使用隐身模式（快捷键为 <ph name="INCOGNITO_MODE_SHORTCUT" />）。</translation>
@@ -2896,7 +2894,7 @@
 <translation id="5227808808023563348">查找上一文字</translation>
 <translation id="5228076606934445476">设备出现问题。要从此错误下恢复，您需要重启设备，然后重试。</translation>
 <translation id="5228962187251412618">只能在线检查</translation>
-<translation id="5229622432348746578">停用桌面共享音频功能</translation>
+<translation id="5229622432348746578">禁止桌面共享功能共享音频</translation>
 <translation id="5230516054153933099">窗口</translation>
 <translation id="5232178406098309195">当您发出音频功能启动指令（例如说“Ok Google”或触摸麦克风图标）后，语音和音频活动记录功能会将部分语音和其他音频存储在您帐户名下（这部分记录只有您本人能看到）。Google 会将接下来（以及在您发出指令前的几秒内）的语音/音频录音存储起来。</translation>
 <translation id="523299859570409035">通知例外情况</translation>
@@ -3292,7 +3290,6 @@
 <translation id="577322787686508614">禁止在“<ph name="DEVICE_NAME" />”上执行读取操作。</translation>
 <translation id="5774295353725270860">打开文件应用</translation>
 <translation id="5774515636230743468">网址：</translation>
-<translation id="5776006986202016118">此网站想要连接到：</translation>
 <translation id="577624874850706961">搜索 Cookie</translation>
 <translation id="5778550464785688721">完全控制 MIDI 设备</translation>
 <translation id="5780066559993805332">（最佳）</translation>
@@ -4180,7 +4177,6 @@
 <translation id="7175353351958621980">加载来源：</translation>
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7180865173735832675">自定义</translation>
-<translation id="7184428045150946911">在大型平板电脑上禁止自动隐藏工具栏</translation>
 <translation id="7185690883425432021">当标签栏处于堆叠模式时，隐藏不活动标签页上的关闭按钮。</translation>
 <translation id="7186088072322679094">固定在工具栏中</translation>
 <translation id="719009910964971313">美式 Programmer Dvorak 键盘</translation>

@@ -662,7 +662,6 @@
 <translation id="1962233722219655970">Ta stran uporablja aplikacijo s tehnologijo Native Client, ki ne deluje v vašem računalniku.</translation>
 <translation id="1965328510789761112">Zasebni pomnilnik</translation>
 <translation id="1965624977906726414">Nima posebnih dovoljenj.</translation>
-<translation id="1968720524450620475">Omogoči ikone dejanj za spletna obvestila</translation>
 <translation id="1970746430676306437">Poglej informacije o &amp;strani</translation>
 <translation id="197288927597451399">Obdrži</translation>
 <translation id="1973491249112991739">Prenos vtičnika <ph name="PLUGIN_NAME" /> ni uspel.</translation>
@@ -1425,7 +1424,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="302014277942214887">Vnos ID-ja aplikacije ali URL-ja spletne trgovine.</translation>
 <translation id="3020616530769498629">Omogočanje vnovičnega nalaganja brez preverjanja pri osveževanju z vlečenjem</translation>
 <translation id="3020990233660977256">Serijska številka: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Ko je to omogočeno, v napravah, v katerih je najmanjša vrednost »dp« za zaslon enaka 800 ali večja, orodna vrstica nikoli ne bo skrita zaradi drsenja. Še vedno bo skrita, če bo vsebina strani prikazana v celozaslonskem načinu.</translation>
 <translation id="3021678814754966447">&amp;Prikaz izvorne kode okvirja</translation>
 <translation id="3024374909719388945">Uporabi 24-urno obliko ure</translation>
 <translation id="3025022340603654002">Prikaz predlogov za samodejni vnos pri prvem kliku elementa obrazca z miško.</translation>
@@ -1496,7 +1494,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="3117812041123364382">Omogoči/onemogoči plavajočo navidezno tipkovnico</translation>
 <translation id="3118319026408854581">Pomoč za <ph name="PRODUCT_NAME" /> </translation>
 <translation id="3120430004221004537">Nezadostno šifriranje za dano dejanje v tej napravi: »<ph name="DEVICE_NAME" />«.</translation>
-<translation id="3121260210578524273">Omogočanje ikon v gumbih dejanj za spletna obvestila.</translation>
 <translation id="3121793941267913344">Ponastavitev te naprave <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="3122162841865761901">Poskusi v orodjih za razvijalce</translation>
 <translation id="3122464029669770682">CPE</translation>
@@ -2278,6 +2275,7 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="421017592316736757">Če želite dostopati do datoteke, mora biti vzpostavljena povezava z internetom.</translation>
 <translation id="421182450098841253">&amp;Pokaži vrstico z zaznamki</translation>
 <translation id="4212108296677106246">Ali želite zaupati »<ph name="CERTIFICATE_NAME" />« kot overitelju potrdil?</translation>
+<translation id="42126664696688958">Izvozi</translation>
 <translation id="42137655013211669">Strežnik je onemogočil dostop do tega vira.</translation>
 <translation id="4215350869199060536">Ojoj, neveljavni znaki v imenu.</translation>
 <translation id="4215898373199266584">Pst! Naslednjič vam lahko pride prav način brez beleženja zgodovine (<ph name="INCOGNITO_MODE_SHORTCUT" />).</translation>
@@ -3311,7 +3309,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="577322787686508614">V tej napravi ni dovoljeno dejanje branja: »<ph name="DEVICE_NAME" />«.</translation>
 <translation id="5774295353725270860">Odpiranje aplikacije Datoteke</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5776006986202016118">Spletno mesto se želi povezati s tem:</translation>
 <translation id="577624874850706961">Preišči piškotke</translation>
 <translation id="5778550464785688721">Popolni nadzor naprav MIDI</translation>
 <translation id="5780066559993805332">(Najboljša)</translation>
@@ -4201,7 +4198,6 @@ Nekatere funkcije morda ne bodo na voljo. Preverite, ali profil obstaja in ali i
 <translation id="7175353351958621980">Naloženo iz:</translation>
 <translation id="7180611975245234373">Osveži</translation>
 <translation id="7180865173735832675">Prilagodi</translation>
-<translation id="7184428045150946911">Onemogoči samodejno skrivanje orodne vrstice v velikih tabličnih računalnikih</translation>
 <translation id="7185690883425432021">Skrije gumbe za zapiranje na nedejavnih zavihkih, ko je vrstica zavihkov v zloženem načinu.</translation>
 <translation id="7186088072322679094">Ohrani v orodni vrstici</translation>
 <translation id="719009910964971313">ameriška tpkovnica Dvorak za programerje</translation>

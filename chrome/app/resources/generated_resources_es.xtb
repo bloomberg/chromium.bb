@@ -661,7 +661,6 @@
 <translation id="1962233722219655970">Esta página utiliza una aplicación de Native Client que no funciona en tu ordenador.</translation>
 <translation id="1965328510789761112">Memoria privada</translation>
 <translation id="1965624977906726414">No tiene permisos especiales.</translation>
-<translation id="1968720524450620475">Habilitar iconos de acción para las notificaciones web.</translation>
 <translation id="1970746430676306437">Ver &amp;información de la página</translation>
 <translation id="197288927597451399">Descargar</translation>
 <translation id="1973491249112991739">Error al descargar <ph name="PLUGIN_NAME" /></translation>
@@ -1426,7 +1425,6 @@ sistema operativo desde una unidad USB
 <translation id="302014277942214887">Introduce el identificador de la aplicación o la URL de Chrome Web Store.</translation>
 <translation id="3020616530769498629">Habilitar la opción de volver a cargar sin validar en la función de deslizar para actualizar</translation>
 <translation id="3020990233660977256">Número de serie: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Si se habilita esta opción, la barra de herramientas no se ocultará nunca cuando se produzcan desplazamientos en dispositivos con una pantalla de 800 dp como mínimo. Sin embargo, se ocultará si los contenidos de una página web se muestran en pantalla completa.</translation>
 <translation id="3021678814754966447">&amp;Ver fuente del marco</translation>
 <translation id="3024374909719388945">Usar reloj de 24 horas</translation>
 <translation id="3025022340603654002">Permite hacer sugerencias de autocompletado con el clic inicial del ratón en un elemento de formulario.</translation>
@@ -1443,7 +1441,7 @@ sistema operativo desde una unidad USB
 
 Al crear un usuario supervisado, no se crea una cuenta de Google, y sus marcadores, su historial de navegación y otras preferencias no estarán disponibles en otros dispositivos con la sincronización de Chrome. Una vez que hayas creado un nuevo usuario supervisado, podrás administrar su configuración en cualquier momento y desde cualquier dispositivo en la página <ph name="BEGIN_MANAGE_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_MANAGE_LINK" />.
 
-Para obtener más información accede a nuestro <ph name="BEGIN_LINK" />Centro de Ayuda<ph name="END_LINK" />.</translation>
+Para obtener más información, accede a nuestro <ph name="BEGIN_LINK" />Centro de Ayuda<ph name="END_LINK" />.</translation>
 <translation id="3031417829280473749">Agente X</translation>
 <translation id="3031557471081358569">Selecciona los elementos que quieres importar:</translation>
 <translation id="3033332627063280038">Habilita la implementación experimental de la directiva de control de caché stale_while_revalidate, que permite que los servidores especifiquen que se puedan revalidar algunos recursos en segundo plano para mejorar la latencia.</translation>
@@ -1497,7 +1495,6 @@ Para obtener más información accede a nuestro <ph name="BEGIN_LINK" />Centro d
 <translation id="3117812041123364382">Habilita o inhabilita el teclado virtual flotante.</translation>
 <translation id="3118319026408854581">Ayuda de <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Cifrado insuficiente para una operación determinada de "<ph name="DEVICE_NAME" />".</translation>
-<translation id="3121260210578524273">Habilitar iconos en los botones de acción para las notificaciones web.</translation>
 <translation id="3121793941267913344">Restablece este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="3122162841865761901">Experimentos de Herramientas para desarrolladores</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2275,6 +2272,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="421017592316736757">Tienes que conectarte a Internet para acceder a este archivo.</translation>
 <translation id="421182450098841253">&amp;Mostrar barra de marcadores</translation>
 <translation id="4212108296677106246">¿Quieres confiar en "<ph name="CERTIFICATE_NAME" />" como una entidad emisora de certificados?</translation>
+<translation id="42126664696688958">Exportar</translation>
 <translation id="42137655013211669">El servidor ha prohibido el acceso a este recurso.</translation>
 <translation id="4215350869199060536">¡Vaya! El nombre incluye símbolos que no están permitidos</translation>
 <translation id="4215898373199266584">¡Pst! El modo de incógnito (<ph name="INCOGNITO_MODE_SHORTCUT" />) puede serte de utilidad la próxima vez.</translation>
@@ -3303,7 +3301,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="577322787686508614">No se permite la operación de lectura en "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Abrir la aplicación Archivos</translation>
 <translation id="5774515636230743468">Manifiesto:</translation>
-<translation id="5776006986202016118">Este sitio quiere conectarse a:</translation>
 <translation id="577624874850706961">Buscar cookies</translation>
 <translation id="5778550464785688721">Control total de dispositivos MIDI</translation>
 <translation id="5780066559993805332">(Mejor)</translation>
@@ -3703,7 +3700,7 @@ Es posible que algunas funciones no estén disponibles. Comprueba si el perfil e
 <translation id="6418505248408153264">Habilitar el historial de Material Design</translation>
 <translation id="6419288379019356534">Este dispositivo está gestionado por <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
     <ph name="LINE_BREAK" />
-    Haz clic en "Siguiente" para continuar iniciando sesión en tu cuenta de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
+    Haz clic en Siguiente para continuar iniciando sesión en tu cuenta de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="6419902127459849040">Europa Central</translation>
 <translation id="6420676428473580225">Añadir al escritorio</translation>
 <translation id="6422329785618833949">Foto girada</translation>
@@ -4194,7 +4191,6 @@ Es posible que algunas funciones no estén disponibles. Comprueba si el perfil e
 <translation id="7175353351958621980">Cargado desde:</translation>
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="7180865173735832675">Personalizar</translation>
-<translation id="7184428045150946911">Inhabilitar la opción para ocultar la barra de herramientas automáticamente en tablets de gran tamaño</translation>
 <translation id="7185690883425432021">Oculta botones de cierre de pestañas inactivas cuando la barra de pestañas está en modo apilado.</translation>
 <translation id="7186088072322679094">Mantener en la barra de herramientas</translation>
 <translation id="719009910964971313">Teclado Programmer Dvorak de EE. UU.</translation>
@@ -4579,7 +4575,7 @@ Es posible que algunas funciones no estén disponibles. Comprueba si el perfil e
 <translation id="7786207843293321886">Salir de la sesión de invitado</translation>
 <translation id="7786889348652477777">&amp;Volver a cargar aplicación</translation>
 <translation id="7787129790495067395">Actualmente estás utilizando una frase de contraseña. Si la has olvidado, puedes restablecer la sincronización para borrar los datos de los servidores de Google a través del panel de control de Google.</translation>
-<translation id="7787308148023287649">Se muestra en otra pantalla</translation>
+<translation id="7787308148023287649">Mostrar en otra pantalla</translation>
 <translation id="7788080748068240085">Para guardar "<ph name="FILE_NAME" />" sin conexión, debes liberar <ph name="TOTAL_FILE_SIZE" /> de espacio adicional:<ph name="MARKUP_1" />
         <ph name="MARKUP_2" />Elimina archivos a los que ya no necesites acceder sin conexión.<ph name="MARKUP_3" />
         <ph name="MARKUP_4" />Borra archivos de la carpeta de descargas.<ph name="MARKUP_5" /></translation>
@@ -5320,7 +5316,7 @@ Calculando el tiempo de carga completa</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848709220963126773">Cambiar a modo de tecla Mayús</translation>
 <translation id="8852742364582744935">Se han añadido las siguientes aplicaciones y extensiones:</translation>
-<translation id="8853611566624224021">Habilita la recuperación de archivos de pantalla ICC del servidor de Quirks para calibrar el color de la pantalla.</translation>
+<translation id="8853611566624224021">Habilita la recuperación de archivos de pantalla ICC de Quirks Server para calibrar el color de la pantalla.</translation>
 <translation id="885381502874625531">Teclado bielorruso</translation>
 <translation id="8856844195561710094">Error al detener la detección del dispositivo Bluetooth</translation>
 <translation id="885701979325669005">Almacenamiento</translation>

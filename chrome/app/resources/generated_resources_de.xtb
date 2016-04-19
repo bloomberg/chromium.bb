@@ -658,7 +658,6 @@
 <translation id="1962233722219655970">Diese Seite verwendet eine Native Client App, die auf Ihrem Computer nicht funktioniert.</translation>
 <translation id="1965328510789761112">Privater Speicher</translation>
 <translation id="1965624977906726414">Erfordert keine besonderen Berechtigungen</translation>
-<translation id="1968720524450620475">Aktionssymbole für Webbenachrichtigungen aktivieren.</translation>
 <translation id="1970746430676306437">Seiten&amp;info anzeigen</translation>
 <translation id="197288927597451399">Behalten</translation>
 <translation id="1973491249112991739">Fehler beim Download von <ph name="PLUGIN_NAME" /></translation>
@@ -1419,7 +1418,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="302014277942214887">Geben Sie die App-ID oder die Webstore-URL ein.</translation>
 <translation id="3020616530769498629">Ohne Überprüfung den Effekt "Zum Aktualisieren ziehen" aktualisieren</translation>
 <translation id="3020990233660977256">Seriennummer: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Wenn dieses Kästchen angeklickt ist, wird die Symbolleiste auf Geräten, deren Bildschirm mindestens 800 dp hat, beim Scrollen nicht ausgeblendet. Die Symbolleiste wird weiterhin ausgeblendet, wenn Seiteninhalte im Vollbildmodus angezeigt werden.</translation>
 <translation id="3021678814754966447">Frame-Quelltext &amp;anzeigen</translation>
 <translation id="3024374909719388945">24-Stunden-Format verwenden</translation>
 <translation id="3025022340603654002">Beim ersten Mausklick auf ein Formularelement AutoFill-Vervollständigungen anbieten</translation>
@@ -1490,7 +1488,6 @@ Mehr dazu erfahren Sie in <ph name="BEGIN_LINK" />unserer Hilfe<ph name="END_LIN
 <translation id="3117812041123364382">Aktiviert/deaktiviert die schwebende Bildschirmtastatur</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" />-Hilfe</translation>
 <translation id="3120430004221004537">Unzureichende Verschlüsselung für einen bestimmten Vorgang auf folgendem Gerät: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="3121260210578524273">Symbole in Aktionsschaltflächen für Webbenachrichtigungen aktivieren.</translation>
 <translation id="3121793941267913344"><ph name="IDS_SHORT_PRODUCT_NAME" />-Gerät zurücksetzen</translation>
 <translation id="3122162841865761901">Entwicklertool-Experimente</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2272,6 +2269,7 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="421017592316736757">Sie müssen online sein, um auf diese Datei zugreifen zu können.</translation>
 <translation id="421182450098841253">&amp;Lesezeichenleiste anzeigen</translation>
 <translation id="4212108296677106246">Möchten Sie "<ph name="CERTIFICATE_NAME" />" als Zertifizierungsstelle vertrauen?</translation>
+<translation id="42126664696688958">Exportieren</translation>
 <translation id="42137655013211669">Der Zugriff auf diese Ressource wurde vom Server nicht zugelassen.</translation>
 <translation id="4215350869199060536">Der Name enthält unzulässige Zeichen.</translation>
 <translation id="4215898373199266584">Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="INCOGNITO_MODE_SHORTCUT" />).</translation>
@@ -3299,7 +3297,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="577322787686508614">Der Lesevorgang ist auf folgendem Gerät nicht erlaubt: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">App "Dateien" öffnen</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5776006986202016118">Die Website versucht, die folgenden Verbindungen herzustellen:</translation>
 <translation id="577624874850706961">Cookies suchen</translation>
 <translation id="5778550464785688721">Vollständige Kontrolle über MIDI-Geräte</translation>
 <translation id="5780066559993805332">(beste)</translation>
@@ -4007,7 +4004,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6918340160281024199">US-amerikanische Workman-Tastatur</translation>
 <translation id="6920569915859786172">Eingriff des User-Agents zum Laden von WebFonts stets auslösen.</translation>
 <translation id="6920989436227028121">In normalem Tab öffnen</translation>
-<translation id="6922128026973287222">Mit der Google Datenkomprimierung verbrauchen Sie weniger Daten und surfen schneller. Klicken Sie hier, um mehr zu erfahren.</translation>
+<translation id="6922128026973287222">Mit dem Google-Datensparmodus verbrauchen Sie weniger Daten und surfen schneller. Klicken Sie hier, um mehr zu erfahren.</translation>
 <translation id="6929555043669117778">Pop-ups weiterhin blockieren</translation>
 <translation id="6930242544192836755">Dauer</translation>
 <translation id="6934265752871836553">Aktiviert den neuesten experimentellen Code für ein schnelleres Rendering von Inhalten in Chrome. Aufgrund der Änderungen dieses Pfades werden viele Inhalte wahrscheinlich nicht korrekt dargestellt.</translation>
@@ -4187,7 +4184,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="7175353351958621980">Geladen von:</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="7180865173735832675">Anpassen</translation>
-<translation id="7184428045150946911">Symbolleiste auf großen Tablets nicht automatisch ausblenden</translation>
 <translation id="7185690883425432021">Blendet die Schaltflächen zum Schließen inaktiver Tabs aus, wenn die Tab-Leiste gestapelt ist.</translation>
 <translation id="7186088072322679094">In Symbolleiste behalten</translation>
 <translation id="719009910964971313">US-amerikanische "Programmer Dvorak"-Tastatur</translation>

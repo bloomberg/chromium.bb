@@ -1600,11 +1600,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli zgodnie z ustawieniem zasady RestoreOnStartup adresy URL z poprzednich sesji mają być wznawiane, ta zasada nie będzie przestrzegana, a pliki cookie witryn będą trwale zapisywane.</translation>
 <translation id="7207095846245296855">Wymuś stosowanie filtra Google SafeSearch</translation>
-<translation id="7213425178181578730">Jeśli ta zasada ma wartość Fałsz, <ph name="PRODUCT_OS_NAME" /> wyłącza moduł Bluetooth i użytkownik nie może włączyć go ponownie.
-
-      Jeśli zasada ma wartość Prawda lub nie ma wartości, użytkownik może swobodnie włączać i wyłączać moduł Bluetooth.
-
-      Jeśli ustawisz wartość tej zasady, użytkownik nie może jej zmienić ani zastąpić.</translation>
 <translation id="7216442368414164495">Umożliwia użytkownikom wyrażenie zgody na generowanie rozszerzonych raportów przez usługę Bezpieczne przeglądanie</translation>
 <translation id="7227967227357489766">Określa listę użytkowników, którzy mogą logować się do urządzenia. Pozycje mają postać <ph name="USER_WHITELIST_ENTRY_FORMAT" />, np. <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Aby zezwolić na logowanie dowolnym użytkownikom z domeny, użyj wpisów w postaci <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

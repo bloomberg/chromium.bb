@@ -658,7 +658,6 @@
 <translation id="1962233722219655970">Esta página usa una aplicación con tecnología Native Client que no funciona en tu computadora.</translation>
 <translation id="1965328510789761112">Memoria privada</translation>
 <translation id="1965624977906726414">No requiere permisos especiales.</translation>
-<translation id="1968720524450620475">Habilitar íconos de acción para las notificaciones web</translation>
 <translation id="1970746430676306437">Ver &amp;información de la página</translation>
 <translation id="197288927597451399">Conservar</translation>
 <translation id="1973491249112991739">Error al descargar <ph name="PLUGIN_NAME" /></translation>
@@ -1420,7 +1419,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="302014277942214887">Ingresa el ID de la aplicación o la URL de la tienda virtual.</translation>
 <translation id="3020616530769498629">Habilitar la opción no validante de volver a cargar en "Desplegar para actualizar"</translation>
 <translation id="3020990233660977256">Número de serie: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Cuando se habilite, la barra de herramientas nunca se ocultará al desplazarse en dispositivos que tengan una pantalla de 800 dp como mínimo. Sin embargo, se ocultará si el contenido de la página se muestra en pantalla completa.</translation>
 <translation id="3021678814754966447">&amp;Ver fuente del marco</translation>
 <translation id="3024374909719388945">Utilizar reloj de 24 horas</translation>
 <translation id="3025022340603654002">Realizar sugerencias de autocompletar con el clic inicial del mouse en un elemento de formulario.</translation>
@@ -1491,7 +1489,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="3117812041123364382">Permite habilitar o inhabilitar el teclado virtual flotante.</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Ayuda</translation>
 <translation id="3120430004221004537">La encriptación no fue suficiente para una operación en: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="3121260210578524273">Permite habilitar íconos en los botones de acción para las notificaciones web.</translation>
 <translation id="3121793941267913344">Restablecer este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="3122162841865761901">Experimentos en Herramientas para programadores</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2273,6 +2270,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="421017592316736757">Tienes que estar conectado para acceder a este archivo.</translation>
 <translation id="421182450098841253">Mo&amp;strar la barra de marcadores</translation>
 <translation id="4212108296677106246">¿Deseas confiar en "<ph name="CERTIFICATE_NAME" />" como una Entidad de certificación?</translation>
+<translation id="42126664696688958">Exportar</translation>
 <translation id="42137655013211669">El servidor prohibió el acceso a este recurso.</translation>
 <translation id="4215350869199060536">El nombre incluye símbolos no permitidos.</translation>
 <translation id="4215898373199266584">¡No se lo digas a nadie! El modo incógnito (<ph name="INCOGNITO_MODE_SHORTCUT" />) puede resultarte útil la próxima vez.</translation>
@@ -3304,7 +3302,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="577322787686508614">No se permite la operación de lectura en: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Abrir aplicación de archivos</translation>
 <translation id="5774515636230743468">Manifiesto:</translation>
-<translation id="5776006986202016118">Este sitio desea conectarse a:</translation>
 <translation id="577624874850706961">Buscar cookies</translation>
 <translation id="5778550464785688721">Control total de dispositivos MIDI</translation>
 <translation id="5780066559993805332">(Superior)</translation>
@@ -4193,7 +4190,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7175353351958621980">Cargados desde:</translation>
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="7180865173735832675">Personalizar</translation>
-<translation id="7184428045150946911">Inhabilitar la ocultación automática de la barra de herramientas en tablets de gran tamaño</translation>
 <translation id="7185690883425432021">Oculta los botones de cierre de las pestañas inactivas en la barra de pestañas cuando están apiladas.</translation>
 <translation id="7186088072322679094">Mantener en la barra de herramientas</translation>
 <translation id="719009910964971313">Teclado Programmer Dvorak, EE. UU.</translation>
@@ -5130,7 +5126,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8589311641140863898">Extensión experimental API</translation>
 <translation id="8590375307970699841">Configurar actualizaciones automáticas</translation>
 <translation id="8592071947729879125">Restringe los permisos de iframe.</translation>
-<translation id="8592125506633137593">Aislamiento del documento superior</translation>
+<translation id="8592125506633137593">Aislamiento del documento principal</translation>
 <translation id="8594787581355215556">Accediste como <ph name="USER_EMAIL_ADDRESS" />. Administra tus datos sincronizados en el <ph name="BEGIN_LINK" />panel de control de Google<ph name="END_LINK" />.</translation>
 <translation id="8596540852772265699">Archivos personalizados</translation>
 <translation id="8596785155158796745">El micrófono no está disponible en este momento. <ph name="BEGIN_LINK" />Administrar micrófono<ph name="END_LINK" /></translation>

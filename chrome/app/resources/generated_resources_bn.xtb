@@ -661,7 +661,6 @@
 <translation id="1962233722219655970">এই পৃষ্ঠাটি একটি নেটিভ ক্লায়েন্ট অ্যাপ্লিকেশন ব্যবহার করে যা আপনার কম্পিউটারে কাজ করে না৷</translation>
 <translation id="1965328510789761112">ব্যক্তিগত স্মৃতি</translation>
 <translation id="1965624977906726414">কোনো বিশেষ অনুমতি নেই৷</translation>
-<translation id="1968720524450620475">ওয়েব বিজ্ঞপ্তিগুলির জন্য ক্রিয়া আইকন সক্ষম করে।</translation>
 <translation id="1970746430676306437">পৃষ্ঠা &amp;তথ্য দেখুন</translation>
 <translation id="197288927597451399">রাখুন</translation>
 <translation id="1973491249112991739"><ph name="PLUGIN_NAME" /> ডাউনলোড ব্যর্থ হয়েছে৷</translation>
@@ -1423,7 +1422,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="302014277942214887">অ্যাপ্লিকেশান ID বা ওয়েব দোকানের URL লিখুন৷</translation>
 <translation id="3020616530769498629">রিফ্রেশ-করতে-টানুন এর সময় যাচাই-অসমর্থন করা পুনঃলোড করণ সক্ষম করে</translation>
 <translation id="3020990233660977256">ক্রমিক সংখ্যা: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">সক্ষম করা হলে, সর্বনিম্ন স্ক্রীন dp &gt;= ৮০০ এর ডিভাইসগুলিতে স্ক্রলিংয়ের কারণে সরঞ্জামদণ্ড কখনোই লুকানো হবে না। তবে পৃষ্ঠার বিষয়বস্তু পূর্ণ স্ক্রীনে গেলে, তখন এটি আড়াল করা হবে।</translation>
 <translation id="3021678814754966447">ফ্রেম উৎস &amp;দেখুন</translation>
 <translation id="3024374909719388945">24-ঘন্টার ঘড়ি ব্যবহার করুন</translation>
 <translation id="3025022340603654002">একটি উপাদানের ফর্মের উপর প্রাথমিক মাউস ক্লিক করার স্বতঃপূর্ণ পরামর্শগুলি তৈরি করুন৷</translation>
@@ -1493,7 +1491,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3117812041123364382">ভাসমান ভার্চুয়াল কীবোর্ড সক্ষম/অক্ষম করুন।</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> সহায়তা</translation>
 <translation id="3120430004221004537">এখানে একটি নির্দিষ্ট ক্রিয়াকলাপের জন্য অপর্যাপ্ত এনক্রিপশান: "<ph name="DEVICE_NAME" />"।</translation>
-<translation id="3121260210578524273">ওয়েব বিজ্ঞপ্তির জন্য ক্রিয়া বোতামগুলিতে আইকন সক্ষম করে।</translation>
 <translation id="3121793941267913344">এই <ph name="IDS_SHORT_PRODUCT_NAME" /> ডিভাইসটি পুনরায় সেট করুন</translation>
 <translation id="3122162841865761901">বিকাশকারী সরঞ্জামগুলির পরীক্ষা</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2269,6 +2266,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="421017592316736757">আপনার এই ফাইলটিতে অ্যাক্সেস পেতে অনলাইন হওয়া আবশ্যক৷</translation>
 <translation id="421182450098841253">&amp;বুকমার্ক দণ্ড দেখান</translation>
 <translation id="4212108296677106246">আপনি কি "<ph name="CERTIFICATE_NAME" />"কে শংসাপত্র কর্তৃপক্ষ হিসাবে বিশ্বাস করতে চান?</translation>
+<translation id="42126664696688958">রপ্তানি</translation>
 <translation id="42137655013211669">এই সম্পদে অ্যাক্সেস করা সার্ভার দ্বারা নিষিদ্ধ ছিল।</translation>
 <translation id="4215350869199060536">উপস, নামে অবৈধ চিহ্ন রয়েছে!</translation>
 <translation id="4215898373199266584">চুপ! ছদ্মবেশী মোড (<ph name="INCOGNITO_MODE_SHORTCUT" />) পরের বার কাজে লাগতে পারে৷</translation>
@@ -3298,7 +3296,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="577322787686508614">"<ph name="DEVICE_NAME" />" এ পড়ার ক্রিয়াকলাপ অনুমোদিত নয়।</translation>
 <translation id="5774295353725270860">ফাইল অ্যাপ্লিকেশন খুলুন</translation>
 <translation id="5774515636230743468">সুস্পষ্ট:</translation>
-<translation id="5776006986202016118">এই সাইটটি এর সাথে সংযোগ করতে চায়:</translation>
 <translation id="577624874850706961">কুকিজ অনুসন্ধান করুন</translation>
 <translation id="5778550464785688721">MIDI ডিভাইসসমূহ পূর্ণ নিয়ন্ত্রণ</translation>
 <translation id="5780066559993805332">(সেরা)</translation>
@@ -4189,7 +4186,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7175353351958621980">এখান থেকে লোড হয়েছে:</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
 <translation id="7180865173735832675">কাস্টমাইজ করুন</translation>
-<translation id="7184428045150946911">বড় ট্যাবলেটে স্বতঃলুকানোর সরঞ্জাম দণ্ডটি অক্ষম করুন</translation>
 <translation id="7185690883425432021">ট্র্যাবস্ট্রিপ যখন স্ট্যাক করা মোডে থাকে তখন নিষ্ক্রিয় ট্যাবগুলির বন্ধ বোতামগুলি গোপন করে।</translation>
 <translation id="7186088072322679094">সরঞ্জাম দণ্ডের মধ্যে রাখুন</translation>
 <translation id="719009910964971313">মার্কিন যুক্তরাষ্ট্র প্রোগ্রামার ডিভোরাক কীবোর্ড</translation>

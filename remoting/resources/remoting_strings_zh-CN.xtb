@@ -165,7 +165,7 @@
 <translation id="4918086044614829423">接受</translation>
 <translation id="492843737083352574">我的键盘或鼠标无法正常使用。</translation>
 <translation id="4973800994433240357">下载 Chrome 远程访问主机安装程序，即表示您同意遵守 Google <ph name="LINK_BEGIN" />服务条款<ph name="LINK_END" />。</translation>
-<translation id="4985296110227979402">您需要先设置计算机，以便进行远程访问</translation>
+<translation id="4985296110227979402">您需要先设置计算机，然后才能进行远程访问</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />（离线）</translation>
 <translation id="5070121137485264635">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>
 <translation id="5156271271724754543">请在两个框中输入相同的 PIN。</translation>

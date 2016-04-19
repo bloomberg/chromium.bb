@@ -662,7 +662,6 @@
 <translation id="1962233722219655970">Trang này sử dụng ứng dụng Native Client không hoạt động trên máy tính của bạn.</translation>
 <translation id="1965328510789761112">Bộ nhớ riêng</translation>
 <translation id="1965624977906726414">Không có đặc quyền.</translation>
-<translation id="1968720524450620475">Bật biểu tượng tác vụ cho Thông báo trên web.</translation>
 <translation id="1970746430676306437">Xem thông t&amp;in trang</translation>
 <translation id="197288927597451399">Giữ</translation>
 <translation id="1973491249112991739">Không thể tải xuống <ph name="PLUGIN_NAME" />.</translation>
@@ -1425,7 +1424,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="302014277942214887">Nhập id ứng dụng hoặc URL cửa hàng trực tuyến.</translation>
 <translation id="3020616530769498629">Bật tính năng tải lại không xác thực khi kéo để làm mới</translation>
 <translation id="3020990233660977256">Số Sê-ri: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Khi được bật, thanh công cụ sẽ không bao giờ bị ẩn do thao tác cuộn trên thiết bị có chiều cao màn hình tối thiểu &gt;= 800. Thanh công cụ sẽ vẫn bị ẩn nếu nội dung trang ở chế độ toàn màn hình.</translation>
 <translation id="3021678814754966447">&amp;Xem Nguồn Khung</translation>
 <translation id="3024374909719388945">Sử dụng đồng hồ 24 giờ</translation>
 <translation id="3025022340603654002">Đưa ra đề xuất tự động điền bằng cú nhấp chuột đầu tiên trên phần tử biểu mẫu.</translation>
@@ -1496,7 +1494,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="3117812041123364382">Bật/tắt bàn phím ảo nổi.</translation>
 <translation id="3118319026408854581">Trợ giúp <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Mã hóa không đầy đủ đối với một tác vụ cụ thể trên: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="3121260210578524273">Bật các biểu tượng trong nút tác vụ cho Thông báo trên web.</translation>
 <translation id="3121793941267913344">Đặt lại thiết bị <ph name="IDS_SHORT_PRODUCT_NAME" /> này</translation>
 <translation id="3122162841865761901">Thử nghiệm trong Công cụ dành cho nhà phát triển</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2278,13 +2275,14 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="421017592316736757">Bạn phải trực tuyến để truy cập tệp này.</translation>
 <translation id="421182450098841253">&amp;Hiển thị thanh dấu trang</translation>
 <translation id="4212108296677106246">Ban có muốn tin tưởng "<ph name="CERTIFICATE_NAME" />" là Tổ chức phát hành chứng chỉ không?</translation>
+<translation id="42126664696688958">Xuất</translation>
 <translation id="42137655013211669">Máy chủ cấm truy cập vào tài nguyên này.</translation>
 <translation id="4215350869199060536">Rất tiếc, ký tự không hợp lệ trong tên!</translation>
 <translation id="4215898373199266584">Lưu ý! Chế độ ẩn danh (<ph name="INCOGNITO_MODE_SHORTCUT" />) có thể hữu ích vào lần sau.</translation>
 <translation id="4218259925454408822">Đăng nhập tài khoản khác</translation>
 <translation id="4219614746733932747">Nếu được bật, Blink sẽ sử dụng cơ chế thu phóng để mở rộng nội dung cho yếu tố phạm vi thiết bị.</translation>
 <translation id="4220865787605972627">Cho phép hiệu chỉnh màu của màn hình nếu màn hình hỗ trợ tính năng này.</translation>
-<translation id="4232692576734035989">Chế độ thực hiện mang tính thử nghiệm cao trong đó iframe giữa các trang web được lưu giữ trong quá trình riêng biệt từ tài liệu quan trọng nhất. Ở chế độ này, iframe từ các trang web bên thứ ba khác sẽ được cho phép chia sẻ quá trình.</translation>
+<translation id="4232692576734035989">Chế độ thực hiện mang tính thử nghiệm cao trong đó iframe giữa các trang web được lưu giữ trong quá trình riêng biệt từ tài liệu trên cùng. Ở chế độ này, iframe từ các trang web bên thứ ba khác sẽ được cho phép chia sẻ quá trình.</translation>
 <translation id="4235200303672858594">Toàn màn hình</translation>
 <translation id="4235813040357936597">Thêm tài khoản cho <ph name="PROFILE_NAME" /></translation>
 <translation id="4240069395079660403">Không thể hiển thị <ph name="PRODUCT_NAME" /> bằng ngôn ngữ này</translation>
@@ -3310,7 +3308,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="577322787686508614">Tác vụ đọc không được phép trên: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Mở ứng dụng tệp</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5776006986202016118">Trang web này muốn kết nối với:</translation>
 <translation id="577624874850706961">Tìm kiếm cookie</translation>
 <translation id="5778550464785688721">Điều khiển toàn bộ thiết bị MIDI</translation>
 <translation id="5780066559993805332">(Cao nhất)</translation>
@@ -4203,7 +4200,6 @@ Một số tính năng có thể không có sẵn. Hãy kiểm tra xem hồ sơ 
 <translation id="7175353351958621980">Được tải từ:</translation>
 <translation id="7180611975245234373">Làm mới</translation>
 <translation id="7180865173735832675">Tùy chỉnh</translation>
-<translation id="7184428045150946911">Tắt tính năng tự động ẩn thanh công cụ trên máy tính bảng lớn</translation>
 <translation id="7185690883425432021">Ẩn nút đóng của các tab không hoạt động khi thanh tab ở chế độ xếp chồng.</translation>
 <translation id="7186088072322679094">Giữ trong thanh công cụ</translation>
 <translation id="719009910964971313">Bàn phím US Programmer Dvorak</translation>

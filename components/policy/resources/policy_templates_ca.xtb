@@ -82,7 +82,7 @@
 <translation id="1359553908012294236">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_NAME" /> permetrà els inicis de sessió en mode de convidat. Aquests inicis són perfils de <ph name="PRODUCT_NAME" /> on totes les finestres utilitzen el mode d'incògnit.
 
       Si aquesta política s'estableix en "false", <ph name="PRODUCT_NAME" /> no permetrà que s'iniciïn els perfils de convidat.</translation>
-<translation id="1363275621236827384">Activa l'opció d'enviar consultes al servidor de Quirks per als perfils de maquinari</translation>
+<translation id="1363275621236827384">Activa l'opció d'enviar consultes a Quirks Server per als perfils de maquinari</translation>
 <translation id="1397855852561539316">URL de suggeriments del proveïdor de cerca predeterminat</translation>
 <translation id="1398889361882383850">Permet definir si els llocs web poden executar connectors automàticament. Podeu permetre o denegar l'execució automàtica de connectors a tots els llocs web.
 
@@ -1611,11 +1611,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si la política RestoreOnStartup s'estableix per restaurar els URL de les sessions anteriors, aquesta política no es respectarà i les galetes s'emmagatzemaran permanentment per a aquests llocs.</translation>
 <translation id="7207095846245296855">Força l'aplicació de Google SafeSearch</translation>
-<translation id="7213425178181578730">Si aquesta política s'estableix en "false", <ph name="PRODUCT_OS_NAME" /> desactivarà el Bluetooth i l'usuari no el podrà tornar a activar.
-
-      Si aquesta política s'estableix en "true" o es deixa sense establir, l'usuari podrà activar o desactivar el Bluetooth com vulgui.
-
-      Si aquesta política s'estableix, l'usuari no la podrà canviar ni substituir.</translation>
 <translation id="7216442368414164495">Permet que els usuaris activin els informes ampliats de Navegació segura</translation>
 <translation id="7227967227357489766">Defineix la llista d'usuaris que poden iniciar la sessió al dispositiu. El text introduït té el format <ph name="USER_WHITELIST_ENTRY_FORMAT" />, com ara <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Perquè els usuaris arbitraris puguin accedir a un domini, utilitzeu text que tingui el format <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

@@ -18,6 +18,7 @@
 <translation id="1240668123557180468">Descubra páginas da Web enviadas por objetos nas proximidades. O Chrome reúne páginas da Web associadas a objetos ao seu redor, envia-as anonimamente para um serviço do Google para encontrar as mais úteis para você e as exibe.
 
 É necessário que o Bluetooth e o Local estejam ativados para usar a Web física.</translation>
+<translation id="1250508505624960884">Favoritos do Chrome Beta</translation>
 <translation id="1254090737195733114">Importar dados?</translation>
 <translation id="1258753120186372309">Doodle do Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Parar</translation>
@@ -39,9 +40,11 @@
 <translation id="1445680696957526815">Os componentes do Chrome são incompatíveis entre si. O Chrome pode estar fazendo um upgrade. Tente novamente em alguns minutos. Se o problema persistir, tente desinstalar e reinstalar o Chrome.</translation>
 <translation id="1446450296470737166">Permitir controle total de dispositivos MIDI</translation>
 <translation id="145097072038377568">Desativada nas configurações do Android</translation>
+<translation id="147006957810816598">Você não será desconectado da sua Conta do Google.</translation>
 <translation id="1477626028522505441">Falha no download do arquivo <ph name="FILE_NAME" /> devido a problemas de servidor.</translation>
 <translation id="1506061864768559482">Mecanismo de pesquisa</translation>
 <translation id="1513352483775369820">Favoritos e histórico da Web</translation>
+<translation id="1549000191223877751">Mover para outra janela</translation>
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
 <translation id="1557201757634521564">Detectar codificação automaticamente</translation>
 <translation id="1592483623187843893">Favorito salvo off-line</translation>
@@ -69,8 +72,10 @@
 <translation id="194341124344773587">Ative a permissão para o Chrome nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Salvar senhas</translation>
 <translation id="1944384637046898011">Criptografar tudo com senha do Google a partir de <ph name="TIME" /></translation>
+<translation id="1959930595721737608">Permitir o JavaScript no site a seguir.</translation>
 <translation id="1966710179511230534">Atualize seus detalhes de login.</translation>
 <translation id="1974060860693918893">Avançado</translation>
+<translation id="1984321224716884559">Favoritos do Chrome Dev</translation>
 <translation id="1984937141057606926">Permitidos, exceto de terceiros</translation>
 <translation id="1994173015038366702">URL do site</translation>
 <translation id="2001120796168634316">Salvar página vinculada para mais tarde</translation>
@@ -80,6 +85,7 @@
 <translation id="2079545284768500474">Desfazer</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2095887075102408547">Quando este recurso está ativado, o Chrome usa os servidores do Google para compactar as páginas que você visita antes de fazer o download delas. Páginas acessadas usando conexões privadas (HTTPS) ou guias anônimas não são otimizadas ou vistas pelo Google.</translation>
+<translation id="2096396629993765042">Você não será desconectado da sua Conta do Google. É possível que sua Conta do Google tenha outras formas de histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Login automático</translation>
 <translation id="2126426811489709554">Em execução no Chrome</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> fechada</translation>
@@ -188,6 +194,7 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="360480449234699036">Saiba mais sobre tópicos em websites sem sair da página. A opção "Tocar para pesquisar" envia uma palavra e seu respectivo contexto para a Pesquisa Google, que retorna definições, imagens, resultados de pesquisa e outros detalhes.
 
 Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para refinar sua pesquisa, deslize o painel totalmente para cima e toque na caixa de pesquisa.</translation>
+<translation id="3623048332793834136">Favoritos do Chrome Canary</translation>
 <translation id="363596933471559332">Faça login automaticamente nos websites usando as credenciais armazenadas. Se o recurso estiver desativado, será preciso fazer a verificação sempre antes de fazer login em um website.</translation>
 <translation id="3653742808139624888">Para ter seus favoritos em todos os seus dispositivos, faça login no Chrome</translation>
 <translation id="3656115297268584622">Ative o local nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
@@ -255,6 +262,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4645575059429386691">Gerenciado pelos seus pais</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoritos excluídos</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado à sua tela inicial</translation>
+<translation id="4668044310199835006">Favoritos do Work Chrome</translation>
 <translation id="4684427112815847243">Sincronizar tudo</translation>
 <translation id="4686372254213217147">Tamanho original</translation>
 <translation id="4690286298542128877">As guias serão movidas para um alternador de guias dentro do Google Chrome.</translation>
@@ -414,6 +422,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="6464825623202322042">Este dispositivo</translation>
 <translation id="6476911854266661814">“<ph name="VIDEO_TITLE" />” pausado</translation>
 <translation id="6482749332252372425">Falha no download do arquivo <ph name="FILE_NAME" /> devido à falta de espaço de armazenamento.</translation>
+<translation id="6541922744811587456">Favoritos do Chrome</translation>
 <translation id="654446541061731451">Selecione uma guia para transferir</translation>
 <translation id="6550675742724504774">Opções</translation>
 <translation id="656628257199996201">Sempre traduzir <ph name="SOURCE_LANGUAGE" /></translation>
@@ -427,6 +436,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="6656545060687952787">O Chrome precisa de acesso ao local para procurar por dispositivos. <ph name="BEGIN_LINK" />Atualizar permissões<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Usar um serviço de previsão para mostrar consultas relacionadas e sites populares quando você digitar na barra de endereços</translation>
 <translation id="666981079809192359">Aviso de Privacidade do Chrome</translation>
+<translation id="6683720003467092441">Permitir a sincronização em segundo plano no site a seguir.</translation>
 <translation id="6697251040310467641">Página salva off-line</translation>
 <translation id="6698801883190606802">Gerenciar dados sincronizados</translation>
 <translation id="6699351163704950317">Todas as páginas salvas</translation>
@@ -492,6 +502,9 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7475192538862203634">Se estiver vendo isso com frequência, tente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Confirmar exclusão da credencial do dispositivo</translation>
+<translation id="7487352416683556407">Os dados selecionados foram removidos do Chrome e dos seus dispositivos sincronizados.
+
+É possível que sua Conta do Google tenha outras formas de histórico de navegação, como pesquisas e atividades de outros serviços do Google em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizada <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Aguarde...</translation>
 <translation id="7499262814309712782">Conta de sincronização</translation>
@@ -596,6 +609,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8737542153238017984">Página salva não disponível off-line. Armazenamento quase cheio.</translation>
 <translation id="8793430725658173476">Copiar URL</translation>
 <translation id="8798099450830957504">Padrão</translation>
+<translation id="8812942424849541387">Controlar como esse recurso funciona nas <ph name="BEGIN_LINK1" />Configurações<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Favoritos</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> fez o login. Fazer o login com <ph name="ACCOUNT_EMAIL_NEW" /> mescla dados sincronizados, por exemplo, os favoritos, entre as contas. Para manter as informações separadas, limpe os dados de navegação em "<ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />".</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, guia</translation>

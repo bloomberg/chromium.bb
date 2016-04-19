@@ -686,13 +686,13 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Nilai kebijakan harus ditentukan dalam milidetik. Nilai ditetapkan dengan rentang antara 30 detik hingga 24 jam.</translation>
 <translation id="3528000905991875314">Mengaktifkan laman kesalahan alternatif</translation>
-<translation id="3538538104630456270">Setelan yang dikaitkan telah digunakan sebelum autentikasi ulang lihat sandi diperkenalkan. Oleh karena itu, setelan dan kebijakan ini tidak berpengaruh pada perilaku Chrome. Perilaku Chrome saat ini sama dengan jika kebijakan ini disetel untuk menonaktifkan menampilkan sandi dalam teks yang jelas di laman setelan pengelola sandi. Artinya, laman setelan tersebut hanya berisi placeholder, dan Chrome hanya akan menampilkan sandi saat pengguna mengeklik "Tampilkan" (dan autentikasi ulang, jika berlaku). Deskripsi asli kebijakan ini tercantum di bawah.
+<translation id="3538538104630456270">Setelan terkait telah digunakan sebelum proses autentikasi ulang lihat sandi diperkenalkan. Oleh karena itu, setelan dan kebijakan ini tidak berpengaruh pada perilaku Chrome. Perilaku Chrome saat ini sama seperti ketika kebijakan ini disetel untuk berhenti menampilkan teks sandi di laman setelan pengelola sandi. Artinya, laman setelan tersebut hanya berisi placeholder, dan Chrome hanya akan menampilkan sandi saat pengguna mengeklik "Tampilkan" (dan mengautentikasi ulang, jika berlaku). Deskripsi awal untuk kebijakan ini tercantum di bawah.
 
           Mengontrol apakah pengguna dapat menampilkan sandi dalam teks yang jelas di pengelola sandi atau tidak.
 
-          Jika Anda menonaktifkan setelan ini, pengelola sandi tidak mengizinkan penampilan sandi tersimpan dalam teks yang jelas di jendela pengelola sandi.
+          Jika Anda menonaktifkan setelan ini, pengelola sandi tidak mengizinkan sandi untuk ditampilkan dalam teks yang jelas di jendela pengelola sandi.
 
-          Jika Anda mengaktifkan atau tidak menyetel kebijakan ini, pengguna dapat melihat sandinya dalam teks yang jelas di pengelola sandi.</translation>
+          Jika Anda mengaktifkan atau tidak menyetel kebijakan ini, pengguna dapat melihat sandi dalam teks yang jelas di pengelola sandi.</translation>
 <translation id="3547954654003013442">Setelan proxy</translation>
 <translation id="3570008976476035109">Mencekal plugin di situs ini</translation>
 <translation id="3591584750136265240">Mengonfigurasi perilaku autentikasi proses masuk</translation>
@@ -1612,11 +1612,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika kebijakan "RestoreOnStartup" disetel untuk memulihkan URL dari sesi sebelumnya, kebijakan ini akan diabaikan dan cookie akan disimpan secara permanen untuk situs tersebut.</translation>
 <translation id="7207095846245296855">Paksa Google TelusurAman</translation>
-<translation id="7213425178181578730">Jika kebijakan ini disetel ke false, <ph name="PRODUCT_OS_NAME" /> akan menonaktifkan Bluetooth dan pengguna tidak dapat mengaktifkannya kembali.
-
-      Jika kebijakan ini disetel ke true atau tidak disetel, pengguna dapat mengaktifkan atau menonaktifkan Bluetooth sesuai keinginan.
-
-      Jika kebijakan ini disetel, pengguna tidak dapat mengubah atau menggantinya.</translation>
 <translation id="7216442368414164495">Memungkinkan pengguna ikut serta dalam pelaporan yang diperluas Penjelajahan Aman</translation>
 <translation id="7227967227357489766">Menetapkan daftar pengguna yang diizinkan masuk ke perangkat. Entrinya berformat <ph name="USER_WHITELIST_ENTRY_FORMAT" />, misalnya <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Untuk mengizinkan sembarang pengguna di domain, gunakan entri format <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

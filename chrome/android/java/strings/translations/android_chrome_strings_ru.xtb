@@ -18,6 +18,7 @@
 <translation id="1240668123557180468">"Интернет вокруг нас" – это новый способ познавать мир. Chrome находит и анонимно отправляет в сервис Google веб-страницы, связанные с находящимися рядом объектами, а затем предлагает вам самые интересные и полезные ресурсы.
 
 Чтобы использовать эту функцию, необходимо включить Bluetooth и доступ к геоданным.</translation>
+<translation id="1250508505624960884">Закладки Chrome (бета)</translation>
 <translation id="1254090737195733114">Импорт данных</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Остановить</translation>
@@ -39,9 +40,11 @@
 <translation id="1445680696957526815">Компоненты Chrome несовместимы друг с другом. Возможно, выполняется обновление. Повторите попытку через несколько минут. Если проблема не исчезнет, переустановите браузер.</translation>
 <translation id="1446450296470737166">Полный доступ к управлению MIDI-устройствами</translation>
 <translation id="145097072038377568">Отключено в настройках Android</translation>
+<translation id="147006957810816598">Вы останетесь в аккаунте Google.</translation>
 <translation id="1477626028522505441">Не удалось скачать файл <ph name="FILE_NAME" /> из-за неполадок на сервере.</translation>
 <translation id="1506061864768559482">Поисковая система</translation>
 <translation id="1513352483775369820">Закладки и история поиска</translation>
+<translation id="1549000191223877751">Перейти к другому окну</translation>
 <translation id="1553358976309200471">Обновить Chrome</translation>
 <translation id="1557201757634521564">Определять кодировку</translation>
 <translation id="1592483623187843893">Закладка доступна в офлайн-режиме</translation>
@@ -69,8 +72,10 @@
 <translation id="194341124344773587">Разрешение для Chrome можно предоставить в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Сохранение паролей</translation>
 <translation id="1944384637046898011">Зашифровать все с помощью пароля аккаунта Google с <ph name="TIME" /></translation>
+<translation id="1959930595721737608">Разрешить JavaScript на следующих сайтах.</translation>
 <translation id="1966710179511230534">Обновите учетные данные</translation>
 <translation id="1974060860693918893">Дополнительные</translation>
+<translation id="1984321224716884559">Закладки Chrome для разработчиков</translation>
 <translation id="1984937141057606926">Разрешено, кроме сторонних сайтов</translation>
 <translation id="1994173015038366702">Адрес сайта</translation>
 <translation id="2001120796168634316">Сохранить страницу офлайн</translation>
@@ -80,6 +85,7 @@
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" />, всего <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2095887075102408547">Если вы включите эту функцию, серверы Google начнут сжимать данные перед показом веб-страниц в Chrome. Это не касается данных, полученных по протоколу HTTPS и в режиме инкогнито.</translation>
+<translation id="2096396629993765042">Вы не выйдете из аккаунта Google. Остальная история ваших действий в Интернете доступна на странице <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Автоматический вход</translation>
 <translation id="2126426811489709554">Технологии Chrome</translation>
 <translation id="213279576345780926">Вкладка "<ph name="TAB_TITLE" />" закрыта</translation>
@@ -188,6 +194,7 @@
 <translation id="360480449234699036">Ищите картинки, определения и другую информацию, не покидая выбранную страницу. Просто выберите слово, и оно будет отправлено в Google Поиск вместе с контекстом.
 
 Чтобы задать новый поисковый запрос, нажмите на нужное слово и не отпускайте палец. Чтобы уточнить запрос, прокрутите панель вверх и коснитесь поисковой строки.</translation>
+<translation id="3623048332793834136">Закладки Chrome Canary</translation>
 <translation id="363596933471559332">Входить на веб-сайты с помощью сохраненного имени пользователя и пароля. Когда функция отключена, эти данные нужно указывать при каждом входе.</translation>
 <translation id="3653742808139624888">Чтобы получить доступ к закладкам на всех ваших устройствах, войдите в Chrome.</translation>
 <translation id="3656115297268584622">Включите определение местоположения в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
@@ -255,6 +262,7 @@
 <translation id="4645575059429386691">Управляется вашими родителями</translation>
 <translation id="4663756553811254707">Удалено закладок: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Сайт <ph name="NAME" /> добавлен на главный экран</translation>
+<translation id="4668044310199835006">Закладки Work Chrome</translation>
 <translation id="4684427112815847243">Синхронизировать все</translation>
 <translation id="4686372254213217147">Исходный размер</translation>
 <translation id="4690286298542128877">Каждая вкладка будет отображаться внутри Chrome, а не в виде отдельных окон в списке приложений.</translation>
@@ -415,6 +423,7 @@
 <translation id="6464825623202322042">На этом устройстве</translation>
 <translation id="6476911854266661814">Воспроизведение видео "<ph name="VIDEO_TITLE" />" приостановлено</translation>
 <translation id="6482749332252372425">Не удалось скачать файл <ph name="FILE_NAME" />, так как места для хранения данных недостаточно.</translation>
+<translation id="6541922744811587456">Закладки Chrome</translation>
 <translation id="654446541061731451">Выберите вкладку для передачи</translation>
 <translation id="6550675742724504774">Параметры</translation>
 <translation id="656628257199996201">Всегда переводить <ph name="SOURCE_LANGUAGE" /></translation>
@@ -428,6 +437,7 @@
 <translation id="6656545060687952787">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK" />Обновить разрешения<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Показывать подсказки с похожими запросами и часто посещаемыми сайтами по мере ввода в адресную строку</translation>
 <translation id="666981079809192359">Примечание о конфиденциальности Chrome</translation>
+<translation id="6683720003467092441">Разрешить фоновую синхронизацию на следующих сайтах:</translation>
 <translation id="6697251040310467641">Сохранено в офлайн-доступе</translation>
 <translation id="6698801883190606802">Управление синхронизированными данными</translation>
 <translation id="6699351163704950317">Все сохраненные страницы</translation>
@@ -493,6 +503,9 @@
 <translation id="7473891865547856676">Пропустить</translation>
 <translation id="7475192538862203634">Если эта проблема возникает часто, узнайте, <ph name="BEGIN_LINK" />как ее решить<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Подтвердите удаление учетных данных устройства</translation>
+<translation id="7487352416683556407">Выбранные данные удалены из Chrome и с синхронизированных устройств.
+
+Остальная история ваших действий в Интернете может храниться в аккаунте Google, например в виде поисковых запросов и сведений из наших сервисов. Она доступна на странице <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (последнее обновление: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Подождите…</translation>
 <translation id="7499262814309712782">Аккаунт для синхронизации</translation>
@@ -598,6 +611,7 @@
 <translation id="8737542153238017984">Страница недоступна в офлайн-режиме: свободное пространство заканчивается.</translation>
 <translation id="8793430725658173476">Копировать URL</translation>
 <translation id="8798099450830957504">По умолчанию</translation>
+<translation id="8812942424849541387">Изменить эти параметры можно в <ph name="BEGIN_LINK1" />настройках<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="8829678271838353305">Был выполнен вход в аккаунт <ph name="ACCOUNT_EMAIL_LAST" />. Если вы войдете в аккаунт <ph name="ACCOUNT_EMAIL_NEW" />, синхронизируемые данные (например, закладки) будут объединены. Чтобы этого не произошло, <ph name="BEGIN_LINK" />удалите данные о работе в браузере<ph name="END_LINK" />.</translation>
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>

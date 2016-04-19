@@ -661,7 +661,6 @@
 <translation id="1962233722219655970">Šiame puslapyje naudojama programa „Native Client“, kuri neveikia jūsų kompiuteryje.</translation>
 <translation id="1965328510789761112">Privati atmintis</translation>
 <translation id="1965624977906726414">Nėra specialių leidimų.</translation>
-<translation id="1968720524450620475">Įgalinti žiniatinklio pranešimų veiksmų piktogramas.</translation>
 <translation id="1970746430676306437">Rodyti puslapio &amp;informaciją</translation>
 <translation id="197288927597451399">Palikti</translation>
 <translation id="1973491249112991739">Nepavyko atsisiųsti „<ph name="PLUGIN_NAME" />“.</translation>
@@ -1424,7 +1423,6 @@ Nemanau, kad ši svetainė turėtų būti užblokuota!</translation>
 <translation id="302014277942214887">Įveskite programos ID arba žiniatinklio parduotuvės URL.</translation>
 <translation id="3020616530769498629">Įgalinti nepatvirtinantį įkėlimą iš naujo, kai patraukiama norint atnaujinti</translation>
 <translation id="3020990233660977256">Serijos numeris: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Įgalinus šią parinktį įrankių juosta niekada nebus paslėpta slenkant įrenginiuose, kurių ekrano tankis ne mažesnis nei 800 taškų colyje. Ji vis tiek bus paslėpta, jei puslapio turinys bus pateiktas viso ekrano režimu.</translation>
 <translation id="3021678814754966447">&amp;Žiūrėti rėmelio šaltinį</translation>
 <translation id="3024374909719388945">Naudoti 24 val. laikrodį</translation>
 <translation id="3025022340603654002">Automatinio pildymo pasiūlymai bus teikiami pirmą kartą spustelėjus formos elementą pele.</translation>
@@ -1435,13 +1433,13 @@ Nemanau, kad ši svetainė turėtų būti užblokuota!</translation>
 <translation id="302781076327338683">Iš naujo įkelti talpyklos apėjimą</translation>
 <translation id="3030243755303701754">Prižiūrimas naudotojas gali naršyti žiniatinklį su jūsų priežiūra. Jei esate prižiūrimo naudotojo valdytojas „Chrome“, galite:
 
- • leisti arba drausti lankytis tam tikrose svetainėse,
- • peržiūrėti svetaines, kuriose lankėsi prižiūrimas naudotojas,
+ • leisti arba drausti lankytis tam tikrose svetainėse;
+ • peržiūrėti svetaines, kuriose lankėsi prižiūrimas naudotojas;
  • tvarkyti kitus nustatymus.
 
 Sukūrus prižiūrimą naudotoją „Google“ paskyra nesukuriama. Visos prižiūrimo naudotojos žymės, naršymo istorija ir kitos nuostatos nebus perkeltos į kitus įrenginius naudojant „Chrome“ sinchronizavimo funkciją. Sukūrę prižiūrimą naudotoją, galėsite bet kada bet kokiame įrenginyje tvarkyti jo nustatymus apsilankę adresu <ph name="BEGIN_MANAGE_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_MANAGE_LINK" />.
 
-Jei reikia daugiau informacijos, apsilankykite <ph name="BEGIN_LINK" />Pagalbos centre<ph name="END_LINK" />.</translation>
+Jei reikia daugiau informacijos, apsilankykite <ph name="BEGIN_LINK" />pagalbos centre<ph name="END_LINK" />.</translation>
 <translation id="3031417829280473749">Slaptasis agentas</translation>
 <translation id="3031557471081358569">Pasirinkite elementus importuoti:</translation>
 <translation id="3033332627063280038">Įgalinti eksperimentinį talpyklos valdymo: neaktyvios būsenos pakartotinai tvirtinant direktyvos diegimą. Taip leidžiama nurodyti serveriams, kad tam tikrus išteklius galima pakartotinai patvirtinti fone, kad būtų sumažinta delsa.</translation>
@@ -1495,7 +1493,6 @@ Jei reikia daugiau informacijos, apsilankykite <ph name="BEGIN_LINK" />Pagalbos 
 <translation id="3117812041123364382">Įgalinama / išjungiama slankioji virtualioji klaviatūra.</translation>
 <translation id="3118319026408854581">„<ph name="PRODUCT_NAME" />“ pagalba</translation>
 <translation id="3120430004221004537">Nepakankama nurodytos operacijos šifruotė įrenginyje „<ph name="DEVICE_NAME" />“.</translation>
-<translation id="3121260210578524273">Įgalinkite žiniatinklio pranešimų veiksmų mygtukų piktogramas.</translation>
 <translation id="3121793941267913344">Nustatyti iš naujo šį „<ph name="IDS_SHORT_PRODUCT_NAME" />“ įrenginį</translation>
 <translation id="3122162841865761901">Kūrėjo įrankių eksperimentai</translation>
 <translation id="3122464029669770682">Centrinis procesorius</translation>
@@ -2276,6 +2273,7 @@ Norint tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="421017592316736757">Jei norite pasiekti šį failą, turite prisijungti.</translation>
 <translation id="421182450098841253">&amp;Rodyti žymių juostą</translation>
 <translation id="4212108296677106246">Ar norite pasitikėti „<ph name="CERTIFICATE_NAME" />“ kaip sertifikavimo institucija?</translation>
+<translation id="42126664696688958">Eksportuoti</translation>
 <translation id="42137655013211669">Prieigą prie šio ištekliaus uždraudė serveris.</translation>
 <translation id="4215350869199060536">Oi, pavadinime yra netinkamų simbolių.</translation>
 <translation id="4215898373199266584">Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="INCOGNITO_MODE_SHORTCUT" />).</translation>
@@ -3308,7 +3306,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="577322787686508614">Skaitymo operacija neleidžiama įrenginyje „<ph name="DEVICE_NAME" />“.</translation>
 <translation id="5774295353725270860">Atidaryti failų programą</translation>
 <translation id="5774515636230743468">„Manifest“:</translation>
-<translation id="5776006986202016118">Ši svetainė nori prisijungti prie:</translation>
 <translation id="577624874850706961">Ieškoti slapukų</translation>
 <translation id="5778550464785688721">MIDI įrenginių visateisis valdymas</translation>
 <translation id="5780066559993805332">(Geriausia)</translation>
@@ -4203,7 +4200,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Įsitikinkite, kad profilis egzis
 <translation id="7175353351958621980">Įkelta iš:</translation>
 <translation id="7180611975245234373">Atnaujinti</translation>
 <translation id="7180865173735832675">Tinkinti</translation>
-<translation id="7184428045150946911">Išjungti automatinį įrankių juostos slėpimą dideliuose planšetiniuose kompiuteriuose</translation>
 <translation id="7185690883425432021">Slepiami neaktyvių skirtukų uždarymo mygtukai, kai skirtukų juostelėje įjungtas krūvos režimas.</translation>
 <translation id="7186088072322679094">Laikyti įrankių juostoje</translation>
 <translation id="719009910964971313">Programuotojų JAV Dvorako klaviatūra</translation>

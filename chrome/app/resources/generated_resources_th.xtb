@@ -661,7 +661,6 @@
 <translation id="1962233722219655970">หน้าเว็บนี้ใช้แอปพลิเคชัน Native Client ซึ่งไม่สามารถทำงานบนคอมพิวเตอร์ของคุณ</translation>
 <translation id="1965328510789761112">หน่วยความจำส่วนตัว</translation>
 <translation id="1965624977906726414">ไม่มีสิทธิ์พิเศษใดๆ</translation>
-<translation id="1968720524450620475">เปิดใช้ไอคอนการทำงานสำหรับการแจ้งเตือนในเว็บ</translation>
 <translation id="1970746430676306437">ดู&amp;ข้อมูลหน้าเว็บ</translation>
 <translation id="197288927597451399">เก็บไว้</translation>
 <translation id="1973491249112991739">การดาวน์โหลด <ph name="PLUGIN_NAME" /> ล้มเหลว</translation>
@@ -1423,7 +1422,6 @@
 <translation id="302014277942214887">ป้อน ID แอปพลิเคชันหรือ URL เว็บสโตร์</translation>
 <translation id="3020616530769498629">เปิดใช้การโหลดซ้ำแบบไม่ตรวจสอบเมื่อดึงเพื่อรีเฟรช</translation>
 <translation id="3020990233660977256">หมายเลขซีเรียล: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">เมื่อเปิดใช้ ระบบจะไม่ซ่อนแถบเครื่องมือหากเลื่อนบนอุปกรณ์ต่างๆ ที่มีขนาดหน้าจออย่างน้อย dp &gt;= 800 แถบเครื่องมือจะยังคงซ่อนอยู่หากเปิดเนื้อหาในหน้าแบบเต็มหน้าจอ</translation>
 <translation id="3021678814754966447">&amp;ดูแหล่งที่มาของเฟรม</translation>
 <translation id="3024374909719388945">ใช้เวลารูปแบบ 24 ชั่วโมง</translation>
 <translation id="3025022340603654002">สร้างคำแนะนำการป้อนอัตโนมัติในการคลิกเมาส์ครั้งแรกบนองค์ประกอบแบบฟอร์ม</translation>
@@ -1494,7 +1492,6 @@
 <translation id="3117812041123364382">เปิดหรือปิดใช้แป้นพิมพ์เสมือนแบบลอย</translation>
 <translation id="3118319026408854581">ความช่วยเหลือของ <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">การเข้ารหัสสำหรับการดำเนินการที่ระบุไม่เพียงพอใน "<ph name="DEVICE_NAME" />"</translation>
-<translation id="3121260210578524273">เปิดใช้ไอคอนในปุ่มการทำงานสำหรับการแจ้งเตือนในเว็บ</translation>
 <translation id="3121793941267913344">รีเซ็ตอุปกรณ์ <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="3122162841865761901">การทดสอบเครื่องมือสำหรับนักพัฒนาซอฟต์แวร์</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2275,6 +2272,7 @@
 <translation id="421017592316736757">คุณจะต้องออนไลน์เพื่อเข้าถึงไฟล์นี้</translation>
 <translation id="421182450098841253">&amp;แสดงแถบบุ๊กมาร์ก</translation>
 <translation id="4212108296677106246">คุณต้องการให้ความเชื่อถือ "<ph name="CERTIFICATE_NAME" />" ในฐานะผู้ออกใบรับรองหรือไม่</translation>
+<translation id="42126664696688958">ส่งออก</translation>
 <translation id="42137655013211669">เซิร์ฟเวอร์ได้ห้ามการเข้าถึงทรัพยากรนี้</translation>
 <translation id="4215350869199060536">อ๊ะ มีสัญลักษณ์ที่ไม่ถูกต้องในชื่อ!</translation>
 <translation id="4215898373199266584">รู้หรือไม่! โหมดไม่ระบุตัวตน (<ph name="INCOGNITO_MODE_SHORTCUT" />) อาจมีประโยชน์ต่อการใช้งานในครั้งถัดไป</translation>
@@ -3306,7 +3304,6 @@
 <translation id="577322787686508614">ไม่อนุญาตให้อ่านใน "<ph name="DEVICE_NAME" />"</translation>
 <translation id="5774295353725270860">เปิดแอปพลิเคชันไฟล์</translation>
 <translation id="5774515636230743468">จัดการ:</translation>
-<translation id="5776006986202016118">เว็บไซต์นี้ต้องการเชื่อมต่อกับ:</translation>
 <translation id="577624874850706961">ค้นหาคุกกี้</translation>
 <translation id="5778550464785688721">การควบคุมอุปกรณ์ MIDI เต็มรูปแบบ</translation>
 <translation id="5780066559993805332">(ดีที่สุด)</translation>
@@ -4195,7 +4192,6 @@
 <translation id="7175353351958621980">โหลดจาก:</translation>
 <translation id="7180611975245234373">รีเฟรช</translation>
 <translation id="7180865173735832675">กำหนดค่า</translation>
-<translation id="7184428045150946911">ปิดใช้การซ่อนแถบเครื่องมืออัตโนมัติบนแท็บเล็ตขนาดใหญ่</translation>
 <translation id="7185690883425432021">ซ่อนปุ่มปิดของแท็บที่ไม่ได้ใช้งานเมื่อแถบแท็บอยู่ในโหมดเรียงกันเป็นกลุ่ม</translation>
 <translation id="7186088072322679094">เก็บในแถบเครื่องมือ</translation>
 <translation id="719009910964971313">แป้นพิมพ์ดีโวรักโปรแกรมเมอร์สหรัฐอเมริกา</translation>

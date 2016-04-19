@@ -662,7 +662,6 @@ UPOZORNĚNÍ: Když toto pravidlo povolíte, Chrome bude zaznamenávat data o v
 <translation id="1962233722219655970">Tato stránka používá aplikaci nativního klienta, která ve vašem počítači nefunguje.</translation>
 <translation id="1965328510789761112">Privátní paměť</translation>
 <translation id="1965624977906726414">Nemá žádná zvláštní oprávnění.</translation>
-<translation id="1968720524450620475">Povolit ikony akcí pro oznámení Web Notifications</translation>
 <translation id="1970746430676306437">Zobrazit &amp;informace o stránkách</translation>
 <translation id="197288927597451399">Uložit</translation>
 <translation id="1973491249112991739">Stahování pluginu <ph name="PLUGIN_NAME" /> selhalo. </translation>
@@ -1421,7 +1420,6 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="302014277942214887">Zadejte identifikátor aplikace nebo URL internetového obchodu.</translation>
 <translation id="3020616530769498629">Aktivovat opětovné načtení bez ověření při žádostech o obnovení</translation>
 <translation id="3020990233660977256">Sériové číslo: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Pokud je tento příznak zapnut, lišta se na zařízeních s výškou obrazovky minimálně 800 dp při posouvání nikdy neskryje. I nadále se skryje, pokud se obsah stránky zobrazí na celou obrazovku.</translation>
 <translation id="3021678814754966447">Zobrazit zdrojo&amp;vý kód rámce</translation>
 <translation id="3024374909719388945">Použít hodiny s formátem 24 h</translation>
 <translation id="3025022340603654002">Provádět návrhy automatického vyplnění při prvním kliknutí na prvek formuláře.</translation>
@@ -1492,7 +1490,6 @@ Další informace naleznete v <ph name="BEGIN_LINK" />centru nápovědy<ph name
 <translation id="3117812041123364382">Umožňuje aktivovat či zakázat plovoucí virtuální klávesnici.</translation>
 <translation id="3118319026408854581">Nápověda aplikace <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Šifrování je pro danou operaci na zařízení <ph name="DEVICE_NAME" /> nedostatečné.</translation>
-<translation id="3121260210578524273">Povolit ikony v tlačítkách akcí oznámení Web Notifications.</translation>
 <translation id="3121793941267913344">Resetování tohoto zařízení <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="3122162841865761901">Experimenty v Nástrojích pro vývojáře</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2270,6 +2267,7 @@ Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
 <translation id="421017592316736757">Pro přístup k souboru musíte být online.</translation>
 <translation id="421182450098841253">&amp;Zobrazit lištu záložek</translation>
 <translation id="4212108296677106246">Chcete certifikátu <ph name="CERTIFICATE_NAME" /> důvěřovat jako certifikační autoritě?</translation>
+<translation id="42126664696688958">Exportovat</translation>
 <translation id="42137655013211669">Server zakázal přístup k tomuto zdroji.</translation>
 <translation id="4215350869199060536">Jejda, název obsahuje zakázané znaky!</translation>
 <translation id="4215898373199266584">Psst! Příště by se vám mohl hodit anonymní režim (<ph name="INCOGNITO_MODE_SHORTCUT" />).</translation>
@@ -3298,7 +3296,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="577322787686508614">Operace čtení v zařízení <ph name="DEVICE_NAME" /> není povolena.</translation>
 <translation id="5774295353725270860">Otevřít aplikaci Soubory</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5776006986202016118">Web žádá o následující připojení:</translation>
 <translation id="577624874850706961">Prohledávat cookie</translation>
 <translation id="5778550464785688721">Úplná kontrola zařízení MIDI</translation>
 <translation id="5780066559993805332">(Nejlepší)</translation>
@@ -4191,7 +4188,6 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="7175353351958621980">Načteno z:</translation>
 <translation id="7180611975245234373">Obnovit</translation>
 <translation id="7180865173735832675">Personalizovat</translation>
-<translation id="7184428045150946911">Vypnout automatické skrývání lišty na velkých tabletech</translation>
 <translation id="7185690883425432021">Skryje tlačítka k zavření neaktivních karet, když je lišta karet v režimu shromáždění nad sebou.</translation>
 <translation id="7186088072322679094">Ponechat na liště</translation>
 <translation id="719009910964971313">Americká programátorská klávesnice Dvorak</translation>

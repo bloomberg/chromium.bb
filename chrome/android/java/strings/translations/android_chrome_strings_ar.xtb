@@ -18,6 +18,7 @@
 <translation id="1240668123557180468">‏تعرَّف على صفحات الويب التي أرسلتها الأجهزة المجاورة. يُجمِّع Chrome صفحات الويب المرتبطة بالأجهزة حولك ويُرسلها دون الكشف عن هويتها إلى خدمة Google لمعرفة أكثرها نفعًا لك ثم يعرضها.
 
 يتعين عليك تشغيل خدمتى البلوتوث والموقع لاستخدام الشبكة المادية.</translation>
+<translation id="1250508505624960884">‏الإشارات المرجعية للإصدار التجريبي من متصفح Chrome</translation>
 <translation id="1254090737195733114">هل تريد استيراد البيانات؟</translation>
 <translation id="1258753120186372309">‏رسم الشعار المبتكر من Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">إيقاف</translation>
@@ -39,9 +40,11 @@
 <translation id="1445680696957526815">‏مكونات Chrome غير متوافقة مع بعضها البعض. قد تتم ترقية Chrome؛ لذا يُرجى إعادة المحاولة بعد دقائق قليلة. وإذا استمرت المشكلة، فحاول إلغاء تثبيت Chrome وإعادة تثبيته.</translation>
 <translation id="1446450296470737166">‏السماح بالتحكم الكامل لأجهزة MIDI</translation>
 <translation id="145097072038377568">‏تم إيقافه في إعدادات Android.</translation>
+<translation id="147006957810816598">‏لن يتم تسجيل خروجك من حسابك في Google.</translation>
 <translation id="1477626028522505441">أخفق تنزيل الملف <ph name="FILE_NAME" /> بسبب مشكلات بالخادم.</translation>
 <translation id="1506061864768559482">محرك البحث</translation>
 <translation id="1513352483775369820">الإشارات المرجعية وسجل بحث الويب</translation>
+<translation id="1549000191223877751">الانتقال إلى نافذة أخرى</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
 <translation id="1557201757634521564">الاكتشاف التلقائي للتشفير</translation>
 <translation id="1592483623187843893">حُفظَت الإشارة المرجعية بلا اتصال</translation>
@@ -69,8 +72,10 @@
 <translation id="194341124344773587">‏تشغيل الإذن لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">حفظ كلمات المرور</translation>
 <translation id="1944384637046898011">‏ترميز الكل باستخدام كلمة مرور Google بدءًا من <ph name="TIME" /></translation>
+<translation id="1959930595721737608">السماح بتشغيل جافا سكريبت في الموقع التالي.</translation>
 <translation id="1966710179511230534">الرجاء تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
+<translation id="1984321224716884559">‏الإشارات المرجعية لإصدار مطوّري البرامج من Chrome</translation>
 <translation id="1984937141057606926">مسموح باستثناء الجهات الخارجية</translation>
 <translation id="1994173015038366702">‏عنوان URL للموقع</translation>
 <translation id="2001120796168634316">حفظ الصفحة المرتبطة لوقت لاحق</translation>
@@ -80,6 +85,7 @@
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="2082238445998314030">النتيجة <ph name="RESULT_NUMBER" /> من <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2095887075102408547">‏عند تشغيل هذه الميزة، سيستخدم Chrome خوادم Google لضغط الصفحات التي تزورها قبل تنزيلها. ولن يتم تحسين الصفحات التي يتم الوصول إليها باستخدام الاتصالات الخاصة (HTTPS) أو من خلال علامات تبويب التصفح المتخفي أو لن يكتشفها متصفح Google.</translation>
+<translation id="2096396629993765042">‏لن يتم تسجيل خروجك من حسابك في Google. قد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">تسجيل الدخول التلقائي</translation>
 <translation id="2126426811489709554">‏يدعمها Chrome</translation>
 <translation id="213279576345780926">تم إغلاق <ph name="TAB_TITLE" /></translation>
@@ -186,6 +192,7 @@
 <translation id="360480449234699036">‏اعرف موضوعات معنية بمواقع الويب بدون مغادرة الصفحة. تُرسل ميزة "المس للبحث" الكلمة والسياق المحيط بها إلى بحث Google، والتعريفات العائدة، والصور، ونتائج البحث، وتفاصيل أخرى.
 
 لضبط عبارة البحث، اضغط مع الاستمرار للتحديد. لتحسين البحث، مرّر اللوحة للأعلى والمس مربع البحث.</translation>
+<translation id="3623048332793834136">‏الإشارات المرجعية لمتصفح Chrome Canary</translation>
 <translation id="363596933471559332">يمكن تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدم الاعتمادات المخزّنة. وعندما تكون الميزة معطّلة، فسيُطلب منك التحقق كل مرة قبل تسجيل الدخول إلى مواقع الويب.</translation>
 <translation id="3653742808139624888">‏للحصول على الإشارات المرجعية على جميع أجهزتك، سجِّل الدخول إلى Chrome</translation>
 <translation id="3656115297268584622">‏تشغيل الموقع في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
@@ -254,6 +261,7 @@
 <translation id="4645575059429386691">يديره والداك</translation>
 <translation id="4663756553811254707">تم حذف <ph name="NUMBER_OF_BOOKMARKS" /> من الإشارات المرجعية</translation>
 <translation id="4665282149850138822">تمت إضافة <ph name="NAME" /> إلى صفحتك الرئيسية</translation>
+<translation id="4668044310199835006">‏الإشارات المرجعية لمتصفح Work Chrome</translation>
 <translation id="4684427112815847243">مزامنة كل شيء</translation>
 <translation id="4686372254213217147">الحجم الأصلي</translation>
 <translation id="4690286298542128877">‏سيتم نقل علامات التبويب إلى مبدّل علامات التبويب في Chrome.</translation>
@@ -414,6 +422,7 @@
 <translation id="6464825623202322042">هذا الجهاز</translation>
 <translation id="6476911854266661814">تم إيقاف "<ph name="VIDEO_TITLE" />" مؤقتًا</translation>
 <translation id="6482749332252372425">أخفق تنزيل الملف <ph name="FILE_NAME" /> لعدم توفر مساحة لتخزين.</translation>
+<translation id="6541922744811587456">‏الإشارات المرجعية لمتصفح Chrome</translation>
 <translation id="654446541061731451">حدد علامة تبويب لإرسالها باستخدام الشعاع</translation>
 <translation id="6550675742724504774">خيارات</translation>
 <translation id="656628257199996201">ترجمة <ph name="SOURCE_LANGUAGE" /> دائمًا</translation>
@@ -427,6 +436,7 @@
 <translation id="6656545060687952787">‏يحتاج Chrome للوصول إلى المواقع للبحث عن الأجهزة. <ph name="BEGIN_LINK" />تحديث الأذونات<ph name="END_LINK" />.</translation>
 <translation id="666268767214822976">يمكنك استخدام خدمة التوقعات لعرض طلبات البحث ذات الصلة ومواقع الويب الشائعة أثناء الكتابة في شريط العناوين</translation>
 <translation id="666981079809192359">‏إشعار خصوصية Chrome</translation>
+<translation id="6683720003467092441">السماح بتشغيل "مزامنة الخلفية" في الموقع التالي.</translation>
 <translation id="6697251040310467641">تم حفظ صفحة بلا اتصال</translation>
 <translation id="6698801883190606802">إدارة البيانات المتزامنة</translation>
 <translation id="6699351163704950317">جميع الصفحات التي تم حفظها</translation>
@@ -492,6 +502,9 @@
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="7475192538862203634">إذا تكرر ظهور هذا، فحاول الاستفادة من <ph name="BEGIN_LINK" />الاقتراحات<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">تأكيد حذف بيانات اعتماد الجهاز</translation>
+<translation id="7487352416683556407">‏تمت إزالة البيانات المُحددة من متصفح Chrome والأجهزة التي تمت مزامنتها.
+
+قد يحتوي حسابك في Google على نماذج أخرى من سجل التصفح، مثل عمليات البحث والأنشطة من خدمات Google الأخرى في <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (تم التحديث منذ <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">يُرجى الانتظار...</translation>
 <translation id="7499262814309712782">حساب المزامنة</translation>
@@ -597,6 +610,7 @@
 <translation id="8737542153238017984">الصفحة المحفوظة غير متوفرة في وضع عدم الاتصال. سعة التخزين ممتلئة.</translation>
 <translation id="8793430725658173476">‏نسخ عنوان URL</translation>
 <translation id="8798099450830957504">الافتراضي</translation>
+<translation id="8812942424849541387">التحكم في كيفية عمل هذا في <ph name="BEGIN_LINK1" />الإعدادات<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">إشارات</translation>
 <translation id="8829678271838353305">تم تسجيل دخول <ph name="ACCOUNT_EMAIL_LAST" />. سيدمج تسجيل الدخول باستخدام <ph name="ACCOUNT_EMAIL_NEW" /> البيانات التي تمت مزامنتها، مثل الإشارات المرجعية بين الحسابات. للحفاظ على المعلومات منفصلة، عليك بمحو بيانات التصفح في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="8853345339104747198">علامة التبويب <ph name="TAB_TITLE" /></translation>

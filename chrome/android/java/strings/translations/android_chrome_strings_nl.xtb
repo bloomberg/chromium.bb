@@ -425,7 +425,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6612856669344839356">Bladwijzer opslaan</translation>
 <translation id="6627583120233659107">Map bewerken</translation>
 <translation id="6647073004883890710">Wil je dat <ph name="PASSWORD_MANAGER_BRAND" /> het wachtwoord voor <ph name="USERNAME" /> updatet voor deze site?</translation>
-<translation id="6656545060687952787">Chrome heeft locatietoegang nodig om naar apparaten te scannen. <ph name="BEGIN_LINK" />Rechten updaten<ph name="END_LINK" /></translation>
+<translation id="6656545060687952787">Chrome heeft locatietoegang nodig om naar apparaten te zoeken. <ph name="BEGIN_LINK" />Rechten updaten<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Een voorspellingsservice gebruiken om gerelateerde zoekopdrachten en populaire websites te tonen terwijl je in de adresbalk typt</translation>
 <translation id="666981079809192359">Privacybeleid van Chrome</translation>
 <translation id="6697251040310467641">Pagina offline opgeslagen</translation>
@@ -544,7 +544,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="8073388330009372546">Openen op nieuw tabblad</translation>
 <translation id="8076014560081431679">Opgeslagen site-instellingen worden niet verwijderd en kunnen je browsegedrag weerspiegelen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Deze content is afkomstig van <ph name="DOMAIN_NAME" />, geleverd door Google.</translation>
-<translation id="8098570222830891427">Apparaten bij je in de buurt verzenden webpagina's via Bluetooth. Chrome scant op pagina's en geeft ze weer wanneer je je apparaat activeert uit de slaapstand. Deze pagina's worden verwerkt door een Google-servcice om de kwaliteit van paginaresultaten te verbeteren.
+<translation id="8098570222830891427">Apparaten bij je in de buurt verzenden webpagina's via Bluetooth. Chrome zoekt naar pagina's en geeft ze weer wanneer je je apparaat activeert uit de slaapstand. Deze pagina's worden verwerkt door een Google-servcice om de kwaliteit van paginaresultaten te verbeteren.
 
 Je kunt het Fysieke web beheren via de instellingen van Chrome.</translation>
 <translation id="8106211421800660735">Creditcardnummer</translation>

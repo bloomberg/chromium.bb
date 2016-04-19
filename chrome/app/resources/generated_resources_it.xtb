@@ -661,7 +661,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1962233722219655970">Questa pagina utilizza un'app Native Client che non funziona sul tuo computer.</translation>
 <translation id="1965328510789761112">Memoria privata</translation>
 <translation id="1965624977906726414">Non ha autorizzazioni speciali.</translation>
-<translation id="1968720524450620475">Abilita icone di azione per le notifiche web.</translation>
 <translation id="1970746430676306437">Visualizza &amp;informazioni pagina</translation>
 <translation id="197288927597451399">Conserva</translation>
 <translation id="1973491249112991739">Download di <ph name="PLUGIN_NAME" /> non riuscito.</translation>
@@ -1421,7 +1420,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="302014277942214887">Inserisci l'ID dell'applicazione o l'URL del webstore.</translation>
 <translation id="3020616530769498629">Attiva il ricaricamento senza convalida al pull-to-refresh</translation>
 <translation id="3020990233660977256">Numero di serie: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Quando l'opzione è attiva, la barra degli strumenti non viene mai nascosta quando viene eseguito lo scorrimento su dispositivi con schermo di dimensioni minime pari a dp &gt;= 800. La barra continuerà a essere nascosta se i contenuti della pagina vengono mostrati a schermo intero.</translation>
 <translation id="3021678814754966447">&amp;Visualizza sorgente frame</translation>
 <translation id="3024374909719388945">Usa orologio 24 ore</translation>
 <translation id="3025022340603654002">Consente di visualizzare suggerimenti di Compilazione automatica al clic iniziale del mouse su un elemento del modulo.</translation>
@@ -1492,7 +1490,6 @@ Per ulteriori informazioni, visita il nostro <ph name="BEGIN_LINK" />Centro assi
 <translation id="3117812041123364382">Attiva/Disattiva la tastiera virtuale mobile.</translation>
 <translation id="3118319026408854581">Guida di <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Crittografia insufficiente per un'operazione specifica su: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="3121260210578524273">Abilita icone nei pulsanti di azione per le notifiche web.</translation>
 <translation id="3121793941267913344">Ripristina questo dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="3122162841865761901">Esperimenti Strumenti per sviluppatori</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2272,6 +2269,7 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="421017592316736757">Per poter accedere a questo file devi essere online.</translation>
 <translation id="421182450098841253">&amp;Mostra barra dei Preferiti</translation>
 <translation id="4212108296677106246">Considerare attendibile "<ph name="CERTIFICATE_NAME" />" come autorità di certificazione?</translation>
+<translation id="42126664696688958">Esporta</translation>
 <translation id="42137655013211669">L'accesso a questa risorsa è vietato dal server.</translation>
 <translation id="4215350869199060536">Spiacenti, simboli non validi nel nome.</translation>
 <translation id="4215898373199266584">Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in incognito (<ph name="INCOGNITO_MODE_SHORTCUT" />).</translation>
@@ -3301,7 +3299,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="577322787686508614">Lettura non consentita su: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Apri l'applicazione File</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5776006986202016118">Questo sito vuole collegarsi a:</translation>
 <translation id="577624874850706961">Cerca cookie</translation>
 <translation id="5778550464785688721">Controllo completo di dispositivi MIDI</translation>
 <translation id="5780066559993805332">(Migliore)</translation>
@@ -4191,7 +4188,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="7175353351958621980">Caricamento da:</translation>
 <translation id="7180611975245234373">Aggiorna</translation>
 <translation id="7180865173735832675">Personalizza</translation>
-<translation id="7184428045150946911">Disattiva la visualizzazione automatica della barra degli strumenti su tablet di grandi dimensioni</translation>
 <translation id="7185690883425432021">Consente di nascondere i pulsanti di chiusura delle schede non attive quando la tabstrip è in modalità sovrapposta.</translation>
 <translation id="7186088072322679094">Mantieni in barra degli strumenti</translation>
 <translation id="719009910964971313">Tastiera US Programmer Dvorak</translation>

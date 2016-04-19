@@ -161,6 +161,18 @@
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
 <translation id="1583248206450240930">Use <ph name="PRODUCT_FRAME_NAME" /> by default</translation>
 <translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
+<translation id="1613574633990410986">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and ARC-apps and prevents users from changing proxy settings.
+
+      If you choose to never use a proxy server and always connect directly, all other options are ignored.
+
+      If you choose to auto detect the proxy server, all other options are ignored.
+
+      For detailed examples, visit:
+      <ph name="PROXY_HELP_URL" />
+
+      If you enable this setting, <ph name="PRODUCT_NAME" /> and ARC-apps ignore all proxy-related options specified from the command line.
+
+      Leaving these policies not set will allow the users to choose the proxy settings on their own.</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
 <translation id="1617384279878333801">Enable add person in profile manager</translation>
 <translation id="1655229863189977773">Set disk cache size in bytes</translation>
@@ -234,6 +246,15 @@
       If you disable this setting, whenever the user performs an action which would provoke a file selection dialogue (like importing bookmarks, uploading files, saving links, etc.) a message is displayed instead and the user is assumed to have clicked Cancel on the file selection dialogue.
 
       If this setting is not set, users can open file selection dialogues as normal.</translation>
+<translation id="1879485426724769439">Specifies the timezone to be used for the device. Users can override the specified timezone for the current session. However, on logout it is set back to the specified timezone. If an invalid value is provided, the policy is still activated using "GMT" instead. If an empty string is provided, the policy is ignored.
+
+      If this policy is not used, the currently active timezone will remain in use however users can change the timezone and the change is persistent. Thus a change by one user affects the login-screen and all other users.
+
+      New devices start out with the timezone set to "US/Pacific".
+
+      The format of the value follows the names of timezones in the "IANA Time Zone Database" (see "https://en.wikipedia.org/wiki/Tz_database"). In particular, most timezones can be referred to by "continent/large_city" or "ocean/large_city".
+
+      Setting this policy completely disables automatic timezone resolve by device location. It also overrides SystemTimezoneAutomaticDetection policy.</translation>
 <translation id="1897365952389968758">Allow all sites to run JavaScript (recommended)</translation>
 <translation id="193259052151668190">Whitelist of USB detachable devices</translation>
 <translation id="1933378685401357864">Wallpaper image</translation>
@@ -640,6 +661,24 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3072847235228302527">Set the Terms of Service for a device-local account</translation>
 <translation id="3096595567015595053">List of enabled plug-ins</translation>
 <translation id="3101501961102569744">Choose how to specify proxy server settings</translation>
+<translation id="3125884964575432854">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and ARC-apps and prevents users from changing proxy settings.
+
+          If you choose to never use a proxy server and always connect directly, all other options are ignored.
+
+          If you choose to use system proxy settings, all other options are ignored.
+
+          If you choose to auto detect the proxy server, all other options are ignored.
+
+          If you choose fixed server proxy mode, you can specify further options in 'Address or URL of proxy server' and 'Comma-separated list of proxy bypass rules'. ARC-apps will only use the HTTP proxy server with the highest priority.
+
+          If you choose to use a .pac proxy script, you must specify the URL to the script in 'URL to a proxy .pac file'.
+
+          For detailed examples, visit:
+          <ph name="PROXY_HELP_URL" />
+
+          If you enable this setting, <ph name="PRODUCT_NAME" /> and ARC-apps ignore all proxy-related options specified from the command line.
+
+          Leaving this policy not set will allow the users to choose the proxy settings on their own.</translation>
 <translation id="3153348162326497318">Allows you to specify which extensions the users CANNOT install. Extensions already installed will be removed if blacklisted.
 
           A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
@@ -716,6 +755,20 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set or the user's personal configuration otherwise.</translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
+<translation id="3398137877608138703">Allow or deny video capture.
+
+      If enabled or not configured (default), the user will be prompted for
+      video capture access except for URLs configured in the
+      VideoCaptureAllowedUrls list which will be granted access without prompting.
+      ARC-apps will be able to access the camera if they have been given
+      permission.
+
+      When this policy is disabled, the user will never be prompted and video
+      capture only be available to URLs configured in VideoCaptureAllowedUrls.
+      ARC-apps will not be able to access the camera.
+
+      Outside of ARC-apps, this policy affects all types of video inputs and
+      not only the built-in camera.</translation>
 <translation id="3417418267404583991">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will enable guest logins. Guest logins are anonymous user sessions and do not require a password.
 
       If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will not allow guest sessions to be started.</translation>
@@ -733,6 +786,8 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3478024346823118645">Wipe user data on sign-out</translation>
 <translation id="348495353354674884">Enable virtual keyboard</translation>
 <translation id="3496296378755072552">Password manager</translation>
+<translation id="349667858031092827">Never auto-detect timezone.</translation>
+<translation id="350443680860256679">Configure ARC</translation>
 <translation id="3504791027627803580">Specifies the URL of the search engine used to provide image search. Search requests will be sent using the GET method. If the DefaultSearchProviderImageURLPostParams policy is set then image search requests will use the POST method instead.
 
           This policy is optional. If not set, no image search will be used.
@@ -883,6 +938,22 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this policy is set to 'Keep cookies for the duration of the session' then cookies will be cleared when the session closes. Note that if <ph name="PRODUCT_NAME" /> is running in 'background mode', the session may not close when the last window is closed. Please see the 'BackgroundModeEnabled' policy for more information about configuring this behaviour.
 
           If this policy is left not set, 'AllowCookies' will be used and the user will be able to change it.</translation>
+<translation id="4098957623809244159">This policy is deprecated, use ProxyMode instead.
+
+          Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and ARC-apps and prevents users from changing proxy settings.
+
+          If you choose to never use a proxy server and always connect directly, all other options are ignored.
+
+          If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
+
+          If you choose manual proxy settings, you can specify further options in 'Address or URL of proxy server', 'URL to a proxy .pac file' and 'Comma-separated list of proxy bypass rules'.
+
+          For detailed examples, visit:
+          <ph name="PROXY_HELP_URL" />
+
+          If you enable this setting, <ph name="PRODUCT_NAME" /> ignores all proxy-related options specified from the command line.
+
+          Leaving this policy not set will allow the users to choose the proxy settings on their own.</translation>
 <translation id="4103289232974211388">Redirect to SAML IdP after user confirmation</translation>
 <translation id="410478022164847452">Specifies the length of time without user input after which the idle action is taken when running on AC power.
 
@@ -1368,6 +1439,14 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5893553533827140852">If this setting is enabled, then gnubby authentication requests will be proxied across a remote host connection.
 
           If this setting is disabled or not configured, gnubby authentication requests will not be proxied.</translation>
+<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> and ARC-apps will bypass any proxy for the list of hosts given here.
+
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+
+          You should leave this policy not set if you have selected any other mode for setting proxy policies.
+
+          For more detailed examples, visit:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Allow autoupdate downloads via HTTP</translation>
 <translation id="5921888683953999946">Set the default state of the large cursor accessibility feature on the login screen.
 
@@ -1513,6 +1592,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="637934607141010488">Report list of device users that have recently logged in.
 
       If the policy is set to false, the users will not be reported.</translation>
+<translation id="639009029157091157">Let users decide.</translation>
 <translation id="6392973646875039351">Enables <ph name="PRODUCT_NAME" />'s Auto-fill feature and allows users to auto-complete web forms using previously stored information such as address or credit card information.
 
       If you disable this setting, Auto-fill will be inaccessible to users.
@@ -1778,11 +1858,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If the "RestoreOnStartup" policy is set to restore URLs from previous sessions this policy will not be respected and cookies will be stored permanently for those sites.</translation>
 <translation id="7207095846245296855">Force Google SafeSearch</translation>
-<translation id="7213425178181578730">If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will disable Bluetooth and the user cannot enable it back.
-
-      If this policy is set to true or left unset, the user will be able to enable or disable Bluetooth as he wishes.
-
-      If this policy is set, the user cannot change or override it.</translation>
 <translation id="7216442368414164495">Allow users to opt in to Safe Browsing extended reporting</translation>
 <translation id="7227967227357489766">Defines the list of users that are allowed to login to the device. Entries are of the form <ph name="USER_WHITELIST_ENTRY_FORMAT" />, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. To allow arbitrary users on a domain, use entries of the form <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
@@ -1897,6 +1972,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this setting is disabled or not set, <ph name="PRODUCT_NAME" /> uses either the user-specified preferred locale (if configured), the system locale or the default locale 'en-US'.</translation>
 <translation id="7651739109954974365">Determines whether data roaming should be enabled for the device. If set to true, data roaming is allowed. If left unconfigured or set to false, data roaming will be unavailable.</translation>
+<translation id="7667184304362487902">Configures the proxy settings for <ph name="PRODUCT_NAME" /> and ARC-apps.
+
+      This policy isn't ready for usage yet, please don't use it.</translation>
 <translation id="76810863974142048">URL where remote access clients should obtain their authentication token.
 
           If this policy is set, the remote access host will require authenticating clients to obtain an authentication token from this URL in order to connect. Must be used in conjunction with RemoteAccessHostTokenValidationUrl.
@@ -1971,6 +2049,19 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7848840259379156480">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME" /> is installed.
       The default setting is to allow the host browser do the rendering, but you
       can optionally override this and have <ph name="PRODUCT_FRAME_NAME" /> render HTML pages by default.</translation>
+<translation id="7853178359124471330">When this policy is set, automatic timezone detection flow will be in one of the following ways depending on the value of the setting:
+
+      If set to TimezoneAutomaticDetectionUsersDecide, users would be able to control automatic timezone detection using normal controls in chrome://settings.
+
+      If set to TimezoneAutomaticDetectionDisabled, automatic timezone controls in chrome://settings will be disabled. Automatic timezone detection will be always off.
+
+      If set to TimezoneAutomaticDetectionIPOnly, timezone controls in chrome://settings will be disabled. Automatic timezone detection will be always on. Timezone detection will use IP-only method to resolve location.
+
+      If set to TimezoneAutomaticDetectionSendWiFiAccessPoints, timezone controls in chrome://settings will be disabled. Automatic timezone detection will be always on. The list of visible Wi-Fi access-points will be always sent to Geolocation API server for fine-grained timezone detection.
+
+      If this policy is not set, it will behave as if TimezoneAutomaticDetectionUsersDecide is set.
+
+      If SystemTimezone policy is set, it overrides this policy. In this case automatic timezone detection is completely disabled.</translation>
 <translation id="7882585827992171421">This policy is active in retail mode only.
 
       Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the DeviceAppPack policy.</translation>
@@ -2013,6 +2104,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is not set, the setting will be enabled.</translation>
 <translation id="8073243368829195">Allows Smart Lock to be used</translation>
+<translation id="8074052133552427532">Always use coarse timezone detection.</translation>
 <translation id="8099880303030573137">Idle delay when running on battery power</translation>
 <translation id="8102913158860568230">Default mediastream setting</translation>
 <translation id="8104962233214241919">Automatically select client certificates for these sites</translation>
@@ -2127,6 +2219,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8424255554404582727">Set default display rotation, reapplied on every reboot</translation>
 <translation id="8426231401662877819">Rotate screen clockwise by 90 degrees</translation>
 <translation id="8451988835943702790">Use New Tab Page as homepage</translation>
+<translation id="8458790683633857482">Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.</translation>
 <translation id="8465065632133292531">Parameters for instant URL which uses POST</translation>
 <translation id="847472800012384958">Do not allow any site to show pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2262,9 +2355,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is set to false, neither the user nor any apps or extensions can enter full screen mode.
 
       On all platforms except <ph name="PRODUCT_OS_NAME" />, kiosk mode is unavailable when full screen mode is disabled.</translation>
+<translation id="8795495354632096254">Always send Wi-Fi acess-points to server while resolving timezone.</translation>
 <translation id="8818173863808665831">Report the geographic location of the device.
 
       If the policy is not set or set to false, the location will not be reported.</translation>
+<translation id="8818768076343557335">Predict network actions on any network that is not cellular.
+          (Deprecated in 50, removed in 52. After 52, if value 1 is set, it will be treated as 0 – predict network actions on any network connection.)</translation>
 <translation id="8828766846428537606">Configure the default home page in <ph name="PRODUCT_NAME" /> and prevent users from changing it.
 
       The user's home page settings are only completely locked down, if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.</translation>
@@ -2316,6 +2412,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="9042911395677044526">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Specify whether video activity affects power management</translation>
 <translation id="9088433379343318874">Enable the supervised user content provider</translation>
+<translation id="9088444059179765143">Configure the automatic timezone detection method</translation>
 <translation id="9096086085182305205">Authentication server whitelist</translation>
 <translation id="9098553063150791878">Policies for HTTP authentication</translation>
 <translation id="9104138886225968319">Send monitoring heartbeats to the management server, to allow

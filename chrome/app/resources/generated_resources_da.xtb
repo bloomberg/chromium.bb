@@ -658,7 +658,6 @@
 <translation id="1962233722219655970">Denne side bruger en Native Client-app, der ikke virker på din computer.</translation>
 <translation id="1965328510789761112">Privat hukommelse</translation>
 <translation id="1965624977906726414">Har ingen særlige tilladelser.</translation>
-<translation id="1968720524450620475">Aktivér handlingsikoner for Webunderretninger.</translation>
 <translation id="1970746430676306437">Vis side&amp;information</translation>
 <translation id="197288927597451399">Behold</translation>
 <translation id="1973491249112991739"><ph name="PLUGIN_NAME" /> download mislykkedes.</translation>
@@ -1421,7 +1420,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="302014277942214887">Indtast et applikations-id eller webadressen for webshoppen.</translation>
 <translation id="3020616530769498629">Aktivér genindlæsning uden validering ved Træk for at opdatere</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Når dette er aktiveret, forsvinder værktøjslinjen aldrig, når du ruller på enheder med en skærm med mindst 800 dp. Den skjules dog, hvis sideindholdet vises i fuld skærm.</translation>
 <translation id="3021678814754966447">&amp;Vis rammens kilde</translation>
 <translation id="3024374909719388945">Brug 24-timers ur</translation>
 <translation id="3025022340603654002">Angiv forslag til autofyld ved museklik på et formularelement.</translation>
@@ -1494,7 +1492,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3117812041123364382">Aktivér/deaktiver svævende virtuelt tastatur.</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Hjælp</translation>
 <translation id="3120430004221004537">Utilstrækkelig kryptering til en angivet handling på: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="3121260210578524273">Aktivér ikoner på handlingsknapper for Webunderretninger.</translation>
 <translation id="3121793941267913344">Nulstil denne <ph name="IDS_SHORT_PRODUCT_NAME" />-enhed</translation>
 <translation id="3122162841865761901">Eksperimenter for Udviklerværktøjer</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2275,6 +2272,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="421017592316736757">Du skal være online for at få adgang til denne fil.</translation>
 <translation id="421182450098841253">&amp;Vis bogmærkelinjen</translation>
 <translation id="4212108296677106246">Har du tillid til "<ph name="CERTIFICATE_NAME" />" som certificeringsautoritet?</translation>
+<translation id="42126664696688958">Eksportér</translation>
 <translation id="42137655013211669">Serveren har forbudt dig adgang til denne ressource.</translation>
 <translation id="4215350869199060536">Ups! Navnet indeholder ulovlige tegn.</translation>
 <translation id="4215898373199266584">Psst! Prøv at bruge Inkognitotilstand (<ph name="INCOGNITO_MODE_SHORTCUT" />) næste gang.</translation>
@@ -3305,7 +3303,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="577322787686508614">Læsehandlingen er ikke tilladt på: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Åbn appen Filer</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5776006986202016118">Dette website vil oprette forbindelse til:</translation>
 <translation id="577624874850706961">Søg i cookies</translation>
 <translation id="5778550464785688721">Fuld kontrol over MIDI</translation>
 <translation id="5780066559993805332">(Bedst)</translation>
@@ -4195,7 +4192,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7175353351958621980">Indlæst fra:</translation>
 <translation id="7180611975245234373">Opdater</translation>
 <translation id="7180865173735832675">Tilpas</translation>
-<translation id="7184428045150946911">Deaktiver Skjul værktøjslinjen automatisk på store tablets</translation>
 <translation id="7185690883425432021">Skjuler knapper til lukning af inaktive faner, når fanelinjen er i staktilstand.</translation>
 <translation id="7186088072322679094">Behold på værktøjslinjen</translation>
 <translation id="719009910964971313">Amerikansk (Programmer Dvorak) tastatur</translation>

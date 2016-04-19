@@ -661,7 +661,6 @@
 <translation id="1962233722219655970">Ova stranica upotrebljava aplikaciju izvornog klijenta koja ne funkcionira na vašem računalu.</translation>
 <translation id="1965328510789761112">Privatna memorija</translation>
 <translation id="1965624977906726414">Nema posebne dozvole.</translation>
-<translation id="1968720524450620475">Omogući ikone radnji za web-obavijesti.</translation>
 <translation id="1970746430676306437">Pogledaj &amp;informacije o stranici</translation>
 <translation id="197288927597451399">Zadrži</translation>
 <translation id="1973491249112991739">Preuzimanje dodatka <ph name="PLUGIN_NAME" /> nije uspjelo.</translation>
@@ -1423,7 +1422,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="302014277942214887">Unesite ID aplikacije ili URL web-trgovine.</translation>
 <translation id="3020616530769498629">Omogući ponovno učitavanje bez provjere za povlačenje radi osvježavanja</translation>
 <translation id="3020990233660977256">Serijski broj: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Kada je omogućeno, alatna traka nikada neće biti skrivena zbog pomicanja na uređajima sa zaslonom od minimalno 800 dp. Ostat će skrivena ako se sadržaj stranice prikaže na cijelom zaslonu.</translation>
 <translation id="3021678814754966447">&amp;Pogledaj izvor okvira</translation>
 <translation id="3024374909719388945">Koristi 24-satni sat</translation>
 <translation id="3025022340603654002">Pruži prijedloge za automatsko popunjavanje pri prvom kliku mišem na element obrasca.</translation>
@@ -1494,7 +1492,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="3117812041123364382">Omogući/onemogući plutajuću virtualnu tipkovnicu.</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Pomoć</translation>
 <translation id="3120430004221004537">Nedovoljna enkripcija za navedenu operaciju na uređaju: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="3121260210578524273">Omogući ikone na gumbima za radnju za web-obavijesti.</translation>
 <translation id="3121793941267913344">Vraćanje uređaja <ph name="IDS_SHORT_PRODUCT_NAME" /> na zadano</translation>
 <translation id="3122162841865761901">Eksperimenti Alata za razvojne programere</translation>
 <translation id="3122464029669770682">Procesor (CPU)</translation>
@@ -2275,6 +2272,7 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="421017592316736757">Morate biti na mreži da biste pristupili toj datoteci.</translation>
 <translation id="421182450098841253">&amp;Prikaz trake oznake</translation>
 <translation id="4212108296677106246">Želite li vjerovati tijelu "<ph name="CERTIFICATE_NAME" />" kao tijelu za izdavanje certifikata?</translation>
+<translation id="42126664696688958">Izvezi</translation>
 <translation id="42137655013211669">Pristup tom resursu zabranio je poslužitelj.</translation>
 <translation id="4215350869199060536">Ups, nedopušteni simboli u imenu!</translation>
 <translation id="4215898373199266584">Psst! Sljedeći bi vam put mogao koristiti anoniman način (<ph name="INCOGNITO_MODE_SHORTCUT" />).</translation>
@@ -3307,7 +3305,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="577322787686508614">Operacija čitanja nije dopuštena na uređaju: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Aplikacija za otvaranje datoteka</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5776006986202016118">Web-lokacija se želi povezati s:</translation>
 <translation id="577624874850706961">Pretraživanje kolačića</translation>
 <translation id="5778550464785688721">Potpuni nadzor nad MIDI uređajima</translation>
 <translation id="5780066559993805332">(Najbolje)</translation>
@@ -4121,7 +4118,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="7057058088140140610">Kreditne kartice i adrese s Google Paymentsa</translation>
 <translation id="7059858479264779982">Postavi na automatsko pokretanje</translation>
 <translation id="7061692898138851896">Automatski spremi zaporke</translation>
-<translation id="7062222374113411376">Dopusti nedavno zatovrenim web-lokacijama dovršetak slanja i primanja podataka</translation>
+<translation id="7062222374113411376">Dopusti nedavno zatvorenim web-lokacijama dovršetak slanja i primanja podataka</translation>
 <translation id="7063129466199351735">Obrada prečaca...</translation>
 <translation id="7065223852455347715">Ovaj je uređaj zaključan u načinu koji sprječava registraciju u organizaciji. Ako želite registrirati uređaj, prvo morate izvršiti njegov oporavak.</translation>
 <translation id="7065534935986314333">O sustavu</translation>
@@ -4195,7 +4192,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="7175353351958621980">Učitano iz:</translation>
 <translation id="7180611975245234373">Osvježi</translation>
 <translation id="7180865173735832675">Prilagodi</translation>
-<translation id="7184428045150946911">Onemogući automatsko skrivanje alatne trake na velikim tabletima</translation>
 <translation id="7185690883425432021">Gumbi za zatvaranje skrivaju se kada je vrpca kartica u načinu nizanja.</translation>
 <translation id="7186088072322679094">Zadrži na alatnoj traci</translation>
 <translation id="719009910964971313">Američka programerska tipkovnica Dvorak</translation>

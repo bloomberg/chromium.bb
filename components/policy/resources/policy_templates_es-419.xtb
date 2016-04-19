@@ -1569,7 +1569,7 @@ desactivarlo).</translation>
 
       Si no se configura esta política, el usuario podrá cambiar la lista de aplicaciones fijas en el menú de aplicaciones.</translation>
 <translation id="7132877481099023201">Las URL que recibirán acceso a dispositivos de captura de video sin solicitarlo</translation>
-<translation id="7167436895080860385">Permitir que los usuarios muestren las contraseñas en el administrador de contraseñas (ya no está disponible)</translation>
+<translation id="7167436895080860385">Permitir que los usuarios muestren las contraseñas en el administrador de contraseñas (dejó de estar disponible)</translation>
 <translation id="7173856672248996428">Perfil efímero</translation>
 <translation id="7187256234726597551">Si está establecida como verdadera, se permitirá la confirmación remota para el dispositivo, y se generará automáticamente un certificado que se subirá al servidor de administración de dispositivos.
 
@@ -1591,11 +1591,6 @@ desactivarlo).</translation>
 
           Si la política "RestoreOnStartup" se establece en la opción de restaurar las URL de las sesiones anteriores, esta política no se respetará y las cookies se almacenarán de forma permanente para esos sitios.</translation>
 <translation id="7207095846245296855">Forzar Google SafeSearch</translation>
-<translation id="7213425178181578730">Si esta política se establece como falsa, <ph name="PRODUCT_OS_NAME" /> inhabilitará Bluetooth y el usuario no podrá volver a habilitarlo.
-
-      Si esta política se establece como verdadera o no se establece, el usuario podrá habilitar o inhabilitar Bluetooth como lo desee.
-
-      Si esta política está establecida, el usuario no puede cambiarla ni anularla.</translation>
 <translation id="7216442368414164495">Permitir que los usuarios acepten informes extendidos de navegación segura</translation>
 <translation id="7227967227357489766">Define la lista de usuarios con permiso para acceder al dispositivo. Las entradas tienen el formato <ph name="USER_WHITELIST_ENTRY_FORMAT" />, como <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Para permitir usuarios arbitrarios en un dominio, utiliza las entradas del formulario <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

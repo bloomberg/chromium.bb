@@ -661,7 +661,6 @@
 <translation id="1962233722219655970">Această pagină utilizează o aplicație Client nativ care nu funcționează pe computerul dvs.</translation>
 <translation id="1965328510789761112">Memorie privată</translation>
 <translation id="1965624977906726414">Nu are permisiuni speciale.</translation>
-<translation id="1968720524450620475">Activează pictogramele de acțiune pentru Notificările web.</translation>
 <translation id="1970746430676306437">Afișează &amp;informații despre pagină</translation>
 <translation id="197288927597451399">Păstrează</translation>
 <translation id="1973491249112991739">Descărcarea pluginului <ph name="PLUGIN_NAME" /> a eșuat.</translation>
@@ -1423,7 +1422,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="302014277942214887">Introduceți ID-ul aplicației sau adresa URL a magazinului web.</translation>
 <translation id="3020616530769498629">Activează reîncărcarea fără validare în urma acțiunii „trage pentru a actualiza”</translation>
 <translation id="3020990233660977256">Numărul de serie: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">Când este activat, bara de instrumente nu va fi niciodată ascunsă din cauza derulării pe dispozitive cu ecran de minimum 800 dp. Aceasta va fi în continuare ascunsă când conținutul paginii se afișează pe tot ecranul.</translation>
 <translation id="3021678814754966447">&amp;Afișează sursa cadrului</translation>
 <translation id="3024374909719388945">Utilizează formatul de 24 de ore</translation>
 <translation id="3025022340603654002">Sugerează completări automate la primul clic cu mouse-ul pe un element dintr-un formular.</translation>
@@ -1494,7 +1492,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="3117812041123364382">Activează/Dezactivează tastatură virtuală mobilă.</translation>
 <translation id="3118319026408854581">Ajutor <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Criptare insuficientă pentru o operațiune pe: „<ph name="DEVICE_NAME" />”.</translation>
-<translation id="3121260210578524273">Activează pictogramele în butoanele de acțiune pentru Notificările web.</translation>
 <translation id="3121793941267913344">Resetați acest dispozitiv <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="3122162841865761901">Experimente cu Instrumentele pentru dezvoltatori</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -1704,7 +1701,7 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3392020134425442298">Recuperați fișierul rău-intenționat</translation>
 <translation id="3394150261239285340"><ph name="HOST" /> dorește să utilizeze camera foto și microfonul.</translation>
 <translation id="3394279550557729862">Activează compatibilitatea pentru folosirea notificărilor native și a centrului de notificări pe platformele unde acestea sunt disponibile.</translation>
-<translation id="3394862755749546286">Dezactivează canalul media unificat (Android sau desktop) pe Android.</translation>
+<translation id="3394862755749546286">Dezactivează canalul media unificat (Android și desktop) pe Android.</translation>
 <translation id="3396331542604645348">Imprimanta selectată nu este disponibilă sau nu este instalată corect. Verificați imprimanta sau încercați să selectați altă imprimantă.</translation>
 <translation id="3399597614303179694">Tastatură macedoneană</translation>
 <translation id="3401130144947259741">Dacă este activat, evenimentele de urmărire vor fi exportate în Urmărirea evenimentelor Windows (ETW) și pot fi apoi capturate de instrumente cum ar fi UIForETW sau Xperf.</translation>
@@ -2275,6 +2272,7 @@ Toți utilizatorii trebuie să se deconecteze pentru a continua.</translation>
 <translation id="421017592316736757">Trebuie să fiți online pentru a accesa acest fișier.</translation>
 <translation id="421182450098841253">&amp;Afișați bara de marcaje</translation>
 <translation id="4212108296677106246">Ai încredere în „<ph name="CERTIFICATE_NAME" />” ca autoritate de certificare?</translation>
+<translation id="42126664696688958">Exportă</translation>
 <translation id="42137655013211669">Accesul la această resursă a fost interzis de server.</translation>
 <translation id="4215350869199060536">Hopa, în nume apar simboluri nepermise!</translation>
 <translation id="4215898373199266584">Data viitoare ați putea utiliza modul incognito (<ph name="INCOGNITO_MODE_SHORTCUT" />).</translation>
@@ -3306,7 +3304,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="577322787686508614">Operațiunea de citire nu este permisă pe: „<ph name="DEVICE_NAME" />”.</translation>
 <translation id="5774295353725270860">Deschideți aplicația Fișiere</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5776006986202016118">Acest site dorește să se conecteze la:</translation>
 <translation id="577624874850706961">Caută cookie-uri</translation>
 <translation id="5778550464785688721">Control complet asupra dispozitivelor MIDI</translation>
 <translation id="5780066559993805332">(Cea mai bună)</translation>
@@ -4195,7 +4192,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="7175353351958621980">Încărcată de la:</translation>
 <translation id="7180611975245234373">Actualizați</translation>
 <translation id="7180865173735832675">Personalizează</translation>
-<translation id="7184428045150946911">Dezactivează ascunderea automată a barei de instrumente pe tabletele mari</translation>
 <translation id="7185690883425432021">Ascunde butoanele de închidere din filele inactive atunci când bara cu file se află în modul Stivuite.</translation>
 <translation id="7186088072322679094">Păstrează în bara de instrumente</translation>
 <translation id="719009910964971313">Tastatura pentru programatori S.U.A Dvorak</translation>

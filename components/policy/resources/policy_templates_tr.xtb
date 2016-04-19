@@ -97,7 +97,7 @@
 <translation id="1359553908012294236">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, misafir modunda giriş yapılmasına izin verir. Misafir modunda girişler, tüm pencerelerin gizli modda açıldığı <ph name="PRODUCT_NAME" /> profilleridir.
 
       Bu politika yanlış seçeneğine ayarlanırsa, <ph name="PRODUCT_NAME" /> misafir profillerinin başlatılmasına izin vermez.</translation>
-<translation id="1363275621236827384">Quirks Sunucusu'ndan donanım profillerini sorgulamayı etkinleştir</translation>
+<translation id="1363275621236827384">Quirks Server'dan donanım profillerini sorgulamayı etkinleştir</translation>
 <translation id="1397855852561539316">Arama önerileri için varsayılan arama sağlayıcı URL'si</translation>
 <translation id="1398889361882383850">Web sitelerinin, eklentileri otomatik olarak çalıştırmalarına izin verilip verilmeyeceğini ayarlamanızı sağlar. Otomatik olarak çalışan eklentilere ya bütün web sitelerinde izin verilebilir ya da bunlar web sitelerinin tümünde reddedilebilir.
 
@@ -1778,11 +1778,6 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 
           "RestoreOnStartup" politikası önceki oturumlara ilişkin URL'leri geri yükleyecek şekilde ayarlanmışsa bu politika yoksayılır ve o siteler için çerezler kalıcı olarak depolanır.</translation>
 <translation id="7207095846245296855">Google Güvenli Arama'yı zorla</translation>
-<translation id="7213425178181578730">Bu politika yanlış değerine ayarlanırsa <ph name="PRODUCT_OS_NAME" />, Bluetooth'u devre dışı bırakır ve kullanıcı, bu işlevi etkinleştiremez.
-
-      Bu politika doğru değerine ayarlanır veya ayarlanmadan bırakılırsa kullanıcı, Bluetooth'u istediği gibi etkinleştirebilir veya devre dışı bırakabilir.
-
-      Bu politika ayarlanırsa kullanıcı, bunu değiştiremez veya geçersiz kılamaz.</translation>
 <translation id="7216442368414164495">Kullanıcıların Güvenli Tarama genişletilmiş raporlamasını etkinleştirmesine izin ver</translation>
 <translation id="7227967227357489766">Cihaza giriş yapmalarına izin verilen kullanıcıların listesini tanımlar. Girişler <ph name="USER_WHITELIST_ENTRY_FORMAT" /> biçimindedir (örneğin, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />). Bir etki alanı üzerinde keyfi kullanıcılara izin vermek için <ph name="USER_WHITELIST_ENTRY_WILDCARD" /> biçiminde girişler kullanın.
 
@@ -2261,14 +2256,14 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 <translation id="8858642179038618439">YouTube Güvenlik Modunu zorla</translation>
 <translation id="8864975621965365890">Bir site <ph name="PRODUCT_FRAME_NAME" /> tarafından oluşturulduğunda görülen reddetme sorusunu engeller.</translation>
 <translation id="8870318296973696995">Ana sayfa</translation>
-<translation id="8889588091638298603">Quirks Sunucusu, monitör kalibrasyonunu ayarlamaya yönelik ICC görüntü
+<translation id="8889588091638298603">Quirks Server, monitör kalibrasyonunu ayarlamaya yönelik ICC görüntü
       profilleri gibi donanıma özel yapılandırma dosyaları sağlar.
 
       Bu politika false (yanlış) değerine ayarlandığında cihaz, yapılandırma
-      dosyalarını indirmek için Quirks Sunucusu ile iletişim kurmayı denemez.
+      dosyalarını indirmek için Quirks Server ile iletişim kurmayı denemez.
 
       Bu politika true (doğru) değerine ayarlanırsa veya yapılandırılmamışsa
-      <ph name="PRODUCT_OS_NAME" />, Quirks Sunucusu ile otomatik olarak iletişim kurar
+      <ph name="PRODUCT_OS_NAME" />, Quirks Server ile otomatik olarak iletişim kurar
       ve varsa yapılandırma dosyalarını indirip cihaza kaydeder. Bu tür dosyalar,
       örneğin bağlı monitörlerin görüntü kalitesini iyileştirmek için kullanılabilir.</translation>
 <translation id="8905426178924715309">Bu politika kullanımdan kaldırılmıştır. Bunun yerine lütfen ForceGoogleSafeSearch'ü ve ForceYouTubeSafetyMode'u kullanın. ForceGoogleSafeSearch veya ForceYouTubeSafetyMode politikası ayarlanırsa bu politika yoksayılır.

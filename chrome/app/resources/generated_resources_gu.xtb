@@ -657,7 +657,6 @@
 <translation id="1962233722219655970">આ પૃષ્ઠ મૂળ ક્લાયન્ટ એપ્લિકેશનનો ઉપયોગ કરે છે જે તમારા કમ્પ્યુટર પર કામ કરતી નથી.</translation>
 <translation id="1965328510789761112">ખાનગી મેમરી</translation>
 <translation id="1965624977906726414">તેને કોઈ વિશેષ પરવાનગીઓ નથી.</translation>
-<translation id="1968720524450620475">વેબ સૂચનાઓ માટે ઍક્શન આઇકન્સ સક્ષમ કરો.</translation>
 <translation id="1970746430676306437">પૃષ્ઠ &amp;માહિતી જુઓ</translation>
 <translation id="197288927597451399">રાખો</translation>
 <translation id="1973491249112991739"><ph name="PLUGIN_NAME" /> ડાઉનલોડ નિષ્ફળ થયું.</translation>
@@ -1420,7 +1419,6 @@
 <translation id="302014277942214887">એપ્લિકેશન id અથવા વેબસ્ટોર URL દાખલ કરો.</translation>
 <translation id="3020616530769498629">તાજું કરવા માટે ખેંચો પર બિન-માન્ય ફરીથી લોડ કરોને સક્ષમ કરો</translation>
 <translation id="3020990233660977256">સીરિયલ નંબર: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">સક્ષમ હોય ત્યારે, ઓછામાં ઓછા સ્ક્રીન dp &gt;= 800 ધરાવતાં ઉપકરણો પર સ્ક્રોલિંગને કારણે ટુલબાર ક્યારેય પણ છુપાવવામાં આવશે નહીં. જો પૃષ્ઠ સામગ્રી પૂર્ણ સ્ક્રીન થશે તો તે હજીપણ છુપાયેલ રહેશે.</translation>
 <translation id="3021678814754966447">ફ્રેમ સ્રોત &amp;જુઓ</translation>
 <translation id="3024374909719388945">24-કલાકની ઘડિયાળ વાપરો</translation>
 <translation id="3025022340603654002">કોઈ ફોર્મ ઘટક પરની પ્રારંભિક માઉસ ક્લિક પર સ્વતઃભરણ સૂચનો કરો.</translation>
@@ -1491,7 +1489,6 @@
 <translation id="3117812041123364382">ફ્લોટિંગ વર્ચ્યુઅલ કીબોર્ડને સક્ષમ/અક્ષમ કરો.</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> સહાય</translation>
 <translation id="3120430004221004537">આના પર આપેલ ઓપરેશન માટે અપૂરતું એન્ક્રિપ્શન: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="3121260210578524273">વેબ સૂચનાઓ માટે ઍક્શન બટન્સમાં આઇકન્સ સક્ષમ કરો.</translation>
 <translation id="3121793941267913344">આ <ph name="IDS_SHORT_PRODUCT_NAME" /> ઉપકરણ ફરીથી સેટ કરો</translation>
 <translation id="3122162841865761901">વિકાસકર્તા સાધનોના પ્રયોગો</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2273,6 +2270,7 @@
 <translation id="421017592316736757">આ ફાઇલ એક્સેસ કરવા તમારું ઑનલાઇન હોવું આવશ્યક છે.</translation>
 <translation id="421182450098841253">બુકમાર્ક્સ બાર &amp;બતાવો</translation>
 <translation id="4212108296677106246">શું તમે પ્રમાણન અધિકારી તરીકે "<ph name="CERTIFICATE_NAME" />" પર વિશ્વાસ કરો છો?</translation>
+<translation id="42126664696688958">નિકાસ કરો</translation>
 <translation id="42137655013211669">સર્વર દ્વારા આ સંસાધનની અ‍ૅક્સેસ નિષિદ્ધ હતી.</translation>
 <translation id="4215350869199060536">ઉફ્ફ, નામમાં ગેરકાનૂની પ્રતીકો!</translation>
 <translation id="4215898373199266584">અરેરે! છુપો મોડ ( <ph name="INCOGNITO_MODE_SHORTCUT" /> ) આગલી વખતે સુલભ થઈ રહ્યો છે.</translation>
@@ -3303,7 +3301,6 @@
 <translation id="577322787686508614">આના પર વાંચન ઓપરેશનને મંજૂરી નથી: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">ફાઇલ્સ એપ્લિકેશન ખોલો</translation>
 <translation id="5774515636230743468">સ્પષ્ટ:</translation>
-<translation id="5776006986202016118">આ સાઇટ આની સાથે કનેક્ટ થવા માગે છે:</translation>
 <translation id="577624874850706961">કૂકીઝ શોધો</translation>
 <translation id="5778550464785688721">MIDI ઉપકરણોનું પૂર્ણ નિયંત્રણ</translation>
 <translation id="5780066559993805332">(શ્રેષ્ઠ)</translation>
@@ -4194,7 +4191,6 @@
 <translation id="7175353351958621980">અહીંથી લોડ કરેલું:</translation>
 <translation id="7180611975245234373">તાજું કરો</translation>
 <translation id="7180865173735832675">કસ્ટમાઇઝ કરો</translation>
-<translation id="7184428045150946911">મોટા ટેબ્લેટ્સ પર ટુલબારને સ્વતઃછુપાવો અક્ષમ કરો</translation>
 <translation id="7185690883425432021">જ્યારે ટેબસ્ટ્રિપ સ્ટૅક્ડ મોડમાં હોય ત્યારે નિષ્ક્રિય ટેબ્સના બંધ કરો બટનોને છુપાવે છે.</translation>
 <translation id="7186088072322679094">ટુલબારમાં રાખો</translation>
 <translation id="719009910964971313">યુએસ પ્રોગ્રામર ડ્વોરેક કીબોર્ડ</translation>

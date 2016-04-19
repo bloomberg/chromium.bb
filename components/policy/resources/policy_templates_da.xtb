@@ -82,7 +82,7 @@
 <translation id="1359553908012294236">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_NAME" /> gæstelogins. Gæstelogins er <ph name="PRODUCT_NAME" />-profiler, hvor alle vinduer er i inkognitotilstand.
 
       Hvis denne politik er angivet til falsk, tillader <ph name="PRODUCT_NAME" /> ikke, at der startes gæsteprofiler.</translation>
-<translation id="1363275621236827384">Aktivér forespørgsler til Quirks-serveren om hardwareprofiler</translation>
+<translation id="1363275621236827384">Aktivér forespørgsler til Quirks Server om hardwareprofiler</translation>
 <translation id="1397855852561539316">Foreslået webadresse fra standardsøgemaskinen</translation>
 <translation id="1398889361882383850">Giver dig mulighed for at angive, om websites automatisk har tilladelse til at køre plugins. Plugins, der kører automatisk, kan enten tillades eller nægtes for alle websites.
 
@@ -1621,11 +1621,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
           Hvis politikken "RestoreOnStartup" er indstillet til at gendanne webadresser fra tidligere sessioner, overholdes denne politik ikke, og cookies gemmes permanent for disse websites.</translation>
 <translation id="7207095846245296855">Gennemtving Google Beskyttet søgning</translation>
-<translation id="7213425178181578730">Hvis denne politik angives som falsk, deaktiverer <ph name="PRODUCT_OS_NAME" /> Bluetooth, og brugeren kan ikke aktivere det igen.
-
-      Hvis denne politik er angivet til sand eller ikke angives, kan brugeren aktivere og deaktivere Bluetooth efter forgodtbefindende.
-
-      Hvis denne politik er angivet, kan brugeren ikke ændre eller tilsidesætte den.</translation>
 <translation id="7216442368414164495">Giv brugerne tilladelse til at vælge udvidet rapportering af Beskyttet browsing</translation>
 <translation id="7227967227357489766">Definerer en liste over brugere, der kan logge på enheden. Indtastningerne er i formatet <ph name="USER_WHITELIST_ENTRY_FORMAT" /> som f.eks. <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Hvis du vil tillade vilkårlige brugere på et domæne, skal du bruge indtastninger med formatet <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
@@ -2079,13 +2074,13 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8858642179038618439">Gennemtving Beskyttet tilstand på YouTube</translation>
 <translation id="8864975621965365890">Undertrykker opfordringen til afvisning, som vises, når et website gengives af <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Startside</translation>
-<translation id="8889588091638298603">Quirks-serveren leverer hardwarespecifikke konfigurationsfiler, som f.eks. ICC-profiler til visning, til justering af skærmkalibrering.
+<translation id="8889588091638298603">Quirks Server leverer hardwarespecifikke konfigurationsfiler, som f.eks. ICC-profiler til visning, til justering af skærmkalibrering.
 
-      Når denne politik er angivet som falsk, forsøger enheden ikke at kontakte Quirks-serveren for at downloade konfigurationsfiler.
+      Når denne politik er angivet som falsk, forsøger enheden ikke at kontakte Quirks Server for at downloade konfigurationsfiler.
 
       Hvis denne politik er angivet som sand eller ikke er konfigureret,
       kontakter <ph name="PRODUCT_OS_NAME" />
-      automatisk Quirks-serveren og downloader konfigurationsfiler,
+      automatisk Quirks Server og downloader konfigurationsfiler,
       hvis de er tilgængelige, som derefter gemmes på enheden.  Sådanne filer
       kan f.eks. anvendes til at forbedre kvaliteten af visningen af tilsluttede skærme.</translation>
 <translation id="8905426178924715309">Denne politik er udfaset. Brug ForceGoogleSafeSearch og ForceYouTubeSafetyMode i stedet. Denne politik ignoreres, hvis en af politikkerne ForceGoogleSafeSearch eller ForceYouTubeSafetyMode er angivet.

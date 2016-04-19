@@ -121,6 +121,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="549669000822060376">Please wait while Chromium installs the latest system updates.</translation>
 <translation id="5563479599352954471">Search with one touch</translation>
 <translation id="5620765574781326016">Learn about topics on websites without leaving the page.</translation>
+<translation id="5634636535844844681">Chromium requires Windows 7 or higher.</translation>
 <translation id="5680901439334282664">sign in to Chromium</translation>
 <translation id="5772805321386874569">(requires Chromium <ph name="BEGIN_BUTTON" />restart<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium is almost ready.</translation>
@@ -208,6 +209,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8621669128220841554">Installation failed due to unspecified error. Please download Chromium again.</translation>
 <translation id="8628626585870903697">Chromium does not include the PDF viewer which is required for Print Preview to function.</translation>
+<translation id="8667808506758191620">Your <ph name="DEVICE_TYPE" /> is up to date.</translation>
 <translation id="8697124171261953979">It also controls what page is shown when you start Chromium or search from the Omnibox.</translation>
 <translation id="8704119203788522458">This is your Chromium</translation>
 <translation id="872034308864968620">Let Chromium Run In The Background</translation>

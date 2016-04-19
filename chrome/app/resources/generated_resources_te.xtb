@@ -661,7 +661,6 @@
 <translation id="1962233722219655970">ఈ పేజీ మీ కంప్యూటర్‌లో పని చేయని స్థానిక క్లయింట్ అనువర్తనాన్ని ఉపయోగిస్తుంది.</translation>
 <translation id="1965328510789761112">ప్రైవేట్ మెమరీ</translation>
 <translation id="1965624977906726414">ప్రత్యేక అనుమతులు లేవు.</translation>
-<translation id="1968720524450620475">వెబ్ నోటిఫికేషన్‌ల కోసం చర్య చిహ్నాలను ప్రారంభించండి.</translation>
 <translation id="1970746430676306437">పేజీ యొక్క &amp;సమాచారాన్ని చూడండి</translation>
 <translation id="197288927597451399">ఉంచు</translation>
 <translation id="1973491249112991739"><ph name="PLUGIN_NAME" /> డౌన్‌లోడ్ విఫలమైంది.</translation>
@@ -1423,7 +1422,6 @@
 <translation id="302014277942214887">అనువర్తన id లేదా వెబ్‌స్టోర్ URLను నమోదు చేయండి.</translation>
 <translation id="3020616530769498629">రీఫ్రెష్ చేయడానికి లాగండి చర్యపై ప్రామాణీకరణ-యేతర రీలోడ్‌ను ప్రారంభించండి</translation>
 <translation id="3020990233660977256">క్రమ సంఖ్య: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021245547458004908">ప్రారంభించినప్పుడు, కనిష్ట స్క్రీన్ dp &gt;= 800 ఉండే పరికరాల్లో స్క్రోల్ చేయడం వలన సాధనపట్టీ ఎప్పటికీ దాచబడదు. అయితే పేజీ కంటెంట్‌లను పూర్తి స్క్రీన్‌లో చూసినప్పుడు ఇది దాచబడుతుంది.</translation>
 <translation id="3021678814754966447">ఫ్రేమ్ మూలాన్ని &amp;వీక్షించండి</translation>
 <translation id="3024374909719388945">24-గంటల గడియారాన్ని ఉపయోగించండి</translation>
 <translation id="3025022340603654002">ఫారమ్ మూలకంలో మౌస్ క్లిక్ చేసిన ప్రారంభంలో స్వీయపూర్తి సూచనలు అందించబడతాయి.</translation>
@@ -1494,7 +1492,6 @@
 <translation id="3117812041123364382">తేలియాడే వర్చువల్ కీబోర్డ్‌ను ప్రారంభించండి/నిలిపివేయండి.</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> సహాయం</translation>
 <translation id="3120430004221004537">దీనిలో నిర్దిష్ట చర్య కోసం తగిన గుప్తీకరణ లేదు: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="3121260210578524273">వెబ్ నోటిఫికేషన్‌ల కోసం చర్య బటన్‌ల్లో చిహ్నాలను ప్రారంభిస్తుంది.</translation>
 <translation id="3121793941267913344">ఈ <ph name="IDS_SHORT_PRODUCT_NAME" /> పరికరాన్ని రీసెట్ చేయండి</translation>
 <translation id="3122162841865761901">డెవలపర్ సాధనాల ప్రయోగాలు</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2276,6 +2273,7 @@
 <translation id="421017592316736757">ఈ ఫైల్‌ను ప్రాప్యత చేయడానికి మీరు తప్పనిసరిగా ఆన్‌లైన్‌లో ఉండాలి.</translation>
 <translation id="421182450098841253"> &amp;బుక్‌మార్క్‌ల బార్‌ను చూపు</translation>
 <translation id="4212108296677106246">మీరు "<ph name="CERTIFICATE_NAME" />"ని ప్రమాణపత్రం అధికారిగా నమ్మాలనుకుంటున్నారా?</translation>
+<translation id="42126664696688958">ఎగుమతి చేయి</translation>
 <translation id="42137655013211669">సర్వర్ ఈ వనరుకు ప్రాప్యతను నిషేధించింది.</translation>
 <translation id="4215350869199060536">అయ్యో, పేరులో చట్టవ్యతిరేక చిహ్నాలు ఉన్నాయి!</translation>
 <translation id="4215898373199266584">అయ్యో! అజ్ఞాత మోడ్ (<ph name="INCOGNITO_MODE_SHORTCUT" />) తదుపరిసారి అందుబాటులోకి రావచ్చు.</translation>
@@ -3308,7 +3306,6 @@
 <translation id="577322787686508614">దీనిలో చదివే చర్యకు అనుమతి లేదు: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">ఫైల్‌ల అనువర్తనాన్ని తెరువు</translation>
 <translation id="5774515636230743468">మానిఫెస్ట్:</translation>
-<translation id="5776006986202016118">ఈ సైట్ వీటికి కనెక్ట్ చేయాలనుకుంటోంది:</translation>
 <translation id="577624874850706961">కుకీలను శోధించు</translation>
 <translation id="5778550464785688721">MIDI పరికరాల పూర్తి నియంత్రణ</translation>
 <translation id="5780066559993805332">(ఉత్తమమైనది)</translation>
@@ -4198,7 +4195,6 @@
 <translation id="7175353351958621980">దీని నుండి లోడ్ అయ్యింది:</translation>
 <translation id="7180611975245234373">రీఫ్రెష్ చేయి</translation>
 <translation id="7180865173735832675">అనుకూలీకరించు</translation>
-<translation id="7184428045150946911">పెద్ద టాబ్లెట్‌ల్లో సాధనపట్టీని స్వయంచాలకంగా దాచడాన్ని నిలిపివేయండి</translation>
 <translation id="7185690883425432021">ట్యాబ్‌స్ట్రిప్ స్టాక్ చేసిన మోడ్‌లో ఉన్నప్పుడు నిష్క్రియ ట్యాబ్‌ల మూసివేత బటన్‌లను దాస్తుంది.</translation>
 <translation id="7186088072322679094">సాధనపట్టీలో ఉంచండి</translation>
 <translation id="719009910964971313">US ప్రోగ్రామర్ డ్వోరక్ కీబోర్డ్</translation>
