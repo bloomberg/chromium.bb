@@ -85,7 +85,6 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // deliver for the request we're handling.
   void DeliverAppCachedResponse(const AppCacheEntry& entry,
                                 int64_t cache_id,
-                                int64_t group_id,
                                 const GURL& manifest_url,
                                 bool is_fallback,
                                 const GURL& namespace_entry_url);

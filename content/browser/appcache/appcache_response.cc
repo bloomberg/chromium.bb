@@ -94,10 +94,8 @@ AppCacheDiskCacheInterface::~AppCacheDiskCacheInterface() {}
 
 AppCacheResponseIO::AppCacheResponseIO(
     int64_t response_id,
-    int64_t group_id,
     const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache)
     : response_id_(response_id),
-      group_id_(group_id),
       disk_cache_(disk_cache),
       entry_(NULL),
       buffer_len_(0),
@@ -189,9 +187,8 @@ void AppCacheResponseIO::OpenEntryCallback(
 
 AppCacheResponseReader::AppCacheResponseReader(
     int64_t response_id,
-    int64_t group_id,
     const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache)
-    : AppCacheResponseIO(response_id, group_id, disk_cache),
+    : AppCacheResponseIO(response_id, disk_cache),
       range_offset_(0),
       range_length_(std::numeric_limits<int32_t>::max()),
       read_position_(0),
@@ -314,9 +311,8 @@ void AppCacheResponseReader::OnOpenEntryComplete() {
 
 AppCacheResponseWriter::AppCacheResponseWriter(
     int64_t response_id,
-    int64_t group_id,
     const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache)
-    : AppCacheResponseIO(response_id, group_id, disk_cache),
+    : AppCacheResponseIO(response_id, disk_cache),
       info_size_(0),
       write_position_(0),
       write_amount_(0),
@@ -459,9 +455,8 @@ void AppCacheResponseWriter::OnCreateEntryComplete(
 
 AppCacheResponseMetadataWriter::AppCacheResponseMetadataWriter(
     int64_t response_id,
-    int64_t group_id,
     const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache)
-    : AppCacheResponseIO(response_id, group_id, disk_cache),
+    : AppCacheResponseIO(response_id, disk_cache),
       write_amount_(0),
       weak_factory_(this) {}
 

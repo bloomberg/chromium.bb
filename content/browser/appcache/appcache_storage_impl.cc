@@ -1734,23 +1734,19 @@ void AppCacheStorageImpl::StoreEvictionTimes(AppCacheGroup* group) {
 
 AppCacheResponseReader* AppCacheStorageImpl::CreateResponseReader(
     const GURL& manifest_url,
-    int64_t group_id,
     int64_t response_id) {
-  return new AppCacheResponseReader(response_id, group_id,
-                                    disk_cache()->GetWeakPtr());
+  return new AppCacheResponseReader(response_id, disk_cache()->GetWeakPtr());
 }
 
 AppCacheResponseWriter* AppCacheStorageImpl::CreateResponseWriter(
-    const GURL& manifest_url,
-    int64_t group_id) {
-  return new AppCacheResponseWriter(NewResponseId(), group_id,
+    const GURL& manifest_url) {
+  return new AppCacheResponseWriter(NewResponseId(),
                                     disk_cache()->GetWeakPtr());
 }
 
 AppCacheResponseMetadataWriter*
-AppCacheStorageImpl::CreateResponseMetadataWriter(int64_t group_id,
-                                                  int64_t response_id) {
-  return new AppCacheResponseMetadataWriter(response_id, group_id,
+AppCacheStorageImpl::CreateResponseMetadataWriter(int64_t response_id) {
+  return new AppCacheResponseMetadataWriter(response_id,
                                             disk_cache()->GetWeakPtr());
 }
 

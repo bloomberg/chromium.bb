@@ -41,12 +41,10 @@ AppCacheStorage::DelegateReference::~DelegateReference() {
 
 AppCacheStorage::ResponseInfoLoadTask::ResponseInfoLoadTask(
     const GURL& manifest_url,
-    int64_t group_id,
     int64_t response_id,
     AppCacheStorage* storage)
     : storage_(storage),
       manifest_url_(manifest_url),
-      group_id_(group_id),
       response_id_(response_id),
       info_buffer_(new HttpResponseInfoIOBuffer) {
   storage_->pending_info_loads_.insert(
@@ -59,8 +57,7 @@ AppCacheStorage::ResponseInfoLoadTask::~ResponseInfoLoadTask() {
 void AppCacheStorage::ResponseInfoLoadTask::StartIfNeeded() {
   if (reader_)
     return;
-  reader_.reset(
-      storage_->CreateResponseReader(manifest_url_, group_id_, response_id_));
+  reader_.reset(storage_->CreateResponseReader(manifest_url_, response_id_));
   reader_->ReadInfo(info_buffer_.get(),
                     base::Bind(&ResponseInfoLoadTask::OnReadComplete,
                                base::Unretained(this)));
@@ -80,7 +77,6 @@ void AppCacheStorage::ResponseInfoLoadTask::OnReadComplete(int result) {
 }
 
 void AppCacheStorage::LoadResponseInfo(const GURL& manifest_url,
-                                       int64_t group_id,
                                        int64_t id,
                                        Delegate* delegate) {
   AppCacheResponseInfo* info = working_set_.GetResponseInfo(id);
@@ -89,9 +85,8 @@ void AppCacheStorage::LoadResponseInfo(const GURL& manifest_url,
     return;
   }
   ResponseInfoLoadTask* info_load =
-      GetOrCreateResponseInfoLoadTask(manifest_url, group_id, id);
+      GetOrCreateResponseInfoLoadTask(manifest_url, id);
   DCHECK(manifest_url == info_load->manifest_url());
-  DCHECK(group_id == info_load->group_id());
   DCHECK(id == info_load->response_id());
   info_load->AddDelegate(GetOrCreateDelegateReference(delegate));
   info_load->StartIfNeeded();

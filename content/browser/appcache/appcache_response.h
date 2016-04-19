@@ -122,7 +122,6 @@ class CONTENT_EXPORT AppCacheResponseIO {
  protected:
   AppCacheResponseIO(
       int64_t response_id,
-      int64_t group_id,
       const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
 
   virtual void OnIOComplete(int result) = 0;
@@ -136,7 +135,6 @@ class CONTENT_EXPORT AppCacheResponseIO {
   void OpenEntryIfNeeded();
 
   const int64_t response_id_;
-  const int64_t group_id_;
   base::WeakPtr<AppCacheDiskCacheInterface> disk_cache_;
   AppCacheDiskCacheInterface::Entry* entry_;
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer_;
@@ -199,7 +197,6 @@ class CONTENT_EXPORT AppCacheResponseReader
   // Should only be constructed by the storage class and derivatives.
   AppCacheResponseReader(
       int64_t response_id,
-      int64_t group_id,
       const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
 
   void OnIOComplete(int result) override;
@@ -257,7 +254,6 @@ class CONTENT_EXPORT AppCacheResponseWriter
   // Should only be constructed by the storage class and derivatives.
   AppCacheResponseWriter(
       int64_t response_id,
-      int64_t group_id,
       const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
 
  private:
@@ -317,7 +313,6 @@ class CONTENT_EXPORT AppCacheResponseMetadataWriter
   // Should only be constructed by the storage class and derivatives.
   AppCacheResponseMetadataWriter(
       int64_t response_id,
-      int64_t group_id,
       const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
 
  private:

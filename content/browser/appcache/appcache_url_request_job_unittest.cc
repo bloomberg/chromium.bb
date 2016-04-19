@@ -502,16 +502,13 @@ class AppCacheURLRequestJobTest : public testing::Test {
                                         base::Bind(&ExpectNotRestarted)));
     const GURL kManifestUrl("http://blah/");
     const int64_t kCacheId(1);
-    const int64_t kGroupId(1);
     const AppCacheEntry kEntry(AppCacheEntry::EXPLICIT, 1);
-    job->DeliverAppCachedResponse(kManifestUrl, kCacheId, kGroupId,
-                                  kEntry, false);
+    job->DeliverAppCachedResponse(kManifestUrl, kCacheId, kEntry, false);
     EXPECT_FALSE(job->is_waiting());
     EXPECT_TRUE(job->is_delivering_appcache_response());
     EXPECT_FALSE(job->has_been_started());
     EXPECT_EQ(kManifestUrl, job->manifest_url());
     EXPECT_EQ(kCacheId, job->cache_id());
-    EXPECT_EQ(kGroupId, job->group_id());
     EXPECT_EQ(kEntry.types(), job->entry().types());
     EXPECT_EQ(kEntry.response_id(), job->entry().response_id());
 
@@ -609,7 +606,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
         base::Bind(&AppCacheURLRequestJobTest::RequestAppCachedResource,
                    base::Unretained(this), false));
 
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL(), 0));
+    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
     WriteBasicResponse();
     // Continues async
@@ -629,9 +626,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     if (start_after_delivery_orders) {
       job->DeliverAppCachedResponse(
-          GURL(), 0, 111,
-          AppCacheEntry(AppCacheEntry::EXPLICIT, written_response_id_),
-          false);
+          GURL(), 111,
+          AppCacheEntry(AppCacheEntry::EXPLICIT, written_response_id_), false);
       EXPECT_TRUE(job->is_delivering_appcache_response());
     }
 
@@ -646,7 +642,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     if (!start_after_delivery_orders) {
       weak_job->DeliverAppCachedResponse(
-          GURL(), 0, 111,
+          GURL(), 111,
           AppCacheEntry(AppCacheEntry::EXPLICIT, written_response_id_), false);
       ASSERT_TRUE(weak_job);
       EXPECT_TRUE(weak_job->is_delivering_appcache_response());
@@ -683,7 +679,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
        &AppCacheURLRequestJobTest::RequestAppCachedResource,
        base::Unretained(this), true));
 
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL(), 0));
+    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
     WriteLargeResponse();
     // Continues async
@@ -726,7 +722,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
        base::Unretained(this)));
     PushNextTask(base::Bind(
        &AppCacheURLRequestJobTest::MakeRangeRequest, base::Unretained(this)));
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL(), 0));
+    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
     WriteBasicResponse();
     // Continues async
@@ -748,9 +744,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
         new AppCacheURLRequestJob(request_.get(), NULL, storage, NULL, false,
                                   base::Bind(&ExpectNotRestarted)));
     job->DeliverAppCachedResponse(
-        GURL(), 0, 111,
-        AppCacheEntry(AppCacheEntry::EXPLICIT, written_response_id_),
-        false);
+        GURL(), 111,
+        AppCacheEntry(AppCacheEntry::EXPLICIT, written_response_id_), false);
     EXPECT_TRUE(job->is_delivering_appcache_response());
 
     // Start the request.
@@ -794,7 +789,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
        &AppCacheURLRequestJobTest::RequestAppCachedResource,
        base::Unretained(this), true));
 
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL(), 0));
+    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
     WriteLargeResponse();
 
@@ -823,7 +818,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
        &AppCacheURLRequestJobTest::RequestAppCachedResource,
        base::Unretained(this), true));
 
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL(), 0));
+    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
     WriteLargeResponse();
 

@@ -114,7 +114,6 @@ class CONTENT_EXPORT AppCacheStorage {
   // immediately without returning to the message loop. If the load fails,
   // the delegate will be called back with a NULL pointer.
   virtual void LoadResponseInfo(const GURL& manifest_url,
-                                int64_t group_id,
                                 int64_t response_id,
                                 Delegate* delegate);
 
@@ -173,17 +172,15 @@ class CONTENT_EXPORT AppCacheStorage {
 
   // Creates a reader to read a response from storage.
   virtual AppCacheResponseReader* CreateResponseReader(const GURL& manifest_url,
-                                                       int64_t group_id,
                                                        int64_t response_id) = 0;
 
   // Creates a writer to write a new response to storage. This call
   // establishes a new response id.
-  virtual AppCacheResponseWriter* CreateResponseWriter(const GURL& manifest_url,
-                                                       int64_t group_id) = 0;
+  virtual AppCacheResponseWriter* CreateResponseWriter(
+      const GURL& manifest_url) = 0;
 
   // Creates a metadata writer to write metadata of response to storage.
   virtual AppCacheResponseMetadataWriter* CreateResponseMetadataWriter(
-      int64_t group_id,
       int64_t response_id) = 0;
 
   // Schedules the lazy deletion of responses and saves the ids
@@ -254,14 +251,12 @@ class CONTENT_EXPORT AppCacheStorage {
   class ResponseInfoLoadTask {
    public:
     ResponseInfoLoadTask(const GURL& manifest_url,
-                         int64_t group_id,
                          int64_t response_id,
                          AppCacheStorage* storage);
     ~ResponseInfoLoadTask();
 
     int64_t response_id() const { return response_id_; }
     const GURL& manifest_url() const { return manifest_url_; }
-    int64_t group_id() const { return group_id_; }
 
     void AddDelegate(DelegateReference* delegate_reference) {
       delegates_.push_back(delegate_reference);
@@ -274,7 +269,6 @@ class CONTENT_EXPORT AppCacheStorage {
 
     AppCacheStorage* storage_;
     GURL manifest_url_;
-    int64_t group_id_;
     int64_t response_id_;
     std::unique_ptr<AppCacheResponseReader> reader_;
     DelegateReferenceVector delegates_;
@@ -300,13 +294,12 @@ class CONTENT_EXPORT AppCacheStorage {
 
   ResponseInfoLoadTask* GetOrCreateResponseInfoLoadTask(
       const GURL& manifest_url,
-      int64_t group_id,
       int64_t response_id) {
     PendingResponseInfoLoads::iterator iter =
         pending_info_loads_.find(response_id);
     if (iter != pending_info_loads_.end())
       return iter->second;
-    return new ResponseInfoLoadTask(manifest_url, group_id, response_id, this);
+    return new ResponseInfoLoadTask(manifest_url, response_id, this);
   }
 
   // Should only be called when creating a new response writer.

@@ -41,9 +41,11 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
     : net::URLRequestJob(request, network_delegate),
       host_(host),
       storage_(storage),
-      has_been_started_(false), has_been_killed_(false),
+      has_been_started_(false),
+      has_been_killed_(false),
       delivery_type_(AWAITING_DELIVERY_ORDERS),
-      group_id_(0), cache_id_(kAppCacheNoCacheId), is_fallback_(false),
+      cache_id_(kAppCacheNoCacheId),
+      is_fallback_(false),
       is_main_resource_(is_main_resource),
       cache_entry_not_found_(false),
       on_prepare_to_restart_callback_(restart_callback),
@@ -57,7 +59,6 @@ AppCacheURLRequestJob::~AppCacheURLRequestJob() {
 }
 
 void AppCacheURLRequestJob::DeliverAppCachedResponse(const GURL& manifest_url,
-                                                     int64_t group_id,
                                                      int64_t cache_id,
                                                      const AppCacheEntry& entry,
                                                      bool is_fallback) {
@@ -65,7 +66,6 @@ void AppCacheURLRequestJob::DeliverAppCachedResponse(const GURL& manifest_url,
   DCHECK(entry.has_response_id());
   delivery_type_ = APPCACHED_DELIVERY;
   manifest_url_ = manifest_url;
-  group_id_ = group_id;
   cache_id_ = cache_id;
   entry_ = entry;
   is_fallback_ = is_fallback;
@@ -137,8 +137,7 @@ void AppCacheURLRequestJob::BeginDelivery() {
           is_fallback_ ?
               net::NetLog::TYPE_APPCACHE_DELIVERING_FALLBACK_RESPONSE :
               net::NetLog::TYPE_APPCACHE_DELIVERING_CACHED_RESPONSE);
-      storage_->LoadResponseInfo(
-          manifest_url_, group_id_, entry_.response_id(), this);
+      storage_->LoadResponseInfo(manifest_url_, entry_.response_id(), this);
       break;
 
     default:
@@ -201,8 +200,8 @@ void AppCacheURLRequestJob::OnCacheLoaded(AppCache* cache, int64_t cache_id) {
   const int64_t kLimit = 500 * 1000;
   handler_source_buffer_ = new net::GrowableIOBuffer();
   handler_source_buffer_->SetCapacity(kLimit);
-  handler_source_reader_.reset(storage_->CreateResponseReader(
-      manifest_url_, group_id_, entry_.response_id()));
+  handler_source_reader_.reset(
+      storage_->CreateResponseReader(manifest_url_, entry_.response_id()));
   handler_source_reader_->ReadData(
       handler_source_buffer_.get(),
       kLimit,
@@ -283,8 +282,8 @@ void AppCacheURLRequestJob::OnResponseInfoLoaded(
   DCHECK(is_delivering_appcache_response());
   if (response_info) {
     info_ = response_info;
-    reader_.reset(storage_->CreateResponseReader(
-        manifest_url_, group_id_, entry_.response_id()));
+    reader_.reset(
+        storage_->CreateResponseReader(manifest_url_, entry_.response_id()));
 
     if (is_range_request())
       SetupRangeResponse();

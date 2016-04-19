@@ -270,7 +270,6 @@ void AppCacheInternalsUI::Proxy::HandleFileDetailsRequest() {
   preparing_response_ = true;
   appcache_service_->storage()->LoadResponseInfo(
       GURL(response_enquiries_.front().manifest_url),
-      response_enquiries_.front().group_id,
       response_enquiries_.front().response_id, this);
 }
 
@@ -292,8 +291,7 @@ void AppCacheInternalsUI::Proxy::OnResponseInfoLoaded(
         base::CheckedNumeric<size_t>(amount_to_read).ValueOrDie()));
     std::unique_ptr<AppCacheResponseReader> reader(
         appcache_service_->storage()->CreateResponseReader(
-            GURL(response_enquiry.manifest_url), response_enquiry.group_id,
-            response_enquiry.response_id));
+            GURL(response_enquiry.manifest_url), response_enquiry.response_id));
 
     reader->ReadData(
         response_data.get(), amount_to_read,

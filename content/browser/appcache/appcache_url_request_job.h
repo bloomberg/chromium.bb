@@ -52,7 +52,6 @@ class CONTENT_EXPORT AppCacheURLRequestJob
   // methods should be called, and only once per job. A job will sit idle and
   // wait indefinitely until one of the deliver methods is called.
   void DeliverAppCachedResponse(const GURL& manifest_url,
-                                int64_t group_id,
                                 int64_t cache_id,
                                 const AppCacheEntry& entry,
                                 bool is_fallback);
@@ -79,7 +78,6 @@ class CONTENT_EXPORT AppCacheURLRequestJob
   // that this job has been instructed to deliver. These are only
   // valid to call if is_delivering_appcache_response.
   const GURL& manifest_url() const { return manifest_url_; }
-  int64_t group_id() const { return group_id_; }
   int64_t cache_id() const { return cache_id_; }
   const AppCacheEntry& entry() const { return entry_; }
 
@@ -173,7 +171,6 @@ class CONTENT_EXPORT AppCacheURLRequestJob
   bool has_been_killed_;
   DeliveryType delivery_type_;
   GURL manifest_url_;
-  int64_t group_id_;
   int64_t cache_id_;
   AppCacheEntry entry_;
   bool is_fallback_;

@@ -498,8 +498,7 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
 
 AppCacheResponseWriter* AppCacheUpdateJob::CreateResponseWriter() {
   AppCacheResponseWriter* writer =
-      storage_->CreateResponseWriter(manifest_url_,
-                                                group_->group_id());
+      storage_->CreateResponseWriter(manifest_url_);
   stored_response_ids_.push_back(writer->response_id());
   return writer;
 }
@@ -564,8 +563,7 @@ void AppCacheUpdateJob::FetchManifest(bool is_first_fetch) {
         group_->newest_complete_cache()->GetEntry(manifest_url_) : NULL;
     if (entry && !doing_full_update_check_) {
       // Asynchronously load response info for manifest from newest cache.
-      storage_->LoadResponseInfo(manifest_url_, group_->group_id(),
-                                 entry->response_id(), this);
+      storage_->LoadResponseInfo(manifest_url_, entry->response_id(), this);
       return;
     }
     manifest_fetcher_->Start();
@@ -1160,7 +1158,6 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
   // Load manifest data from storage to compare against fetched manifest.
   manifest_response_reader_.reset(
       storage_->CreateResponseReader(manifest_url_,
-                                     group_->group_id(),
                                      entry->response_id()));
   read_manifest_buffer_ = new net::IOBuffer(kBufferSize);
   manifest_response_reader_->ReadData(
@@ -1443,9 +1440,7 @@ bool AppCacheUpdateJob::MaybeLoadFromNewestCache(const GURL& url,
   // Load HTTP headers for entry from newest cache.
   loading_responses_.insert(
       LoadingResponses::value_type(copy_me->response_id(), url));
-  storage_->LoadResponseInfo(manifest_url_, group_->group_id(),
-                             copy_me->response_id(),
-                             this);
+  storage_->LoadResponseInfo(manifest_url_, copy_me->response_id(), this);
   // Async: wait for OnResponseInfoLoaded to complete.
   return true;
 }
