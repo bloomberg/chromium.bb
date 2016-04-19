@@ -137,6 +137,27 @@ TEST_F(ArcPolicyBridgeTest, AudioCaptureAllowedTest) {
       PolicyStringCallback("{\"unmuteMicrophoneDisabled\":true}"));
 }
 
+TEST_F(ArcPolicyBridgeTest, DefaultGeolocationSettingTest) {
+  policy_map().Set(policy::key::kDefaultGeolocationSetting,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD, new base::FundamentalValue(1),
+                   nullptr);
+  policy_bridge()->GetPolicies(
+      PolicyStringCallback("{\"shareLocationDisabled\":false}"));
+  policy_map().Set(policy::key::kDefaultGeolocationSetting,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD, new base::FundamentalValue(2),
+                   nullptr);
+  policy_bridge()->GetPolicies(
+      PolicyStringCallback("{\"shareLocationDisabled\":true}"));
+  policy_map().Set(policy::key::kDefaultGeolocationSetting,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD, new base::FundamentalValue(3),
+                   nullptr);
+  policy_bridge()->GetPolicies(
+      PolicyStringCallback("{\"shareLocationDisabled\":false}"));
+}
+
 TEST_F(ArcPolicyBridgeTest, URLBlacklistTest) {
   base::ListValue blacklist;
   blacklist.Append(new base::StringValue("www.blacklist1.com"));

@@ -29,21 +29,41 @@ const char* kArcGlobalAppRestrictions = "globalAppRestrictions";
 // invert_bool_value: If the Chrome policy and the ARC policy with boolean value
 // have opposite semantics, set this to true so the bool is inverted before
 // being added. Otherwise, set it to false.
-void AddPolicy(const std::string& arc_policy_name,
-               const std::string& policy_name,
-               const policy::PolicyMap& policy_map,
-               bool invert_bool_value,
-               base::DictionaryValue* filtered_policies) {
+void MapBoolToBool(const std::string& arc_policy_name,
+                   const std::string& policy_name,
+                   const policy::PolicyMap& policy_map,
+                   bool invert_bool_value,
+                   base::DictionaryValue* filtered_policies) {
   const base::Value* const policy_value = policy_map.GetValue(policy_name);
-  if (policy_value) {
-    if (invert_bool_value && policy_value->IsType(base::Value::TYPE_BOOLEAN)) {
-      bool bool_value;
-      policy_value->GetAsBoolean(&bool_value);
-      filtered_policies->SetBoolean(arc_policy_name, !bool_value);
-    } else {
-      filtered_policies->Set(arc_policy_name, policy_value->CreateDeepCopy());
-    }
+  if (!policy_value)
+    return;
+  if (!policy_value->IsType(base::Value::TYPE_BOOLEAN)) {
+    LOG(ERROR) << "Policy " << policy_name << " is not a boolean.";
+    return;
   }
+  bool bool_value;
+  policy_value->GetAsBoolean(&bool_value);
+  filtered_policies->SetBoolean(arc_policy_name,
+                                bool_value != invert_bool_value);
+}
+
+// int_true: value of Chrome OS policy for which arc policy is set to true.
+// It is set to false for all other values.
+void MapIntToBool(const std::string& arc_policy_name,
+                  const std::string& policy_name,
+                  const policy::PolicyMap& policy_map,
+                  int int_true,
+                  base::DictionaryValue* filtered_policies) {
+  const base::Value* const policy_value = policy_map.GetValue(policy_name);
+  if (!policy_value)
+    return;
+  if (!policy_value->IsType(base::Value::TYPE_INTEGER)) {
+    LOG(ERROR) << "Policy " << policy_name << " is not an integer.";
+    return;
+  }
+  int int_value;
+  policy_value->GetAsInteger(&int_value);
+  filtered_policies->SetBoolean(arc_policy_name, int_value == int_true);
 }
 
 void AddGlobalAppRestriction(const std::string& arc_app_restriction_name,
@@ -87,12 +107,14 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
   }
 
   // Keep them sorted by the ARC policy names.
-  AddPolicy("cameraDisabled", policy::key::kVideoCaptureAllowed, policy_map,
-            true, &filtered_policies);
-  AddPolicy("screenCaptureDisabled", policy::key::kDisableScreenshots,
-            policy_map, false, &filtered_policies);
-  AddPolicy("unmuteMicrophoneDisabled", policy::key::kAudioCaptureAllowed,
-            policy_map, true, &filtered_policies);
+  MapBoolToBool("cameraDisabled", policy::key::kVideoCaptureAllowed, policy_map,
+                true, &filtered_policies);
+  MapBoolToBool("screenCaptureDisabled", policy::key::kDisableScreenshots,
+                policy_map, false, &filtered_policies);
+  MapIntToBool("shareLocationDisabled", policy::key::kDefaultGeolocationSetting,
+               policy_map, 2 /*BlockGeolocation*/, &filtered_policies);
+  MapBoolToBool("unmuteMicrophoneDisabled", policy::key::kAudioCaptureAllowed,
+                policy_map, true, &filtered_policies);
 
   // Add global app restrictions.
   AddGlobalAppRestriction("com.android.browser:URLBlacklist",
