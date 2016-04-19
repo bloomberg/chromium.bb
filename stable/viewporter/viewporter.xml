@@ -2,7 +2,7 @@
 <protocol name="viewporter">
 
   <copyright>
-    Copyright © 2013-2014 Collabora, Ltd.
+    Copyright © 2013-2016 Collabora, Ltd.
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -88,11 +88,13 @@
       has no content and therefore no size. Otherwise, the size is always
       at least 1x1 in surface local coordinates.
 
-      If the source rectangle is set, it defines what area of the
-      wl_buffer is taken as the source. If the source rectangle is set and
-      the destination size is not set, the surface size becomes the source
-      rectangle size rounded up to the nearest integer. If the source size
-      is already exactly integers, this results in cropping without scaling.
+      If the source rectangle is set, it defines what area of the wl_buffer is
+      taken as the source. If the source rectangle is set and the destination
+      size is not set, then src_width and src_height must be integers, and the
+      surface size becomes the source rectangle size. This results in cropping
+      without scaling. If src_width or src_height are not integers and
+      destination size is not set, the bad_size protocol error is raised when
+      the surface state is applied.
 
       The coordinate transformations from buffer pixel coordinates up to
       the surface-local coordinates happen in the following order:
@@ -104,9 +106,11 @@
       i.e. in the coordinates that would be the surface-local coordinates
       if the crop and scale was not applied.
 
-      If the source rectangle is partially or completely outside of the
-      wl_buffer, then the surface contents are undefined (not void), and
-      the surface size is still dst_width, dst_height.
+      If src_x or src_y are negative, the bad_value protocol error is raised.
+      Otherwise, if the source rectangle is partially or completely outside of
+      the non-NULL wl_buffer, then the out_of_buffer protocol error is raised
+      when the surface state is applied. A NULL wl_buffer does not raise the
+      out_of_buffer error.
 
       The x, y arguments of wl_surface.attach are applied as normal to
       the surface. They indicate how many pixels to remove from the
@@ -115,7 +119,8 @@
       and dst_height are.
 
       If the wl_surface associated with the wp_viewport is destroyed,
-      the wp_viewport object becomes inert.
+      all wp_viewport requests except 'destroy' raise the protocol error
+      no_surface.
 
       If the wp_viewport object is destroyed, the crop and scale
       state is removed from the wl_surface. The change will be applied
@@ -131,7 +136,13 @@
 
     <enum name="error">
       <entry name="bad_value" value="0"
-             summary="negative or zero values in width or height"/>
+	     summary="negative or zero values in width or height"/>
+      <entry name="bad_size" value="1"
+	     summary="destination size is not integer"/>
+      <entry name="out_of_buffer" value="2"
+	     summary="source rectangle extends outside of the content area"/>
+      <entry name="no_surface" value="3"
+	     summary="the wl_surface was destroyed"/>
     </enum>
 
     <request name="set_source">
@@ -140,9 +151,9 @@
 	wp_viewport for the description, and relation to the wl_buffer
 	size.
 
-	If width is -1.0 and height is -1.0, the source rectangle is unset
-	instead. Any other pair of values for width and height that
-	contains zero or negative values raises the bad_value protocol
+	If all of x, y, width and height are -1.0, the source rectangle is
+	unset instead. Any other set of values where width or height are zero
+	or negative, or x or y are negative, raise the bad_value protocol
 	error.
 
 	The crop and scale state is double-buffered state, and will be
@@ -168,11 +179,6 @@
 
 	The crop and scale state is double-buffered state, and will be
 	applied on the next wl_surface.commit.
-
-	Arguments x and y do not exist here, use the x and y arguments to
-	wl_surface.attach. The x, y, width, and height define the
-	surface-local coordinate system irrespective of the attached
-	wl_buffer size.
       </description>
 
       <arg name="width" type="int" summary="surface width"/>
