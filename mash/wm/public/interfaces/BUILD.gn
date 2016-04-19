@@ -11,4 +11,8 @@ mojom("interfaces") {
     "shelf_layout.mojom",
     "user_window_controller.mojom",
   ]
+
+  public_deps = [
+    "//mash/shelf/public/interfaces",
+  ]
 }

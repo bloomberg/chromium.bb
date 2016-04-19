@@ -46,10 +46,13 @@ source_set("command_buffer_traits_sources") {
     "//third_party/khronos:khronos_headers",
   ]
 
-  deps = [
-    "//base",
+  public_deps = [
     "//gpu/command_buffer/common:common_sources",
     "//ipc",
+  ]
+
+  deps = [
+    "//base",
   ]
 }
 
@@ -80,8 +83,11 @@ source_set("ipc_common_sources") {
     "//third_party/khronos:khronos_headers",
   ]
 
-  deps = [
+  public_deps = [
     ":command_buffer_traits_sources",
+  ]
+
+  deps = [
     "//base",
     "//gpu/command_buffer/common:common_sources",
     "//gpu/config:config_sources",

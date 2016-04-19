@@ -120,13 +120,13 @@
       'target_name': 'url_interfaces_mojom',
       'type': 'none',
       'variables': {
-        'mojom_extra_generator_args': [
-          '--typemap', '<(DEPTH)/url/mojo/origin.typemap',
-          '--typemap', '<(DEPTH)/url/mojo/gurl.typemap',
-        ],
         'mojom_files': [
           'mojo/origin.mojom',
           'mojo/url.mojom',
+        ],
+        'mojom_typemaps': [
+          'mojo/gurl.typemap',
+          'mojo/origin.typemap',
         ],
       },
       'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
@@ -140,24 +140,24 @@
       'dependencies': [
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         'url_interfaces_mojom',
+        'url_lib',
       ],
     },
     {
       'target_name': 'url_test_interfaces_mojom',
       'type': 'none',
       'variables': {
-        'mojom_extra_generator_args': [
-          '--typemap', '<(DEPTH)/url/mojo/gurl.typemap',
-          '--typemap', '<(DEPTH)/url/mojo/origin.typemap',
-        ],
         'mojom_files': [
           'mojo/url_test.mojom',
+        ],
+        'mojom_typemaps': [
+          'mojo/gurl.typemap',
+          'mojo/origin.typemap',
         ],
       },
       'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
       'dependencies': [
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-        'url_interfaces_mojom',
       ],
     },
     {
@@ -168,6 +168,7 @@
       ],
       'dependencies': [
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        'url_lib',
         'url_mojom',
         'url_test_interfaces_mojom',
       ],

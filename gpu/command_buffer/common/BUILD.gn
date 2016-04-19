@@ -96,7 +96,4 @@ mojom("interfaces") {
     "sync_token.mojom",
     "value_state.mojom",
   ]
-
-  typemaps = [ "mojo.typemap" ]
-  typemap_deps = [ "//gpu/ipc/common:command_buffer_traits" ]
 }

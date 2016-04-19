@@ -103,7 +103,7 @@ test("webkit_unit_tests") {
     "//third_party/WebKit/Source/modules",
     "//third_party/WebKit/Source/platform:test_support",
     "//third_party/WebKit/Source/wtf",
-    "//third_party/WebKit/public:mojo_bindings_blink",
+    "//third_party/WebKit/public:mojo_bindings_wtf",
     "//third_party/libwebp",
     "//third_party/zlib",
     "//url",

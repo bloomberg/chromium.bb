@@ -4,29 +4,61 @@
 
 import("../../../tools/bindings/mojom.gni")
 
-test_interfaces_mojom = [
-  "math_calculator.mojom",
-  "no_module.mojom",
-  "ping_service.mojom",
-  "rect.mojom",
-  "regression_tests.mojom",
-  "sample_factory.mojom",
-  "sample_import.mojom",
-  "sample_import2.mojom",
-  "sample_interfaces.mojom",
-  "sample_service.mojom",
-  "scoping.mojom",
-  "serialization_test_structs.mojom",
-  "test_constants.mojom",
-  "test_native_types.mojom",
-  "test_structs.mojom",
-  "test_sync_methods.mojom",
-  "validation_test_interfaces.mojom",
-]
-
 mojom("test_interfaces") {
   testonly = true
-  sources = test_interfaces_mojom
+  sources = [
+    "math_calculator.mojom",
+    "no_module.mojom",
+    "ping_service.mojom",
+    "rect.mojom",
+    "regression_tests.mojom",
+    "sample_factory.mojom",
+    "sample_interfaces.mojom",
+    "sample_service.mojom",
+    "scoping.mojom",
+    "serialization_test_structs.mojom",
+    "test_constants.mojom",
+    "test_native_types.mojom",
+    "test_structs.mojom",
+    "test_sync_methods.mojom",
+    "validation_test_interfaces.mojom",
+  ]
+  public_deps = [
+    ":test_mojom_import",
+    ":test_mojom_import2",
+  ]
+}
+
+mojom("test_mojom_import") {
+  testonly = true
+  sources = [
+    "sample_import.mojom",
+  ]
+}
+
+mojom("test_mojom_import_wrapper") {
+  testonly = true
+  public_deps = [
+    ":test_mojom_import",
+  ]
+}
+
+mojom("test_mojom_import_wrapper_wrapper") {
+  testonly = true
+  public_deps = [
+    ":test_mojom_import_wrapper",
+  ]
+}
+
+mojom("test_mojom_import2") {
+  testonly = true
+  sources = [
+    "sample_import2.mojom",
+  ]
+  public_deps = [
+    ":test_mojom_import",
+    ":test_mojom_import_wrapper_wrapper",
+  ]
 }
 
 mojom("test_struct_traits_interfaces") {
@@ -34,8 +66,6 @@ mojom("test_struct_traits_interfaces") {
   sources = [
     "struct_with_traits.mojom",
   ]
-
-  typemaps = [ "struct_with_traits.typemap" ]
 }
 
 mojom("test_interfaces_experimental") {
@@ -69,24 +99,6 @@ mojom("versioning_test_client_interfaces") {
   ]
 }
 
-mojom("test_interfaces_chromium") {
-  testonly = true
-
-  sources = test_interfaces_mojom
-
-  variant = "chromium"
-  typemaps = [ "chromium_test.typemap" ]
-}
-
-mojom("test_interfaces_blink") {
-  testonly = true
-
-  sources = test_interfaces_mojom
-
-  variant = "blink"
-  typemaps = [ "blink_test.typemap" ]
-}
-
 mojom("test_wtf_types") {
   testonly = true
 
@@ -95,24 +107,10 @@ mojom("test_wtf_types") {
   ]
 }
 
-mojom("test_wtf_types_blink") {
+mojom("test_no_sources") {
   testonly = true
 
-  sources = [
-    "test_wtf_types.mojom",
+  public_deps = [
+    ":test_interfaces",
   ]
-
-  for_blink = true
-  variant = "blink"
-}
-
-mojom("test_variant") {
-  testonly = true
-
-  sources = [
-    "test_variant.mojom",
-    "test_variant_import.mojom",
-  ]
-
-  variant = "variant_test"
 }

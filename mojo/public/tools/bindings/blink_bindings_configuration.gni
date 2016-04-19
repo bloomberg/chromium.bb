@@ -1,0 +1,33 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+variant = "wtf"
+
+for_blink = true
+
+_typemap_imports = [ "//mojo/public/cpp/bindings/tests/blink_typemaps.gni" ]
+_typemaps = []
+
+foreach(typemap_import, _typemap_imports) {
+  _imported = read_file(typemap_import, "scope")
+  _typemaps += _imported.typemaps
+}
+
+typemaps = []
+foreach(typemap, _typemaps) {
+  typemaps += [ read_file(typemap, "scope") ]
+}
+
+blacklist = [
+  # TODO(sammc): Remove the following once |for_blink| bindings support WTF
+  # maps. See https://crbug.com/583738.
+  "//components/mus/public/interfaces/window_manager.mojom",
+  "//components/mus/public/interfaces/window_tree.mojom",
+  "//extensions/common/api/mime_handler.mojom",
+  "//mojo/public/interfaces/bindings/tests/test_structs.mojom",
+  "//mojo/public/interfaces/bindings/tests/test_unions.mojom",
+  "//mojo/public/interfaces/bindings/tests/validation_test_interfaces.mojom",
+  "//services/catalog/public/interfaces/catalog.mojom",
+  "//services/shell/public/interfaces/capabilities.mojom",
+]

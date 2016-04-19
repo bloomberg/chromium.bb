@@ -52,10 +52,8 @@
         'mojo_public.gyp:mojo_public_test_associated_interfaces',
         'mojo_public.gyp:mojo_public_test_interfaces',
         'mojo_public.gyp:mojo_public_test_interfaces_blink',
-        'mojo_public.gyp:mojo_public_test_interfaces_chromium',
         'mojo_public.gyp:mojo_public_test_interfaces_struct_traits',
         'mojo_public.gyp:mojo_public_test_utils',
-        'mojo_public.gyp:mojo_public_test_variant',
       ],
       'sources': [
         'public/cpp/bindings/tests/array_common_test.h',

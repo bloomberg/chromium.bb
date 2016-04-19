@@ -258,11 +258,11 @@
           'target_name': 'password_manager_content_mojo_bindings_mojom',
           'type': 'none',
           'variables': {
-            'mojom_extra_generator_args': [
-              '--typemap', '<(DEPTH)/url/mojo/origin.typemap',
-            ],
             'mojom_files': [
               'password_manager/content/public/interfaces/credential_manager.mojom',
+            ],
+            'mojom_typemaps': [
+              '<(DEPTH)/url/mojo/origin.typemap',
             ],
           },
           'include_dirs': [

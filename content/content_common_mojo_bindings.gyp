@@ -9,10 +9,6 @@
       'target_name': 'content_common_mojo_bindings_mojom',
       'type': 'none',
       'variables': {
-        'mojom_extra_generator_args': [
-          '--typemap', '<(DEPTH)/url/mojo/origin.typemap',
-          '--typemap', '<(DEPTH)/url/mojo/gurl.typemap',
-        ],
         'mojom_files': [
           # NOTE: Sources duplicated in //content/common/BUILD.gn:mojo_bindings.
           'common/application_setup.mojom',
@@ -30,6 +26,10 @@
           # //content/public/common/BUILD.gn:mojo_bindings.
           'public/common/background_sync.mojom',
           'public/common/service_worker_event_status.mojom',
+        ],
+        'mojom_typemaps': [
+          '../url/mojo/gurl.typemap',
+          '../url/mojo/origin.typemap',
         ],
       },
       'dependencies': [

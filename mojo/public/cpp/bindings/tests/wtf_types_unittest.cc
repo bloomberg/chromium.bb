@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/lib/wtf_serialization.h"
 #include "mojo/public/cpp/bindings/tests/variant_test_util.h"
-#include "mojo/public/interfaces/bindings/tests/test_wtf_types.mojom-blink.h"
+#include "mojo/public/interfaces/bindings/tests/test_wtf_types.mojom-wtf.h"
 #include "mojo/public/interfaces/bindings/tests/test_wtf_types.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -107,7 +107,7 @@ TEST_F(WTFTypesTest, WTFToMojoSerialization_StringArray) {
 }
 
 TEST_F(WTFTypesTest, SendString) {
-  blink::TestWTFPtr ptr;
+  wtf::TestWTFPtr ptr;
   TestWTFImpl impl(ConvertInterfaceRequest<TestWTF>(GetProxy(&ptr)));
 
   WTFArray<WTF::String> strs = ConstructStringArray();
@@ -128,7 +128,7 @@ TEST_F(WTFTypesTest, SendString) {
 }
 
 TEST_F(WTFTypesTest, SendStringArray) {
-  blink::TestWTFPtr ptr;
+  wtf::TestWTFPtr ptr;
   TestWTFImpl impl(ConvertInterfaceRequest<TestWTF>(GetProxy(&ptr)));
 
   WTFArray<WTF::String> arrs[3];

@@ -10,15 +10,9 @@
 #include <string>
 
 #include "base/strings/string_piece.h"
-#include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace mojo {
 namespace test {
-
-// The mojom types are forward-declared to avoid circular dependencies between
-// this and generated headers.
-class StructWithTraits;
-class StructWithTraits_Reader;
 
 // A type which knows how to look like a mojo::test::StructWithTraits mojom type
 // by way of mojo::StructTraits.

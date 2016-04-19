@@ -14,8 +14,8 @@
 #include "mojo/public/cpp/bindings/tests/struct_with_traits_impl.h"
 #include "mojo/public/cpp/bindings/tests/variant_test_util.h"
 #include "mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.h"
-#include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-blink.h"
-#include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-chromium.h"
+#include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-wtf.h"
+#include "mojo/public/interfaces/bindings/tests/test_native_types.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -55,11 +55,11 @@ void ExpectError(InterfacePtr<T> *proxy, const base::Closure& callback) {
 }
 
 // This implements the generated Chromium variant of RectService.
-class ChromiumRectServiceImpl : public chromium::RectService {
+class ChromiumRectServiceImpl : public RectService {
  public:
   ChromiumRectServiceImpl() {}
 
-  // mojo::test::chromium::RectService:
+  // mojo::test::RectService:
   void AddRect(const RectChromium& r) override {
     if (r.GetArea() > largest_rect_.GetArea())
       largest_rect_ = r;
@@ -74,11 +74,11 @@ class ChromiumRectServiceImpl : public chromium::RectService {
 };
 
 // This implements the generated Blink variant of RectService.
-class BlinkRectServiceImpl : public blink::RectService {
+class BlinkRectServiceImpl : public wtf::RectService {
  public:
   BlinkRectServiceImpl() {}
 
-  // mojo::test::blink::RectService:
+  // mojo::test::wtf::RectService:
   void AddRect(const RectBlink& r) override {
     if (r.computeArea() > largest_rect_.computeArea()) {
       largest_rect_.setX(r.x());
@@ -103,22 +103,22 @@ class StructTraitsTest : public testing::Test,
   StructTraitsTest() {}
 
  protected:
-  void BindToChromiumService(chromium::RectServiceRequest request) {
+  void BindToChromiumService(RectServiceRequest request) {
     chromium_bindings_.AddBinding(&chromium_service_, std::move(request));
   }
-  void BindToChromiumService(blink::RectServiceRequest request) {
+  void BindToChromiumService(wtf::RectServiceRequest request) {
     chromium_bindings_.AddBinding(
         &chromium_service_,
-        ConvertInterfaceRequest<chromium::RectService>(std::move(request)));
+        ConvertInterfaceRequest<RectService>(std::move(request)));
   }
 
-  void BindToBlinkService(blink::RectServiceRequest request) {
+  void BindToBlinkService(wtf::RectServiceRequest request) {
     blink_bindings_.AddBinding(&blink_service_, std::move(request));
   }
-  void BindToBlinkService(chromium::RectServiceRequest request) {
+  void BindToBlinkService(RectServiceRequest request) {
     blink_bindings_.AddBinding(
         &blink_service_,
-        ConvertInterfaceRequest<blink::RectService>(std::move(request)));
+        ConvertInterfaceRequest<wtf::RectService>(std::move(request)));
   }
 
   TraitsTestServicePtr GetTraitsTestProxy() {
@@ -136,10 +136,10 @@ class StructTraitsTest : public testing::Test,
   base::MessageLoop loop_;
 
   ChromiumRectServiceImpl chromium_service_;
-  BindingSet<chromium::RectService> chromium_bindings_;
+  BindingSet<RectService> chromium_bindings_;
 
   BlinkRectServiceImpl blink_service_;
-  BindingSet<blink::RectService> blink_bindings_;
+  BindingSet<wtf::RectService> blink_bindings_;
 
   BindingSet<TraitsTestService> traits_test_bindings_;
 };
@@ -147,7 +147,7 @@ class StructTraitsTest : public testing::Test,
 }  // namespace
 
 TEST_F(StructTraitsTest, ChromiumProxyToChromiumService) {
-  chromium::RectServicePtr chromium_proxy;
+  RectServicePtr chromium_proxy;
   BindToChromiumService(GetProxy(&chromium_proxy));
   {
     base::RunLoop loop;
@@ -160,7 +160,7 @@ TEST_F(StructTraitsTest, ChromiumProxyToChromiumService) {
 }
 
 TEST_F(StructTraitsTest, ChromiumToBlinkService) {
-  chromium::RectServicePtr chromium_proxy;
+  RectServicePtr chromium_proxy;
   BindToBlinkService(GetProxy(&chromium_proxy));
   {
     base::RunLoop loop;
@@ -183,7 +183,7 @@ TEST_F(StructTraitsTest, ChromiumToBlinkService) {
 }
 
 TEST_F(StructTraitsTest, BlinkProxyToBlinkService) {
-  blink::RectServicePtr blink_proxy;
+  wtf::RectServicePtr blink_proxy;
   BindToBlinkService(GetProxy(&blink_proxy));
   {
     base::RunLoop loop;
@@ -196,7 +196,7 @@ TEST_F(StructTraitsTest, BlinkProxyToBlinkService) {
 }
 
 TEST_F(StructTraitsTest, BlinkProxyToChromiumService) {
-  blink::RectServicePtr blink_proxy;
+  wtf::RectServicePtr blink_proxy;
   BindToChromiumService(GetProxy(&blink_proxy));
   {
     base::RunLoop loop;

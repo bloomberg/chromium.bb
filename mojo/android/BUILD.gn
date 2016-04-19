@@ -98,6 +98,8 @@ android_library("mojo_javatests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//mojo/public/interfaces/bindings/tests:test_interfaces_java",
+    "//mojo/public/interfaces/bindings/tests:test_mojom_import2_java",
+    "//mojo/public/interfaces/bindings/tests:test_mojom_import_java",
     "//mojo/public/java:bindings",
     "//mojo/public/java:system",
   ]

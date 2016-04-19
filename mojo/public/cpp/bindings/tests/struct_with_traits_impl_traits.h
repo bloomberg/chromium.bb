@@ -14,6 +14,10 @@
 #include "mojo/public/cpp/bindings/tests/struct_with_traits_impl.h"
 
 namespace mojo {
+namespace test {
+class StructWithTraits;
+class StructWithTraits_Reader;
+}
 
 template <>
 struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {

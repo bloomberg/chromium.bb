@@ -7,19 +7,18 @@
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/cpp/bindings/tests/rect_blink.h"
-#include "mojo/public/interfaces/bindings/tests/rect.mojom-blink.h"
+#include "mojo/public/interfaces/bindings/tests/rect.mojom-wtf.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<test::blink::TypemappedRect, test::RectBlink> {
+struct StructTraits<test::wtf::TypemappedRect, test::RectBlink> {
   static int x(const test::RectBlink& r) { return r.x(); }
   static int y(const test::RectBlink& r) { return r.y(); }
   static int width(const test::RectBlink& r) { return r.width(); }
   static int height(const test::RectBlink& r) { return r.height(); }
 
-  static bool Read(test::blink::TypemappedRect::Reader r,
-                   test::RectBlink* out) {
+  static bool Read(test::wtf::TypemappedRect::Reader r, test::RectBlink* out) {
     if (r.x() < 0 || r.y() < 0 || r.width() < 0 || r.height() < 0) {
       return false;
     }

@@ -1,0 +1,12 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+typemaps = [
+  "//gpu/command_buffer/common/capabilities.typemap",
+  "//gpu/command_buffer/common/command_buffer.typemap",
+  "//gpu/command_buffer/common/mailbox.typemap",
+  "//gpu/command_buffer/common/mailbox_holder.typemap",
+  "//gpu/command_buffer/common/sync_token.typemap",
+  "//gpu/command_buffer/common/value_state.typemap",
+]

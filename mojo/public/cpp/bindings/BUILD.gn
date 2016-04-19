@@ -103,12 +103,12 @@ source_set("bindings") {
     "string.h",
     "strong_binding.h",
     "struct_ptr.h",
-    "struct_traits.h",
     "type_converter.h",
   ]
 
   public_deps = [
     ":callback",
+    ":struct_traits",
     "//base",
     "//ipc:param_traits",
     "//mojo/public/cpp/system",
@@ -132,6 +132,12 @@ source_set("callback") {
   deps = [
     "//base",
     "//mojo/public/cpp/system",
+  ]
+}
+
+source_set("struct_traits") {
+  sources = [
+    "struct_traits.h",
   ]
 }
 

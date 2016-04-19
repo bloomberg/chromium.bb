@@ -8,16 +8,12 @@ mojom("url_mojom_gurl") {
   sources = [
     "url.mojom",
   ]
-
-  typemaps = [ "gurl.typemap" ]
 }
 
 mojom("url_mojom_origin") {
   sources = [
     "origin.mojom",
   ]
-
-  typemaps = [ "origin.typemap" ]
 
   public_deps = [
     ":url_mojom_gurl",
@@ -27,11 +23,6 @@ mojom("url_mojom_origin") {
 mojom("test_url_mojom_gurl") {
   sources = [
     "url_test.mojom",
-  ]
-
-  typemaps = [
-    "gurl.typemap",
-    "origin.typemap",
   ]
 
   public_deps = [

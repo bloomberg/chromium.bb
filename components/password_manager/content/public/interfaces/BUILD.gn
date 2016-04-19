@@ -9,8 +9,6 @@ mojom("interfaces") {
     "credential_manager.mojom",
   ]
 
-  typemaps = [ "//url/mojo/origin.typemap" ]
-
   public_deps = [
     "//url/mojo:url_mojom_origin",
   ]
