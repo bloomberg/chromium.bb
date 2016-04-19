@@ -259,6 +259,12 @@ InspectorDatabaseAgent::~InspectorDatabaseAgent()
 {
 }
 
+void InspectorDatabaseAgent::discardAgent()
+{
+    if (DatabaseClient* client = DatabaseClient::fromPage(m_page))
+        client->setInspectorAgent(nullptr);
+}
+
 void InspectorDatabaseAgent::enable(ErrorString*)
 {
     if (m_enabled)
