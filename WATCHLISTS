@@ -365,6 +365,9 @@
     'extension': {
       'filepath': 'extension',
     },
+    'feedback_ui': {
+      'filepath': 'chrome/browser/resources/(md_)?feedback/'
+    },
     'fileapi': {
       'filepath': 'file_system/|' \
                   'fileapi/'
@@ -1421,6 +1424,7 @@
     'events': ['tdresser+watch@chromium.org'],
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],
+    'feedback_ui': ['apacible+watch@chromium.org'],
     'fileapi': ['kinuko+fileapi@chromium.org',
                 'nhiroki@chromium.org',
                 'tzik@chromium.org'],
