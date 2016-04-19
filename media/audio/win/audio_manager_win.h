@@ -19,7 +19,10 @@ class AudioDeviceListenerWin;
 // the AudioManager class.
 class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
  public:
-  AudioManagerWin(AudioLogFactory* audio_log_factory);
+  AudioManagerWin(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+      AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
   bool HasAudioOutputDevices() override;
@@ -85,7 +88,6 @@ class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
   // Helper methods for performing expensive initialization tasks on the audio
   // thread instead of on the UI thread which AudioManager is constructed on.
   void InitializeOnAudioThread();
-  void ShutdownOnAudioThread();
 
   void GetAudioDeviceNamesImpl(bool input, AudioDeviceNames* device_names);
 

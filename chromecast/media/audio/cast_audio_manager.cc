@@ -25,10 +25,15 @@ static const int kDefaultOutputBufferSize = 2048;
 namespace chromecast {
 namespace media {
 
-CastAudioManager::CastAudioManager(::media::AudioLogFactory* audio_log_factory,
-                                   MediaPipelineBackendManager* backend_manager)
-    : AudioManagerBase(audio_log_factory), backend_manager_(backend_manager) {
-}
+CastAudioManager::CastAudioManager(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+    ::media::AudioLogFactory* audio_log_factory,
+    MediaPipelineBackendManager* backend_manager)
+    : AudioManagerBase(std::move(task_runner),
+                       std::move(worker_task_runner),
+                       audio_log_factory),
+      backend_manager_(backend_manager) {}
 
 CastAudioManager::~CastAudioManager() {
   Shutdown();

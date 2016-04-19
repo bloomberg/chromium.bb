@@ -8,11 +8,9 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/run_loop.h"
 #include "components/audio_modem/public/audio_modem_types.h"
-#include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
@@ -160,21 +158,6 @@ void AudioPlayerImpl::OnError(media::AudioOutputStream* /* stream */) {
       FROM_HERE,
       base::Bind(&AudioPlayerImpl::StopAndCloseOnAudioThread,
                  base::Unretained(this)));
-}
-
-void AudioPlayerImpl::FlushAudioLoopForTesting() {
-  if (media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread())
-    return;
-
-  // Queue task on the audio thread, when it is executed, that means we've
-  // successfully executed all the tasks before us.
-  base::RunLoop rl;
-  media::AudioManager::Get()->GetTaskRunner()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&AudioPlayerImpl::FlushAudioLoopForTesting),
-                 base::Unretained(this)),
-      rl.QuitClosure());
-  rl.Run();
 }
 
 }  // namespace audio_modem

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/audio_modem/audio_recorder_impl.h"
 #include "components/audio_modem/public/audio_modem_types.h"
@@ -82,8 +83,9 @@ namespace audio_modem {
 class AudioRecorderTest : public testing::Test {
  public:
   AudioRecorderTest() : total_samples_(0), recorder_(nullptr) {
-    if (!media::AudioManager::Get())
-      media::AudioManager::CreateForTesting();
+    audio_manager_ = media::AudioManager::CreateForTesting(
+        base::ThreadTaskRunnerHandle::Get());
+    base::RunLoop().RunUntilIdle();
   }
 
   ~AudioRecorderTest() override {
@@ -101,6 +103,7 @@ class AudioRecorderTest : public testing::Test {
       recorder_ = new AudioRecorderImpl();
       recorder_->Initialize(base::Bind(&AudioRecorderTest::DecodeSamples,
                                        base::Unretained(this)));
+      base::RunLoop().RunUntilIdle();
     } else {
       CreateRecorder(kSomeNumber);
     }
@@ -124,6 +127,7 @@ class AudioRecorderTest : public testing::Test {
     recorder_->set_params_for_testing(new media::AudioParameters(params_));
     recorder_->Initialize(
         base::Bind(&AudioRecorderTest::DecodeSamples, base::Unretained(this)));
+    base::RunLoop().RunUntilIdle();
   }
 
   void DeleteRecorder() {
@@ -131,6 +135,7 @@ class AudioRecorderTest : public testing::Test {
       return;
     recorder_->Finalize();
     recorder_ = nullptr;
+    base::RunLoop().RunUntilIdle();
   }
 
   void RecordAndVerifySamples() {
@@ -183,9 +188,12 @@ class AudioRecorderTest : public testing::Test {
     return samples;
   }
   bool IsRecording() {
-    recorder_->FlushAudioLoopForTesting();
+    base::RunLoop().RunUntilIdle();
     return recorder_->is_recording_;
   }
+
+  content::TestBrowserThreadBundle thread_bundle_;
+  media::ScopedAudioManagerPtr audio_manager_;
 
   std::vector<float*> channel_data_;
   media::AudioParameters params_;
@@ -197,7 +205,6 @@ class AudioRecorderTest : public testing::Test {
   std::string received_samples_;
 
   scoped_ptr<base::RunLoop> run_loop_;
-  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 
@@ -213,16 +220,19 @@ TEST_F(AudioRecorderTest, MAYBE_BasicRecordAndStop) {
 
   recorder_->Record();
   EXPECT_TRUE(IsRecording());
+
   recorder_->Stop();
   EXPECT_FALSE(IsRecording());
-  recorder_->Record();
 
+  recorder_->Record();
   EXPECT_TRUE(IsRecording());
+
   recorder_->Stop();
   EXPECT_FALSE(IsRecording());
-  recorder_->Record();
 
+  recorder_->Record();
   EXPECT_TRUE(IsRecording());
+
   recorder_->Stop();
   EXPECT_FALSE(IsRecording());
 

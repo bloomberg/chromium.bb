@@ -79,10 +79,6 @@ class AudioRecorderImpl final
               double volume) override;
   void OnError(media::AudioInputStream* stream) override;
 
-  // Flushes the audio loop, making sure that any queued operations are
-  // performed.
-  void FlushAudioLoopForTesting();
-
   bool is_recording_;
 
   media::AudioInputStream* stream_;

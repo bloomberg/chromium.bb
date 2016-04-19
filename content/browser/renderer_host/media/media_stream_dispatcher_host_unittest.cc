@@ -225,8 +225,8 @@ class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
 class MediaStreamDispatcherHostTest : public testing::Test {
  public:
   MediaStreamDispatcherHostTest()
-      : old_browser_client_(NULL),
-        thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        old_browser_client_(NULL),
         origin_("https://test.com") {
     audio_manager_.reset(
         new media::MockAudioManager(base::ThreadTaskRunnerHandle::Get()));
@@ -422,12 +422,13 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   }
 
   scoped_refptr<MockMediaStreamDispatcherHost> host_;
-  std::unique_ptr<media::AudioManager> audio_manager_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<media::AudioManager, media::AudioManagerDeleter>
+      audio_manager_;
   MockMediaStreamUIProxy* stream_ui_;
   ContentBrowserClient* old_browser_client_;
   std::unique_ptr<ContentClient> content_client_;
-  content::TestBrowserThreadBundle thread_bundle_;
   content::TestBrowserContext browser_context_;
   media::AudioDeviceNames physical_audio_devices_;
   media::VideoCaptureDevice::Names physical_video_devices_;

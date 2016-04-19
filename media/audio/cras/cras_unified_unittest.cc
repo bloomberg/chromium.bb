@@ -7,8 +7,11 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/test_message_loop.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/audio/cras/audio_manager_cras.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -33,7 +36,10 @@ namespace media {
 
 class MockAudioManagerCras : public AudioManagerCras {
  public:
-  MockAudioManagerCras() : AudioManagerCras(&fake_audio_log_factory_) {}
+  MockAudioManagerCras()
+      : AudioManagerCras(base::ThreadTaskRunnerHandle::Get(),
+                         base::ThreadTaskRunnerHandle::Get(),
+                         &fake_audio_log_factory_) {}
 
   MOCK_METHOD0(Init, void());
   MOCK_METHOD0(HasAudioOutputDevices, bool());
@@ -65,10 +71,10 @@ class CrasUnifiedStreamTest : public testing::Test {
  protected:
   CrasUnifiedStreamTest() {
     mock_manager_.reset(new StrictMock<MockAudioManagerCras>());
+    base::RunLoop().RunUntilIdle();
   }
 
-  virtual ~CrasUnifiedStreamTest() {
-  }
+  ~CrasUnifiedStreamTest() override {}
 
   CrasUnifiedStream* CreateStream(ChannelLayout layout) {
     return CreateStream(layout, kTestFramesPerPacket);
@@ -91,7 +97,9 @@ class CrasUnifiedStreamTest : public testing::Test {
   static const AudioParameters::Format kTestFormat;
   static const uint32_t kTestFramesPerPacket;
 
-  scoped_ptr<StrictMock<MockAudioManagerCras> > mock_manager_;
+  base::TestMessageLoop message_loop_;
+  scoped_ptr<StrictMock<MockAudioManagerCras>, AudioManagerDeleter>
+      mock_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrasUnifiedStreamTest);

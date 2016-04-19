@@ -274,7 +274,7 @@ class VideoCaptureHostTest : public testing::Test {
 #endif
 
     // Create our own MediaStreamManager.
-    audio_manager_.reset(media::AudioManager::CreateForTesting());
+    audio_manager_ = media::AudioManager::CreateForTesting(task_runner_);
 #ifndef TEST_REAL_CAPTURE_DEVICE
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
@@ -483,10 +483,13 @@ class VideoCaptureHostTest : public testing::Test {
   scoped_refptr<MockVideoCaptureHost> host_;
 
  private:
+  // media_stream_manager_ needs to outlive thread_bundle_ because it is a
+  // MessageLoop::DestructionObserver. audio_manager_ needs to outlive
+  // thread_bundle_ because it uses the underlying message loop.
   StrictMock<MockMediaStreamRequester> stream_requester_;
-  std::unique_ptr<media::AudioManager> audio_manager_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
+  media::ScopedAudioManagerPtr audio_manager_;
   content::TestBrowserContext browser_context_;
   content::TestContentBrowserClient browser_client_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

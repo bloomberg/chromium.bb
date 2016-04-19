@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "base/sys_byteorder.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/audio/fake_audio_output_stream.h"
@@ -26,7 +26,6 @@
 
 using media::AudioInputController;
 using media::AudioInputStream;
-using media::AudioManager;
 using media::AudioOutputStream;
 using media::AudioParameters;
 using media::TestAudioInputController;
@@ -38,8 +37,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
                                  public testing::Test {
  public:
   SpeechRecognizerImplTest()
-      : io_thread_(BrowserThread::IO, &message_loop_),
-        recognition_started_(false),
+      : recognition_started_(false),
         recognition_ended_(false),
         result_received_(false),
         audio_started_(false),
@@ -184,10 +182,9 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
-  BrowserThreadImpl io_thread_;
+  TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<SpeechRecognizerImpl> recognizer_;
-  std::unique_ptr<AudioManager> audio_manager_;
+  media::ScopedAudioManagerPtr audio_manager_;
   bool recognition_started_;
   bool recognition_ended_;
   bool result_received_;

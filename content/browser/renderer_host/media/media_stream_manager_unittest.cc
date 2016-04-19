@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -72,7 +71,9 @@ ResourceContext::SaltCallback GetMockSaltCallback() {
 class MockAudioManager : public AudioManagerPlatform {
  public:
   MockAudioManager()
-      : AudioManagerPlatform(&fake_audio_log_factory_),
+      : AudioManagerPlatform(base::ThreadTaskRunnerHandle::Get(),
+                             base::ThreadTaskRunnerHandle::Get(),
+                             &fake_audio_log_factory_),
         num_output_devices_(2) {}
   ~MockAudioManager() override {}
 
@@ -176,21 +177,21 @@ class MockMediaStreamRequester : public MediaStreamRequester {
 class MediaStreamManagerTest : public ::testing::Test {
  public:
   MediaStreamManagerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
     audio_manager_.reset(new MockAudioManager());
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
-}
-
-  virtual ~MediaStreamManagerTest() {
+    base::RunLoop().RunUntilIdle();
   }
+
+  ~MediaStreamManagerTest() override {}
 
   MOCK_METHOD1(Response, void(int index));
   void ResponseCallback(int index,
                         const MediaStreamDevices& devices,
                         std::unique_ptr<MediaStreamUIProxy> ui_proxy) {
     Response(index);
-    task_runner_->PostTask(FROM_HERE, run_loop_.QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop_.QuitClosure());
   }
 
  protected:
@@ -208,10 +209,12 @@ class MediaStreamManagerTest : public ::testing::Test {
         security_origin, callback);
   }
 
-  std::unique_ptr<MockAudioManager> audio_manager_;
+  // media_stream_manager_ needs to outlive thread_bundle_ because it is a
+  // MessageLoop::DestructionObserver. audio_manager_ needs to outlive
+  // thread_bundle_ because it uses the underlying message loop.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  std::unique_ptr<MockAudioManager, media::AudioManagerDeleter> audio_manager_;
   base::RunLoop run_loop_;
 
  private:
@@ -231,7 +234,6 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMediaAccessRequest) {
   // No callback is expected.
   media_stream_manager_->CancelRequest(label);
   run_loop_.RunUntilIdle();
-  media_stream_manager_->WillDestroyCurrentMessageLoop();
 }
 
 TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {

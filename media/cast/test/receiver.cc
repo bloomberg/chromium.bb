@@ -548,14 +548,15 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
   InitLogging(logging::LoggingSettings());
+  base::MessageLoop message_loop;
 
   scoped_refptr<media::cast::CastEnvironment> cast_environment(
       new media::cast::StandaloneCastEnvironment);
 
   // Start up Chromium audio system.
-  media::FakeAudioLogFactory fake_audio_log_factory_;
-  const scoped_ptr<media::AudioManager> audio_manager(
-      media::AudioManager::Create(&fake_audio_log_factory_));
+  const media::ScopedAudioManagerPtr audio_manager(
+      media::AudioManager::CreateForTesting(
+          base::ThreadTaskRunnerHandle::Get()));
   CHECK(media::AudioManager::Get());
 
   media::cast::FrameReceiverConfig audio_config =
@@ -600,7 +601,7 @@ int main(int argc, char** argv) {
                                   window_height);
   player.Start();
 
-  base::MessageLoop().Run();  // Run forever (i.e., until SIGTERM).
+  message_loop.Run();  // Run forever (i.e., until SIGTERM).
   NOTREACHED();
   return 0;
 }

@@ -63,6 +63,7 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     "//base",
+    "//base/test:test_support",
     "//content/test:test_support",
     "//media",
     "//media:shared_memory_support",

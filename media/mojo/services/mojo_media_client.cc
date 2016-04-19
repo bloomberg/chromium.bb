@@ -12,6 +12,8 @@ MojoMediaClient::~MojoMediaClient() {}
 
 void MojoMediaClient::Initialize() {}
 
+void MojoMediaClient::WillQuit() {}
+
 std::unique_ptr<AudioDecoder> MojoMediaClient::CreateAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return nullptr;

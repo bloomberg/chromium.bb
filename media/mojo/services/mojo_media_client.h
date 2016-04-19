@@ -32,6 +32,10 @@ class MojoMediaClient {
 
   // Called exactly once before any other method.
   virtual void Initialize();
+  // Called before the host application is scheduled to quit.
+  // The application message loop is still valid at this point, so all clean
+  // up tasks requiring the message loop must be completed before returning.
+  virtual void WillQuit();
 
   virtual std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);

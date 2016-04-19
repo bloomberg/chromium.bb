@@ -16,7 +16,10 @@ namespace media {
 
 class MEDIA_EXPORT FakeAudioManager : public AudioManagerBase {
  public:
-  FakeAudioManager(AudioLogFactory* audio_log_factory);
+  FakeAudioManager(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+      AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
   bool HasAudioOutputDevices() override;
