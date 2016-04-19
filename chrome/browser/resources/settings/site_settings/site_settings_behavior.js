@@ -71,8 +71,6 @@ var SiteSettingsBehaviorImpl = {
         return 'camera';
       case settings.ContentSettingsTypes.COOKIES:
         return 'cookies';
-      case settings.ContentSettingsTypes.FULLSCREEN:
-        return 'fullscreen';
       case settings.ContentSettingsTypes.GEOLOCATION:
         return 'location';
       case settings.ContentSettingsTypes.IMAGES:
@@ -91,7 +89,9 @@ var SiteSettingsBehaviorImpl = {
   },
 
   /**
-   * A utility function to compute the icon to use for the category.
+   * A utility function to compute the icon to use for the category, both for
+   * the overall category as well as the individual permission in the details
+   * for a site.
    * @param {number} category The category to show the icon for.
    * @return {string} The id of the icon for the given category.
    * @protected
@@ -123,7 +123,9 @@ var SiteSettingsBehaviorImpl = {
   },
 
   /**
-   * A utility function to compute the title of the category.
+   * A utility function to compute the title of the category, both for
+   * the overall category as well as the individual permission in the details
+   * for a site.
    * @param {number} category The category to show the title for.
    * @return {string} The title for the given category.
    * @protected
@@ -150,62 +152,6 @@ var SiteSettingsBehaviorImpl = {
         return loadTimeData.getString('siteSettingsPopups');
       default:
         assertNotReached('Invalid category: ' + category);
-        return '';
-    }
-  },
-
-  /**
-   * A utility function to compute the name of the pref for the category.
-   * @param {number} category The category to find the pref name for.
-   * @return {string} The pref name for the given category.
-   * @protected
-   */
-  computeCategoryPrefName: function(category) {
-    return 'profile.default_content_setting_values.' +
-        this.computeCategorySuffix(category);
-  },
-
-  /**
-   * A utility function to compute the name of the pref for the exceptions
-   * for a given category.
-   * @param {number} category The category to find the pref name for.
-   * @return {string} The pref name for the given category exceptions.
-   * @protected
-   */
-  computeCategoryExceptionsPrefName: function(category) {
-    return 'profile.content_settings.exceptions.' +
-        this.computeCategorySuffix(category);
-  },
-
-  /**
-   * A utility function to convert the category enum into its text
-   * representation, for use with prefs.
-   * @param {number} category The category to find the pref name for.
-   * @return {string} The pref name (suffix) for the given category.
-   * @protected
-   */
-  computeCategorySuffix: function(category) {
-    switch (category) {
-      case settings.ContentSettingsTypes.CAMERA:
-        return 'media_stream_camera';
-      case settings.ContentSettingsTypes.COOKIES:
-        return 'cookies';
-      case settings.ContentSettingsTypes.FULLSCREEN:
-        return 'fullscreen';
-      case settings.ContentSettingsTypes.GEOLOCATION:
-        return 'geolocation';
-      case settings.ContentSettingsTypes.IMAGES:
-        return 'images';
-      case settings.ContentSettingsTypes.JAVASCRIPT:
-        return 'javascript';
-      case settings.ContentSettingsTypes.MIC:
-        return 'media_stream_mic';
-      case settings.ContentSettingsTypes.NOTIFICATIONS:
-        return 'notifications';
-      case settings.ContentSettingsTypes.POPUPS:
-        return 'popups';
-      default:
-        assertNotReached();
         return '';
     }
   },
@@ -256,14 +202,6 @@ var SiteSettingsBehaviorImpl = {
             loadTimeData.getString(
                 'siteSettingsAskBeforeAccessingRecommended') :
             loadTimeData.getString('siteSettingsAskBeforeAccessing');
-      case settings.ContentSettingsTypes.FULLSCREEN:
-        // "Allowed" vs. "Ask first (recommended)".
-        if (categoryEnabled) {
-          return loadTimeData.getString('siteSettingsAllowed');
-        }
-        return showRecommendation ?
-            loadTimeData.getString('siteSettingsAskFirstRecommended') :
-            loadTimeData.getString('siteSettingsAskFirst');
       case settings.ContentSettingsTypes.COOKIES:
         // "Allow sites to save and read cookie data" vs "Blocked".
         if (!categoryEnabled) {

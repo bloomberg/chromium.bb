@@ -43,8 +43,6 @@ Polymer({
     this.setDefaultValue_(this.ContentSettingsTypes.JAVASCRIPT,
         '#javascript');
     this.setDefaultValue_(this.ContentSettingsTypes.POPUPS, '#popups');
-    this.setDefaultValue_(this.ContentSettingsTypes.FULLSCREEN,
-        '#fullscreen');
     this.setDefaultValue_(this.ContentSettingsTypes.NOTIFICATIONS,
         '#notifications');
     this.setDefaultValue_(this.ContentSettingsTypes.IMAGES, '#images');

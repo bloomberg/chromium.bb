@@ -4,11 +4,11 @@
 
 cr.define('settings', function() {
   /**
-   * The possible contentSettingsTypes (the ones we currently support
-   * configuring in the UI). This is a subset of the constants found under
-   * content_setttings_types.h and the values should be kept in sync.
-   * TODO(finnur): When all categories have been implemented we can just
-   * generate these constants from content_setttings_types.h.
+   * All possible contentSettingsTypes that we currently support configuring in
+   * the UI. Both top-level categories and content settings that represent
+   * individual permissions under Site Details should appear here. This is a
+   * subset of the constants found under content_setttings_types.h and the
+   * values should be kept in sync.
    * @enum {number}
    */
   var ContentSettingsTypes = {

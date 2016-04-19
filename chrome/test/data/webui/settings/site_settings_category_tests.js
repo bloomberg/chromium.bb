@@ -105,25 +105,27 @@ cr.define('site_settings_category', function() {
         for (var key in settings.ContentSettingsTypes) {
           var category = settings.ContentSettingsTypes[key];
 
-          // All categories have a textId, an icon, a title, and pref names.
-          assertNotEquals('', testElement.computeCategoryTextId(category));
+          // All top-level categories must have category text ids and
+          // descriptions. Categories that only appear under Site Details don't
+          // need that.
+          if (category != settings.ContentSettingsTypes.FULLSCREEN) {
+            assertNotEquals('', testElement.computeCategoryTextId(category));
+
+            assertNotEquals(
+                '', testElement.computeCategoryDesc(category, true, true));
+            assertNotEquals(
+                '', testElement.computeCategoryDesc(category, true, false));
+            assertNotEquals(
+                '', testElement.computeCategoryDesc(category, false, true));
+            assertNotEquals(
+                '', testElement.computeCategoryDesc(category, false, false));
+          }
+
+          // All categories have an icon and a title.
           assertNotEquals(
               '', testElement.computeIconForContentCategory(category));
           assertNotEquals(
               '', testElement.computeTitleForContentCategory(category));
-          assertNotEquals(
-              '', testElement.computeCategoryPrefName(category));
-          assertNotEquals(
-              '', testElement.computeCategoryExceptionsPrefName(category));
-
-          assertNotEquals(
-              '', testElement.computeCategoryDesc(category, true, true));
-          assertNotEquals(
-              '', testElement.computeCategoryDesc(category, true, false));
-          assertNotEquals(
-              '', testElement.computeCategoryDesc(category, false, true));
-          assertNotEquals(
-              '', testElement.computeCategoryDesc(category, false, false));
         }
       });
     });

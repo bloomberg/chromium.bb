@@ -96,14 +96,6 @@ Polymer({
                 settings.PermissionValues.ASK :
                 settings.PermissionValues.BLOCK);
         break;
-      case settings.ContentSettingsTypes.FULLSCREEN:
-        // "Allowed" vs. "Ask first".
-        this.browserProxy.setDefaultValueForContentType(
-            this.category,
-            this.categoryEnabled ?
-                settings.PermissionValues.ALLOW :
-                settings.PermissionValues.ASK);
-        break;
       default:
         assertNotReached('Invalid category: ' + this.category);
     }

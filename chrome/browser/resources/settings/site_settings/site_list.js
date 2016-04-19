@@ -359,8 +359,7 @@ Polymer({
     this.showAllowAction_ =
         this.categorySubtype == settings.PermissionValues.BLOCK;
     this.showBlockAction_ =
-        this.categorySubtype == settings.PermissionValues.ALLOW &&
-        this.category != settings.ContentSettingsTypes.FULLSCREEN;
+        this.categorySubtype == settings.PermissionValues.ALLOW;
   },
 
   /**
