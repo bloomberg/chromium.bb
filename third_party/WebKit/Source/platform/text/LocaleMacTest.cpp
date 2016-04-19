@@ -132,7 +132,6 @@ protected:
         return locale->isRTL();
     }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     String monthFormat(const String& localeString)
     {
         OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
@@ -180,7 +179,6 @@ protected:
         OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->localizedDecimalSeparator();
     }
-#endif
 };
 
 TEST_F(LocaleMacTest, formatWeek)
@@ -274,7 +272,6 @@ TEST_F(LocaleMacTest, isRTL)
     EXPECT_FALSE(isRTL("**invalid**"));
 }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 TEST_F(LocaleMacTest, monthFormat)
 {
     EXPECT_STREQ("MMMM yyyy", monthFormat("en_US").utf8().data());
@@ -355,7 +352,6 @@ TEST_F(LocaleMacTest, decimalSeparator)
     EXPECT_STREQ(".", decimalSeparator("en_US").utf8().data());
     EXPECT_STREQ(",", decimalSeparator("fr_FR").utf8().data());
 }
-#endif
 
 TEST_F(LocaleMacTest, invalidLocale)
 {

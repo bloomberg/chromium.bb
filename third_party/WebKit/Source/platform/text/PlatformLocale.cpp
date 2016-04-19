@@ -413,13 +413,11 @@ String Locale::stripInvalidNumberCharacters(const String& input, const String& s
     return builder.toString();
 }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 String Locale::localizedDecimalSeparator()
 {
     initializeLocaleData();
     return m_decimalSymbols[DecimalSeparatorIndex];
 }
-#endif
 
 String Locale::formatDateTime(const DateComponents& date, FormatType formatType)
 {

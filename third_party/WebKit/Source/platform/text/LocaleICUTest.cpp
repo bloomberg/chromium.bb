@@ -87,7 +87,6 @@ protected:
         return Labels(labels);
     }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     String monthFormat(const char* localeString)
     {
         OwnPtr<LocaleICU> locale = LocaleICU::create(localeString);
@@ -135,7 +134,6 @@ protected:
         OwnPtr<LocaleICU> locale = LocaleICU::create(localeString);
         return locale->isRTL();
     }
-#endif
 };
 
 std::ostream& operator<<(std::ostream& os, const LocaleICUTest::Labels& labels)
@@ -143,7 +141,6 @@ std::ostream& operator<<(std::ostream& os, const LocaleICUTest::Labels& labels)
     return os << labels.toString().utf8().data();
 }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 TEST_F(LocaleICUTest, isRTL)
 {
     EXPECT_TRUE(isRTL("ar-EG"));
@@ -249,7 +246,6 @@ TEST_F(LocaleICUTest, localizedDecimalSeparator)
     EXPECT_EQ(String("."), testDecimalSeparator("en_US"));
     EXPECT_EQ(String(","), testDecimalSeparator("fr"));
 }
-#endif
 
 void testNumberIsReversible(const AtomicString& localeIdentifier, const char* original, const char* shouldHave = 0)
 {

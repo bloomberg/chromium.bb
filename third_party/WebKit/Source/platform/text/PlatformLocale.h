@@ -65,10 +65,8 @@ public:
     // locale-specific number characters and |standardChars|.
     String stripInvalidNumberCharacters(const String& input, const String& standardChars) const;
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     // Returns localized decimal separator, e.g. "." for English, "," for French.
     String localizedDecimalSeparator();
-#endif
 
     // Returns date format in Unicode TR35 LDML[1] containing day of month,
     // month, and year, e.g. "dd/mm/yyyy"

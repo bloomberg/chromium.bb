@@ -112,7 +112,6 @@ protected:
         return locale->isRTL();
     }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     String monthFormat(LCID lcid)
     {
         OwnPtr<LocaleWin> locale = LocaleWin::create(lcid, true /* defaultsForLocale */);
@@ -148,7 +147,6 @@ protected:
         OwnPtr<LocaleWin> locale = LocaleWin::create(lcid, true /* defaultsForLocale */);
         return locale->localizedDecimalSeparator();
     }
-#endif
 };
 
 TEST_F(LocaleWinTest, formatDate)
@@ -201,7 +199,6 @@ TEST_F(LocaleWinTest, isRTL)
     EXPECT_FALSE(isRTL(EnglishUS));
 }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 TEST_F(LocaleWinTest, dateFormat)
 {
     EXPECT_STREQ("y-M-d", LocaleWin::dateFormat("y-M-d").utf8().data());
@@ -261,7 +258,6 @@ TEST_F(LocaleWinTest, decimalSeparator)
     EXPECT_STREQ(".", decimalSeparator(EnglishUS).utf8().data());
     EXPECT_STREQ(",", decimalSeparator(FrenchFR).utf8().data());
 }
-#endif
 
 static void testNumberIsReversible(LCID lcid, const char* original, const char* shouldHave = 0)
 {
