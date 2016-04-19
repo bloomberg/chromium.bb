@@ -1571,6 +1571,7 @@
       'browser/ui/webui/settings_utils_unittest.cc',
       'browser/ui/webui/settings/settings_manage_profile_handler_unittest.cc',
       'browser/ui/webui/settings/people_handler_unittest.cc',
+      'browser/ui/webui/settings/profile_info_handler_unittest.cc',
       'browser/ui/webui/settings/reset_settings_handler_unittest.cc',
       'browser/ui/webui/settings/site_settings_handler_unittest.cc',
       'browser/ui/webui/signin/login_ui_service_unittest.cc',

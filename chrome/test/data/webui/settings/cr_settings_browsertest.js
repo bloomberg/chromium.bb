@@ -124,6 +124,32 @@ TEST_F('CrSettingsPeoplePageManageProfileTest', 'ManageProfile', function() {
 GEN('#endif');
 
 /**
+ * Test fixture for
+ * chrome/browser/resources/settings/people_page/people_page.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsPeoplePageTest() {}
+
+CrSettingsPeoplePageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/people_page/people_page.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'test_browser_proxy.js',
+    'people_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsPeoplePageTest', 'PeoplePage', function() {
+  settings_people_page.registerTests();
+  mocha.run();
+});
+
+/**
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
@@ -146,7 +172,6 @@ TEST_F('CrSettingsRtlTest', 'DrawerPanelFlips', function() {
   settings_rtl_tests.registerDrawerPanelTests();
   mocha.run();
 });
-
 
 /**
  * Test fixture for chrome/browser/resources/settings/reset_page/.

@@ -56,7 +56,7 @@ Polymer({
 
 <if expr="chromeos">
     /** @private {!settings.EasyUnlockBrowserProxyImpl} */
-    browserProxy_: {
+    easyUnlockBrowserProxy_: {
       type: Object,
       value: function() {
         return settings.EasyUnlockBrowserProxyImpl.getInstance();
@@ -100,7 +100,11 @@ Polymer({
 
   /** @override */
   attached: function() {
-    settings.SyncPrivateApi.getProfileInfo(this.handleProfileInfo_.bind(this));
+    settings.ProfileInfoBrowserProxyImpl.getInstance().getProfileInfo().then(
+        this.handleProfileInfo_.bind(this));
+    this.addWebUIListener('profile-info-changed',
+                          this.handleProfileInfo_.bind(this));
+
     settings.SyncPrivateApi.getSyncStatus(
         this.handleSyncStatusFetched_.bind(this));
 
@@ -109,7 +113,7 @@ Polymer({
       this.addWebUIListener(
           'easy-unlock-enabled-status',
           this.handleEasyUnlockEnabledStatusChanged_.bind(this));
-      this.browserProxy_.getEnabledStatus().then(
+      this.easyUnlockBrowserProxy_.getEnabledStatus().then(
           this.handleEasyUnlockEnabledStatusChanged_.bind(this));
     }
 </if>
@@ -118,12 +122,11 @@ Polymer({
   /**
    * Handler for when the profile's icon and name is updated.
    * @private
-   * @param {!string} name
-   * @param {!string} iconUrl
+   * @param {!settings.ProfileInfo} info
    */
-  handleProfileInfo_: function(name, iconUrl) {
-    this.profileName_ = name;
-    this.profileIconUrl_ = iconUrl;
+  handleProfileInfo_: function(info) {
+    this.profileName_ = info.name;
+    this.profileIconUrl_ = info.iconUrl;
   },
 
   /**
@@ -196,7 +199,7 @@ Polymer({
 <if expr="chromeos">
   /** @private */
   onEasyUnlockSetupTap_: function() {
-    this.browserProxy_.startTurnOnFlow();
+    this.easyUnlockBrowserProxy_.startTurnOnFlow();
   },
 
   /** @private */

@@ -2034,6 +2034,8 @@
       'browser/ui/webui/settings/md_settings_ui.h',
       'browser/ui/webui/settings/people_handler.cc',
       'browser/ui/webui/settings/people_handler.h',
+      'browser/ui/webui/settings/profile_info_handler.cc',
+      'browser/ui/webui/settings/profile_info_handler.h',
       'browser/ui/webui/settings/reset_settings_handler.cc',
       'browser/ui/webui/settings/reset_settings_handler.h',
       'browser/ui/webui/settings/search_engines_handler.cc',

@@ -16,11 +16,8 @@
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_attributes_entry.h"
-#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
@@ -53,18 +50,11 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "grit/components_strings.h"
 #include "net/base/url_util.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_manager_base.h"
-#include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_service.h"
 #else
 #include "components/signin/core/browser/signin_manager.h"
 #endif
@@ -158,47 +148,6 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
   return true;
 }
 
-void GetAccountNameAndIcon(const Profile& profile,
-                           std::string* name,
-                           std::string* icon_url) {
-  DCHECK(name);
-  DCHECK(icon_url);
-
-#if defined(OS_CHROMEOS)
-  *name = profile.GetProfileUserName();
-  if (name->empty()) {
-    const user_manager::User* user =
-        chromeos::ProfileHelper::Get()->GetUserByProfile(&profile);
-    if (user && (user->GetType() != user_manager::USER_TYPE_GUEST))
-      *name = user->email();
-  }
-  if (!name->empty())
-    *name = gaia::SanitizeEmail(gaia::CanonicalizeEmail(*name));
-
-  // Get image as data URL instead of using chrome://userimage source to avoid
-  // issues with caching.
-  const AccountId account_id(AccountId::FromUserEmail(*name));
-  scoped_refptr<base::RefCountedMemory> image =
-      chromeos::options::UserImageSource::GetUserImage(account_id);
-  *icon_url = webui::GetPngDataUrl(image->front(), image->size());
-#else   // !defined(OS_CHROMEOS)
-  ProfileAttributesEntry* entry;
-  if (g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(profile.GetPath(), &entry)) {
-    *name = base::UTF16ToUTF8(entry->GetName());
-
-    if (entry->IsUsingGAIAPicture() && entry->GetGAIAPicture()) {
-      gfx::Image icon =
-          profiles::GetAvatarIconForWebUI(entry->GetAvatarIcon(), true);
-      *icon_url = webui::GetBitmapDataUrl(icon.AsBitmap());
-    } else {
-      *icon_url =
-          profiles::GetDefaultAvatarIconUrl(entry->GetAvatarIconIndex());
-    }
-  }
-#endif  // defined(OS_CHROMEOS)
-}
-
 }  // namespace
 
 namespace settings {
@@ -218,20 +167,9 @@ PeopleHandler::PeopleHandler(Profile* profile)
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_));
   if (sync_service)
     sync_service_observer_.Add(sync_service);
-
-  g_browser_process->profile_manager()->
-      GetProfileAttributesStorage().AddObserver(this);
-
-#if defined(OS_CHROMEOS)
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                 content::NotificationService::AllSources());
-#endif
 }
 
 PeopleHandler::~PeopleHandler() {
-  g_browser_process->profile_manager()->
-      GetProfileAttributesStorage().RemoveObserver(this);
-
   // Early exit if running unit tests (no actual WebUI is attached).
   if (!web_ui())
     return;
@@ -271,9 +209,6 @@ bool PeopleHandler::IsActiveLogin() const {
 }
 
 void PeopleHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
-      "getProfileInfo",
-      base::Bind(&PeopleHandler::HandleGetProfileInfo, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupDidClosePage",
       base::Bind(&PeopleHandler::OnDidClosePage, base::Unretained(this)));
@@ -445,16 +380,6 @@ ProfileSyncService* PeopleHandler::GetSyncService() const {
   return profile_->IsSyncAllowed()
              ? ProfileSyncServiceFactory::GetForProfile(profile_)
              : nullptr;
-}
-
-void PeopleHandler::HandleGetProfileInfo(const base::ListValue* args) {
-  std::string name;
-  std::string icon_url;
-  GetAccountNameAndIcon(*profile_, &name, &icon_url);
-
-  web_ui()->CallJavascriptFunction("settings.SyncPrivateApi.receiveProfileInfo",
-                                   base::StringValue(name),
-                                   base::StringValue(icon_url));
 }
 
 void PeopleHandler::HandleConfigure(const base::ListValue* args) {
@@ -793,31 +718,6 @@ void PeopleHandler::GoogleSignedOut(const std::string& /* account_id */,
 
 void PeopleHandler::OnStateChanged() {
   UpdateSyncState();
-}
-
-#if defined(OS_CHROMEOS)
-void PeopleHandler::Observe(int type,
-                            const content::NotificationSource& source,
-                            const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED:
-      HandleGetProfileInfo(nullptr);
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-#endif
-
-void PeopleHandler::OnProfileNameChanged(
-    const base::FilePath& /* profile_path */,
-    const base::string16& /* old_profile_name */) {
-  HandleGetProfileInfo(nullptr);
-}
-
-void PeopleHandler::OnProfileAvatarChanged(
-    const base::FilePath& /* profile_path */) {
-  HandleGetProfileInfo(nullptr);
 }
 
 std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStateDictionary() {

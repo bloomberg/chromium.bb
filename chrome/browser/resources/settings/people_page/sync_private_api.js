@@ -90,33 +90,11 @@ cr.define('settings', function() {
    */
   function SyncPrivateApi() {}
 
-  /** @private {?function(!string, !string)} */
-  SyncPrivateApi.getProfileInfoCallback_ = null;
-
   /** @private {?function(settings.SyncPrefs)} */
   SyncPrivateApi.syncPrefsCallback_ = null;
 
   /** @private {?function(settings.PageStatus)} */
   SyncPrivateApi.setPageStatusCallback_ = null;
-
-  /**
-   * Called from JavaScript. Gets the current profile name and icon.
-   * @param {?function(!string, !string)} callback
-   */
-  SyncPrivateApi.getProfileInfo = function(callback) {
-    SyncPrivateApi.getProfileInfoCallback_ = callback;
-    chrome.send('getProfileInfo');
-  };
-
-  /**
-   * Called from C++ as a response to getIconsAndNames.
-   * @param {!string} name The current profile name.
-   * @param {!string} iconUrl The current profile icon's URL. Can be a data URL.
-   */
-  SyncPrivateApi.receiveProfileInfo = function(name, iconUrl) {
-    if (SyncPrivateApi.getProfileInfoCallback_)
-      SyncPrivateApi.getProfileInfoCallback_(name, iconUrl);
-  };
 
   /**
    * Starts the signin process for the user. Does nothing if the user is

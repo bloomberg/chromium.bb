@@ -467,13 +467,17 @@
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_PEOPLE_PAGE_MANAGE_PROFILE_BROWSER_PROXY_HTML"
                    file="people_page/manage_profile_browser_proxy.html"
-                   type="chrome_html"
-                   flattenhtml="true"
-                   allowexternalscript="true" />
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_PEOPLE_PAGE_MANAGE_PROFILE_BROWSER_PROXY_JS"
                    file="people_page/manage_profile_browser_proxy.js"
                    type="chrome_html" />
       </if>
+      <structure name="IDR_SETTINGS_PEOPLE_PAGE_PROFILE_INFO_BROWSER_PROXY_HTML"
+                 file="people_page/profile_info_browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PEOPLE_PAGE_PROFILE_INFO_BROWSER_PROXY_JS"
+                 file="people_page/profile_info_browser_proxy.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PREF_UTIL_HTML"
                  file="prefs/pref_util.html"
                  type="chrome_html" />

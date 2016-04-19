@@ -75,7 +75,15 @@
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
         'easy_unlock_browser_proxy',
         'easy_unlock_turn_off_dialog',
+        'profile_info_browser_proxy',
         'sync_private_api',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'profile_info_browser_proxy',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
