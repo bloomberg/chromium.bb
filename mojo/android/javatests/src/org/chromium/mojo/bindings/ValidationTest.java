@@ -91,14 +91,17 @@ public class ValidationTest extends MojoTestCase {
             return results;
         }
 
-        for (File dataFile : VALIDATION_TEST_DATA_PATH.listFiles(new DataFileFilter(prefix))) {
-            File resultFile = new File(dataFile.getParent(),
-                    dataFile.getName().replaceFirst("\\.data$", ".expected"));
-            TestData testData = new TestData();
-            testData.dataFile = dataFile;
-            testData.inputData = ValidationTestUtil.parseData(getStringContent(dataFile));
-            testData.expectedResult = getStringContent(resultFile);
-            results.add(testData);
+        File[] files = VALIDATION_TEST_DATA_PATH.listFiles(new DataFileFilter(prefix));
+        if (files != null) {
+            for (File dataFile : files) {
+                File resultFile = new File(dataFile.getParent(),
+                        dataFile.getName().replaceFirst("\\.data$", ".expected"));
+                TestData testData = new TestData();
+                testData.dataFile = dataFile;
+                testData.inputData = ValidationTestUtil.parseData(getStringContent(dataFile));
+                testData.expectedResult = getStringContent(resultFile);
+                results.add(testData);
+            }
         }
         return results;
     }

@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.blimp.auth.RetryingTokenSource;
 import org.chromium.blimp.auth.TokenSource;
@@ -43,6 +44,7 @@ public class BlimpRendererActivity
     private WebInputBox mWebInputBox;
 
     @Override
+    @SuppressFBWarnings("DM_EXIT")  // FindBugs doesn't like System.exit().
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -115,6 +117,8 @@ public class BlimpRendererActivity
                 } else {
                     onTokenUnavailable(false);
                 }
+                break;
+            default:
                 break;
         }
     }

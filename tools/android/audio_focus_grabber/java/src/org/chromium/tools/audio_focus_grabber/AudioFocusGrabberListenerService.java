@@ -144,6 +144,8 @@ public class AudioFocusGrabberListenerService extends Service {
                             mMediaPlayer.setVolume(0.1f, 0.1f);
                             mIsDucking = true;
                             break;
+                        default:
+                            break;
                     }
                 }
             };

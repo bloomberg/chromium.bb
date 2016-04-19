@@ -38,6 +38,8 @@ public class AudioFocusGrabberActivity extends Activity {
             case R.id.button_hide_notification:
                 intent.setAction(AudioFocusGrabberListenerService.ACTION_HIDE_NOTIFICATION);
                 break;
+            default:
+                break;
         }
         startService(intent);
     }

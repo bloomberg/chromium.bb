@@ -148,7 +148,7 @@ public class InterfacesTest extends MojoTestCase {
     /**
      * Implementation of DoStuffResponse that keeps track of if the response is called.
      */
-    public class DoStuffResponseImpl implements Factory.DoStuffResponse {
+    public static class DoStuffResponseImpl implements Factory.DoStuffResponse {
         private boolean mResponseCalled = false;
 
         public boolean wasResponseCalled() {
