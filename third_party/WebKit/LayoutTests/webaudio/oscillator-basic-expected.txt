@@ -3,15 +3,15 @@ Basic test of setting Oscillator node types.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS osc.type = 'sine' is equal to sine.
-PASS osc.type = 'square' is equal to square.
-PASS osc.type = 'sawtooth' is equal to sawtooth.
-PASS osc.type = 'triangle' is equal to triangle.
+PASS osc.type = 'sine' is equal to "sine".
+PASS osc.type = 'square' is equal to "square".
+PASS osc.type = 'sawtooth' is equal to "sawtooth".
+PASS osc.type = 'triangle' is equal to "triangle".
 PASS osc.type = 'custom' threw InvalidStateError: Failed to set the 'type' property on 'OscillatorNode': 'type' cannot be set directly to 'custom'.  Use setPeriodicWave() to create a custom Oscillator type..
 PASS osc.setPeriodicWave(wave) did not throw an exception.
-PASS osc.type is equal to custom.
+PASS osc.type is equal to "custom".
 PASS osc.type = 0 is not equal to 0.
-PASS osc.type is equal to custom.
+PASS osc.type is equal to "custom".
 PASS successfullyParsed is true
 
 TEST COMPLETE

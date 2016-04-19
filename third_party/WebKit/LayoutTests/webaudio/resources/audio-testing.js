@@ -509,10 +509,18 @@ var Should = (function () {
 
         this._checkNaN(value, 'EXPECTED');
 
-        if (this.target === value)
-            this._testPassed('is equal to ' + value);
-        else
-            this._testFailed('was ' + this.target + ' instead of ' + value);
+        var outputValue = value;
+        if (type === 'string')
+            outputValue = '"' + outputValue + '"';
+        if (this.target === value) {
+            var outputValue = (type === 'string') ? '"' + value + '"' : value;
+            this._testPassed('is equal to ' + outputValue);
+        } else {
+            var targetValue = this.target;
+            if (typeof this.target === 'string')
+                targetValue = '"' + targetValue + '"';
+            this._testFailed('was ' + targetValue + ' instead of ' + outputValue);
+        }
         return this._success;
     };
 

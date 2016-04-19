@@ -6,8 +6,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS context.createIIRFilter is defined.
 PASS numberOfInputs is equal to 1.
 PASS numberOfOutputs is equal to 1.
-PASS channelCountMode is equal to max.
-PASS channelInterpretation is equal to speakers.
+PASS channelCountMode is equal to "max".
+PASS channelInterpretation is equal to "speakers".
 PASS All basic IIRFilter parameters are correct.
 
 PASS createIIRFilter() threw TypeError: Failed to execute 'createIIRFilter' on 'AudioContext': 2 arguments required, but only 0 present..
