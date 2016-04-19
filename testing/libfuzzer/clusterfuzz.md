@@ -13,6 +13,7 @@ executes libFuzzer tests on scale.
 * [Buildbot] - status of all libFuzzer builds.
 * [ClusterFuzz Fuzzer Status] - fuzzing metrics, links to crashes and coverage 
 reports.
+* [ClusterFuzz libFuzzer Logs] - individual fuzzer run logs.
 * [Corpus GCS Bucket] - current corpus for each fuzzer. Can be used to upload
 bootstrapped corpus.
 
@@ -25,6 +26,7 @@ The integration between libFuzzer and ClusterFuzz consists of:
 builds fuzzers with multiple sanitizers and uploads binaries to a special
 GCS bucket. Build bot recipe is defined in [chromium_libfuzzer.py].
 * ClusterFuzz downloads new binaries once a day and runs fuzzers continuously.
+* Fuzzer run logs are uploaded to [ClusterFuzz libFuzzer Logs] GCS bucket.
 * Fuzzing corpus is maintained for each fuzzer in [Corpus GCS Bucket]. Once a day
 corpus is minimized to reduce number of duplicates and/or reduce effect of 
 parasitic coverage. 
@@ -37,4 +39,5 @@ is collected every 30 minutes.
 [fuzzer_test.gni]: https://code.google.com/p/chromium/codesearch#chromium/src/testing/libfuzzer/fuzzer_test.gni
 [chromium_libfuzzer.py]: https://code.google.com/p/chromium/codesearch#chromium/build/scripts/slave/recipes/chromium_libfuzzer.py
 [ClusterFuzz Fuzzer Status]: https://goto.google.com/libfuzzer-clusterfuzz-status
+[ClusterFuzz libFuzzer Logs]: https://goto.google.com/libfuzzer-clusterfuzz-logs
 [Corpus GCS Bucket]: https://goto.google.com/libfuzzer-clusterfuzz-corpus
