@@ -21,7 +21,6 @@
 #include "chrome/browser/search/most_visited_iframe_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
-#include "chrome/browser/search/suggestions/suggestions_source.h"
 #include "chrome/browser/search/thumbnail_source.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -174,8 +173,6 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(
       profile_, new LargeIconSource(fallback_icon_service, large_icon_service));
   content::URLDataSource::Add(profile_, new MostVisitedIframeSource());
-  content::URLDataSource::Add(
-      profile_, new suggestions::SuggestionsSource(profile_));
 
   if (IsLocalNTPSuggestionServiceEnabled()) {
     suggestions_service_ =

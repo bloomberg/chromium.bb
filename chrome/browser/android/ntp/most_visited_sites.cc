@@ -25,7 +25,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
-#include "chrome/browser/search/suggestions/suggestions_source.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
@@ -223,10 +222,7 @@ MostVisitedSites::MostVisitedSites(Profile* profile)
     : profile_(profile), num_sites_(0), received_most_visited_sites_(false),
       received_popular_sites_(false), recorded_uma_(false),
       scoped_observer_(this), weak_ptr_factory_(this) {
-  // Register the debugging page for the Suggestions Service and the thumbnails
-  // debugging page.
-  content::URLDataSource::Add(profile_,
-                              new suggestions::SuggestionsSource(profile_));
+  // Register the thumbnails debugging page.
   content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
 
   SupervisedUserService* supervised_user_service =

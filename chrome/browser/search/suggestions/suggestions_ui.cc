@@ -1,18 +1,18 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search/suggestions/suggestions_source.h"
+#include "chrome/browser/search/suggestions/suggestions_ui.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
-#include <vector>
+#include <map>
+#include <string>
 
 #include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -22,7 +22,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/common/url_constants.h"
+#include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
+#include "content/public/browser/url_data_source.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -108,7 +110,55 @@ std::string RenderOutputHtmlNoSuggestions(bool is_refresh) {
   return base::JoinString(out, base::StringPiece());
 }
 
-}  // namespace
+// SuggestionsSource renders a webpage to list SuggestionsService data.
+class SuggestionsSource : public content::URLDataSource {
+ public:
+  explicit SuggestionsSource(Profile* profile);
+
+  // content::URLDataSource implementation.
+  std::string GetSource() const override;
+  void StartDataRequest(
+      const std::string& path,
+      int render_process_id,
+      int render_frame_id,
+      const content::URLDataSource::GotDataCallback& callback) override;
+  std::string GetMimeType(const std::string& path) const override;
+  base::MessageLoop* MessageLoopForRequestPath(
+      const std::string& path) const override;
+
+ private:
+  ~SuggestionsSource() override;
+
+  // Container for the state of a request.
+  struct RequestContext {
+    RequestContext(
+        bool is_refresh_in,
+        const suggestions::SuggestionsProfile& suggestions_profile_in,
+        const content::URLDataSource::GotDataCallback& callback_in);
+    ~RequestContext();
+
+    const bool is_refresh;
+    const suggestions::SuggestionsProfile suggestions_profile;
+    const content::URLDataSource::GotDataCallback callback;
+    std::map<GURL, std::string> base64_encoded_pngs;
+  };
+
+  // Callback for responses from each Thumbnail request.
+  void OnThumbnailAvailable(RequestContext* context, base::Closure barrier,
+                            const GURL& url, const SkBitmap* bitmap);
+
+  // Callback for when all requests are complete. Renders the output webpage and
+  // passes the result to the original caller.
+  void OnThumbnailsFetched(RequestContext* context);
+
+  // Only used when servicing requests on the UI thread.
+  Profile* const profile_;
+
+  // For callbacks may be run after destruction.
+  base::WeakPtrFactory<SuggestionsSource> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SuggestionsSource);
+};
 
 SuggestionsSource::SuggestionsSource(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {}
@@ -214,5 +264,15 @@ void SuggestionsSource::OnThumbnailAvailable(RequestContext* context,
   }
   barrier.Run();
 }
+
+}  // namespace
+
+SuggestionsUI::SuggestionsUI(content::WebUI* web_ui)
+    : content::WebUIController(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::URLDataSource::Add(profile, new SuggestionsSource(profile));
+}
+
+SuggestionsUI::~SuggestionsUI() {}
 
 }  // namespace suggestions
