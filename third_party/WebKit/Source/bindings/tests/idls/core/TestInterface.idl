@@ -82,9 +82,6 @@
     setter DOMString (DOMString name, DOMString value);
     deleter boolean (DOMString name);
 
-    [NotEnumerable] stringifier;
-    [NotEnumerable, RaisesException] serializer;
-
     // Per-method [Exposed] annotation support.
     void alwaysExposedMethod();
     [Exposed=Worker] void workerExposedMethod();

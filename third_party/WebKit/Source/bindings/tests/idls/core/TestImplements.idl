@@ -45,4 +45,7 @@
     [Reflect=IMPLEMENTS_REFLECT_CONSTANT] const unsigned short IMPLEMENTS_CONSTANT_2 = 2;
 
     [RuntimeEnabled=ImplementsFeatureName] attribute Node implementsRuntimeEnabledNodeAttribute;
+
+    [NotEnumerable] stringifier;
+    [NotEnumerable, RaisesException] serializer;
 };

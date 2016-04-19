@@ -387,6 +387,10 @@ class IdlInterface(object):
         self.attributes.extend(other.attributes)
         self.constants.extend(other.constants)
         self.operations.extend(other.operations)
+        if self.serializer is None:
+            self.serializer = other.serializer
+        if self.stringifier is None:
+            self.stringifier = other.stringifier
 
 
 class IdlException(IdlInterface):
