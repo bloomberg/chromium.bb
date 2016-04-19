@@ -959,6 +959,15 @@ config("default_warnings") {
         # TODO(thakis): Enable this, crbug.com/507717
         "-Wno-shift-negative-value",
       ]
+
+      if (exec_script("//tools/clang/scripts/update.py",
+                      [ "--print-revision" ],
+                      "trim string") != "266460-1") {
+        cflags += [
+          # TODO(thakis): https://crbug.com/604888
+          "-Wno-undefined-var-template",
+        ]
+      }
     }
   }
 }

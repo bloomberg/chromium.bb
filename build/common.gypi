@@ -3097,6 +3097,10 @@
         # TODO: Enable on Windows too, http://crbug.com/404525
         'variables': { 'clang_warning_flags': ['-Wexit-time-destructors']},
       }],
+      ['"<!(python <(DEPTH)/tools/clang/scripts/update.py --print-revision)"!="266460-1"', {
+        # TODO(thakis): https://crbug.com/604888
+        'variables': { 'clang_warning_flags': ['-Wno-undefined-var-template']},
+      }],
       ['chromium_code==0', {
         'variables': {
           'clang_warning_flags': [
