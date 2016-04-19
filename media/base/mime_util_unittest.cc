@@ -329,13 +329,24 @@ TEST(IsCodecSupportedOnPlatformTest, ClearCodecBehaviorWithAndroidPipeline) {
             break;
 
           case MimeUtil::VP9:
-            EXPECT_EQ(info.has_platform_vp9_decoder, result);
+            // MediaPlayer only supports VP9 in WebM.
+            EXPECT_FALSE(result);
             break;
 
           case MimeUtil::HEVC_MAIN:
             EXPECT_EQ(HasHevcSupport(), result);
             break;
         }
+      });
+
+  // Verify vp9 support in WebM.
+  RunCodecSupportTest(
+      states_to_vary, test_states,
+      [](const MimeUtil::PlatformInfo& info, MimeUtil::Codec codec) {
+        const bool result = MimeUtil::IsCodecSupportedOnPlatform(
+            codec, "video/webm", true, info);
+        if (codec == MimeUtil::VP9)
+          EXPECT_EQ(info.has_platform_vp9_decoder, result);
       });
 }
 
