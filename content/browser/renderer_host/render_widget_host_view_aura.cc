@@ -1170,6 +1170,10 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
   if (!host)
     return;
 
+  // The TouchScrollStarted event is generated & consumed downstream from the
+  // TouchEventQueue. So we don't expect an ACK up here.
+  DCHECK(touch.event.type != blink::WebInputEvent::TouchScrollStarted);
+
   ui::EventResult result = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
                                ? ui::ER_HANDLED
                                : ui::ER_UNHANDLED;

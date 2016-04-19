@@ -40,7 +40,7 @@ public:
         const double clientX, const double clientY);
 
     PointerEvent* createPointerCancelEvent(
-        const PlatformTouchPoint&);
+        const int pointerId, const WebPointerProperties::PointerType);
 
     // For creating capture events (i.e got/lostpointercapture)
     PointerEvent* createPointerCaptureEvent(
@@ -56,11 +56,13 @@ public:
     // Clear all the existing ids.
     void clear();
 
-    // Returns true if pointerEvent is removed. When a pointerEvent with a
-    // particular id is removed that id is considered free even though there
-    // might have been other PointerEvents that were generated with the same id
-    // before.
-    bool remove(const PointerEvent*);
+    // When a particular pointerId is removed, the id is considered free even
+    // though there might have been other PointerEvents that were generated with
+    // the same id before.
+    bool remove(const int);
+
+    // Returns all ids of the given pointerType.
+    HeapVector<int> getPointerIdsOfType(WebPointerProperties::PointerType);
 
     // Returns whether a pointer id exists and active
     bool isActive(const int);
@@ -92,8 +94,9 @@ private:
 
     int addIdAndActiveButtons(const IncomingId, bool isActiveButtons);
     bool isPrimary(const int) const;
-    void setIdTypeButtons(PointerEventInit &, const WebPointerProperties &,
+    void setIdTypeButtons(PointerEventInit&, const WebPointerProperties&,
         unsigned buttons);
+    void setBubblesAndCancelable(PointerEventInit&, const AtomicString& type);
 
     static const int s_invalidId;
     static const int s_mouseId;

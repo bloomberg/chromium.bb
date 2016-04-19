@@ -170,6 +170,7 @@ std::unique_ptr<BlimpMessage> InputMessageGenerator::GenerateMessage(
     case blink::WebInputEvent::Type::TouchMove:
     case blink::WebInputEvent::Type::TouchEnd:
     case blink::WebInputEvent::Type::TouchCancel:
+    case blink::WebInputEvent::Type::TouchScrollStarted:
       NOTIMPLEMENTED();
       return nullptr;
   }

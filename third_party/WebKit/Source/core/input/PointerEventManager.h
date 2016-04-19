@@ -39,8 +39,13 @@ public:
         const double width, const double height,
         const double clientX, const double clientY);
 
-    void sendTouchCancelPointerEvent(EventTarget*,
-        const PlatformTouchPoint&);
+    // Inhibits firing of touch-type PointerEvents until unblocked by unblockTouchPointers(). Also
+    // sends pointercancels for existing touch-type PointerEvents.
+    // See: www.w3.org/TR/pointerevents/#declaring-candidate-regions-for-default-touch-behaviors
+    void blockTouchPointers();
+
+    // Enables firing of touch-type PointerEvents after they were inhibited by blockTouchPointers().
+    void unblockTouchPointers();
 
     // Sends node transition events mouseout/leave/over/enter to the
     // corresponding targets. This function sends pointerout/leave/over/enter
@@ -134,6 +139,10 @@ private:
     // See "PREVENT MOUSE EVENT flag" in the spec:
     //   https://w3c.github.io/pointerevents/#compatibility-mapping-with-mouse-events
     bool m_preventMouseEventForPointerType[static_cast<size_t>(WebPointerProperties::PointerType::LastEntry) + 1];
+
+    // Set upon sending a pointercancel for touch, prevents PE dispatches for touches until
+    // all touch-points become inactive.
+    bool m_inCanceledStateForPointerTypeTouch;
 
     // Note that this map keeps track of node under pointer with id=1 as well
     // which might be different than m_nodeUnderMouse in EventHandler. That one

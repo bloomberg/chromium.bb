@@ -1231,7 +1231,6 @@ TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
 
-
   // GesturePinchBegin ignores its ack.
   SimulateGestureEvent(WebInputEvent::GesturePinchBegin,
                        blink::WebGestureDeviceTouchscreen);

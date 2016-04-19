@@ -1523,24 +1523,24 @@ TEST_F(RenderWidgetHostTest, InputRouterReceivesHasTouchEventHandlers) {
   EXPECT_TRUE(host_->mock_input_router()->message_received_);
 }
 
-ui::LatencyInfo GetLatencyInfoFromInputEvent(RenderWidgetHostProcess* process) {
-  const IPC::Message* message = process->sink().GetUniqueMessageMatching(
-      InputMsg_HandleInputEvent::ID);
-  EXPECT_TRUE(message);
-  InputMsg_HandleInputEvent::Param params;
-  EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
-  process->sink().ClearMessages();
-  return base::get<1>(params);
-}
-
 void CheckLatencyInfoComponentInMessage(RenderWidgetHostProcess* process,
                                         int64_t component_id,
-                                        WebInputEvent::Type input_type) {
-  ui::LatencyInfo latency_info = GetLatencyInfoFromInputEvent(process);
+                                        WebInputEvent::Type expected_type) {
+  EXPECT_EQ(process->sink().message_count(), 1U);
+
+  const IPC::Message* message = process->sink().GetMessageAt(0);
+  EXPECT_EQ(InputMsg_HandleInputEvent::ID, message->type());
+  InputMsg_HandleInputEvent::Param params;
+  EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
+
+  const WebInputEvent* event = base::get<0>(params);
+  ui::LatencyInfo latency_info = base::get<1>(params);
+
+  EXPECT_TRUE(event->type == expected_type);
   EXPECT_TRUE(latency_info.FindLatency(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-      component_id,
-      NULL));
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, NULL));
+
+  process->sink().ClearMessages();
 }
 
 // Tests that after input event passes through RWHI through ForwardXXXEvent()

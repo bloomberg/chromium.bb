@@ -139,7 +139,8 @@ public:
         TouchMove,
         TouchEnd,
         TouchCancel,
-        TouchTypeLast = TouchCancel,
+        TouchScrollStarted,
+        TouchTypeLast = TouchScrollStarted,
 
         TypeLast = TouchTypeLast
     };

@@ -523,6 +523,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void TouchMoveCausingScrollIfUncanceled();
   void TouchCancel();
   void TouchEnd();
+  void NotifyStartOfTouchScroll();
   void LeapForward(int milliseconds);
   double LastEventTimestamp();
   void BeginDragWithFiles(const std::vector<std::string>& files);
@@ -644,10 +645,10 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
                  &EventSenderBindings::GestureScrollFirstPoint)
       .SetMethod("touchStart", &EventSenderBindings::TouchStart)
       .SetMethod("touchMove", &EventSenderBindings::TouchMove)
-      .SetMethod("touchMoveCausingScrollIfUncanceled",
-                 &EventSenderBindings::TouchMoveCausingScrollIfUncanceled)
       .SetMethod("touchCancel", &EventSenderBindings::TouchCancel)
       .SetMethod("touchEnd", &EventSenderBindings::TouchEnd)
+      .SetMethod("notifyStartOfTouchScroll",
+                 &EventSenderBindings::NotifyStartOfTouchScroll)
       .SetMethod("leapForward", &EventSenderBindings::LeapForward)
       .SetMethod("lastEventTimestamp", &EventSenderBindings::LastEventTimestamp)
       .SetMethod("beginDragWithFiles", &EventSenderBindings::BeginDragWithFiles)
@@ -828,11 +829,6 @@ void EventSenderBindings::TouchMove() {
     sender_->TouchMove();
 }
 
-void EventSenderBindings::TouchMoveCausingScrollIfUncanceled() {
-  if (sender_)
-    sender_->TouchMoveCausingScrollIfUncanceled();
-}
-
 void EventSenderBindings::TouchCancel() {
   if (sender_)
     sender_->TouchCancel();
@@ -841,6 +837,11 @@ void EventSenderBindings::TouchCancel() {
 void EventSenderBindings::TouchEnd() {
   if (sender_)
     sender_->TouchEnd();
+}
+
+void EventSenderBindings::NotifyStartOfTouchScroll() {
+  if (sender_)
+    sender_->NotifyStartOfTouchScroll();
 }
 
 void EventSenderBindings::LeapForward(int milliseconds) {
@@ -1891,16 +1892,18 @@ void EventSender::TouchMove() {
   SendCurrentTouchEvent(WebInputEvent::TouchMove, false);
 }
 
-void EventSender::TouchMoveCausingScrollIfUncanceled() {
-  SendCurrentTouchEvent(WebInputEvent::TouchMove, true);
-}
-
 void EventSender::TouchCancel() {
   SendCurrentTouchEvent(WebInputEvent::TouchCancel, false);
 }
 
 void EventSender::TouchEnd() {
   SendCurrentTouchEvent(WebInputEvent::TouchEnd, false);
+}
+
+void EventSender::NotifyStartOfTouchScroll() {
+  WebTouchEvent event;
+  event.type = WebInputEvent::TouchScrollStarted;
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::LeapForward(int milliseconds) {

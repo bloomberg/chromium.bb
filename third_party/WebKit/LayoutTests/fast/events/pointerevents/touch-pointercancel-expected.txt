@@ -5,51 +5,37 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 --- single drag tests ---
 
--- preventDefault on none, without uncanceledMoveCausesScroll --
+-- preventDefault on none, without notifyStartOfTouchScroll --
 Received touchstart, touchIds=0
 Received touchmove, touchIds=0
 Received touchmove, touchIds=0
 Received touchmove, touchIds=0
 Received touchend, touchIds=0
 
--- preventDefault on pointermove, without uncanceledMoveCausesScroll --
+-- preventDefault on pointermove, without notifyStartOfTouchScroll --
 Received touchstart, touchIds=0
 Received touchmove, touchIds=0
 Received touchmove, touchIds=0
 Received touchmove, touchIds=0
 Received touchend, touchIds=0
 
--- preventDefault on touchmove, without uncanceledMoveCausesScroll --
-Received touchstart, touchIds=0
-Received touchmove, touchIds=0, prevented default
-Received touchmove, touchIds=0, prevented default
-Received touchmove, touchIds=0, prevented default
-Received touchend, touchIds=0
-
--- preventDefault on none, with uncanceledMoveCausesScroll --
+-- preventDefault on none, with notifyStartOfTouchScroll --
 Received touchstart, touchIds=0
 Received touchmove, touchIds=0
 Received touchmove, touchIds=0
 Received touchmove, touchIds=0
 Received touchend, touchIds=0
 
--- preventDefault on pointermove, with uncanceledMoveCausesScroll --
+-- preventDefault on pointermove, with notifyStartOfTouchScroll --
 Received touchstart, touchIds=0
 Received touchmove, touchIds=0
 Received touchmove, touchIds=0
 Received touchmove, touchIds=0
-Received touchend, touchIds=0
-
--- preventDefault on touchmove, with uncanceledMoveCausesScroll --
-Received touchstart, touchIds=0
-Received touchmove, touchIds=0, prevented default
-Received touchmove, touchIds=0, prevented default
-Received touchmove, touchIds=0, prevented default
 Received touchend, touchIds=0
 
 --- multi drag tests ---
 
--- preventDefault on none, without uncanceledMoveCausesScroll --
+-- preventDefault on none, without notifyStartOfTouchScroll --
 Received touchstart, touchIds=012
 Received touchmove, touchIds=012
 Received touchmove, touchIds=012
@@ -57,7 +43,7 @@ Received touchstart, touchIds=3
 Received touchmove, touchIds=0123
 Received touchend, touchIds=0123
 
--- preventDefault on none, with uncanceledMoveCausesScroll --
+-- preventDefault on none, with notifyStartOfTouchScroll --
 Received touchstart, touchIds=012
 Received touchmove, touchIds=012
 Received touchmove, touchIds=012

@@ -74,6 +74,7 @@ public:
         TouchMove,
         TouchEnd,
         TouchCancel,
+        TouchScrollStarted,
     };
 
     // These values are direct mappings of the values in WebInputEvent so the values can be cast between the

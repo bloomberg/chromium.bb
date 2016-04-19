@@ -399,9 +399,8 @@ private:
     bool slideFocusOnShadowHostIfNecessary(const Element&);
 
     void dispatchPointerEvents(const PlatformTouchEvent&, HeapVector<TouchInfo>&);
-    void sendPointerCancels(HeapVector<TouchInfo>&);
 
-    WebInputEventResult dispatchTouchEvents(const PlatformTouchEvent&, HeapVector<TouchInfo>&, bool, bool);
+    WebInputEventResult dispatchTouchEvents(const PlatformTouchEvent&, HeapVector<TouchInfo>&, bool);
 
     // NOTE: If adding a new field to this class please ensure that it is
     // cleared in |EventHandler::clear()|.
@@ -477,11 +476,6 @@ private:
     bool m_touchPressed;
 
     PointerEventManager m_pointerEventManager;
-
-    // This is set upon sending a pointercancel for touch, prevents PE dispatches for touches until
-    // all touch-points become inactive.
-    // TODO(mustaq): Consider a state per pointerType, as in PointerIdManager? Exclude mouse?
-    bool m_inPointerCanceledState;
 
     Member<Node> m_scrollGestureHandlingNode;
     bool m_lastGestureScrollOverWidget;

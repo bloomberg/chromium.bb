@@ -236,6 +236,10 @@ class TouchEventQueueTest : public testing::Test,
     SendTouchEvent();
   }
 
+  void PrependTouchScrollNotification() {
+    queue_->PrependTouchScrollNotification();
+  }
+
   void AdvanceTouchTime(double seconds) {
     touch_event_.timeStampSeconds += seconds;
   }
@@ -2616,6 +2620,97 @@ TEST_F(TouchEventQueueTest, FilterTouchMovesWhenNoPointerChanged) {
   EXPECT_EQ(WebTouchPoint::StateMoved, event2.touches[1].state);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
+}
+
+// Tests that touch-scroll-notification is not pushed into an empty queue.
+TEST_F(TouchEventQueueTest, TouchScrollNotificationOrder_EmptyQueue) {
+  PrependTouchScrollNotification();
+
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+}
+
+// Tests touch-scroll-notification firing order when the event is placed at the
+// end of touch queue because of a pending ack for the head of the queue.
+TEST_F(TouchEventQueueTest, TouchScrollNotificationOrder_EndOfQueue) {
+  PressTouchPoint(1, 1);
+
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+
+  // Send the touch-scroll-notification when 3 events are in the queue.
+  PrependTouchScrollNotification();
+
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(2U, queued_event_count());
+
+  // Receive an ACK for the touchstart.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(WebInputEvent::TouchStart, acked_event().type);
+  EXPECT_EQ(1U, queued_event_count());
+
+  // Receive an ACK for the touch-scroll-notification.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_IGNORED);
+
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, queued_event_count());
+
+  EXPECT_EQ(WebInputEvent::TouchStart, all_sent_events()[0].type);
+  EXPECT_EQ(WebInputEvent::TouchScrollStarted, all_sent_events()[1].type);
+  EXPECT_EQ(2U, GetAndResetSentEventCount());
+}
+
+// Tests touch-scroll-notification firing order when the event is placed in the
+// 2nd position in the touch queue between two events.
+TEST_F(TouchEventQueueTest, TouchScrollNotificationOrder_SecondPosition) {
+  PressTouchPoint(1, 1);
+  MoveTouchPoint(0, 5, 5);
+  ReleaseTouchPoint(0);
+
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(3U, queued_event_count());
+
+  // Send the touch-scroll-notification when 3 events are in the queue.
+  PrependTouchScrollNotification();
+
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(4U, queued_event_count());
+
+  // Receive an ACK for the touchstart.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(WebInputEvent::TouchStart, acked_event().type);
+  EXPECT_EQ(3U, queued_event_count());
+
+  // Receive an ACK for the touch-scroll-notification.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_IGNORED);
+
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(2U, queued_event_count());
+
+  // Receive an ACK for the touchmove.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(WebInputEvent::TouchMove, acked_event().type);
+  EXPECT_EQ(1U, queued_event_count());
+
+  // Receive an ACK for the touchend.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(WebInputEvent::TouchEnd, acked_event().type);
+  EXPECT_EQ(0U, queued_event_count());
+
+  EXPECT_EQ(WebInputEvent::TouchStart, all_sent_events()[0].type);
+  EXPECT_EQ(WebInputEvent::TouchScrollStarted, all_sent_events()[1].type);
+  EXPECT_EQ(WebInputEvent::TouchMove, all_sent_events()[2].type);
+  EXPECT_EQ(WebInputEvent::TouchEnd, all_sent_events()[3].type);
+  EXPECT_EQ(4U, GetAndResetSentEventCount());
 }
 
 }  // namespace content

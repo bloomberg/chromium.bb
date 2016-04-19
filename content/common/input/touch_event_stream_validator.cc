@@ -48,6 +48,10 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
   DCHECK(error_msg);
   error_msg->clear();
 
+  // TouchScrollStarted is not part of a regular touch event stream.
+  if (event.type == WebInputEvent::TouchScrollStarted)
+    return true;
+
   WebTouchEvent previous_event = previous_event_;
   previous_event_ = event;
 

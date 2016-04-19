@@ -393,6 +393,8 @@ inline PlatformEvent::EventType toPlatformTouchEventType(const WebInputEvent::Ty
         return PlatformEvent::TouchEnd;
     case WebInputEvent::TouchCancel:
         return PlatformEvent::TouchCancel;
+    case WebInputEvent::TouchScrollStarted:
+        return PlatformEvent::TouchScrollStarted;
     default:
         NOTREACHED();
     }

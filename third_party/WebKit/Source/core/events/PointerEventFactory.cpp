@@ -62,8 +62,8 @@ float getPointerEventPressure(float force, int buttons)
     return force;
 }
 
-void PointerEventFactory::setIdTypeButtons(PointerEventInit &pointerEventInit,
-    const WebPointerProperties &pointerProperties, unsigned buttons)
+void PointerEventFactory::setIdTypeButtons(PointerEventInit& pointerEventInit,
+    const WebPointerProperties& pointerProperties, unsigned buttons)
 {
     const WebPointerProperties::PointerType pointerType = pointerProperties.pointerType;
     const IncomingId incomingId(pointerType, pointerProperties.id);
@@ -73,6 +73,15 @@ void PointerEventFactory::setIdTypeButtons(PointerEventInit &pointerEventInit,
     pointerEventInit.setPointerId(pointerId);
     pointerEventInit.setPointerType(pointerTypeNameForWebPointPointerType(pointerType));
     pointerEventInit.setIsPrimary(isPrimary(pointerId));
+}
+
+void PointerEventFactory::setBubblesAndCancelable(PointerEventInit& pointerEventInit,
+    const AtomicString& type)
+{
+    pointerEventInit.setBubbles(type != EventTypeNames::pointerenter
+        && type != EventTypeNames::pointerleave);
+    pointerEventInit.setCancelable(type != EventTypeNames::pointerenter
+        && type != EventTypeNames::pointerleave && type != EventTypeNames::pointercancel);
 }
 
 PointerEvent* PointerEventFactory::create(
@@ -85,6 +94,7 @@ PointerEvent* PointerEventFactory::create(
     PointerEventInit pointerEventInit;
 
     setIdTypeButtons(pointerEventInit, mouseEvent.pointerProperties(), buttons);
+    setBubblesAndCancelable(pointerEventInit, pointerEventName);
 
     pointerEventInit.setScreenX(mouseEvent.globalPosition().x());
     pointerEventInit.setScreenY(mouseEvent.globalPosition().y());
@@ -110,13 +120,6 @@ PointerEvent* PointerEventFactory::create(
         || (pointerEventName == EventTypeNames::pointerup && buttons != 0))
         pointerEventName = EventTypeNames::pointermove;
 
-    pointerEventInit.setBubbles(
-        pointerEventName != EventTypeNames::pointerenter
-        && pointerEventName != EventTypeNames::pointerleave);
-    pointerEventInit.setCancelable(
-        pointerEventName != EventTypeNames::pointerenter
-        && pointerEventName != EventTypeNames::pointerleave
-        && pointerEventName != EventTypeNames::pointercancel);
 
     pointerEventInit.setView(view);
     if (relatedTarget)
@@ -166,13 +169,17 @@ PointerEvent* PointerEventFactory::create(const AtomicString& type,
     return PointerEvent::create(type, pointerEventInit);
 }
 
-
-PointerEvent* PointerEventFactory::createPointerCancelEvent(const PlatformTouchPoint& touchPoint)
+PointerEvent* PointerEventFactory::createPointerCancelEvent(
+    const int pointerId, const WebPointerProperties::PointerType pointerType)
 {
+    ASSERT(m_pointerIdMapping.contains(pointerId));
+    m_pointerIdMapping.set(pointerId, PointerAttributes(m_pointerIdMapping.get(pointerId).incomingId, false));
+
     PointerEventInit pointerEventInit;
 
-    setIdTypeButtons(pointerEventInit, touchPoint.pointerProperties(), 0);
-
+    pointerEventInit.setPointerId(pointerId);
+    pointerEventInit.setPointerType(pointerTypeNameForWebPointPointerType(pointerType));
+    pointerEventInit.setIsPrimary(isPrimary(pointerId));
     pointerEventInit.setBubbles(true);
     pointerEventInit.setCancelable(false);
 
@@ -223,11 +230,8 @@ PointerEvent* PointerEventFactory::createPointerTransitionEvent(
     pointerEventInit.setButtons(pointerEvent->buttons());
     pointerEventInit.setPressure(pointerEvent->pressure());
 
-    pointerEventInit.setBubbles(type != EventTypeNames::pointerenter
-        && type != EventTypeNames::pointerleave);
-    pointerEventInit.setCancelable(type != EventTypeNames::pointerenter
-        && type != EventTypeNames::pointerleave
-        && type != EventTypeNames::pointercancel);
+    setBubblesAndCancelable(pointerEventInit, type);
+
     if (relatedTarget)
         pointerEventInit.setRelatedTarget(relatedTarget);
 
@@ -289,10 +293,8 @@ int PointerEventFactory::addIdAndActiveButtons(const IncomingId p,
     return mappedId;
 }
 
-bool PointerEventFactory::remove(
-    const PointerEvent* pointerEvent)
+bool PointerEventFactory::remove(const int mappedId)
 {
-    int mappedId = pointerEvent->pointerId();
     // Do not remove mouse pointer id as it should always be there
     if (mappedId == s_mouseId || !m_pointerIdMapping.contains(mappedId))
         return false;
@@ -305,6 +307,21 @@ bool PointerEventFactory::remove(
         m_primaryId[type] = PointerEventFactory::s_invalidId;
     m_idCount[type]--;
     return true;
+}
+
+HeapVector<int> PointerEventFactory::getPointerIdsOfType(WebPointerProperties::PointerType pointerType)
+{
+    HeapVector<int> mappedIds;
+
+    for (auto iter = m_pointerIdMapping.begin(); iter != m_pointerIdMapping.end(); ++iter) {
+        int mappedId = iter->key;
+        if (iter->value.incomingId.pointerType() == static_cast<int>(pointerType))
+            mappedIds.append(mappedId);
+    }
+
+    // Sorting for a predictable ordering.
+    std::sort(mappedIds.begin(), mappedIds.end());
+    return mappedIds;
 }
 
 bool PointerEventFactory::isPrimary(int mappedId) const

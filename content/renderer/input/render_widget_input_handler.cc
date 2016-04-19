@@ -106,6 +106,7 @@ void LogInputEventLatencyUma(const WebInputEvent& event, base::TimeTicks now) {
     CASE_TYPE(TouchMove);
     CASE_TYPE(TouchEnd);
     CASE_TYPE(TouchCancel);
+    CASE_TYPE(TouchScrollStarted);
     default:
       // Must include default to let blink::WebInputEvent add new event types
       // before they're added here.

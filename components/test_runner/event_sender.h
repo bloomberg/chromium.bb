@@ -137,9 +137,9 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   void TouchStart();
   void TouchMove();
-  void TouchMoveCausingScrollIfUncanceled();
   void TouchCancel();
   void TouchEnd();
+  void NotifyStartOfTouchScroll();
 
   void LeapForward(int milliseconds);
 

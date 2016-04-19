@@ -49,7 +49,7 @@ function init() {
   });
 }
 
-function testSingleDrag(uncanceledMoveCausesScroll) {
+function testSingleDrag(notifyStartOfTouchScroll) {
   var rect = document.getElementById("target").getBoundingClientRect();
   var x = rect.left + 50;
   var y = rect.top + 50;
@@ -60,11 +60,11 @@ function testSingleDrag(uncanceledMoveCausesScroll) {
   eventSender.updateTouchPoint(0, x, y+50);
   eventSender.touchMove();
 
+  if (notifyStartOfTouchScroll)
+    eventSender.notifyStartOfTouchScroll();
+
   eventSender.updateTouchPoint(0, x, y+100);
-  if (uncanceledMoveCausesScroll)
-    eventSender.touchMoveCausingScrollIfUncanceled();
-  else
-    eventSender.touchMove();
+  eventSender.touchMove();
 
   eventSender.updateTouchPoint(0, x, y+150);
   eventSender.touchMove();
@@ -73,7 +73,7 @@ function testSingleDrag(uncanceledMoveCausesScroll) {
   eventSender.touchEnd();
 }
 
-function testMultiDrag(uncanceledMoveCausesScroll) {
+function testMultiDrag(notifyStartOfTouchScroll) {
   var rect;
 
   rect = document.getElementById("target").getBoundingClientRect();
@@ -98,10 +98,10 @@ function testMultiDrag(uncanceledMoveCausesScroll) {
   eventSender.updateTouchPoint(0, x0, y);
   eventSender.updateTouchPoint(1, x1, y);
   eventSender.updateTouchPoint(2, x2, y);
-  if (uncanceledMoveCausesScroll)
-    eventSender.touchMoveCausingScrollIfUncanceled();
-  else
-    eventSender.touchMove();
+  eventSender.touchMove();
+
+  if (notifyStartOfTouchScroll)
+    eventSender.notifyStartOfTouchScroll();
 
   eventSender.addTouchPoint(x3, y);
   eventSender.touchStart();
@@ -151,45 +151,35 @@ function runTests() {
   debug("--- single drag tests ---");
   debug("");
 
-  debug("-- preventDefault on none, without uncanceledMoveCausesScroll --");
+  debug("-- preventDefault on none, without notifyStartOfTouchScroll --");
   eventToPreventDefault = "-none-";
   testSingleDrag(false);
   debug("");
 
-  debug("-- preventDefault on pointermove, without uncanceledMoveCausesScroll --");
+  debug("-- preventDefault on pointermove, without notifyStartOfTouchScroll --");
   eventToPreventDefault = "pointermove";
   testSingleDrag(false);
   debug("");
 
-  debug("-- preventDefault on touchmove, without uncanceledMoveCausesScroll --");
-  eventToPreventDefault = "touchmove";
-  testSingleDrag(false);
-  debug("");
-
-  debug("-- preventDefault on none, with uncanceledMoveCausesScroll --");
+  debug("-- preventDefault on none, with notifyStartOfTouchScroll --");
   eventToPreventDefault = "-none-";
   testSingleDrag(true);
   debug("");
 
-  debug("-- preventDefault on pointermove, with uncanceledMoveCausesScroll --");
+  debug("-- preventDefault on pointermove, with notifyStartOfTouchScroll --");
   eventToPreventDefault = "pointermove";
-  testSingleDrag(true);
-  debug("");
-
-  debug("-- preventDefault on touchmove, with uncanceledMoveCausesScroll --");
-  eventToPreventDefault = "touchmove";
   testSingleDrag(true);
   debug("");
 
   debug("--- multi drag tests ---");
   debug("");
 
-  debug("-- preventDefault on none, without uncanceledMoveCausesScroll --");
+  debug("-- preventDefault on none, without notifyStartOfTouchScroll --");
   eventToPreventDefault = "-none-";
   testMultiDrag(false);
   debug("");
 
-  debug("-- preventDefault on none, with uncanceledMoveCausesScroll --");
+  debug("-- preventDefault on none, with notifyStartOfTouchScroll --");
   eventToPreventDefault = "-none-";
   testMultiDrag(true);
   debug("");

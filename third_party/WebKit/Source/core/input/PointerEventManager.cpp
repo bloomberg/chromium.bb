@@ -311,26 +311,46 @@ void PointerEventManager::setNodeUnderPointer(
     }
 }
 
-void PointerEventManager::sendTouchCancelPointerEvent(EventTarget* target, const PlatformTouchPoint& point)
+void PointerEventManager::blockTouchPointers()
 {
-    PointerEvent* pointerEvent = m_pointerEventFactory.createPointerCancelEvent(point);
+    if (m_inCanceledStateForPointerTypeTouch)
+        return;
+    m_inCanceledStateForPointerTypeTouch = true;
 
+    HeapVector<int> touchPointerIds
+        = m_pointerEventFactory.getPointerIdsOfType(WebPointerProperties::PointerType::Touch);
 
-    processCaptureAndPositionOfPointerEvent(pointerEvent, target);
+    for (int pointerId : touchPointerIds) {
+        PointerEvent* pointerEvent
+            = m_pointerEventFactory.createPointerCancelEvent(
+                pointerId, WebPointerProperties::PointerType::Touch);
 
-    // TODO(nzolghadr): crbug.com/579553 dealing with implicit touch capturing vs pointer event capturing
-    dispatchPointerEvent(
-        getEffectiveTargetForPointerEvent(target, pointerEvent->pointerId()),
-        pointerEvent);
+        ASSERT(m_nodeUnderPointer.contains(pointerId));
+        EventTarget* target = m_nodeUnderPointer.get(pointerId).target;
 
-    releasePointerCapture(pointerEvent->pointerId());
+        processCaptureAndPositionOfPointerEvent(pointerEvent, target);
 
-    // Sending the leave/out events and lostpointercapture
-    // because the next touch event will have a different id. So delayed
-    // sending of lostpointercapture won't work here.
-    processCaptureAndPositionOfPointerEvent(pointerEvent, nullptr);
+        // TODO(nzolghadr): This event follows implicit TE capture. The actual target
+        // would depend on PE capturing. Perhaps need to split TE/PE event path upstream?
+        // crbug.com/579553.
+        dispatchPointerEvent(
+            getEffectiveTargetForPointerEvent(target, pointerEvent->pointerId()),
+            pointerEvent);
 
-    removePointer(pointerEvent);
+        releasePointerCapture(pointerEvent->pointerId());
+
+        // Sending the leave/out events and lostpointercapture
+        // because the next touch event will have a different id. So delayed
+        // sending of lostpointercapture won't work here.
+        processCaptureAndPositionOfPointerEvent(pointerEvent, nullptr);
+
+        removePointer(pointerEvent);
+    }
+}
+
+void PointerEventManager::unblockTouchPointers()
+{
+    m_inCanceledStateForPointerTypeTouch = false;
 }
 
 WebInputEventResult PointerEventManager::sendTouchPointerEvent(
@@ -339,6 +359,9 @@ WebInputEventResult PointerEventManager::sendTouchPointerEvent(
     const double width, const double height,
     const double clientX, const double clientY)
 {
+    if (m_inCanceledStateForPointerTypeTouch)
+        return WebInputEventResult::NotHandled;
+
     PointerEvent* pointerEvent =
         m_pointerEventFactory.create(
         pointerEventNameForTouchPointState(touchPoint.state()),
@@ -436,6 +459,7 @@ void PointerEventManager::clear()
 {
     for (auto& entry : m_preventMouseEventForPointerType)
         entry = false;
+    m_inCanceledStateForPointerTypeTouch = false;
     m_pointerEventFactory.clear();
     m_nodeUnderPointer.clear();
     m_pointerCaptureTarget.clear();
@@ -565,8 +589,8 @@ EventTarget* PointerEventManager::getCapturingNode(int pointerId)
 void PointerEventManager::removePointer(
     PointerEvent* pointerEvent)
 {
-    if (m_pointerEventFactory.remove(pointerEvent)) {
-        int pointerId = pointerEvent->pointerId();
+    int pointerId = pointerEvent->pointerId();
+    if (m_pointerEventFactory.remove(pointerId)) {
         m_pendingPointerCaptureTarget.remove(pointerId);
         m_pointerCaptureTarget.remove(pointerId);
         m_nodeUnderPointer.remove(pointerId);

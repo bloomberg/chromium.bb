@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include <deque>
-#include <map>
+#include <list>
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -70,6 +70,10 @@ class CONTENT_EXPORT TouchEventQueue {
   // the renderer (e.g. when there are no other queued touch event).
   void QueueEvent(const TouchEventWithLatencyInfo& event);
 
+  // Insert a TouchScrollStarted event in the queue ahead of all not-in-flight
+  // events.
+  void PrependTouchScrollNotification();
+
   // Notifies the queue that a touch-event has been processed by the renderer.
   // At this point, if the ack is for async touchmove, remove the uncancelable
   // touchmove from the front of the queue and decide if it should dispatch the
@@ -108,8 +112,6 @@ class CONTENT_EXPORT TouchEventQueue {
 
   // Whether ack timeout behavior is supported and enabled for the current site.
   bool IsAckTimeoutEnabled() const;
-
-  bool IsForwardingTouches();
 
   bool empty() const WARN_UNUSED_RESULT {
     return touch_queue_.empty();
@@ -155,15 +157,11 @@ class CONTENT_EXPORT TouchEventQueue {
   void PopTouchEventToClient(InputEventAckState ack_result,
                              const ui::LatencyInfo& renderer_latency_info);
 
-  // Ack all coalesced events in |acked_event| to the client with |ack_result|,
-  // updating the acked events with |optional_latency_info| if it exists.
-  void AckTouchEventToClient(
-      InputEventAckState ack_result,
-      std::unique_ptr<CoalescedWebTouchEvent> acked_event,
-      const ui::LatencyInfo* optional_latency_info);
-
-  // Safely pop the head of the queue.
-  std::unique_ptr<CoalescedWebTouchEvent> PopTouchEvent();
+  // Ack all coalesced events at the head of the queue to the client with
+  // |ack_result|, updating the acked events with |optional_latency_info| if it
+  // exists, and popping the head of the queue.
+  void AckTouchEventToClient(InputEventAckState ack_result,
+                             const ui::LatencyInfo* optional_latency_info);
 
   // Dispatch |touch| to the client. Before dispatching, updates pointer
   // states in touchmove events for pointers that have not changed position.
@@ -185,7 +183,7 @@ class CONTENT_EXPORT TouchEventQueue {
   // Handles touch event forwarding and ack'ed event dispatch.
   TouchEventQueueClient* client_;
 
-  typedef std::deque<CoalescedWebTouchEvent*> TouchQueue;
+  typedef std::list<CoalescedWebTouchEvent*> TouchQueue;
   TouchQueue touch_queue_;
 
   // Position of the first touch in the most recent sequence forwarded to the
