@@ -16,18 +16,25 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
+namespace webrtc {
+class DesktopCaptureOptions;
+}  // namespace webrtc
+
 namespace remoting {
 
 class MouseCursorMonitorProxy : public webrtc::MouseCursorMonitor {
  public:
   MouseCursorMonitorProxy(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-      std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor);
+      const webrtc::DesktopCaptureOptions& options);
   ~MouseCursorMonitorProxy() override;
 
   // webrtc::MouseCursorMonitor interface.
   void Init(Callback* callback, Mode mode) override;
   void Capture() override;
+
+  void SetMouseCursorMonitorForTests(
+      std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor);
 
  private:
   class Core;

@@ -20,10 +20,6 @@
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
-#if defined(OS_CHROMEOS)
-#include "remoting/host/chromeos/aura_desktop_capturer.h"
-#include "remoting/host/chromeos/mouse_cursor_monitor_aura.h"
-#endif
 #if defined(USE_X11)
 #include "remoting/host/linux/x11_util.h"
 #endif
@@ -55,16 +51,8 @@ BasicDesktopEnvironment::CreateScreenControls() {
 
 std::unique_ptr<webrtc::MouseCursorMonitor>
 BasicDesktopEnvironment::CreateMouseCursorMonitor() {
-  std::unique_ptr<webrtc::MouseCursorMonitor> cursor_monitor;
-
-#if defined(OS_CHROMEOS)
-  cursor_monitor.reset(new MouseCursorMonitorAura());
-#else
-  cursor_monitor.reset(webrtc::MouseCursorMonitor::CreateForScreen(
-      *desktop_capture_options_, webrtc::kFullDesktopScreenId));
-#endif
   return base::WrapUnique(new MouseCursorMonitorProxy(
-      video_capture_task_runner_, std::move(cursor_monitor)));
+      video_capture_task_runner_, *desktop_capture_options_));
 }
 
 std::string BasicDesktopEnvironment::GetCapabilities() const {
@@ -81,16 +69,8 @@ std::unique_ptr<webrtc::DesktopCapturer>
 BasicDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  std::unique_ptr<webrtc::DesktopCapturer> capturer;
-
-#if defined(OS_CHROMEOS)
-  capturer.reset(new AuraDesktopCapturer());
-#else  // !defined(OS_CHROMEOS)
-  capturer.reset(webrtc::ScreenCapturer::Create(*desktop_capture_options_));
-#endif  // !defined(OS_CHROMEOS)
-
   return base::WrapUnique(new DesktopCapturerProxy(video_capture_task_runner_,
-                                                   std::move(capturer)));
+                                                   *desktop_capture_options_));
 }
 
 BasicDesktopEnvironment::BasicDesktopEnvironment(

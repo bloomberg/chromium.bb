@@ -16,6 +16,7 @@
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
@@ -119,12 +120,12 @@ void MouseCursorMonitorProxyTest::OnMouseCursorPosition(
 }
 
 TEST_F(MouseCursorMonitorProxyTest, CursorShape) {
-  std::unique_ptr<ThreadCheckMouseCursorMonitor> cursor_monitor(
-      new ThreadCheckMouseCursorMonitor(capture_thread_.task_runner()));
-
   // Initialize the proxy.
-  proxy_.reset(new MouseCursorMonitorProxy(capture_thread_.task_runner(),
-                                           std::move(cursor_monitor)));
+  proxy_.reset(new MouseCursorMonitorProxy(
+      capture_thread_.task_runner(),
+      webrtc::DesktopCaptureOptions::CreateDefault()));
+  proxy_->SetMouseCursorMonitorForTests(base::WrapUnique(
+      new ThreadCheckMouseCursorMonitor(capture_thread_.task_runner())));
   proxy_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);
   proxy_->Capture();
 

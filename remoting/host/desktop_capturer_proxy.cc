@@ -15,17 +15,23 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "remoting/proto/control.pb.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
+
+#if defined(OS_CHROMEOS)
+#include "remoting/host/chromeos/aura_desktop_capturer.h"
+#endif
 
 namespace remoting {
 
 class DesktopCapturerProxy::Core : public webrtc::DesktopCapturer::Callback {
  public:
-  Core(base::WeakPtr<DesktopCapturerProxy> proxy,
-       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-       std::unique_ptr<webrtc::DesktopCapturer> capturer);
+  explicit Core(base::WeakPtr<DesktopCapturerProxy> proxy);
   ~Core() override;
+
+  void CreateCapturer(const webrtc::DesktopCaptureOptions& options);
 
   void Start();
   void SetSharedMemoryFactory(
@@ -45,13 +51,8 @@ class DesktopCapturerProxy::Core : public webrtc::DesktopCapturer::Callback {
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-DesktopCapturerProxy::Core::Core(
-    base::WeakPtr<DesktopCapturerProxy> proxy,
-    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-    std::unique_ptr<webrtc::DesktopCapturer> capturer)
-    : proxy_(proxy),
-      caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      capturer_(std::move(capturer)) {
+DesktopCapturerProxy::Core::Core(base::WeakPtr<DesktopCapturerProxy> proxy)
+    : proxy_(proxy), caller_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   thread_checker_.DetachFromThread();
 }
 
@@ -59,21 +60,42 @@ DesktopCapturerProxy::Core::~Core() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
+void DesktopCapturerProxy::Core::CreateCapturer(
+    const webrtc::DesktopCaptureOptions& options) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!capturer_);
+
+#if defined(OS_CHROMEOS)
+  capturer_.reset(new AuraDesktopCapturer());
+#else  // !defined(OS_CHROMEOS)
+  capturer_.reset(webrtc::ScreenCapturer::Create(options));
+#endif  // !defined(OS_CHROMEOS)
+  if (!capturer_)
+    LOG(ERROR) << "Failed to initialize screen capturer.";
+}
+
 void DesktopCapturerProxy::Core::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  capturer_->Start(this);
+  if (capturer_)
+    capturer_->Start(this);
 }
 
 void DesktopCapturerProxy::Core::SetSharedMemoryFactory(
     std::unique_ptr<webrtc::SharedMemoryFactory> shared_memory_factory) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  capturer_->SetSharedMemoryFactory(
-      rtc_make_scoped_ptr(shared_memory_factory.release()));
+  if (capturer_) {
+    capturer_->SetSharedMemoryFactory(
+        rtc_make_scoped_ptr(shared_memory_factory.release()));
+  }
 }
 
 void DesktopCapturerProxy::Core::Capture(const webrtc::DesktopRegion& rect) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  capturer_->Capture(rect);
+  if (capturer_) {
+    capturer_->Capture(rect);
+  } else {
+    OnCaptureCompleted(nullptr);
+  }
 }
 
 void DesktopCapturerProxy::Core::OnCaptureCompleted(
@@ -87,10 +109,12 @@ void DesktopCapturerProxy::Core::OnCaptureCompleted(
 
 DesktopCapturerProxy::DesktopCapturerProxy(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-    std::unique_ptr<webrtc::DesktopCapturer> capturer)
+    const webrtc::DesktopCaptureOptions& options)
     : capture_task_runner_(capture_task_runner), weak_factory_(this) {
-  core_.reset(new Core(weak_factory_.GetWeakPtr(), capture_task_runner,
-                       std::move(capturer)));
+  core_.reset(new Core(weak_factory_.GetWeakPtr()));
+  capture_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Core::CreateCapturer,
+                            base::Unretained(core_.get()), options));
 }
 
 DesktopCapturerProxy::~DesktopCapturerProxy() {
