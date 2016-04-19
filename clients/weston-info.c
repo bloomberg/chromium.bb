@@ -662,7 +662,7 @@ global_handler(void *data, struct wl_registry *registry, uint32_t id,
 		add_shm_info(info, id, version);
 	else if (!strcmp(interface, "wl_output"))
 		add_output_info(info, id, version);
-	else if (!strcmp(interface, "presentation"))
+	else if (!strcmp(interface, wp_presentation_interface.name))
 		add_presentation_info(info, id, version);
 	else
 		add_global_info(info, id, interface, version);
