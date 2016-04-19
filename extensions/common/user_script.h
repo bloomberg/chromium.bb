@@ -220,8 +220,6 @@ class UserScript {
   bool is_incognito_enabled() const { return incognito_enabled_; }
   void set_incognito_enabled(bool enabled) { incognito_enabled_ = enabled; }
 
-  bool is_standalone() const { return extension_id().empty(); }
-
   // Returns true if the script should be applied to the specified URL, false
   // otherwise.
   bool MatchesURL(const GURL& url) const;

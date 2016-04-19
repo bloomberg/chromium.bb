@@ -195,19 +195,15 @@ std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
 
   std::vector<blink::WebScriptSource> sources;
   const UserScript::FileList& js_scripts = script_->js_scripts();
-  bool is_standalone_or_emulate_greasemonkey =
-      script_->is_standalone() || script_->emulate_greasemonkey();
 
   for (UserScript::FileList::const_iterator iter = js_scripts.begin();
        iter != js_scripts.end();
        ++iter) {
     std::string content = iter->GetContent().as_string();
 
-    // We add this dumb function wrapper for standalone user script to
-    // emulate what Greasemonkey does.
-    // TODO(aa): I think that maybe "is_standalone" scripts don't exist
-    // anymore. Investigate.
-    if (is_standalone_or_emulate_greasemonkey) {
+    // We add this dumb function wrapper for user scripts to emulate what
+    // Greasemonkey does.
+    if (script_->emulate_greasemonkey()) {
       content.insert(0, kUserScriptHead);
       content += kUserScriptTail;
     }
@@ -215,9 +211,9 @@ std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
         blink::WebString::fromUTF8(content), iter->url()));
   }
 
-  // Emulate Greasemonkey API for scripts that were converted to extensions
-  // and "standalone" user scripts.
-  if (is_standalone_or_emulate_greasemonkey)
+  // Emulate Greasemonkey API for scripts that were converted to extension
+  // user scripts.
+  if (script_->emulate_greasemonkey())
     sources.insert(sources.begin(), g_greasemonkey_api.Get().GetSource());
 
   return sources;
