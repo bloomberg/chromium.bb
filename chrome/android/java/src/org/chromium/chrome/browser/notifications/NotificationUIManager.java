@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.os.SystemClock;
@@ -618,6 +619,9 @@ public class NotificationUIManager {
             return true;
         }
         if (commandLine.hasSwitch(ChromeSwitches.DISABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS)) {
+            return false;
+        }
+        if (Build.VERSION.CODENAME.equals("N")) {
             return false;
         }
         return !groupName.equals("Disabled");
