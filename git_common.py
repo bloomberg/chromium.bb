@@ -437,7 +437,7 @@ def get_or_create_merge_base(branch, parent=None):
   def is_ancestor(a, b):
     return run_with_retcode('merge-base', '--is-ancestor', a, b) == 0
 
-  if base:
+  if base and base != actual_merge_base:
     if not is_ancestor(base, branch):
       logging.debug('Found WRONG pre-set merge-base for %s: %s', branch, base)
       base = None
