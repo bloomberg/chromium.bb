@@ -194,8 +194,8 @@ bool IsCompilerTool(Toolchain::ToolType type) {
 }
 
 bool IsLinkerTool(Toolchain::ToolType type) {
-  return type == Toolchain::TYPE_ALINK ||
-         type == Toolchain::TYPE_SOLINK ||
+  // "alink" is not counted as in the generic "linker" tool list.
+  return type == Toolchain::TYPE_SOLINK ||
          type == Toolchain::TYPE_SOLINK_MODULE ||
          type == Toolchain::TYPE_LINK;
 }
@@ -690,6 +690,7 @@ const char kTool_Help[] =
     "        Example: \"gen/base/test\"\n"
     "\n"
     "  Linker tools have multiple inputs and (potentially) multiple outputs\n"
+    "  The static library tool (\"alink\") is not considered a linker tool.\n"
     "  The following expansions are available:\n"
     "\n"
     "    {{inputs}}\n"
@@ -748,6 +749,9 @@ const char kTool_Help[] =
     "\n"
     "        These should generally be treated the same as libs by your tool.\n"
     "        Example: \"libfoo.so libbar.so\"\n"
+    "\n"
+    "  The static library (\"alink\") tool allows {{arflags}} plus the common\n"
+    "  tool substitutions.\n"
     "\n"
     "  The copy tool allows the common compiler/linker substitutions, plus\n"
     "  {{source}} which is the source of the copy. The stamp tool allows\n"
@@ -858,6 +862,10 @@ Value RunTool(Scope* scope,
     subst_output_validator = &IsValidCompilerOutputsSubstitution;
   } else if (IsLinkerTool(tool_type)) {
     subst_validator = &IsValidLinkerSubstitution;
+    subst_output_validator = &IsValidLinkerOutputsSubstitution;
+  } else if (tool_type == Toolchain::TYPE_ALINK) {
+    subst_validator = &IsValidALinkSubstitution;
+    // ALink uses the standard output file patterns as other linker tools.
     subst_output_validator = &IsValidLinkerOutputsSubstitution;
   } else if (tool_type == Toolchain::TYPE_COPY ||
              tool_type == Toolchain::TYPE_COPY_BUNDLE_DATA) {

@@ -111,6 +111,7 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
         // There are no sources so there are no params to alink. (In practice
         // this will probably fail in the archive tool.)
         "build obj/foo/libstlib.a: alink || obj/foo/bar.stamp\n"
+        "  arflags =\n"
         "  output_extension = \n"
         "  output_dir = \n";
     std::string out_str = out.str();
@@ -138,11 +139,44 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
         "build obj/foo/libstlib.a: alink obj/foo/bar.input1.o "
             "obj/foo/bar.input2.o ../../foo/input3.o ../../foo/input4.obj "
             "|| obj/foo/bar.stamp\n"
+        "  arflags =\n"
         "  output_extension = \n"
         "  output_dir = \n";
     std::string out_str = out.str();
     EXPECT_EQ(expected, out_str);
   }
+}
+
+TEST(NinjaBinaryTargetWriter, StaticLibrary) {
+  TestWithScope setup;
+  Err err;
+
+  TestTarget target(setup, "//foo:bar", Target::STATIC_LIBRARY);
+  target.sources().push_back(SourceFile("//foo/input1.cc"));
+  target.config_values().arflags().push_back("--asdf");
+  ASSERT_TRUE(target.OnResolved(&err));
+
+  std::ostringstream out;
+  NinjaBinaryTargetWriter writer(&target, out);
+  writer.Run();
+
+  const char expected[] =
+      "defines =\n"
+      "include_dirs =\n"
+      "cflags =\n"
+      "cflags_cc =\n"
+      "root_out_dir = .\n"
+      "target_out_dir = obj/foo\n"
+      "target_output_name = libbar\n"
+      "\n"
+      "build obj/foo/libbar.input1.o: cxx ../../foo/input1.cc\n"
+      "\n"
+      "build obj/foo/libbar.a: alink obj/foo/libbar.input1.o\n"
+      "  arflags = --asdf\n"
+      "  output_extension = \n"
+      "  output_dir = \n";
+  std::string out_str = out.str();
+  EXPECT_EQ(expected, out_str);
 }
 
 // This tests that output extension and output dir overrides apply, and input

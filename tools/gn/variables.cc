@@ -418,6 +418,25 @@ const char kAllowCircularIncludesFrom_Help[] =
     "    public_deps = [ \":c\" ]\n"
     "  }\n";
 
+const char kArflags[] = "arflags";
+const char kArflags_HelpShort[] =
+    "arflags: [string list] Arguments passed to static_library archiver.";
+const char kArflags_Help[] =
+    "arflags: Arguments passed to static_library archiver.\n"
+    "\n"
+    "  A list of flags passed to the archive/lib command that creates static\n"
+    "  libraries.\n"
+    "\n"
+    "  arflags are NOT pushed to dependents, so applying arflags to source\n"
+    "  sets or any other target type will be a no-op. As with ldflags,\n"
+    "  you could put the arflags in a config and set that as a public or\n"
+    "  \"all dependent\" config, but that will likely not be what you want.\n"
+    "  If you have a chain of static libraries dependent on each other,\n"
+    "  this can cause the flags to propagate up to other static libraries.\n"
+    "  Due to the nature of how arflags are typically used, you will normally\n"
+    "  want to apply them directly on static_library targets themselves.\n"
+    COMMON_ORDERING_HELP;
+
 const char kArgs[] = "args";
 const char kArgs_HelpShort[] =
     "args: [string list] Arguments passed to an action.";
@@ -1638,6 +1657,7 @@ const VariableInfoMap& GetTargetVariables() {
   if (info_map.empty()) {
     INSERT_VARIABLE(AllDependentConfigs)
     INSERT_VARIABLE(AllowCircularIncludesFrom)
+    INSERT_VARIABLE(Arflags)
     INSERT_VARIABLE(Args)
     INSERT_VARIABLE(Asmflags)
     INSERT_VARIABLE(AssertNoDeps)

@@ -67,6 +67,7 @@ void ConfigValuesGenerator::Run() {
     GetDirList(scope_, #name, config_values_, input_dir_, \
                &ConfigValues::name, err_);
 
+  FILL_STRING_CONFIG_VALUE(arflags)
   FILL_STRING_CONFIG_VALUE(asmflags)
   FILL_STRING_CONFIG_VALUE(cflags)
   FILL_STRING_CONFIG_VALUE(cflags_c)

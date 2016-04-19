@@ -79,6 +79,10 @@ extern const char kAllowCircularIncludesFrom[];
 extern const char kAllowCircularIncludesFrom_HelpShort[];
 extern const char kAllowCircularIncludesFrom_Help[];
 
+extern const char kArflags[];
+extern const char kArflags_HelpShort[];
+extern const char kArflags_Help[];
+
 extern const char kArgs[];
 extern const char kArgs_HelpShort[];
 extern const char kArgs_Help[];

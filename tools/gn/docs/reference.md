@@ -3003,6 +3003,7 @@
         Example: "gen/base/test"
 
   Linker tools have multiple inputs and (potentially) multiple outputs
+  The static library tool ("alink") is not considered a linker tool.
   The following expansions are available:
 
     {{inputs}}
@@ -3061,6 +3062,9 @@
 
         These should generally be treated the same as libs by your tool.
         Example: "libfoo.so libbar.so"
+
+  The static library ("alink") tool allows {{arflags}} plus the common
+  tool substitutions.
 
   The copy tool allows the common compiler/linker substitutions, plus
   {{source}} which is the source of the copy. The stamp tool allows
@@ -3722,6 +3726,42 @@
   group("a_b_shared_deps") {
     public_deps = [ ":c" ]
   }
+
+
+```
+## **arflags**: Arguments passed to static_library archiver.
+
+```
+  A list of flags passed to the archive/lib command that creates static
+  libraries.
+
+  arflags are NOT pushed to dependents, so applying arflags to source
+  sets or any other target type will be a no-op. As with ldflags,
+  you could put the arflags in a config and set that as a public or
+  "all dependent" config, but that will likely not be what you want.
+  If you have a chain of static libraries dependent on each other,
+  this can cause the flags to propagate up to other static libraries.
+  Due to the nature of how arflags are typically used, you will normally
+  want to apply them directly on static_library targets themselves.
+
+```
+
+### **Ordering of flags and values**
+
+```
+  1. Those set on the current target (not in a config).
+  2. Those set on the "configs" on the target in order that the
+     configs appear in the list.
+  3. Those set on the "all_dependent_configs" on the target in order
+     that the configs appear in the list.
+  4. Those set on the "public_configs" on the target in order that
+     those configs appear in the list.
+  5. all_dependent_configs pulled from dependencies, in the order of
+     the "deps" list. This is done recursively. If a config appears
+     more than once, only the first occurance will be used.
+  6. public_configs pulled from dependencies, in the order of the
+     "deps" list. If a dependency is public, they will be applied
+     recursively.
 
 
 ```

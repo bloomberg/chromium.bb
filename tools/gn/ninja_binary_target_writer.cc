@@ -785,6 +785,11 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
       target_->output_type() == Target::LOADABLE_MODULE) {
     WriteLinkerFlags(optional_def_file);
     WriteLibs();
+  } else if (target_->output_type() == Target::STATIC_LIBRARY) {
+    out_ << "  arflags =";
+    RecursiveTargetConfigStringsToStream(target_, &ConfigValues::arflags,
+                                         GetFlagOptions(), out_);
+    out_ << std::endl;
   }
   WriteOutputSubstitutions();
   WriteSolibs(solibs);
@@ -795,9 +800,8 @@ void NinjaBinaryTargetWriter::WriteLinkerFlags(
   out_ << "  ldflags =";
 
   // First the ldflags from the target and its config.
-  EscapeOptions flag_options = GetFlagOptions();
   RecursiveTargetConfigStringsToStream(target_, &ConfigValues::ldflags,
-                                       flag_options, out_);
+                                       GetFlagOptions(), out_);
 
   // Followed by library search paths that have been recursively pushed
   // through the dependency tree.

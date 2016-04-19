@@ -60,6 +60,9 @@ enum SubstitutionType {
   SUBSTITUTION_OUTPUT_EXTENSION,  // {{output_extension}}
   SUBSTITUTION_SOLIBS,  // {{solibs}}
 
+  // Valid for alink only.
+  SUBSTITUTION_ARFLAGS,  // {{arflags}}
+
   // Valid for bundle_data targets.
   SUBSTITUTION_BUNDLE_ROOT_DIR,  // {{bundle_root_dir}}
   SUBSTITUTION_BUNDLE_RESOURCES_DIR,  // {{bundle_resources_dir}}
@@ -117,6 +120,7 @@ bool IsValidCompilerSubstitution(SubstitutionType type);
 bool IsValidCompilerOutputsSubstitution(SubstitutionType type);
 bool IsValidLinkerSubstitution(SubstitutionType type);
 bool IsValidLinkerOutputsSubstitution(SubstitutionType type);
+bool IsValidALinkSubstitution(SubstitutionType type);
 bool IsValidCopySubstitution(SubstitutionType type);
 bool IsValidCompileXCassetsSubstitution(SubstitutionType type);
 
