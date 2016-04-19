@@ -32,9 +32,6 @@ class BASE_EXPORT PriorityQueue {
     // Constructs a SequenceAndSortKey with the given |sequence| and |sort_key|.
     SequenceAndSortKey(scoped_refptr<Sequence> sequence,
                        const SequenceSortKey& sort_key);
-
-    SequenceAndSortKey(const SequenceAndSortKey& other);
-
     ~SequenceAndSortKey();
 
     // Returns true if this is a null SequenceAndSortKey.
@@ -42,6 +39,9 @@ class BASE_EXPORT PriorityQueue {
 
     const scoped_refptr<Sequence> sequence;
     const SequenceSortKey sort_key;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(SequenceAndSortKey);
   };
 
   // A Transaction can perform multiple operations atomically on a

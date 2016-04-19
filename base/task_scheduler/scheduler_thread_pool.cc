@@ -238,7 +238,7 @@ SchedulerThreadPool::SchedulerWorkerThreadDelegateImpl::GetWork(
     SchedulerWorkerThread* worker_thread) {
   std::unique_ptr<PriorityQueue::Transaction> transaction(
       outer_->shared_priority_queue_.BeginTransaction());
-  const auto sequence_and_sort_key = transaction->Peek();
+  const auto& sequence_and_sort_key = transaction->Peek();
 
   if (sequence_and_sort_key.is_null()) {
     // |transaction| is kept alive while |worker_thread| is added to
@@ -257,8 +257,9 @@ SchedulerThreadPool::SchedulerWorkerThreadDelegateImpl::GetWork(
     return nullptr;
   }
 
+  scoped_refptr<Sequence> sequence = sequence_and_sort_key.sequence;
   transaction->Pop();
-  return sequence_and_sort_key.sequence;
+  return sequence;
 }
 
 void SchedulerThreadPool::SchedulerWorkerThreadDelegateImpl::EnqueueSequence(

@@ -20,9 +20,6 @@ PriorityQueue::SequenceAndSortKey::SequenceAndSortKey(
     const SequenceSortKey& sort_key)
     : sequence(std::move(sequence)), sort_key(sort_key) {}
 
-PriorityQueue::SequenceAndSortKey::SequenceAndSortKey(
-    const SequenceAndSortKey& other) = default;
-
 PriorityQueue::SequenceAndSortKey::~SequenceAndSortKey() = default;
 
 PriorityQueue::Transaction::Transaction(PriorityQueue* outer_queue)
