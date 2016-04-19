@@ -39,7 +39,7 @@ class TooltipBubble : public InfoBubble {
  protected:
   // InfoBubble:
   gfx::Rect GetAnchorRect() const override {
-    gfx::Rect bounds = views::BubbleDelegateView::GetAnchorRect();
+    gfx::Rect bounds = views::BubbleDialogDelegateView::GetAnchorRect();
     bounds.Inset(GetPreferredInsets(anchor()));
     return bounds;
   }

@@ -86,7 +86,7 @@ void InfoBubble::Show() {
   if (show_above_anchor_)
     set_arrow(views::BubbleBorder::vertical_mirror(arrow()));
 
-  widget_ = views::BubbleDelegateView::CreateBubble(this);
+  widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
 
   if (align_to_anchor_edge_) {
     // The frame adjusts its arrow before the bubble's alignment can be changed.
@@ -142,9 +142,13 @@ void InfoBubble::OnWidgetDestroyed(views::Widget* widget) {
 
 void InfoBubble::OnWidgetBoundsChanged(views::Widget* widget,
                                        const gfx::Rect& new_bounds) {
-  views::BubbleDelegateView::OnWidgetBoundsChanged(widget, new_bounds);
+  views::BubbleDialogDelegateView::OnWidgetBoundsChanged(widget, new_bounds);
   if (anchor_widget() == widget)
     frame_->set_available_bounds(widget->GetWindowBoundsInScreen());
+}
+
+int InfoBubble::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 }  // namespace autofill

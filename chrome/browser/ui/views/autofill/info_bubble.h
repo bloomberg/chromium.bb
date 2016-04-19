@@ -9,14 +9,14 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 
 namespace autofill {
 
 class InfoBubbleFrame;
 
 // Class to create and manage an information bubble for errors or tooltips.
-class InfoBubble : public views::BubbleDelegateView {
+class InfoBubble : public views::BubbleDialogDelegateView {
  public:
   InfoBubble(views::View* anchor, const base::string16& message);
   ~InfoBubble() override;
@@ -30,13 +30,14 @@ class InfoBubble : public views::BubbleDelegateView {
   // Updates the position of the bubble.
   void UpdatePosition();
 
-  // views::BubbleDelegateView:
+  // views::BubbleDialogDelegateView:
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
   gfx::Size GetPreferredSize() const override;
   void OnWidgetDestroyed(views::Widget* widget) override;
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override;
+  int GetDialogButtons() const override;
 
   views::View* anchor() { return anchor_; }
   const views::View* anchor() const { return anchor_; }
