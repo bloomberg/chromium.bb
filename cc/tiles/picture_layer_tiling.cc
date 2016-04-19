@@ -386,10 +386,15 @@ bool PictureLayerTiling::ShouldCreateTileAt(
   const Region* layer_invalidation = client_->GetPendingInvalidation();
 
   // If this tile is invalidated, then the pending tree should create one.
-  if (layer_invalidation &&
-      layer_invalidation->Intersects(info.enclosing_layer_rect))
-    return true;
-
+  // Do the intersection test in content space to match the corresponding check
+  // on the active tree and avoid floating point inconsistencies.
+  for (Region::Iterator iter(*layer_invalidation); iter.has_rect();
+       iter.next()) {
+    gfx::Rect invalid_content_rect =
+        gfx::ScaleToEnclosingRect(iter.rect(), contents_scale_);
+    if (invalid_content_rect.Intersects(info.content_rect))
+      return true;
+  }
   // If the active tree doesn't have a tile here, but it's in the pending tree's
   // visible rect, then the pending tree should create a tile. This can happen
   // if the pending visible rect is outside of the active tree's live tiles

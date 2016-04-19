@@ -472,6 +472,46 @@ TEST_F(PictureLayerTilingIteratorTest, RemoveOutsideLayerKeepsTiles) {
   EXPECT_TRUE(tiling_->TileAt(0, 0));
 }
 
+TEST_F(PictureLayerTilingIteratorTest, CreateTileJustCoverBorderUp) {
+  float content_scale = 1.2000000476837158f;
+  gfx::Size tile_size(512, 512);
+  gfx::Size layer_size(1440, 4560);
+  FakePictureLayerTilingClient active_client;
+
+  active_client.SetTileSize(tile_size);
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateFilled(layer_size);
+  std::unique_ptr<TestablePictureLayerTiling> active_tiling =
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, content_scale,
+                                         raster_source, &active_client,
+                                         LayerTreeSettings());
+  active_tiling->set_resolution(HIGH_RESOLUTION);
+
+  gfx::Rect invalid_rect(0, 750, 220, 100);
+  Initialize(tile_size, content_scale, layer_size);
+  client_.set_twin_tiling(active_tiling.get());
+  client_.set_invalidation(invalid_rect);
+  SetLiveRectAndVerifyTiles(gfx::Rect(layer_size));
+  // When it creates a tile in pending tree, verify that tiles are invalidated
+  // even if only their border pixels intersect the invalidation rect
+  EXPECT_TRUE(tiling_->TileAt(0, 1));
+  gfx::Rect scaled_invalid_rect =
+      gfx::ScaleToEnclosingRect(invalid_rect, content_scale);
+  EXPECT_FALSE(scaled_invalid_rect.Intersects(
+      tiling_->TilingDataForTesting().TileBounds(0, 2)));
+  EXPECT_TRUE(scaled_invalid_rect.Intersects(
+      tiling_->TilingDataForTesting().TileBoundsWithBorder(0, 2)));
+  EXPECT_TRUE(tiling_->TileAt(0, 2));
+
+  bool recreate_tiles = false;
+  active_tiling->RemoveTilesInRegion(invalid_rect, recreate_tiles);
+  // Even though a tile just touch border area of invalid region, verify that
+  // RemoveTilesInRegion behaves the same as SetLiveRectAndVerifyTiles with
+  // respect to the tiles that it invalidates
+  EXPECT_FALSE(active_tiling->TileAt(0, 1));
+  EXPECT_FALSE(active_tiling->TileAt(0, 2));
+}
+
 TEST_F(PictureLayerTilingIteratorTest, LiveTilesExactlyCoverLiveTileRect) {
   Initialize(gfx::Size(100, 100), 1.f, gfx::Size(1099, 801));
   SetLiveRectAndVerifyTiles(gfx::Rect(100, 100));
