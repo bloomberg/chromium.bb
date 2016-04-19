@@ -21,6 +21,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_MirrorHTML5Video) {
   ExecuteScript(web_contents, script);
   content::WebContents* dialog_contents = OpenMRDialog(web_contents);
   ASSERT_TRUE(dialog_contents);
+  // Wait for 1s to make sure the dialog finishes rendering.
+  Wait(base::TimeDelta::FromSeconds(1));
   WaitUntilSinkDiscoveredOnUI();
   ChooseSink(web_contents, receiver());
   WaitUntilRouteCreated();
