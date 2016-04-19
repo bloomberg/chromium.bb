@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/c/system/main.h"
-#include "services/catalog/public/interfaces/resolver.mojom.h"
+#include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/shell_client.h"
@@ -36,11 +36,11 @@ class QuickLaunchUI : public views::WidgetDelegateView,
  public:
   QuickLaunchUI(QuickLaunchApplication* quick_launch,
                 shell::Connector* connector,
-                catalog::mojom::ResolverPtr resolver)
+                catalog::mojom::CatalogPtr catalog)
       : quick_launch_(quick_launch),
         connector_(connector),
         prompt_(new views::Textfield),
-        resolver_(std::move(resolver)) {
+        catalog_(std::move(catalog)) {
     set_background(views::Background::CreateStandardPanelBackground());
     prompt_->set_controller(this);
     AddChildView(prompt_);
@@ -123,9 +123,10 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   }
 
   void UpdateEntries() {
-    resolver_->ResolveClass("launchable",
-                            base::Bind(&QuickLaunchUI::OnGotCatalogEntries,
-                                       base::Unretained(this)));
+    catalog_->GetEntriesProvidingClass(
+        "launchable",
+        base::Bind(&QuickLaunchUI::OnGotCatalogEntries,
+                   base::Unretained(this)));
   }
 
   void OnGotCatalogEntries(mojo::Array<catalog::mojom::EntryPtr> entries) {
@@ -147,7 +148,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   shell::Connector* connector_;
   views::Textfield* prompt_;
   std::vector<std::unique_ptr<shell::Connection>> connections_;
-  catalog::mojom::ResolverPtr resolver_;
+  catalog::mojom::CatalogPtr catalog_;
   std::set<base::string16> app_names_;
   bool suggestion_rejected_ = false;
 
@@ -189,11 +190,11 @@ void QuickLaunchApplication::Launch(uint32_t what, mojom::LaunchMode how) {
     windows_.back()->Activate();
     return;
   }
-  catalog::mojom::ResolverPtr resolver;
-  connector_->ConnectToInterface("mojo:catalog", &resolver);
+  catalog::mojom::CatalogPtr catalog;
+  connector_->ConnectToInterface("mojo:catalog", &catalog);
 
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
-      new QuickLaunchUI(this, connector_, std::move(resolver)), nullptr,
+      new QuickLaunchUI(this, connector_, std::move(catalog)), nullptr,
       gfx::Rect(10, 640, 0, 0));
   window->Show();
   windows_.push_back(window);

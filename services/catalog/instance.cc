@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/catalog/resolver.h"
+#include "services/catalog/instance.h"
 
 #include "base/bind.h"
 #include "services/catalog/entry.h"
@@ -24,41 +24,32 @@ void AddEntry(const Entry& entry, mojo::Array<mojom::EntryPtr>* ary) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// Resolver, public:
+// Instance, public:
 
-Resolver::Resolver(scoped_ptr<Store> store, Reader* system_reader)
+Instance::Instance(scoped_ptr<Store> store, Reader* system_reader)
     : store_(std::move(store)),
       system_reader_(system_reader),
       weak_factory_(this) {}
-Resolver::~Resolver() {}
+Instance::~Instance() {}
 
-void Resolver::BindResolver(mojom::ResolverRequest request) {
-  if (system_catalog_)
-    resolver_bindings_.AddBinding(this, std::move(request));
-  else
-    pending_resolver_requests_.push_back(std::move(request));
-}
-
-void Resolver::BindShellResolver(
+void Instance::BindShellResolver(
     shell::mojom::ShellResolverRequest request) {
-  if (system_catalog_)
+  if (system_cache_)
     shell_resolver_bindings_.AddBinding(this, std::move(request));
   else
     pending_shell_resolver_requests_.push_back(std::move(request));
 }
 
-void Resolver::BindCatalog(mojom::CatalogRequest request) {
-  if (system_catalog_)
+void Instance::BindCatalog(mojom::CatalogRequest request) {
+  if (system_cache_)
     catalog_bindings_.AddBinding(this, std::move(request));
   else
     pending_catalog_requests_.push_back(std::move(request));
 }
 
-void Resolver::CacheReady(EntryCache* cache) {
-  system_catalog_ = cache;
+void Instance::CacheReady(EntryCache* cache) {
+  system_cache_ = cache;
   DeserializeCatalog();
-  for (auto& request : pending_resolver_requests_)
-    BindResolver(std::move(request));
   for (auto& request : pending_shell_resolver_requests_)
     BindShellResolver(std::move(request));
   for (auto& request : pending_catalog_requests_)
@@ -66,34 +57,11 @@ void Resolver::CacheReady(EntryCache* cache) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Resolver, mojom::Resolver:
+// Instance, shell::mojom::ShellResolver:
 
-void Resolver::ResolveClass(const mojo::String& clazz,
-                            const ResolveClassCallback& callback) {
-  mojo::Array<mojom::EntryPtr> entries;
-  for (const auto& entry : *system_catalog_)
-    if (entry.second->ProvidesClass(clazz))
-      entries.push_back(mojom::Entry::From(*entry.second));
-  callback.Run(std::move(entries));
-}
-
-void Resolver::ResolveMIMEType(const mojo::String& mime_type,
-                               const ResolveMIMETypeCallback& callback) {
-  // TODO(beng): implement.
-}
-
-void Resolver::ResolveProtocolScheme(
-    const mojo::String& scheme,
-    const ResolveProtocolSchemeCallback& callback) {
-  // TODO(beng): implement.
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Resolver, shell::mojom::ShellResolver:
-
-void Resolver::ResolveMojoName(const mojo::String& mojo_name,
+void Instance::ResolveMojoName(const mojo::String& mojo_name,
                                const ResolveMojoNameCallback& callback) {
-  DCHECK(system_catalog_);
+  DCHECK(system_cache_);
 
   std::string type = shell::GetNameType(mojo_name);
   if (type != shell::kNameType_Mojo && type != shell::kNameType_Exe) {
@@ -103,8 +71,8 @@ void Resolver::ResolveMojoName(const mojo::String& mojo_name,
   }
 
   // TODO(beng): per-user catalogs.
-  auto entry = system_catalog_->find(mojo_name);
-  if (entry != system_catalog_->end()) {
+  auto entry = system_cache_->find(mojo_name);
+  if (entry != system_cache_->end()) {
     callback.Run(shell::mojom::ResolveResult::From(*entry->second));
     return;
   }
@@ -112,30 +80,30 @@ void Resolver::ResolveMojoName(const mojo::String& mojo_name,
   // Manifests for mojo: names should always be in the catalog by this point.
   //DCHECK(type == shell::kNameType_Exe);
   system_reader_->CreateEntryForName(
-      mojo_name, system_catalog_,
-      base::Bind(&Resolver::OnReadManifest, weak_factory_.GetWeakPtr(),
+      mojo_name, system_cache_,
+      base::Bind(&Instance::OnReadManifest, weak_factory_.GetWeakPtr(),
                  mojo_name, callback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Resolver, mojom::Catalog:
+// Instance, mojom::Catalog:
 
-void Resolver::GetEntries(mojo::Array<mojo::String> names,
+void Instance::GetEntries(mojo::Array<mojo::String> names,
                           const GetEntriesCallback& callback) {
-  DCHECK(system_catalog_);
+  DCHECK(system_cache_);
 
   mojo::Array<mojom::EntryPtr> entries;
   if (names.is_null()) {
     // TODO(beng): user catalog.
-    for (const auto& entry : *system_catalog_)
+    for (const auto& entry : *system_cache_)
       AddEntry(*entry.second, &entries);
   } else {
     std::vector<mojo::String> names_vec = names.PassStorage();
     for (const std::string& name : names_vec) {
       Entry* entry = nullptr;
       // TODO(beng): user catalog.
-      if (system_catalog_->find(name) != system_catalog_->end())
-        entry = (*system_catalog_)[name].get();
+      if (system_cache_->find(name) != system_cache_->end())
+        entry = (*system_cache_)[name].get();
       else
         continue;
       AddEntry(*entry, &entries);
@@ -144,11 +112,33 @@ void Resolver::GetEntries(mojo::Array<mojo::String> names,
   callback.Run(std::move(entries));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Resolver, private:
+void Instance::GetEntriesProvidingClass(
+    const mojo::String& clazz,
+    const GetEntriesProvidingClassCallback& callback) {
+  mojo::Array<mojom::EntryPtr> entries;
+  for (const auto& entry : *system_cache_)
+    if (entry.second->ProvidesClass(clazz))
+      entries.push_back(mojom::Entry::From(*entry.second));
+  callback.Run(std::move(entries));
+}
 
-void Resolver::DeserializeCatalog() {
-  DCHECK(system_catalog_);
+void Instance::GetEntriesConsumingMIMEType(
+    const mojo::String& mime_type,
+    const GetEntriesConsumingMIMETypeCallback& callback) {
+  // TODO(beng): implement.
+}
+
+void Instance::GetEntriesSupportingScheme(
+    const mojo::String& scheme,
+    const GetEntriesSupportingSchemeCallback& callback) {
+  // TODO(beng): implement.
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Instance, private:
+
+void Instance::DeserializeCatalog() {
+  DCHECK(system_cache_);
   if (!store_)
     return;
   const base::ListValue* catalog = store_->GetStore();
@@ -162,28 +152,28 @@ void Resolver::DeserializeCatalog() {
     scoped_ptr<Entry> entry = Entry::Deserialize(*dictionary);
     // TODO(beng): user catalog.
     if (entry)
-      (*system_catalog_)[entry->name()] = std::move(entry);
+      (*system_cache_)[entry->name()] = std::move(entry);
   }
 }
 
-void Resolver::SerializeCatalog() {
-  DCHECK(system_catalog_);
+void Instance::SerializeCatalog() {
+  DCHECK(system_cache_);
   scoped_ptr<base::ListValue> catalog(new base::ListValue);
   // TODO(beng): user catalog.
-  for (const auto& entry : *system_catalog_)
+  for (const auto& entry : *system_cache_)
     catalog->Append(entry.second->Serialize());
   if (store_)
     store_->UpdateStore(std::move(catalog));
 }
 
 // static
-void Resolver::OnReadManifest(base::WeakPtr<Resolver> resolver,
+void Instance::OnReadManifest(base::WeakPtr<Instance> instance,
                               const std::string& mojo_name,
                               const ResolveMojoNameCallback& callback,
                               shell::mojom::ResolveResultPtr result) {
   callback.Run(std::move(result));
-  if (resolver)
-    resolver->SerializeCatalog();
+  if (instance)
+    instance->SerializeCatalog();
 }
 
 }  // namespace catalog

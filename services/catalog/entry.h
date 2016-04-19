@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "services/catalog/public/interfaces/entry.mojom.h"
+#include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/shell/public/cpp/capabilities.h"
 
 namespace base {

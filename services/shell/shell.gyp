@@ -9,8 +9,6 @@
     'variables': {
       'mojom_files': [
         '../catalog/public/interfaces/catalog.mojom',
-        '../catalog/public/interfaces/entry.mojom',
-        '../catalog/public/interfaces/resolver.mojom',
         'public/interfaces/capabilities.mojom',
         'public/interfaces/connector.mojom',
         'public/interfaces/interface_provider.mojom',
@@ -73,10 +71,10 @@
       '../catalog/constants.h',
       '../catalog/entry.cc',
       '../catalog/entry.h',
+      '../catalog/instance.cc',
+      '../catalog/instance.h',
       '../catalog/reader.cc',
       '../catalog/reader.h',
-      '../catalog/resolver.cc',
-      '../catalog/resolver.h',
       '../catalog/store.cc',
       '../catalog/store.h',
       '../catalog/types.h',

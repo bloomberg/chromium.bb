@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
-#include "services/catalog/public/interfaces/resolver.mojom.h"
 #include "services/catalog/types.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
@@ -29,16 +28,15 @@ class ShellConnection;
 
 namespace catalog {
 
+class Instance;
 class ManifestProvider;
 class Reader;
-class Resolver;
 class Store;
 
 // Creates and owns an instance of the catalog. Exposes a ShellClientPtr that
 // can be passed to the Shell, potentially in a different process.
 class Catalog : public shell::ShellClient,
                 public shell::InterfaceFactory<mojom::Catalog>,
-                public shell::InterfaceFactory<mojom::Resolver>,
                 public shell::InterfaceFactory<shell::mojom::ShellResolver> {
  public:
   // |manifest_provider| may be null.
@@ -53,10 +51,6 @@ class Catalog : public shell::ShellClient,
   // shell::ShellClient:
   bool AcceptConnection(shell::Connection* connection) override;
 
-  // shell::InterfaceFactory<mojom::Resolver>:
-  void Create(shell::Connection* connection,
-              mojom::ResolverRequest request) override;
-
   // shell::InterfaceFactory<shell::mojom::ShellResolver>:
   void Create(shell::Connection* connection,
               shell::mojom::ShellResolverRequest request) override;
@@ -65,7 +59,7 @@ class Catalog : public shell::ShellClient,
   void Create(shell::Connection* connection,
               mojom::CatalogRequest request) override;
 
-  Resolver* GetResolverForUserId(const std::string& user_id);
+  Instance* GetInstanceForUserId(const std::string& user_id);
 
   void SystemPackageDirScanned();
 
@@ -75,10 +69,10 @@ class Catalog : public shell::ShellClient,
   shell::mojom::ShellClientPtr shell_client_;
   scoped_ptr<shell::ShellConnection> shell_connection_;
 
-  std::map<std::string, scoped_ptr<Resolver>> resolvers_;
+  std::map<std::string, scoped_ptr<Instance>> instances_;
 
   scoped_ptr<Reader> system_reader_;
-  EntryCache system_catalog_;
+  EntryCache system_cache_;
   bool loaded_ = false;
 
   base::WeakPtrFactory<Catalog> weak_factory_;
