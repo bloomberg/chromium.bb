@@ -164,6 +164,12 @@ bool StackwalkerAMD64::IsEndOfStack(uint64_t caller_rip, uint64_t caller_rsp,
   return false;
 }
 
+// Returns true if `ptr` is not in x86-64 canonical form.
+// https://en.wikipedia.org/wiki/X86-64#Virtual_address_space_details
+static bool is_non_canonical(uint64_t ptr) {
+  return ptr > 0x7FFFFFFFFFFF && ptr < 0xFFFF800000000000;
+}
+
 StackFrameAMD64* StackwalkerAMD64::GetCallerByFramePointerRecovery(
     const vector<StackFrame*>& frames) {
   StackFrameAMD64* last_frame = static_cast<StackFrameAMD64*>(frames.back());
@@ -186,10 +192,21 @@ StackFrameAMD64* StackwalkerAMD64::GetCallerByFramePointerRecovery(
   // %caller_rip = *(%callee_rbp + 8)
   // %caller_rbp = *(%callee_rbp)
 
+  // If rbp is not 8-byte aligned it can't be a frame pointer.
+  if (last_rbp % 8 != 0) {
+    return NULL;
+  }
+
   uint64_t caller_rip, caller_rbp;
   if (memory_->GetMemoryAtAddress(last_rbp + 8, &caller_rip) &&
       memory_->GetMemoryAtAddress(last_rbp, &caller_rbp)) {
     uint64_t caller_rsp = last_rbp + 16;
+
+    // If the recovered rip is not a canonical address it can't be
+    // the return address, so rbp must not have been a frame pointer.
+    if (is_non_canonical(caller_rip)) {
+      return NULL;
+    }
 
     // Simple sanity check that the stack is growing downwards as expected.
     if (IsEndOfStack(caller_rip, caller_rsp, last_rsp) ||
