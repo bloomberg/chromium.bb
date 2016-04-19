@@ -43,15 +43,6 @@ class GLSurface;
 class Size;
 }
 
-#if defined(OS_ANDROID)
-namespace gfx {
-class SurfaceTexture;
-}
-namespace gpu {
-class StreamTextureManagerInProcess;
-}
-#endif
-
 namespace gpu {
 class SyncPointClient;
 class SyncPointOrderData;
@@ -178,11 +169,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     scoped_ptr<gpu::gles2::ProgramCache> program_cache_;
   };
 
-#if defined(OS_ANDROID)
-  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(uint32_t stream_id);
-  uint32_t CreateStreamTexture(uint32_t texture_id);
-#endif
-
  private:
   struct InitializeOnGpuThreadParams {
     bool is_offscreen;
@@ -217,7 +203,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool DestroyOnGpuThread();
   void FlushOnGpuThread(int32_t put_offset, uint32_t order_num);
   void ScheduleDelayedWorkOnGpuThread();
-  uint32_t CreateStreamTextureOnGpuThread(uint32_t client_texture_id);
   bool MakeCurrent();
   base::Closure WrapCallback(const base::Closure& callback);
   State GetStateFast();
@@ -287,10 +272,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   base::Lock state_after_last_flush_lock_;
   scoped_refptr<gfx::GLShareGroup> gl_share_group_;
   base::WaitableEvent fence_sync_wait_event_;
-
-#if defined(OS_ANDROID)
-  scoped_ptr<StreamTextureManagerInProcess> stream_texture_manager_;
-#endif
 
   // Only used with explicit scheduling and the gpu thread is the same as
   // the client thread.

@@ -158,12 +158,4 @@ gpu::gles2::GLES2Interface* StreamTextureFactoryImpl::ContextGL() {
   return context_provider_->ContextGL();
 }
 
-void StreamTextureFactoryImpl::AddObserver(
-    StreamTextureFactoryContextObserver* obs) {
-}
-
-void StreamTextureFactoryImpl::RemoveObserver(
-    StreamTextureFactoryContextObserver* obs) {
-}
-
 }  // namespace content

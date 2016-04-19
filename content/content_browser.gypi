@@ -1727,8 +1727,6 @@
       'browser/web_contents/web_contents_view_android.h',
     ],
     'android_in_process_browser_sources': [
-      'browser/android/in_process/context_provider_in_process.cc',
-      'browser/android/in_process/context_provider_in_process.h',
       'browser/android/in_process/synchronous_compositor_factory_impl.cc',
       'browser/android/in_process/synchronous_compositor_factory_impl.h',
       'browser/android/in_process/synchronous_compositor_impl.cc',

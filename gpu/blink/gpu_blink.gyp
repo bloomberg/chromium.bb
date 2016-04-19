@@ -35,8 +35,6 @@
             'gpu_blink_export.h',
             'webgraphicscontext3d_impl.cc',
             'webgraphicscontext3d_impl.h',
-            'webgraphicscontext3d_in_process_command_buffer_impl.cc',
-            'webgraphicscontext3d_in_process_command_buffer_impl.h',
           ],
           'defines': [
             'GPU_BLINK_IMPLEMENTATION',

@@ -21,6 +21,7 @@ class GLES2Interface;
 }  // namespace gles2
 }  // namespace gpu
 
+// TODO(boliu): Remove interfaces.
 namespace content {
 
 // The proxy class for the gpu thread to notify the compositor thread
@@ -46,12 +47,6 @@ class StreamTextureProxy {
 
 typedef std::unique_ptr<StreamTextureProxy, StreamTextureProxy::Deleter>
     ScopedStreamTextureProxy;
-
-class StreamTextureFactoryContextObserver {
- public:
-  virtual ~StreamTextureFactoryContextObserver() {}
-  virtual void ResetStreamTextureProxy() = 0;
-};
 
 // Factory class for managing stream textures.
 class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
@@ -79,9 +74,6 @@ class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
                                     const gfx::Size& size) = 0;
 
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
-
-  virtual void AddObserver(StreamTextureFactoryContextObserver* obs) = 0;
-  virtual void RemoveObserver(StreamTextureFactoryContextObserver* obs) = 0;
 
  protected:
   friend class base::RefCounted<StreamTextureFactory>;

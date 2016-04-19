@@ -47,11 +47,6 @@
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_share_group.h"
 
-#if defined(OS_ANDROID)
-#include "gpu/command_buffer/service/stream_texture_manager_in_process_android.h"
-#include "ui/gl/android/surface_texture.h"
-#endif
-
 #if defined(OS_WIN)
 #include <windows.h>
 #include "base/process/process_handle.h"
@@ -342,10 +337,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                         ? params.context_group->gl_share_group_
                         : service_->share_group();
 
-#if defined(OS_ANDROID)
-  stream_texture_manager_.reset(new StreamTextureManagerInProcess);
-#endif
-
   bool bind_generates_resource = false;
   decoder_.reset(gles2::GLES2Decoder::Create(
       params.context_group
@@ -484,9 +475,6 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
     sync_point_order_data_ = nullptr;
   }
   gl_share_group_ = nullptr;
-#if defined(OS_ANDROID)
-  stream_texture_manager_.reset();
-#endif
 
   return true;
 }
@@ -993,16 +981,6 @@ bool InProcessCommandBuffer::CanWaitUnverifiedSyncToken(
   return sync_token->namespace_id() == GetNamespaceID();
 }
 
-uint32_t InProcessCommandBuffer::CreateStreamTextureOnGpuThread(
-    uint32_t client_texture_id) {
-#if defined(OS_ANDROID)
-  return stream_texture_manager_->CreateStreamTexture(
-      client_texture_id, decoder_->GetContextGroup()->texture_manager());
-#else
-  return 0;
-#endif
-}
-
 gpu::error::Error InProcessCommandBuffer::GetLastError() {
   CheckSequencedThread();
   return last_state_.error;
@@ -1048,26 +1026,6 @@ base::Closure InProcessCommandBuffer::WrapCallback(
                  callback_on_client_thread);
   return wrapped_callback;
 }
-
-#if defined(OS_ANDROID)
-scoped_refptr<gfx::SurfaceTexture> InProcessCommandBuffer::GetSurfaceTexture(
-    uint32_t stream_id) {
-  DCHECK(stream_texture_manager_);
-  return stream_texture_manager_->GetSurfaceTexture(stream_id);
-}
-
-uint32_t InProcessCommandBuffer::CreateStreamTexture(uint32_t texture_id) {
-  base::WaitableEvent completion(true, false);
-  uint32_t stream_id = 0;
-  base::Callback<uint32_t(void)> task =
-      base::Bind(&InProcessCommandBuffer::CreateStreamTextureOnGpuThread,
-                 base::Unretained(this), texture_id);
-  QueueTask(
-      base::Bind(&RunTaskWithResult<uint32_t>, task, &stream_id, &completion));
-  completion.Wait();
-  return stream_id;
-}
-#endif
 
 GpuInProcessThread::GpuInProcessThread(SyncPointManager* sync_point_manager)
     : base::Thread("GpuThread"), sync_point_manager_(sync_point_manager) {

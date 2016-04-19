@@ -104,11 +104,6 @@
 #include "ui/gfx/color_profile.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
-#include "content/renderer/android/synchronous_compositor_factory.h"
-#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
 #include "content/common/mac/font_loader.h"

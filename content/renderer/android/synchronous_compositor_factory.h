@@ -21,19 +21,10 @@ class ContextProvider;
 class OutputSurface;
 }
 
-namespace cc_blink {
-class ContextProviderWebContext;
-}
-
-namespace gpu_blink {
-class WebGraphicsContext3DInProcessCommandBufferImpl;
-}
-
 namespace content {
 
 class InputHandlerManagerClient;
 class SynchronousInputHandlerProxyClient;
-class StreamTextureFactory;
 class FrameSwapMessageQueue;
 
 // Decouples creation from usage of the parts needed for the synchonous

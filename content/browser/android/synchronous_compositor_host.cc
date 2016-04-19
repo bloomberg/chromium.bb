@@ -10,7 +10,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/compositor_frame_ack.h"
-#include "content/browser/android/in_process/synchronous_compositor_factory_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_renderer_statics.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -290,17 +289,8 @@ void SynchronousCompositorHost::ReturnResources(
 void SynchronousCompositorHost::SetMemoryPolicy(size_t bytes_limit) {
   if (bytes_limit_ == bytes_limit)
     return;
-  size_t current_bytes_limit = bytes_limit_;
   bytes_limit_ = bytes_limit;
   SendAsyncCompositorStateIfNeeded();
-
-  if (bytes_limit && !current_bytes_limit) {
-    SynchronousCompositorStreamTextureFactoryImpl::GetInstance()
-        ->CompositorInitializedHardwareDraw();
-  } else if (!bytes_limit && current_bytes_limit) {
-    SynchronousCompositorStreamTextureFactoryImpl::GetInstance()
-        ->CompositorReleasedHardwareDraw();
-  }
 }
 
 void SynchronousCompositorHost::DidChangeRootLayerScrollOffset(

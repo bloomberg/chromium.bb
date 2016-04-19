@@ -291,8 +291,6 @@
       'renderer/media/android/stream_texture_factory.h',
       'renderer/media/android/stream_texture_factory_impl.cc',
       'renderer/media/android/stream_texture_factory_impl.h',
-      'renderer/media/android/stream_texture_factory_synchronous_impl.cc',
-      'renderer/media/android/stream_texture_factory_synchronous_impl.h',
       'renderer/media/android/webmediaplayer_android.cc',
       'renderer/media/android/webmediaplayer_android.h',
       'renderer/media/android/webmediasession_android.cc',

@@ -79,7 +79,6 @@ class RendererMediaPlayerManager;
 class WebMediaPlayerAndroid
     : public blink::WebMediaPlayer,
       public cc::VideoFrameProvider,
-      public StreamTextureFactoryContextObserver,
       public media::RendererMediaPlayerInterface,
       public NON_EXPORTED_BASE(media::WebMediaPlayerDelegate::Observer) {
  public:
@@ -214,9 +213,6 @@ class WebMediaPlayerAndroid
   void OnMediaPlayerPlay() override;
   void OnMediaPlayerPause() override;
   void OnRemoteRouteAvailabilityChanged(bool routes_available) override;
-
-  // StreamTextureFactoryContextObserver implementation.
-  void ResetStreamTextureProxy() override;
 
   // Called when the player is released.
   void OnPlayerReleased() override;

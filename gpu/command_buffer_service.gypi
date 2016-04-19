@@ -113,8 +113,6 @@
     'command_buffer/service/shader_translator.h',
     'command_buffer/service/shader_translator_cache.cc',
     'command_buffer/service/shader_translator_cache.h',
-    'command_buffer/service/stream_texture_manager_in_process_android.cc',
-    'command_buffer/service/stream_texture_manager_in_process_android.h',
     'command_buffer/service/sync_point_manager.cc',
     'command_buffer/service/sync_point_manager.h',
     'command_buffer/service/texture_definition.cc',

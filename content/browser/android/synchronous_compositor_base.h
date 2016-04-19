@@ -25,7 +25,6 @@ struct BeginFrameArgs;
 namespace content {
 
 class RenderWidgetHostViewAndroid;
-class SynchronousCompositorStreamTextureFactoryImpl;
 class WebContents;
 struct DidOverscrollParams;
 

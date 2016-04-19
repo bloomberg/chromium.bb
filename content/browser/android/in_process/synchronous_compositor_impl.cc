@@ -213,17 +213,7 @@ void SynchronousCompositorImpl::UpdateFrameMetaData(
 void SynchronousCompositorImpl::SetMemoryPolicy(size_t bytes_limit) {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
-
-  size_t current_bytes_limit = output_surface_->GetMemoryPolicy();
   output_surface_->SetMemoryPolicy(bytes_limit);
-
-  if (bytes_limit && !current_bytes_limit) {
-    SynchronousCompositorStreamTextureFactoryImpl::GetInstance()
-        ->CompositorInitializedHardwareDraw();
-  } else if (!bytes_limit && current_bytes_limit) {
-    SynchronousCompositorStreamTextureFactoryImpl::GetInstance()
-        ->CompositorReleasedHardwareDraw();
-  }
 }
 
 void SynchronousCompositorImpl::Invalidate() {

@@ -39,8 +39,6 @@ class StreamTextureFactoryImpl : public StreamTextureFactory {
                                gpu::Mailbox* texture_mailbox) override;
   void SetStreamTextureSize(int32_t texture_id, const gfx::Size& size) override;
   gpu::gles2::GLES2Interface* ContextGL() override;
-  void AddObserver(StreamTextureFactoryContextObserver* obs) override;
-  void RemoveObserver(StreamTextureFactoryContextObserver* obs) override;
 
  private:
   friend class base::RefCounted<StreamTextureFactoryImpl>;

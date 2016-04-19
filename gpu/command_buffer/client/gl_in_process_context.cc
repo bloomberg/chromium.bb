@@ -71,12 +71,6 @@ class GLInProcessContextImpl
   size_t GetMappedMemoryLimit() override;
   void SetLock(base::Lock* lock) override;
 
-#if defined(OS_ANDROID)
-  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
-      uint32_t stream_id) override;
-  uint32_t CreateStreamTexture(uint32_t texture_id) override;
-#endif
-
  private:
   void Destroy();
   void OnSignalSyncPoint(const base::Closure& callback);
@@ -206,17 +200,6 @@ void GLInProcessContextImpl::Destroy() {
   gles2_helper_.reset();
   command_buffer_.reset();
 }
-
-#if defined(OS_ANDROID)
-scoped_refptr<gfx::SurfaceTexture> GLInProcessContextImpl::GetSurfaceTexture(
-    uint32_t stream_id) {
-  return command_buffer_->GetSurfaceTexture(stream_id);
-}
-
-uint32_t GLInProcessContextImpl::CreateStreamTexture(uint32_t texture_id) {
-  return command_buffer_->CreateStreamTexture(texture_id);
-}
-#endif
 
 }  // anonymous namespace
 
