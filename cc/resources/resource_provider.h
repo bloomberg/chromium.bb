@@ -518,7 +518,7 @@ class CC_EXPORT ResourceProvider
              const gfx::Size& size,
              Origin origin,
              GLenum filter);
-    Resource(const Resource& other);
+    Resource(Resource&& other);
 
     bool needs_sync_token() const { return needs_sync_token_; }
 
@@ -570,12 +570,14 @@ class CC_EXPORT ResourceProvider
     ResourceFormat format;
     SharedBitmapId shared_bitmap_id;
     SharedBitmap* shared_bitmap;
-    gfx::GpuMemoryBuffer* gpu_memory_buffer;
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
 
    private:
     SynchronizationState synchronization_state_ = SYNCHRONIZED;
     bool needs_sync_token_ = false;
     TextureMailbox mailbox_;
+
+    DISALLOW_COPY_AND_ASSIGN(Resource);
   };
   using ResourceMap = std::unordered_map<ResourceId, Resource>;
 
@@ -602,7 +604,7 @@ class CC_EXPORT ResourceProvider
                              ResourceType type,
                              ResourceFormat format);
   ResourceId CreateBitmap(const gfx::Size& size);
-  Resource* InsertResource(ResourceId id, const Resource& resource);
+  Resource* InsertResource(ResourceId id, Resource resource);
   Resource* GetResource(ResourceId id);
   const Resource* LockForRead(ResourceId id);
   void UnlockForRead(ResourceId id);

@@ -221,7 +221,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       gl_pixel_buffer_id(0),
       gl_upload_query_id(0),
       gl_read_lock_query_id(0),
-      pixels(NULL),
+      pixels(nullptr),
       lock_for_read_count(0),
       imported_count(0),
       exported_count(0),
@@ -233,7 +233,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       read_lock_fences_enabled(false),
       has_shared_bitmap_id(false),
       is_overlay_candidate(false),
-      read_lock_fence(NULL),
+      read_lock_fence(nullptr),
       size(size),
       origin(origin),
       target(target),
@@ -244,8 +244,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       hint(hint),
       type(type),
       format(format),
-      shared_bitmap(NULL),
-      gpu_memory_buffer(NULL) {}
+      shared_bitmap(nullptr) {}
 
 ResourceProvider::Resource::Resource(uint8_t* pixels,
                                      SharedBitmap* bitmap,
@@ -269,7 +268,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       read_lock_fences_enabled(false),
       has_shared_bitmap_id(!!bitmap),
       is_overlay_candidate(false),
-      read_lock_fence(NULL),
+      read_lock_fence(nullptr),
       size(size),
       origin(origin),
       target(0),
@@ -280,8 +279,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       hint(TEXTURE_HINT_IMMUTABLE),
       type(RESOURCE_TYPE_BITMAP),
       format(RGBA_8888),
-      shared_bitmap(bitmap),
-      gpu_memory_buffer(NULL) {
+      shared_bitmap(bitmap) {
   DCHECK(origin == DELEGATED || pixels);
   if (bitmap)
     shared_bitmap_id = bitmap->id();
@@ -296,7 +294,7 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
       gl_pixel_buffer_id(0),
       gl_upload_query_id(0),
       gl_read_lock_query_id(0),
-      pixels(NULL),
+      pixels(nullptr),
       lock_for_read_count(0),
       imported_count(0),
       exported_count(0),
@@ -308,7 +306,7 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
       read_lock_fences_enabled(false),
       has_shared_bitmap_id(true),
       is_overlay_candidate(false),
-      read_lock_fence(NULL),
+      read_lock_fence(nullptr),
       size(size),
       origin(origin),
       target(0),
@@ -320,10 +318,9 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
       type(RESOURCE_TYPE_BITMAP),
       format(RGBA_8888),
       shared_bitmap_id(bitmap_id),
-      shared_bitmap(NULL),
-      gpu_memory_buffer(NULL) {}
+      shared_bitmap(nullptr) {}
 
-ResourceProvider::Resource::Resource(const Resource& other) = default;
+ResourceProvider::Resource::Resource(Resource&& other) = default;
 
 void ResourceProvider::Resource::set_mailbox(const TextureMailbox& mailbox) {
   mailbox_ = mailbox;
@@ -714,17 +711,16 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     DCHECK(resource->origin != Resource::EXTERNAL);
     DCHECK_EQ(RESOURCE_TYPE_BITMAP, resource->type);
     delete resource->shared_bitmap;
-    resource->pixels = NULL;
+    resource->pixels = nullptr;
   }
   if (resource->pixels) {
     DCHECK(resource->origin == Resource::INTERNAL);
     delete[] resource->pixels;
-    resource->pixels = NULL;
+    resource->pixels = nullptr;
   }
   if (resource->gpu_memory_buffer) {
     DCHECK(resource->origin == Resource::INTERNAL);
-    delete resource->gpu_memory_buffer;
-    resource->gpu_memory_buffer = NULL;
+    resource->gpu_memory_buffer.reset();
   }
   resources_.erase(it);
 }
@@ -826,9 +822,9 @@ void ResourceProvider::GenerateSyncTokenForResources(
 
 ResourceProvider::Resource* ResourceProvider::InsertResource(
     ResourceId id,
-    const Resource& resource) {
+    Resource resource) {
   std::pair<ResourceMap::iterator, bool> result =
-      resources_.insert(ResourceMap::value_type(id, resource));
+      resources_.insert(ResourceMap::value_type(id, std::move(resource)));
   DCHECK(result.second);
   return &result.first->second;
 }
@@ -1050,7 +1046,7 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
     : resource_provider_(resource_provider),
       resource_(resource_provider->LockForWrite(resource_id)) {
   DCHECK(IsGpuResourceType(resource_->type));
-  gpu_memory_buffer_.reset(resource_->gpu_memory_buffer);
+  gpu_memory_buffer_ = std::move(resource_->gpu_memory_buffer);
   resource_->gpu_memory_buffer = nullptr;
 }
 
@@ -1063,7 +1059,7 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
 
   DCHECK(!resource_->gpu_memory_buffer);
   resource_provider_->LazyCreate(resource_);
-  resource_->gpu_memory_buffer = gpu_memory_buffer_.release();
+  resource_->gpu_memory_buffer = std::move(gpu_memory_buffer_);
   resource_->allocated = true;
   resource_provider_->LazyCreateImage(resource_);
   resource_->dirty_image = true;
@@ -1782,11 +1778,9 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   gl->BindTexture(resource->target, resource->gl_id);
   if (resource->type == RESOURCE_TYPE_GPU_MEMORY_BUFFER) {
     resource->gpu_memory_buffer =
-        gpu_memory_buffer_manager_
-            ->AllocateGpuMemoryBuffer(size, BufferFormat(format),
-                                      gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-                                      0 /* surface_id */)
-            .release();
+        gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
+            size, BufferFormat(format),
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, 0 /* surface_id */);
     LazyCreateImage(resource);
     resource->dirty_image = true;
     resource->is_overlay_candidate = true;
@@ -1801,7 +1795,7 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
     if (format != ETC1) {
       gl->TexImage2D(resource->target, 0, GLInternalFormat(format),
                      size.width(), size.height(), 0, GLDataFormat(format),
-                     GLDataType(format), NULL);
+                     GLDataType(format), nullptr);
     }
   }
 }
@@ -1881,14 +1875,14 @@ void ResourceProvider::ValidateResource(ResourceId id) const {
 
 GLES2Interface* ResourceProvider::ContextGL() const {
   ContextProvider* context_provider = output_surface_->context_provider();
-  return context_provider ? context_provider->ContextGL() : NULL;
+  return context_provider ? context_provider->ContextGL() : nullptr;
 }
 
 class GrContext* ResourceProvider::GrContext(bool worker_context) const {
   ContextProvider* context_provider =
       worker_context ? output_surface_->worker_context_provider()
                      : output_surface_->context_provider();
-  return context_provider ? context_provider->GrContext() : NULL;
+  return context_provider ? context_provider->GrContext() : nullptr;
 }
 
 bool ResourceProvider::OnMemoryDump(
