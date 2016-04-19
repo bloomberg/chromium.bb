@@ -178,8 +178,7 @@ bool MediaCodecUtil::RegisterMediaCodecUtil(JNIEnv* env) {
 
 // static
 bool MediaCodecUtil::IsVp8DecoderAvailable() {
-  return IsMediaCodecAvailable() &&
-         IsDecoderSupportedByDevice(CodecTypeToAndroidMimeType("vp8"));
+  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice("vp8");
 }
 
 // static
@@ -191,8 +190,7 @@ bool MediaCodecUtil::IsVp8EncoderAvailable() {
 
 // static
 bool MediaCodecUtil::IsVp9DecoderAvailable() {
-  return IsMediaCodecAvailable() &&
-         IsDecoderSupportedByDevice(CodecTypeToAndroidMimeType("vp9"));
+  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice("vp9");
 }
 
 // static
