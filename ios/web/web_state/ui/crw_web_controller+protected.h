@@ -196,6 +196,10 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Returns whether the user is interacting with the page.
 @property(nonatomic, readonly) BOOL userIsInteracting;
 
+// YES if a user interaction has been registered at any time since the page has
+// loaded.
+@property(nonatomic, readwrite) BOOL userInteractionRegistered;
+
 // YES if the web process backing _wkWebView is believed to currently be dead.
 @property(nonatomic, assign) BOOL webProcessIsDead;
 
