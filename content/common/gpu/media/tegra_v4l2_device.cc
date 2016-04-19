@@ -189,13 +189,14 @@ bool TegraV4L2Device::CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) {
   return v4l2_pixfmt == V4L2_PIX_FMT_NV12M;
 }
 
-EGLImageKHR TegraV4L2Device::CreateEGLImage(EGLDisplay egl_display,
-                                            EGLContext egl_context,
-                                            GLuint texture_id,
-                                            gfx::Size /* frame_buffer_size */,
-                                            unsigned int buffer_index,
-                                            uint32_t v4l2_pixfmt,
-                                            size_t /* num_v4l2_planes */) {
+EGLImageKHR TegraV4L2Device::CreateEGLImage(
+    EGLDisplay egl_display,
+    EGLContext egl_context,
+    GLuint texture_id,
+    const gfx::Size& /* size */,
+    unsigned int buffer_index,
+    uint32_t v4l2_pixfmt,
+    const std::vector<base::ScopedFD>& /* dmabuf_fds */) {
   DVLOG(3) << "CreateEGLImage()";
   if (!CanCreateEGLImageFrom(v4l2_pixfmt)) {
     LOG(ERROR) << "Unsupported V4L2 pixel format";

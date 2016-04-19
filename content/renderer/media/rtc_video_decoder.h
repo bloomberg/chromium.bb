@@ -147,7 +147,8 @@ class CONTENT_EXPORT RTCVideoDecoder
       const media::Picture& picture,
       const media::PictureBuffer& pb,
       uint32_t timestamp,
-      const gfx::Rect& visible_rect);
+      const gfx::Rect& visible_rect,
+      media::VideoPixelFormat pixel_format);
 
   // Resets VDA.
   void ResetInternal();

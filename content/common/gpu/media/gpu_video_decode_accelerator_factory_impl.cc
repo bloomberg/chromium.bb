@@ -31,13 +31,6 @@
 
 namespace content {
 
-namespace {
-static base::WeakPtr<gpu::gles2::GLES2Decoder> GetEmptyGLES2Decoder() {
-  NOTREACHED() << "VDA requests a GLES2Decoder, but client did not provide it";
-  return base::WeakPtr<gpu::gles2::GLES2Decoder>();
-}
-}
-
 // static
 std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl>
 GpuVideoDecodeAcceleratorFactoryImpl::Create(
@@ -46,7 +39,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::Create(
     const BindGLImageCallback& bind_image_cb) {
   return base::WrapUnique(new GpuVideoDecodeAcceleratorFactoryImpl(
       get_gl_context_cb, make_context_current_cb, bind_image_cb,
-      base::Bind(&GetEmptyGLES2Decoder)));
+      GetGLES2DecoderCallback()));
 }
 
 // static
@@ -59,6 +52,13 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateWithGLES2Decoder(
   return base::WrapUnique(new GpuVideoDecodeAcceleratorFactoryImpl(
       get_gl_context_cb, make_context_current_cb, bind_image_cb,
       get_gles2_decoder_cb));
+}
+
+// static
+std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl>
+GpuVideoDecodeAcceleratorFactoryImpl::CreateWithNoGL() {
+  return Create(GetGLContextCallback(), MakeGLContextCurrentCallback(),
+                BindGLImageCallback());
 }
 
 // static

@@ -103,18 +103,21 @@ class CONTENT_EXPORT V4L2Device
   // for the current platform.
   virtual bool CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) = 0;
 
-  // Creates an EGLImageKHR since each V4L2Device may use a different method of
-  // acquiring one and associating it to the given texture. The texture_id is
-  // used to bind the texture to the returned EGLImageKHR. buffer_index can be
-  // used to associate the returned EGLImageKHR by the underlying V4L2Device
-  // implementation.
-  virtual EGLImageKHR CreateEGLImage(EGLDisplay egl_display,
-                                     EGLContext egl_context,
-                                     GLuint texture_id,
-                                     gfx::Size frame_buffer_size,
-                                     unsigned int buffer_index,
-                                     uint32_t v4l2_pixfmt,
-                                     size_t num_v4l2_planes) = 0;
+  // Create an EGLImage from provided |dmabuf_fds| and bind |texture_id| to it.
+  // Some implementations may also require the V4L2 |buffer_index| of the buffer
+  // for which |dmabuf_fds| have been exported.
+  // The caller may choose to close the file descriptors after this method
+  // returns, and may expect the buffers to remain valid for the lifetime of
+  // the created EGLImage.
+  // Return EGL_NO_IMAGE_KHR on failure.
+  virtual EGLImageKHR CreateEGLImage(
+      EGLDisplay egl_display,
+      EGLContext egl_context,
+      GLuint texture_id,
+      const gfx::Size& size,
+      unsigned int buffer_index,
+      uint32_t v4l2_pixfmt,
+      const std::vector<base::ScopedFD>& dmabuf_fds) = 0;
 
   // Destroys the EGLImageKHR.
   virtual EGLBoolean DestroyEGLImage(EGLDisplay egl_display,

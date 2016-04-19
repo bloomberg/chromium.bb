@@ -74,8 +74,10 @@
 #endif  // OS_WIN
 
 #if defined(USE_OZONE)
+#include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 #endif  // defined(USE_OZONE)
 
 using media::VideoDecodeAccelerator;
@@ -124,6 +126,10 @@ int g_rendering_warm_up = 0;
 int g_num_play_throughs = 0;
 // Fake decode
 int g_fake_decoder = 0;
+
+// Test buffer import into VDA, providing buffers allocated by us, instead of
+// requesting the VDA itself to allocate buffers.
+bool g_test_import = false;
 
 // Environment to store rendering thread.
 class VideoDecodeAcceleratorTestEnvironment;
@@ -269,24 +275,104 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeAcceleratorTestEnvironment);
 };
 
-// A helper class used to manage the lifetime of a Texture.
+// A helper class used to manage the lifetime of a Texture. Can be backed by
+// either a buffer allocated by the VDA, or by a preallocated pixmap.
 class TextureRef : public base::RefCounted<TextureRef> {
  public:
-  TextureRef(uint32_t texture_id, const base::Closure& no_longer_needed_cb)
-      : texture_id_(texture_id), no_longer_needed_cb_(no_longer_needed_cb) {}
+  static scoped_refptr<TextureRef> Create(
+      uint32_t texture_id,
+      const base::Closure& no_longer_needed_cb);
+
+  static scoped_refptr<TextureRef> CreatePreallocated(
+      uint32_t texture_id,
+      const base::Closure& no_longer_needed_cb,
+      media::VideoPixelFormat pixel_format,
+      const gfx::Size& size);
+
+  std::vector<gfx::GpuMemoryBufferHandle> ExportGpuMemoryBufferHandles() const;
 
   int32_t texture_id() const { return texture_id_; }
 
  private:
   friend class base::RefCounted<TextureRef>;
+
+  TextureRef(uint32_t texture_id, const base::Closure& no_longer_needed_cb)
+      : texture_id_(texture_id), no_longer_needed_cb_(no_longer_needed_cb) {}
+
   ~TextureRef();
 
   uint32_t texture_id_;
   base::Closure no_longer_needed_cb_;
+#if defined(USE_OZONE)
+  scoped_refptr<ui::NativePixmap> pixmap_;
+#endif
 };
 
 TextureRef::~TextureRef() {
   base::ResetAndReturn(&no_longer_needed_cb_).Run();
+}
+
+// static
+scoped_refptr<TextureRef> TextureRef::Create(
+    uint32_t texture_id,
+    const base::Closure& no_longer_needed_cb) {
+  return make_scoped_refptr(new TextureRef(texture_id, no_longer_needed_cb));
+}
+
+#if defined(USE_OZONE)
+gfx::BufferFormat VideoPixelFormatToGfxBufferFormat(
+    media::VideoPixelFormat pixel_format) {
+  switch (pixel_format) {
+    case media::VideoPixelFormat::PIXEL_FORMAT_ARGB:
+      return gfx::BufferFormat::BGRA_8888;
+    case media::VideoPixelFormat::PIXEL_FORMAT_XRGB:
+      return gfx::BufferFormat::BGRX_8888;
+    case media::VideoPixelFormat::PIXEL_FORMAT_NV12:
+      return gfx::BufferFormat::YUV_420_BIPLANAR;
+    default:
+      LOG_ASSERT(false) << "Unknown VideoPixelFormat";
+      return gfx::BufferFormat::BGRX_8888;
+  }
+}
+#endif
+
+// static
+scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
+    uint32_t texture_id,
+    const base::Closure& no_longer_needed_cb,
+    media::VideoPixelFormat pixel_format,
+    const gfx::Size& size) {
+  scoped_refptr<TextureRef> texture_ref;
+#if defined(USE_OZONE)
+  texture_ref = TextureRef::Create(texture_id, no_longer_needed_cb);
+  LOG_ASSERT(texture_ref);
+
+  ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
+  ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
+  gfx::BufferFormat buffer_format =
+      VideoPixelFormatToGfxBufferFormat(pixel_format);
+  texture_ref->pixmap_ =
+      factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size,
+                                  buffer_format, gfx::BufferUsage::SCANOUT);
+  LOG_ASSERT(texture_ref->pixmap_);
+#endif
+
+  return texture_ref;
+}
+
+std::vector<gfx::GpuMemoryBufferHandle>
+TextureRef::ExportGpuMemoryBufferHandles() const {
+  std::vector<gfx::GpuMemoryBufferHandle> handles;
+#if defined(USE_OZONE)
+  CHECK(pixmap_);
+  int duped_fd = HANDLE_EINTR(dup(pixmap_->GetDmaBufFd()));
+  LOG_ASSERT(duped_fd != -1) << "Failed duplicating dmabuf fd";
+  gfx::GpuMemoryBufferHandle handle;
+  handle.type = gfx::OZONE_NATIVE_PIXMAP;
+  handle.native_pixmap_handle.fd = base::FileDescriptor(duped_fd, true);
+  handles.push_back(handle);
+#endif
+  return handles;
 }
 
 // Client that can accept callbacks from a VideoDecodeAccelerator and is used by
@@ -531,6 +617,10 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
     }
 
     VideoDecodeAccelerator::Config config(profile_);
+    if (g_test_import) {
+      config.output_mode =
+          media::VideoDecodeAccelerator::Config::OutputMode::IMPORT;
+    }
     gpu::GpuPreferences gpu_preferences;
     decoder_ = vda_factory_->CreateVDA(this, config, gpu_preferences);
   }
@@ -564,21 +654,46 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
         texture_target_, &texture_id, dimensions, &done);
     done.Wait();
 
+    scoped_refptr<TextureRef> texture_ref;
+    base::Closure delete_texture_cb =
+        base::Bind(&RenderingHelper::DeleteTexture,
+                   base::Unretained(rendering_helper_), texture_id);
+
+    if (g_test_import) {
+      media::VideoPixelFormat pixel_format = decoder_->GetOutputFormat();
+      if (pixel_format == media::PIXEL_FORMAT_UNKNOWN)
+        pixel_format = media::PIXEL_FORMAT_ARGB;
+      texture_ref = TextureRef::CreatePreallocated(
+          texture_id, delete_texture_cb, pixel_format, dimensions);
+    } else {
+      texture_ref = TextureRef::Create(texture_id, delete_texture_cb);
+    }
+
+    LOG_ASSERT(texture_ref);
+
     int32_t picture_buffer_id = next_picture_buffer_id_++;
-    LOG_ASSERT(active_textures_
-              .insert(std::make_pair(
-                  picture_buffer_id,
-                  new TextureRef(texture_id,
-                                 base::Bind(&RenderingHelper::DeleteTexture,
-                                            base::Unretained(rendering_helper_),
-                                            texture_id))))
-              .second);
+    LOG_ASSERT(
+        active_textures_.insert(std::make_pair(picture_buffer_id, texture_ref))
+            .second);
 
     media::PictureBuffer::TextureIds ids;
     ids.push_back(texture_id);
     buffers.push_back(media::PictureBuffer(picture_buffer_id, dimensions, ids));
   }
   decoder_->AssignPictureBuffers(buffers);
+
+  if (g_test_import) {
+    for (const auto& buffer : buffers) {
+      TextureRefMap::iterator texture_it = active_textures_.find(buffer.id());
+      ASSERT_NE(active_textures_.end(), texture_it);
+
+      std::vector<gfx::GpuMemoryBufferHandle> handles =
+          texture_it->second->ExportGpuMemoryBufferHandles();
+      LOG_ASSERT(!handles.empty()) << "Failed producing GMB handles";
+
+      decoder_->ImportBufferForPicture(buffer.id(), handles);
+    }
+  }
 }
 
 void GLRenderingVDAClient::DismissPictureBuffer(int32_t picture_buffer_id) {
@@ -1557,6 +1672,10 @@ int main(int argc, char **argv) {
       continue;
     if (it->first == "ozone-platform" || it->first == "ozone-use-surfaceless")
       continue;
+    if (it->first == "test_import") {
+      content::g_test_import = true;
+      continue;
+    }
     LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }
 

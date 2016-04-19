@@ -70,6 +70,13 @@ class CONTENT_EXPORT GpuVideoDecodeAcceleratorFactory {
       const BindGLImageCallback& bind_image_cb,
       const GetGLES2DecoderCallback& get_gles2_decoder_cb);
 
+  // Create a factory capable of producing VDA instances for current platform
+  // with no GL support.
+  // A factory created with this method will only be able to produce VDAs with
+  // no ability to call GL functions/access GL state. This also implies no
+  // ability to decode into textures provided by the client.
+  static std::unique_ptr<GpuVideoDecodeAcceleratorFactory> CreateWithNoGL();
+
   // Return decoder capabilities supported on the current platform.
   static gpu::VideoDecodeAcceleratorCapabilities GetDecoderCapabilities();
 

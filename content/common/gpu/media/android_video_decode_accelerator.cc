@@ -327,6 +327,11 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
+  if (config.output_mode != Config::OutputMode::ALLOCATE) {
+    NOTREACHED() << "Only ALLOCATE OutputMode is supported by this VDA";
+    return false;
+  }
+
   DCHECK(client);
   client_ = client;
   codec_config_ = new CodecConfig();

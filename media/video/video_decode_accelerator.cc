@@ -40,11 +40,21 @@ bool VideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner) {
   // Implementations in the process that VDA runs in must override this.
   LOG(FATAL) << "This may only be called in the same process as VDA impl.";
-  return false;  // not reached
+  return false;
+}
+
+void VideoDecodeAccelerator::ImportBufferForPicture(
+    int32_t picture_buffer_id,
+    const std::vector<gfx::GpuMemoryBufferHandle>& gpu_memory_buffer_handles) {
+  NOTREACHED() << "Buffer import not supported.";
 }
 
 GLenum VideoDecodeAccelerator::GetSurfaceInternalFormat() const {
   return GL_RGBA;
+}
+
+VideoPixelFormat VideoDecodeAccelerator::GetOutputFormat() const {
+  return PIXEL_FORMAT_UNKNOWN;
 }
 
 VideoDecodeAccelerator::SupportedProfile::SupportedProfile()

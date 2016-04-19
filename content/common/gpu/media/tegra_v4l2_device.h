@@ -40,13 +40,14 @@ class TegraV4L2Device : public V4L2Device {
       size_t num_planes,
       enum v4l2_buf_type type) override;
   bool CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) override;
-  EGLImageKHR CreateEGLImage(EGLDisplay egl_display,
-                             EGLContext egl_context,
-                             GLuint texture_id,
-                             gfx::Size frame_buffer_size,
-                             unsigned int buffer_index,
-                             uint32_t v4l2_pixfmt,
-                             size_t num_v4l2_planes);
+  EGLImageKHR CreateEGLImage(
+      EGLDisplay egl_display,
+      EGLContext egl_context,
+      GLuint texture_id,
+      const gfx::Size& size,
+      unsigned int buffer_index,
+      uint32_t v4l2_pixfmt,
+      const std::vector<base::ScopedFD>& dmabuf_fds) override;
   EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
                              EGLImageKHR egl_image) override;
   GLenum GetTextureTarget() override;

@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <queue>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -49,6 +50,9 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
+  void ImportBufferForPicture(int32_t picture_buffer_id,
+                              const std::vector<gfx::GpuMemoryBufferHandle>&
+                                  gpu_memory_buffer_handles) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
@@ -57,6 +61,7 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
       const base::WeakPtr<Client>& decode_client,
       const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
       override;
+  media::VideoPixelFormat GetOutputFormat() const override;
 
   static media::VideoDecodeAccelerator::SupportedProfiles
       GetSupportedProfiles();
@@ -81,8 +86,10 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
     bool at_device;
     bool at_client;
     int32_t picture_id;
+    GLuint texture_id;
     EGLImageKHR egl_image;
     EGLSyncKHR egl_sync;
+    std::vector<base::ScopedFD> dmabuf_fds;
     bool cleared;
   };
 
@@ -158,27 +165,30 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Dismiss all |picture_buffer_ids| via Client::DismissPictureBuffer()
   // and signal |done| after finishing.
-  void DismissPictures(std::vector<int32_t> picture_buffer_ids,
+  void DismissPictures(const std::vector<int32_t>& picture_buffer_ids,
                        base::WaitableEvent* done);
 
   // Task to finish initialization on decoder_thread_.
   void InitializeTask();
-
-  // Surface set change (resolution change) flow.
-  // If we have no surfaces allocated, just allocate them and return.
-  // Otherwise mark us as pending for surface set change.
-  void InitiateSurfaceSetChange();
-  // If a surface set change is pending and we are ready, stop the device,
-  // destroy outputs, releasing resources and dismissing pictures as required,
-  // followed by allocating a new set for the new resolution/DPB size
-  // as provided by decoder. Finally, try to resume decoding.
-  void FinishSurfaceSetChangeIfNeeded();
 
   void NotifyError(Error error);
   void DestroyTask();
 
   // Sets the state to kError and notifies client if needed.
   void SetErrorState(Error error);
+
+  // Event handling. Events include flush, reset and resolution change and are
+  // processed while in kIdle state.
+
+  // Surface set change (resolution change) flow.
+  // If we have no surfaces allocated, start it immediately, otherwise mark
+  // ourselves as pending for surface set change.
+  void InitiateSurfaceSetChange();
+  // If a surface set change is pending and we are ready, stop the device,
+  // destroy outputs, releasing resources and dismissing pictures as required,
+  // followed by starting the flow to allocate a new set for the current
+  // resolution/DPB size, as provided by decoder.
+  bool FinishSurfaceSetChange();
 
   // Flush flow when requested by client.
   // When Flush() is called, it posts a FlushTask, which checks the input queue.
@@ -190,21 +200,77 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   // Tell the decoder to flush all frames, reset it and mark us as scheduled
   // for flush, so that we can finish it once all pending decodes are finished.
   void InitiateFlush();
-  // If all pending frames are decoded and we are waiting to flush, perform it.
-  // This will send all pending pictures to client and notify the client that
-  // flush is complete and puts us in a state ready to resume.
-  void FinishFlushIfNeeded();
+  // To be called if decoder_flushing_ is true. If not all pending frames are
+  // decoded, return false, requesting the caller to try again later.
+  // Otherwise perform flush by sending all pending pictures to the client,
+  // notify it that flush is finished and return true, informing the caller
+  // that further progress can be made.
+  bool FinishFlush();
 
   // Reset flow when requested by client.
-  // Drop all inputs and reset the decoder and mark us as pending for reset.
+  // Drop all inputs, reset the decoder and mark us as pending for reset.
   void ResetTask();
-  // If all pending frames are decoded and we are waiting to reset, perform it.
-  // This drops all pending outputs (client is not interested anymore),
-  // notifies the client we are done and puts us in a state ready to resume.
-  void FinishResetIfNeeded();
+  // To be called if decoder_resetting_ is true. If not all pending frames are
+  // decoded, return false, requesting the caller to try again later.
+  // Otherwise perform reset by dropping all pending outputs (client is not
+  // interested anymore), notifying it that reset is finished, and return true,
+  // informing the caller that further progress can be made.
+  bool FinishReset();
 
-  // Process pending events if any.
+  // Called when a new event is pended. Transitions us into kIdle state (if not
+  // already in it), if possible. Also starts processing events.
+  void NewEventPending();
+
+  // Called after all events are processed successfully (i.e. all Finish*()
+  // methods return true) to return to decoding state.
+  bool FinishEventProcessing();
+
+  // Process pending events, if any.
   void ProcessPendingEventsIfNeeded();
+
+
+  // Allocate V4L2 buffers and assign them to |buffers| provided by the client
+  // via AssignPictureBuffers() on decoder thread.
+  void AssignPictureBuffersTask(
+      const std::vector<media::PictureBuffer>& buffers);
+
+  // Use buffer backed by dmabuf file descriptors in |passed_dmabuf_fds| for the
+  // OutputRecord associated with |picture_buffer_id|, taking ownership of the
+  // file descriptors.
+  void ImportBufferForPictureTask(
+      int32_t picture_buffer_id,
+      // TODO(posciak): (crbug.com/561749) we should normally be able to pass
+      // the vector by itself via std::move, but it's not possible to do this
+      // if this method is used as a callback.
+      std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds);
+
+  // Create an EGLImage for the buffer associated with V4L2 |buffer_index| and
+  // for |picture_buffer_id|, backed by dmabuf file descriptors in
+  // |passed_dmabuf_fds|, taking ownership of them.
+  // The buffer should be bound to |texture_id| and is of |size| and format
+  // described by |fourcc|.
+  void CreateEGLImageFor(
+      size_t buffer_index,
+      int32_t picture_buffer_id,
+      // TODO(posciak): (crbug.com/561749) we should normally be able to pass
+      // the vector by itself via std::move, but it's not possible to do this
+      // if this method is used as a callback.
+      std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds,
+      GLuint texture_id,
+      const gfx::Size& size,
+      uint32_t fourcc);
+
+  // Take the EGLImage |egl_image|, created for |picture_buffer_id|, and use it
+  // for OutputRecord at |buffer_index|. The buffer is backed by
+  // |passed_dmabuf_fds|, and the OutputRecord takes ownership of them.
+  void AssignEGLImage(
+      size_t buffer_index,
+      int32_t picture_buffer_id,
+      EGLImageKHR egl_image,
+      // TODO(posciak): (crbug.com/561749) we should normally be able to pass
+      // the vector by itself via std::move, but it's not possible to do this
+      // if this method is used as a callback.
+      std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds);
 
   // Performed on decoder_thread_ as a consequence of poll() on decoder_thread_
   // returning an event.
@@ -232,6 +298,9 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
     // Transitional state when we are not decoding any more stream, but are
     // performing flush, reset, resolution change or are destroying ourselves.
     kIdle,
+    // Requested new PictureBuffers via ProvidePictureBuffers(), awaiting
+    // AssignPictureBuffers().
+    kAwaitingPictureBuffers,
     // Error state, set when sending NotifyError to client.
     kError,
   };
@@ -347,6 +416,8 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   // Decoder state.
   State state_;
 
+  Config::OutputMode output_mode_;
+
   // If any of these are true, we are waiting for the device to finish decoding
   // all previously-queued frames, so we can finish the flush/reset/surface
   // change flows. These can stack.
@@ -379,10 +450,6 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // The number of pictures that are sent to PictureReady and will be cleared.
   int picture_clearing_count_;
-
-  // Used by the decoder thread to wait for AssignPictureBuffers to arrive
-  // to avoid races with potential Reset requests.
-  base::WaitableEvent pictures_assigned_;
 
   // EGL state
   EGLDisplay egl_display_;

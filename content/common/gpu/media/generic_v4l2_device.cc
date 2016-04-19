@@ -217,13 +217,14 @@ bool GenericV4L2Device::CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) {
       kEGLImageDrmFmtsSupported + arraysize(kEGLImageDrmFmtsSupported);
 }
 
-EGLImageKHR GenericV4L2Device::CreateEGLImage(EGLDisplay egl_display,
-                                              EGLContext /* egl_context */,
-                                              GLuint texture_id,
-                                              gfx::Size frame_buffer_size,
-                                              unsigned int buffer_index,
-                                              uint32_t v4l2_pixfmt,
-                                              size_t num_v4l2_planes) {
+EGLImageKHR GenericV4L2Device::CreateEGLImage(
+    EGLDisplay egl_display,
+    EGLContext /* egl_context */,
+    GLuint texture_id,
+    const gfx::Size& size,
+    unsigned int buffer_index,
+    uint32_t v4l2_pixfmt,
+    const std::vector<base::ScopedFD>& dmabuf_fds) {
   DVLOG(3) << "CreateEGLImage()";
   if (!CanCreateEGLImageFrom(v4l2_pixfmt)) {
     LOG(ERROR) << "Unsupported V4L2 pixel format";
@@ -235,34 +236,18 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(EGLDisplay egl_display,
   // just a buffer count.
   size_t num_planes = media::VideoFrame::NumPlanes(vf_format);
   DCHECK_LE(num_planes, 3u);
-  if (num_planes < num_v4l2_planes) {
+  if (num_planes < dmabuf_fds.size()) {
     // It's possible for more than one DRM plane to reside in one V4L2 plane,
     // but not the other way around. We must use all V4L2 planes.
     LOG(ERROR) << "Invalid plane count";
     return EGL_NO_IMAGE_KHR;
   }
 
-  std::unique_ptr<base::ScopedFD[]> dmabuf_fds(
-      new base::ScopedFD[num_v4l2_planes]);
-  // Export dmabuf fds so we can create an EGLImage from them.
-  for (size_t i = 0; i < num_v4l2_planes; ++i) {
-    struct v4l2_exportbuffer expbuf;
-    memset(&expbuf, 0, sizeof(expbuf));
-    expbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-    expbuf.index = buffer_index;
-    expbuf.plane = i;
-    expbuf.flags = O_CLOEXEC;
-    if (Ioctl(VIDIOC_EXPBUF, &expbuf) != 0) {
-      return EGL_NO_IMAGE_KHR;
-    }
-    dmabuf_fds[i].reset(expbuf.fd);
-  }
-
   std::vector<EGLint> attrs;
   attrs.push_back(EGL_WIDTH);
-  attrs.push_back(frame_buffer_size.width());
+  attrs.push_back(size.width());
   attrs.push_back(EGL_HEIGHT);
-  attrs.push_back(frame_buffer_size.height());
+  attrs.push_back(size.height());
   attrs.push_back(EGL_LINUX_DRM_FOURCC_EXT);
   attrs.push_back(V4L2PixFmtToDrmFormat(v4l2_pixfmt));
 
@@ -280,14 +265,15 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(EGLDisplay egl_display,
     attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + plane * 3);
     attrs.push_back(plane_offset);
     attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + plane * 3);
-    attrs.push_back(media::VideoFrame::RowBytes(plane, vf_format,
-                    frame_buffer_size.width()));
+    attrs.push_back(
+        media::VideoFrame::RowBytes(plane, vf_format, size.width()));
 
-    if (v4l2_plane + 1 < num_v4l2_planes) {
+    if (v4l2_plane + 1 < dmabuf_fds.size()) {
       ++v4l2_plane;
+      plane_offset = 0;
     } else {
-      plane_offset += media::VideoFrame::PlaneSize(
-          vf_format, plane, frame_buffer_size).GetArea();
+      plane_offset +=
+          media::VideoFrame::PlaneSize(vf_format, plane, size).GetArea();
     }
   }
 

@@ -940,6 +940,11 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
+  if (config.output_mode != Config::OutputMode::ALLOCATE) {
+    NOTREACHED() << "Only ALLOCATE OutputMode is supported by this VDA";
+    return false;
+  }
+
   client_ = client;
 
   main_thread_task_runner_ = base::MessageLoop::current()->task_runner();

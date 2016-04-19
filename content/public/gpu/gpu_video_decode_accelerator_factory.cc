@@ -46,6 +46,18 @@ GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
 }
 
 // static
+std::unique_ptr<GpuVideoDecodeAcceleratorFactory>
+GpuVideoDecodeAcceleratorFactory::CreateWithNoGL() {
+  auto gvdafactory_impl =
+      GpuVideoDecodeAcceleratorFactoryImpl::CreateWithNoGL();
+  if (!gvdafactory_impl)
+    return nullptr;
+
+  return base::WrapUnique(
+      new GpuVideoDecodeAcceleratorFactory(std::move(gvdafactory_impl)));
+}
+
+// static
 gpu::VideoDecodeAcceleratorCapabilities
 GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities() {
   const gpu::GpuPreferences gpu_preferences =

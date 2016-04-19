@@ -70,6 +70,8 @@ public:
       const BindGLImageCallback& bind_image_cb,
       const GetGLES2DecoderCallback& get_gles2_decoder_cb);
 
+  static std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> CreateWithNoGL();
+
   static gpu::VideoDecodeAcceleratorCapabilities GetDecoderCapabilities(
       const gpu::GpuPreferences& gpu_preferences);
 
