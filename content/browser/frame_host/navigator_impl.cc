@@ -651,9 +651,15 @@ void NavigatorImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
   DCHECK(!render_frame_host->GetParent() ||
          SiteIsolationPolicy::AreCrossProcessFramesPossible());
 
-  SiteInstance* current_site_instance = render_frame_host->frame_tree_node()
-                                            ->current_frame_host()
-                                            ->GetSiteInstance();
+  // Only the current RenderFrameHost should be sending an OpenURL request.
+  // Pending RenderFrameHost should know where it is navigating and pending
+  // deletion RenderFrameHost shouldn't be trying to navigate.
+  if (render_frame_host !=
+      render_frame_host->frame_tree_node()->current_frame_host()) {
+    return;
+  }
+
+  SiteInstance* current_site_instance = render_frame_host->GetSiteInstance();
 
   // TODO(creis): Pass the redirect_chain into this method to support client
   // redirects.  http://crbug.com/311721.
