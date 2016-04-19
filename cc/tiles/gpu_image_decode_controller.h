@@ -61,7 +61,7 @@ class CC_EXPORT GpuImageDecodeController : public ImageDecodeController {
   // upload task to upload the image if an exsiting image does not exist.
   bool GetTaskForImageAndRef(const DrawImage& image,
                              uint64_t prepare_tiles_id,
-                             scoped_refptr<ImageDecodeTask>* task) override;
+                             scoped_refptr<TileTask>* task) override;
   void UnrefImage(const DrawImage& image) override;
   DecodedDrawImage GetDecodedImageForDraw(const DrawImage& draw_image) override;
   void DrawWithImageFinished(const DrawImage& image,
@@ -135,9 +135,8 @@ class CC_EXPORT GpuImageDecodeController : public ImageDecodeController {
 
   // Similar to GetTaskForImageAndRef, but gets the dependent decode task
   // rather than the upload task, if necessary.
-  scoped_refptr<ImageDecodeTask> GetImageDecodeTaskAndRef(
-      const DrawImage& image,
-      uint64_t prepare_tiles_id);
+  scoped_refptr<TileTask> GetImageDecodeTaskAndRef(const DrawImage& image,
+                                                   uint64_t prepare_tiles_id);
 
   void RefImageDecode(const DrawImage& draw_image);
   void UnrefImageDecode(const DrawImage& draw_image);
@@ -170,9 +169,9 @@ class CC_EXPORT GpuImageDecodeController : public ImageDecodeController {
   // All members below this point must only be accessed while holding |lock_|.
   base::Lock lock_;
 
-  std::unordered_map<uint32_t, scoped_refptr<ImageDecodeTask>>
+  std::unordered_map<uint32_t, scoped_refptr<TileTask>>
       pending_image_upload_tasks_;
-  std::unordered_map<uint32_t, scoped_refptr<ImageDecodeTask>>
+  std::unordered_map<uint32_t, scoped_refptr<TileTask>>
       pending_image_decode_tasks_;
 
   ImageDataMRUCache image_data_;

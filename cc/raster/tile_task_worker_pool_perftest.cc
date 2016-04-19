@@ -123,9 +123,9 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
-class PerfImageDecodeTaskImpl : public ImageDecodeTask {
+class PerfImageDecodeTaskImpl : public TileTask {
  public:
-  PerfImageDecodeTaskImpl() {}
+  PerfImageDecodeTaskImpl() : TileTask(true) {}
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
@@ -148,11 +148,11 @@ class PerfImageDecodeTaskImpl : public ImageDecodeTask {
   DISALLOW_COPY_AND_ASSIGN(PerfImageDecodeTaskImpl);
 };
 
-class PerfRasterTaskImpl : public RasterTask {
+class PerfRasterTaskImpl : public TileTask {
  public:
   PerfRasterTaskImpl(std::unique_ptr<ScopedResource> resource,
-                     ImageDecodeTask::Vector* dependencies)
-      : RasterTask(dependencies), resource_(std::move(resource)) {}
+                     TileTask::Vector* dependencies)
+      : TileTask(true, dependencies), resource_(std::move(resource)) {}
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
@@ -184,7 +184,7 @@ class PerfRasterTaskImpl : public RasterTask {
 
 class TileTaskWorkerPoolPerfTestBase {
  public:
-  typedef std::vector<scoped_refptr<RasterTask>> RasterTaskVector;
+  typedef std::vector<scoped_refptr<TileTask>> RasterTaskVector;
 
   enum NamedTaskSet { REQUIRED_FOR_ACTIVATION, REQUIRED_FOR_DRAW, ALL };
 
@@ -197,13 +197,13 @@ class TileTaskWorkerPoolPerfTestBase {
                kTimeCheckInterval) {}
 
   void CreateImageDecodeTasks(unsigned num_image_decode_tasks,
-                              ImageDecodeTask::Vector* image_decode_tasks) {
+                              TileTask::Vector* image_decode_tasks) {
     for (unsigned i = 0; i < num_image_decode_tasks; ++i)
       image_decode_tasks->push_back(new PerfImageDecodeTaskImpl);
   }
 
   void CreateRasterTasks(unsigned num_raster_tasks,
-                         const ImageDecodeTask::Vector& image_decode_tasks,
+                         const TileTask::Vector& image_decode_tasks,
                          RasterTaskVector* raster_tasks) {
     const gfx::Size size(1, 1);
 
@@ -213,7 +213,7 @@ class TileTaskWorkerPoolPerfTestBase {
       resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                          RGBA_8888);
 
-      ImageDecodeTask::Vector dependencies = image_decode_tasks;
+      TileTask::Vector dependencies = image_decode_tasks;
       raster_tasks->push_back(
           new PerfRasterTaskImpl(std::move(resource), &dependencies));
     }
@@ -300,7 +300,7 @@ class TileTaskWorkerPoolPerfTest
   void RunScheduleTasksTest(const std::string& test_name,
                             unsigned num_raster_tasks,
                             unsigned num_image_decode_tasks) {
-    ImageDecodeTask::Vector image_decode_tasks;
+    TileTask::Vector image_decode_tasks;
     RasterTaskVector raster_tasks;
     CreateImageDecodeTasks(num_image_decode_tasks, &image_decode_tasks);
     CreateRasterTasks(num_raster_tasks, image_decode_tasks, &raster_tasks);
@@ -329,7 +329,7 @@ class TileTaskWorkerPoolPerfTest
                                      unsigned num_raster_tasks,
                                      unsigned num_image_decode_tasks) {
     const size_t kNumVersions = 2;
-    ImageDecodeTask::Vector image_decode_tasks[kNumVersions];
+    TileTask::Vector image_decode_tasks[kNumVersions];
     RasterTaskVector raster_tasks[kNumVersions];
     for (size_t i = 0; i < kNumVersions; ++i) {
       CreateImageDecodeTasks(num_image_decode_tasks, &image_decode_tasks[i]);
@@ -362,7 +362,7 @@ class TileTaskWorkerPoolPerfTest
   void RunScheduleAndExecuteTasksTest(const std::string& test_name,
                                       unsigned num_raster_tasks,
                                       unsigned num_image_decode_tasks) {
-    ImageDecodeTask::Vector image_decode_tasks;
+    TileTask::Vector image_decode_tasks;
     RasterTaskVector raster_tasks;
     CreateImageDecodeTasks(num_image_decode_tasks, &image_decode_tasks);
     CreateRasterTasks(num_raster_tasks, image_decode_tasks, &raster_tasks);
@@ -471,7 +471,7 @@ class TileTaskWorkerPoolCommonPerfTest : public TileTaskWorkerPoolPerfTestBase,
   void RunBuildTileTaskGraphTest(const std::string& test_name,
                                  unsigned num_raster_tasks,
                                  unsigned num_image_decode_tasks) {
-    ImageDecodeTask::Vector image_decode_tasks;
+    TileTask::Vector image_decode_tasks;
     RasterTaskVector raster_tasks;
     CreateImageDecodeTasks(num_image_decode_tasks, &image_decode_tasks);
     CreateRasterTasks(num_raster_tasks, image_decode_tasks, &raster_tasks);

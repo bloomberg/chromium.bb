@@ -7,8 +7,17 @@
 
 namespace cc {
 
-TileTask::TileTask() : did_schedule_(false), did_complete_(false) {
-}
+TileTask::TileTask(bool supports_concurrent_execution)
+    : supports_concurrent_execution_(supports_concurrent_execution),
+      did_schedule_(false),
+      did_complete_(false) {}
+
+TileTask::TileTask(bool supports_concurrent_execution,
+                   TileTask::Vector* dependencies)
+    : supports_concurrent_execution_(supports_concurrent_execution),
+      dependencies_(std::move(*dependencies)),
+      did_schedule_(false),
+      did_complete_(false) {}
 
 TileTask::~TileTask() {
   DCHECK(!did_schedule_);
@@ -41,26 +50,6 @@ void TileTask::DidComplete() {
 
 bool TileTask::HasCompleted() const {
   return did_complete_;
-}
-
-ImageDecodeTask::ImageDecodeTask() {
-}
-
-ImageDecodeTask::ImageDecodeTask(scoped_refptr<ImageDecodeTask> dependency)
-    : dependency_(std::move(dependency)) {}
-
-ImageDecodeTask::~ImageDecodeTask() {
-}
-
-bool ImageDecodeTask::SupportsConcurrentExecution() const {
-  return true;
-}
-
-RasterTask::RasterTask(ImageDecodeTask::Vector* dependencies) {
-  dependencies_.swap(*dependencies);
-}
-
-RasterTask::~RasterTask() {
 }
 
 bool TileTaskRunner::ResourceFormatRequiresSwizzle(ResourceFormat format) {

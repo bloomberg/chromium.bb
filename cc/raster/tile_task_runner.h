@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "cc/raster/raster_buffer.h"
-#include "cc/raster/task_graph_runner.h"
+#include "cc/raster/task.h"
 #include "cc/resources/resource_format.h"
 
 namespace cc {
@@ -19,6 +19,16 @@ namespace cc {
 class CC_EXPORT TileTask : public Task {
  public:
   typedef std::vector<scoped_refptr<TileTask>> Vector;
+
+  const TileTask::Vector& dependencies() const { return dependencies_; }
+
+  // Indicates whether this TileTask can be run at the same time as other tasks
+  // in the task graph. If false, this task will be scheduled with
+  // TASK_CATEGORY_NONCONCURRENT_FOREGROUND. The base implementation always
+  // returns true.
+  bool SupportsConcurrentExecution() const {
+    return supports_concurrent_execution_;
+  }
 
   virtual void ScheduleOnOriginThread(RasterBufferProvider* provider) = 0;
   virtual void CompleteOnOriginThread(RasterBufferProvider* provider) = 0;
@@ -32,47 +42,14 @@ class CC_EXPORT TileTask : public Task {
   bool HasCompleted() const;
 
  protected:
-  TileTask();
+  explicit TileTask(bool supports_concurrent_execution);
+  TileTask(bool supports_concurrent_execution, TileTask::Vector* dependencies);
   ~TileTask() override;
 
+  const bool supports_concurrent_execution_;
+  TileTask::Vector dependencies_;
   bool did_schedule_;
   bool did_complete_;
-};
-
-class CC_EXPORT ImageDecodeTask : public TileTask {
- public:
-  typedef std::vector<scoped_refptr<ImageDecodeTask>> Vector;
-
-  // Indicates whether this ImageDecodeTask can be run at the same time as
-  // other tasks in the task graph. If false, this task will be scheduled with
-  // TASK_CATEGORY_NONCONCURRENT_FOREGROUND. The base implementation always
-  // returns true.
-  virtual bool SupportsConcurrentExecution() const;
-
-  // Returns an optional task which this task depends on. May be null.
-  const scoped_refptr<ImageDecodeTask>& dependency() { return dependency_; }
-
- protected:
-  ImageDecodeTask();
-  explicit ImageDecodeTask(scoped_refptr<ImageDecodeTask> dependency);
-  ~ImageDecodeTask() override;
-
- private:
-  scoped_refptr<ImageDecodeTask> dependency_;
-};
-
-class CC_EXPORT RasterTask : public TileTask {
- public:
-  typedef std::vector<scoped_refptr<RasterTask>> Vector;
-
-  const ImageDecodeTask::Vector& dependencies() const { return dependencies_; }
-
- protected:
-  explicit RasterTask(ImageDecodeTask::Vector* dependencies);
-  ~RasterTask() override;
-
- private:
-  ImageDecodeTask::Vector dependencies_;
 };
 
 // This interface can be used to schedule and run tile tasks.

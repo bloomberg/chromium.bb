@@ -57,12 +57,13 @@ SkImage::DeferredTextureImageUsageParams ParamsFromDrawImage(
 
 // Task which decodes an image and stores the result in discardable memory.
 // This task does not use GPU resources and can be run on any thread.
-class ImageDecodeTaskImpl : public ImageDecodeTask {
+class ImageDecodeTaskImpl : public TileTask {
  public:
   ImageDecodeTaskImpl(GpuImageDecodeController* controller,
                       const DrawImage& draw_image,
                       uint64_t source_prepare_tiles_id)
-      : controller_(controller),
+      : TileTask(true),
+        controller_(controller),
         image_(draw_image),
         image_ref_(skia::SharePtr(draw_image.image())),
         source_prepare_tiles_id_(source_prepare_tiles_id) {
@@ -97,18 +98,19 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
 // Task which creates an image from decoded data. Typically this involves
 // uploading data to the GPU, which requires this task be run on the non-
 // concurrent thread.
-class ImageUploadTaskImpl : public ImageDecodeTask {
+class ImageUploadTaskImpl : public TileTask {
  public:
   ImageUploadTaskImpl(GpuImageDecodeController* controller,
                       const DrawImage& draw_image,
-                      scoped_refptr<ImageDecodeTask> decode_dependency,
+                      scoped_refptr<TileTask> decode_dependency,
                       uint64_t source_prepare_tiles_id)
-      : ImageDecodeTask(std::move(decode_dependency)),
+      : TileTask(false),
         controller_(controller),
         image_(draw_image),
         image_ref_(skia::SharePtr(draw_image.image())),
         source_prepare_tiles_id_(source_prepare_tiles_id) {
     DCHECK(!SkipImage(draw_image));
+    dependencies_.push_back(std::move(decode_dependency));
   }
 
   // Override from Task:
@@ -122,9 +124,6 @@ class ImageUploadTaskImpl : public ImageDecodeTask {
   void CompleteOnOriginThread(RasterBufferProvider* provider) override {
     controller_->UploadTaskCompleted(image_);
   }
-
-  // Override from ImageDecodeTask:
-  bool SupportsConcurrentExecution() const override { return false; }
 
  protected:
   ~ImageUploadTaskImpl() override {}
@@ -174,7 +173,7 @@ GpuImageDecodeController::~GpuImageDecodeController() {
 bool GpuImageDecodeController::GetTaskForImageAndRef(
     const DrawImage& draw_image,
     uint64_t prepare_tiles_id,
-    scoped_refptr<ImageDecodeTask>* task) {
+    scoped_refptr<TileTask>* task) {
   if (SkipImage(draw_image)) {
     *task = nullptr;
     return false;
@@ -202,7 +201,7 @@ bool GpuImageDecodeController::GetTaskForImageAndRef(
 
   // We didn't have a pre-uploaded image, so we need an upload task. Try to find
   // an existing one.
-  scoped_refptr<ImageDecodeTask>& existing_task =
+  scoped_refptr<TileTask>& existing_task =
       pending_image_upload_tasks_[image_id];
   if (existing_task) {
     // We had an existing upload task, ref the image and return the task.
@@ -387,9 +386,9 @@ void GpuImageDecodeController::UploadTaskCompleted(
 
 // Checks if an existing image decode exists. If not, returns a task to produce
 // the requested decode.
-scoped_refptr<ImageDecodeTask>
-GpuImageDecodeController::GetImageDecodeTaskAndRef(const DrawImage& draw_image,
-                                                   uint64_t prepare_tiles_id) {
+scoped_refptr<TileTask> GpuImageDecodeController::GetImageDecodeTaskAndRef(
+    const DrawImage& draw_image,
+    uint64_t prepare_tiles_id) {
   lock_.AssertAcquired();
 
   const uint32_t image_id = draw_image.image()->uniqueID();
@@ -408,7 +407,7 @@ GpuImageDecodeController::GetImageDecodeTaskAndRef(const DrawImage& draw_image,
   }
 
   // We didn't have an existing locked image, create a task to lock or decode.
-  scoped_refptr<ImageDecodeTask>& existing_task =
+  scoped_refptr<TileTask>& existing_task =
       pending_image_decode_tasks_[image_id];
   if (!existing_task) {
     // Ref image decode and create a decode task. This ref will be released in

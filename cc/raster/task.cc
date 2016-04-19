@@ -1,15 +1,10 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/raster/task_graph_runner.h"
+#include "cc/raster/task.h"
 
-#include <algorithm>
-#include <utility>
-
-#include "base/atomic_sequence_num.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/trace_event/trace_event.h"
+#include "base/logging.h"
 
 namespace cc {
 

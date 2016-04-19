@@ -110,7 +110,7 @@ class CC_EXPORT SoftwareImageDecodeController
   // ImageDecodeController overrides.
   bool GetTaskForImageAndRef(const DrawImage& image,
                              uint64_t prepare_tiles_id,
-                             scoped_refptr<ImageDecodeTask>* task) override;
+                             scoped_refptr<TileTask>* task) override;
   void UnrefImage(const DrawImage& image) override;
   DecodedDrawImage GetDecodedImageForDraw(const DrawImage& image) override;
   void DrawWithImageFinished(const DrawImage& image,
@@ -241,7 +241,7 @@ class CC_EXPORT SoftwareImageDecodeController
                                const char* cache_name,
                                base::trace_event::ProcessMemoryDump* pmd) const;
 
-  std::unordered_map<ImageKey, scoped_refptr<ImageDecodeTask>, ImageKeyHash>
+  std::unordered_map<ImageKey, scoped_refptr<TileTask>, ImageKeyHash>
       pending_image_tasks_;
 
   // The members below this comment can only be accessed if the lock is held to

@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "cc/playback/raster_source.h"
+#include "cc/raster/task_graph_runner.h"
 #include "cc/raster/tile_task_runner.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

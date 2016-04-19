@@ -359,7 +359,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageSameImage) {
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
@@ -368,7 +368,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageSameImage) {
   DrawImage another_draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> another_task;
+  scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(
       another_draw_image, prepare_tiles_id, &another_task);
   EXPECT_TRUE(need_unref);
@@ -389,7 +389,7 @@ TEST(SoftwareImageDecodeControllerTest,
       image.get(), SkIRect::MakeWH(image->width(), image->height()),
       kHigh_SkFilterQuality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> high_quality_task;
+  scoped_refptr<TileTask> high_quality_task;
   bool need_unref = controller.GetTaskForImageAndRef(
       high_quality_draw_image, prepare_tiles_id, &high_quality_task);
   EXPECT_TRUE(need_unref);
@@ -399,7 +399,7 @@ TEST(SoftwareImageDecodeControllerTest,
       image.get(), SkIRect::MakeWH(image->width(), image->height()),
       kMedium_SkFilterQuality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> medium_quality_task;
+  scoped_refptr<TileTask> medium_quality_task;
   need_unref = controller.GetTaskForImageAndRef(
       medium_quality_draw_image, prepare_tiles_id, &medium_quality_task);
   // Medium quality isn't handled by the controller, so it won't ref it. Note
@@ -413,7 +413,7 @@ TEST(SoftwareImageDecodeControllerTest,
       image.get(), SkIRect::MakeWH(image->width(), image->height()),
       kLow_SkFilterQuality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> low_quality_task;
+  scoped_refptr<TileTask> low_quality_task;
   need_unref = controller.GetTaskForImageAndRef(
       low_quality_draw_image, prepare_tiles_id, &low_quality_task);
   EXPECT_TRUE(need_unref);
@@ -435,7 +435,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageSameImageDifferentSize) {
   DrawImage half_size_draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> half_size_task;
+  scoped_refptr<TileTask> half_size_task;
   bool need_unref = controller.GetTaskForImageAndRef(
       half_size_draw_image, prepare_tiles_id, &half_size_task);
   EXPECT_TRUE(need_unref);
@@ -444,7 +444,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageSameImageDifferentSize) {
   DrawImage quarter_size_draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.25f, 0.25f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> quarter_size_task;
+  scoped_refptr<TileTask> quarter_size_task;
   need_unref = controller.GetTaskForImageAndRef(
       quarter_size_draw_image, prepare_tiles_id, &quarter_size_task);
   EXPECT_TRUE(need_unref);
@@ -466,7 +466,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageDifferentImage) {
       first_image.get(),
       SkIRect::MakeWH(first_image->width(), first_image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> first_task;
+  scoped_refptr<TileTask> first_task;
   bool need_unref = controller.GetTaskForImageAndRef(
       first_draw_image, prepare_tiles_id, &first_task);
   EXPECT_TRUE(need_unref);
@@ -477,7 +477,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageDifferentImage) {
       second_image.get(),
       SkIRect::MakeWH(second_image->width(), second_image->height()), quality,
       CreateMatrix(SkSize::Make(0.25f, 0.25f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> second_task;
+  scoped_refptr<TileTask> second_task;
   need_unref = controller.GetTaskForImageAndRef(second_draw_image,
                                                 prepare_tiles_id, &second_task);
   EXPECT_TRUE(need_unref);
@@ -498,7 +498,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyDecoded) {
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
@@ -509,7 +509,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyDecoded) {
   task->DidSchedule();
   task->RunOnWorkerThread();
 
-  scoped_refptr<ImageDecodeTask> another_task;
+  scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &another_task);
   EXPECT_TRUE(need_unref);
@@ -533,7 +533,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyPrerolled) {
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
@@ -544,7 +544,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyPrerolled) {
   task->DidSchedule();
   task->RunOnWorkerThread();
 
-  scoped_refptr<ImageDecodeTask> another_task;
+  scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &another_task);
   EXPECT_TRUE(need_unref);
@@ -554,7 +554,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyPrerolled) {
   task->CompleteOnOriginThread(nullptr);
   task->DidComplete();
 
-  scoped_refptr<ImageDecodeTask> third_task;
+  scoped_refptr<TileTask> third_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &third_task);
   EXPECT_TRUE(need_unref);
@@ -575,7 +575,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
@@ -585,7 +585,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
   task->ScheduleOnOriginThread(nullptr);
   task->DidSchedule();
 
-  scoped_refptr<ImageDecodeTask> another_task;
+  scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &another_task);
   EXPECT_TRUE(need_unref);
@@ -601,7 +601,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
   controller.UnrefImage(draw_image);
 
   // Here a new task is created.
-  scoped_refptr<ImageDecodeTask> third_task;
+  scoped_refptr<TileTask> third_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &third_task);
   EXPECT_TRUE(need_unref);
@@ -622,7 +622,7 @@ TEST(SoftwareImageDecodeControllerTest,
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
@@ -632,7 +632,7 @@ TEST(SoftwareImageDecodeControllerTest,
   task->ScheduleOnOriginThread(nullptr);
   task->DidSchedule();
 
-  scoped_refptr<ImageDecodeTask> another_task;
+  scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &another_task);
   EXPECT_TRUE(need_unref);
@@ -645,7 +645,7 @@ TEST(SoftwareImageDecodeControllerTest,
 
   // Note that here, everything is reffed, but a new task is created. This is
   // possible with repeated schedule/cancel operations.
-  scoped_refptr<ImageDecodeTask> third_task;
+  scoped_refptr<TileTask> third_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &third_task);
   EXPECT_TRUE(need_unref);
@@ -668,7 +668,7 @@ TEST(SoftwareImageDecodeControllerTest, GetDecodedImageForDraw) {
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
@@ -710,7 +710,7 @@ TEST(SoftwareImageDecodeControllerTest,
   DrawImage draw_image(
       image.get(), SkIRect::MakeXYWH(20, 30, image->width(), image->height()),
       quality, CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
@@ -819,7 +819,7 @@ TEST(SoftwareImageDecodeControllerTest,
   EXPECT_FALSE(decoded_draw_image.is_scale_adjustment_identity());
   EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
 
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
@@ -873,7 +873,7 @@ TEST(SoftwareImageDecodeControllerTest,
   EXPECT_FALSE(decoded_draw_image.is_scale_adjustment_identity());
   EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
 
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
@@ -916,7 +916,7 @@ TEST(SoftwareImageDecodeControllerTest, ZeroSizedImagesAreSkipped) {
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.f, 0.f), is_decomposable));
 
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_FALSE(task);
@@ -940,7 +940,7 @@ TEST(SoftwareImageDecodeControllerTest, NonOverlappingSrcRectImagesAreSkipped) {
       image.get(), SkIRect::MakeXYWH(150, 150, image->width(), image->height()),
       quality, CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable));
 
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_FALSE(task);
@@ -964,7 +964,7 @@ TEST(SoftwareImageDecodeControllerTest, LowQualityFilterIsHandled) {
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable));
 
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(task);
@@ -991,7 +991,7 @@ TEST(SoftwareImageDecodeControllerTest, LowQualityScaledSubrectIsHandled) {
   DrawImage draw_image(image.get(), SkIRect::MakeXYWH(10, 10, 80, 80), quality,
                        CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
 
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(task);
@@ -1020,7 +1020,7 @@ TEST(SoftwareImageDecodeControllerTest, NoneQualityScaledSubrectIsHandled) {
   DrawImage draw_image(image.get(), SkIRect::MakeXYWH(10, 10, 80, 80), quality,
                        CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
 
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(task);

@@ -11,14 +11,14 @@
 
 namespace cc {
 
-class ImageDecodeTask;
+class TileTask;
 
 // ImageDecodeController is responsible for generating decode tasks, decoding
 // images, storing images in cache, and being able to return the decoded images
 // when requested.
 
 // ImageDecodeController is responsible for the following things:
-// 1. Given a DrawImage, it can return an ImageDecodeTask which when run will
+// 1. Given a DrawImage, it can return an TileTask which when run will
 //    decode and cache the resulting image. If the image does not need a task to
 //    be decoded, then nullptr will be returned. The return value of the
 //    function indicates whether the image was or is going to be locked, so an
@@ -35,7 +35,7 @@ class CC_EXPORT ImageDecodeController {
  public:
   virtual ~ImageDecodeController() {}
 
-  // Fill in an ImageDecodeTask which will decode the given image when run. In
+  // Fill in an TileTask which will decode the given image when run. In
   // case the image is already cached, fills in nullptr. Returns true if the
   // image needs to be unreffed when the caller is finished with it.
   //
@@ -43,7 +43,7 @@ class CC_EXPORT ImageDecodeController {
   // a raster task.
   virtual bool GetTaskForImageAndRef(const DrawImage& image,
                                      uint64_t prepare_tiles_id,
-                                     scoped_refptr<ImageDecodeTask>* task) = 0;
+                                     scoped_refptr<TileTask>* task) = 0;
   // Unrefs an image. When the tile is finished, this should be called for every
   // GetTaskForImageAndRef call that returned true.
   virtual void UnrefImage(const DrawImage& image) = 0;

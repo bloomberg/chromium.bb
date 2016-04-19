@@ -31,25 +31,25 @@ SkMatrix CreateMatrix(const SkSize& scale, bool is_decomposable) {
   return matrix;
 }
 
-void ScheduleTask(ImageDecodeTask* task) {
+void ScheduleTask(TileTask* task) {
   task->WillSchedule();
   task->ScheduleOnOriginThread(nullptr);
   task->DidSchedule();
 }
 
-void RunTask(ImageDecodeTask* task) {
+void RunTask(TileTask* task) {
   task->WillRun();
   task->RunOnWorkerThread();
   task->DidRun();
 }
 
-void CompleteTask(ImageDecodeTask* task) {
+void CompleteTask(TileTask* task) {
   task->WillComplete();
   task->CompleteOnOriginThread(nullptr);
   task->DidComplete();
 }
 
-void ProcessTask(ImageDecodeTask* task) {
+void ProcessTask(TileTask* task) {
   ScheduleTask(task);
   RunTask(task);
   CompleteTask(task);
@@ -68,7 +68,7 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageSameImage) {
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
@@ -77,13 +77,13 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageSameImage) {
   DrawImage another_draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(1.5f, 1.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> another_task;
+  scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(
       another_draw_image, prepare_tiles_id, &another_task);
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task.get() == another_task.get());
 
-  ProcessTask(task->dependency().get());
+  ProcessTask(task->dependencies()[0].get());
   ProcessTask(task.get());
 
   controller.UnrefImage(draw_image);
@@ -104,7 +104,7 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageDifferentImage) {
       first_image.get(),
       SkIRect::MakeWH(first_image->width(), first_image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> first_task;
+  scoped_refptr<TileTask> first_task;
   bool need_unref = controller.GetTaskForImageAndRef(
       first_draw_image, prepare_tiles_id, &first_task);
   EXPECT_TRUE(need_unref);
@@ -115,16 +115,16 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageDifferentImage) {
       second_image.get(),
       SkIRect::MakeWH(second_image->width(), second_image->height()), quality,
       CreateMatrix(SkSize::Make(0.25f, 0.25f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> second_task;
+  scoped_refptr<TileTask> second_task;
   need_unref = controller.GetTaskForImageAndRef(second_draw_image,
                                                 prepare_tiles_id, &second_task);
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(second_task);
   EXPECT_TRUE(first_task.get() != second_task.get());
 
-  ProcessTask(first_task->dependency().get());
+  ProcessTask(first_task->dependencies()[0].get());
   ProcessTask(first_task.get());
-  ProcessTask(second_task->dependency().get());
+  ProcessTask(second_task->dependencies()[0].get());
   ProcessTask(second_task.get());
 
   controller.UnrefImage(first_draw_image);
@@ -144,18 +144,19 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyDecoded) {
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
-  EXPECT_TRUE(task->dependency());
+  EXPECT_EQ(task->dependencies().size(), 1u);
+  EXPECT_TRUE(task->dependencies()[0]);
 
-  ProcessTask(task->dependency().get());
+  ProcessTask(task->dependencies()[0].get());
   ScheduleTask(task.get());
   RunTask(task.get());
 
-  scoped_refptr<ImageDecodeTask> another_task;
+  scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &another_task);
   EXPECT_TRUE(need_unref);
@@ -180,16 +181,16 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
-  ProcessTask(task->dependency().get());
+  ProcessTask(task->dependencies()[0].get());
   ScheduleTask(task.get());
 
-  scoped_refptr<ImageDecodeTask> another_task;
+  scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &another_task);
   EXPECT_TRUE(need_unref);
@@ -203,14 +204,14 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
   controller.UnrefImage(draw_image);
 
   // Here a new task is created.
-  scoped_refptr<ImageDecodeTask> third_task;
+  scoped_refptr<TileTask> third_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &third_task);
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(third_task);
   EXPECT_FALSE(third_task.get() == task.get());
 
-  ProcessTask(third_task->dependency().get());
+  ProcessTask(third_task->dependencies()[0].get());
   ProcessTask(third_task.get());
 
   controller.UnrefImage(draw_image);
@@ -230,16 +231,16 @@ TEST(GpuImageDecodeControllerTest,
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
-  ProcessTask(task->dependency().get());
+  ProcessTask(task->dependencies()[0].get());
   ScheduleTask(task.get());
 
-  scoped_refptr<ImageDecodeTask> another_task;
+  scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &another_task);
   EXPECT_TRUE(need_unref);
@@ -250,14 +251,14 @@ TEST(GpuImageDecodeControllerTest,
 
   // Note that here, everything is reffed, but a new task is created. This is
   // possible with repeated schedule/cancel operations.
-  scoped_refptr<ImageDecodeTask> third_task;
+  scoped_refptr<TileTask> third_task;
   need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
                                                 &third_task);
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(third_task);
   EXPECT_FALSE(third_task.get() == task.get());
 
-  ProcessTask(third_task->dependency().get());
+  ProcessTask(third_task->dependencies()[0].get());
   ProcessTask(third_task.get());
 
   // 3 Unrefs!
@@ -279,13 +280,13 @@ TEST(GpuImageDecodeControllerTest, GetDecodedImageForDraw) {
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
-  ProcessTask(task->dependency().get());
+  ProcessTask(task->dependencies()[0].get());
   ProcessTask(task.get());
 
   // Must hold context lock before calling GetDecodedImageForDraw /
@@ -314,13 +315,13 @@ TEST(GpuImageDecodeControllerTest, GetLargeDecodedImageForDraw) {
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
-  ProcessTask(task->dependency().get());
+  ProcessTask(task->dependencies()[0].get());
   ProcessTask(task.get());
 
   // Must hold context lock before calling GetDecodedImageForDraw /
@@ -353,7 +354,7 @@ TEST(GpuImageDecodeControllerTest, GetDecodedImageForDrawAtRasterDecode) {
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
 
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_FALSE(need_unref);
@@ -388,7 +389,7 @@ TEST(GpuImageDecodeControllerTest, AtRasterUsedDirectlyIfSpaceAllows) {
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
 
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_FALSE(need_unref);
@@ -410,7 +411,7 @@ TEST(GpuImageDecodeControllerTest, AtRasterUsedDirectlyIfSpaceAllows) {
   // cache.
   controller.DrawWithImageFinished(draw_image, decoded_draw_image);
 
-  scoped_refptr<ImageDecodeTask> another_task;
+  scoped_refptr<TileTask> another_task;
   bool another_task_needs_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_TRUE(another_task_needs_unref);
@@ -467,7 +468,7 @@ TEST(GpuImageDecodeControllerTest, ZeroSizedImagesAreSkipped) {
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.f, 0.f), is_decomposable));
 
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_FALSE(task);
@@ -497,7 +498,7 @@ TEST(GpuImageDecodeControllerTest, NonOverlappingSrcRectImagesAreSkipped) {
       image.get(), SkIRect::MakeXYWH(150, 150, image->width(), image->height()),
       quality, CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable));
 
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_FALSE(task);
@@ -527,15 +528,15 @@ TEST(GpuImageDecodeControllerTest, CanceledTasksDoNotCountAgainstBudget) {
       image.get(), SkIRect::MakeXYWH(0, 0, image->width(), image->height()),
       quality, CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable));
 
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
   EXPECT_NE(0u, controller.GetBytesUsedForTesting());
   EXPECT_TRUE(task);
   EXPECT_TRUE(need_unref);
 
-  ScheduleTask(task->dependency().get());
-  CompleteTask(task->dependency().get());
+  ScheduleTask(task->dependencies()[0].get());
+  CompleteTask(task->dependencies()[0].get());
   ScheduleTask(task.get());
   CompleteTask(task.get());
 
@@ -556,7 +557,7 @@ TEST(GpuImageDecodeControllerTest, ShouldAggressivelyFreeResources) {
   DrawImage draw_image(
       image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<ImageDecodeTask> task;
+  scoped_refptr<TileTask> task;
   {
     bool need_unref =
         controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
@@ -564,7 +565,7 @@ TEST(GpuImageDecodeControllerTest, ShouldAggressivelyFreeResources) {
     EXPECT_TRUE(task);
   }
 
-  ProcessTask(task->dependency().get());
+  ProcessTask(task->dependencies()[0].get());
   ProcessTask(task.get());
 
   controller.UnrefImage(draw_image);
@@ -594,7 +595,7 @@ TEST(GpuImageDecodeControllerTest, ShouldAggressivelyFreeResources) {
     EXPECT_TRUE(task);
   }
 
-  ProcessTask(task->dependency().get());
+  ProcessTask(task->dependencies()[0].get());
   ProcessTask(task.get());
 
   // The image should be in our cache after un-ref.

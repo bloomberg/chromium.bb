@@ -144,7 +144,7 @@ class CC_EXPORT Tile {
 
   unsigned scheduled_priority_;
 
-  scoped_refptr<RasterTask> raster_task_;
+  scoped_refptr<TileTask> raster_task_;
 
   DISALLOW_COPY_AND_ASSIGN(Tile);
 };

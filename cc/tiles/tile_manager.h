@@ -249,7 +249,7 @@ class CC_EXPORT TileManager {
 
   void FreeResourcesForTile(Tile* tile);
   void FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(Tile* tile);
-  scoped_refptr<RasterTask> CreateRasterTask(
+  scoped_refptr<TileTask> CreateRasterTask(
       const PrioritizedTile& prioritized_tile);
 
   std::unique_ptr<EvictionTilePriorityQueue>

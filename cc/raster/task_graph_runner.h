@@ -16,84 +16,9 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
+#include "cc/raster/task.h"
 
 namespace cc {
-
-class TaskGraphRunner;
-
-// A task which can be run by a TaskGraphRunner. To run a Task, it should be
-// inserted into a TaskGraph, which can then be scheduled on the
-// TaskGraphRunner.
-class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
- public:
-  typedef std::vector<scoped_refptr<Task>> Vector;
-
-  // Subclasses should implement this method. RunOnWorkerThread may be called
-  // on any thread, and subclasses are responsible for locking and thread
-  // safety.
-  virtual void RunOnWorkerThread() = 0;
-
-  void WillRun();
-  void DidRun();
-  bool HasFinishedRunning() const;
-
- protected:
-  friend class base::RefCountedThreadSafe<Task>;
-
-  Task();
-  virtual ~Task();
-
-  bool will_run_;
-  bool did_run_;
-};
-
-// A task dependency graph describes the order in which to execute a set
-// of tasks. Dependencies are represented as edges. Each node is assigned
-// a category, a priority and a run count that matches the number of
-// dependencies. Priority range from 0 (most favorable scheduling) to UINT16_MAX
-// (least favorable). Categories range from 0 to UINT16_MAX. It is up to the
-// implementation and its consumer to determine the meaning (if any) of a
-// category. A TaskGraphRunner implementation may chose to prioritize certain
-// categories over others, regardless of the individual priorities of tasks.
-struct CC_EXPORT TaskGraph {
-  struct Node {
-    typedef std::vector<Node> Vector;
-
-    Node(Task* task,
-         uint16_t category,
-         uint16_t priority,
-         uint32_t dependencies)
-        : task(task),
-          category(category),
-          priority(priority),
-          dependencies(dependencies) {}
-
-    Task* task;
-    uint16_t category;
-    uint16_t priority;
-    uint32_t dependencies;
-  };
-
-  struct Edge {
-    typedef std::vector<Edge> Vector;
-
-    Edge(const Task* task, Task* dependent)
-        : task(task), dependent(dependent) {}
-
-    const Task* task;
-    Task* dependent;
-  };
-
-  TaskGraph();
-  TaskGraph(const TaskGraph& other);
-  ~TaskGraph();
-
-  void Swap(TaskGraph* other);
-  void Reset();
-
-  Node::Vector nodes;
-  Edge::Vector edges;
-};
 
 // Opaque identifier that defines a namespace of tasks.
 class CC_EXPORT NamespaceToken {
@@ -164,61 +89,6 @@ class CC_EXPORT TaskGraphRunner {
 
  protected:
   virtual ~TaskGraphRunner() {}
-};
-
-// Helper class for iterating over all dependents of a task.
-class DependentIterator {
- public:
-  DependentIterator(TaskGraph* graph, const Task* task)
-      : graph_(graph),
-        task_(task),
-        current_index_(static_cast<size_t>(-1)),
-        current_node_(NULL) {
-    ++(*this);
-  }
-
-  TaskGraph::Node& operator->() const {
-    DCHECK_LT(current_index_, graph_->edges.size());
-    DCHECK_EQ(graph_->edges[current_index_].task, task_);
-    DCHECK(current_node_);
-    return *current_node_;
-  }
-
-  TaskGraph::Node& operator*() const {
-    DCHECK_LT(current_index_, graph_->edges.size());
-    DCHECK_EQ(graph_->edges[current_index_].task, task_);
-    DCHECK(current_node_);
-    return *current_node_;
-  }
-
-  // Note: Performance can be improved by keeping edges sorted.
-  DependentIterator& operator++() {
-    // Find next dependency edge for |task_|.
-    do {
-      ++current_index_;
-      if (current_index_ == graph_->edges.size())
-        return *this;
-    } while (graph_->edges[current_index_].task != task_);
-
-    // Now find the node for the dependent of this edge.
-    TaskGraph::Node::Vector::iterator it = std::find_if(
-        graph_->nodes.begin(), graph_->nodes.end(),
-        [this](const TaskGraph::Node& node) {
-          return node.task == graph_->edges[current_index_].dependent;
-        });
-    DCHECK(it != graph_->nodes.end());
-    current_node_ = &(*it);
-
-    return *this;
-  }
-
-  operator bool() const { return current_index_ < graph_->edges.size(); }
-
- private:
-  TaskGraph* graph_;
-  const Task* task_;
-  size_t current_index_;
-  TaskGraph::Node* current_node_;
 };
 
 }  // namespace cc

@@ -41,7 +41,7 @@ class AutoRemoveKeyFromTaskMap {
  public:
   AutoRemoveKeyFromTaskMap(
       std::unordered_map<SoftwareImageDecodeController::ImageKey,
-                         scoped_refptr<ImageDecodeTask>,
+                         scoped_refptr<TileTask>,
                          SoftwareImageDecodeController::ImageKeyHash>* task_map,
       const SoftwareImageDecodeController::ImageKey& key)
       : task_map_(task_map), key_(key) {}
@@ -49,18 +49,19 @@ class AutoRemoveKeyFromTaskMap {
 
  private:
   std::unordered_map<SoftwareImageDecodeController::ImageKey,
-                     scoped_refptr<ImageDecodeTask>,
+                     scoped_refptr<TileTask>,
                      SoftwareImageDecodeController::ImageKeyHash>* task_map_;
   SoftwareImageDecodeController::ImageKey key_;
 };
 
-class ImageDecodeTaskImpl : public ImageDecodeTask {
+class ImageDecodeTaskImpl : public TileTask {
  public:
   ImageDecodeTaskImpl(SoftwareImageDecodeController* controller,
                       const SoftwareImageDecodeController::ImageKey& image_key,
                       const DrawImage& image,
                       uint64_t source_prepare_tiles_id)
-      : controller_(controller),
+      : TileTask(true),
+        controller_(controller),
         image_key_(image_key),
         image_(image),
         image_ref_(skia::SharePtr(image.image())),
@@ -152,7 +153,7 @@ SoftwareImageDecodeController::~SoftwareImageDecodeController() {
 bool SoftwareImageDecodeController::GetTaskForImageAndRef(
     const DrawImage& image,
     uint64_t prepare_tiles_id,
-    scoped_refptr<ImageDecodeTask>* task) {
+    scoped_refptr<TileTask>* task) {
   // If the image already exists or if we're going to create a task for it, then
   // we'll likely need to ref this image (the exception is if we're prerolling
   // the image only). That means the image is or will be in the cache. When the
@@ -179,7 +180,7 @@ bool SoftwareImageDecodeController::GetTaskForImageAndRef(
   if (!CanHandleImage(key)) {
     base::AutoLock lock(lock_);
     if (prerolled_images_.count(key.image_id()) == 0) {
-      scoped_refptr<ImageDecodeTask>& existing_task = pending_image_tasks_[key];
+      scoped_refptr<TileTask>& existing_task = pending_image_tasks_[key];
       if (!existing_task) {
         existing_task = make_scoped_refptr(
             new ImageDecodeTaskImpl(this, key, image, prepare_tiles_id));
@@ -212,7 +213,7 @@ bool SoftwareImageDecodeController::GetTaskForImageAndRef(
   }
 
   // If the task exists, return it.
-  scoped_refptr<ImageDecodeTask>& existing_task = pending_image_tasks_[key];
+  scoped_refptr<TileTask>& existing_task = pending_image_tasks_[key];
   if (existing_task) {
     RefImage(key);
     *task = existing_task;

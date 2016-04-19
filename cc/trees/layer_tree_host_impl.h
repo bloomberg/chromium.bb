@@ -74,6 +74,7 @@ class ScrollbarLayerImplBase;
 class SwapPromise;
 class SwapPromiseMonitor;
 class SynchronousTaskGraphRunner;
+class TaskGraphRunner;
 class TextureMailboxDeleter;
 class TopControlsManager;
 class UIResourceBitmap;

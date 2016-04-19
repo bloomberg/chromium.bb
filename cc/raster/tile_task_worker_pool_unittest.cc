@@ -51,14 +51,14 @@ enum TileTaskWorkerPoolType {
   TILE_TASK_WORKER_POOL_TYPE_BITMAP
 };
 
-class TestRasterTaskImpl : public RasterTask {
+class TestRasterTaskImpl : public TileTask {
  public:
   typedef base::Callback<void(bool was_canceled)> Reply;
 
   TestRasterTaskImpl(const Resource* resource,
                      const Reply& reply,
-                     ImageDecodeTask::Vector* dependencies)
-      : RasterTask(dependencies),
+                     TileTask::Vector* dependencies)
+      : TileTask(true, dependencies),
         resource_(resource),
         reply_(reply),
         raster_source_(FakeRasterSource::CreateFilled(gfx::Size(1, 1))) {}
@@ -99,7 +99,7 @@ class BlockingTestRasterTaskImpl : public TestRasterTaskImpl {
   BlockingTestRasterTaskImpl(const Resource* resource,
                              const Reply& reply,
                              base::Lock* lock,
-                             ImageDecodeTask::Vector* dependencies)
+                             TileTask::Vector* dependencies)
       : TestRasterTaskImpl(resource, reply, dependencies), lock_(lock) {}
 
   // Overridden from Task:
@@ -125,7 +125,7 @@ class TileTaskWorkerPoolTest
     bool canceled;
   };
 
-  typedef std::vector<scoped_refptr<RasterTask>> RasterTaskVector;
+  typedef std::vector<scoped_refptr<TileTask>> RasterTaskVector;
 
   enum NamedTaskSet { REQUIRED_FOR_ACTIVATION, REQUIRED_FOR_DRAW, ALL };
 
@@ -210,7 +210,7 @@ class TileTaskWorkerPoolTest
                        RGBA_8888);
     const Resource* const_resource = resource.get();
 
-    ImageDecodeTask::Vector empty;
+    TileTask::Vector empty;
     tasks_.push_back(new TestRasterTaskImpl(
         const_resource,
         base::Bind(&TileTaskWorkerPoolTest::OnTaskCompleted,
@@ -229,7 +229,7 @@ class TileTaskWorkerPoolTest
                        RGBA_8888);
     const Resource* const_resource = resource.get();
 
-    ImageDecodeTask::Vector empty;
+    TileTask::Vector empty;
     tasks_.push_back(new BlockingTestRasterTaskImpl(
         const_resource,
         base::Bind(&TileTaskWorkerPoolTest::OnTaskCompleted,

@@ -42,7 +42,7 @@ DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
     "Compositing.%s.RasterTask.RasterUs",
     "Compositing.%s.RasterTask.RasterPixelsPerMs");
 
-class RasterTaskImpl : public RasterTask {
+class RasterTaskImpl : public TileTask {
  public:
   RasterTaskImpl(const Resource* resource,
                  scoped_refptr<RasterSource> raster_source,
@@ -59,8 +59,8 @@ class RasterTaskImpl : public RasterTask {
                  uint64_t resource_content_id,
                  int source_frame_number,
                  const base::Callback<void(bool)>& reply,
-                 ImageDecodeTask::Vector* dependencies)
-      : RasterTask(dependencies),
+                 TileTask::Vector* dependencies)
+      : TileTask(true, dependencies),
         resource_(resource),
         raster_source_(std::move(raster_source)),
         content_rect_(content_rect),
@@ -156,15 +156,18 @@ void InsertNodeForTask(TaskGraph* graph,
 }
 
 void InsertNodeForDecodeTask(TaskGraph* graph,
-                             ImageDecodeTask* task,
+                             TileTask* task,
                              uint16_t category,
                              uint16_t priority) {
   uint32_t dependency_count = 0u;
-  auto* dependency = task->dependency().get();
-  if (dependency && !dependency->HasCompleted()) {
-    InsertNodeForDecodeTask(graph, dependency, category, priority);
-    graph->edges.push_back(TaskGraph::Edge(dependency, task));
-    dependency_count = 1u;
+  if (task->dependencies().size()) {
+    DCHECK_EQ(task->dependencies().size(), 1u);
+    auto* dependency = task->dependencies()[0].get();
+    if (!dependency->HasCompleted()) {
+      InsertNodeForDecodeTask(graph, dependency, category, priority);
+      graph->edges.push_back(TaskGraph::Edge(dependency, task));
+      dependency_count = 1u;
+    }
   }
   InsertNodeForTask(graph, task, task->SupportsConcurrentExecution()
                                      ? category
@@ -173,8 +176,8 @@ void InsertNodeForDecodeTask(TaskGraph* graph,
 }
 
 void InsertNodesForRasterTask(TaskGraph* graph,
-                              RasterTask* raster_task,
-                              const ImageDecodeTask::Vector& decode_tasks,
+                              TileTask* raster_task,
+                              const TileTask::Vector& decode_tasks,
                               size_t priority,
                               bool use_gpu_rasterization,
                               bool high_priority) {
@@ -198,9 +201,9 @@ void InsertNodesForRasterTask(TaskGraph* graph,
       high_priority ? TASK_CATEGORY_FOREGROUND : TASK_CATEGORY_BACKGROUND;
 
   // Insert image decode tasks.
-  for (ImageDecodeTask::Vector::const_iterator it = decode_tasks.begin();
+  for (TileTask::Vector::const_iterator it = decode_tasks.begin();
        it != decode_tasks.end(); ++it) {
-    ImageDecodeTask* decode_task = it->get();
+    TileTask* decode_task = it->get();
 
     // Skip if already decoded.
     if (decode_task->HasCompleted())
@@ -242,7 +245,8 @@ class TaskSetFinishedTaskImpl : public TileTask {
   explicit TaskSetFinishedTaskImpl(
       base::SequencedTaskRunner* task_runner,
       const base::Closure& on_task_set_finished_callback)
-      : task_runner_(task_runner),
+      : TileTask(true),
+        task_runner_(task_runner),
         on_task_set_finished_callback_(on_task_set_finished_callback) {}
 
   // Overridden from Task:
@@ -779,7 +783,7 @@ void TileManager::ScheduleTasks(
     if (!tile->raster_task_)
       tile->raster_task_ = CreateRasterTask(prioritized_tile);
 
-    RasterTask* task = tile->raster_task_.get();
+    TileTask* task = tile->raster_task_.get();
     DCHECK(!task->HasCompleted());
 
     if (tile->required_for_activation()) {
@@ -845,7 +849,7 @@ void TileManager::ScheduleTasks(
                                ScheduledTasksStateAsValue());
 }
 
-scoped_refptr<RasterTask> TileManager::CreateRasterTask(
+scoped_refptr<TileTask> TileManager::CreateRasterTask(
     const PrioritizedTile& prioritized_tile) {
   Tile* tile = prioritized_tile.tile();
 
@@ -872,7 +876,7 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
       prioritized_tile.priority().resolution == LOW_RESOLUTION;
 
   // Create and queue all image decode tasks that this tile depends on.
-  ImageDecodeTask::Vector decode_tasks;
+  TileTask::Vector decode_tasks;
   std::vector<DrawImage>& images = scheduled_draw_images_[tile->id()];
   images.clear();
   if (!playback_settings.skip_images) {
@@ -883,7 +887,7 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
   // We can skip the image hijack canvas if we have no images.
   playback_settings.use_image_hijack_canvas = !images.empty();
   for (auto it = images.begin(); it != images.end();) {
-    scoped_refptr<ImageDecodeTask> task;
+    scoped_refptr<TileTask> task;
     bool need_to_unref_when_finished =
         image_decode_controller_->GetTaskForImageAndRef(
             *it, prepare_tiles_count_, &task);
