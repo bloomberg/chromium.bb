@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/dwrite_font_proxy_messages.h"
+#include "content/common/dwrite_text_analysis_source_win.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/win/direct_write.h"
 
@@ -90,6 +91,7 @@ bool DWriteFontProxyMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(DWriteFontProxyMsg_GetFamilyCount, OnGetFamilyCount)
     IPC_MESSAGE_HANDLER(DWriteFontProxyMsg_GetFamilyNames, OnGetFamilyNames)
     IPC_MESSAGE_HANDLER(DWriteFontProxyMsg_GetFontFiles, OnGetFontFiles)
+    IPC_MESSAGE_HANDLER(DWriteFontProxyMsg_MapCharacters, OnMapCharacters)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -142,13 +144,13 @@ void DWriteFontProxyMessageFilter::OnGetFamilyNames(
 
   mswr::ComPtr<IDWriteFontFamily> family;
   HRESULT hr = collection_->GetFontFamily(family_index, &family);
-  if (!SUCCEEDED(hr)) {
+  if (FAILED(hr)) {
     return;
   }
 
   mswr::ComPtr<IDWriteLocalizedStrings> localized_names;
   hr = family->GetFamilyNames(&localized_names);
-  if (!SUCCEEDED(hr)) {
+  if (FAILED(hr)) {
     return;
   }
 
@@ -159,26 +161,26 @@ void DWriteFontProxyMessageFilter::OnGetFamilyNames(
   for (size_t index = 0; index < string_count; ++index) {
     UINT32 length = 0;
     hr = localized_names->GetLocaleNameLength(index, &length);
-    if (!SUCCEEDED(hr)) {
+    if (FAILED(hr)) {
       return;
     }
     ++length;  // Reserve space for the null terminator.
     locale.resize(length);
     hr = localized_names->GetLocaleName(index, locale.data(), length);
-    if (!SUCCEEDED(hr)) {
+    if (FAILED(hr)) {
       return;
     }
     CHECK_EQ(L'\0', locale[length - 1]);
 
     length = 0;
     hr = localized_names->GetStringLength(index, &length);
-    if (!SUCCEEDED(hr)) {
+    if (FAILED(hr)) {
       return;
     }
     ++length;  // Reserve space for the null terminator.
     name.resize(length);
     hr = localized_names->GetString(index, name.data(), length);
-    if (!SUCCEEDED(hr)) {
+    if (FAILED(hr)) {
       return;
     }
     CHECK_EQ(L'\0', name[length - 1]);
@@ -200,7 +202,7 @@ void DWriteFontProxyMessageFilter::OnGetFontFiles(
 
   mswr::ComPtr<IDWriteFontFamily> family;
   HRESULT hr = collection_->GetFontFamily(family_index, &family);
-  if (!SUCCEEDED(hr)) {
+  if (FAILED(hr)) {
     return;
   }
 
@@ -213,7 +215,7 @@ void DWriteFontProxyMessageFilter::OnGetFontFiles(
   for (UINT32 font_index = 0; font_index < font_count; ++font_index) {
     mswr::ComPtr<IDWriteFont> font;
     hr = family->GetFont(font_index, &font);
-    if (!SUCCEEDED(hr)) {
+    if (FAILED(hr)) {
       return;
     }
 
@@ -221,6 +223,105 @@ void DWriteFontProxyMessageFilter::OnGetFontFiles(
   }
 
   file_paths->assign(path_set.begin(), path_set.end());
+}
+
+void DWriteFontProxyMessageFilter::OnMapCharacters(
+    const base::string16& text,
+    const DWriteFontStyle& font_style,
+    const base::string16& locale_name,
+    uint32_t reading_direction,
+    const base::string16& base_family_name,
+    MapCharactersResult* result) {
+  InitializeDirectWrite();
+  result->family_index = UINT32_MAX;
+  result->mapped_length = text.length();
+  result->family_name.clear();
+  result->scale = 0.0;
+  result->font_style.font_slant = DWRITE_FONT_STYLE_NORMAL;
+  result->font_style.font_stretch = DWRITE_FONT_STRETCH_NORMAL;
+  result->font_style.font_weight = DWRITE_FONT_WEIGHT_NORMAL;
+  if (factory2_ == nullptr || collection_ == nullptr)
+    return;
+  if (font_fallback_ == nullptr) {
+    if (FAILED(factory2_->GetSystemFontFallback(&font_fallback_)))
+      return;
+  }
+
+  UINT32 length;
+  mswr::ComPtr<IDWriteFont> mapped_font;
+
+  mswr::ComPtr<IDWriteNumberSubstitution> number_substitution;
+  if (FAILED(factory2_->CreateNumberSubstitution(
+          DWRITE_NUMBER_SUBSTITUTION_METHOD_NONE, locale_name.c_str(),
+          TRUE /* ignoreUserOverride */, &number_substitution))) {
+    DCHECK(false);
+    return;
+  }
+  mswr::ComPtr<IDWriteTextAnalysisSource> analysis_source;
+  if (FAILED(mswr::MakeAndInitialize<TextAnalysisSource>(
+          &analysis_source, text, locale_name, number_substitution.Get(),
+          static_cast<DWRITE_READING_DIRECTION>(reading_direction)))) {
+    DCHECK(false);
+    return;
+  }
+
+  if (FAILED(font_fallback_->MapCharacters(
+          analysis_source.Get(), 0, text.length(), collection_.Get(),
+          base_family_name.c_str(),
+          static_cast<DWRITE_FONT_WEIGHT>(font_style.font_weight),
+          static_cast<DWRITE_FONT_STYLE>(font_style.font_slant),
+          static_cast<DWRITE_FONT_STRETCH>(font_style.font_stretch), &length,
+          &mapped_font, &result->scale))) {
+    DCHECK(false);
+    return;
+  }
+
+  result->mapped_length = length;
+  if (mapped_font == nullptr)
+    return;
+
+  mswr::ComPtr<IDWriteFontFamily> mapped_family;
+  if (FAILED(mapped_font->GetFontFamily(&mapped_family))) {
+    DCHECK(false);
+    return;
+  }
+  mswr::ComPtr<IDWriteLocalizedStrings> family_names;
+  if (FAILED(mapped_family->GetFamilyNames(&family_names))) {
+    DCHECK(false);
+    return;
+  }
+
+  result->font_style.font_slant = mapped_font->GetStyle();
+  result->font_style.font_stretch = mapped_font->GetStretch();
+  result->font_style.font_weight = mapped_font->GetWeight();
+
+  std::vector<base::char16> name;
+  size_t name_count = family_names->GetCount();
+  for (size_t name_index = 0; name_index < name_count; name_index++) {
+    UINT32 name_length = 0;
+    if (FAILED(family_names->GetStringLength(name_index, &name_length)))
+      continue;  // Keep trying other names
+
+    ++name_length;  // Reserve space for the null terminator.
+    name.resize(name_length);
+    if (FAILED(family_names->GetString(name_index, name.data(), name_length)))
+      continue;
+    UINT32 index = UINT32_MAX;
+    BOOL exists = false;
+    if (FAILED(collection_->FindFamilyName(name.data(), &index, &exists)) ||
+        !exists)
+      continue;
+
+    // Found a matching family!
+    result->family_index = index;
+    result->family_name = name.data();
+    return;
+  }
+  // Could not find a matching family
+  // TODO(kulshin): log UMA that we matched a font, but could not locate the
+  // family
+  DCHECK_EQ(result->family_index, UINT32_MAX);
+  DCHECK_GT(result->mapped_length, 0u);
 }
 
 void DWriteFontProxyMessageFilter::InitializeDirectWrite() {
@@ -237,6 +338,10 @@ void DWriteFontProxyMessageFilter::InitializeDirectWrite() {
     return;
   }
 
+  // QueryInterface for IDWriteFactory2. It's ok for this to fail if we are
+  // running an older version of DirectWrite (earlier than Win8.1).
+  factory.As<IDWriteFactory2>(&factory2_);
+
   HRESULT hr = factory->GetSystemFontCollection(&collection_);
   DCHECK(SUCCEEDED(hr));
 }
@@ -247,13 +352,13 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
   mswr::ComPtr<IDWriteFontFace> font_face;
   HRESULT hr;
   hr = font->CreateFontFace(&font_face);
-  if (!SUCCEEDED(hr)) {
+  if (FAILED(hr)) {
     return false;
   }
 
   UINT32 file_count;
   hr = font_face->GetFiles(&file_count, nullptr);
-  if (!SUCCEEDED(hr)) {
+  if (FAILED(hr)) {
     return false;
   }
 
@@ -261,14 +366,14 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
   font_files.resize(file_count);
   hr = font_face->GetFiles(
       &file_count, reinterpret_cast<IDWriteFontFile**>(font_files.data()));
-  if (!SUCCEEDED(hr)) {
+  if (FAILED(hr)) {
     return false;
   }
 
   for (unsigned int file_index = 0; file_index < file_count; ++file_index) {
     mswr::ComPtr<IDWriteFontFileLoader> loader;
     hr = font_files[file_index]->GetLoader(&loader);
-    if (!SUCCEEDED(hr)) {
+    if (FAILED(hr)) {
       return false;
     }
 
@@ -289,7 +394,7 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
       DCHECK(false);
 
       return false;
-    } else if (!SUCCEEDED(hr)) {
+    } else if (FAILED(hr)) {
       return false;
     }
 
@@ -309,13 +414,13 @@ bool DWriteFontProxyMessageFilter::AddLocalFile(
   const void* key;
   UINT32 key_size;
   hr = font_file->GetReferenceKey(&key, &key_size);
-  if (!SUCCEEDED(hr)) {
+  if (FAILED(hr)) {
     return false;
   }
 
   UINT32 path_length = 0;
   hr = local_loader->GetFilePathLengthFromKey(key, key_size, &path_length);
-  if (!SUCCEEDED(hr)) {
+  if (FAILED(hr)) {
     return false;
   }
   ++path_length;  // Reserve space for the null terminator.
@@ -323,7 +428,7 @@ bool DWriteFontProxyMessageFilter::AddLocalFile(
   file_path_chars.resize(path_length);
   hr = local_loader->GetFilePathFromKey(key, key_size, file_path_chars.data(),
                                         path_length);
-  if (!SUCCEEDED(hr)) {
+  if (FAILED(hr)) {
     return false;
   }
 

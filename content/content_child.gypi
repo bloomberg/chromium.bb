@@ -96,6 +96,8 @@
       'child/dwrite_font_proxy/dwrite_font_proxy_win.h',
       'child/dwrite_font_proxy/dwrite_localized_strings_win.cc',
       'child/dwrite_font_proxy/dwrite_localized_strings_win.h',
+      'child/dwrite_font_proxy/font_fallback_win.cc',
+      'child/dwrite_font_proxy/font_fallback_win.h',
       'child/file_info_util.cc',
       'child/file_info_util.h',
       'child/fileapi/file_system_dispatcher.cc',

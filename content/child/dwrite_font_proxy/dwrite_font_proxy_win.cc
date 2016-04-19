@@ -245,6 +245,22 @@ bool DWriteFontCollectionProxy::LoadFamily(
   return SUCCEEDED(hr);
 }
 
+bool DWriteFontCollectionProxy::GetFontFamily(UINT32 family_index,
+                                              const base::string16& family_name,
+                                              IDWriteFontFamily** font_family) {
+  DCHECK(font_family);
+  DCHECK(!family_name.empty());
+  if (!CreateFamily(family_index))
+    return false;
+
+  mswr::ComPtr<DWriteFontFamilyProxy>& family = families_[family_index];
+  if (!family->IsLoaded() || family->GetName().empty())
+    family->SetName(family_name);
+
+  family.CopyTo(font_family);
+  return true;
+}
+
 bool DWriteFontCollectionProxy::LoadFamilyNames(
     UINT32 family_index,
     IDWriteLocalizedStrings** localized_strings) {
@@ -402,6 +418,10 @@ bool DWriteFontFamilyProxy::GetFontFromFontFace(IDWriteFontFace* font_face,
 
 void DWriteFontFamilyProxy::SetName(const base::string16& family_name) {
   family_name_.assign(family_name);
+}
+
+const base::string16& DWriteFontFamilyProxy::GetName() {
+  return family_name_;
 }
 
 bool DWriteFontFamilyProxy::IsLoaded() {

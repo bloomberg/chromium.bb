@@ -314,6 +314,8 @@
       'common/drag_messages.h',
       'common/drag_traits.h',
       'common/dwrite_font_proxy_messages.h',
+      'common/dwrite_text_analysis_source_win.cc',
+      'common/dwrite_text_analysis_source_win.h',
       'common/edit_command.h',
       'common/establish_channel_params.cc',
       'common/establish_channel_params.h',

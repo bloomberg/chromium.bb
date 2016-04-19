@@ -642,6 +642,7 @@
       'child/blob_storage/blob_consolidation_unittest.cc',
       'child/blob_storage/blob_transport_controller_unittest.cc',
       'child/dwrite_font_proxy/dwrite_font_proxy_win_unittest.cc',
+      'child/dwrite_font_proxy/font_fallback_win_unittest.cc',
       'child/fileapi/webfilewriter_base_unittest.cc',
       'child/font_warmup_win_unittest.cc',
       'child/indexed_db/indexed_db_dispatcher_unittest.cc',

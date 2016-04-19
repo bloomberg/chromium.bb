@@ -4,6 +4,7 @@
 
 #include "content/test/dwrite_font_fake_sender_win.h"
 
+#include <dwrite.h>
 #include <shlobj.h>
 
 #include "content/common/dwrite_font_proxy_messages.h"
@@ -79,6 +80,7 @@ FakeFontCollection::ReplySender::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(DWriteFontProxyMsg_GetFamilyCount, OnGetFamilyCount)
     IPC_MESSAGE_HANDLER(DWriteFontProxyMsg_GetFamilyNames, OnGetFamilyNames)
     IPC_MESSAGE_HANDLER(DWriteFontProxyMsg_GetFontFiles, OnGetFontFiles)
+    IPC_MESSAGE_HANDLER(DWriteFontProxyMsg_MapCharacters, OnMapCharacters)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return reply_;
@@ -109,6 +111,17 @@ void FakeFontCollection::ReplySender::OnGetFontFiles(
     uint32_t family_index,
     std::vector<base::string16>* file_paths) {
   collection_->OnGetFontFiles(family_index, file_paths);
+}
+
+void FakeFontCollection::ReplySender::OnMapCharacters(
+    const base::string16& text,
+    const DWriteFontStyle& font_style,
+    const base::string16& locale_name,
+    uint32_t reading_direction,
+    const base::string16& base_family_name,
+    MapCharactersResult* result) {
+  collection_->OnMapCharacters(text, font_style, locale_name, reading_direction,
+                               base_family_name, result);
 }
 
 FakeFontCollection::FakeSender::FakeSender(FakeFontCollection* collection,
@@ -163,6 +176,21 @@ void FakeFontCollection::OnGetFontFiles(
   if (family_index >= fonts_.size())
     return;
   *file_paths = fonts_[family_index].file_paths_;
+}
+
+void FakeFontCollection::OnMapCharacters(const base::string16& text,
+                                         const DWriteFontStyle& font_style,
+                                         const base::string16& locale_name,
+                                         uint32_t reading_direction,
+                                         const base::string16& base_family_name,
+                                         MapCharactersResult* result) {
+  result->family_index = 0;
+  result->family_name = fonts_[0].font_name();
+  result->mapped_length = 1;
+  result->scale = 1.0;
+  result->font_style.font_weight = DWRITE_FONT_WEIGHT_NORMAL;
+  result->font_style.font_slant = DWRITE_FONT_STYLE_NORMAL;
+  result->font_style.font_stretch = DWRITE_FONT_STRETCH_NORMAL;
 }
 
 std::unique_ptr<FakeFontCollection::ReplySender>

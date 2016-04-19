@@ -5,11 +5,13 @@
 #include "content/browser/renderer_host/dwrite_font_proxy_message_filter_win.h"
 
 #include <dwrite.h>
+#include <dwrite_2.h>
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/win/windows_version.h"
 #include "content/common/dwrite_font_proxy_messages.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_message_macros.h"
@@ -54,6 +56,19 @@ class DWriteFontProxyMessageFilterUnitTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     ASSERT_NE(nullptr, filter_->GetReply());
     serializer->SerializeOutputParameters(*(filter_->GetReply()));
+  }
+
+  bool IsDWrite2Available() {
+    mswr::ComPtr<IDWriteFactory> factory;
+    gfx::win::CreateDWriteFactory(&factory);
+    mswr::ComPtr<IDWriteFactory2> factory2;
+    factory.As<IDWriteFactory2>(&factory2);
+
+    if (!factory2.Get()) {
+      // IDWriteFactory2 is expected to not be available before Win8.1
+      EXPECT_LT(base::win::GetVersion(), base::win::VERSION_WIN8_1);
+    }
+    return factory2.Get();
   }
 
   scoped_refptr<FilterWithFakeSender> filter_;
@@ -138,6 +153,71 @@ TEST_F(DWriteFontProxyMessageFilterUnitTest, GetFontFilesIndexOutOfBounds) {
   Send(new DWriteFontProxyMsg_GetFontFiles(invalid_index, &files));
 
   EXPECT_EQ(0u, files.size());
+}
+
+TEST_F(DWriteFontProxyMessageFilterUnitTest, MapCharacter) {
+  if (!gfx::win::ShouldUseDirectWrite() || !IsDWrite2Available())
+    return;
+
+  DWriteFontStyle font_style;
+  font_style.font_weight = DWRITE_FONT_WEIGHT_NORMAL;
+  font_style.font_slant = DWRITE_FONT_STYLE_NORMAL;
+  font_style.font_stretch = DWRITE_FONT_STRETCH_NORMAL;
+
+  MapCharactersResult result;
+  Send(new DWriteFontProxyMsg_MapCharacters(
+      L"abc", font_style, L"", DWRITE_READING_DIRECTION_LEFT_TO_RIGHT, L"",
+      &result));
+
+  EXPECT_NE(UINT32_MAX, result.family_index);
+  EXPECT_STRNE(L"", result.family_name.c_str());
+  EXPECT_EQ(3u, result.mapped_length);
+  EXPECT_NE(0.0, result.scale);
+  EXPECT_NE(0, result.font_style.font_weight);
+  EXPECT_EQ(DWRITE_FONT_STYLE_NORMAL, result.font_style.font_slant);
+  EXPECT_NE(0, result.font_style.font_stretch);
+}
+
+TEST_F(DWriteFontProxyMessageFilterUnitTest, MapCharacterInvalidCharacter) {
+  if (!gfx::win::ShouldUseDirectWrite() || !IsDWrite2Available())
+    return;
+
+  DWriteFontStyle font_style;
+  font_style.font_weight = DWRITE_FONT_WEIGHT_NORMAL;
+  font_style.font_slant = DWRITE_FONT_STYLE_NORMAL;
+  font_style.font_stretch = DWRITE_FONT_STRETCH_NORMAL;
+
+  MapCharactersResult result;
+  Send(new DWriteFontProxyMsg_MapCharacters(
+      L"\ufffe\uffffabc", font_style, L"en-us",
+      DWRITE_READING_DIRECTION_LEFT_TO_RIGHT, L"", &result));
+
+  EXPECT_EQ(UINT32_MAX, result.family_index);
+  EXPECT_STREQ(L"", result.family_name.c_str());
+  EXPECT_EQ(2u, result.mapped_length);
+}
+
+TEST_F(DWriteFontProxyMessageFilterUnitTest, MapCharacterInvalidAfterValid) {
+  if (!gfx::win::ShouldUseDirectWrite() || !IsDWrite2Available())
+    return;
+
+  DWriteFontStyle font_style;
+  font_style.font_weight = DWRITE_FONT_WEIGHT_NORMAL;
+  font_style.font_slant = DWRITE_FONT_STYLE_NORMAL;
+  font_style.font_stretch = DWRITE_FONT_STRETCH_NORMAL;
+
+  MapCharactersResult result;
+  Send(new DWriteFontProxyMsg_MapCharacters(
+      L"abc\ufffe\uffff", font_style, L"en-us",
+      DWRITE_READING_DIRECTION_LEFT_TO_RIGHT, L"", &result));
+
+  EXPECT_NE(UINT32_MAX, result.family_index);
+  EXPECT_STRNE(L"", result.family_name.c_str());
+  EXPECT_EQ(3u, result.mapped_length);
+  EXPECT_NE(0.0, result.scale);
+  EXPECT_NE(0, result.font_style.font_weight);
+  EXPECT_EQ(DWRITE_FONT_STYLE_NORMAL, result.font_style.font_slant);
+  EXPECT_NE(0, result.font_style.font_stretch);
 }
 
 }  // namespace

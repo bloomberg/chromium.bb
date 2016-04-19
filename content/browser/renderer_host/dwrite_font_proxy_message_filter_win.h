@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_DWRITE_FONT_PROXY_MESSAGE_FILTER_WIN_H_
 
 #include <dwrite.h>
+#include <dwrite_2.h>
 #include <wrl.h>
 #include <set>
 #include <utility>
@@ -17,6 +18,9 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
+
+struct DWriteFontStyle;
+struct MapCharactersResult;
 
 namespace content {
 
@@ -43,6 +47,12 @@ class CONTENT_EXPORT DWriteFontProxyMessageFilter
       std::vector<std::pair<base::string16, base::string16>>* family_names);
   void OnGetFontFiles(UINT32 family_index,
                       std::vector<base::string16>* file_paths);
+  void OnMapCharacters(const base::string16& text,
+                       const DWriteFontStyle& font_style,
+                       const base::string16& locale_name,
+                       uint32_t reading_direction,
+                       const base::string16& base_family_name,
+                       MapCharactersResult* result);
 
   void InitializeDirectWrite();
 
@@ -55,6 +65,8 @@ class CONTENT_EXPORT DWriteFontProxyMessageFilter
  private:
   bool direct_write_initialized_ = false;
   Microsoft::WRL::ComPtr<IDWriteFontCollection> collection_;
+  Microsoft::WRL::ComPtr<IDWriteFactory2> factory2_;
+  Microsoft::WRL::ComPtr<IDWriteFontFallback> font_fallback_;
   base::string16 windows_fonts_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DWriteFontProxyMessageFilter);
