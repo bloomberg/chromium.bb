@@ -367,11 +367,14 @@
     },
 
     'chromium.memory.fyi': {
-      'Chromium Linux ChromeOS MSan Builder': 'tbd',
-      'Chromium Linux MSan Builder': 'tbd',
-      'Chromium Linux TSan Builder': 'tbd',
 
       'Chromium Linux Builder (valgrind)': 'gyp_valgrind_release_bot',
+      'Chromium Linux ChromeOS MSan Builder':
+        'swarming_gyp_chromeos_msan_release_bot',
+      'Chromium Linux MSan Builder':
+        'swarming_gyp_msan_release_bot',
+      'Chromium Linux TSan Builder':
+        'swarming_gyp_tsan_disable_nacl_release_bot',
       'Chromium OS (valgrind)(1)': 'none',
       'Chromium OS (valgrind)(2)': 'none',
       'Chromium OS (valgrind)(3)': 'none',
@@ -749,6 +752,8 @@
       'linux_chromium_practice_rel_ng': 'gyp_release_trybot',
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'linux_chromium_tsan_rel_ng': 'swarming_tsan_gyp_release_trybot',
+      'linux_chromium_tsan_rel_ng':
+        'swarming_gyp_tsan_disable_nacl_release_trybot',
       'linux_chromium_variable': 'findit',
       'linux_chromium_variable_32': 'findit',
       'linux_chromium_variable_chrome': 'findit',
@@ -1570,6 +1575,10 @@
       'swarming', 'gn', 'release_trybot', 'minimal_symbols', 'x64',
     ],
 
+    'swarming_gyp_chromeos_msan_release_bot': [
+      'swarming', 'gyp', 'chromeos', 'msan', 'release_bot',
+    ],
+
     'swarming_gyp_clang_debug_bot_minimal_symbols_x86': [
       'swarming', 'gyp', 'clang', 'debug_bot', 'minimal_symbols', 'x86',
     ],
@@ -1619,6 +1628,10 @@
       'swarming', 'gyp', 'debug_trybot', 'x86',
     ],
 
+    'swarming_gyp_msan_release_bot': [
+      'swarming', 'gyp', 'msan', 'release_bot',
+    ],
+
     'swarming_gyp_release_bot': [
       'swarming', 'gyp', 'release_bot',
     ],
@@ -1656,8 +1669,12 @@
       'x86',
     ],
 
-    'swarming_tsan_gyp_release_trybot': [
-      'swarming', 'disable_nacl', 'tsan', 'gyp', 'release_trybot',
+    'swarming_gyp_tsan_disable_nacl_release_bot': [
+      'swarming', 'gyp', 'tsan', 'disable_nacl', 'release_bot',
+    ],
+
+    'swarming_gyp_tsan_disable_nacl_release_trybot': [
+      'swarming', 'gyp', 'tsan', 'disable_nacl', 'release_trybot',
     ],
 
     'gn_debug_bot_minimal_symbols_chrome_with_codecs': [
