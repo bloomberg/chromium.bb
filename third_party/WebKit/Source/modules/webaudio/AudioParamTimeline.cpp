@@ -114,14 +114,14 @@ AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createSetValueEve
     return ParamEvent(ParamEvent::SetValue, value, time, 0, 0, nullptr);
 }
 
-AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createLinearRampEvent(float value, double time)
+AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createLinearRampEvent(float value, double time, float initialValue, double callTime)
 {
-    return ParamEvent(ParamEvent::LinearRampToValue, value, time, 0, 0, nullptr);
+    return ParamEvent(ParamEvent::LinearRampToValue, value, time, 0, 0, nullptr, initialValue, callTime);
 }
 
-AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createExponentialRampEvent(float value, double time)
+AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createExponentialRampEvent(float value, double time, float initialValue, double callTime)
 {
-    return ParamEvent(ParamEvent::ExponentialRampToValue, value, time, 0, 0, nullptr);
+    return ParamEvent(ParamEvent::ExponentialRampToValue, value, time, 0, 0, nullptr, initialValue, callTime);
 }
 
 AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createSetTargetEvent(float value, double time, double timeConstant)
@@ -144,17 +144,17 @@ void AudioParamTimeline::setValueAtTime(float value, double time, ExceptionState
     insertEvent(ParamEvent::createSetValueEvent(value, time), exceptionState);
 }
 
-void AudioParamTimeline::linearRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
+void AudioParamTimeline::linearRampToValueAtTime(float value, double time, float initialValue, double callTime, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
     if (!isNonNegativeAudioParamTime(time, exceptionState))
         return;
 
-    insertEvent(ParamEvent::createLinearRampEvent(value, time), exceptionState);
+    insertEvent(ParamEvent::createLinearRampEvent(value, time, initialValue, callTime), exceptionState);
 }
 
-void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
+void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time, float initialValue, double callTime, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
@@ -171,7 +171,7 @@ void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time, 
         return;
     }
 
-    insertEvent(ParamEvent::createExponentialRampEvent(value, time), exceptionState);
+    insertEvent(ParamEvent::createExponentialRampEvent(value, time, initialValue, callTime), exceptionState);
 }
 
 void AudioParamTimeline::setTargetAtTime(float target, double time, double timeConstant, ExceptionState& exceptionState)
@@ -218,6 +218,15 @@ void AudioParamTimeline::insertEvent(const ParamEvent& event, ExceptionState& ex
 
     unsigned i = 0;
     double insertTime = event.time();
+
+    if (!m_events.size()
+        && (event.getType() == ParamEvent::LinearRampToValue
+            || event.getType() == ParamEvent::ExponentialRampToValue)) {
+        // There are no events preceding these ramps.  Insert a new setValueAtTime event to set the
+        // starting point for these events.
+        m_events.insert(0,
+            AudioParamTimeline::ParamEvent::createSetValueEvent(event.initialValue(), event.callTime()));
+    }
 
     for (i = 0; i < m_events.size(); ++i) {
         if (event.getType() == ParamEvent::SetValueCurve) {

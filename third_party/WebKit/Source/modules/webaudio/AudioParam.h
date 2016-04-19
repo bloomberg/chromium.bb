@@ -100,6 +100,7 @@ public:
     void connect(AudioNodeOutput&);
     void disconnect(AudioNodeOutput&);
 
+    float intrinsicValue() const { return noBarrierLoad(&m_intrinsicValue); }
 private:
     AudioParamHandler(AbstractAudioContext& context, double defaultValue)
         : AudioSummingJunction(context.deferredTaskHandler())
@@ -114,7 +115,6 @@ private:
 
     // Intrinsic value
     float m_intrinsicValue;
-    float intrinsicValue() const { return noBarrierLoad(&m_intrinsicValue); }
     void setIntrinsicValue(float newValue) { noBarrierStore(&m_intrinsicValue, newValue); }
 
     float m_defaultValue;

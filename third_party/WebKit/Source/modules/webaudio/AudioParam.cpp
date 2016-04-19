@@ -237,13 +237,14 @@ AudioParam* AudioParam::setValueAtTime(float value, double time, ExceptionState&
 
 AudioParam* AudioParam::linearRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
-    handler().timeline().linearRampToValueAtTime(value, time, exceptionState);
+    handler().timeline().linearRampToValueAtTime(
+        value, time, handler().intrinsicValue(), context()->currentTime(), exceptionState);
     return this;
 }
 
 AudioParam* AudioParam::exponentialRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
-    handler().timeline().exponentialRampToValueAtTime(value, time, exceptionState);
+    handler().timeline().exponentialRampToValueAtTime(value, time, handler().intrinsicValue(), context()->currentTime(), exceptionState);
     return this;
 }
 
