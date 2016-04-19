@@ -1075,6 +1075,7 @@ def GetConfig():
       chromium_pfq,
       chrome_try,
       chrome_sdk=False,
+      unittests=False,
       description='Informational Chromium Uprev & Build (public)',
   )
 
@@ -1082,6 +1083,7 @@ def GetConfig():
       'chrome-pfq-informational',
       chromium_info,
       internal, official,
+      unittests=False,
       description='Informational Chrome Uprev & Build (internal)',
   )
 
@@ -1341,6 +1343,7 @@ def GetConfig():
       'tot-asan-informational',
       chromium_info,
       asan,
+      unittests=True,
       description='Build TOT Chrome with Address Sanitizer (Clang)',
   )
 

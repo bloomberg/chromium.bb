@@ -357,6 +357,7 @@
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": false,
             "overlays": "both",
+            "unittests": false,
             "uprev": false,
             "useflags": [
                 "chrome_internal"
@@ -404,6 +405,7 @@
             "important": false,
             "manifest_version": false,
             "overlays": "public",
+            "unittests": false,
             "uprev": false,
             "vm_tests": [
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
@@ -1324,6 +1326,7 @@
             "manifest_version": false,
             "overlays": "public",
             "profile": "asan",
+            "unittests": true,
             "uprev": false,
             "vm_tests": [
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
