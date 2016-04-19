@@ -22,6 +22,7 @@
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -45,6 +46,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::SecurityStyle,
                           content::SECURITY_STYLE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebReferrerPolicy,
                           blink::WebReferrerPolicyLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::PermissionStatus,
+                          blink::mojom::PermissionStatus::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::EditingBehavior,
                           content::EDITING_BEHAVIOR_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(WindowOpenDisposition,

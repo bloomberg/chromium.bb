@@ -144,7 +144,7 @@ void Notification::schedulePrepareShow()
 void Notification::prepareShow()
 {
     ASSERT(m_state == NotificationStateIdle);
-    if (Notification::checkPermission(getExecutionContext()) != WebNotificationPermissionAllowed) {
+    if (Notification::checkPermission(getExecutionContext()) != mojom::PermissionStatus::GRANTED) {
         dispatchErrorEvent();
         return;
     }
@@ -333,14 +333,14 @@ HeapVector<NotificationAction> Notification::actions() const
     return actions;
 }
 
-String Notification::permissionString(WebNotificationPermission permission)
+String Notification::permissionString(mojom::PermissionStatus permission)
 {
     switch (permission) {
-    case WebNotificationPermissionAllowed:
+    case mojom::PermissionStatus::GRANTED:
         return "granted";
-    case WebNotificationPermissionDenied:
+    case mojom::PermissionStatus::DENIED:
         return "denied";
-    case WebNotificationPermissionDefault:
+    case mojom::PermissionStatus::ASK:
         return "default";
     }
 
@@ -353,7 +353,7 @@ String Notification::permission(ExecutionContext* context)
     return permissionString(checkPermission(context));
 }
 
-WebNotificationPermission Notification::checkPermission(ExecutionContext* context)
+mojom::PermissionStatus Notification::checkPermission(ExecutionContext* context)
 {
     SecurityOrigin* origin = context->getSecurityOrigin();
     ASSERT(origin);

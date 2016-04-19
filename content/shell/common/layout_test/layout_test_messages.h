@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
@@ -13,10 +14,6 @@
 #include "url/ipc/url_param_traits.h"
 
 #define IPC_MESSAGE_START LayoutTestMsgStart
-
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::mojom::PermissionStatus,
-                              blink::mojom::PermissionStatus::GRANTED,
-                              blink::mojom::PermissionStatus::ASK)
 
 IPC_SYNC_MESSAGE_ROUTED1_1(LayoutTestHostMsg_ReadFileToString,
                            base::FilePath /* local path */,

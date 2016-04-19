@@ -11,6 +11,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/WebKit/public/web/modules/notifications/WebNotificationPermissionCallback.h"
 
 using blink::WebNotificationPermissionCallback;
@@ -47,21 +48,7 @@ void NotificationPermissionDispatcher::OnPermissionRequestComplete(
     blink::mojom::PermissionStatus status) {
   DCHECK(callback);
 
-  blink::WebNotificationPermission permission =
-      blink::WebNotificationPermissionDefault;
-  switch (status) {
-    case blink::mojom::PermissionStatus::GRANTED:
-      permission = blink::WebNotificationPermissionAllowed;
-      break;
-    case blink::mojom::PermissionStatus::DENIED:
-      permission = blink::WebNotificationPermissionDenied;
-      break;
-    case blink::mojom::PermissionStatus::ASK:
-      permission = blink::WebNotificationPermissionDefault;
-      break;
-  }
-
-  callback->permissionRequestComplete(permission);
+  callback->permissionRequestComplete(status);
 }
 
 }  // namespace content

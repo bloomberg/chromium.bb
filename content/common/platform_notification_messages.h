@@ -10,10 +10,11 @@
 #include <utility>
 #include <vector>
 
+#include "content/public/common/common_param_traits_macros.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 // Singly-included section for type definitions.
@@ -28,9 +29,6 @@ using PersistentNotificationInfo =
 #endif  // CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
 
 #define IPC_MESSAGE_START PlatformNotificationMsgStart
-
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebNotificationPermission,
-                          blink::WebNotificationPermissionLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(
     content::PlatformNotificationData::Direction,
@@ -128,6 +126,7 @@ IPC_MESSAGE_CONTROL2(PlatformNotificationHostMsg_ClosePersistent,
                      GURL /* origin */,
                      int64_t /* persistent_notification_id */)
 
-IPC_SYNC_MESSAGE_CONTROL1_1(PlatformNotificationHostMsg_CheckPermission,
-                            GURL /* origin */,
-                            blink::WebNotificationPermission /* result */)
+IPC_SYNC_MESSAGE_CONTROL1_1(
+    PlatformNotificationHostMsg_CheckPermission,
+    GURL /* origin */,
+    blink::mojom::PermissionStatus /* permission_status */)

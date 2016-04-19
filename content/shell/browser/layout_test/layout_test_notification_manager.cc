@@ -23,21 +23,6 @@ namespace {
 // Service Worker when a notificationclick event has been dispatched.
 void OnEventDispatchComplete(PersistentNotificationStatus status) {}
 
-blink::WebNotificationPermission ToWebNotificationPermission(
-    blink::mojom::PermissionStatus status) {
-  switch (status) {
-    case blink::mojom::PermissionStatus::GRANTED:
-      return blink::WebNotificationPermissionAllowed;
-    case blink::mojom::PermissionStatus::DENIED:
-      return blink::WebNotificationPermissionDenied;
-    case blink::mojom::PermissionStatus::ASK:
-      return blink::WebNotificationPermissionDefault;
-  }
-
-  NOTREACHED();
-  return blink::WebNotificationPermissionLast;
-}
-
 }  // namespace
 
 LayoutTestNotificationManager::LayoutTestNotificationManager()
@@ -152,7 +137,7 @@ void LayoutTestNotificationManager::SimulateClose(const std::string& title,
           base::Bind(&OnEventDispatchComplete));
 }
 
-blink::WebNotificationPermission
+blink::mojom::PermissionStatus
 LayoutTestNotificationManager::CheckPermissionOnUIThread(
     BrowserContext* browser_context,
     const GURL& origin,
@@ -161,7 +146,7 @@ LayoutTestNotificationManager::CheckPermissionOnUIThread(
   return CheckPermission(origin);
 }
 
-blink::WebNotificationPermission
+blink::mojom::PermissionStatus
 LayoutTestNotificationManager::CheckPermissionOnIOThread(
     ResourceContext* resource_context,
     const GURL& origin,
@@ -210,14 +195,14 @@ void LayoutTestNotificationManager::ReplaceNotificationIfNeeded(
   replacements_[tag] = base::UTF16ToUTF8(notification_data.title);
 }
 
-blink::WebNotificationPermission
+blink::mojom::PermissionStatus
 LayoutTestNotificationManager::CheckPermission(const GURL& origin) {
-  return ToWebNotificationPermission(LayoutTestContentBrowserClient::Get()
+  return LayoutTestContentBrowserClient::Get()
       ->GetLayoutTestBrowserContext()
       ->GetLayoutTestPermissionManager()
       ->GetPermissionStatus(PermissionType::NOTIFICATIONS,
                             origin,
-                            origin));
+                            origin);
 }
 
 }  // namespace content

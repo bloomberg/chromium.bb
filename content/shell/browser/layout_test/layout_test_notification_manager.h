@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/platform_notification_service.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -39,11 +39,11 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
   void SimulateClose(const std::string& title, bool by_user);
 
   // PlatformNotificationService implementation.
-  blink::WebNotificationPermission CheckPermissionOnUIThread(
+  blink::mojom::PermissionStatus CheckPermissionOnUIThread(
       BrowserContext* browser_context,
       const GURL& origin,
       int render_process_id) override;
-  blink::WebNotificationPermission CheckPermissionOnIOThread(
+  blink::mojom::PermissionStatus CheckPermissionOnIOThread(
       ResourceContext* resource_context,
       const GURL& origin,
       int render_process_id) override;
@@ -86,7 +86,7 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
 
   // Checks if |origin| has permission to display notifications. May be called
   // on both the IO and the UI threads.
-  blink::WebNotificationPermission CheckPermission(const GURL& origin);
+  blink::mojom::PermissionStatus CheckPermission(const GURL& origin);
 
   std::map<std::string, DesktopNotificationDelegate*> page_notifications_;
   std::map<std::string, PersistentNotification> persistent_notifications_;

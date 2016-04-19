@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/notification_database_data.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 class GURL;
 
@@ -54,7 +54,8 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   friend class BrowserThread;
 
   void OnCheckNotificationPermission(
-      const GURL& origin, blink::WebNotificationPermission* permission);
+      const GURL& origin,
+      blink::mojom::PermissionStatus* permission_status);
   void OnShowPlatformNotification(
       int notification_id,
       const GURL& origin,
@@ -103,7 +104,7 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   // Returns the permission status for |origin|. Must only be used on the IO
   // thread. If the PlatformNotificationService is unavailable, permission will
   // assumed to be denied.
-  blink::WebNotificationPermission GetPermissionForOriginOnIO(
+  blink::mojom::PermissionStatus GetPermissionForOriginOnIO(
       const GURL& origin) const;
 
   // Verifies that Web Notification permission has been granted for |origin| in

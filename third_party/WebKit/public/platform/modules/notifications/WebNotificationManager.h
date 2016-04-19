@@ -9,12 +9,15 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
-#include "public/platform/modules/notifications/WebNotificationPermission.h"
 #include "public/platform/modules/notifications/WebNotificationResources.h"
 #include <memory>
 #include <stdint.h>
 
 namespace blink {
+
+namespace mojom {
+enum class PermissionStatus;
+}
 
 class WebNotificationDelegate;
 class WebSecurityOrigin;
@@ -59,7 +62,7 @@ public:
     virtual void notifyDelegateDestroyed(WebNotificationDelegate*) = 0;
 
     // Synchronously checks the permission level for the given origin.
-    virtual WebNotificationPermission checkPermission(const WebSecurityOrigin&) = 0;
+    virtual mojom::PermissionStatus checkPermission(const WebSecurityOrigin&) = 0;
 };
 
 } // namespace blink

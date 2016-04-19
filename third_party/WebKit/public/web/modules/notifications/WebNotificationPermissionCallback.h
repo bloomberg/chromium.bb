@@ -31,7 +31,7 @@
 #ifndef WebNotificationPermissionCallback_h
 #define WebNotificationPermissionCallback_h
 
-#include "public/platform/modules/notifications/WebNotificationPermission.h"
+#include "public/platform/modules/permissions/permission_status.mojom.h"
 
 namespace blink {
 
@@ -42,7 +42,7 @@ public:
 
     // Method to be invoked when the asynchronous permission request for the
     // ability to display Web Notifications has been completed.
-    virtual void permissionRequestComplete(WebNotificationPermission) = 0;
+    virtual void permissionRequestComplete(mojom::PermissionStatus) = 0;
 };
 
 } // namespace blink

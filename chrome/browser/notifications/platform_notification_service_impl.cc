@@ -164,13 +164,13 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
     const GURL& origin,
     int action_index) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  blink::WebNotificationPermission permission =
+  blink::mojom::PermissionStatus permission_status =
       CheckPermissionOnUIThread(browser_context, origin,
                                 kInvalidRenderProcessId);
 
   // TODO(peter): Change this to a CHECK() when Issue 555572 is resolved.
   // Also change this method to be const again.
-  if (permission != blink::WebNotificationPermissionAllowed) {
+  if (permission_status != blink::mojom::PermissionStatus::GRANTED) {
     content::RecordAction(base::UserMetricsAction(
         "Notifications.Persistent.ClickedWithoutPermission"));
     return;
@@ -214,7 +214,7 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
           base::Bind(&OnCloseEventDispatchComplete));
 }
 
-blink::WebNotificationPermission
+blink::mojom::PermissionStatus
 PlatformNotificationServiceImpl::CheckPermissionOnUIThread(
     BrowserContext* browser_context,
     const GURL& origin,
@@ -248,7 +248,7 @@ PlatformNotificationServiceImpl::CheckPermissionOnUIThread(
 
       NotifierId notifier_id(NotifierId::APPLICATION, extension->id());
       if (notifier_state_tracker->IsNotifierEnabled(notifier_id))
-        return blink::WebNotificationPermissionAllowed;
+        return blink::mojom::PermissionStatus::GRANTED;
     }
   }
 #endif
@@ -257,14 +257,14 @@ PlatformNotificationServiceImpl::CheckPermissionOnUIThread(
       DesktopNotificationProfileUtil::GetContentSetting(profile, origin);
 
   if (setting == CONTENT_SETTING_ALLOW)
-    return blink::WebNotificationPermissionAllowed;
+    return blink::mojom::PermissionStatus::GRANTED;
   if (setting == CONTENT_SETTING_BLOCK)
-    return blink::WebNotificationPermissionDenied;
+    return blink::mojom::PermissionStatus::DENIED;
 
-  return blink::WebNotificationPermissionDefault;
+  return blink::mojom::PermissionStatus::ASK;
 }
 
-blink::WebNotificationPermission
+blink::mojom::PermissionStatus
 PlatformNotificationServiceImpl::CheckPermissionOnIOThread(
     content::ResourceContext* resource_context,
     const GURL& origin,
@@ -289,7 +289,7 @@ PlatformNotificationServiceImpl::CheckPermissionOnIOThread(
             extensions::APIPermission::kNotifications) &&
         process_map.Contains(extension->id(), render_process_id)) {
       if (!extension_info_map->AreNotificationsDisabled(extension->id()))
-        return blink::WebNotificationPermissionAllowed;
+        return blink::mojom::PermissionStatus::GRANTED;
     }
   }
 #endif
@@ -304,11 +304,11 @@ PlatformNotificationServiceImpl::CheckPermissionOnIOThread(
       content_settings::ResourceIdentifier());
 
   if (setting == CONTENT_SETTING_ALLOW)
-    return blink::WebNotificationPermissionAllowed;
+    return blink::mojom::PermissionStatus::GRANTED;
   if (setting == CONTENT_SETTING_BLOCK)
-    return blink::WebNotificationPermissionDenied;
+    return blink::mojom::PermissionStatus::DENIED;
 
-  return blink::WebNotificationPermissionDefault;
+  return blink::mojom::PermissionStatus::ASK;
 }
 
 void PlatformNotificationServiceImpl::DisplayNotification(

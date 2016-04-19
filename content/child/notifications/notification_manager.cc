@@ -20,8 +20,6 @@
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationDelegate.h"
 
-using blink::WebNotificationPermission;
-
 namespace content {
 namespace {
 
@@ -211,17 +209,18 @@ void NotificationManager::notifyDelegateDestroyed(
   }
 }
 
-WebNotificationPermission NotificationManager::checkPermission(
+blink::mojom::PermissionStatus NotificationManager::checkPermission(
     const blink::WebSecurityOrigin& origin) {
-  WebNotificationPermission permission =
-      blink::WebNotificationPermissionAllowed;
+  blink::mojom::PermissionStatus permission_status =
+      blink::mojom::PermissionStatus::DENIED;
+
   // TODO(mkwst): This is potentially doing the wrong thing with unique
   // origins. Perhaps also 'file:', 'blob:' and 'filesystem:'. See
   // https://crbug.com/490074 for detail.
   thread_safe_sender_->Send(new PlatformNotificationHostMsg_CheckPermission(
-      blink::WebStringToGURL(origin.toString()), &permission));
+      blink::WebStringToGURL(origin.toString()), &permission_status));
 
-  return permission;
+  return permission_status;
 }
 
 bool NotificationManager::OnMessageReceived(const IPC::Message& message) {

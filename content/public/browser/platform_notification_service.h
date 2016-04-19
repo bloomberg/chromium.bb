@@ -14,7 +14,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 class GURL;
 
@@ -35,7 +35,7 @@ class CONTENT_EXPORT PlatformNotificationService {
 
   // Checks if |origin| has permission to display Web Notifications.
   // This method must only be called on the UI thread.
-  virtual blink::WebNotificationPermission CheckPermissionOnUIThread(
+  virtual blink::mojom::PermissionStatus CheckPermissionOnUIThread(
       BrowserContext* browser_context,
       const GURL& origin,
       int render_process_id) = 0;
@@ -45,7 +45,7 @@ class CONTENT_EXPORT PlatformNotificationService {
   // JavaScript getter, and should not be used for other purposes. See
   // https://crbug.com/446497 for the plan to deprecate this method.
   // This method must only be called on the IO thread.
-  virtual blink::WebNotificationPermission CheckPermissionOnIOThread(
+  virtual blink::mojom::PermissionStatus CheckPermissionOnIOThread(
       ResourceContext* resource_context,
       const GURL& origin,
       int render_process_id) = 0;
