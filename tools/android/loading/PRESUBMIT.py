@@ -11,7 +11,7 @@ for more details on the presubmit API built into depot_tools.
 
 def CommonChecks(input_api, output_api):
   output = []
-  blacklist = []
+  blacklist = [r'cloud/frontend/lib/*']
   output.extend(input_api.canned_checks.RunPylint(
       input_api, output_api, black_list=blacklist))
   output.extend(input_api.canned_checks.RunUnitTests(
