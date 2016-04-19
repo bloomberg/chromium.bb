@@ -343,12 +343,14 @@ void WorkerGlobalScope::deregisterEventListener(V8AbstractEventListener* eventLi
 
 void WorkerGlobalScope::countFeature(UseCounter::Feature) const
 {
-    // FIXME: How should we count features for shared/service workers?
+    // TODO(nhiroki): How should we count features for shared/service workers?
+    // (http://crbug.com/376039)
 }
 
 void WorkerGlobalScope::countDeprecation(UseCounter::Feature feature) const
 {
-    // FIXME: How should we count features for shared/service workers?
+    // TODO(nhiroki): How should we count features for shared/service workers?
+    // (http://crbug.com/376039)
 
     ASSERT(isSharedWorkerGlobalScope() || isServiceWorkerGlobalScope() || isCompositorWorkerGlobalScope());
     // For each deprecated feature, send console message at most once

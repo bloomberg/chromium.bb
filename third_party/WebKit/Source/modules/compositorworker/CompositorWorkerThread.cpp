@@ -6,8 +6,8 @@
 
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8Initializer.h"
+#include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerBackingThread.h"
-#include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
 #include "platform/ThreadSafeFunctional.h"
@@ -42,14 +42,14 @@ private:
 
 } // namespace
 
-PassOwnPtr<CompositorWorkerThread> CompositorWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin)
+PassOwnPtr<CompositorWorkerThread> CompositorWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, InProcessWorkerObjectProxy& workerObjectProxy, double timeOrigin)
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"), "CompositorWorkerThread::create");
     ASSERT(isMainThread());
     return adoptPtr(new CompositorWorkerThread(workerLoaderProxy, workerObjectProxy, timeOrigin));
 }
 
-CompositorWorkerThread::CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin)
+CompositorWorkerThread::CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, InProcessWorkerObjectProxy& workerObjectProxy, double timeOrigin)
     : WorkerThread(workerLoaderProxy, workerObjectProxy)
     , m_workerObjectProxy(workerObjectProxy)
     , m_timeOrigin(timeOrigin)

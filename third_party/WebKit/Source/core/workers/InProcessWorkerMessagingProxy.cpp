@@ -36,20 +36,16 @@
 #include "core/events/MessageEvent.h"
 #include "core/frame/Console.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/workers/InProcessWorkerBase.h"
+#include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerInspectorProxy.h"
-#include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
-#include "platform/heap/Handle.h"
-#include "wtf/Functional.h"
 
 namespace blink {
 
@@ -61,7 +57,7 @@ void processExceptionOnWorkerGlobalScope(int exceptionId, bool handled, Executio
     globalScope->exceptionHandled(exceptionId, handled);
 }
 
-void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels, WorkerObjectProxy* workerObjectProxy, ExecutionContext* scriptContext)
+void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels, InProcessWorkerObjectProxy* workerObjectProxy, ExecutionContext* scriptContext)
 {
     WorkerGlobalScope* globalScope = toWorkerGlobalScope(scriptContext);
     MessagePortArray* ports = MessagePort::entanglePorts(*scriptContext, channels);
@@ -73,7 +69,7 @@ void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message
 
 InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(InProcessWorkerBase* workerObject, WorkerClients* workerClients)
     : m_executionContext(workerObject->getExecutionContext())
-    , m_workerObjectProxy(WorkerObjectProxy::create(this))
+    , m_workerObjectProxy(InProcessWorkerObjectProxy::create(this))
     , m_workerObject(workerObject)
     , m_mayBeDestroyed(false)
     , m_unconfirmedMessageCount(0)

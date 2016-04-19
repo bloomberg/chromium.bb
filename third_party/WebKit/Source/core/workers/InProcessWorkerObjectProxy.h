@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerObjectProxy_h
-#define WorkerObjectProxy_h
+#ifndef InProcessWorkerObjectProxy_h
+#define InProcessWorkerObjectProxy_h
 
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
@@ -51,12 +51,12 @@ class InProcessWorkerMessagingProxy;
 // InProcessWorkerMessagingProxy on the worker object thread.
 //
 // Used only by in-process workers (DedicatedWorker and CompositorWorker.)
-class CORE_EXPORT WorkerObjectProxy : public WorkerReportingProxy {
-    USING_FAST_MALLOC(WorkerObjectProxy);
-    WTF_MAKE_NONCOPYABLE(WorkerObjectProxy);
+class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
+    USING_FAST_MALLOC(InProcessWorkerObjectProxy);
+    WTF_MAKE_NONCOPYABLE(InProcessWorkerObjectProxy);
 public:
-    static PassOwnPtr<WorkerObjectProxy> create(InProcessWorkerMessagingProxy*);
-    ~WorkerObjectProxy() override { }
+    static PassOwnPtr<InProcessWorkerObjectProxy> create(InProcessWorkerMessagingProxy*);
+    ~InProcessWorkerObjectProxy() override { }
 
     void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
     void postTaskToMainExecutionContext(PassOwnPtr<ExecutionContextTask>);
@@ -75,7 +75,7 @@ public:
     void willDestroyWorkerGlobalScope() override { }
 
 protected:
-    WorkerObjectProxy(InProcessWorkerMessagingProxy*);
+    InProcessWorkerObjectProxy(InProcessWorkerMessagingProxy*);
     virtual ExecutionContext* getExecutionContext();
 
 private:
@@ -85,4 +85,4 @@ private:
 
 } // namespace blink
 
-#endif // WorkerObjectProxy_h
+#endif // InProcessWorkerObjectProxy_h

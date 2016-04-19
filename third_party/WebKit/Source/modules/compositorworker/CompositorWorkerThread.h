@@ -10,15 +10,15 @@
 
 namespace blink {
 
-class WorkerObjectProxy;
+class InProcessWorkerObjectProxy;
 
 // This class is overridden in unit-tests.
 class MODULES_EXPORT CompositorWorkerThread final : public WorkerThread {
 public:
-    static PassOwnPtr<CompositorWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
+    static PassOwnPtr<CompositorWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
     ~CompositorWorkerThread() override;
 
-    WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
+    InProcessWorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
     WorkerBackingThread& workerBackingThread() override;
     bool shouldAttachThreadDebugger() const override { return false; }
 
@@ -26,12 +26,12 @@ public:
     static void clearSharedBackingThread();
 
 protected:
-    CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
+    CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
 
     WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
 
 private:
-    WorkerObjectProxy& m_workerObjectProxy;
+    InProcessWorkerObjectProxy& m_workerObjectProxy;
     double m_timeOrigin;
 };
 

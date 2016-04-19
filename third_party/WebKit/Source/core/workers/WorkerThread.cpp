@@ -34,7 +34,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/WorkerThreadDebugger.h"
-#include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerReportingProxy.h"

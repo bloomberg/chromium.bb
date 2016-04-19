@@ -46,7 +46,6 @@
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
-#include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/heap/ThreadState.h"

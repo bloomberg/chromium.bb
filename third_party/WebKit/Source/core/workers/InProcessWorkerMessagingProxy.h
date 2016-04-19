@@ -31,6 +31,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/InProcessWorkerGlobalScopeProxy.h"
 #include "core/workers/WorkerLoaderProxy.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
@@ -40,7 +41,7 @@
 
 namespace blink {
 
-class WorkerObjectProxy;
+class InProcessWorkerObjectProxy;
 class WorkerThread;
 class ExecutionContext;
 class InProcessWorkerBase;
@@ -63,8 +64,9 @@ public:
     bool hasPendingActivity() const final;
     void workerObjectDestroyed() override;
 
-    // These methods come from worker context thread via WorkerObjectProxy
-    // and are called on the worker object thread (e.g. main thread).
+    // These methods come from worker context thread via
+    // InProcessWorkerObjectProxy and are called on the worker object thread
+    // (e.g. main thread).
     void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
     void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId);
     void reportConsoleMessage(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL);
@@ -85,7 +87,7 @@ protected:
     virtual PassOwnPtr<WorkerThread> createWorkerThread(double originTime) = 0;
 
     PassRefPtr<WorkerLoaderProxy> loaderProxy() { return m_loaderProxy; }
-    WorkerObjectProxy& workerObjectProxy() { return *m_workerObjectProxy.get(); }
+    InProcessWorkerObjectProxy& workerObjectProxy() { return *m_workerObjectProxy.get(); }
 
 private:
     void workerObjectDestroyedInternal();
@@ -98,7 +100,7 @@ private:
     bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
 
     Persistent<ExecutionContext> m_executionContext;
-    OwnPtr<WorkerObjectProxy> m_workerObjectProxy;
+    OwnPtr<InProcessWorkerObjectProxy> m_workerObjectProxy;
     WeakPersistent<InProcessWorkerBase> m_workerObject;
     bool m_mayBeDestroyed;
     OwnPtr<WorkerThread> m_workerThread;

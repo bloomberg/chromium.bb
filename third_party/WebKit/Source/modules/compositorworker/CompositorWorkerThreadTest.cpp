@@ -8,9 +8,9 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/testing/DummyPageHolder.h"
+#include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerLoaderProxy.h"
-#include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
@@ -24,8 +24,8 @@
 namespace blink {
 namespace {
 
-// A null WorkerObjectProxy, supplied when creating CompositorWorkerThreads.
-class TestCompositorWorkerObjectProxy : public WorkerObjectProxy {
+// A null InProcessWorkerObjectProxy, supplied when creating CompositorWorkerThreads.
+class TestCompositorWorkerObjectProxy : public InProcessWorkerObjectProxy {
 public:
     static PassOwnPtr<TestCompositorWorkerObjectProxy> create(ExecutionContext* context)
     {
@@ -48,7 +48,7 @@ public:
 
 private:
     TestCompositorWorkerObjectProxy(ExecutionContext* context)
-        : WorkerObjectProxy(nullptr)
+        : InProcessWorkerObjectProxy(nullptr)
         , m_executionContext(context)
     {
     }
@@ -132,7 +132,7 @@ private:
 
     OwnPtr<DummyPageHolder> m_page;
     RefPtr<SecurityOrigin> m_securityOrigin;
-    OwnPtr<WorkerObjectProxy> m_objectProxy;
+    OwnPtr<InProcessWorkerObjectProxy> m_objectProxy;
     CompositorWorkerTestPlatform m_testPlatform;
 };
 
