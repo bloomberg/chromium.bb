@@ -87,6 +87,7 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(const CanvasRenderi
     , m_lineDashOffset(other.m_lineDashOffset)
     , m_unparsedFont(other.m_unparsedFont)
     , m_font(other.m_font)
+    , m_fontForFilter(other.m_fontForFilter)
     , m_unparsedFilter(other.m_unparsedFilter)
     , m_filterValue(other.m_filterValue)
     , m_resolvedFilter(other.m_resolvedFilter)
@@ -261,9 +262,6 @@ void CanvasRenderingContext2DState::setFont(const Font& font, CSSFontSelector* s
     m_font.update(selector);
     m_realizedFont = true;
     selector->registerForInvalidationCallbacks(this);
-    // FIXME: We only really need to invalidate the resolved filter if it
-    // uses font-relative units.
-    m_resolvedFilter.reset();
 }
 
 const Font& CanvasRenderingContext2DState::font() const
@@ -290,7 +288,7 @@ static void updateFilterReferences(HTMLCanvasElement* canvasElement, CanvasRende
     context->addFilterReferences(filters, canvasElement->document());
 }
 
-SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolutionHost, const Font& font, IntSize canvasSize, CanvasRenderingContext2D* context) const
+SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolutionHost, IntSize canvasSize, CanvasRenderingContext2D* context) const
 {
     if (!m_filterValue)
         return nullptr;
@@ -298,7 +296,7 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
     if (!m_resolvedFilter) {
         RefPtr<ComputedStyle> filterStyle = ComputedStyle::create();
         // Must set font in case the filter uses any font-relative units (em, ex)
-        filterStyle->setFont(font);
+        filterStyle->setFont(m_fontForFilter);
 
         StyleResolverState resolverState(styleResolutionHost->document(), styleResolutionHost, filterStyle.get());
         resolverState.setStyle(filterStyle);
@@ -335,11 +333,11 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
     return m_resolvedFilter.get();
 }
 
-bool CanvasRenderingContext2DState::hasFilter(Element* styleResolutionHost, const Font& font, IntSize canvasSize, CanvasRenderingContext2D* context) const
+bool CanvasRenderingContext2DState::hasFilter(Element* styleResolutionHost, IntSize canvasSize, CanvasRenderingContext2D* context) const
 {
     // Checking for a non-null m_filterValue isn't sufficient, since this value
     // might refer to a non-existent filter.
-    return !!getFilter(styleResolutionHost, font, canvasSize, context);
+    return !!getFilter(styleResolutionHost, canvasSize, context);
 }
 
 void CanvasRenderingContext2DState::clearResolvedFilter() const

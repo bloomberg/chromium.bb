@@ -9,9 +9,11 @@
 <script>
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
-ctx.filter = 'url(#blur)';
+ctx.font = '20px sans-serif';
+ctx.filter = 'drop-shadow(0em 1em green) url(#blur)';
 ctx.fillStyle = '#0f0';
 ctx.fillRect(20, 20, 20, 20);
+ctx.font = '30px sans-serif';
 document.getElementById('blurElement').setAttribute('stdDeviation', '0, 5');
 ctx.fillRect(60, 20, 20, 20);
 </script>

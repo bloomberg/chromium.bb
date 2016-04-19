@@ -163,6 +163,7 @@ public:
 
     bool stateHasFilter() final;
     SkImageFilter* stateGetFilter() final;
+    void snapshotStateForFilter() final;
 
     void validateStateStack() final;
 

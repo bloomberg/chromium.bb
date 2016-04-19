@@ -383,6 +383,7 @@ void BaseRenderingContext2D::setFilter(const String& filterString)
 
     modifiableState().setUnparsedFilter(filterString);
     modifiableState().setFilter(filterValue);
+    snapshotStateForFilter();
 }
 
 SVGMatrixTearOff* BaseRenderingContext2D::currentTransform() const

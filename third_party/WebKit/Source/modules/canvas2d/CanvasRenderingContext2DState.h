@@ -82,11 +82,13 @@ public:
     void setUnparsedFont(const String& font) { m_unparsedFont = font; }
     const String& unparsedFont() const { return m_unparsedFont; }
 
+    void setFontForFilter(const Font& font) { m_fontForFilter = font; }
+
     void setFilter(CSSValue*);
     void setUnparsedFilter(const String& filterString) { m_unparsedFilter = filterString; }
     const String& unparsedFilter() const { return m_unparsedFilter; }
-    SkImageFilter* getFilter(Element*, const Font&, IntSize canvasSize, CanvasRenderingContext2D*) const;
-    bool hasFilter(Element*, const Font&, IntSize canvasSize, CanvasRenderingContext2D*) const;
+    SkImageFilter* getFilter(Element*, IntSize canvasSize, CanvasRenderingContext2D*) const;
+    bool hasFilter(Element*, IntSize canvasSize, CanvasRenderingContext2D*) const;
     void clearResolvedFilter() const;
 
     void setStrokeStyle(CanvasStyle*);
@@ -205,6 +207,7 @@ private:
 
     String m_unparsedFont;
     Font m_font;
+    Font m_fontForFilter;
 
     String m_unparsedFilter;
     Member<CSSValue> m_filterValue;

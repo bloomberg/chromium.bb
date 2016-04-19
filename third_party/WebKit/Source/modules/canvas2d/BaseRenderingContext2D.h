@@ -148,6 +148,7 @@ public:
 
     virtual bool stateHasFilter() = 0;
     virtual SkImageFilter* stateGetFilter() = 0;
+    virtual void snapshotStateForFilter() = 0;
 
     virtual void validateStateStack() = 0;
 

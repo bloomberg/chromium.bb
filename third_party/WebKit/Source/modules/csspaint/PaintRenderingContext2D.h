@@ -56,6 +56,7 @@ public:
     // that we don't have a filter set.
     bool stateHasFilter() final { return false; }
     SkImageFilter* stateGetFilter() final { return nullptr; }
+    void snapshotStateForFilter() final { }
 
     void validateStateStack() final;
 

@@ -372,12 +372,17 @@ void CanvasRenderingContext2D::didDraw(const SkIRect& dirtyRect)
 
 bool CanvasRenderingContext2D::stateHasFilter()
 {
-    return state().hasFilter(canvas(), accessFont(), canvas()->size(), this);
+    return state().hasFilter(canvas(), canvas()->size(), this);
 }
 
 SkImageFilter* CanvasRenderingContext2D::stateGetFilter()
 {
-    return state().getFilter(canvas(), accessFont(), canvas()->size(), this);
+    return state().getFilter(canvas(), canvas()->size(), this);
+}
+
+void CanvasRenderingContext2D::snapshotStateForFilter()
+{
+    modifiableState().setFontForFilter(accessFont());
 }
 
 SkCanvas* CanvasRenderingContext2D::drawingCanvas() const
