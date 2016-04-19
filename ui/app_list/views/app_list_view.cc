@@ -262,10 +262,10 @@ void AppListView::InitAsFramelessWindow(gfx::NativeView parent,
   params.delegate = this;
   widget->Init(params);
   widget->SetBounds(bounds);
-  // This needs to be set *after* Widget::Init() because BubbleDelegateView sets
-  // its own background at OnNativeThemeChanged(), which is called in
-  // View::AddChildView() which is called at Widget::SetContentsView() to build
-  // the views hierarchy in the widget.
+  // This needs to be set *after* Widget::Init() because
+  // BubbleDialogDelegateView sets its own background at OnNativeThemeChanged(),
+  // which is called in View::AddChildView() which is called at
+  // Widget::SetContentsView() to build the views hierarchy in the widget.
   set_background(new AppListBackground(0));
 
   InitChildWidgets();
@@ -290,7 +290,7 @@ void AppListView::ShowWhenReady() {
   app_list_main_view_->ShowAppListWhenReady();
 }
 
-void AppListView::Close() {
+void AppListView::CloseAppList() {
   app_list_main_view_->Close();
   delegate_->Dismiss();
 }
@@ -347,7 +347,7 @@ gfx::Size AppListView::GetPreferredSize() const {
 }
 
 void AppListView::OnPaint(gfx::Canvas* canvas) {
-  views::BubbleDelegateView::OnPaint(canvas);
+  views::BubbleDialogDelegateView::OnPaint(canvas);
   if (!next_paint_callback_.is_null()) {
     next_paint_callback_.Run();
     next_paint_callback_.Reset();
@@ -376,8 +376,8 @@ bool AppListView::ShouldDescendIntoChildForEventHandling(
                 ->GetCollapsedLauncherPageBounds()
                 .Contains(location);
 
-  return views::BubbleDelegateView::ShouldDescendIntoChildForEventHandling(
-      child, location);
+  return views::BubbleDialogDelegateView::
+      ShouldDescendIntoChildForEventHandling(child, location);
 }
 
 void AppListView::Prerender() {
@@ -518,11 +518,11 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
 
   InitContents(parent, initial_apps_page);
 
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   set_color(kContentsBackgroundColor);
   set_margins(gfx::Insets());
   set_parent_window(parent);
   set_close_on_deactivate(false);
-  set_close_on_esc(false);
   set_anchor_view_insets(gfx::Insets(kArrowOffset + anchor_offset.y(),
                                      kArrowOffset + anchor_offset.x(),
                                      kArrowOffset - anchor_offset.y(),
@@ -535,11 +535,11 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
     // TODO(tapted): Remove ScopedTracker below once crbug.com/431326 is fixed.
     tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "431326 views::BubbleDelegateView::CreateBubble()"));
+            "431326 views::BubbleDialogDelegateView::CreateBubble()"));
 
     // This creates the app list widget. (Before this, child widgets cannot be
     // created.)
-    views::BubbleDelegateView::CreateBubble(this);
+    views::BubbleDialogDelegateView::CreateBubble(this);
   }
 
   SetBubbleArrow(arrow);
@@ -616,6 +616,10 @@ void AppListView::OnBeforeBubbleWidgetInit(
 #endif
 }
 
+int AppListView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
+}
+
 views::View* AppListView::GetInitiallyFocusedView() {
   return app_list_main_view_->search_box_view()->search_box();
 }
@@ -633,36 +637,29 @@ void AppListView::GetWidgetHitTestMask(gfx::Path* mask) const {
 }
 
 bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  // The accelerator is added by BubbleDelegateView.
-  if (accelerator.key_code() == ui::VKEY_ESCAPE) {
-    if (switches::IsExperimentalAppListEnabled()) {
-      // If the ContentsView does not handle the back action, then this is the
-      // top level, so we close the app list.
-      if (!app_list_main_view_->contents_view()->Back()) {
-        GetWidget()->Deactivate();
-        Close();
-      }
-      return true;
-    }
-
-    if (app_list_main_view_->search_box_view()->HasSearch()) {
-      app_list_main_view_->search_box_view()->ClearSearch();
-    } else if (app_list_main_view_->contents_view()
-                   ->apps_container_view()
-                   ->IsInFolderView()) {
-      app_list_main_view_->contents_view()
-          ->apps_container_view()
-          ->app_list_folder_view()
-          ->CloseFolderPage();
-      return true;
-    } else {
+  DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
+  if (switches::IsExperimentalAppListEnabled()) {
+    // If the ContentsView does not handle the back action, then this is the
+    // top level, so we close the app list.
+    if (!app_list_main_view_->contents_view()->Back()) {
       GetWidget()->Deactivate();
-      Close();
+      CloseAppList();
     }
-    return true;
+  } else if (app_list_main_view_->search_box_view()->HasSearch()) {
+    app_list_main_view_->search_box_view()->ClearSearch();
+  } else if (app_list_main_view_->contents_view()
+                 ->apps_container_view()
+                 ->IsInFolderView()) {
+    app_list_main_view_->contents_view()
+        ->apps_container_view()
+        ->app_list_folder_view()
+        ->CloseFolderPage();
+  } else {
+    GetWidget()->Deactivate();
+    CloseAppList();
   }
-
-  return false;
+  // Don't let DialogClientView handle the accelerator.
+  return true;
 }
 
 void AppListView::Layout() {
@@ -689,13 +686,13 @@ void AppListView::Layout() {
 }
 
 void AppListView::SchedulePaintInRect(const gfx::Rect& rect) {
-  BubbleDelegateView::SchedulePaintInRect(rect);
+  BubbleDialogDelegateView::SchedulePaintInRect(rect);
   if (GetBubbleFrameView())
     GetBubbleFrameView()->SchedulePaint();
 }
 
 void AppListView::OnWidgetDestroying(views::Widget* widget) {
-  BubbleDelegateView::OnWidgetDestroying(widget);
+  BubbleDialogDelegateView::OnWidgetDestroying(widget);
   if (delegate_ && widget == GetWidget())
     delegate_->ViewClosing();
 }
@@ -711,7 +708,7 @@ void AppListView::OnWidgetActivationChanged(views::Widget* widget,
 
 void AppListView::OnWidgetVisibilityChanged(views::Widget* widget,
                                             bool visible) {
-  BubbleDelegateView::OnWidgetVisibilityChanged(widget, visible);
+  BubbleDialogDelegateView::OnWidgetVisibilityChanged(widget, visible);
 
   if (widget != GetWidget())
     return;

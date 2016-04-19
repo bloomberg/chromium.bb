@@ -14,7 +14,7 @@
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/speech_ui_model_observer.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/widget/widget.h"
 
 namespace base {
@@ -42,7 +42,7 @@ class SpeechView;
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
-class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
+class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
                                     public AppListViewDelegateObserver,
                                     public SpeechUIModelObserver {
  public:
@@ -87,7 +87,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // timer to show the UI when a maximum allowed wait time has expired.
   void ShowWhenReady();
 
-  void Close();
+  void CloseAppList();
 
   void UpdateBounds();
 
@@ -152,9 +152,10 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
                             bool border_accepts_events,
                             const gfx::Vector2d& anchor_offset);
 
-  // Overridden from views::BubbleDelegateView:
+  // Overridden from views::BubbleDialogDelegateView:
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;
+  int GetDialogButtons() const override;
 
   // Overridden from views::WidgetDelegateView:
   views::View* GetInitiallyFocusedView() override;

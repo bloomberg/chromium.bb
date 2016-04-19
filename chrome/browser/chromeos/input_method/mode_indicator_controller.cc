@@ -111,7 +111,7 @@ void ModeIndicatorController::ShowModeIndicator() {
                                ash::kShellWindowId_SettingBubbleContainer);
   ui::ime::ModeIndicatorView* mi_view = new ui::ime::ModeIndicatorView(
       parent, cursor_bounds_, short_name);
-  views::BubbleDelegateView::CreateBubble(mi_view);
+  views::BubbleDialogDelegateView::CreateBubble(mi_view);
 
   views::Widget* mi_widget = mi_view->GetWidget();
   if (GetModeIndicatorObserverForTesting())

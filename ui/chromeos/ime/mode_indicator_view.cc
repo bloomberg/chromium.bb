@@ -81,6 +81,10 @@ const char* ModeIndicatorView::GetClassName() const {
   return "ModeIndicatorView";
 }
 
+int ModeIndicatorView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
+}
+
 void ModeIndicatorView::Init() {
   SetLayoutManager(new views::FillLayout());
   AddChildView(label_view_);
@@ -91,7 +95,7 @@ void ModeIndicatorView::Init() {
 views::NonClientFrameView* ModeIndicatorView::CreateNonClientFrameView(
     views::Widget* widget) {
   views::BubbleFrameView* frame = new ModeIndicatorFrameView(margins());
-  // arrow adjustment in BubbleDelegateView is unnecessary because arrow
+  // arrow adjustment in BubbleDialogDelegateView is unnecessary because arrow
   // of this bubble is always center.
   frame->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(
       new views::BubbleBorder(arrow(), shadow(), color())));

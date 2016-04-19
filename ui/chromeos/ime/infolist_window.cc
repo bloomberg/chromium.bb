@@ -171,10 +171,11 @@ void InfolistEntryView::UpdateBackground() {
 
 InfolistWindow::InfolistWindow(views::View* candidate_window,
                                const std::vector<ui::InfolistEntry>& entries)
-    : views::BubbleDelegateView(candidate_window, views::BubbleBorder::NONE),
+    : views::BubbleDialogDelegateView(candidate_window,
+                                      views::BubbleBorder::NONE),
       title_font_list_(gfx::Font(kJapaneseFontName, kFontSizeDelta + 15)),
-      description_font_list_(gfx::Font(kJapaneseFontName,
-                                       kFontSizeDelta + 11)) {
+      description_font_list_(
+          gfx::Font(kJapaneseFontName, kFontSizeDelta + 11)) {
   set_can_activate(false);
   set_accept_events(false);
   set_margins(gfx::Insets());
@@ -214,7 +215,7 @@ InfolistWindow::~InfolistWindow() {
 }
 
 void InfolistWindow::InitWidget() {
-  views::Widget* widget = views::BubbleDelegateView::CreateBubble(this);
+  views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
   wm::SetWindowVisibilityAnimationType(
       widget->GetNativeView(),
       wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
@@ -277,6 +278,10 @@ void InfolistWindow::HideImmediately() {
 
 const char* InfolistWindow::GetClassName() const {
   return "InfolistWindow";
+}
+
+int InfolistWindow::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 void InfolistWindow::WindowClosing() {

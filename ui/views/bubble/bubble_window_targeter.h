@@ -11,21 +11,22 @@ class Window;
 }
 
 namespace views {
-class BubbleDelegateView;
+
+class BubbleDialogDelegateView;
 
 // A convenient window-targeter that uses a mask based on the content-bounds of
 // the bubble-frame.
 class VIEWS_EXPORT BubbleWindowTargeter
     : public NON_EXPORTED_BASE(wm::MaskedWindowTargeter) {
  public:
-  explicit BubbleWindowTargeter(BubbleDelegateView* bubble);
+  explicit BubbleWindowTargeter(BubbleDialogDelegateView* bubble);
   ~BubbleWindowTargeter() override;
 
  private:
   // wm::MaskedWindowTargeter:
   bool GetHitTestMask(aura::Window* window, gfx::Path* mask) const override;
 
-  views::BubbleDelegateView* bubble_;
+  views::BubbleDialogDelegateView* bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleWindowTargeter);
 };

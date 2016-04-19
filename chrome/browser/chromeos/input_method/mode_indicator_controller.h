@@ -64,8 +64,8 @@ class ModeIndicatorController
   // True on a text field is focused.
   bool is_focused_;
 
-  // Observer of the widgets created by BubbleDelegateView.  This is used to
-  // close the previous widget when a new widget is created.
+  // Observer of the widgets created by BubbleDialogDelegateView.  This is used
+  // to close the previous widget when a new widget is created.
   std::unique_ptr<ModeIndicatorObserverInterface> mi_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ModeIndicatorController);

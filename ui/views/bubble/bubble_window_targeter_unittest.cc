@@ -9,7 +9,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -17,16 +17,15 @@ namespace views {
 
 namespace {
 
-class WidgetOwnsNativeBubble : public BubbleDelegateView {
+class WidgetOwnsNativeBubble : public BubbleDialogDelegateView {
  public:
   WidgetOwnsNativeBubble(View* content, BubbleBorder::Arrow arrow)
-      : BubbleDelegateView(content, arrow) {
-  }
+      : BubbleDialogDelegateView(content, arrow) {}
 
   ~WidgetOwnsNativeBubble() override {}
 
  private:
-  // BubbleDelegateView:
+  // BubbleDialogDelegateView:
   void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                 Widget* widget) const override {
     params->ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -62,7 +61,7 @@ class BubbleWindowTargeterTest : public ViewsTestBase {
 
   Widget* anchor_widget() { return anchor_.get(); }
   Widget* bubble_widget() { return bubble_widget_.get(); }
-  BubbleDelegateView* bubble_delegate() { return bubble_delegate_; }
+  BubbleDialogDelegateView* bubble_delegate() { return bubble_delegate_; }
 
  private:
   void CreateAnchorWidget() {
@@ -76,12 +75,13 @@ class BubbleWindowTargeterTest : public ViewsTestBase {
     bubble_delegate_ = new WidgetOwnsNativeBubble(
         anchor_->GetContentsView(), BubbleBorder::NONE);
     bubble_delegate_->set_color(SK_ColorGREEN);
-    bubble_widget_.reset(BubbleDelegateView::CreateBubble(bubble_delegate_));
+    bubble_widget_.reset(
+        BubbleDialogDelegateView::CreateBubble(bubble_delegate_));
   }
 
   std::unique_ptr<Widget> anchor_;
   std::unique_ptr<Widget> bubble_widget_;
-  BubbleDelegateView* bubble_delegate_;
+  BubbleDialogDelegateView* bubble_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleWindowTargeterTest);
 };

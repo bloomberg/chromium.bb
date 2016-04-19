@@ -320,7 +320,7 @@ TrayBubbleView::TrayBubbleView(gfx::NativeView parent_window,
                                View* anchor,
                                Delegate* delegate,
                                const InitParams& init_params)
-    : BubbleDelegateView(anchor, init_params.arrow),
+    : BubbleDialogDelegateView(anchor, init_params.arrow),
       params_(init_params),
       delegate_(delegate),
       preferred_width_(init_params.min_width),
@@ -346,7 +346,7 @@ TrayBubbleView::~TrayBubbleView() {
 }
 
 void TrayBubbleView::InitializeAndShowBubble() {
-  // Must occur after call to BubbleDelegateView::CreateBubble().
+  // Must occur after call to BubbleDialogDelegateView::CreateBubble().
   SetAlignment(params_.arrow_alignment);
   bubble_border_->UpdateArrowOffset();
 
@@ -391,6 +391,10 @@ gfx::Insets TrayBubbleView::GetBorderInsets() const {
   return bubble_border_->GetInsets();
 }
 
+int TrayBubbleView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
+}
+
 void TrayBubbleView::Init() {
   BoxLayout* layout = new BottomAlignedBoxLayout(this);
   layout->SetDefaultFlex(1);
@@ -411,7 +415,7 @@ bool TrayBubbleView::CanActivate() const {
 
 NonClientFrameView* TrayBubbleView::CreateNonClientFrameView(Widget* widget) {
   BubbleFrameView* frame = static_cast<BubbleFrameView*>(
-      BubbleDelegateView::CreateNonClientFrameView(widget));
+      BubbleDialogDelegateView::CreateNonClientFrameView(widget));
   frame->SetBubbleBorder(std::move(owned_bubble_border_));
   return frame;
 }

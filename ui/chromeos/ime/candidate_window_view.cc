@@ -191,7 +191,7 @@ CandidateWindowView::~CandidateWindowView() {
 }
 
 views::Widget* CandidateWindowView::InitWidget() {
-  views::Widget* widget = BubbleDelegateView::CreateBubble(this);
+  views::Widget* widget = BubbleDialogDelegateView::CreateBubble(this);
 
   wm::SetWindowVisibilityAnimationType(
       widget->GetNativeView(),
@@ -397,6 +397,10 @@ void CandidateWindowView::SelectCandidateAt(int index_in_page) {
 
 const char* CandidateWindowView::GetClassName() const {
   return "CandidateWindowView";
+}
+
+int CandidateWindowView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 void CandidateWindowView::ButtonPressed(views::Button* sender,

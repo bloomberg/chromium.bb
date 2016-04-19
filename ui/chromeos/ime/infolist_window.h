@@ -15,7 +15,7 @@
 #include "ui/base/ime/infolist_entry.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/gfx/font_list.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 
 namespace ui {
 namespace ime {
@@ -23,7 +23,8 @@ namespace ime {
 class InfolistEntryView;
 
 // A widget delegate representing the infolist window UI.
-class UI_CHROMEOS_EXPORT InfolistWindow : public views::BubbleDelegateView {
+class UI_CHROMEOS_EXPORT InfolistWindow
+    : public views::BubbleDialogDelegateView {
  public:
   InfolistWindow(views::View* candidate_window,
                  const std::vector<ui::InfolistEntry>& entries);
@@ -42,8 +43,9 @@ class UI_CHROMEOS_EXPORT InfolistWindow : public views::BubbleDelegateView {
   void HideImmediately();
 
  private:
-  // views::BubbleDelegateView:
+  // views::BubbleDialogDelegateView:
   const char* GetClassName() const override;
+  int GetDialogButtons() const override;
 
   // views::WidgetDelegate implementation.
   void WindowClosing() override;

@@ -7,15 +7,14 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 
 namespace views {
 
-BubbleWindowTargeter::BubbleWindowTargeter(BubbleDelegateView* bubble)
+BubbleWindowTargeter::BubbleWindowTargeter(BubbleDialogDelegateView* bubble)
     : wm::MaskedWindowTargeter(bubble->GetWidget()->GetNativeView()),
-      bubble_(bubble) {
-}
+      bubble_(bubble) {}
 
 BubbleWindowTargeter::~BubbleWindowTargeter() {
 }

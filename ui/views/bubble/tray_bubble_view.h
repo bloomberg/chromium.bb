@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/views_export.h"
 
@@ -32,7 +32,7 @@ class TrayBubbleContentMask;
 // Ash status area). Mostly this handles custom anchor location and arrow and
 // border rendering. This also has its own delegate for handling mouse events
 // and other implementation specific details.
-class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
+class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
                                     public views::MouseWatcherListener {
  public:
   // AnchorType differentiates between bubbles that are anchored on a tray
@@ -74,7 +74,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
     // accessible name for the bubble.
     virtual base::string16 GetAccessibleNameForBubble() = 0;
 
-    // Passes responsibility for BubbleDelegateView::GetAnchorRect to the
+    // Passes responsibility for BubbleDialogDelegateView::GetAnchorRect to the
     // delegate.
     virtual gfx::Rect GetAnchorRect(
         views::Widget* anchor_widget,
@@ -155,7 +155,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
   bool WidgetHasHitTestMask() const override;
   void GetWidgetHitTestMask(gfx::Path* mask) const override;
 
-  // Overridden from views::BubbleDelegateView.
+  // Overridden from views::BubbleDialogDelegateView.
   gfx::Rect GetAnchorRect() const override;
 
   // Overridden from views::View.
@@ -175,7 +175,8 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
                  Delegate* delegate,
                  const InitParams& init_params);
 
-  // Overridden from views::BubbleDelegateView.
+  // Overridden from views::BubbleDialogDelegateView.
+  int GetDialogButtons() const override;
   void Init() override;
 
   // Overridden from views::View.

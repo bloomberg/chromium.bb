@@ -62,7 +62,7 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
  protected:
-  // views::BubbleDelegateView method.
+  // views::BubbleDialogDelegateView method.
   void Init() override;
   base::string16 GetWindowTitle() const override;
 
@@ -71,7 +71,7 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleViewTest, SyncPromoSignedIn);
   FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleViewTest, SyncPromoNotSignedIn);
 
-  // views::BubbleDelegateView:
+  // views::BubbleDialogDelegateView:
   const char* GetClassName() const override;
   View* GetInitiallyFocusedView() override;
   View* CreateFootnoteView() override;
