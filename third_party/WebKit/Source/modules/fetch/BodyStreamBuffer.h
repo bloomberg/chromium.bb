@@ -55,6 +55,12 @@ public:
     // WebDataConsumerHandle::Client
     void didGetReadable() override;
 
+    bool isStreamReadable() const;
+    bool isStreamClosed() const;
+    bool isStreamErrored() const;
+    bool isStreamLocked() const;
+    bool isStreamDisturbed() const;
+
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_stream);

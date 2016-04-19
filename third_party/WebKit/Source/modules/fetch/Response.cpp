@@ -408,7 +408,7 @@ bool Response::hasBody() const
 
 bool Response::bodyUsed()
 {
-    return internalBodyBuffer() && internalBodyBuffer()->stream()->isDisturbed();
+    return internalBodyBuffer() && internalBodyBuffer()->isStreamDisturbed();
 }
 
 String Response::mimeType() const

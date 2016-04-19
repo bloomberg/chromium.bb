@@ -270,12 +270,12 @@ ScriptValue Body::v8ExtraStreamBody(ScriptState* scriptState)
 
 bool Body::bodyUsed()
 {
-    return body() && body()->isDisturbed();
+    return bodyBuffer() && bodyBuffer()->isStreamDisturbed();
 }
 
 bool Body::isBodyLocked()
 {
-    return body() && body()->isLocked();
+    return bodyBuffer() && bodyBuffer()->isStreamLocked();
 }
 
 bool Body::hasPendingActivity() const

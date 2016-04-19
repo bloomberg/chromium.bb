@@ -84,9 +84,9 @@ BodyStreamBuffer::BodyStreamBuffer(PassOwnPtr<FetchDataConsumerHandle> handle)
 
 PassRefPtr<BlobDataHandle> BodyStreamBuffer::drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy policy)
 {
-    ASSERT(!stream()->isLocked());
+    ASSERT(!isStreamLocked());
     m_stream->setIsDisturbed();
-    if (ReadableStream::Closed == m_stream->stateInternal() || ReadableStream::Errored == m_stream->stateInternal())
+    if (isStreamClosed() || isStreamErrored())
         return nullptr;
 
     RefPtr<BlobDataHandle> blobDataHandle = m_reader->drainAsBlobDataHandle(policy);
@@ -99,9 +99,9 @@ PassRefPtr<BlobDataHandle> BodyStreamBuffer::drainAsBlobDataHandle(FetchDataCons
 
 PassRefPtr<EncodedFormData> BodyStreamBuffer::drainAsFormData()
 {
-    ASSERT(!stream()->isLocked());
+    ASSERT(!isStreamLocked());
     m_stream->setIsDisturbed();
-    if (ReadableStream::Closed == m_stream->stateInternal() || ReadableStream::Errored == m_stream->stateInternal())
+    if (isStreamClosed() || isStreamErrored())
         return nullptr;
 
     RefPtr<EncodedFormData> formData = m_reader->drainAsFormData();
@@ -114,15 +114,15 @@ PassRefPtr<EncodedFormData> BodyStreamBuffer::drainAsFormData()
 
 PassOwnPtr<FetchDataConsumerHandle> BodyStreamBuffer::releaseHandle(ExecutionContext* executionContext)
 {
-    ASSERT(!stream()->isLocked());
+    ASSERT(!isStreamLocked());
     m_reader = nullptr;
     m_stream->setIsDisturbed();
     TrackExceptionState exceptionState;
     m_stream->getBytesReader(executionContext, exceptionState);
 
-    if (ReadableStream::Closed == m_stream->stateInternal())
+    if (isStreamClosed())
         return createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle());
-    if (ReadableStream::Errored == m_stream->stateInternal())
+    if (isStreamErrored())
         return createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle());
 
     ASSERT(m_handle);
@@ -141,7 +141,7 @@ void BodyStreamBuffer::startLoading(ExecutionContext* executionContext, FetchDat
 
 bool BodyStreamBuffer::hasPendingActivity() const
 {
-    return m_loader || (m_stream->isLocked() && m_stream->stateInternal() == ReadableStream::Readable);
+    return m_loader || (isStreamLocked() && isStreamReadable());
 }
 
 void BodyStreamBuffer::stop()
@@ -188,6 +188,31 @@ void BodyStreamBuffer::didGetReadable()
         return;
     }
     processData();
+}
+
+bool BodyStreamBuffer::isStreamReadable() const
+{
+    return m_stream->stateInternal() == ReadableStream::Readable;
+}
+
+bool BodyStreamBuffer::isStreamClosed() const
+{
+    return m_stream->stateInternal() == ReadableStream::Closed;
+}
+
+bool BodyStreamBuffer::isStreamErrored() const
+{
+    return m_stream->stateInternal() == ReadableStream::Errored;
+}
+
+bool BodyStreamBuffer::isStreamLocked() const
+{
+    return m_stream->isLocked();
+}
+
+bool BodyStreamBuffer::isStreamDisturbed() const
+{
+    return m_stream->isDisturbed();
 }
 
 void BodyStreamBuffer::close()
