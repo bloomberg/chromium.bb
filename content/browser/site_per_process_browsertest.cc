@@ -31,7 +31,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
 #include "content/common/view_messages.h"
@@ -47,7 +46,6 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
-#include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/test_frame_navigation_observer.h"
 #include "ipc/ipc_security_test_util.h"
@@ -632,9 +630,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
 
@@ -648,8 +644,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
     // There should be only one RenderWidgetHost when there are no
     // cross-process iframes.
     std::set<RenderWidgetHostView*> views_set =
-        static_cast<WebContentsImpl*>(shell()->web_contents())
-            ->GetRenderWidgetHostViewsInTree();
+        web_contents()->GetRenderWidgetHostViewsInTree();
     EXPECT_EQ(1U, views_set.size());
   }
 
@@ -682,8 +677,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
     // There should be now two RenderWidgetHosts, one for each process
     // rendering a frame.
     std::set<RenderWidgetHostView*> views_set =
-        static_cast<WebContentsImpl*>(shell()->web_contents())
-            ->GetRenderWidgetHostViewsInTree();
+        web_contents()->GetRenderWidgetHostViewsInTree();
     EXPECT_EQ(2U, views_set.size());
   }
   RenderFrameProxyHost* proxy_to_parent =
@@ -730,8 +724,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   EXPECT_NE(rph, child->current_frame_host()->GetProcess());
   {
     std::set<RenderWidgetHostView*> views_set =
-        static_cast<WebContentsImpl*>(shell()->web_contents())
-            ->GetRenderWidgetHostViewsInTree();
+        web_contents()->GetRenderWidgetHostViewsInTree();
     EXPECT_EQ(2U, views_set.size());
   }
   EXPECT_EQ(proxy_to_parent, child->render_manager()->GetProxyToParent());
@@ -922,9 +915,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
 
   FrameTreeNode* parent_iframe_node = root->child_at(0);
@@ -950,8 +941,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       nested_iframe_node->current_frame_host()->GetRenderWidgetHost());
 
   RenderWidgetHostInputEventRouter* router =
-      static_cast<WebContentsImpl*>(shell()->web_contents())
-          ->GetInputEventRouter();
+      web_contents()->GetInputEventRouter();
 
   RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
@@ -1003,9 +993,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
 
   FrameTreeNode* child_node = root->child_at(0);
@@ -1021,8 +1009,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       child_node->current_frame_host()->GetRenderWidgetHost());
 
   RenderWidgetHostInputEventRouter* router =
-      static_cast<WebContentsImpl*>(shell()->web_contents())
-          ->GetInputEventRouter();
+      web_contents()->GetInputEventRouter();
 
   RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
@@ -1065,9 +1052,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
 
   FrameTreeNode* child_node = root->child_at(0);
@@ -1098,9 +1083,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CleanupCrossSiteIframe) {
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
 
@@ -1157,9 +1140,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
 
@@ -1221,9 +1202,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteFrame) {
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
 
@@ -1290,9 +1269,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
 
@@ -1398,9 +1375,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
   ASSERT_EQ(2U, root->child_count());
@@ -1449,9 +1424,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   TestNavigationObserver observer(shell()->web_contents());
 
   ASSERT_EQ(2U, root->child_count());
@@ -1536,9 +1509,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteAfterError) {
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Load same-site page into iframe.
   {
@@ -1592,9 +1563,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child = root->child_at(0);
   GURL url_a = child->current_url();
 
@@ -1696,9 +1665,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   TestNavigationObserver observer(shell()->web_contents());
 
   EXPECT_EQ(
@@ -1761,9 +1728,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   EXPECT_EQ(
       " Site A ------------ proxies for B\n"
@@ -1838,9 +1803,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   SiteInstance* site_instance_a = root->current_frame_host()->GetSiteInstance();
 
   // Open a popup and navigate it cross-process to b.com.
@@ -1926,9 +1889,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(2U, root->child_count());
 
   GURL site_b_url(
@@ -2000,9 +1961,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrashSubframe) {
   NavigateToURL(shell(), main_url);
 
   // Check the subframe process.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   EXPECT_EQ(
       " Site A ------------ proxies for B\n"
       "   +--Site B ------- proxies for A\n"
@@ -2063,9 +2022,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CreateProxiesForNewFrames) {
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
 
   // Make sure the frame starts out at the correct cross-site URL.
@@ -2308,9 +2265,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   EXPECT_TRUE(root->child_at(1) != NULL);
   EXPECT_EQ(2U, root->child_at(1)->child_count());
@@ -2456,9 +2411,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(1u, root->child_count());
 
   EXPECT_EQ(
@@ -2524,9 +2477,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(1u, root->child_count());
 
   EXPECT_EQ(
@@ -2613,9 +2564,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   EXPECT_EQ(
       " Site A ------------ proxies for B C\n"
@@ -2704,9 +2653,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SandboxFlagsReplication) {
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
 
@@ -2804,9 +2751,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
   ASSERT_EQ(2U, root->child_count());
@@ -2928,9 +2873,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
   ASSERT_EQ(2U, root->child_count());
@@ -2998,9 +2941,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
   ASSERT_EQ(1U, root->child_count());
@@ -3079,9 +3020,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   TestNavigationObserver observer(shell()->web_contents());
 
   EXPECT_EQ(
@@ -3160,9 +3099,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, WindowNameReplication) {
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
 
@@ -3193,9 +3130,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicWindowName) {
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   TestNavigationObserver observer(shell()->web_contents());
 
   // Load cross-site page into iframe.
@@ -3252,9 +3187,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginUpdatesReachProxies) {
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   TestNavigationObserver observer(shell()->web_contents());
 
   EXPECT_EQ(
@@ -3305,9 +3238,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteDidStopLoading) {
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
 
@@ -3341,9 +3272,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   TestNavigationObserver observer(shell()->web_contents());
 
   // Make sure the first frame is out of process.
@@ -3377,9 +3306,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   FrameTreeNode* node2 = root->child_at(0);
   FrameTreeNode* node3 = root->child_at(1);
@@ -3424,9 +3351,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, LoadEventForwarding) {
   }
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Load another cross-site page into the iframe and check that the load event
   // is fired.
@@ -3449,9 +3374,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframePostMessage) {
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   ASSERT_EQ(2U, root->child_count());
 
@@ -3497,9 +3420,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   ASSERT_EQ(2U, root->child_count());
 
@@ -3608,9 +3529,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, IndexedFrameAccess) {
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(3U, root->child_count());
   FrameTreeNode* child0 = root->child_at(0);
   FrameTreeNode* child1 = root->child_at(1);
@@ -3680,9 +3599,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RFPHDestruction) {
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
 
@@ -3741,9 +3658,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenPopupWithRemoteParent) {
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Navigate first child cross-site.
   GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
@@ -3845,9 +3760,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Navigate first child cross-site.
   GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
@@ -3898,9 +3811,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Open a same-site popup from the main frame.
   GURL a_com_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
@@ -3958,9 +3869,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UpdateSubframeOpener) {
       "foo.com", "/frame_tree/page_with_two_frames.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   EXPECT_EQ(2U, root->child_count());
 
   // From the top frame, open a popup and navigate it to a cross-site page with
@@ -4033,9 +3942,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL main_url = embedded_test_server()->GetURL("a.com", "/post_message.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Open a popup with a cross-site page that has a subframe.
   GURL popup_url(embedded_test_server()->GetURL(
@@ -4080,9 +3987,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateSubframeWithOpener) {
       "foo.com", "/frame_tree/page_with_two_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   EXPECT_EQ(
       " Site A ------------ proxies for B\n"
       "   |--Site B ------- proxies for A\n"
@@ -4147,9 +4052,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       embedded_test_server()->GetURL("foo.com", "/post_message.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Open a popup with a cross-site page that has two subframes.
   GURL popup_url(embedded_test_server()->GetURL(
@@ -4226,9 +4129,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   NavigateToURL(shell(), a_url);
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   RenderFrameHostImpl* rfh = root->current_frame_host();
   RenderViewHostImpl* rvh = rfh->render_view_host();
   int rvh_routing_id = rvh->GetRoutingID();
@@ -4320,9 +4221,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       embedded_test_server()->GetURL("a.com", "/page_with_input_field.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   EXPECT_EQ(
       " Site A ------------ proxies for B\n"
@@ -4382,9 +4281,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DocumentActiveElement) {
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   EXPECT_EQ(
       " Site A ------------ proxies for B C\n"
@@ -4456,9 +4353,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframeWindowFocus) {
       "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   EXPECT_EQ(
       " Site A ------------ proxies for B C\n"
@@ -4595,9 +4490,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   FrameTreeNode* child_node = root->child_at(0);
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
@@ -4616,9 +4509,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
   RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
-  static_cast<WebContentsImpl*>(shell()->web_contents())
-      ->GetInputEventRouter()
-      ->RouteMouseEvent(root_view, &mouse_event);
+  web_contents()->GetInputEventRouter()->RouteMouseEvent(root_view,
+                                                         &mouse_event);
 
   // CursorMessageFilter::Wait() implicitly tests whether we receive a
   // ViewHostMsg_SetCursor message from the renderer process, because it does
@@ -4661,9 +4553,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  WebContentsImpl* contents = web_contents();
+  FrameTreeNode* root = contents->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
 
   GURL frame_url(
@@ -4681,7 +4572,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Simulate touch event to sub-frame.
   gfx::Point child_center(150, 150);
   auto rwhv = static_cast<RenderWidgetHostViewAura*>(
-      web_contents->GetRenderWidgetHostView());
+      contents->GetRenderWidgetHostView());
   ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, child_center, 0, 0,
                              ui::EventTimeForNow(), 30.f, 30.f, 0.f, 0.f);
   rwhv->OnTouchEvent(&touch_event);
@@ -4717,9 +4608,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
 
   GURL frame_url(
@@ -4852,9 +4741,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  WebContentsImpl* contents = web_contents();
+  FrameTreeNode* root = contents->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
 
   GURL frame_url(
@@ -4873,10 +4761,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // All touches & gestures are sent to the main frame's view, and should be
   // routed appropriately from there.
   auto rwhv_parent = static_cast<RenderWidgetHostViewBase*>(
-      web_contents->GetRenderWidgetHostView());
+      contents->GetRenderWidgetHostView());
 
-  RenderWidgetHostInputEventRouter* router =
-      web_contents->GetInputEventRouter();
+  RenderWidgetHostInputEventRouter* router = contents->GetInputEventRouter();
   EXPECT_TRUE(router->gesture_target_queue_.empty());
   EXPECT_EQ(nullptr, router->gesture_target_);
 
@@ -5139,16 +5026,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_PopupMenuTest) {
       embedded_test_server()->GetURL("/cross_site_iframe_factory.html?a(a)"));
   NavigateToURL(shell(), main_url);
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
 #if !defined(OS_MACOSX)
   // Unused variable on Mac.
   RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
 #endif
-  static_cast<WebContentsImpl*>(shell()->web_contents())->SendScreenRects();
+  web_contents()->SendScreenRects();
 
   content::TestNavigationObserver navigation_observer(shell()->web_contents());
   FrameTreeNode* child_node = root->child_at(0);
@@ -5210,16 +5095,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NestedPopupMenuTest) {
       "/cross_site_iframe_factory.html?a(b(c))"));
   NavigateToURL(shell(), main_url);
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
 #if !defined(OS_MACOSX)
   // Undefined variable on Mac.
   RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
 #endif
-  static_cast<WebContentsImpl*>(shell()->web_contents())->SendScreenRects();
+  web_contents()->SendScreenRects();
 
   // For clarity, we are labeling the frame tree nodes as:
   //  - root_node
@@ -5496,10 +5379,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // Capture the FrameTreeNode this test will be navigating.
-  FrameTreeNode* node = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root()
-                            ->child_at(0);
+  FrameTreeNode* node = web_contents()->GetFrameTree()->root()->child_at(0);
   EXPECT_TRUE(node);
   EXPECT_NE(node->current_frame_host()->GetSiteInstance(),
             node->parent()->current_frame_host()->GetSiteInstance());
@@ -5573,12 +5453,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
       "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
   NavigateToURL(shell(), main_url);
 
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  EXPECT_EQ(2U, web_contents->GetFrameTree()->root()->child_count());
+  WebContentsImpl* contents = web_contents();
+  EXPECT_EQ(2U, contents->GetFrameTree()->root()->child_count());
 
   // Capture the FrameTreeNode this test will be navigating.
-  FrameTreeNode* node = web_contents->GetFrameTree()->root()->child_at(0);
+  FrameTreeNode* node = contents->GetFrameTree()->root()->child_at(0);
   EXPECT_TRUE(node);
   EXPECT_NE(node->current_frame_host()->GetSiteInstance(),
             node->parent()->current_frame_host()->GetSiteInstance());
@@ -5598,10 +5477,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
 
   // Have the parent frame remove the child frame from its DOM. This should
   // result in the child RenderFrame being deleted in the remote process.
-  EXPECT_TRUE(ExecuteScript(web_contents,
+  EXPECT_TRUE(ExecuteScript(contents,
                             "document.body.removeChild("
                             "document.querySelectorAll('iframe')[0])"));
-  EXPECT_EQ(1U, web_contents->GetFrameTree()->root()->child_count());
+  EXPECT_EQ(1U, contents->GetFrameTree()->root()->child_count());
 
   {
     FrameMsg_NewFrame_Params params;
@@ -5622,9 +5501,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
   // RenderFrame will be properly created and there will be no crash.
   // Therefore, navigate the remaining subframe to completely different site,
   // which will cause the original process to exit cleanly.
-  NavigateFrameToURL(
-      web_contents->GetFrameTree()->root()->child_at(0),
-      embedded_test_server()->GetURL("d.com", "/title3.html"));
+  NavigateFrameToURL(contents->GetFrameTree()->root()->child_at(0),
+                     embedded_test_server()->GetURL("d.com", "/title3.html"));
   watcher.Wait();
   EXPECT_TRUE(watcher.did_exit_normally());
 }
@@ -5638,9 +5516,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, VisibilityChanged) {
   GURL cross_site_url =
       embedded_test_server()->GetURL("oopif.com", "/title1.html");
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   TestNavigationObserver observer(shell()->web_contents());
 
@@ -5678,9 +5554,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SandboxFlagsInheritance) {
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Set sandbox flags for child frame.
   EXPECT_TRUE(ExecuteScript(
@@ -5733,9 +5607,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Set sandbox flags for child frame.
   EXPECT_TRUE(ExecuteScript(
@@ -5785,9 +5657,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Set sandbox flags for child frame.
   EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
@@ -5856,9 +5726,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Set sandbox flags for child frame, specifying that popups opened from it
   // should not be sandboxed.
@@ -5933,9 +5801,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   // When the subframe navigates, the WebContents should still be marked
   // as having displayed insecure content.
   GURL navigate_url(https_server.GetURL("/title1.html"));
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   NavigateFrameToURL(root->child_at(0), navigate_url);
   EXPECT_TRUE(shell()->web_contents()->DisplayedInsecureContent());
 
@@ -5961,9 +5827,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), iframe_url_with_strict_blocking));
   EXPECT_FALSE(shell()->web_contents()->DisplayedInsecureContent());
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   EXPECT_TRUE(root->current_replication_state()
                   .should_enforce_strict_mixed_content_checking);
   EXPECT_TRUE(root->child_at(0)
@@ -6002,9 +5866,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   GURL iframe_url(
       https_server.GetURL("/mixed-content/basic-active-in-iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), iframe_url));
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
   FrameTreeNode* mixed_child = root->child_at(0)->child_at(0);
   ASSERT_TRUE(mixed_child);
@@ -6020,9 +5882,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframeDisplayNone) {
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   NavigateToURL(shell(), main_url);
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   RenderWidgetHost* root_render_widget_host =
       root->current_frame_host()->GetRenderWidgetHost();
 
@@ -6052,9 +5912,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   NavigateToURL(shell(), main_url);
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Add a load event handler for the iframe element.
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
@@ -6122,9 +5980,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScreenCoordinates) {
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   NavigateToURL(shell(), main_url);
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child = root->child_at(0);
 
   const char* properties[] = {"screenX", "screenY", "outerWidth",
@@ -6208,8 +6064,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  WebContentsImpl* contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
+  WebContentsImpl* contents = web_contents();
   FrameTreeNode* root = contents->GetFrameTree()->root();
   EXPECT_EQ(1U, root->child_count());
 
