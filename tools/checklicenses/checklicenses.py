@@ -76,6 +76,7 @@ WHITELISTED_LICENSES = [
     'LGPL (v3 or later)',
     'MIT/X11 (BSD like) LGPL (v2.1 or later)',
     'MIT/X11 (BSD like)',
+    'MIT/X11 (BSD like) Public domain MIT/X11 (BSD like)',
     'MPL (v1.0) LGPL (v2 or later)',
     'MPL (v1.1) BSD (3 clause) GPL (v2) LGPL (v2.1 or later)',
     'MPL (v1.1) BSD (3 clause) LGPL (v2.1 or later)',
