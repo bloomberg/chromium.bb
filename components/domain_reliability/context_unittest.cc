@@ -535,7 +535,7 @@ TEST_F(DomainReliabilityContextTest, SampleNoBeacons) {
   EXPECT_EQ(0u, beacons.size());
 }
 
-// TODO(ttuttle): Add beacon_unittest.cc to test serialization.
+// TODO(juliatuttle): Add beacon_unittest.cc to test serialization.
 
 }  // namespace
 }  // namespace domain_reliability

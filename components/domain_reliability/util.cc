@@ -90,7 +90,7 @@ bool GetDomainReliabilityBeaconStatus(
     return true;
   }
 
-  // TODO(ttuttle): Consider sorting and using binary search?
+  // TODO(juliatuttle): Consider sorting and using binary search?
   for (size_t i = 0; i < arraysize(net_error_map); i++) {
     if (net_error_map[i].net_error == net_error) {
       *beacon_status_out = net_error_map[i].beacon_status;
@@ -100,8 +100,8 @@ bool GetDomainReliabilityBeaconStatus(
   return false;
 }
 
-// TODO(ttuttle): Consider using NPN/ALPN instead, if there's a good way to
-//                differentiate HTTP and HTTPS.
+// TODO(juliatuttle): Consider using NPN/ALPN instead, if there's a good way to
+//                    differentiate HTTP and HTTPS.
 std::string GetDomainReliabilityProtocol(
     net::HttpResponseInfo::ConnectionInfo connection_info,
     bool ssl_info_populated) {

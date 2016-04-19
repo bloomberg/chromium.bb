@@ -49,7 +49,7 @@ void DomainReliabilityContextManager::SetConfig(
                << origin.spec() << ".";
       return;
     }
-    // TODO(ttuttle): Make Context accept Config changes.
+    // TODO(juliatuttle): Make Context accept Config changes.
   }
 
   DVLOG(1) << "Adding/replacing context for existing origin " << origin.spec()
@@ -77,7 +77,7 @@ void DomainReliabilityContextManager::ClearBeaconsInAllContexts() {
 DomainReliabilityContext* DomainReliabilityContextManager::AddContextForConfig(
     scoped_ptr<const DomainReliabilityConfig> config) {
   std::string key = config->origin.host();
-  // TODO(ttuttle): Convert this to actual origin.
+  // TODO(juliatuttle): Convert this to actual origin.
 
   scoped_ptr<DomainReliabilityContext> context =
       context_factory_->CreateContextForConfig(std::move(config));
@@ -114,7 +114,7 @@ DomainReliabilityContext* DomainReliabilityContextManager::GetContextForHost(
   if (dot_pos == std::string::npos)
     return nullptr;
 
-  // TODO(ttuttle): Make sure parent is not in PSL before using.
+  // TODO(juliatuttle): Make sure parent is not in PSL before using.
 
   std::string parent_host = host.substr(dot_pos + 1);
   context_it = contexts_.find(parent_host);

@@ -413,7 +413,7 @@ bool HttpCache::Transaction::GetFullRequestHeaders(
   if (network_trans_)
     return network_trans_->GetFullRequestHeaders(headers);
 
-  // TODO(ttuttle): Read headers from cache.
+  // TODO(juliatuttle): Read headers from cache.
   return false;
 }
 

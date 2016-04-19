@@ -240,7 +240,7 @@ bool GetDomainReliabilityBeaconQuicError(net::QuicErrorCode quic_error,
                                          std::string* beacon_quic_error_out) {
   if (quic_error != net::QUIC_NO_ERROR) {
     // Convert a QUIC error.
-    // TODO(ttuttle): Consider sorting and using binary search?
+    // TODO(juliatuttle): Consider sorting and using binary search?
     for (size_t i = 0; i < arraysize(kQuicErrorMap); i++) {
       if (kQuicErrorMap[i].quic_error == quic_error) {
         *beacon_quic_error_out = kQuicErrorMap[i].beacon_quic_error;

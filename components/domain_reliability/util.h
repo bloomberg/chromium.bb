@@ -57,7 +57,7 @@ GURL SanitizeURLForReport(const GURL& beacon_url,
 
 // Mockable wrapper around TimeTicks::Now and Timer. Mock version is in
 // test_util.h.
-// TODO(ttuttle): Rename to Time{Provider,Source,?}.
+// TODO(juliatuttle): Rename to Time{Provider,Source,?}.
 class DOMAIN_RELIABILITY_EXPORT MockableTime : public base::Clock,
                                                public base::TickClock {
  public:

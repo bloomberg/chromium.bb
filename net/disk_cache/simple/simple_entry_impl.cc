@@ -81,8 +81,8 @@ void RecordWriteResult(net::CacheType cache_type, WriteResult result) {
                    "WriteResult2", cache_type, result, WRITE_RESULT_MAX);
 }
 
-// TODO(ttuttle): Consider removing this once we have a good handle on header
-// size changes.
+// TODO(juliatuttle): Consider removing this once we have a good handle on
+// header size changes.
 void RecordHeaderSizeChange(net::CacheType cache_type,
                             int old_size, int new_size) {
   HeaderSizeChange size_change;
@@ -521,7 +521,7 @@ int SimpleEntryImpl::GetAvailableRange(int64_t offset,
 
 bool SimpleEntryImpl::CouldBeSparse() const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  // TODO(ttuttle): Actually check.
+  // TODO(juliatuttle): Actually check.
   return true;
 }
 

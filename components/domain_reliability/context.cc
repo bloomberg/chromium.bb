@@ -91,7 +91,7 @@ void DomainReliabilityContext::OnBeacon(
         "DomainReliability.ReportedBeaconError_HasServerIP",
         -beacon->chrome_error);
   }
-  // TODO(ttuttle): Histogram HTTP response code?
+  // TODO(juliatuttle): Histogram HTTP response code?
 
   // Allow beacons about reports, but don't schedule an upload for more than
   // one layer of recursion, to avoid infinite report loops.

@@ -45,7 +45,7 @@ DomainReliabilityDispatcher::DomainReliabilityDispatcher(MockableTime* time)
     : time_(time) {}
 
 DomainReliabilityDispatcher::~DomainReliabilityDispatcher() {
-  // TODO(ttuttle): STLElementDeleter?
+  // TODO(juliatuttle): STLElementDeleter?
   STLDeleteElements(&tasks_);
 }
 

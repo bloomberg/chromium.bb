@@ -2293,7 +2293,7 @@ TEST_F(BrowsingDataRemoverTest, DomainReliability_ProtectedOrigins) {
   EXPECT_EQ(CLEAR_CONTEXTS, tester.last_clear_mode());
 }
 
-// TODO(ttuttle): This isn't actually testing the no-monitor case, since
+// TODO(juliatuttle): This isn't actually testing the no-monitor case, since
 // BrowsingDataRemoverTest now creates one unconditionally, since it's needed
 // for some unrelated test cases. This should be fixed so it tests the no-
 // monitor case again.

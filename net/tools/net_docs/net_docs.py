@@ -54,7 +54,7 @@ TEMPLATE = """
 
 
 def FormatPage(markdown_html, title):
-  # TODO(ttuttle): Add a navigation list / table of contents of available
+  # TODO(juliatuttle): Add a navigation list / table of contents of available
   # Markdown files, perhaps?
   return TEMPLATE.format(title=title, body=markdown_html)
 

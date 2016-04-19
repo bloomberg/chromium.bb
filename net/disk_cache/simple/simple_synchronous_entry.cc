@@ -785,8 +785,9 @@ bool SimpleSynchronousEntry::OpenFiles(
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     File::Error error;
     if (!MaybeOpenFile(i, &error)) {
-      // TODO(ttuttle,gavinp): Remove one each of these triplets of histograms.
-      // We can calculate the third as the sum or difference of the other two.
+      // TODO(juliatuttle,gavinp): Remove one each of these triplets of
+      // histograms. We can calculate the third as the sum or difference of the
+      // other two.
       RecordSyncOpenResult(
           cache_type_, OPEN_ENTRY_PLATFORM_FILE_ERROR, had_index);
       SIMPLE_CACHE_UMA(ENUMERATION,
@@ -865,8 +866,9 @@ bool SimpleSynchronousEntry::CreateFiles(
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     File::Error error;
     if (!MaybeCreateFile(i, FILE_NOT_REQUIRED, &error)) {
-      // TODO(ttuttle,gavinp): Remove one each of these triplets of histograms.
-      // We can calculate the third as the sum or difference of the other two.
+      // TODO(juliatuttle,gavinp): Remove one each of these triplets of
+      // histograms. We can calculate the third as the sum or difference of the
+      // other two.
       RecordSyncCreateResult(CREATE_ENTRY_PLATFORM_FILE_ERROR, had_index);
       SIMPLE_CACHE_UMA(ENUMERATION,
                        "SyncCreatePlatformFileError", cache_type_,
@@ -1381,7 +1383,7 @@ bool SimpleSynchronousEntry::ReadSparseRange(const SparseRange* range,
       return false;
     }
   }
-  // TODO(ttuttle): Incremental crc32 calculation?
+  // TODO(juliatuttle): Incremental crc32 calculation?
 
   return true;
 }

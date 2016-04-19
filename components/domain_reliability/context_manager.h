@@ -41,8 +41,9 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContextManager {
   // the contexts themselves intact.
   void ClearBeaconsInAllContexts();
 
-  // TODO(ttuttle): Once unit tests test ContextManager directly, they can use
-  // a custom Context::Factory to get the created Context, and this can be void.
+  // TODO(juliatuttle): Once unit tests test ContextManager directly, they can
+  // use a custom Context::Factory to get the created Context, and this can be
+  // void.
   DomainReliabilityContext* AddContextForConfig(
       scoped_ptr<const DomainReliabilityConfig> config);
 

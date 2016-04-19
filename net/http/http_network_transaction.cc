@@ -359,7 +359,7 @@ void HttpNetworkTransaction::StopCaching() {}
 
 bool HttpNetworkTransaction::GetFullRequestHeaders(
     HttpRequestHeaders* headers) const {
-  // TODO(ttuttle): Make sure we've populated request_headers_.
+  // TODO(juliatuttle): Make sure we've populated request_headers_.
   *headers = request_headers_;
   return true;
 }

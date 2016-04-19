@@ -4664,7 +4664,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
   rv = callback1.WaitForResult();
   EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
 
-  // TODO(ttuttle): Anything else to check here?
+  // TODO(juliatuttle): Anything else to check here?
 }
 
 // Test load timing in the case of two HTTPS (non-SPDY) requests through a SPDY
@@ -7493,7 +7493,7 @@ TEST_P(HttpNetworkTransactionTest,
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
 
-  // TODO(ttuttle): Anything else to check here?
+  // TODO(juliatuttle): Anything else to check here?
 }
 
 // Test that a SPDY proxy's response to a CONNECT request is filtered.
@@ -7549,7 +7549,7 @@ TEST_P(HttpNetworkTransactionTest,
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
 
-  // TODO(ttuttle): Anything else to check here?
+  // TODO(juliatuttle): Anything else to check here?
 }
 
 // Test the request-challenge-retry sequence for basic auth, through

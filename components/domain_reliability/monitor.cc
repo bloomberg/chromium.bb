@@ -346,7 +346,7 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   // This is not foolproof -- it's possible that we'll see the same error twice
   // (e.g. an SSL error during connection on one attempt, and then an error
   // that maps to the same code during a read).
-  // TODO(ttuttle): Find a way for this code to reliably tell whether we
+  // TODO(juliatuttle): Find a way for this code to reliably tell whether we
   // eventually established a connection or not.
   bool url_request_attempt_is_duplicate = false;
   for (const auto& attempt : request.connection_attempts) {

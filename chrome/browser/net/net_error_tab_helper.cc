@@ -263,7 +263,7 @@ bool NetErrorTabHelper::ProbesAllowed() const {
   if (testing_state_ != TESTING_DEFAULT)
     return testing_state_ == TESTING_FORCE_ENABLED;
 
-  // TODO(ttuttle): Disable on mobile?
+  // TODO(juliatuttle): Disable on mobile?
   return *resolve_errors_with_web_service_;
 }
 
