@@ -1632,15 +1632,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     lf_data->stop = cm->mi_rows;
     winterface->execute(&pbi->lf_worker);
   }
-#if CONFIG_CLPF
-  if (cm->clpf && !cm->skip_loop_filter)
-    av1_clpf_frame(&pbi->cur_buf->buf, cm, &pbi->mb);
-#endif
-#if CONFIG_DERING
-  if (cm->dering_level && !cm->skip_loop_filter) {
-    av1_dering_frame(&pbi->cur_buf->buf, cm, &pbi->mb, cm->dering_level);
-  }
-#endif  // CONFIG_DERING
 
   // Get last tile data.
   tile_data = pbi->tile_data + tile_cols * tile_rows - 1;
@@ -2446,6 +2437,16 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   } else {
     *p_data_end = decode_tiles(pbi, data + first_partition_size, data_end);
   }
+
+#if CONFIG_CLPF
+  if (cm->clpf && !cm->skip_loop_filter)
+    av1_clpf_frame(&pbi->cur_buf->buf, cm, &pbi->mb);
+#endif
+#if CONFIG_DERING
+  if (cm->dering_level && !cm->skip_loop_filter) {
+    av1_dering_frame(&pbi->cur_buf->buf, cm, &pbi->mb, cm->dering_level);
+  }
+#endif  // CONFIG_DERING
 
   if (!xd->corrupted) {
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
