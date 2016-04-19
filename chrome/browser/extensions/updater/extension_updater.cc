@@ -60,10 +60,6 @@ const int kMinUpdateFrequencySeconds = 30;
 #endif
 const int kMaxUpdateFrequencySeconds = 60 * 60 * 24 * 7;  // 7 days
 
-// Require at least 5 seconds between consecutive non-succesful extension update
-// checks.
-const int kMinUpdateThrottleTime = 5;
-
 // When we've computed a days value, we want to make sure we don't send a
 // negative value (due to the system clock being set backwards, etc.), since -1
 // is a special sentinel value that means "never pinged", and other negative
@@ -129,17 +125,6 @@ ExtensionUpdater::InProgressCheck::InProgressCheck(
 
 ExtensionUpdater::InProgressCheck::~InProgressCheck() {}
 
-struct ExtensionUpdater::ThrottleInfo {
-  ThrottleInfo()
-      : in_progress(true),
-        throttle_delay(kMinUpdateThrottleTime),
-        check_start(Time::Now()) {}
-
-  bool in_progress;
-  int throttle_delay;
-  Time check_start;
-};
-
 ExtensionUpdater::ExtensionUpdater(
     ExtensionServiceInterface* service,
     ExtensionPrefs* extension_prefs,
@@ -157,7 +142,6 @@ ExtensionUpdater::ExtensionUpdater(
       prefs_(prefs),
       profile_(profile),
       next_request_id_(0),
-      extension_registry_observer_(this),
       crx_install_is_running_(false),
       extension_cache_(cache),
       weak_ptr_factory_(this) {
@@ -168,8 +152,6 @@ ExtensionUpdater::ExtensionUpdater(
   frequency_seconds_ = std::max(frequency_seconds_, kMinUpdateFrequencySeconds);
 #endif
   frequency_seconds_ = std::min(frequency_seconds_, kMaxUpdateFrequencySeconds);
-
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 }
 
 ExtensionUpdater::~ExtensionUpdater() {
@@ -422,56 +404,12 @@ void ExtensionUpdater::CheckNow(const CheckParams& params) {
     NotifyIfFinished(request_id);
 }
 
-bool ExtensionUpdater::CheckExtensionSoon(const std::string& extension_id,
+void ExtensionUpdater::CheckExtensionSoon(const std::string& extension_id,
                                           const FinishedCallback& callback) {
-  bool have_throttle_info = ContainsKey(throttle_info_, extension_id);
-  ThrottleInfo& info = throttle_info_[extension_id];
-  if (have_throttle_info) {
-    // We already had a ThrottleInfo object for this extension, check if the
-    // update check request should be allowed.
-
-    // If another check is in progress, don't start a new check.
-    if (info.in_progress)
-      return false;
-
-    Time now = Time::Now();
-    Time last = info.check_start;
-    // If somehow time moved back, we don't want to infinitely keep throttling.
-    if (now < last) {
-      last = now;
-      info.check_start = now;
-    }
-    Time earliest = last + TimeDelta::FromSeconds(info.throttle_delay);
-    // If check is too soon, throttle.
-    if (now < earliest)
-      return false;
-
-    // TODO(mek): Somehow increase time between allowing checks when checks
-    // are repeatedly throttled and don't result in updates being installed.
-
-    // It's okay to start a check, update values.
-    info.check_start = now;
-    info.in_progress = true;
-  }
-
   CheckParams params;
   params.ids.push_back(extension_id);
-  params.callback = base::Bind(&ExtensionUpdater::ExtensionCheckFinished,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               extension_id, callback);
+  params.callback = callback;
   CheckNow(params);
-  return true;
-}
-
-void ExtensionUpdater::ExtensionCheckFinished(
-    const std::string& extension_id,
-    const FinishedCallback& callback) {
-  std::map<std::string, ThrottleInfo>::iterator it =
-      throttle_info_.find(extension_id);
-  if (it != throttle_info_.end()) {
-    it->second.in_progress = false;
-  }
-  callback.Run();
 }
 
 void ExtensionUpdater::OnExtensionDownloadFailed(
@@ -657,14 +595,6 @@ void ExtensionUpdater::Observe(int type,
 
   // If any files are available to update, start one.
   MaybeInstallCRXFile();
-}
-
-void ExtensionUpdater::OnExtensionWillBeInstalled(
-    content::BrowserContext* browser_context,
-    const Extension* extension,
-    bool is_update,
-    const std::string& old_name) {
-  throttle_info_.erase(extension->id());
 }
 
 void ExtensionUpdater::NotifyStarted() {
