@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/system/core.h"
 
@@ -20,10 +20,10 @@ namespace internal {
 // be watched together.
 //
 // This class is not thread safe.
-class SyncHandleRegistry : public base::MessageLoop::DestructionObserver {
+class SyncHandleRegistry : public base::RefCounted<SyncHandleRegistry> {
  public:
   // Returns a thread-local object.
-  static SyncHandleRegistry* current();
+  static scoped_refptr<SyncHandleRegistry> current();
 
   using HandleCallback = base::Callback<void(MojoResult)>;
   bool RegisterHandle(const Handle& handle,
@@ -40,6 +40,8 @@ class SyncHandleRegistry : public base::MessageLoop::DestructionObserver {
   bool WatchAllHandles(const bool* should_stop[], size_t count);
 
  private:
+  friend class base::RefCounted<SyncHandleRegistry>;
+
   struct HandleHasher {
     size_t operator()(const Handle& handle) const {
       return std::hash<uint32_t>()(static_cast<uint32_t>(handle.value()));
@@ -48,16 +50,11 @@ class SyncHandleRegistry : public base::MessageLoop::DestructionObserver {
   using HandleMap = std::unordered_map<Handle, HandleCallback, HandleHasher>;
 
   SyncHandleRegistry();
-  ~SyncHandleRegistry() override;
-
-  // base::MessageLoop::DestructionObserver implementation:
-  void WillDestroyCurrentMessageLoop() override;
+  ~SyncHandleRegistry();
 
   HandleMap handles_;
 
   ScopedHandle wait_set_handle_;
-
-  scoped_refptr<base::RefCountedData<bool>> destroyed_;
 
   base::ThreadChecker thread_checker_;
 

@@ -18,12 +18,13 @@ SyncHandleWatcher::SyncHandleWatcher(
       callback_(callback),
       registered_(false),
       register_request_count_(0),
+      registry_(SyncHandleRegistry::current()),
       destroyed_(new base::RefCountedData<bool>(false)) {}
 
 SyncHandleWatcher::~SyncHandleWatcher() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (registered_)
-    SyncHandleRegistry::current()->UnregisterHandle(handle_);
+    registry_->UnregisterHandle(handle_);
 
   destroyed_->data = true;
 }
@@ -45,8 +46,7 @@ bool SyncHandleWatcher::SyncWatch(const bool* should_stop) {
   // to preserve the boolean that WatchAllHandles uses.
   auto destroyed = destroyed_;
   const bool* should_stop_array[] = {should_stop, &destroyed->data};
-  bool result =
-      SyncHandleRegistry::current()->WatchAllHandles(should_stop_array, 2);
+  bool result = registry_->WatchAllHandles(should_stop_array, 2);
 
   // This object has been destroyed.
   if (destroyed->data)
@@ -59,8 +59,8 @@ bool SyncHandleWatcher::SyncWatch(const bool* should_stop) {
 void SyncHandleWatcher::IncrementRegisterCount() {
   register_request_count_++;
   if (!registered_) {
-    registered_ = SyncHandleRegistry::current()->RegisterHandle(
-        handle_, handle_signals_, callback_);
+    registered_ =
+        registry_->RegisterHandle(handle_, handle_signals_, callback_);
   }
 }
 
@@ -69,7 +69,7 @@ void SyncHandleWatcher::DecrementRegisterCount() {
 
   register_request_count_--;
   if (register_request_count_ == 0 && registered_) {
-    SyncHandleRegistry::current()->UnregisterHandle(handle_);
+    registry_->UnregisterHandle(handle_);
     registered_ = false;
   }
 }

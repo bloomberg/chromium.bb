@@ -20,11 +20,12 @@ base::LazyInstance<base::ThreadLocalPointer<SyncHandleRegistry>>
 }  // namespace
 
 // static
-SyncHandleRegistry* SyncHandleRegistry::current() {
-  SyncHandleRegistry* result = g_current_sync_handle_watcher.Pointer()->Get();
+scoped_refptr<SyncHandleRegistry> SyncHandleRegistry::current() {
+  scoped_refptr<SyncHandleRegistry> result(
+      g_current_sync_handle_watcher.Pointer()->Get());
   if (!result) {
     result = new SyncHandleRegistry();
-    DCHECK_EQ(result, g_current_sync_handle_watcher.Pointer()->Get());
+    DCHECK_EQ(result.get(), g_current_sync_handle_watcher.Pointer()->Get());
   }
   return result;
 }
@@ -66,10 +67,8 @@ bool SyncHandleRegistry::WatchAllHandles(const bool* should_stop[],
   MojoHandle ready_handle;
   MojoResult ready_handle_result;
 
-  // This object may be destroyed during a callback. So we have to preserve
-  // the boolean.
-  scoped_refptr<base::RefCountedData<bool>> destroyed = destroyed_;
-  while (!destroyed->data) {
+  scoped_refptr<SyncHandleRegistry> preserver(this);
+  while (true) {
     for (size_t i = 0; i < count; ++i)
       if (*should_stop[i])
         return true;
@@ -96,8 +95,7 @@ bool SyncHandleRegistry::WatchAllHandles(const bool* should_stop[],
   return false;
 }
 
-SyncHandleRegistry::SyncHandleRegistry()
-    : destroyed_(new base::RefCountedData<bool>(false)) {
+SyncHandleRegistry::SyncHandleRegistry() {
   MojoHandle handle;
   MojoResult result = MojoCreateWaitSet(&handle);
   CHECK_EQ(MOJO_RESULT_OK, result);
@@ -106,23 +104,11 @@ SyncHandleRegistry::SyncHandleRegistry()
 
   DCHECK(!g_current_sync_handle_watcher.Pointer()->Get());
   g_current_sync_handle_watcher.Pointer()->Set(this);
-
-  base::MessageLoop::current()->AddDestructionObserver(this);
 }
 
 SyncHandleRegistry::~SyncHandleRegistry() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  destroyed_->data = true;
   g_current_sync_handle_watcher.Pointer()->Set(nullptr);
-}
-
-void SyncHandleRegistry::WillDestroyCurrentMessageLoop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(this, g_current_sync_handle_watcher.Pointer()->Get());
-
-  base::MessageLoop::current()->RemoveDestructionObserver(this);
-
-  delete this;
 }
 
 }  // namespace internal

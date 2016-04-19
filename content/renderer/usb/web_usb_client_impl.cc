@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/move.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/mojo/type_converters.h"
 #include "content/child/scoped_web_callbacks.h"

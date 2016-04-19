@@ -61,6 +61,8 @@ class SyncHandleWatcher {
   // If non-zero, |handle_| should be registered with SyncHandleRegistry.
   size_t register_request_count_;
 
+  scoped_refptr<SyncHandleRegistry> registry_;
+
   scoped_refptr<base::RefCountedData<bool>> destroyed_;
 
   base::ThreadChecker thread_checker_;
