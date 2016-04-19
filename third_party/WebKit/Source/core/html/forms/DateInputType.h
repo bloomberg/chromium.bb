@@ -31,7 +31,7 @@
 #ifndef DateInputType_h
 #define DateInputType_h
 
-#include "core/html/forms/BaseChooserOnlyDateAndTimeInputType.h"
+#include "core/html/forms/BaseDateAndTimeInputType.h"
 #include "core/html/forms/BaseMultipleFieldsDateAndTimeInputType.h"
 
 namespace blink {
@@ -39,7 +39,7 @@ namespace blink {
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 using BaseDateInputType = BaseMultipleFieldsDateAndTimeInputType;
 #else
-using BaseDateInputType = BaseChooserOnlyDateAndTimeInputType;
+using BaseDateInputType = BaseDateAndTimeInputType;
 #endif
 
 class DateInputType final : public BaseDateInputType {

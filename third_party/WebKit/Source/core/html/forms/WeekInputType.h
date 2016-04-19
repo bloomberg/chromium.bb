@@ -31,7 +31,7 @@
 #ifndef WeekInputType_h
 #define WeekInputType_h
 
-#include "core/html/forms/BaseChooserOnlyDateAndTimeInputType.h"
+#include "core/html/forms/BaseDateAndTimeInputType.h"
 #include "core/html/forms/BaseMultipleFieldsDateAndTimeInputType.h"
 
 namespace blink {
@@ -39,7 +39,7 @@ namespace blink {
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 using BaseWeekInputType = BaseMultipleFieldsDateAndTimeInputType;
 #else
-using BaseWeekInputType = BaseChooserOnlyDateAndTimeInputType;
+using BaseWeekInputType = BaseDateAndTimeInputType;
 #endif
 
 class WeekInputType final : public BaseWeekInputType {

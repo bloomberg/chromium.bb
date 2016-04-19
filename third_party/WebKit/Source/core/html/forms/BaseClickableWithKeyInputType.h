@@ -41,7 +41,7 @@ class CORE_EXPORT BaseClickableWithKeyInputType : public InputType {
 public:
     static void handleKeydownEvent(HTMLInputElement&, KeyboardEvent*);
     static void handleKeypressEvent(HTMLInputElement&, KeyboardEvent*);
-    static void handleKeyupEvent(InputType&, KeyboardEvent*);
+    static void handleKeyupEvent(InputTypeView&, KeyboardEvent*);
     static void accessKeyAction(HTMLInputElement&, bool sendMouseEvents);
 
 protected:

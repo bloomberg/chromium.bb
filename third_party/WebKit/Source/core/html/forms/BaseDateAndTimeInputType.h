@@ -40,6 +40,9 @@ class ExceptionState;
 
 // A super class of date, datetime, datetime-local, month, time, and week types.
 class BaseDateAndTimeInputType : public InputType {
+public:
+    String visibleValue() const override;
+
 protected:
     BaseDateAndTimeInputType(HTMLInputElement& element) : InputType(element) { }
     Decimal parseToNumber(const String&, const Decimal&) const override;
@@ -52,7 +55,6 @@ protected:
     String serialize(const Decimal&) const override;
     String serializeWithComponents(const DateComponents&) const;
     virtual bool setMillisecondToDateComponents(double, DateComponents*) const = 0;
-    String visibleValue() const override;
     bool shouldHaveSecondField(const DateComponents&) const;
 
 private:

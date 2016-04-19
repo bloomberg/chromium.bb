@@ -62,13 +62,13 @@ void BaseClickableWithKeyInputType::handleKeypressEvent(HTMLInputElement& elemen
     }
 }
 
-void BaseClickableWithKeyInputType::handleKeyupEvent(InputType& inputType, KeyboardEvent* event)
+void BaseClickableWithKeyInputType::handleKeyupEvent(InputTypeView& inputTypeView, KeyboardEvent* event)
 {
     const String& key = event->keyIdentifier();
     if (key != "U+0020")
         return;
     // Simulate mouse click for spacebar for button types.
-    inputType.dispatchSimulatedClickIfActive(event);
+    inputTypeView.dispatchSimulatedClickIfActive(event);
 }
 
 // FIXME: Could share this with BaseCheckableInputType and RangeInputType if we had a common base class.

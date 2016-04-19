@@ -25,7 +25,6 @@
 
 #include "core/html/forms/BaseChooserOnlyDateAndTimeInputType.h"
 
-#if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -37,10 +36,16 @@
 
 namespace blink {
 
-BaseChooserOnlyDateAndTimeInputType::BaseChooserOnlyDateAndTimeInputType(HTMLInputElement& element)
-    : BaseDateAndTimeInputType(element)
+BaseChooserOnlyDateAndTimeInputType::BaseChooserOnlyDateAndTimeInputType(HTMLInputElement& element, BaseDateAndTimeInputType& inputType)
+    : InputTypeView(element)
+    , m_inputType(inputType)
 {
     ThreadState::current()->registerPreFinalizer(this);
+}
+
+BaseChooserOnlyDateAndTimeInputType* BaseChooserOnlyDateAndTimeInputType::create(HTMLInputElement& element, BaseDateAndTimeInputType& inputType)
+{
+    return new BaseChooserOnlyDateAndTimeInputType(element, inputType);
 }
 
 BaseChooserOnlyDateAndTimeInputType::~BaseChooserOnlyDateAndTimeInputType()
@@ -50,8 +55,9 @@ BaseChooserOnlyDateAndTimeInputType::~BaseChooserOnlyDateAndTimeInputType()
 
 DEFINE_TRACE(BaseChooserOnlyDateAndTimeInputType)
 {
+    visitor->trace(m_inputType);
     visitor->trace(m_dateTimeChooser);
-    BaseDateAndTimeInputType::trace(visitor);
+    InputTypeView::trace(visitor);
     DateTimeChooserClient::trace(visitor);
 }
 
@@ -89,7 +95,7 @@ void BaseChooserOnlyDateAndTimeInputType::updateView()
     if (!element().suggestedValue().isNull())
         displayValue = element().suggestedValue();
     else
-        displayValue = visibleValue();
+        displayValue = m_inputType->visibleValue();
     if (displayValue.isEmpty()) {
         // Need to put something to keep text baseline.
         displayValue = " ";
@@ -155,9 +161,8 @@ void BaseChooserOnlyDateAndTimeInputType::handleKeyupEvent(KeyboardEvent* event)
 
 void BaseChooserOnlyDateAndTimeInputType::accessKeyAction(bool sendMouseEvents)
 {
-    BaseDateAndTimeInputType::accessKeyAction(sendMouseEvents);
+    InputTypeView::accessKeyAction(sendMouseEvents);
     BaseClickableWithKeyInputType::accessKeyAction(element(), sendMouseEvents);
 }
 
-}
-#endif
+} // namespace blink
