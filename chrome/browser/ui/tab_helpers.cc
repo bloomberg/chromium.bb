@@ -54,10 +54,12 @@
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/data_usage/data_use_tab_helper.h"
 #include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
+#include "chrome/browser/android/offline_pages/recent_tab_helper.h"
 #include "chrome/browser/android/voice_search_tab_helper.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
+#include "components/offline_pages/offline_page_feature.h"
 #else
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/plugins/plugin_observer.h"
@@ -180,7 +182,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #if BUILDFLAG(ANDROID_JAVA_UI)
   ContextMenuHelper::CreateForWebContents(web_contents);
   DataUseTabHelper::CreateForWebContents(web_contents);
+
   offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents);
+  if (offline_pages::IsOffliningRecentPagesEnabled())
+    offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
+
   SingleTabModeTabHelper::CreateForWebContents(web_contents);
   ViewAndroidHelper::CreateForWebContents(web_contents);
   VoiceSearchTabHelper::CreateForWebContents(web_contents);

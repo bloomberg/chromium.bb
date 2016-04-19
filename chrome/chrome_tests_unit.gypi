@@ -1648,6 +1648,7 @@
       'browser/android/offline_pages/offline_page_mhtml_archiver_unittest.cc',
       'browser/android/offline_pages/offline_page_tab_helper_unittest.cc',
       'browser/android/offline_pages/offline_page_utils_unittest.cc',
+      'browser/android/offline_pages/recent_tab_helper_unittest.cc',
       'browser/android/offline_pages/test_offline_page_model_builder.cc',
       'browser/android/offline_pages/test_offline_page_model_builder.h',
     ],

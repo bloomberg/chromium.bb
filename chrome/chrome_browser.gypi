@@ -1540,6 +1540,8 @@
       'browser/android/offline_pages/offline_page_tab_helper.h',
       'browser/android/offline_pages/offline_page_utils.cc',
       'browser/android/offline_pages/offline_page_utils.h',
+      'browser/android/offline_pages/recent_tab_helper.cc',
+      'browser/android/offline_pages/recent_tab_helper.h',
     ],
     'chrome_browser_browser_process_sources': [
       'browser/browser_process.cc',
