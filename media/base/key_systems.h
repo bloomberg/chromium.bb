@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
 
