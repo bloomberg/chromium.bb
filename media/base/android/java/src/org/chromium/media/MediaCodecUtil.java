@@ -222,14 +222,14 @@ class MediaCodecUtil {
             }
             // MediaTek decoders do not work properly on vp8. See http://crbug.com/446974 and
             // http://crbug.com/597836.
-            if (getDefaultCodecName(mime, MEDIA_CODEC_DECODER).startsWith("OMX.MTK.")) return false;
+            if (Build.HARDWARE.startsWith("mt")) return false;
         } else if (mime.equals("video/x-vnd.on2.vp9")) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return false;
 
             // MediaTek decoders do not work properly on vp9 before Lollipop. See
             // http://crbug.com/597836.
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
-                    && getDefaultCodecName(mime, MEDIA_CODEC_DECODER).startsWith("OMX.MTK.")) {
+                    && Build.HARDWARE.startsWith("mt")) {
                 return false;
             }
         } else if (mime.equals("audio/opus")
