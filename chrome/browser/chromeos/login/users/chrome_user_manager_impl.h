@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_policy_observer.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -38,10 +39,6 @@ class ProfileSyncService;
 
 namespace gfx {
 class ImageSkia;
-}
-
-namespace policy {
-struct DeviceLocalAccount;
 }
 
 namespace user_manager {
@@ -154,7 +151,7 @@ class ChromeUserManagerImpl
       const AccountId& account_id,
       user_manager::User::OAuthTokenStatus status) const override;
   bool IsEnterpriseManaged() const override;
-  void LoadPublicAccounts(std::set<AccountId>* users_set) override;
+  void LoadDeviceLocalAccounts(std::set<AccountId>* users_set) override;
   void NotifyOnLogin() override;
   void NotifyUserAddedToSession(const user_manager::User* added_user,
                                 bool user_switch_pending) override;
@@ -165,12 +162,11 @@ class ChromeUserManagerImpl
   void RemoveUserInternal(const AccountId& account_id,
                           user_manager::RemoveUserDelegate* delegate) override;
   bool IsDemoApp(const AccountId& account_id) const override;
-  bool IsKioskApp(const AccountId& account_id) const override;
-  bool IsPublicAccountMarkedForRemoval(
+  bool IsDeviceLocalAccountMarkedForRemoval(
       const AccountId& account_id) const override;
   void DemoAccountLoggedIn() override;
   void GuestUserLoggedIn() override;
-  void KioskAppLoggedIn(const AccountId& kiosk_app_account_id) override;
+  void KioskAppLoggedIn(user_manager::User* user) override;
   void PublicAccountUserLoggedIn(user_manager::User* user) override;
   void RegularUserLoggedIn(const AccountId& account_id) override;
   void RegularUserLoggedInAsEphemeral(const AccountId& account_id) override;
@@ -196,23 +192,23 @@ class ChromeUserManagerImpl
   // Updates current user ownership on UI thread.
   void UpdateOwnership();
 
-  // If data for a public account is marked as pending removal and the user is
-  // no longer logged into that account, removes the data.
-  void CleanUpPublicAccountNonCryptohomeDataPendingRemoval();
+  // If data for a device local account is marked as pending removal and the
+  // user is no longer logged into that account, removes the data.
+  void CleanUpDeviceLocalAccountNonCryptohomeDataPendingRemoval();
 
-  // Removes data belonging to public accounts that are no longer found on the
-  // user list. If the user is currently logged into one of these accounts, the
-  // data for that account is not removed immediately but marked as pending
+  // Removes data belonging to device local accounts that are no longer found on
+  // the user list. If the user is currently logged into one of these accounts,
+  // the data for that account is not removed immediately but marked as pending
   // removal after logout.
-  void CleanUpPublicAccountNonCryptohomeData(
-      const std::vector<std::string>& old_public_accounts);
+  void CleanUpDeviceLocalAccountNonCryptohomeData(
+      const std::vector<std::string>& old_device_local_accounts);
 
-  // Replaces the list of public accounts with those found in
+  // Replaces the list of device local accounts with those found in
   // |device_local_accounts|. Ensures that data belonging to accounts no longer
   // on the list is removed. Returns |true| if the list has changed.
-  // Public accounts are defined by policy. This method is called whenever an
-  // updated list of public accounts is received from policy.
-  bool UpdateAndCleanUpPublicAccounts(
+  // Device local accounts are defined by policy. This method is called whenever
+  // an updated list of device local accounts is received from policy.
+  bool UpdateAndCleanUpDeviceLocalAccounts(
       const std::vector<policy::DeviceLocalAccount>& device_local_accounts);
 
   // Updates the display name for public account |username| from policy settings
@@ -243,6 +239,11 @@ class ChromeUserManagerImpl
 
   // Removes user from the list of the users who should be reported.
   void RemoveReportingUser(const AccountId& account_id);
+
+  // Creates a user for the given device local account.
+  std::unique_ptr<user_manager::User> CreateUserFromDeviceLocalAccount(
+      const AccountId& account_id,
+      const policy::DeviceLocalAccount::Type type) const;
 
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;

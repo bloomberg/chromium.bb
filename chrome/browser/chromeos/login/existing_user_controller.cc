@@ -228,25 +228,29 @@ void ExistingUserController::UpdateLoginDisplay(
 
   cros_settings_->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
                              &show_users_on_signin);
-  for (user_manager::UserList::const_iterator it = users.begin();
-       it != users.end();
-       ++it) {
+  for (const auto& user : users) {
+    // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
+    // kiosk UI) is currently disabled and it gets the apps directly from
+    // KioskAppManager.
+    if (user->GetType() == user_manager::USER_TYPE_KIOSK_APP)
+      continue;
+
     // TODO(xiyuan): Clean user profile whose email is not in whitelist.
-    bool meets_supervised_requirements =
-        (*it)->GetType() != user_manager::USER_TYPE_SUPERVISED ||
+    const bool meets_supervised_requirements =
+        user->GetType() != user_manager::USER_TYPE_SUPERVISED ||
         user_manager::UserManager::Get()->AreSupervisedUsersAllowed();
-    bool meets_whitelist_requirements =
-        CrosSettings::IsWhitelisted((*it)->email(), nullptr) ||
-        !(*it)->HasGaiaAccount();
+    const bool meets_whitelist_requirements =
+        CrosSettings::IsWhitelisted(user->email(), nullptr) ||
+        !user->HasGaiaAccount();
 
     // Public session accounts are always shown on login screen.
-    bool meets_show_users_requirements =
+    const bool meets_show_users_requirements =
         show_users_on_signin ||
-        (*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
+        user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
     if (meets_supervised_requirements &&
         meets_whitelist_requirements &&
         meets_show_users_requirements) {
-      filtered_users.push_back(*it);
+      filtered_users.push_back(user);
     }
   }
 

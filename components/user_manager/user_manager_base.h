@@ -154,12 +154,10 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Returns true if device is enterprise managed.
   virtual bool IsEnterpriseManaged() const = 0;
 
-  // Helper function that copies users from |users_list| to |users_vector| and
-  // |users_set|. Duplicates and users already present in |existing_users| are
-  // skipped.
-  // Loads public accounts from the Local state and fills in
-  // |public_sessions_set|.
-  virtual void LoadPublicAccounts(std::set<AccountId>* public_sessions_set) = 0;
+  // Loads device local accounts from the Local state and fills in
+  // |device_local_accounts_set|.
+  virtual void LoadDeviceLocalAccounts(
+      std::set<AccountId>* device_local_accounts_set) = 0;
 
   // Notifies that user has logged in.
   virtual void NotifyOnLogin();
@@ -207,12 +205,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Returns true if |account_id| represents demo app.
   virtual bool IsDemoApp(const AccountId& account_id) const = 0;
 
-  // Returns true if |account_id| represents kiosk app.
-  virtual bool IsKioskApp(const AccountId& account_id) const = 0;
-
-  // Returns true if |account_id| represents public account that has been marked
-  // for deletion.
-  virtual bool IsPublicAccountMarkedForRemoval(
+  // Returns true if |account_id| represents a device local account that has
+  // been marked for deletion.
+  virtual bool IsDeviceLocalAccountMarkedForRemoval(
       const AccountId& account_id) const = 0;
 
   // These methods are called when corresponding user type has signed in.
@@ -224,7 +219,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   virtual void GuestUserLoggedIn();
 
   // Indicates that a kiosk app robot just logged in.
-  virtual void KioskAppLoggedIn(const AccountId& kiosk_app_account_id) = 0;
+  virtual void KioskAppLoggedIn(User* user) = 0;
 
   // Indicates that a user just logged into a public session.
   virtual void PublicAccountUserLoggedIn(User* user) = 0;
@@ -269,8 +264,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   User* primary_user_ = nullptr;
 
   // List of all known users. User instances are owned by |this|. Regular users
-  // are removed by |RemoveUserFromList|, public accounts by
-  // |UpdateAndCleanUpPublicAccounts|.
+  // are removed by |RemoveUserFromList|, device local accounts by
+  // |UpdateAndCleanUpDeviceLocalAccounts|.
   UserList users_;
 
   // List of all users that are logged in current session. These point to User

@@ -30,7 +30,7 @@ class FakeChromeUserManager : public user_manager::FakeUserManager,
   ~FakeChromeUserManager() override;
 
   // Create and add a kiosk app user.
-  void AddKioskAppUser(const AccountId& kiosk_app_account_id);
+  user_manager::User* AddKioskAppUser(const AccountId& account_id);
 
   // Create and add a public account user.
   const user_manager::User* AddPublicAccountUser(const AccountId& account_id);

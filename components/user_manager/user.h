@@ -83,6 +83,9 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // Returns true if user type has gaia account.
   static bool TypeHasGaiaAccount(UserType user_type);
 
+  explicit User(const AccountId& account_id);
+  ~User() override;
+
   // UserInfo
   std::string GetEmail() const override;
   base::string16 GetDisplayName() const override;
@@ -111,6 +114,9 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   // True if the user is affiliated to the device.
   virtual bool IsAffiliated() const;
+
+  // True if the user is a device local account user.
+  virtual bool IsDeviceLocalAccount() const;
 
   // The email the user used to log in.
   // TODO(alemate): rename this to GetUserEmail() (see crbug.com/548923)
@@ -193,9 +199,6 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   static User* CreateKioskAppUser(const AccountId& kiosk_app_account_id);
   static User* CreateSupervisedUser(const AccountId& account_id);
   static User* CreatePublicAccountUser(const AccountId& account_id);
-
-  explicit User(const AccountId& account_id);
-  ~User() override;
 
   const std::string* GetAccountLocale() const { return account_locale_.get(); }
 

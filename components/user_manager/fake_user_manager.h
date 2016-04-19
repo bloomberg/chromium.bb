@@ -127,16 +127,16 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
       const AccountId& account_id,
       user_manager::User::OAuthTokenStatus status) const override {}
   bool IsEnterpriseManaged() const override;
-  void LoadPublicAccounts(std::set<AccountId>* public_sessions_set) override {}
+  void LoadDeviceLocalAccounts(
+      std::set<AccountId>* device_local_accounts_set) override {}
   void PerformPreUserListLoadingActions() override {}
   void PerformPostUserListLoadingActions() override {}
   void PerformPostUserLoggedInActions(bool browser_restart) override {}
   bool IsDemoApp(const AccountId& account_id) const override;
-  bool IsKioskApp(const AccountId& account_id) const override;
-  bool IsPublicAccountMarkedForRemoval(
+  bool IsDeviceLocalAccountMarkedForRemoval(
       const AccountId& account_id) const override;
   void DemoAccountLoggedIn() override {}
-  void KioskAppLoggedIn(const AccountId& kiosk_app_account_id) override {}
+  void KioskAppLoggedIn(user_manager::User* user) override {}
   void PublicAccountUserLoggedIn(user_manager::User* user) override {}
   void SupervisedUserLoggedIn(const AccountId& account_id) override {}
   void OnUserRemoved(const AccountId& account_id) override {}

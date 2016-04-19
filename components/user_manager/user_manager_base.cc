@@ -152,8 +152,6 @@ void UserManagerBase::UserLoggedIn(const AccountId& account_id,
 
   if (IsGuestAccountId(account_id)) {
     GuestUserLoggedIn();
-  } else if (IsKioskApp(account_id)) {
-    KioskAppLoggedIn(account_id);
   } else if (IsDemoApp(account_id)) {
     DemoAccountLoggedIn();
   } else {
@@ -161,10 +159,13 @@ void UserManagerBase::UserLoggedIn(const AccountId& account_id,
 
     if (user && user->GetType() == USER_TYPE_PUBLIC_ACCOUNT) {
       PublicAccountUserLoggedIn(user);
+    } else if (user && user->GetType() == USER_TYPE_KIOSK_APP) {
+      KioskAppLoggedIn(user);
     } else if ((user && user->GetType() == USER_TYPE_SUPERVISED) ||
                (!user && IsSupervisedAccountId(account_id))) {
       SupervisedUserLoggedIn(account_id);
-    } else if (browser_restart && IsPublicAccountMarkedForRemoval(account_id)) {
+    } else if (browser_restart &&
+               IsDeviceLocalAccountMarkedForRemoval(account_id)) {
       PublicAccountUserLoggedIn(User::CreatePublicAccountUser(account_id));
     } else if (account_id != GetOwnerAccountId() && !user &&
                (AreEphemeralUsersEnabled() || browser_restart)) {
@@ -595,9 +596,9 @@ bool UserManagerBase::IsUserNonCryptohomeDataEphemeral(
     return true;
 
   // Data belonging to the owner, anyone found on the user list and obsolete
-  // public accounts whose data has not been removed yet is not ephemeral.
+  // device local accounts whose data has not been removed yet is not ephemeral.
   if (account_id == GetOwnerAccountId() || UserExistsInList(account_id) ||
-      IsPublicAccountMarkedForRemoval(account_id)) {
+      IsDeviceLocalAccountMarkedForRemoval(account_id)) {
     return false;
   }
 
@@ -726,15 +727,13 @@ void UserManagerBase::EnsureUsersLoaded() {
       local_state->GetDictionary(kUserType);
 
   // Load public sessions first.
-  std::set<AccountId> public_sessions_set;
-  LoadPublicAccounts(&public_sessions_set);
+  std::set<AccountId> device_local_accounts_set;
+  LoadDeviceLocalAccounts(&device_local_accounts_set);
 
   // Load regular users and supervised users.
   std::vector<AccountId> regular_users;
   std::set<AccountId> regular_users_set;
-  ParseUserList(*prefs_regular_users,
-                public_sessions_set,
-                &regular_users,
+  ParseUserList(*prefs_regular_users, device_local_accounts_set, &regular_users,
                 &regular_users_set);
   for (std::vector<AccountId>::const_iterator it = regular_users.begin();
        it != regular_users.end(); ++it) {

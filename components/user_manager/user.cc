@@ -79,6 +79,7 @@ class DeviceLocalAccountUserBase : public User {
   ~DeviceLocalAccountUserBase() override;
   // User:
   void SetAffiliation(bool) override;
+  bool IsDeviceLocalAccount() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountUserBase);
@@ -120,6 +121,11 @@ class PublicAccountUser : public DeviceLocalAccountUserBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(PublicAccountUser);
 };
+
+User::User(const AccountId& account_id)
+    : account_id_(account_id), user_image_(new UserImage) {}
+
+User::~User() {}
 
 std::string User::GetEmail() const {
   return display_email();
@@ -204,6 +210,10 @@ void User::SetAffiliation(bool is_affiliated) {
   is_affiliated_ = is_affiliated;
 }
 
+bool User::IsDeviceLocalAccount() const {
+  return false;
+}
+
 User* User::CreateRegularUser(const AccountId& account_id) {
   return new RegularUser(account_id);
 }
@@ -222,12 +232,6 @@ User* User::CreateSupervisedUser(const AccountId& account_id) {
 
 User* User::CreatePublicAccountUser(const AccountId& account_id) {
   return new PublicAccountUser(account_id);
-}
-
-User::User(const AccountId& account_id) : account_id_(account_id),
-                                          user_image_(new UserImage) {}
-
-User::~User() {
 }
 
 void User::SetAccountLocale(const std::string& resolved_account_locale) {
@@ -304,6 +308,10 @@ void DeviceLocalAccountUserBase::SetAffiliation(bool) {
   // Device local accounts are always affiliated. No affiliation modification
   // must happen.
   NOTREACHED();
+}
+
+bool DeviceLocalAccountUserBase::IsDeviceLocalAccount() const {
+  return true;
 }
 
 KioskAppUser::KioskAppUser(const AccountId& kiosk_app_account_id)

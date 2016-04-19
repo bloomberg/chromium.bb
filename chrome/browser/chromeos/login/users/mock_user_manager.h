@@ -97,15 +97,16 @@ class MockUserManager : public ChromeUserManager {
                      void(const AccountId&,
                           user_manager::User::OAuthTokenStatus status));
   MOCK_CONST_METHOD0(IsEnterpriseManaged, bool(void));
-  MOCK_METHOD1(LoadPublicAccounts, void(std::set<AccountId>*));
+  MOCK_METHOD1(LoadDeviceLocalAccounts, void(std::set<AccountId>*));
   MOCK_METHOD0(PerformPreUserListLoadingActions, void(void));
   MOCK_METHOD0(PerformPostUserListLoadingActions, void(void));
   MOCK_METHOD1(PerformPostUserLoggedInActions, void(bool));
   MOCK_CONST_METHOD1(IsDemoApp, bool(const AccountId&));
   MOCK_CONST_METHOD1(IsKioskApp, bool(const AccountId&));
-  MOCK_CONST_METHOD1(IsPublicAccountMarkedForRemoval, bool(const AccountId&));
+  MOCK_CONST_METHOD1(IsDeviceLocalAccountMarkedForRemoval,
+                     bool(const AccountId&));
   MOCK_METHOD0(DemoAccountLoggedIn, void(void));
-  MOCK_METHOD1(KioskAppLoggedIn, void(const AccountId&));
+  MOCK_METHOD1(KioskAppLoggedIn, void(user_manager::User*));
   MOCK_METHOD1(PublicAccountUserLoggedIn, void(user_manager::User*));
   MOCK_METHOD1(SupervisedUserLoggedIn, void(const AccountId&));
   MOCK_METHOD1(OnUserRemoved, void(const AccountId&));

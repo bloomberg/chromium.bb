@@ -277,11 +277,7 @@ bool FakeUserManager::IsDemoApp(const AccountId& account_id) const {
   return false;
 }
 
-bool FakeUserManager::IsKioskApp(const AccountId& account_id) const {
-  return false;
-}
-
-bool FakeUserManager::IsPublicAccountMarkedForRemoval(
+bool FakeUserManager::IsDeviceLocalAccountMarkedForRemoval(
     const AccountId& account_id) const {
   return false;
 }

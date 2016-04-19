@@ -58,6 +58,15 @@ const user_manager::User* FakeChromeUserManager::AddUserWithAffiliation(
   return user;
 }
 
+user_manager::User* FakeChromeUserManager::AddKioskAppUser(
+    const AccountId& account_id) {
+  user_manager::User* user = user_manager::User::CreateKioskAppUser(account_id);
+  user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
+      account_id.GetUserEmail()));
+  users_.push_back(user);
+  return user;
+}
+
 const user_manager::User* FakeChromeUserManager::AddPublicAccountUser(
     const AccountId& account_id) {
   user_manager::User* user =
@@ -70,15 +79,6 @@ const user_manager::User* FakeChromeUserManager::AddPublicAccountUser(
                      user_manager::User::USER_IMAGE_PROFILE, false);
   users_.push_back(user);
   return user;
-}
-
-void FakeChromeUserManager::AddKioskAppUser(
-    const AccountId& kiosk_app_account_id) {
-  user_manager::User* user =
-      user_manager::User::CreateKioskAppUser(kiosk_app_account_id);
-  user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
-      kiosk_app_account_id.GetUserEmail()));
-  users_.push_back(user);
 }
 
 void FakeChromeUserManager::LoginUser(const AccountId& account_id) {

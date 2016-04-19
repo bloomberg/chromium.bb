@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/user_manager/user.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -399,8 +400,10 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
                              .SetBoolean("kiosk_only", true)
                              .Build())
           .Build());
-  user_manager_->KioskAppLoggedIn(
-      AccountId::FromUserEmail(manual_launch_kiosk_app->id()));
+  user_manager::User* const manual_kiosk_app_user =
+      user_manager_->AddKioskAppUser(
+          AccountId::FromUserEmail(manual_launch_kiosk_app->id()));
+  user_manager_->KioskAppLoggedIn(manual_kiosk_app_user);
   {
     TestingConsentProviderDelegate delegate;
     delegate.SetDialogButton(ui::DIALOG_BUTTON_OK);
