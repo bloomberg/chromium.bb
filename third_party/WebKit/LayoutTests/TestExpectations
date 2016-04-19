@@ -1439,7 +1439,6 @@ crbug.com/601166 [ Mac10.9 ]  fast/text/large-text-composed-char.html [ Failure 
 crbug.com/601166 [ Mac10.9 ]  fast/text/line-breaks-after-white-space.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text/line-breaks.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text/line-initial-and-final-swashes.html [ Failure ]
-crbug.com/601166 [ Mac10.9 ]  fast/text/midword-break-after-breakable-char.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text/midword-break-before-surrogate-pair.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text/midword-break-hang.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text/monospace-width-cache.html [ Failure ]
@@ -1523,3 +1522,5 @@ crbug.com/600248 imported/web-platform-tests/web-animations/keyframe-effect/getC
 crbug.com/600248 imported/web-platform-tests/web-animations/keyframe-effect/getComputedTiming-currentIteration.html [ Crash Failure ]
 crbug.com/600248 imported/web-platform-tests/web-animations/animation-effect-timing/endDelay.html [ Failure ]
 crbug.com/600248 imported/web-platform-tests/web-animations/animation/constructor.html [ Failure Timeout ]
+
+crbug.com/604642 [ Mac ]  fast/text/midword-break-after-breakable-char.html [ Failure ]
