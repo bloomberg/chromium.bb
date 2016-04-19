@@ -223,35 +223,9 @@ CreateOffscreenContext(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
   attributes.lose_context_when_out_of_memory = true;
 
   content::WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
-#if defined(OS_ANDROID)
-  bool using_synchronous_compositing =
-      content::SynchronousCompositorFactory::GetInstance() ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIPCSyncCompositing);
-  // If we raster too fast we become upload bound, and pending
-  // uploads consume memory. For maximum upload throughput, we would
-  // want to allow for upload_throughput * pipeline_time of pending
-  // uploads, after which we are just wasting memory. Since we don't
-  // know our upload throughput yet, this just caps our memory usage.
-  // Synchronous compositor uses half because synchronous compositor
-  // pipeline is only one frame deep. But twice of half for low end
-  // because 16bit texture is not supported.
-  size_t divider = using_synchronous_compositing ? 2 : 1;
-  if (base::SysInfo::IsLowEndDevice())
-    divider = 6;
-  // For reference Nexus10 can upload 1MB in about 2.5ms.
-  const double max_mb_uploaded_per_ms = 2.0 / (5 * divider);
-  // Deadline to draw a frame to achieve 60 frames per second.
-  const size_t kMillisecondsPerFrame = 16;
-  // Assuming a two frame deep pipeline between the CPU and the GPU.
-  size_t max_transfer_buffer_usage_mb =
-      static_cast<size_t>(2 * kMillisecondsPerFrame * max_mb_uploaded_per_ms);
-  static const size_t kBytesPerMegabyte = 1024 * 1024;
-  // We keep the MappedMemoryReclaimLimit the same as the upload limit
-  // to avoid unnecessarily stalling the compositor thread.
-  limits.mapped_memory_reclaim_limit =
-      max_transfer_buffer_usage_mb * kBytesPerMegabyte;
-#endif
+  // The renderer compositor context doesn't do a lot of stuff, so we don't
+  // expect it to need a lot of space for commands or transfer. Raster and
+  // uploads happen on the worker context instead.
   limits.command_buffer_size = 64 * 1024;
   limits.start_transfer_buffer_size = 64 * 1024;
   limits.min_transfer_buffer_size = 64 * 1024;
