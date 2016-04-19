@@ -1031,15 +1031,6 @@ void RenderWidgetCompositor::SendCompositorProto(
   delegate_->ForwardCompositorProto(serialized);
 }
 
-void RenderWidgetCompositor::RecordFrameTimingEvents(
-    std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
-        composite_events,
-    std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
-        main_frame_events) {
-  delegate_->RecordFrameTimingEvents(std::move(composite_events),
-                                     std::move(main_frame_events));
-}
-
 void RenderWidgetCompositor::SetSurfaceIdNamespace(
     uint32_t surface_id_namespace) {
   layer_tree_host_->set_surface_id_namespace(surface_id_namespace);

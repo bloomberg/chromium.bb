@@ -119,22 +119,6 @@ void LayerTreeImpl::RecreateResources() {
   }
 }
 
-void LayerTreeImpl::GatherFrameTimingRequestIds(
-    std::vector<int64_t>* request_ids) {
-  if (!root_layer_)
-    return;
-
-  // TODO(vmpstr): Early out if there are no requests on any of the layers. For
-  // that, we need to inform LayerTreeImpl whenever there are requests when we
-  // get them.
-  LayerTreeHostCommon::CallFunctionForEveryLayer(
-      this,
-      [request_ids](LayerImpl* layer) {
-        layer->GatherFrameTimingRequestIds(request_ids);
-      },
-      CallFunctionLayerType::ALL_LAYERS);
-}
-
 bool LayerTreeImpl::IsViewportLayerId(int id) const {
   if (id == inner_viewport_scroll_layer_id_ ||
       id == outer_viewport_scroll_layer_id_)

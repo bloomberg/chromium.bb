@@ -188,7 +188,6 @@ void ProxyImpl::BeginMainFrameAbortedOnImpl(
 
   if (CommitEarlyOutHandledCommit(reason)) {
     SetInputThrottledUntilCommitOnImpl(false);
-    last_processed_begin_main_frame_args_ = last_begin_main_frame_args_;
   }
   layer_tree_host_impl_->BeginMainFrameAborted(reason);
   scheduler_->NotifyBeginMainFrameStarted(main_thread_start_time);
@@ -456,8 +455,6 @@ void ProxyImpl::DidActivateSyncTree() {
     commit_completion_event_ = nullptr;
     next_commit_waits_for_activation_ = false;
   }
-
-  last_processed_begin_main_frame_args_ = last_begin_main_frame_args_;
 }
 
 void ProxyImpl::WillPrepareTiles() {
@@ -480,26 +477,9 @@ void ProxyImpl::OnDrawForOutputSurface(bool resourceless_software_draw) {
   scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
 }
 
-void ProxyImpl::PostFrameTimingEventsOnImplThread(
-    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
-  DCHECK(IsImplThread());
-  channel_impl_->PostFrameTimingEventsOnMain(std::move(composite_events),
-                                             std::move(main_frame_events));
-}
-
 void ProxyImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
   DCHECK(IsImplThread());
   layer_tree_host_impl_->WillBeginImplFrame(args);
-  if (last_processed_begin_main_frame_args_.IsValid()) {
-    // Last processed begin main frame args records the frame args that we sent
-    // to the main thread for the last frame that we've processed. If that is
-    // set, that means the current frame is one past the frame in which we've
-    // finished the processing.
-    layer_tree_host_impl_->RecordMainFrameTiming(
-        last_processed_begin_main_frame_args_, args);
-    last_processed_begin_main_frame_args_ = BeginFrameArgs();
-  }
 }
 
 void ProxyImpl::DidFinishImplFrame() {
@@ -524,10 +504,6 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) {
       layer_tree_host_impl_->memory_allocation_limit_bytes();
   begin_main_frame_state->evicted_ui_resources =
       layer_tree_host_impl_->EvictedUIResourcesExist();
-  // TODO(vmpstr): This needs to be fixed if
-  // main_frame_before_activation_enabled is set, since we might run this code
-  // twice before recording a duration. crbug.com/469824
-  last_begin_main_frame_args_ = begin_main_frame_state->begin_frame_args;
   channel_impl_->BeginMainFrame(std::move(begin_main_frame_state));
   devtools_instrumentation::DidRequestMainThreadFrame(layer_tree_host_id_);
 }

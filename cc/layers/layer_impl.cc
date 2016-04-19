@@ -91,7 +91,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       mutable_properties_(MutableProperty::kNone),
       debug_info_(nullptr),
       force_render_surface_(false),
-      frame_timing_requests_dirty_(false),
       scrolls_drawn_descendant_(false),
       layer_or_descendant_has_touch_handler_(false) {
   DCHECK_GT(layer_id_, 0);
@@ -594,11 +593,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   if (owned_debug_info_)
     layer->SetDebugInfo(std::move(owned_debug_info_));
-
-  if (frame_timing_requests_dirty_) {
-    layer->SetFrameTimingRequests(frame_timing_requests_);
-    frame_timing_requests_dirty_ = false;
-  }
 
   // Reset any state that should be cleared for the next update.
   layer_property_changed_ = false;
@@ -1214,18 +1208,6 @@ void LayerImpl::Set3dSortingContextId(int id) {
   sorting_context_id_ = id;
 }
 
-void LayerImpl::SetFrameTimingRequests(
-    const std::vector<FrameTimingRequest>& requests) {
-  frame_timing_requests_ = requests;
-  frame_timing_requests_dirty_ = true;
-  SetNeedsPushProperties();
-}
-
-void LayerImpl::GatherFrameTimingRequestIds(std::vector<int64_t>* request_ids) {
-  for (const auto& request : frame_timing_requests_)
-    request_ids->push_back(request.id());
-}
-
 void LayerImpl::SetTransform(const gfx::Transform& transform) {
   if (transform_ == transform)
     return;
@@ -1486,17 +1468,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
     } else {
       NOTREACHED();
     }
-  }
-
-  if (!frame_timing_requests_.empty()) {
-    state->BeginArray("frame_timing_requests");
-    for (const auto& request : frame_timing_requests_) {
-      state->BeginDictionary();
-      state->SetInteger("request_id", request.id());
-      MathUtil::AddToTracedValue("request_rect", request.rect(), state);
-      state->EndDictionary();
-    }
-    state->EndArray();
   }
 }
 

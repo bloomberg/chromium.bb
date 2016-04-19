@@ -1805,7 +1805,6 @@ void Document::updateStyle()
     }
 
     view()->recalcOverflowAfterStyleChange();
-    view()->setFrameTimingRequestsDirty(true);
 
     clearChildNeedsStyleRecalc();
 

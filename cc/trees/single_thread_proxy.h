@@ -106,10 +106,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void DidPrepareTiles() override;
   void DidCompletePageScaleAnimationOnImplThread() override;
   void OnDrawForOutputSurface(bool resourceless_software_draw) override;
-  void PostFrameTimingEventsOnImplThread(
-      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
-      override;
 
   void RequestNewOutputSurface();
 

@@ -180,10 +180,6 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
       bool success,
       const RendererCapabilities& capabilities) override;
   void DidCompletePageScaleAnimation() override;
-  void PostFrameTimingEventsOnMain(
-      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
-      override;
   void BeginMainFrame(std::unique_ptr<BeginMainFrameAndCommitState>
                           begin_main_frame_state) override;
 

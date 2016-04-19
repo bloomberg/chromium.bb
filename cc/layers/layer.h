@@ -20,7 +20,6 @@
 #include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
-#include "cc/debug/frame_timing_request.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer_collections.h"
@@ -488,14 +487,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetSubtreePropertyChanged();
   bool subtree_property_changed() const { return subtree_property_changed_; }
 
-  // Sets new frame timing requests for this layer.
-  void SetFrameTimingRequests(const std::vector<FrameTimingRequest>& requests);
-
-  // Accessor for unit tests
-  const std::vector<FrameTimingRequest>& FrameTimingRequests() const {
-    return frame_timing_requests_;
-  }
-
   void DidBeginTracing();
 
   int num_copy_requests_in_target_subtree();
@@ -688,9 +679,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // These all act like draw properties, so don't need push properties.
   gfx::Rect visible_layer_rect_;
   size_t num_unclipped_descendants_;
-
-  std::vector<FrameTimingRequest> frame_timing_requests_;
-  bool frame_timing_requests_dirty_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

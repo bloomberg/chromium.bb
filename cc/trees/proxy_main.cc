@@ -129,14 +129,6 @@ void ProxyMain::DidCompletePageScaleAnimation() {
   layer_tree_host_->DidCompletePageScaleAnimation();
 }
 
-void ProxyMain::PostFrameTimingEventsOnMain(
-    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
-  DCHECK(IsMainThread());
-  layer_tree_host_->RecordFrameTimingEvents(std::move(composite_events),
-                                            std::move(main_frame_events));
-}
-
 void ProxyMain::BeginMainFrame(
     std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
   benchmark_instrumentation::ScopedBeginFrameTask begin_frame_task(

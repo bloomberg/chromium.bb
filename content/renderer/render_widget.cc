@@ -930,40 +930,6 @@ void RenderWidget::OnSwapBuffersPosted() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersPosted");
 }
 
-void RenderWidget::RecordFrameTimingEvents(
-    std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
-        composite_events,
-    std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
-        main_frame_events) {
-  for (const auto& composite_event : *composite_events) {
-    int64_t frameId = composite_event.first;
-    const std::vector<cc::FrameTimingTracker::CompositeTimingEvent>& events =
-        composite_event.second;
-    std::vector<blink::WebFrameTimingEvent> webEvents;
-    for (size_t i = 0; i < events.size(); ++i) {
-      webEvents.push_back(blink::WebFrameTimingEvent(
-          events[i].frame_id,
-          (events[i].timestamp - base::TimeTicks()).InSecondsF()));
-    }
-    webwidget_->recordFrameTimingEvent(blink::WebWidget::CompositeEvent,
-                                       frameId, webEvents);
-  }
-  for (const auto& main_frame_event : *main_frame_events) {
-    int64_t frameId = main_frame_event.first;
-    const std::vector<cc::FrameTimingTracker::MainFrameTimingEvent>& events =
-        main_frame_event.second;
-    std::vector<blink::WebFrameTimingEvent> webEvents;
-    for (size_t i = 0; i < events.size(); ++i) {
-      webEvents.push_back(blink::WebFrameTimingEvent(
-          events[i].frame_id,
-          (events[i].timestamp - base::TimeTicks()).InSecondsF(),
-          (events[i].end_time - base::TimeTicks()).InSecondsF()));
-    }
-    webwidget_->recordFrameTimingEvent(blink::WebWidget::RenderEvent, frameId,
-                                       webEvents);
-  }
-}
-
 void RenderWidget::RequestScheduleAnimation() {
   scheduleAnimation();
 }

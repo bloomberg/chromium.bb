@@ -106,11 +106,6 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   void DidPrepareTiles() override;
   void DidCompletePageScaleAnimationOnImplThread() override;
   void OnDrawForOutputSurface(bool resourceless_software_draw) override;
-  // This should only be called by LayerTreeHostImpl::PostFrameTimingEvents.
-  void PostFrameTimingEventsOnImplThread(
-      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
-      override;
 
   // SchedulerClient implementation
   void WillBeginImplFrame(const BeginFrameArgs& args) override;
@@ -157,10 +152,6 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
-
-  // Values used to keep track of frame durations. Used only in frame timing.
-  BeginFrameArgs last_begin_main_frame_args_;
-  BeginFrameArgs last_processed_begin_main_frame_args_;
 
   std::unique_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
 

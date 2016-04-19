@@ -2449,9 +2449,6 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
             if (!m_frame->document()->printing())
                 synchronizedPaint();
 
-            if (RuntimeEnabledFeatures::frameTimingSupportEnabled())
-                updateFrameTimingRequestsIfNeeded();
-
             if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
                 pushPaintArtifactToCompositor();
 
@@ -2550,18 +2547,6 @@ void FrameView::pushPaintArtifactToCompositor()
     if (!page)
         return;
     page->chromeClient().didPaint(paintArtifact);
-}
-
-void FrameView::updateFrameTimingRequestsIfNeeded()
-{
-    GraphicsLayerFrameTimingRequests graphicsLayerTimingRequests;
-    // TODO(mpb) use a 'dirty' bit to not call this every time.
-    collectFrameTimingRequestsRecursive(graphicsLayerTimingRequests);
-
-    for (const auto& iter : graphicsLayerTimingRequests) {
-        const GraphicsLayer* graphicsLayer = iter.key;
-        graphicsLayer->platformLayer()->setFrameTimingRequests(iter.value);
-    }
 }
 
 void FrameView::updateStyleAndLayoutIfNeededRecursive()
@@ -3946,43 +3931,6 @@ void FrameView::collectAnnotatedRegions(LayoutObject& layoutObject, Vector<Annot
     layoutObject.addAnnotatedRegions(regions);
     for (LayoutObject* curr = layoutObject.slowFirstChild(); curr; curr = curr->nextSibling())
         collectAnnotatedRegions(*curr, regions);
-}
-
-void FrameView::collectFrameTimingRequestsRecursive(GraphicsLayerFrameTimingRequests& graphicsLayerTimingRequests)
-{
-    if (!m_frameTimingRequestsDirty)
-        return;
-
-    collectFrameTimingRequests(graphicsLayerTimingRequests);
-
-    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (!child->isLocalFrame())
-            continue;
-
-        toLocalFrame(child)->view()->collectFrameTimingRequestsRecursive(graphicsLayerTimingRequests);
-    }
-    m_frameTimingRequestsDirty = false;
-}
-
-void FrameView::collectFrameTimingRequests(GraphicsLayerFrameTimingRequests& graphicsLayerTimingRequests)
-{
-    if (!m_frame->isLocalFrame())
-        return;
-    Frame* frame = m_frame.get();
-    LocalFrame* localFrame = toLocalFrame(frame);
-    LayoutRect viewRect = localFrame->contentLayoutItem().viewRect();
-    const LayoutBoxModelObject& paintInvalidationContainer = localFrame->contentLayoutObject()->containerForPaintInvalidation();
-    // If the frame is being throttled, its compositing state may not be up to date.
-    if (!paintInvalidationContainer.enclosingLayer()->isAllowedToQueryCompositingState())
-        return;
-    const GraphicsLayer* graphicsLayer = paintInvalidationContainer.enclosingLayer()->graphicsLayerBacking();
-
-    if (!graphicsLayer)
-        return;
-
-    PaintLayer::mapRectToPaintInvalidationBacking(*localFrame->contentLayoutObject(), paintInvalidationContainer, viewRect);
-
-    graphicsLayerTimingRequests.add(graphicsLayer, Vector<std::pair<int64_t, WebRect>>()).storedValue->value.append(std::make_pair(m_frame->frameID(), enclosingIntRect(viewRect)));
 }
 
 void FrameView::setNeedsUpdateViewportIntersection()

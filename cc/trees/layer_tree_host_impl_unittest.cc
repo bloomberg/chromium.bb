@@ -175,10 +175,6 @@ class LayerTreeHostImplTest : public testing::Test,
     host_impl_->SwapBuffers(*frame);
     last_on_draw_frame_ = std::move(frame);
   }
-  void PostFrameTimingEventsOnImplThread(
-      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
-      override {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;

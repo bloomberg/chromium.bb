@@ -99,14 +99,6 @@ void ProxyMainForTest::DidCompletePageScaleAnimation() {
   ProxyMain::DidCompletePageScaleAnimation();
 }
 
-void ProxyMainForTest::PostFrameTimingEventsOnMain(
-    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
-  test_hooks_->ReceivedPostFrameTimingEventsOnMain();
-  ProxyMain::PostFrameTimingEventsOnMain(std::move(composite_events),
-                                         std::move(main_frame_events));
-}
-
 void ProxyMainForTest::BeginMainFrame(
     std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
   test_hooks_->ReceivedBeginMainFrame();

@@ -301,31 +301,6 @@ WebVector<WebRect> WebLayerImpl::nonFastScrollableRegion() const {
   return result;
 }
 
-void WebLayerImpl::setFrameTimingRequests(
-    const WebVector<std::pair<int64_t, WebRect>>& requests) {
-  std::vector<cc::FrameTimingRequest> frame_timing_requests(requests.size());
-  for (size_t i = 0; i < requests.size(); ++i) {
-    frame_timing_requests[i] = cc::FrameTimingRequest(
-        requests[i].first, gfx::Rect(requests[i].second));
-  }
-  layer_->SetFrameTimingRequests(frame_timing_requests);
-}
-
-WebVector<std::pair<int64_t, WebRect>> WebLayerImpl::frameTimingRequests()
-    const {
-  const std::vector<cc::FrameTimingRequest>& frame_timing_requests =
-      layer_->FrameTimingRequests();
-
-  size_t num_requests = frame_timing_requests.size();
-
-  WebVector<std::pair<int64_t, WebRect>> result(num_requests);
-  for (size_t i = 0; i < num_requests; ++i) {
-    result[i] = std::make_pair(frame_timing_requests[i].id(),
-                               frame_timing_requests[i].rect());
-  }
-  return result;
-}
-
 void WebLayerImpl::setTouchEventHandlerRegion(const WebVector<WebRect>& rects) {
   cc::Region region;
   for (size_t i = 0; i < rects.size(); ++i)

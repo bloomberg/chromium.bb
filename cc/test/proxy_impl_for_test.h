@@ -31,9 +31,6 @@ class ProxyImplForTest : public ProxyImpl {
   const DelayedUniqueNotifier& smoothness_priority_expiration_notifier() const {
     return smoothness_priority_expiration_notifier_;
   }
-  const BeginFrameArgs& last_begin_frame_args() const {
-    return last_begin_main_frame_args_;
-  }
 
   ProxyImplForTest(
       TestHooks* test_hooks,

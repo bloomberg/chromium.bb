@@ -150,27 +150,11 @@ class RemoteChannelTestCommit : public RemoteChannelTest {
     EXPECT_EQ(viewport_size_, host_impl->device_viewport_size());
   }
 
-  void ScheduledActionSendBeginMainFrame() override {
-    last_args_sent_ = GetProxyImplForTest()->last_begin_frame_args();
-  }
-
-  void BeginMainFrame(const BeginFrameArgs& args) override {
-    last_args_received_ = args;
-  }
-
   void AfterTest() override {
     EXPECT_EQ(5, calls_received_);
-
-    // Ensure that we serialized and deserialized the
-    // BeginMainFrameAndCommitState. While the last_args_received_ will be set
-    // on the impl thread, it is safe to read it here since the impl thread has
-    // been destroyed now.
-    EXPECT_EQ(last_args_sent_, last_args_received_);
   }
 
   const gfx::Size viewport_size_ = gfx::Size(5, 3);
-  BeginFrameArgs last_args_sent_;
-  BeginFrameArgs last_args_received_;
 };
 
 REMOTE_DIRECT_RENDERER_TEST_F(RemoteChannelTestCommit);

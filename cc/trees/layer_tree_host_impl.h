@@ -19,7 +19,6 @@
 #include "cc/animation/layer_tree_mutator.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/synced_property.h"
-#include "cc/debug/frame_timing_tracker.h"
 #include "cc/debug/micro_benchmark_controller_impl.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/scrollbar_animation_controller.h"
@@ -132,11 +131,6 @@ class LayerTreeHostImplClient {
   // Called when output surface asks for a draw.
   virtual void OnDrawForOutputSurface(bool resourceless_software_draw) = 0;
 
-  virtual void PostFrameTimingEventsOnImplThread(
-      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet>
-          main_frame_events) = 0;
-
  protected:
   virtual ~LayerTreeHostImplClient() {}
 };
@@ -223,7 +217,6 @@ class CC_EXPORT LayerTreeHostImpl
 
     std::vector<gfx::Rect> occluding_screen_space_rects;
     std::vector<gfx::Rect> non_occluding_screen_space_rects;
-    std::vector<FrameTimingTracker::FrameAndRectIds> composite_events;
     RenderPassList render_passes;
     const LayerImplList* render_surface_layer_list;
     LayerImplList will_draw_layers;
@@ -585,10 +578,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   bool prepare_tiles_needed() const { return tile_priorities_dirty_; }
 
-  FrameTimingTracker* frame_timing_tracker() {
-    return frame_timing_tracker_.get();
-  }
-
   gfx::Vector2dF ScrollSingleNode(ScrollNode* scroll_node,
                                   const gfx::Vector2dF& delta,
                                   const gfx::Point& viewport_point,
@@ -600,25 +589,6 @@ class CC_EXPORT LayerTreeHostImpl
   }
 
   bool output_is_secure() const { return output_is_secure_; }
-
-  // Record main frame timing information.
-  // |start_of_main_frame_args| is the BeginFrameArgs of the beginning of the
-  // main frame (ie the frame that kicked off the main frame).
-  // |expected_next_main_frame_args| is the BeginFrameArgs of the frame that
-  // follows the completion of the main frame (whether it is activation or some
-  // other completion, such as early out). Note that if there is a main frame
-  // scheduled in that frame, then this BeginFrameArgs will become the main
-  // frame args. However, if no such frame is scheduled, then this _would_ be
-  // the main frame args if it was scheduled.
-  void RecordMainFrameTiming(
-      const BeginFrameArgs& start_of_main_frame_args,
-      const BeginFrameArgs& expected_next_main_frame_args);
-
-  // Post the given frame timing events to the requester.
-  void PostFrameTimingEvents(
-      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet>
-          main_frame_events);
 
   base::SingleThreadTaskRunner* GetTaskRunner() const {
     DCHECK(task_runner_provider_);
@@ -865,8 +835,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   bool requires_high_res_to_draw_;
   bool is_likely_to_require_a_draw_;
-
-  std::unique_ptr<FrameTimingTracker> frame_timing_tracker_;
 
   std::unique_ptr<Viewport> viewport_;
 

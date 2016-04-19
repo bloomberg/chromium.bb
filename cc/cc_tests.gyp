@@ -28,7 +28,6 @@
       'base/simple_enclosed_region_unittest.cc',
       'base/tiling_data_unittest.cc',
       'base/unique_notifier_unittest.cc',
-      'debug/frame_timing_tracker_unittest.cc',
       'debug/layer_tree_debug_state_unittest.cc',
       'debug/micro_benchmark_controller_unittest.cc',
       'debug/rendering_stats_unittest.cc',

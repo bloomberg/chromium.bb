@@ -564,9 +564,6 @@ public:
 
     LayoutAnalyzer* layoutAnalyzer() { return m_analyzer.get(); }
 
-    void setFrameTimingRequestsDirty(bool isDirty) { m_frameTimingRequestsDirty = isDirty; }
-    bool frameTimingRequestsDirty() { return m_frameTimingRequestsDirty; }
-
     // Returns true if this frame should not render or schedule visual updates.
     bool shouldThrottleRendering() const;
 
@@ -746,11 +743,6 @@ private:
     LayoutObject* viewportLayoutObject();
 
     void collectAnnotatedRegions(LayoutObject&, Vector<AnnotatedRegionValue>&) const;
-
-    typedef WTF::HashMap <const GraphicsLayer*, Vector<std::pair<int64_t, WebRect>>> GraphicsLayerFrameTimingRequests;
-    void updateFrameTimingRequestsIfNeeded();
-    void collectFrameTimingRequests(GraphicsLayerFrameTimingRequests&);
-    void collectFrameTimingRequestsRecursive(GraphicsLayerFrameTimingRequests&);
 
     template <typename Function> void forAllNonThrottledFrameViews(const Function&);
 

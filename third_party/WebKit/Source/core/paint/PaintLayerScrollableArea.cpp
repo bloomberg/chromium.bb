@@ -394,7 +394,6 @@ void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffse
     // FIXME: This invalidation will be unnecessary in slimming paint phase 2.
     if (requiresPaintInvalidation) {
         box().setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-        frameView->setFrameTimingRequestsDirty(true);
     }
 
     // Schedule the scroll DOM event.

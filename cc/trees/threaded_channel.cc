@@ -254,17 +254,6 @@ void ThreadedChannel::DidCompletePageScaleAnimation() {
                             impl().proxy_main_weak_ptr));
 }
 
-void ThreadedChannel::PostFrameTimingEventsOnMain(
-    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
-  DCHECK(IsImplThread());
-  MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyMain::PostFrameTimingEventsOnMain,
-                            impl().proxy_main_weak_ptr,
-                            base::Passed(std::move(composite_events)),
-                            base::Passed(std::move(main_frame_events))));
-}
-
 void ThreadedChannel::BeginMainFrame(
     std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
   DCHECK(IsImplThread());

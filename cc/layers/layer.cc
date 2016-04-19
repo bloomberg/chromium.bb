@@ -90,8 +90,7 @@ Layer::Layer()
       clip_parent_(nullptr),
       replica_layer_(nullptr),
       client_(nullptr),
-      num_unclipped_descendants_(0),
-      frame_timing_requests_dirty_(false) {}
+      num_unclipped_descendants_(0) {}
 
 Layer::~Layer() {
   // Our parent should be holding a reference to us so there should be no
@@ -1270,11 +1269,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   update_rect_.Union(layer->update_rect());
   layer->SetUpdateRect(update_rect_);
 
-  if (frame_timing_requests_dirty_) {
-    layer->SetFrameTimingRequests(frame_timing_requests_);
-    frame_timing_requests_dirty_ = false;
-  }
-
   // Reset any state that should be cleared for the next update.
   subtree_property_changed_ = false;
   update_rect_ = gfx::Rect();
@@ -1476,8 +1470,6 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
 
   // TODO(nyquist): Figure out what to do with LayerAnimationController.
   // See crbug.com/570376.
-  // TODO(nyquist): Figure out what to do with FrameTimingRequests. See
-  // crbug.com/570377.
 
   update_rect_ = gfx::Rect();
 }
@@ -1791,16 +1783,6 @@ void Layer::AddDrawableDescendants(int num) {
 
 void Layer::RunMicroBenchmark(MicroBenchmark* benchmark) {
   benchmark->RunOnLayer(this);
-}
-
-void Layer::SetFrameTimingRequests(
-    const std::vector<FrameTimingRequest>& requests) {
-  // TODO(vmpstr): Early out if there are no changes earlier in the call stack.
-  if (requests == frame_timing_requests_)
-    return;
-  frame_timing_requests_ = requests;
-  frame_timing_requests_dirty_ = true;
-  SetNeedsCommit();
 }
 
 void Layer::SetElementId(uint64_t id) {

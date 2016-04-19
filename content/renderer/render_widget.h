@@ -199,11 +199,6 @@ class CONTENT_EXPORT RenderWidget
   void OnSwapBuffersAborted() override;
   void OnSwapBuffersComplete() override;
   void OnSwapBuffersPosted() override;
-  void RecordFrameTimingEvents(
-      std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
-          composite_events,
-      std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
-          main_frame_events) override;
   void RequestScheduleAnimation() override;
   void UpdateVisualState() override;
   void WillBeginCompositorFrame() override;

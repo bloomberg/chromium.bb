@@ -112,12 +112,6 @@ void BlimpCompositor::DidCompleteSwapBuffers() {}
 
 void BlimpCompositor::DidCompletePageScaleAnimation() {}
 
-void BlimpCompositor::RecordFrameTimingEvents(
-    std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
-        composite_events,
-    std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
-        main_frame_events) {}
-
 void BlimpCompositor::SetProtoReceiver(ProtoReceiver* receiver) {
   remote_proto_channel_receiver_ = receiver;
 }

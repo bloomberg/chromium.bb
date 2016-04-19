@@ -55,10 +55,6 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
   void DidCommit() override {}
   void DidCommitAndDrawFrame() override {}
   void DidCompleteSwapBuffers() override {}
-  void RecordFrameTimingEvents(
-      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
-      override{};
   void DidCompletePageScaleAnimation() override {}
   void SendBeginFramesToChildren(const BeginFrameArgs& args) override {}
 

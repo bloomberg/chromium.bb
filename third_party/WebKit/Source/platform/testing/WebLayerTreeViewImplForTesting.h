@@ -88,10 +88,6 @@ public:
     void DidCommitAndDrawFrame() override {}
     void DidCompleteSwapBuffers() override {}
     void DidCompletePageScaleAnimation() override {}
-    void RecordFrameTimingEvents(
-        std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet> compositeEvents,
-        std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet> mainFrameEvents)
-        override {}
 
     // cc::LayerTreeHostSingleThreadClient implementation.
     void DidPostSwapBuffers() override {}

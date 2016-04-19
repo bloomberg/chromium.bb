@@ -92,7 +92,6 @@
       "platform/WebFont.h",
       "platform/WebFontDescription.h",
       "platform/WebFrameScheduler.h",
-      "platform/WebFrameTimingEvent.h",
       "platform/WebGamepad.h",
       "platform/WebGamepadListener.h",
       "platform/WebGamepads.h",

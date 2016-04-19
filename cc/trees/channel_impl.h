@@ -6,7 +6,6 @@
 #define CC_TREES_CHANNEL_IMPL_H_
 
 #include "cc/base/cc_export.h"
-#include "cc/debug/frame_timing_tracker.h"
 #include "cc/output/renderer_capabilities.h"
 #include "cc/trees/proxy_common.h"
 
@@ -33,10 +32,6 @@ class CC_EXPORT ChannelImpl {
       bool success,
       const RendererCapabilities& capabilities) = 0;
   virtual void DidCompletePageScaleAnimation() = 0;
-  virtual void PostFrameTimingEventsOnMain(
-      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet>
-          main_frame_events) = 0;
   virtual void BeginMainFrame(
       std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) = 0;
 

@@ -172,11 +172,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidCommitAndDrawFrame() override;
   void DidCompleteSwapBuffers() override;
   void DidCompletePageScaleAnimation() override;
-  void RecordFrameTimingEvents(
-      std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
-          composite_events,
-      std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
-          main_frame_events) override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void RequestScheduleAnimation() override;

@@ -1281,13 +1281,6 @@ void LayerTreeHost::SetAuthoritativeVSyncInterval(
   proxy_->SetAuthoritativeVSyncInterval(interval);
 }
 
-void LayerTreeHost::RecordFrameTimingEvents(
-    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
-  client_->RecordFrameTimingEvents(std::move(composite_events),
-                                   std::move(main_frame_events));
-}
-
 Layer* LayerTreeHost::LayerById(int id) const {
   LayerIdMap::const_iterator iter = layer_id_map_.find(id);
   return iter != layer_id_map_.end() ? iter->second : NULL;

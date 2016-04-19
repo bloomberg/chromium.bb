@@ -51,18 +51,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-namespace {
-
-int64_t generateFrameID()
-{
-    // Initialize to the current time to reduce the likelihood of generating
-    // identifiers that overlap with those from past/future browser sessions.
-    static int64_t next = static_cast<int64_t>(currentTime() * 1000000.0);
-    return ++next;
-}
-
-} // namespace
-
 Frame::~Frame()
 {
     InstanceCounters::decrementCounter(InstanceCounters::FrameCounter);
@@ -305,7 +293,6 @@ Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
     , m_host(host)
     , m_owner(owner)
     , m_client(client)
-    , m_frameID(generateFrameID())
     , m_isLoading(false)
 {
     InstanceCounters::incrementCounter(InstanceCounters::FrameCounter);

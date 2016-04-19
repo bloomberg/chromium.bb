@@ -5,8 +5,6 @@
 #ifndef CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_DELEGATE_H_
 #define CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_DELEGATE_H_
 
-#include "cc/debug/frame_timing_tracker.h"
-
 namespace blink {
 class WebWidget;
 struct WebScreenInfo;
@@ -76,13 +74,6 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
 
   // Called by the compositor in single-threaded mode when a swap is posted.
   virtual void OnSwapBuffersPosted() = 0;
-
-  // Called by the compositor to request the delegate to record frame timing.
-  virtual void RecordFrameTimingEvents(
-      std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
-          composite_events,
-      std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
-          main_frame_events) = 0;
 
   // Requests that the client schedule a composite now, and calculate
   // appropriate delay for potential future frame.

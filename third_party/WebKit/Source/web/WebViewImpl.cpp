@@ -4382,27 +4382,6 @@ void WebViewImpl::applyViewportDeltas(
     }
 }
 
-void WebViewImpl::recordFrameTimingEvent(FrameTimingEventType eventType, int64_t FrameId, const WebVector<WebFrameTimingEvent>& events)
-{
-    Frame* frame = m_page ? m_page->mainFrame() : 0;
-
-    while (frame && frame->frameID() != FrameId) {
-        frame = frame->tree().traverseNext();
-    }
-
-    if (!frame || !frame->domWindow() || !frame->domWindow()->document())
-        return; // Can't find frame, it may have been cleaned up from the DOM.
-
-    blink::DOMWindow* domWindow = frame->domWindow();
-    blink::Performance* performance = DOMWindowPerformance::performance(*domWindow);
-    for (size_t i = 0; i < events.size(); ++i) {
-        if (eventType == CompositeEvent)
-            performance->addCompositeTiming(domWindow->document(), events[i].sourceFrame, events[i].startTime);
-        else if (eventType == RenderEvent)
-            performance->addRenderTiming(domWindow->document(), events[i].sourceFrame, events[i].startTime, events[i].finishTime);
-    }
-}
-
 void WebViewImpl::updateLayerTreeViewport()
 {
     if (!page() || !m_layerTreeView)

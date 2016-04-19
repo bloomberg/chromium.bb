@@ -121,11 +121,6 @@ void WebViewFrameWidget::applyViewportDeltas(
     return m_webView->applyViewportDeltas(visualViewportDelta, layoutViewportDelta, elasticOverscrollDelta, scaleFactor, topControlsShownRatioDelta);
 }
 
-void WebViewFrameWidget::recordFrameTimingEvent(FrameTimingEventType eventType, int64_t rectId, const WebVector<WebFrameTimingEvent>& events)
-{
-    return m_webView->recordFrameTimingEvent(eventType, rectId, events);
-}
-
 void WebViewFrameWidget::mouseCaptureLost()
 {
     return m_webView->mouseCaptureLost();

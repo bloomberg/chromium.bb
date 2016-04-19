@@ -22,7 +22,6 @@
 #include "base/time/time.h"
 #include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
-#include "cc/debug/frame_timing_tracker.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
 #include "cc/input/event_listener_properties.h"
@@ -354,11 +353,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool needs_meta_info_recomputation() {
     return needs_meta_info_recomputation_;
   }
-
-  void RecordFrameTimingEvents(
-      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet>
-          main_frame_events);
 
   Layer* LayerById(int id) const;
 

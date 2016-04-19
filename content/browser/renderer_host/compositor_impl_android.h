@@ -104,11 +104,6 @@ class CONTENT_EXPORT CompositorImpl
   void DidCommitAndDrawFrame() override {}
   void DidCompleteSwapBuffers() override;
   void DidCompletePageScaleAnimation() override {}
-  void RecordFrameTimingEvents(
-      std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
-          composite_events,
-      std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
-          main_frame_events) override {}
 
   // LayerTreeHostSingleThreadClient implementation.
   void DidPostSwapBuffers() override;

@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
-#include "cc/debug/frame_timing_tracker.h"
 #include "cc/input/top_controls_state.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/renderer_capabilities.h"
@@ -62,10 +61,6 @@ class CC_EXPORT ProxyMain : public Proxy {
       bool success,
       const RendererCapabilities& capabilities);
   virtual void DidCompletePageScaleAnimation();
-  virtual void PostFrameTimingEventsOnMain(
-      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet>
-          main_frame_events);
   virtual void BeginMainFrame(
       std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state);
 

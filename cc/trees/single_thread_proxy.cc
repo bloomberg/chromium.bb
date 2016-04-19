@@ -529,13 +529,6 @@ void SingleThreadProxy::OnDrawForOutputSurface(
   NOTREACHED() << "Implemented by ThreadProxy for synchronous compositor.";
 }
 
-void SingleThreadProxy::PostFrameTimingEventsOnImplThread(
-    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
-  layer_tree_host_->RecordFrameTimingEvents(std::move(composite_events),
-                                            std::move(main_frame_events));
-}
-
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc,benchmark", "SingleThreadProxy::CompositeImmediately");
   DCHECK(task_runner_provider_->IsMainThread());
