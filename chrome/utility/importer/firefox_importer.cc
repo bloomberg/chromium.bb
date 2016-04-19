@@ -4,13 +4,13 @@
 
 #include "chrome/utility/importer/firefox_importer.h"
 
+#include <memory>
 #include <set>
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -542,7 +542,7 @@ void FirefoxImporter::GetSearchEnginesXMLDataFromJSON(
   base::FilePath search_metadata_json_file =
       source_path_.AppendASCII("search-metadata.json");
   JSONFileValueDeserializer metadata_deserializer(search_metadata_json_file);
-  scoped_ptr<base::Value> metadata_root =
+  std::unique_ptr<base::Value> metadata_root =
       metadata_deserializer.Deserialize(NULL, NULL);
   const base::DictionaryValue* search_metadata_root = NULL;
   if (metadata_root)
@@ -554,7 +554,7 @@ void FirefoxImporter::GetSearchEnginesXMLDataFromJSON(
     return;
 
   JSONFileValueDeserializer deserializer(search_json_file);
-  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
+  std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
   const base::DictionaryValue* search_root = NULL;
   if (!root || !root->GetAsDictionary(&search_root))
     return;

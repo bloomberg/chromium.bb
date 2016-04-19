@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_listener.h"
@@ -65,7 +65,7 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
   // is received that is not handled by the ServiceIPCServer itself, the
   // handlers will be called to handle the message in first-add first-call order
   // until it is handled or there are no more handlers.
-  void AddMessageHandler(scoped_ptr<MessageHandler> handler);
+  void AddMessageHandler(std::unique_ptr<MessageHandler> handler);
 
   bool is_ipc_client_connected() const { return ipc_client_connected_; }
 
@@ -89,7 +89,7 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
   Client* client_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   IPC::ChannelHandle channel_handle_;
-  scoped_ptr<IPC::SyncChannel> channel_;
+  std::unique_ptr<IPC::SyncChannel> channel_;
   base::WaitableEvent* shutdown_event_;
   ScopedVector<MessageHandler> message_handlers_;
 
@@ -97,7 +97,8 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
   bool ipc_client_connected_;
 
   // Calculates histograms deltas.
-  scoped_ptr<base::HistogramDeltaSerialization> histogram_delta_serializer_;
+  std::unique_ptr<base::HistogramDeltaSerialization>
+      histogram_delta_serializer_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceIPCServer);
 };

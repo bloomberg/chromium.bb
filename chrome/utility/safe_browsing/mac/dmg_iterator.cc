@@ -75,7 +75,7 @@ base::string16 DMGIterator::GetPath() {
   return hfs_->GetPath();
 }
 
-scoped_ptr<ReadStream> DMGIterator::GetReadStream() {
+std::unique_ptr<ReadStream> DMGIterator::GetReadStream() {
   return hfs_->GetReadStream();
 }
 

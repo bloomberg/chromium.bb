@@ -7,10 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -94,7 +94,7 @@ bool MachOFeatureExtractor::HashAndCopyStream(
     return false;
 
   buffer_.clear();
-  scoped_ptr<crypto::SecureHash> sha256(
+  std::unique_ptr<crypto::SecureHash> sha256(
       crypto::SecureHash::Create(crypto::SecureHash::SHA256));
 
   size_t bytes_read;
@@ -128,7 +128,7 @@ void AnalyzeDMGFile(base::File dmg_file,
     return;
 
   while (iterator.Next()) {
-    scoped_ptr<ReadStream> stream = iterator.GetReadStream();
+    std::unique_ptr<ReadStream> stream = iterator.GetReadStream();
     if (!stream || !feature_extractor.IsMachO(stream.get()))
       continue;
 

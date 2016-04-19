@@ -57,7 +57,7 @@ class TrackingTestURLRequestContextGetter
  private:
   // Not owned here.
   net::URLRequestThrottlerManager* throttler_manager_;
-  scoped_ptr<net::TestURLRequestContext> context_;
+  std::unique_ptr<net::TestURLRequestContext> context_;
 };
 
 class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {

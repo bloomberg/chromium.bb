@@ -89,8 +89,8 @@ void DiskUnmounterMac::DiskUnmounted(DADiskRef disk,
 }
 
 // static
-scoped_ptr<base::MessagePump> DiskUnmounterMac::CreateMessagePump() {
-  return scoped_ptr<base::MessagePump>(new base::MessagePumpCFRunLoop);
+std::unique_ptr<base::MessagePump> DiskUnmounterMac::CreateMessagePump() {
+  return std::unique_ptr<base::MessagePump>(new base::MessagePumpCFRunLoop);
 }
 
 void DiskUnmounterMac::UnmountOnWorker(const std::string& device_path) {

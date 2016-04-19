@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -16,7 +17,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -215,7 +215,7 @@ void EdgeImporter::ParseFavoritesDatabase(
     return;
   }
 
-  scoped_ptr<EdgeDatabaseTableEnumerator> enumerator =
+  std::unique_ptr<EdgeDatabaseTableEnumerator> enumerator =
       database.OpenTableEnumerator(L"Favorites");
   if (!enumerator) {
     DVLOG(1) << "Error opening database table " << database.GetErrorMessage();

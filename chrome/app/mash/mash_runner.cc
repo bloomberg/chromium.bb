@@ -83,7 +83,8 @@ class DefaultShellClient : public shell::ShellClient,
 
  private:
   // TODO(sky): move this into mash.
-  scoped_ptr<shell::ShellClient> CreateShellClient(const std::string& name) {
+  std::unique_ptr<shell::ShellClient> CreateShellClient(
+      const std::string& name) {
     if (name == "mojo:ash_sysui")
       return base::WrapUnique(new ash::sysui::SysUIApplication);
     if (name == "mojo:desktop_wm")
@@ -112,8 +113,8 @@ class DefaultShellClient : public shell::ShellClient,
   }
 
   mojo::BindingSet<ShellClientFactory> shell_client_factory_bindings_;
-  scoped_ptr<shell::ShellClient> shell_client_;
-  scoped_ptr<shell::ShellConnection> shell_connection_;
+  std::unique_ptr<shell::ShellClient> shell_client_;
+  std::unique_ptr<shell::ShellConnection> shell_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultShellClient);
 };
@@ -188,7 +189,7 @@ void MashRunner::RunMain() {
   // in chrome.
   NativeRunnerDelegateImpl native_runner_delegate;
   shell::BackgroundShell background_shell;
-  scoped_ptr<shell::BackgroundShell::InitParams> init_params(
+  std::unique_ptr<shell::BackgroundShell::InitParams> init_params(
       new shell::BackgroundShell::InitParams);
   init_params->native_runner_delegate = &native_runner_delegate;
   background_shell.Init(std::move(init_params));
@@ -231,7 +232,7 @@ int MashMain() {
                        true);  // Tick count
 
   // TODO(sky): use MessagePumpMojo.
-  scoped_ptr<base::MessageLoop> message_loop;
+  std::unique_ptr<base::MessageLoop> message_loop;
 #if defined(OS_LINUX)
   base::AtExitManager exit_manager;
 #endif

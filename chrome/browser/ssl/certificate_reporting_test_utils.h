@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_SSL_CERTIFICATE_REPORTING_TEST_UTILS_H_
 #define CHROME_BROWSER_SSL_CERTIFICATE_REPORTING_TEST_UTILS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 class Browser;

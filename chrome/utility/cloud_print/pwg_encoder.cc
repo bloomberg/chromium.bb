@@ -8,10 +8,10 @@
 #include <string.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/big_endian.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/utility/cloud_print/bitmap_image.h"
 
 namespace cloud_print {

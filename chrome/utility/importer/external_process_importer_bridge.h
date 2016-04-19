@@ -5,12 +5,12 @@
 #ifndef CHROME_UTILITY_IMPORTER_EXTERNAL_PROCESS_IMPORTER_BRIDGE_H_
 #define CHROME_UTILITY_IMPORTER_EXTERNAL_PROCESS_IMPORTER_BRIDGE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "components/favicon_base/favicon_usage_data.h"
@@ -92,7 +92,7 @@ class ExternalProcessImporterBridge : public ImporterBridge {
 
   // Holds strings needed by the external importer because the resource
   // bundle isn't available to the external process.
-  scoped_ptr<base::DictionaryValue> localized_strings_;
+  std::unique_ptr<base::DictionaryValue> localized_strings_;
 
   IPC::Sender* sender_;
   scoped_refptr<base::TaskRunner> task_runner_;

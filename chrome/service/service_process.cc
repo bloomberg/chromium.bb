@@ -13,6 +13,7 @@
 #include "base/i18n/rtl.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
@@ -84,7 +85,7 @@ void ServiceIOThread::CleanUp() {
 // chrome executable's lifetime.
 void PrepareRestartOnCrashEnviroment(
     const base::CommandLine& parsed_command_line) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   // Clear this var so child processes don't show the dialog by default.
   env->UnSetVar(env_vars::kShowRestart);
 
@@ -200,7 +201,7 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
       io_task_runner(),
       service_process_state_->GetServiceProcessChannel(),
       &shutdown_event_));
-  ipc_server_->AddMessageHandler(make_scoped_ptr(
+  ipc_server_->AddMessageHandler(base::WrapUnique(
       new cloud_print::CloudPrintMessageHandler(ipc_server_.get(), this)));
   ipc_server_->Init();
 

@@ -6,11 +6,11 @@
 #define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_PROXY_H_
 
 #include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/service/cloud_print/cloud_print_proxy_backend.h"
 #include "chrome/service/cloud_print/cloud_print_wipeout.h"
@@ -83,7 +83,7 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
 
   // Our asynchronous backend to communicate with sync components living on
   // other threads.
-  scoped_ptr<CloudPrintProxyBackend> backend_;
+  std::unique_ptr<CloudPrintProxyBackend> backend_;
   // This class does not own this. It is guaranteed to remain valid for the
   // lifetime of this class.
   ServiceProcessPrefs* service_prefs_;
@@ -97,7 +97,7 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   // successful authentication with the Cloud Print service.
   bool enabled_;
   // This is a cleanup class for unregistering printers on proxy disable.
-  scoped_ptr<CloudPrintWipeout> wipeout_;
+  std::unique_ptr<CloudPrintWipeout> wipeout_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxy);
 };

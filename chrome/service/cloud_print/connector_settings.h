@@ -5,12 +5,12 @@
 #ifndef CHROME_SERVICE_CLOUD_PRINT_CONNECTOR_SETTINGS_H_
 #define CHROME_SERVICE_CLOUD_PRINT_CONNECTOR_SETTINGS_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "url/gurl.h"
 
 class ServiceProcessPrefs;
@@ -91,7 +91,7 @@ class ConnectorSettings {
   Printers printers_;
 
   // Print system settings.
-  scoped_ptr<base::DictionaryValue> print_system_settings_;
+  std::unique_ptr<base::DictionaryValue> print_system_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectorSettings);
 };

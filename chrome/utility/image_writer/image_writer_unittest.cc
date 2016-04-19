@@ -40,7 +40,7 @@ class ImageWriterUtilityTest : public testing::Test {
   void TearDown() override {}
 
   void FillFile(const base::FilePath& path, int pattern) {
-    scoped_ptr<char[]> buffer(new char[kTestFileSize]);
+    std::unique_ptr<char[]> buffer(new char[kTestFileSize]);
     memset(buffer.get(), pattern, kTestFileSize);
 
     ASSERT_TRUE(base::WriteFile(path, buffer.get(), kTestFileSize));

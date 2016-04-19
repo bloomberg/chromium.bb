@@ -6,6 +6,7 @@
 #define CHROME_TOOLS_SERVICE_DISCOVERY_SNIFFER_SERVICE_DISCOVERY_SNIFFER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -31,7 +32,7 @@ class ServicePrinter {
                          const ServiceDescription& service);
 
   bool changed_;
-  scoped_ptr<ServiceResolver> service_resolver_;
+  std::unique_ptr<ServiceResolver> service_resolver_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicePrinter);
 };
@@ -52,7 +53,7 @@ class ServiceTypePrinter {
   typedef std::map<std::string, linked_ptr<ServicePrinter> > ServiceMap;
 
   ServiceMap services_;
-  scoped_ptr<ServiceWatcher> watcher_;
+  std::unique_ptr<ServiceWatcher> watcher_;
   ServiceDiscoveryClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceTypePrinter);

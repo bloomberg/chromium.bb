@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -37,7 +38,7 @@ class BitmapImage {
  private:
   gfx::Size size_;
   Colorspace colorspace_;
-  scoped_ptr<uint8_t[]> data_;
+  std::unique_ptr<uint8_t[]> data_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapImage);
 };

@@ -133,11 +133,11 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
   // there's no reason to have its native handlers residing and being compiled
   // in //extensions.
   module_system->RegisterNativeHandler(
-      "i18n",
-      scoped_ptr<NativeHandler>(new extensions::I18NCustomBindings(context)));
+      "i18n", std::unique_ptr<NativeHandler>(
+                  new extensions::I18NCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "lazy_background_page",
-      scoped_ptr<NativeHandler>(
+      std::unique_ptr<NativeHandler>(
           new extensions::LazyBackgroundPageNativeHandler(context)));
 }
 

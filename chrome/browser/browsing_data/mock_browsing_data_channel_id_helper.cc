@@ -4,10 +4,10 @@
 
 #include "chrome/browser/browsing_data/mock_browsing_data_channel_id_helper.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

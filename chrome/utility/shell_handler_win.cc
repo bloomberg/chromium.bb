@@ -6,8 +6,9 @@
 
 #include <commdlg.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/public/utility/utility_thread.h"
 #include "ui/base/win/open_file_name_win.h"

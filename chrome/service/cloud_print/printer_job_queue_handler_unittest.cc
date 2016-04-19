@@ -53,7 +53,7 @@ class TimeProviderMock : public PrinterJobQueueHandler::TimeProvider {
 
 class PrinterJobQueueHandlerTest : public ::testing::Test {
  protected:
-  scoped_ptr<base::Value> data_;
+  std::unique_ptr<base::Value> data_;
 
   const base::DictionaryValue* GetAsDictionary() const {
     const base::DictionaryValue* json_data_ = nullptr;

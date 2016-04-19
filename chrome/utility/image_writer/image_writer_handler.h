@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/utility/image_writer/image_writer.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "ipc/ipc_message.h"
@@ -45,7 +45,7 @@ class ImageWriterHandler : public UtilityMessageHandler {
   void OnVerifyStart(const base::FilePath& image, const base::FilePath& device);
   void OnCancel();
 
-  scoped_ptr<ImageWriter> image_writer_;
+  std::unique_ptr<ImageWriter> image_writer_;
 };
 
 }  // namespace image_writer

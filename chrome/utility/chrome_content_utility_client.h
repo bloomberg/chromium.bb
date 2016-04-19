@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
 #include "content/public/utility/content_utility_client.h"
@@ -35,7 +35,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   bool OnMessageReceived(const IPC::Message& message) override;
   void RegisterMojoServices(content::ServiceRegistry* registry) override;
 
-  void AddHandler(scoped_ptr<UtilityMessageHandler> handler);
+  void AddHandler(std::unique_ptr<UtilityMessageHandler> handler);
 
   static void PreSandboxStartup();
 

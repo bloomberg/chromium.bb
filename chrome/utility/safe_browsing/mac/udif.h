@@ -8,15 +8,14 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include <sys/types.h>
-
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 
 namespace safe_browsing {
@@ -71,7 +70,7 @@ class UDIFParser {
 
   // Returns a stream of the raw partition data for the given partition
   // number.
-  scoped_ptr<ReadStream> GetPartitionReadStream(size_t part_number);
+  std::unique_ptr<ReadStream> GetPartitionReadStream(size_t part_number);
 
  private:
   // Parses the blkx plist trailer structure.

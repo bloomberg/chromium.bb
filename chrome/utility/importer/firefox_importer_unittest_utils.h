@@ -5,9 +5,10 @@
 #ifndef CHROME_UTILITY_IMPORTER_FIREFOX_IMPORTER_UNITTEST_UTILS_H_
 #define CHROME_UTILITY_IMPORTER_FIREFOX_IMPORTER_UNITTEST_UTILS_H_
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "chrome/utility/importer/nss_decryptor.h"
@@ -59,9 +60,9 @@ class FFUnitTestDecryptorProxy {
   bool WaitForClientResponse();
 
   base::Process child_process_;
-  scoped_ptr<IPC::Channel> channel_;
-  scoped_ptr<FFDecryptorServerChannelListener> listener_;
-  scoped_ptr<base::MessageLoopForIO> message_loop_;
+  std::unique_ptr<IPC::Channel> channel_;
+  std::unique_ptr<FFDecryptorServerChannelListener> listener_;
+  std::unique_ptr<base::MessageLoopForIO> message_loop_;
 #else
   NSSDecryptor decryptor_;
 #endif  // !OS_MACOSX

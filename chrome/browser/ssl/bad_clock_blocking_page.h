@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_SSL_BAD_CLOCK_BLOCKING_PAGE_H_
 #define CHROME_BROWSER_SSL_BAD_CLOCK_BLOCKING_PAGE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"

@@ -5,6 +5,7 @@
 #ifndef CHROME_SERVICE_SERVICE_PROCESS_PREFS_H_
 #define CHROME_SERVICE_SERVICE_PROCESS_PREFS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -57,7 +58,7 @@ class ServiceProcessPrefs {
   const base::ListValue* GetList(const std::string& key) const;
 
   // Set a |value| for |key|.
-  void SetValue(const std::string& key, scoped_ptr<base::Value> value);
+  void SetValue(const std::string& key, std::unique_ptr<base::Value> value);
 
   // Removes the pref specified by |key|.
   void RemovePref(const std::string& key);

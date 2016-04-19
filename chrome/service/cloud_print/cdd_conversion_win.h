@@ -7,17 +7,17 @@
 
 #include <windows.h>
 
+#include <memory>
 #include <string>
 
 #include "base/memory/free_deleter.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 namespace cloud_print {
 
 bool IsValidCjt(const std::string& print_ticket);
 
-scoped_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
+std::unique_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
     const base::string16& printer_name,
     const std::string& print_ticket);
 

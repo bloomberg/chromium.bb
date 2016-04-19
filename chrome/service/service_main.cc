@@ -30,7 +30,7 @@ int ServiceProcessMain(const content::MainFunctionParams& parameters) {
   base::StatisticsRecorder::Initialize();
 
   // If there is already a service process running, quit now.
-  scoped_ptr<ServiceProcessState> state(new ServiceProcessState);
+  std::unique_ptr<ServiceProcessState> state(new ServiceProcessState);
   if (!state->Initialize())
     return 0;
 

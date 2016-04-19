@@ -4,12 +4,13 @@
 
 #include "chrome/service/cloud_print/print_system.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/win/object_watcher.h"
@@ -262,7 +263,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       base::string16 printer_wide = base::UTF8ToWide(printer_name);
       // We only support PDF and XPS documents for now.
       if (print_data_mime_type == kContentTypePDF) {
-        scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode;
+        std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode;
         if (print_ticket_mime_type == kContentTypeJSON) {
           dev_mode = CjtToDevMode(printer_wide, print_ticket);
         } else {
@@ -426,7 +427,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         int render_dpi,
         const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
       DCHECK(g_service_process->io_task_runner()->BelongsToCurrentThread());
-      scoped_ptr<ServiceUtilityProcessHost> utility_host(
+      std::unique_ptr<ServiceUtilityProcessHost> utility_host(
           new ServiceUtilityProcessHost(this, client_task_runner.get()));
       // TODO(gene): For now we disabling autorotation for CloudPrinting.
       // Landscape/Portrait setting is passed in the print ticket and
@@ -540,7 +541,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
     printing::PrinterCapsAndDefaults printer_info;
     if (succeeded) {
       printer_info.caps_mime_type = kContentTypeJSON;
-      scoped_ptr<base::DictionaryValue> description(
+      std::unique_ptr<base::DictionaryValue> description(
           PrinterSemanticCapsAndDefaultsToCdd(semantic_info));
       if (description) {
         base::JSONWriter::WriteWithOptions(
@@ -573,7 +574,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
   void GetPrinterCapsAndDefaultsImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
     DCHECK(g_service_process->io_task_runner()->BelongsToCurrentThread());
-    scoped_ptr<ServiceUtilityProcessHost> utility_host(
+    std::unique_ptr<ServiceUtilityProcessHost> utility_host(
         new ServiceUtilityProcessHost(this, client_task_runner.get()));
     if (utility_host->StartGetPrinterCapsAndDefaults(printer_name_)) {
       // The object will self-destruct when the child process dies.
@@ -587,7 +588,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
   void GetPrinterSemanticCapsAndDefaultsImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
     DCHECK(g_service_process->io_task_runner()->BelongsToCurrentThread());
-    scoped_ptr<ServiceUtilityProcessHost> utility_host(
+    std::unique_ptr<ServiceUtilityProcessHost> utility_host(
         new ServiceUtilityProcessHost(this, client_task_runner.get()));
     if (utility_host->StartGetPrinterSemanticCapsAndDefaults(printer_name_)) {
       // The object will self-destruct when the child process dies.
@@ -750,7 +751,7 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
     if (ERROR_INVALID_PARAMETER != last_error) {
       // ERROR_INVALID_PARAMETER normally means that the job id is not valid.
       DCHECK(last_error == ERROR_INSUFFICIENT_BUFFER);
-      scoped_ptr<BYTE[]> job_info_buffer(new BYTE[bytes_needed]);
+      std::unique_ptr<BYTE[]> job_info_buffer(new BYTE[bytes_needed]);
       if (GetJob(printer_handle.Get(), job_id, 1, job_info_buffer.get(),
                  bytes_needed, &bytes_needed)) {
         JOB_INFO_1 *job_info =

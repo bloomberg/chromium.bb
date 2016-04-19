@@ -27,7 +27,7 @@ class ServiceProcessPrefsTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   // A message loop that we can use as the file thread message loop.
   base::MessageLoop message_loop_;
-  scoped_ptr<ServiceProcessPrefs> prefs_;
+  std::unique_ptr<ServiceProcessPrefs> prefs_;
 };
 
 // Test ability to retrieve prefs

@@ -45,7 +45,6 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "net/cert/cert_database.h"
 
 namespace mozilla_security_manager {

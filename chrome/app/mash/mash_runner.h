@@ -5,8 +5,9 @@
 #ifndef CHROME_APP_MASH_MASH_RUNNER_H_
 #define CHROME_APP_MASH_MASH_RUNNER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 
 namespace shell {
@@ -28,8 +29,8 @@ class MashRunner {
 
   void StartChildApp(shell::mojom::ShellClientRequest client_request);
 
-  scoped_ptr<shell::ShellClient> shell_client_;
-  scoped_ptr<shell::ShellConnection> shell_connection_;
+  std::unique_ptr<shell::ShellClient> shell_client_;
+  std::unique_ptr<shell::ShellConnection> shell_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(MashRunner);
 };

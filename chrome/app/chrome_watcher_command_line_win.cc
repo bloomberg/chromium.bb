@@ -114,7 +114,7 @@ ChromeWatcherCommandLine::~ChromeWatcherCommandLine() {
       << "Handles left untaken.";
 }
 
-scoped_ptr<ChromeWatcherCommandLine>
+std::unique_ptr<ChromeWatcherCommandLine>
 ChromeWatcherCommandLine::InterpretCommandLine(
     const base::CommandLine& command_line) {
   base::win::ScopedHandle on_initialized_event_handle;
@@ -126,9 +126,9 @@ ChromeWatcherCommandLine::InterpretCommandLine(
   if (!InterpretChromeWatcherCommandLine(
       command_line, &parent_process_handle, &main_thread_id,
       &on_initialized_event_handle))
-    return scoped_ptr<ChromeWatcherCommandLine>();
+    return std::unique_ptr<ChromeWatcherCommandLine>();
 
-  return scoped_ptr<ChromeWatcherCommandLine>(new ChromeWatcherCommandLine(
+  return std::unique_ptr<ChromeWatcherCommandLine>(new ChromeWatcherCommandLine(
       on_initialized_event_handle.Take(), parent_process_handle.Take(),
       main_thread_id));
 }

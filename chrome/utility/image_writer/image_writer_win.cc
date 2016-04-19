@@ -33,7 +33,7 @@ bool ImageWriter::IsValidDevice() {
   query.QueryType = PropertyStandardQuery;
   DWORD bytes_returned;
 
-  scoped_ptr<char[]> output_buf(new char[kStorageQueryBufferSize]);
+  std::unique_ptr<char[]> output_buf(new char[kStorageQueryBufferSize]);
   BOOL status = DeviceIoControl(
       device_handle.Get(),             // Device handle.
       IOCTL_STORAGE_QUERY_PROPERTY,    // Flag to request device properties.

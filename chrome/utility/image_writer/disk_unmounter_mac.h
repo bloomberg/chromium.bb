@@ -8,10 +8,11 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <DiskArbitration/DiskArbitration.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/mac/foundation_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -51,7 +52,7 @@ class DiskUnmounterMac {
                             void* context);
 
   // A |MessagePumpFactory| for creating the thread.
-  static scoped_ptr<base::MessagePump> CreateMessagePump();
+  static std::unique_ptr<base::MessagePump> CreateMessagePump();
 
   // Starts the unmount process.  Should be posted to the |cf_thread_|.
   void UnmountOnWorker(const std::string& device_path);

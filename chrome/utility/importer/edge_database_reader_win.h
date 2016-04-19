@@ -10,9 +10,9 @@
 #undef JET_UNICODE
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 class EdgeErrorObject {
@@ -79,7 +79,7 @@ class EdgeDatabaseReader : public EdgeErrorObject {
   bool OpenDatabase(const base::string16& database_file);
 
   // Open a row enumerator for a specified table. Returns a nullptr on error.
-  scoped_ptr<EdgeDatabaseTableEnumerator> OpenTableEnumerator(
+  std::unique_ptr<EdgeDatabaseTableEnumerator> OpenTableEnumerator(
       const base::string16& table_name);
 
  private:

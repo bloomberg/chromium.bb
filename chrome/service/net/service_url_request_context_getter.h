@@ -5,9 +5,9 @@
 #ifndef CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_GETTER_H_
 #define CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_GETTER_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_resolver.h"
@@ -48,8 +48,8 @@ class ServiceURLRequestContextGetter : public net::URLRequestContextGetter {
 
   std::string user_agent_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<net::URLRequestContext> url_request_context_;
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<net::URLRequestContext> url_request_context_;
 };
 
 #endif  // CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_GETTER_H_

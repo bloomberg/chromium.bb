@@ -22,13 +22,13 @@ namespace metadata {
 namespace {
 
 void SetStringScopedPtr(const std::string& value,
-                        scoped_ptr<std::string>* destination) {
+                        std::unique_ptr<std::string>* destination) {
   DCHECK(destination);
   if (!value.empty())
     destination->reset(new std::string(value));
 }
 
-void SetIntScopedPtr(int value, scoped_ptr<int>* destination) {
+void SetIntScopedPtr(int value, std::unique_ptr<int>* destination) {
   DCHECK(destination);
   if (value >= 0)
     destination->reset(new int(value));

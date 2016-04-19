@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 
@@ -88,7 +88,7 @@ class ImageWriter : public base::SupportsWeakPtr<ImageWriter> {
 
 #if defined(OS_MACOSX)
   friend class DiskUnmounterMac;
-  scoped_ptr<DiskUnmounterMac> unmounter_;
+  std::unique_ptr<DiskUnmounterMac> unmounter_;
 #endif
 
   ImageWriterHandler* handler_;

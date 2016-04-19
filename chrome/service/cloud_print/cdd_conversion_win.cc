@@ -18,10 +18,10 @@ bool IsValidCjt(const std::string& print_ticket_data) {
   return description.InitFromString(print_ticket_data);
 }
 
-scoped_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
+std::unique_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
     const base::string16& printer_name,
     const std::string& print_ticket) {
-  scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode;
+  std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode;
 
   cloud_devices::CloudDeviceDescription description;
   if (!description.InitFromString(print_ticket))

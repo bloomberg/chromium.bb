@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/app/main_dll_loader_win.h"
+
 #include <windows.h>  // NOLINT
 #include <shlwapi.h>  // NOLINT
 #include <stddef.h>
 #include <userenv.h>  // NOLINT
 
-#include "chrome/app/main_dll_loader_win.h"
+#include <memory>
 
 #include "base/base_paths.h"
 #include "base/base_switches.h"
@@ -17,7 +19,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -212,9 +213,9 @@ class ChromeDllLoader : public MainDllLoader {
   int OnBeforeExit(int return_code, const base::FilePath& dll_path) override;
 
  private:
-  scoped_ptr<ChromeWatcherClient> chrome_watcher_client_;
+  std::unique_ptr<ChromeWatcherClient> chrome_watcher_client_;
 #if BUILDFLAG(ENABLE_KASKO)
-  scoped_ptr<KaskoClient> kasko_client_;
+  std::unique_ptr<KaskoClient> kasko_client_;
 #endif
 };
 

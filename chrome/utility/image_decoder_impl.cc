@@ -53,9 +53,8 @@ void ImageDecoderImpl::DecodeImage(
   if (codec == mojom::ImageCodec::ROBUST_JPEG) {
     // Our robust jpeg decoding is using IJG libjpeg.
     if (encoded_data.size()) {
-      scoped_ptr<SkBitmap> decoded_jpeg(
-          gfx::JPEGCodecRobustSlow::Decode(encoded_data.storage().data(),
-                                           encoded_data.size()));
+      std::unique_ptr<SkBitmap> decoded_jpeg(gfx::JPEGCodecRobustSlow::Decode(
+          encoded_data.storage().data(), encoded_data.size()));
       if (decoded_jpeg.get() && !decoded_jpeg->empty())
         decoded_image = *decoded_jpeg;
     }

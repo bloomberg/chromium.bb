@@ -6,13 +6,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/base64.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -295,7 +295,8 @@ bool NSSDecryptor::ReadAndParseLogins(
     std::vector<autofill::PasswordForm>* forms) {
   std::string json_content;
   base::ReadFileToString(json_file, &json_content);
-  scoped_ptr<base::Value> parsed_json(base::JSONReader::Read(json_content));
+  std::unique_ptr<base::Value> parsed_json(
+      base::JSONReader::Read(json_content));
   const base::DictionaryValue* password_dict;
   const base::ListValue* password_list;
   const base::ListValue* blacklist_domains;

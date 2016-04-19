@@ -5,8 +5,9 @@
 #ifndef CHROME_APP_CHROME_MAIN_DELEGATE_H_
 #define CHROME_APP_CHROME_MAIN_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_content_client.h"
 #include "content/public/app/content_main_delegate.h"

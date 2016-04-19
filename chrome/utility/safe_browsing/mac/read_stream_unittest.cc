@@ -7,12 +7,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/utility/safe_browsing/mac/dmg_test_utils.h"
@@ -56,26 +57,26 @@ class ReadStreamTest : public testing::Test {
       ADD_FAILURE() << "Failing type is " << test_helper_.TestName();
   }
 
-  scoped_ptr<ReadStream> CreateStream(size_t data_size);
+  std::unique_ptr<ReadStream> CreateStream(size_t data_size);
 
  private:
   T test_helper_;
 };
 
 template <>
-scoped_ptr<ReadStream>
-ReadStreamTest<MemoryReadStreamTest>::CreateStream(size_t data_size) {
+std::unique_ptr<ReadStream> ReadStreamTest<MemoryReadStreamTest>::CreateStream(
+    size_t data_size) {
   test_helper_.data.resize(data_size);
   for (size_t i = 0; i < data_size; ++i) {
     test_helper_.data[i] = i % 255;
   }
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new MemoryReadStream(&test_helper_.data[0], data_size));
 }
 
 template <>
-scoped_ptr<ReadStream>
-ReadStreamTest<FileReadStreamTest>::CreateStream(size_t data_size) {
+std::unique_ptr<ReadStream> ReadStreamTest<FileReadStreamTest>::CreateStream(
+    size_t data_size) {
   base::FilePath path = test_helper_.temp_dir.path().Append("stream");
   test_helper_.file.Initialize(path,
       base::File::FLAG_CREATE | base::File::FLAG_WRITE);
@@ -98,7 +99,7 @@ ReadStreamTest<FileReadStreamTest>::CreateStream(size_t data_size) {
     return nullptr;
   }
 
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new FileReadStream(test_helper_.file.GetPlatformFile()));
 }
 
@@ -107,7 +108,8 @@ using ReadStreamImpls = testing::Types<MemoryReadStreamTest,
 TYPED_TEST_CASE(ReadStreamTest, ReadStreamImpls);
 
 TYPED_TEST(ReadStreamTest, Read) {
-  scoped_ptr<ReadStream> stream = ReadStreamTest<TypeParam>::CreateStream(128);
+  std::unique_ptr<ReadStream> stream =
+      ReadStreamTest<TypeParam>::CreateStream(128);
   uint8_t buf[128] = {0};
   size_t bytes_read;
 
@@ -128,7 +130,7 @@ TYPED_TEST(ReadStreamTest, Read) {
 
 TYPED_TEST(ReadStreamTest, ReadAll) {
   const size_t kStreamSize = 4242;
-  scoped_ptr<ReadStream> stream =
+  std::unique_ptr<ReadStream> stream =
       ReadStreamTest<TypeParam>::CreateStream(kStreamSize);
 
   std::vector<uint8_t> data;
@@ -137,7 +139,8 @@ TYPED_TEST(ReadStreamTest, ReadAll) {
 }
 
 TYPED_TEST(ReadStreamTest, SeekSet) {
-  scoped_ptr<ReadStream> stream = ReadStreamTest<TypeParam>::CreateStream(255);
+  std::unique_ptr<ReadStream> stream =
+      ReadStreamTest<TypeParam>::CreateStream(255);
   uint8_t buf[32] = {0};
   size_t bytes_read;
 
@@ -159,7 +162,8 @@ TYPED_TEST(ReadStreamTest, SeekSet) {
 }
 
 TYPED_TEST(ReadStreamTest, SeekEnd) {
-  scoped_ptr<ReadStream> stream = ReadStreamTest<TypeParam>::CreateStream(32);
+  std::unique_ptr<ReadStream> stream =
+      ReadStreamTest<TypeParam>::CreateStream(32);
   uint8_t buf[32] = {0};
   size_t bytes_read;
 
@@ -179,7 +183,8 @@ TYPED_TEST(ReadStreamTest, SeekEnd) {
 }
 
 TYPED_TEST(ReadStreamTest, SeekCur) {
-  scoped_ptr<ReadStream> stream = ReadStreamTest<TypeParam>::CreateStream(100);
+  std::unique_ptr<ReadStream> stream =
+      ReadStreamTest<TypeParam>::CreateStream(100);
   uint8_t buf[32] = {0};
   size_t bytes_read;
 

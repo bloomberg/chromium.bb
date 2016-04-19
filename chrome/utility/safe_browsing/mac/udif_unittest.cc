@@ -94,7 +94,7 @@ class UDIFParserTest : public testing::TestWithParam<UDIFTestCase> {
 
       size_t total_size = udif.GetPartitionSize(i);
       size_t total_bytes_read = 0;
-      scoped_ptr<ReadStream> stream = udif.GetPartitionReadStream(i);
+      std::unique_ptr<ReadStream> stream = udif.GetPartitionReadStream(i);
 
       bool success = false;
       do {
@@ -134,7 +134,7 @@ TEST_P(UDIFParserTest, ParseUDIF) {
 
   for (size_t i = 0; i < udif.GetNumberOfPartitions(); ++i) {
     SCOPED_TRACE(base::StringPrintf("partition %zu", i));
-    scoped_ptr<ReadStream> stream = udif.GetPartitionReadStream(i);
+    std::unique_ptr<ReadStream> stream = udif.GetPartitionReadStream(i);
 
     // Apple_HFS will match both HFS and HFSX.
     if (udif.GetPartitionType(i).find("Apple_HFS") != std::string::npos) {

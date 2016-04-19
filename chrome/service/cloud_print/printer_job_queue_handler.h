@@ -6,6 +6,7 @@
 #define CHROME_SERVICE_CLOUD_PRINT_PRINTER_JOB_QUEUE_HANDLER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
@@ -76,7 +76,7 @@ class PrinterJobQueueHandler {
   void JobDone(const std::string& job_id);
 
  private:
-  scoped_ptr<TimeProvider> time_provider_;
+  std::unique_ptr<TimeProvider> time_provider_;
 
   struct FailedJobMetadata {
     int retries_;

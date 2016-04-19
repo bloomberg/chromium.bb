@@ -141,7 +141,7 @@ class AppShimController : public IPC::Listener {
   void Close();
 
   base::FilePath user_data_dir_;
-  scoped_ptr<IPC::ChannelProxy> channel_;
+  std::unique_ptr<IPC::ChannelProxy> channel_;
   base::scoped_nsobject<AppShimDelegate> delegate_;
   bool launch_app_done_;
   bool ping_chrome_reply_received_;

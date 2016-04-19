@@ -8,8 +8,9 @@
 #include <hfs/hfs_format.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 namespace safe_browsing {
@@ -68,7 +69,7 @@ class HFSIterator {
 
   // Returns a stream for the data fork of the current iterator item. This may
   // only be called if IsDirectory() and IsHardLink() returns false.
-  scoped_ptr<ReadStream> GetReadStream();
+  std::unique_ptr<ReadStream> GetReadStream();
 
  private:
   friend class HFSForkReadStream;
@@ -84,8 +85,10 @@ class HFSIterator {
 
   ReadStream* const stream_;  // The stream backing the filesystem.
   HFSPlusVolumeHeader volume_header_;
-  scoped_ptr<HFSForkReadStream> catalog_file_;  // Data of the catalog file.
-  scoped_ptr<HFSBTreeIterator> catalog_;  // Iterator over the catalog file.
+  std::unique_ptr<HFSForkReadStream>
+      catalog_file_;  // Data of the catalog file.
+  std::unique_ptr<HFSBTreeIterator>
+      catalog_;  // Iterator over the catalog file.
 
   DISALLOW_COPY_AND_ASSIGN(HFSIterator);
 };

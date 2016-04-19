@@ -138,7 +138,7 @@ class CloudPrintProxyBackend::Core
   // OAuth client info.
   gaia::OAuthClientInfo oauth_client_info_;
   // Notification (xmpp) handler.
-  scoped_ptr<notifier::PushClient> push_client_;
+  std::unique_ptr<notifier::PushClient> push_client_;
   // Indicates whether XMPP notifications are currently enabled.
   bool notifications_enabled_;
   // The time when notifications were enabled. Valid only when
@@ -155,7 +155,7 @@ class CloudPrintProxyBackend::Core
   // Connector settings.
   ConnectorSettings settings_;
   std::string robot_email_;
-  scoped_ptr<CloudPrintTokenStore> token_store_;
+  std::unique_ptr<CloudPrintTokenStore> token_store_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };

@@ -5,12 +5,12 @@
 #ifndef CHROME_UTILITY_MEDIA_GALLERIES_MEDIA_METADATA_PARSER_H_
 #define CHROME_UTILITY_MEDIA_GALLERIES_MEDIA_METADATA_PARSER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 
@@ -58,7 +58,7 @@ class MediaMetadataParser {
   // handles messages from the browser process.
   // TODO(tommycli): Replace with a reference to a WorkerPool if we ever use
   // this class in batch mode.
-  scoped_ptr<base::Thread> media_thread_;
+  std::unique_ptr<base::Thread> media_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaMetadataParser);
 };

@@ -14,6 +14,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/utility/safe_browsing/mac/convert_big_endian.h"
@@ -304,12 +305,12 @@ base::string16 HFSIterator::GetPath() {
   return catalog_->current_record()->path;
 }
 
-scoped_ptr<ReadStream> HFSIterator::GetReadStream() {
+std::unique_ptr<ReadStream> HFSIterator::GetReadStream() {
   if (IsDirectory() || IsHardLink())
     return nullptr;
 
   DCHECK_EQ(kHFSPlusFileRecord, catalog_->current_record()->record_type);
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new HFSForkReadStream(this, catalog_->current_record()->file->dataFork));
 }
 

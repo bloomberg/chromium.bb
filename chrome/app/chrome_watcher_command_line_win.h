@@ -6,11 +6,12 @@
 #define CHROME_APP_CHROME_WATCHER_COMMAND_LINE_WIN_H_
 
 #include <windows.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
 
 // Class for configuring the Chrome watcher process via the command-line. This
@@ -75,7 +76,7 @@ class ChromeWatcherCommandLine {
   // If this fails any successfully opened handles will be closed prior to
   // return. Returns a ChromeWatcherCommandLine object on success, nullptr
   // otherwise.
-  static scoped_ptr<ChromeWatcherCommandLine> InterpretCommandLine(
+  static std::unique_ptr<ChromeWatcherCommandLine> InterpretCommandLine(
       const base::CommandLine& command_line);
 
   // Accessors for handles. Any handles not taken from this object at the time

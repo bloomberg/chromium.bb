@@ -86,7 +86,8 @@ bool ServiceIPCServer::Send(IPC::Message* msg) {
   return channel_->Send(msg);
 }
 
-void ServiceIPCServer::AddMessageHandler(scoped_ptr<MessageHandler> handler) {
+void ServiceIPCServer::AddMessageHandler(
+    std::unique_ptr<MessageHandler> handler) {
   message_handlers_.push_back(handler.release());
 }
 

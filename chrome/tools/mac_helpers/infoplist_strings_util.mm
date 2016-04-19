@@ -8,14 +8,14 @@
 
 #import <Foundation/Foundation.h>
 #include <stdint.h>
-
 #include <stdio.h>
 #include <unistd.h>
+
+#include <memory>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -222,10 +222,8 @@ int main(int argc, char* const argv[]) {
     const char* cur_lang = lang_list[loop];
 
     // Open the branded string pak file
-    scoped_ptr<ui::DataPack> branded_data_pack(
-        LoadResourceDataPack(grit_output_dir,
-                             branding_strings_name,
-                             cur_lang));
+    std::unique_ptr<ui::DataPack> branded_data_pack(
+        LoadResourceDataPack(grit_output_dir, branding_strings_name, cur_lang));
     if (branded_data_pack.get() == NULL) {
       fprintf(stderr, "ERROR: Failed to load branded pak for language: %s\n",
               cur_lang);

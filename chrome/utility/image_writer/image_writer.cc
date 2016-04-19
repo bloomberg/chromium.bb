@@ -119,7 +119,7 @@ void ImageWriter::WriteChunk() {
   }
 
   // DASD buffers require memory alignment on some systems.
-  scoped_ptr<char, base::AlignedFreeDeleter> buffer(static_cast<char*>(
+  std::unique_ptr<char, base::AlignedFreeDeleter> buffer(static_cast<char*>(
       base::AlignedAlloc(kBurningBlockSize, kMemoryAlignment)));
   memset(buffer.get(), 0, kBurningBlockSize);
 
@@ -160,10 +160,11 @@ void ImageWriter::VerifyChunk() {
     return;
   }
 
-  scoped_ptr<char[]> image_buffer(new char[kBurningBlockSize]);
+  std::unique_ptr<char[]> image_buffer(new char[kBurningBlockSize]);
   // DASD buffers require memory alignment on some systems.
-  scoped_ptr<char, base::AlignedFreeDeleter> device_buffer(static_cast<char*>(
-      base::AlignedAlloc(kBurningBlockSize, kMemoryAlignment)));
+  std::unique_ptr<char, base::AlignedFreeDeleter> device_buffer(
+      static_cast<char*>(
+          base::AlignedAlloc(kBurningBlockSize, kMemoryAlignment)));
 
   int bytes_read = image_file_.Read(bytes_processed_, image_buffer.get(),
                                     kBurningBlockSize);

@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -21,7 +22,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/md5.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -535,7 +535,7 @@ bool PrintSystemCUPS::ValidatePrintTicket(
     const std::string& print_ticket_data,
     const std::string& print_ticket_mime_type) {
   DCHECK(initialized_);
-  scoped_ptr<base::Value> ticket_value(
+  std::unique_ptr<base::Value> ticket_value(
       base::JSONReader::Read(print_ticket_data));
   return ticket_value != NULL &&
          ticket_value->IsType(base::Value::TYPE_DICTIONARY);
@@ -546,7 +546,8 @@ bool PrintSystemCUPS::ParsePrintTicket(
     const std::string& print_ticket,
     std::map<std::string, std::string>* options) {
   DCHECK(options);
-  scoped_ptr<base::Value> ticket_value(base::JSONReader::Read(print_ticket));
+  std::unique_ptr<base::Value> ticket_value(
+      base::JSONReader::Read(print_ticket));
   if (ticket_value == NULL ||
       !ticket_value->IsType(base::Value::TYPE_DICTIONARY)) {
     return false;

@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/utility/utility_message_handler.h"
 
 class ExternalProcessImporterBridge;
@@ -45,7 +46,7 @@ class ProfileImportHandler : public UtilityMessageHandler {
 
   // Thread that importer runs on, while ProfileImportThread handles messages
   // from the browser process.
-  scoped_ptr<base::Thread> import_thread_;
+  std::unique_ptr<base::Thread> import_thread_;
 
   // Bridge object is passed to importer, so that it can send IPC calls
   // directly back to the ProfileImportProcessHost.

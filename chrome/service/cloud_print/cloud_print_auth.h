@@ -5,6 +5,7 @@
 #ifndef CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_AUTH_H_
 #define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_AUTH_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -80,7 +81,7 @@ class CloudPrintAuth
 
   Client* client_;
   gaia::OAuthClientInfo oauth_client_info_;
-  scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;
+  std::unique_ptr<gaia::GaiaOAuthClient> oauth_client_;
 
   // The CloudPrintURLFetcher instance for the current request.
   scoped_refptr<CloudPrintURLFetcher> request_;

@@ -84,7 +84,7 @@ TEST_F(ConnectorSettingsTest, InitFromEmpty) {
     "{'foo',,}",
   };
   for (size_t i = 0; i < arraysize(kEmptyJSons); ++i) {
-    scoped_ptr<ServiceProcessPrefs> prefs(CreateTestFile(kEmptyJSons[i]));
+    std::unique_ptr<ServiceProcessPrefs> prefs(CreateTestFile(kEmptyJSons[i]));
     ConnectorSettings settings;
     settings.InitFrom(prefs.get());
 
@@ -99,7 +99,8 @@ TEST_F(ConnectorSettingsTest, InitFromEmpty) {
 }
 
 TEST_F(ConnectorSettingsTest, InitFromFile) {
-  scoped_ptr<ServiceProcessPrefs> prefs(CreateTestFile(kServiceStateContent));
+  std::unique_ptr<ServiceProcessPrefs> prefs(
+      CreateTestFile(kServiceStateContent));
   ConnectorSettings settings;
   settings.InitFrom(prefs.get());
   EXPECT_EQ("https://www.google.com/cloudprint", settings.server_url().spec());
@@ -115,7 +116,8 @@ TEST_F(ConnectorSettingsTest, InitFromFile) {
 }
 
 TEST_F(ConnectorSettingsTest, CopyFrom) {
-  scoped_ptr<ServiceProcessPrefs> prefs(CreateTestFile(kServiceStateContent));
+  std::unique_ptr<ServiceProcessPrefs> prefs(
+      CreateTestFile(kServiceStateContent));
   ConnectorSettings settings1;
   settings1.InitFrom(prefs.get());
 
@@ -136,7 +138,7 @@ TEST_F(ConnectorSettingsTest, CopyFrom) {
 }
 
 TEST_F(ConnectorSettingsTest, SettersTest) {
-  scoped_ptr<ServiceProcessPrefs> prefs(CreateTestFile("{}"));
+  std::unique_ptr<ServiceProcessPrefs> prefs(CreateTestFile("{}"));
   ConnectorSettings settings;
   settings.InitFrom(prefs.get());
   EXPECT_FALSE(settings.xmpp_ping_enabled());

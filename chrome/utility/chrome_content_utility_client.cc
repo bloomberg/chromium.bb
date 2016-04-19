@@ -203,7 +203,7 @@ void ChromeContentUtilityClient::RegisterMojoServices(
 }
 
 void ChromeContentUtilityClient::AddHandler(
-    scoped_ptr<UtilityMessageHandler> handler) {
+    std::unique_ptr<UtilityMessageHandler> handler) {
   handlers_.push_back(std::move(handler));
 }
 

@@ -5,10 +5,10 @@
 #ifndef CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_URL_FETCHER_H_
 #define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_URL_FETCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -156,7 +156,7 @@ class CloudPrintURLFetcher
   void SetupRequestHeaders();
   static CloudPrintURLFetcherFactory* factory();
 
-  scoped_ptr<net::URLFetcher> request_;
+  std::unique_ptr<net::URLFetcher> request_;
   Delegate* delegate_;
   int num_retries_;
   std::string additional_headers_;

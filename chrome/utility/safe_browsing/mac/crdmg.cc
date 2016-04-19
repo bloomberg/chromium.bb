@@ -177,7 +177,7 @@ bool SafeDMG::ParseDMG() {
     if (partition_type != "Apple_HFS" && partition_type != "Apple_HFSX")
       continue;
 
-    scoped_ptr<safe_browsing::dmg::ReadStream> partition_stream(
+    std::unique_ptr<safe_browsing::dmg::ReadStream> partition_stream(
         udif_parser.GetPartitionReadStream(i));
     safe_browsing::dmg::HFSIterator iterator(partition_stream.get());
     if (!iterator.Open()) {
@@ -221,7 +221,7 @@ bool SafeDMG::ParseDMG() {
           continue;
         }
 
-        scoped_ptr<safe_browsing::dmg::ReadStream> stream(
+        std::unique_ptr<safe_browsing::dmg::ReadStream> stream(
             iterator.GetReadStream());
         size_t read_this_pass = 0;
         do {

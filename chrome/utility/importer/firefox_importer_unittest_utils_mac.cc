@@ -284,8 +284,8 @@ MULTIPROCESS_IPC_TEST_MAIN(NSSDecrypterChildProcess) {
   base::MessageLoopForIO main_message_loop;
   FFDecryptorClientChannelListener listener;
 
-  scoped_ptr<IPC::Channel> channel = IPC::Channel::CreateClient(
-      kTestChannelID, &listener);
+  std::unique_ptr<IPC::Channel> channel =
+      IPC::Channel::CreateClient(kTestChannelID, &listener);
   CHECK(channel->Connect());
   listener.SetSender(channel.get());
 

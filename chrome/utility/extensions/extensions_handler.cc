@@ -129,7 +129,7 @@ void ExtensionsHandler::OnParseMediaMetadata(const std::string& mime_type,
                                              int64_t total_size,
                                              bool get_attached_images) {
   // Only one IPCDataSource may be created and added to the list of handlers.
-  scoped_ptr<metadata::IPCDataSource> source(
+  std::unique_ptr<metadata::IPCDataSource> source(
       new metadata::IPCDataSource(total_size));
   metadata::MediaMetadataParser* parser = new metadata::MediaMetadataParser(
       source.get(), mime_type, get_attached_images);
@@ -196,7 +196,7 @@ void ExtensionsHandler::OnIndexPicasaAlbumsContents(
 
 #if defined(OS_WIN)
 void ExtensionsHandler::OnGetWiFiCredentials(const std::string& network_guid) {
-  scoped_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
+  std::unique_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
   wifi_service->Initialize(NULL);
 
   std::string key_data;

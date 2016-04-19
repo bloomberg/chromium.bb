@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -107,9 +108,9 @@ class ServiceIPCServerTest : public ::testing::Test {
   base::MessageLoopForUI main_message_loop_;
   base::Thread io_thread_;
   base::WaitableEvent shutdown_event_;
-  scoped_ptr<ServiceIPCServer> server_;
+  std::unique_ptr<ServiceIPCServer> server_;
   FakeChannelListener client_process_channel_listener_;
-  scoped_ptr<IPC::SyncChannel> client_process_channel_;
+  std::unique_ptr<IPC::SyncChannel> client_process_channel_;
 };
 
 ServiceIPCServerTest::ServiceIPCServerTest()
@@ -237,7 +238,7 @@ TEST_F(ServiceIPCServerTest, SingleMessageHandler) {
   // itself.
   FakeMessageHandler* handler =
       new FakeMessageHandler(true /* should_handle */);
-  server_->AddMessageHandler(make_scoped_ptr(handler));
+  server_->AddMessageHandler(base::WrapUnique(handler));
   SendToServiceProcess(new ServiceMsg_DisableCloudPrintProxy());
   ASSERT_EQ(1, handler->handle_message_calls_);
 }
@@ -250,13 +251,13 @@ TEST_F(ServiceIPCServerTest, MultipleMessageHandlers) {
   // being added until it is handled.
   FakeMessageHandler* handler1 =
       new FakeMessageHandler(false /* should_handle */);
-  server_->AddMessageHandler(make_scoped_ptr(handler1));
+  server_->AddMessageHandler(base::WrapUnique(handler1));
   FakeMessageHandler* handler2 =
       new FakeMessageHandler(true /* should_handle */);
-  server_->AddMessageHandler(make_scoped_ptr(handler2));
+  server_->AddMessageHandler(base::WrapUnique(handler2));
   FakeMessageHandler* handler3 =
       new FakeMessageHandler(true /* should_handle */);
-  server_->AddMessageHandler(make_scoped_ptr(handler3));
+  server_->AddMessageHandler(base::WrapUnique(handler3));
   SendToServiceProcess(new ServiceMsg_DisableCloudPrintProxy());
   ASSERT_EQ(1, handler1->handle_message_calls_);
   ASSERT_EQ(1, handler2->handle_message_calls_);

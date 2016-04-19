@@ -84,7 +84,7 @@ class ChromeWatcherCommandLineTest : public testing::Test {
   base::win::ScopedHandle event_;
   TestChromeWatcherCommandLineGenerator generator_;
   base::CommandLine cmd_line_;
-  scoped_ptr<ChromeWatcherCommandLine> interpreted_;
+  std::unique_ptr<ChromeWatcherCommandLine> interpreted_;
 };
 
 // The corresponding death test fixture.
