@@ -61,11 +61,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   ui::WindowAndroid* GetWindowAndroid() const override;
   const scoped_refptr<cc::Layer>& GetLayer() const override;
   bool ShowPastePopup(int x, int y) override;
-  void GetScaledContentBitmap(
-      float scale,
-      SkColorType preferred_color_type,
-      const gfx::Rect& src_subrect,
-      const ReadbackRequestCallback& result_callback) override;
   float GetDpiScale() const override;
   void PauseOrResumeGeolocation(bool should_pause) override;
   void RequestTextSurroundingSelection(
