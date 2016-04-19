@@ -23,6 +23,7 @@ import shutil
 import sys
 import subprocess
 import tempfile
+import traceback
 import urllib2
 
 from collections import OrderedDict
@@ -62,9 +63,11 @@ class MetaBuildWrapper(object):
     except KeyboardInterrupt:
       self.Print('interrupted, exiting', stream=sys.stderr)
       return 130
-    except Exception as e:
+    except Exception:
       self.DumpInputFiles()
-      self.Print(str(e))
+      s = traceback.format_exc()
+      for l in s.splitlines():
+        self.Print(l)
       return 1
 
   def ParseArgs(self, argv):
@@ -468,6 +471,8 @@ class MetaBuildWrapper(object):
         config = self.masters[master][builder]
         if config == 'tbd':
           tbd.add(builder)
+        elif config.startswith('//'):
+          done.add(builder)
         else:
           # TODO(dpranke): Check if MB is actually running?
           vals = self.FlattenConfig(config)
@@ -487,7 +492,7 @@ class MetaBuildWrapper(object):
         PrintBuilders(STAT_TBD, tbd, notes)
         PrintBuilders(STAT_GYP, gyp, notes)
       else:
-        self.Print('  ... done')
+        self.Print('  All GN!')
 
       stats[STAT_DONE] += len(done)
 
