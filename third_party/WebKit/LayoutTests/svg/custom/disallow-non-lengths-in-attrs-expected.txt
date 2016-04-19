@@ -6,7 +6,6 @@ CONSOLE ERROR: Error: <svg> attribute width: Expected length, "inherit".
 CONSOLE ERROR: Error: <foreignObject> attribute width: Expected length, "inherit".
 CONSOLE ERROR: Error: <svg> attribute width: Expected length, "foo".
 CONSOLE ERROR: Error: <foreignObject> attribute width: Expected length, "foo".
- 
  This is a testharness.js-based test.
 PASS Test width 'auto' on SVGSVGElement 
 PASS Test width 'auto' on SVGForeignObject 

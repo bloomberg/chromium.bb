@@ -28,7 +28,7 @@
     invalid_widths.forEach(function(invalid_width) {
         setWidth('#svg', invalid_width);
         test(function() {
-            assert_equals(getWidth('#svg'), 0);
+            assert_equals(getWidth('#svg'), document.body.clientWidth);
         }, "Test width '" + invalid_width + "' on SVGSVGElement");
 
         setWidth('#fO', invalid_width);
