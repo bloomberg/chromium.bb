@@ -719,20 +719,6 @@ void NaClProcessHost::ReplyToRenderer(
     ScopedChannelHandle ppapi_channel_handle,
     ScopedChannelHandle trusted_channel_handle,
     ScopedChannelHandle manifest_service_channel_handle) {
-#if defined(OS_WIN)
-  // If we are on 64-bit Windows, the NaCl process's sandbox is
-  // managed by a different process from the renderer's sandbox.  We
-  // need to inform the renderer's sandbox about the NaCl process so
-  // that the renderer can send handles to the NaCl process using
-  // BrokerDuplicateHandle().
-  if (RunningOnWOW64()) {
-    if (!content::BrokerAddTargetPeer(process_->GetData().handle)) {
-      SendErrorToRenderer("BrokerAddTargetPeer() failed");
-      return;
-    }
-  }
-#endif
-
   // Hereafter, we always send an IPC message with handles created above
   // which, on Windows, are not closable in this process.
   std::string error_message;
