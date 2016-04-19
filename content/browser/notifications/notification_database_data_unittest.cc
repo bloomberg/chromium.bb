@@ -12,10 +12,10 @@
 #include "base/time/time.h"
 #include "content/browser/notifications/notification_database_data.pb.h"
 #include "content/browser/notifications/notification_database_data_conversions.h"
-#include "content/common/notification_constants.h"
 #include "content/public/browser/notification_database_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
 
 namespace content {
 
@@ -59,7 +59,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   notification_data.silent = true;
   notification_data.require_interaction = true;
   notification_data.data = developer_data;
-  for (size_t i = 0; i < kPlatformNotificationMaxActions; i++) {
+  for (size_t i = 0; i < blink::kWebNotificationMaxActions; i++) {
     PlatformNotificationAction notification_action;
     notification_action.type = kNotificationActionType;
     notification_action.action = base::SizeTToString(i);

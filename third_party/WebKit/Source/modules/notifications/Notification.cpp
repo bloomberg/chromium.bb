@@ -50,6 +50,7 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/platform/modules/notifications/WebNotificationAction.h"
+#include "public/platform/modules/notifications/WebNotificationConstants.h"
 #include "public/platform/modules/notifications/WebNotificationManager.h"
 #include "wtf/Functional.h"
 
@@ -373,11 +374,7 @@ ScriptPromise Notification::requestPermission(ScriptState* scriptState, Notifica
 
 size_t Notification::maxActions()
 {
-    // Returns a fixed number for unit tests, which run without the availability of the Platform object.
-    if (!notificationManager())
-        return 2;
-
-    return notificationManager()->maxActions();
+    return kWebNotificationMaxActions;
 }
 
 DispatchEventResult Notification::dispatchEventInternal(Event* event)

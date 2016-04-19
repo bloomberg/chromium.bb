@@ -10,7 +10,6 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/notifications/page_notification_delegate.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
-#include "content/common/notification_constants.h"
 #include "content/common/platform_notification_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,6 +19,7 @@
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
 
 namespace content {
 
@@ -39,8 +39,8 @@ PlatformNotificationData SanitizeNotificationData(
   }
 
   // Ensure there aren't more actions than supported.
-  if (sanitized_data.actions.size() > kPlatformNotificationMaxActions)
-    sanitized_data.actions.resize(kPlatformNotificationMaxActions);
+  if (sanitized_data.actions.size() > blink::kWebNotificationMaxActions)
+    sanitized_data.actions.resize(blink::kWebNotificationMaxActions);
 
   return sanitized_data;
 }
@@ -48,18 +48,18 @@ PlatformNotificationData SanitizeNotificationData(
 // Returns true when |resources| looks ok, false otherwise.
 bool ValidateNotificationResources(const NotificationResources& resources) {
   if (resources.notification_icon.width() >
-          kPlatformNotificationMaxIconSizePx ||
+          blink::kWebNotificationMaxIconSizePx ||
       resources.notification_icon.height() >
-          kPlatformNotificationMaxIconSizePx) {
+          blink::kWebNotificationMaxIconSizePx) {
     return false;
   }
-  if (resources.badge.width() > kPlatformNotificationMaxBadgeSizePx ||
-      resources.badge.height() > kPlatformNotificationMaxBadgeSizePx) {
+  if (resources.badge.width() > blink::kWebNotificationMaxBadgeSizePx ||
+      resources.badge.height() > blink::kWebNotificationMaxBadgeSizePx) {
     return false;
   }
   for (const auto& action_icon : resources.action_icons) {
-    if (action_icon.width() > kPlatformNotificationMaxActionIconSizePx ||
-        action_icon.height() > kPlatformNotificationMaxActionIconSizePx) {
+    if (action_icon.width() > blink::kWebNotificationMaxActionIconSizePx ||
+        action_icon.height() > blink::kWebNotificationMaxActionIconSizePx) {
       return false;
     }
   }

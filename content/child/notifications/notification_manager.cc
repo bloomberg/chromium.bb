@@ -14,7 +14,6 @@
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/notification_constants.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
@@ -223,10 +222,6 @@ WebNotificationPermission NotificationManager::checkPermission(
       blink::WebStringToGURL(origin.toString()), &permission));
 
   return permission;
-}
-
-size_t NotificationManager::maxActions() {
-  return kPlatformNotificationMaxActions;
 }
 
 bool NotificationManager::OnMessageReceived(const IPC::Message& message) {

@@ -5,6 +5,7 @@
 #include "modules/notifications/NotificationResourcesLoader.h"
 
 #include "platform/weborigin/KURL.h"
+#include "public/platform/modules/notifications/WebNotificationConstants.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationResources.h"
 #include "skia/ext/image_operations.h"
@@ -13,20 +14,6 @@
 namespace blink {
 
 namespace {
-
-// TODO(mvanouwerkerk): Get icon dimensions from the embedder.
-
-// The maximum reasonable notification icon size, scaled from dip units to
-// pixels using the largest supported scaling factor.
-static const int kMaxIconSizePx = 320; // 80 dip * 4
-
-// The maximum reasonable badge size, scaled from dip units to pixels using the
-// largest supported scaling factor.
-static const int kMaxBadgeSizePx = 96; // 24 dip * 4
-
-// The maximum reasonable action icon size, scaled from dip units to pixels
-// using the largest supported scaling factor.
-static const int kMaxActionIconSizePx = 128; // 32 dip * 4
 
 // Scales down |image| to fit within |maxSizePx| if its width or height is
 // larger than |maxSizePx| and returns the result. Otherwise does nothing and
@@ -102,13 +89,13 @@ void NotificationResourcesLoader::loadImage(ExecutionContext* executionContext, 
 
 void NotificationResourcesLoader::didLoadIcon(const SkBitmap& image)
 {
-    m_icon = scaleDownIfNeeded(image, kMaxIconSizePx);
+    m_icon = scaleDownIfNeeded(image, kWebNotificationMaxIconSizePx);
     didFinishRequest();
 }
 
 void NotificationResourcesLoader::didLoadBadge(const SkBitmap& image)
 {
-    m_badge = scaleDownIfNeeded(image, kMaxBadgeSizePx);
+    m_badge = scaleDownIfNeeded(image, kWebNotificationMaxBadgeSizePx);
     didFinishRequest();
 }
 
@@ -116,7 +103,7 @@ void NotificationResourcesLoader::didLoadActionIcon(size_t actionIndex, const Sk
 {
     DCHECK_LT(actionIndex, m_actionIcons.size());
 
-    m_actionIcons[actionIndex] = scaleDownIfNeeded(image, kMaxActionIconSizePx);
+    m_actionIcons[actionIndex] = scaleDownIfNeeded(image, kWebNotificationMaxActionIconSizePx);
     didFinishRequest();
 }
 

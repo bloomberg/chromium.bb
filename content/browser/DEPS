@@ -69,6 +69,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/geolocation/geolocation.mojom.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h",
+  "+third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h",
   "+third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h",
   "+third_party/WebKit/public/platform/modules/permissions/permission.mojom.h",
   "+third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h",

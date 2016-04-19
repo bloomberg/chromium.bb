@@ -98,7 +98,3 @@ per-file cc_messages_perftest.cc=danakj@chromium.org
 # DirectWrite
 per-file dwrite_font_platform_win*=scottmg@chromium.org
 per-file font_warmup_win.cc=scottmg@chromium.org
-
-# Web Notifications
-per-file notification_constants.h=peter@chromium.org
-per-file notification_constants.h=mvanouwerkerk@chromium.org

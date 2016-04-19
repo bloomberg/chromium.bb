@@ -473,7 +473,6 @@
       'common/net/url_request_service_worker_data.h',
       'common/net/url_request_user_data.cc',
       'common/net/url_request_user_data.h',
-      'common/notification_constants.h',
       'common/one_writer_seqlock.cc',
       'common/one_writer_seqlock.h',
       'common/origin_trials/trial_token.cc',
