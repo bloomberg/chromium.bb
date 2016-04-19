@@ -1208,8 +1208,17 @@
     <message name="IDS_SETTINGS_DISPLAY_MAKE_PRIMARY" desc="In Device Settings > Displays, the label for the control for making a display primary.">
       Make primary
     </message>
-    <message name="IDS_SETTINGS_DISPLAY_RESOLUTION" desc="In Device Settings > Displays, the label for the control for changing a display's resolution.">
+    <message name="IDS_SETTINGS_DISPLAY_RESOLUTION_TITLE" desc="In Device Settings > Displays, the label for the section for changing a display's resolution.">
       Resolution
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT" desc="In Device Settings > Displays, the text describing the display's resolution.">
+      <ph name="WIDTH">$1<ex>1600</ex></ph> x <ph name="HEIGHT">$2<ex>1200</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT_BEST" desc="In Device Settings > Displays, the text describing the display's resolution when it is the 'best' resolution.">
+      <ph name="WIDTH">$1<ex>1600</ex></ph> x <ph name="HEIGHT">$2<ex>1200</ex></ph> (Best)
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT_NATIVE" desc="In Device Settings > Displays, the text describing the display's resolution when it is the native resolution.">
+      <ph name="WIDTH">$1<ex>1600</ex></ph> x <ph name="HEIGHT">$2<ex>1200</ex></ph> (Native)
     </message>
     <message name="IDS_SETTINGS_DISPLAY_ORIENTATION" desc="In Device Settings > Displays, the label for the control for changing a display's orientation.">
       Orientation

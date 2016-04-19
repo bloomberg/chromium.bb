@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-display">
@@ -18,19 +19,29 @@
      }
 
      .settings-box.embedded {
+       align-self: stretch;
        margin-left: 20px;
        padding: 0;
      }
 
      /* TODO(stevenjb): Placeholder */
      .display-area {
+       align-self: stretch;
        border: lightgrey solid 1px;
-       height: 300px;
+       flex: 1 1;
+       height: 200px;
        margin: 10px;
-       width: 600px;
+     }
+
+     .textarea {
+       margin: 10px 0;
+     }
+
+     .info-text {
+       color: var(--paper-grey-500);
      }
     </style>
-    <div class="settings-box first layout vertical">
+    <div class="settings-box first layout vertical self-stretch">
       <div class="display-section">$i18n{displayArrangement}</div>
       <div class="display-area">
         <!-- TODO(stevenjb): Support layout -->
@@ -44,7 +55,7 @@
     </div>
     <div class="settings-box layout vertical">
       <div class="display-section">[[selectedDisplay.name]]</div>
-      <div class="settings-box embedded first self-stretch">
+      <div class="settings-box embedded first">
         <paper-checkbox class="flex" checked="[[isMirrored_(displays)]]"
             hidden$="[[!showMirror_(displays)]]" on-tap="onMirroredTap_">
           $i18n{displayMirror}
@@ -55,13 +66,23 @@
           $i18n{displayMakePrimary}
         </paper-button>
       </div>
-      <div class="settings-box embedded self-stretch">
-        <div class="start">$i18n{displayResolution}</div>
-        <!-- TODO(stevenjb): Implement -->
-        <paper-slider disabled></paper-slider>
+      <div class="settings-box embedded horizontal justified">
+        <div class="start textarea layout vertical">
+          <div>$i18n{displayResolutionTitle}</div>
+          <div class="info-text layout self-start">
+            [[getResolutionText_(selectedDisplay, immediateSelectedModeIndex_)]]
+          </div>
+        </div>
+        <paper-slider snaps max-markers="100" step="1"
+            disabled="[[!enableSetResolution_(selectedDisplay)]]"
+            min="0" max="[[maxModeIndex_]]"
+            value="[[selectedModeIndex_]]"
+            immediate-value="{{immediateSelectedModeIndex_}}"
+            on-change="onChangeMode_">
+        </paper-slider>
       </div>
-      <div class="settings-box embedded self-stretch">
-        <div class="start">$i18n{displayOrientation}</div>
+      <div class="settings-box embedded">
+        <div class="start textarea">$i18n{displayOrientation}</div>
         <paper-dropdown-menu>
           <paper-listbox class="dropdown-content"
               selected="[[selectedDisplay.rotation]]"

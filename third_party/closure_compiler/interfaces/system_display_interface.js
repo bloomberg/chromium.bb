@@ -26,7 +26,7 @@ SystemDisplay.prototype = {
   /**
    * Updates the properties for the display specified by |id|, according to the
    * information provided in |info|. On failure, $(ref:runtime.lastError) will
-   * be set.
+   * be set. NOTE: This is only available to Chrome OS Kiosk apps and Web UI.
    * @param {string} id The display's unique identifier.
    * @param {!chrome.system.display.DisplayProperties} info The information
    *     about display properties that should be changed.     A property will be
@@ -41,8 +41,9 @@ SystemDisplay.prototype = {
   /**
    * Enables/disables the unified desktop feature. Note that this simply enables
    * the feature, but will not change the actual desktop mode. (That is, if the
-   * desktop is in mirror mode, it will stay in mirror mode)
-   * @param {boolean} enabled
+   * desktop is in mirror mode, it will stay in mirror mode) NOTE: This is only
+   * available to Chrome OS Kiosk apps and Web UI.
+   * @param {boolean} enabled True if unified desktop should be enabled.
    * @see https://developer.chrome.com/extensions/system.display#method-enableUnifiedDesktop
    */
   enableUnifiedDesktop: assertNotReached,

@@ -25,7 +25,7 @@ struct DisplayUnitInfo;
 }
 }
 
-typedef std::vector<api::system_display::DisplayUnitInfo> DisplayInfo;
+typedef std::vector<api::system_display::DisplayUnitInfo> DisplayUnitInfoList;
 
 class DisplayInfoProvider {
  public:
@@ -50,7 +50,7 @@ class DisplayInfoProvider {
   virtual void EnableUnifiedDesktop(bool enable);
 
   // Get display information.
-  virtual DisplayInfo GetAllDisplaysInfo();
+  virtual DisplayUnitInfoList GetAllDisplaysInfo();
 
  protected:
   DisplayInfoProvider();

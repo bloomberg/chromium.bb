@@ -8,8 +8,10 @@
 
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/resolution_notification_controller.h"
 #include "ash/shell.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/chromeos/display/display_preferences.h"
 #include "extensions/common/api/system_display.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/gfx/display.h"
@@ -186,8 +188,9 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
                               ash::DisplayManager* display_manager,
                               int64_t primary_display_id,
                               std::string* error) {
-  bool is_primary = display.id() == primary_display_id ||
-                    (info.is_primary && *info.is_primary);
+  int64_t id = display.id();
+  bool is_primary =
+      id == primary_display_id || (info.is_primary && *info.is_primary);
 
   // If mirroring source id is set, a display with the given id should exist,
   // and if should not be the same as the target display's id.
@@ -200,7 +203,7 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
       return false;
     }
 
-    if (*info.mirroring_source_id == base::Int64ToString(display.id())) {
+    if (*info.mirroring_source_id == base::Int64ToString(id)) {
       *error = "Not allowed to mirror self.";
       return false;
     }
@@ -256,8 +259,7 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
       return false;
     }
 
-    const gfx::Insets overscan =
-        display_manager->GetOverscanInsets(display.id());
+    const gfx::Insets overscan = display_manager->GetOverscanInsets(id);
     int screen_width = display.bounds().width() + overscan.width();
     int screen_height = display.bounds().height() + overscan.height();
 
@@ -269,6 +271,41 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
     if ((info.overscan->top + info.overscan->bottom) * 2 > screen_height) {
       *error = "Vertical overscan is more than half of the screen height.";
       return false;
+    }
+  }
+
+  // Set the display mode.
+  if (info.display_mode) {
+    ash::DisplayMode current_mode =
+        display_manager->GetActiveModeForDisplayId(id);
+    ash::DisplayMode new_mode;
+    // Copy properties not set in the UI from the current mode.
+    new_mode.refresh_rate = current_mode.refresh_rate;
+    new_mode.interlaced = current_mode.interlaced;
+    // Set properties from the UI properties.
+    new_mode.size.SetSize(info.display_mode->width_in_native_pixels,
+                          info.display_mode->height_in_native_pixels);
+    new_mode.ui_scale = info.display_mode->ui_scale;
+    new_mode.device_scale_factor = info.display_mode->device_scale_factor;
+    new_mode.native = info.display_mode->is_native;
+
+    if (new_mode.IsEquivalent(current_mode)) {
+      *error = "Display mode mataches crrent mode.";
+      return false;
+    }
+
+    if (!display_manager->SetDisplayMode(id, new_mode)) {
+      *error = "Unable to set the display mode.";
+      return false;
+    }
+
+    if (!gfx::Display::IsInternalDisplayId(id)) {
+      // For external displays, show a notification confirming the resolution
+      // change.
+      ash::Shell::GetInstance()
+          ->resolution_notification_controller()
+          ->PrepareNotification(id, current_mode, new_mode,
+                                base::Bind(&chromeos::StoreDisplayPrefs));
     }
   }
   return true;
@@ -283,6 +320,27 @@ gfx::Display GetTargetDisplay(const std::string& display_id_str,
     return gfx::Display();
   }
   return manager->GetDisplayForId(display_id);
+}
+
+extensions::api::system_display::DisplayMode GetDisplayMode(
+    ash::DisplayManager* display_manager,
+    const ash::DisplayInfo& display_info,
+    const ash::DisplayMode& display_mode) {
+  extensions::api::system_display::DisplayMode result;
+
+  bool is_internal = gfx::Display::HasInternalDisplay() &&
+                     gfx::Display::InternalDisplayId() == display_info.id();
+  gfx::Size size_dip = display_mode.GetSizeInDIP(is_internal);
+  result.width = size_dip.width();
+  result.height = size_dip.height();
+  result.width_in_native_pixels = display_mode.size.width();
+  result.height_in_native_pixels = display_mode.size.height();
+  result.ui_scale = display_mode.ui_scale;
+  result.device_scale_factor = display_mode.device_scale_factor;
+  result.is_native = display_mode.native;
+  result.is_selected = display_mode.IsEquivalent(
+      display_manager->GetActiveModeForDisplayId(display_info.id()));
+  return result;
 }
 
 }  // namespace
@@ -388,6 +446,11 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
   unit->overscan.top = overscan_insets.top();
   unit->overscan.right = overscan_insets.right();
   unit->overscan.bottom = overscan_insets.bottom();
+
+  for (const ash::DisplayMode& display_mode : display_info.display_modes()) {
+    unit->modes.push_back(
+        GetDisplayMode(display_manager, display_info, display_mode));
+  }
 }
 
 void DisplayInfoProviderChromeOS::EnableUnifiedDesktop(bool enable) {
@@ -395,7 +458,7 @@ void DisplayInfoProviderChromeOS::EnableUnifiedDesktop(bool enable) {
       enable);
 }
 
-DisplayInfo DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
+DisplayUnitInfoList DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   if (!display_manager->IsInUnifiedMode())
@@ -407,7 +470,7 @@ DisplayInfo DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
 
   // Use first display as primary.
   int64_t primary_id = displays[0].id();
-  DisplayInfo all_displays;
+  DisplayUnitInfoList all_displays;
   for (const gfx::Display& display : displays) {
     api::system_display::DisplayUnitInfo unit =
         CreateDisplayUnitInfo(display, primary_id);

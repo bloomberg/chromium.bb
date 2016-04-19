@@ -366,7 +366,11 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"displayArrangement", IDS_SETTINGS_DISPLAY_ARRANGEMENT},
       {"displayMirror", IDS_SETTINGS_DISPLAY_MIRROR},
       {"displayMakePrimary", IDS_SETTINGS_DISPLAY_MAKE_PRIMARY},
-      {"displayResolution", IDS_SETTINGS_DISPLAY_RESOLUTION},
+      {"displayResolutionTitle", IDS_SETTINGS_DISPLAY_RESOLUTION_TITLE},
+      {"displayResolutionText", IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT},
+      {"displayResolutionTextBest", IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT_BEST},
+      {"displayResolutionTextNative",
+       IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT_NATIVE},
       {"displayOrientation", IDS_SETTINGS_DISPLAY_ORIENTATION},
       {"displayOrientationStandard", IDS_SETTINGS_DISPLAY_ORIENTATION_STANDARD},
   };

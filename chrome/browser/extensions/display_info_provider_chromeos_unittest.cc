@@ -79,7 +79,7 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
 
 TEST_F(DisplayInfoProviderChromeosTest, GetBasic) {
   UpdateDisplay("500x600,400x520");
-  DisplayInfo result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
+  DisplayUnitInfoList result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
 
@@ -120,7 +120,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetWithUnifiedDesktop) {
 
   // Check initial state.
   EXPECT_FALSE(GetDisplayManager()->IsInUnifiedMode());
-  DisplayInfo result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
+  DisplayUnitInfoList result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
 
@@ -230,7 +230,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetWithUnifiedDesktop) {
 
 TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
   UpdateDisplay("500x600/r");
-  DisplayInfo result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
+  DisplayUnitInfoList result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(1u, result.size());
 
@@ -278,7 +278,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
 
 TEST_F(DisplayInfoProviderChromeosTest, GetDPI) {
   UpdateDisplay("500x600,400x520*2");
-  DisplayInfo result;
+  DisplayUnitInfoList result;
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
@@ -311,7 +311,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetDPI) {
 
 TEST_F(DisplayInfoProviderChromeosTest, GetVisibleArea) {
   UpdateDisplay("640x720*2/o, 400x520/o");
-  DisplayInfo result;
+  DisplayUnitInfoList result;
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
@@ -356,7 +356,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetVisibleArea) {
 
 TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
   UpdateDisplay("600x600, 400x520/o");
-  DisplayInfo result;
+  DisplayUnitInfoList result;
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
@@ -404,7 +404,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
   GetDisplayManager()->SetLayoutForCurrentDisplays(
       ash::test::CreateDisplayLayout(display::DisplayPlacement::LEFT, -40));
 
-  DisplayInfo result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
+  DisplayUnitInfoList result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
   EXPECT_EQ("0,0 600x600", SystemInfoDisplayBoundsToString(result[0].bounds));
@@ -1068,6 +1068,58 @@ TEST_F(DisplayInfoProviderChromeosTest, SetOverscanForInternal) {
 
   ASSERT_FALSE(success);
   EXPECT_EQ("Overscan changes not allowed for the internal monitor.", error);
+}
+
+TEST_F(DisplayInfoProviderChromeosTest, DisplayMode) {
+  UpdateDisplay("1200x600,600x1000");
+
+  DisplayUnitInfoList result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
+  ASSERT_GE(result.size(), 1u);
+  const api::system_display::DisplayUnitInfo& primary_info = result[0];
+  // Ensure that we have two modes for the primary display so that we can
+  // test chaning modes.
+  ASSERT_GE(primary_info.modes.size(), 2u);
+
+  // Get the currently active mode and one other mode to switch to.
+  int64_t id;
+  base::StringToInt64(primary_info.id, &id);
+  ash::DisplayMode active_mode =
+      GetDisplayManager()->GetActiveModeForDisplayId(id);
+  const api::system_display::DisplayMode* cur_mode = nullptr;
+  const api::system_display::DisplayMode* other_mode = nullptr;
+  for (const auto& mode : primary_info.modes) {
+    if (mode.is_selected)
+      cur_mode = &mode;
+    else if (!other_mode)
+      other_mode = &mode;
+    if (cur_mode && other_mode)
+      break;
+  }
+  ASSERT_TRUE(cur_mode);
+  ASSERT_TRUE(other_mode);
+  ASSERT_NE(other_mode, cur_mode);
+
+  // Verify that other_mode differs from the active mode.
+  ash::DisplayMode other_mode_ash;
+  other_mode_ash.size.SetSize(other_mode->width_in_native_pixels,
+                              other_mode->height_in_native_pixels);
+  other_mode_ash.ui_scale = other_mode->ui_scale;
+  other_mode_ash.device_scale_factor = other_mode->device_scale_factor;
+  EXPECT_FALSE(active_mode.IsEquivalent(other_mode_ash));
+
+  // Switch modes.
+  api::system_display::DisplayProperties info;
+  info.display_mode =
+      api::system_display::DisplayMode::FromValue(*other_mode->ToValue());
+
+  bool success = false;
+  std::string error;
+  CallSetDisplayUnitInfo(base::Int64ToString(id), info, &success, &error);
+  ASSERT_TRUE(success);
+
+  // Verify that other_mode now matches the active mode.
+  active_mode = GetDisplayManager()->GetActiveModeForDisplayId(id);
+  EXPECT_TRUE(active_mode.IsEquivalent(other_mode_ash));
 }
 
 }  // namespace

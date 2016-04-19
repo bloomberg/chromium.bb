@@ -38,7 +38,16 @@ Polymer({
      * Selected display
      * @type {!chrome.system.display.DisplayUnitInfo|undefined}
      */
-    selectedDisplay: Object,
+    selectedDisplay: {type: Object, observer: 'selectedDisplayChanged_'},
+
+    /** Maximum mode index value for slider. */
+    maxModeIndex_: {type: Number, value: 0},
+
+    /** Selected mode index value for slider. */
+    selectedModeIndex_: {type: Number},
+
+    /** Immediate selected mode index value for slider. */
+    immediateSelectedModeIndex_: {type: Number, value: 0}
   },
 
   /**
@@ -68,6 +77,31 @@ Polymer({
   getDisplayInfo_: function() {
     settings.display.systemDisplayApi.getInfo(
         this.updateDisplayInfo_.bind(this));
+  },
+
+  /**
+   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+   * @return {number}
+   * @private
+   */
+  getSelectedModeIndex_: function(selectedDisplay) {
+    for (var i = 0; i < selectedDisplay.modes.length; ++i) {
+      if (selectedDisplay.modes[i].isSelected)
+        return i;
+    }
+    return 0;
+  },
+
+  /** @private */
+  selectedDisplayChanged_: function() {
+    // Set maxModeIndex first so that the slider updates correctly.
+    if (this.selectedDisplay.modes.length == 0) {
+      this.maxModeIndex_ = 0;
+      this.selectedModeIndex_ = 0;
+      return;
+    }
+    this.maxModeIndex_ = this.selectedDisplay.modes.length - 1;
+    this.selectedModeIndex_ = this.getSelectedModeIndex_(this.selectedDisplay);
   },
 
   /**
@@ -109,11 +143,47 @@ Polymer({
   },
 
   /**
-   * @param {!{model: !{index: number}}} e
+   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+   * @return {boolean}
+   * @private
+   */
+  enableSetResolution_: function(selectedDisplay) {
+    return selectedDisplay.modes.length > 1;
+  },
+
+  /**
+   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+   * @param {number} immediateSelectedModeIndex
+   * @return {string}
+   * @private
+   */
+  getResolutionText_: function(selectedDisplay, immediateSelectedModeIndex) {
+    if (this.selectedDisplay.modes.length == 0) {
+      var widthStr = selectedDisplay.bounds.width.toString();
+      var heightStr = selectedDisplay.bounds.height.toString();
+      return this.i18n('displayResolutionText', widthStr, heightStr);
+    }
+    if (isNaN(immediateSelectedModeIndex))
+      immediateSelectedModeIndex = this.getSelectedModeIndex_(selectedDisplay);
+    var mode = selectedDisplay.modes[immediateSelectedModeIndex];
+    var best = selectedDisplay.isInternal ? mode.uiScale == 1.0 : mode.isNative;
+    var widthStr = mode.width.toString();
+    var heightStr = mode.height.toString();
+    if (best)
+      return this.i18n('displayResolutionTextBest', widthStr, heightStr);
+    else if (mode.isNative)
+      return this.i18n('displayResolutionTextNative', widthStr, heightStr);
+    return this.i18n('displayResolutionText', widthStr, heightStr);
+  },
+
+  /**
+   * @param {!{model: !{index: number}, target: !PaperButtonElement}} e
    * @private
    */
   onSelectDisplayTap_: function(e) {
     this.selectedDisplay = this.displays[e.model.index];
+    // Force active in case selected display was clicked.
+    e.target.active = true;
   },
 
   /** @private */
@@ -124,6 +194,25 @@ Polymer({
       return;
     /** @type {!chrome.system.display.DisplayProperties} */ var properties = {
       isPrimary: true
+    };
+    settings.display.systemDisplayApi.setDisplayProperties(
+        this.selectedDisplay.id, properties,
+        this.setPropertiesCallback_.bind(this));
+  },
+
+  /**
+   * @param {!{target: !PaperSliderElement}} e
+   * @private
+   */
+  onChangeMode_: function(e) {
+    var curIndex = this.selectedModeIndex_;
+    var newIndex = parseInt(e.target.value, 10);
+    if (newIndex == curIndex)
+      return;
+    assert(newIndex >= 0);
+    assert(newIndex < this.selectedDisplay.modes.length);
+    /** @type {!chrome.system.display.DisplayProperties} */ var properties = {
+      displayMode: this.selectedDisplay.modes[newIndex]
     };
     settings.display.systemDisplayApi.setDisplayProperties(
         this.selectedDisplay.id, properties,

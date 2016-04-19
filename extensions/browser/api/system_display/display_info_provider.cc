@@ -75,11 +75,11 @@ api::system_display::DisplayUnitInfo DisplayInfoProvider::CreateDisplayUnitInfo(
 
 void DisplayInfoProvider::EnableUnifiedDesktop(bool enable) {}
 
-DisplayInfo DisplayInfoProvider::GetAllDisplaysInfo() {
+DisplayUnitInfoList DisplayInfoProvider::GetAllDisplaysInfo() {
   gfx::Screen* screen = gfx::Screen::GetScreen();
   int64_t primary_id = screen->GetPrimaryDisplay().id();
   std::vector<gfx::Display> displays = screen->GetAllDisplays();
-  DisplayInfo all_displays;
+  DisplayUnitInfoList all_displays;
   for (const gfx::Display& display : displays) {
     api::system_display::DisplayUnitInfo unit =
         CreateDisplayUnitInfo(display, primary_id);

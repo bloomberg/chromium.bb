@@ -33,6 +33,32 @@ namespace system.display {
     long bottom;
   };
 
+  dictionary DisplayMode {
+    // The display mode width in device independent (user visible) pixels.
+    long width;
+
+    // The display mode height in device independent (user visible) pixels.
+    long height;
+
+    // The display mode width in native pixels.
+    long widthInNativePixels;
+
+    // The display mode height in native pixels.
+    long heightInNativePixels;
+
+    // The display mode UI scale factor.
+    double uiScale;
+
+    // The display mode device scale factor.
+    double deviceScaleFactor;
+
+    // True if the mode is the display's native mode.
+    boolean isNative;
+
+    // True if the display mode is currently selected.
+    boolean isSelected;
+  };
+
   dictionary DisplayUnitInfo {
     // The unique identifier of the display.
     DOMString id;
@@ -77,6 +103,11 @@ namespace system.display {
     // area excludes areas of the display reserved for OS, for example taskbar
     // and launcher.
     Bounds workArea;
+
+    // The list of available display modes. The current mode will have
+    // isSelected=true. Only available on Chrome OS. Will be set to an empty
+    // array on other platforms.
+    DisplayMode[] modes;
   };
 
   dictionary DisplayProperties {
@@ -115,6 +146,9 @@ namespace system.display {
     // If set, updates the display's logical bounds origin along y-axis.
     // See documentation for <code>boundsOriginX</code> parameter.
     long? boundsOriginY;
+
+    // If set, updates the display mode to the mode matching this value.
+    DisplayMode? displayMode;
   };
 
   callback DisplayInfoCallback = void (DisplayUnitInfo[] displayInfo);
@@ -127,6 +161,7 @@ namespace system.display {
     // Updates the properties for the display specified by |id|, according to
     // the information provided in |info|. On failure, $(ref:runtime.lastError)
     // will be set.
+    // NOTE: This is only available to Chrome OS Kiosk apps and Web UI.
     // |id|: The display's unique identifier.
     // |info|: The information about display properties that should be changed.
     //     A property will be changed only if a new value for it is specified in
@@ -142,6 +177,8 @@ namespace system.display {
     // Enables/disables the unified desktop feature. Note that this simply
     // enables the feature, but will not change the actual desktop mode.
     // (That is, if the desktop is in mirror mode, it will stay in mirror mode)
+    // NOTE: This is only available to Chrome OS Kiosk apps and Web UI.
+    // |enabled|: True if unified desktop should be enabled.
     static void enableUnifiedDesktop(boolean enabled);
   };
 

@@ -23,7 +23,8 @@ namespace {
 
 BOOL CALLBACK
 EnumMonitorCallback(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data) {
-  DisplayInfo* all_displays = reinterpret_cast<DisplayInfo*>(data);
+  DisplayUnitInfoList* all_displays =
+      reinterpret_cast<DisplayUnitInfoList*>(data);
   DCHECK(all_displays);
 
   DisplayUnitInfo unit;
@@ -68,7 +69,7 @@ bool DisplayInfoProviderWin::SetInfo(
 void DisplayInfoProviderWin::UpdateDisplayUnitInfoForPlatform(
     const gfx::Display& display,
     extensions::api::system_display::DisplayUnitInfo* unit) {
-  DisplayInfo all_displays;
+  DisplayUnitInfoList all_displays;
   EnumDisplayMonitors(
       NULL, NULL, EnumMonitorCallback, reinterpret_cast<LPARAM>(&all_displays));
   for (size_t i = 0; i < all_displays.size(); ++i) {

@@ -45,6 +45,21 @@ chrome.system.display.Insets;
 
 /**
  * @typedef {{
+ *   width: number,
+ *   height: number,
+ *   widthInNativePixels: number,
+ *   heightInNativePixels: number,
+ *   uiScale: number,
+ *   deviceScaleFactor: number,
+ *   isNative: boolean,
+ *   isSelected: boolean
+ * }}
+ * @see https://developer.chrome.com/extensions/system.display#type-DisplayMode
+ */
+chrome.system.display.DisplayMode;
+
+/**
+ * @typedef {{
  *   id: string,
  *   name: string,
  *   mirroringSourceId: string,
@@ -56,7 +71,8 @@ chrome.system.display.Insets;
  *   rotation: number,
  *   bounds: !chrome.system.display.Bounds,
  *   overscan: !chrome.system.display.Insets,
- *   workArea: !chrome.system.display.Bounds
+ *   workArea: !chrome.system.display.Bounds,
+ *   modes: !Array<!chrome.system.display.DisplayMode>
  * }}
  * @see https://developer.chrome.com/extensions/system.display#type-DisplayUnitInfo
  */
@@ -69,7 +85,8 @@ chrome.system.display.DisplayUnitInfo;
  *   overscan: (!chrome.system.display.Insets|undefined),
  *   rotation: (number|undefined),
  *   boundsOriginX: (number|undefined),
- *   boundsOriginY: (number|undefined)
+ *   boundsOriginY: (number|undefined),
+ *   displayMode: (!chrome.system.display.DisplayMode|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/system.display#type-DisplayProperties
  */
@@ -86,7 +103,7 @@ chrome.system.display.getInfo = function(callback) {};
 /**
  * Updates the properties for the display specified by |id|, according to the
  * information provided in |info|. On failure, $(ref:runtime.lastError) will be
- * set.
+ * set. NOTE: This is only available to Chrome OS Kiosk apps and Web UI.
  * @param {string} id The display's unique identifier.
  * @param {!chrome.system.display.DisplayProperties} info The information about
  *     display properties that should be changed.     A property will be changed
@@ -101,8 +118,9 @@ chrome.system.display.setDisplayProperties = function(id, info, callback) {};
 /**
  * Enables/disables the unified desktop feature. Note that this simply enables
  * the feature, but will not change the actual desktop mode. (That is, if the
- * desktop is in mirror mode, it will stay in mirror mode)
- * @param {boolean} enabled
+ * desktop is in mirror mode, it will stay in mirror mode) NOTE: This is only
+ * available to Chrome OS Kiosk apps and Web UI.
+ * @param {boolean} enabled True if unified desktop should be enabled.
  * @see https://developer.chrome.com/extensions/system.display#method-enableUnifiedDesktop
  */
 chrome.system.display.enableUnifiedDesktop = function(enabled) {};

@@ -23,7 +23,7 @@ using api::system_display::DisplayUnitInfo;
 namespace SetDisplayProperties = api::system_display::SetDisplayProperties;
 
 bool SystemDisplayGetInfoFunction::RunSync() {
-  DisplayInfo all_displays_info =
+  DisplayUnitInfoList all_displays_info =
       DisplayInfoProvider::Get()->GetAllDisplaysInfo();
   results_ = api::system_display::GetInfo::Results::Create(all_displays_info);
   return true;
