@@ -1,6 +1,0 @@
-Testing
-
-This is a testharness.js-based test.
-PASS set innerHTML to an XHTML fragment with in-scope namespace prefixes on attributes 
-Harness: the test ran to completion.
-

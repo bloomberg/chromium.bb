@@ -1,5 +1,0 @@
-This test case verifies if relevant TypeError is thrown when invalid Node argument is given.
-This is a testharness.js-based test.
-PASS Node.appendChild should throw TypeError when a wrong type of argument is passed. 
-Harness: the test ran to completion.
-

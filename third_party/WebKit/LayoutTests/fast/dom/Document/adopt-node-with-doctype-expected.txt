@@ -1,6 +1,0 @@
-This page tests the DOM document.adoptNode method with DocumentType.
-
-This is a testharness.js-based test.
-PASS Explicitly adopting a DocumentType should work. 
-Harness: the test ran to completion.
-

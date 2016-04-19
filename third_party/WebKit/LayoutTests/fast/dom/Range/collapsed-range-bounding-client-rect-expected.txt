@@ -1,7 +1,0 @@
-Tests that Range::getBoundingClientRect returns top and left coordinates for collapsed ranges as mandated by the spec.
-
-This is a testharness.js-based test.
-PASS Check position for non-collapsed range. 
-PASS Check position for collapsed range. 
-Harness: the test ran to completion.
-

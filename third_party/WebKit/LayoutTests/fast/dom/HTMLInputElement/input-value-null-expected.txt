@@ -1,8 +1,0 @@
-This test checks that assigning null to HTMLInputElement.value behaves correctly; i.e. as if the empty string was assigned.
-
-This is a testharness.js-based test.
-PASS input[type=text] with value content attribute. 
-PASS input[type=text] without value content attribute. 
-PASS input[type=hidden] with value content attribute. 
-Harness: the test ran to completion.
-
