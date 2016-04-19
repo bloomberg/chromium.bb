@@ -51,6 +51,7 @@ namespace blink {
 
 Image::Image(ImageObserver* observer)
     : m_imageObserver(observer)
+    , m_imageObserverDisabled(false)
 {
 }
 

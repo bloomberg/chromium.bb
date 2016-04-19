@@ -342,7 +342,7 @@ inline void ImageResource::clearImage()
 
     // If our Image has an observer, it's always us so we need to clear the back pointer
     // before dropping our reference.
-    m_image->setImageObserver(nullptr);
+    m_image->clearImageObserver();
     m_image.clear();
 }
 
