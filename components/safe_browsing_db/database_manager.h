@@ -56,6 +56,7 @@ class SafeBrowsingDatabaseManager
         const std::set<std::string>& threats) {}
 
     // Called when the result of checking the API blacklist is known.
+    // TODO(kcarattini): Consider if we need |url| passed here, remove if not.
     virtual void OnCheckApiBlacklistUrlResult(const GURL& url,
                                               const ThreatMetadata& metadata) {}
 
@@ -175,15 +176,6 @@ class SafeBrowsingDatabaseManager
   virtual void StopOnIOThread(bool shutdown);
 
  protected:
-  SafeBrowsingDatabaseManager();
-
-  virtual ~SafeBrowsingDatabaseManager();
-
-  friend class base::RefCountedThreadSafe<SafeBrowsingDatabaseManager>;
-
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
-                           CheckApiBlacklistUrlPrefixes);
-
   // Bundled client info for an API abuse hash prefix check.
   class SafeBrowsingApiCheck {
    public:
@@ -191,6 +183,10 @@ class SafeBrowsingDatabaseManager
                          const std::vector<SBFullHash>& full_hashes,
                          Client* client);
     ~SafeBrowsingApiCheck();
+
+    const GURL& url() {return url_;}
+    std::vector<SBFullHash>& full_hashes() {return full_hashes_;}
+    SafeBrowsingDatabaseManager::Client* client() {return client_;}
 
    private:
     GURL url_;
@@ -200,6 +196,21 @@ class SafeBrowsingDatabaseManager
 
     DISALLOW_COPY_AND_ASSIGN(SafeBrowsingApiCheck);
   };
+
+  SafeBrowsingDatabaseManager();
+
+  virtual ~SafeBrowsingDatabaseManager();
+
+  friend class base::RefCountedThreadSafe<SafeBrowsingDatabaseManager>;
+
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
+                           CheckApiBlacklistUrlPrefixes);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
+                           HandleGetHashesWithApisResults);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
+                           HandleGetHashesWithApisResultsNoMatch);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
+                           HandleGetHashesWithApisResultsMatches);
 
   // Called on the IO thread wheh the SafeBrowsingProtocolManager has received
   // the full hash and api results for prefixes of the |url| argument in

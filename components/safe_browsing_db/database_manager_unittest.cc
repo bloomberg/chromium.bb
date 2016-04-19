@@ -80,9 +80,16 @@ class TestClient : public SafeBrowsingDatabaseManager::Client {
   ~TestClient() override {}
 
   void OnCheckApiBlacklistUrlResult(const GURL& url,
-                                    const ThreatMetadata& metadata) override {}
+                                    const ThreatMetadata& metadata) override {
+    blocked_permissions_ = metadata.api_permissions;
+  }
+
+  const std::vector<std::string>& GetBlockedPermissions() {
+    return blocked_permissions_;
+  }
 
  private:
+  std::vector<std::string> blocked_permissions_;
   DISALLOW_COPY_AND_ASSIGN(TestClient);
 };
 
@@ -129,6 +136,68 @@ TEST_F(SafeBrowsingDatabaseManagerTest, CheckApiBlacklistUrlPrefixes) {
   for (unsigned int i = 0; i < prefixes.size(); ++i) {
     EXPECT_EQ(expected_prefixes[i], prefixes[i]);
   }
+}
+
+TEST_F(SafeBrowsingDatabaseManagerTest, HandleGetHashesWithApisResults) {
+  TestClient client;
+  const GURL url("https://www.example.com/more");
+  TestV4GetHashProtocolManager* pm = static_cast<TestV4GetHashProtocolManager*>(
+      db_manager_->v4_get_hash_protocol_manager_);
+  SBFullHashResult full_hash_result;
+  full_hash_result.hash = SBFullHashForString("example.com/");
+  full_hash_result.metadata.api_permissions.push_back("GEOLOCATION");
+  pm->AddGetFullHashResponse(full_hash_result);
+
+  EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
+  base::RunLoop().RunUntilIdle();
+
+  const std::vector<std::string>& permissions = client.GetBlockedPermissions();
+  EXPECT_EQ(1ul, permissions.size());
+  EXPECT_EQ("GEOLOCATION", permissions[0]);
+}
+
+TEST_F(SafeBrowsingDatabaseManagerTest, HandleGetHashesWithApisResultsNoMatch) {
+  TestClient client;
+  const GURL url("https://www.example.com/more");
+  TestV4GetHashProtocolManager* pm = static_cast<TestV4GetHashProtocolManager*>(
+      db_manager_->v4_get_hash_protocol_manager_);
+  SBFullHashResult full_hash_result;
+  full_hash_result.hash = SBFullHashForString("wrongexample.com/");
+  full_hash_result.metadata.api_permissions.push_back("GEOLOCATION");
+  pm->AddGetFullHashResponse(full_hash_result);
+
+  EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
+  base::RunLoop().RunUntilIdle();
+
+  const std::vector<std::string>& permissions = client.GetBlockedPermissions();
+  EXPECT_EQ(0ul, permissions.size());
+}
+
+TEST_F(SafeBrowsingDatabaseManagerTest, HandleGetHashesWithApisResultsMatches) {
+  TestClient client;
+  const GURL url("https://www.example.com/more");
+  TestV4GetHashProtocolManager* pm = static_cast<TestV4GetHashProtocolManager*>(
+      db_manager_->v4_get_hash_protocol_manager_);
+  SBFullHashResult full_hash_result;
+  full_hash_result.hash = SBFullHashForString("example.com/");
+  full_hash_result.metadata.api_permissions.push_back("GEOLOCATION");
+  pm->AddGetFullHashResponse(full_hash_result);
+  SBFullHashResult full_hash_result2;
+  full_hash_result2.hash = SBFullHashForString("example.com/more");
+  full_hash_result2.metadata.api_permissions.push_back("NOTIFICATIONS");
+  pm->AddGetFullHashResponse(full_hash_result2);
+  SBFullHashResult full_hash_result3;
+  full_hash_result3.hash = SBFullHashForString("wrongexample.com/");
+  full_hash_result3.metadata.api_permissions.push_back("AUDIO_CAPTURE");
+  pm->AddGetFullHashResponse(full_hash_result3);
+
+  EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
+  base::RunLoop().RunUntilIdle();
+
+  const std::vector<std::string>& permissions = client.GetBlockedPermissions();
+  EXPECT_EQ(2ul, permissions.size());
+  EXPECT_EQ("GEOLOCATION", permissions[0]);
+  EXPECT_EQ("NOTIFICATIONS", permissions[1]);
 }
 
 }  // namespace safe_browsing

@@ -86,7 +86,24 @@ void SafeBrowsingDatabaseManager::HandleGetHashesWithApisResults(
     const std::vector<SBFullHashResult>& full_hash_results,
     const base::TimeDelta& negative_cache_duration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(kcarattini): Implement response handler.
+  DCHECK(check);
+
+  ThreatMetadata md;
+  // Merge the metadata from all matching results.
+  // TODO(kcarattini): This is O(N^2). Look at improving performance by
+  // using a map, sorting or doing binary search etc..
+  for (const SBFullHashResult& result : full_hash_results) {
+    for (const SBFullHash& full_hash : check->full_hashes()) {
+      if (SBFullHashEqual(full_hash, result.hash)) {
+        md.api_permissions.insert(md.api_permissions.end(),
+                                  result.metadata.api_permissions.begin(),
+                                  result.metadata.api_permissions.end());
+        break;
+      }
+    }
+  }
+
+  check->client()->OnCheckApiBlacklistUrlResult(check->url(), md);
 }
 
 SafeBrowsingDatabaseManager::SafeBrowsingApiCheck::SafeBrowsingApiCheck(
