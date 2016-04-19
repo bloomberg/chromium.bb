@@ -35,7 +35,7 @@ uint8_t GetDevicePriority(AudioDeviceType type, bool is_input) {
     case AUDIO_TYPE_INTERNAL_MIC:
       return 1;
     case AUDIO_TYPE_KEYBOARD_MIC:
-    case AUDIO_TYPE_AOKR:
+    case AUDIO_TYPE_HOTWORD:
     case AUDIO_TYPE_POST_MIX_LOOPBACK:
     case AUDIO_TYPE_POST_DSP_LOOPBACK:
     case AUDIO_TYPE_OTHER:
@@ -65,8 +65,8 @@ std::string AudioDevice::GetTypeString(AudioDeviceType type) {
       return "INTERNAL_MIC";
     case AUDIO_TYPE_KEYBOARD_MIC:
       return "KEYBOARD_MIC";
-    case AUDIO_TYPE_AOKR:
-      return "AOKR";
+    case AUDIO_TYPE_HOTWORD:
+      return "HOTWORD";
     case AUDIO_TYPE_POST_MIX_LOOPBACK:
       return "POST_MIX_LOOPBACK";
     case AUDIO_TYPE_POST_DSP_LOOPBACK:
@@ -96,8 +96,12 @@ AudioDeviceType AudioDevice::GetAudioType(
     return AUDIO_TYPE_HDMI;
   else if (node_type.find("INTERNAL_SPEAKER") != std::string::npos)
     return AUDIO_TYPE_INTERNAL_SPEAKER;
+  // TODO(hychao): Remove the 'AOKR' matching line after CRAS switches
+  // node type naming to 'HOTWORD'.
   else if (node_type.find("AOKR") != std::string::npos)
-    return AUDIO_TYPE_AOKR;
+    return AUDIO_TYPE_HOTWORD;
+  else if (node_type.find("HOTWORD") != std::string::npos)
+    return AUDIO_TYPE_HOTWORD;
   else if (node_type.find("POST_MIX_LOOPBACK") != std::string::npos)
     return AUDIO_TYPE_POST_MIX_LOOPBACK;
   else if (node_type.find("POST_DSP_LOOPBACK") != std::string::npos)

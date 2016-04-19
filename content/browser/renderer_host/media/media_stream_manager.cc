@@ -151,7 +151,7 @@ void EnableHotwordEffect(const StreamControls& controls, int* effects) {
     chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
     // Only enable if a hotword device exists.
     for (const chromeos::AudioDevice& device : devices) {
-      if (device.type == chromeos::AUDIO_TYPE_AOKR) {
+      if (device.type == chromeos::AUDIO_TYPE_HOTWORD) {
         DCHECK(device.is_input);
         *effects |= media::AudioParameters::HOTWORD;
       }

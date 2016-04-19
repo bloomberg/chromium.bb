@@ -26,7 +26,7 @@ enum AudioDeviceType {
   AUDIO_TYPE_INTERNAL_SPEAKER,
   AUDIO_TYPE_INTERNAL_MIC,
   AUDIO_TYPE_KEYBOARD_MIC,
-  AUDIO_TYPE_AOKR,
+  AUDIO_TYPE_HOTWORD,
   AUDIO_TYPE_POST_MIX_LOOPBACK,
   AUDIO_TYPE_POST_DSP_LOOPBACK,
   AUDIO_TYPE_OTHER,
@@ -45,7 +45,7 @@ struct CHROMEOS_EXPORT AudioDevice {
 
   // Indicates that an input or output audio device is for simple usage like
   // playback or recording for user. In contrast, audio device such as
-  // loopback, always on keyword recognition (AOKR), and keyboard mic are
+  // loopback, always on keyword recognition (HOTWORD), and keyboard mic are
   // not for simple usage.
   bool is_for_simple_usage() const {
     return (type == AUDIO_TYPE_HEADPHONE ||
