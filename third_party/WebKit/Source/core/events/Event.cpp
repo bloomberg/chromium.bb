@@ -231,7 +231,7 @@ bool Event::isBeforeUnloadEvent() const
 void Event::preventDefault()
 {
     if (m_handlingPassive) {
-        const LocalDOMWindow* window = m_currentTarget ? m_currentTarget->toDOMWindow() : 0;
+        const LocalDOMWindow* window = m_eventPath ? m_eventPath->windowEventContext().window() : 0;
         if (window)
             window->printErrorMessage("Unable to preventDefault inside passive event listener invocation.");
         return;
