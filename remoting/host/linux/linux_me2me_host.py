@@ -1092,9 +1092,6 @@ Web Store: https://chrome.google.com/remotedesktop"""
                     action="store", metavar="USER",
                     help="Adds the specified user to the chrome-remote-desktop "
                     "group (must be run as root).")
-  parser.add_option("", "--host-version", dest="host_version", default=False,
-                    action="store_true",
-                    help="Prints version of the host.")
   parser.add_option("", "--watch-resolution", dest="watch_resolution",
                     type="int", nargs=2, default=False, action="store",
                     help=optparse.SUPPRESS_HELP)
@@ -1189,10 +1186,6 @@ Web Store: https://chrome.google.com/remotedesktop"""
       return 1
 
     return 0
-
-  if options.host_version:
-    # TODO(sergeyu): Also check RPM package version once we add RPM package.
-    return os.system(locate_executable(HOST_BINARY_NAME) + " --version") >> 8
 
   if options.watch_resolution:
     watch_for_resolution_changes(options.watch_resolution)

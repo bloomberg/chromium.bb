@@ -829,6 +829,8 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       }
     } else {
       executable("remoting_me2me_host") {
+        configs += [ "//remoting:version" ]
+
         sources = [
           "host_main.cc",
           "host_main.h",
