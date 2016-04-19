@@ -366,18 +366,10 @@ void SVGLayoutSupport::intersectPaintInvalidationRectWithResources(const LayoutO
         paintInvalidationRect.intersect(masker->resourceBoundingBox(layoutObject));
 }
 
-bool SVGLayoutSupport::filtersForceContainerLayout(LayoutObject* object)
+bool SVGLayoutSupport::hasFilterResource(const LayoutObject& object)
 {
-    // If any of this container's children need to be laid out, and a filter is applied
-    // to the container, we need to issue paint invalidations the entire container.
-    if (!object->normalChildNeedsLayout())
-        return false;
-
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(object);
-    if (!resources || !resources->filter())
-        return false;
-
-    return true;
+    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&object);
+    return resources && resources->filter();
 }
 
 bool SVGLayoutSupport::pointInClippingArea(const LayoutObject* object, const FloatPoint& point)

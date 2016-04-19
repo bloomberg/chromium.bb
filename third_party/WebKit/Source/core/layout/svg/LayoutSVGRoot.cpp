@@ -151,7 +151,11 @@ void LayoutSVGRoot::layout()
     SVGSVGElement* svg = toSVGSVGElement(node());
     ASSERT(svg);
     m_isLayoutSizeChanged = needsLayout || (svg->hasRelativeLengths() && oldSize != size());
-    SVGLayoutSupport::layoutChildren(this, needsLayout || SVGLayoutSupport::filtersForceContainerLayout(this));
+    // If any of this root's children need to be laid out, and a filter is
+    // applied to it, we need to issue paint invalidations for all descendants.
+    bool forceLayoutOfChildren = needsLayout
+        || (normalChildNeedsLayout() && SVGLayoutSupport::hasFilterResource(*this));
+    SVGLayoutSupport::layoutChildren(this, forceLayoutOfChildren);
 
     if (m_needsBoundariesOrTransformUpdate) {
         updateCachedBoundaries();

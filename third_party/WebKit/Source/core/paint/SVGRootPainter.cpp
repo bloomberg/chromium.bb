@@ -5,8 +5,7 @@
 #include "core/paint/SVGRootPainter.h"
 
 #include "core/layout/svg/LayoutSVGRoot.h"
-#include "core/layout/svg/SVGResources.h"
-#include "core/layout/svg/SVGResourcesCache.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
@@ -41,11 +40,8 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
         return;
 
     // Don't paint if we don't have kids, except if we have filters we should paint those.
-    if (!m_layoutSVGRoot.firstChild()) {
-        SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&m_layoutSVGRoot);
-        if (!resources || !resources->filter())
-            return;
-    }
+    if (!m_layoutSVGRoot.firstChild() && !SVGLayoutSupport::hasFilterResource(m_layoutSVGRoot))
+        return;
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
 

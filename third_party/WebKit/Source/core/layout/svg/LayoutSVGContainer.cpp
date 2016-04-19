@@ -59,7 +59,12 @@ void LayoutSVGContainer::layout()
     // LayoutSVGViewportContainer needs to set the 'layout size changed' flag.
     determineIfLayoutSizeChanged();
 
-    SVGLayoutSupport::layoutChildren(this, selfNeedsLayout() || SVGLayoutSupport::filtersForceContainerLayout(this));
+    // If any of this container's children need to be laid out, and a filter is
+    // applied to the container, we need to issue paint invalidations for all
+    // the descendants.
+    bool forceLayoutOfChildren = selfNeedsLayout()
+        || (normalChildNeedsLayout() && SVGLayoutSupport::hasFilterResource(*this));
+    SVGLayoutSupport::layoutChildren(this, forceLayoutOfChildren);
 
     // Invalidate all resources of this client if our layout changed.
     if (everHadLayout() && needsLayout())
@@ -98,8 +103,7 @@ void LayoutSVGContainer::removeChild(LayoutObject* child)
 
 bool LayoutSVGContainer::selfWillPaint() const
 {
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(this);
-    return resources && resources->filter();
+    return SVGLayoutSupport::hasFilterResource(*this);
 }
 
 void LayoutSVGContainer::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)

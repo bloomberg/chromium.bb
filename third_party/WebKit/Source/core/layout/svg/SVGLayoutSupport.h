@@ -61,8 +61,8 @@ public:
     // Calculates the paintInvalidationRect in combination with filter, clipper and masker in local coordinates.
     static void intersectPaintInvalidationRectWithResources(const LayoutObject*, FloatRect&);
 
-    // Determines whether a container needs to be laid out because it's filtered and a child is being laid out.
-    static bool filtersForceContainerLayout(LayoutObject*);
+    // Determine if the LayoutObject references a filter resource object.
+    static bool hasFilterResource(const LayoutObject&);
 
     // Determines whether the passed point lies in a clipping area
     static bool pointInClippingArea(const LayoutObject*, const FloatPoint&);
