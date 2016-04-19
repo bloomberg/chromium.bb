@@ -133,33 +133,6 @@
              summary="negative or zero values in width or height"/>
     </enum>
 
-    <request name="set">
-      <description summary="set the crop and scale state">
-	Set both source rectangle and destination size of the associated
-	wl_surface. See wl_viewport for the description, and relation to
-	the wl_buffer size.
-
-	The bad_value protocol error is raised if src_width or
-	src_height is negative, or if dst_width or dst_height is not
-	positive.
-
-	The crop and scale state is double-buffered state, and will be
-	applied on the next wl_surface.commit.
-
-	Arguments dst_x and dst_y do not exist here, use the x and y
-	arguments to wl_surface.attach. The x, y, dst_width, and dst_height
-	define the surface-local coordinate system irrespective of the
-	attached wl_buffer size.
-      </description>
-
-      <arg name="src_x" type="fixed" summary="source rectangle x"/>
-      <arg name="src_y" type="fixed" summary="source rectangle y"/>
-      <arg name="src_width" type="fixed" summary="source rectangle width"/>
-      <arg name="src_height" type="fixed" summary="source rectangle height"/>
-      <arg name="dst_width" type="int" summary="surface width"/>
-      <arg name="dst_height" type="int" summary="surface height"/>
-    </request>
-
     <request name="set_source" since="2">
       <description summary="set the source rectangle for cropping">
 	Set the source rectangle of the associated wl_surface. See
