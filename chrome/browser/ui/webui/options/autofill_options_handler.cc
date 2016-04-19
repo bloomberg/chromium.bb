@@ -28,6 +28,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -97,23 +98,17 @@ void GetAddressComponents(const std::string& country_code,
   std::string not_used;
   std::vector<AddressUiComponent> components =
       i18n::addressinput::BuildComponents(
-          country_code,
-          localization,
-          ui_language_code,
-          components_language_code == NULL ?
-              &not_used : components_language_code);
+          country_code, localization, ui_language_code,
+          components_language_code ? components_language_code : &not_used);
   if (components.empty()) {
     static const char kDefaultCountryCode[] = "US";
     components = i18n::addressinput::BuildComponents(
-        kDefaultCountryCode,
-        localization,
-        ui_language_code,
-        components_language_code == NULL ?
-            &not_used : components_language_code);
+        kDefaultCountryCode, localization, ui_language_code,
+        components_language_code ? components_language_code : &not_used);
   }
   DCHECK(!components.empty());
 
-  base::ListValue* line = NULL;
+  base::ListValue* line = nullptr;
   static const char kField[] = "field";
   static const char kLength[] = "length";
   for (size_t i = 0; i < components.size(); ++i) {
@@ -209,7 +204,8 @@ void SetCountryData(const PersonalDataManager& manager,
 
 namespace options {
 
-AutofillOptionsHandler::AutofillOptionsHandler() : personal_data_(NULL) {}
+AutofillOptionsHandler::AutofillOptionsHandler()
+    : personal_data_(nullptr), prior_profile_(nullptr) {}
 
 AutofillOptionsHandler::~AutofillOptionsHandler() {
   if (personal_data_)
@@ -395,8 +391,8 @@ void AutofillOptionsHandler::LoadAddressEditor(const base::ListValue* args) {
     return;
   }
 
-  AutofillProfile* profile = personal_data_->GetProfileByGUID(guid);
-  if (!profile) {
+  prior_profile_ = personal_data_->GetProfileByGUID(guid);
+  if (!prior_profile_) {
     // There is a race where a user can click once on the close button and
     // quickly click again on the list item before the item is removed (since
     // the list is not updated until the model tells the list an item has been
@@ -406,7 +402,7 @@ void AutofillOptionsHandler::LoadAddressEditor(const base::ListValue* args) {
   }
 
   base::DictionaryValue address;
-  AutofillProfileToDictionary(*profile, &address);
+  AutofillProfileToDictionary(*prior_profile_, &address);
 
   web_ui()->CallJavascriptFunction("AutofillOptions.editAddress", address);
 }
@@ -481,12 +477,32 @@ void AutofillOptionsHandler::SetAddress(const base::ListValue* args) {
 
   AutofillProfile profile(guid, kSettingsOrigin);
 
-  base::string16 value;
-  if (args->GetString(arg_counter++, &value)) {
-    profile.SetInfo(AutofillType(autofill::NAME_FULL), value,
-                    g_browser_process->GetApplicationLocale());
+  base::string16 full_name;
+  if (args->GetString(arg_counter++, &full_name)) {
+    // Although First/Middle/Last are not displayed on the form, we transfer
+    // this information when they match the full name given. This is because it
+    // may not be possible later to correctly tokenize the concatenated full
+    // name; e.g., when the last name contains a space, the first word would be
+    // treated as a middle name.
+    if (prior_profile_ && autofill::data_util::ProfileMatchesFullName(
+                              full_name, *prior_profile_)) {
+      profile.SetRawInfo(autofill::NAME_FULL, full_name);
+
+      profile.SetRawInfo(autofill::NAME_FIRST,
+                         prior_profile_->GetRawInfo(autofill::NAME_FIRST));
+      profile.SetRawInfo(autofill::NAME_MIDDLE,
+                         prior_profile_->GetRawInfo(autofill::NAME_MIDDLE));
+      profile.SetRawInfo(autofill::NAME_LAST,
+                         prior_profile_->GetRawInfo(autofill::NAME_LAST));
+    } else {
+      // In contrast to SetRawInfo, SetInfo will naively attempt to populate the
+      // First/Middle/Last fields by tokenization.
+      profile.SetInfo(AutofillType(autofill::NAME_FULL), full_name,
+                      g_browser_process->GetApplicationLocale());
+    }
   }
 
+  base::string16 value;
   if (args->GetString(arg_counter++, &value))
     profile.SetRawInfo(autofill::COMPANY_NAME, value);
 
@@ -609,9 +625,7 @@ void AutofillOptionsHandler::AutofillProfileToDictionary(
   std::unique_ptr<base::ListValue> components(new base::ListValue);
   GetAddressComponents(
       base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY)),
-      profile.language_code(),
-      components.get(),
-      NULL);
+      profile.language_code(), components.get(), nullptr);
   address->Set(kComponents, components.release());
 }
 

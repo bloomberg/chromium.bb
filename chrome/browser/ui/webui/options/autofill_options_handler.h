@@ -106,6 +106,10 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
   // Unowned pointer, may not be NULL.
   autofill::PersonalDataManager* personal_data_;
 
+  // The profile which was last used to populate the Address Editor. Unowned;
+  // not populated until LoadAdressEditor is called.
+  autofill::AutofillProfile* prior_profile_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillOptionsHandler);
 };
 

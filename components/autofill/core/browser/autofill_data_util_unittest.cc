@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -40,6 +41,27 @@ TEST(AutofillDataUtilTest, SplitName) {
     EXPECT_EQ(base::UTF8ToUTF16(test_case.middle_name), name_parts.middle);
     EXPECT_EQ(base::UTF8ToUTF16(test_case.family_name), name_parts.family);
   }
+}
+
+TEST(AutofillDataUtilTest, ProfileMatchesFullName) {
+  autofill::AutofillProfile profile;
+  autofill::test::SetProfileInfo(
+      &profile, "First", "Middle", "Last", "fml@example.com", "Acme inc",
+      "123 Main", "Apt 2", "Laredo", "TX", "77300", "US", "832-555-1000");
+
+  EXPECT_TRUE(ProfileMatchesFullName(base::UTF8ToUTF16("First Last"), profile));
+
+  EXPECT_TRUE(
+      ProfileMatchesFullName(base::UTF8ToUTF16("First Middle Last"), profile));
+
+  EXPECT_TRUE(
+      ProfileMatchesFullName(base::UTF8ToUTF16("First M Last"), profile));
+
+  EXPECT_TRUE(
+      ProfileMatchesFullName(base::UTF8ToUTF16("First M. Last"), profile));
+
+  EXPECT_FALSE(
+      ProfileMatchesFullName(base::UTF8ToUTF16("Kirby Puckett"), profile));
 }
 
 }  // namespace data_util

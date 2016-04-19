@@ -9,6 +9,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
 namespace data_util {
@@ -126,6 +127,45 @@ NameParts SplitName(const base::string16& name) {
   parts.given = base::JoinString(name_tokens, base::ASCIIToUTF16(" "));
 
   return parts;
+}
+
+bool ProfileMatchesFullName(const base::string16 full_name,
+                            const autofill::AutofillProfile& profile) {
+  const base::string16 kSpace = base::ASCIIToUTF16(" ");
+  const base::string16 kPeriodSpace = base::ASCIIToUTF16(". ");
+
+  // First Last
+  base::string16 candidate = profile.GetRawInfo(autofill::NAME_FIRST) + kSpace +
+                             profile.GetRawInfo(autofill::NAME_LAST);
+  if (!full_name.compare(candidate)) {
+    return true;
+  }
+
+  // First Middle Last
+  candidate = profile.GetRawInfo(autofill::NAME_FIRST) + kSpace +
+              profile.GetRawInfo(autofill::NAME_MIDDLE) + kSpace +
+              profile.GetRawInfo(autofill::NAME_LAST);
+  if (!full_name.compare(candidate)) {
+    return true;
+  }
+
+  // First M Last
+  candidate = profile.GetRawInfo(autofill::NAME_FIRST) + kSpace +
+              profile.GetRawInfo(autofill::NAME_MIDDLE_INITIAL) + kSpace +
+              profile.GetRawInfo(autofill::NAME_LAST);
+  if (!full_name.compare(candidate)) {
+    return true;
+  }
+
+  // First M. Last
+  candidate = profile.GetRawInfo(autofill::NAME_FIRST) + kSpace +
+              profile.GetRawInfo(autofill::NAME_MIDDLE_INITIAL) + kPeriodSpace +
+              profile.GetRawInfo(autofill::NAME_LAST);
+  if (!full_name.compare(candidate)) {
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace data_util
