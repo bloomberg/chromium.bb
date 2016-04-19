@@ -919,7 +919,7 @@ class CRWWebControllerWindowOpenTest : public web::WebTestWithWebController {
 
     // Configure child web state.
     child_web_state_.reset(new web::WebStateImpl(GetBrowserState()));
-    [child_web_state_->GetWebController() setWebUsageEnabled:YES];
+    child_web_state_->SetWebUsageEnabled(true);
     [delegate_ setChildWebController:child_web_state_->GetWebController()];
 
     // Configure child web controller's session controller mock.

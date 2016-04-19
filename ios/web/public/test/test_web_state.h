@@ -23,9 +23,11 @@ class TestWebState : public WebState {
   ~TestWebState() override;
 
   // WebState implementation.
-  UIView* GetView() override;
   WebStateDelegate* GetDelegate() override;
   void SetDelegate(WebStateDelegate* delegate) override;
+  bool IsWebUsageEnabled() const override;
+  void SetWebUsageEnabled(bool enabled) override;
+  UIView* GetView() override;
   BrowserState* GetBrowserState() const override;
   void OpenURL(const OpenURLParams& params) override {}
   NavigationManager* GetNavigationManager() override;
@@ -68,6 +70,7 @@ class TestWebState : public WebState {
   void SetTrustLevel(URLVerificationTrustLevel trust_level);
 
  private:
+  bool web_usage_enabled_;
   GURL url_;
   base::string16 title_;
   URLVerificationTrustLevel trust_level_;

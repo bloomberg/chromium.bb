@@ -6,7 +6,6 @@ include_rules = [
 
   # TODO(crbug.com/597997): Remove these exceptions. Web shell must not use
   # any private APIs from web.
-  "+ios/web/web_state/ui/crw_web_controller.h",
   "+ios/web/web_state/web_state_impl.h",
 ]
 

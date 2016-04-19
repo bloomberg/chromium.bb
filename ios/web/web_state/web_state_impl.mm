@@ -498,6 +498,14 @@ base::WeakPtr<WebState> WebStateImpl::AsWeakPtr() {
 
 #pragma mark - WebState implementation
 
+bool WebStateImpl::IsWebUsageEnabled() const {
+  return [web_controller_ webUsageEnabled];
+}
+
+void WebStateImpl::SetWebUsageEnabled(bool enabled) {
+  [web_controller_ setWebUsageEnabled:enabled];
+}
+
 UIView* WebStateImpl::GetView() {
   return [web_controller_ view];
 }

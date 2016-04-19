@@ -20,7 +20,6 @@
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/shell/shell_browser_state.h"
-#include "ios/web/web_state/ui/crw_web_controller.h"
 #include "ios/web/web_state/web_state_impl.h"
 #include "ui/base/page_transition_types.h"
 
@@ -114,7 +113,7 @@ using web::NavigationManager;
 
   _webState.reset(new web::WebStateImpl(_browserState));
   _webState->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, 0);
-  [_webState->GetWebController() setWebUsageEnabled:YES];
+  _webState->SetWebUsageEnabled(true);
 
   _webStateObserver.reset(
       new web::WebStateObserverBridge(_webState.get(), self));

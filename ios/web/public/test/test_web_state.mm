@@ -11,13 +11,11 @@
 namespace web {
 
 TestWebState::TestWebState()
-    : trust_level_(kAbsolute), content_is_html_(true) {}
+    : web_usage_enabled_(false),
+      trust_level_(kAbsolute),
+      content_is_html_(true) {}
 
 TestWebState::~TestWebState() = default;
-
-UIView* TestWebState::GetView() {
-  return nullptr;
-}
 
 WebStateDelegate* TestWebState::GetDelegate() {
   return nil;
@@ -26,6 +24,18 @@ WebStateDelegate* TestWebState::GetDelegate() {
 void TestWebState::SetDelegate(WebStateDelegate* delegate) {}
 
 BrowserState* TestWebState::GetBrowserState() const {
+  return nullptr;
+}
+
+bool TestWebState::IsWebUsageEnabled() const {
+  return web_usage_enabled_;
+}
+
+void TestWebState::SetWebUsageEnabled(bool enabled) {
+  web_usage_enabled_ = enabled;
+}
+
+UIView* TestWebState::GetView() {
   return nullptr;
 }
 

@@ -282,6 +282,19 @@ class WebStateTest : public web::WebTest {
   std::unique_ptr<WebStateImpl> web_state_;
 };
 
+TEST_F(WebStateTest, WebUsageEnabled) {
+  // Default is false.
+  ASSERT_FALSE(web_state_->IsWebUsageEnabled());
+
+  web_state_->SetWebUsageEnabled(true);
+  EXPECT_TRUE(web_state_->IsWebUsageEnabled());
+  EXPECT_TRUE(web_state_->GetWebController().webUsageEnabled);
+
+  web_state_->SetWebUsageEnabled(false);
+  EXPECT_FALSE(web_state_->IsWebUsageEnabled());
+  EXPECT_FALSE(web_state_->GetWebController().webUsageEnabled);
+}
+
 TEST_F(WebStateTest, ResponseHeaders) {
   GURL real_url("http://foo.com/bar");
   GURL frame_url("http://frames-r-us.com/");

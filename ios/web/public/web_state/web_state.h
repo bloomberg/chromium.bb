@@ -90,6 +90,11 @@ class WebState : public base::SupportsUserData {
   virtual WebStateDelegate* GetDelegate() = 0;
   virtual void SetDelegate(WebStateDelegate* delegate) = 0;
 
+  // Whether or not a web view is allowed to exist in this WebState. Defaults
+  // to false; this should be enabled before attempting to access the view.
+  virtual bool IsWebUsageEnabled() const = 0;
+  virtual void SetWebUsageEnabled(bool enabled) = 0;
+
   // The view containing the contents of the current web page. If the view has
   // been purged due to low memory, this will recreate it. It is up to the
   // caller to size the view.
