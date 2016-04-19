@@ -39,10 +39,11 @@ class BlinkGCPluginAction : public PluginASTAction {
       // Blink no longer passes in the option (cf. Source/config.gyp)
       if (args[i] == "enable-oilpan")
         continue;
+      // TODO(sof): same for warn-raw-ptr
+      if (args[i] == "warn-raw-ptr")
+        continue;
       if (args[i] == "dump-graph") {
         options_.dump_graph = true;
-      } else if (args[i] == "warn-raw-ptr") {
-        options_.warn_raw_ptr = true;
       } else if (args[i] == "warn-unneeded-finalizer") {
         options_.warn_unneeded_finalizer = true;
       } else {

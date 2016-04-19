@@ -213,8 +213,6 @@ BlinkGCPluginConsumer::BlinkGCPluginConsumer(
       diagnostic_.getCustomDiagID(getErrorLevel(), kFieldsRequireTracing);
   diag_class_contains_invalid_fields_ = diagnostic_.getCustomDiagID(
       getErrorLevel(), kClassContainsInvalidFields);
-  diag_class_contains_invalid_fields_warning_ = diagnostic_.getCustomDiagID(
-      getErrorLevel(), kClassContainsInvalidFields);
   diag_class_contains_gc_root_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kClassContainsGCRoot);
   diag_class_requires_finalization_ = diagnostic_.getCustomDiagID(
@@ -964,25 +962,19 @@ void BlinkGCPluginConsumer::ReportFieldsRequireTracing(
 void BlinkGCPluginConsumer::ReportClassContainsInvalidFields(
     RecordInfo* info,
     const CheckFieldsVisitor::Errors& errors) {
-  bool only_warnings = options_.warn_raw_ptr;
-  for (auto& error : errors)
-    if (!CheckFieldsVisitor::IsWarning(error.second))
-      only_warnings = false;
 
   ReportDiagnostic(info->record()->getLocStart(),
-                   only_warnings ?
-                   diag_class_contains_invalid_fields_warning_ :
                    diag_class_contains_invalid_fields_)
       << info->record();
 
   for (auto& error : errors) {
     unsigned note;
-    if (CheckFieldsVisitor::IsRawPtrError(error.second)) {
+    if (error.second == CheckFieldsVisitor::kRawPtrToGCManaged) {
       note = diag_raw_ptr_to_gc_managed_class_note_;
-    } else if (CheckFieldsVisitor::IsReferencePtrError(error.second)) {
-      note = diag_reference_ptr_to_gc_managed_class_note_;
     } else if (error.second == CheckFieldsVisitor::kRefPtrToGCManaged) {
       note = diag_ref_ptr_to_gc_managed_class_note_;
+    } else if (error.second == CheckFieldsVisitor::kReferencePtrToGCManaged) {
+      note = diag_reference_ptr_to_gc_managed_class_note_;
     } else if (error.second == CheckFieldsVisitor::kOwnPtrToGCManaged) {
       note = diag_own_ptr_to_gc_managed_class_note_;
     } else if (error.second == CheckFieldsVisitor::kMemberToGCUnmanaged) {

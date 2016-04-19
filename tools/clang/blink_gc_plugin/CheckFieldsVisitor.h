@@ -22,10 +22,8 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
  public:
   enum Error {
     kRawPtrToGCManaged,
-    kRawPtrToGCManagedWarning,
     kRefPtrToGCManaged,
     kReferencePtrToGCManaged,
-    kReferencePtrToGCManagedWarning,
     kOwnPtrToGCManaged,
     kMemberToGCUnmanaged,
     kMemberInUnmanaged,
@@ -44,10 +42,6 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
   void AtMember(Member* edge) override;
   void AtValue(Value* edge) override;
   void AtCollection(Collection* edge) override;
-
-  static bool IsWarning(Error error);
-  static bool IsRawPtrError(Error error);
-  static bool IsReferencePtrError(Error error);
 
  private:
   Error InvalidSmartPtr(Edge* ptr);

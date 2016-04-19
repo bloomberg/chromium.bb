@@ -12,10 +12,8 @@
 struct BlinkGCPluginOptions {
   BlinkGCPluginOptions()
       : dump_graph(false),
-        warn_raw_ptr(false),
         warn_unneeded_finalizer(false) {}
   bool dump_graph;
-  bool warn_raw_ptr;
   bool warn_unneeded_finalizer;
   std::set<std::string> ignored_classes;
   std::set<std::string> checked_namespaces;

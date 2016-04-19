@@ -147,7 +147,6 @@ class BlinkGCPluginConsumer : public clang::ASTConsumer {
   unsigned diag_base_requires_tracing_;
   unsigned diag_fields_require_tracing_;
   unsigned diag_class_contains_invalid_fields_;
-  unsigned diag_class_contains_invalid_fields_warning_;
   unsigned diag_class_contains_gc_root_;
   unsigned diag_class_requires_finalization_;
   unsigned diag_class_does_not_require_finalization_;

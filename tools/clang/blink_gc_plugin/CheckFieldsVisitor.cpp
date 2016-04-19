@@ -93,38 +93,17 @@ void CheckFieldsVisitor::AtValue(Value* edge) {
         current_, InvalidSmartPtr(Parent())));
     return;
   }
-  if (options_.warn_raw_ptr && Parent()->IsRawPtr()) {
-    if (static_cast<RawPtr*>(Parent())->HasReferenceType()) {
-      invalid_fields_.push_back(std::make_pair(
-          current_, kReferencePtrToGCManagedWarning));
-    } else {
-      invalid_fields_.push_back(std::make_pair(
-          current_, kRawPtrToGCManagedWarning));
-    }
+  if (Parent()->IsRawPtr()) {
+    RawPtr* rawPtr = static_cast<RawPtr*>(Parent());
+    Error error = rawPtr->HasReferenceType() ?
+        kReferencePtrToGCManaged : kRawPtrToGCManaged;
+    invalid_fields_.push_back(std::make_pair(current_, error));
   }
 }
 
 void CheckFieldsVisitor::AtCollection(Collection* edge) {
   if (edge->on_heap() && Parent() && Parent()->IsOwnPtr())
     invalid_fields_.push_back(std::make_pair(current_, kOwnPtrToGCManaged));
-}
-
-bool CheckFieldsVisitor::IsWarning(Error error) {
-  if (error == kRawPtrToGCManagedWarning)
-    return true;
-  if (error == kReferencePtrToGCManagedWarning)
-    return true;
-  return false;
-}
-
-bool CheckFieldsVisitor::IsRawPtrError(Error error) {
-  return (error == kRawPtrToGCManaged ||
-          error == kRawPtrToGCManagedWarning);
-}
-
-bool CheckFieldsVisitor::IsReferencePtrError(Error error) {
-  return (error == kReferencePtrToGCManaged ||
-          error == kReferencePtrToGCManagedWarning);
 }
 
 CheckFieldsVisitor::Error CheckFieldsVisitor::InvalidSmartPtr(Edge* ptr) {
