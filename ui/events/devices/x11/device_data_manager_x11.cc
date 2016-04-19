@@ -218,7 +218,6 @@ bool DeviceDataManagerX11::IsXInput2Available() const {
 void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
   cmt_devices_.reset();
   touchpads_.reset();
-  scrollclass_devices_.reset();
   master_pointers_.clear();
   for (int i = 0; i < kMaxDeviceNum; ++i) {
     valuator_count_[i] = 0;
@@ -424,14 +423,13 @@ int DeviceDataManagerX11::GetScrollClassEventDetail(const XEvent& xev) const {
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev.xcookie.data);
   if (xievent->sourceid >= kMaxDeviceNum)
     return SCROLL_TYPE_NO_SCROLL;
-  if (!scrollclass_devices_[xievent->sourceid])
-    return SCROLL_TYPE_NO_SCROLL;
   int horizontal_id = scroll_data_[xievent->sourceid].horizontal.number;
   int vertical_id = scroll_data_[xievent->sourceid].vertical.number;
-  return (XIMaskIsSet(xievent->valuators.mask, horizontal_id)
+  return (horizontal_id != -1 &&
+                  XIMaskIsSet(xievent->valuators.mask, horizontal_id)
               ? SCROLL_TYPE_HORIZONTAL
               : 0) |
-         (XIMaskIsSet(xievent->valuators.mask, vertical_id)
+         (vertical_id != -1 && XIMaskIsSet(xievent->valuators.mask, vertical_id)
               ? SCROLL_TYPE_VERTICAL
               : 0);
 }
@@ -787,7 +785,6 @@ void DeviceDataManagerX11::UpdateScrollClassDevice(
       info.horizontal.seen = false;
       break;
   }
-  scrollclass_devices_[deviceid] = true;
 }
 
 double DeviceDataManagerX11::ExtractAndUpdateScrollOffset(

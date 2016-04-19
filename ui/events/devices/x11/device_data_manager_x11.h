@@ -340,7 +340,6 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   // should be processed.
   std::bitset<kMaxDeviceNum> cmt_devices_;
   std::bitset<kMaxDeviceNum> touchpads_;
-  std::bitset<kMaxDeviceNum> scrollclass_devices_;
 
   // List of the master pointer devices.
   std::vector<int> master_pointers_;
