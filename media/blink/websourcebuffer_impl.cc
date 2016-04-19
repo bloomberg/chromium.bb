@@ -179,16 +179,16 @@ void WebSourceBufferImpl::InitSegmentReceived(scoped_ptr<MediaTracks> tracks) {
 
   std::vector<blink::WebSourceBufferClient::MediaTrackInfo> trackInfoVector;
   for (const auto& track : tracks->tracks()) {
-    trackInfoVector.push_back(
-        std::make_tuple(mediaTrackTypeToBlink(track->type()),
-                        blink::WebString::fromUTF8(track->id()),
-                        blink::WebString::fromUTF8(track->kind()),
-                        blink::WebString::fromUTF8(track->label()),
-                        blink::WebString::fromUTF8(track->language())));
+    blink::WebSourceBufferClient::MediaTrackInfo trackInfo;
+    trackInfo.trackType = mediaTrackTypeToBlink(track->type());
+    trackInfo.byteStreamTrackId = blink::WebString::fromUTF8(track->id());
+    trackInfo.kind = blink::WebString::fromUTF8(track->kind());
+    trackInfo.label = blink::WebString::fromUTF8(track->label());
+    trackInfo.language = blink::WebString::fromUTF8(track->language());
+    trackInfoVector.push_back(trackInfo);
   }
 
-  std::vector<blink::WebMediaPlayer::TrackId> blinkTrackIds =
-      client_->initializationSegmentReceived(trackInfoVector);
+  client_->initializationSegmentReceived(trackInfoVector);
 }
 
 }  // namespace media

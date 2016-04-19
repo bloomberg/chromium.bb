@@ -110,7 +110,7 @@ public:
     const AtomicString& interfaceName() const override;
 
     // WebSourceBufferClient interface
-    std::vector<WebMediaPlayer::TrackId> initializationSegmentReceived(const std::vector<MediaTrackInfo>&) override;
+    WebVector<WebMediaPlayer::TrackId> initializationSegmentReceived(const WebVector<MediaTrackInfo>&) override;
 
     DECLARE_VIRTUAL_TRACE();
 

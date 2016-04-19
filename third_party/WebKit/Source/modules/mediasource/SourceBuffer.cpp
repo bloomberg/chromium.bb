@@ -502,7 +502,7 @@ T* findExistingTrackById(const TrackListBase<T>& trackList, const String& id)
     return trackList.getTrackById(id);
 }
 
-std::vector<WebMediaPlayer::TrackId> SourceBuffer::initializationSegmentReceived(const std::vector<MediaTrackInfo>& newTracks)
+WebVector<WebMediaPlayer::TrackId> SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>& newTracks)
 {
     WTF_LOG(Media, "SourceBuffer::initializationSegmentReceived %p tracks=%zu", this, newTracks.size());
     ASSERT(m_source);
@@ -511,54 +511,49 @@ std::vector<WebMediaPlayer::TrackId> SourceBuffer::initializationSegmentReceived
 
     // TODO(servolk): Implement proper 'initialization segment received' algorithm according to MSE spec:
     // https://w3c.github.io/media-source/#sourcebuffer-init-segment-received
-    std::vector<WebMediaPlayer::TrackId> result;
+    WebVector<WebMediaPlayer::TrackId> result(newTracks.size());
+    unsigned resultIdx = 0;
     for (const auto& trackInfo : newTracks) {
-        const auto& trackType = std::get<0>(trackInfo);
-        const auto& id = std::get<1>(trackInfo);
-        const auto& kind = std::get<2>(trackInfo);
-        const auto& label = std::get<3>(trackInfo);
-        const auto& language = std::get<4>(trackInfo);
-
         if (!RuntimeEnabledFeatures::audioVideoTracksEnabled()) {
             static WebMediaPlayer::TrackId nextTrackId = 0;
-            result.push_back(++nextTrackId);
+            result[resultIdx++] = ++nextTrackId;
             continue;
         }
 
         const TrackBase* trackBase = nullptr;
-        if (trackType == WebMediaPlayer::AudioTrack) {
+        if (trackInfo.trackType == WebMediaPlayer::AudioTrack) {
             AudioTrack* audioTrack = nullptr;
             if (!m_firstInitializationSegmentReceived) {
-                audioTrack = AudioTrack::create(id, kind, label, language, false);
+                audioTrack = AudioTrack::create(trackInfo.byteStreamTrackId, trackInfo.kind, trackInfo.label, trackInfo.language, false);
                 SourceBufferTrackBaseSupplement::setSourceBuffer(*audioTrack, this);
                 audioTracks().add(audioTrack);
                 m_source->mediaElement()->audioTracks().add(audioTrack);
             } else {
-                audioTrack = findExistingTrackById(audioTracks(), id);
+                audioTrack = findExistingTrackById(audioTracks(), trackInfo.byteStreamTrackId);
                 ASSERT(audioTrack);
             }
             trackBase = audioTrack;
-            result.push_back(audioTrack->trackId());
-        } else if (trackType == WebMediaPlayer::VideoTrack) {
+            result[resultIdx++] = audioTrack->trackId();
+        } else if (trackInfo.trackType == WebMediaPlayer::VideoTrack) {
             VideoTrack* videoTrack = nullptr;
             if (!m_firstInitializationSegmentReceived) {
-                videoTrack = VideoTrack::create(id, kind, label, language, false);
+                videoTrack = VideoTrack::create(trackInfo.byteStreamTrackId, trackInfo.kind, trackInfo.label, trackInfo.language, false);
                 SourceBufferTrackBaseSupplement::setSourceBuffer(*videoTrack, this);
                 videoTracks().add(videoTrack);
                 m_source->mediaElement()->videoTracks().add(videoTrack);
             } else {
-                videoTrack = findExistingTrackById(videoTracks(), id);
+                videoTrack = findExistingTrackById(videoTracks(), trackInfo.byteStreamTrackId);
                 ASSERT(videoTrack);
             }
             trackBase = videoTrack;
-            result.push_back(videoTrack->trackId());
+            result[resultIdx++] = videoTrack->trackId();
         } else {
             NOTREACHED();
         }
         (void)trackBase;
 #if !LOG_DISABLED
         const char* logActionStr = m_firstInitializationSegmentReceived ? "using existing" : "added";
-        const char* logTrackTypeStr = (trackType == WebMediaPlayer::AudioTrack) ? "audio" : "video";
+        const char* logTrackTypeStr = (trackInfo.trackType == WebMediaPlayer::AudioTrack) ? "audio" : "video";
         WTF_LOG(Media, "Tracks (sb=%p): %s %sTrack %p trackId=%d id=%s label=%s lang=%s", this, logActionStr, logTrackTypeStr, trackBase, trackBase->trackId(), trackBase->id().utf8().data(), trackBase->label().utf8().data(), trackBase->language().utf8().data());
 #endif
     }
