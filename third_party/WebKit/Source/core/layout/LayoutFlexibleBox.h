@@ -192,6 +192,11 @@ private:
     // This is used to cache the preferred size for orthogonal flow children so we don't have to relayout to get it
     HashMap<const LayoutObject*, LayoutUnit> m_intrinsicSizeAlongMainAxis;
 
+    // This set is used to keep track of which children we laid out in this current layout iteration.
+    // We need it because the ones in this set may need an additional layout pass for correct stretch alignment
+    // handling, as the first layout likely did not use the correct value for percentage sizing of children.
+    HashSet<const LayoutObject*> m_relaidOutChildren;
+
     mutable OrderIterator m_orderIterator;
     int m_numberOfInFlowChildrenOnFirstLine;
 };

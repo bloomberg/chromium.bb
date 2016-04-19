@@ -31,22 +31,21 @@
 <div id=log></div>
 
 <p>This test verifies that we consider flex items' cross sizes to be definite
-iff the flexbox has a definite cross size, is single-line, and the align value
-is stretch (the default)</p>
+if the align value is stretch (the default)</p>
 
-<p>Tests that we get an indefinite size in the normal case.</p>
+<p>Tests that we get a definite size in the simple case.</p>
 <div class="flexbox" data-expected-height="50">
   <div data-expected-height="50">
-    <div style="height: 50%" data-expected-height="50">
+    <div style="height: 50%" data-expected-height="25">
       <div class="rect" data-expected-height="50"></div>
     </div>
   </div>
 </div>
 
-<p>Tests that we get an indefinite size in a wrapping flexbox</p>
+<p>Tests that we get an definite size in a wrapping flexbox</p>
 <div class="flexbox wrap" style="height: 50px;" data-expected-height="50">
   <div data-expected-height="50">
-    <div style="height: 50%" data-expected-height="50">
+    <div style="height: 50%" data-expected-height="25">
       <div class="rect" data-expected-height="50"></div>
     </div>
   </div>
@@ -110,11 +109,11 @@ is stretch (the default)</p>
   </div>
 </div>
 
-<p>Tests that percentage sizes are not necessarily definite</p>
+<p>Tests that we use a definite size even when a percentage size is not definite</p>
 <div>
   <div class="flexbox" style="height: 10%;" data-expected-height="50">
     <div data-expected-height="50">
-      <div style="height: 50%" data-expected-height="50">
+      <div style="height: 50%" data-expected-height="25">
         <div class="rect" data-expected-height="50"></div>
       </div>
     </div>

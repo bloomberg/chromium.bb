@@ -269,6 +269,8 @@ void LayoutFlexibleBox::layoutBlock(bool relayoutChildren)
     if (!relayoutChildren && simplifiedLayout())
         return;
 
+    m_relaidOutChildren.clear();
+
     if (updateLogicalWidthAndColumnWidth())
         relayoutChildren = true;
 
@@ -736,6 +738,7 @@ void LayoutFlexibleBox::cacheChildMainSize(const LayoutBox& child)
         mainSize = child.maxPreferredLogicalWidth() + child.scrollbarLogicalWidth() - child.intrinsicScrollbarLogicalWidth();
     }
     m_intrinsicSizeAlongMainAxis.set(&child, mainSize);
+    m_relaidOutChildren.add(&child);
 }
 
 void LayoutFlexibleBox::clearCachedMainSizeForChild(const LayoutBox& child)
@@ -786,6 +789,8 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren, SubtreeLayoutScop
     LayoutUnit sumHypotheticalMainSize;
 
     Vector<LayoutUnit, 16> childSizes;
+
+    dirtyForLayoutFromPercentageHeightDescendants(layoutScope);
 
     m_orderIterator.first();
     LayoutUnit crossAxisOffset = flowAwareBorderBefore() + flowAwarePaddingBefore();
@@ -1077,37 +1082,20 @@ LayoutUnit LayoutFlexibleBox::computeDefiniteLogicalHeight()
 
 LayoutUnit LayoutFlexibleBox::crossSizeForPercentageResolution(const LayoutBox& child)
 {
-    // This function implements section 9.8. Definite and Indefinite Sizes, case
-    // 1) of the flexbox spec.
-    // We need to check for multiline and a definite cross size of the flexbox
-    // per https://drafts.csswg.org/css-flexbox/#definite-sizes, and for
-    // stretch, auto margins, and an indefinite cross size of the flex item per
-    // https://drafts.csswg.org/css-flexbox/#stretched (linked from that
-    // section)
-    if (isMultiline() || alignmentForChild(child) != ItemPositionStretch || hasAutoMarginsInCrossAxis(child))
+    if (alignmentForChild(child) != ItemPositionStretch)
         return LayoutUnit(-1);
 
-    const Length& childCrossLength = isHorizontalFlow() ? child.styleRef().height() : child.styleRef().width();
-    if (crossAxisLengthIsDefinite(child, childCrossLength))
-        return LayoutUnit(-1);
+    // Here we implement https://drafts.csswg.org/css-flexbox/#algo-stretch
+    if (hasOrthogonalFlow(child) && child.hasOverrideLogicalContentWidth())
+        return child.overrideLogicalContentWidth();
+    if (!hasOrthogonalFlow(child) && child.hasOverrideLogicalContentHeight())
+        return child.overrideLogicalContentHeight();
 
-    LayoutUnit childCrossSize;
-
-    if (isColumnFlow()) {
-        LayoutUnit definiteWidth = computeDefiniteLogicalWidth();
-        if (definiteWidth == LayoutUnit(-1))
-            return definiteWidth;
-        childCrossSize = definiteWidth - borderAndPaddingLogicalWidth() - scrollbarLogicalWidth();
-        childCrossSize = child.constrainLogicalWidthByMinMax(childCrossSize, childCrossSize, this) - child.scrollbarLogicalWidth() - child.borderAndPaddingLogicalWidth();
-    } else {
-        LayoutUnit definiteHeight = computeDefiniteLogicalHeight();
-        if (definiteHeight == LayoutUnit(-1))
-            return definiteHeight;
-
-        childCrossSize = definiteHeight - borderAndPaddingLogicalHeight() - scrollbarLogicalHeight();
-        childCrossSize = child.constrainLogicalHeightByMinMax(childCrossSize, LayoutUnit(-1)) - child.scrollbarLogicalHeight() - child.borderAndPaddingLogicalHeight();
-    }
-    return childCrossSize;
+    // We don't currently implement the optimization from https://drafts.csswg.org/css-flexbox/#definite-sizes
+    // case 1. While that could speed up a specialized case, it requires determining if we have a definite
+    // size, which itself is not cheap. We can consider implementing it at a later time.
+    // (The correctness is ensured by redoing layout in applyStretchAlignmentToChild)
+    return LayoutUnit(-1);
 }
 
 LayoutUnit LayoutFlexibleBox::mainSizeForPercentageResolution(const LayoutBox& child)
@@ -1468,11 +1456,6 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
         LayoutUnit childPreferredSize = childSizes[i] + mainAxisBorderAndPaddingExtentForChild(*child);
         setOverrideMainAxisSizeForChild(*child, childPreferredSize);
         if (childPreferredSize != mainAxisExtentForChild(*child)) {
-            // We will correctly handle percentage sizing even without re-laying out here, because
-            // if our size was already correct, then percentage resolution was also correct due
-            // to the way percentage sizing is defined by flexbox (ie. it requires a definite flex basis)
-            // TODO(cbiesinger): When flex-basis is used instead of width/height, this is not the case. That
-            // problem is not limited to percentages. See http://crbug.com/531656#c11
             child->setChildNeedsLayout(MarkOnlyThis);
         } else {
             // To avoid double applying margin changes in updateAutoMarginsInCrossAxis, we reset the margins here.
@@ -1480,9 +1463,17 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
         }
         // We may have already forced relayout for orthogonal flowing children in computeInnerFlexBaseSizeForChild.
         bool forceChildRelayout = relayoutChildren && !childFlexBaseSizeRequiresLayout(*child);
+        if (child->isLayoutBlock() && toLayoutBlock(*child).hasPercentHeightDescendants() && m_relaidOutChildren.contains(child)) {
+            // Have to force another relayout even though the child is sized correctly, because
+            // its descendants are not sized correctly yet. Our previous layout of the child was
+            // done without an override height set. So, redo it here.
+            forceChildRelayout = true;
+        }
         updateBlockChildDirtyBitsBeforeLayout(forceChildRelayout, *child);
         if (!child->needsLayout())
             child->markForPaginationRelayoutIfNeeded(layoutScope);
+        if (child->needsLayout())
+            m_relaidOutChildren.add(child);
         child->layoutIfNeeded();
 
         updateAutoMarginsInMainAxis(*child, autoMarginOffset);
@@ -1740,6 +1731,12 @@ void LayoutFlexibleBox::applyStretchAlignmentToChild(LayoutBox& child, LayoutUni
 
         // FIXME: Can avoid laying out here in some cases. See https://webkit.org/b/87905.
         bool childNeedsRelayout = desiredLogicalHeight != child.logicalHeight();
+        if (child.isLayoutBlock() && toLayoutBlock(child).hasPercentHeightDescendants() && m_relaidOutChildren.contains(&child)) {
+            // Have to force another relayout even though the child is sized correctly, because
+            // its descendants are not sized correctly yet. Our previous layout of the child was
+            // done without an override height set. So, redo it here.
+            childNeedsRelayout = true;
+        }
         if (childNeedsRelayout || !child.hasOverrideLogicalContentHeight())
             child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
         if (childNeedsRelayout) {
