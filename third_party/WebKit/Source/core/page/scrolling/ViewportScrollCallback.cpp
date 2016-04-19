@@ -18,10 +18,8 @@
 
 namespace blink {
 
-ViewportScrollCallback::ViewportScrollCallback(Document& document,
-    FrameHost& frameHost)
+ViewportScrollCallback::ViewportScrollCallback(Document& document)
     : m_document(&document)
-    , m_frameHost(&frameHost)
 {
     // Only the root document can have a viewport scroll callback for now.
     ASSERT(!document.ownerElement());
@@ -33,7 +31,6 @@ ViewportScrollCallback::~ViewportScrollCallback()
 
 DEFINE_TRACE(ViewportScrollCallback)
 {
-    visitor->trace(m_frameHost);
     visitor->trace(m_document);
     ScrollStateCallback::trace(visitor);
 }
@@ -60,10 +57,10 @@ bool ViewportScrollCallback::shouldScrollTopControls(const FloatSize& delta,
 
 void ViewportScrollCallback::handleEvent(ScrollState* state)
 {
-    if (!m_frameHost || !m_document)
+    if (!m_document || !m_document->frameHost())
         return;
 
-    TopControls& topControls = m_frameHost->topControls();
+    TopControls& topControls = m_document->frameHost()->topControls();
 
     // Scroll top controls.
     if (state->isBeginning())

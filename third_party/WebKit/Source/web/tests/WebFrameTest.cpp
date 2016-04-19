@@ -8136,6 +8136,7 @@ protected:
         event.windowX = windowX;
         event.windowY = windowY;
         event.canScroll = true;
+        event.hasPreciseScrollingDeltas = true;
         webViewHelper->webViewImpl()->handleInputEvent(event);
     }
 
@@ -8397,6 +8398,43 @@ TEST_P(WebFrameOverscrollTest, ReportingLatestOverscrollForElasticOverscroll)
     EXPECT_CALL(client, didOverscroll(WebFloatSize(-1000, -1000), WebFloatSize(-1000, -1000), WebFloatPoint(), WebFloatSize()));
     ScrollByWheel(&webViewHelper, 10, 10, 1000, 1000);
     Mock::VerifyAndClearExpectations(&client);
+}
+
+TEST_P(WebFrameOverscrollTest, ScrollPageWithBodyExplicitlyOverflowing)
+{
+    RuntimeEnabledFeatures::setScrollTopLeftInteropEnabled(false);
+
+    OverscrollWebViewClient client;
+    registerMockedHttpURLLoad("mouse-wheel-overflow-body.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "mouse-wheel-overflow-body.html", true, 0, &client, configureAndroid);
+    webViewHelper.resize(WebSize(800, 600));
+
+    FrameView* view = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
+    Document* document = toWebLocalFrameImpl(webViewHelper.webViewImpl()->mainFrame())->frame()->document();
+
+    {
+        EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
+        ScrollByWheel(&webViewHelper, 100, 100, 0, -450);
+
+        LayoutBox* layoutBody = toLayoutBox(document->body()->layoutObject());
+        ASSERT_EQ(400, layoutBody->getScrollableArea()->scrollPosition().y());
+        ASSERT_EQ(400, layoutBody->getScrollableArea()->maximumScrollPosition().y());
+
+        Mock::VerifyAndClearExpectations(&client);
+    }
+
+    view->setScrollPosition(DoublePoint(0, 0), ProgrammaticScroll);
+
+    {
+        EXPECT_CALL(client, didOverscroll(WebFloatSize(0, 200), WebFloatSize(0, 200), WebFloatPoint(), WebFloatSize()));
+        ScrollByWheel(&webViewHelper, 100, 100, 0, -300);
+
+        ASSERT_EQ(100, view->getScrollableArea()->scrollPosition().y());
+        ASSERT_EQ(100, view->getScrollableArea()->maximumScrollPosition().y());
+
+        Mock::VerifyAndClearExpectations(&client);
+    }
 }
 
 TEST_F(WebFrameTest, OrientationFrameDetach)

@@ -20,7 +20,7 @@ class ScrollState;
 
 class ViewportScrollCallback : public ScrollStateCallback {
 public:
-    ViewportScrollCallback(Document&, FrameHost&);
+    ViewportScrollCallback(Document&);
     ~ViewportScrollCallback();
 
     void handleEvent(ScrollState*) override;
@@ -32,8 +32,6 @@ private:
     ScrollableArea* getRootFrameViewport() const;
 
     WeakMember<Document> m_document;
-    WeakMember<FrameHost> m_frameHost;
-
 };
 
 } // namespace blink

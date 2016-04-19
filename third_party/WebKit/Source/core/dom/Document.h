@@ -1158,13 +1158,6 @@ private:
 
     const OriginAccessEntry& accessEntryFromURL();
 
-    // Installs the viewport scrolling callback (the "applyScroll" in Scroll
-    // Customization lingo) on the root scrollingElement. This callback is
-    // responsible for viewport related scroll actions like top controls
-    // movement and overscroll glow as well as actually scrolling the root
-    // viewport.
-    void updateViewportApplyScroll();
-
     DocumentLifecycle m_lifecycle;
 
     bool m_hasNodesWithPlaceholderStyle;
@@ -1270,10 +1263,6 @@ private:
     Timer<Document> m_updateFocusAppearanceTimer;
 
     Member<Element> m_cssTarget;
-
-    // Not a WeakMember since we want to keep the scrollingElement around until
-    // we move its ApplyScroll onto the new scrollingElement.
-    Member<Element> m_oldScrollingElement;
 
     LoadEventProgress m_loadEventProgress;
 

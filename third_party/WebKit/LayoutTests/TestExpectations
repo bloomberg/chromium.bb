@@ -49,10 +49,6 @@ crbug.com/581990 [ Win ] fast/writing-mode/english-lr-text.html [ Pass Failure ]
 # See also crbug.com/521730 for the these two text/emphasis tests (non-Oilpan) Win10 failures.
 crbug.com/574660 [ Win7 ] fast/text/emphasis-combined-text.html [ Pass Failure ]
 
-# This test violates lifecycle assertions.
-# Timeout because of crbug.com/603231
-crbug.com/372245 media/track/track-word-breaking.html [ Crash Timeout ]
-
 # ====== Oilpan-only failures until here ======
 
 # Run these tests with under virtual/spv2 only.

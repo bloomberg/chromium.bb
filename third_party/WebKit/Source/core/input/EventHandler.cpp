@@ -631,34 +631,17 @@ ScrollResult EventHandler::scrollBox(LayoutBox* box,
 {
     ASSERT(box);
     Node* node = box->node();
-    Document* document = m_frame->document();
-    Element* scrollingElement = document->scrollingElement();
-
-    bool isRootFrame = !document->ownerElement();
-
-    // TODO(bokan): If the ViewportScrollCallback is installed on the body, we
-    // can still hit the HTML element for scrolling in which case it'll bubble
-    // up to the document node and try to scroll the LayoutView directly. Make
-    // sure we never scroll the LayoutView like this by manually resetting the
-    // scroll to happen on the scrolling element. This can also happen in
-    // QuirksMode when the body is scrollable and scrollingElement == nullptr.
-    if (node && node->isDocumentNode() && isRootFrame) {
-        node = scrollingElement
-            ? scrollingElement
-            : document->documentElement();
-    }
 
     // If there's no ApplyScroll callback on the element, scroll as usuall in
     // the non-scroll-customization case.
     if (!node || !node->isElementNode() || !toElement(node)->getApplyScroll()) {
-        ASSERT(!isRootFrame
-            || node != scrollingElement
-            || (!scrollingElement && node != document->documentElement()));
         *wasRootScroller = false;
         return box->scroll(granularity, delta);
     }
 
-    ASSERT(isRootFrame);
+    // Viewport actions should only happen when scrolling an element in the
+    // main frame.
+    ASSERT(m_frame->isMainFrame());
 
     // If there is an ApplyScroll callback, its because we placed one on the
     // root scroller to control top controls and overscroll. Invoke a scroll
