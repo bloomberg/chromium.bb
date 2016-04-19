@@ -152,9 +152,10 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // KeyedService:
   void Shutdown() override;
 
-  // Callback for value asynchronously returned by GetCountsForOrigins().
-  typedef base::Callback<void(const OriginCountMap&)>
-      GetCountsForOriginsCallback;
+  // Callback for value asynchronously returned by
+  // GetCountsAndLastVisitForOrigins().
+  typedef base::Callback<void(const OriginCountAndLastVisitMap&)>
+      GetCountsAndLastVisitForOriginsCallback;
 
   // Computes the |num_hosts| most-visited hostnames in the past 30 days and
   // returns a list of those hosts paired with their visit counts. The following
@@ -171,9 +172,11 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   virtual void TopHosts(size_t num_hosts,
                         const TopHostsCallback& callback) const;
 
-  // Gets the counts of URLs that belong to |origins| in the history database.
-  void GetCountsForOrigins(const std::set<GURL>& origins,
-                           const GetCountsForOriginsCallback& callback) const;
+  // Gets the counts and most recent visit date of URLs that belong to |origins|
+  // in the history database.
+  void GetCountsAndLastVisitForOrigins(
+      const std::set<GURL>& origins,
+      const GetCountsAndLastVisitForOriginsCallback& callback) const;
 
   // Returns, for the given URL, a 0-based index into the list produced by
   // TopHosts(), corresponding to that URL's host. If TopHosts() has not

@@ -424,24 +424,29 @@ TopHostsList HistoryBackend::TopHosts(size_t num_hosts) const {
   return top_hosts;
 }
 
-OriginCountMap HistoryBackend::GetCountsForOrigins(
+OriginCountAndLastVisitMap HistoryBackend::GetCountsAndLastVisitForOrigins(
     const std::set<GURL>& origins) const {
   if (!db_)
-    return OriginCountMap();
+    return OriginCountAndLastVisitMap();
 
   URLDatabase::URLEnumerator it;
   if (!db_->InitURLEnumeratorForEverything(&it))
-    return OriginCountMap();
+    return OriginCountAndLastVisitMap();
 
-  OriginCountMap origin_count_map;
+  OriginCountAndLastVisitMap origin_count_map;
   for (const GURL& origin : origins)
-    origin_count_map[origin] = 0;
+    origin_count_map[origin] = std::make_pair(0, base::Time());
 
   URLRow row;
   while (it.GetNextURL(&row)) {
     GURL origin = row.url().GetOrigin();
-    if (ContainsValue(origins, origin))
-      ++origin_count_map[origin];
+    auto iter = origin_count_map.find(origin);
+    if (iter != origin_count_map.end()) {
+      std::pair<int, base::Time>& value = iter->second;
+      ++(value.first);
+      if (value.second.is_null() || value.second < row.last_visit())
+        value.second = row.last_visit();
+    }
   }
 
   return origin_count_map;

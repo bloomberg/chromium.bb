@@ -22,6 +22,10 @@ class DictionaryValue;
 class Clock;
 }
 
+namespace history {
+class HistoryService;
+}
+
 class GURL;
 class Profile;
 
@@ -101,8 +105,16 @@ class SiteEngagementScore {
   double Score() const;
   void AddPoints(double points);
 
-  // Resets the score to |points| and reset the daily point limit.
-  void Reset(double points);
+  // Resets the score to |points| and resets the daily point limit. If
+  // |updated_time| is non-null, sets the last engagement time and last
+  // shortcut launch time (if it is non-null) to |updated_time|. Otherwise, last
+  // engagement time is set to the current time and last shortcut launch time is
+  // left unchanged.
+  // TODO(calamity): Ideally, all SiteEngagementScore methods should take a
+  // base::Time argument like this one does rather than each Score hold a
+  // pointer to a base::Clock. Then SiteEngagementScore doesn't need to worry
+  // about clock vending. See crbug.com/604305
+  void Reset(double points, const base::Time* updated_time);
 
   // Returns true if the maximum number of points today has been added.
   bool MaxPointsPerDayAdded() const;
@@ -298,10 +310,18 @@ class SiteEngagementService : public KeyedService,
   int OriginsWithMaxDailyEngagement() const;
   int OriginsWithMaxEngagement(const std::map<GURL, double>& score_map) const;
 
-  void GetCountsForOriginsComplete(
+  void GetCountsAndLastVisitForOriginsComplete(
+    history::HistoryService* history_service,
     const std::multiset<GURL>& deleted_url_origins,
     bool expired,
-    const history::OriginCountMap& remaining_origin_counts);
+    const history::OriginCountAndLastVisitMap& remaining_origin_counts);
+
+  // Resets the engagement score for |url| to |score|, and sets the last
+  // engagement time and last shortcut launch time (if it is non-null) to
+  // |updated_time|. Clears daily limits.
+  void ResetScoreAndAccessTimesForURL(const GURL& url,
+                                      double score,
+                                      const base::Time* updated_time);
 
   Profile* profile_;
 

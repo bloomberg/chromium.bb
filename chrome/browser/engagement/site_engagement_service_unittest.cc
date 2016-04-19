@@ -433,20 +433,43 @@ TEST_F(SiteEngagementScoreTest, Reset) {
   current_day += base::TimeDelta::FromDays(7);
   test_clock_.SetNow(current_day);
 
-  score_.Reset(20.0);
+  score_.Reset(20.0, nullptr);
   EXPECT_DOUBLE_EQ(20.0, score_.Score());
   EXPECT_DOUBLE_EQ(0, score_.points_added_today_);
   EXPECT_EQ(current_day, score_.last_engagement_time_);
+  EXPECT_TRUE(score_.last_shortcut_launch_time_.is_null());
 
   // Adding points after the reset should work as normal.
   score_.AddPoints(5);
   EXPECT_EQ(25.0, score_.Score());
 
-  // The decay should happen one decay period from
+  // The decay should happen one decay period from the current time.
   test_clock_.SetNow(current_day +
                      base::TimeDelta::FromDays(
                          SiteEngagementScore::GetDecayPeriodInDays() + 1));
   EXPECT_EQ(25.0 - SiteEngagementScore::GetDecayPoints(), score_.Score());
+
+  // Ensure that manually setting a time works as expected.
+  score_.AddPoints(5);
+  test_clock_.SetNow(GetReferenceTime());
+  base::Time now = test_clock_.Now();
+  score_.Reset(10.0, &now);
+
+  EXPECT_DOUBLE_EQ(10.0, score_.Score());
+  EXPECT_DOUBLE_EQ(0, score_.points_added_today_);
+  EXPECT_EQ(now, score_.last_engagement_time_);
+  EXPECT_TRUE(score_.last_shortcut_launch_time_.is_null());
+
+  score_.set_last_shortcut_launch_time(test_clock_.Now());
+  test_clock_.SetNow(GetReferenceTime() + base::TimeDelta::FromDays(3));
+  now = test_clock_.Now();
+  score_.Reset(15.0, &now);
+
+  // 5 bonus from the last shortcut launch.
+  EXPECT_DOUBLE_EQ(20.0, score_.Score());
+  EXPECT_DOUBLE_EQ(0, score_.points_added_today_);
+  EXPECT_EQ(now, score_.last_engagement_time_);
+  EXPECT_EQ(now, score_.last_shortcut_launch_time_);
 }
 
 class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
@@ -1104,28 +1127,35 @@ TEST_F(SiteEngagementServiceTest, IsBootstrapped) {
 }
 
 TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
-  SiteEngagementService* engagement =
-      SiteEngagementServiceFactory::GetForProfile(profile());
-  ASSERT_TRUE(engagement);
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  std::unique_ptr<SiteEngagementService> engagement(
+      new SiteEngagementService(profile(), base::WrapUnique(clock)));
+  ASSERT_TRUE(engagement.get());
 
   GURL origin1("http://www.google.com/");
   GURL origin1a("http://www.google.com/search?q=asdf");
+  GURL origin1b("http://www.google.com/maps/search?q=asdf");
   GURL origin2("https://drive.google.com/");
   GURL origin2a("https://drive.google.com/somedoc");
   GURL origin3("http://notdeleted.com/");
+  GURL origin4("http://decayed.com/");
+  GURL origin4a("http://decayed.com/index.html");
 
   base::Time today = GetReferenceTime();
   base::Time yesterday = GetReferenceTime() - base::TimeDelta::FromDays(1);
   base::Time yesterday_afternoon = GetReferenceTime() -
                                    base::TimeDelta::FromDays(1) +
                                    base::TimeDelta::FromHours(4);
+  base::Time yesterday_week = GetReferenceTime() - base::TimeDelta::FromDays(8);
+  clock->SetNow(today);
 
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile(), ServiceAccessType::IMPLICIT_ACCESS);
 
   history->AddPage(origin1, yesterday_afternoon, history::SOURCE_BROWSED);
-  history->AddPage(origin1a, today, history::SOURCE_BROWSED);
-  engagement->AddPoints(origin1, 5.0);
+  history->AddPage(origin1a, yesterday_week, history::SOURCE_BROWSED);
+  history->AddPage(origin1b, today, history::SOURCE_BROWSED);
+  engagement->AddPoints(origin1, 3.0);
 
   history->AddPage(origin2, yesterday_afternoon, history::SOURCE_BROWSED);
   history->AddPage(origin2a, yesterday_afternoon, history::SOURCE_BROWSED);
@@ -1134,26 +1164,34 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   history->AddPage(origin3, today, history::SOURCE_BROWSED);
   engagement->AddPoints(origin3, 5.0);
 
-  EXPECT_EQ(5.0, engagement->GetScore(origin1));
+  history->AddPage(origin4, yesterday_week, history::SOURCE_BROWSED);
+  history->AddPage(origin4a, yesterday_afternoon, history::SOURCE_BROWSED);
+  engagement->AddPoints(origin4, 5.0);
+
+  EXPECT_EQ(3.0, engagement->GetScore(origin1));
   EXPECT_EQ(5.0, engagement->GetScore(origin2));
   EXPECT_EQ(5.0, engagement->GetScore(origin3));
+  EXPECT_EQ(5.0, engagement->GetScore(origin4));
 
   {
     SiteEngagementChangeWaiter waiter(profile());
 
     base::CancelableTaskTracker task_tracker;
-    // Expire origin1, origin2 and origin2a.
+    // Expire origin1, origin2, origin2a, and origin4's most recent visit.
     history->ExpireHistoryBetween(std::set<GURL>(), yesterday, today,
                                   base::Bind(&base::DoNothing), &task_tracker);
     waiter.Wait();
 
-    // origin2 is cleaned up because all its urls are deleted. origin1a is still
-    // in history, but 50% of urls have been deleted, thus halving origin1's
-    // score. origin3 is untouched.
-    EXPECT_EQ(2.5, engagement->GetScore(origin1));
+    // origin2 is cleaned up because all its urls are deleted. origin1a and
+    // origin1b are still in history, but 33% of urls have been deleted, thus
+    // cutting origin1's score by 1/3. origin3 is untouched. origin4 has 1 URL
+    // deleted and 1 remaining, but its most recent visit is more than 1 week in
+    // the past. Ensure that its scored is halved, and not decayed further.
+    EXPECT_EQ(2, engagement->GetScore(origin1));
     EXPECT_EQ(0, engagement->GetScore(origin2));
     EXPECT_EQ(5.0, engagement->GetScore(origin3));
-    EXPECT_EQ(7.5, engagement->GetTotalEngagementPoints());
+    EXPECT_EQ(2.5, engagement->GetScore(origin4));
+    EXPECT_EQ(9.5, engagement->GetTotalEngagementPoints());
   }
 
   {
@@ -1163,6 +1201,30 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     std::vector<history::ExpireHistoryArgs> expire_list;
     history::ExpireHistoryArgs args;
     args.urls.insert(origin1a);
+    args.SetTimeRangeForOneDay(yesterday_week);
+    expire_list.push_back(args);
+
+    base::CancelableTaskTracker task_tracker;
+    history->ExpireHistory(expire_list, base::Bind(&base::DoNothing),
+                           &task_tracker);
+    waiter.Wait();
+
+    // origin1's score should be halved again. origin3 and origin4 remain
+    // untouched.
+    EXPECT_EQ(1, engagement->GetScore(origin1));
+    EXPECT_EQ(0, engagement->GetScore(origin2));
+    EXPECT_EQ(5.0, engagement->GetScore(origin3));
+    EXPECT_EQ(2.5, engagement->GetScore(origin4));
+    EXPECT_EQ(8.5, engagement->GetTotalEngagementPoints());
+  }
+
+  {
+    SiteEngagementChangeWaiter waiter(profile());
+
+    // Expire origin1b.
+    std::vector<history::ExpireHistoryArgs> expire_list;
+    history::ExpireHistoryArgs args;
+    args.urls.insert(origin1b);
     args.SetTimeRangeForOneDay(today);
     expire_list.push_back(args);
 
@@ -1171,11 +1233,12 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
                            &task_tracker);
     waiter.Wait();
 
-    // Only origin3 remains.
+    // origin1 should be removed. origin3 and origin4 remain untouched.
     EXPECT_EQ(0, engagement->GetScore(origin1));
     EXPECT_EQ(0, engagement->GetScore(origin2));
     EXPECT_EQ(5.0, engagement->GetScore(origin3));
-    EXPECT_EQ(5.0, engagement->GetTotalEngagementPoints());
+    EXPECT_EQ(2.5, engagement->GetScore(origin4));
+    EXPECT_EQ(7.5, engagement->GetTotalEngagementPoints());
   }
 }
 
