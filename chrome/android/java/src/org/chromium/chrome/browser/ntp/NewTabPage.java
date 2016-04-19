@@ -543,6 +543,12 @@ public class NewTabPage
             NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_DISMISSED);
             mSnippetsBridge.discardSnippet(dismissedSnippet);
         }
+
+        @Override
+        public void addTabObserver(TabObserver tabObserver) {
+            if (mIsDestroyed) return;
+            mTab.addObserver(tabObserver);
+        }
     };
 
     /**
