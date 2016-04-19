@@ -1,11 +1,12 @@
 # ChromeOS Build Instructions (Chromium OS on Linux)
 
-Chromium on Chromium OS is built on a mix of code sourced from Chromium
+Chromium on Chromium OS is built from a mix of code sourced from Chromium
 on Linux and Chromium on Windows. Much of the user interface code is
-shared with Chromium on Windows. As such, if you make a change to
-Chromium on Windows you may find your changes affect Chromium on
-Chromium OS. Fortunately to test the effect of your changes you don't
-have to build all of Chromium OS, you can just build Chromium for
+shared with Chromium on Windows.
+
+If you make changes to Chromium on Windows, they may affect Chromium
+on Chromium OS. Fortunately to test the effects of your changes you
+don't need to build all of Chromium OS, you can just build Chromium for
 Chromium OS directly on Linux.
 
 First, follow the [normal Linux build
@@ -30,15 +31,20 @@ Now, when you build, you will build with Chromium OS features turned on.
 See [GN Build Configuration](https://www.chromium.org/developers/gn-build-configuration)
 for more information about configuring your build.
 
-Some additional options you may wish to set:
-```
+If you have not already done so, be sure to set the following to prevent
+'gclient runhooks' from executing 'gyp_chromium':
+
+    export GYP_CHROMIUM_NO_ACTION=1
+
+Some additional options you may wish to set by passing in **--args** to
+**gn gen** or running **gn args out/Default**:
+
     is_component_build = true
     use_goma = true
     is_debug = false  # Release build
     dcheck_always_on = true  # Enable DCHECK (with is_debug = false)
     is_official_build = true
     is_chrome_branded = true
-```
 
 ## Notes
 
@@ -76,7 +82,7 @@ To specify a logged in user:
 Signing in as a specific user is useful for debugging features like sync
 that require a logged in user.
 
-## Compile Testing Chromium with the Chromium OS SDK (quick version)
+## Compile Chromium for a Chromium OS device using the Chromium OS SDK
 
 See [Building Chromium for a Chromium OS device](https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/building-chromium-browser)
-for information about building & testing chromium for Chromium OS.
+for information about building and testing chromium for Chromium OS.
