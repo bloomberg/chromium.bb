@@ -21,7 +21,7 @@ setup_env() {
 
 build() {
   ./configure
-  make -j${JOBS} check
+  make -j${JOBS} check VERBOSE=1
 }
 
 main() {
