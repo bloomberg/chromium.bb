@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "net/spdy/spdy_bug_tracker.h"
 #include "net/spdy/spdy_protocol.h"
 
 namespace net {
@@ -46,24 +47,22 @@ class PriorityWriteScheduler {
 
   // Registers the given stream with the scheduler, which will now track its
   // priority and ready state. If the stream was already registered, logs
-  // DFATAL and does nothing.
+  // SPDY_BUG and does nothing.
   void RegisterStream(StreamIdType stream_id, SpdyPriority priority) {
     priority = ClampPriority(priority);
     StreamInfo stream_info = {priority, false};
     bool inserted =
         stream_infos_.insert(std::make_pair(stream_id, stream_info)).second;
-    if (!inserted) {
-      LOG(DFATAL) << "Stream " << stream_id << " already registered";
-    }
+    SPDY_BUG_IF(!inserted) << "Stream " << stream_id << " already registered";
   }
 
   // Unregisters the given stream from the scheduler, which will no
   // longer keep track of its priority and ready state. If the stream
-  // was not previously registered, logs DFATAL and does nothing.
+  // was not previously registered, logs SPDY_BUG and does nothing.
   void UnregisterStream(StreamIdType stream_id) {
     auto it = stream_infos_.find(stream_id);
     if (it == stream_infos_.end()) {
-      LOG(DFATAL) << "Stream " << stream_id << " not registered";
+      SPDY_BUG << "Stream " << stream_id << " not registered";
       return;
     }
     StreamInfo& stream_info = it->second;
@@ -75,22 +74,22 @@ class PriorityWriteScheduler {
   }
 
   // Returns the priority value for the specified stream. If the stream is not
-  // registered, logs DFATAL and returns the lowest priority.
+  // registered, logs SPDY_BUG and returns the lowest priority.
   SpdyPriority GetStreamPriority(StreamIdType stream_id) const {
     auto it = stream_infos_.find(stream_id);
     if (it == stream_infos_.end()) {
-      LOG(DFATAL) << "Stream " << stream_id << " not registered";
+      SPDY_BUG << "Stream " << stream_id << " not registered";
       return kV3LowestPriority;
     }
     return it->second.priority;
   }
 
   // Updates the priority of the given stream. If the stream is not registered,
-  // logs DFATAL and does nothing.
+  // logs SPDY_BUG and does nothing.
   void UpdateStreamPriority(StreamIdType stream_id, SpdyPriority priority) {
     auto it = stream_infos_.find(stream_id);
     if (it == stream_infos_.end()) {
-      LOG(DFATAL) << "Stream " << stream_id << " not registered";
+      SPDY_BUG << "Stream " << stream_id << " not registered";
       return;
     }
     StreamInfo& stream_info = it->second;
@@ -108,7 +107,7 @@ class PriorityWriteScheduler {
   // If the scheduler has any ready streams, pops the next stream ID from the
   // highest priority non-empty ready list and returns it, transitioning the
   // stream from ready to not ready. If the scheduler doesn't have any ready
-  // streams, logs DFATAL and returns 0.
+  // streams, logs SPDY_BUG and returns 0.
   StreamIdType PopNextReadyStream() {
     StreamIdType stream_id = 0;
     for (SpdyPriority p = kV3HighestPriority; p <= kV3LowestPriority; ++p) {
@@ -119,14 +118,14 @@ class PriorityWriteScheduler {
 
         auto it = stream_infos_.find(stream_id);
         if (it == stream_infos_.end()) {
-          LOG(DFATAL) << "Missing StreamInfo for stream " << stream_id;
+          SPDY_BUG << "Missing StreamInfo for stream " << stream_id;
         } else {
           it->second.ready = false;
         }
         return stream_id;
       }
     }
-    LOG(DFATAL) << "No ready streams available";
+    SPDY_BUG << "No ready streams available";
     return stream_id;
   }
 
@@ -141,7 +140,7 @@ class PriorityWriteScheduler {
 
     auto it = stream_infos_.find(stream_id);
     if (it == stream_infos_.end()) {
-      LOG(DFATAL) << "Stream " << stream_id << " not registered";
+      SPDY_BUG << "Stream " << stream_id << " not registered";
       return false;
     }
 
@@ -159,11 +158,11 @@ class PriorityWriteScheduler {
 
   // Returns true if the scheduler has any ready streams with a higher priority
   // than that of the specified stream. If the stream is not registered, logs
-  // DFATAL and returns false.
+  // SPDY_BUG and returns false.
   bool HasHigherPriorityReadyStream(StreamIdType stream_id) const {
     auto it = stream_infos_.find(stream_id);
     if (it == stream_infos_.end()) {
-      LOG(DFATAL) << "Stream " << stream_id << " not registered";
+      SPDY_BUG << "Stream " << stream_id << " not registered";
       return false;
     }
     const StreamInfo& stream_info = it->second;
@@ -176,13 +175,13 @@ class PriorityWriteScheduler {
   }
 
   // Marks the given stream as ready to write. If stream was already ready,
-  // does nothing. If stream was not registered, logs DFATAL and does
+  // does nothing. If stream was not registered, logs SPDY_BUG and does
   // nothing. If |add_to_front| is true, adds stream to the front of its
   // per-priority ready list, otherwise adds it to the back.
   void MarkStreamReady(StreamIdType stream_id, bool add_to_front) {
     auto it = stream_infos_.find(stream_id);
     if (it == stream_infos_.end()) {
-      LOG(DFATAL) << "Stream " << stream_id << " not registered";
+      SPDY_BUG << "Stream " << stream_id << " not registered";
       return;
     }
     StreamInfo& stream_info = it->second;
@@ -200,11 +199,11 @@ class PriorityWriteScheduler {
 
   // Marks the given stream as not ready to write, removing it from the ready
   // list for its priority. If stream was already not ready, does nothing. If
-  // stream was not registered, logs DFATAL and does nothing.
+  // stream was not registered, logs SPDY_BUG and does nothing.
   void MarkStreamNotReady(StreamIdType stream_id) {
     auto it = stream_infos_.find(stream_id);
     if (it == stream_infos_.end()) {
-      LOG(DFATAL) << "Stream " << stream_id << " not registered";
+      SPDY_BUG << "Stream " << stream_id << " not registered";
       return;
     }
     StreamInfo& stream_info = it->second;
@@ -256,11 +255,11 @@ class PriorityWriteScheduler {
 
   static SpdyPriority ClampPriority(SpdyPriority priority) {
     if (priority < kV3HighestPriority) {
-      LOG(DFATAL) << "Invalid priority: " << static_cast<int>(priority);
+      SPDY_BUG << "Invalid priority: " << static_cast<int>(priority);
       return kV3HighestPriority;
     }
     if (priority > kV3LowestPriority) {
-      LOG(DFATAL) << "Invalid priority: " << static_cast<int>(priority);
+      SPDY_BUG << "Invalid priority: " << static_cast<int>(priority);
       return kV3LowestPriority;
     }
     return priority;

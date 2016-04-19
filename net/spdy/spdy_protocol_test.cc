@@ -9,6 +9,7 @@
 
 #include "net/spdy/spdy_bitmasks.h"
 #include "net/spdy/spdy_framer.h"
+#include "net/spdy/spdy_test_utils.h"
 #include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,8 +22,8 @@ namespace net {
 TEST(SpdyProtocolDeathTest, TestSpdySettingsAndIdOutOfBounds) {
   std::unique_ptr<SettingsFlagsAndId> flags_and_id;
 
-  EXPECT_DFATAL(flags_and_id.reset(new SettingsFlagsAndId(1, 0xffffffff)),
-                "SPDY setting ID too large.");
+  EXPECT_SPDY_BUG(flags_and_id.reset(new SettingsFlagsAndId(1, 0xffffffff)),
+                  "SPDY setting ID too large.");
   // Make sure that we get expected values in opt mode.
   if (flags_and_id.get() != nullptr) {
     EXPECT_EQ(1, flags_and_id->flags());

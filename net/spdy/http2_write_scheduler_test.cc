@@ -4,6 +4,7 @@
 
 #include "net/spdy/http2_write_scheduler.h"
 
+#include "net/spdy/spdy_test_utils.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,8 +63,8 @@ TEST_F(Http2PriorityWriteSchedulerTest, RegisterAndUnregisterStreams) {
 
   scheduler_.RegisterStream(5, 0, 50, false);
   // Should not be able to add a stream with an id that already exists.
-  EXPECT_DFATAL(scheduler_.RegisterStream(5, 1, 50, false),
-                "Stream 5 already registered");
+  EXPECT_SPDY_BUG(scheduler_.RegisterStream(5, 1, 50, false),
+                  "Stream 5 already registered");
   EXPECT_EQ(3, scheduler_.num_streams());
   EXPECT_TRUE(scheduler_.StreamRegistered(1));
   ASSERT_TRUE(scheduler_.StreamRegistered(5));
@@ -80,7 +81,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, RegisterAndUnregisterStreams) {
 
   scheduler_.UnregisterStream(5);
   // Cannot remove a stream that has already been removed.
-  EXPECT_DFATAL(scheduler_.UnregisterStream(5), "Stream 5 not registered");
+  EXPECT_SPDY_BUG(scheduler_.UnregisterStream(5), "Stream 5 not registered");
   EXPECT_EQ(3, scheduler_.num_streams());
   EXPECT_TRUE(scheduler_.StreamRegistered(1));
   EXPECT_FALSE(scheduler_.StreamRegistered(5));
@@ -88,13 +89,13 @@ TEST_F(Http2PriorityWriteSchedulerTest, RegisterAndUnregisterStreams) {
   EXPECT_EQ(kHttp2RootStreamId, scheduler_.GetStreamParent(13));
 
   // The parent stream 19 doesn't exist, so this should use 0 as parent stream:
-  EXPECT_DFATAL(scheduler_.RegisterStream(7, 19, 70, false),
-                "Parent stream 19 not registered");
+  EXPECT_SPDY_BUG(scheduler_.RegisterStream(7, 19, 70, false),
+                  "Parent stream 19 not registered");
   EXPECT_TRUE(scheduler_.StreamRegistered(7));
   EXPECT_EQ(0u, scheduler_.GetStreamParent(7));
   // Now stream 7 already exists, so this should fail:
-  EXPECT_DFATAL(scheduler_.RegisterStream(7, 1, 70, false),
-                "Stream 7 already registered");
+  EXPECT_SPDY_BUG(scheduler_.RegisterStream(7, 1, 70, false),
+                  "Stream 7 already registered");
   // Try adding a second child to stream 13:
   scheduler_.RegisterStream(17, 13, 170, false);
 
@@ -107,8 +108,9 @@ TEST_F(Http2PriorityWriteSchedulerTest, RegisterAndUnregisterStreams) {
 }
 
 TEST_F(Http2PriorityWriteSchedulerTest, GetStreamWeight) {
-  EXPECT_DFATAL(EXPECT_EQ(kHttp2MinStreamWeight, scheduler_.GetStreamWeight(3)),
-                "Stream 3 not registered");
+  EXPECT_SPDY_BUG(
+      EXPECT_EQ(kHttp2MinStreamWeight, scheduler_.GetStreamWeight(3)),
+      "Stream 3 not registered");
   scheduler_.RegisterStream(3, 0, 130, true);
   EXPECT_EQ(130, scheduler_.GetStreamWeight(3));
   scheduler_.SetStreamWeight(3, 50);
@@ -119,42 +121,42 @@ TEST_F(Http2PriorityWriteSchedulerTest, GetStreamWeight) {
 }
 
 TEST_F(Http2PriorityWriteSchedulerTest, GetStreamParent) {
-  EXPECT_DFATAL(EXPECT_EQ(kHttp2RootStreamId, scheduler_.GetStreamParent(3)),
-                "Stream 3 not registered");
+  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2RootStreamId, scheduler_.GetStreamParent(3)),
+                  "Stream 3 not registered");
   scheduler_.RegisterStream(2, 0, 20, false);
   scheduler_.RegisterStream(3, 2, 30, false);
   EXPECT_EQ(2u, scheduler_.GetStreamParent(3));
   scheduler_.UnregisterStream(3);
-  EXPECT_DFATAL(EXPECT_EQ(kHttp2RootStreamId, scheduler_.GetStreamParent(3)),
-                "Stream 3 not registered");
+  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2RootStreamId, scheduler_.GetStreamParent(3)),
+                  "Stream 3 not registered");
 }
 
 TEST_F(Http2PriorityWriteSchedulerTest, GetStreamChildren) {
-  EXPECT_DFATAL(EXPECT_THAT(scheduler_.GetStreamChildren(7), IsEmpty()),
-                "Stream 7 not registered");
+  EXPECT_SPDY_BUG(EXPECT_THAT(scheduler_.GetStreamChildren(7), IsEmpty()),
+                  "Stream 7 not registered");
   scheduler_.RegisterStream(7, 0, 70, false);
   EXPECT_THAT(scheduler_.GetStreamChildren(7), IsEmpty());
   scheduler_.RegisterStream(9, 7, 90, false);
   scheduler_.RegisterStream(15, 7, 150, false);
   EXPECT_THAT(scheduler_.GetStreamChildren(7), UnorderedElementsAre(9, 15));
   scheduler_.UnregisterStream(7);
-  EXPECT_DFATAL(EXPECT_THAT(scheduler_.GetStreamChildren(7), IsEmpty()),
-                "Stream 7 not registered");
+  EXPECT_SPDY_BUG(EXPECT_THAT(scheduler_.GetStreamChildren(7), IsEmpty()),
+                  "Stream 7 not registered");
 }
 
 TEST_F(Http2PriorityWriteSchedulerTest, SetStreamWeight) {
-  EXPECT_DFATAL(scheduler_.SetStreamWeight(0, 10),
-                "Cannot set weight of root stream");
-  EXPECT_DFATAL(scheduler_.SetStreamWeight(3, 10), "Stream 3 not registered");
+  EXPECT_SPDY_BUG(scheduler_.SetStreamWeight(0, 10),
+                  "Cannot set weight of root stream");
+  EXPECT_SPDY_BUG(scheduler_.SetStreamWeight(3, 10), "Stream 3 not registered");
   scheduler_.RegisterStream(3, 0, 10, false);
   scheduler_.SetStreamWeight(3, 20);
   EXPECT_EQ(20, scheduler_.GetStreamWeight(3));
-  EXPECT_DFATAL(scheduler_.SetStreamWeight(3, 500), "Invalid weight: 500");
+  EXPECT_SPDY_BUG(scheduler_.SetStreamWeight(3, 500), "Invalid weight: 500");
   EXPECT_EQ(kHttp2MaxStreamWeight, scheduler_.GetStreamWeight(3));
-  EXPECT_DFATAL(scheduler_.SetStreamWeight(3, 0), "Invalid weight: 0");
+  EXPECT_SPDY_BUG(scheduler_.SetStreamWeight(3, 0), "Invalid weight: 0");
   EXPECT_EQ(kHttp2MinStreamWeight, scheduler_.GetStreamWeight(3));
   scheduler_.UnregisterStream(3);
-  EXPECT_DFATAL(scheduler_.SetStreamWeight(3, 10), "Stream 3 not registered");
+  EXPECT_SPDY_BUG(scheduler_.SetStreamWeight(3, 10), "Stream 3 not registered");
 }
 
 // Basic case of reparenting a subtree.
@@ -208,12 +210,12 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentNonexistent) {
   scheduler_.RegisterStream(1, 0, 100, false);
   scheduler_.RegisterStream(2, 0, 100, false);
   for (bool exclusive : {true, false}) {
-    EXPECT_DFATAL(scheduler_.SetStreamParent(1, 3, exclusive),
-                  "Parent stream 3 not registered");
-    EXPECT_DFATAL(scheduler_.SetStreamParent(4, 2, exclusive),
-                  "Stream 4 not registered");
-    EXPECT_DFATAL(scheduler_.SetStreamParent(3, 4, exclusive),
-                  "Stream 3 not registered");
+    EXPECT_SPDY_BUG(scheduler_.SetStreamParent(1, 3, exclusive),
+                    "Parent stream 3 not registered");
+    EXPECT_SPDY_BUG(scheduler_.SetStreamParent(4, 2, exclusive),
+                    "Stream 4 not registered");
+    EXPECT_SPDY_BUG(scheduler_.SetStreamParent(3, 4, exclusive),
+                    "Stream 3 not registered");
     EXPECT_THAT(scheduler_.GetStreamChildren(0), UnorderedElementsAre(1, 2));
     EXPECT_THAT(scheduler_.GetStreamChildren(1), IsEmpty());
     EXPECT_THAT(scheduler_.GetStreamChildren(2), IsEmpty());
@@ -391,10 +393,10 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToParent) {
 
 TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToSelf) {
   scheduler_.RegisterStream(1, 0, 100, false);
-  EXPECT_DFATAL(scheduler_.SetStreamParent(1, 1, false),
-                "Cannot set stream to be its own parent");
-  EXPECT_DFATAL(scheduler_.SetStreamParent(1, 1, true),
-                "Cannot set stream to be its own parent");
+  EXPECT_SPDY_BUG(scheduler_.SetStreamParent(1, 1, false),
+                  "Cannot set stream to be its own parent");
+  EXPECT_SPDY_BUG(scheduler_.SetStreamParent(1, 1, true),
+                  "Cannot set stream to be its own parent");
   EXPECT_THAT(scheduler_.GetStreamChildren(0), ElementsAre(1));
   EXPECT_THAT(scheduler_.GetStreamChildren(1), IsEmpty());
   ASSERT_TRUE(peer_.ValidateInvariants());
@@ -404,10 +406,10 @@ TEST_F(Http2PriorityWriteSchedulerTest, StreamHasChild) {
   scheduler_.RegisterStream(1, 0, 10, false);
   scheduler_.RegisterStream(2, 1, 20, false);
   scheduler_.RegisterStream(3, 1, 30, false);
-  EXPECT_DFATAL(EXPECT_FALSE(scheduler_.StreamHasChild(4, 1)),
-                "Parent stream 4 not registered");
-  EXPECT_DFATAL(EXPECT_FALSE(scheduler_.StreamHasChild(3, 7)),
-                "Child stream 7 not registered");
+  EXPECT_SPDY_BUG(EXPECT_FALSE(scheduler_.StreamHasChild(4, 1)),
+                  "Parent stream 4 not registered");
+  EXPECT_SPDY_BUG(EXPECT_FALSE(scheduler_.StreamHasChild(3, 7)),
+                  "Child stream 7 not registered");
   EXPECT_FALSE(scheduler_.StreamHasChild(3, 1));
   EXPECT_TRUE(scheduler_.StreamHasChild(1, 3));
   EXPECT_TRUE(scheduler_.StreamHasChild(1, 2));

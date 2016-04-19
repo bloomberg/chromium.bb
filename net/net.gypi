@@ -1154,6 +1154,7 @@
       'spdy/spdy_buffer.h',
       'spdy/spdy_buffer_producer.cc',
       'spdy/spdy_buffer_producer.h',
+      'spdy/spdy_bug_tracker.h',
       'spdy/spdy_frame_builder.cc',
       'spdy/spdy_frame_builder.h',
       'spdy/spdy_frame_reader.cc',

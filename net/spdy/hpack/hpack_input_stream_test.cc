@@ -674,8 +674,8 @@ TEST(HpackInputStreamTest, InitializePeekBits) {
     bits <<= 28;
     EXPECT_EQ(0xb0000000, bits);
 
-    EXPECT_DFATAL(peeked_count_and_bits = input_stream.InitializePeekBits(),
-                  "bit_offset_");
+    EXPECT_SPDY_BUG(peeked_count_and_bits = input_stream.InitializePeekBits(),
+                    "bit_offset_");
     EXPECT_EQ(0u, peeked_count_and_bits.first);
     EXPECT_EQ(0u, peeked_count_and_bits.second);
     EXPECT_TRUE(input_stream.HasMoreData());

@@ -9,6 +9,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
+#include "net/spdy/spdy_test_utils.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -247,7 +248,7 @@ TEST_P(SpdyHeadersBlockParserTest, WrongStreamIdTest) {
   EXPECT_FALSE(parser_->HandleControlFrameHeadersData(1, headers.data(), 1));
   EXPECT_EQ(SpdyHeadersBlockParser::NEED_MORE_DATA, parser_->get_error());
   bool result;
-  EXPECT_DFATAL(
+  EXPECT_SPDY_BUG(
       result = parser_->HandleControlFrameHeadersData(2, headers.data() + 1, 1),
       "Unexpected stream id: 2 \\(expected 1\\)");
   EXPECT_FALSE(result);
@@ -257,7 +258,7 @@ TEST_P(SpdyHeadersBlockParserTest, WrongStreamIdTest) {
 TEST_P(SpdyHeadersBlockParserTest, InvalidStreamIdTest) {
   string headers(CreateHeaders(kNumHeadersInBlock, false));
   bool result;
-  EXPECT_DFATAL(
+  EXPECT_SPDY_BUG(
       result = parser_->HandleControlFrameHeadersData(0, headers.data(), 1),
       "Expected nonzero stream id, saw: 0");
   EXPECT_FALSE(result);

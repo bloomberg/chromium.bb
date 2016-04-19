@@ -12,6 +12,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "net/spdy/spdy_bug_tracker.h"
 #include "net/spdy/spdy_protocol.h"
 
 namespace net {
@@ -31,11 +32,11 @@ class WriteBlockedList {
 
   static SpdyPriority ClampPriority(SpdyPriority priority) {
     if (priority < kV3HighestPriority) {
-      LOG(DFATAL) << "Invalid priority: " << static_cast<int>(priority);
+      SPDY_BUG << "Invalid priority: " << static_cast<int>(priority);
       return kV3HighestPriority;
     }
     if (priority > kV3LowestPriority) {
-      LOG(DFATAL) << "Invalid priority: " << static_cast<int>(priority);
+      SPDY_BUG << "Invalid priority: " << static_cast<int>(priority);
       return kV3LowestPriority;
     }
     return priority;
@@ -48,7 +49,7 @@ class WriteBlockedList {
         return i;
       }
     }
-    LOG(DFATAL) << "No blocked streams";
+    SPDY_BUG << "No blocked streams";
     return kV3HighestPriority;
   }
 

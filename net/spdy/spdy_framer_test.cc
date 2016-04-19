@@ -3236,9 +3236,6 @@ TEST_P(SpdyFramerTest, ControlFrameMaximumSize) {
   // Create a frame at exatly that size.
   string big_value(kBigValueSize, 'x');
   syn_stream.SetHeader("aa", big_value);
-  // Upstream branches here and wraps HTTP/2 with EXPECT_DEBUG_DFATAL. We
-  // neither support that in Chromium, nor do we use the same DFATAL (see
-  // SpdyFrameBuilder::WriteFramePrefix()).
   control_frame = framer.SerializeSynStream(syn_stream);
 
   EXPECT_EQ(SpdyConstants::GetFrameMaximumSize(spdy_version_),

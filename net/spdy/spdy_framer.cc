@@ -17,6 +17,7 @@
 #include "net/quic/quic_flags.h"
 #include "net/spdy/hpack/hpack_constants.h"
 #include "net/spdy/spdy_bitmasks.h"
+#include "net/spdy/spdy_bug_tracker.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_frame_reader.h"
 #include "third_party/zlib/zlib.h"
@@ -144,7 +145,7 @@ SettingsFlagsAndId SettingsFlagsAndId::FromWireFormat(SpdyMajorVersion version,
 
 SettingsFlagsAndId::SettingsFlagsAndId(uint8_t flags, uint32_t id)
     : flags_(flags), id_(id & 0x00ffffff) {
-  LOG_IF(DFATAL, id > (1u << 24)) << "SPDY setting ID too large: " << id;
+  SPDY_BUG_IF(id > (1u << 24)) << "SPDY setting ID too large: " << id;
 }
 
 uint32_t SettingsFlagsAndId::GetWireFormat(SpdyMajorVersion version) const {
@@ -638,8 +639,8 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
       }
 
       default:
-        LOG(DFATAL) << "Invalid value for " << display_protocol_
-                    << " framer state: " << state_;
+        SPDY_BUG << "Invalid value for " << display_protocol_
+                 << " framer state: " << state_;
         // This ensures that we don't infinite-loop if state_ gets an
         // invalid value somehow, such as due to a SpdyFramer getting deleted
         // from a callback it calls.
@@ -1125,8 +1126,8 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
     // We should already be in an error state. Double-check.
     DCHECK_EQ(SPDY_ERROR, state_);
     if (state_ != SPDY_ERROR) {
-      LOG(DFATAL) << display_protocol_
-                  << " control frame buffer too small for fixed-length frame.";
+      SPDY_BUG << display_protocol_
+               << " control frame buffer too small for fixed-length frame.";
       set_error(SPDY_CONTROL_PAYLOAD_TOO_LARGE);
     }
     return;
@@ -1569,7 +1570,7 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
       current_frame_type_ != HEADERS &&
       current_frame_type_ != PUSH_PROMISE &&
       current_frame_type_ != CONTINUATION) {
-    LOG(DFATAL) << "Unhandled frame type in ProcessControlFrameHeaderBlock.";
+    SPDY_BUG << "Unhandled frame type in ProcessControlFrameHeaderBlock.";
   }
   size_t process_bytes = std::min(
       data_len, remaining_data_length_ - remaining_padding_payload_length_);
@@ -2089,7 +2090,8 @@ size_t SpdyFramer::ProcessFramePadding(const char* data, size_t len) {
     DCHECK_EQ(remaining_padding_payload_length_, remaining_data_length_);
     size_t amount_to_discard = std::min(remaining_padding_payload_length_, len);
     if (current_frame_type_ == DATA && amount_to_discard > 0) {
-      DCHECK_EQ(HTTP2, protocol_version_);
+      SPDY_BUG_IF(protocol_version_ == SPDY3)
+          << "Padding invalid for SPDY version " << protocol_version_;
       visitor_->OnStreamPadding(current_frame_stream_id_, amount_to_discard);
     }
     data += amount_to_discard;
@@ -2197,9 +2199,9 @@ bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
     (*block)[name] = value;
   }
   if (reader.GetBytesConsumed() != header_length) {
-    LOG(DFATAL) << "Buffer expected to consist entirely of headers, but only "
-                << reader.GetBytesConsumed() << " bytes consumed, from "
-                << header_length;
+    SPDY_BUG << "Buffer expected to consist entirely of headers, but only "
+             << reader.GetBytesConsumed() << " bytes consumed, from "
+             << header_length;
     return false;
   }
 
@@ -2290,7 +2292,7 @@ SpdySerializedFrame SpdyFramer::SerializeSynStream(
   // Sanitize priority.
   uint8_t priority = syn_stream.priority();
   if (priority > GetLowestPriority()) {
-    DLOG(DFATAL) << "Priority out-of-bounds.";
+    SPDY_BUG << "Priority out-of-bounds.";
     priority = GetLowestPriority();
   }
 
@@ -2514,7 +2516,7 @@ SpdySerializedFrame SpdyFramer::SerializeHeaders(const SpdyHeadersIR& headers) {
   SpdyPriority priority = static_cast<SpdyPriority>(headers.priority());
   if (headers.has_priority()) {
     if (headers.priority() > GetLowestPriority()) {
-      DLOG(DFATAL) << "Priority out-of-bounds.";
+      SPDY_BUG << "Priority out-of-bounds.";
       priority = GetLowestPriority();
     }
     size += 5;
@@ -2981,7 +2983,7 @@ bool SpdyFramer::IncrementallyDecompressControlFrameHeaderData(
   // Get a decompressor or set error.
   z_stream* decomp = GetHeaderDecompressor();
   if (decomp == NULL) {
-    LOG(DFATAL) << "Couldn't get decompressor for handling compressed headers.";
+    SPDY_BUG << "Couldn't get decompressor for handling compressed headers.";
     set_error(SPDY_DECOMPRESS_FAILURE);
     return false;
   }
@@ -3101,7 +3103,7 @@ void SpdyFramer::SerializeHeaderBlock(SpdyFrameBuilder* builder,
 
   z_stream* compressor = GetHeaderCompressor();
   if (!compressor) {
-    LOG(DFATAL) << "Could not obtain compressor.";
+    SPDY_BUG << "Could not obtain compressor.";
     return;
   }
   // Create an output frame.

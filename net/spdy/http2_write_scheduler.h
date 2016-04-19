@@ -23,6 +23,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "net/spdy/spdy_bug_tracker.h"
 
 namespace net {
 
@@ -65,38 +66,38 @@ class Http2PriorityWriteScheduler {
   // Registers a new stream with the given weight and parent, adding it to the
   // dependency tree. Non-exclusive streams simply get added below the parent
   // stream. If exclusive = true, the stream becomes the parent's sole child
-  // and the parent's previous children become the children of the new
-  // stream. If the stream was already registered, logs DFATAL and does
-  // nothing. If the parent stream is not registered, logs DFATAL and uses the
-  // root stream as the parent.
+  // and the parent's previous children become the children of the new stream.
+  // If the stream was already registered, logs SPDY_BUG and does nothing. If
+  // the parent stream is not registered, logs SPDY_BUG and uses the root stream
+  // as the parent.
   void RegisterStream(StreamIdType stream_id,
                       StreamIdType parent_id,
                       int weight,
                       bool exclusive);
 
   // Unregisters the given stream from the scheduler, removing it from the
-  // dependency tree. If the stream was not previously registered, logs DFATAL
-  // and does nothing.
+  // dependency tree. If the stream was not previously registered, logs
+  // SPDY_BUG and does nothing.
   void UnregisterStream(StreamIdType stream_id);
 
   // Returns the weight value for the specified stream. If the stream is not
-  // registered, logs DFATAL and returns the lowest weight.
+  // registered, logs SPDY_BUG and returns the lowest weight.
   int GetStreamWeight(StreamIdType stream_id) const;
 
   // Returns the stream ID for the parent of the given stream. If the stream
-  // isn't registered, logs DFATAL and returns the root stream ID (0).
+  // isn't registered, logs SPDY_BUG and returns the root stream ID (0).
   StreamIdType GetStreamParent(StreamIdType stream_id) const;
 
   // Returns stream IDs of the children of the given stream, if any. If the
-  // stream isn't registered, logs DFATAL and returns an empty vector.
+  // stream isn't registered, logs SPDY_BUG and returns an empty vector.
   std::vector<StreamIdType> GetStreamChildren(StreamIdType stream_id) const;
 
   // Sets the weight of the given stream. If the stream isn't registered or is
-  // the root stream, logs DFATAL and does nothing.
+  // the root stream, logs SPDY_BUG and does nothing.
   void SetStreamWeight(StreamIdType stream_id, int weight);
 
   // Sets the parent of the given stream. If the stream and/or parent aren't
-  // registered, logs DFATAL and does nothing. If the new parent is a
+  // registered, logs SPDY_BUG and does nothing. If the new parent is a
   // descendant of the stream (i.e. this would have created a cycle) then the
   // topology of the tree is rearranged as described in section 5.3.3 of RFC
   // 7540: https://tools.ietf.org/html/rfc7540#section-5.3.3
@@ -105,17 +106,17 @@ class Http2PriorityWriteScheduler {
                        bool exclusive);
 
   // Returns true if the stream parent_id has child_id in its children. If
-  // either parent or child stream aren't registered, logs DFATAL and returns
+  // either parent or child stream aren't registered, logs SPDY_BUG and returns
   // false.
   bool StreamHasChild(StreamIdType parent_id, StreamIdType child_id) const;
 
   // Marks the stream as blocked or unblocked. If the stream is not registered,
-  // logs DFATAL and does nothing.
+  // logs SPDY_BUG and does nothing.
   void MarkStreamBlocked(StreamIdType stream_id, bool blocked);
 
   // Marks the stream as ready or not ready to write; i.e. whether there is
   // buffered data for the associated stream. If the stream is not registered,
-  // logs DFATAL and does nothing.
+  // logs SPDY_BUG and does nothing.
   void MarkStreamReady(StreamIdType stream_id, bool ready);
 
   // Returns true iff the scheduler has one or more usable streams. A stream is
@@ -126,7 +127,7 @@ class Http2PriorityWriteScheduler {
 
   // If the scheduler has any usable streams, returns the ID of the next usable
   // stream, in the process changing its ready state to false. If the scheduler
-  // does not have any usable streams, logs DFATAL and returns the root stream
+  // does not have any usable streams, logs SPDY_BUG and returns the root stream
   // ID (0). If there are multiple usable streams, precedence is given to the
   // one with the highest priority (thus preserving SPDY priority semantics),
   // or, if there are multiple with the highest priority, the one with the
@@ -262,14 +263,14 @@ void Http2PriorityWriteScheduler<StreamIdType>::RegisterStream(
     int weight,
     bool exclusive) {
   if (StreamRegistered(stream_id)) {
-    LOG(DFATAL) << "Stream " << stream_id << " already registered";
+    SPDY_BUG << "Stream " << stream_id << " already registered";
     return;
   }
   weight = ClampWeight(weight);
 
   StreamInfo* parent = FindStream(parent_id);
   if (parent == nullptr) {
-    LOG(DFATAL) << "Parent stream " << parent_id << " not registered";
+    SPDY_BUG << "Parent stream " << parent_id << " not registered";
     parent = root_stream_info_;
   }
 
@@ -307,13 +308,13 @@ template <typename StreamIdType>
 void Http2PriorityWriteScheduler<StreamIdType>::UnregisterStream(
     StreamIdType stream_id) {
   if (stream_id == kHttp2RootStreamId) {
-    LOG(DFATAL) << "Cannot unregister root stream";
+    SPDY_BUG << "Cannot unregister root stream";
     return;
   }
   // Remove the stream from table.
   typename StreamInfoMap::iterator it = all_stream_infos_.find(stream_id);
   if (it == all_stream_infos_.end()) {
-    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    SPDY_BUG << "Stream " << stream_id << " not registered";
     return;
   }
   std::unique_ptr<StreamInfo> stream_info(std::move(it->second));
@@ -353,7 +354,7 @@ int Http2PriorityWriteScheduler<StreamIdType>::GetStreamWeight(
     StreamIdType stream_id) const {
   const StreamInfo* stream_info = FindStream(stream_id);
   if (stream_info == nullptr) {
-    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    SPDY_BUG << "Stream " << stream_id << " not registered";
     return kHttp2MinStreamWeight;
   }
   return stream_info->weight;
@@ -364,7 +365,7 @@ StreamIdType Http2PriorityWriteScheduler<StreamIdType>::GetStreamParent(
     StreamIdType stream_id) const {
   const StreamInfo* stream_info = FindStream(stream_id);
   if (stream_info == nullptr) {
-    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    SPDY_BUG << "Stream " << stream_id << " not registered";
     return kHttp2RootStreamId;
   }
   if (stream_info->parent == nullptr) {  // root stream
@@ -379,7 +380,7 @@ std::vector<StreamIdType> Http2PriorityWriteScheduler<
   std::vector<StreamIdType> child_vec;
   const StreamInfo* stream_info = FindStream(stream_id);
   if (stream_info == nullptr) {
-    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    SPDY_BUG << "Stream " << stream_id << " not registered";
   } else {
     child_vec.reserve(stream_info->children.size());
     for (StreamInfo* child : stream_info->children) {
@@ -394,12 +395,12 @@ void Http2PriorityWriteScheduler<StreamIdType>::SetStreamWeight(
     StreamIdType stream_id,
     int weight) {
   if (stream_id == kHttp2RootStreamId) {
-    LOG(DFATAL) << "Cannot set weight of root stream";
+    SPDY_BUG << "Cannot set weight of root stream";
     return;
   }
   StreamInfo* stream_info = FindStream(stream_id);
   if (stream_info == nullptr) {
-    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    SPDY_BUG << "Stream " << stream_id << " not registered";
     return;
   }
   weight = ClampWeight(weight);
@@ -421,21 +422,21 @@ void Http2PriorityWriteScheduler<StreamIdType>::SetStreamParent(
     StreamIdType parent_id,
     bool exclusive) {
   if (stream_id == kHttp2RootStreamId) {
-    LOG(DFATAL) << "Cannot set parent of root stream";
+    SPDY_BUG << "Cannot set parent of root stream";
     return;
   }
   if (stream_id == parent_id) {
-    LOG(DFATAL) << "Cannot set stream to be its own parent";
+    SPDY_BUG << "Cannot set stream to be its own parent";
     return;
   }
   StreamInfo* stream_info = FindStream(stream_id);
   if (stream_info == nullptr) {
-    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    SPDY_BUG << "Stream " << stream_id << " not registered";
     return;
   }
   StreamInfo* new_parent = FindStream(parent_id);
   if (new_parent == nullptr) {
-    LOG(DFATAL) << "Parent stream " << parent_id << " not registered";
+    SPDY_BUG << "Parent stream " << parent_id << " not registered";
     return;
   }
 
@@ -491,12 +492,12 @@ void Http2PriorityWriteScheduler<StreamIdType>::MarkStreamBlocked(
     StreamIdType stream_id,
     bool blocked) {
   if (stream_id == kHttp2RootStreamId) {
-    LOG(DFATAL) << "Cannot mark root stream blocked or unblocked";
+    SPDY_BUG << "Cannot mark root stream blocked or unblocked";
     return;
   }
   StreamInfo* stream_info = FindStream(stream_id);
   if (stream_info == nullptr) {
-    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    SPDY_BUG << "Stream " << stream_id << " not registered";
     return;
   }
   stream_info->blocked = blocked;
@@ -508,12 +509,12 @@ void Http2PriorityWriteScheduler<StreamIdType>::MarkStreamReady(
     StreamIdType stream_id,
     bool ready) {
   if (stream_id == kHttp2RootStreamId) {
-    LOG(DFATAL) << "Cannot mark root stream ready or unready";
+    SPDY_BUG << "Cannot mark root stream ready or unready";
     return;
   }
   StreamInfo* stream_info = FindStream(stream_id);
   if (stream_info == nullptr) {
-    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    SPDY_BUG << "Stream " << stream_id << " not registered";
     return;
   }
   stream_info->ready = ready;
@@ -537,11 +538,11 @@ bool Http2PriorityWriteScheduler<StreamIdType>::Remove(
 template <typename StreamIdType>
 int Http2PriorityWriteScheduler<StreamIdType>::ClampWeight(int weight) {
   if (weight < kHttp2MinStreamWeight) {
-    LOG(DFATAL) << "Invalid weight: " << weight;
+    SPDY_BUG << "Invalid weight: " << weight;
     return kHttp2MinStreamWeight;
   }
   if (weight > kHttp2MaxStreamWeight) {
-    LOG(DFATAL) << "Invalid weight: " << weight;
+    SPDY_BUG << "Invalid weight: " << weight;
     return kHttp2MaxStreamWeight;
   }
   return weight;
@@ -638,11 +639,11 @@ bool Http2PriorityWriteScheduler<StreamIdType>::StreamHasChild(
     StreamIdType child_id) const {
   const StreamInfo* parent = FindStream(parent_id);
   if (parent == nullptr) {
-    LOG(DFATAL) << "Parent stream " << parent_id << " not registered";
+    SPDY_BUG << "Parent stream " << parent_id << " not registered";
     return false;
   }
   if (!StreamRegistered(child_id)) {
-    LOG(DFATAL) << "Child stream " << child_id << " not registered";
+    SPDY_BUG << "Child stream " << child_id << " not registered";
     return false;
   }
   auto found = std::find_if(parent->children.begin(), parent->children.end(),
@@ -671,7 +672,7 @@ StreamIdType Http2PriorityWriteScheduler<StreamIdType>::PopNextUsableStream() {
       return stream_info->id;
     }
   }
-  LOG(DFATAL) << "No usable streams";
+  SPDY_BUG << "No usable streams";
   return kHttp2RootStreamId;
 }
 
