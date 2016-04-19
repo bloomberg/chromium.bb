@@ -79,7 +79,7 @@ bool RemoteFontFaceSource::isValid() const
     return !m_font->errorOccurred();
 }
 
-void RemoteFontFaceSource::fontLoaded(FontResource*)
+void RemoteFontFaceSource::notifyFinished(Resource*)
 {
     m_histograms.recordRemoteFont(m_font.get());
     m_histograms.fontLoaded(m_isInterventionTriggered);

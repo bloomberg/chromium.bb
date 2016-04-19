@@ -153,9 +153,9 @@ public:
 
     void clear() override { clearResource(); }
 
-    void fontLoaded(FontResource* resource) override
+    void notifyFinished(Resource* resource) override
     {
-        ASSERT(this->resource() == resource);
+        ASSERT(this->resource() == toFontResource(resource));
         triggerEvents(resource);
     }
 

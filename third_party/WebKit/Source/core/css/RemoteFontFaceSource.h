@@ -38,7 +38,7 @@ public:
 
     void beginLoadIfNeeded() override;
 
-    void fontLoaded(FontResource*) override;
+    void notifyFinished(Resource*) override;
     void fontLoadShortLimitExceeded(FontResource*) override;
     void fontLoadLongLimitExceeded(FontResource*) override;
     String debugName() const override { return "RemoteFontFaceSource"; }

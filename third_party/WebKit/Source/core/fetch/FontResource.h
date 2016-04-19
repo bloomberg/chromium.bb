@@ -98,7 +98,6 @@ public:
     ~FontResourceClient() override {}
     static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == FontType; }
     ResourceClientType getResourceClientType() const final { return FontType; }
-    virtual void fontLoaded(FontResource*) {}
     virtual void fontLoadShortLimitExceeded(FontResource*) {}
     virtual void fontLoadLongLimitExceeded(FontResource*) {}
 };

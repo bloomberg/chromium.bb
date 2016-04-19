@@ -97,8 +97,6 @@ void FontResource::didAddClient(ResourceClient* c)
 {
     ASSERT(FontResourceClient::isExpectedType(c));
     Resource::didAddClient(c);
-    if (isLoaded())
-        static_cast<FontResourceClient*>(c)->fontLoaded(this);
     if (m_loadLimitState == ShortLimitExceeded || m_loadLimitState == LongLimitExceeded)
         static_cast<FontResourceClient*>(c)->fontLoadShortLimitExceeded(this);
     if (m_loadLimitState == LongLimitExceeded)
@@ -173,9 +171,8 @@ void FontResource::checkNotify()
 {
     m_fontLoadShortLimitTimer.stop();
     m_fontLoadLongLimitTimer.stop();
-    ResourceClientWalker<FontResourceClient> w(m_clients);
-    while (FontResourceClient* c = w.next())
-        c->fontLoaded(this);
+
+    Resource::checkNotify();
 }
 
 } // namespace blink
