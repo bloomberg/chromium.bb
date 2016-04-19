@@ -873,7 +873,7 @@ test("ui_base_unittests") {
       "//chrome:resources",
       "//ui/android:ui_java",
     ]
-    isolate_file = "ui_base_unittests.isolate"
+    isolate_file = "ui_base_tests.isolate"
   }
 
   if (use_pango) {
