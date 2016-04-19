@@ -446,6 +446,7 @@
           'numerics/safe_math_impl.h',
           'observer_list.h',
           'observer_list_threadsafe.h',
+          'optional.h',
           'os_compat_android.cc',
           'os_compat_android.h',
           'os_compat_nacl.cc',
