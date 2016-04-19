@@ -11,7 +11,6 @@ import "bluetooth.mojom";
 import "clipboard.mojom";
 import "crash_collector.mojom";
 import "ime.mojom";
-import "input.mojom";
 import "intent_helper.mojom";
 import "net.mojom";
 import "notifications.mojom";
@@ -46,9 +45,6 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the ImeInstance interface is ready.
   [MinVersion=3] OnImeInstanceReady@110(ImeInstance instance_ptr);
-
-  // Notifies Chrome that the InputInstance interface is ready.
-  OnInputInstanceReady@101(InputInstance instance_ptr);
 
   // Notifies Chrome that the IntentHelperInstance interface is ready.
   [MinVersion=4] OnIntentHelperInstanceReady@111(

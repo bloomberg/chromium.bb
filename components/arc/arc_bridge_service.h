@@ -101,10 +101,6 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
     virtual void OnImeInstanceReady() {}
     virtual void OnImeInstanceClosed() {}
 
-    // Called whenever the ARC input interface state changes.
-    virtual void OnInputInstanceReady() {}
-    virtual void OnInputInstanceClosed() {}
-
     // Called whenever the ARC intent helper interface state changes.
     virtual void OnIntentHelperInstanceReady() {}
     virtual void OnIntentHelperInstanceClosed() {}
@@ -183,7 +179,6 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
     return crash_collector_ptr_.get();
   }
   mojom::ImeInstance* ime_instance() { return ime_ptr_.get(); }
-  mojom::InputInstance* input_instance() { return input_ptr_.get(); }
   mojom::IntentHelperInstance* intent_helper_instance() {
     return intent_helper_ptr_.get();
   }
@@ -205,7 +200,6 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
     return crash_collector_ptr_.version();
   }
   int32_t ime_version() const { return ime_ptr_.version(); }
-  int32_t input_version() const { return input_ptr_.version(); }
   int32_t intent_helper_version() const { return intent_helper_ptr_.version(); }
   int32_t net_version() const { return net_ptr_.version(); }
   int32_t notifications_version() const { return notifications_ptr_.version(); }
@@ -225,7 +219,6 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void OnCrashCollectorInstanceReady(
       mojom::CrashCollectorInstancePtr crash_collector_ptr) override;
   void OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) override;
-  void OnInputInstanceReady(mojom::InputInstancePtr input_ptr) override;
   void OnIntentHelperInstanceReady(
       mojom::IntentHelperInstancePtr intent_helper_ptr) override;
   void OnNetInstanceReady(mojom::NetInstancePtr net_ptr) override;
@@ -273,7 +266,6 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void CloseClipboardChannel();
   void CloseCrashCollectorChannel();
   void CloseImeChannel();
-  void CloseInputChannel();
   void CloseIntentHelperChannel();
   void CloseNetChannel();
   void CloseNotificationsChannel();
@@ -290,7 +282,6 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void OnClipboardVersionReady(int32_t version);
   void OnCrashCollectorVersionReady(int32_t version);
   void OnImeVersionReady(int32_t version);
-  void OnInputVersionReady(int32_t version);
   void OnIntentHelperVersionReady(int32_t version);
   void OnNetVersionReady(int32_t version);
   void OnNotificationsVersionReady(int32_t version);
@@ -307,7 +298,6 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::ClipboardInstancePtr clipboard_ptr_;
   mojom::CrashCollectorInstancePtr crash_collector_ptr_;
   mojom::ImeInstancePtr ime_ptr_;
-  mojom::InputInstancePtr input_ptr_;
   mojom::IntentHelperInstancePtr intent_helper_ptr_;
   mojom::NetInstancePtr net_ptr_;
   mojom::NotificationsInstancePtr notifications_ptr_;
@@ -329,7 +319,6 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::ClipboardInstancePtr temporary_clipboard_ptr_;
   mojom::CrashCollectorInstancePtr temporary_crash_collector_ptr_;
   mojom::ImeInstancePtr temporary_ime_ptr_;
-  mojom::InputInstancePtr temporary_input_ptr_;
   mojom::IntentHelperInstancePtr temporary_intent_helper_ptr_;
   mojom::NetInstancePtr temporary_net_ptr_;
   mojom::NotificationsInstancePtr temporary_notifications_ptr_;

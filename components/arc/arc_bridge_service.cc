@@ -72,8 +72,6 @@ void ArcBridgeService::AddObserver(Observer* observer) {
     observer->OnCrashCollectorInstanceReady();
   if (ime_instance())
     observer->OnImeInstanceReady();
-  if (input_instance())
-    observer->OnInputInstanceReady();
   if (net_instance())
     observer->OnNetInstanceReady();
   if (notifications_instance())
@@ -264,30 +262,6 @@ void ArcBridgeService::CloseImeChannel() {
 
   ime_ptr_.reset();
   FOR_EACH_OBSERVER(Observer, observer_list(), OnImeInstanceClosed());
-}
-
-void ArcBridgeService::OnInputInstanceReady(mojom::InputInstancePtr input_ptr) {
-  DCHECK(CalledOnValidThread());
-  temporary_input_ptr_ = std::move(input_ptr);
-  temporary_input_ptr_.QueryVersion(base::Bind(
-      &ArcBridgeService::OnInputVersionReady, weak_factory_.GetWeakPtr()));
-}
-
-void ArcBridgeService::OnInputVersionReady(int32_t version) {
-  DCHECK(CalledOnValidThread());
-  input_ptr_ = std::move(temporary_input_ptr_);
-  input_ptr_.set_connection_error_handler(base::Bind(
-      &ArcBridgeService::CloseInputChannel, weak_factory_.GetWeakPtr()));
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnInputInstanceReady());
-}
-
-void ArcBridgeService::CloseInputChannel() {
-  DCHECK(CalledOnValidThread());
-  if (!input_ptr_)
-    return;
-
-  input_ptr_.reset();
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnInputInstanceClosed());
 }
 
 void ArcBridgeService::OnIntentHelperInstanceReady(
@@ -494,7 +468,6 @@ void ArcBridgeService::CloseAllChannels() {
   CloseClipboardChannel();
   CloseCrashCollectorChannel();
   CloseImeChannel();
-  CloseInputChannel();
   CloseIntentHelperChannel();
   CloseNetChannel();
   CloseNotificationsChannel();
