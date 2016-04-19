@@ -48,6 +48,9 @@ class MdFocusRing : public views::View {
   MdFocusRing() {
     SetPaintToLayer(true);
     layer()->SetFillsBoundsOpaquely(false);
+
+    // Don't accept input events.
+    SetEnabled(false);
   }
   ~MdFocusRing() override {}
 
