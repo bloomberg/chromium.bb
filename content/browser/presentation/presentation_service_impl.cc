@@ -155,8 +155,7 @@ void PresentationServiceImpl::CreateMojoService(
   DCHECK(web_contents);
 
   // This object will be deleted when the RenderFrameHost is about to be
-  // deleted (RenderFrameDeleted) or if a connection error occurred
-  // (OnConnectionError).
+  // deleted (RenderFrameDeleted).
   PresentationServiceImpl* impl = new PresentationServiceImpl(
       render_frame_host,
       web_contents,
@@ -169,10 +168,6 @@ void PresentationServiceImpl::Bind(
     mojo::InterfaceRequest<mojom::PresentationService> request) {
   binding_.reset(
       new mojo::Binding<mojom::PresentationService>(this, std::move(request)));
-  binding_->set_connection_error_handler([this]() {
-    DVLOG(1) << "Connection error";
-    delete this;
-  });
 }
 
 void PresentationServiceImpl::SetClient(
