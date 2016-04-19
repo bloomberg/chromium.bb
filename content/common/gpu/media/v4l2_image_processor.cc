@@ -298,7 +298,7 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   reqbufs.memory = V4L2_MEMORY_USERPTR;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
-  if (reqbufs.count != num_buffers_) {
+  if (static_cast<int>(reqbufs.count) != num_buffers_) {
     LOG(ERROR) << "Failed to allocate input buffers. reqbufs.count="
                << reqbufs.count << ", num_buffers=" << num_buffers_;
     return false;
@@ -355,7 +355,7 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
-  if (reqbufs.count != num_buffers_) {
+  if (static_cast<int>(reqbufs.count) != num_buffers_) {
     LOG(ERROR) << "Failed to allocate output buffers. reqbufs.count="
                << reqbufs.count << ", num_buffers=" << num_buffers_;
     return false;
@@ -599,7 +599,7 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
 
 bool V4L2ImageProcessor::EnqueueOutputRecord(int index) {
   DCHECK_GE(index, 0);
-  DCHECK_LT(index, output_buffer_map_.size());
+  DCHECK_LT(static_cast<size_t>(index), output_buffer_map_.size());
   // Enqueue an output (VIDEO_CAPTURE) buffer.
   OutputRecord& output_record = output_buffer_map_[index];
   DCHECK(!output_record.at_device);

@@ -354,7 +354,8 @@ void V4L2VideoEncodeAccelerator::FrameProcessed(bool force_keyframe,
   DVLOG(3) << "FrameProcessed(): force_keyframe=" << force_keyframe
            << ", output_buffer_index=" << output_buffer_index;
   DCHECK_GE(output_buffer_index, 0);
-  DCHECK_LT(output_buffer_index, image_processor_output_buffer_map_.size());
+  DCHECK_LT(static_cast<size_t>(output_buffer_index),
+            image_processor_output_buffer_map_.size());
 
   std::vector<base::ScopedFD>& scoped_fds =
       image_processor_output_buffer_map_[output_buffer_index];
