@@ -808,8 +808,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter product
 [Worker]     getter storage
 [Worker]     getter userAgent
-[Worker]     getter webkitPersistentStorage
-[Worker]     getter webkitTemporaryStorage
 [Worker]     method constructor
 [Worker] interface XMLHttpRequest : XMLHttpRequestEventTarget
 [Worker]     attribute @@toStringTag

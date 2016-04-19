@@ -17,13 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// This partial interface is a merge of two different partial interfaces
-// related to storage.
 partial interface WorkerNavigator {
-    // http://www.w3.org/TR/2012/WD-quota-api-20120703/#idl-def-StorageQuotaEnvironment
-    [MeasureAs=PrefixedStorageQuota] readonly attribute DeprecatedStorageQuota webkitTemporaryStorage;
-    [MeasureAs=PrefixedStorageQuota] readonly attribute DeprecatedStorageQuota webkitPersistentStorage;
-
     // https://storage.spec.whatwg.org/#api
     [RuntimeEnabled=DurableStorage] readonly attribute StorageManager storage;
 };

@@ -798,8 +798,6 @@ interface WorkerNavigator
     getter product
     getter storage
     getter userAgent
-    getter webkitPersistentStorage
-    getter webkitTemporaryStorage
     method constructor
 interface webkitIDBCursor
     getter direction

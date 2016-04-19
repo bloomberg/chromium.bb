@@ -54,33 +54,9 @@ WorkerNavigatorStorageQuota& WorkerNavigatorStorageQuota::from(WorkerNavigator& 
     return *supplement;
 }
 
-DeprecatedStorageQuota* WorkerNavigatorStorageQuota::webkitTemporaryStorage(WorkerNavigator& navigator)
-{
-    return WorkerNavigatorStorageQuota::from(navigator).webkitTemporaryStorage();
-}
-
-DeprecatedStorageQuota* WorkerNavigatorStorageQuota::webkitPersistentStorage(WorkerNavigator& navigator)
-{
-    return WorkerNavigatorStorageQuota::from(navigator).webkitPersistentStorage();
-}
-
 StorageManager* WorkerNavigatorStorageQuota::storage(WorkerNavigator& navigator)
 {
     return WorkerNavigatorStorageQuota::from(navigator).storage();
-}
-
-DeprecatedStorageQuota* WorkerNavigatorStorageQuota::webkitTemporaryStorage() const
-{
-    if (!m_temporaryStorage)
-        m_temporaryStorage = DeprecatedStorageQuota::create(DeprecatedStorageQuota::Temporary);
-    return m_temporaryStorage.get();
-}
-
-DeprecatedStorageQuota* WorkerNavigatorStorageQuota::webkitPersistentStorage() const
-{
-    if (!m_persistentStorage)
-        m_persistentStorage = DeprecatedStorageQuota::create(DeprecatedStorageQuota::Persistent);
-    return m_persistentStorage.get();
 }
 
 StorageManager* WorkerNavigatorStorageQuota::storage() const
@@ -92,8 +68,6 @@ StorageManager* WorkerNavigatorStorageQuota::storage() const
 
 DEFINE_TRACE(WorkerNavigatorStorageQuota)
 {
-    visitor->trace(m_temporaryStorage);
-    visitor->trace(m_persistentStorage);
     visitor->trace(m_storageManager);
     Supplement<WorkerNavigator>::trace(visitor);
 }
