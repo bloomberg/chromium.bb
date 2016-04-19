@@ -68,11 +68,12 @@
       client to specify the cropping and scaling of the surface
       contents.
 
-      This interface allows to define the source rectangle (src_x,
-      src_y, src_width, src_height) from where to take the wl_buffer
-      contents, and scale that to destination size (dst_width,
-      dst_height). This state is double-buffered, and is applied on the
-      next wl_surface.commit.
+      This interface works with two concepts: the source rectangle (src_x,
+      src_y, src_width, src_height), and the destination size (dst_width,
+      dst_height). The contents of the source rectangle are scaled to the
+      destination size, and content outside the source rectangle is ignored.
+      This state is double-buffered, and is applied on the next
+      wl_surface.commit.
 
       The two parts of crop and scale state are independent: the source
       rectangle, and the destination size. Initially both are unset, that
