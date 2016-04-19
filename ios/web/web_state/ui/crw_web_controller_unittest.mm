@@ -447,7 +447,8 @@ TEST_F(CRWWebControllerTest, UrlForHistoryNavigation) {
 
 // Tests that presentSSLError:forSSLStatus:recoverable:callback: is called with
 // correct arguments if WKWebView fails to load a page with bad SSL cert.
-TEST_F(CRWWebControllerTest, SslCertError) {
+// TODO(crbug.com/602298): Remove this test.
+TEST_F(CRWWebControllerTest, SslCertErrorDeprecatedApi) {
   ASSERT_FALSE([mockDelegate_ SSLInfo].is_valid());
 
   scoped_refptr<net::X509Certificate> cert =
@@ -478,6 +479,50 @@ TEST_F(CRWWebControllerTest, SslCertError) {
             [mockDelegate_ SSLStatus].security_style);
   EXPECT_FALSE([mockDelegate_ recoverable]);
   EXPECT_TRUE([mockDelegate_ shouldContinueCallback]);
+}
+
+// Tests that AllowCertificateError is called with correct arguments if
+// WKWebView fails to load a page with bad SSL cert.
+TEST_F(CRWWebControllerTest, SslCertError) {
+  // TODO(crbug.com/602298): Remove this call.
+  [webController_ setDelegate:nil];
+
+  // Last arguments passed to AllowCertificateError must be in default state.
+  ASSERT_FALSE(GetWebClient()->last_cert_error_code());
+  ASSERT_FALSE(GetWebClient()->last_cert_error_ssl_info().is_valid());
+  ASSERT_FALSE(GetWebClient()->last_cert_error_ssl_info().cert_status);
+  ASSERT_FALSE(GetWebClient()->last_cert_error_request_url().is_valid());
+  ASSERT_TRUE(GetWebClient()->last_cert_error_overridable());
+
+  scoped_refptr<net::X509Certificate> cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+
+  NSArray* chain = @[ static_cast<id>(cert->os_cert_handle()) ];
+  GURL url("https://chromium.test");
+  NSError* error =
+      [NSError errorWithDomain:NSURLErrorDomain
+                          code:NSURLErrorServerCertificateHasUnknownRoot
+                      userInfo:@{
+                        web::kNSErrorPeerCertificateChainKey : chain,
+                        web::kNSErrorFailingURLKey : net::NSURLWithGURL(url),
+                      }];
+  WKWebView* webView = static_cast<WKWebView*>([webController_ webView]);
+  base::scoped_nsobject<NSObject> navigation([[NSObject alloc] init]);
+  [static_cast<id<WKNavigationDelegate>>(webController_.get())
+                            webView:webView
+      didStartProvisionalNavigation:static_cast<WKNavigation*>(navigation)];
+  [static_cast<id<WKNavigationDelegate>>(webController_.get())
+                           webView:webView
+      didFailProvisionalNavigation:static_cast<WKNavigation*>(navigation)
+                         withError:error];
+
+  // Verify correctness of AllowCertificateError method call.
+  EXPECT_EQ(net::ERR_CERT_INVALID, GetWebClient()->last_cert_error_code());
+  EXPECT_TRUE(GetWebClient()->last_cert_error_ssl_info().is_valid());
+  EXPECT_EQ(net::CERT_STATUS_INVALID,
+            GetWebClient()->last_cert_error_ssl_info().cert_status);
+  EXPECT_EQ(url, GetWebClient()->last_cert_error_request_url());
+  EXPECT_FALSE(GetWebClient()->last_cert_error_overridable());
 }
 
 // Test fixture to test |setPageDialogOpenPolicy:|.

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "ui/base/layout.h"
@@ -22,12 +23,17 @@ class GURL;
 @class UIWebView;
 @class NSString;
 
+namespace net {
+class SSLInfo;
+}
+
 namespace web {
 
 class BrowserState;
 class BrowserURLRewriter;
 class WebClient;
 class WebMainParts;
+class WebState;
 
 // Setter and getter for the client.  The client should be set early, before any
 // web code is called.
@@ -114,6 +120,18 @@ class WebClient {
   // Gives the embedder a chance to provide the JavaScript to be injected into
   // the web view as early as possible. Result must not be nil.
   virtual NSString* GetEarlyPageScript() const;
+
+  // Informs the embedder that a certificate error has occurred. If
+  // |overridable| is true, the user can ignore the error and continue. The
+  // embedder can call the |callback| asynchronously (an argument of true means
+  // that |cert_error| should be ignored and web// should load the page).
+  virtual void AllowCertificateError(
+      WebState* web_state,
+      int cert_error,
+      const net::SSLInfo& ssl_info,
+      const GURL& request_url,
+      bool overridable,
+      const base::Callback<void(bool)>& callback);
 };
 
 }  // namespace web

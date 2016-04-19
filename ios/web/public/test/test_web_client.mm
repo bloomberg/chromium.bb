@@ -8,7 +8,8 @@
 
 namespace web {
 
-TestWebClient::TestWebClient() {}
+TestWebClient::TestWebClient()
+    : last_cert_error_code_(0), last_cert_error_overridable_(true) {}
 
 TestWebClient::~TestWebClient() {}
 
@@ -18,6 +19,21 @@ NSString* TestWebClient::GetEarlyPageScript() const {
 
 void TestWebClient::SetEarlyPageScript(NSString* page_script) {
   early_page_script_.reset([page_script copy]);
+}
+
+void TestWebClient::AllowCertificateError(
+    WebState* web_state,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
+    bool overridable,
+    const base::Callback<void(bool)>& callback) {
+  last_cert_error_code_ = cert_error;
+  last_cert_error_ssl_info_ = ssl_info;
+  last_cert_error_request_url_ = request_url;
+  last_cert_error_overridable_ = overridable;
+
+  callback.Run(false);
 }
 
 }  // namespace web

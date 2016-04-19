@@ -19,6 +19,7 @@
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
+#include "base/mac/bind_objc_block.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/objc_property_releaser.h"
@@ -3574,22 +3575,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                   onUrl:(const GURL&)url
             recoverable:(BOOL)recoverable
                callback:(SSLErrorCallback)shouldContinue {
-  DCHECK(_delegate);
-  DCHECK_EQ(url, [self currentNavigationURL]);
-  [_delegate presentSSLError:info
-                forSSLStatus:status
-                 recoverable:recoverable
-                    callback:^(BOOL proceed) {
-                      if (proceed) {
-                        // The interstitial will be removed during reload.
-                        [self loadCurrentURL];
-                      }
-                      if (shouldContinue) {
-                        shouldContinue(proceed);
-                      }
-                    }];
-  DCHECK([self currentNavItem]);
-  [self currentNavItem]->SetUnsafe(true);
+  // This is a UIWebView callback, which is no longer called.
+  NOTREACHED();
 }
 
 - (void)updatedProgress:(float)progress {
@@ -4438,6 +4425,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   net::SSLInfo info;
   web::GetSSLInfoFromWKWebViewSSLCertError(error, &info);
 
+  // TODO(crbug.com/602298): Remove |status| variable, once |presentSSLError:|
+  // callback is dropped.
   web::SSLStatus status;
   status.security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
   status.cert_status = info.cert_status;
@@ -4453,7 +4442,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // cert, because the cert chain in |didReceiveAuthenticationChallenge:| is
   // the OS constructed chain, while |chain| is the chain from the server.
   NSArray* chain = error.userInfo[web::kNSErrorPeerCertificateChainKey];
-  NSString* host = [error.userInfo[web::kNSErrorFailingURLKey] host];
+  NSURL* requestURL = error.userInfo[web::kNSErrorFailingURLKey];
+  NSString* host = [requestURL host];
   scoped_refptr<net::X509Certificate> leafCert;
   BOOL recoverable = NO;
   if (chain.count && host.length) {
@@ -4476,19 +4466,36 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 
   // Present SSL interstitial and inform everyone that the load is cancelled.
-  [self.delegate presentSSLError:info
-                    forSSLStatus:status
-                     recoverable:recoverable
-                        callback:^(BOOL proceed) {
-                          if (proceed) {
-                            // The interstitial will be removed during reload.
-                            [_certVerificationController
-                                allowCert:leafCert
-                                  forHost:host
-                                   status:status.cert_status];
-                            [self loadCurrentURL];
-                          }
-                        }];
+  void (^proceedBlock)() = ^{
+    DCHECK(recoverable);
+    // The interstitial will be removed during reload.
+    [_certVerificationController allowCert:leafCert
+                                   forHost:host
+                                    status:status.cert_status];
+    [self loadCurrentURL];
+  };
+  // TODO(crbug.com/602298): Remove SSL error API from CRWWebDelegate.
+  if ([self.delegate respondsToSelector:@selector(presentSSLError:
+                                                     forSSLStatus:
+                                                      recoverable:
+                                                         callback:)]) {
+    [self.delegate presentSSLError:info
+                      forSSLStatus:status
+                       recoverable:recoverable
+                          callback:^(BOOL proceed) {
+                            if (proceed)
+                              proceedBlock();
+                          }];
+  } else {
+    web::GetWebClient()->AllowCertificateError(
+        self.webState, net::MapCertStatusToNetError(info.cert_status), info,
+        net::GURLWithNSURL(requestURL), recoverable,
+        base::BindBlock(^(bool proceed) {
+          if (proceed)
+            proceedBlock();
+        }));
+  }
+
   [self loadCancelled];
 }
 

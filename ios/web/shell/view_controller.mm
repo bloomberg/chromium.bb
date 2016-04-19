@@ -30,7 +30,9 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
 
 using web::NavigationManager;
 
-@interface ViewController ()<CRWWebStateDelegate, CRWWebStateObserver> {
+@interface ViewController ()<CRWWebStateDelegate,
+                             CRWWebStateObserver,
+                             UITextFieldDelegate> {
   web::BrowserState* _browserState;
   std::unique_ptr<web::WebStateImpl> _webState;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
@@ -112,7 +114,6 @@ using web::NavigationManager;
 
   _webState.reset(new web::WebStateImpl(_browserState));
   _webState->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, 0);
-  [_webState->GetWebController() setDelegate:self];
   [_webState->GetWebController() setWebUsageEnabled:YES];
 
   _webStateObserver.reset(
@@ -256,99 +257,6 @@ using web::NavigationManager;
 - (void)webStateDidLoadPage:(web::WebState*)webState {
   DCHECK_EQ(_webState.get(), webState);
   [self updateToolbar];
-}
-
-// -----------------------------------------------------------------------
-// WebDelegate implementation.
-
-- (void)webWillAddPendingURL:(const GURL&)url
-                  transition:(ui::PageTransition)transition {
-}
-- (void)webDidAddPendingURL {
-}
-- (void)webCancelStartLoadingRequest {
-}
-- (void)webDidStartLoadingURL:(const GURL&)currentUrl
-          shouldUpdateHistory:(BOOL)updateHistory {
-}
-- (void)webDidFinishWithURL:(const GURL&)url loadSuccess:(BOOL)loadSuccess {
-}
-
-- (CRWWebController*)webPageOrderedOpen:(const GURL&)url
-                               referrer:(const web::Referrer&)referrer
-                             windowName:(NSString*)windowName
-                           inBackground:(BOOL)inBackground {
-  return nil;
-}
-
-- (CRWWebController*)webPageOrderedOpen {
-  return nil;
-}
-
-- (void)webPageOrderedClose {
-}
-- (void)goDelta:(int)delta {
-}
-- (void)openURLWithParams:(const web::WebState::OpenURLParams&)params {
-}
-- (BOOL)openExternalURL:(const GURL&)URL linkClicked:(BOOL)linkClicked {
-  return NO;
-}
-
-- (void)presentSSLError:(const net::SSLInfo&)info
-           forSSLStatus:(const web::SSLStatus&)status
-            recoverable:(BOOL)recoverable
-               callback:(SSLErrorCallback)shouldContinue {
-  UIAlertController* alert = [UIAlertController
-      alertControllerWithTitle:@"Your connection is not private"
-                       message:nil
-                preferredStyle:UIAlertControllerStyleActionSheet];
-  [alert addAction:[UIAlertAction actionWithTitle:@"Go Back"
-                                            style:UIAlertActionStyleCancel
-                                          handler:^(UIAlertAction*) {
-                                            shouldContinue(NO);
-                                          }]];
-
-  if (recoverable) {
-    [alert addAction:[UIAlertAction actionWithTitle:@"Continue"
-                                              style:UIAlertActionStyleDefault
-                                            handler:^(UIAlertAction*) {
-                                              shouldContinue(YES);
-                                            }]];
-  }
-  [self presentViewController:alert animated:YES completion:nil];
-}
-
-- (void)presentSpoofingError {
-}
-- (void)webLoadCancelled:(const GURL&)url {
-}
-- (void)webDidUpdateHistoryStateWithPageURL:(const GURL&)pageUrl {
-}
-- (void)webController:(CRWWebController*)webController
-    retrievePlaceholderOverlayImage:(void (^)(UIImage*))block {
-}
-- (void)webController:(CRWWebController*)webController
-    onFormResubmissionForRequest:(NSURLRequest*)request
-                   continueBlock:(ProceduralBlock)continueBlock
-                     cancelBlock:(ProceduralBlock)cancelBlock {
-}
-- (void)webWillReload {
-}
-- (void)webWillInitiateLoadWithParams:
-    (NavigationManager::WebLoadParams&)params {
-}
-- (void)webDidUpdateSessionForLoadWithParams:
-            (const NavigationManager::WebLoadParams&)params
-                        wasInitialNavigation:(BOOL)initialNavigation {
-}
-- (void)webWillFinishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry {
-}
-- (int)downloadImageAtUrl:(const GURL&)url
-            maxBitmapSize:(uint32_t)maxBitmapSize
-                 callback:
-                     (const web::WebState::ImageDownloadCallback&)callback {
-  return -1;
 }
 
 @end

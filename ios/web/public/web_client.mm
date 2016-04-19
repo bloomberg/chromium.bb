@@ -75,4 +75,14 @@ NSString* WebClient::GetEarlyPageScript() const {
   return @"";
 }
 
+void WebClient::AllowCertificateError(
+    WebState* web_state,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
+    bool overridable,
+    const base::Callback<void(bool)>& callback) {
+  callback.Run(false);
+}
+
 }  // namespace web

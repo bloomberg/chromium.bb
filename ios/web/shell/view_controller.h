@@ -7,8 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/web/public/web_state/ui/crw_web_delegate.h"
-
 namespace web {
 class BrowserState;
 }
@@ -21,8 +19,7 @@ extern NSString* const kWebShellForwardButtonAccessibilityLabel;
 extern NSString* const kWebShellAddressFieldAccessibilityLabel;
 
 // Implements the main UI for ios_web_shell, including a toolbar and web view.
-@interface ViewController
-    : UIViewController<CRWWebDelegate, UITextFieldDelegate>
+@interface ViewController : UIViewController
 
 @property(nonatomic, retain) IBOutlet UIView* containerView;
 @property(nonatomic, retain) IBOutlet UIToolbar* toolbarView;

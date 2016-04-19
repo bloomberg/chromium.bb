@@ -4,6 +4,8 @@
 
 #include "ios/web/shell/shell_web_client.h"
 
+#import <UIKit/UIKit.h>
+
 #include "ios/web/public/user_agent.h"
 #include "ios/web/shell/shell_web_main_parts.h"
 
@@ -31,6 +33,37 @@ std::string ShellWebClient::GetProduct() const {
 std::string ShellWebClient::GetUserAgent(bool desktop_user_agent) const {
   std::string product = GetProduct();
   return web::BuildUserAgentFromProduct(product);
+}
+
+void ShellWebClient::AllowCertificateError(
+    WebState*,
+    int /*cert_error*/,
+    const net::SSLInfo&,
+    const GURL&,
+    bool overridable,
+    const base::Callback<void(bool)>& callback) {
+  base::Callback<void(bool)> block_callback(callback);
+  UIAlertController* alert = [UIAlertController
+      alertControllerWithTitle:@"Your connection is not private"
+                       message:nil
+                preferredStyle:UIAlertControllerStyleActionSheet];
+  [alert addAction:[UIAlertAction actionWithTitle:@"Go Back"
+                                            style:UIAlertActionStyleCancel
+                                          handler:^(UIAlertAction*) {
+                                            block_callback.Run(false);
+                                          }]];
+
+  if (overridable) {
+    [alert addAction:[UIAlertAction actionWithTitle:@"Continue"
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction*) {
+                                              block_callback.Run(true);
+                                            }]];
+  }
+  [[UIApplication sharedApplication].keyWindow.rootViewController
+      presentViewController:alert
+                   animated:YES
+                 completion:nil];
 }
 
 }  // namespace web

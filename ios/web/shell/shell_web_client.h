@@ -24,6 +24,13 @@ class ShellWebClient : public WebClient {
   WebMainParts* CreateWebMainParts() override;
   std::string GetProduct() const override;
   std::string GetUserAgent(bool desktop_user_agent) const override;
+  void AllowCertificateError(
+      WebState* web_state,
+      int cert_error,
+      const net::SSLInfo& ssl_info,
+      const GURL& request_url,
+      bool overridable,
+      const base::Callback<void(bool)>& callback) override;
 
   ShellBrowserState* browser_state() const;
 
