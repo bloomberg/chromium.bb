@@ -33,7 +33,9 @@ void LayoutSVGHiddenContainer::layout()
 {
     ASSERT(needsLayout());
     LayoutAnalyzer::Scope analyzer(*this);
-    SVGLayoutSupport::layoutChildren(this, selfNeedsLayout());
+    // TODO(fs): In what cases do we need this?
+    bool transformChanged = SVGLayoutSupport::transformToRootChanged(this);
+    SVGLayoutSupport::layoutChildren(this, selfNeedsLayout(), transformChanged);
     updateCachedBoundaries();
     clearNeedsLayout();
 }

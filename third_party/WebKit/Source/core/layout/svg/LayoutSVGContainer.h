@@ -44,7 +44,7 @@ public:
     void paint(const PaintInfo&, const LayoutPoint&) const override;
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void setNeedsBoundariesUpdate() final { m_needsBoundariesUpdate = true; }
-    virtual bool didTransformToRootUpdate() { return false; }
+    virtual bool didTransformToRootUpdate() const { return false; }
     bool isObjectBoundingBoxValid() const { return m_objectBoundingBoxValid; }
 
     bool selfWillPaint() const;

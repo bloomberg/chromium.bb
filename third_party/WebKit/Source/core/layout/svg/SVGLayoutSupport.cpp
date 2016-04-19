@@ -34,6 +34,7 @@
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/LayoutSVGShape.h"
 #include "core/layout/svg/LayoutSVGText.h"
+#include "core/layout/svg/LayoutSVGTransformableContainer.h"
 #include "core/layout/svg/LayoutSVGViewportContainer.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
@@ -259,35 +260,33 @@ inline bool SVGLayoutSupport::layoutSizeOfNearestViewportChanged(const LayoutObj
     return toLayoutSVGRoot(start)->isLayoutSizeChanged();
 }
 
-bool SVGLayoutSupport::transformToRootChanged(LayoutObject* ancestor)
+bool SVGLayoutSupport::transformToRootChanged(const LayoutObject* ancestor)
 {
     while (ancestor && !ancestor->isSVGRoot()) {
         if (ancestor->isSVGTransformableContainer())
-            return toLayoutSVGContainer(ancestor)->didTransformToRootUpdate();
+            return toLayoutSVGTransformableContainer(ancestor)->didTransformToRootUpdate();
         if (ancestor->isSVGViewportContainer())
             return toLayoutSVGViewportContainer(ancestor)->didTransformToRootUpdate();
         ancestor = ancestor->parent();
     }
-
     return false;
 }
 
-void SVGLayoutSupport::layoutChildren(LayoutObject* start, bool selfNeedsLayout)
+void SVGLayoutSupport::layoutChildren(LayoutObject* start, bool forceLayout, bool transformChanged)
 {
     // When hasRelativeLengths() is false, no descendants have relative lengths
     // (hence no one is interested in viewport size changes).
     bool layoutSizeChanged = toSVGElement(start->node())->hasRelativeLengths()
         && layoutSizeOfNearestViewportChanged(start);
-    bool transformChanged = transformToRootChanged(start);
 
     for (LayoutObject* child = start->slowFirstChild(); child; child = child->nextSibling()) {
-        bool forceLayout = selfNeedsLayout;
+        bool forceChildLayout = forceLayout;
 
         if (transformChanged) {
             // If the transform changed we need to update the text metrics (note: this also happens for layoutSizeChanged=true).
             if (child->isSVGText())
                 toLayoutSVGText(child)->setNeedsTextMetricsUpdate();
-            forceLayout = true;
+            forceChildLayout = true;
         }
 
         if (layoutSizeChanged) {
@@ -303,7 +302,7 @@ void SVGLayoutSupport::layoutChildren(LayoutObject* start, bool selfNeedsLayout)
                         toLayoutSVGText(child)->setNeedsPositioningValuesUpdate();
                     }
 
-                    forceLayout = true;
+                    forceChildLayout = true;
                 }
             }
         }
@@ -321,7 +320,7 @@ void SVGLayoutSupport::layoutChildren(LayoutObject* start, bool selfNeedsLayout)
             child->layoutIfNeeded();
         } else {
             SubtreeLayoutScope layoutScope(*child);
-            if (forceLayout)
+            if (forceChildLayout)
                 layoutScope.setNeedsLayout(child, LayoutInvalidationReason::SvgChanged);
 
             // Lay out any referenced resources before the child.

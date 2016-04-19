@@ -50,7 +50,7 @@ class CORE_EXPORT SVGLayoutSupport {
     STATIC_ONLY(SVGLayoutSupport);
 public:
     // Shares child layouting code between LayoutSVGRoot/LayoutSVG(Hidden)Container
-    static void layoutChildren(LayoutObject*, bool selfNeedsLayout);
+    static void layoutChildren(LayoutObject*, bool forceLayout, bool transformChanged);
 
     // Layout resources used by this node.
     static void layoutResourcesIfNeeded(const LayoutObject*);
@@ -89,7 +89,7 @@ public:
     static DashArray resolveSVGDashArray(const SVGDashArray&, const ComputedStyle&, const SVGLengthContext&);
 
     // Determines if any ancestor's transform has changed.
-    static bool transformToRootChanged(LayoutObject*);
+    static bool transformToRootChanged(const LayoutObject*);
 
     // FIXME: These methods do not belong here.
     static const LayoutSVGRoot* findTreeRootObject(const LayoutObject*);

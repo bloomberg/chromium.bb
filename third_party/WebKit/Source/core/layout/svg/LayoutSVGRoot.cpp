@@ -155,7 +155,8 @@ void LayoutSVGRoot::layout()
     // applied to it, we need to issue paint invalidations for all descendants.
     bool forceLayoutOfChildren = needsLayout
         || (normalChildNeedsLayout() && SVGLayoutSupport::hasFilterResource(*this));
-    SVGLayoutSupport::layoutChildren(this, forceLayoutOfChildren);
+    const bool transformToRootChanged = false;
+    SVGLayoutSupport::layoutChildren(this, forceLayoutOfChildren, transformToRootChanged);
 
     if (m_needsBoundariesOrTransformUpdate) {
         updateCachedBoundaries();

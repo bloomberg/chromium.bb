@@ -26,6 +26,7 @@
 namespace blink {
 
 class SVGGraphicsElement;
+
 class LayoutSVGTransformableContainer final : public LayoutSVGContainer {
 public:
     explicit LayoutSVGTransformableContainer(SVGGraphicsElement*);
@@ -37,7 +38,7 @@ public:
     const FloatSize& additionalTranslation() const { return m_additionalTranslation; }
 
     void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
-    bool didTransformToRootUpdate() override { return m_didTransformToRootUpdate; }
+    bool didTransformToRootUpdate() const override { return m_didTransformToRootUpdate; }
 
 private:
     bool calculateLocalTransform() override;
