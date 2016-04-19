@@ -59,6 +59,23 @@
       ],
     },
     {
+      # GN version: //mojo/common:common_custom_types
+      'target_name': 'mojo_common_custom_types',
+      'type': 'static_library',
+      'variables': {
+        'mojom_typemaps': [
+          'common/common_custom_types.typemap',
+        ],
+      },
+      'sources': [
+        'common/common_custom_types.mojom',
+      ],
+      'dependencies': [
+        '../ipc/ipc.gyp:ipc',
+      ],
+      'includes': [ 'mojom_bindings_generator.gypi' ],
+    },
+    {
       # GN version: //mojo/common:url_type_converters
       'target_name': 'mojo_url_type_converters',
       'type': 'static_library',
@@ -95,6 +112,23 @@
       ],
     },
     {
+      # GN version: //mojo/common:test_common_custom_types
+      'target_name': 'mojo_test_common_custom_types',
+      'type': 'static_library',
+      'variables': {
+        'mojom_typemaps': [
+          'common/common_custom_types.typemap',
+        ],
+      },
+      'sources': [
+        'common/test_common_custom_types.mojom',
+      ],
+      'dependencies': [
+        'mojo_common_custom_types',
+      ],
+      'includes': [ 'mojom_bindings_generator.gypi' ],
+    },
+    {
       # GN version: //mojo/common:mojo_common_unittests
       'target_name': 'mojo_common_unittests',
       'type': 'executable',
@@ -104,7 +138,9 @@
         '../base/base.gyp:base_message_loop_tests',
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
+        'mojo_common_custom_types',
         'mojo_common_lib',
+        'mojo_test_common_custom_types',
         'mojo_edk.gyp:mojo_system_impl',
         'mojo_edk.gyp:mojo_common_test_support',
         'mojo_edk.gyp:mojo_run_all_unittests',
@@ -114,6 +150,7 @@
         'mojo_url_type_converters',
       ],
       'sources': [
+        'common/common_custom_types_unittest.cc',
         'common/common_type_converters_unittest.cc',
         'message_pump/handle_watcher_unittest.cc',
         'message_pump/message_pump_mojo_unittest.cc',

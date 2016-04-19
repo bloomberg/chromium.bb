@@ -2,12 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 group("common") {
   public_deps = [
     ":common_base",
+    ":common_custom_types",
     ":url_type_converters",
+  ]
+}
+
+# GYP version: mojo/mojo_base.gyp:mojo_common_custom_types
+mojom("common_custom_types") {
+  sources = [
+    "common_custom_types.mojom",
   ]
 }
 
@@ -58,10 +67,22 @@ source_set("url_type_converters") {
   ]
 }
 
+# GYP version: mojo/mojo_base.gyp:mojo_test_common_custom_types
+mojom("test_common_custom_types") {
+  sources = [
+    "test_common_custom_types.mojom",
+  ]
+  public_deps = [
+    ":common_custom_types",
+  ]
+}
+
 # GYP version: mojo/mojo_base.gyp:mojo_common_unittests
 test("mojo_common_unittests") {
   deps = [
     ":common",
+    ":common_custom_types",
+    ":test_common_custom_types",
     "//base",
     "//base:message_loop_tests",
     "//base/test:test_support",
@@ -79,6 +100,7 @@ test("mojo_common_unittests") {
     # that we put them here.
     "../message_pump/handle_watcher_unittest.cc",
     "../message_pump/message_pump_mojo_unittest.cc",
+    "common_custom_types_unittest.cc",
     "common_type_converters_unittest.cc",
   ]
 
