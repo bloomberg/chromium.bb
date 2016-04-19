@@ -713,8 +713,8 @@
         <structure name="IDR_SETTINGS_BLUETOOTH_DEVICE_LIST_ITEM_JS"
                    file="bluetooth_page/bluetooth_device_list_item.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_BLUETOOTH_DIALOG_CSS"
-                   file="bluetooth_page/bluetooth_dialog.css"
+        <structure name="IDR_SETTINGS_BLUETOOTH_DIALOG_SHARED_CSS_HTML"
+                   file="bluetooth_page/bluetooth_dialog_shared_css.html"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_BLUETOOTH_PAGE_HTML"
                    file="bluetooth_page/bluetooth_page.html"
