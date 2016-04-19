@@ -107,8 +107,6 @@ class BASE_EXPORT TaskTraits {
   // Returns the shutdown behavior of tasks with these traits.
   TaskShutdownBehavior shutdown_behavior() const { return shutdown_behavior_; }
 
-  bool operator==(const TaskTraits& other) const;
-
  private:
   bool with_file_io_;
   TaskPriority priority_;

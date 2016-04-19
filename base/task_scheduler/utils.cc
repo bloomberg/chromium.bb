@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/priority_queue.h"
@@ -18,23 +17,17 @@
 namespace base {
 namespace internal {
 
-bool PostTaskToExecutor(const tracked_objects::Location& posted_from,
-                        const Closure& closure,
-                        const TaskTraits& traits,
-                        const TimeDelta& delay,
+bool PostTaskToExecutor(std::unique_ptr<Task> task,
                         scoped_refptr<Sequence> sequence,
                         SchedulerTaskExecutor* executor,
                         TaskTracker* task_tracker) {
-  DCHECK(!closure.is_null());
+  DCHECK(task);
   DCHECK(sequence);
   DCHECK(executor);
   DCHECK(task_tracker);
 
   // TODO(fdoray): Support delayed tasks.
-  DCHECK(delay.is_zero());
-
-  std::unique_ptr<Task> task(
-      new Task(posted_from, closure, traits, TimeTicks()));
+  DCHECK(task->delayed_run_time.is_null());
 
   if (!task_tracker->WillPostTask(task.get()))
     return false;

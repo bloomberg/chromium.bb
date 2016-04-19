@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_scheduler/priority_queue.h"
@@ -20,11 +19,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-
-bool operator==(const Closure& lhs, const Closure& rhs) {
-  return lhs.Equals(rhs);
-}
-
 namespace internal {
 namespace {
 
@@ -32,26 +26,25 @@ class MockSchedulerTaskExecutor : public SchedulerTaskExecutor {
  public:
   void PostTaskWithSequence(std::unique_ptr<Task> task,
                             scoped_refptr<Sequence> sequence) override {
-    PostTaskWithSequenceMock(task->task, task->traits, sequence.get());
+    PostTaskWithSequenceMock(task.get(), sequence.get());
   }
 
-  MOCK_METHOD3(PostTaskWithSequenceMock,
-               void(const Closure&, const TaskTraits&, Sequence* sequence));
+  MOCK_METHOD2(PostTaskWithSequenceMock,
+               void(const Task* task, const Sequence* sequence));
 };
 
 // Verifies that when PostTaskToExecutor receives a Task that is allowed to be
 // posted, it forwards it to a SchedulerTaskExecutor.
 TEST(TaskSchedulerPostTaskToExecutorTest, PostTaskAllowed) {
-  const Closure closure(Bind(&DoNothing));
-  const TaskTraits traits;
+  std::unique_ptr<Task> task(
+      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeTicks()));
+  const Task* task_raw = task.get();
   scoped_refptr<Sequence> sequence(new Sequence);
   testing::StrictMock<MockSchedulerTaskExecutor> executor;
   TaskTracker task_tracker;
 
-  EXPECT_CALL(executor,
-              PostTaskWithSequenceMock(closure, traits, sequence.get()));
-  PostTaskToExecutor(FROM_HERE, closure, traits, TimeDelta(), sequence,
-                     &executor, &task_tracker);
+  EXPECT_CALL(executor, PostTaskWithSequenceMock(task_raw, sequence.get()));
+  PostTaskToExecutor(std::move(task), sequence, &executor, &task_tracker);
 }
 
 // Verifies that when PostTaskToExecutor receives a Task that isn't allowed to
@@ -63,10 +56,10 @@ TEST(TaskSchedulerPostTaskToExecutorTest, PostTaskNotAllowed) {
   TaskTracker task_tracker;
   task_tracker.Shutdown();
 
-  PostTaskToExecutor(
-      FROM_HERE, Bind(&DoNothing),
-      TaskTraits().WithShutdownBehavior(TaskShutdownBehavior::SKIP_ON_SHUTDOWN),
-      TimeDelta(), make_scoped_refptr(new Sequence), &executor, &task_tracker);
+  PostTaskToExecutor(WrapUnique(new Task(FROM_HERE, Bind(&DoNothing),
+                                         TaskTraits(), TimeTicks())),
+                     make_scoped_refptr(new Sequence), &executor,
+                     &task_tracker);
 }
 
 // Verifies that when AddTaskToSequenceAndPriorityQueue is called with an empty
