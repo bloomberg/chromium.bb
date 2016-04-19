@@ -26,20 +26,23 @@ namespace metrics {
 // This structure stores all the information about the files being monitored
 // and their current reporting state.
 struct FileMetricsProvider::FileInfo {
-  FileInfo() {}
+  FileInfo(FileType file_type) : type(file_type) {}
   ~FileInfo() {}
+
+  // How to access this file (atomic/active).
+  const FileType type;
 
   // Where on disk the file is located.
   base::FilePath path;
-
-  // How to access this file (atomic/active).
-  FileType type;
 
   // Name used inside prefs to persistent metadata.
   std::string prefs_key;
 
   // The last-seen time of this file to detect change.
   base::Time last_seen;
+
+  // Indicates if the data has been read out or not.
+  bool read_complete = false;
 
   // Once a file has been recognized as needing to be read, it is |mapped|
   // into memory. If that file is "atomic" then the data from that file
@@ -68,9 +71,8 @@ void FileMetricsProvider::RegisterFile(const base::FilePath& path,
                                        const base::StringPiece prefs_key) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_ptr<FileInfo> file(new FileInfo());
+  scoped_ptr<FileInfo> file(new FileInfo(type));
   file->path = path;
-  file->type = type;
   file->prefs_key = prefs_key.as_string();
 
   // |prefs_key| may be empty if the caller does not wish to persist the
@@ -148,6 +150,7 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapNewMetrics(
     file->mapped.reset();
   }
 
+  file->read_complete = false;
   return ACCESS_RESULT_SUCCESS;
 }
 
@@ -232,6 +235,7 @@ void FileMetricsProvider::RecordFilesChecked(FileInfoList* checked) {
 void FileMetricsProvider::RecordFileAsSeen(FileInfo* file) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  file->read_complete = true;
   if (pref_service_ && !file->prefs_key.empty()) {
     pref_service_->SetInt64(metrics::prefs::kMetricsLastSeenPrefix +
                             file->prefs_key,
@@ -245,7 +249,15 @@ void FileMetricsProvider::OnDidCreateMetricsLog() {
   // Move finished metric files back to list of monitored files.
   for (auto iter = files_to_read_.begin(); iter != files_to_read_.end();) {
     auto temp = iter++;
-    const FileInfo* file = temp->get();
+    FileInfo* file = temp->get();
+
+    // Atomic files are read once and then ignored unless they change.
+    if (file->type == FILE_HISTOGRAMS_ATOMIC && file->read_complete) {
+      DCHECK(!file->mapped);
+      file->allocator.reset();
+      file->data.clear();
+    }
+
     if (!file->allocator && !file->mapped && file->data.empty())
       files_to_check_.splice(files_to_check_.end(), files_to_read_, temp);
   }
@@ -262,6 +274,10 @@ void FileMetricsProvider::RecordHistogramSnapshots(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   for (scoped_ptr<FileInfo>& file : files_to_read_) {
+    // Skip this file if the data has already been read.
+    if (file->read_complete)
+      continue;
+
     // If the file is mapped or loaded then it needs to have an allocator
     // attached to it in order to read histograms out of it.
     if (file->mapped || !file->data.empty())
@@ -278,13 +294,8 @@ void FileMetricsProvider::RecordHistogramSnapshots(
     // Dump all histograms contained within the file to the snapshot-manager.
     RecordHistogramSnapshotsFromFile(snapshot_manager, file.get());
 
-    // Atomic files are read once and then ignored unless they change.
-    if (file->type == FILE_HISTOGRAMS_ATOMIC) {
-      DCHECK(!file->mapped);
-      file->allocator.reset();
-      file->data.clear();
-      RecordFileAsSeen(file.get());
-    }
+    // Update the last-seen time so it isn't read again unless it changes.
+    RecordFileAsSeen(file.get());
   }
 }
 
