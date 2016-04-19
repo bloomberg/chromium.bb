@@ -144,6 +144,7 @@ public:
     void canClearBrowserCookies(ErrorString*, bool* result) override;
     void emulateNetworkConditions(ErrorString*, bool offline, double latency, double downloadThroughput, double uploadThroughput) override;
     void setCacheDisabled(ErrorString*, bool cacheDisabled) override;
+    void setBypassServiceWorker(ErrorString*, bool bypass) override;
     void setDataSizeLimitsForTest(ErrorString*, int maxTotalSize, int maxResourceSize) override;
 
     // Called from other agents.
