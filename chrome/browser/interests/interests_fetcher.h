@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_INTERESTS_INTERESTS_FETCHER_H_
 #define CHROME_BROWSER_INTERESTS_INTERESTS_FETCHER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -46,7 +46,7 @@ class InterestsFetcher : public net::URLFetcherDelegate,
   };
 
   using InterestsCallback =
-      base::Callback<void(scoped_ptr<std::vector<Interest>>)>;
+      base::Callback<void(std::unique_ptr<std::vector<Interest>>)>;
 
   InterestsFetcher(OAuth2TokenService* oauth2_token_service,
                    const std::string& account_id,
@@ -54,7 +54,7 @@ class InterestsFetcher : public net::URLFetcherDelegate,
 
   ~InterestsFetcher() override;
 
-  static scoped_ptr<InterestsFetcher> CreateFromProfile(Profile* profile);
+  static std::unique_ptr<InterestsFetcher> CreateFromProfile(Profile* profile);
 
   void FetchInterests(const InterestsCallback& callback);
 
@@ -71,20 +71,20 @@ class InterestsFetcher : public net::URLFetcherDelegate,
 
   void StartOAuth2Request();
   OAuth2TokenService::ScopeSet GetApiScopes();
-  scoped_ptr<net::URLFetcher> CreateFetcher();
+  std::unique_ptr<net::URLFetcher> CreateFetcher();
 
   // Parse the json response.
-  scoped_ptr<std::vector<Interest>>
-      ExtractInterests(const std::string& response);
+  std::unique_ptr<std::vector<Interest>> ExtractInterests(
+      const std::string& response);
 
   InterestsCallback callback_;
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
   std::string account_id_;
   net::URLRequestContextGetter* url_request_context_;
   bool access_token_expired_;
   std::string access_token_;
 
-  scoped_ptr<OAuth2TokenService::Request> oauth_request_;
+  std::unique_ptr<OAuth2TokenService::Request> oauth_request_;
   OAuth2TokenService* token_service_;
 
   DISALLOW_COPY_AND_ASSIGN(InterestsFetcher);

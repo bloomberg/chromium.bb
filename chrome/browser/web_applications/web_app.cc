@@ -88,7 +88,7 @@ base::FilePath GetShortcutDataDir(const web_app::ShortcutInfo& shortcut_info) {
 void UpdateAllShortcutsForShortcutInfo(
     const base::string16& old_app_title,
     const base::Closure& callback,
-    scoped_ptr<web_app::ShortcutInfo> shortcut_info,
+    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   base::FilePath shortcut_data_dir = GetShortcutDataDir(*shortcut_info);
   base::Closure task = base::Bind(
@@ -102,7 +102,7 @@ void UpdateAllShortcutsForShortcutInfo(
   }
 }
 
-void OnImageLoaded(scoped_ptr<web_app::ShortcutInfo> shortcut_info,
+void OnImageLoaded(std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
                    extensions::FileHandlersInfo file_handlers_info,
                    web_app::InfoCallback callback,
                    const gfx::ImageFamily& image_family) {
@@ -129,7 +129,7 @@ void OnImageLoaded(scoped_ptr<web_app::ShortcutInfo> shortcut_info,
 
 void IgnoreFileHandlersInfo(
     const web_app::ShortcutInfoCallback& shortcut_info_callback,
-    scoped_ptr<web_app::ShortcutInfo> shortcut_info,
+    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   shortcut_info_callback.Run(std::move(shortcut_info));
 }
@@ -137,7 +137,7 @@ void IgnoreFileHandlersInfo(
 void ScheduleCreatePlatformShortcut(
     web_app::ShortcutCreationReason reason,
     const web_app::ShortcutLocations& locations,
-    scoped_ptr<web_app::ShortcutInfo> shortcut_info,
+    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   base::FilePath shortcut_data_dir = GetShortcutDataDir(*shortcut_info);
   BrowserThread::PostTask(
@@ -184,7 +184,7 @@ ShortcutLocations::ShortcutLocations()
 }
 
 #if defined(TOOLKIT_VIEWS)
-scoped_ptr<ShortcutInfo> GetShortcutInfoForTab(
+std::unique_ptr<ShortcutInfo> GetShortcutInfoForTab(
     content::WebContents* web_contents) {
   const favicon::FaviconDriver* favicon_driver =
       favicon::ContentFaviconDriver::FromWebContents(web_contents);
@@ -192,7 +192,7 @@ scoped_ptr<ShortcutInfo> GetShortcutInfoForTab(
       extensions::TabHelper::FromWebContents(web_contents);
   const WebApplicationInfo& app_info = extensions_tab_helper->web_app_info();
 
-  scoped_ptr<ShortcutInfo> info(new ShortcutInfo);
+  std::unique_ptr<ShortcutInfo> info(new ShortcutInfo);
   info->url = app_info.app_url.is_empty() ? web_contents->GetURL() :
                                             app_info.app_url;
   info->title = app_info.title.empty() ?
@@ -214,10 +214,10 @@ scoped_ptr<ShortcutInfo> GetShortcutInfoForTab(
 void UpdateShortcutForTabContents(content::WebContents* web_contents) {}
 #endif
 
-scoped_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
+std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* app,
     Profile* profile) {
-  scoped_ptr<ShortcutInfo> shortcut_info(new ShortcutInfo);
+  std::unique_ptr<ShortcutInfo> shortcut_info(new ShortcutInfo);
   shortcut_info->extension_id = app->id();
   shortcut_info->is_platform_app = app->is_platform_app();
 
@@ -241,7 +241,7 @@ scoped_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
 void GetInfoForApp(const extensions::Extension* extension,
                    Profile* profile,
                    const InfoCallback& callback) {
-  scoped_ptr<web_app::ShortcutInfo> shortcut_info(
+  std::unique_ptr<web_app::ShortcutInfo> shortcut_info(
       web_app::ShortcutInfoForExtensionAndProfile(extension, profile));
   const std::vector<extensions::FileHandlerInfo>* file_handlers =
       extensions::FileHandlers::GetFileHandlers(extension);
@@ -410,7 +410,7 @@ std::string GetExtensionIdFromApplicationName(const std::string& app_name) {
 void CreateShortcutsWithInfo(
     ShortcutCreationReason reason,
     const ShortcutLocations& locations,
-    scoped_ptr<ShortcutInfo> shortcut_info,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -438,7 +438,7 @@ void CreateShortcutsWithInfo(
 }
 
 void CreateNonAppShortcut(const ShortcutLocations& locations,
-                          scoped_ptr<ShortcutInfo> shortcut_info) {
+                          std::unique_ptr<ShortcutInfo> shortcut_info) {
   ScheduleCreatePlatformShortcut(SHORTCUT_CREATION_AUTOMATED, locations,
                                  std::move(shortcut_info),
                                  extensions::FileHandlersInfo());
@@ -460,7 +460,7 @@ void CreateShortcuts(ShortcutCreationReason reason,
 void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  scoped_ptr<ShortcutInfo> shortcut_info(
+  std::unique_ptr<ShortcutInfo> shortcut_info(
       ShortcutInfoForExtensionAndProfile(app, profile));
   base::FilePath shortcut_data_dir = GetShortcutDataDir(*shortcut_info);
   BrowserThread::PostTask(

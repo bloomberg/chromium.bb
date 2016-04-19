@@ -4,10 +4,11 @@
 
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -55,7 +56,7 @@ NotificationUIManager::CreateNativeNotificationManager() {
 
 MessageCenterNotificationManager::MessageCenterNotificationManager(
     message_center::MessageCenter* message_center,
-    scoped_ptr<message_center::NotifierSettingsProvider> settings_provider)
+    std::unique_ptr<message_center::NotifierSettingsProvider> settings_provider)
     : message_center_(message_center),
       settings_provider_(std::move(settings_provider)),
       system_observer_(this),
@@ -65,14 +66,14 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
   message_center_->SetNotifierSettingsProvider(settings_provider_.get());
 
 #if defined(OS_CHROMEOS)
-  blockers_.push_back(make_scoped_ptr(
+  blockers_.push_back(base::WrapUnique(
       new LoginStateNotificationBlockerChromeOS(message_center)));
 #else
-  blockers_.push_back(make_scoped_ptr(
-      new ScreenLockNotificationBlocker(message_center)));
+  blockers_.push_back(
+      base::WrapUnique(new ScreenLockNotificationBlocker(message_center)));
 #endif
-  blockers_.push_back(make_scoped_ptr(
-      new FullscreenNotificationBlocker(message_center)));
+  blockers_.push_back(
+      base::WrapUnique(new FullscreenNotificationBlocker(message_center)));
 
 #if defined(OS_WIN) || defined(OS_MACOSX) \
   || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
@@ -124,7 +125,7 @@ void MessageCenterNotificationManager::Add(const Notification& notification,
     AddNotificationToAlternateProvider(profile_notification->notification(),
                                        profile, extension_id);
 
-  message_center_->AddNotification(make_scoped_ptr(
+  message_center_->AddNotification(base::WrapUnique(
       new message_center::Notification(profile_notification->notification())));
 }
 
@@ -167,9 +168,8 @@ bool MessageCenterNotificationManager::Update(const Notification& notification,
       // center via the notification within a ProfileNotification object or the
       // profile ID will not be correctly set for ChromeOS.
       message_center_->UpdateNotification(
-          old_id,
-          make_scoped_ptr(new message_center::Notification(
-              new_notification->notification())));
+          old_id, base::WrapUnique(new message_center::Notification(
+                      new_notification->notification())));
 
       return true;
     }

@@ -35,7 +35,7 @@ TEST_F(GeolocationSettingsStateTests, ClearOnNewOrigin) {
   GeolocationSettingsState state(&profile);
   GURL url_0("http://www.example.com");
 
-  scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
+  std::unique_ptr<NavigationEntry> entry(NavigationEntry::Create());
   entry->SetURL(url_0);
   content::LoadCommittedDetails load_committed_details;
   load_committed_details.entry = entry.get();
@@ -136,7 +136,7 @@ TEST_F(GeolocationSettingsStateTests, ShowPortOnSameHost) {
   GeolocationSettingsState state(&profile);
   GURL url_0("http://www.example.com");
 
-  scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
+  std::unique_ptr<NavigationEntry> entry(NavigationEntry::Create());
   entry->SetURL(url_0);
   content::LoadCommittedDetails load_committed_details;
   load_committed_details.entry = entry.get();

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/icon_manager.h"
 
+#include <memory>
 #include <tuple>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/task_runner.h"
 #include "third_party/skia/include/core/SkBitmap.h"

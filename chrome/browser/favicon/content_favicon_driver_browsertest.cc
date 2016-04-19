@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, ReloadBypassingCache) {
   GURL url = embedded_test_server()->GetURL("/favicon/page_with_favicon.html");
   GURL icon_url = embedded_test_server()->GetURL("/favicon/icon.png");
 
-  scoped_ptr<TestResourceDispatcherHostDelegate> delegate(
+  std::unique_ptr<TestResourceDispatcherHostDelegate> delegate(
       new TestResourceDispatcherHostDelegate(icon_url));
   content::ResourceDispatcherHost::Get()->SetDelegate(delegate.get());
 

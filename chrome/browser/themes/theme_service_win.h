@@ -28,7 +28,7 @@ class ThemeServiceWin : public ThemeService {
 
   // Registry key containing the params that determine the DWM frame color.
   // This is only initialized on Windows 10.
-  scoped_ptr<base::win::RegKey> dwm_key_;
+  std::unique_ptr<base::win::RegKey> dwm_key_;
 
   // The DWM frame color, if available; white otherwise.
   SkColor dwm_frame_color_;

@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -69,9 +71,9 @@ class MockHotwordService : public HotwordService {
   base::WeakPtrFactory<MockHotwordService> weak_factory_;
 };
 
-scoped_ptr<KeyedService> BuildMockHotwordService(
+std::unique_ptr<KeyedService> BuildMockHotwordService(
     content::BrowserContext* context) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new MockHotwordService(static_cast<Profile*>(context)));
 }
 

@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/engagement/site_engagement_eviction_policy.h"
+
 #include <stdint.h>
+
+#include <memory>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/engagement/site_engagement_eviction_policy.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/mock_storage_client.h"
@@ -84,7 +86,7 @@ class SiteEngagementEvictionPolicyTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<TestSiteEngagementScoreProvider> score_provider_;
+  std::unique_ptr<TestSiteEngagementScoreProvider> score_provider_;
   scoped_refptr<content::MockSpecialStoragePolicy> storage_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementEvictionPolicyTest);

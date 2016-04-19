@@ -110,7 +110,7 @@ class PermissionManager : public KeyedService,
   SubscriptionsMap subscriptions_;
 
   std::unordered_map<content::PermissionType,
-                     scoped_ptr<PermissionContextBase>,
+                     std::unique_ptr<PermissionContextBase>,
                      PermissionTypeHash>
       permission_contexts_;
 

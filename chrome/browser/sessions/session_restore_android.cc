@@ -30,7 +30,7 @@ content::WebContents* SessionRestore::RestoreForeignSessionTab(
   Profile* profile = Profile::FromBrowserContext(context);
   TabModel* tab_model = TabModelList::GetTabModelForWebContents(web_contents);
   DCHECK(tab_model);
-  std::vector<scoped_ptr<content::NavigationEntry>> entries =
+  std::vector<std::unique_ptr<content::NavigationEntry>> entries =
       sessions::ContentSerializedNavigationBuilder::ToNavigationEntries(
           session_tab.navigations, profile);
   content::WebContents* new_web_contents = content::WebContents::Create(

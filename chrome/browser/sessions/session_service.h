@@ -293,7 +293,7 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   void ScheduleResetCommands();
 
   // Schedules the specified command.
-  void ScheduleCommand(scoped_ptr<sessions::SessionCommand> command);
+  void ScheduleCommand(std::unique_ptr<sessions::SessionCommand> command);
 
   // Converts all pending tab/window closes to commands and schedules them.
   void CommitPendingCloses();
@@ -342,7 +342,7 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   bool should_use_delayed_save_;
 
   // The owned BaseSessionService.
-  scoped_ptr<sessions::BaseSessionService> base_session_service_;
+  std::unique_ptr<sessions::BaseSessionService> base_session_service_;
 
   content::NotificationRegistrar registrar_;
 

@@ -4,10 +4,11 @@
 
 #include "chrome/browser/signin/local_auth.h"
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
@@ -103,11 +104,10 @@ std::string CreateSecurePasswordHash(const std::string& salt,
   base::Time start_time = base::Time::Now();
 
   // Library call to create secure password hash as SymmetricKey (uses PBKDF2).
-  scoped_ptr<crypto::SymmetricKey> password_key(
+  std::unique_ptr<crypto::SymmetricKey> password_key(
       crypto::SymmetricKey::DeriveKeyFromPassword(
-          crypto::SymmetricKey::AES,
-          password, salt,
-          encoding.iteration_count, encoding.hash_bits));
+          crypto::SymmetricKey::AES, password, salt, encoding.iteration_count,
+          encoding.hash_bits));
   std::string password_hash;
   const bool success = password_key->GetRawKey(&password_hash);
   DCHECK(success);

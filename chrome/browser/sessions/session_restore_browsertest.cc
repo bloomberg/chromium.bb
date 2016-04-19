@@ -129,7 +129,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
     Profile* profile = browser->profile();
 
     // Close the browser.
-    scoped_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
+    std::unique_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
         KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED));
     CloseBrowserSynchronously(browser);
 
@@ -1361,15 +1361,15 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorageAfterTabReplace) {
     content::SessionStorageNamespaceMap session_storage_namespace_map;
     session_storage_namespace_map[std::string()] =
         controller->GetDefaultSessionStorageNamespace();
-    scoped_ptr<content::WebContents> web_contents(
+    std::unique_ptr<content::WebContents> web_contents(
         content::WebContents::CreateWithSessionStorage(
             content::WebContents::CreateParams(browser()->profile()),
             session_storage_namespace_map));
 
     TabStripModel* tab_strip_model = browser()->tab_strip_model();
-    scoped_ptr<content::WebContents> old_web_contents(
-        tab_strip_model->ReplaceWebContentsAt(
-            tab_strip_model->active_index(), web_contents.release()));
+    std::unique_ptr<content::WebContents> old_web_contents(
+        tab_strip_model->ReplaceWebContentsAt(tab_strip_model->active_index(),
+                                              web_contents.release()));
     // Navigate with the new tab.
     ui_test_utils::NavigateToURL(browser(), url2_);
     // old_web_contents goes out of scope.
@@ -1408,7 +1408,7 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, PRE_CorrectLoadingOrder) {
     browser()->tab_strip_model()->ActivateTabAt(i, true);
 
   // Close the browser.
-  scoped_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
+  std::unique_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
       KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED));
   CloseBrowserSynchronously(browser());
 
@@ -1452,7 +1452,7 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_CorrectLoadingOrder) {
 
   // Close the browser that gets opened automatically so we can track the order
   // of loading of the tabs.
-  scoped_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
+  std::unique_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
       KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED));
   CloseBrowserSynchronously(browser());
   // We have an extra tab that is added when the test starts, which gets ignored

@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_RENDERER_HOST_CHROME_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 
@@ -73,7 +73,7 @@ class ChromeResourceDispatcherHostDelegate
                                        GURL* origin,
                                        std::string* payload) override;
   void OnStreamCreated(net::URLRequest* request,
-                       scoped_ptr<content::StreamInfo> stream) override;
+                       std::unique_ptr<content::StreamInfo> stream) override;
   void OnResponseStarted(net::URLRequest* request,
                          content::ResourceContext* resource_context,
                          content::ResourceResponse* response,

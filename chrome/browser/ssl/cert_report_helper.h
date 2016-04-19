@@ -37,7 +37,7 @@ class CertReportHelper {
   static const char kFinchGroupDontShowDontSend[];
   static const char kFinchParamName[];
 
-  CertReportHelper(scoped_ptr<SSLCertReporter> ssl_cert_reporter,
+  CertReportHelper(std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
                    content::WebContents* web_contents,
                    const GURL& request_url,
                    const net::SSLInfo& ssl_info,
@@ -60,7 +60,7 @@ class CertReportHelper {
 
   // Allows tests to inject a mock reporter.
   void SetSSLCertReporterForTesting(
-      scoped_ptr<SSLCertReporter> ssl_cert_reporter);
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
 
  private:
   // Checks whether a checkbox should be shown on the page that allows
@@ -76,7 +76,7 @@ class CertReportHelper {
   bool IsPrefEnabled(const char* pref);
 
   // Handles reports of invalid SSL certificates.
-  scoped_ptr<SSLCertReporter> ssl_cert_reporter_;
+  std::unique_ptr<SSLCertReporter> ssl_cert_reporter_;
   // The WebContents for which this helper sends reports.
   content::WebContents* web_contents_;
   // The URL for which this helper sends reports.

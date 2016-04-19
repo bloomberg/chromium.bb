@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "extensions/common/extension.h"
@@ -211,7 +211,7 @@ class BrowserThemePack : public CustomThemeSupplier {
   void GenerateRawImageForAllSupportedScales(int prs_id);
 
   // Data pack, if we have one.
-  scoped_ptr<ui::DataPack> data_pack_;
+  std::unique_ptr<ui::DataPack> data_pack_;
 
   // All structs written to disk need to be packed; no alignment tricks here,
   // please.

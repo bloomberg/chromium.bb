@@ -98,7 +98,7 @@ class BrowserThemePackTest : public ::testing::Test {
   }
 
   void LoadColorJSON(const std::string& json) {
-    scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
     ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
     LoadColorDictionary(static_cast<base::DictionaryValue*>(value.get()));
   }
@@ -108,7 +108,7 @@ class BrowserThemePackTest : public ::testing::Test {
   }
 
   void LoadTintJSON(const std::string& json) {
-    scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
     ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
     LoadTintDictionary(static_cast<base::DictionaryValue*>(value.get()));
   }
@@ -118,7 +118,7 @@ class BrowserThemePackTest : public ::testing::Test {
   }
 
   void LoadDisplayPropertiesJSON(const std::string& json) {
-    scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
     ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
     LoadDisplayPropertiesDictionary(
         static_cast<base::DictionaryValue*>(value.get()));
@@ -130,7 +130,7 @@ class BrowserThemePackTest : public ::testing::Test {
 
   void ParseImageNamesJSON(const std::string& json,
                            TestFilePathMap* out_file_paths) {
-    scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
     ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
     ParseImageNamesDictionary(static_cast<base::DictionaryValue*>(value.get()),
                               out_file_paths);
@@ -159,7 +159,7 @@ class BrowserThemePackTest : public ::testing::Test {
         extension_path.AppendASCII("manifest.json");
     std::string error;
     JSONFileValueDeserializer deserializer(manifest_path);
-    scoped_ptr<base::DictionaryValue> valid_value =
+    std::unique_ptr<base::DictionaryValue> valid_value =
         base::DictionaryValue::From(deserializer.Deserialize(NULL, &error));
     EXPECT_EQ("", error);
     ASSERT_TRUE(valid_value.get());
@@ -364,7 +364,7 @@ class BrowserThemePackTest : public ::testing::Test {
   content::TestBrowserThread fake_ui_thread;
   content::TestBrowserThread fake_file_thread;
 
-  typedef scoped_ptr<ui::test::ScopedSetSupportedScaleFactors>
+  typedef std::unique_ptr<ui::test::ScopedSetSupportedScaleFactors>
       ScopedSetSupportedScaleFactors;
   ScopedSetSupportedScaleFactors scoped_set_supported_scale_factors_;
   scoped_refptr<BrowserThemePack> theme_pack_;

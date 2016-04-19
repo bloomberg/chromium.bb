@@ -6,17 +6,16 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-
 #include "library_loaders/libspeechd.h"
 
 using content::BrowserThread;
@@ -83,7 +82,7 @@ class TtsPlatformImplLinux : public TtsPlatformImpl {
 
   // Map a string composed of a voicename and module to the voicename. Used to
   // uniquely identify a voice across all available modules.
-  scoped_ptr<std::map<std::string, SPDChromeVoice> > all_native_voices_;
+  std::unique_ptr<std::map<std::string, SPDChromeVoice>> all_native_voices_;
 
   friend struct base::DefaultSingletonTraits<TtsPlatformImplLinux>;
 

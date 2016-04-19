@@ -8,10 +8,10 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
@@ -121,16 +121,16 @@ class MessageCenterSettingsController
   base::ObserverList<message_center::NotifierSettingsObserver> observers_;
 
   // The task tracker for loading favicons.
-  scoped_ptr<base::CancelableTaskTracker> favicon_tracker_;
+  std::unique_ptr<base::CancelableTaskTracker> favicon_tracker_;
 
-  scoped_ptr<AppIconLoader> app_icon_loader_;
+  std::unique_ptr<AppIconLoader> app_icon_loader_;
 
   std::map<base::string16, ContentSettingsPattern> patterns_;
 
   // The list of all configurable notifier groups. This is each profile that is
   // loaded (and in the ProfileAttributesStorage - so no incognito profiles go
   // here).
-  std::vector<scoped_ptr<message_center::ProfileNotifierGroup>>
+  std::vector<std::unique_ptr<message_center::ProfileNotifierGroup>>
       notifier_groups_;
 
   size_t current_notifier_group_;

@@ -104,7 +104,7 @@ void IntranetRedirectDetector::OnURLFetchComplete(
   Fetchers::iterator fetcher = fetchers_.find(
       const_cast<net::URLFetcher*>(source));
   DCHECK(fetcher != fetchers_.end());
-  scoped_ptr<net::URLFetcher> clean_up_fetcher(*fetcher);
+  std::unique_ptr<net::URLFetcher> clean_up_fetcher(*fetcher);
   fetchers_.erase(fetcher);
 
   // If any two fetches result in the same domain/host, we set the redirect

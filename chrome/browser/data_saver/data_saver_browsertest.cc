@@ -63,7 +63,7 @@ class DataSaverWithServerBrowserTest : public InProcessBrowserTest {
     prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
   }
 
-  scoped_ptr<net::test_server::HttpResponse> VerifySaveDataHeader(
+  std::unique_ptr<net::test_server::HttpResponse> VerifySaveDataHeader(
       const net::test_server::HttpRequest& request) {
     auto save_data_header_it = request.headers.find("save-data");
 
@@ -73,10 +73,10 @@ class DataSaverWithServerBrowserTest : public InProcessBrowserTest {
     } else {
       EXPECT_TRUE(save_data_header_it == request.headers.end());
     }
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
   }
 
-  scoped_ptr<net::EmbeddedTestServer> test_server_;
+  std::unique_ptr<net::EmbeddedTestServer> test_server_;
   std::string expected_save_data_header_;
 };
 

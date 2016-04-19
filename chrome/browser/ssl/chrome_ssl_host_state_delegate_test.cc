@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
   GURL url(std::string("https://") + kWWWGoogleHost);
-  scoped_ptr<base::Value> new_format =
+  std::unique_ptr<base::Value> new_format =
       map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
                              std::string(), nullptr);
   // Delete the new-format setting.
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
 
   // Trigger the migration code that happens on construction.
   {
-    scoped_ptr<ChromeSSLHostStateDelegate> temp_delegate(
+    std::unique_ptr<ChromeSSLHostStateDelegate> temp_delegate(
         new ChromeSSLHostStateDelegate(profile));
   }
 
@@ -361,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, PRE_AfterRestart) {
   // in the incognito profile.
   state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
 
-  scoped_ptr<Profile> incognito(profile->CreateOffTheRecordProfile());
+  std::unique_ptr<Profile> incognito(profile->CreateOffTheRecordProfile());
   content::SSLHostStateDelegate* incognito_state =
       incognito->GetSSLHostStateDelegate();
 
@@ -401,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, AfterRestart) {
             state->QueryPolicy(kWWWGoogleHost, *cert,
                                net::CERT_STATUS_DATE_INVALID, &unused_value));
 
-  scoped_ptr<Profile> incognito(profile->CreateOffTheRecordProfile());
+  std::unique_ptr<Profile> incognito(profile->CreateOffTheRecordProfile());
   content::SSLHostStateDelegate* incognito_state =
       incognito->GetSSLHostStateDelegate();
 
@@ -444,7 +444,7 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest, AfterRestart) {
   base::SimpleTestClock* clock = new base::SimpleTestClock();
   ChromeSSLHostStateDelegate* chrome_state =
       static_cast<ChromeSSLHostStateDelegate*>(state);
-  chrome_state->SetClock(scoped_ptr<base::Clock>(clock));
+  chrome_state->SetClock(std::unique_ptr<base::Clock>(clock));
 
   // Start the clock at standard system time.
   clock->SetNow(base::Time::NowFromSystemTime());
@@ -493,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest,
   base::SimpleTestClock* clock = new base::SimpleTestClock();
   ChromeSSLHostStateDelegate* chrome_state =
       static_cast<ChromeSSLHostStateDelegate*>(state);
-  chrome_state->SetClock(scoped_ptr<base::Clock>(clock));
+  chrome_state->SetClock(std::unique_ptr<base::Clock>(clock));
 
   // Start the clock at standard system time but do not advance at all to
   // emphasize that instant forget works.

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -26,10 +27,10 @@ std::string GetManagedBookmarksDomain(Profile* profile) {
   return std::string();
 }
 
-scoped_ptr<KeyedService> BuildManagedBookmarkService(
+std::unique_ptr<KeyedService> BuildManagedBookmarkService(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  return make_scoped_ptr(new bookmarks::ManagedBookmarkService(
+  return base::WrapUnique(new bookmarks::ManagedBookmarkService(
       profile->GetPrefs(),
       base::Bind(&GetManagedBookmarksDomain, base::Unretained(profile))));
 }

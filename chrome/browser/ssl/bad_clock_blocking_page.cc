@@ -55,21 +55,20 @@ BadClockBlockingPage::BadClockBlockingPage(
     const GURL& request_url,
     const base::Time& time_triggered,
     ssl_errors::ClockState clock_state,
-    scoped_ptr<SSLCertReporter> ssl_cert_reporter,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const base::Callback<void(bool)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
       callback_(callback),
       ssl_info_(ssl_info),
       time_triggered_(time_triggered),
       controller_(new ChromeControllerClient(web_contents)) {
-
   // Set up the metrics helper for the BadClockUI.
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
   reporting_info.metric_prefix = kMetricsName;
   ChromeMetricsHelper* chrome_metrics_helper = new ChromeMetricsHelper(
       web_contents, request_url, reporting_info, kMetricsName);
   chrome_metrics_helper->StartRecordingCaptivePortalMetrics(false);
-  scoped_ptr<security_interstitials::MetricsHelper> metrics_helper(
+  std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper(
       chrome_metrics_helper);
   controller_->set_metrics_helper(std::move(metrics_helper));
 
@@ -131,7 +130,7 @@ void BadClockBlockingPage::OverrideEntry(NavigationEntry* entry) {
 }
 
 void BadClockBlockingPage::SetSSLCertReporterForTesting(
-    scoped_ptr<SSLCertReporter> ssl_cert_reporter) {
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
   cert_report_helper_->SetSSLCertReporterForTesting(
       std::move(ssl_cert_reporter));
 }

@@ -94,8 +94,8 @@ void ManageProfileHandler::HandleGetAvailableIcons(
   ResolveJavascriptCallback(*callback_id, *GetAvailableIcons());
 }
 
-scoped_ptr<base::ListValue> ManageProfileHandler::GetAvailableIcons() {
-  scoped_ptr<base::ListValue> image_url_list(new base::ListValue());
+std::unique_ptr<base::ListValue> ManageProfileHandler::GetAvailableIcons() {
+  std::unique_ptr<base::ListValue> image_url_list(new base::ListValue());
 
   // First add the GAIA picture if it is available.
   ProfileAttributesEntry* entry;

@@ -599,8 +599,7 @@ CookieTreeRootNode::CookieTreeRootNode(CookiesTreeModel* model)
 CookieTreeRootNode::~CookieTreeRootNode() {}
 
 CookieTreeHostNode* CookieTreeRootNode::GetOrCreateHostNode(const GURL& url) {
-  scoped_ptr<CookieTreeHostNode> host_node(
-      new CookieTreeHostNode(url));
+  std::unique_ptr<CookieTreeHostNode> host_node(new CookieTreeHostNode(url));
 
   // First see if there is an existing match.
   std::vector<CookieTreeNode*>::iterator host_node_iterator =

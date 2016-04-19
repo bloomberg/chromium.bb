@@ -4,10 +4,12 @@
 
 #include "components/content_settings/core/browser/content_settings_pref_provider.h"
 
+#include <memory>
+
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/platform_thread.h"
@@ -160,11 +162,11 @@ TEST_F(PrefProviderTest, Incognito) {
   chrome::RegisterUserProfilePrefs(otr_registry.get());
 
   TestingProfile::Builder profile_builder;
-  profile_builder.SetPrefService(make_scoped_ptr(regular_prefs));
-  scoped_ptr<TestingProfile> profile = profile_builder.Build();
+  profile_builder.SetPrefService(base::WrapUnique(regular_prefs));
+  std::unique_ptr<TestingProfile> profile = profile_builder.Build();
 
   TestingProfile::Builder otr_profile_builder;
-  otr_profile_builder.SetPrefService(make_scoped_ptr(otr_prefs));
+  otr_profile_builder.SetPrefService(base::WrapUnique(otr_prefs));
   otr_profile_builder.BuildIncognito(profile.get());
 
   PrefProvider pref_content_settings_provider(regular_prefs, false);
@@ -224,7 +226,7 @@ TEST_F(PrefProviderTest, GetContentSettingsValue) {
             TestUtils::GetContentSetting(&provider, primary_url, primary_url,
                                          CONTENT_SETTINGS_TYPE_IMAGES,
                                          std::string(), false));
-  scoped_ptr<base::Value> value_ptr(TestUtils::GetContentSettingValue(
+  std::unique_ptr<base::Value> value_ptr(TestUtils::GetContentSettingValue(
       &provider, primary_url, primary_url, CONTENT_SETTINGS_TYPE_IMAGES,
       std::string(), false));
   int int_value = -1;
@@ -376,7 +378,7 @@ TEST_F(PrefProviderTest, LastUsage) {
   test_clock->SetNow(base::Time::Now());
 
   pref_content_settings_provider.SetClockForTesting(
-      scoped_ptr<base::Clock>(test_clock));
+      std::unique_ptr<base::Clock>(test_clock));
   GURL host("http://example.com/");
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]example.com");
@@ -413,7 +415,7 @@ TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
       ContentSettingsPattern::FromString("www.google.com");
   ContentSettingsPattern wildcard =
       ContentSettingsPattern::FromString("*");
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       new base::FundamentalValue(CONTENT_SETTING_ALLOW));
 
   // Create a normal provider and set a setting.
@@ -426,7 +428,7 @@ TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
 
   // Non-OTR provider, Non-OTR iterator has one setting (pattern 1).
   {
-    scoped_ptr<RuleIterator> it(normal_provider.GetRuleIterator(
+    std::unique_ptr<RuleIterator> it(normal_provider.GetRuleIterator(
         CONTENT_SETTINGS_TYPE_IMAGES, std::string(), false));
     EXPECT_TRUE(it->HasNext());
     EXPECT_EQ(pattern_1, it->Next().primary_pattern);
@@ -435,7 +437,7 @@ TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
 
   // Non-OTR provider, OTR iterator has no settings.
   {
-    scoped_ptr<RuleIterator> it(normal_provider.GetRuleIterator(
+    std::unique_ptr<RuleIterator> it(normal_provider.GetRuleIterator(
         CONTENT_SETTINGS_TYPE_IMAGES, std::string(), true));
     EXPECT_FALSE(it->HasNext());
   }
@@ -450,7 +452,7 @@ TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
 
   // OTR provider, non-OTR iterator has one setting (pattern 1).
   {
-    scoped_ptr<RuleIterator> it(incognito_provider.GetRuleIterator(
+    std::unique_ptr<RuleIterator> it(incognito_provider.GetRuleIterator(
         CONTENT_SETTINGS_TYPE_IMAGES, std::string(), false));
     EXPECT_TRUE(it->HasNext());
     EXPECT_EQ(pattern_1, it->Next().primary_pattern);
@@ -459,7 +461,7 @@ TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
 
   // OTR provider, OTR iterator has one setting (pattern 2).
   {
-    scoped_ptr<RuleIterator> it(incognito_provider.GetRuleIterator(
+    std::unique_ptr<RuleIterator> it(incognito_provider.GetRuleIterator(
         CONTENT_SETTINGS_TYPE_IMAGES, std::string(), true));
     EXPECT_TRUE(it->HasNext());
     EXPECT_EQ(pattern_2, it->Next().primary_pattern);
@@ -478,7 +480,7 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
       ContentSettingsPattern::FromString("google.com");
   ContentSettingsPattern wildcard =
       ContentSettingsPattern::FromString("*");
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       new base::FundamentalValue(CONTENT_SETTING_ALLOW));
   ResourceIdentifier res_id("abcde");
 

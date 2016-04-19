@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -29,16 +30,16 @@ std::string TimeToISO8601(const base::Time& t) {
       exploded.millisecond);
 }
 
-scoped_ptr<base::ListValue> GetPEMEncodedChainAsList(
+std::unique_ptr<base::ListValue> GetPEMEncodedChainAsList(
     const net::X509Certificate* cert_chain) {
   if (!cert_chain)
-    return make_scoped_ptr(new base::ListValue());
+    return base::WrapUnique(new base::ListValue());
 
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+  std::unique_ptr<base::ListValue> result(new base::ListValue());
   std::vector<std::string> pem_encoded_chain;
   cert_chain->GetPEMEncodedChain(&pem_encoded_chain);
   for (const std::string& cert : pem_encoded_chain)
-    result->Append(make_scoped_ptr(new base::StringValue(cert)));
+    result->Append(base::WrapUnique(new base::StringValue(cert)));
 
   return result;
 }
@@ -61,7 +62,7 @@ std::string SCTOriginToString(
 void AddUnknownSCT(
     const net::SignedCertificateTimestampAndStatus& sct_and_status,
     base::ListValue* list) {
-  scoped_ptr<base::DictionaryValue> list_item(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> list_item(new base::DictionaryValue());
   list_item->SetString("origin", SCTOriginToString(sct_and_status.sct->origin));
   list->Append(std::move(list_item));
 }
@@ -69,7 +70,7 @@ void AddUnknownSCT(
 void AddInvalidSCT(
     const net::SignedCertificateTimestampAndStatus& sct_and_status,
     base::ListValue* list) {
-  scoped_ptr<base::DictionaryValue> list_item(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> list_item(new base::DictionaryValue());
   list_item->SetString("origin", SCTOriginToString(sct_and_status.sct->origin));
   std::string log_id;
   base::Base64Encode(sct_and_status.sct->log_id, &log_id);
@@ -79,12 +80,12 @@ void AddInvalidSCT(
 
 void AddValidSCT(const net::SignedCertificateTimestampAndStatus& sct_and_status,
                  base::ListValue* list) {
-  scoped_ptr<base::DictionaryValue> list_item(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> list_item(new base::DictionaryValue());
   list_item->SetString("origin", SCTOriginToString(sct_and_status.sct->origin));
 
   // The structure of the SCT object is defined in
   // http://tools.ietf.org/html/rfc6962#section-4.1.
-  scoped_ptr<base::DictionaryValue> sct(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> sct(new base::DictionaryValue());
   sct->SetInteger("sct_version", sct_and_status.sct->version);
   std::string log_id;
   base::Base64Encode(sct_and_status.sct->log_id, &log_id);
@@ -142,9 +143,9 @@ void ChromeExpectCTReporter::OnExpectCTFailed(
   report.Set("validated-certificate-chain",
              GetPEMEncodedChainAsList(ssl_info.cert.get()));
 
-  scoped_ptr<base::ListValue> unknown_scts(new base::ListValue());
-  scoped_ptr<base::ListValue> invalid_scts(new base::ListValue());
-  scoped_ptr<base::ListValue> valid_scts(new base::ListValue());
+  std::unique_ptr<base::ListValue> unknown_scts(new base::ListValue());
+  std::unique_ptr<base::ListValue> invalid_scts(new base::ListValue());
+  std::unique_ptr<base::ListValue> valid_scts(new base::ListValue());
 
   for (const auto& sct_and_status : ssl_info.signed_certificate_timestamps) {
     switch (sct_and_status.status) {

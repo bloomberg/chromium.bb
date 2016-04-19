@@ -119,7 +119,7 @@ class SessionRestoreStatsCollector
   // Constructs a SessionRestoreStatsCollector.
   SessionRestoreStatsCollector(
       const base::TimeTicks& restore_started,
-      scoped_ptr<StatsReportingDelegate> reporting_delegate);
+      std::unique_ptr<StatsReportingDelegate> reporting_delegate);
 
   // Adds new tabs to the list of tracked tabs.
   void TrackTabs(const std::vector<SessionRestoreDelegate::RestoredTab>& tabs);
@@ -186,7 +186,7 @@ class SessionRestoreStatsCollector
   void ReleaseIfDoneTracking();
 
   // Testing seam for configuring the tick clock in use.
-  void set_tick_clock(scoped_ptr<base::TickClock> tick_clock) {
+  void set_tick_clock(std::unique_ptr<base::TickClock> tick_clock) {
     tick_clock_ = std::move(tick_clock);
   }
 
@@ -225,10 +225,10 @@ class SessionRestoreStatsCollector
   // The source of ticks used for taking timing information. This is
   // configurable as a testing seam. Defaults to using base::DefaultTickClock,
   // which in turn uses base::TimeTicks.
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // The reporting delegate used to report gathered statistics.
-  scoped_ptr<StatsReportingDelegate> reporting_delegate_;
+  std::unique_ptr<StatsReportingDelegate> reporting_delegate_;
 
   // For keeping SessionRestoreStatsCollector alive while it is still working
   // even if no TabLoader references it. The object only lives on if it still

@@ -188,7 +188,7 @@ base::MessageLoop* SuggestionsSource::MessageLoopForRequestPath(
 }
 
 void SuggestionsSource::OnThumbnailsFetched(RequestContext* context) {
-  scoped_ptr<RequestContext> context_deleter(context);
+  std::unique_ptr<RequestContext> context_deleter(context);
 
   std::string output =
       RenderOutputHtml(context->is_refresh, context->suggestions_profile,

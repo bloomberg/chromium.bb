@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_NOTIFICATIONS_MESSAGE_CENTER_NOTIFICATION_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -43,7 +43,8 @@ class MessageCenterNotificationManager
  public:
   MessageCenterNotificationManager(
       message_center::MessageCenter* message_center,
-      scoped_ptr<message_center::NotifierSettingsProvider> settings_provider);
+      std::unique_ptr<message_center::NotifierSettingsProvider>
+          settings_provider);
   ~MessageCenterNotificationManager() override;
 
   // NotificationUIManager
@@ -88,7 +89,7 @@ class MessageCenterNotificationManager
   FRIEND_TEST_ALL_PREFIXES(message_center::WebNotificationTrayTest,
                            ManuallyCloseMessageCenter);
 
-  scoped_ptr<message_center::MessageCenterTrayDelegate> tray_;
+  std::unique_ptr<message_center::MessageCenterTrayDelegate> tray_;
   message_center::MessageCenter* message_center_;  // Weak, global.
 
   // Use a map by notification_id since this mapping is the most often used.
@@ -108,10 +109,10 @@ class MessageCenterNotificationManager
   // Chorme Notification Center.
   std::string GetExtensionTakingOverNotifications(Profile* profile);
 
-  scoped_ptr<message_center::NotifierSettingsProvider> settings_provider_;
+  std::unique_ptr<message_center::NotifierSettingsProvider> settings_provider_;
 
   // To own the blockers.
-  std::vector<scoped_ptr<message_center::NotificationBlocker>> blockers_;
+  std::vector<std::unique_ptr<message_center::NotificationBlocker>> blockers_;
 
   NotificationSystemObserver system_observer_;
 

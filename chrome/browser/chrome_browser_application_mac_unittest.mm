@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/chrome_browser_application_mac.h"
+
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
-#import "chrome/browser/chrome_browser_application_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::HistogramBase;
@@ -76,7 +78,7 @@ TEST(ChromeApplicationMacTest, RecordException) {
   EXPECT_EQ(1U, histograms.size());
   EXPECT_EQ(HistogramBase::kUmaTargetedHistogramFlag, histograms[0]->flags());
 
-  scoped_ptr<HistogramSamples> samples(histograms[0]->SnapshotSamples());
+  std::unique_ptr<HistogramSamples> samples(histograms[0]->SnapshotSamples());
   EXPECT_EQ(4, samples->GetCount(0));
   EXPECT_EQ(1, samples->GetCount(1));
   EXPECT_EQ(3, samples->GetCount(2));

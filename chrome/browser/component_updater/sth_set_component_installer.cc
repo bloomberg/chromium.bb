@@ -49,7 +49,7 @@ const uint8_t kPublicKeySHA256[32] = {
 const char kSTHSetFetcherManifestName[] = "Signed Tree Heads";
 
 STHSetComponentInstallerTraits::STHSetComponentInstallerTraits(
-    scoped_ptr<net::ct::STHObserver> sth_observer)
+    std::unique_ptr<net::ct::STHObserver> sth_observer)
     : sth_observer_(std::move(sth_observer)) {}
 
 STHSetComponentInstallerTraits::~STHSetComponentInstallerTraits() {}
@@ -72,7 +72,7 @@ bool STHSetComponentInstallerTraits::OnCustomInstall(
 void STHSetComponentInstallerTraits::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
-    scoped_ptr<base::DictionaryValue> manifest) {
+    std::unique_ptr<base::DictionaryValue> manifest) {
   if (!content::BrowserThread::PostBlockingPoolTask(
           FROM_HERE,
           base::Bind(&STHSetComponentInstallerTraits::LoadSTHsFromDisk,
@@ -156,7 +156,7 @@ void STHSetComponentInstallerTraits::LoadSTHsFromDisk(
 
 void STHSetComponentInstallerTraits::OnJsonParseSuccess(
     const std::string& log_id,
-    scoped_ptr<base::Value> parsed_json) {
+    std::unique_ptr<base::Value> parsed_json) {
   net::ct::SignedTreeHead signed_tree_head;
   DVLOG(1) << "STH parsing success for log: "
            << base::HexEncode(log_id.data(), log_id.length());
@@ -187,10 +187,10 @@ void RegisterSTHSetComponent(ComponentUpdateService* cus,
   // TODO(eranm): The next step in auditing CT logs (crbug.com/506227) is to
   // pass the distributor to the IOThread so it can be used in a per-profile
   // context for checking inclusion of SCTs.
-  scoped_ptr<net::ct::STHDistributor> distributor(
+  std::unique_ptr<net::ct::STHDistributor> distributor(
       new net::ct::STHDistributor());
 
-  scoped_ptr<ComponentInstallerTraits> traits(
+  std::unique_ptr<ComponentInstallerTraits> traits(
       new STHSetComponentInstallerTraits(std::move(distributor)));
   // |cus| will take ownership of |installer| during installer->Register(cus).
   DefaultComponentInstaller* installer =

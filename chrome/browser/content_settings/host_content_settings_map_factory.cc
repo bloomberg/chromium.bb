@@ -85,7 +85,7 @@ scoped_refptr<RefcountedKeyedService>
       SupervisedUserSettingsServiceFactory::GetForProfile(profile);
   // This may be null in testing.
   if (supervised_service) {
-    scoped_ptr<content_settings::SupervisedProvider> supervised_provider(
+    std::unique_ptr<content_settings::SupervisedProvider> supervised_provider(
         new content_settings::SupervisedProvider(supervised_service));
     settings_map->RegisterProvider(HostContentSettingsMap::SUPERVISED_PROVIDER,
                                    std::move(supervised_provider));

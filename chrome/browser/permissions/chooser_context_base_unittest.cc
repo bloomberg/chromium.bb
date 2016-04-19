@@ -57,7 +57,7 @@ TEST_F(ChooserContextBaseTest, GrantAndRevokeObjectPermissions) {
   context_.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
   context_.GrantObjectPermission(origin1_, origin1_, object2_.CreateDeepCopy());
 
-  std::vector<scoped_ptr<base::DictionaryValue>> objects =
+  std::vector<std::unique_ptr<base::DictionaryValue>> objects =
       context_.GetGrantedObjects(origin1_, origin1_);
   EXPECT_EQ(2u, objects.size());
   EXPECT_TRUE(object1_.Equals(objects[0].get()));
@@ -76,7 +76,7 @@ TEST_F(ChooserContextBaseTest, GrantObjectPermissionTwice) {
   context_.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
   context_.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
 
-  std::vector<scoped_ptr<base::DictionaryValue>> objects =
+  std::vector<std::unique_ptr<base::DictionaryValue>> objects =
       context_.GetGrantedObjects(origin1_, origin1_);
   EXPECT_EQ(1u, objects.size());
   EXPECT_TRUE(object1_.Equals(objects[0].get()));
@@ -89,7 +89,7 @@ TEST_F(ChooserContextBaseTest, GrantObjectPermissionTwice) {
 TEST_F(ChooserContextBaseTest, GrantObjectPermissionEmbedded) {
   context_.GrantObjectPermission(origin1_, origin2_, object1_.CreateDeepCopy());
 
-  std::vector<scoped_ptr<base::DictionaryValue>> objects =
+  std::vector<std::unique_ptr<base::DictionaryValue>> objects =
       context_.GetGrantedObjects(origin1_, origin2_);
   EXPECT_EQ(1u, objects.size());
   EXPECT_TRUE(object1_.Equals(objects[0].get()));
@@ -107,7 +107,7 @@ TEST_F(ChooserContextBaseTest, GetAllGrantedObjects) {
   context_.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
   context_.GrantObjectPermission(origin2_, origin2_, object2_.CreateDeepCopy());
 
-  std::vector<scoped_ptr<ChooserContextBase::Object>> objects =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       context_.GetAllGrantedObjects();
   EXPECT_EQ(2u, objects.size());
   bool found_one = false;

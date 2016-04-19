@@ -4,8 +4,9 @@
 
 #include "chrome/browser/chrome_elf_init_win.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -54,7 +55,7 @@ class ChromeBlacklistTrialTest : public testing::Test {
     return blacklist_version;
   }
 
-  scoped_ptr<base::win::RegKey> blacklist_registry_key_;
+  std::unique_ptr<base::win::RegKey> blacklist_registry_key_;
   registry_util::RegistryOverrideManager override_manager_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 

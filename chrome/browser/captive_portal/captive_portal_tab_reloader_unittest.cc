@@ -104,7 +104,7 @@ class CaptivePortalTabReloaderTest : public ChromeRenderViewHostTestHarness {
   TestCaptivePortalTabReloader& tab_reloader() { return *tab_reloader_.get(); }
 
  private:
-  scoped_ptr<TestCaptivePortalTabReloader> tab_reloader_;
+  std::unique_ptr<TestCaptivePortalTabReloader> tab_reloader_;
 };
 
 // Simulates a slow SSL load when the Internet is connected.

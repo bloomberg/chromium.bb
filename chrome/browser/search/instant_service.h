@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_SEARCH_INSTANT_SERVICE_H_
 #define CHROME_BROWSER_SEARCH_INSTANT_SERVICE_H_
 
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/history/core/browser/history_types.h"
@@ -166,7 +166,7 @@ class InstantService : public KeyedService,
   std::vector<InstantMostVisitedItem> suggestions_items_;
 
   // Theme-related data for NTP overlay to adopt themes.
-  scoped_ptr<ThemeBackgroundInfo> theme_info_;
+  std::unique_ptr<ThemeBackgroundInfo> theme_info_;
 
   base::ObserverList<InstantServiceObserver> observers_;
 
@@ -175,18 +175,18 @@ class InstantService : public KeyedService,
   scoped_refptr<InstantIOContext> instant_io_context_;
 
   // Set to NULL if the default search provider does not support Instant.
-  scoped_ptr<InstantSearchPrerenderer> instant_prerenderer_;
+  std::unique_ptr<InstantSearchPrerenderer> instant_prerenderer_;
 
   // Used to check whether notifications from TemplateURLService indicate a
   // change that affects the default search provider.
-  scoped_ptr<TemplateURLData> previous_default_search_provider_;
+  std::unique_ptr<TemplateURLData> previous_default_search_provider_;
   GURL previous_google_base_url_;
 
   // Suggestions Service to fetch server suggestions.
   suggestions::SuggestionsService* suggestions_service_;
 
   // Subscription to the SuggestionsService.
-  scoped_ptr<
+  std::unique_ptr<
       suggestions::SuggestionsService::ResponseCallbackList::Subscription>
       suggestions_subscription_;
 

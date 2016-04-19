@@ -14,9 +14,9 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 
-scoped_ptr<KeyedService> BuildFakeSigninManagerBase(
+std::unique_ptr<KeyedService> BuildFakeSigninManagerBase(
     content::BrowserContext* context) {
-  scoped_ptr<SigninManagerBase> manager;
+  std::unique_ptr<SigninManagerBase> manager;
   Profile* profile = static_cast<Profile*>(context);
   manager.reset(new FakeSigninManagerForTesting(profile));
   manager->Initialize(nullptr);

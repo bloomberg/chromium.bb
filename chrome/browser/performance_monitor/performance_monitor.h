@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/performance_monitor/process_metrics_history.h"
@@ -54,7 +54,7 @@ class PerformanceMonitor {
   void MarkProcessAsAlive(const ProcessMetricsMetadata& process_data,
                           int current_update_sequence);
   void MarkProcessesAsAliveOnUIThread(
-      scoped_ptr<std::vector<ProcessMetricsMetadata>> process_data_list,
+      std::unique_ptr<std::vector<ProcessMetricsMetadata>> process_data_list,
       int current_update_sequence);
 
   // Updates the ProcessMetrics map with the current list of processes and

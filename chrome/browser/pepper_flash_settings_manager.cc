@@ -187,7 +187,7 @@ class PepperFlashSettingsManager::Core
 
   // The channel is NULL until we have opened a connection to the broker
   // process. Used only on the I/O thread.
-  scoped_ptr<IPC::Channel> channel_;
+  std::unique_ptr<IPC::Channel> channel_;
 
   // Used only on the I/O thread.
   State state_;

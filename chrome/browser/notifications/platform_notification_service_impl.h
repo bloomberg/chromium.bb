@@ -6,14 +6,15 @@
 #define CHROME_BROWSER_NOTIFICATIONS_PLATFORM_NOTIFICATION_SERVICE_IMPL_H_
 
 #include <stdint.h>
+
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_set>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification.h"
@@ -98,7 +99,7 @@ class PlatformNotificationServiceImpl
       const GURL& origin,
       const content::PlatformNotificationData& notification_data,
       const content::NotificationResources& notification_resources,
-      scoped_ptr<content::DesktopNotificationDelegate> delegate,
+      std::unique_ptr<content::DesktopNotificationDelegate> delegate,
       base::Closure* cancel_callback) override;
   void DisplayPersistentNotification(
       content::BrowserContext* browser_context,
@@ -146,7 +147,7 @@ class PlatformNotificationServiceImpl
 
   // Platforms that display native notification interact with them through this
   // object.
-  scoped_ptr<NotificationUIManager> native_notification_ui_manager_;
+  std::unique_ptr<NotificationUIManager> native_notification_ui_manager_;
 
   // Weak reference. Ownership maintains with the test.
   NotificationUIManager* notification_ui_manager_for_tests_;

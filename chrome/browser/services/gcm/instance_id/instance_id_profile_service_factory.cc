@@ -4,7 +4,8 @@
 
 #include "chrome/browser/services/gcm/instance_id/instance_id_profile_service_factory.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"

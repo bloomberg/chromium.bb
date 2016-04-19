@@ -145,13 +145,13 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
   // utterance now.
   bool sends_end_event = voice.events.find(TTS_EVENT_END) != voice.events.end();
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->AppendString(utterance->text());
 
   // Pass through most options to the speech engine, but remove some
   // that are handled internally.
-  scoped_ptr<base::DictionaryValue> options(static_cast<base::DictionaryValue*>(
-      utterance->options()->DeepCopy()));
+  std::unique_ptr<base::DictionaryValue> options(
+      static_cast<base::DictionaryValue*>(utterance->options()->DeepCopy()));
   if (options->HasKey(constants::kRequiredEventTypesKey))
     options->Remove(constants::kRequiredEventTypesKey, NULL);
   if (options->HasKey(constants::kDesiredEventTypesKey))
@@ -195,7 +195,7 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
   std::string json;
   base::JSONWriter::Write(*args, &json);
 
-  scoped_ptr<extensions::Event> event(
+  std::unique_ptr<extensions::Event> event(
       new extensions::Event(extensions::events::TTS_ENGINE_ON_SPEAK,
                             tts_engine_events::kOnSpeak, std::move(args)));
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
@@ -205,8 +205,8 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
 }
 
 void TtsExtensionEngine::Stop(Utterance* utterance) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  scoped_ptr<extensions::Event> event(
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<extensions::Event> event(
       new extensions::Event(extensions::events::TTS_ENGINE_ON_STOP,
                             tts_engine_events::kOnStop, std::move(args)));
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
@@ -216,8 +216,8 @@ void TtsExtensionEngine::Stop(Utterance* utterance) {
 }
 
 void TtsExtensionEngine::Pause(Utterance* utterance) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  scoped_ptr<extensions::Event> event(
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<extensions::Event> event(
       new extensions::Event(extensions::events::TTS_ENGINE_ON_PAUSE,
                             tts_engine_events::kOnPause, std::move(args)));
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
@@ -229,8 +229,8 @@ void TtsExtensionEngine::Pause(Utterance* utterance) {
 }
 
 void TtsExtensionEngine::Resume(Utterance* utterance) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  scoped_ptr<extensions::Event> event(
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<extensions::Event> event(
       new extensions::Event(extensions::events::TTS_ENGINE_ON_RESUME,
                             tts_engine_events::kOnResume, std::move(args)));
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());

@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_SSL_CERT_VERIFIER_BROWSER_TEST_H_
 #define CHROME_BROWSER_SSL_CERT_VERIFIER_BROWSER_TEST_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/test/base/in_process_browser_test.h"
 
 namespace net {
@@ -31,7 +32,7 @@ class CertVerifierBrowserTest : public InProcessBrowserTest {
   net::MockCertVerifier* mock_cert_verifier();
 
  private:
-  scoped_ptr<net::MockCertVerifier> mock_cert_verifier_;
+  std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
 };
 
 #endif  // CHROME_BROWSER_SSL_CERT_VERIFIER_BROWSER_TEST_H_

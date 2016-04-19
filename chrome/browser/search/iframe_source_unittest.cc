@@ -4,9 +4,10 @@
 
 #include "chrome/browser/search/iframe_source.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -89,16 +90,13 @@ class IframeSourceTest : public testing::Test {
     return "";
   }
 
-  scoped_ptr<net::URLRequest> MockRequest(
-      const std::string& url,
-      bool allocate_info,
-      int render_process_id,
-      int render_frame_id) {
-    scoped_ptr<net::URLRequest> request(
+  std::unique_ptr<net::URLRequest> MockRequest(const std::string& url,
+                                               bool allocate_info,
+                                               int render_process_id,
+                                               int render_frame_id) {
+    std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
-            GURL(url),
-            net::DEFAULT_PRIORITY,
-            NULL));
+            GURL(url), net::DEFAULT_PRIORITY, NULL));
     if (allocate_info) {
       content::ResourceRequestInfo::AllocateForTesting(
           request.get(),
@@ -150,14 +148,14 @@ class IframeSourceTest : public testing::Test {
 
   net::TestURLRequestContext test_url_request_context_;
   content::MockResourceContext resource_context_;
-  scoped_ptr<TestIframeSource> source_;
+  std::unique_ptr<TestIframeSource> source_;
   content::URLDataSource::GotDataCallback callback_;
   scoped_refptr<InstantIOContext> instant_io_context_;
   scoped_refptr<base::RefCountedMemory> response_;
 };
 
 TEST_F(IframeSourceTest, ShouldServiceRequest) {
-  scoped_ptr<net::URLRequest> request;
+  std::unique_ptr<net::URLRequest> request;
   request = MockRequest("http://test/loader.js", true,
                         kNonInstantRendererPID, 0);
   EXPECT_FALSE(source()->ShouldServiceRequest(request.get()));

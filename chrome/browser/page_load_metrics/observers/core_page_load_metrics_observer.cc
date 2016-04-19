@@ -376,7 +376,7 @@ void CorePageLoadMetricsObserver::RecordRappor(
                                                info)) {
     return;
   }
-  scoped_ptr<rappor::Sample> sample =
+  std::unique_ptr<rappor::Sample> sample =
       rappor_service->CreateSample(rappor::UMA_RAPPOR_TYPE);
   sample->SetStringField(
       "Domain", rappor::GetDomainAndRegistrySampleFromGURL(info.committed_url));

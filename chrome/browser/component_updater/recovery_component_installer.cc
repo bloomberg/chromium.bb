@@ -5,6 +5,8 @@
 #include "chrome/browser/component_updater/recovery_component_installer.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 
 #include "base/base_paths.h"
@@ -14,7 +16,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
@@ -115,7 +116,8 @@ base::CommandLine GetRecoveryInstallCommandLine(
 }
 
 #if defined(OS_WIN)
-scoped_ptr<base::DictionaryValue> ReadManifest(const base::FilePath& manifest) {
+std::unique_ptr<base::DictionaryValue> ReadManifest(
+    const base::FilePath& manifest) {
   JSONFileValueDeserializer deserializer(manifest);
   std::string error;
   return base::DictionaryValue::From(deserializer.Deserialize(NULL, &error));
@@ -142,7 +144,7 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
   if (!base::PathExists(main_file) || !base::PathExists(manifest_file))
     return;
 
-  scoped_ptr<base::DictionaryValue> manifest(ReadManifest(manifest_file));
+  std::unique_ptr<base::DictionaryValue> manifest(ReadManifest(manifest_file));
   std::string name;
   manifest->GetStringASCII("name", &name);
   if (name != kRecoveryManifestName)

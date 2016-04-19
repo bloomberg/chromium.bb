@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
@@ -81,7 +82,7 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
   // creating the ProcessMetrics.
   base::Process process_;
 
-  scoped_ptr<base::ProcessMetrics> process_metrics_;
+  std::unique_ptr<base::ProcessMetrics> process_metrics_;
 
   // The specific blocking pool SequencedTaskRunner that will be used to post
   // the refresh tasks onto serially.

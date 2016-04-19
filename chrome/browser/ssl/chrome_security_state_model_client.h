@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_SSL_CHROME_SECURITY_STATE_MODEL_CLIENT_H_
 #define CHROME_BROWSER_SSL_CHROME_SECURITY_STATE_MODEL_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/security_state/security_state_model.h"
 #include "components/security_state/security_state_model_client.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -38,7 +39,7 @@ class ChromeSecurityStateModelClient
   friend class content::WebContentsUserData<ChromeSecurityStateModelClient>;
 
   content::WebContents* web_contents_;
-  scoped_ptr<security_state::SecurityStateModel> security_state_model_;
+  std::unique_ptr<security_state::SecurityStateModel> security_state_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSecurityStateModelClient);
 };

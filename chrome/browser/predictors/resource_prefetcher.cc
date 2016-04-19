@@ -41,7 +41,7 @@ ResourcePrefetcher::ResourcePrefetcher(
     const ResourcePrefetchPredictorConfig& config,
     const NavigationID& navigation_id,
     PrefetchKeyType key_type,
-    scoped_ptr<RequestVector> requests)
+    std::unique_ptr<RequestVector> requests)
     : state_(INITIALIZED),
       delegate_(delegate),
       config_(config),

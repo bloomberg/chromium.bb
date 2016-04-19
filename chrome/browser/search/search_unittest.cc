@@ -111,7 +111,7 @@ class SearchTest : public BrowserWithTestWindowTest {
         contents->GetRenderProcessHost()->GetID());
   }
 
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 struct SearchTestCase {

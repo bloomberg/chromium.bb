@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -55,17 +56,17 @@ void BrowsingDataCounter::Restart() {
   if (!profile_->GetPrefs()->GetBoolean(GetPrefName()))
     return;
 
-  callback_.Run(make_scoped_ptr(new Result(this)));
+  callback_.Run(base::WrapUnique(new Result(this)));
 
   Count();
 }
 
 void BrowsingDataCounter::ReportResult(ResultInt value) {
   DCHECK(initialized_);
-  callback_.Run(make_scoped_ptr(new FinishedResult(this, value)));
+  callback_.Run(base::WrapUnique(new FinishedResult(this, value)));
 }
 
-void BrowsingDataCounter::ReportResult(scoped_ptr<Result> result) {
+void BrowsingDataCounter::ReportResult(std::unique_ptr<Result> result) {
   DCHECK(initialized_);
   callback_.Run(std::move(result));
 }

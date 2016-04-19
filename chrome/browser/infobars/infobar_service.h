@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_INFOBARS_INFOBAR_SERVICE_H_
 #define CHROME_BROWSER_INFOBARS_INFOBAR_SERVICE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -50,8 +50,8 @@ class InfoBarService : public infobars::InfoBarManager,
   // InfoBarManager:
   // TODO(sdefresne): Change clients to invoke this on infobars::InfoBarManager
   // and turn the method override private.
-  scoped_ptr<infobars::InfoBar> CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate> delegate) override;
+  std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
+      std::unique_ptr<ConfirmInfoBarDelegate> delegate) override;
   void OpenURL(const GURL& url, WindowOpenDisposition disposition) override;
 
  private:

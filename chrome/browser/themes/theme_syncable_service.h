@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_THEMES_THEME_SYNCABLE_SERVICE_H_
 #define CHROME_BROWSER_THEMES_THEME_SYNCABLE_SERVICE_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
@@ -38,8 +39,8 @@ class ThemeSyncableService : public syncer::SyncableService {
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+      std::unique_ptr<syncer::SyncErrorFactory> error_handler) override;
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
@@ -78,8 +79,8 @@ class ThemeSyncableService : public syncer::SyncableService {
   Profile* const profile_;
   ThemeService* const theme_service_;
 
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
-  scoped_ptr<syncer::SyncErrorFactory> sync_error_handler_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncErrorFactory> sync_error_handler_;
 
   // Persist use_system_theme_by_default for platforms that use it, even if
   // we're not on one.

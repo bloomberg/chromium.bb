@@ -7,10 +7,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
@@ -217,7 +218,7 @@ class TaskManagerInterface {
 
   int64_t enabled_resources_flags() const { return enabled_resources_flags_; }
 
-  void set_timer_for_testing(scoped_ptr<base::Timer> timer) {
+  void set_timer_for_testing(std::unique_ptr<base::Timer> timer) {
     refresh_timer_ = std::move(timer);
   }
 
@@ -242,7 +243,7 @@ class TaskManagerInterface {
   base::ObserverList<TaskManagerObserver> observers_;
 
   // The timer that will be used to schedule the successive refreshes.
-  scoped_ptr<base::Timer> refresh_timer_;
+  std::unique_ptr<base::Timer> refresh_timer_;
 
   // The flags containing the enabled resources types calculations.
   int64_t enabled_resources_flags_;

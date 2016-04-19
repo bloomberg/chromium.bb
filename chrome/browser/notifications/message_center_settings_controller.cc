@@ -292,8 +292,8 @@ void MessageCenterSettingsController::GetNotifierList(
 #endif
 
   UErrorCode error = U_ZERO_ERROR;
-  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
-  scoped_ptr<NotifierComparator> comparator(
+  std::unique_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
+  std::unique_ptr<NotifierComparator> comparator(
       new NotifierComparator(U_SUCCESS(error) ? collator.get() : NULL));
 
   std::sort(notifiers->begin(), notifiers->end(), *comparator);
@@ -411,9 +411,9 @@ void MessageCenterSettingsController::OnNotifierAdvancedSettingsRequested(
   Profile* profile = notifier_groups_[current_notifier_group_]->profile();
 
   extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
 
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::NOTIFICATIONS_ON_SHOW_SETTINGS,
       extensions::api::notifications::OnShowSettings::kEventName,
       std::move(args)));
@@ -493,11 +493,10 @@ void MessageCenterSettingsController::CreateNotifierGroupForGuestLogin() {
       chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
   DCHECK(profile);
 
-  scoped_ptr<message_center::ProfileNotifierGroup> group(
-      new message_center::ProfileNotifierGroup(gfx::Image(user->GetImage()),
-                                               user->GetDisplayName(),
-                                               user->GetDisplayName(),
-                                               profile));
+  std::unique_ptr<message_center::ProfileNotifierGroup> group(
+      new message_center::ProfileNotifierGroup(
+          gfx::Image(user->GetImage()), user->GetDisplayName(),
+          user->GetDisplayName(), profile));
 
   notifier_groups_.push_back(std::move(group));
 
@@ -514,11 +513,9 @@ void MessageCenterSettingsController::RebuildNotifierGroups(bool notify) {
   std::vector<ProfileAttributesEntry*> entries =
       profile_attributes_storage_.GetAllProfilesAttributes();
   for (const auto entry : entries) {
-    scoped_ptr<message_center::ProfileNotifierGroup> group(
+    std::unique_ptr<message_center::ProfileNotifierGroup> group(
         new message_center::ProfileNotifierGroup(
-            entry->GetAvatarIcon(),
-            entry->GetName(),
-            entry->GetUserName(),
+            entry->GetAvatarIcon(), entry->GetName(), entry->GetUserName(),
             entry->GetPath()));
     if (group->profile() == NULL)
       continue;

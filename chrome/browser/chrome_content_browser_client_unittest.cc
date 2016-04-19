@@ -362,7 +362,7 @@ class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 TEST_F(InstantNTPURLRewriteTest, UberURLHandler_InstantExtendedNewTabPage) {

@@ -150,8 +150,9 @@ class MutableProfileOAuth2TokenServiceDelegateTest
  protected:
   base::MessageLoop message_loop_;
   net::FakeURLFetcherFactory factory_;
-  scoped_ptr<TestSigninClient> client_;
-  scoped_ptr<MutableProfileOAuth2TokenServiceDelegate> oauth2_service_delegate_;
+  std::unique_ptr<TestSigninClient> client_;
+  std::unique_ptr<MutableProfileOAuth2TokenServiceDelegate>
+      oauth2_service_delegate_;
   TestingOAuth2TokenServiceConsumer consumer_;
   SigninErrorController signin_error_controller_;
   TestingPrefServiceSimple pref_service_;
@@ -380,7 +381,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, FetchPersistentError) {
   EXPECT_EQ(0, access_token_failure_count_);
   std::vector<std::string> scope_list;
   scope_list.push_back("scope");
-  scoped_ptr<OAuth2AccessTokenFetcher> fetcher(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher(
       oauth2_service_delegate_->CreateAccessTokenFetcher(
           kEmail, oauth2_service_delegate_->GetRequestContext(), this));
   fetcher->Start("foo", "bar", scope_list);
@@ -409,7 +410,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RetryBackoff) {
   EXPECT_EQ(0, access_token_failure_count_);
   std::vector<std::string> scope_list;
   scope_list.push_back("scope");
-  scoped_ptr<OAuth2AccessTokenFetcher> fetcher1(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher1(
       oauth2_service_delegate_->CreateAccessTokenFetcher(
           kEmail, oauth2_service_delegate_->GetRequestContext(), this));
   fetcher1->Start("foo", "bar", scope_list);
@@ -423,7 +424,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RetryBackoff) {
   // Pretend that backoff has expired and try again.
   oauth2_service_delegate_->backoff_entry_.SetCustomReleaseTime(
       base::TimeTicks());
-  scoped_ptr<OAuth2AccessTokenFetcher> fetcher2(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher2(
       oauth2_service_delegate_->CreateAccessTokenFetcher(
           kEmail, oauth2_service_delegate_->GetRequestContext(), this));
   fetcher2->Start("foo", "bar", scope_list);
@@ -452,7 +453,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ResetBackoff) {
   EXPECT_EQ(0, access_token_failure_count_);
   std::vector<std::string> scope_list;
   scope_list.push_back("scope");
-  scoped_ptr<OAuth2AccessTokenFetcher> fetcher1(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher1(
       oauth2_service_delegate_->CreateAccessTokenFetcher(
           kEmail, oauth2_service_delegate_->GetRequestContext(), this));
   fetcher1->Start("foo", "bar", scope_list);
@@ -463,7 +464,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ResetBackoff) {
   // Notify of network change and ensure that request now runs.
   oauth2_service_delegate_->OnNetworkChanged(
       net::NetworkChangeNotifier::CONNECTION_WIFI);
-  scoped_ptr<OAuth2AccessTokenFetcher> fetcher2(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher2(
       oauth2_service_delegate_->CreateAccessTokenFetcher(
           kEmail, oauth2_service_delegate_->GetRequestContext(), this));
   fetcher2->Start("foo", "bar", scope_list);

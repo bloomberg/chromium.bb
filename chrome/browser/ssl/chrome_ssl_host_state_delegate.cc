@@ -118,7 +118,7 @@ void MigrateOldSettings(HostContentSettingsMap* map) {
       // Pull out the value of the old-format setting. Only do this if the
       // patterns are as we expect them to be, otherwise the setting will just
       // be removed for safety.
-      scoped_ptr<base::Value> value;
+      std::unique_ptr<base::Value> value;
       if (setting.primary_pattern == setting.secondary_pattern &&
           url.is_valid()) {
         value = map->GetWebsiteSetting(url, url,
@@ -283,7 +283,7 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
   GURL url = GetSecureGURLForHost(host);
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
-  scoped_ptr<base::Value> value(map->GetWebsiteSetting(
+  std::unique_ptr<base::Value> value(map->GetWebsiteSetting(
       url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(), NULL));
 
   if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
@@ -326,7 +326,7 @@ ChromeSSLHostStateDelegate::QueryPolicy(const std::string& host,
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
   GURL url = GetSecureGURLForHost(host);
-  scoped_ptr<base::Value> value(map->GetWebsiteSetting(
+  std::unique_ptr<base::Value> value(map->GetWebsiteSetting(
       url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(), NULL));
 
   // Set a default value in case this method is short circuited and doesn't do a
@@ -414,7 +414,7 @@ bool ChromeSSLHostStateDelegate::HasAllowException(
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
 
-  scoped_ptr<base::Value> value(map->GetWebsiteSetting(
+  std::unique_ptr<base::Value> value(map->GetWebsiteSetting(
       url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(), NULL));
 
   if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
@@ -444,6 +444,6 @@ bool ChromeSSLHostStateDelegate::DidHostRunInsecureContent(
     int pid) const {
   return !!ran_insecure_content_hosts_.count(BrokenHostEntry(host, pid));
 }
-void ChromeSSLHostStateDelegate::SetClock(scoped_ptr<base::Clock> clock) {
+void ChromeSSLHostStateDelegate::SetClock(std::unique_ptr<base::Clock> clock) {
   clock_.reset(clock.release());
 }

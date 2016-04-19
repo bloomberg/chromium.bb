@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/browsing_data/history_counter.h"
+
 #include <limits.h>
 #include <stdint.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/browsing_data/history_counter.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -165,8 +167,8 @@ void HistoryCounter::MergeResults() {
   if (!local_counting_finished_ || !web_counting_finished_)
     return;
 
-  ReportResult(make_scoped_ptr(new HistoryResult(
-      this, local_result_, has_synced_visits_)));
+  ReportResult(base::WrapUnique(
+      new HistoryResult(this, local_result_, has_synced_visits_)));
 }
 
 HistoryCounter::HistoryResult::HistoryResult(

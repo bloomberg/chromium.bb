@@ -4,7 +4,8 @@
 
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "build/build_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -71,11 +72,11 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
   return new GCMProfileService(
       profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
       chrome::GetChannel(),
-      scoped_ptr<ProfileIdentityProvider>(new ProfileIdentityProvider(
+      std::unique_ptr<ProfileIdentityProvider>(new ProfileIdentityProvider(
           SigninManagerFactory::GetForProfile(profile),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile))),
-      scoped_ptr<GCMClientFactory>(new GCMClientFactory),
+      std::unique_ptr<GCMClientFactory>(new GCMClientFactory),
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::UI),
       content::BrowserThread::GetMessageLoopProxyForThread(

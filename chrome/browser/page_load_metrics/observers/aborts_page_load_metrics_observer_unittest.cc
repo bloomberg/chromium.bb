@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
+
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 
 class AbortsPageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(make_scoped_ptr(new AbortsPageLoadMetricsObserver()));
+    tracker->AddObserver(base::WrapUnique(new AbortsPageLoadMetricsObserver()));
   }
 
   void SimulateTimingWithoutPaint() {

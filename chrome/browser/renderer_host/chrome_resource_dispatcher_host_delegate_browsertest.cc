@@ -33,7 +33,7 @@ namespace {
 static const char kTestPolicyHeader[] = "test_header";
 static const char kServerRedirectUrl[] = "/server-redirect";
 
-scoped_ptr<net::test_server::HttpResponse> HandleTestRequest(
+std::unique_ptr<net::test_server::HttpResponse> HandleTestRequest(
     const net::test_server::HttpRequest& request) {
   if (base::StartsWith(request.relative_url, kServerRedirectUrl,
                        base::CompareCase::SENSITIVE)) {
@@ -42,13 +42,13 @@ scoped_ptr<net::test_server::HttpResponse> HandleTestRequest(
     std::string redirect_target =
         request.relative_url.substr(query_string_pos + 1);
 
-    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
     http_response->AddCustomHeader("Location", redirect_target);
     return std::move(http_response);
   } else {
-    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_OK);
     http_response->set_content("Success");
@@ -138,7 +138,7 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
  protected:
   // The fake URL for DMServer we are using.
   GURL dm_url_;
-  scoped_ptr<TestDispatcherHostDelegate> dispatcher_host_delegate_;
+  std::unique_ptr<TestDispatcherHostDelegate> dispatcher_host_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostDelegateBrowserTest);

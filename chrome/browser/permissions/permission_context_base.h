@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_CONTEXT_BASE_H_
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_CONTEXT_BASE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
@@ -161,9 +162,9 @@ class PermissionContextBase : public KeyedService {
   const content::PermissionType permission_type_;
   const ContentSettingsType content_settings_type_;
 #if defined(OS_ANDROID)
-  scoped_ptr<PermissionQueueController> permission_queue_controller_;
+  std::unique_ptr<PermissionQueueController> permission_queue_controller_;
 #endif
-  base::ScopedPtrHashMap<std::string, scoped_ptr<PermissionBubbleRequest>>
+  base::ScopedPtrHashMap<std::string, std::unique_ptr<PermissionBubbleRequest>>
       pending_bubbles_;
 
   // Must be the last member, to ensure that it will be

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -76,7 +76,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
     ContextMenuEntryAppearsForHandledUrls) {
-  scoped_ptr<TestRenderViewContextMenu> menu(
+  std::unique_ptr<TestRenderViewContextMenu> menu(
       CreateContextMenu(GURL("http://www.google.com/")));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
 
@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
     UnregisterProtocolHandler) {
-  scoped_ptr<TestRenderViewContextMenu> menu(
+  std::unique_ptr<TestRenderViewContextMenu> menu(
       CreateContextMenu(GURL("http://www.google.com/")));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
 

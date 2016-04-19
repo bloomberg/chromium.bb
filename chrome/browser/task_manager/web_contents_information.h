@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_TASK_MANAGER_WEB_CONTENTS_INFORMATION_H_
 #define CHROME_BROWSER_TASK_MANAGER_WEB_CONTENTS_INFORMATION_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -46,7 +47,7 @@ class WebContentsInformation {
   virtual void StopObservingCreation() = 0;
 
   // Create a new task manager resource for the given WebContents instance.
-  virtual scoped_ptr<RendererResource> MakeResource(
+  virtual std::unique_ptr<RendererResource> MakeResource(
       content::WebContents* web_contents) = 0;
 
  private:

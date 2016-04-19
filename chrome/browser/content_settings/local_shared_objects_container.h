@@ -7,9 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/browser/local_shared_objects_counter.h"
 
 class CannedBrowsingDataAppCacheHelper;
@@ -38,7 +39,7 @@ class LocalSharedObjectsContainer : public LocalSharedObjectsCounter {
 
   // Creates a new CookiesTreeModel for all objects in the container,
   // copying each of them.
-  scoped_ptr<CookiesTreeModel> CreateCookiesTreeModel() const;
+  std::unique_ptr<CookiesTreeModel> CreateCookiesTreeModel() const;
 
   CannedBrowsingDataAppCacheHelper* appcaches() const {
     return appcaches_.get();

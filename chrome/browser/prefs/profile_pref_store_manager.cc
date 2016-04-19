@@ -92,11 +92,11 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     const base::Closure& on_reset_on_load,
     TrackedPreferenceValidationDelegate* validation_delegate) {
-  scoped_ptr<PrefFilter> pref_filter;
+  std::unique_ptr<PrefFilter> pref_filter;
   if (!kPlatformSupportsPreferenceTracking) {
     return new JsonPrefStore(profile_path_.Append(chrome::kPreferencesFilename),
                              io_task_runner.get(),
-                             scoped_ptr<PrefFilter>());
+                             std::unique_ptr<PrefFilter>());
   }
 
   std::vector<PrefHashFilter::TrackedPreferenceMetadata>
@@ -118,20 +118,13 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
     }
   }
 
-  scoped_ptr<PrefHashFilter> unprotected_pref_hash_filter(
-      new PrefHashFilter(GetPrefHashStore(false),
-                         unprotected_configuration,
-                         base::Closure(),
-                         validation_delegate,
-                         reporting_ids_count_,
-                         false));
-  scoped_ptr<PrefHashFilter> protected_pref_hash_filter(
-      new PrefHashFilter(GetPrefHashStore(true),
-                         protected_configuration,
-                         on_reset_on_load,
-                         validation_delegate,
-                         reporting_ids_count_,
-                         true));
+  std::unique_ptr<PrefHashFilter> unprotected_pref_hash_filter(
+      new PrefHashFilter(GetPrefHashStore(false), unprotected_configuration,
+                         base::Closure(), validation_delegate,
+                         reporting_ids_count_, false));
+  std::unique_ptr<PrefHashFilter> protected_pref_hash_filter(new PrefHashFilter(
+      GetPrefHashStore(true), protected_configuration, on_reset_on_load,
+      validation_delegate, reporting_ids_count_, true));
 
   PrefHashFilter* raw_unprotected_pref_hash_filter =
       unprotected_pref_hash_filter.get();
@@ -157,7 +150,7 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
       base::Bind(&JsonPrefStore::RegisterOnNextSuccessfulWriteCallback,
                  protected_pref_store->AsWeakPtr()),
       GetPrefHashStore(false), GetPrefHashStore(true),
-      scoped_ptr<HashStoreContents>(new PrefServiceHashStoreContents(
+      std::unique_ptr<HashStoreContents>(new PrefServiceHashStoreContents(
           profile_path_.AsUTF8Unsafe(), local_state_)),
       raw_unprotected_pref_hash_filter, raw_protected_pref_hash_filter);
 
@@ -173,7 +166,7 @@ bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
     return false;
 
   const base::DictionaryValue* to_serialize = &master_prefs;
-  scoped_ptr<base::DictionaryValue> copy;
+  std::unique_ptr<base::DictionaryValue> copy;
 
   if (kPlatformSupportsPreferenceTracking) {
     copy.reset(master_prefs.DeepCopy());
@@ -205,12 +198,12 @@ bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
 PersistentPrefStore*
 ProfilePrefStoreManager::CreateDeprecatedCombinedProfilePrefStore(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
-  scoped_ptr<PrefFilter> pref_filter;
+  std::unique_ptr<PrefFilter> pref_filter;
   if (kPlatformSupportsPreferenceTracking) {
-    scoped_ptr<PrefHashStoreImpl> pref_hash_store_impl(
+    std::unique_ptr<PrefHashStoreImpl> pref_hash_store_impl(
         new PrefHashStoreImpl(seed_, device_id_, true));
     pref_hash_store_impl->set_legacy_hash_store_contents(
-        scoped_ptr<HashStoreContents>(new PrefServiceHashStoreContents(
+        std::unique_ptr<HashStoreContents>(new PrefServiceHashStoreContents(
             profile_path_.AsUTF8Unsafe(), local_state_)));
     pref_filter.reset(new PrefHashFilter(
         std::move(pref_hash_store_impl), tracking_configuration_,
@@ -220,12 +213,10 @@ ProfilePrefStoreManager::CreateDeprecatedCombinedProfilePrefStore(
                            io_task_runner.get(), std::move(pref_filter));
 }
 
-scoped_ptr<PrefHashStore> ProfilePrefStoreManager::GetPrefHashStore(
+std::unique_ptr<PrefHashStore> ProfilePrefStoreManager::GetPrefHashStore(
     bool use_super_mac) {
   DCHECK(kPlatformSupportsPreferenceTracking);
 
-  return scoped_ptr<PrefHashStore>(new PrefHashStoreImpl(
-      seed_,
-      device_id_,
-      use_super_mac));
+  return std::unique_ptr<PrefHashStore>(
+      new PrefHashStoreImpl(seed_, device_id_, use_super_mac));
 }

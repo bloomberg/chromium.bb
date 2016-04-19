@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_PROFILE_RESETTER_BRANDCODED_DEFAULT_SETTINGS_H_
 #define CHROME_BROWSER_PROFILE_RESETTER_BRANDCODED_DEFAULT_SETTINGS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 // BrandcodedDefaultSettings provides a set of default settings
@@ -25,7 +25,7 @@ class BrandcodedDefaultSettings {
   // provided for given setting.
   // After the call return_value contains a list of default engines.
   // |return_value[0]| is default one.
-  scoped_ptr<base::ListValue> GetSearchProviderOverrides() const;
+  std::unique_ptr<base::ListValue> GetSearchProviderOverrides() const;
 
   bool GetHomepage(std::string* homepage) const;
   bool GetHomepageIsNewTab(bool* homepage_is_ntp) const;
@@ -35,12 +35,12 @@ class BrandcodedDefaultSettings {
   bool GetExtensions(std::vector<std::string>* extension_ids) const;
 
   bool GetRestoreOnStartup(int* restore_on_startup) const;
-  scoped_ptr<base::ListValue> GetUrlsToRestoreOnStartup() const;
+  std::unique_ptr<base::ListValue> GetUrlsToRestoreOnStartup() const;
 
  private:
-  scoped_ptr<base::ListValue> ExtractList(const char* pref_name) const;
+  std::unique_ptr<base::ListValue> ExtractList(const char* pref_name) const;
 
-  scoped_ptr<base::DictionaryValue> master_dictionary_;
+  std::unique_ptr<base::DictionaryValue> master_dictionary_;
 
   DISALLOW_COPY_AND_ASSIGN(BrandcodedDefaultSettings);
 };

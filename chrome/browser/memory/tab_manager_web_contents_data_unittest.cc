@@ -39,7 +39,7 @@ class TabManagerWebContentsDataTest : public ChromeRenderViewHostTestHarness {
   base::SimpleTestTickClock& test_clock() { return test_clock_; }
 
   TabManager::WebContentsData* CreateWebContentsAndTabData(
-      scoped_ptr<WebContents>* web_contents) {
+      std::unique_ptr<WebContents>* web_contents) {
     web_contents->reset(
         WebContents::Create(WebContents::CreateParams(profile())));
     TabManager::WebContentsData::CreateForWebContents(web_contents->get());
@@ -47,7 +47,7 @@ class TabManagerWebContentsDataTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
-  scoped_ptr<WebContents> web_contents_;
+  std::unique_ptr<WebContents> web_contents_;
   TabManager::WebContentsData* tab_data_;
   base::SimpleTestTickClock test_clock_;
 };
@@ -93,7 +93,7 @@ TEST_F(TabManagerWebContentsDataTest, LastInactiveTime) {
 }
 
 TEST_F(TabManagerWebContentsDataTest, CopyState) {
-  scoped_ptr<WebContents> web_contents2;
+  std::unique_ptr<WebContents> web_contents2;
   auto tab_data2 = CreateWebContentsAndTabData(&web_contents2);
 
   EXPECT_EQ(tab_data()->tab_data_, tab_data2->tab_data_);

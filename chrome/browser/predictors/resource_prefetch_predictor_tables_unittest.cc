@@ -34,7 +34,7 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   base::MessageLoop loop_;
   content::TestBrowserThread db_thread_;
   TestingProfile profile_;
-  scoped_ptr<PredictorDatabase> db_;
+  std::unique_ptr<PredictorDatabase> db_;
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
 
  private:

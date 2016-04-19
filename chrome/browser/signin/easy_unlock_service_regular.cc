@@ -5,12 +5,14 @@
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
@@ -125,9 +127,9 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
   // We need to store a copy of |remote devices_| in the TPM, so it can be
   // retrieved on the sign-in screen when a user session has not been started
   // yet.
-  scoped_ptr<base::ListValue> device_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> device_list(new base::ListValue());
   for (const auto& device : remote_devices) {
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     std::string b64_public_key, b64_psk;
     base::Base64UrlEncode(device.public_key,
                           base::Base64UrlEncodePolicy::INCLUDE_PADDING,
@@ -343,7 +345,7 @@ void EasyUnlockServiceRegular::RunTurnOffFlow() {
 
   SetTurnOffFlowStatus(PENDING);
 
-  scoped_ptr<proximity_auth::CryptAuthClientFactory> factory =
+  std::unique_ptr<proximity_auth::CryptAuthClientFactory> factory =
       proximity_auth_client()->CreateCryptAuthClientFactory();
   cryptauth_client_ = factory->CreateInstance();
 
@@ -398,8 +400,8 @@ void EasyUnlockServiceRegular::StartAutoPairing(
 
   auto_pairing_callback_ = callback;
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::EASY_UNLOCK_PRIVATE_ON_START_AUTO_PAIRING,
       extensions::api::easy_unlock_private::OnStartAutoPairing::kEventName,
       std::move(args)));
@@ -589,7 +591,7 @@ void EasyUnlockServiceRegular::SyncProfilePrefsToLocalState() {
 
   // Create the dictionary of Easy Unlock preferences for the current user. The
   // items in the dictionary are the same profile prefs used for Easy Unlock.
-  scoped_ptr<base::DictionaryValue> user_prefs_dict(
+  std::unique_ptr<base::DictionaryValue> user_prefs_dict(
       new base::DictionaryValue());
   user_prefs_dict->SetBooleanWithoutPathExpansion(
       prefs::kEasyUnlockProximityRequired,
@@ -659,8 +661,8 @@ void EasyUnlockServiceRegular::InitializeCryptAuth() {
   // Initialize enrollment manager.
   cryptauth::GcmDeviceInfo device_info;
   enrollment_manager_.reset(new proximity_auth::CryptAuthEnrollmentManager(
-      make_scoped_ptr(new base::DefaultClock()),
-      make_scoped_ptr(new proximity_auth::CryptAuthEnrollerFactoryImpl(
+      base::WrapUnique(new base::DefaultClock()),
+      base::WrapUnique(new proximity_auth::CryptAuthEnrollerFactoryImpl(
           proximity_auth_client())),
       proximity_auth_client()->CreateSecureMessageDelegate(),
       GetGcmDeviceInfo(), gcm_manager_.get(),
@@ -668,7 +670,7 @@ void EasyUnlockServiceRegular::InitializeCryptAuth() {
 
   // Initialize device manager.
   device_manager_.reset(new proximity_auth::CryptAuthDeviceManager(
-      make_scoped_ptr(new base::DefaultClock()),
+      base::WrapUnique(new base::DefaultClock()),
       proximity_auth_client()->CreateCryptAuthClientFactory(),
       gcm_manager_.get(), proximity_auth_client()->GetPrefService()));
 

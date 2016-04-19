@@ -147,10 +147,10 @@ void VerifyPluginMarkedEssential(content::WebContents* contents,
   EXPECT_TRUE(PluginLoaded(contents, element_id));
 }
 
-scoped_ptr<net::test_server::HttpResponse> RespondWithHTML(
+std::unique_ptr<net::test_server::HttpResponse> RespondWithHTML(
     const std::string& html,
     const net::test_server::HttpRequest& request) {
-  scoped_ptr<net::test_server::BasicHttpResponse> response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> response(
       new net::test_server::BasicHttpResponse());
   response->set_content_type("text/html");
   response->set_content(html);

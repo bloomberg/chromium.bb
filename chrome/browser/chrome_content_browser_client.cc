@@ -16,6 +16,7 @@
 #include "base/files/scoped_file.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -1418,7 +1419,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
 #if defined(OS_MACOSX)
-  scoped_ptr<metrics::ClientInfo> client_info =
+  std::unique_ptr<metrics::ClientInfo> client_info =
       GoogleUpdateSettings::LoadMetricsClientInfo();
   if (client_info) {
     command_line->AppendSwitchASCII(switches::kMetricsClientID,
@@ -1427,7 +1428,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #elif defined(OS_POSIX)
   if (breakpad::IsCrashReporterEnabled()) {
     std::string switch_value;
-    scoped_ptr<metrics::ClientInfo> client_info =
+    std::unique_ptr<metrics::ClientInfo> client_info =
         GoogleUpdateSettings::LoadMetricsClientInfo();
     if (client_info)
       switch_value = client_info->client_id;
@@ -2025,11 +2026,11 @@ ChromeContentBrowserClient::CreateQuotaPermissionContext() {
   return new ChromeQuotaPermissionContext();
 }
 
-scoped_ptr<storage::QuotaEvictionPolicy>
+std::unique_ptr<storage::QuotaEvictionPolicy>
 ChromeContentBrowserClient::GetTemporaryStorageEvictionPolicy(
     content::BrowserContext* context) {
   return SiteEngagementEvictionPolicy::IsEnabled()
-             ? make_scoped_ptr(new SiteEngagementEvictionPolicy(context))
+             ? base::WrapUnique(new SiteEngagementEvictionPolicy(context))
              : nullptr;
 }
 
@@ -2075,7 +2076,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
 
   safe_browsing::SafeBrowsingService* safe_browsing_service =
       g_browser_process->safe_browsing_service();
-  scoped_ptr<SafeBrowsingSSLCertReporter> cert_reporter(
+  std::unique_ptr<SafeBrowsingSSLCertReporter> cert_reporter(
       new SafeBrowsingSSLCertReporter(safe_browsing_service
                                           ? safe_browsing_service->ui_manager()
                                           : nullptr));
@@ -2087,7 +2088,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
 void ChromeContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
-    scoped_ptr<content::ClientCertificateDelegate> delegate) {
+    std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   prerender::PrerenderContents* prerender_contents =
       prerender::PrerenderContents::FromWebContents(web_contents);
   if (prerender_contents) {
@@ -2103,13 +2104,10 @@ void ChromeContentBrowserClient::SelectClientCertificate(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  scoped_ptr<base::Value> filter =
+  std::unique_ptr<base::Value> filter =
       HostContentSettingsMapFactory::GetForProfile(profile)->GetWebsiteSetting(
-          requesting_url,
-          requesting_url,
-          CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-          std::string(),
-          NULL);
+          requesting_url, requesting_url,
+          CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, std::string(), NULL);
 
   if (filter.get()) {
     // Try to automatically select a client certificate.
@@ -2867,7 +2865,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   if (handle->IsInMainFrame()) {
     // Redirect some navigations to apps that have registered matching URL
     // handlers ('url_handlers' in the manifest).
-    scoped_ptr<content::NavigationThrottle> url_to_app_throttle =
+    std::unique_ptr<content::NavigationThrottle> url_to_app_throttle =
         AppUrlRedirector::MaybeCreateThrottleFor(handle);
     if (url_to_app_throttle)
       throttles.push_back(std::move(url_to_app_throttle));

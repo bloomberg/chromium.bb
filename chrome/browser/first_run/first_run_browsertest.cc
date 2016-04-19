@@ -119,7 +119,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
 
  private:
   base::FilePath prefs_file_;
-  scoped_ptr<std::string> text_;
+  std::unique_ptr<std::string> text_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunMasterPrefsBrowserTestBase);
 };
@@ -145,7 +145,7 @@ class FirstRunMasterPrefsBrowserTestT
 // bot configurations do not have another profile (browser) to import from and
 // thus the import must not be expected to have occurred.
 int MaskExpectedImportState(int expected_import_state) {
-  scoped_ptr<ImporterList> importer_list(new ImporterList());
+  std::unique_ptr<ImporterList> importer_list(new ImporterList());
   base::RunLoop run_loop;
   importer_list->DetectSourceProfiles(
       g_browser_process->GetApplicationLocale(),

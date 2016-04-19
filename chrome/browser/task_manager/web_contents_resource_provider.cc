@@ -235,7 +235,7 @@ class TaskManagerWebContentsEntry : public content::WebContentsObserver,
         (existing_resource_range.first != existing_resource_range.second);
     bool is_main_frame = (render_frame_host == web_contents()->GetMainFrame());
     bool site_instance_is_main = (site_instance == main_frame_site_instance_);
-    scoped_ptr<RendererResource> new_resource;
+    std::unique_ptr<RendererResource> new_resource;
     if (!existing_resource || (is_main_frame && !site_instance_is_main)) {
       if (is_main_frame) {
         new_resource = info()->MakeResource(web_contents());
@@ -326,7 +326,7 @@ class TaskManagerWebContentsEntry : public content::WebContentsObserver,
 
 WebContentsResourceProvider::WebContentsResourceProvider(
     TaskManager* task_manager,
-    scoped_ptr<WebContentsInformation> info)
+    std::unique_ptr<WebContentsInformation> info)
     : task_manager_(task_manager), info_(std::move(info)) {}
 
 WebContentsResourceProvider::~WebContentsResourceProvider() {}
@@ -384,7 +384,7 @@ void WebContentsResourceProvider::OnWebContentsCreated(
     // are already observing this WebContents and just ignore it.
     return;
   }
-  scoped_ptr<TaskManagerWebContentsEntry> entry(
+  std::unique_ptr<TaskManagerWebContentsEntry> entry(
       new TaskManagerWebContentsEntry(web_contents, this));
   entry->CreateAllResources();
   entries_[web_contents] = entry.release();

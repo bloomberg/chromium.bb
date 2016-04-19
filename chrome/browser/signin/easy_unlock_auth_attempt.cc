@@ -29,8 +29,8 @@ std::string UnwrapSecret(const std::string& wrapped_secret,
     return std::string();
 
   // Import the key structure.
-  scoped_ptr<crypto::SymmetricKey> key(
-     crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, raw_key));
+  std::unique_ptr<crypto::SymmetricKey> key(
+      crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, raw_key));
 
   if (!key)
     return std::string();

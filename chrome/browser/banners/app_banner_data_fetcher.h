@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_BANNERS_APP_BANNER_DATA_FETCHER_H_
 #define CHROME_BROWSER_BANNERS_APP_BANNER_DATA_FETCHER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -191,7 +192,7 @@ class AppBannerDataFetcher : public base::RefCountedThreadSafe<
   const bool is_debug_mode_;
   ui::PageTransition transition_type_;
   int event_request_id_;
-  scoped_ptr<SkBitmap> app_icon_;
+  std::unique_ptr<SkBitmap> app_icon_;
   std::string referrer_;
 
   GURL validated_url_;

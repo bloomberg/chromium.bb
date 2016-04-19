@@ -32,7 +32,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   const SearchTermsData& GetSearchTermsData() const override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override;
-  scoped_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
+  std::unique_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
       KeywordProvider* keyword_provider) override;
   std::string GetAcceptLanguages() const override;
   std::string GetEmbedderRepresentationOfAboutScheme() override;

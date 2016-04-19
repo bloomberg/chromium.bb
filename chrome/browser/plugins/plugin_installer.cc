@@ -103,7 +103,7 @@ void PluginInstaller::StartInstallingWithDownloadManager(
   DCHECK_EQ(INSTALLER_STATE_IDLE, state_);
   state_ = INSTALLER_STATE_DOWNLOADING;
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadStarted());
-  scoped_ptr<content::DownloadUrlParameters> download_parameters(
+  std::unique_ptr<content::DownloadUrlParameters> download_parameters(
       content::DownloadUrlParameters::FromWebContents(web_contents,
                                                       plugin_url));
   download_parameters->set_callback(

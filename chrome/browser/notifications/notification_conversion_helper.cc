@@ -7,12 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/api/notification_provider.h"
 #include "chrome/common/extensions/api/notifications/notification_style.h"
@@ -28,7 +28,7 @@ void NotificationConversionHelper::NotificationToNotificationOptions(
   options->type = extensions::api::notifications::ParseTemplateType(type);
 
   if (!notification.icon().IsEmpty()) {
-    scoped_ptr<extensions::api::notifications::NotificationBitmap> icon(
+    std::unique_ptr<extensions::api::notifications::NotificationBitmap> icon(
         new extensions::api::notifications::NotificationBitmap());
     GfxImageToNotificationBitmap(&notification.icon(), icon.get());
     options->icon_bitmap = std::move(icon);
@@ -44,8 +44,8 @@ void NotificationConversionHelper::NotificationToNotificationOptions(
       &notification.rich_notification_data();
 
   if (!rich_data->small_image.IsEmpty()) {
-    scoped_ptr<extensions::api::notifications::NotificationBitmap> icon_mask(
-        new extensions::api::notifications::NotificationBitmap());
+    std::unique_ptr<extensions::api::notifications::NotificationBitmap>
+        icon_mask(new extensions::api::notifications::NotificationBitmap());
     GfxImageToNotificationBitmap(&rich_data->small_image, icon_mask.get());
     options->app_icon_mask_bitmap = std::move(icon_mask);
   }
@@ -68,8 +68,8 @@ void NotificationConversionHelper::NotificationToNotificationOptions(
       button.title = base::UTF16ToUTF8(button_info.title);
 
       if (!button_info.icon.IsEmpty()) {
-        scoped_ptr<extensions::api::notifications::NotificationBitmap> icon(
-            new extensions::api::notifications::NotificationBitmap());
+        std::unique_ptr<extensions::api::notifications::NotificationBitmap>
+            icon(new extensions::api::notifications::NotificationBitmap());
         GfxImageToNotificationBitmap(&button_info.icon, icon.get());
         button.icon_bitmap = std::move(icon);
       }
@@ -79,7 +79,7 @@ void NotificationConversionHelper::NotificationToNotificationOptions(
 
   // Only image type notifications should have images.
   if (type == "image" && !rich_data->image.IsEmpty()) {
-    scoped_ptr<extensions::api::notifications::NotificationBitmap> image(
+    std::unique_ptr<extensions::api::notifications::NotificationBitmap> image(
         new extensions::api::notifications::NotificationBitmap());
     GfxImageToNotificationBitmap(&notification.image(), image.get());
     options->image_bitmap = std::move(image);
@@ -122,7 +122,7 @@ void NotificationConversionHelper::GfxImageToNotificationBitmap(
   uint32_t* bitmap_pixels = sk_bitmap.getAddr32(0, 0);
   const unsigned char* bitmap =
       reinterpret_cast<const unsigned char*>(bitmap_pixels);
-  scoped_ptr<std::vector<char>> rgba_bitmap_data(
+  std::unique_ptr<std::vector<char>> rgba_bitmap_data(
       new std::vector<char>(pixel_count * BYTES_PER_PIXEL));
 
   gfx::ConvertSkiaToRGBA(bitmap, pixel_count, reinterpret_cast<unsigned char*>(

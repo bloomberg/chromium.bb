@@ -5,6 +5,7 @@
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 
 #include <stddef.h>
+
 #include <map>
 #include <utility>
 
@@ -16,6 +17,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -254,7 +256,7 @@ class SupervisedUserWhitelistComponentInstallerTraits
                        const base::FilePath& install_dir) override;
   void ComponentReady(const base::Version& version,
                       const base::FilePath& install_dir,
-                      scoped_ptr<base::DictionaryValue> manifest) override;
+                      std::unique_ptr<base::DictionaryValue> manifest) override;
   base::FilePath GetBaseDirectory() const override;
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
@@ -294,7 +296,7 @@ bool SupervisedUserWhitelistComponentInstallerTraits::OnCustomInstall(
 void SupervisedUserWhitelistComponentInstallerTraits::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
-    scoped_ptr<base::DictionaryValue> manifest) {
+    std::unique_ptr<base::DictionaryValue> manifest) {
   // TODO(treib): Before getting the title, we should localize the manifest
   // using extension_l10n_util::LocalizeExtension, but that doesn't exist on
   // Android. crbug.com/558387
@@ -392,7 +394,7 @@ void SupervisedUserWhitelistInstallerImpl::RegisterComponent(
     const std::string& crx_id,
     const std::string& name,
     const base::Closure& callback) {
-  scoped_ptr<ComponentInstallerTraits> traits(
+  std::unique_ptr<ComponentInstallerTraits> traits(
       new SupervisedUserWhitelistComponentInstallerTraits(
           crx_id, name,
           base::Bind(&SupervisedUserWhitelistInstallerImpl::OnRawWhitelistReady,
@@ -582,12 +584,12 @@ void SupervisedUserWhitelistInstallerImpl::OnProfileWillBeRemoved(
 }  // namespace
 
 // static
-scoped_ptr<SupervisedUserWhitelistInstaller>
+std::unique_ptr<SupervisedUserWhitelistInstaller>
 SupervisedUserWhitelistInstaller::Create(
     ComponentUpdateService* cus,
     ProfileAttributesStorage* profile_attributes_storage,
     PrefService* local_state) {
-  return make_scoped_ptr(new SupervisedUserWhitelistInstallerImpl(
+  return base::WrapUnique(new SupervisedUserWhitelistInstallerImpl(
       cus, profile_attributes_storage, local_state));
 }
 

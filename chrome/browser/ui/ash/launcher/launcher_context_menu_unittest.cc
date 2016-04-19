@@ -146,7 +146,8 @@ TEST_F(LauncherContextMenuTest, DesktopShellLauncherContextMenuItemCheck) {
 // Verifies contextmenu items for Arc app
 #if defined(OS_CHROMEOS)
 TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
-  scoped_ptr<LauncherContextMenu> menu(CreateLauncherContextMenuForArcApp());
+  std::unique_ptr<LauncherContextMenu> menu(
+      CreateLauncherContextMenuForArcApp());
   EXPECT_TRUE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
   EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_OPEN_NEW));

@@ -58,7 +58,7 @@ std::string LazyDomDistillerService::GetUrlForEntry(
 
 const std::string LazyDomDistillerService::AddToList(
     const GURL& url,
-    scoped_ptr<DistillerPage> distiller_page,
+    std::unique_ptr<DistillerPage> distiller_page,
     const ArticleAvailableCallback& article_cb) {
   return instance()->AddToList(url, std::move(distiller_page), article_cb);
 }
@@ -67,34 +67,34 @@ std::vector<ArticleEntry> LazyDomDistillerService::GetEntries() const {
   return instance()->GetEntries();
 }
 
-scoped_ptr<ArticleEntry> LazyDomDistillerService::RemoveEntry(
+std::unique_ptr<ArticleEntry> LazyDomDistillerService::RemoveEntry(
     const std::string& entry_id) {
   return instance()->RemoveEntry(entry_id);
 }
 
-scoped_ptr<ViewerHandle> LazyDomDistillerService::ViewEntry(
+std::unique_ptr<ViewerHandle> LazyDomDistillerService::ViewEntry(
     ViewRequestDelegate* delegate,
-    scoped_ptr<DistillerPage> distiller_page,
+    std::unique_ptr<DistillerPage> distiller_page,
     const std::string& entry_id) {
   return instance()->ViewEntry(delegate, std::move(distiller_page), entry_id);
 }
 
-scoped_ptr<ViewerHandle> LazyDomDistillerService::ViewUrl(
+std::unique_ptr<ViewerHandle> LazyDomDistillerService::ViewUrl(
     ViewRequestDelegate* delegate,
-    scoped_ptr<DistillerPage> distiller_page,
+    std::unique_ptr<DistillerPage> distiller_page,
     const GURL& url) {
   return instance()->ViewUrl(delegate, std::move(distiller_page), url);
 }
 
-scoped_ptr<DistillerPage>
+std::unique_ptr<DistillerPage>
 LazyDomDistillerService::CreateDefaultDistillerPage(
     const gfx::Size& render_view_size) {
   return instance()->CreateDefaultDistillerPage(render_view_size);
 }
 
-scoped_ptr<DistillerPage>
+std::unique_ptr<DistillerPage>
 LazyDomDistillerService::CreateDefaultDistillerPageWithHandle(
-    scoped_ptr<SourcePageHandle> handle) {
+    std::unique_ptr<SourcePageHandle> handle) {
   return instance()->CreateDefaultDistillerPageWithHandle(std::move(handle));
 }
 

@@ -214,7 +214,7 @@ class HotwordService : public MediaCaptureDevicesDispatcher::Observer,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  scoped_ptr<HotwordAudioHistoryHandler> audio_history_handler_;
+  std::unique_ptr<HotwordAudioHistoryHandler> audio_history_handler_;
 
   bool microphone_available_;
 
@@ -228,7 +228,7 @@ class HotwordService : public MediaCaptureDevicesDispatcher::Observer,
   bool reinstall_pending_;
   // Whether we are currently in the process of training the speaker model.
   bool training_;
-  scoped_ptr<HotwordUserSessionStateObserver> session_observer_;
+  std::unique_ptr<HotwordUserSessionStateObserver> session_observer_;
 
   // Stores the launch mode for the Hotword Audio Verification App.
   LaunchMode hotword_audio_verification_launch_mode_;

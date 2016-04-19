@@ -82,8 +82,8 @@ void TabLoaderDelegateImpl::OnConnectionTypeChanged(
 }  // namespace
 
 // static
-scoped_ptr<TabLoaderDelegate> TabLoaderDelegate::Create(
+std::unique_ptr<TabLoaderDelegate> TabLoaderDelegate::Create(
     TabLoaderCallback* callback) {
-  return scoped_ptr<TabLoaderDelegate>(
+  return std::unique_ptr<TabLoaderDelegate>(
       new TabLoaderDelegateImpl(callback));
 }

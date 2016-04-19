@@ -173,9 +173,10 @@ void TabContentsInformation::GetAll(const NewWebContentsCallback& callback) {
   }
 }
 
-scoped_ptr<RendererResource> TabContentsInformation::MakeResource(
+std::unique_ptr<RendererResource> TabContentsInformation::MakeResource(
     content::WebContents* web_contents) {
-  return scoped_ptr<RendererResource>(new TabContentsResource(web_contents));
+  return std::unique_ptr<RendererResource>(
+      new TabContentsResource(web_contents));
 }
 
 }  // namespace task_manager

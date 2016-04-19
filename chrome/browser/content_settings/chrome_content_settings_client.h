@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CONTENT_SETTINGS_CHROME_CONTENT_SETTINGS_CLIENT_H_
 #define CHROME_BROWSER_CONTENT_SETTINGS_CHROME_CONTENT_SETTINGS_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "components/content_settings/core/browser/content_settings_client.h"
@@ -45,7 +46,8 @@ class ChromeContentSettingsClient
 
   // Creates a new copy of a CookiesTreeModel for all allowed (or blocked,
   // depending on |type|) local shared objects.
-  scoped_ptr<CookiesTreeModel> CreateCookiesTreeModel(AccessType type) const;
+  std::unique_ptr<CookiesTreeModel> CreateCookiesTreeModel(
+      AccessType type) const;
 
  private:
   friend class content::WebContentsUserData<ChromeContentSettingsClient>;

@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_SSL_CHROME_SSL_HOST_STATE_DELEGATE_H_
 #define CHROME_BROWSER_SSL_CHROME_SSL_HOST_STATE_DELEGATE_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 
@@ -58,7 +59,7 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
 
  protected:
   // SetClock takes ownership of the passed in clock.
-  void SetClock(scoped_ptr<base::Clock> clock);
+  void SetClock(std::unique_ptr<base::Clock> clock);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DefaultMemorySSLHostStateDelegateTest, AfterRestart);
@@ -101,7 +102,7 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
       CreateDictionaryEntriesDisposition create_entries,
       bool* expired_previous_decision);
 
-  scoped_ptr<base::Clock> clock_;
+  std::unique_ptr<base::Clock> clock_;
   RememberSSLExceptionDecisionsDisposition should_remember_ssl_decisions_;
   Profile* profile_;
 

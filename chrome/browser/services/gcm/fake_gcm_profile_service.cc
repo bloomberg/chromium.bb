@@ -119,10 +119,11 @@ void CustomFakeGCMDriver::OnDispatchMessage(const std::string& app_id,
 }  // namespace
 
 // static
-scoped_ptr<KeyedService> FakeGCMProfileService::Build(
+std::unique_ptr<KeyedService> FakeGCMProfileService::Build(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  scoped_ptr<FakeGCMProfileService> service(new FakeGCMProfileService(profile));
+  std::unique_ptr<FakeGCMProfileService> service(
+      new FakeGCMProfileService(profile));
   service->SetDriverForTesting(new CustomFakeGCMDriver(service.get()));
   return std::move(service);
 }

@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/task_management/providers/task.h"
 
 class ProcessResourceUsage;
@@ -41,7 +42,7 @@ class ChildProcessTask : public Task {
  private:
   // The Mojo service wrapper that will provide us with the V8 memory usage of
   // the browser child process represented by this object.
-  scoped_ptr<ProcessResourceUsage> process_resources_sampler_;
+  std::unique_ptr<ProcessResourceUsage> process_resources_sampler_;
 
   // The allocated and used V8 memory (in bytes).
   int64_t v8_memory_allocated_;

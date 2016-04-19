@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/environment.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,7 +15,7 @@ class ChromeLoggingTest : public testing::Test {
   // Stores the current value of the log file name environment
   // variable and sets the variable to new_value.
   void SaveEnvironmentVariable(const std::string& new_value) {
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
     if (!env->GetVar(env_vars::kLogFileName, &environment_filename_))
       environment_filename_ = "";
 
@@ -24,7 +25,7 @@ class ChromeLoggingTest : public testing::Test {
   // Restores the value of the log file nave environment variable
   // previously saved by SaveEnvironmentVariable().
   void RestoreEnvironmentVariable() {
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
     env->SetVar(env_vars::kLogFileName, environment_filename_);
   }
 

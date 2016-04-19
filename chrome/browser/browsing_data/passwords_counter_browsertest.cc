@@ -87,7 +87,7 @@ class PasswordsCounterTest : public InProcessBrowserTest,
     return result_;
   }
 
-  void Callback(scoped_ptr<BrowsingDataCounter::Result> result) {
+  void Callback(std::unique_ptr<BrowsingDataCounter::Result> result) {
     finished_ = result->Finished();
 
     if (finished_) {
@@ -115,7 +115,7 @@ class PasswordsCounterTest : public InProcessBrowserTest,
 
   scoped_refptr<password_manager::PasswordStore> store_;
 
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   base::Time time_;
 
   bool finished_;

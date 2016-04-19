@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/webui/options/password_manager_handler.h"
+
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
-#include "chrome/browser/ui/webui/options/password_manager_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -98,8 +100,9 @@ void CallbackTestWebUI::ProcessWebUIMessage(const GURL& source_url,
 
 class TestPasswordManagerHandler : public options::PasswordManagerHandler {
  public:
-  TestPasswordManagerHandler(scoped_ptr<PasswordManagerPresenter> presenter,
-                             CallbackTestWebUI* web_ui)
+  TestPasswordManagerHandler(
+      std::unique_ptr<PasswordManagerPresenter> presenter,
+      CallbackTestWebUI* web_ui)
       : PasswordManagerHandler(std::move(presenter)) {
     set_web_ui(web_ui);
   }
@@ -141,9 +144,9 @@ class DummyPasswordManagerHandler : public PasswordUIView {
                     const std::string&,
                     const base::string16&) override {}
   void SetPasswordList(
-      const std::vector<scoped_ptr<autofill::PasswordForm>>&) override {}
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>&) override {}
   void SetPasswordExceptionList(
-      const std::vector<scoped_ptr<autofill::PasswordForm>>&) override {}
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>&) override {}
 
 #if !defined(OS_ANDROID)
   gfx::NativeWindow GetNativeWindow() const override;
@@ -176,7 +179,7 @@ class PasswordManagerHandlerTest : public testing::Test {
         content::WebContentsTester::CreateTestWebContents(&profile_, NULL);
     web_ui_.set_web_contents(web_contents_);
     handler_.reset(new TestPasswordManagerHandler(
-        make_scoped_ptr(presenter_raw_), &web_ui_));
+        base::WrapUnique(presenter_raw_), &web_ui_));
     handler_->RegisterMessages();
     ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactory);
     handler_->InitializeHandler();
@@ -197,8 +200,8 @@ class PasswordManagerHandlerTest : public testing::Test {
   PasswordManagerPresenter* presenter_raw_;
   CallbackTestWebUI web_ui_;
   content::WebContents* web_contents_;
-  scoped_ptr<DummyPasswordManagerHandler> dummy_handler_;
-  scoped_ptr<TestPasswordManagerHandler> handler_;
+  std::unique_ptr<DummyPasswordManagerHandler> dummy_handler_;
+  std::unique_ptr<TestPasswordManagerHandler> handler_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;

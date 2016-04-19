@@ -12,10 +12,10 @@
 #include <cstdlib>
 #include <functional>
 #include <limits>
+#include <memory>
 #include <numeric>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"

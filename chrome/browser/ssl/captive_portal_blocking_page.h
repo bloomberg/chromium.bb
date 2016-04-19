@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_SSL_CAPTIVE_PORTAL_BLOCKING_PAGE_H_
 #define CHROME_BROWSER_SSL_CAPTIVE_PORTAL_BLOCKING_PAGE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "url/gurl.h"
 
@@ -43,7 +43,7 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
   CaptivePortalBlockingPage(content::WebContents* web_contents,
                             const GURL& request_url,
                             const GURL& login_url,
-                            scoped_ptr<SSLCertReporter> ssl_cert_reporter,
+                            std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
                             const net::SSLInfo& ssl_info,
                             const base::Callback<void(bool)>& callback);
   ~CaptivePortalBlockingPage() override;
@@ -71,7 +71,7 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
  private:
   // URL of the login page, opened when the user clicks the "Connect" button.
   const GURL login_url_;
-  scoped_ptr<CertReportHelper> cert_report_helper_;
+  std::unique_ptr<CertReportHelper> cert_report_helper_;
   base::Callback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPage);

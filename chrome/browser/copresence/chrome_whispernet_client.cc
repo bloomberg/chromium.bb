@@ -5,8 +5,10 @@
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 
 #include <stddef.h>
+
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/copresence/chrome_whispernet_config.h"
 #include "chrome/browser/extensions/api/copresence_private/copresence_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -134,7 +136,7 @@ void ChromeWhispernetClient::EncodeToken(
   params.token.audible = (type == AUDIBLE);
   ConvertTokenParams(token_params[type], &params.token_params);
 
-  SendEventIfLoaded(make_scoped_ptr(new Event(
+  SendEventIfLoaded(base::WrapUnique(new Event(
       extensions::events::COPRESENCE_PRIVATE_ON_ENCODE_TOKEN_REQUEST,
       OnEncodeTokenRequest::kEventName,
       OnEncodeTokenRequest::Create(client_id_, params), browser_context_)));
@@ -151,7 +153,7 @@ void ChromeWhispernetClient::DecodeSamples(
   ConvertTokenParams(token_params[AUDIBLE], &params.audible_token_params);
   ConvertTokenParams(token_params[INAUDIBLE], &params.inaudible_token_params);
 
-  SendEventIfLoaded(make_scoped_ptr(new Event(
+  SendEventIfLoaded(base::WrapUnique(new Event(
       extensions::events::COPRESENCE_PRIVATE_ON_DECODE_SAMPLES_REQUEST,
       OnDecodeSamplesRequest::kEventName,
       OnDecodeSamplesRequest::Create(client_id_, params), browser_context_)));
@@ -193,14 +195,14 @@ void ChromeWhispernetClient::AudioConfiguration(const AudioParamData& params) {
   memcpy(audio_params.param_data.data(), &params, params_size);
 
   DVLOG(3) << "Configuring audio for client " << client_id_;
-  SendEventIfLoaded(make_scoped_ptr(new Event(
+  SendEventIfLoaded(base::WrapUnique(new Event(
       extensions::events::COPRESENCE_PRIVATE_ON_CONFIG_AUDIO,
       OnConfigAudio::kEventName,
       OnConfigAudio::Create(client_id_, audio_params), browser_context_)));
 }
 
 void ChromeWhispernetClient::SendEventIfLoaded(
-    scoped_ptr<extensions::Event> event) {
+    std::unique_ptr<extensions::Event> event) {
   DCHECK(event_router_);
 
   if (extension_loaded_) {
@@ -226,7 +228,7 @@ void ChromeWhispernetClient::OnExtensionLoaded(bool success) {
   DCHECK(event_router_);
   for (Event* event : queued_events_) {
     event_router_->DispatchEventToExtension(kWhispernetProxyExtensionId,
-                                            make_scoped_ptr(event));
+                                            base::WrapUnique(event));
   }
   queued_events_.weak_clear();
 

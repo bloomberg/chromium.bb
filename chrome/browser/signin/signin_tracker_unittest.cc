@@ -89,8 +89,8 @@ class SigninTrackerTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<SigninTracker> tracker_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<SigninTracker> tracker_;
+  std::unique_ptr<TestingProfile> profile_;
   FakeSigninManagerForTesting* mock_signin_manager_;
   FakeProfileOAuth2TokenService* fake_oauth2_token_service_;
   MockObserver observer_;

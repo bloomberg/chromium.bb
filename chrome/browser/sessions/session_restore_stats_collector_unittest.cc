@@ -160,8 +160,8 @@ class TestSessionRestoreStatsCollector : public SessionRestoreStatsCollector {
   using SessionRestoreStatsCollector::Observe;
 
   TestSessionRestoreStatsCollector(
-      scoped_ptr<base::TickClock> tick_clock,
-      scoped_ptr<StatsReportingDelegate> reporting_delegate)
+      std::unique_ptr<base::TickClock> tick_clock,
+      std::unique_ptr<StatsReportingDelegate> reporting_delegate)
       : SessionRestoreStatsCollector(tick_clock->NowTicks(),
                                      std::move(reporting_delegate)) {
     set_tick_clock(std::move(tick_clock));
@@ -203,8 +203,8 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
     // its job, and will clean itself up when done.
     scoped_refptr<TestSessionRestoreStatsCollector> stats_collector =
         new TestSessionRestoreStatsCollector(
-            scoped_ptr<base::TickClock>(test_tick_clock_),
-            scoped_ptr<StatsReportingDelegate>(
+            std::unique_ptr<base::TickClock>(test_tick_clock_),
+            std::unique_ptr<StatsReportingDelegate>(
                 passthrough_reporting_delegate_));
     stats_collector_ = stats_collector.get();
     stats_collector = nullptr;
@@ -301,7 +301,7 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
 
   // A new web contents factory is generated per test. This automatically cleans
   // up any tabs created by previous tests.
-  scoped_ptr<content::TestWebContentsFactory> test_web_contents_factory_;
+  std::unique_ptr<content::TestWebContentsFactory> test_web_contents_factory_;
 
   // These are recreated for each test. The reporting delegate allows the test
   // to observe the behaviour of the SessionRestoreStatsCollector under test.

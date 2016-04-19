@@ -355,7 +355,7 @@ void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
 
   std::string current_theme = GetThemeID();
   std::vector<std::string> remove_list;
-  scoped_ptr<const extensions::ExtensionSet> extensions(
+  std::unique_ptr<const extensions::ExtensionSet> extensions(
       extensions::ExtensionRegistry::Get(profile_)
           ->GenerateInstalledExtensionsSet());
   extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);

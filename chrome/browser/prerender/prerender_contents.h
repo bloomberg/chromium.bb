@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -312,7 +312,7 @@ class PrerenderContents : public content::NotificationObserver,
   base::TimeTicks load_start_time_;
 
   // The prerendered WebContents; may be null.
-  scoped_ptr<content::WebContents> prerender_contents_;
+  std::unique_ptr<content::WebContents> prerender_contents_;
 
   // The session storage namespace id for use in matching. We must save it
   // rather than get it from the RenderViewHost since in the control group
@@ -377,9 +377,9 @@ class PrerenderContents : public content::NotificationObserver,
 
   // Process Metrics of the render process associated with the
   // RenderViewHost for this object.
-  scoped_ptr<base::ProcessMetrics> process_metrics_;
+  std::unique_ptr<base::ProcessMetrics> process_metrics_;
 
-  scoped_ptr<WebContentsDelegateImpl> web_contents_delegate_;
+  std::unique_ptr<WebContentsDelegateImpl> web_contents_delegate_;
 
   // These are -1 before a RenderView is created.
   int child_id_;

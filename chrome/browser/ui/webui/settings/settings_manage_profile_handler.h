@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_MANAGE_PROFILE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_MANAGE_PROFILE_HANDLER_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -44,7 +44,7 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
   void HandleGetAvailableIcons(const base::ListValue* args);
 
   // Get all the available profile icons to choose from.
-  scoped_ptr<base::ListValue> GetAvailableIcons();
+  std::unique_ptr<base::ListValue> GetAvailableIcons();
 
   // Callback for the "setProfileIconAndName" message. Sets the name and icon
   // of a given profile.

@@ -92,14 +92,14 @@ translate::LanguageState& ChromeTranslateClient::GetLanguageState() {
 }
 
 // static
-scoped_ptr<translate::TranslatePrefs>
+std::unique_ptr<translate::TranslatePrefs>
 ChromeTranslateClient::CreateTranslatePrefs(PrefService* prefs) {
 #if defined(OS_CHROMEOS)
   const char* preferred_languages_prefs = prefs::kLanguagePreferredLanguages;
 #else
   const char* preferred_languages_prefs = NULL;
 #endif
-  scoped_ptr<translate::TranslatePrefs> translate_prefs(
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs(
       new translate::TranslatePrefs(prefs, prefs::kAcceptLanguages,
                                     preferred_languages_prefs));
 
@@ -153,7 +153,7 @@ void ChromeTranslateClient::GetTranslateLanguages(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   Profile* original_profile = profile->GetOriginalProfile();
   PrefService* prefs = original_profile->GetPrefs();
-  scoped_ptr<translate::TranslatePrefs> translate_prefs =
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
       CreateTranslatePrefs(prefs);
   if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
     std::string auto_translate_language =
@@ -228,7 +228,7 @@ PrefService* ChromeTranslateClient::GetPrefs() {
   return profile->GetOriginalProfile()->GetPrefs();
 }
 
-scoped_ptr<translate::TranslatePrefs>
+std::unique_ptr<translate::TranslatePrefs>
 ChromeTranslateClient::GetTranslatePrefs() {
   DCHECK(web_contents());
   Profile* profile =

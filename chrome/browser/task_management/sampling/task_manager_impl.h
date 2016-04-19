@@ -133,7 +133,7 @@ class TaskManagerImpl :
   // The manager of the IO thread helper used to handle network bytes
   // notifications on IO thread. The manager itself lives on the UI thread, but
   // the IO thread helper lives entirely on the IO thread.
-  scoped_ptr<IoThreadHelperManager> io_thread_helper_manager_;
+  std::unique_ptr<IoThreadHelperManager> io_thread_helper_manager_;
 
   // The list of the task providers that are owned and observed by this task
   // manager implementation.

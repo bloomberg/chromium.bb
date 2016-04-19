@@ -4,6 +4,7 @@
 
 #include "chrome/browser/data_usage/tab_id_provider.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -11,7 +12,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
@@ -79,7 +79,7 @@ TabIdProvider::TabIdProvider(base::TaskRunner* task_runner,
                              const tracked_objects::Location& from_here,
                              const TabIdGetter& tab_id_getter)
     : is_tab_id_ready_(false), tab_id_(-1), weak_ptr_factory_(this) {
-  scoped_ptr<CallbackRunner> callback_runner(new CallbackRunner());
+  std::unique_ptr<CallbackRunner> callback_runner(new CallbackRunner());
   weak_callback_runner_ = callback_runner->GetWeakPtr();
   callback_runner->AddCallback(
       base::Bind(&TabIdProvider::OnTabIdReady, GetWeakPtr()));

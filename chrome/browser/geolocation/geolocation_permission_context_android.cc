@@ -92,6 +92,6 @@ void GeolocationPermissionContextAndroid::HandleUpdateAndroidPermissions(
 }
 
 void GeolocationPermissionContextAndroid::SetLocationSettingsForTesting(
-    scoped_ptr<LocationSettings> settings) {
+    std::unique_ptr<LocationSettings> settings) {
   location_settings_ = std::move(settings);
 }

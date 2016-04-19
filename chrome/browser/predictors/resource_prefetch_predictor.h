@@ -8,13 +8,13 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -160,7 +160,7 @@ class ResourcePrefetchPredictor
     ~Result();
 
     PrefetchKeyType key_type;
-    scoped_ptr<ResourcePrefetcher::RequestVector> requests;
+    std::unique_ptr<ResourcePrefetcher::RequestVector> requests;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Result);
@@ -172,7 +172,7 @@ class ResourcePrefetchPredictor
   typedef ResourcePrefetchPredictorTables::PrefetchDataMap PrefetchDataMap;
   typedef std::map<NavigationID, linked_ptr<std::vector<URLRequestSummary> > >
       NavigationMap;
-  typedef std::map<NavigationID, scoped_ptr<Result>> ResultsMap;
+  typedef std::map<NavigationID, std::unique_ptr<Result>> ResultsMap;
 
   // Returns true if the main page request is supported for prediction.
   static bool IsHandledMainPage(net::URLRequest* request);
@@ -224,8 +224,8 @@ class ResourcePrefetchPredictor
 
   // Callback for task to read predictor database. Takes ownership of
   // |url_data_map| and |host_data_map|.
-  void CreateCaches(scoped_ptr<PrefetchDataMap> url_data_map,
-                    scoped_ptr<PrefetchDataMap> host_data_map);
+  void CreateCaches(std::unique_ptr<PrefetchDataMap> url_data_map,
+                    std::unique_ptr<PrefetchDataMap> host_data_map);
 
   // Called during initialization when history is read and the predictor
   // database has been read.
@@ -319,8 +319,8 @@ class ResourcePrefetchPredictor
   NavigationMap inflight_navigations_;
 
   // Copy of the data in the predictor tables.
-  scoped_ptr<PrefetchDataMap> url_table_cache_;
-  scoped_ptr<PrefetchDataMap> host_table_cache_;
+  std::unique_ptr<PrefetchDataMap> url_table_cache_;
+  std::unique_ptr<PrefetchDataMap> host_table_cache_;
 
   ResultsMap results_map_;
 

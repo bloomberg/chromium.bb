@@ -232,9 +232,9 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
         lock_handler_.get());
   }
 
-  scoped_ptr<EasyUnlockAuthAttempt> auth_attempt_;
-  scoped_ptr<FakeAppManager> app_manager_;
-  scoped_ptr<TestLockHandler> lock_handler_;
+  std::unique_ptr<EasyUnlockAuthAttempt> auth_attempt_;
+  std::unique_ptr<FakeAppManager> app_manager_;
+  std::unique_ptr<TestLockHandler> lock_handler_;
 
   const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
   const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestUser2);
@@ -390,9 +390,9 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
         lock_handler_.get());
   }
 
-  scoped_ptr<EasyUnlockAuthAttempt> auth_attempt_;
-  scoped_ptr<FakeAppManager> app_manager_;
-  scoped_ptr<TestLockHandler> lock_handler_;
+  std::unique_ptr<EasyUnlockAuthAttempt> auth_attempt_;
+  std::unique_ptr<FakeAppManager> app_manager_;
+  std::unique_ptr<TestLockHandler> lock_handler_;
 
   const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
   const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestUser2);

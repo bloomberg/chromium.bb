@@ -5,11 +5,11 @@
 #include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "net/cookies/canonical_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +53,7 @@ void RunTestCase(
   std::string cookie_line = "A=2";
   GURL test_url(test_case.url);
   EXPECT_TRUE(test_url.is_valid()) << test_case.url;
-  scoped_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
+  std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
       test_url, cookie_line, base::Time::Now(), net::CookieOptions());
   EXPECT_TRUE(cookie) << cookie_line << " from " << test_case.url
                       << " is not a valid cookie";

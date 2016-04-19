@@ -41,7 +41,7 @@ OneClickSigninDialogView* OneClickSigninDialogView::dialog_view_ = NULL;
 // static
 void OneClickSigninDialogView::ShowDialog(
     const base::string16& email,
-    scoped_ptr<OneClickSigninLinksDelegate> delegate,
+    std::unique_ptr<OneClickSigninLinksDelegate> delegate,
     gfx::NativeWindow window,
     const BrowserWindow::StartSyncCallback& start_sync) {
   if (IsShowing())
@@ -67,7 +67,7 @@ void OneClickSigninDialogView::Hide() {
 
 OneClickSigninDialogView::OneClickSigninDialogView(
     const base::string16& email,
-    scoped_ptr<OneClickSigninLinksDelegate> delegate,
+    std::unique_ptr<OneClickSigninLinksDelegate> delegate,
     const BrowserWindow::StartSyncCallback& start_sync_callback)
     : delegate_(std::move(delegate)),
       email_(email),

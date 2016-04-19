@@ -195,7 +195,7 @@ class CrossDevicePromo : public KeyedService,
   PrefService* prefs_;
   SigninClient* signin_client_;
 
-  scoped_ptr<DeviceActivityFetcher> device_activity_fetcher_;
+  std::unique_ptr<DeviceActivityFetcher> device_activity_fetcher_;
   base::ObserverList<CrossDevicePromo::Observer> observer_list_;
 
   // Initialized from the |kParamMinutesMaxContextSwitchDuration| field trial

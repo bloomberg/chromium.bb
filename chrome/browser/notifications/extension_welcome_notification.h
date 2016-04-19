@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_EXTENSION_WELCOME_NOTIFICATION_H_
 #define CHROME_BROWSER_NOTIFICATIONS_EXTENSION_WELCOME_NOTIFICATION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
@@ -149,15 +149,15 @@ class ExtensionWelcomeNotification
   // Simplifying Assumption: The delayed notification has passed the
   // extension ID check. This means we do not need to store all of the
   // notifications that may also show a welcome notification.
-  scoped_ptr<Notification> delayed_notification_;
+  std::unique_ptr<Notification> delayed_notification_;
 
   // If the welcome notification is shown, this timer tracks when to hide the
   // welcome notification.
-  scoped_ptr<base::OneShotTimer> expiration_timer_;
+  std::unique_ptr<base::OneShotTimer> expiration_timer_;
 
   // Delegate for Chrome global calls like base::Time::GetTime() for
   // testability.
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWelcomeNotification);
 };

@@ -79,7 +79,8 @@ void ChromeMashShelfController::Init() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Image& image = rb.GetImageNamed(IDR_PRODUCT_LOGO_32);
   item->image = skia::mojom::Bitmap::From(*image.ToSkBitmap());
-  scoped_ptr<ChromeShelfItemDelegate> delegate(new ChromeShelfItemDelegate());
+  std::unique_ptr<ChromeShelfItemDelegate> delegate(
+      new ChromeShelfItemDelegate());
   shelf_controller_->AddItem(std::move(item),
                              delegate->CreateInterfacePtrInfoAndBind(
                                  shelf_controller_.associated_group()));

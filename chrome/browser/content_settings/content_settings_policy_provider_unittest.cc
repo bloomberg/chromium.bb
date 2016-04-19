@@ -4,11 +4,11 @@
 
 #include "components/content_settings/core/browser/content_settings_policy_provider.h"
 
+#include <memory>
 #include <string>
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/common/chrome_switches.h"
@@ -43,11 +43,8 @@ TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
 
   Rules rules;
 
-  scoped_ptr<RuleIterator> rule_iterator(
-      provider.GetRuleIterator(
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string(),
-          false));
+  std::unique_ptr<RuleIterator> rule_iterator(provider.GetRuleIterator(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), false));
   EXPECT_FALSE(rule_iterator->HasNext());
 
   // Change the managed value of the default geolocation setting
@@ -76,11 +73,8 @@ TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
                         new base::FundamentalValue(CONTENT_SETTING_BLOCK));
 
-  scoped_ptr<RuleIterator> rule_iterator(
-      provider.GetRuleIterator(
-          CONTENT_SETTINGS_TYPE_PLUGINS,
-          std::string(),
-          false));
+  std::unique_ptr<RuleIterator> rule_iterator(provider.GetRuleIterator(
+      CONTENT_SETTINGS_TYPE_PLUGINS, std::string(), false));
   EXPECT_TRUE(rule_iterator->HasNext());
   Rule rule = rule_iterator->Next();
   EXPECT_FALSE(rule_iterator->HasNext());
@@ -152,7 +146,7 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
             TestUtils::GetContentSetting(&provider, google_url, google_url,
                                          CONTENT_SETTINGS_TYPE_IMAGES,
                                          std::string(), false));
-  scoped_ptr<base::Value> value_ptr(TestUtils::GetContentSettingValue(
+  std::unique_ptr<base::Value> value_ptr(TestUtils::GetContentSettingValue(
       &provider, google_url, google_url, CONTENT_SETTINGS_TYPE_IMAGES,
       std::string(), false));
 
@@ -163,7 +157,7 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   // The PolicyProvider does not allow setting content settings as they are
   // enforced via policies and not set by the user or extension. So a call to
   // SetWebsiteSetting does nothing.
-  scoped_ptr<base::Value> value_block(
+  std::unique_ptr<base::Value> value_block(
       new base::FundamentalValue(CONTENT_SETTING_BLOCK));
   bool owned = provider.SetWebsiteSetting(yt_url_pattern,
                                           yt_url_pattern,
@@ -241,7 +235,7 @@ TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
                       &provider, youtube_url, youtube_url,
                       CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
                       std::string(), false));
-  scoped_ptr<base::Value> cert_filter(TestUtils::GetContentSettingValue(
+  std::unique_ptr<base::Value> cert_filter(TestUtils::GetContentSettingValue(
       &provider, google_url, google_url,
       CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, std::string(), false));
 

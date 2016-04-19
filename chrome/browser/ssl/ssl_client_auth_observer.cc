@@ -22,7 +22,7 @@ typedef std::pair<net::SSLCertRequestInfo*, net::X509Certificate*> CertDetails;
 SSLClientAuthObserver::SSLClientAuthObserver(
     const content::BrowserContext* browser_context,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
-    scoped_ptr<content::ClientCertificateDelegate> delegate)
+    std::unique_ptr<content::ClientCertificateDelegate> delegate)
     : browser_context_(browser_context),
       cert_request_info_(cert_request_info),
       delegate_(std::move(delegate)) {}

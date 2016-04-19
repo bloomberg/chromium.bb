@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -167,7 +168,7 @@ class SearchProviderTest : public testing::Test,
 
  protected:
   // Needed for AutocompleteFieldTrial::ActivateStaticTrials();
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   // Default values used for testing.
   static const std::string kNotApplicable;
@@ -257,7 +258,7 @@ class SearchProviderTest : public testing::Test,
 
   net::TestURLFetcherFactory test_factory_;
   TestingProfile profile_;
-  scoped_ptr<ChromeAutocompleteProviderClient> client_;
+  std::unique_ptr<ChromeAutocompleteProviderClient> client_;
   scoped_refptr<SearchProviderForTest> provider_;
 
   // If non-NULL, OnProviderUpdate quits the current |run_loop_|.
@@ -1090,8 +1091,8 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
   AutocompleteController controller(
-      make_scoped_ptr(new ChromeAutocompleteProviderClient(&profile_)), nullptr,
-      AutocompleteProvider::TYPE_SEARCH);
+      base::WrapUnique(new ChromeAutocompleteProviderClient(&profile_)),
+      nullptr, AutocompleteProvider::TYPE_SEARCH);
   controller.Start(AutocompleteInput(
       ASCIIToUTF16("k t"), base::string16::npos, std::string(), GURL(),
       metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true, false,

@@ -9,10 +9,10 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
@@ -90,7 +90,7 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
                      const ResourcePrefetchPredictorConfig& config,
                      const NavigationID& navigation_id,
                      PrefetchKeyType key_type,
-                     scoped_ptr<RequestVector> requests);
+                     std::unique_ptr<RequestVector> requests);
   ~ResourcePrefetcher() override;
 
   void Start();  // Kicks off the prefetching. Can only be called once.
@@ -152,7 +152,7 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
   ResourcePrefetchPredictorConfig const config_;
   NavigationID navigation_id_;
   PrefetchKeyType key_type_;
-  scoped_ptr<RequestVector> request_vector_;
+  std::unique_ptr<RequestVector> request_vector_;
 
   std::map<net::URLRequest*, Request*> inflight_requests_;
   std::list<Request*> request_queue_;

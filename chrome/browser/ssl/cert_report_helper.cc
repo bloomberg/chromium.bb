@@ -34,7 +34,7 @@ const char CertReportHelper::kFinchGroupDontShowDontSend[] =
 const char CertReportHelper::kFinchParamName[] = "sendingThreshold";
 
 CertReportHelper::CertReportHelper(
-    scoped_ptr<SSLCertReporter> ssl_cert_reporter,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     content::WebContents* web_contents,
     const GURL& request_url,
     const net::SSLInfo& ssl_info,
@@ -112,7 +112,7 @@ void CertReportHelper::FinishCertCollection(
 }
 
 void CertReportHelper::SetSSLCertReporterForTesting(
-    scoped_ptr<SSLCertReporter> ssl_cert_reporter) {
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
   ssl_cert_reporter_ = std::move(ssl_cert_reporter);
 }
 

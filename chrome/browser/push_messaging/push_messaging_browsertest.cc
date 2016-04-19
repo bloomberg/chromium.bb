@@ -241,12 +241,12 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   virtual Browser* GetBrowser() const { return browser(); }
 
  private:
-  scoped_ptr<net::EmbeddedTestServer> https_server_;
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
   gcm::FakeGCMProfileService* gcm_service_;
   PushMessagingServiceImpl* push_service_;
 
 #if defined(ENABLE_NOTIFICATIONS)
-  scoped_ptr<StubNotificationUIManager> notification_manager_;
+  std::unique_ptr<StubNotificationUIManager> notification_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingBrowserTest);

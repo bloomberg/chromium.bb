@@ -37,7 +37,7 @@ namespace {
 
 void SetMockReporter(
     SafeBrowsingService* safe_browsing_service,
-    scoped_ptr<certificate_reporting::ErrorReporter> reporter) {
+    std::unique_ptr<certificate_reporting::ErrorReporter> reporter) {
   safe_browsing_service->ping_manager()->SetCertificateErrorReporterForTesting(
       std::move(reporter));
 }
@@ -140,9 +140,10 @@ void CertificateReportingTest::SetUpMockReporter() {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(SetMockReporter, base::RetainedRef(safe_browsing_service),
-                 base::Passed(scoped_ptr<certificate_reporting::ErrorReporter>(
-                     reporter_))));
+      base::Bind(
+          SetMockReporter, base::RetainedRef(safe_browsing_service),
+          base::Passed(std::unique_ptr<certificate_reporting::ErrorReporter>(
+              reporter_))));
 }
 
 const std::string& CertificateReportingTest::GetLatestHostnameReported() const {
@@ -155,7 +156,7 @@ void SetCertReportingOptIn(Browser* browser, OptIn opt_in) {
       opt_in == EXTENDED_REPORTING_OPT_IN);
 }
 
-scoped_ptr<SSLCertReporter> SetUpMockSSLCertReporter(
+std::unique_ptr<SSLCertReporter> SetUpMockSSLCertReporter(
     base::RunLoop* run_loop,
     ExpectReport expect_report) {
   // Set up a MockSSLCertReporter to keep track of when the blocking
@@ -165,10 +166,11 @@ scoped_ptr<SSLCertReporter> SetUpMockSSLCertReporter(
   if (!sb_service)
     return nullptr;
 
-  scoped_ptr<MockSSLCertReporter> ssl_cert_reporter(new MockSSLCertReporter(
-      sb_service->ui_manager(), expect_report == CERT_REPORT_EXPECTED
-                                    ? run_loop->QuitClosure()
-                                    : base::Bind(&base::DoNothing)));
+  std::unique_ptr<MockSSLCertReporter> ssl_cert_reporter(
+      new MockSSLCertReporter(sb_service->ui_manager(),
+                              expect_report == CERT_REPORT_EXPECTED
+                                  ? run_loop->QuitClosure()
+                                  : base::Bind(&base::DoNothing)));
   ssl_cert_reporter->set_expect_report(expect_report == CERT_REPORT_EXPECTED);
   return std::move(ssl_cert_reporter);
 }

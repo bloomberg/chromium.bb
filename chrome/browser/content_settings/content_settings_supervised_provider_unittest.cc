@@ -4,9 +4,9 @@
 
 #include "chrome/browser/content_settings/content_settings_supervised_provider.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
@@ -29,7 +29,7 @@ class SupervisedUserProviderTest : public ::testing::Test {
  protected:
   SupervisedUserSettingsService service_;
   scoped_refptr<TestingPrefStore> pref_store_;
-  scoped_ptr<SupervisedProvider> provider_;
+  std::unique_ptr<SupervisedProvider> provider_;
   content_settings::MockObserver mock_observer_;
 };
 
@@ -49,7 +49,7 @@ void SupervisedUserProviderTest::TearDown() {
 }
 
 TEST_F(SupervisedUserProviderTest, GeolocationTest) {
-  scoped_ptr<RuleIterator> rule_iterator(provider_->GetRuleIterator(
+  std::unique_ptr<RuleIterator> rule_iterator(provider_->GetRuleIterator(
       CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), false));
   EXPECT_FALSE(rule_iterator->HasNext());
   rule_iterator.reset();
@@ -59,7 +59,7 @@ TEST_F(SupervisedUserProviderTest, GeolocationTest) {
                                   _, _, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
   service_.SetLocalSetting(
       supervised_users::kGeolocationDisabled,
-      scoped_ptr<base::Value>(new base::FundamentalValue(true)));
+      std::unique_ptr<base::Value>(new base::FundamentalValue(true)));
 
   rule_iterator = provider_->GetRuleIterator(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                              std::string(), false);
@@ -77,7 +77,7 @@ TEST_F(SupervisedUserProviderTest, GeolocationTest) {
                                   _, _, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
   service_.SetLocalSetting(
       supervised_users::kGeolocationDisabled,
-      scoped_ptr<base::Value>(new base::FundamentalValue(false)));
+      std::unique_ptr<base::Value>(new base::FundamentalValue(false)));
 
   rule_iterator = provider_->GetRuleIterator(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                              std::string(), false);
@@ -85,7 +85,7 @@ TEST_F(SupervisedUserProviderTest, GeolocationTest) {
 }
 
 TEST_F(SupervisedUserProviderTest, CameraMicTest) {
-  scoped_ptr<RuleIterator> rule_iterator(provider_->GetRuleIterator(
+  std::unique_ptr<RuleIterator> rule_iterator(provider_->GetRuleIterator(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), false));
   EXPECT_FALSE(rule_iterator->HasNext());
   rule_iterator.reset();
@@ -103,7 +103,7 @@ TEST_F(SupervisedUserProviderTest, CameraMicTest) {
       OnContentSettingChanged(_, _, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, ""));
   service_.SetLocalSetting(
       supervised_users::kCameraMicDisabled,
-      scoped_ptr<base::Value>(new base::FundamentalValue(true)));
+      std::unique_ptr<base::Value>(new base::FundamentalValue(true)));
 
   rule_iterator = provider_->GetRuleIterator(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), false);
@@ -136,7 +136,7 @@ TEST_F(SupervisedUserProviderTest, CameraMicTest) {
       OnContentSettingChanged(_, _, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, ""));
   service_.SetLocalSetting(
       supervised_users::kCameraMicDisabled,
-      scoped_ptr<base::Value>(new base::FundamentalValue(false)));
+      std::unique_ptr<base::Value>(new base::FundamentalValue(false)));
 
   rule_iterator = provider_->GetRuleIterator(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), false);

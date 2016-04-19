@@ -9,13 +9,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -516,7 +516,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   // An observer waiting for video memory usage stats updates from the GPU
   // process
-  scoped_ptr<TaskManagerModelGpuDataManagerObserver>
+  std::unique_ptr<TaskManagerModelGpuDataManagerObserver>
       video_memory_usage_stats_observer_;
 
   base::ObserverList<TaskManagerModelObserver> observer_list_;
@@ -543,7 +543,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   std::vector<base::Closure> on_data_ready_callbacks_;
 
 #if defined(OS_WIN)
-  scoped_ptr<PrivateWorkingSetSnapshot> working_set_snapshot_;
+  std::unique_ptr<PrivateWorkingSetSnapshot> working_set_snapshot_;
 #endif
 
   // All per-Resource values are stored here.

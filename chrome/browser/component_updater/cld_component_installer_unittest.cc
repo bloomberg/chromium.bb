@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -13,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -125,7 +126,7 @@ TEST_F(CldComponentInstallerTest, GetName) {
 }
 
 TEST_F(CldComponentInstallerTest, ComponentReady) {
-  scoped_ptr<base::DictionaryValue> manifest;
+  std::unique_ptr<base::DictionaryValue> manifest;
   const base::FilePath install_dir(FILE_PATH_LITERAL("/foo"));
   const base::Version version("1.2.3.4");
   traits_.ComponentReady(version, install_dir, std::move(manifest));

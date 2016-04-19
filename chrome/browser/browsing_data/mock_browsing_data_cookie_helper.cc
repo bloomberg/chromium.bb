@@ -36,7 +36,7 @@ void MockBrowsingDataCookieHelper::DeleteCookie(
 
 void MockBrowsingDataCookieHelper::AddCookieSamples(
     const GURL& url, const std::string& cookie_line) {
-  scoped_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
+  std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
       url, cookie_line, base::Time::Now(), net::CookieOptions()));
 
   if (cc.get()) {

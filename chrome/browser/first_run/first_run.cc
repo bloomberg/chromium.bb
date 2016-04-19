@@ -282,7 +282,7 @@ void ImportFromFile(Profile* profile,
 
 // Imports settings from the first profile in |importer_list|.
 void ImportSettings(Profile* profile,
-                    scoped_ptr<ImporterList> importer_list,
+                    std::unique_ptr<ImporterList> importer_list,
                     int items_to_import) {
   const importer::SourceProfile& source_profile =
       importer_list->GetSourceProfileAt(0);
@@ -724,7 +724,8 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
     MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
 
-  scoped_ptr<installer::MasterPreferences> install_prefs(LoadMasterPrefs());
+  std::unique_ptr<installer::MasterPreferences> install_prefs(
+      LoadMasterPrefs());
 
   // Default value in case master preferences is missing or corrupt, or
   // ping_delay is missing.
@@ -760,7 +761,7 @@ void AutoImport(
   // It may be possible to do the if block below asynchronously. In which case,
   // get rid of this RunLoop. http://crbug.com/366116.
   base::RunLoop run_loop;
-  scoped_ptr<ImporterList> importer_list(new ImporterList());
+  std::unique_ptr<ImporterList> importer_list(new ImporterList());
   importer_list->DetectSourceProfiles(
       g_browser_process->GetApplicationLocale(),
       false,  // include_interactive_profiles?

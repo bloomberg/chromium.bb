@@ -53,7 +53,7 @@ void ResourcePrefetcherManager::ShutdownOnIOThread() {
 void ResourcePrefetcherManager::MaybeAddPrefetch(
     const NavigationID& navigation_id,
     PrefetchKeyType key_type,
-    scoped_ptr<ResourcePrefetcher::RequestVector> requests) {
+    std::unique_ptr<ResourcePrefetcher::RequestVector> requests) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // Don't add a duplicate prefetch for the same host or URL.
@@ -95,7 +95,7 @@ void ResourcePrefetcherManager::ResourcePrefetcherFinished(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // |predictor_| can only be accessed from the UI thread.
-  scoped_ptr<ResourcePrefetcher::RequestVector> scoped_requests(requests);
+  std::unique_ptr<ResourcePrefetcher::RequestVector> scoped_requests(requests);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&ResourcePrefetcherManager::ResourcePrefetcherFinishedOnUI,
                  this,
@@ -117,7 +117,7 @@ void ResourcePrefetcherManager::ResourcePrefetcherFinished(
 void ResourcePrefetcherManager::ResourcePrefetcherFinishedOnUI(
     const NavigationID& navigation_id,
     PrefetchKeyType key_type,
-    scoped_ptr<ResourcePrefetcher::RequestVector> requests) {
+    std::unique_ptr<ResourcePrefetcher::RequestVector> requests) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // |predictor_| may have been set to NULL if the predictor is shutting down.

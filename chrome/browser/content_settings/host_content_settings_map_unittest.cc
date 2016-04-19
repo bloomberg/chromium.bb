@@ -340,7 +340,7 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
   PrefService* prefs = profile.GetPrefs();
 
   // Make a copy of the default pref value so we can reset it later.
-  scoped_ptr<base::Value> default_value(
+  std::unique_ptr<base::Value> default_value(
       prefs->FindPreference(GetPrefName(CONTENT_SETTINGS_TYPE_IMAGES))
           ->GetValue()
           ->DeepCopy());
@@ -359,7 +359,7 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
                 host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
   // Make a copy of the pref's new value so we can reset it later.
-  scoped_ptr<base::Value> new_value(
+  std::unique_ptr<base::Value> new_value(
       prefs->FindPreference(GetPrefName(CONTENT_SETTINGS_TYPE_IMAGES))
           ->GetValue()
           ->DeepCopy());
@@ -763,7 +763,7 @@ TEST_F(HostContentSettingsMapTest, OffTheRecordDontInheritSetting) {
       test_value.DeepCopy());
 
   // The setting is not inherted by |otr_map|.
-  scoped_ptr<base::Value> stored_value =
+  std::unique_ptr<base::Value> stored_value =
       host_content_settings_map->GetWebsiteSetting(
           host, host, CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, std::string(),
           nullptr);
@@ -808,12 +808,12 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
 TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
   TestingProfile profile;
 
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       base::JSONReader::Read("{\"[*.]\\xC4\\x87ira.com,*\":{\"setting\":1}}");
   profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES), *value);
 
   // Set punycode equivalent, with different setting.
-  scoped_ptr<base::Value> puny_value =
+  std::unique_ptr<base::Value> puny_value =
       base::JSONReader::Read("{\"[*.]xn--ira-ppa.com,*\":{\"setting\":2}}");
   profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES),
                           *puny_value);
@@ -1129,7 +1129,7 @@ TEST_F(HostContentSettingsMapTest, GuestProfileMigration) {
   profile.SetGuestSession(true);
 
   // Set a pref manually in the guest profile.
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       base::JSONReader::Read("{\"[*.]\\xC4\\x87ira.com,*\":{\"setting\":1}}");
   profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_IMAGES), *value);
 

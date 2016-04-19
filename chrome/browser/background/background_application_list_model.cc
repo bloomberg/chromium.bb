@@ -74,7 +74,7 @@ class BackgroundApplicationListModel::Application
   void RequestIcon(extension_misc::ExtensionIcons size);
 
   const Extension* extension_;
-  scoped_ptr<gfx::ImageSkia> icon_;
+  std::unique_ptr<gfx::ImageSkia> icon_;
   BackgroundApplicationListModel* model_;
 };
 

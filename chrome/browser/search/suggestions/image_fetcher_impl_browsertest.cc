@@ -4,10 +4,11 @@
 
 #include "chrome/browser/search/suggestions/image_fetcher_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -87,7 +88,7 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
   }
 
   void StartOrQueueNetworkRequestHelper(const GURL& image_url) {
-    scoped_ptr<ImageFetcherImpl> image_fetcher_(CreateImageFetcher());
+    std::unique_ptr<ImageFetcherImpl> image_fetcher_(CreateImageFetcher());
 
     base::RunLoop run_loop;
     image_fetcher_->StartOrQueueNetworkRequest(

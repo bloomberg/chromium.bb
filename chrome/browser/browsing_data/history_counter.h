@@ -56,7 +56,7 @@ class HistoryCounter: public BrowsingDataCounter,
   history::WebHistoryService* testing_web_history_service_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
-  scoped_ptr<history::WebHistoryService::Request> web_history_request_;
+  std::unique_ptr<history::WebHistoryService::Request> web_history_request_;
   base::OneShotTimer web_history_timeout_;
 
   base::ThreadChecker thread_checker_;

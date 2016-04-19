@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_SSL_COMMON_NAME_MISMATCH_HANDLER_H_
 #define CHROME_BROWSER_SSL_COMMON_NAME_MISMATCH_HANDLER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "net/url_request/url_fetcher.h"
@@ -82,7 +83,7 @@ class CommonNameMismatchHandler : public net::URLFetcherDelegate,
   const GURL request_url_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   CheckUrlCallback check_url_callback_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(CommonNameMismatchHandler);
 };

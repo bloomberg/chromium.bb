@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_PREDICTORS_AUTOCOMPLETE_ACTION_PREDICTOR_H_
 
 #include <map>
+#include <memory>
 #include <tuple>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
@@ -248,7 +248,7 @@ class AutocompleteActionPredictor
   // This is cleared after every Omnibox navigation.
   std::vector<TransitionalMatch> transitional_matches_;
 
-  scoped_ptr<prerender::PrerenderHandle> prerender_handle_;
+  std::unique_ptr<prerender::PrerenderHandle> prerender_handle_;
 
   // This allows us to predict the effect of confidence threshold changes on
   // accuracy.  This is cleared after every omnibox navigation.

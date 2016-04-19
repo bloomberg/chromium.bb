@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_OBSERVER_H_
 #define CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_OBSERVER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -31,7 +32,7 @@ class SSLClientAuthObserver : public content::NotificationObserver {
   SSLClientAuthObserver(
       const content::BrowserContext* browser_context,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
-      scoped_ptr<content::ClientCertificateDelegate> delegate);
+      std::unique_ptr<content::ClientCertificateDelegate> delegate);
   ~SSLClientAuthObserver() override;
 
   // UI should implement this to close the dialog.
@@ -67,7 +68,7 @@ class SSLClientAuthObserver : public content::NotificationObserver {
 
   const content::BrowserContext* browser_context_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
-  scoped_ptr<content::ClientCertificateDelegate> delegate_;
+  std::unique_ptr<content::ClientCertificateDelegate> delegate_;
   content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientAuthObserver);

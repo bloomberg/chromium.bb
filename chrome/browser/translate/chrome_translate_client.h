@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_TRANSLATE_CHROME_TRANSLATE_CLIENT_H_
 #define CHROME_BROWSER_TRANSLATE_CHROME_TRANSLATE_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/translate/core/browser/translate_client.h"
@@ -53,7 +53,7 @@ class ChromeTranslateClient
   }
 
   // Helper method to return a new TranslatePrefs instance.
-  static scoped_ptr<translate::TranslatePrefs> CreateTranslatePrefs(
+  static std::unique_ptr<translate::TranslatePrefs> CreateTranslatePrefs(
       PrefService* prefs);
 
   // Helper method to return the TranslateAcceptLanguages instance associated
@@ -81,12 +81,13 @@ class ChromeTranslateClient
   // TranslateClient implementation.
   translate::TranslateDriver* GetTranslateDriver() override;
   PrefService* GetPrefs() override;
-  scoped_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
+  std::unique_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
   translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages() override;
   int GetInfobarIconID() const override;
 #if !defined(USE_AURA)
-  scoped_ptr<infobars::InfoBar> CreateInfoBar(
-      scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const override;
+  std::unique_ptr<infobars::InfoBar> CreateInfoBar(
+      std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
+      const override;
 #endif
   void ShowTranslateUI(translate::TranslateStep step,
                        const std::string& source_language,
@@ -115,7 +116,7 @@ class ChromeTranslateClient
                   translate::TranslateErrors::Type error_type);
 
   translate::ContentTranslateDriver translate_driver_;
-  scoped_ptr<translate::TranslateManager> translate_manager_;
+  std::unique_ptr<translate::TranslateManager> translate_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTranslateClient);
 };

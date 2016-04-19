@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, BasicDecode) {
 IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, StartAndDestroy) {
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
-  scoped_ptr<TestImageRequest> test_request(
+  std::unique_ptr<TestImageRequest> test_request(
       new TestImageRequest(runner->QuitClosure()));
   ImageDecoder::Start(test_request.get(), std::string());
   test_request.reset();

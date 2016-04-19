@@ -49,9 +49,9 @@ void ChromeTracingDelegate::OnBrowserAdded(Browser* browser) {
     incognito_launched_ = true;
 }
 
-scoped_ptr<content::TraceUploader> ChromeTracingDelegate::GetTraceUploader(
+std::unique_ptr<content::TraceUploader> ChromeTracingDelegate::GetTraceUploader(
     net::URLRequestContextGetter* request_context) {
-  return scoped_ptr<content::TraceUploader>(
+  return std::unique_ptr<content::TraceUploader>(
       new TraceCrashServiceUploader(request_context));
 }
 
@@ -148,7 +148,7 @@ void ChromeTracingDelegate::GenerateMetadataDict(
   std::vector<std::string> variations;
   variations::GetFieldTrialActiveGroupIdsAsStrings(&variations);
 
-  scoped_ptr<base::ListValue> variations_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> variations_list(new base::ListValue());
   for (const auto& it : variations)
     variations_list->Append(new base::StringValue(it));
 

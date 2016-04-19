@@ -38,22 +38,25 @@ class LazyDomDistillerService : public DomDistillerServiceInterface,
   syncer::SyncableService* GetSyncableService() const override;
   const std::string AddToList(
       const GURL& url,
-      scoped_ptr<DistillerPage> distiller_page,
+      std::unique_ptr<DistillerPage> distiller_page,
       const ArticleAvailableCallback& article_cb) override;
   bool HasEntry(const std::string& entry_id) override;
   std::string GetUrlForEntry(const std::string& entry_id) override;
   std::vector<ArticleEntry> GetEntries() const override;
-  scoped_ptr<ArticleEntry> RemoveEntry(const std::string& entry_id) override;
-  scoped_ptr<ViewerHandle> ViewEntry(ViewRequestDelegate* delegate,
-                                     scoped_ptr<DistillerPage> distiller_page,
-                                     const std::string& entry_id) override;
-  scoped_ptr<ViewerHandle> ViewUrl(ViewRequestDelegate* delegate,
-                                   scoped_ptr<DistillerPage> distiller_page,
-                                   const GURL& url) override;
-  scoped_ptr<DistillerPage> CreateDefaultDistillerPage(
+  std::unique_ptr<ArticleEntry> RemoveEntry(
+      const std::string& entry_id) override;
+  std::unique_ptr<ViewerHandle> ViewEntry(
+      ViewRequestDelegate* delegate,
+      std::unique_ptr<DistillerPage> distiller_page,
+      const std::string& entry_id) override;
+  std::unique_ptr<ViewerHandle> ViewUrl(
+      ViewRequestDelegate* delegate,
+      std::unique_ptr<DistillerPage> distiller_page,
+      const GURL& url) override;
+  std::unique_ptr<DistillerPage> CreateDefaultDistillerPage(
       const gfx::Size& render_view_size) override;
-  scoped_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
-      scoped_ptr<SourcePageHandle> handle) override;
+  std::unique_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
+      std::unique_ptr<SourcePageHandle> handle) override;
   void AddObserver(DomDistillerObserver* observer) override;
   void RemoveObserver(DomDistillerObserver* observer) override;
   DistilledPagePrefs* GetDistilledPagePrefs() override;

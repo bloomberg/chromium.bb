@@ -102,7 +102,7 @@ class URLRequestFakerForPostRequestsInterceptor
     const net::UploadDataStream* upload_data = request->get_upload();
     last_upload_bytes_.clear();
     if (upload_data) {
-      const std::vector<scoped_ptr<net::UploadElementReader>>* readers =
+      const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
           upload_data->GetElementReaders();
       if (readers) {
         for (size_t i = 0; i < readers->size(); ++i) {
@@ -187,13 +187,13 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
       CHECK(base::ReadFileToString(path, &contents));
       net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
           GURL(fake_server_address_ + test_path_ + *it),
-          scoped_ptr<net::URLRequestInterceptor>(
+          std::unique_ptr<net::URLRequestInterceptor>(
               new URLRequestFakerInterceptor(contents)));
     }
     post_interceptor_ = new URLRequestFakerForPostRequestsInterceptor();
     net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
         GURL(fake_server_address_ + test_path_ + "posted.php"),
-        scoped_ptr<net::URLRequestInterceptor>(post_interceptor_));
+        std::unique_ptr<net::URLRequestInterceptor>(post_interceptor_));
   }
 
  protected:
@@ -203,7 +203,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     helper.SetForceBrowserNotAliveWithNoWindows(true);
     helper.ReleaseService();
     g_browser_process->set_background_mode_manager_for_test(
-        scoped_ptr<BackgroundModeManager>(new FakeBackgroundModeManager));
+        std::unique_ptr<BackgroundModeManager>(new FakeBackgroundModeManager));
   }
 
   void StoreDataWithPage(const std::string& filename) {

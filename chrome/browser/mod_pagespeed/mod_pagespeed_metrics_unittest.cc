@@ -5,10 +5,10 @@
 #include "chrome/browser/mod_pagespeed/mod_pagespeed_metrics.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -37,8 +37,8 @@ TEST(ModPagespeedMetricsTest, CountPageSpeedHeadersTest) {
   int num_bucket_30 = 0;  // 1.2.24.1 bucket
   int num_bucket_33 = 0;  // 1.3.25.2 bucket
 
-  scoped_ptr<base::HistogramSamples> server_samples;
-  scoped_ptr<base::HistogramSamples> version_samples;
+  std::unique_ptr<base::HistogramSamples> server_samples;
+  std::unique_ptr<base::HistogramSamples> version_samples;
 
   // No PageSpeed header. The VersionCounts histogram isn't created yet.
   RecordMetrics(content::RESOURCE_TYPE_MAIN_FRAME, url, headers.get());

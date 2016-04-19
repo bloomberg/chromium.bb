@@ -80,7 +80,7 @@ class BitmapFetcherBrowserTest : public InProcessBrowserTest {
 
  protected:
   net::URLFetcherImplFactory url_fetcher_impl_factory_;
-  scoped_ptr<net::FakeURLFetcherFactory> url_fetcher_factory_;
+  std::unique_ptr<net::FakeURLFetcherFactory> url_fetcher_factory_;
 };
 
 // WARNING:  These tests work with --single_process, but not

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/version.h"
@@ -15,7 +16,6 @@
 #include "chrome/common/pepper_flash.h"
 #include "content/public/test/test_browser_thread.h"
 #include "ppapi/shared_impl/test_globals.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -75,7 +75,7 @@ TEST(ComponentInstallerTest, PepperFlashCheck) {
   JSONFileValueDeserializer deserializer(manifest);
   std::string error;
 
-  scoped_ptr<base::DictionaryValue> root =
+  std::unique_ptr<base::DictionaryValue> root =
       base::DictionaryValue::From(deserializer.Deserialize(NULL, &error));
 
   ASSERT_TRUE(root);

@@ -255,8 +255,9 @@ bool HasSameUserDataDir(const base::FilePath& bundle_path) {
       user_data_dir.value(), base::CompareCase::SENSITIVE);
 }
 
-void LaunchShimOnFileThread(scoped_ptr<web_app::ShortcutInfo> shortcut_info,
-                            bool launched_after_rebuild) {
+void LaunchShimOnFileThread(
+    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
+    bool launched_after_rebuild) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   base::FilePath shim_path = web_app::GetAppInstallPath(*shortcut_info);
 
@@ -306,7 +307,7 @@ void UpdatePlatformShortcutsInternal(
 }
 
 void UpdateAndLaunchShimOnFileThread(
-    scoped_ptr<web_app::ShortcutInfo> shortcut_info,
+    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   base::FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
       shortcut_info->profile_path, shortcut_info->extension_id, GURL());
@@ -316,7 +317,7 @@ void UpdateAndLaunchShimOnFileThread(
 }
 
 void UpdateAndLaunchShim(
-    scoped_ptr<web_app::ShortcutInfo> shortcut_info,
+    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
@@ -324,7 +325,7 @@ void UpdateAndLaunchShim(
                  file_handlers_info));
 }
 
-void RebuildAppAndLaunch(scoped_ptr<web_app::ShortcutInfo> shortcut_info) {
+void RebuildAppAndLaunch(std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (shortcut_info->extension_id == app_mode::kAppListModeId) {
     AppListService* app_list_service = AppListService::Get();
@@ -520,11 +521,12 @@ std::vector<base::FilePath> GetAllAppBundlesInPath(
   return bundle_paths;
 }
 
-scoped_ptr<web_app::ShortcutInfo> BuildShortcutInfoFromBundle(
+std::unique_ptr<web_app::ShortcutInfo> BuildShortcutInfoFromBundle(
     const base::FilePath& bundle_path) {
   NSDictionary* plist = ReadPlist(GetPlistPath(bundle_path));
 
-  scoped_ptr<web_app::ShortcutInfo> shortcut_info(new web_app::ShortcutInfo);
+  std::unique_ptr<web_app::ShortcutInfo> shortcut_info(
+      new web_app::ShortcutInfo);
   shortcut_info->extension_id = base::SysNSStringToUTF8(
       [plist valueForKey:app_mode::kCrAppModeShortcutIDKey]);
   shortcut_info->is_platform_app = true;
@@ -549,7 +551,7 @@ scoped_ptr<web_app::ShortcutInfo> BuildShortcutInfoFromBundle(
   return shortcut_info;
 }
 
-scoped_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
+std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
     const base::FilePath& bundle_path) {
   NSDictionary* plist = ReadPlist(GetPlistPath(bundle_path));
   NSString* version_string = [plist valueForKey:app_mode::kCrBundleVersionKey];
@@ -611,7 +613,7 @@ void UpdateFileTypes(NSMutableDictionary* plist,
 }
 
 void RevealAppShimInFinderForAppOnFileThread(
-    scoped_ptr<web_app::ShortcutInfo> shortcut_info,
+    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
     const base::FilePath& app_path) {
   web_app::WebAppShortcutCreator shortcut_creator(
       app_path, shortcut_info.get(), extensions::FileHandlersInfo());
@@ -1119,7 +1121,7 @@ base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info) {
   return shortcut_creator.GetApplicationsShortcutPath();
 }
 
-void MaybeLaunchShortcut(scoped_ptr<ShortcutInfo> shortcut_info) {
+void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info) {
   if (AppShimsDisabledForTest() &&
       !g_app_shims_allow_update_and_launch_in_tests) {
     return;
@@ -1149,7 +1151,7 @@ void CreateAppShortcutInfoLoaded(
     Profile* profile,
     const extensions::Extension* app,
     const base::Callback<void(bool)>& close_callback,
-    scoped_ptr<ShortcutInfo> shortcut_info) {
+    std::unique_ptr<ShortcutInfo> shortcut_info) {
   base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
 
   NSButton* continue_button = [alert
@@ -1217,7 +1219,7 @@ void UpdateShortcutsForAllApps(Profile* profile,
   scoped_refptr<Latch> latch = new Latch(callback);
 
   // Update all apps.
-  scoped_ptr<extensions::ExtensionSet> candidates =
+  std::unique_ptr<extensions::ExtensionSet> candidates =
       registry->GenerateInstalledExtensionsSet();
   for (auto& extension_refptr : *candidates) {
     const extensions::Extension* extension = extension_refptr.get();
@@ -1230,7 +1232,7 @@ void UpdateShortcutsForAllApps(Profile* profile,
 
 void RevealAppShimInFinderForApp(Profile* profile,
                                  const extensions::Extension* app) {
-  scoped_ptr<web_app::ShortcutInfo> shortcut_info =
+  std::unique_ptr<web_app::ShortcutInfo> shortcut_info =
       ShortcutInfoForExtensionAndProfile(app, profile);
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
@@ -1242,7 +1244,7 @@ namespace internals {
 
 bool CreatePlatformShortcuts(
     const base::FilePath& app_data_path,
-    scoped_ptr<ShortcutInfo> shortcut_info,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info,
     const ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason) {
@@ -1256,7 +1258,7 @@ bool CreatePlatformShortcuts(
 }
 
 void DeletePlatformShortcuts(const base::FilePath& app_data_path,
-                             scoped_ptr<ShortcutInfo> shortcut_info) {
+                             std::unique_ptr<ShortcutInfo> shortcut_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   WebAppShortcutCreator shortcut_creator(app_data_path, shortcut_info.get(),
                                          extensions::FileHandlersInfo());
@@ -1266,7 +1268,7 @@ void DeletePlatformShortcuts(const base::FilePath& app_data_path,
 void UpdatePlatformShortcuts(
     const base::FilePath& app_data_path,
     const base::string16& old_app_title,
-    scoped_ptr<ShortcutInfo> shortcut_info,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   UpdatePlatformShortcutsInternal(app_data_path, old_app_title, *shortcut_info,
                                   file_handlers_info);
@@ -1279,7 +1281,7 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
 
   for (std::vector<base::FilePath>::const_iterator it = bundles.begin();
        it != bundles.end(); ++it) {
-    scoped_ptr<web_app::ShortcutInfo> shortcut_info =
+    std::unique_ptr<web_app::ShortcutInfo> shortcut_info =
         BuildShortcutInfoFromBundle(*it);
     WebAppShortcutCreator shortcut_creator(it->DirName(), shortcut_info.get(),
                                            extensions::FileHandlersInfo());

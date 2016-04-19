@@ -66,7 +66,7 @@ class ChromeSigninClient
   // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
   // If version information is unavailable, returns "invalid."
   std::string GetProductVersion() override;
-  scoped_ptr<CookieChangedSubscription> AddCookieChangedCallback(
+  std::unique_ptr<CookieChangedSubscription> AddCookieChangedCallback(
       const GURL& url,
       const std::string& name,
       const net::CookieStore::CookieChangedCallback& callback) override;
@@ -83,7 +83,7 @@ class ChromeSigninClient
 
   // gaia::GaiaOAuthClient::Delegate implementation.
   void OnGetTokenInfoResponse(
-      scoped_ptr<base::DictionaryValue> token_info) override;
+      std::unique_ptr<base::DictionaryValue> token_info) override;
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
@@ -110,8 +110,8 @@ class ChromeSigninClient
   std::list<base::Closure> delayed_callbacks_;
 #endif
 
-  scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;
-  scoped_ptr<OAuth2TokenService::Request> oauth_request_;
+  std::unique_ptr<gaia::GaiaOAuthClient> oauth_client_;
+  std::unique_ptr<OAuth2TokenService::Request> oauth_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSigninClient);
 };

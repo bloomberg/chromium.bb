@@ -9,11 +9,11 @@
 #include <unistd.h>
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_iterator.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
@@ -67,7 +67,7 @@ ProcessData GetProcessDataMemoryInformation(
     else
       pmi.process_type = content::PROCESS_TYPE_UNKNOWN;
 
-    scoped_ptr<base::ProcessMetrics> metrics(
+    std::unique_ptr<base::ProcessMetrics> metrics(
         base::ProcessMetrics::CreateProcessMetrics(pid));
     metrics->GetWorkingSetKBytes(&pmi.working_set);
 

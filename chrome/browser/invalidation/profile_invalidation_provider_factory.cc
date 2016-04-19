@@ -4,9 +4,9 @@
 
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -101,11 +101,11 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     return testing_factory_(context).release();
 
 #if defined(OS_ANDROID)
-  return new ProfileInvalidationProvider(scoped_ptr<InvalidationService>(
+  return new ProfileInvalidationProvider(std::unique_ptr<InvalidationService>(
       new InvalidationServiceAndroid(base::android::GetApplicationContext())));
 #else
 
-  scoped_ptr<IdentityProvider> identity_provider;
+  std::unique_ptr<IdentityProvider> identity_provider;
 
 #if defined(OS_CHROMEOS)
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -126,13 +126,13 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
         LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile)));
   }
 
-  scoped_ptr<TiclInvalidationService> service(new TiclInvalidationService(
+  std::unique_ptr<TiclInvalidationService> service(new TiclInvalidationService(
       GetUserAgent(), std::move(identity_provider),
-      scoped_ptr<TiclSettingsProvider>(
+      std::unique_ptr<TiclSettingsProvider>(
           new TiclProfileSettingsProvider(profile->GetPrefs())),
       gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
       profile->GetRequestContext()));
-  service->Init(scoped_ptr<syncer::InvalidationStateTracker>(
+  service->Init(std::unique_ptr<syncer::InvalidationStateTracker>(
       new InvalidatorStorage(profile->GetPrefs())));
 
   return new ProfileInvalidationProvider(std::move(service));

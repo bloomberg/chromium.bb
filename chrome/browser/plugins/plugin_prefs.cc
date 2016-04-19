@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
@@ -128,7 +128,8 @@ void PluginPrefs::EnablePluginGroupInternal(
 
   // Update the state for all plugins in the group.
   for (size_t i = 0; i < plugins.size(); ++i) {
-    scoped_ptr<PluginMetadata> plugin(finder->GetPluginMetadata(plugins[i]));
+    std::unique_ptr<PluginMetadata> plugin(
+        finder->GetPluginMetadata(plugins[i]));
     if (group_name != plugin->name())
       continue;
     plugin_state_.Set(plugins[i].path, enabled);
@@ -147,7 +148,7 @@ void PluginPrefs::EnablePlugin(
   content::WebPluginInfo plugin;
   bool can_enable = true;
   if (PluginService::GetInstance()->GetPluginInfoByPath(path, &plugin)) {
-    scoped_ptr<PluginMetadata> plugin_metadata(
+    std::unique_ptr<PluginMetadata> plugin_metadata(
         finder->GetPluginMetadata(plugin));
     PolicyStatus plugin_status = PolicyStatusForPlugin(plugin.name);
     PolicyStatus group_status = PolicyStatusForPlugin(plugin_metadata->name());
@@ -188,7 +189,7 @@ void PluginPrefs::EnablePluginInternal(
   base::string16 group_name;
   for (size_t i = 0; i < plugins.size(); ++i) {
     if (plugins[i].path == path) {
-      scoped_ptr<PluginMetadata> plugin_metadata(
+      std::unique_ptr<PluginMetadata> plugin_metadata(
           plugin_finder->GetPluginMetadata(plugins[i]));
       // set the group name for this plugin.
       group_name = plugin_metadata->name();
@@ -199,7 +200,7 @@ void PluginPrefs::EnablePluginInternal(
 
   bool all_disabled = true;
   for (size_t i = 0; i < plugins.size(); ++i) {
-    scoped_ptr<PluginMetadata> plugin_metadata(
+    std::unique_ptr<PluginMetadata> plugin_metadata(
         plugin_finder->GetPluginMetadata(plugins[i]));
     DCHECK(!plugin_metadata->name().empty());
     if (group_name == plugin_metadata->name()) {
@@ -235,7 +236,7 @@ PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
 }
 
 bool PluginPrefs::IsPluginEnabled(const content::WebPluginInfo& plugin) const {
-  scoped_ptr<PluginMetadata> plugin_metadata(
+  std::unique_ptr<PluginMetadata> plugin_metadata(
       PluginFinder::GetInstance()->GetPluginMetadata(plugin));
   base::string16 group_name = plugin_metadata->name();
 
@@ -490,7 +491,7 @@ void PluginPrefs::OnUpdatePreferences(
     summary->SetBoolean("enabled", enabled);
     plugins_list->Append(summary);
 
-    scoped_ptr<PluginMetadata> plugin_metadata(
+    std::unique_ptr<PluginMetadata> plugin_metadata(
         finder->GetPluginMetadata(plugins[i]));
     // Insert into a set of all group names.
     group_names.insert(plugin_metadata->name());

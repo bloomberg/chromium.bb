@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -229,7 +229,7 @@ bool InputScalesValid(const base::StringPiece& input,
   size_t scales_size = static_cast<size_t>(input.size() / sizeof(float));
   if (scales_size != expected.size())
     return false;
-  scoped_ptr<float[]> scales(new float[scales_size]);
+  std::unique_ptr<float[]> scales(new float[scales_size]);
   // Do a memcpy to avoid misaligned memory access.
   memcpy(scales.get(), input.data(), input.size());
   for (size_t index = 0; index < scales_size; ++index) {
@@ -242,7 +242,7 @@ bool InputScalesValid(const base::StringPiece& input,
 // Returns |scale_factors| as a string to be written to disk.
 std::string GetScaleFactorsAsString(
     const std::vector<ui::ScaleFactor>& scale_factors) {
-  scoped_ptr<float[]> scales(new float[scale_factors.size()]);
+  std::unique_ptr<float[]> scales(new float[scale_factors.size()]);
   for (size_t i = 0; i < scale_factors.size(); ++i)
     scales[i] = ui::GetScaleForScaleFactor(scale_factors[i]);
   std::string out_string = std::string(

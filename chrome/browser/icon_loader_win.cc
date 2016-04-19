@@ -58,8 +58,8 @@ void IconLoader::ReadIcon() {
   if (SHGetFileInfo(group_.c_str(), FILE_ATTRIBUTE_NORMAL, &file_info,
                      sizeof(SHFILEINFO),
                      SHGFI_ICON | size | SHGFI_USEFILEATTRIBUTES)) {
-    scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(
-        file_info.hIcon));
+    std::unique_ptr<SkBitmap> bitmap(
+        IconUtil::CreateSkBitmapFromHICON(file_info.hIcon));
     if (bitmap.get()) {
       gfx::ImageSkia image_skia(gfx::ImageSkiaRep(*bitmap, gfx::GetDPIScale()));
       image_skia.MakeThreadSafe();

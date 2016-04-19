@@ -161,7 +161,7 @@ class AutofillCounterTest : public InProcessBrowserTest {
     return num_addresses_;
   }
 
-  void Callback(scoped_ptr<BrowsingDataCounter::Result> result) {
+  void Callback(std::unique_ptr<BrowsingDataCounter::Result> result) {
     finished_ = result->Finished();
 
     if (finished_) {
@@ -178,7 +178,7 @@ class AutofillCounterTest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   std::vector<std::string> credit_card_ids_;
   std::vector<std::string> address_ids_;

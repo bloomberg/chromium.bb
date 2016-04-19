@@ -170,7 +170,7 @@ class PrerenderManager::OnCloseWebContentsDeleter
   }
 
   PrerenderManager* manager_;
-  scoped_ptr<WebContents> tab_;
+  std::unique_ptr<WebContents> tab_;
   bool suppressed_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(OnCloseWebContentsDeleter);
@@ -489,8 +489,8 @@ WebContents* PrerenderManager::SwapInternal(
       FindIteratorForPrerenderContents(prerender_data->contents());
   DCHECK(active_prerenders_.end() != to_erase);
   DCHECK_EQ(prerender_data, *to_erase);
-  scoped_ptr<PrerenderContents>
-      prerender_contents(prerender_data->ReleaseContents());
+  std::unique_ptr<PrerenderContents> prerender_contents(
+      prerender_data->ReleaseContents());
   active_prerenders_.erase(to_erase);
 
   // Mark prerender as used.

@@ -42,7 +42,7 @@ class AppBannerDataFetcherDesktop : public AppBannerDataFetcher {
                   const base::string16& title,
                   const std::string& referrer) override;
 
-  scoped_ptr<extensions::BookmarkAppHelper> bookmark_app_helper_;
+  std::unique_ptr<extensions::BookmarkAppHelper> bookmark_app_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerDataFetcherDesktop);
 };

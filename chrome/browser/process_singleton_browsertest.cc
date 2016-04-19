@@ -211,7 +211,7 @@ class ProcessSingletonTest : public InProcessBrowserTest {
   // The idea is to start chrome from multiple threads all at once.
   static const size_t kNbThreads = 5;
   scoped_refptr<ChromeStarter> chrome_starters_[kNbThreads];
-  scoped_ptr<base::Thread> chrome_starter_threads_[kNbThreads];
+  std::unique_ptr<base::Thread> chrome_starter_threads_[kNbThreads];
 
   // The event that will get all threads to wake up simultaneously and try
   // to start a chrome process at the same time.

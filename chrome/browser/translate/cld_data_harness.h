@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_TRANSLATE_CLD_DATA_HARNESS_H_
 #define CHROME_BROWSER_TRANSLATE_CLD_DATA_HARNESS_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace test {
 
@@ -28,7 +29,7 @@ namespace test {
 // Sample usage:
 //
 //   IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
-//     scoped_ptr<test::CldDataHarness> cld_data_scope =
+//     std::unique_ptr<test::CldDataHarness> cld_data_scope =
 //       test::CldDataHarnessFactory::Get()->CreateCldDataHarness();
 //     ASSERT_NO_FATAL_FAILURE(cld_data_scope->Init());
 //     // ... your code that depends on language detection goes here
@@ -51,7 +52,7 @@ namespace test {
 //       InProcessBrowserTest::SetUpOnMainThread();
 //     }
 //    private:
-//     scoped_ptr<test::CldDataHarness> cld_data_scope;
+//     std::unique_ptr<test::CldDataHarness> cld_data_scope;
 //   };
 //
 class CldDataHarness {
@@ -76,19 +77,19 @@ class CldDataHarness {
 
   // Create and return a new instance of a data harness whose Init() method
   // will configure the "static" CldDataSource.
-  static scoped_ptr<CldDataHarness> CreateStaticDataHarness();
+  static std::unique_ptr<CldDataHarness> CreateStaticDataHarness();
 
   // Create and return a new instance of a data harness whose Init() method
   // will configure the "standalone" CldDataSource.
   // Unlike NONE() and STATIC(), this data hardness will perform work to allow
   // CLD to load data from a file.
-  static scoped_ptr<CldDataHarness> CreateStandaloneDataHarness();
+  static std::unique_ptr<CldDataHarness> CreateStandaloneDataHarness();
 
   // Create and return a new instance of a data harness whose Init() method
   // will configure the "component" CldDataSource.
   // Unlike NONE() and STATIC(), this data hardness will perform work to allow
   // CLD to load data from a file.
-  static scoped_ptr<CldDataHarness> CreateComponentDataHarness();
+  static std::unique_ptr<CldDataHarness> CreateComponentDataHarness();
 
  protected:
   // Returns the version number of the Component Updater "extension" in the

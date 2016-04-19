@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/fake_gaia_cookie_manager_service.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -115,10 +116,10 @@ void FakeGaiaCookieManagerService::SetListAccountsResponseTwoAccountsWithExpiry(
 }
 
 // static
-scoped_ptr<KeyedService> FakeGaiaCookieManagerService::Build(
+std::unique_ptr<KeyedService> FakeGaiaCookieManagerService::Build(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  return make_scoped_ptr(new FakeGaiaCookieManagerService(
+  return base::WrapUnique(new FakeGaiaCookieManagerService(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       GaiaConstants::kChromeSource,
       ChromeSigninClientFactory::GetForProfile(profile)));

@@ -5,13 +5,13 @@
 #include "chrome/browser/component_updater/sth_set_component_installer.h"
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -44,7 +44,7 @@ class STHSetComponentInstallerTest : public PlatformTest {
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    scoped_ptr<StoringSTHObserver> observer(new StoringSTHObserver());
+    std::unique_ptr<StoringSTHObserver> observer(new StoringSTHObserver());
     observer_ = observer.get();
     traits_.reset(new STHSetComponentInstallerTraits(std::move(observer)));
   }
@@ -82,7 +82,7 @@ class STHSetComponentInstallerTest : public PlatformTest {
   content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<STHSetComponentInstallerTraits> traits_;
+  std::unique_ptr<STHSetComponentInstallerTraits> traits_;
   StoringSTHObserver* observer_;
   safe_json::TestingJsonParser::ScopedFactoryOverride factory_override_;
 

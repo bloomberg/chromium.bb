@@ -28,7 +28,7 @@ void NaClInfoBarDelegate::Create(int render_process_id, int render_view_id) {
       InfoBarService::FromWebContents(web_contents);
   if (infobar_service) {
     infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-        scoped_ptr<ConfirmInfoBarDelegate>(new NaClInfoBarDelegate())));
+        std::unique_ptr<ConfirmInfoBarDelegate>(new NaClInfoBarDelegate())));
   }
 }
 

@@ -4,9 +4,10 @@
 
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/browser/captive_portal/captive_portal_tab_reloader.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -192,7 +193,7 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
   void SetIsLoginTab() { tab_helper()->SetIsLoginTab(); }
 
  private:
-  scoped_ptr<CaptivePortalTabHelper> tab_helper_;
+  std::unique_ptr<CaptivePortalTabHelper> tab_helper_;
 
   // Owned by |tab_helper_|.
   testing::StrictMock<MockCaptivePortalTabReloader>* mock_reloader_;

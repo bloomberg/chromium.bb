@@ -491,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
       GetExpectedTitle(start_url, EXPECT_ORIGIN_AS_REFERRER);
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  scoped_ptr<content::TitleWatcher> title_watcher(
+  std::unique_ptr<content::TitleWatcher> title_watcher(
       new content::TitleWatcher(tab, expected_title));
 
   // Watch for all possible outcomes to avoid timeouts if something breaks.
@@ -547,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, IFrame) {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   base::string16 expected_title(base::ASCIIToUTF16("loaded"));
-  scoped_ptr<content::TitleWatcher> title_watcher(
+  std::unique_ptr<content::TitleWatcher> title_watcher(
       new content::TitleWatcher(tab, expected_title));
 
   // Load a page that loads an iframe.

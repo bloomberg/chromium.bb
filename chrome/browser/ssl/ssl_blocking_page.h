@@ -58,7 +58,7 @@ class SSLBlockingPage : public SecurityInterstitialPage {
                   const GURL& request_url,
                   int options_mask,
                   const base::Time& time_triggered,
-                  scoped_ptr<SSLCertReporter> ssl_cert_reporter,
+                  std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
                   const base::Callback<void(bool)>& callback);
 
   // InterstitialPageDelegate method:
@@ -69,7 +69,7 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   static bool IsOverridable(int options_mask, const Profile* const profile);
 
   void SetSSLCertReporterForTesting(
-      scoped_ptr<SSLCertReporter> ssl_cert_reporter);
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
 
  protected:
   friend class policy::PolicyTest_SSLErrorOverridingDisallowed_Test;
@@ -99,9 +99,9 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   // expired.
   const bool expired_but_previously_allowed_;
 
-  scoped_ptr<ChromeControllerClient> controller_;
-  scoped_ptr<security_interstitials::SSLErrorUI> ssl_error_ui_;
-  scoped_ptr<CertReportHelper> cert_report_helper_;
+  std::unique_ptr<ChromeControllerClient> controller_;
+  std::unique_ptr<security_interstitials::SSLErrorUI> ssl_error_ui_;
+  std::unique_ptr<CertReportHelper> cert_report_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPage);
 };

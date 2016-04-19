@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_H_
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/tracked_objects.h"
@@ -129,25 +130,25 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   int result_code_;
 
   // Create StartupTimeBomb object for watching jank during startup.
-  scoped_ptr<StartupTimeBomb> startup_watcher_;
+  std::unique_ptr<StartupTimeBomb> startup_watcher_;
 
   // Create ShutdownWatcherHelper object for watching jank during shutdown.
   // Please keep |shutdown_watcher| as the first object constructed, and hence
   // it is destroyed last.
-  scoped_ptr<ShutdownWatcherHelper> shutdown_watcher_;
+  std::unique_ptr<ShutdownWatcherHelper> shutdown_watcher_;
 
   // Statistical testing infrastructure for the entire browser. NULL until
   // SetupMetricsAndFieldTrials is called.
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   ChromeBrowserFieldTrials browser_field_trials_;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // A monitor for attributing power consumption to origins.
-  scoped_ptr<ProcessPowerCollector> process_power_collector_;
+  std::unique_ptr<ProcessPowerCollector> process_power_collector_;
 
-  scoped_ptr<webusb::WebUsbBrowserClient> webusb_browser_client_;
-  scoped_ptr<webusb::WebUsbDetector> webusb_detector_;
+  std::unique_ptr<webusb::WebUsbBrowserClient> webusb_browser_client_;
+  std::unique_ptr<webusb::WebUsbDetector> webusb_detector_;
 #endif
 
   // Vector of additional ChromeBrowserMainExtraParts.
@@ -163,23 +164,23 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Members initialized after / released before main_message_loop_ ------------
 
-  scoped_ptr<BrowserProcessImpl> browser_process_;
+  std::unique_ptr<BrowserProcessImpl> browser_process_;
   scoped_refptr<metrics::TrackingSynchronizer> tracking_synchronizer_;
 #if !defined(OS_ANDROID)
   // Browser creation happens on the Java side in Android.
-  scoped_ptr<StartupBrowserCreator> browser_creator_;
+  std::unique_ptr<StartupBrowserCreator> browser_creator_;
 
   // Android doesn't support multiple browser processes, so it doesn't implement
   // ProcessSingleton.
-  scoped_ptr<ChromeProcessSingleton> process_singleton_;
+  std::unique_ptr<ChromeProcessSingleton> process_singleton_;
 
   // Android's first run is done in Java instead of native.
-  scoped_ptr<first_run::MasterPrefs> master_prefs_;
+  std::unique_ptr<first_run::MasterPrefs> master_prefs_;
 #endif
   Profile* profile_;
   bool run_message_loop_;
   ProcessSingleton::NotifyResult notify_result_;
-  scoped_ptr<ThreeDAPIObserver> three_d_observer_;
+  std::unique_ptr<ThreeDAPIObserver> three_d_observer_;
 
   // Initialized in SetupMetricsAndFieldTrials.
   scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;

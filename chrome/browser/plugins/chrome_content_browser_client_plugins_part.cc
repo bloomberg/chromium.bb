@@ -147,7 +147,7 @@ bool ChromeContentBrowserClientPluginsPart::IsPluginAllowedToUseDevChannelAPIs(
 void ChromeContentBrowserClientPluginsPart::DidCreatePpapiPlugin(
     content::BrowserPpapiHost* browser_host) {
   browser_host->GetPpapiHost()->AddHostFactoryFilter(
-      scoped_ptr<ppapi::host::HostFactory>(
+      std::unique_ptr<ppapi::host::HostFactory>(
           new ChromeBrowserPepperHostFactory(browser_host)));
 }
 

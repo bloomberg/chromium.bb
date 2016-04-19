@@ -123,16 +123,16 @@ void PanelInformation::GetAll(const NewWebContentsCallback& callback) {
     callback.Run(panels[i]->GetWebContents());
 }
 
-scoped_ptr<RendererResource> PanelInformation::MakeResource(
+std::unique_ptr<RendererResource> PanelInformation::MakeResource(
     WebContents* web_contents) {
   std::vector<Panel*> panels = PanelManager::GetInstance()->panels();
   for (size_t i = 0; i < panels.size(); ++i) {
     if (panels[i]->GetWebContents() == web_contents) {
-      return scoped_ptr<RendererResource>(new PanelResource(panels[i]));
+      return std::unique_ptr<RendererResource>(new PanelResource(panels[i]));
     }
   }
   NOTREACHED();
-  return scoped_ptr<RendererResource>();
+  return std::unique_ptr<RendererResource>();
 }
 
 }  // namespace task_manager

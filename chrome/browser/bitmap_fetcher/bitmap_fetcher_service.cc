@@ -37,7 +37,7 @@ class BitmapFetcherRequest {
 
  private:
   const BitmapFetcherService::RequestId request_id_;
-  scoped_ptr<BitmapFetcherService::Observer> observer_;
+  std::unique_ptr<BitmapFetcherService::Observer> observer_;
   const chrome::BitmapFetcher* fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapFetcherRequest);
@@ -89,7 +89,7 @@ BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
   if (current_request_id_ == REQUEST_ID_INVALID)
     ++current_request_id_;
   int request_id = current_request_id_;
-  scoped_ptr<BitmapFetcherRequest> request(
+  std::unique_ptr<BitmapFetcherRequest> request(
       new BitmapFetcherRequest(request_id, observer));
 
   // Reject invalid URLs.
@@ -123,9 +123,9 @@ void BitmapFetcherService::Prefetch(const GURL& url) {
     EnsureFetcherForUrl(url);
 }
 
-scoped_ptr<chrome::BitmapFetcher> BitmapFetcherService::CreateFetcher(
+std::unique_ptr<chrome::BitmapFetcher> BitmapFetcherService::CreateFetcher(
     const GURL& url) {
-  scoped_ptr<chrome::BitmapFetcher> new_fetcher(
+  std::unique_ptr<chrome::BitmapFetcher> new_fetcher(
       new chrome::BitmapFetcher(url, this));
 
   new_fetcher->Init(
@@ -144,7 +144,7 @@ const chrome::BitmapFetcher* BitmapFetcherService::EnsureFetcherForUrl(
   if (fetcher)
     return fetcher;
 
-  scoped_ptr<chrome::BitmapFetcher> new_fetcher = CreateFetcher(url);
+  std::unique_ptr<chrome::BitmapFetcher> new_fetcher = CreateFetcher(url);
   active_fetchers_.push_back(std::move(new_fetcher));
   return active_fetchers_.back().get();
 }
@@ -186,7 +186,7 @@ void BitmapFetcherService::OnFetchComplete(const GURL& url,
   }
 
   if (bitmap && !bitmap->isNull()) {
-    scoped_ptr<CacheEntry> entry(new CacheEntry);
+    std::unique_ptr<CacheEntry> entry(new CacheEntry);
     entry->bitmap.reset(new SkBitmap(*bitmap));
     cache_.Put(fetcher->url(), std::move(entry));
   }

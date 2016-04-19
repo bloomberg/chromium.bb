@@ -143,7 +143,7 @@ void BackgroundInformation::GetAll(const NewWebContentsCallback& callback) {
   }
 }
 
-scoped_ptr<RendererResource> BackgroundInformation::MakeResource(
+std::unique_ptr<RendererResource> BackgroundInformation::MakeResource(
     WebContents* web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -165,12 +165,12 @@ scoped_ptr<RendererResource> BackgroundInformation::MakeResource(
           extensions_set.GetByID(base::UTF16ToUTF8(application_id));
       if (extension)
         application_name = base::UTF8ToUTF16(extension->name());
-      return scoped_ptr<RendererResource>(
+      return std::unique_ptr<RendererResource>(
           new BackgroundContentsResource(*iterator, application_name));
     }
   }
   NOTREACHED();
-  return scoped_ptr<RendererResource>();
+  return std::unique_ptr<RendererResource>();
 }
 
 }  // namespace task_manager

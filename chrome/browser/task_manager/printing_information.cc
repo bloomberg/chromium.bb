@@ -109,9 +109,9 @@ void PrintingInformation::GetAll(const NewWebContentsCallback& callback) {
       callback);
 }
 
-scoped_ptr<RendererResource> PrintingInformation::MakeResource(
+std::unique_ptr<RendererResource> PrintingInformation::MakeResource(
     WebContents* web_contents) {
-  return scoped_ptr<RendererResource>(new PrintingResource(web_contents));
+  return std::unique_ptr<RendererResource>(new PrintingResource(web_contents));
 }
 
 }  // namespace task_manager

@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_SERVICE_IMPL_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -13,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/background/background_trigger.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -240,7 +241,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   MessageDispatchedCallback message_dispatched_callback_for_testing_;
 
-  scoped_ptr<PushMessagingServiceObserver> push_messaging_service_observer_;
+  std::unique_ptr<PushMessagingServiceObserver>
+      push_messaging_service_observer_;
 
   base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_;
 

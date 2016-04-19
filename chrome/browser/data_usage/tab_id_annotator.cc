@@ -44,7 +44,7 @@ int32_t GetTabIdForRenderFrame(int render_process_id, int render_frame_id) {
 // destroyed. This doesn't make much of a difference for production code, but
 // makes it easier to test the TabIdAnnotator.
 void AnnotateDataUse(
-    scoped_ptr<DataUse> data_use,
+    std::unique_ptr<DataUse> data_use,
     const data_usage::DataUseAnnotator::DataUseConsumerCallback& callback,
     int32_t tab_id) {
   DCHECK(data_use);
@@ -58,7 +58,7 @@ TabIdAnnotator::TabIdAnnotator() {}
 TabIdAnnotator::~TabIdAnnotator() {}
 
 void TabIdAnnotator::Annotate(net::URLRequest* request,
-                              scoped_ptr<DataUse> data_use,
+                              std::unique_ptr<DataUse> data_use,
                               const DataUseConsumerCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_use);
@@ -82,7 +82,7 @@ void TabIdAnnotator::Annotate(net::URLRequest* request,
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
-  scoped_ptr<TabIdProvider> tab_id_provider(new TabIdProvider(
+  std::unique_ptr<TabIdProvider> tab_id_provider(new TabIdProvider(
       ui_thread_task_runner.get(), FROM_HERE,
       base::Bind(&GetTabIdForRenderFrame, render_process_id, render_frame_id)));
   tab_id_provider->ProvideTabId(

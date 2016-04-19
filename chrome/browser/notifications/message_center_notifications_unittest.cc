@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
@@ -93,7 +94,7 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
   }
 
  private:
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   MessageCenter* message_center_;
   FakeMessageCenterTrayDelegate* delegate_;
 };
@@ -124,10 +125,9 @@ TEST_F(MessageCenterNotificationManagerTest, MultiUserUpdates) {
   chrome::MultiUserWindowManager::SetInstanceForTest(
       multi_user_window_manager,
       chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED);
-  scoped_ptr<MultiUserNotificationBlockerChromeOS> blocker(
+  std::unique_ptr<MultiUserNotificationBlockerChromeOS> blocker(
       new MultiUserNotificationBlockerChromeOS(
-          message_center::MessageCenter::Get(),
-          active_user_id));
+          message_center::MessageCenter::Get(), active_user_id));
   EXPECT_EQ(0u, message_center()->NotificationCount());
   notification_manager()->Add(GetANotification("test"), &profile);
   EXPECT_EQ(1u, message_center()->NotificationCount());

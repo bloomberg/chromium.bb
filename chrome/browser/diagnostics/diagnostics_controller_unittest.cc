@@ -4,12 +4,13 @@
 
 #include "chrome/browser/diagnostics/diagnostics_controller.h"
 
+#include <memory>
+
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
@@ -71,10 +72,10 @@ class DiagnosticsControllerTest : public testing::Test {
     base::WriteFile(path, bogus_data, arraysize(bogus_data));
   }
 
-  scoped_ptr<DiagnosticsModel> model_;
+  std::unique_ptr<DiagnosticsModel> model_;
   base::CommandLine cmdline_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<DiagnosticsWriter> writer_;
+  std::unique_ptr<DiagnosticsWriter> writer_;
   base::FilePath profile_dir_;
 
 #if defined(OS_CHROMEOS)

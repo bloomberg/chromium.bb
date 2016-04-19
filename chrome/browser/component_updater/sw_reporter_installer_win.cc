@@ -122,9 +122,10 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
     return true;
   }
 
-  void ComponentReady(const base::Version& version,
-                      const base::FilePath& install_dir,
-                      scoped_ptr<base::DictionaryValue> manifest) override {
+  void ComponentReady(
+      const base::Version& version,
+      const base::FilePath& install_dir,
+      std::unique_ptr<base::DictionaryValue> manifest) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     safe_browsing::RunSwReporter(install_dir.Append(kSwReporterExeName),
                                  version, base::ThreadTaskRunnerHandle::Get(),
@@ -240,7 +241,8 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
   }
 
   // Install the component.
-  scoped_ptr<ComponentInstallerTraits> traits(new SwReporterInstallerTraits());
+  std::unique_ptr<ComponentInstallerTraits> traits(
+      new SwReporterInstallerTraits());
   // |cus| will take ownership of |installer| during installer->Register(cus).
   DefaultComponentInstaller* installer =
       new DefaultComponentInstaller(std::move(traits));

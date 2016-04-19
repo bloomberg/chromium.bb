@@ -8,6 +8,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
@@ -89,9 +90,10 @@ base::Time GetReferenceTime() {
   return base::Time::FromLocalExploded(exploded_reference_time);
 }
 
-scoped_ptr<KeyedService> BuildTestHistoryService(
+std::unique_ptr<KeyedService> BuildTestHistoryService(
     content::BrowserContext* context) {
-  scoped_ptr<history::HistoryService> service(new history::HistoryService());
+  std::unique_ptr<history::HistoryService> service(
+      new history::HistoryService());
   service->Init(history::TestHistoryDatabaseParamsForPath(g_temp_history_dir));
   return std::move(service);
 }
@@ -652,8 +654,8 @@ TEST_F(SiteEngagementServiceTest, GetTotalUserInputPoints) {
 
 TEST_F(SiteEngagementServiceTest, LastShortcutLaunch) {
   base::SimpleTestClock* clock = new base::SimpleTestClock();
-  scoped_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), make_scoped_ptr(clock)));
+  std::unique_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), base::WrapUnique(clock)));
 
   base::HistogramTester histograms;
 
@@ -717,8 +719,8 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   base::HistogramTester histograms;
 
   base::SimpleTestClock* clock = new base::SimpleTestClock();
-  scoped_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), make_scoped_ptr(clock)));
+  std::unique_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), base::WrapUnique(clock)));
 
   base::Time current_day = GetReferenceTime();
   clock->SetNow(current_day);
@@ -982,8 +984,8 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
 // Expect that sites that have reached zero engagement are cleaned up.
 TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
   base::SimpleTestClock* clock = new base::SimpleTestClock();
-  scoped_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), make_scoped_ptr(clock)));
+  std::unique_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), base::WrapUnique(clock)));
 
   base::Time current_day = GetReferenceTime();
   clock->SetNow(current_day);
@@ -1080,8 +1082,8 @@ TEST_F(SiteEngagementServiceTest, NavigationAccumulation) {
 
 TEST_F(SiteEngagementServiceTest, IsBootstrapped) {
   base::SimpleTestClock* clock = new base::SimpleTestClock();
-  scoped_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), make_scoped_ptr(clock)));
+  std::unique_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), base::WrapUnique(clock)));
 
   base::Time current_day = GetReferenceTime();
   clock->SetNow(current_day);
@@ -1192,8 +1194,8 @@ TEST_F(SiteEngagementServiceTest, EngagementLevel) {
                 "enum values should not be equal");
 
   base::SimpleTestClock* clock = new base::SimpleTestClock();
-  scoped_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), make_scoped_ptr(clock)));
+  std::unique_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), base::WrapUnique(clock)));
 
   base::Time current_day = GetReferenceTime();
   clock->SetNow(current_day);
@@ -1292,8 +1294,8 @@ TEST_F(SiteEngagementServiceTest, EngagementLevel) {
 
 TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {
   base::SimpleTestClock* clock = new base::SimpleTestClock();
-  scoped_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), make_scoped_ptr(clock)));
+  std::unique_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), base::WrapUnique(clock)));
 
   base::Time current_day = GetReferenceTime();
   clock->SetNow(current_day);

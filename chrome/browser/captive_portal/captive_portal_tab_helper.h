@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_TAB_HELPER_H_
 #define CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_TAB_HELPER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -115,8 +116,8 @@ class CaptivePortalTabHelper
   content::NavigationHandle* navigation_handle_;
 
   // Neither of these will ever be NULL.
-  scoped_ptr<CaptivePortalTabReloader> tab_reloader_;
-  scoped_ptr<CaptivePortalLoginDetector> login_detector_;
+  std::unique_ptr<CaptivePortalTabReloader> tab_reloader_;
+  std::unique_ptr<CaptivePortalLoginDetector> login_detector_;
 
   content::NotificationRegistrar registrar_;
 

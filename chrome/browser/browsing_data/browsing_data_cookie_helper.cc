@@ -4,12 +4,12 @@
 
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -102,7 +102,7 @@ void CannedBrowsingDataCookieHelper::AddChangedCookie(
     const GURL& url,
     const std::string& cookie_line,
     const net::CookieOptions& options) {
-  scoped_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+  std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
       url, cookie_line, base::Time::Now(), options));
   if (cookie.get())
     AddCookie(frame_url, *cookie);

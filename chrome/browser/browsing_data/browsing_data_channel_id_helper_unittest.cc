@@ -4,8 +4,10 @@
 
 #include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,13 +42,13 @@ class BrowsingDataChannelIDHelperTest
     net::ChannelIDStore* channel_id_store =
         context->channel_id_service()->GetChannelIDStore();
     channel_id_store->SetChannelID(
-        make_scoped_ptr(new net::ChannelIDStore::ChannelID(
+        base::WrapUnique(new net::ChannelIDStore::ChannelID(
             "https://www.google.com:443", base::Time(),
-            make_scoped_ptr(crypto::ECPrivateKey::Create()))));
+            base::WrapUnique(crypto::ECPrivateKey::Create()))));
     channel_id_store->SetChannelID(
-        make_scoped_ptr(new net::ChannelIDStore::ChannelID(
+        base::WrapUnique(new net::ChannelIDStore::ChannelID(
             "https://www.youtube.com:443", base::Time(),
-            make_scoped_ptr(crypto::ECPrivateKey::Create()))));
+            base::WrapUnique(crypto::ECPrivateKey::Create()))));
   }
 
   void FetchCallback(
@@ -60,7 +62,7 @@ class BrowsingDataChannelIDHelperTest
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> testing_profile_;
+  std::unique_ptr<TestingProfile> testing_profile_;
 
   net::ChannelIDStore::ChannelIDList channel_id_list_;
 
@@ -140,7 +142,7 @@ TEST_F(BrowsingDataChannelIDHelperTest, CannedEmpty) {
 
   ASSERT_TRUE(helper->empty());
   helper->AddChannelID(net::ChannelIDStore::ChannelID(
-      origin, base::Time(), make_scoped_ptr(crypto::ECPrivateKey::Create())));
+      origin, base::Time(), base::WrapUnique(crypto::ECPrivateKey::Create())));
   ASSERT_FALSE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/push_messaging/push_messaging_service_observer.h"
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 
 #if defined(OS_ANDROID)
@@ -11,10 +12,10 @@
 #endif
 
 // static
-scoped_ptr<PushMessagingServiceObserver>
+std::unique_ptr<PushMessagingServiceObserver>
 PushMessagingServiceObserver::Create() {
 #if defined(OS_ANDROID)
-  return make_scoped_ptr(new PushMessagingServiceObserverAndroid());
+  return base::WrapUnique(new PushMessagingServiceObserverAndroid());
 #endif
   return nullptr;
 }

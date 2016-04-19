@@ -224,7 +224,7 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
     // 46182). We therefore use GetSwitches to copy the command line (it stops
     // at the switch argument terminator).
     base::CommandLine old_cl(*base::CommandLine::ForCurrentProcess());
-    scoped_ptr<base::CommandLine> new_cl(
+    std::unique_ptr<base::CommandLine> new_cl(
         new base::CommandLine(old_cl.GetProgram()));
     std::map<std::string, base::CommandLine::StringType> switches =
         old_cl.GetSwitches();

@@ -25,7 +25,7 @@ namespace {
 
 ScopedJavaLocalRef<jobjectArray> ConvertInterestsToJava(
     JNIEnv* env,
-    scoped_ptr<std::vector<InterestsFetcher::Interest>> interests) {
+    std::unique_ptr<std::vector<InterestsFetcher::Interest>> interests) {
   if (!interests)
     return ScopedJavaLocalRef<jobjectArray>();
 
@@ -64,7 +64,7 @@ void InterestsService::GetInterests(
     const JavaParamRef<jobject>& j_callback_obj) {
   ScopedJavaGlobalRef<jobject> j_callback(env, j_callback_obj);
 
-  scoped_ptr<InterestsFetcher> fetcher =
+  std::unique_ptr<InterestsFetcher> fetcher =
       InterestsFetcher::CreateFromProfile(profile_);
   InterestsFetcher* fetcher_raw_ptr = fetcher.get();
 
@@ -81,9 +81,9 @@ bool InterestsService::Register(JNIEnv* env) {
 }
 
 void InterestsService::OnObtainedInterests(
-    scoped_ptr<InterestsFetcher> fetcher,
+    std::unique_ptr<InterestsFetcher> fetcher,
     const ScopedJavaGlobalRef<jobject>& j_callback,
-    scoped_ptr<std::vector<InterestsFetcher::Interest>> interests) {
+    std::unique_ptr<std::vector<InterestsFetcher::Interest>> interests) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_interests =
       ConvertInterestsToJava(env, std::move(interests));

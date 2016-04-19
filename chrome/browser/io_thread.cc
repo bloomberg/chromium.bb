@@ -17,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
@@ -203,7 +204,7 @@ base::FilePath GetSSLKeyLogFile(const base::CommandLine& command_line) {
     LOG(WARNING) << "ssl-key-log-file argument missing";
   }
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string path_str;
   env->GetVar("SSLKEYLOGFILE", &path_str);
 #if defined(OS_WIN)
@@ -232,7 +233,8 @@ class SystemURLRequestContext : public net::URLRequestContext {
   }
 };
 
-scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
+std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
+    net::NetLog* net_log) {
   TRACE_EVENT0("startup", "IOThread::CreateGlobalHostResolver");
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -252,7 +254,7 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
     }
   }
 
-  scoped_ptr<net::HostResolver> global_host_resolver;
+  std::unique_ptr<net::HostResolver> global_host_resolver;
 #if defined OS_CHROMEOS
   global_host_resolver =
       chromeos::HostResolverImplChromeOS::CreateSystemResolver(options,
@@ -268,7 +270,7 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
   if (!command_line.HasSwitch(switches::kHostResolverRules))
     return global_host_resolver;
 
-  scoped_ptr<net::MappedHostResolver> remapped_resolver(
+  std::unique_ptr<net::MappedHostResolver> remapped_resolver(
       new net::MappedHostResolver(std::move(global_host_resolver)));
   remapped_resolver->SetRulesFromString(
       command_line.GetSwitchValueASCII(switches::kHostResolverRules));
@@ -600,13 +602,13 @@ void IOThread::Init() {
       extension_event_router_forwarder_;
 #endif
 
-  scoped_ptr<data_usage::DataUseAmortizer> data_use_amortizer;
+  std::unique_ptr<data_usage::DataUseAmortizer> data_use_amortizer;
 #if BUILDFLAG(ANDROID_JAVA_UI)
   data_use_amortizer.reset(new data_usage::android::TrafficStatsAmortizer());
 #endif
 
   globals_->data_use_aggregator.reset(new data_usage::DataUseAggregator(
-      scoped_ptr<data_usage::DataUseAnnotator>(
+      std::unique_ptr<data_usage::DataUseAnnotator>(
           new chrome_browser_data_usage::TabIdAnnotator()),
       std::move(data_use_amortizer)));
 
@@ -615,7 +617,7 @@ void IOThread::Init() {
   tracked_objects::ScopedTracker tracking_profile3(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "466432 IOThread::InitAsync::ChromeNetworkDelegate"));
-  scoped_ptr<ChromeNetworkDelegate> chrome_network_delegate(
+  std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
       new ChromeNetworkDelegate(extension_event_router_forwarder(),
                                 &system_enable_referrers_,
                                 metrics_data_use_forwarder_));
@@ -644,7 +646,7 @@ void IOThread::Init() {
   variations::GetVariationParams(kNetworkQualityEstimatorFieldTrialName,
                                  &network_quality_estimator_params);
 
-  scoped_ptr<net::ExternalEstimateProvider> external_estimate_provider;
+  std::unique_ptr<net::ExternalEstimateProvider> external_estimate_provider;
 #if BUILDFLAG(ANDROID_JAVA_UI)
   external_estimate_provider.reset(
       new chrome::android::ExternalEstimateProviderAndroid());
@@ -1746,14 +1748,14 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
   context->set_http_transaction_factory(
       globals->proxy_script_fetcher_http_transaction_factory.get());
 
-  scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
+  std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
 
   job_factory->SetProtocolHandler(
-      url::kDataScheme, make_scoped_ptr(new net::DataProtocolHandler()));
+      url::kDataScheme, base::WrapUnique(new net::DataProtocolHandler()));
   job_factory->SetProtocolHandler(
       url::kFileScheme,
-      make_scoped_ptr(new net::FileProtocolHandler(
+      base::WrapUnique(new net::FileProtocolHandler(
           content::BrowserThread::GetBlockingPool()
               ->GetTaskRunnerWithShutdownBehavior(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
@@ -1762,7 +1764,7 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
       new net::FtpNetworkLayer(globals->host_resolver.get()));
   job_factory->SetProtocolHandler(
       url::kFtpScheme,
-      make_scoped_ptr(new net::FtpProtocolHandler(
+      base::WrapUnique(new net::FtpProtocolHandler(
           globals->proxy_script_fetcher_ftp_transaction_factory.get())));
 #endif
   globals->proxy_script_fetcher_url_request_job_factory =

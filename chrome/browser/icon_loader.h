@@ -5,15 +5,14 @@
 #ifndef CHROME_BROWSER_ICON_LOADER_H_
 #define CHROME_BROWSER_ICON_LOADER_H_
 
-#include "build/build_config.h"
-
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/image/image.h"
 
@@ -96,7 +95,7 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
 
   IconSize icon_size_;
 
-  scoped_ptr<gfx::Image> image_;
+  std::unique_ptr<gfx::Image> image_;
 
   Delegate* delegate_;
 

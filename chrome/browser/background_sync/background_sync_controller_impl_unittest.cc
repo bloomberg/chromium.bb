@@ -66,8 +66,8 @@ class BackgroundSyncControllerImplTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   rappor::TestRapporService rappor_service_;
-  scoped_ptr<TestBackgroundSyncControllerImpl> controller_;
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<TestBackgroundSyncControllerImpl> controller_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncControllerImplTest);
 };

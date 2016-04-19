@@ -79,7 +79,7 @@ class ChromeSigninClientTest : public testing::Test {
   SigninClient* signin_client() { return signin_client_; }
 
  private:
-  scoped_ptr<Profile> profile_;
+  std::unique_ptr<Profile> profile_;
   SigninClient* signin_client_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
@@ -93,8 +93,8 @@ void ChromeSigninClientTest::SetUp() {
 }
 
 TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsImmediatelyWithNetwork) {
-  scoped_ptr<net::NetworkChangeNotifier>
-      mock(new MockNetworkChangeNotifierNeverOffline);
+  std::unique_ptr<net::NetworkChangeNotifier> mock(
+      new MockNetworkChangeNotifierNeverOffline);
   CallbackTester tester;
   signin_client()->DelayNetworkCall(base::Bind(&CallbackTester::Increment,
                                                base::Unretained(&tester)));
@@ -102,8 +102,8 @@ TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsImmediatelyWithNetwork) {
 }
 
 TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsAfterNetworkFound) {
-  scoped_ptr<MockNetworkChangeNotifierOfflineUntilChange>
-      mock(new MockNetworkChangeNotifierOfflineUntilChange());
+  std::unique_ptr<MockNetworkChangeNotifierOfflineUntilChange> mock(
+      new MockNetworkChangeNotifierOfflineUntilChange());
   // Install a SigninClient after the NetworkChangeNotifier's created.
   SetUp();
 

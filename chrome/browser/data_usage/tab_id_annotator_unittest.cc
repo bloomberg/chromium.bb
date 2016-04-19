@@ -5,6 +5,8 @@
 #include "chrome/browser/data_usage/tab_id_annotator.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -12,7 +14,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -51,14 +52,15 @@ class TabIdAnnotatorTest : public ChromeRenderViewHostTestHarness {
 };
 
 // Synthesizes a DataUse object with the given |tab_id|.
-scoped_ptr<DataUse> CreateDataUse(int32_t tab_id) {
-  return scoped_ptr<DataUse>(new DataUse(
+std::unique_ptr<DataUse> CreateDataUse(int32_t tab_id) {
+  return std::unique_ptr<DataUse>(new DataUse(
       GURL("http://foo.com"), base::TimeTicks(), GURL(), tab_id,
       net::NetworkChangeNotifier::CONNECTION_UNKNOWN, std::string(), 100, 100));
 }
 
 // Expects that |expected| and |actual| are equal.
-void ExpectDataUse(scoped_ptr<DataUse> expected, scoped_ptr<DataUse> actual) {
+void ExpectDataUse(std::unique_ptr<DataUse> expected,
+                   std::unique_ptr<DataUse> actual) {
   // Single out the |tab_id| for better debug output in failure cases.
   EXPECT_EQ(expected->tab_id, actual->tab_id);
   EXPECT_EQ(*expected, *actual);
@@ -67,8 +69,8 @@ void ExpectDataUse(scoped_ptr<DataUse> expected, scoped_ptr<DataUse> actual) {
 // Expects that |expected| and |actual| are equal, then quits |ui_run_loop| on
 // the UI thread.
 void ExpectDataUseAndQuit(base::RunLoop* ui_run_loop,
-                          scoped_ptr<DataUse> expected,
-                          scoped_ptr<DataUse> actual) {
+                          std::unique_ptr<DataUse> expected,
+                          std::unique_ptr<DataUse> actual) {
   DCHECK(ui_run_loop);
   ExpectDataUse(std::move(expected), std::move(actual));
 
@@ -95,7 +97,7 @@ void TestAnnotateOnIOThread(base::RunLoop* ui_run_loop,
   TabIdAnnotator annotator;
   net::TestURLRequestContext context;
   net::TestDelegate test_delegate;
-  scoped_ptr<net::URLRequest> request =
+  std::unique_ptr<net::URLRequest> request =
       context.CreateRequest(GURL("http://foo.com"), net::IDLE, &test_delegate);
 
   if (render_process_id != -1 && render_frame_id != -1) {
@@ -113,13 +115,15 @@ void TestAnnotateOnIOThread(base::RunLoop* ui_run_loop,
 
   // Annotate two separate DataUse objects to ensure that repeated annotations
   // for the same URLRequest work properly.
-  scoped_ptr<DataUse> first_expected_data_use = CreateDataUse(expected_tab_id);
+  std::unique_ptr<DataUse> first_expected_data_use =
+      CreateDataUse(expected_tab_id);
   annotator.Annotate(
       request.get(), CreateDataUse(kInvalidTabId),
       base::Bind(&ExpectDataUse, base::Passed(&first_expected_data_use)));
 
   // Quit the |ui_run_loop| after the second annotation.
-  scoped_ptr<DataUse> second_expected_data_use = CreateDataUse(expected_tab_id);
+  std::unique_ptr<DataUse> second_expected_data_use =
+      CreateDataUse(expected_tab_id);
   annotator.Annotate(request.get(), CreateDataUse(kInvalidTabId),
                      base::Bind(&ExpectDataUseAndQuit, ui_run_loop,
                                 base::Passed(&second_expected_data_use)));

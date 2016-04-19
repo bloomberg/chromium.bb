@@ -38,7 +38,7 @@ void OnUploadComplete(TraceCrashServiceUploader* uploader,
 
 void UploadCallback(const std::string& upload_url,
                     const scoped_refptr<base::RefCountedString>& file_contents,
-                    scoped_ptr<const base::DictionaryValue> metadata,
+                    std::unique_ptr<const base::DictionaryValue> metadata,
                     base::Closure callback) {
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
       g_browser_process->system_request_context());
@@ -70,7 +70,7 @@ void SetupBackgroundTracingFieldTrial() {
   if (g_config_text_filter_for_testing)
     (*g_config_text_filter_for_testing)(&config_text);
 
-  scoped_ptr<base::Value> value = base::JSONReader::Read(config_text);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(config_text);
   if (!value)
     return;
 
@@ -78,7 +78,7 @@ void SetupBackgroundTracingFieldTrial() {
   if (!value->GetAsDictionary(&dict))
     return;
 
-  scoped_ptr<content::BackgroundTracingConfig> config =
+  std::unique_ptr<content::BackgroundTracingConfig> config =
       content::BackgroundTracingConfig::FromDict(dict);
   if (!config)
     return;

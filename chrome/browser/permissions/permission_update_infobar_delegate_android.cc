@@ -4,9 +4,10 @@
 
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 
+#include <memory>
+
 #include "base/android/jni_array.h"
 #include "base/callback_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/chromium_strings.h"
@@ -79,8 +80,9 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
   }
 
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new PermissionUpdateInfoBarDelegate(
-          web_contents, android_permissions, permission_msg_id, callback))));
+      std::unique_ptr<ConfirmInfoBarDelegate>(
+          new PermissionUpdateInfoBarDelegate(web_contents, android_permissions,
+                                              permission_msg_id, callback))));
 }
 
 // static

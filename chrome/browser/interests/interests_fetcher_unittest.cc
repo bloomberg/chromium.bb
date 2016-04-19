@@ -83,7 +83,7 @@ class InterestsFetcherTest : public testing::Test {
   MOCK_METHOD0(OnFailedResponse, void());
 
   void OnReceivedInterests(
-      scoped_ptr<std::vector<InterestsFetcher::Interest>> interests) {
+      std::unique_ptr<std::vector<InterestsFetcher::Interest>> interests) {
     if (!interests) {
       OnFailedResponse();
       return;
@@ -150,8 +150,8 @@ class InterestsFetcherTest : public testing::Test {
   base::MessageLoop message_loop_;
   FakeProfileOAuth2TokenService token_service_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  scoped_ptr<net::TestURLFetcherFactory> url_fetcher_factory_;
-  scoped_ptr<InterestsFetcher> request_;
+  std::unique_ptr<net::TestURLFetcherFactory> url_fetcher_factory_;
+  std::unique_ptr<InterestsFetcher> request_;
 };
 
 TEST_F(InterestsFetcherTest, EmptyResponse) {

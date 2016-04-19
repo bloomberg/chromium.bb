@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_MASH_SHELF_CONTROLLER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "mash/shelf/public/interfaces/shelf.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
@@ -39,7 +39,7 @@ class ChromeMashShelfController : public mash::shelf::mojom::ShelfObserver {
 
   mash::shelf::mojom::ShelfControllerPtr shelf_controller_;
   mojo::AssociatedBinding<mash::shelf::mojom::ShelfObserver> observer_binding_;
-  std::map<std::string, scoped_ptr<ChromeShelfItemDelegate>>
+  std::map<std::string, std::unique_ptr<ChromeShelfItemDelegate>>
       app_id_to_item_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMashShelfController);

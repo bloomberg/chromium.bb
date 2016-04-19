@@ -42,13 +42,14 @@ void RecordHistogramResourceTypeSafe(content::ResourceType resource_type) {
 // Return a dictionary with "url"=|url-spec| and optionally
 // |name|=|value| (if not null), for netlogging.
 // This will also add a reference to the original request's net_log ID.
-scoped_ptr<base::Value> NetLogUrlCallback(
+std::unique_ptr<base::Value> NetLogUrlCallback(
     const net::URLRequest* request,
     const GURL& url,
     const char* name,
     const char* value,
     net::NetLogCaptureMode /* capture_mode */) {
-  scoped_ptr<base::DictionaryValue> event_params(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> event_params(
+      new base::DictionaryValue());
   event_params->SetString("url", url.spec());
   if (name && value)
     event_params->SetString(name, value);
@@ -57,11 +58,11 @@ scoped_ptr<base::Value> NetLogUrlCallback(
 }
 
 // Return a dictionary with |name|=|value|, for netlogging.
-scoped_ptr<base::Value> NetLogStringCallback(
-    const char* name,
-    const char* value,
-    net::NetLogCaptureMode) {
-  scoped_ptr<base::DictionaryValue> event_params(new base::DictionaryValue());
+std::unique_ptr<base::Value> NetLogStringCallback(const char* name,
+                                                  const char* value,
+                                                  net::NetLogCaptureMode) {
+  std::unique_ptr<base::DictionaryValue> event_params(
+      new base::DictionaryValue());
   if (name && value)
     event_params->SetString(name, value);
   return std::move(event_params);

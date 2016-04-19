@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -65,17 +66,16 @@ InterestsFetcher::InterestsFetcher(
 InterestsFetcher::~InterestsFetcher() {}
 
 // static
-scoped_ptr<InterestsFetcher> InterestsFetcher::CreateFromProfile(
+std::unique_ptr<InterestsFetcher> InterestsFetcher::CreateFromProfile(
     Profile* profile) {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
 
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
 
-  return make_scoped_ptr(new InterestsFetcher(
-      token_service,
-      signin->GetAuthenticatedAccountId(),
-      profile->GetRequestContext()));
+  return base::WrapUnique(
+      new InterestsFetcher(token_service, signin->GetAuthenticatedAccountId(),
+                           profile->GetRequestContext()));
 }
 
 void InterestsFetcher::FetchInterests(
@@ -159,14 +159,14 @@ OAuth2TokenService::ScopeSet InterestsFetcher::GetApiScopes() {
   return scopes;
 }
 
-scoped_ptr<net::URLFetcher> InterestsFetcher::CreateFetcher() {
+std::unique_ptr<net::URLFetcher> InterestsFetcher::CreateFetcher() {
   return
       net::URLFetcher::Create(0, GetInterestsURL(), net::URLFetcher::GET, this);
 }
 
-scoped_ptr<std::vector<InterestsFetcher::Interest>>
+std::unique_ptr<std::vector<InterestsFetcher::Interest>>
 InterestsFetcher::ExtractInterests(const std::string& response) {
-  scoped_ptr<base::Value> value = base::JSONReader::Read(response);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(response);
   DVLOG(2) << response;
 
   const base::DictionaryValue* dict = nullptr;
@@ -181,7 +181,7 @@ InterestsFetcher::ExtractInterests(const std::string& response) {
     return nullptr;
   }
 
-  scoped_ptr<std::vector<Interest>> res(new std::vector<Interest>());
+  std::unique_ptr<std::vector<Interest>> res(new std::vector<Interest>());
   for (const base::Value* entry : *interests_list) {
     const base::DictionaryValue* interest_dict = nullptr;
     if (!entry->GetAsDictionary(&interest_dict)) {

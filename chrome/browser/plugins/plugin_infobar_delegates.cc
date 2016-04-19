@@ -49,12 +49,12 @@ using base::UserMetricsAction;
 void OutdatedPluginInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PluginInstaller* installer,
-    scoped_ptr<PluginMetadata> plugin_metadata) {
+    std::unique_ptr<PluginMetadata> plugin_metadata) {
   // Copy the name out of |plugin_metadata| now, since the Pass() call below
   // will make it impossible to get at.
   base::string16 name(plugin_metadata->name());
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new OutdatedPluginInfoBarDelegate(
+      std::unique_ptr<ConfirmInfoBarDelegate>(new OutdatedPluginInfoBarDelegate(
           installer, std::move(plugin_metadata),
           l10n_util::GetStringFUTF16(
               (installer->state() == PluginInstaller::INSTALLER_STATE_IDLE)
@@ -65,7 +65,7 @@ void OutdatedPluginInfoBarDelegate::Create(
 
 OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     PluginInstaller* installer,
-    scoped_ptr<PluginMetadata> plugin_metadata,
+    std::unique_ptr<PluginMetadata> plugin_metadata,
     const base::string16& message)
     : ConfirmInfoBarDelegate(),
       WeakPluginInstallerObserver(installer),
@@ -200,14 +200,14 @@ void OutdatedPluginInfoBarDelegate::ReplaceWithInfoBar(
 void OutdatedPluginInfoBarDelegate::Replace(
     infobars::InfoBar* infobar,
     PluginInstaller* installer,
-    scoped_ptr<PluginMetadata> plugin_metadata,
+    std::unique_ptr<PluginMetadata> plugin_metadata,
     const base::string16& message) {
   DCHECK(infobar->owner());
   infobar->owner()->ReplaceInfoBar(
-      infobar,
-      infobar->owner()->CreateConfirmInfoBar(
-          scoped_ptr<ConfirmInfoBarDelegate>(new OutdatedPluginInfoBarDelegate(
-              installer, std::move(plugin_metadata), message))));
+      infobar, infobar->owner()->CreateConfirmInfoBar(
+                   std::unique_ptr<ConfirmInfoBarDelegate>(
+                       new OutdatedPluginInfoBarDelegate(
+                           installer, std::move(plugin_metadata), message))));
 }
 
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)

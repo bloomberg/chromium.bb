@@ -5,12 +5,14 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 #include <utility>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -67,9 +69,9 @@ const double kTimeDelta = 1000000;
 // for which WEB_APP_INSTALLED_POINTS will be added to the engagement score.
 const int kMaxDaysSinceShortcutLaunch = 10;
 
-scoped_ptr<ContentSettingsForOneType> GetEngagementContentSettings(
+std::unique_ptr<ContentSettingsForOneType> GetEngagementContentSettings(
     HostContentSettingsMap* settings_map) {
-  scoped_ptr<ContentSettingsForOneType> engagement_settings(
+  std::unique_ptr<ContentSettingsForOneType> engagement_settings(
       new ContentSettingsForOneType);
   settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
                                       std::string(), engagement_settings.get());
@@ -97,22 +99,22 @@ bool IsEngagementNavigation(ui::PageTransition transition) {
                                       ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 }
 
-scoped_ptr<base::DictionaryValue> GetScoreDictForOrigin(
+std::unique_ptr<base::DictionaryValue> GetScoreDictForOrigin(
     HostContentSettingsMap* settings,
     const GURL& origin_url) {
   if (!settings)
-    return scoped_ptr<base::DictionaryValue>();
+    return std::unique_ptr<base::DictionaryValue>();
 
-  scoped_ptr<base::Value> value = settings->GetWebsiteSetting(
+  std::unique_ptr<base::Value> value = settings->GetWebsiteSetting(
       origin_url, origin_url, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
       std::string(), NULL);
   if (!value.get())
-    return make_scoped_ptr(new base::DictionaryValue());
+    return base::WrapUnique(new base::DictionaryValue());
 
   if (!value->IsType(base::Value::TYPE_DICTIONARY))
-    return make_scoped_ptr(new base::DictionaryValue());
+    return base::WrapUnique(new base::DictionaryValue());
 
-  return make_scoped_ptr(static_cast<base::DictionaryValue*>(value.release()));
+  return base::WrapUnique(static_cast<base::DictionaryValue*>(value.release()));
 }
 
 }  // namespace
@@ -396,7 +398,7 @@ bool SiteEngagementService::IsEnabled() {
 }
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
-    : SiteEngagementService(profile, make_scoped_ptr(new base::DefaultClock)) {
+    : SiteEngagementService(profile, base::WrapUnique(new base::DefaultClock)) {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE, content::BrowserThread::GetMessageLoopProxyForThread(
                      content::BrowserThread::UI),
@@ -451,7 +453,7 @@ void SiteEngagementService::ResetScoreForURL(const GURL& url, double score) {
 
   HostContentSettingsMap* settings_map =
     HostContentSettingsMapFactory::GetForProfile(profile_);
-  scoped_ptr<base::DictionaryValue> score_dict =
+  std::unique_ptr<base::DictionaryValue> score_dict =
       GetScoreDictForOrigin(settings_map, url);
   SiteEngagementScore engagement_score(clock_.get(), *score_dict);
 
@@ -491,7 +493,7 @@ void SiteEngagementService::OnURLsDeleted(
 void SiteEngagementService::SetLastShortcutLaunchTime(const GURL& url) {
   HostContentSettingsMap* settings_map =
     HostContentSettingsMapFactory::GetForProfile(profile_);
-  scoped_ptr<base::DictionaryValue> score_dict =
+  std::unique_ptr<base::DictionaryValue> score_dict =
       GetScoreDictForOrigin(settings_map, url);
   SiteEngagementScore score(clock_.get(), *score_dict);
 
@@ -517,7 +519,7 @@ void SiteEngagementService::SetLastShortcutLaunchTime(const GURL& url) {
 double SiteEngagementService::GetScore(const GURL& url) const {
   HostContentSettingsMap* settings_map =
     HostContentSettingsMapFactory::GetForProfile(profile_);
-  scoped_ptr<base::DictionaryValue> score_dict =
+  std::unique_ptr<base::DictionaryValue> score_dict =
       GetScoreDictForOrigin(settings_map, url);
   SiteEngagementScore score(clock_.get(), *score_dict);
 
@@ -537,7 +539,7 @@ double SiteEngagementService::GetTotalEngagementPoints() const {
 std::map<GURL, double> SiteEngagementService::GetScoreMap() const {
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
-  scoped_ptr<ContentSettingsForOneType> engagement_settings =
+  std::unique_ptr<ContentSettingsForOneType> engagement_settings =
       GetEngagementContentSettings(settings_map);
 
   std::map<GURL, double> score_map;
@@ -546,7 +548,7 @@ std::map<GURL, double> SiteEngagementService::GetScoreMap() const {
     if (!origin.is_valid())
       continue;
 
-    scoped_ptr<base::DictionaryValue> score_dict =
+    std::unique_ptr<base::DictionaryValue> score_dict =
         GetScoreDictForOrigin(settings_map, origin);
     SiteEngagementScore score(clock_.get(), *score_dict);
     score_map[origin] = score.Score();
@@ -603,7 +605,7 @@ bool SiteEngagementService::IsEngagementAtLeast(
 }
 
 SiteEngagementService::SiteEngagementService(Profile* profile,
-                                             scoped_ptr<base::Clock> clock)
+                                             std::unique_ptr<base::Clock> clock)
     : profile_(profile), clock_(std::move(clock)), weak_factory_(this) {
   // May be null in tests.
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
@@ -615,7 +617,7 @@ SiteEngagementService::SiteEngagementService(Profile* profile,
 void SiteEngagementService::AddPoints(const GURL& url, double points) {
   HostContentSettingsMap* settings_map =
     HostContentSettingsMapFactory::GetForProfile(profile_);
-  scoped_ptr<base::DictionaryValue> score_dict =
+  std::unique_ptr<base::DictionaryValue> score_dict =
       GetScoreDictForOrigin(settings_map, url);
   SiteEngagementScore score(clock_.get(), *score_dict);
 
@@ -635,13 +637,13 @@ void SiteEngagementService::AfterStartupTask() {
 void SiteEngagementService::CleanupEngagementScores() {
   HostContentSettingsMap* settings_map =
     HostContentSettingsMapFactory::GetForProfile(profile_);
-  scoped_ptr<ContentSettingsForOneType> engagement_settings =
+  std::unique_ptr<ContentSettingsForOneType> engagement_settings =
       GetEngagementContentSettings(settings_map);
 
   for (const auto& site : *engagement_settings) {
     GURL origin(site.primary_pattern.ToString());
     if (origin.is_valid()) {
-      scoped_ptr<base::DictionaryValue> score_dict =
+      std::unique_ptr<base::DictionaryValue> score_dict =
           GetScoreDictForOrigin(settings_map, origin);
       SiteEngagementScore score(clock_.get(), *score_dict);
       if (score.Score() != 0)
@@ -711,7 +713,7 @@ double SiteEngagementService::GetMedianEngagement(
 int SiteEngagementService::OriginsWithMaxDailyEngagement() const {
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
-  scoped_ptr<ContentSettingsForOneType> engagement_settings =
+  std::unique_ptr<ContentSettingsForOneType> engagement_settings =
       GetEngagementContentSettings(settings_map);
 
   int total_origins = 0;
@@ -722,7 +724,7 @@ int SiteEngagementService::OriginsWithMaxDailyEngagement() const {
     if (!origin.is_valid())
       continue;
 
-    scoped_ptr<base::DictionaryValue> score_dict =
+    std::unique_ptr<base::DictionaryValue> score_dict =
         GetScoreDictForOrigin(settings_map, origin);
     SiteEngagementScore score(clock_.get(), *score_dict);
     if (score.MaxPointsPerDayAdded())

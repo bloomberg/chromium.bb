@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 namespace base {
@@ -38,7 +38,7 @@ class SupervisedUserWhitelistInstaller {
 
   virtual ~SupervisedUserWhitelistInstaller() {}
 
-  static scoped_ptr<SupervisedUserWhitelistInstaller> Create(
+  static std::unique_ptr<SupervisedUserWhitelistInstaller> Create(
       ComponentUpdateService* cus,
       ProfileAttributesStorage* profile_attributes_storage,
       PrefService* local_state);

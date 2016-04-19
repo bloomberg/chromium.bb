@@ -46,11 +46,11 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, device));
   store->GrantDevicePermission(origin, origin, device->guid());
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, device));
-  std::vector<scoped_ptr<base::DictionaryValue>> objects =
+  std::vector<std::unique_ptr<base::DictionaryValue>> objects =
       store->GetGrantedObjects(origin, origin);
   ASSERT_EQ(1u, objects.size());
   EXPECT_TRUE(object_dict.Equals(objects[0].get()));
-  std::vector<scoped_ptr<ChooserContextBase::Object>> all_origin_objects =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
       store->GetAllGrantedObjects();
   ASSERT_EQ(1u, all_origin_objects.size());
   EXPECT_EQ(origin, all_origin_objects[0]->requesting_origin);
@@ -83,11 +83,11 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokeEphemeralPermission) {
   store->GrantDevicePermission(origin, origin, device->guid());
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, device));
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, other_device));
-  std::vector<scoped_ptr<base::DictionaryValue>> objects =
+  std::vector<std::unique_ptr<base::DictionaryValue>> objects =
       store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
   EXPECT_TRUE(object_dict.Equals(objects[0].get()));
-  std::vector<scoped_ptr<ChooserContextBase::Object>> all_origin_objects =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
       store->GetAllGrantedObjects();
   EXPECT_EQ(1u, all_origin_objects.size());
   EXPECT_EQ(origin, all_origin_objects[0]->requesting_origin);
@@ -113,10 +113,10 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, device));
   store->GrantDevicePermission(origin, origin, device->guid());
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, device));
-  std::vector<scoped_ptr<base::DictionaryValue>> objects =
+  std::vector<std::unique_ptr<base::DictionaryValue>> objects =
       store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
-  std::vector<scoped_ptr<ChooserContextBase::Object>> all_origin_objects =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
       store->GetAllGrantedObjects();
   EXPECT_EQ(1u, all_origin_objects.size());
 
@@ -147,10 +147,10 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, device));
   store->GrantDevicePermission(origin, origin, device->guid());
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, device));
-  std::vector<scoped_ptr<base::DictionaryValue>> objects =
+  std::vector<std::unique_ptr<base::DictionaryValue>> objects =
       store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
-  std::vector<scoped_ptr<ChooserContextBase::Object>> all_origin_objects =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
       store->GetAllGrantedObjects();
   EXPECT_EQ(1u, all_origin_objects.size());
 
@@ -195,20 +195,20 @@ TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
   EXPECT_TRUE(incognito_store->HasDevicePermission(origin, origin, device2));
 
   {
-    std::vector<scoped_ptr<base::DictionaryValue>> objects =
+    std::vector<std::unique_ptr<base::DictionaryValue>> objects =
         store->GetGrantedObjects(origin, origin);
     EXPECT_EQ(1u, objects.size());
-    std::vector<scoped_ptr<ChooserContextBase::Object>> all_origin_objects =
-        store->GetAllGrantedObjects();
+    std::vector<std::unique_ptr<ChooserContextBase::Object>>
+        all_origin_objects = store->GetAllGrantedObjects();
     ASSERT_EQ(1u, all_origin_objects.size());
     EXPECT_FALSE(all_origin_objects[0]->incognito);
   }
   {
-    std::vector<scoped_ptr<base::DictionaryValue>> objects =
+    std::vector<std::unique_ptr<base::DictionaryValue>> objects =
         incognito_store->GetGrantedObjects(origin, origin);
     EXPECT_EQ(1u, objects.size());
-    std::vector<scoped_ptr<ChooserContextBase::Object>> all_origin_objects =
-        incognito_store->GetAllGrantedObjects();
+    std::vector<std::unique_ptr<ChooserContextBase::Object>>
+        all_origin_objects = incognito_store->GetAllGrantedObjects();
     ASSERT_EQ(1u, all_origin_objects.size());
     EXPECT_TRUE(all_origin_objects[0]->incognito);
   }

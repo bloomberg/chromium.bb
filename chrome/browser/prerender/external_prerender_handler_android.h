@@ -7,9 +7,10 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class GURL;
 class Profile;
@@ -60,7 +61,7 @@ class ExternalPrerenderHandlerAndroid {
 
  private:
   virtual ~ExternalPrerenderHandlerAndroid();
-  scoped_ptr<prerender::PrerenderHandle> prerender_handle_;
+  std::unique_ptr<prerender::PrerenderHandle> prerender_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrerenderHandlerAndroid);
 };

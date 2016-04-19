@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -93,18 +94,18 @@ PrefService* ChromeProximityAuthClient::GetPrefService() {
   return profile_->GetPrefs();
 }
 
-scoped_ptr<proximity_auth::SecureMessageDelegate>
+std::unique_ptr<proximity_auth::SecureMessageDelegate>
 ChromeProximityAuthClient::CreateSecureMessageDelegate() {
 #if defined(OS_CHROMEOS)
-  return make_scoped_ptr(new chromeos::SecureMessageDelegateChromeOS());
+  return base::WrapUnique(new chromeos::SecureMessageDelegateChromeOS());
 #else
   return nullptr;
 #endif
 }
 
-scoped_ptr<proximity_auth::CryptAuthClientFactory>
+std::unique_ptr<proximity_auth::CryptAuthClientFactory>
 ChromeProximityAuthClient::CreateCryptAuthClientFactory() {
-  return make_scoped_ptr(new proximity_auth::CryptAuthClientFactoryImpl(
+  return base::WrapUnique(new proximity_auth::CryptAuthClientFactoryImpl(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_), GetAccountId(),
       profile_->GetRequestContext(), GetDeviceClassifier()));
 }

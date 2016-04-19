@@ -32,18 +32,18 @@ class OutdatedPluginInfoBarDelegate : public ConfirmInfoBarDelegate,
   // |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      PluginInstaller* installer,
-                     scoped_ptr<PluginMetadata> metadata);
+                     std::unique_ptr<PluginMetadata> metadata);
 
   // Replaces |infobar|, which must currently be owned, with an infobar asking
   // the user to update a particular plugin.
   static void Replace(infobars::InfoBar* infobar,
                       PluginInstaller* installer,
-                      scoped_ptr<PluginMetadata> plugin_metadata,
+                      std::unique_ptr<PluginMetadata> plugin_metadata,
                       const base::string16& message);
 
  private:
   OutdatedPluginInfoBarDelegate(PluginInstaller* installer,
-                                scoped_ptr<PluginMetadata> metadata,
+                                std::unique_ptr<PluginMetadata> metadata,
                                 const base::string16& message);
   ~OutdatedPluginInfoBarDelegate() override;
 
@@ -73,7 +73,7 @@ class OutdatedPluginInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   std::string identifier_;
 
-  scoped_ptr<PluginMetadata> plugin_metadata_;
+  std::unique_ptr<PluginMetadata> plugin_metadata_;
 
   base::string16 message_;
 

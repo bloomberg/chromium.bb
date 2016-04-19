@@ -154,7 +154,7 @@ void SSLErrorHandler::HandleSSLError(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     int options_mask,
-    scoped_ptr<SSLCertReporter> ssl_cert_reporter,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const base::Callback<void(bool)>& callback) {
   DCHECK(!FromWebContents(web_contents));
   SSLErrorHandler* error_handler =
@@ -181,13 +181,14 @@ void SSLErrorHandler::SetClockForTest(base::Clock* testing_clock) {
   g_testing_clock = testing_clock;
 }
 
-SSLErrorHandler::SSLErrorHandler(content::WebContents* web_contents,
-                                 int cert_error,
-                                 const net::SSLInfo& ssl_info,
-                                 const GURL& request_url,
-                                 int options_mask,
-                                 scoped_ptr<SSLCertReporter> ssl_cert_reporter,
-                                 const base::Callback<void(bool)>& callback)
+SSLErrorHandler::SSLErrorHandler(
+    content::WebContents* web_contents,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
+    int options_mask,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+    const base::Callback<void(bool)>& callback)
     : content::WebContentsObserver(web_contents),
       web_contents_(web_contents),
       cert_error_(cert_error),

@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include <string.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/guid.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
@@ -119,18 +120,18 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnableDomDistiller);
   }
 
-  static scoped_ptr<KeyedService> Build(content::BrowserContext* context) {
+  static std::unique_ptr<KeyedService> Build(content::BrowserContext* context) {
     FakeDB<ArticleEntry>* fake_db = new FakeDB<ArticleEntry>(database_model_);
     distiller_factory_ = new MockDistillerFactory();
     MockDistillerPageFactory* distiller_page_factory_ =
         new MockDistillerPageFactory();
-    scoped_ptr<DomDistillerContextKeyedService> service(
+    std::unique_ptr<DomDistillerContextKeyedService> service(
         new DomDistillerContextKeyedService(
-            scoped_ptr<DomDistillerStoreInterface>(CreateStoreWithFakeDB(
+            std::unique_ptr<DomDistillerStoreInterface>(CreateStoreWithFakeDB(
                 fake_db, FakeDB<ArticleEntry>::EntryMap())),
-            scoped_ptr<DistillerFactory>(distiller_factory_),
-            scoped_ptr<DistillerPageFactory>(distiller_page_factory_),
-            scoped_ptr<DistilledPagePrefs>(new DistilledPagePrefs(
+            std::unique_ptr<DistillerFactory>(distiller_factory_),
+            std::unique_ptr<DistillerPageFactory>(distiller_page_factory_),
+            std::unique_ptr<DistilledPagePrefs>(new DistilledPagePrefs(
                 Profile::FromBrowserContext(context)->GetPrefs()))));
     fake_db->InitCallback(true);
     fake_db->LoadCallback(true);
@@ -336,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   // Finish distillation and make sure the spinner has been replaced by text.
   std::vector<scoped_refptr<ArticleDistillationUpdate::RefCountedPageProto> >
       update_pages;
-  scoped_ptr<DistilledArticleProto> article(new DistilledArticleProto());
+  std::unique_ptr<DistilledArticleProto> article(new DistilledArticleProto());
 
   scoped_refptr<base::RefCountedData<DistilledPageProto> > page_proto =
       new base::RefCountedData<DistilledPageProto>();
@@ -445,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, MultiPageArticle) {
 
   std::vector<scoped_refptr<ArticleDistillationUpdate::RefCountedPageProto> >
       update_pages;
-  scoped_ptr<DistilledArticleProto> article(new DistilledArticleProto());
+  std::unique_ptr<DistilledArticleProto> article(new DistilledArticleProto());
 
   // Flush page 1.
   {

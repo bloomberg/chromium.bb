@@ -152,7 +152,7 @@ class BackgroundModeManager
     ~BackgroundModeData() override;
 
     // The cached list of BackgroundApplications.
-    scoped_ptr<BackgroundApplicationListModel> applications_;
+    std::unique_ptr<BackgroundApplicationListModel> applications_;
 
     // Overrides from StatusIconMenuModel::Delegate implementation.
     void ExecuteCommand(int command_id, int event_flags) override;
@@ -420,12 +420,12 @@ class BackgroundModeManager
 
   // Background mode does not always keep Chrome alive. When it does, it is
   // using this scoped object.
-  scoped_ptr<ScopedKeepAlive> keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
   // Set when we are keeping chrome running during the startup process - this
   // is required when running with the --no-startup-window flag, as otherwise
   // chrome would immediately exit due to having no open windows.
-  scoped_ptr<ScopedKeepAlive> keep_alive_for_startup_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_for_startup_;
 
   // Set to true when Chrome is running with the --keep-alive-for-test flag
   // (used for testing background mode without having to install a background

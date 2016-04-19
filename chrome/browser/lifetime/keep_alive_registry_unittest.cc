@@ -4,7 +4,8 @@
 
 #include "chrome/browser/lifetime/keep_alive_registry.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/keep_alive_state_observer.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
@@ -82,7 +83,7 @@ TEST_F(KeepAliveRegistryTest, BasicKeepAliveTest) {
 TEST_F(KeepAliveRegistryTest, DoubleKeepAliveTest) {
   EXPECT_EQ(0, start_keep_alive_call_count_);
   EXPECT_EQ(0, stop_keep_alive_call_count_);
-  scoped_ptr<ScopedKeepAlive> keep_alive_1, keep_alive_2;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_1, keep_alive_2;
 
   keep_alive_1.reset(new ScopedKeepAlive(KeepAliveOrigin::CHROME_APP_DELEGATE,
                                          KeepAliveRestartOption::DISABLED));
@@ -109,7 +110,7 @@ TEST_F(KeepAliveRegistryTest, DoubleKeepAliveTest) {
 // Test the IsKeepingAlive state and when we interact with the browser with
 // more than one KeepAlive registered.
 TEST_F(KeepAliveRegistryTest, RestartOptionTest) {
-  scoped_ptr<ScopedKeepAlive> keep_alive, keep_alive_restart;
+  std::unique_ptr<ScopedKeepAlive> keep_alive, keep_alive_restart;
 
   EXPECT_EQ(0, on_restart_allowed_call_count_);
   EXPECT_EQ(0, on_restart_forbidden_call_count_);

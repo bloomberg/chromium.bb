@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/notifications/notification_delegate.h"

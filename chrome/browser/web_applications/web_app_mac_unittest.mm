@@ -9,13 +9,14 @@
 #include <stddef.h>
 #include <sys/xattr.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -63,8 +64,8 @@ class WebAppShortcutCreatorMock : public web_app::WebAppShortcutCreator {
   DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreatorMock);
 };
 
-scoped_ptr<web_app::ShortcutInfo> GetShortcutInfo() {
-  scoped_ptr<web_app::ShortcutInfo> info(new web_app::ShortcutInfo);
+std::unique_ptr<web_app::ShortcutInfo> GetShortcutInfo() {
+  std::unique_ptr<web_app::ShortcutInfo> info(new web_app::ShortcutInfo);
   info->extension_id = "extensionid";
   info->extension_path = base::FilePath("/fake/extension/path");
   info->title = base::ASCIIToUTF16("Shortcut Title");
@@ -100,7 +101,7 @@ class WebAppShortcutCreatorTest : public testing::Test {
   base::FilePath app_data_dir_;
   base::FilePath destination_dir_;
 
-  scoped_ptr<web_app::ShortcutInfo> info_;
+  std::unique_ptr<web_app::ShortcutInfo> info_;
   base::FilePath shim_base_name_;
   base::FilePath internal_shim_path_;
   base::FilePath shim_path_;

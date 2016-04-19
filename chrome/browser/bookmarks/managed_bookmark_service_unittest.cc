@@ -4,8 +4,9 @@
 
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -158,14 +159,14 @@ TEST_F(ManagedBookmarkServiceTest, LoadInitial) {
   EXPECT_FALSE(managed_->managed_node()->empty());
   EXPECT_TRUE(managed_->managed_node()->IsVisible());
 
-  scoped_ptr<base::DictionaryValue> expected(CreateExpectedTree());
+  std::unique_ptr<base::DictionaryValue> expected(CreateExpectedTree());
   EXPECT_TRUE(NodeMatchesValue(managed_->managed_node(), expected.get()));
 }
 
 TEST_F(ManagedBookmarkServiceTest, SwapNodes) {
   // Swap the Google bookmark with the Folder.
-  scoped_ptr<base::ListValue> updated(CreateTestTree());
-  scoped_ptr<base::Value> removed;
+  std::unique_ptr<base::ListValue> updated(CreateTestTree());
+  std::unique_ptr<base::Value> removed;
   ASSERT_TRUE(updated->Remove(0, &removed));
   updated->Append(removed.release());
 
@@ -177,14 +178,14 @@ TEST_F(ManagedBookmarkServiceTest, SwapNodes) {
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify the final tree.
-  scoped_ptr<base::DictionaryValue> expected(
+  std::unique_ptr<base::DictionaryValue> expected(
       CreateFolder(GetManagedFolderTitle(), updated.release()));
   EXPECT_TRUE(NodeMatchesValue(managed_->managed_node(), expected.get()));
 }
 
 TEST_F(ManagedBookmarkServiceTest, RemoveNode) {
   // Remove the Folder.
-  scoped_ptr<base::ListValue> updated(CreateTestTree());
+  std::unique_ptr<base::ListValue> updated(CreateTestTree());
   ASSERT_TRUE(updated->Remove(1, NULL));
 
   const BookmarkNode* parent = managed_->managed_node();
@@ -194,14 +195,14 @@ TEST_F(ManagedBookmarkServiceTest, RemoveNode) {
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify the final tree.
-  scoped_ptr<base::DictionaryValue> expected(
+  std::unique_ptr<base::DictionaryValue> expected(
       CreateFolder(GetManagedFolderTitle(), updated.release()));
   EXPECT_TRUE(NodeMatchesValue(managed_->managed_node(), expected.get()));
 }
 
 TEST_F(ManagedBookmarkServiceTest, CreateNewNodes) {
   // Put all the nodes inside another folder.
-  scoped_ptr<base::ListValue> updated(new base::ListValue);
+  std::unique_ptr<base::ListValue> updated(new base::ListValue);
   updated->Append(CreateFolder("Container", CreateTestTree()));
 
   EXPECT_CALL(observer_, BookmarkNodeAdded(model_, _, _)).Times(5);
@@ -214,7 +215,7 @@ TEST_F(ManagedBookmarkServiceTest, CreateNewNodes) {
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify the final tree.
-  scoped_ptr<base::DictionaryValue> expected(
+  std::unique_ptr<base::DictionaryValue> expected(
       CreateFolder(GetManagedFolderTitle(), updated.release()));
   EXPECT_TRUE(NodeMatchesValue(managed_->managed_node(), expected.get()));
 }

@@ -73,19 +73,19 @@ class BrowserProcessPowerTest : public BrowserWithTestWindowTest {
             ->GetProcess());
   }
 
-  scoped_ptr<base::ProcessHandle> MakeProcessHandle(int process_id) {
-    scoped_ptr<base::ProcessHandle> proc_handle(new base::ProcessHandle(
+  std::unique_ptr<base::ProcessHandle> MakeProcessHandle(int process_id) {
+    std::unique_ptr<base::ProcessHandle> proc_handle(new base::ProcessHandle(
 #if defined(OS_WIN)
         reinterpret_cast<HANDLE>(process_id))
 #else
         process_id)
 #endif
-                                                );
+                                                         );
     return proc_handle;
   }
 
-  scoped_ptr<ProcessPowerCollector> collector;
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<ProcessPowerCollector> collector;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
 };
 
 TEST_F(BrowserProcessPowerTest, NoSite) {
@@ -121,9 +121,9 @@ TEST_F(BrowserProcessPowerTest, MultipleSites) {
   GURL url1("http://www.google.com");
   GURL url2("http://www.example.com");
   GURL url3("https://www.google.com");
-  scoped_ptr<Browser> browser2(
+  std::unique_ptr<Browser> browser2(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
-  scoped_ptr<Browser> browser3(
+  std::unique_ptr<Browser> browser3(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
   AddTab(browser(), url1);
   AddTab(browser2.get(), url2);
@@ -166,7 +166,7 @@ TEST_F(BrowserProcessPowerTest, MultipleSites) {
 
 TEST_F(BrowserProcessPowerTest, IncognitoDoesntRecordPowerUsage) {
   Browser::CreateParams native_params(profile()->GetOffTheRecordProfile());
-  scoped_ptr<Browser> incognito_browser(
+  std::unique_ptr<Browser> incognito_browser(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
   GURL url("http://www.google.com");
   AddTab(browser(), url);
@@ -201,9 +201,9 @@ TEST_F(BrowserProcessPowerTest, IncognitoDoesntRecordPowerUsage) {
 }
 
 TEST_F(BrowserProcessPowerTest, MultipleProfilesRecordSeparately) {
-  scoped_ptr<Profile> other_profile(CreateProfile());
+  std::unique_ptr<Profile> other_profile(CreateProfile());
   Browser::CreateParams native_params(other_profile.get());
-  scoped_ptr<Browser> other_user(
+  std::unique_ptr<Browser> other_user(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
   GURL url("http://www.google.com");
@@ -272,7 +272,7 @@ TEST_F(BrowserProcessPowerTest, AppsRecordPowerUsage) {
           current_profile,
           content::SiteInstance::CreateForURL(current_profile, url))));
   window->SetAppWindowContentsForTesting(
-      scoped_ptr<extensions::AppWindowContents>(
+      std::unique_ptr<extensions::AppWindowContents>(
           new extensions::TestAppWindowContents(web_contents)));
   extensions::AppWindowRegistry* app_registry =
       extensions::AppWindowRegistry::Get(current_profile);

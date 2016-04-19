@@ -38,7 +38,7 @@ class NaClGdbTest : public PPAPINaClNewlibTest {
 
   void RunWithNaClGdb(const std::string& test_name) {
     base::FilePath mock_nacl_gdb_file;
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
     std::string content;
     // TODO(halyavin): Make this test work on Windows 32-bit. Currently this
     // is not possible because NaCl doesn't work without sandbox since 1Gb of

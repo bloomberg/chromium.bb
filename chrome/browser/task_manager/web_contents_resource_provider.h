@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_TASK_MANAGER_WEB_CONTENTS_RESOURCE_PROVIDER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/task_manager/renderer_resource.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 
@@ -35,7 +35,7 @@ class WebContentsInformation;
 class WebContentsResourceProvider : public ResourceProvider {
  public:
   WebContentsResourceProvider(TaskManager* task_manager,
-                              scoped_ptr<WebContentsInformation> info);
+                              std::unique_ptr<WebContentsInformation> info);
 
   // ResourceProvider implementation.
   RendererResource* GetResource(int origin_pid,
@@ -71,7 +71,7 @@ class WebContentsResourceProvider : public ResourceProvider {
 
   // The WebContentsInformation that informs us when a new WebContents* is
   // created, and which serves as a RendererResource factory for our type.
-  scoped_ptr<WebContentsInformation> info_;
+  std::unique_ptr<WebContentsInformation> info_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsResourceProvider);
 };

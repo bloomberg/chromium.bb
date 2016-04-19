@@ -12,12 +12,12 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 
 // static
-scoped_ptr<KeyedService> FakeAccountFetcherServiceBuilder::BuildForTests(
+std::unique_ptr<KeyedService> FakeAccountFetcherServiceBuilder::BuildForTests(
     content::BrowserContext* context) {
   FakeAccountFetcherService* service = new FakeAccountFetcherService();
   Profile* profile = Profile::FromBrowserContext(context);
   service->Initialize(ChromeSigninClientFactory::GetForProfile(profile),
                       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
                       AccountTrackerServiceFactory::GetForProfile(profile));
-  return scoped_ptr<KeyedService>(service);
+  return std::unique_ptr<KeyedService>(service);
 }

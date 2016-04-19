@@ -28,7 +28,7 @@ namespace web_app {
 // created shortcut.
 base::FilePath CreateShortcutInWebAppDir(
     const base::FilePath& web_app_path,
-    scoped_ptr<ShortcutInfo> shortcut_info);
+    std::unique_ptr<ShortcutInfo> shortcut_info);
 
 // Update the relaunch details for the given app's window, making the taskbar
 // group's "Pin to the taskbar" button function correctly.

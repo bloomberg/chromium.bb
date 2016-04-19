@@ -111,7 +111,7 @@ SessionRestoreStatsCollector::TabState::TabState(
 
 SessionRestoreStatsCollector::SessionRestoreStatsCollector(
     const base::TimeTicks& restore_started,
-    scoped_ptr<StatsReportingDelegate> reporting_delegate)
+    std::unique_ptr<StatsReportingDelegate> reporting_delegate)
     : done_tracking_non_deferred_tabs_(false),
       got_first_foreground_load_(false),
       got_first_paint_(false),

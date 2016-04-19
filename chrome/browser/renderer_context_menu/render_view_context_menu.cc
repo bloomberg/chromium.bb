@@ -1805,7 +1805,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       content::Referrer referrer = CreateReferrer(url, params_);
       DownloadManager* dlm =
           BrowserContext::GetDownloadManager(browser_context_);
-      scoped_ptr<DownloadUrlParameters> dl_params(
+      std::unique_ptr<DownloadUrlParameters> dl_params(
           DownloadUrlParameters::FromWebContents(source_web_contents_, url));
       dl_params->set_referrer(referrer);
       dl_params->set_referrer_encoding(params_.frame_charset);
@@ -2075,7 +2075,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           translate::TranslateDownloadManager::GetLanguageCode(target_lang);
       // Since the user decided to translate for that language and site, clears
       // any preferences for not translating them.
-      scoped_ptr<translate::TranslatePrefs> prefs(
+      std::unique_ptr<translate::TranslatePrefs> prefs(
           ChromeTranslateClient::CreateTranslatePrefs(
               GetPrefs(browser_context_)));
       prefs->UnblockLanguage(original_lang);

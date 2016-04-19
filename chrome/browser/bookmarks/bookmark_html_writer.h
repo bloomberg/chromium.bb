@@ -88,7 +88,7 @@ class BookmarkFaviconFetcher: public content::NotificationObserver {
   base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Map that stores favicon per URL.
-  scoped_ptr<URLFaviconMap> favicons_map_;
+  std::unique_ptr<URLFaviconMap> favicons_map_;
 
   // Path where html output is stored.
   base::FilePath path_;

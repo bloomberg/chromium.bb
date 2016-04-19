@@ -144,7 +144,7 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
     int current_update_sequence) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  scoped_ptr<std::vector<ProcessMetricsMetadata>> process_data_list(
+  std::unique_ptr<std::vector<ProcessMetricsMetadata>> process_data_list(
       new std::vector<ProcessMetricsMetadata>());
 
   // Find all child processes (does not include renderers), which has to be
@@ -176,7 +176,7 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
 }
 
 void PerformanceMonitor::MarkProcessesAsAliveOnUIThread(
-    scoped_ptr<std::vector<ProcessMetricsMetadata>> process_data_list,
+    std::unique_ptr<std::vector<ProcessMetricsMetadata>> process_data_list,
     int current_update_sequence) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (size_t i = 0; i < process_data_list->size(); ++i) {

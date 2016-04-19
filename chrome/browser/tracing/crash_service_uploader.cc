@@ -110,7 +110,7 @@ void TraceCrashServiceUploader::OnURLFetchUploadProgress(
 void TraceCrashServiceUploader::DoUpload(
     const std::string& file_contents,
     UploadMode upload_mode,
-    scoped_ptr<const base::DictionaryValue> metadata,
+    std::unique_ptr<const base::DictionaryValue> metadata,
     const UploadProgressCallback& progress_callback,
     const UploadDoneCallback& done_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -126,7 +126,7 @@ void TraceCrashServiceUploader::DoUploadOnFileThread(
     const std::string& file_contents,
     UploadMode upload_mode,
     const std::string& upload_url,
-    scoped_ptr<const base::DictionaryValue> metadata,
+    std::unique_ptr<const base::DictionaryValue> metadata,
     const UploadProgressCallback& progress_callback,
     const UploadDoneCallback& done_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
@@ -174,7 +174,7 @@ void TraceCrashServiceUploader::DoUploadOnFileThread(
 
   std::string compressed_contents;
   if (upload_mode == COMPRESSED_UPLOAD) {
-    scoped_ptr<char[]> compressed_buffer(new char[kMaxUploadBytes]);
+    std::unique_ptr<char[]> compressed_buffer(new char[kMaxUploadBytes]);
     int compressed_bytes;
     if (!Compress(file_contents, kMaxUploadBytes, compressed_buffer.get(),
                   &compressed_bytes)) {
@@ -212,7 +212,7 @@ void TraceCrashServiceUploader::OnUploadError(
 void TraceCrashServiceUploader::SetupMultipart(
     const std::string& product,
     const std::string& version,
-    scoped_ptr<const base::DictionaryValue> metadata,
+    std::unique_ptr<const base::DictionaryValue> metadata,
     const std::string& trace_filename,
     const std::string& trace_contents,
     std::string* post_data) {

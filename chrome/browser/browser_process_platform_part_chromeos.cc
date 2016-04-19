@@ -41,7 +41,7 @@ void BrowserProcessPlatformPart::InitializeAutomaticRebootManager() {
   DCHECK(!automatic_reboot_manager_);
 
   automatic_reboot_manager_.reset(new chromeos::system::AutomaticRebootManager(
-      scoped_ptr<base::TickClock>(new base::DefaultTickClock)));
+      std::unique_ptr<base::TickClock>(new base::DefaultTickClock)));
 }
 
 void BrowserProcessPlatformPart::ShutdownAutomaticRebootManager() {
@@ -155,9 +155,9 @@ void BrowserProcessPlatformPart::StartTearDown() {
   profile_helper_.reset();
 }
 
-scoped_ptr<policy::BrowserPolicyConnector>
+std::unique_ptr<policy::BrowserPolicyConnector>
 BrowserProcessPlatformPart::CreateBrowserPolicyConnector() {
-  return scoped_ptr<policy::BrowserPolicyConnector>(
+  return std::unique_ptr<policy::BrowserPolicyConnector>(
       new policy::BrowserPolicyConnectorChromeOS());
 }
 

@@ -151,7 +151,7 @@ class MockComponentUpdateService : public ComponentUpdateService,
 
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_ptr<CrxComponent> component_;
+  std::unique_ptr<CrxComponent> component_;
   base::Closure registration_callback_;
   bool on_demand_update_called_;
 };
@@ -228,21 +228,22 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
     whitelist_path_ =
         installed_whitelist_directory_.AppendASCII(crx_id + ".json");
 
-    scoped_ptr<base::DictionaryValue> whitelist_dict(
+    std::unique_ptr<base::DictionaryValue> whitelist_dict(
         new base::DictionaryValue);
     whitelist_dict->SetString("sites", kWhitelistFile);
     manifest_.Set("whitelisted_content", whitelist_dict.release());
 
     large_icon_path_ = whitelist_version_directory_.AppendASCII(kLargeIconFile);
-    scoped_ptr<base::DictionaryValue> icons_dict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> icons_dict(
+        new base::DictionaryValue);
     icons_dict->SetString("128", kLargeIconFile);
     manifest_.Set("icons", icons_dict.release());
 
     manifest_.SetString("version", kVersion);
 
-    scoped_ptr<base::DictionaryValue> crx_dict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> crx_dict(new base::DictionaryValue);
     crx_dict->SetString("name", kName);
-    scoped_ptr<base::ListValue> clients(new base::ListValue);
+    std::unique_ptr<base::ListValue> clients(new base::ListValue);
     clients->AppendString(kClientId);
     clients->AppendString(kOtherClientId);
     crx_dict->Set("clients", clients.release());
@@ -293,7 +294,7 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   safe_json::TestingJsonParser::ScopedFactoryOverride json_parser_override_;
   MockComponentUpdateService component_update_service_;
   TestingPrefServiceSimple local_state_;
-  scoped_ptr<SupervisedUserWhitelistInstaller> installer_;
+  std::unique_ptr<SupervisedUserWhitelistInstaller> installer_;
   base::FilePath whitelist_base_directory_;
   base::FilePath whitelist_directory_;
   base::FilePath whitelist_version_directory_;

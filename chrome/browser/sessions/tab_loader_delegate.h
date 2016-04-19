@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_SESSIONS_TAB_LOADER_DELEGATE_H_
 #define CHROME_BROWSER_SESSIONS_TAB_LOADER_DELEGATE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/time/time.h"
 
 class TabLoaderCallback {
@@ -25,7 +26,7 @@ class TabLoaderDelegate {
   // Create a tab loader delegate. |TabLoaderCallback::SetTabLoadingEnabled| can
   // get called to disable / enable tab loading.
   // The callback object is valid as long as this object exists.
-  static scoped_ptr<TabLoaderDelegate> Create(TabLoaderCallback* callback);
+  static std::unique_ptr<TabLoaderDelegate> Create(TabLoaderCallback* callback);
 
   // Returns the default timeout time after which the first non-visible tab
   // gets loaded if the first (visible) tab did not finish loading.

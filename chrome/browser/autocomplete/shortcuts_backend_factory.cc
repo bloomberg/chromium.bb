@@ -4,7 +4,9 @@
 
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/autocomplete/shortcuts_extensions_manager.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -90,7 +92,7 @@ scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::CreateShortcutsBackend(
     bool suppress_db) {
   scoped_refptr<ShortcutsBackend> backend(new ShortcutsBackend(
       TemplateURLServiceFactory::GetForProfile(profile),
-      make_scoped_ptr(new UIThreadSearchTermsData(profile)),
+      base::WrapUnique(new UIThreadSearchTermsData(profile)),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS),
       content::BrowserThread::GetMessageLoopProxyForThread(

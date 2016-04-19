@@ -38,12 +38,10 @@ void ShowSettingsApiBubble(SettingsApiOverrideType type,
     return;
 
   // TODO(devlin): This should go through the ToolbarActionsBar.
-  ToolbarActionsBarBubbleViews* bubble =
-      new ToolbarActionsBarBubbleViews(
-          anchor_view,
-          scoped_ptr<ToolbarActionsBarBubbleDelegate>(
-              new ExtensionMessageBubbleBridge(
-                  std::move(settings_api_bubble))));
+  ToolbarActionsBarBubbleViews* bubble = new ToolbarActionsBarBubbleViews(
+      anchor_view,
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate>(
+          new ExtensionMessageBubbleBridge(std::move(settings_api_bubble))));
   bubble->set_arrow(arrow);
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->Show();

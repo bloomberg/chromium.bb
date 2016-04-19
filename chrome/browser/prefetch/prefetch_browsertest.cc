@@ -101,27 +101,31 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionDisabled,
 // the network type.
 IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPrediction, PreferenceWorks) {
   // Set real NetworkChangeNotifier singleton aside.
-  scoped_ptr<NetworkChangeNotifier::DisableForTest> disable_for_test(
+  std::unique_ptr<NetworkChangeNotifier::DisableForTest> disable_for_test(
       new NetworkChangeNotifier::DisableForTest);
 
   // Preference defaults to ALWAYS.
   {
-    scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
+    std::unique_ptr<NetworkChangeNotifier> mock(
+        new MockNetworkChangeNotifierWIFI);
     EXPECT_TRUE(RunPrefetchExperiment(true, browser()));
   }
   {
-    scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
+    std::unique_ptr<NetworkChangeNotifier> mock(
+        new MockNetworkChangeNotifier4G);
     EXPECT_TRUE(RunPrefetchExperiment(true, browser()));
   }
 
   // Set preference to NEVER: prefetch should be unaffected.
   SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_NEVER);
   {
-    scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
+    std::unique_ptr<NetworkChangeNotifier> mock(
+        new MockNetworkChangeNotifierWIFI);
     EXPECT_TRUE(RunPrefetchExperiment(true, browser()));
   }
   {
-    scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
+    std::unique_ptr<NetworkChangeNotifier> mock(
+        new MockNetworkChangeNotifier4G);
     EXPECT_TRUE(RunPrefetchExperiment(true, browser()));
   }
 }

@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -352,7 +352,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
    private:
     PrerenderManager* manager_;
-    scoped_ptr<PrerenderContents> contents_;
+    std::unique_ptr<PrerenderContents> contents_;
 
     // The number of distinct PrerenderHandles created for |this|, including
     // ones that have called PrerenderData::OnHandleNavigatedAway(), but not
@@ -526,7 +526,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // navigate_time_.
   std::list<NavigationRecord> navigations_;
 
-  scoped_ptr<PrerenderContents::Factory> prerender_contents_factory_;
+  std::unique_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 
   static PrerenderManagerMode mode_;
 
@@ -545,9 +545,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   ScopedVector<OnCloseWebContentsDeleter> on_close_web_contents_deleters_;
 
-  scoped_ptr<PrerenderHistory> prerender_history_;
+  std::unique_ptr<PrerenderHistory> prerender_history_;
 
-  scoped_ptr<PrerenderHistograms> histograms_;
+  std::unique_ptr<PrerenderHistograms> histograms_;
 
   content::NotificationRegistrar notification_registrar_;
 

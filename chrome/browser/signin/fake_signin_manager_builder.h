@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_SIGNIN_FAKE_SIGNIN_MANAGER_BUILDER_H_
 #define CHROME_BROWSER_SIGNIN_FAKE_SIGNIN_MANAGER_BUILDER_H_
 
+#include <memory>
 #include <string>
-
-#include "base/memory/scoped_ptr.h"
 
 #include "build/build_config.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
@@ -23,7 +22,7 @@ class Profile;
 // In order to match the API of SigninManagerFactory::GetForProfile(), returns a
 // FakeSigninManagerBase* on ChromeOS, and a FakeSigninManager* on all other
 // platforms. The returned instance is initialized.
-scoped_ptr<KeyedService> BuildFakeSigninManagerBase(
+std::unique_ptr<KeyedService> BuildFakeSigninManagerBase(
     content::BrowserContext* context);
 
 class FakeSigninManagerForTesting

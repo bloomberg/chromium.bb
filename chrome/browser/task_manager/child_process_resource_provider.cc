@@ -74,7 +74,7 @@ class ChildProcessResource : public Resource {
   int unique_process_id_;
   mutable base::string16 title_;
   bool network_usage_support_;
-  scoped_ptr<ProcessResourceUsage> resource_usage_;
+  std::unique_ptr<ProcessResourceUsage> resource_usage_;
 
   // The icon painted for the child processs.
   // TODO(jcampan): we should have plugin specific icons for well-known

@@ -10,11 +10,11 @@
 #include <algorithm>
 #include <deque>
 #include <limits>
+#include <memory>
 
 #include "base/base64.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -251,7 +251,7 @@ class InternalAuthVerificationService {
 
     if (key.size() != kKeySizeInBytes)
       return;
-    scoped_ptr<crypto::HMAC> new_engine(
+    std::unique_ptr<crypto::HMAC> new_engine(
         new crypto::HMAC(crypto::HMAC::SHA256));
     if (!new_engine->Init(key))
       return;
@@ -302,8 +302,8 @@ class InternalAuthVerificationService {
   std::string old_key_;
 
   // Corresponding HMAC engines.
-  scoped_ptr<crypto::HMAC> engine_;
-  scoped_ptr<crypto::HMAC> old_engine_;
+  std::unique_ptr<crypto::HMAC> engine_;
+  std::unique_ptr<crypto::HMAC> old_engine_;
 
   // Tick at a time of recent key regeneration.
   int64_t key_change_tick_;
@@ -341,7 +341,8 @@ class InternalAuthGenerationService : public base::ThreadChecker {
 
   void GenerateNewKey() {
     DCHECK(CalledOnValidThread());
-    scoped_ptr<crypto::HMAC> new_engine(new crypto::HMAC(crypto::HMAC::SHA256));
+    std::unique_ptr<crypto::HMAC> new_engine(
+        new crypto::HMAC(crypto::HMAC::SHA256));
     std::string key = base::RandBytesAsString(kKeySizeInBytes);
     if (!new_engine->Init(key))
       return;
@@ -420,7 +421,7 @@ class InternalAuthGenerationService : public base::ThreadChecker {
     return InternalAuthVerification::get_verification_window_ticks();
   }
 
-  scoped_ptr<crypto::HMAC> engine_;
+  std::unique_ptr<crypto::HMAC> engine_;
   int64_t key_regeneration_tick_;
   std::deque<int64_t> used_ticks_;
 

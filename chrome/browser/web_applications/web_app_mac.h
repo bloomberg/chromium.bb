@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
 
@@ -33,7 +33,7 @@ namespace web_app {
 base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info);
 
 // If necessary, launch the shortcut for an app.
-void MaybeLaunchShortcut(scoped_ptr<ShortcutInfo> shortcut_info);
+void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info);
 
 // Rebuild the shortcut and relaunch it.
 bool MaybeRebuildShortcut(const base::CommandLine& command_line);

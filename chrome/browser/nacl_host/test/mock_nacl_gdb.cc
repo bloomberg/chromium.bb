@@ -4,12 +4,12 @@
 
 #include <cstdio>
 #include <cstring>
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 
 static const char kEvalCommand[] = "--eval-command";
 static const char kCommand[] = "--command";
@@ -18,7 +18,7 @@ static const char kPass[] = "PASS";
 static const char kAttach[] = "target remote :4014";
 
 int main(int argc, char** argv) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string mock_nacl_gdb_file;
   env->GetVar("MOCK_NACL_GDB", &mock_nacl_gdb_file);
   CHECK_GE(argc, 5);

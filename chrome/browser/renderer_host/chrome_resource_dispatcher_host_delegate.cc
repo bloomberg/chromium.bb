@@ -170,13 +170,14 @@ void UpdatePrerenderNetworkBytesCallback(
 }
 
 #if defined(ENABLE_EXTENSIONS)
-void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamInfo> stream,
-                                     int64_t expected_content_size,
-                                     int render_process_id,
-                                     int render_frame_id,
-                                     const std::string& extension_id,
-                                     const std::string& view_id,
-                                     bool embedded) {
+void SendExecuteMimeTypeHandlerEvent(
+    std::unique_ptr<content::StreamInfo> stream,
+    int64_t expected_content_size,
+    int render_process_id,
+    int render_frame_id,
+    const std::string& extension_id,
+    const std::string& view_id,
+    bool embedded) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents =
@@ -510,7 +511,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
   extensions::ExtensionThrottleManager* extension_throttle_manager =
       io_data->GetExtensionThrottleManager();
   if (extension_throttle_manager) {
-    scoped_ptr<content::ResourceThrottle> extension_throttle =
+    std::unique_ptr<content::ResourceThrottle> extension_throttle =
         extension_throttle_manager->MaybeCreateThrottle(request);
     if (extension_throttle)
       throttles->push_back(extension_throttle.release());
@@ -595,7 +596,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
 
 void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
     net::URLRequest* request,
-    scoped_ptr<content::StreamInfo> stream) {
+    std::unique_ptr<content::StreamInfo> stream) {
 #if defined(ENABLE_EXTENSIONS)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   std::map<net::URLRequest*, StreamTargetInfo>::iterator ix =

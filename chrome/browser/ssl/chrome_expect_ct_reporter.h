@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_SSL_CHROME_EXPECT_CT_REPORTER_H_
 #define CHROME_BROWSER_SSL_CHROME_EXPECT_CT_REPORTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/http/transport_security_state.h"
 
 namespace net {
@@ -34,7 +35,7 @@ class ChromeExpectCTReporter
   FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest, EmptyReportURI);
   FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest, SendReport);
 
-  scoped_ptr<net::CertificateReportSender> report_sender_;
+  std::unique_ptr<net::CertificateReportSender> report_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExpectCTReporter);
 };

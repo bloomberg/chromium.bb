@@ -74,7 +74,7 @@ ChromeContentSettingsClient::local_shared_objects(AccessType type) const {
   return blocked_local_shared_objects_;
 }
 
-scoped_ptr<CookiesTreeModel>
+std::unique_ptr<CookiesTreeModel>
 ChromeContentSettingsClient::CreateCookiesTreeModel(AccessType type) const {
   switch (type) {
     case ALLOWED:
@@ -85,7 +85,7 @@ ChromeContentSettingsClient::CreateCookiesTreeModel(AccessType type) const {
   // Some compilers don't believe this is not reachable, so let's return a dummy
   // value.
   NOTREACHED();
-  return scoped_ptr<CookiesTreeModel>();
+  return std::unique_ptr<CookiesTreeModel>();
 }
 
 ChromeContentSettingsClient::ChromeContentSettingsClient(

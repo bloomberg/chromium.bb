@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
@@ -166,8 +166,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url,
       content::ResourceContext* context) override;
   content::QuotaPermissionContext* CreateQuotaPermissionContext() override;
-  scoped_ptr<storage::QuotaEvictionPolicy> GetTemporaryStorageEvictionPolicy(
-      content::BrowserContext* context) override;
+  std::unique_ptr<storage::QuotaEvictionPolicy>
+  GetTemporaryStorageEvictionPolicy(content::BrowserContext* context) override;
   void AllowCertificateError(
       content::WebContents* web_contents,
       int cert_error,
@@ -182,7 +182,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void SelectClientCertificate(
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
-      scoped_ptr<content::ClientCertificateDelegate> delegate) override;
+      std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
   void AddCertificate(net::CertificateMimeType cert_type,
                       const void* cert_data,
                       size_t cert_size,

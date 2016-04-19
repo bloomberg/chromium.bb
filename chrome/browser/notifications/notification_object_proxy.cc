@@ -13,7 +13,7 @@
 
 NotificationObjectProxy::NotificationObjectProxy(
     content::BrowserContext* browser_context,
-    scoped_ptr<content::DesktopNotificationDelegate> delegate)
+    std::unique_ptr<content::DesktopNotificationDelegate> delegate)
     : browser_context_(browser_context),
       delegate_(std::move(delegate)),
       displayed_(false),

@@ -6,8 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bit_cast.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
@@ -55,7 +56,7 @@ class TriggeredProfileResetterTest : public testing::Test {
 
  private:
   registry_util::RegistryOverrideManager override_manager_;
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 TEST_F(TriggeredProfileResetterTest, HasResetTriggerAndClear) {

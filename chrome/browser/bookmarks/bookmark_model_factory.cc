@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/deferred_sequenced_task_runner.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -71,7 +72,7 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   BookmarkModel* bookmark_model =
-      new BookmarkModel(make_scoped_ptr(new ChromeBookmarkClient(
+      new BookmarkModel(base::WrapUnique(new ChromeBookmarkClient(
           profile, ManagedBookmarkServiceFactory::GetForProfile(profile))));
   bookmark_model->Load(profile->GetPrefs(),
                        profile->GetPath(),

@@ -55,9 +55,9 @@ void PepperBrokerInfoBarDelegate::Create(
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents);
     infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-        scoped_ptr<ConfirmInfoBarDelegate>(new PepperBrokerInfoBarDelegate(
-            url, plugin_path, content_settings, tab_content_settings,
-            callback))));
+        std::unique_ptr<ConfirmInfoBarDelegate>(
+            new PepperBrokerInfoBarDelegate(url, plugin_path, content_settings,
+                                            tab_content_settings, callback))));
     return;
   }
 
@@ -103,7 +103,7 @@ base::string16 PepperBrokerInfoBarDelegate::GetMessageText() const {
   content::WebPluginInfo plugin;
   bool success = plugin_service->GetPluginInfoByPath(plugin_path_, &plugin);
   DCHECK(success);
-  scoped_ptr<PluginMetadata> plugin_metadata(
+  std::unique_ptr<PluginMetadata> plugin_metadata(
       PluginFinder::GetInstance()->GetPluginMetadata(plugin));
   return l10n_util::GetStringFUTF16(
       IDS_PEPPER_BROKER_MESSAGE, plugin_metadata->name(),

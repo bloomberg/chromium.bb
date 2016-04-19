@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_BANNERS_APP_BANNER_INFOBAR_DELEGATE_DESKTOP_H_
 #define CHROME_BROWSER_BANNERS_APP_BANNER_INFOBAR_DELEGATE_DESKTOP_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "content/public/common/manifest.h"

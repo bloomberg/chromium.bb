@@ -7,6 +7,8 @@
 #include <fcntl.h>
 #include <stddef.h>
 
+#include <memory>
+
 #if defined(USE_GLIB)
 #include <glib.h>
 #endif
@@ -28,7 +30,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/nix/xdg_util.h"
 #include "base/path_service.h"
@@ -137,7 +138,7 @@ bool SetDefaultWebClient(const std::string& protocol) {
 #if defined(OS_CHROMEOS)
   return true;
 #else
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   std::vector<std::string> argv;
   argv.push_back(kXdgSettings);
@@ -171,7 +172,7 @@ DefaultWebClientState GetIsDefaultWebClient(const std::string& protocol) {
 #else
   base::ThreadRestrictions::AssertIOAllowed();
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   std::vector<std::string> argv;
   argv.push_back(kXdgSettings);
@@ -528,7 +529,7 @@ bool GetNoDisplayFromDesktopFile(const std::string& shortcut_contents) {
 // never happen.
 base::FilePath GetChromeExePath() {
   // Try to get the name of the wrapper script that launched Chrome.
-  scoped_ptr<base::Environment> environment(base::Environment::Create());
+  std::unique_ptr<base::Environment> environment(base::Environment::Create());
   std::string wrapper_script;
   if (environment->GetVar("CHROME_WRAPPER", &wrapper_script))
     return base::FilePath(wrapper_script);
@@ -570,7 +571,7 @@ std::vector<base::FilePath> GetDataSearchLocations(base::Environment* env) {
 }
 
 std::string GetProgramClassName() {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string desktop_file(GetDesktopName(env.get()));
   std::size_t last = desktop_file.find(".desktop");
   if (last != std::string::npos)
@@ -1031,7 +1032,7 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
 void DeleteAllDesktopShortcuts(const base::FilePath& profile_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   // Delete shortcuts from Desktop.
   base::FilePath desktop_path;

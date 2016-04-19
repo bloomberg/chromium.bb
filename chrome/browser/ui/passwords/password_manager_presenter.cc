@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -252,12 +253,12 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
 #endif
 }
 
-std::vector<scoped_ptr<autofill::PasswordForm>>
+std::vector<std::unique_ptr<autofill::PasswordForm>>
 PasswordManagerPresenter::GetAllPasswords() {
-  std::vector<scoped_ptr<autofill::PasswordForm>> ret_val;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> ret_val;
 
   for (const auto& form : password_list_) {
-    ret_val.push_back(make_scoped_ptr(new autofill::PasswordForm(*form)));
+    ret_val.push_back(base::WrapUnique(new autofill::PasswordForm(*form)));
   }
 
   return ret_val;

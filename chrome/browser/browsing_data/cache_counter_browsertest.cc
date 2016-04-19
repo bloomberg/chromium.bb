@@ -129,7 +129,7 @@ class CacheCounterTest : public InProcessBrowserTest {
   }
 
   // Callback from the counter.
-  void CountingCallback(scoped_ptr<BrowsingDataCounter::Result> result) {
+  void CountingCallback(std::unique_ptr<BrowsingDataCounter::Result> result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     finished_ = result->Finished();
 
@@ -159,7 +159,7 @@ class CacheCounterTest : public InProcessBrowserTest {
   disk_cache::Backend* backend_;
   disk_cache::Entry* entry_;
 
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   bool finished_;
   BrowsingDataCounter::ResultInt result_;

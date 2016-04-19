@@ -22,7 +22,7 @@ class SessionStartupPrefTest : public testing::Test {
     return pref_service_->registry();
   }
 
-  scoped_ptr<syncable_prefs::TestingPrefServiceSyncable> pref_service_;
+  std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable> pref_service_;
 };
 
 TEST_F(SessionStartupPrefTest, URLListIsFixedUp) {

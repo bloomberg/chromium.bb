@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "components/sessions/core/session_id.h"
 
@@ -84,7 +84,7 @@ class SessionServiceTestHelper {
                               const base::Closure& task);
 
  private:
-  scoped_ptr<SessionService> service_;
+  std::unique_ptr<SessionService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionServiceTestHelper);
 };

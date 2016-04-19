@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -17,7 +18,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/task_runner.h"
@@ -248,7 +248,7 @@ class TabManager : public TabStripModelObserver {
   base::RepeatingTimer recent_tab_discard_timer_;
 
   // A listener to global memory pressure events.
-  scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   // Wall-clock time when the priority manager started running.
   base::TimeTicks start_time_;
@@ -276,7 +276,7 @@ class TabManager : public TabStripModelObserver {
   base::TimeDelta minimum_protection_time_;
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<TabManagerDelegate> delegate_;
+  std::unique_ptr<TabManagerDelegate> delegate_;
 #endif
 
   // Responsible for automatically registering this class as an observer of all

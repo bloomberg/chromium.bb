@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <list>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -17,7 +18,6 @@
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -719,7 +719,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
   // When asynchronous it's possible for there to be no windows. To make sure
   // Chrome doesn't prematurely exit we register a KeepAlive for the lifetime
   // of this object.
-  scoped_ptr<ScopedKeepAlive> keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
   // The time we started the restore.
   base::TimeTicks restore_started_;

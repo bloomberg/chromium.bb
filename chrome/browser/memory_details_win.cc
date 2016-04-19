@@ -8,10 +8,11 @@
 #include <stddef.h>
 #include <TlHelp32.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -80,7 +81,7 @@ void MemoryDetails::CollectProcessData(
     else
       info.process_type = content::PROCESS_TYPE_UNKNOWN;
 
-    scoped_ptr<base::ProcessMetrics> metrics;
+    std::unique_ptr<base::ProcessMetrics> metrics;
     metrics.reset(
         base::ProcessMetrics::CreateProcessMetrics(process_handle.Get()));
     metrics->GetCommittedKBytes(&info.committed);

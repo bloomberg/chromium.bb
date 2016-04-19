@@ -46,7 +46,7 @@ class ScopedLocale {
 
   ~ScopedLocale() {
 #if defined(OS_LINUX)
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
     if (old_locale_) {
       env->SetVar("LC_ALL", old_locale_);
     } else {

@@ -93,10 +93,10 @@ void SSLClientCertificateSelectorTestBase::TearDownOnIOThread() {
   io_loop_finished_event_.Signal();
 }
 
-scoped_ptr<net::URLRequest>
+std::unique_ptr<net::URLRequest>
 SSLClientCertificateSelectorTestBase::MakeURLRequest(
     net::URLRequestContextGetter* context_getter) {
-  scoped_ptr<net::URLRequest> request =
+  std::unique_ptr<net::URLRequest> request =
       context_getter->GetURLRequestContext()->CreateRequest(
           GURL("https://example"), net::DEFAULT_PRIORITY, NULL);
   return request;

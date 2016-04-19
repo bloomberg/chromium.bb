@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
@@ -96,10 +97,10 @@ class SigninErrorNotifierTest : public AshTestBase {
   }
 
 #if defined(OS_WIN)
-  scoped_ptr<gfx::Screen> test_screen_;
+  std::unique_ptr<gfx::Screen> test_screen_;
 #endif
-  scoped_ptr<TestingProfileManager> profile_manager_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfile> profile_;
   SigninErrorController* error_controller_;
   NotificationUIManager* notification_ui_manager_;
 };

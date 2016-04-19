@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_SIGNIN_FAKE_ACCOUNT_FETCHER_SERVICE_BUILDER_H_
 #define CHROME_BROWSER_SIGNIN_FAKE_ACCOUNT_FETCHER_SERVICE_BUILDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace content {
 class BrowserContext;
@@ -15,7 +16,7 @@ class KeyedService;
 
 class FakeAccountFetcherServiceBuilder {
  public:
-  static scoped_ptr<KeyedService> BuildForTests(
+  static std::unique_ptr<KeyedService> BuildForTests(
       content::BrowserContext* context);
 
  private:

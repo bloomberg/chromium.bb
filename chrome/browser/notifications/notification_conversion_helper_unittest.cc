@@ -24,7 +24,7 @@ class NotificationConversionHelperTest : public testing::Test {
   void TearDown() override {}
 
  protected:
-  scoped_ptr<Notification> CreateNotification(
+  std::unique_ptr<Notification> CreateNotification(
       message_center::NotificationType type) {
     message_center::RichNotificationData optional_fields;
     optional_fields.priority = 1;
@@ -57,7 +57,7 @@ class NotificationConversionHelperTest : public testing::Test {
     bitmap.eraseColor(SkColorSetRGB(1, 2, 3));
     gfx::Image icon = gfx::Image::CreateFrom1xBitmap(bitmap);
 
-    scoped_ptr<Notification> notification(new Notification(
+    std::unique_ptr<Notification> notification(new Notification(
         type, base::UTF8ToUTF16("Title"),
         base::UTF8ToUTF16("This is a message."), icon,
         message_center::NotifierId(message_center::NotifierId::APPLICATION,
@@ -74,9 +74,9 @@ class NotificationConversionHelperTest : public testing::Test {
 
 TEST_F(NotificationConversionHelperTest, NotificationToNotificationOptions) {
   // Create a notification of image type
-  scoped_ptr<Notification> notification1 =
+  std::unique_ptr<Notification> notification1 =
       CreateNotification(message_center::NOTIFICATION_TYPE_IMAGE);
-  scoped_ptr<extensions::api::notifications::NotificationOptions> options1(
+  std::unique_ptr<extensions::api::notifications::NotificationOptions> options1(
       new extensions::api::notifications::NotificationOptions());
   NotificationConversionHelper::NotificationToNotificationOptions(
       *(notification1), options1.get());
@@ -96,9 +96,9 @@ TEST_F(NotificationConversionHelperTest, NotificationToNotificationOptions) {
   EXPECT_EQ(options1->icon_bitmap->height, 1);
 
   // Create a notification of progress type
-  scoped_ptr<Notification> notification2 =
+  std::unique_ptr<Notification> notification2 =
       CreateNotification(message_center::NOTIFICATION_TYPE_PROGRESS);
-  scoped_ptr<extensions::api::notifications::NotificationOptions> options2(
+  std::unique_ptr<extensions::api::notifications::NotificationOptions> options2(
       new extensions::api::notifications::NotificationOptions());
   NotificationConversionHelper::NotificationToNotificationOptions(
       *(notification2), options2.get());
@@ -107,9 +107,9 @@ TEST_F(NotificationConversionHelperTest, NotificationToNotificationOptions) {
   EXPECT_EQ(*(options2->progress), 50);
 
   // Create a notification of multiple type
-  scoped_ptr<Notification> notification3 =
+  std::unique_ptr<Notification> notification3 =
       CreateNotification(message_center::NOTIFICATION_TYPE_MULTIPLE);
-  scoped_ptr<extensions::api::notifications::NotificationOptions> options3(
+  std::unique_ptr<extensions::api::notifications::NotificationOptions> options3(
       new extensions::api::notifications::NotificationOptions());
   NotificationConversionHelper::NotificationToNotificationOptions(
       *(notification3), options3.get());

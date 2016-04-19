@@ -4,12 +4,13 @@
 
 #include "chrome/browser/platform_util.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/platform_util_internal.h"
@@ -94,7 +95,7 @@ class PlatformUtilTestBase : public BrowserWithTestWindowTest {
         "    }"
         "}";
     JSONStringValueDeserializer json_string_deserializer(json_manifest);
-    scoped_ptr<base::Value> manifest =
+    std::unique_ptr<base::Value> manifest =
         json_string_deserializer.Deserialize(&error_code, &error);
     base::DictionaryValue* manifest_dictionary;
 
@@ -122,7 +123,7 @@ class PlatformUtilTestBase : public BrowserWithTestWindowTest {
   }
 
  private:
-  scoped_ptr<content::ContentBrowserClient> content_browser_client_;
+  std::unique_ptr<content::ContentBrowserClient> content_browser_client_;
   content::ContentBrowserClient* old_content_browser_client_ = nullptr;
 };
 
@@ -190,7 +191,7 @@ class PlatformUtilTest : public PlatformUtilTestBase {
   base::ScopedTempDir directory_;
 
  private:
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   static void OnOpenOperationDone(const base::Closure& closure,
                                   OpenOperationResult* store_result,

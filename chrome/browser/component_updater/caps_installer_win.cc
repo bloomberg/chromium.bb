@@ -86,9 +86,10 @@ class CAPSInstallerTraits : public ComponentInstallerTraits {
     return true;
   }
 
-  void ComponentReady(const base::Version& version,
-                      const base::FilePath& install_dir,
-                      scoped_ptr<base::DictionaryValue> manifest) override {
+  void ComponentReady(
+      const base::Version& version,
+      const base::FilePath& install_dir,
+      std::unique_ptr<base::DictionaryValue> manifest) override {
     // Can't block here. This is usually the browser UI thread.
     base::WorkerPool::PostTask(
         FROM_HERE,
@@ -118,8 +119,7 @@ class CAPSInstallerTraits : public ComponentInstallerTraits {
 
 void RegisterCAPSComponent(ComponentUpdateService* cus) {
   // The component updater takes ownership of |installer|.
-  scoped_ptr<ComponentInstallerTraits> traits(
-      new CAPSInstallerTraits());
+  std::unique_ptr<ComponentInstallerTraits> traits(new CAPSInstallerTraits());
   DefaultComponentInstaller* installer =
       new DefaultComponentInstaller(std::move(traits));
   installer->Register(cus, base::Closure());

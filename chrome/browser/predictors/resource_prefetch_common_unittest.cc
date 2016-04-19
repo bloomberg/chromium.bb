@@ -95,10 +95,10 @@ class ResourcePrefetchCommonTest : public testing::Test {
  protected:
   base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 
  private:
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 ResourcePrefetchCommonTest::ResourcePrefetchCommonTest()
@@ -297,22 +297,26 @@ TEST_F(ResourcePrefetchCommonTest, FieldTrialPrefetchingDisabledByNetwork) {
   // Set preference to WIFI_ONLY: prefetch when not on cellular.
   SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_WIFI_ONLY);
   {
-    scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
+    std::unique_ptr<NetworkChangeNotifier> mock(
+        new MockNetworkChangeNotifierWIFI);
     TestIsPrefetchEnabled(config);
   }
   {
-    scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
+    std::unique_ptr<NetworkChangeNotifier> mock(
+        new MockNetworkChangeNotifier4G);
     TestIsPrefetchLearning(config);
   }
 
   // Set preference to NEVER: never prefetch.
   SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_NEVER);
   {
-    scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
+    std::unique_ptr<NetworkChangeNotifier> mock(
+        new MockNetworkChangeNotifierWIFI);
     TestIsPrefetchLearning(config);
   }
   {
-    scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
+    std::unique_ptr<NetworkChangeNotifier> mock(
+        new MockNetworkChangeNotifier4G);
     TestIsPrefetchLearning(config);
   }
 }

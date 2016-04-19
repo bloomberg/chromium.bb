@@ -4,6 +4,7 @@
 
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
@@ -216,12 +217,12 @@ void LocalSharedObjectsContainer::Reset() {
   session_storages_->Reset();
 }
 
-scoped_ptr<CookiesTreeModel>
+std::unique_ptr<CookiesTreeModel>
 LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
   LocalDataContainer* container = new LocalDataContainer(
       cookies(), databases(), local_storages(), session_storages(), appcaches(),
       indexed_dbs(), file_systems(), NULL, channel_ids(), service_workers(),
       cache_storages(), NULL);
 
-  return make_scoped_ptr(new CookiesTreeModel(container, NULL, true));
+  return base::WrapUnique(new CookiesTreeModel(container, NULL, true));
 }

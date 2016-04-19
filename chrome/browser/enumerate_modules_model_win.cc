@@ -4,11 +4,13 @@
 
 #include "chrome/browser/enumerate_modules_model_win.h"
 
+#include <Tlhelp32.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <Tlhelp32.h>
 #include <wintrust.h>
+
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -17,7 +19,6 @@
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -627,7 +628,7 @@ void ModuleEnumerator::PopulateModuleInformation(Module* module) {
   module->digital_signer =
       GetSubjectNameFromDigitalSignature(base::FilePath(module->location));
   module->recommended_action = NONE;
-  scoped_ptr<FileVersionInfo> version_info(
+  std::unique_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfo(base::FilePath(module->location)));
   if (version_info.get()) {
     FileVersionInfoWin* version_info_win =
@@ -663,7 +664,7 @@ void ModuleEnumerator::AddToListWithoutDuplicating(const Module& module) {
 void ModuleEnumerator::PreparePathMappings() {
   path_mapping_.clear();
 
-  scoped_ptr<base::Environment> environment(base::Environment::Create());
+  std::unique_ptr<base::Environment> environment(base::Environment::Create());
   std::vector<base::string16> env_vars;
   env_vars.push_back(L"LOCALAPPDATA");
   env_vars.push_back(L"ProgramFiles");
@@ -787,7 +788,7 @@ base::string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
     return base::string16();
 
   // Allocate enough space to hold the signer info.
-  scoped_ptr<BYTE[]> signer_info_buffer(new BYTE[signer_info_size]);
+  std::unique_ptr<BYTE[]> signer_info_buffer(new BYTE[signer_info_size]);
   CMSG_SIGNER_INFO* signer_info =
       reinterpret_cast<CMSG_SIGNER_INFO*>(signer_info_buffer.get());
 

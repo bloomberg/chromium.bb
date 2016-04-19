@@ -4,11 +4,12 @@
 
 #include "chrome/browser/chrome_browser_main_win.h"
 
-#include <windows.h>
 #include <shellapi.h>
 #include <stddef.h>
+#include <windows.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -19,7 +20,6 @@
 #include "base/i18n/rtl.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
@@ -360,7 +360,7 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
 void ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment(
     const base::CommandLine& parsed_command_line) {
   // Clear this var so child processes don't show the dialog by default.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   env->UnSetVar(env_vars::kShowRestart);
 
   // For non-interactive tests we don't restart on crash.

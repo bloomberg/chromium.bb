@@ -19,6 +19,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
@@ -304,7 +305,7 @@ class OpenSystemSettingsHelper {
   // Helper function to create a registry watcher for a given |key_path|. Do
   // nothing on initialization failure.
   void AddRegistryKeyWatcher(const wchar_t* key_path) {
-    auto reg_key = make_scoped_ptr(
+    auto reg_key = base::WrapUnique(
         new base::win::RegKey(HKEY_CURRENT_USER, key_path, KEY_NOTIFY));
 
     if (reg_key->Valid() &&
@@ -325,7 +326,7 @@ class OpenSystemSettingsHelper {
   // There can be multiple registry key watchers as some settings modify
   // multiple protocol associations. e.g. Changing the default browser modifies
   // the http and https associations.
-  std::vector<scoped_ptr<base::win::RegKey>> registry_key_watchers_;
+  std::vector<std::unique_ptr<base::win::RegKey>> registry_key_watchers_;
 
   base::OneShotTimer timer_;
 

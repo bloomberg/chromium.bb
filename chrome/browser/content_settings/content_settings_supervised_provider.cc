@@ -52,11 +52,11 @@ SupervisedProvider::SupervisedProvider(
 SupervisedProvider::~SupervisedProvider() {
 }
 
-scoped_ptr<RuleIterator> SupervisedProvider::GetRuleIterator(
+std::unique_ptr<RuleIterator> SupervisedProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
-  scoped_ptr<base::AutoLock> auto_lock(new base::AutoLock(lock_));
+  std::unique_ptr<base::AutoLock> auto_lock(new base::AutoLock(lock_));
   return value_map_.GetRuleIterator(content_type, resource_identifier,
                                     std::move(auto_lock));
 }

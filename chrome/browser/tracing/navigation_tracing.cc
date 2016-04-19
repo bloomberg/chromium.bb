@@ -36,7 +36,7 @@ void OnUploadComplete(TraceCrashServiceUploader* uploader,
 }
 
 void UploadCallback(const scoped_refptr<base::RefCountedString>& file_contents,
-                    scoped_ptr<const base::DictionaryValue> metadata,
+                    std::unique_ptr<const base::DictionaryValue> metadata,
                     base::Closure callback) {
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
       g_browser_process->system_request_context());
@@ -61,9 +61,10 @@ void SetupNavigationTracing() {
   base::DictionaryValue dict;
   dict.SetString("mode", "REACTIVE_TRACING_MODE");
 
-  scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
   {
-    scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> rules_dict(
+        new base::DictionaryValue());
     rules_dict->SetString("rule", "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
     rules_dict->SetString("trigger_name", kNavigationTracingConfig);
     rules_dict->SetString("category", "BENCHMARK_DEEP");
@@ -71,7 +72,7 @@ void SetupNavigationTracing() {
   }
   dict.Set("configs", std::move(rules_list));
 
-  scoped_ptr<content::BackgroundTracingConfig> config(
+  std::unique_ptr<content::BackgroundTracingConfig> config(
       content::BackgroundTracingConfig::FromDict(&dict));
   DCHECK(config);
 

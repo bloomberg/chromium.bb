@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -14,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -411,7 +411,7 @@ class URLRequestMockCaptivePortalJobFactory {
 
   // Create a new Interceptor and add it to |interceptors_|, though it returns
   // ownership.
-  scoped_ptr<net::URLRequestInterceptor> CreateInterceptor();
+  std::unique_ptr<net::URLRequestInterceptor> CreateInterceptor();
 
   // These variables are only accessed on IO thread, though
   // URLRequestMockCaptivePortalJobFactory is created and
@@ -441,10 +441,11 @@ void URLRequestMockCaptivePortalJobFactory::SetBehindCaptivePortal(
                  base::Unretained(this), behind_captive_portal));
 }
 
-scoped_ptr<net::URLRequestInterceptor>
+std::unique_ptr<net::URLRequestInterceptor>
 URLRequestMockCaptivePortalJobFactory::CreateInterceptor() {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  scoped_ptr<Interceptor> interceptor(new Interceptor(behind_captive_portal_));
+  std::unique_ptr<Interceptor> interceptor(
+      new Interceptor(behind_captive_portal_));
   interceptors_.push_back(interceptor.get());
   return std::move(interceptor);
 }

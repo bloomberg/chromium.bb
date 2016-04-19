@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
@@ -105,7 +105,7 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   base::string16 result_;
 
   // The URLFetcher object used for sending a JSON-RPC request.
-  scoped_ptr<SpellingServiceClient> client_;
+  std::unique_ptr<SpellingServiceClient> client_;
 
   // A timer used for loading animation.
   base::RepeatingTimer animation_timer_;

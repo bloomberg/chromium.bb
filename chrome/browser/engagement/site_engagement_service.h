@@ -278,7 +278,7 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);
 
   // Only used in tests.
-  SiteEngagementService(Profile* profile, scoped_ptr<base::Clock> clock);
+  SiteEngagementService(Profile* profile, std::unique_ptr<base::Clock> clock);
 
   // Adds the specified number of points to the given origin, respecting the
   // maximum limits for the day and overall.
@@ -306,7 +306,7 @@ class SiteEngagementService : public KeyedService,
   Profile* profile_;
 
   // The clock used to vend times.
-  scoped_ptr<base::Clock> clock_;
+  std::unique_ptr<base::Clock> clock_;
 
   // Metrics are recorded at non-incognito browser startup, and then
   // approximately once per hour thereafter. Store the local time at which

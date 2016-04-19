@@ -39,10 +39,11 @@ void StatusIcon::DispatchBalloonClickEvent() {
 
 void StatusIcon::ForceVisible() {}
 
-void StatusIcon::SetContextMenu(scoped_ptr<StatusIconMenuModel> menu) {
+void StatusIcon::SetContextMenu(std::unique_ptr<StatusIconMenuModel> menu) {
   // The UI may been showing a menu for the current model, don't destroy it
   // until we've notified the UI of the change.
-  scoped_ptr<StatusIconMenuModel> old_menu = std::move(context_menu_contents_);
+  std::unique_ptr<StatusIconMenuModel> old_menu =
+      std::move(context_menu_contents_);
   context_menu_contents_ = std::move(menu);
   UpdatePlatformContextMenu(context_menu_contents_.get());
 }

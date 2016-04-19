@@ -64,7 +64,7 @@ class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
  public:
   ConfirmInstallDialogDelegate(content::WebContents* web_contents,
                                PluginInstaller* installer,
-                               scoped_ptr<PluginMetadata> plugin_metadata);
+                               std::unique_ptr<PluginMetadata> plugin_metadata);
 
   // TabModalConfirmDialogDelegate methods:
   base::string16 GetTitle() override;
@@ -79,13 +79,13 @@ class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
 
  private:
   content::WebContents* web_contents_;
-  scoped_ptr<PluginMetadata> plugin_metadata_;
+  std::unique_ptr<PluginMetadata> plugin_metadata_;
 };
 
 ConfirmInstallDialogDelegate::ConfirmInstallDialogDelegate(
     content::WebContents* web_contents,
     PluginInstaller* installer,
-    scoped_ptr<PluginMetadata> plugin_metadata)
+    std::unique_ptr<PluginMetadata> plugin_metadata)
     : TabModalConfirmDialogDelegate(web_contents),
       WeakPluginInstallerObserver(installer),
       web_contents_(web_contents),
@@ -153,8 +153,8 @@ void ReloadPluginInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     content::NavigationController* controller,
     const base::string16& message) {
-  infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+      std::unique_ptr<ConfirmInfoBarDelegate>(
           new ReloadPluginInfoBarDelegate(controller, message))));
 }
 
@@ -342,7 +342,7 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
   PluginFinder* finder = PluginFinder::GetInstance();
   // Find plugin to update.
   PluginInstaller* installer = NULL;
-  scoped_ptr<PluginMetadata> plugin;
+  std::unique_ptr<PluginMetadata> plugin;
   if (finder->FindPluginWithIdentifier(identifier, &installer, &plugin)) {
     plugin_placeholders_[placeholder_id] = new PluginPlaceholderHost(
         this, placeholder_id, plugin->name(), installer);

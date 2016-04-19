@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/background/background_mode_manager.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/background/background_trigger.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -58,8 +59,8 @@ using testing::StrictMock;
 
 namespace {
 
-scoped_ptr<TestingProfileManager> CreateTestingProfileManager() {
-  scoped_ptr<TestingProfileManager> profile_manager(
+std::unique_ptr<TestingProfileManager> CreateTestingProfileManager() {
+  std::unique_ptr<TestingProfileManager> profile_manager(
       new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
   EXPECT_TRUE(profile_manager->SetUp());
   return profile_manager;
@@ -207,9 +208,9 @@ class BackgroundModeManagerTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<base::CommandLine> command_line_;
+  std::unique_ptr<base::CommandLine> command_line_;
 
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   // Test profile used by all tests - this is owned by profile_manager_.
   TestingProfile* profile_;
 
@@ -286,7 +287,7 @@ class BackgroundModeManagerWithExtensionsTest : public testing::Test {
       extensions::Manifest::Location location,
       const std::string& data,
       const std::string& id) {
-    scoped_ptr<base::DictionaryValue> parsed_manifest(
+    std::unique_ptr<base::DictionaryValue> parsed_manifest(
         extensions::api_test_utils::ParseDictionary(data));
     return extensions::api_test_utils::CreateExtension(
         location, parsed_manifest.get(), id);
@@ -301,11 +302,11 @@ class BackgroundModeManagerWithExtensionsTest : public testing::Test {
     return false;
   }
 
-  scoped_ptr<TestBackgroundModeManager> manager_;
+  std::unique_ptr<TestBackgroundModeManager> manager_;
 
-  scoped_ptr<base::CommandLine> command_line_;
+  std::unique_ptr<base::CommandLine> command_line_;
 
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   // Test profile used by all tests - this is owned by profile_manager_.
   TestingProfile* profile_;
 
@@ -317,7 +318,7 @@ class BackgroundModeManagerWithExtensionsTest : public testing::Test {
   // tearing down our thread bundle before we've had chance to clean
   // everything up. Keeping Chrome alive prevents this.
   // We aren't interested in if the keep alive works correctly in this test.
-  scoped_ptr<ScopedKeepAlive> test_keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> test_keep_alive_;
 
 #if defined(OS_CHROMEOS)
   // ChromeOS needs extra services to run in the following order.
@@ -708,8 +709,8 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BackgroundMenuGeneration) {
   service->AddExtension(regular_extension_with_options.get());
   Mock::VerifyAndClearExpectations(manager_.get());
 
-  scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(NULL));
-  scoped_ptr<StatusIconMenuModel> submenu(new StatusIconMenuModel(NULL));
+  std::unique_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(NULL));
+  std::unique_ptr<StatusIconMenuModel> submenu(new StatusIconMenuModel(NULL));
   BackgroundModeManager::BackgroundModeData* bmd =
       manager_->GetBackgroundModeData(profile_);
   bmd->BuildProfileMenu(submenu.get(), menu.get());

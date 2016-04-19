@@ -93,7 +93,7 @@ PasswordManagerHandler::PasswordManagerHandler() {
 }
 
 PasswordManagerHandler::PasswordManagerHandler(
-    scoped_ptr<PasswordManagerPresenter> presenter)
+    std::unique_ptr<PasswordManagerPresenter> presenter)
     : password_manager_presenter_(std::move(presenter)) {}
 
 PasswordManagerHandler::~PasswordManagerHandler() {}
@@ -405,7 +405,7 @@ void PasswordManagerHandler::HandlePasswordExport(const base::ListValue* args) {
 
 void PasswordManagerHandler::ExportPasswordFileSelected(
     const base::FilePath& path) {
-  std::vector<scoped_ptr<autofill::PasswordForm>> password_list =
+  std::vector<std::unique_ptr<autofill::PasswordForm>> password_list =
       password_manager_presenter_->GetAllPasswords();
   UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
                        password_list.size());

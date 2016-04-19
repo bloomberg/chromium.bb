@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_BROWSER_PROCESS_PLATFORM_PART_CHROMEOS_H_
 #define CHROME_BROWSER_BROWSER_PROCESS_PLATFORM_PART_CHROMEOS_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
 
@@ -102,7 +103,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   // Overridden from BrowserProcessPlatformPartBase:
   void StartTearDown() override;
 
-  scoped_ptr<policy::BrowserPolicyConnector> CreateBrowserPolicyConnector()
+  std::unique_ptr<policy::BrowserPolicyConnector> CreateBrowserPolicyConnector()
       override;
 
   chromeos::system::SystemClock* GetSystemClock();
@@ -110,28 +111,28 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
  private:
   void CreateProfileHelper();
 
-  scoped_ptr<session_manager::SessionManager> session_manager_;
+  std::unique_ptr<session_manager::SessionManager> session_manager_;
 
   bool created_profile_helper_;
-  scoped_ptr<chromeos::ProfileHelper> profile_helper_;
+  std::unique_ptr<chromeos::ProfileHelper> profile_helper_;
 
-  scoped_ptr<chromeos::system::AutomaticRebootManager>
+  std::unique_ptr<chromeos::system::AutomaticRebootManager>
       automatic_reboot_manager_;
 
-  scoped_ptr<chromeos::ChromeUserManager> chrome_user_manager_;
+  std::unique_ptr<chromeos::ChromeUserManager> chrome_user_manager_;
 
-  scoped_ptr<chromeos::system::DeviceDisablingManagerDefaultDelegate>
+  std::unique_ptr<chromeos::system::DeviceDisablingManagerDefaultDelegate>
       device_disabling_manager_delegate_;
-  scoped_ptr<chromeos::system::DeviceDisablingManager>
+  std::unique_ptr<chromeos::system::DeviceDisablingManager>
       device_disabling_manager_;
 
-  scoped_ptr<chromeos::system::TimeZoneResolverManager>
+  std::unique_ptr<chromeos::system::TimeZoneResolverManager>
       timezone_resolver_manager_;
-  scoped_ptr<chromeos::TimeZoneResolver> timezone_resolver_;
+  std::unique_ptr<chromeos::TimeZoneResolver> timezone_resolver_;
 
-  scoped_ptr<chromeos::system::SystemClock> system_clock_;
+  std::unique_ptr<chromeos::system::SystemClock> system_clock_;
 
-  scoped_ptr<ScopedKeepAlive> keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPart);
 };

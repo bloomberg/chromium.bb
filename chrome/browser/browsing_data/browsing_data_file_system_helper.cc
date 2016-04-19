@@ -4,12 +4,12 @@
 
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 
+#include <memory>
 #include <set>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "content/public/browser/browser_thread.h"

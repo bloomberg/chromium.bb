@@ -8,11 +8,11 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -79,7 +79,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
   ~ChromeWhispernetClientTest() override {}
 
   void InitializeWhispernet() {
-    scoped_ptr<WhispernetClient> client(
+    std::unique_ptr<WhispernetClient> client(
         new ChromeWhispernetClient(browser()->profile()));
     client->Initialize(base::Bind(
         &ChromeWhispernetClientTest::InitCallback, base::Unretained(this)));
@@ -225,7 +225,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
     return 1.0;
   }
 
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   bool initialized_;
 
   std::string expected_token_;
@@ -235,7 +235,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
   scoped_refptr<media::AudioBusRefCounted> saved_samples_stereo_;
   int saved_samples_index_;
 
-  scoped_ptr<media::AudioConverter> converter_;
+  std::unique_ptr<media::AudioConverter> converter_;
 
   media::AudioParameters default_params_;
   media::AudioParameters coder_params_;
@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_Initialize) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_EncodeAndDecode) {
-  scoped_ptr<WhispernetClient> client(
+  std::unique_ptr<WhispernetClient> client(
       new ChromeWhispernetClient(browser()->profile()));
   client->Initialize(base::Bind(&IgnoreResult));
   SetupDecode();
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_EncodeAndDecode) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_TokenLengths) {
-  scoped_ptr<WhispernetClient> client(
+  std::unique_ptr<WhispernetClient> client(
       new ChromeWhispernetClient(browser()->profile()));
   client->Initialize(base::Bind(&IgnoreResult));
   SetupDecode();
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_TokenLengths) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_Crc) {
-  scoped_ptr<WhispernetClient> client(
+  std::unique_ptr<WhispernetClient> client(
       new ChromeWhispernetClient(browser()->profile()));
   client->Initialize(base::Bind(&IgnoreResult));
   SetupDecode();
@@ -322,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_Crc) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_Parity) {
-  scoped_ptr<WhispernetClient> client(
+  std::unique_ptr<WhispernetClient> client(
       new ChromeWhispernetClient(browser()->profile()));
   client->Initialize(base::Bind(&IgnoreResult));
   SetupDecode();
@@ -340,11 +340,11 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_Parity) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_MultipleClients) {
-  scoped_ptr<WhispernetClient> client_1(
+  std::unique_ptr<WhispernetClient> client_1(
       new ChromeWhispernetClient(browser()->profile()));
-  scoped_ptr<WhispernetClient> client_2(
+  std::unique_ptr<WhispernetClient> client_2(
       new ChromeWhispernetClient(browser()->profile()));
-  scoped_ptr<WhispernetClient> client_3(
+  std::unique_ptr<WhispernetClient> client_3(
       new ChromeWhispernetClient(browser()->profile()));
   SetupDecode();
 

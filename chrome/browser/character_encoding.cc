@@ -7,11 +7,11 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -121,9 +121,9 @@ class CanonicalEncodingMap {
   }
 
  private:
-  scoped_ptr<IdToCanonicalEncodingNameMapType> id_to_encoding_name_map_;
-  scoped_ptr<CanonicalEncodingNameToIdMapType> encoding_name_to_id_map_;
-  scoped_ptr<CanonicalNameDisplayNameMapType>
+  std::unique_ptr<IdToCanonicalEncodingNameMapType> id_to_encoding_name_map_;
+  std::unique_ptr<CanonicalEncodingNameToIdMapType> encoding_name_to_id_map_;
+  std::unique_ptr<CanonicalNameDisplayNameMapType>
       encoding_name_to_display_name_map_;
   std::vector<int> locale_dependent_encoding_ids_;
   std::vector<CharacterEncoding::EncodingInfo> current_display_encodings_;

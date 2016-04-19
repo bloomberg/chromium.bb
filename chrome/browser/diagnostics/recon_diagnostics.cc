@@ -7,13 +7,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -63,7 +63,7 @@ class ConflictingDllsTest : public DiagnosticsTest {
     EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
     model->set_limited_mode(true);
     model->ScanNow();
-    scoped_ptr<base::ListValue> list(model->GetModuleList());
+    std::unique_ptr<base::ListValue> list(model->GetModuleList());
     if (!model->confirmed_bad_modules_detected() &&
         !model->suspected_bad_modules_detected()) {
       RecordSuccess("No conflicting modules found");
@@ -220,7 +220,7 @@ class JSONTest : public DiagnosticsTest {
     JSONStringValueDeserializer json(json_data);
     int error_code = base::JSONReader::JSON_NO_ERROR;
     std::string error_message;
-    scoped_ptr<base::Value> json_root(
+    std::unique_ptr<base::Value> json_root(
         json.Deserialize(&error_code, &error_message));
     if (base::JSONReader::JSON_NO_ERROR != error_code) {
       if (error_message.empty()) {

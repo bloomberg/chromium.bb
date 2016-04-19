@@ -24,9 +24,9 @@ ModuleList::~ModuleList() {
   std::for_each(modules_.begin(), modules_.end(), &CheckFreeLibrary);
 }
 
-scoped_ptr<ModuleList> ModuleList::FromLoadedModuleSnapshot(
+std::unique_ptr<ModuleList> ModuleList::FromLoadedModuleSnapshot(
     const std::vector<HMODULE>& snapshot) {
-  scoped_ptr<ModuleList> instance(new ModuleList);
+  std::unique_ptr<ModuleList> instance(new ModuleList);
 
   for (size_t i = 0; i < snapshot.size(); ++i) {
     HMODULE module = NULL;

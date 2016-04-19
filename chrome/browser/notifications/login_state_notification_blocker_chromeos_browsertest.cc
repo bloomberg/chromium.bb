@@ -46,7 +46,7 @@ class UserAddingFinishObserver : public chromeos::UserAddingScreen::Observer {
   void OnUserAddingStarted() override { finished_ = false; }
 
  private:
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   bool finished_ = false;  // True if OnUserAddingFinished() has been called
                            // before WaitUntilUserAddingFinishedOrCancelled().
   DISALLOW_COPY_AND_ASSIGN(UserAddingFinishObserver);
@@ -101,7 +101,7 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
 
  private:
   int state_changed_count_;
-  scoped_ptr<message_center::NotificationBlocker> blocker_;
+  std::unique_ptr<message_center::NotificationBlocker> blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginStateNotificationBlockerChromeOSBrowserTest);
 };

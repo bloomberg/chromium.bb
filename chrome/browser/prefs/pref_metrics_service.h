@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_PREFS_PREF_METRICS_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
@@ -84,7 +84,7 @@ class PrefMetricsService : public KeyedService {
   PrefService* prefs_;
   PrefService* local_state_;
 
-  scoped_ptr<syncable_prefs::SyncedPrefChangeRegistrar>
+  std::unique_ptr<syncable_prefs::SyncedPrefChangeRegistrar>
       synced_pref_change_registrar_;
 
   base::WeakPtrFactory<PrefMetricsService> weak_factory_;

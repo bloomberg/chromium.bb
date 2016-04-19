@@ -7,7 +7,7 @@
 
 #include <windows.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace gfx {
 class ImageFamily;
@@ -24,6 +24,6 @@ gfx::Size GetSmallAppIconSize();
 
 // Retrieve the application icon for the current process. This returns all of
 // the different sizes of the icon as an ImageFamily.
-scoped_ptr<gfx::ImageFamily> GetAppIconImageFamily();
+std::unique_ptr<gfx::ImageFamily> GetAppIconImageFamily();
 
 #endif  // CHROME_BROWSER_APP_ICON_WIN_H_

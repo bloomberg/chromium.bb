@@ -23,7 +23,7 @@ class ExtensionInformation
   // WebContentsInformation implementation.
   bool CheckOwnership(content::WebContents* web_contents) override;
   void GetAll(const NewWebContentsCallback& callback) override;
-  scoped_ptr<RendererResource> MakeResource(
+  std::unique_ptr<RendererResource> MakeResource(
       content::WebContents* web_contents) override;
 
  private:

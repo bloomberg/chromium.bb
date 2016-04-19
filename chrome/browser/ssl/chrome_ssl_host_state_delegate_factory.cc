@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
@@ -25,7 +26,7 @@ class Service : public KeyedService {
   void Shutdown() override {}
 
  private:
-  scoped_ptr<ChromeSSLHostStateDelegate> decisions_;
+  std::unique_ptr<ChromeSSLHostStateDelegate> decisions_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

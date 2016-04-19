@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <set>
 #include <string>
 #include <utility>
@@ -20,6 +21,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -335,13 +337,10 @@ PrefService* InitializeLocalState(
       base::FilePath parent_profile =
           parsed_command_line.GetSwitchValuePath(switches::kParentProfile);
       scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple();
-      scoped_ptr<PrefService> parent_local_state(
+      std::unique_ptr<PrefService> parent_local_state(
           chrome_prefs::CreateLocalState(
-              parent_profile,
-              local_state_task_runner,
-              g_browser_process->policy_service(),
-              registry,
-              false));
+              parent_profile, local_state_task_runner,
+              g_browser_process->policy_service(), registry, false));
       registry->RegisterStringPref(prefs::kApplicationLocale, std::string());
       // Right now, we only inherit the locale setting from the parent profile.
       local_state->SetString(
@@ -718,7 +717,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
     metrics->AddSyntheticTrialObserver(provider);
   }
 
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),
       command_line->GetSwitchValueASCII(switches::kDisableFeatures));
@@ -1122,7 +1121,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // Initialize tracking synchronizer system.
   tracking_synchronizer_ = new metrics::TrackingSynchronizer(
-      make_scoped_ptr(new base::DefaultTickClock()),
+      base::WrapUnique(new base::DefaultTickClock()),
       base::Bind(&metrics::ContentTrackingSynchronizerDelegate::Create));
 
 #if defined(OS_MACOSX)
@@ -1606,7 +1605,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Negative ping delay means to send ping immediately after a first search is
   // recorded.
   rlz::RLZTracker::SetRlzDelegate(
-      make_scoped_ptr(new ChromeRLZTrackerDelegate));
+      base::WrapUnique(new ChromeRLZTrackerDelegate));
   rlz::RLZTracker::InitRlzDelayed(
       first_run::IsChromeFirstRun(), ping_delay < 0,
       base::TimeDelta::FromMilliseconds(abs(ping_delay)),

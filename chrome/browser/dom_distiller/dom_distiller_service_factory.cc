@@ -23,10 +23,10 @@
 namespace dom_distiller {
 
 DomDistillerContextKeyedService::DomDistillerContextKeyedService(
-    scoped_ptr<DomDistillerStoreInterface> store,
-    scoped_ptr<DistillerFactory> distiller_factory,
-    scoped_ptr<DistillerPageFactory> distiller_page_factory,
-    scoped_ptr<DistilledPagePrefs> distilled_page_prefs)
+    std::unique_ptr<DomDistillerStoreInterface> store,
+    std::unique_ptr<DistillerFactory> distiller_factory,
+    std::unique_ptr<DistillerPageFactory> distiller_page_factory,
+    std::unique_ptr<DistilledPagePrefs> distilled_page_prefs)
     : DomDistillerService(std::move(store),
                           std::move(distiller_factory),
                           std::move(distiller_page_factory),
@@ -58,22 +58,22 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
           base::SequencedWorkerPool::GetSequenceToken());
 
-  scoped_ptr<leveldb_proto::ProtoDatabaseImpl<ArticleEntry> > db(
+  std::unique_ptr<leveldb_proto::ProtoDatabaseImpl<ArticleEntry>> db(
       new leveldb_proto::ProtoDatabaseImpl<ArticleEntry>(
           background_task_runner));
 
   base::FilePath database_dir(
       profile->GetPath().Append(FILE_PATH_LITERAL("Articles")));
 
-  scoped_ptr<DomDistillerStore> dom_distiller_store(
+  std::unique_ptr<DomDistillerStore> dom_distiller_store(
       new DomDistillerStore(std::move(db), database_dir));
 
-  scoped_ptr<DistillerPageFactory> distiller_page_factory(
+  std::unique_ptr<DistillerPageFactory> distiller_page_factory(
       new DistillerPageWebContentsFactory(profile));
-  scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
+  std::unique_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
       new DistillerURLFetcherFactory(
-          content::BrowserContext::GetDefaultStoragePartition(profile)->
-              GetURLRequestContext()));
+          content::BrowserContext::GetDefaultStoragePartition(profile)
+              ->GetURLRequestContext()));
 
   dom_distiller::proto::DomDistillerOptions options;
   if (VLOG_IS_ON(1)) {
@@ -85,9 +85,9 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
   // - "pagenum": detect anchors with numeric page numbers
   // Default is "next".
   options.set_pagination_algo("next");
-  scoped_ptr<DistillerFactory> distiller_factory(new DistillerFactoryImpl(
+  std::unique_ptr<DistillerFactory> distiller_factory(new DistillerFactoryImpl(
       std::move(distiller_url_fetcher_factory), options));
-  scoped_ptr<DistilledPagePrefs> distilled_page_prefs(
+  std::unique_ptr<DistilledPagePrefs> distilled_page_prefs(
       new DistilledPagePrefs(Profile::FromBrowserContext(profile)->GetPrefs()));
 
   DomDistillerContextKeyedService* service =

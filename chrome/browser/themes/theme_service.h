@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_THEMES_THEME_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -13,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
@@ -315,11 +315,11 @@ class ThemeService : public base::NonThreadSafe,
 
   content::NotificationRegistrar registrar_;
 
-  scoped_ptr<ThemeSyncableService> theme_syncable_service_;
+  std::unique_ptr<ThemeSyncableService> theme_syncable_service_;
 
 #if defined(ENABLE_EXTENSIONS)
   class ThemeObserver;
-  scoped_ptr<ThemeObserver> theme_observer_;
+  std::unique_ptr<ThemeObserver> theme_observer_;
 #endif
 
   BrowserThemeProvider original_theme_provider_;

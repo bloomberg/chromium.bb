@@ -6,11 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
@@ -74,14 +75,15 @@ class TestProcessManager : public extensions::ProcessManager {
   DISALLOW_COPY_AND_ASSIGN(TestProcessManager);
 };
 
-scoped_ptr<KeyedService> CreateTestProcessManager(
+std::unique_ptr<KeyedService> CreateTestProcessManager(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new TestProcessManager(context));
+  return base::WrapUnique(new TestProcessManager(context));
 }
 
-scoped_ptr<KeyedService> CreateScreenlockPrivateEventRouter(
+std::unique_ptr<KeyedService> CreateScreenlockPrivateEventRouter(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new extensions::ScreenlockPrivateEventRouter(context));
+  return base::WrapUnique(
+      new extensions::ScreenlockPrivateEventRouter(context));
 }
 
 // Observes extension registry for unload and load events (in that order) of an
@@ -248,15 +250,16 @@ class TestEventRouter : public extensions::EventRouter {
   ~TestEventRouter() override {}
 
   // extensions::EventRouter implementation:
-  void BroadcastEvent(scoped_ptr<extensions::Event> event) override {
+  void BroadcastEvent(std::unique_ptr<extensions::Event> event) override {
     ASSERT_EQ(screenlock_private_api::OnAuthAttempted::kEventName,
               event->event_name);
     EXPECT_TRUE(event_consumer_->ConsumeEvent(event->event_name,
                                               event->event_args.get()));
   }
 
-  void DispatchEventToExtension(const std::string& extension_id,
-                                scoped_ptr<extensions::Event> event) override {
+  void DispatchEventToExtension(
+      const std::string& extension_id,
+      std::unique_ptr<extensions::Event> event) override {
     ASSERT_EQ(extension_misc::kEasyUnlockAppId, extension_id);
     EXPECT_TRUE(event_consumer_->ConsumeEvent(event->event_name,
                                               event->event_args.get()));
@@ -273,9 +276,9 @@ class TestEventRouter : public extensions::EventRouter {
 };
 
 // TestEventRouter factory function
-scoped_ptr<KeyedService> TestEventRouterFactoryFunction(
+std::unique_ptr<KeyedService> TestEventRouterFactoryFunction(
     content::BrowserContext* context) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new TestEventRouter(static_cast<Profile*>(context),
                           extensions::ExtensionPrefs::Get(context)));
 }
@@ -337,7 +340,7 @@ class EasyUnlockAppManagerTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<EasyUnlockAppManager> app_manager_;
+  std::unique_ptr<EasyUnlockAppManager> app_manager_;
 
   // Needed by extension system.
   content::TestBrowserThreadBundle thread_bundle_;

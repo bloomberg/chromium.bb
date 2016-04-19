@@ -106,7 +106,7 @@ bool GuestInformation::CheckOwnership(WebContents* web_contents) {
 }
 
 void GuestInformation::GetAll(const NewWebContentsCallback& callback) {
-  scoped_ptr<content::RenderWidgetHostIterator> widgets(
+  std::unique_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
     content::RenderViewHost* rvh = content::RenderViewHost::From(widget);
@@ -116,9 +116,9 @@ void GuestInformation::GetAll(const NewWebContentsCallback& callback) {
   }
 }
 
-scoped_ptr<RendererResource> GuestInformation::MakeResource(
+std::unique_ptr<RendererResource> GuestInformation::MakeResource(
     WebContents* web_contents) {
-  return scoped_ptr<RendererResource>(
+  return std::unique_ptr<RendererResource>(
       new GuestResource(web_contents->GetRenderViewHost()));
 }
 

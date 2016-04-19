@@ -4,13 +4,13 @@
 
 #include "components/signin/core/browser/signin_manager.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
@@ -54,9 +54,10 @@
 
 namespace {
 
-scoped_ptr<KeyedService> SigninManagerBuild(content::BrowserContext* context) {
+std::unique_ptr<KeyedService> SigninManagerBuild(
+    content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  scoped_ptr<SigninManager> service(new SigninManager(
+  std::unique_ptr<SigninManager> service(new SigninManager(
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       AccountTrackerServiceFactory::GetForProfile(profile),
@@ -218,12 +219,12 @@ class SigninManagerTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   net::TestURLFetcherFactory factory_;
-  scoped_ptr<SigninManager> naked_manager_;
+  std::unique_ptr<SigninManager> naked_manager_;
   SigninManager* manager_;
   TestSigninManagerObserver test_observer_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   std::vector<std::string> oauth_tokens_fetched_;
-  scoped_ptr<TestingPrefServiceSimple> prefs_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
   std::vector<std::string> cookies_;
 };
 

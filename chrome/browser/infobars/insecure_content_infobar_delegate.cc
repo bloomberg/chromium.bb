@@ -27,9 +27,10 @@ void InsecureContentInfoBarDelegate::Create(InfoBarService* infobar_service) {
   UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegateV2",
                             DISPLAY_INFOBAR_SHOWN, NUM_EVENTS);
 
-  scoped_ptr<infobars::InfoBar> new_infobar(
-      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new InsecureContentInfoBarDelegate())));
+  std::unique_ptr<infobars::InfoBar> new_infobar(
+      infobar_service->CreateConfirmInfoBar(
+          std::unique_ptr<ConfirmInfoBarDelegate>(
+              new InsecureContentInfoBarDelegate())));
 
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     infobars::InfoBar* old_infobar = infobar_service->infobar_at(i);

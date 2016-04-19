@@ -92,7 +92,7 @@ class TestMemoryDetails : public MetricsMemoryDetails {
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  scoped_ptr<base::HistogramTester> uma_;
+  std::unique_ptr<base::HistogramTester> uma_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMemoryDetails);
 };
@@ -185,7 +185,7 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
   // resources and, optionally, a background process.
   const Extension* CreateExtension(const std::string& name,
                                    bool has_background_process) {
-    scoped_ptr<TestExtensionDir> dir(new TestExtensionDir);
+    std::unique_ptr<TestExtensionDir> dir(new TestExtensionDir);
 
     DictionaryBuilder manifest;
     manifest.Set("name", name)
@@ -243,7 +243,7 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
 
   const Extension* CreateHostedApp(const std::string& name,
                                    const GURL& app_url) {
-    scoped_ptr<TestExtensionDir> dir(new TestExtensionDir);
+    std::unique_ptr<TestExtensionDir> dir(new TestExtensionDir);
 
     DictionaryBuilder manifest;
     manifest.Set("name", name)

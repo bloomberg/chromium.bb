@@ -50,10 +50,10 @@ class ChromeMetricsHelper : public security_interstitials::MetricsHelper {
   const GURL request_url_;
   const std::string sampling_event_name_;
 #if defined(ENABLE_EXTENSIONS)
-  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
+  std::unique_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 #endif
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  scoped_ptr<CaptivePortalMetricsRecorder> captive_portal_recorder_;
+  std::unique_ptr<CaptivePortalMetricsRecorder> captive_portal_recorder_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetricsHelper);

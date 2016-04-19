@@ -87,7 +87,7 @@ void AndroidAccessTokenFetcher::Start(const std::string& client_id,
   ScopedJavaLocalRef<jstring> j_username =
       ConvertUTF8ToJavaString(env, account_id_);
   ScopedJavaLocalRef<jstring> j_scope = ConvertUTF8ToJavaString(env, scope);
-  scoped_ptr<FetchOAuth2TokenCallback> heap_callback(
+  std::unique_ptr<FetchOAuth2TokenCallback> heap_callback(
       new FetchOAuth2TokenCallback(
           base::Bind(&AndroidAccessTokenFetcher::OnAccessTokenResponse,
                      weak_factory_.GetWeakPtr())));
@@ -563,7 +563,7 @@ void OAuth2TokenFetched(JNIEnv* env,
   std::string token;
   if (authToken)
     token = ConvertJavaStringToUTF8(env, authToken);
-  scoped_ptr<FetchOAuth2TokenCallback> heap_callback(
+  std::unique_ptr<FetchOAuth2TokenCallback> heap_callback(
       reinterpret_cast<FetchOAuth2TokenCallback*>(nativeCallback));
   GoogleServiceAuthError
       err(authToken

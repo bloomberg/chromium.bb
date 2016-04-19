@@ -41,7 +41,7 @@ class ProcessPowerCollector
  public:
   class PerProcessData {
    public:
-    PerProcessData(scoped_ptr<base::ProcessMetrics> metrics,
+    PerProcessData(std::unique_ptr<base::ProcessMetrics> metrics,
                    const GURL& origin,
                    Profile* profile);
     PerProcessData();
@@ -57,7 +57,7 @@ class ProcessPowerCollector
 
    private:
     // |metrics_| holds the ProcessMetrics information for the given process.
-    scoped_ptr<base::ProcessMetrics> metrics_;
+    std::unique_ptr<base::ProcessMetrics> metrics_;
 
     // |profile| is the profile that is visiting the |last_origin_|.
     // It is not owned by PerProcessData.

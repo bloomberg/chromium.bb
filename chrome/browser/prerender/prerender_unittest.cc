@@ -252,7 +252,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
 
   Time time_;
   TimeTicks time_ticks_;
-  scoped_ptr<PrerenderContents> next_prerender_contents_;
+  std::unique_ptr<PrerenderContents> next_prerender_contents_;
   // PrerenderContents with an |expected_final_status| of FINAL_STATUS_USED,
   // tracked so they will be automatically deleted.
   ScopedVector<PrerenderContents> used_prerender_contents_;
@@ -401,8 +401,8 @@ class PrerenderTest : public testing::Test {
   base::MessageLoop message_loop_;
   TestingProfile profile_;
   content::TestBrowserThread ui_thread_;
-  scoped_ptr<UnitTestPrerenderManager> prerender_manager_;
-  scoped_ptr<PrerenderLinkManager> prerender_link_manager_;
+  std::unique_ptr<UnitTestPrerenderManager> prerender_manager_;
+  std::unique_ptr<PrerenderLinkManager> prerender_link_manager_;
   int last_prerender_id_;
   base::FieldTrialList field_trial_list_;
 };
@@ -1080,7 +1080,7 @@ TEST_F(PrerenderTest, LinkRelStillAllowedWhenDisabled) {
 TEST_F(PrerenderTest, LinkRelAllowedOnCellular) {
   EnablePrerender();
   GURL url("http://www.example.com");
-  scoped_ptr<net::NetworkChangeNotifier> mock(
+  std::unique_ptr<net::NetworkChangeNotifier> mock(
       new MockNetworkChangeNotifier4G);
   EXPECT_TRUE(net::NetworkChangeNotifier::IsConnectionCellular(
       net::NetworkChangeNotifier::GetConnectionType()));
@@ -1094,7 +1094,7 @@ TEST_F(PrerenderTest, LinkRelAllowedOnCellular) {
 
 TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
   EnablePrerender();
-  scoped_ptr<net::NetworkChangeNotifier> mock(
+  std::unique_ptr<net::NetworkChangeNotifier> mock(
       new MockNetworkChangeNotifier4G);
   EXPECT_TRUE(net::NetworkChangeNotifier::IsConnectionCellular(
       net::NetworkChangeNotifier::GetConnectionType()));
@@ -1104,7 +1104,7 @@ TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
           url,
           ORIGIN_EXTERNAL_REQUEST,
           FINAL_STATUS_MANAGER_SHUTDOWN);
-  scoped_ptr<PrerenderHandle> prerender_handle(
+  std::unique_ptr<PrerenderHandle> prerender_handle(
       prerender_manager()->AddPrerenderFromExternalRequest(
           url, content::Referrer(), nullptr, kSize));
   EXPECT_FALSE(prerender_handle);
@@ -1113,7 +1113,7 @@ TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
 
 TEST_F(PrerenderTest,PrerenderAllowedOnCellularWithForcedOrigin) {
   EnablePrerender();
-  scoped_ptr<net::NetworkChangeNotifier> mock(
+  std::unique_ptr<net::NetworkChangeNotifier> mock(
       new MockNetworkChangeNotifier4G);
   EXPECT_TRUE(net::NetworkChangeNotifier::IsConnectionCellular(
       net::NetworkChangeNotifier::GetConnectionType()));
@@ -1123,7 +1123,7 @@ TEST_F(PrerenderTest,PrerenderAllowedOnCellularWithForcedOrigin) {
           url,
           ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR,
           FINAL_STATUS_USED);
-  scoped_ptr<PrerenderHandle> prerender_handle(
+  std::unique_ptr<PrerenderHandle> prerender_handle(
       prerender_manager()->AddPrerenderOnCellularFromExternalRequest(
           url, content::Referrer(), nullptr, kSize));
   EXPECT_TRUE(prerender_handle);
@@ -1651,7 +1651,7 @@ TEST_F(PrerenderTest, PrerenderContentsForInstantSearch) {
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(url, ORIGIN_INSTANT,
                                                        FINAL_STATUS_USED);
-  scoped_ptr<PrerenderHandle> prerender_handle(
+  std::unique_ptr<PrerenderHandle> prerender_handle(
       prerender_manager()->AddPrerenderForInstant(url, NULL, kSize));
   CHECK(prerender_handle.get());
   EXPECT_TRUE(prerender_handle->IsPrerendering());

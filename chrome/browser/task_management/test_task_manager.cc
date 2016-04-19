@@ -9,8 +9,8 @@ namespace task_management {
 TestTaskManager::TestTaskManager()
     : handle_(base::kNullProcessHandle),
       pid_(base::kNullProcessId) {
-  set_timer_for_testing(scoped_ptr<base::Timer>(new base::MockTimer(true,
-                                                                    true)));
+  set_timer_for_testing(
+      std::unique_ptr<base::Timer>(new base::MockTimer(true, true)));
 }
 
 TestTaskManager::~TestTaskManager() {

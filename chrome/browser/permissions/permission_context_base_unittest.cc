@@ -101,7 +101,7 @@ class TestPermissionContext : public PermissionContextBase {
  private:
   std::vector<ContentSetting> decisions_;
   bool tab_context_updated_;
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {

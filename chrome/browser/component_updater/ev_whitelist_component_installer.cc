@@ -98,7 +98,7 @@ base::FilePath EVWhitelistComponentInstallerTraits::GetInstalledPath(
 void EVWhitelistComponentInstallerTraits::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
-    scoped_ptr<base::DictionaryValue> manifest) {
+    std::unique_ptr<base::DictionaryValue> manifest) {
   VLOG(1) << "Component ready, version " << version.GetString() << " in "
           << install_dir.value();
 
@@ -140,7 +140,7 @@ void RegisterEVWhitelistComponent(ComponentUpdateService* cus,
                                   const base::FilePath& user_data_dir) {
   VLOG(1) << "Registering EV whitelist component.";
 
-  scoped_ptr<ComponentInstallerTraits> traits(
+  std::unique_ptr<ComponentInstallerTraits> traits(
       new EVWhitelistComponentInstallerTraits());
   // |cus| will take ownership of |installer| during installer->Register(cus).
   DefaultComponentInstaller* installer =

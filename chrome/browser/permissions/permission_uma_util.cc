@@ -158,7 +158,7 @@ void RecordPermissionAction(PermissionType permission,
   if (!rappor_service || permission_str.empty())
     return;
 
-  scoped_ptr<rappor::Sample> sample =
+  std::unique_ptr<rappor::Sample> sample =
       rappor_service->CreateSample(rappor::SAFEBROWSING_RAPPOR_TYPE);
   sample->SetStringField("Scheme", requesting_origin.scheme());
   sample->SetStringField("Host", requesting_origin.host());

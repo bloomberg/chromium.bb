@@ -32,7 +32,7 @@ ProfileResetterTestBase::~ProfileResetterTestBase() {}
 
 void ProfileResetterTestBase::ResetAndWait(
     ProfileResetter::ResettableFlags resettable_flags) {
-  scoped_ptr<BrandcodedDefaultSettings> master_settings(
+  std::unique_ptr<BrandcodedDefaultSettings> master_settings(
       new BrandcodedDefaultSettings);
   resetter_->Reset(resettable_flags, std::move(master_settings),
                    base::Bind(&ProfileResetterMockObject::StopLoop,
@@ -43,7 +43,7 @@ void ProfileResetterTestBase::ResetAndWait(
 void ProfileResetterTestBase::ResetAndWait(
     ProfileResetter::ResettableFlags resettable_flags,
     const std::string& prefs) {
-  scoped_ptr<BrandcodedDefaultSettings> master_settings(
+  std::unique_ptr<BrandcodedDefaultSettings> master_settings(
       new BrandcodedDefaultSettings(prefs));
   resetter_->Reset(resettable_flags, std::move(master_settings),
                    base::Bind(&ProfileResetterMockObject::StopLoop,

@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <list>
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/sessions/session_restore_delegate.h"
 #include "chrome/browser/sessions/tab_loader_delegate.h"
@@ -111,7 +111,7 @@ class TabLoader : public content::NotificationObserver,
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-  scoped_ptr<TabLoaderDelegate> delegate_;
+  std::unique_ptr<TabLoaderDelegate> delegate_;
 
   // Listens for system under memory pressure notifications and stops loading
   // of tabs when we start running out of memory.

@@ -286,7 +286,7 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     if (!integrate_spelling_service_.GetValue()) {
       content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
       gfx::Rect rect = rvh->GetWidget()->GetView()->GetViewBounds();
-      scoped_ptr<SpellingBubbleModel> model(
+      std::unique_ptr<SpellingBubbleModel> model(
           new SpellingBubbleModel(profile, proxy_->GetWebContents()));
       chrome::ShowConfirmBubble(
           proxy_->GetWebContents()->GetTopLevelNativeWindow(),

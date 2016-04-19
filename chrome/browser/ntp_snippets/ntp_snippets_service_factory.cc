@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -73,7 +74,7 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
   return new ntp_snippets::NTPSnippetsService(
       profile->GetPrefs(), suggestions_service, task_runner,
       g_browser_process->GetApplicationLocale(), scheduler,
-      make_scoped_ptr(new ntp_snippets::NTPSnippetsFetcher(
+      base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
           task_runner, request_context,
           chrome::GetChannel() == version_info::Channel::STABLE)),
       base::Bind(&safe_json::SafeJsonParser::Parse));

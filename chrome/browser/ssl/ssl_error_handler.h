@@ -61,7 +61,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
                              const net::SSLInfo& ssl_info,
                              const GURL& request_url,
                              int options_mask,
-                             scoped_ptr<SSLCertReporter> ssl_cert_reporter,
+                             std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
                              const base::Callback<void(bool)>& callback);
 
   // Testing methods.
@@ -78,7 +78,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
                   const net::SSLInfo& ssl_info,
                   const GURL& request_url,
                   int options_mask,
-                  scoped_ptr<SSLCertReporter> ssl_cert_reporter,
+                  std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
                   const base::Callback<void(bool)>& callback);
 
   ~SSLErrorHandler() override;
@@ -138,9 +138,9 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   content::NotificationRegistrar registrar_;
   base::OneShotTimer timer_;
 
-  scoped_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
+  std::unique_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
 
-  scoped_ptr<SSLCertReporter> ssl_cert_reporter_;
+  std::unique_ptr<SSLCertReporter> ssl_cert_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLErrorHandler);
 };

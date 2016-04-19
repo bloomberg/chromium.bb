@@ -223,7 +223,7 @@ void ChromeSigninClient::RemoveContentSettingsObserver(
       ->RemoveObserver(observer);
 }
 
-scoped_ptr<SigninClient::CookieChangedSubscription>
+std::unique_ptr<SigninClient::CookieChangedSubscription>
 ChromeSigninClient::AddCookieChangedCallback(
     const GURL& url,
     const std::string& name,
@@ -231,7 +231,7 @@ ChromeSigninClient::AddCookieChangedCallback(
   scoped_refptr<net::URLRequestContextGetter> context_getter =
       profile_->GetRequestContext();
   DCHECK(context_getter.get());
-  scoped_ptr<SigninCookieChangedSubscription> subscription(
+  std::unique_ptr<SigninCookieChangedSubscription> subscription(
       new SigninCookieChangedSubscription(context_getter, url, name, callback));
   return std::move(subscription);
 }
@@ -275,7 +275,7 @@ void ChromeSigninClient::OnErrorChanged() {
 }
 
 void ChromeSigninClient::OnGetTokenInfoResponse(
-    scoped_ptr<base::DictionaryValue> token_info) {
+    std::unique_ptr<base::DictionaryValue> token_info) {
   if (!token_info->HasKey("error")) {
     std::string handle;
     if (token_info->GetString("token_handle", &handle)) {

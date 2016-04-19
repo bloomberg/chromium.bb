@@ -36,8 +36,8 @@ void BrowserProcessPlatformPartBase::AttemptExit() {
 void BrowserProcessPlatformPartBase::PreMainMessageLoopRun() {
 }
 
-scoped_ptr<policy::BrowserPolicyConnector>
+std::unique_ptr<policy::BrowserPolicyConnector>
 BrowserProcessPlatformPartBase::CreateBrowserPolicyConnector() {
-  return scoped_ptr<policy::BrowserPolicyConnector>(
+  return std::unique_ptr<policy::BrowserPolicyConnector>(
       new policy::ChromeBrowserPolicyConnector());
 }

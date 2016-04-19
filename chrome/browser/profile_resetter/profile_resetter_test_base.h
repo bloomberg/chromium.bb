@@ -46,7 +46,7 @@ class ProfileResetterTestBase {
                     const std::string& prefs);
  protected:
   testing::StrictMock<ProfileResetterMockObject> mock_object_;
-  scoped_ptr<ProfileResetter> resetter_;
+  std::unique_ptr<ProfileResetter> resetter_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfileResetterTestBase);

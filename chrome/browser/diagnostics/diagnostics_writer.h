@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_WRITER_H_
 #define CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_WRITER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 
 namespace diagnostics {
@@ -54,7 +55,7 @@ class DiagnosticsWriter : public DiagnosticsModel::Observer {
                    int outcome_code,
                    const std::string& extra);
 
-  scoped_ptr<SimpleConsole> console_;
+  std::unique_ptr<SimpleConsole> console_;
 
   // Keeps track of how many tests reported failure.
   int failures_;

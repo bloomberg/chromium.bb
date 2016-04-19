@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -184,17 +184,18 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
 
   // An observer that handles spelling suggestions, "Add to dictionary", and
   // "Ask Google for suggestions" items.
-  scoped_ptr<SpellingMenuObserver> spelling_suggestions_menu_observer_;
+  std::unique_ptr<SpellingMenuObserver> spelling_suggestions_menu_observer_;
 
 #if !defined(OS_MACOSX)
   // An observer that handles the submenu for showing spelling options. This
   // submenu lets users select the spelling language, for example.
-  scoped_ptr<SpellingOptionsSubMenuObserver> spelling_options_submenu_observer_;
+  std::unique_ptr<SpellingOptionsSubMenuObserver>
+      spelling_options_submenu_observer_;
 #endif
 
 #if defined(ENABLE_PRINT_PREVIEW)
   // An observer that disables menu items when print preview is active.
-  scoped_ptr<PrintPreviewContextMenuObserver> print_preview_menu_observer_;
+  std::unique_ptr<PrintPreviewContextMenuObserver> print_preview_menu_observer_;
 #endif
 
   // In the case of a MimeHandlerView this will point to the WebContents that

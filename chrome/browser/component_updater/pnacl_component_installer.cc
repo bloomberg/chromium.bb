@@ -128,7 +128,7 @@ bool GetLatestPnaclDirectory(const scoped_refptr<PnaclComponentInstaller>& pci,
 base::DictionaryValue* ReadJSONManifest(const base::FilePath& manifest_path) {
   JSONFileValueDeserializer deserializer(manifest_path);
   std::string error;
-  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, &error);
+  std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, &error);
   if (!root.get())
     return NULL;
   if (!root->IsType(base::Value::TYPE_DICTIONARY))
@@ -227,7 +227,7 @@ base::FilePath PnaclComponentInstaller::GetPnaclBaseDirectory() {
 
 bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
                                       const base::FilePath& unpack_path) {
-  scoped_ptr<base::DictionaryValue> pnacl_manifest(
+  std::unique_ptr<base::DictionaryValue> pnacl_manifest(
       ReadPnaclManifest(unpack_path));
   if (pnacl_manifest == NULL) {
     LOG(WARNING) << "Failed to read pnacl manifest.";
@@ -329,8 +329,10 @@ void StartPnaclUpdateRegistration(
   std::string current_fingerprint;
   std::vector<base::FilePath> older_dirs;
   if (GetLatestPnaclDirectory(pci, &path, &current_version, &older_dirs)) {
-    scoped_ptr<base::DictionaryValue> manifest(ReadComponentManifest(path));
-    scoped_ptr<base::DictionaryValue> pnacl_manifest(ReadPnaclManifest(path));
+    std::unique_ptr<base::DictionaryValue> manifest(
+        ReadComponentManifest(path));
+    std::unique_ptr<base::DictionaryValue> pnacl_manifest(
+        ReadPnaclManifest(path));
     Version manifest_version;
     // Check that the component manifest and PNaCl manifest files
     // are legit, and that the indicated version matches the one

@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -390,7 +391,7 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
   }
 }
 
-scoped_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
+std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
     const base::FilePath& profile_path) {
   std::string device_id;
 #if defined(OS_WIN) && defined(ENABLE_RLZ)
@@ -407,13 +408,9 @@ scoped_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
   seed = ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_PREF_HASH_SEED_BIN).as_string();
 #endif
-  return make_scoped_ptr(new ProfilePrefStoreManager(
-      profile_path,
-      GetTrackingConfiguration(),
-      kTrackedPrefsReportingIDsCount,
-      seed,
-      device_id,
-      g_browser_process->local_state()));
+  return base::WrapUnique(new ProfilePrefStoreManager(
+      profile_path, GetTrackingConfiguration(), kTrackedPrefsReportingIDsCount,
+      seed, device_id, g_browser_process->local_state()));
 }
 
 void PrepareFactory(
@@ -467,25 +464,23 @@ const char kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE[] =
 
 }  // namespace internals
 
-scoped_ptr<PrefService> CreateLocalState(
+std::unique_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
     const scoped_refptr<PrefRegistry>& pref_registry,
     bool async) {
   syncable_prefs::PrefServiceSyncableFactory factory;
-  PrepareFactory(
-      &factory,
-      policy_service,
-      NULL,  // supervised_user_settings
-      new JsonPrefStore(
-          pref_filename, pref_io_task_runner, scoped_ptr<PrefFilter>()),
-      NULL,  // extension_prefs
-      async);
+  PrepareFactory(&factory, policy_service,
+                 NULL,  // supervised_user_settings
+                 new JsonPrefStore(pref_filename, pref_io_task_runner,
+                                   std::unique_ptr<PrefFilter>()),
+                 NULL,  // extension_prefs
+                 async);
   return factory.Create(pref_registry.get());
 }
 
-scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateProfilePrefs(
+std::unique_ptr<syncable_prefs::PrefServiceSyncable> CreateProfilePrefs(
     const base::FilePath& profile_path,
     base::SequencedTaskRunner* pref_io_task_runner,
     TrackedPreferenceValidationDelegate* validation_delegate,
@@ -519,7 +514,7 @@ scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateProfilePrefs(
                  user_pref_store,
                  extension_prefs,
                  async);
-  scoped_ptr<syncable_prefs::PrefServiceSyncable> pref_service =
+  std::unique_ptr<syncable_prefs::PrefServiceSyncable> pref_service =
       factory.CreateSyncable(pref_registry.get());
 
   ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service.get());

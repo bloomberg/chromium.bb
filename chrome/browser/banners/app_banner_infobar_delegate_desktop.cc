@@ -49,8 +49,9 @@ infobars::InfoBar* AppBannerInfoBarDelegateDesktop::Create(
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new AppBannerInfoBarDelegateDesktop(
-          fetcher, web_manifest, bookmark_app_helper, event_request_id))));
+      std::unique_ptr<ConfirmInfoBarDelegate>(
+          new AppBannerInfoBarDelegateDesktop(
+              fetcher, web_manifest, bookmark_app_helper, event_request_id))));
 }
 
 infobars::InfoBarDelegate::Type

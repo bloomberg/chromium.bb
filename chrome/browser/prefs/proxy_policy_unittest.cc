@@ -100,7 +100,7 @@ class ProxyPolicyTest : public testing::Test {
 
   void TearDown() override { provider_.Shutdown(); }
 
-  scoped_ptr<PrefService> CreatePrefService(bool with_managed_policies) {
+  std::unique_ptr<PrefService> CreatePrefService(bool with_managed_policies) {
     syncable_prefs::PrefServiceMockFactory factory;
     factory.set_command_line_prefs(new CommandLinePrefStore(&command_line_));
     if (with_managed_policies) {
@@ -110,7 +110,7 @@ class ProxyPolicyTest : public testing::Test {
 
     scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
         new user_prefs::PrefRegistrySyncable);
-    scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs =
+    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs =
         factory.CreateSyncable(registry.get());
     chrome::RegisterUserProfilePrefs(registry.get());
     return std::move(prefs);
@@ -119,7 +119,7 @@ class ProxyPolicyTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   base::CommandLine command_line_;
   MockConfigurationPolicyProvider provider_;
-  scoped_ptr<PolicyServiceImpl> policy_service_;
+  std::unique_ptr<PolicyServiceImpl> policy_service_;
 };
 
 TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {
@@ -146,7 +146,7 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
-  scoped_ptr<PrefService> prefs(CreatePrefService(false));
+  std::unique_ptr<PrefService> prefs(CreatePrefService(false));
   ProxyConfigDictionary dict(prefs->GetDictionary(proxy_config::prefs::kProxy));
   assertProxyMode(dict, ProxyPrefs::MODE_FIXED_SERVERS);
   assertProxyServer(dict, "789");
@@ -177,7 +177,7 @@ TEST_F(ProxyPolicyTest, OverridesUnrelatedCommandLineOptions) {
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
-  scoped_ptr<PrefService> prefs = CreatePrefService(false);
+  std::unique_ptr<PrefService> prefs = CreatePrefService(false);
   ProxyConfigDictionary dict(prefs->GetDictionary(proxy_config::prefs::kProxy));
   assertProxyMode(dict, ProxyPrefs::MODE_FIXED_SERVERS);
   assertProxyServer(dict, "789");
@@ -205,7 +205,7 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineNoProxy) {
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
-  scoped_ptr<PrefService> prefs = CreatePrefService(false);
+  std::unique_ptr<PrefService> prefs = CreatePrefService(false);
   ProxyConfigDictionary dict(prefs->GetDictionary(proxy_config::prefs::kProxy));
   assertProxyModeWithoutParams(dict, ProxyPrefs::MODE_DIRECT);
 
@@ -229,7 +229,7 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineAutoDetect) {
 
   // First verify that the auto-detect is set if there is no managed
   // PrefStore.
-  scoped_ptr<PrefService> prefs = CreatePrefService(false);
+  std::unique_ptr<PrefService> prefs = CreatePrefService(false);
   ProxyConfigDictionary dict(prefs->GetDictionary(proxy_config::prefs::kProxy));
   assertProxyModeWithoutParams(dict, ProxyPrefs::MODE_AUTO_DETECT);
 

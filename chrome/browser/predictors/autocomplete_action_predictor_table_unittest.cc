@@ -56,7 +56,7 @@ class AutocompleteActionPredictorTableTest : public testing::Test {
  private:
   base::MessageLoop loop_;
   TestingProfile profile_;
-  scoped_ptr<PredictorDatabase> db_;
+  std::unique_ptr<PredictorDatabase> db_;
   content::TestBrowserThread db_thread_;
 };
 

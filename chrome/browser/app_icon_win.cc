@@ -58,7 +58,7 @@ gfx::Size GetSmallAppIconSize() {
                    GetSystemMetrics(SM_CYSMICON));
 }
 
-scoped_ptr<gfx::ImageFamily> GetAppIconImageFamily() {
+std::unique_ptr<gfx::ImageFamily> GetAppIconImageFamily() {
   const int icon_id = GetAppIconResourceId();
   // Get the icon from chrome.dll (not chrome.exe, which has different resource
   // IDs). If chrome.dll is not loaded, we are probably in a unit test, so fall

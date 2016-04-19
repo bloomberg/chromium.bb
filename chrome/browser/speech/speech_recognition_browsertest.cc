@@ -45,7 +45,7 @@ class ChromeSpeechRecognitionTest : public InProcessBrowserTest {
   }
 
  protected:
-  scoped_ptr<content::FakeSpeechRecognitionManager>
+  std::unique_ptr<content::FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;
 
  private:
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSpeechRecognitionTest, BasicTearDown) {
       embedded_test_server()->GetURL("/speech/web_speech_test.html");
   GURL https_url(https_server.GetURL("/speech/web_speech_test.html"));
 
-  scoped_ptr<ChromeSpeechRecognitionManagerDelegate> delegate(
+  std::unique_ptr<ChromeSpeechRecognitionManagerDelegate> delegate(
       new ChromeSpeechRecognitionManagerDelegate());
   static_cast<content::FakeSpeechRecognitionManager*>(
       fake_speech_recognition_manager_.get())->SetDelegate(delegate.get());

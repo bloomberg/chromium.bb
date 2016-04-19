@@ -4,6 +4,7 @@
 
 #include "chrome/browser/engagement/site_engagement_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
@@ -69,13 +70,13 @@ class SiteEngagementHelperTest : public ChromeRenderViewHostTestHarness {
 
   // Set a pause timer on the input tracker for test purposes.
   void SetInputTrackerPauseTimer(SiteEngagementHelper* helper,
-                                 scoped_ptr<base::Timer> timer) {
+                                 std::unique_ptr<base::Timer> timer) {
     helper->input_tracker_.SetPauseTimerForTesting(std::move(timer));
   }
 
   // Set a pause timer on the input tracker for test purposes.
   void SetMediaTrackerPauseTimer(SiteEngagementHelper* helper,
-                                 scoped_ptr<base::Timer> timer) {
+                                 std::unique_ptr<base::Timer> timer) {
     helper->media_tracker_.SetPauseTimerForTesting(std::move(timer));
   }
 
@@ -213,7 +214,7 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
 
   base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
   SiteEngagementHelper* helper = GetHelper(contents);
-  SetMediaTrackerPauseTimer(helper, make_scoped_ptr(media_tracker_timer));
+  SetMediaTrackerPauseTimer(helper, base::WrapUnique(media_tracker_timer));
   SiteEngagementService* service =
       SiteEngagementServiceFactory::GetForProfile(profile());
   DCHECK(service);
@@ -398,8 +399,8 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
   base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
   base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
   SiteEngagementHelper* helper = GetHelper(contents);
-  SetInputTrackerPauseTimer(helper, make_scoped_ptr(input_tracker_timer));
-  SetMediaTrackerPauseTimer(helper, make_scoped_ptr(media_tracker_timer));
+  SetInputTrackerPauseTimer(helper, base::WrapUnique(input_tracker_timer));
+  SetMediaTrackerPauseTimer(helper, base::WrapUnique(media_tracker_timer));
 
   SiteEngagementService* service =
       SiteEngagementServiceFactory::GetForProfile(profile());
@@ -506,8 +507,8 @@ TEST_F(SiteEngagementHelperTest, ShowAndHide) {
   base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
   base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
   SiteEngagementHelper* helper = GetHelper(contents);
-  SetInputTrackerPauseTimer(helper, make_scoped_ptr(input_tracker_timer));
-  SetMediaTrackerPauseTimer(helper, make_scoped_ptr(media_tracker_timer));
+  SetInputTrackerPauseTimer(helper, base::WrapUnique(input_tracker_timer));
+  SetMediaTrackerPauseTimer(helper, base::WrapUnique(media_tracker_timer));
 
   Navigate(url1);
   input_tracker_timer->Fire();
@@ -557,7 +558,7 @@ TEST_F(SiteEngagementHelperTest, SingleTabNavigation) {
 
   base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
   SiteEngagementHelper* helper = GetHelper(contents);
-  SetInputTrackerPauseTimer(helper, make_scoped_ptr(input_tracker_timer));
+  SetInputTrackerPauseTimer(helper, base::WrapUnique(input_tracker_timer));
 
   // Navigation should start the initial delay timer.
   Navigate(url1);

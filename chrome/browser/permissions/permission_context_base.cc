@@ -174,7 +174,7 @@ void PermissionContextBase::DecidePermission(
   // prevent crashes. See crbug.com/457091.
   if (!bubble_manager)
     return;
-  scoped_ptr<PermissionBubbleRequest> request_ptr(
+  std::unique_ptr<PermissionBubbleRequest> request_ptr(
       new PermissionBubbleRequestImpl(
           requesting_origin, permission_type_,
           base::Bind(&PermissionContextBase::PermissionDecided,

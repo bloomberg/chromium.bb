@@ -181,7 +181,7 @@ class CommandLinePrefStoreProxyTest
 
  private:
   base::CommandLine command_line_;
-  scoped_ptr<PrefService> pref_service_;
+  std::unique_ptr<PrefService> pref_service_;
   net::ProxyConfig proxy_config_;
 };
 

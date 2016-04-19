@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -89,8 +90,8 @@ bool IsValidProfile(Profile* profile) {
 struct FileSelectHelper::ActiveDirectoryEnumeration {
   ActiveDirectoryEnumeration() : rvh_(NULL) {}
 
-  scoped_ptr<DirectoryListerDispatchDelegate> delegate_;
-  scoped_ptr<net::DirectoryLister> lister_;
+  std::unique_ptr<DirectoryListerDispatchDelegate> delegate_;
+  std::unique_ptr<net::DirectoryLister> lister_;
   RenderViewHost* rvh_;
   std::vector<base::FilePath> results_;
 };
@@ -199,7 +200,8 @@ void FileSelectHelper::FileSelectionCanceled(void* params) {
 void FileSelectHelper::StartNewEnumeration(const base::FilePath& path,
                                            int request_id,
                                            RenderViewHost* render_view_host) {
-  scoped_ptr<ActiveDirectoryEnumeration> entry(new ActiveDirectoryEnumeration);
+  std::unique_ptr<ActiveDirectoryEnumeration> entry(
+      new ActiveDirectoryEnumeration);
   entry->rvh_ = render_view_host;
   entry->delegate_.reset(new DirectoryListerDispatchDelegate(this, request_id));
   entry->lister_.reset(new net::DirectoryLister(
@@ -229,7 +231,8 @@ void FileSelectHelper::OnListFile(
 
 void FileSelectHelper::OnListDone(int id, int error) {
   // This entry needs to be cleaned up when this function is done.
-  scoped_ptr<ActiveDirectoryEnumeration> entry(directory_enumerations_[id]);
+  std::unique_ptr<ActiveDirectoryEnumeration> entry(
+      directory_enumerations_[id]);
   directory_enumerations_.erase(id);
   if (!entry->rvh_)
     return;
@@ -316,16 +319,16 @@ void FileSelectHelper::CleanUpOnRenderViewHostChange() {
   }
 }
 
-scoped_ptr<ui::SelectFileDialog::FileTypeInfo>
+std::unique_ptr<ui::SelectFileDialog::FileTypeInfo>
 FileSelectHelper::GetFileTypesFromAcceptType(
     const std::vector<base::string16>& accept_types) {
-  scoped_ptr<ui::SelectFileDialog::FileTypeInfo> base_file_type(
+  std::unique_ptr<ui::SelectFileDialog::FileTypeInfo> base_file_type(
       new ui::SelectFileDialog::FileTypeInfo());
   if (accept_types.empty())
     return base_file_type;
 
   // Create FileTypeInfo and pre-allocate for the first extension list.
-  scoped_ptr<ui::SelectFileDialog::FileTypeInfo> file_type(
+  std::unique_ptr<ui::SelectFileDialog::FileTypeInfo> file_type(
       new ui::SelectFileDialog::FileTypeInfo(*base_file_type));
   file_type->include_all_files = true;
   file_type->extensions.resize(1);
@@ -393,7 +396,7 @@ void FileSelectHelper::RunFileChooser(content::WebContents* tab,
       new FileSelectHelper(profile));
   file_select_helper->RunFileChooser(
       tab->GetRenderViewHost(), tab,
-      make_scoped_ptr(new content::FileChooserParams(params)));
+      base::WrapUnique(new content::FileChooserParams(params)));
 }
 
 // static
@@ -408,9 +411,10 @@ void FileSelectHelper::EnumerateDirectory(content::WebContents* tab,
       request_id, tab->GetRenderViewHost(), path);
 }
 
-void FileSelectHelper::RunFileChooser(RenderViewHost* render_view_host,
-                                      content::WebContents* web_contents,
-                                      scoped_ptr<FileChooserParams> params) {
+void FileSelectHelper::RunFileChooser(
+    RenderViewHost* render_view_host,
+    content::WebContents* web_contents,
+    std::unique_ptr<FileChooserParams> params) {
   DCHECK(!render_view_host_);
   DCHECK(!web_contents_);
   DCHECK(params->default_file_name.empty() ||
@@ -442,7 +446,7 @@ void FileSelectHelper::RunFileChooser(RenderViewHost* render_view_host,
 }
 
 void FileSelectHelper::GetFileTypesOnFileThread(
-    scoped_ptr<FileChooserParams> params) {
+    std::unique_ptr<FileChooserParams> params) {
   select_file_types_ = GetFileTypesFromAcceptType(params->accept_types);
   select_file_types_->allowed_paths =
       params->need_local_path ? ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH
@@ -455,7 +459,7 @@ void FileSelectHelper::GetFileTypesOnFileThread(
 }
 
 void FileSelectHelper::GetSanitizedFilenameOnUIThread(
-    scoped_ptr<FileChooserParams> params) {
+    std::unique_ptr<FileChooserParams> params) {
   base::FilePath default_file_path = profile_->last_selected_directory().Append(
       GetSanitizedFileName(params->default_file_name));
 
@@ -487,7 +491,7 @@ void FileSelectHelper::GetSanitizedFilenameOnUIThread(
 #if defined(FULL_SAFE_BROWSING)
 void FileSelectHelper::ApplyUnverifiedDownloadPolicy(
     const base::FilePath& default_path,
-    scoped_ptr<FileChooserParams> params,
+    std::unique_ptr<FileChooserParams> params,
     safe_browsing::UnverifiedDownloadPolicy policy) {
   DCHECK(params);
   if (policy == safe_browsing::UnverifiedDownloadPolicy::DISALLOWED) {
@@ -501,7 +505,7 @@ void FileSelectHelper::ApplyUnverifiedDownloadPolicy(
 
 void FileSelectHelper::RunFileChooserOnUIThread(
     const base::FilePath& default_file_path,
-    scoped_ptr<FileChooserParams> params) {
+    std::unique_ptr<FileChooserParams> params) {
   DCHECK(params);
   if (!render_view_host_ || !web_contents_ || !IsValidProfile(profile_) ||
       !render_view_host_->GetWidget()->GetView()) {

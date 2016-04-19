@@ -884,7 +884,7 @@ gfx::ImageSkia GetStatusTrayIcon() {
   // the ImageFamily abstraction. Note: We could just use the LoadImage function
   // from the Windows API, but that does a *terrible* job scaling images.
   // Therefore, we fetch the images and do our own high-quality scaling.
-  scoped_ptr<gfx::ImageFamily> family = GetAppIconImageFamily();
+  std::unique_ptr<gfx::ImageFamily> family = GetAppIconImageFamily();
   DCHECK(family);
   if (!family)
     return gfx::ImageSkia();
@@ -940,7 +940,7 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
   command_id_handler_vector_.clear();
   submenus.clear();
 
-  scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(this));
+  std::unique_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(this));
   menu->AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
   menu->AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
   menu->AddSeparator(ui::NORMAL_SEPARATOR);

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/json/json_string_value_serializer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -101,11 +101,11 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
     prefs_ = PrefServiceSyncableFromProfile(browser()->profile());
     syncer_ = prefs_->GetSyncableService(syncer::PREFERENCES);
     syncer_->MergeDataAndStartSyncing(
-        syncer::PREFERENCES,
-        syncer::SyncDataList(),
-        scoped_ptr<syncer::SyncChangeProcessor>(
+        syncer::PREFERENCES, syncer::SyncDataList(),
+        std::unique_ptr<syncer::SyncChangeProcessor>(
             new syncer::FakeSyncChangeProcessor),
-        scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock));
+        std::unique_ptr<syncer::SyncErrorFactory>(
+            new syncer::SyncErrorFactoryMock));
     registrar_.reset(new syncable_prefs::SyncedPrefChangeRegistrar(prefs_));
   }
 
@@ -115,7 +115,7 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
   syncer::SyncableService* syncer_;
   int next_sync_data_id_;
 
-  scoped_ptr<syncable_prefs::SyncedPrefChangeRegistrar> registrar_;
+  std::unique_ptr<syncable_prefs::SyncedPrefChangeRegistrar> registrar_;
   policy::MockConfigurationPolicyProvider policy_provider_;
 };
 

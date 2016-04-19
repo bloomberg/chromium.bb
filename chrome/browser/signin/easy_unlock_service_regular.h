@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_REGULAR_H_
 #define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_REGULAR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
@@ -144,7 +144,7 @@ class EasyUnlockServiceRegular
   // Initializes the managers that communicate with CryptAuth.
   void InitializeCryptAuth();
 
-  scoped_ptr<chromeos::ShortLivedUserContext> short_lived_user_context_;
+  std::unique_ptr<chromeos::ShortLivedUserContext> short_lived_user_context_;
 #endif
 
   // Updates local state with the preference from the user's profile, so they
@@ -158,7 +158,7 @@ class EasyUnlockServiceRegular
   PrefChangeRegistrar registrar_;
 
   TurnOffFlowStatus turn_off_flow_status_;
-  scoped_ptr<proximity_auth::CryptAuthClient> cryptauth_client_;
+  std::unique_ptr<proximity_auth::CryptAuthClient> cryptauth_client_;
 
   AutoPairingResultCallback auto_pairing_callback_;
 
@@ -175,15 +175,16 @@ class EasyUnlockServiceRegular
 
   // Managers responsible for handling syncing and communications with
   // CryptAuth.
-  scoped_ptr<proximity_auth::CryptAuthGCMManager> gcm_manager_;
-  scoped_ptr<proximity_auth::CryptAuthEnrollmentManager> enrollment_manager_;
-  scoped_ptr<proximity_auth::CryptAuthDeviceManager> device_manager_;
+  std::unique_ptr<proximity_auth::CryptAuthGCMManager> gcm_manager_;
+  std::unique_ptr<proximity_auth::CryptAuthEnrollmentManager>
+      enrollment_manager_;
+  std::unique_ptr<proximity_auth::CryptAuthDeviceManager> device_manager_;
 
   // Manager responsible for handling the prefs used by proximity_auth classes.
-  scoped_ptr<proximity_auth::ProximityAuthPrefManager> pref_manager_;
+  std::unique_ptr<proximity_auth::ProximityAuthPrefManager> pref_manager_;
 
   // Loads the RemoteDevice instances from CryptAuth and local data.
-  scoped_ptr<proximity_auth::RemoteDeviceLoader> remote_device_loader_;
+  std::unique_ptr<proximity_auth::RemoteDeviceLoader> remote_device_loader_;
 
   // If a new RemoteDevice was synced while the screen is locked, we defer
   // loading the RemoteDevice until the screen is unlocked. For security,

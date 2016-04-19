@@ -4,12 +4,12 @@
 
 #include "chrome/browser/memory_details.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_iterator.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
@@ -59,7 +59,7 @@ void GetProcessDataMemoryInformation(
     else
       pmi.process_type = content::PROCESS_TYPE_UNKNOWN;
 
-    scoped_ptr<base::ProcessMetrics> metrics(
+    std::unique_ptr<base::ProcessMetrics> metrics(
         base::ProcessMetrics::CreateProcessMetrics(*i));
     metrics->GetWorkingSetKBytes(&pmi.working_set);
 

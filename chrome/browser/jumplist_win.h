@@ -165,8 +165,8 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   Profile* profile_;
 
   // Lives on the UI thread.
-  scoped_ptr<content::NotificationRegistrar> registrar_;
-  scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  std::unique_ptr<content::NotificationRegistrar> registrar_;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   // App id to associate with the jump list.
   std::wstring app_id_;

@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_SERVICES_GCM_INSTANCE_ID_INSTANCE_ID_PROFILE_SERVICE_H_
 #define CHROME_BROWSER_SERVICES_GCM_INSTANCE_ID_INSTANCE_ID_PROFILE_SERVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -27,7 +28,7 @@ class InstanceIDProfileService : public KeyedService {
   InstanceIDDriver* driver() const { return driver_.get(); }
 
  private:
-  scoped_ptr<InstanceIDDriver> driver_;
+  std::unique_ptr<InstanceIDDriver> driver_;
 
   DISALLOW_COPY_AND_ASSIGN(InstanceIDProfileService);
 };

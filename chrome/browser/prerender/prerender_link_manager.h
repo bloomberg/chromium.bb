@@ -169,7 +169,7 @@ class PrerenderLinkManager : public KeyedService,
 
   // Helper object to manage prerenders which are launched by other prerenders
   // and must be deferred until the launcher is swapped in.
-  scoped_ptr<PendingPrerenderManager> pending_prerender_manager_;
+  std::unique_ptr<PendingPrerenderManager> pending_prerender_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderLinkManager);
 };

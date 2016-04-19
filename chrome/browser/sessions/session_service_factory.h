@@ -48,7 +48,7 @@ class SessionServiceFactory : public BrowserContextKeyedServiceFactory {
   // For test use: force setting of the session service for a given profile.
   // This will delete a previous session service for this profile if it exists.
   static void SetForTestProfile(Profile* profile,
-                                scoped_ptr<SessionService> service) {
+                                std::unique_ptr<SessionService> service) {
     GetInstance()->BrowserContextShutdown(profile);
     GetInstance()->BrowserContextDestroyed(profile);
     GetInstance()->Associate(profile, std::move(service));

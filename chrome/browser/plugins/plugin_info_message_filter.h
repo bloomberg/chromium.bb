@@ -52,14 +52,15 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
         const content::WebPluginInfo& plugin,
         const PluginMetadata* plugin_metadata,
         ChromeViewHostMsg_GetPluginInfo_Status* status) const;
-    bool FindEnabledPlugin(int render_frame_id,
-                           const GURL& url,
-                           const GURL& top_origin_url,
-                           const std::string& mime_type,
-                           ChromeViewHostMsg_GetPluginInfo_Status* status,
-                           content::WebPluginInfo* plugin,
-                           std::string* actual_mime_type,
-                           scoped_ptr<PluginMetadata>* plugin_metadata) const;
+    bool FindEnabledPlugin(
+        int render_frame_id,
+        const GURL& url,
+        const GURL& top_origin_url,
+        const std::string& mime_type,
+        ChromeViewHostMsg_GetPluginInfo_Status* status,
+        content::WebPluginInfo* plugin,
+        std::string* actual_mime_type,
+        std::unique_ptr<PluginMetadata>* plugin_metadata) const;
     void GetPluginContentSetting(const content::WebPluginInfo& plugin,
                                  const GURL& policy_url,
                                  const GURL& plugin_url,

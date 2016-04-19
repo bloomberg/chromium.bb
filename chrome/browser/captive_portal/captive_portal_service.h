@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_SERVICE_H_
 #define CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_SERVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -180,7 +181,7 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
   // captive_portal::CaptivePortalResult, BackoffEntry::Policy is updated and
   // |backoff_entry_| is recreated.  Each check that returns the same result
   // is considered a "failure", to trigger throttling.
-  scoped_ptr<net::BackoffEntry> backoff_entry_;
+  std::unique_ptr<net::BackoffEntry> backoff_entry_;
 
   // URL that returns a 204 response code when connected to the Internet.
   GURL test_url_;

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -106,14 +107,15 @@ InterstitialPageDelegate::TypeID SSLBlockingPage::kTypeForTesting =
 
 // Note that we always create a navigation entry with SSL errors.
 // No error happening loading a sub-resource triggers an interstitial so far.
-SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
-                                 int cert_error,
-                                 const net::SSLInfo& ssl_info,
-                                 const GURL& request_url,
-                                 int options_mask,
-                                 const base::Time& time_triggered,
-                                 scoped_ptr<SSLCertReporter> ssl_cert_reporter,
-                                 const base::Callback<void(bool)>& callback)
+SSLBlockingPage::SSLBlockingPage(
+    content::WebContents* web_contents,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
+    int options_mask,
+    const base::Time& time_triggered,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+    const base::Callback<void(bool)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
       callback_(callback),
       ssl_info_(ssl_info),
@@ -145,7 +147,7 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       new ChromeMetricsHelper(web_contents, request_url, reporting_info,
                               GetSamplingEventName(overridable_, cert_error));
   chrome_metrics_helper->StartRecordingCaptivePortalMetrics(overridable_);
-  controller_->set_metrics_helper(make_scoped_ptr(chrome_metrics_helper));
+  controller_->set_metrics_helper(base::WrapUnique(chrome_metrics_helper));
 
   cert_report_helper_.reset(new CertReportHelper(
       std::move(ssl_cert_reporter), web_contents, request_url, ssl_info,
@@ -210,7 +212,7 @@ void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
 }
 
 void SSLBlockingPage::SetSSLCertReporterForTesting(
-    scoped_ptr<SSLCertReporter> ssl_cert_reporter) {
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
   cert_report_helper_->SetSSLCertReporterForTesting(
       std::move(ssl_cert_reporter));
 }

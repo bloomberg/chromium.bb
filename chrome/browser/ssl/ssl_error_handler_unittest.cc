@@ -159,7 +159,7 @@ class SSLErrorHandlerTest : public ChromeRenderViewHostTestHarness {
 
  private:
   net::SSLInfo ssl_info_;
-  scoped_ptr<SSLErrorHandlerForTest> error_handler_;
+  std::unique_ptr<SSLErrorHandlerForTest> error_handler_;
   base::FieldTrialList field_trial_list_;
 };
 

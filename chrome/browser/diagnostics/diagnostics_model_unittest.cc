@@ -4,10 +4,11 @@
 
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace diagnostics {
@@ -26,7 +27,7 @@ class DiagnosticsModelTest : public testing::Test {
 
   void TearDown() override { model_.reset(); }
 
-  scoped_ptr<DiagnosticsModel> model_;
+  std::unique_ptr<DiagnosticsModel> model_;
   base::CommandLine cmdline_;
 
   DISALLOW_COPY_AND_ASSIGN(DiagnosticsModelTest);

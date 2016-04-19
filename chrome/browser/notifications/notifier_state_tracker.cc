@@ -107,7 +107,7 @@ void NotifierStateTracker::SetNotifierEnabled(
 
   bool add_new_item = false;
   const char* pref_name = NULL;
-  scoped_ptr<base::StringValue> id;
+  std::unique_ptr<base::StringValue> id;
   switch (notifier_id.type) {
     case NotifierId::APPLICATION:
       pref_name = prefs::kMessageCenterDisabledExtensionIds;
@@ -176,10 +176,10 @@ void NotifierStateTracker::FirePermissionLevelChangedEvent(
   extensions::api::notifications::PermissionLevel permission =
       enabled ? extensions::api::notifications::PERMISSION_LEVEL_GRANTED
               : extensions::api::notifications::PERMISSION_LEVEL_DENIED;
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(new base::StringValue(
       extensions::api::notifications::ToString(permission)));
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::NOTIFICATIONS_ON_PERMISSION_LEVEL_CHANGED,
       extensions::api::notifications::OnPermissionLevelChanged::kEventName,
       std::move(args)));

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/dom_distiller/profile_utils.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/dom_distiller/lazy_dom_distiller_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,7 +43,7 @@ void RegisterDomDistillerViewerSource(Profile* profile) {
     dom_distiller::LazyDomDistillerService* lazy_service =
         new dom_distiller::LazyDomDistillerService(
             profile, dom_distiller_service_factory);
-    scoped_ptr<dom_distiller::DistillerUIHandle> ui_handle;
+    std::unique_ptr<dom_distiller::DistillerUIHandle> ui_handle;
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
     ui_handle.reset(

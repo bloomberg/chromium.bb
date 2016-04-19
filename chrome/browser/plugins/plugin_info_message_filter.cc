@@ -5,10 +5,11 @@
 #include "chrome/browser/plugins/plugin_info_message_filter.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -252,7 +253,7 @@ void PluginInfoMessageFilter::PluginsLoaded(
     const std::vector<WebPluginInfo>& plugins) {
   ChromeViewHostMsg_GetPluginInfo_Output output;
   // This also fills in |actual_mime_type|.
-  scoped_ptr<PluginMetadata> plugin_metadata;
+  std::unique_ptr<PluginMetadata> plugin_metadata;
   if (context_.FindEnabledPlugin(params.render_frame_id, params.url,
                                  params.top_origin_url, params.mime_type,
                                  &output.status, &output.plugin,
@@ -416,7 +417,7 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
     ChromeViewHostMsg_GetPluginInfo_Status* status,
     WebPluginInfo* plugin,
     std::string* actual_mime_type,
-    scoped_ptr<PluginMetadata>* plugin_metadata) const {
+    std::unique_ptr<PluginMetadata>* plugin_metadata) const {
   *status = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
 
   bool allow_wildcard = true;
@@ -467,7 +468,7 @@ void PluginInfoMessageFilter::Context::GetPluginContentSetting(
     ContentSetting* setting,
     bool* uses_default_content_setting,
     bool* is_managed) const {
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   content_settings::SettingInfo info;
   bool uses_plugin_specific_setting = false;
   if (ShouldUseJavaScriptSettingForPlugin(plugin)) {
@@ -479,21 +480,15 @@ void PluginInfoMessageFilter::Context::GetPluginContentSetting(
         &info);
   } else {
     content_settings::SettingInfo specific_info;
-    scoped_ptr<base::Value> specific_setting =
+    std::unique_ptr<base::Value> specific_setting =
         host_content_settings_map_->GetWebsiteSetting(
-            policy_url,
-            plugin_url,
-            CONTENT_SETTINGS_TYPE_PLUGINS,
-            resource,
+            policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource,
             &specific_info);
     content_settings::SettingInfo general_info;
-    scoped_ptr<base::Value> general_setting =
+    std::unique_ptr<base::Value> general_setting =
         host_content_settings_map_->GetWebsiteSetting(
-            policy_url,
-            plugin_url,
-            CONTENT_SETTINGS_TYPE_PLUGINS,
-            std::string(),
-            &general_info);
+            policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS,
+            std::string(), &general_info);
 
     // If there is a plugin-specific setting, we use it, unless the general
     // setting was set by policy, in which case it takes precedence.

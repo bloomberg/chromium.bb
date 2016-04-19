@@ -456,7 +456,7 @@ bool WebrtcLoggingPrivateStartWebRtcEventLoggingFunction::RunAsync() {
     return false;
   }
 
-  scoped_ptr<StartWebRtcEventLogging::Params> params(
+  std::unique_ptr<StartWebRtcEventLogging::Params> params(
       StartWebRtcEventLogging::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -491,7 +491,7 @@ bool WebrtcLoggingPrivateStopWebRtcEventLoggingFunction::RunAsync() {
     return false;
   }
 
-  scoped_ptr<StopWebRtcEventLogging::Params> params(
+  std::unique_ptr<StopWebRtcEventLogging::Params> params(
       StopWebRtcEventLogging::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

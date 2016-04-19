@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
@@ -33,14 +34,14 @@ AutocompleteClassifierFactory* AutocompleteClassifierFactory::GetInstance() {
 }
 
 // static
-scoped_ptr<KeyedService> AutocompleteClassifierFactory::BuildInstanceFor(
+std::unique_ptr<KeyedService> AutocompleteClassifierFactory::BuildInstanceFor(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return make_scoped_ptr(new AutocompleteClassifier(
-      make_scoped_ptr(new AutocompleteController(
-          make_scoped_ptr(new ChromeAutocompleteProviderClient(profile)), NULL,
+  return base::WrapUnique(new AutocompleteClassifier(
+      base::WrapUnique(new AutocompleteController(
+          base::WrapUnique(new ChromeAutocompleteProviderClient(profile)), NULL,
           AutocompleteClassifier::kDefaultOmniboxProviders)),
-      scoped_ptr<AutocompleteSchemeClassifier>(
+      std::unique_ptr<AutocompleteSchemeClassifier>(
           new ChromeAutocompleteSchemeClassifier(profile))));
 }
 

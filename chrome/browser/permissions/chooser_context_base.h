@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_PERMISSIONS_CHOOSER_CONTEXT_BASE_H_
 #define CHROME_BROWSER_PERMISSIONS_CHOOSER_CONTEXT_BASE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -47,7 +47,7 @@ class ChooserContextBase : public KeyedService {
   //
   // This method may be extended by a subclass to return objects not stored in
   // |host_content_settings_map_|.
-  virtual std::vector<scoped_ptr<base::DictionaryValue>> GetGrantedObjects(
+  virtual std::vector<std::unique_ptr<base::DictionaryValue>> GetGrantedObjects(
       const GURL& requesting_origin,
       const GURL& embedding_origin);
 
@@ -56,13 +56,13 @@ class ChooserContextBase : public KeyedService {
   //
   // This method may be extended by a subclass to return objects not stored in
   // |host_content_settings_map_|.
-  virtual std::vector<scoped_ptr<Object>> GetAllGrantedObjects();
+  virtual std::vector<std::unique_ptr<Object>> GetAllGrantedObjects();
 
   // Grants |requesting_origin| access to |object| when embedded within
   // |embedding_origin| by writing it into |host_content_settings_map_|.
   void GrantObjectPermission(const GURL& requesting_origin,
                              const GURL& embedding_origin,
-                             scoped_ptr<base::DictionaryValue> object);
+                             std::unique_ptr<base::DictionaryValue> object);
 
   // Revokes |requesting_origin|'s permission to access |object| when embedded
   // within |embedding_origin|.
@@ -79,12 +79,12 @@ class ChooserContextBase : public KeyedService {
   virtual bool IsValidObject(const base::DictionaryValue& object) = 0;
 
  private:
-  scoped_ptr<base::DictionaryValue> GetWebsiteSetting(
+  std::unique_ptr<base::DictionaryValue> GetWebsiteSetting(
       const GURL& requesting_origin,
       const GURL& embedding_origin);
   void SetWebsiteSetting(const GURL& requesting_origin,
                          const GURL& embedding_origin,
-                         scoped_ptr<base::Value> value);
+                         std::unique_ptr<base::Value> value);
 
   HostContentSettingsMap* const host_content_settings_map_;
   const ContentSettingsType data_content_settings_type_;

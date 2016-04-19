@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_SIGNIN_CHROMEOS_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -147,7 +147,7 @@ class EasyUnlockServiceSignin
   base::TimeTicks user_pod_last_focused_timestamp_;
 
   // Handles wrapping the user's challenge with the TPM.
-  scoped_ptr<chromeos::EasyUnlockChallengeWrapper> challenge_wrapper_;
+  std::unique_ptr<chromeos::EasyUnlockChallengeWrapper> challenge_wrapper_;
 
   base::WeakPtrFactory<EasyUnlockServiceSignin> weak_ptr_factory_;
 

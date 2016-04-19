@@ -53,7 +53,7 @@ const int kEmptyFileSystemSize = 0;
 
 typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
     FileSystemInfoList;
-typedef scoped_ptr<FileSystemInfoList> ScopedFileSystemInfoList;
+typedef std::unique_ptr<FileSystemInfoList> ScopedFileSystemInfoList;
 
 // The FileSystem APIs are all asynchronous; this testing class wraps up the
 // boilerplate code necessary to deal with waiting for responses. In a nutshell,
@@ -187,7 +187,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 
   // Temporary storage to pass information back from callbacks.
   base::File::Error open_file_system_result_;

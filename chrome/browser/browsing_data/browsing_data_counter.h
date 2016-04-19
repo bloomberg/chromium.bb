@@ -54,7 +54,7 @@ class BrowsingDataCounter {
     DISALLOW_COPY_AND_ASSIGN(FinishedResult);
   };
 
-  typedef base::Callback<void(scoped_ptr<Result>)> Callback;
+  typedef base::Callback<void(std::unique_ptr<Result>)> Callback;
 
   BrowsingDataCounter();
   virtual ~BrowsingDataCounter();
@@ -81,7 +81,7 @@ class BrowsingDataCounter {
 
   // A convenience overload of the previous method that allows subclasses to
   // provide a custom |result|.
-  void ReportResult(scoped_ptr<Result> result);
+  void ReportResult(std::unique_ptr<Result> result);
 
   // Calculates the beginning of the counting period as |period_| before now.
   base::Time GetPeriodStart();

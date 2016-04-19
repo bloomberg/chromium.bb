@@ -32,7 +32,7 @@ const int kSecondsPerSample = 30;
 }
 
 ProcessPowerCollector::PerProcessData::PerProcessData(
-    scoped_ptr<base::ProcessMetrics> metrics,
+    std::unique_ptr<base::ProcessMetrics> metrics,
     const GURL& origin,
     Profile* profile)
     : metrics_(std::move(metrics)),
@@ -201,14 +201,13 @@ void ProcessPowerCollector::UpdateProcessInMap(
   if (metrics_map_.find(handle) == metrics_map_.end()) {
     metrics_map_[handle] = linked_ptr<PerProcessData>(new PerProcessData(
 #if defined(OS_MACOSX)
-        scoped_ptr<base::ProcessMetrics>(
+        std::unique_ptr<base::ProcessMetrics>(
             base::ProcessMetrics::CreateProcessMetrics(handle, NULL)),
 #else
-        scoped_ptr<base::ProcessMetrics>(
+        std::unique_ptr<base::ProcessMetrics>(
             base::ProcessMetrics::CreateProcessMetrics(handle)),
 #endif
-        origin,
-        Profile::FromBrowserContext(rph->GetBrowserContext())));
+        origin, Profile::FromBrowserContext(rph->GetBrowserContext())));
   }
 
   linked_ptr<PerProcessData>& process_data = metrics_map_[handle];

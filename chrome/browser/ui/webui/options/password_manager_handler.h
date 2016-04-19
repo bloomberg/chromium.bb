@@ -70,7 +70,7 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
  protected:
   // This constructor is used for testing only.
   explicit PasswordManagerHandler(
-      scoped_ptr<PasswordManagerPresenter> presenter);
+      std::unique_ptr<PasswordManagerPresenter> presenter);
 
  private:
   // Clears and then populates the list of passwords and password exceptions.
@@ -127,7 +127,7 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
   // User pref for storing accept languages.
   std::string languages_;
 
-  scoped_ptr<PasswordManagerPresenter> password_manager_presenter_;
+  std::unique_ptr<PasswordManagerPresenter> password_manager_presenter_;
 
   // File picker to import/export file path.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;

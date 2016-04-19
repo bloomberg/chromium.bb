@@ -58,7 +58,8 @@ void ServiceProcessControl::ConnectInternal() {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get()));
 }
 
-void ServiceProcessControl::SetChannel(scoped_ptr<IPC::ChannelProxy> channel) {
+void ServiceProcessControl::SetChannel(
+    std::unique_ptr<IPC::ChannelProxy> channel) {
   channel_ = std::move(channel);
 }
 
@@ -118,7 +119,8 @@ void ServiceProcessControl::Launch(const base::Closure& success_task,
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents", SERVICE_EVENT_LAUNCH,
                             SERVICE_EVENT_MAX);
 
-  scoped_ptr<base::CommandLine> cmd_line(CreateServiceProcessCommandLine());
+  std::unique_ptr<base::CommandLine> cmd_line(
+      CreateServiceProcessCommandLine());
   // And then start the process asynchronously.
   launcher_ = new Launcher(std::move(cmd_line));
   launcher_->Run(base::Bind(&ServiceProcessControl::OnProcessLaunched,
@@ -324,7 +326,7 @@ ServiceProcessControl* ServiceProcessControl::GetInstance() {
 }
 
 ServiceProcessControl::Launcher::Launcher(
-    scoped_ptr<base::CommandLine> cmd_line)
+    std::unique_ptr<base::CommandLine> cmd_line)
     : cmd_line_(std::move(cmd_line)), launched_(false), retry_count_(0) {}
 
 // Execute the command line to start the process asynchronously.

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -93,8 +93,8 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
 
   const base::FilePath server_root_;
   const std::string test_page_url_;
-  scoped_ptr<StubNotificationUIManager> ui_manager_;
-  scoped_ptr<net::EmbeddedTestServer> https_server_;
+  std::unique_ptr<StubNotificationUIManager> ui_manager_;
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
 // -----------------------------------------------------------------------------

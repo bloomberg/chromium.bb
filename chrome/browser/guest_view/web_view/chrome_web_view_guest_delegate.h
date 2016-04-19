@@ -44,7 +44,7 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate {
   void SetContextMenuPosition(const gfx::Point& position) override;
 
   // Returns the top level items (ignoring submenus) as Value.
-  static scoped_ptr<base::ListValue> MenuModelToValue(
+  static std::unique_ptr<base::ListValue> MenuModelToValue(
       const ui::SimpleMenuModel& menu_model);
 
   void InjectChromeVoxIfNeeded(content::RenderViewHost* render_view_host);
@@ -64,17 +64,17 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate {
 
   // Holds the RenderViewContextMenuBase that has been built but yet to be
   // shown. This is .reset() after ShowContextMenu().
-  scoped_ptr<RenderViewContextMenuBase> pending_menu_;
+  std::unique_ptr<RenderViewContextMenuBase> pending_menu_;
 
 #if defined(OS_CHROMEOS)
   // Subscription to receive notifications on changes to a11y settings.
-  scoped_ptr<chromeos::AccessibilityStatusSubscription>
+  std::unique_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_subscription_;
 #endif
 
   WebViewGuest* const web_view_guest_;
 
-  scoped_ptr<gfx::Point> context_menu_position_;
+  std::unique_ptr<gfx::Point> context_menu_position_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

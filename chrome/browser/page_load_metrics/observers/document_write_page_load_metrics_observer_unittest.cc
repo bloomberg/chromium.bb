@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
+
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
@@ -12,7 +14,7 @@ class DocumentWritePageLoadMetricsObserverTest
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        make_scoped_ptr(new DocumentWritePageLoadMetricsObserver()));
+        base::WrapUnique(new DocumentWritePageLoadMetricsObserver()));
   }
   void AssertNoHistogramsLogged() {
     histogram_tester().ExpectTotalCount(

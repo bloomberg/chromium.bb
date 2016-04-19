@@ -65,8 +65,8 @@ class SpellingMenuObserverTest : public InProcessBrowserTest {
   MockRenderViewContextMenu* menu() { return menu_.get(); }
   SpellingMenuObserver* observer() { return observer_.get(); }
  private:
-  scoped_ptr<SpellingMenuObserver> observer_;
-  scoped_ptr<MockRenderViewContextMenu> menu_;
+  std::unique_ptr<SpellingMenuObserver> observer_;
+  std::unique_ptr<MockRenderViewContextMenu> menu_;
   DISALLOW_COPY_AND_ASSIGN(SpellingMenuObserverTest);
 };
 

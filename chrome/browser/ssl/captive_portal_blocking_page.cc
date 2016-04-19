@@ -52,7 +52,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     content::WebContents* web_contents,
     const GURL& request_url,
     const GURL& login_url,
-    scoped_ptr<SSLCertReporter> ssl_cert_reporter,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
     const base::Callback<void(bool)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
@@ -92,7 +92,7 @@ std::string CaptivePortalBlockingPage::GetWiFiSSID() const {
   // Linux so |net::GetWifiSSID| is used instead.
   std::string ssid;
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  scoped_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
+  std::unique_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
   wifi_service->Initialize(nullptr);
   std::string error;
   wifi_service->GetConnectedNetworkSSID(&ssid, &error);

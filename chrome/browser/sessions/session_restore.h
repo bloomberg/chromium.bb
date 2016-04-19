@@ -46,7 +46,7 @@ class SessionRestore {
   // Used by objects calling RegisterOnSessionRestoredCallback() to de-register
   // themselves when they are destroyed.
   using CallbackSubscription =
-      scoped_ptr<base::CallbackList<void(int)>::Subscription>;
+      std::unique_ptr<base::CallbackList<void(int)>::Subscription>;
 
   // Restores the last session. |behavior| is a bitmask of Behaviors, see it
   // for details. If |browser| is non-null the tabs for the first window are

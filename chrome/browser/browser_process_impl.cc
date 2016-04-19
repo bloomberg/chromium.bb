@@ -5,6 +5,7 @@
 #include "chrome/browser/browser_process_impl.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <map>
 #include <utility>
@@ -18,6 +19,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -494,7 +496,7 @@ BrowserProcessImpl::GetMetricsServicesManager() {
   DCHECK(CalledOnValidThread());
   if (!metrics_services_manager_) {
     metrics_services_manager_.reset(
-        new metrics_services_manager::MetricsServicesManager(make_scoped_ptr(
+        new metrics_services_manager::MetricsServicesManager(base::WrapUnique(
             new ChromeMetricsServicesManagerClient(local_state()))));
   }
   return metrics_services_manager_.get();
@@ -726,9 +728,8 @@ WebRtcLogUploader* BrowserProcessImpl::webrtc_log_uploader() {
 network_time::NetworkTimeTracker* BrowserProcessImpl::network_time_tracker() {
   if (!network_time_tracker_) {
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
-        make_scoped_ptr(new base::DefaultClock()),
-        make_scoped_ptr(new base::DefaultTickClock()),
-        local_state()));
+        base::WrapUnique(new base::DefaultClock()),
+        base::WrapUnique(new base::DefaultTickClock()), local_state()));
   }
   return network_time_tracker_.get();
 }
@@ -819,7 +820,7 @@ BackgroundModeManager* BrowserProcessImpl::background_mode_manager() {
 }
 
 void BrowserProcessImpl::set_background_mode_manager_for_test(
-    scoped_ptr<BackgroundModeManager> manager) {
+    std::unique_ptr<BackgroundModeManager> manager) {
 #if BUILDFLAG(ENABLE_BACKGROUND)
   background_mode_manager_ = std::move(manager);
 #endif
@@ -936,7 +937,7 @@ void BrowserProcessImpl::CreateWatchdogThread() {
   DCHECK(!created_watchdog_thread_ && watchdog_thread_.get() == NULL);
   created_watchdog_thread_ = true;
 
-  scoped_ptr<WatchDogThread> thread(new WatchDogThread());
+  std::unique_ptr<WatchDogThread> thread(new WatchDogThread());
   base::Thread::Options options;
   options.timer_slack = base::TIMER_SLACK_MAXIMUM;
   if (!thread->StartWithOptions(options))
@@ -1052,7 +1053,7 @@ void BrowserProcessImpl::CreateIconManager() {
 
 void BrowserProcessImpl::CreateIntranetRedirectDetector() {
   DCHECK(intranet_redirect_detector_.get() == NULL);
-  scoped_ptr<IntranetRedirectDetector> intranet_redirect_detector(
+  std::unique_ptr<IntranetRedirectDetector> intranet_redirect_detector(
       new IntranetRedirectDetector);
   intranet_redirect_detector_.swap(intranet_redirect_detector);
 }
@@ -1129,11 +1130,8 @@ void BrowserProcessImpl::CreateGCMDriver() {
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
   gcm_driver_ = gcm::CreateGCMDriverDesktop(
-      make_scoped_ptr(new gcm::GCMClientFactory),
-      local_state(),
-      store_path,
-      system_request_context(),
-      chrome::GetChannel(),
+      base::WrapUnique(new gcm::GCMClientFactory), local_state(), store_path,
+      system_request_context(), chrome::GetChannel(),
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::UI),
       content::BrowserThread::GetMessageLoopProxyForThread(
@@ -1245,7 +1243,7 @@ const char* const kSwitchesToAddOnAutorestart[] = {
 
 void BrowserProcessImpl::RestartBackgroundInstance() {
   base::CommandLine* old_cl = base::CommandLine::ForCurrentProcess();
-  scoped_ptr<base::CommandLine> new_cl(
+  std::unique_ptr<base::CommandLine> new_cl(
       new base::CommandLine(old_cl->GetProgram()));
 
   std::map<std::string, base::CommandLine::StringType> switches =

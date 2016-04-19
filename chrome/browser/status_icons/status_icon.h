@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_STATUS_ICONS_STATUS_ICON_H_
 #define CHROME_BROWSER_STATUS_ICONS_STATUS_ICON_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -46,7 +47,7 @@ class StatusIcon {
 
   // Set the context menu for this icon. The icon takes ownership of the passed
   // context menu. Passing NULL results in no menu at all.
-  void SetContextMenu(scoped_ptr<StatusIconMenuModel> menu);
+  void SetContextMenu(std::unique_ptr<StatusIconMenuModel> menu);
 
   // Adds/Removes an observer for clicks on the status icon. If an observer is
   // registered, then left clicks on the status icon will result in the observer
@@ -81,7 +82,7 @@ class StatusIcon {
   base::ObserverList<StatusIconObserver> observers_;
 
   // Context menu, if any.
-  scoped_ptr<StatusIconMenuModel> context_menu_contents_;
+  std::unique_ptr<StatusIconMenuModel> context_menu_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusIcon);
 };

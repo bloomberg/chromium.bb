@@ -43,11 +43,11 @@ TEST_F(CommandLinePrefStoreSSLManagerTest, CommandLinePrefs) {
   factory.set_user_prefs(local_state_store);
   factory.set_command_line_prefs(new CommandLinePrefStore(&command_line));
   scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
-  scoped_ptr<PrefService> local_state(factory.Create(registry.get()));
+  std::unique_ptr<PrefService> local_state(factory.Create(registry.get()));
 
   SSLConfigServiceManager::RegisterPrefs(registry.get());
 
-  scoped_ptr<SSLConfigServiceManager> config_manager(
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(
           local_state.get(), base::ThreadTaskRunnerHandle::Get()));
   ASSERT_TRUE(config_manager.get());

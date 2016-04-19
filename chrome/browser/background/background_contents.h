@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -109,10 +109,10 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
   Delegate* delegate_;
 
   // Delegate for choosing an ExtensionHostQueue.
-  scoped_ptr<extensions::ExtensionHostDelegate> extension_host_delegate_;
+  std::unique_ptr<extensions::ExtensionHostDelegate> extension_host_delegate_;
 
   Profile* profile_;
-  scoped_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<content::WebContents> web_contents_;
   content::NotificationRegistrar registrar_;
   base::ObserverList<extensions::DeferredStartRenderHostObserver>
       deferred_start_render_host_observer_list_;

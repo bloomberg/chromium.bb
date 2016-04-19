@@ -869,7 +869,7 @@ void SessionService::ScheduleResetCommands() {
 }
 
 void SessionService::ScheduleCommand(
-    scoped_ptr<sessions::SessionCommand> command) {
+    std::unique_ptr<sessions::SessionCommand> command) {
   DCHECK(command);
   if (ReplacePendingCommand(base_session_service_.get(), &command))
     return;

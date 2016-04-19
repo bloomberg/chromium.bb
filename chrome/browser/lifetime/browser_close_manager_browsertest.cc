@@ -756,7 +756,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
   SetDownloadPathForProfile(browser()->profile());
 
   // Set up the fake delegate that forces the download to be malicious.
-  scoped_ptr<TestDownloadManagerDelegate> test_delegate(
+  std::unique_ptr<TestDownloadManagerDelegate> test_delegate(
       new TestDownloadManagerDelegate(browser()->profile()));
   DownloadServiceFactory::GetForBrowserContext(browser()->profile())
       ->SetDownloadManagerDelegateForTesting(std::move(test_delegate));
@@ -952,7 +952,7 @@ class BrowserCloseManagerWithBackgroundModeBrowserTest
   void SetUpOnMainThread() override {
     BrowserCloseManagerBrowserTest::SetUpOnMainThread();
     g_browser_process->set_background_mode_manager_for_test(
-        scoped_ptr<BackgroundModeManager>(new FakeBackgroundModeManager));
+        std::unique_ptr<BackgroundModeManager>(new FakeBackgroundModeManager));
   }
 
   bool IsBackgroundModeSuspended() {
@@ -971,7 +971,7 @@ class BrowserCloseManagerWithBackgroundModeBrowserTest
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithBackgroundModeBrowserTest,
                        CloseAllBrowsersWithBackgroundMode) {
   EXPECT_FALSE(IsBackgroundModeSuspended());
-  scoped_ptr<ScopedKeepAlive> tmp_keep_alive;
+  std::unique_ptr<ScopedKeepAlive> tmp_keep_alive;
   Profile* profile = browser()->profile();
   {
     RepeatedNotificationObserver close_observer(

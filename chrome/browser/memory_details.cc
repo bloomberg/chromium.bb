@@ -217,7 +217,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
 
   // First pass, collate the widgets by process ID.
   std::map<base::ProcessId, std::vector<RenderWidgetHost*>> widgets_by_pid;
-  scoped_ptr<content::RenderWidgetHostIterator> widget_it(
+  std::unique_ptr<content::RenderWidgetHostIterator> widget_it(
       RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* widget = widget_it->GetNextHost()) {
     // Ignore processes that don't have a connection, such as crashed tabs.

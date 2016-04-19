@@ -7,9 +7,10 @@
 
 #include "device/core/device_client.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 // Implementation of device::DeviceClient that returns //device service
 // singletons appropriate for use within the Chrome application.
@@ -23,8 +24,8 @@ class ChromeDeviceClient : device::DeviceClient {
   device::HidService* GetHidService() override;
 
  private:
-  scoped_ptr<device::HidService> hid_service_;
-  scoped_ptr<device::UsbService> usb_service_;
+  std::unique_ptr<device::HidService> hid_service_;
+  std::unique_ptr<device::UsbService> usb_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDeviceClient);
 };

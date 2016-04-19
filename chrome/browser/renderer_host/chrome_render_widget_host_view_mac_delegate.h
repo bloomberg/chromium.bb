@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 
 namespace content {
@@ -24,7 +25,8 @@ class SpellCheckObserver;
     : NSObject<RenderWidgetHostViewMacDelegate> {
  @private
   content::RenderWidgetHost* renderWidgetHost_;  // weak
-  scoped_ptr<ChromeRenderWidgetHostViewMacDelegateInternal::SpellCheckObserver>
+  std::unique_ptr<
+      ChromeRenderWidgetHostViewMacDelegateInternal::SpellCheckObserver>
       spellingObserver_;
 
   // Used for continuous spell checking.

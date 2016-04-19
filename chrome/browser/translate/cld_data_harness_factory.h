@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_TRANSLATE_CLD_DATA_HARNESS_FACTORY_H_
 #define CHROME_BROWSER_TRANSLATE_CLD_DATA_HARNESS_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/translate/cld_data_harness.h"
 
 namespace test {
@@ -34,7 +35,7 @@ class CldDataHarnessFactory {
   // Create a new CldDataHarness.
   // The default implementation returns a simple CldDataHarness, which is
   // likely to be incorrect for most non-static CLD use cases.
-  virtual scoped_ptr<CldDataHarness> CreateCldDataHarness();
+  virtual std::unique_ptr<CldDataHarness> CreateCldDataHarness();
 
   // Unconditionally sets the factory for this process, overwriting any
   // previously-configured value. Open-source Chromium test code should almost

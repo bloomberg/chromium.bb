@@ -5,11 +5,13 @@
 #include "components/sessions/core/persistent_tab_restore_service.h"
 
 #include <stddef.h>
+
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -84,10 +86,10 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   // testing::Test:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    live_tab_ = make_scoped_ptr(new sessions::ContentLiveTab(web_contents()));
+    live_tab_ = base::WrapUnique(new sessions::ContentLiveTab(web_contents()));
     time_factory_ = new PersistentTabRestoreTimeFactory();
     service_.reset(new sessions::PersistentTabRestoreService(
-        make_scoped_ptr(new ChromeTabRestoreServiceClient(profile())),
+        base::WrapUnique(new ChromeTabRestoreServiceClient(profile())),
         time_factory_));
   }
 
@@ -127,7 +129,7 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     content::RunAllBlockingPoolTasksUntilIdle();
     service_.reset();
     service_.reset(new sessions::PersistentTabRestoreService(
-        make_scoped_ptr(new ChromeTabRestoreServiceClient(profile())),
+        base::WrapUnique(new ChromeTabRestoreServiceClient(profile())),
         time_factory_));
     SynchronousLoadTabsFromLastSession();
   }
@@ -158,7 +160,8 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   // way of AddWindowWithOneTabToSessionService. If |pinned| is true, the
   // tab is marked as pinned in the session service.
   void CreateSessionServiceWithOneWindow(bool pinned) {
-    scoped_ptr<SessionService> session_service(new SessionService(profile()));
+    std::unique_ptr<SessionService> session_service(
+        new SessionService(profile()));
     SessionServiceFactory::SetForTestProfile(profile(),
                                              std::move(session_service));
 
@@ -180,8 +183,8 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   GURL url2_;
   GURL url3_;
   std::string user_agent_override_;
-  scoped_ptr<sessions::LiveTab> live_tab_;
-  scoped_ptr<sessions::PersistentTabRestoreService> service_;
+  std::unique_ptr<sessions::LiveTab> live_tab_;
+  std::unique_ptr<sessions::PersistentTabRestoreService> service_;
   PersistentTabRestoreTimeFactory* time_factory_;
 };
 

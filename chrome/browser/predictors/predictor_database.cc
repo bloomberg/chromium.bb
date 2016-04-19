@@ -55,7 +55,7 @@ class PredictorDatabaseInternal
 
   bool is_resource_prefetch_predictor_enabled_;
   base::FilePath db_path_;
-  scoped_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Connection> db_;
 
   // TODO(shishir): These tables may not need to be refcounted. Maybe move them
   // to using a WeakPtr instead.

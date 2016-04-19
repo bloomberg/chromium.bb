@@ -41,7 +41,7 @@ class InfoBarsTest : public InProcessBrowserTest {
     extensions::TestExtensionRegistryObserver observer(
         extensions::ExtensionRegistry::Get(browser()->profile()));
 
-    scoped_ptr<ExtensionInstallPrompt> client(new ExtensionInstallPrompt(
+    std::unique_ptr<ExtensionInstallPrompt> client(new ExtensionInstallPrompt(
         browser()->tab_strip_model()->GetActiveWebContents()));
     scoped_refptr<extensions::CrxInstaller> installer(
         extensions::CrxInstaller::Create(service, std::move(client)));

@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -39,9 +39,9 @@ void AssertInterceptedIO(
     net::URLRequestJobFactory* interceptor) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::URLRequestContext context;
-  scoped_ptr<net::URLRequest> request(
+  std::unique_ptr<net::URLRequest> request(
       context.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr));
-  scoped_ptr<net::URLRequestJob> job(
+  std::unique_ptr<net::URLRequestJob> job(
       interceptor->MaybeCreateJobWithProtocolHandler(
           url.scheme(), request.get(), context.network_delegate()));
   ASSERT_TRUE(job.get());
@@ -100,10 +100,10 @@ void AssertWillHandleIO(
     bool expected,
     ProtocolHandlerRegistry::JobInterceptorFactory* interceptor) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  interceptor->Chain(scoped_ptr<net::URLRequestJobFactory>(
+  interceptor->Chain(std::unique_ptr<net::URLRequestJobFactory>(
       new FakeURLRequestJobFactory()));
   ASSERT_EQ(expected, interceptor->IsHandledProtocol(scheme));
-  interceptor->Chain(scoped_ptr<net::URLRequestJobFactory>());
+  interceptor->Chain(std::unique_ptr<net::URLRequestJobFactory>());
 }
 
 void AssertWillHandle(
@@ -410,9 +410,9 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
 
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   FakeDelegate* delegate_;  // Registry assumes ownership of delegate_.
-  scoped_ptr<ProtocolHandlerRegistry> registry_;
+  std::unique_ptr<ProtocolHandlerRegistry> registry_;
   ProtocolHandler test_protocol_handler_;
 };
 
@@ -783,7 +783,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestMaybeCreateTaskWorksFromIOThread) {
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   GURL url("mailto:someone@something.com");
 
-  scoped_ptr<net::URLRequestJobFactory> interceptor(
+  std::unique_ptr<net::URLRequestJobFactory> interceptor(
       registry()->CreateJobInterceptorFactory());
   AssertIntercepted(url, interceptor.get());
 }
@@ -794,7 +794,7 @@ TEST_F(ProtocolHandlerRegistryTest,
   ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
 
-  scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
+  std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
       registry()->CreateJobInterceptorFactory());
   AssertWillHandle(scheme, true, interceptor.get());
 }
@@ -841,7 +841,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestClearDefaultGetsPropagatedToIO) {
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   registry()->ClearDefault(scheme);
 
-  scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
+  std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
       registry()->CreateJobInterceptorFactory());
   AssertWillHandle(scheme, false, interceptor.get());
 }
@@ -851,7 +851,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestLoadEnabledGetsPropogatedToIO) {
   ProtocolHandler ph1 = CreateProtocolHandler(mailto, "MailtoHandler");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
 
-  scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
+  std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
       registry()->CreateJobInterceptorFactory());
   AssertWillHandle(mailto, true, interceptor.get());
   registry()->Disable();

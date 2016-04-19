@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -13,8 +14,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -147,7 +148,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     PrefServiceFactory pref_service_factory;
     pref_service_factory.set_user_prefs(pref_store_);
 
-    scoped_ptr<PrefService> pref_service(
+    std::unique_ptr<PrefService> pref_service(
         pref_service_factory.Create(profile_pref_registry_.get()));
 
     EXPECT_EQ(
@@ -161,7 +162,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     PrefServiceFactory pref_service_factory;
     pref_service_factory.set_user_prefs(pref_store_);
 
-    scoped_ptr<PrefService> pref_service(
+    std::unique_ptr<PrefService> pref_service(
         pref_service_factory.Create(profile_pref_registry_.get()));
 
     ProfilePrefStoreManager::ClearResetTime(pref_service.get());
@@ -211,13 +212,13 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     PersistentPrefStore::PrefReadError error = pref_store->ReadPrefs();
     EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE, error);
     pref_store->SetValue(kTrackedAtomic,
-                         make_scoped_ptr(new base::StringValue(kFoobar)),
+                         base::WrapUnique(new base::StringValue(kFoobar)),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->SetValue(kProtectedAtomic,
-                         make_scoped_ptr(new base::StringValue(kHelloWorld)),
+                         base::WrapUnique(new base::StringValue(kHelloWorld)),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->SetValue(kUnprotectedPref,
-                         make_scoped_ptr(new base::StringValue(kFoobar)),
+                         base::WrapUnique(new base::StringValue(kFoobar)),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->RemoveObserver(&registry_verifier_);
     pref_store->CommitPendingWrite();
@@ -279,7 +280,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
   scoped_refptr<user_prefs::PrefRegistrySyncable> profile_pref_registry_;
   RegistryVerifier registry_verifier_;
   MockValidationDelegate mock_validation_delegate_;
-  scoped_ptr<ProfilePrefStoreManager> manager_;
+  std::unique_ptr<ProfilePrefStoreManager> manager_;
   scoped_refptr<PersistentPrefStore> pref_store_;
 
   std::string seed_;
@@ -571,7 +572,7 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
   // Trigger the logic that migrates it back to the unprotected preferences
   // file.
   pref_store_->SetValue(kProtectedAtomic,
-                        make_scoped_ptr(new base::StringValue(kGoodbyeWorld)),
+                        base::WrapUnique(new base::StringValue(kGoodbyeWorld)),
                         WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   LoadExistingPrefs();
   ExpectStringValueEquals(kProtectedAtomic, kGoodbyeWorld);

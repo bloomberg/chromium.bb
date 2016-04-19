@@ -143,8 +143,8 @@ void AutofillCounter::OnWebDataServiceRequestDone(
   if (HasPendingQuery())
     return;
 
-  scoped_ptr<Result> reported_result(new AutofillResult(
-       this, num_suggestions_, num_credit_cards_, num_addresses_));
+  std::unique_ptr<Result> reported_result(new AutofillResult(
+      this, num_suggestions_, num_credit_cards_, num_addresses_));
   ReportResult(std::move(reported_result));
 }
 

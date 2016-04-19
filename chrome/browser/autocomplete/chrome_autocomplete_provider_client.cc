@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -137,11 +138,11 @@ ChromeAutocompleteProviderClient::GetShortcutsBackendIfExists() {
   return ShortcutsBackendFactory::GetForProfileIfExists(profile_);
 }
 
-scoped_ptr<KeywordExtensionsDelegate>
+std::unique_ptr<KeywordExtensionsDelegate>
 ChromeAutocompleteProviderClient::GetKeywordExtensionsDelegate(
     KeywordProvider* keyword_provider) {
 #if defined(ENABLE_EXTENSIONS)
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new KeywordExtensionsDelegateImpl(profile_, keyword_provider));
 #else
   return nullptr;

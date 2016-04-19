@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -56,7 +56,7 @@ class SigninGlobalErrorTest : public testing::Test {
     testing_factories.push_back(std::make_pair(
         SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase));
     profile_ = profile_manager_.CreateTestingProfile(
-        "Person 1", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+        "Person 1", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
         base::UTF8ToUTF16("Person 1"), 0, std::string(), testing_factories);
 
     SigninManagerFactory::GetForProfile(profile())
@@ -86,7 +86,7 @@ class SigninGlobalErrorTest : public testing::Test {
 };
 
 TEST_F(SigninGlobalErrorTest, NoErrorAuthStatusProviders) {
-  scoped_ptr<FakeAuthStatusProvider> provider;
+  std::unique_ptr<FakeAuthStatusProvider> provider;
 
   ASSERT_FALSE(global_error()->HasMenuItem());
 
@@ -100,8 +100,8 @@ TEST_F(SigninGlobalErrorTest, NoErrorAuthStatusProviders) {
 }
 
 TEST_F(SigninGlobalErrorTest, ErrorAuthStatusProvider) {
-  scoped_ptr<FakeAuthStatusProvider> provider;
-  scoped_ptr<FakeAuthStatusProvider> error_provider;
+  std::unique_ptr<FakeAuthStatusProvider> provider;
+  std::unique_ptr<FakeAuthStatusProvider> error_provider;
 
   provider.reset(new FakeAuthStatusProvider(error_controller()));
   ASSERT_FALSE(global_error()->HasMenuItem());

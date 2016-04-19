@@ -739,7 +739,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestLastUsage) {
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   base::SimpleTestClock* clock = new base::SimpleTestClock();
-  settings_map->SetPrefClockForTesting(scoped_ptr<base::Clock>(clock));
+  settings_map->SetPrefClockForTesting(std::unique_ptr<base::Clock>(clock));
   clock->SetNow(base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10));
 
   // Creates a simple notification.

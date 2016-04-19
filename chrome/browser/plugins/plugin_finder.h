@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_PLUGINS_PLUGIN_FINDER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
@@ -51,18 +51,19 @@ class PluginFinder {
   bool FindPlugin(const std::string& mime_type,
                   const std::string& language,
                   PluginInstaller** installer,
-                  scoped_ptr<PluginMetadata>* plugin_metadata);
+                  std::unique_ptr<PluginMetadata>* plugin_metadata);
 
   // Finds the plugin with the given identifier. If found, sets |installer|
   // to the corresponding PluginInstaller and |plugin_metadata| to a copy
   // of the corresponding PluginMetadata. |installer| may be NULL.
-  bool FindPluginWithIdentifier(const std::string& identifier,
-                                PluginInstaller** installer,
-                                scoped_ptr<PluginMetadata>* plugin_metadata);
+  bool FindPluginWithIdentifier(
+      const std::string& identifier,
+      PluginInstaller** installer,
+      std::unique_ptr<PluginMetadata>* plugin_metadata);
 #endif
 
   // Gets plugin metadata using |plugin|.
-  scoped_ptr<PluginMetadata> GetPluginMetadata(
+  std::unique_ptr<PluginMetadata> GetPluginMetadata(
       const content::WebPluginInfo& plugin);
 
  private:

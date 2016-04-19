@@ -53,7 +53,7 @@ bool SiteEngagementHelper::PeriodicTracker::IsTimerRunning() {
 }
 
 void SiteEngagementHelper::PeriodicTracker::SetPauseTimerForTesting(
-    scoped_ptr<base::Timer> timer) {
+    std::unique_ptr<base::Timer> timer) {
   pause_timer_ = std::move(timer);
 }
 

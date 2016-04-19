@@ -127,12 +127,13 @@ IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest, TestStartStopWebRtcEventLogging) {
   scoped_refptr<WebrtcLoggingPrivateStartWebRtcEventLoggingFunction>
       start_function(CreateExtensionFunction<
                      WebrtcLoggingPrivateStartWebRtcEventLoggingFunction>());
-  scoped_ptr<base::Value> start_result(utils::RunFunctionAndReturnSingleResult(
-      start_function.get(), ParamsToString(start_params), browser()));
+  std::unique_ptr<base::Value> start_result(
+      utils::RunFunctionAndReturnSingleResult(
+          start_function.get(), ParamsToString(start_params), browser()));
   ASSERT_TRUE(start_result.get());
 
   // Get the file name.
-  scoped_ptr<extensions::api::webrtc_logging_private::RecordingInfo>
+  std::unique_ptr<extensions::api::webrtc_logging_private::RecordingInfo>
       recordings_info_start(
           extensions::api::webrtc_logging_private::RecordingInfo::FromValue(
               *start_result.get()));
@@ -152,11 +153,12 @@ IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest, TestStartStopWebRtcEventLogging) {
   scoped_refptr<WebrtcLoggingPrivateStopWebRtcEventLoggingFunction>
       stop_function(CreateExtensionFunction<
                     WebrtcLoggingPrivateStopWebRtcEventLoggingFunction>());
-  scoped_ptr<base::Value> stop_result(utils::RunFunctionAndReturnSingleResult(
-      stop_function.get(), ParamsToString(stop_params), browser()));
+  std::unique_ptr<base::Value> stop_result(
+      utils::RunFunctionAndReturnSingleResult(
+          stop_function.get(), ParamsToString(stop_params), browser()));
 
   // Get the file name.
-  scoped_ptr<extensions::api::webrtc_logging_private::RecordingInfo>
+  std::unique_ptr<extensions::api::webrtc_logging_private::RecordingInfo>
       recordings_info_stop(
           extensions::api::webrtc_logging_private::RecordingInfo::FromValue(
               *stop_result.get()));
@@ -218,12 +220,13 @@ IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest,
   scoped_refptr<WebrtcLoggingPrivateStartWebRtcEventLoggingFunction>
       start_function(CreateExtensionFunction<
                      WebrtcLoggingPrivateStartWebRtcEventLoggingFunction>());
-  scoped_ptr<base::Value> start_result(utils::RunFunctionAndReturnSingleResult(
-      start_function.get(), ParamsToString(start_params), browser()));
+  std::unique_ptr<base::Value> start_result(
+      utils::RunFunctionAndReturnSingleResult(
+          start_function.get(), ParamsToString(start_params), browser()));
   ASSERT_TRUE(start_result.get());
 
   // Get the file name.
-  scoped_ptr<extensions::api::webrtc_logging_private::RecordingInfo>
+  std::unique_ptr<extensions::api::webrtc_logging_private::RecordingInfo>
       recordings_info_start(
           extensions::api::webrtc_logging_private::RecordingInfo::FromValue(
               *start_result.get()));

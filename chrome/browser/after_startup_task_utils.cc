@@ -4,11 +4,12 @@
 
 #include "chrome/browser/after_startup_task_utils.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
 #include "base/rand_util.h"
@@ -57,13 +58,13 @@ bool IsBrowserStartupComplete() {
   return g_startup_complete_flag.Get().IsSet();
 }
 
-void RunTask(scoped_ptr<AfterStartupTask> queued_task) {
+void RunTask(std::unique_ptr<AfterStartupTask> queued_task) {
   // We're careful to delete the caller's |task| on the target runner's thread.
   DCHECK(queued_task->task_runner->RunsTasksOnCurrentThread());
   queued_task->task.Run();
 }
 
-void ScheduleTask(scoped_ptr<AfterStartupTask> queued_task) {
+void ScheduleTask(std::unique_ptr<AfterStartupTask> queued_task) {
   // Spread their execution over a brief time.
   const int kMinDelaySec = 0;
   const int kMaxDelaySec = 10;
@@ -74,7 +75,7 @@ void ScheduleTask(scoped_ptr<AfterStartupTask> queued_task) {
       base::TimeDelta::FromSeconds(base::RandInt(kMinDelaySec, kMaxDelaySec)));
 }
 
-void QueueTask(scoped_ptr<AfterStartupTask> queued_task) {
+void QueueTask(std::unique_ptr<AfterStartupTask> queued_task) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -106,7 +107,7 @@ void SetBrowserStartupIsComplete() {
                              g_after_startup_tasks.Get().size());
   g_startup_complete_flag.Get().Set();
   for (AfterStartupTask* queued_task : g_after_startup_tasks.Get())
-    ScheduleTask(make_scoped_ptr(queued_task));
+    ScheduleTask(base::WrapUnique(queued_task));
   g_after_startup_tasks.Get().clear();
 
   // The shrink_to_fit() method is not available for all of our build targets.
@@ -206,7 +207,7 @@ void AfterStartupTaskUtils::PostTask(
     return;
   }
 
-  scoped_ptr<AfterStartupTask> queued_task(
+  std::unique_ptr<AfterStartupTask> queued_task(
       new AfterStartupTask(from_here, task_runner, task));
   QueueTask(std::move(queued_task));
 }

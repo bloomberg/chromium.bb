@@ -14,13 +14,12 @@ SigninTrackerFactory::SigninTrackerFactory() {}
 SigninTrackerFactory::~SigninTrackerFactory() {}
 
 // static
-scoped_ptr<SigninTracker> SigninTrackerFactory::CreateForProfile(
+std::unique_ptr<SigninTracker> SigninTrackerFactory::CreateForProfile(
     Profile* profile,
     SigninTracker::Observer* observer) {
-  return scoped_ptr<SigninTracker>(new SigninTracker(
+  return std::unique_ptr<SigninTracker>(new SigninTracker(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       SigninManagerFactory::GetForProfile(profile),
       GaiaCookieManagerServiceFactory::GetForProfile(profile),
-      ChromeSigninClientFactory::GetForProfile(profile),
-      observer));
+      ChromeSigninClientFactory::GetForProfile(profile), observer));
 }

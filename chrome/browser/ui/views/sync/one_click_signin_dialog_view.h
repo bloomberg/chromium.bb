@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SYNC_ONE_CLICK_SIGNIN_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_SYNC_ONE_CLICK_SIGNIN_DIALOG_VIEW_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/sync/one_click_signin_links_delegate.h"
@@ -32,7 +33,7 @@ class OneClickSigninDialogView : public views::DialogDelegateView,
   // Show the one-click signin dialog if not already showing. |start_sync| is
   // called to start sync.
   static void ShowDialog(const base::string16& email,
-                         scoped_ptr<OneClickSigninLinksDelegate> delegate,
+                         std::unique_ptr<OneClickSigninLinksDelegate> delegate,
                          gfx::NativeWindow window,
                          const BrowserWindow::StartSyncCallback& start_sync);
 
@@ -48,7 +49,7 @@ class OneClickSigninDialogView : public views::DialogDelegateView,
   // Creates a OneClickSigninDialogView.
   OneClickSigninDialogView(
       const base::string16& email,
-      scoped_ptr<OneClickSigninLinksDelegate> delegate,
+      std::unique_ptr<OneClickSigninLinksDelegate> delegate,
       const BrowserWindow::StartSyncCallback& start_sync_callback);
 
   ~OneClickSigninDialogView() override;
@@ -73,7 +74,7 @@ class OneClickSigninDialogView : public views::DialogDelegateView,
   void LinkClicked(views::Link* source, int event_flags) override;
 
   // Delegate to handle clicking on links in the bubble.
-  scoped_ptr<OneClickSigninLinksDelegate> delegate_;
+  std::unique_ptr<OneClickSigninLinksDelegate> delegate_;
 
   // The user's email address to be used for sync.
   const base::string16 email_;

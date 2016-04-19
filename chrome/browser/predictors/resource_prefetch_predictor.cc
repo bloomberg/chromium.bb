@@ -175,7 +175,7 @@ class GetUrlVisitCountTask : public history::HistoryDBTask {
 
   int visit_count_;
   NavigationID navigation_id_;
-  scoped_ptr<std::vector<URLRequestSummary> > requests_;
+  std::unique_ptr<std::vector<URLRequestSummary>> requests_;
   VisitInfoCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GetUrlVisitCountTask);
@@ -423,7 +423,7 @@ void ResourcePrefetchPredictor::FinishedPrefetchForNavigation(
     ResourcePrefetcher::RequestVector* requests) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  scoped_ptr<Result> result(new Result(key_type, requests));
+  std::unique_ptr<Result> result(new Result(key_type, requests));
   // Add the results to the results map.
   if (!results_map_.insert(std::make_pair(navigation_id, std::move(result)))
            .second)
@@ -552,7 +552,7 @@ base::TimeDelta ResourcePrefetchPredictor::OnNavigationComplete(
           PREFETCH_KEY_TYPE_URL);
     }
   } else {
-    scoped_ptr<ResourcePrefetcher::RequestVector> requests(
+    std::unique_ptr<ResourcePrefetcher::RequestVector> requests(
         new ResourcePrefetcher::RequestVector);
     PrefetchKeyType key_type;
     if (GetPrefetchData(navigation_id, requests.get(), &key_type)) {
@@ -575,12 +575,10 @@ base::TimeDelta ResourcePrefetchPredictor::OnNavigationComplete(
                                            ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(history_service);
   history_service->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(
-          new GetUrlVisitCountTask(
-              navigation_id,
-              requests,
-              base::Bind(&ResourcePrefetchPredictor::OnVisitCountLookup,
-                         AsWeakPtr()))),
+      std::unique_ptr<history::HistoryDBTask>(new GetUrlVisitCountTask(
+          navigation_id, requests,
+          base::Bind(&ResourcePrefetchPredictor::OnVisitCountLookup,
+                     AsWeakPtr()))),
       &history_lookup_consumer_);
 
   return plt;
@@ -647,7 +645,7 @@ void ResourcePrefetchPredictor::StartPrefetching(
     return;
 
   // Prefer URL based data first.
-  scoped_ptr<ResourcePrefetcher::RequestVector> requests(
+  std::unique_ptr<ResourcePrefetcher::RequestVector> requests(
       new ResourcePrefetcher::RequestVector);
   PrefetchKeyType key_type;
   if (!GetPrefetchData(navigation_id, requests.get(), &key_type)) {
@@ -682,8 +680,8 @@ void ResourcePrefetchPredictor::StartInitialization() {
   initialization_state_ = INITIALIZING;
 
   // Create local caches using the database as loaded.
-  scoped_ptr<PrefetchDataMap> url_data_map(new PrefetchDataMap());
-  scoped_ptr<PrefetchDataMap> host_data_map(new PrefetchDataMap());
+  std::unique_ptr<PrefetchDataMap> url_data_map(new PrefetchDataMap());
+  std::unique_ptr<PrefetchDataMap> host_data_map(new PrefetchDataMap());
   PrefetchDataMap* url_data_ptr = url_data_map.get();
   PrefetchDataMap* host_data_ptr = host_data_map.get();
 
@@ -696,8 +694,8 @@ void ResourcePrefetchPredictor::StartInitialization() {
 }
 
 void ResourcePrefetchPredictor::CreateCaches(
-    scoped_ptr<PrefetchDataMap> url_data_map,
-    scoped_ptr<PrefetchDataMap> host_data_map) {
+    std::unique_ptr<PrefetchDataMap> url_data_map,
+    std::unique_ptr<PrefetchDataMap> host_data_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK_EQ(INITIALIZING, initialization_state_);

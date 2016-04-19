@@ -18,7 +18,7 @@ infobars::InfoBar* NotificationPermissionInfobarDelegate::Create(
     const GURL& requesting_frame,
     const base::Callback<void(bool, bool)>& callback) {
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
+      std::unique_ptr<ConfirmInfoBarDelegate>(
           new NotificationPermissionInfobarDelegate(requesting_frame,
                                                     callback))));
 }

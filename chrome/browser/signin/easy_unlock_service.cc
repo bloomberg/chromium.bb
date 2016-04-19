@@ -364,7 +364,7 @@ std::string EasyUnlockService::GetDeviceId() {
 }
 
 void EasyUnlockService::Initialize(
-    scoped_ptr<EasyUnlockAppManager> app_manager) {
+    std::unique_ptr<EasyUnlockAppManager> app_manager) {
   app_manager_ = std::move(app_manager);
   app_manager_->EnsureReady(
       base::Bind(&EasyUnlockService::InitializeOnAppManagerReady,

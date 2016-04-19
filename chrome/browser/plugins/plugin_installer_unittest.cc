@@ -4,7 +4,8 @@
 
 #include "chrome/browser/plugins/plugin_installer.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/run_loop.h"
 #include "chrome/browser/plugins/plugin_installer_observer.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -26,10 +27,10 @@ class PluginInstallerTest : public ChromeRenderViewHostTestHarness {
 
   PluginInstaller* installer() { return installer_.get(); }
 
-  scoped_ptr<content::MockDownloadItem> CreateMockDownloadItem();
+  std::unique_ptr<content::MockDownloadItem> CreateMockDownloadItem();
 
  private:
-  scoped_ptr<PluginInstaller> installer_;
+  std::unique_ptr<PluginInstaller> installer_;
 };
 
 PluginInstallerTest::PluginInstallerTest() {
@@ -45,9 +46,9 @@ void PluginInstallerTest::TearDown() {
   content::RenderViewHostTestHarness::TearDown();
 }
 
-scoped_ptr<content::MockDownloadItem>
+std::unique_ptr<content::MockDownloadItem>
 PluginInstallerTest::CreateMockDownloadItem() {
-  scoped_ptr<content::MockDownloadItem> mock_download_item(
+  std::unique_ptr<content::MockDownloadItem> mock_download_item(
       new testing::StrictMock<content::MockDownloadItem>());
   ON_CALL(*mock_download_item, GetState())
       .WillByDefault(testing::Return(content::DownloadItem::IN_PROGRESS));
@@ -101,7 +102,8 @@ const char kTestUrl[] = "http://example.com/some-url";
 TEST_F(PluginInstallerTest, StartInstalling_SuccessfulDownload) {
   content::MockDownloadManager mock_download_manager;
   base::RunLoop run_loop;
-  scoped_ptr<content::MockDownloadItem> download_item(CreateMockDownloadItem());
+  std::unique_ptr<content::MockDownloadItem> download_item(
+      CreateMockDownloadItem());
 
   EXPECT_CALL(mock_download_manager,
               DownloadUrlMock(testing::Property(
@@ -131,7 +133,8 @@ TEST_F(PluginInstallerTest, StartInstalling_SuccessfulDownload) {
 TEST_F(PluginInstallerTest, StartInstalling_FailedStart) {
   content::MockDownloadManager mock_download_manager;
   base::RunLoop run_loop;
-  scoped_ptr<content::MockDownloadItem> download_item(CreateMockDownloadItem());
+  std::unique_ptr<content::MockDownloadItem> download_item(
+      CreateMockDownloadItem());
 
   EXPECT_CALL(mock_download_manager,
               DownloadUrlMock(testing::Property(
@@ -158,7 +161,8 @@ TEST_F(PluginInstallerTest, StartInstalling_FailedStart) {
 TEST_F(PluginInstallerTest, StartInstalling_Interrupted) {
   content::MockDownloadManager mock_download_manager;
   base::RunLoop run_loop;
-  scoped_ptr<content::MockDownloadItem> download_item(CreateMockDownloadItem());
+  std::unique_ptr<content::MockDownloadItem> download_item(
+      CreateMockDownloadItem());
 
   EXPECT_CALL(mock_download_manager,
               DownloadUrlMock(testing::Property(

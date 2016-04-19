@@ -8,11 +8,12 @@
 #if defined(__OBJC__)
 
 #import <Cocoa/Cocoa.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -43,7 +44,7 @@ class WorkAreaWatcherObserver;
                                     NSApplicationDelegate> {
  @private
   // Manages the state of the command menu items.
-  scoped_ptr<CommandUpdater> menuState_;
+  std::unique_ptr<CommandUpdater> menuState_;
 
   // The profile last used by a Browser. It is this profile that was used to
   // build the user-data specific main menu items.
@@ -51,7 +52,8 @@ class WorkAreaWatcherObserver;
 
   // The ProfileObserver observes the ProfileAttrbutesStorage and gets notified
   // when a profile has been deleted.
-  scoped_ptr<AppControllerProfileObserver> profileAttributesStorageObserver_;
+  std::unique_ptr<AppControllerProfileObserver>
+      profileAttributesStorageObserver_;
 
   // Management of the bookmark menu which spans across all windows
   // (and Browser*s). |profileBookmarkMenuBridgeMap_| is a cache that owns one
@@ -61,7 +63,7 @@ class WorkAreaWatcherObserver;
   BookmarkMenuBridge* bookmarkMenuBridge_;
   std::map<base::FilePath, BookmarkMenuBridge*> profileBookmarkMenuBridgeMap_;
 
-  scoped_ptr<HistoryMenuBridge> historyMenuBridge_;
+  std::unique_ptr<HistoryMenuBridge> historyMenuBridge_;
 
   // Controller that manages main menu items for packaged apps.
   base::scoped_nsobject<AppShimMenuController> appShimMenuController_;
@@ -93,7 +95,7 @@ class WorkAreaWatcherObserver;
   // Observers that listen to the work area changes.
   base::ObserverList<ui::WorkAreaWatcherObserver> workAreaChangeObservers_;
 
-  scoped_ptr<PrefChangeRegistrar> profilePrefRegistrar_;
+  std::unique_ptr<PrefChangeRegistrar> profilePrefRegistrar_;
   PrefChangeRegistrar localPrefRegistrar_;
 
   // Displays a notification when quitting while apps are running.
@@ -103,14 +105,14 @@ class WorkAreaWatcherObserver;
   base::scoped_nsobject<HandoffManager> handoffManager_;
 
   // Observes changes to the active URL.
-  scoped_ptr<HandoffActiveURLObserverBridge>
+  std::unique_ptr<HandoffActiveURLObserverBridge>
       handoff_active_url_observer_bridge_;
 
   // This will be true after receiving a NSWorkspaceWillPowerOffNotification.
   BOOL isPoweringOff_;
 
   // Request to keep the browser alive during that object's lifetime.
-  scoped_ptr<ScopedKeepAlive> keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;

@@ -159,14 +159,14 @@ bool ExtensionInformation::CheckOwnership(WebContents* web_contents) {
           view_type != extensions::VIEW_TYPE_PANEL);
 }
 
-scoped_ptr<RendererResource> ExtensionInformation::MakeResource(
+std::unique_ptr<RendererResource> ExtensionInformation::MakeResource(
     WebContents* web_contents) {
   const Extension* extension = GetExtensionForWebContents(web_contents);
   if (!extension) {
     NOTREACHED();
-    return scoped_ptr<RendererResource>();
+    return std::unique_ptr<RendererResource>();
   }
-  return scoped_ptr<RendererResource>(new ExtensionProcessResource(
+  return std::unique_ptr<RendererResource>(new ExtensionProcessResource(
       extension, web_contents->GetRenderViewHost()));
 }
 

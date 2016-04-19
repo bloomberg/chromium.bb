@@ -30,7 +30,7 @@ class PatchHost : public content::UtilityProcessHostClient {
   PatchHost(base::Callback<void(int result)> callback,
             scoped_refptr<base::SequencedTaskRunner> task_runner);
 
-  void StartProcess(scoped_ptr<IPC::Message> message);
+  void StartProcess(std::unique_ptr<IPC::Message> message);
 
  private:
   ~PatchHost() override;
@@ -54,7 +54,7 @@ PatchHost::PatchHost(base::Callback<void(int result)> callback,
 PatchHost::~PatchHost() {
 }
 
-void PatchHost::StartProcess(scoped_ptr<IPC::Message> message) {
+void PatchHost::StartProcess(std::unique_ptr<IPC::Message> message) {
   // The DeltaUpdateOpPatchHost is not responsible for deleting the
   // UtilityProcessHost object.
   content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
@@ -102,7 +102,7 @@ void ChromeOutOfProcessPatcher::Patch(
     const base::FilePath& output_abs_path,
     base::Callback<void(int result)> callback) {
   host_ = new PatchHost(callback, task_runner);
-  scoped_ptr<IPC::Message> patch_message;
+  std::unique_ptr<IPC::Message> patch_message;
   if (operation == update_client::kBsdiff) {
     patch_message.reset(new ChromeUtilityMsg_PatchFileBsdiff(
         input_abs_path, patch_abs_path, output_abs_path));

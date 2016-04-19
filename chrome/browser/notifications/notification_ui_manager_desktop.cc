@@ -4,9 +4,9 @@
 
 #include "chrome/browser/notifications/notification_ui_manager.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/notifications/message_center_settings_controller.h"
@@ -19,7 +19,7 @@ NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
   if (!profile_manager)
     return nullptr;
 
-  scoped_ptr<message_center::NotifierSettingsProvider> settings_provider(
+  std::unique_ptr<message_center::NotifierSettingsProvider> settings_provider(
       new MessageCenterSettingsController(
           profile_manager->GetProfileAttributesStorage()));
   return new MessageCenterNotificationManager(

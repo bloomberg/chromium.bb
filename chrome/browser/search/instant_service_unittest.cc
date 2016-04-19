@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/search/instant_service.h"
+
+#include <memory>
 #include <string>
 #include <tuple>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/instant_unittest_base.h"
 #include "chrome/browser/search/search.h"
@@ -58,7 +59,7 @@ class InstantServiceTest : public InstantUnitTestBase {
     return instant_service_->suggestions_items_;
   }
 
-  scoped_ptr<MockInstantServiceObserver> instant_service_observer_;
+  std::unique_ptr<MockInstantServiceObserver> instant_service_observer_;
 };
 
 class InstantServiceEnabledTest : public InstantServiceTest {
@@ -100,7 +101,7 @@ TEST_F(InstantServiceTest, DispatchGoogleURLUpdated) {
 }
 
 TEST_F(InstantServiceEnabledTest, SendsSearchURLsToRenderer) {
-  scoped_ptr<content::MockRenderProcessHost> rph(
+  std::unique_ptr<content::MockRenderProcessHost> rph(
       new content::MockRenderProcessHost(profile()));
   rph->sink().ClearMessages();
   instant_service_->Observe(

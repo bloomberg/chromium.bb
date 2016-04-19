@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_FILE_SELECT_HELPER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -95,18 +95,20 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
 
   void RunFileChooser(content::RenderViewHost* render_view_host,
                       content::WebContents* web_contents,
-                      scoped_ptr<content::FileChooserParams> params);
-  void GetFileTypesOnFileThread(scoped_ptr<content::FileChooserParams> params);
+                      std::unique_ptr<content::FileChooserParams> params);
+  void GetFileTypesOnFileThread(
+      std::unique_ptr<content::FileChooserParams> params);
   void GetSanitizedFilenameOnUIThread(
-      scoped_ptr<content::FileChooserParams> params);
+      std::unique_ptr<content::FileChooserParams> params);
 #if defined(FULL_SAFE_BROWSING)
   void ApplyUnverifiedDownloadPolicy(
       const base::FilePath& default_path,
-      scoped_ptr<content::FileChooserParams> params,
+      std::unique_ptr<content::FileChooserParams> params,
       safe_browsing::UnverifiedDownloadPolicy policy);
 #endif
-  void RunFileChooserOnUIThread(const base::FilePath& default_path,
-                                scoped_ptr<content::FileChooserParams> params);
+  void RunFileChooserOnUIThread(
+      const base::FilePath& default_path,
+      std::unique_ptr<content::FileChooserParams> params);
 
   // Cleans up and releases this instance. This must be called after the last
   // callback is received from the file chooser dialog.
@@ -194,9 +196,8 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   //   http://whatwg.org/html/number-state.html#attr-input-accept
   // |accept_types| contains only valid lowercased MIME types or file extensions
   // beginning with a period (.).
-  static scoped_ptr<ui::SelectFileDialog::FileTypeInfo>
-      GetFileTypesFromAcceptType(
-          const std::vector<base::string16>& accept_types);
+  static std::unique_ptr<ui::SelectFileDialog::FileTypeInfo>
+  GetFileTypesFromAcceptType(const std::vector<base::string16>& accept_types);
 
   // Check the accept type is valid. It is expected to be all lower case with
   // no whitespace.
@@ -228,7 +229,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
 
   // Dialog box used for choosing files to upload from file form fields.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
-  scoped_ptr<ui::SelectFileDialog::FileTypeInfo> select_file_types_;
+  std::unique_ptr<ui::SelectFileDialog::FileTypeInfo> select_file_types_;
 
   // The type of file dialog last shown.
   ui::SelectFileDialog::Type dialog_type_;

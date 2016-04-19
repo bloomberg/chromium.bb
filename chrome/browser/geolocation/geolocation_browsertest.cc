@@ -738,7 +738,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_LastUsageUpdated) {
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
   base::SimpleTestClock* clock_ = new base::SimpleTestClock();
   GetHostContentSettingsMap()->SetPrefClockForTesting(
-      scoped_ptr<base::Clock>(clock_));
+      std::unique_ptr<base::Clock>(clock_));
   clock_->SetNow(base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10));
 
   // Setting the permission should trigger the last usage.

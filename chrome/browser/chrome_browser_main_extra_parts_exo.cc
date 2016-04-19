@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
 
+#include "base/memory/ptr_util.h"
+
 #if defined(USE_GLIB)
 #include <glib.h>
 #endif
@@ -74,7 +76,7 @@ class ChromeBrowserMainExtraPartsExo::WaylandWatcher {
 
  private:
   // The poll attached to |wayland_source_|.
-  scoped_ptr<GPollFD> wayland_poll_;
+  std::unique_ptr<GPollFD> wayland_poll_;
 
   // The GLib event source for wayland events.
   GLibWaylandSource* wayland_source_;
@@ -120,7 +122,7 @@ void ChromeBrowserMainExtraPartsExo::PreProfileInit() {
           switches::kEnableWaylandServer)) {
     wayland_server_ = exo::wayland::Server::Create(display_.get());
     wayland_watcher_ =
-        make_scoped_ptr(new WaylandWatcher(wayland_server_.get()));
+        base::WrapUnique(new WaylandWatcher(wayland_server_.get()));
   }
 }
 

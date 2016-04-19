@@ -183,7 +183,7 @@ void ExtensionWelcomeNotification::OnIsSyncingChanged() {
       PrefServiceSyncableFromProfile(profile_);
   if (pref_service_syncable->IsSyncing()) {
     pref_service_syncable->RemoveObserver(this);
-    scoped_ptr<Notification> previous_notification(
+    std::unique_ptr<Notification> previous_notification(
         delayed_notification_.release());
     ShowWelcomeNotificationIfNecessary(*(previous_notification.get()));
   }
@@ -259,7 +259,7 @@ void ExtensionWelcomeNotification::ShowWelcomeNotification(
     welcome_notification_id_ = base::GenerateGUID();
 
   if (!welcome_notification_id_.empty()) {
-    scoped_ptr<message_center::Notification> message_center_notification(
+    std::unique_ptr<message_center::Notification> message_center_notification(
         new message_center::Notification(
             message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             welcome_notification_id_,

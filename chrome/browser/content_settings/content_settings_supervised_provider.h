@@ -27,7 +27,7 @@ class SupervisedProvider : public ObservableProvider {
   ~SupervisedProvider() override;
 
   // ProviderInterface implementations.
-  scoped_ptr<RuleIterator> GetRuleIterator(
+  std::unique_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       bool incognito) const override;
@@ -52,8 +52,9 @@ class SupervisedProvider : public ObservableProvider {
   // thread safety.
   mutable base::Lock lock_;
 
-  scoped_ptr<base::CallbackList<void(
-      const base::DictionaryValue*)>::Subscription> user_settings_subscription_;
+  std::unique_ptr<
+      base::CallbackList<void(const base::DictionaryValue*)>::Subscription>
+      user_settings_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedProvider);
 };

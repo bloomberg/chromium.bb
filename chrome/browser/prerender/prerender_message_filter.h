@@ -66,7 +66,8 @@ class PrerenderMessageFilter : public content::BrowserMessageFilter {
 
   PrerenderLinkManager* prerender_link_manager_;
 
-  scoped_ptr<KeyedServiceShutdownNotifier::Subscription> shutdown_notifier_;
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
+      shutdown_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderMessageFilter);
 };

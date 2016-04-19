@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -10,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
@@ -155,9 +155,8 @@ std::string GetShowSavedButtonLabel() {
   return l10n_util::GetStringUTF8(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY);
 }
 
-void AddInterceptorForURL(
-    const GURL& url,
-    scoped_ptr<net::URLRequestInterceptor> handler) {
+void AddInterceptorForURL(const GURL& url,
+                          std::unique_ptr<net::URLRequestInterceptor> handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(url,
                                                           std::move(handler));
@@ -274,7 +273,7 @@ class LinkDoctorInterceptor : public net::URLRequestInterceptor {
   // These are only used on the UI thread.
   int num_requests_;
   int requests_to_wait_for_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   // This prevents any risk of flake if any test doesn't wait for a request
   // it sent.  Mutable so it can be accessed from a const function.
@@ -285,7 +284,7 @@ class LinkDoctorInterceptor : public net::URLRequestInterceptor {
 
 void InstallMockInterceptors(
     const GURL& search_url,
-    scoped_ptr<net::URLRequestInterceptor> link_doctor_interceptor) {
+    std::unique_ptr<net::URLRequestInterceptor> link_doctor_interceptor) {
   chrome_browser_net::SetUrlRequestMocksEnabled(true);
 
   AddInterceptorForURL(google_util::LinkDoctorBaseURL(),
@@ -425,7 +424,7 @@ class ErrorPageTest : public InProcessBrowserTest {
  protected:
   void SetUpOnMainThread() override {
     link_doctor_interceptor_ = new LinkDoctorInterceptor();
-    scoped_ptr<net::URLRequestInterceptor> owned_interceptor(
+    std::unique_ptr<net::URLRequestInterceptor> owned_interceptor(
         link_doctor_interceptor_);
     // Ownership of the |interceptor_| is passed to an object the IO thread, but
     // a pointer is kept in the test fixture.  As soon as anything calls
@@ -518,7 +517,7 @@ void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
   net::HttpCache* cache(
       getter->GetURLRequestContext()->http_transaction_factory()->GetCache());
   DCHECK(cache);
-  scoped_ptr<net::HttpTransactionFactory> factory(
+  std::unique_ptr<net::HttpTransactionFactory> factory(
       new net::FailingHttpTransactionFactory(cache->GetSession(), error));
   // Throw away old version; since this is a a browser test, we don't
   // need to restore the old state.
@@ -1020,7 +1019,7 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
 
   void InstallInterceptor(const GURL& url, int requests_to_fail) {
     interceptor_ = new FailFirstNRequestsInterceptor(requests_to_fail);
-    scoped_ptr<net::URLRequestInterceptor> owned_interceptor(interceptor_);
+    std::unique_ptr<net::URLRequestInterceptor> owned_interceptor(interceptor_);
 
     // Tests don't need to wait for this task to complete before using the
     // filter; any requests that might be affected by it will end up in the IO
@@ -1184,7 +1183,7 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
 
     net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
         google_util::LinkDoctorBaseURL(),
-        scoped_ptr<net::URLRequestInterceptor>(
+        std::unique_ptr<net::URLRequestInterceptor>(
             new AddressUnreachableInterceptor()));
   }
 
@@ -1266,7 +1265,7 @@ class ErrorPageOfflineTest : public ErrorPageTest {
 #if defined(OS_CHROMEOS)
     if (enroll_) {
       // Set up fake install attributes.
-      scoped_ptr<policy::StubEnterpriseInstallAttributes> attributes(
+      std::unique_ptr<policy::StubEnterpriseInstallAttributes> attributes(
           new policy::StubEnterpriseInstallAttributes());
       attributes->SetDomain("example.com");
       attributes->SetRegistrationUser("user@example.com");

@@ -204,7 +204,7 @@ class BrowsingDataRemover : public KeyedService
   };
 
   using Callback = base::Callback<void(const NotificationDetails&)>;
-  using CallbackSubscription = scoped_ptr<
+  using CallbackSubscription = std::unique_ptr<
       base::CallbackList<void(const NotificationDetails&)>::Subscription>;
 
   // The completion inhibitor can artificially delay completion of the browsing
@@ -276,7 +276,7 @@ class BrowsingDataRemover : public KeyedService
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
   void OverrideWebappRegistryForTesting(
-      scoped_ptr<WebappRegistry> webapp_registry);
+      std::unique_ptr<WebappRegistry> webapp_registry);
 #endif
 
  private:
@@ -456,11 +456,11 @@ class BrowsingDataRemover : public KeyedService
 
 #if defined(ENABLE_PLUGINS)
   // Used to delete plugin data.
-  scoped_ptr<content::PluginDataRemover> plugin_data_remover_;
+  std::unique_ptr<content::PluginDataRemover> plugin_data_remover_;
   base::WaitableEventWatcher watcher_;
 
   // Used to deauthorize content licenses for Pepper Flash.
-  scoped_ptr<PepperFlashSettingsManager> pepper_flash_settings_manager_;
+  std::unique_ptr<PepperFlashSettingsManager> pepper_flash_settings_manager_;
 #endif
 
   uint32_t deauthorize_content_licenses_request_id_ = 0;
@@ -508,7 +508,7 @@ class BrowsingDataRemover : public KeyedService
   // Used if we need to clear history.
   base::CancelableTaskTracker history_task_tracker_;
 
-  scoped_ptr<TemplateURLService::Subscription> template_url_sub_;
+  std::unique_ptr<TemplateURLService::Subscription> template_url_sub_;
 
   // We do not own this.
   content::StoragePartition* storage_partition_for_testing_ = nullptr;
@@ -516,7 +516,7 @@ class BrowsingDataRemover : public KeyedService
 #if BUILDFLAG(ANDROID_JAVA_UI)
   // WebappRegistry makes calls across the JNI. In unit tests, the Java side is
   // not initialised, so the registry must be mocked out.
-  scoped_ptr<WebappRegistry> webapp_registry_;
+  std::unique_ptr<WebappRegistry> webapp_registry_;
 #endif
 
   base::WeakPtrFactory<BrowsingDataRemover> weak_ptr_factory_;

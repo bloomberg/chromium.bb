@@ -6,12 +6,13 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -116,7 +117,7 @@ TEST_F(TabIdProviderTest, ProvideTabIdCacheHit) {
 }
 
 TEST_F(TabIdProviderTest, ProvideTabIdAfterProviderDestroyed) {
-  scoped_ptr<TabIdProvider> provider(
+  std::unique_ptr<TabIdProvider> provider(
       new TabIdProvider(task_runner(), FROM_HERE, TabIdGetterCallback()));
 
   // Ask for two tab IDs.

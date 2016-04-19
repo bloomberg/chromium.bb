@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_DATA_USAGE_TAB_ID_ANNOTATOR_H_
 #define CHROME_BROWSER_DATA_USAGE_TAB_ID_ANNOTATOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_usage/core/data_use_annotator.h"
 
@@ -33,7 +34,7 @@ class TabIdAnnotator : public data_usage::DataUseAnnotator {
   // data if there isn't one attached already and |request| has enough
   // information to get a tab ID.
   void Annotate(net::URLRequest* request,
-                scoped_ptr<data_usage::DataUse> data_use,
+                std::unique_ptr<data_usage::DataUse> data_use,
                 const DataUseConsumerCallback& callback) override;
 
  private:

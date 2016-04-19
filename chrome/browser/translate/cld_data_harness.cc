@@ -48,21 +48,18 @@ void CldDataHarness::GetTestDataSourceDirectory(base::FilePath* out_path) {
 }
 
 // static
-scoped_ptr<CldDataHarness>
-CldDataHarness::CreateStaticDataHarness() {
-  return scoped_ptr<CldDataHarness>(new StaticCldDataHarness());
+std::unique_ptr<CldDataHarness> CldDataHarness::CreateStaticDataHarness() {
+  return std::unique_ptr<CldDataHarness>(new StaticCldDataHarness());
 }
 
 // static
-scoped_ptr<CldDataHarness>
-CldDataHarness::CreateStandaloneDataHarness() {
-  return scoped_ptr<CldDataHarness>(new StandaloneCldDataHarness());
+std::unique_ptr<CldDataHarness> CldDataHarness::CreateStandaloneDataHarness() {
+  return std::unique_ptr<CldDataHarness>(new StandaloneCldDataHarness());
 }
 
 // static
-scoped_ptr<CldDataHarness>
-CldDataHarness::CreateComponentDataHarness() {
-  return scoped_ptr<CldDataHarness>(new ComponentCldDataHarness());
+std::unique_ptr<CldDataHarness> CldDataHarness::CreateComponentDataHarness() {
+  return std::unique_ptr<CldDataHarness>(new ComponentCldDataHarness());
 }
 
 }  // namespace test

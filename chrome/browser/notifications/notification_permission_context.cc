@@ -59,7 +59,7 @@ class VisibilityTimerTabHelper
   bool is_visible_;
 
   struct Task {
-    Task(const PermissionRequestID& id, scoped_ptr<base::Timer> timer)
+    Task(const PermissionRequestID& id, std::unique_ptr<base::Timer> timer)
         : id(id), timer(std::move(timer)) {}
 
     Task& operator=(Task&& other) {
@@ -69,7 +69,7 @@ class VisibilityTimerTabHelper
     }
 
     PermissionRequestID id;
-    scoped_ptr<base::Timer> timer;
+    std::unique_ptr<base::Timer> timer;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Task);
@@ -107,7 +107,7 @@ void VisibilityTimerTabHelper::PostTaskAfterVisibleDelay(
 
   // Safe to use Unretained, as destroying this will destroy task_queue_, hence
   // cancelling all timers.
-  scoped_ptr<base::Timer> timer(new base::Timer(
+  std::unique_ptr<base::Timer> timer(new base::Timer(
       from_here, visible_delay, base::Bind(&VisibilityTimerTabHelper::RunTask,
                                            base::Unretained(this), task),
       false /* is_repeating */));

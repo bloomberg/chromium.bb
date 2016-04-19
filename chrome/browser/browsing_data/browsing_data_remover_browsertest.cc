@@ -73,7 +73,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     // Start a download.
     content::DownloadManager* download_manager =
         content::BrowserContext::GetDownloadManager(browser()->profile());
-    scoped_ptr<content::DownloadTestObserver> observer(
+    std::unique_ptr<content::DownloadTestObserver> observer(
         new content::DownloadTestObserverTerminal(
             download_manager, 1,
             content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));

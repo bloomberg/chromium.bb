@@ -151,11 +151,11 @@ void ResettableSettingsSnapshot::SetShortcutsAndReport(
     callback.Run();
 }
 
-scoped_ptr<reset_report::ChromeResetReport> SerializeSettingsReportToProto(
+std::unique_ptr<reset_report::ChromeResetReport> SerializeSettingsReportToProto(
     const ResettableSettingsSnapshot& snapshot,
     int field_mask) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  scoped_ptr<reset_report::ChromeResetReport> report(
+  std::unique_ptr<reset_report::ChromeResetReport> report(
       new reset_report::ChromeResetReport());
 
   if (field_mask & ResettableSettingsSnapshot::STARTUP_MODE) {
@@ -213,12 +213,12 @@ void SendSettingsFeedbackProto(const reset_report::ChromeResetReport& report,
       ->DispatchReport(report);
 }
 
-scoped_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
+std::unique_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
     Profile* profile,
     const ResettableSettingsSnapshot& snapshot) {
   DCHECK(profile);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  scoped_ptr<base::ListValue> list(new base::ListValue);
+  std::unique_ptr<base::ListValue> list(new base::ListValue);
   AddPair(list.get(),
           l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_LOCALE),
           g_browser_process->GetApplicationLocale());

@@ -113,7 +113,7 @@ void ChromeWebUsbBrowserClient::OnDeviceAdded(
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   message_center::RichNotificationData rich_notification_data;
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
           l10n_util::GetStringFUTF16(
@@ -121,11 +121,10 @@ void ChromeWebUsbBrowserClient::OnDeviceAdded(
           l10n_util::GetStringFUTF16(
               IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION,
               base::UTF8ToUTF16(landing_page.GetContent())),
-          rb.GetNativeImageNamed(IDR_USB_NOTIFICATION_ICON),
-          base::string16(), GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
-              kWebUsbDetectorNotificationID),
+          rb.GetNativeImageNamed(IDR_USB_NOTIFICATION_ICON), base::string16(),
+          GURL(), message_center::NotifierId(
+                      message_center::NotifierId::SYSTEM_COMPONENT,
+                      kWebUsbDetectorNotificationID),
           rich_notification_data,
           new WebUsbNotificationDelegate(landing_page, notification_id)));
 

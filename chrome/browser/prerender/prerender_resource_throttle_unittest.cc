@@ -149,7 +149,7 @@ class DeferredRedirectDelegate : public net::URLRequest::Delegate,
   }
 
  private:
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   PrerenderResourceThrottle* throttle_;
   bool was_deferred_;
   bool cancel_called_;
@@ -211,10 +211,9 @@ TEST_F(PrerenderResourceThrottleTest, RedirectResume) {
   // Fake a request.
   net::TestURLRequestContext url_request_context;
   DeferredRedirectDelegate delegate;
-  scoped_ptr<net::URLRequest> request(url_request_context.CreateRequest(
+  std::unique_ptr<net::URLRequest> request(url_request_context.CreateRequest(
       net::URLRequestMockHTTPJob::GetMockUrl("prerender/image-deferred.png"),
-      net::DEFAULT_PRIORITY,
-      &delegate));
+      net::DEFAULT_PRIORITY, &delegate));
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(),
       content::RESOURCE_TYPE_IMAGE,
@@ -255,10 +254,9 @@ TEST_F(PrerenderResourceThrottleTest, RedirectMainFrame) {
   // Fake a request.
   net::TestURLRequestContext url_request_context;
   DeferredRedirectDelegate delegate;
-  scoped_ptr<net::URLRequest> request(url_request_context.CreateRequest(
+  std::unique_ptr<net::URLRequest> request(url_request_context.CreateRequest(
       net::URLRequestMockHTTPJob::GetMockUrl("prerender/image-deferred.png"),
-      net::DEFAULT_PRIORITY,
-      &delegate));
+      net::DEFAULT_PRIORITY, &delegate));
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(),
       content::RESOURCE_TYPE_MAIN_FRAME,
@@ -297,10 +295,9 @@ TEST_F(PrerenderResourceThrottleTest, RedirectSyncXHR) {
   // Fake a request.
   net::TestURLRequestContext url_request_context;
   DeferredRedirectDelegate delegate;
-  scoped_ptr<net::URLRequest> request(url_request_context.CreateRequest(
+  std::unique_ptr<net::URLRequest> request(url_request_context.CreateRequest(
       net::URLRequestMockHTTPJob::GetMockUrl("prerender/image-deferred.png"),
-      net::DEFAULT_PRIORITY,
-      &delegate));
+      net::DEFAULT_PRIORITY, &delegate));
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(),
       content::RESOURCE_TYPE_XHR,

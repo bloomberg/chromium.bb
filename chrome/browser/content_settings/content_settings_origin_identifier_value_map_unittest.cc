@@ -4,7 +4,8 @@
 
 #include "components/content_settings/core/browser/content_settings_origin_identifier_value_map.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -25,7 +26,7 @@ TEST(OriginIdentifierValueMapTest, SetGetValue) {
                std::string(),
                new base::FundamentalValue(1));
 
-  scoped_ptr<base::Value> expected_value(new base::FundamentalValue(1));
+  std::unique_ptr<base::Value> expected_value(new base::FundamentalValue(1));
   EXPECT_TRUE(expected_value->Equals(map.GetValue(GURL("http://www.google.com"),
                                                   GURL("http://www.google.com"),
                                                   CONTENT_SETTINGS_TYPE_COOKIES,
@@ -172,7 +173,7 @@ TEST(OriginIdentifierValueMapTest, ListEntryPrecedences) {
 
 TEST(OriginIdentifierValueMapTest, IterateEmpty) {
   content_settings::OriginIdentifierValueMap map;
-  scoped_ptr<content_settings::RuleIterator> rule_iterator(
+  std::unique_ptr<content_settings::RuleIterator> rule_iterator(
       map.GetRuleIterator(CONTENT_SETTINGS_TYPE_COOKIES, std::string(), NULL));
   EXPECT_FALSE(rule_iterator->HasNext());
 }
@@ -195,7 +196,7 @@ TEST(OriginIdentifierValueMapTest, IterateNonempty) {
                std::string(),
                new base::FundamentalValue(2));
 
-  scoped_ptr<content_settings::RuleIterator> rule_iterator(
+  std::unique_ptr<content_settings::RuleIterator> rule_iterator(
       map.GetRuleIterator(CONTENT_SETTINGS_TYPE_COOKIES, std::string(), NULL));
   ASSERT_TRUE(rule_iterator->HasNext());
   content_settings::Rule rule = rule_iterator->Next();

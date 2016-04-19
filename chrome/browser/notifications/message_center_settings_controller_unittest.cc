@@ -62,7 +62,7 @@ class MessageCenterSettingsControllerBaseTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager testing_profile_manager_;
-  scoped_ptr<MessageCenterSettingsController> controller_;
+  std::unique_ptr<MessageCenterSettingsController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterSettingsControllerBaseTest);
 };
@@ -108,7 +108,7 @@ class MessageCenterSettingsControllerChromeOSTest
         user_manager::UserManager::Get());
   }
 
-  scoped_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterSettingsControllerChromeOSTest);
 };

@@ -220,8 +220,8 @@ class AutocompleteActionPredictorTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<AutocompleteActionPredictor> predictor_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<AutocompleteActionPredictor> predictor_;
 };
 
 

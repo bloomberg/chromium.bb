@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_set>
@@ -17,7 +18,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
@@ -121,67 +121,68 @@ class IOThread : public content::BrowserThreadDelegate {
 
     // Global aggregator of data use. It must outlive the
     // |system_network_delegate|.
-    scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator;
+    std::unique_ptr<data_usage::DataUseAggregator> data_use_aggregator;
 #if BUILDFLAG(ANDROID_JAVA_UI)
     // An external observer of data use.
-    scoped_ptr<chrome::android::ExternalDataUseObserver>
+    std::unique_ptr<chrome::android::ExternalDataUseObserver>
         external_data_use_observer;
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
     // The "system" NetworkDelegate, used for Profile-agnostic network events.
-    scoped_ptr<net::NetworkDelegate> system_network_delegate;
-    scoped_ptr<net::HostResolver> host_resolver;
-    scoped_ptr<net::CertVerifier> cert_verifier;
+    std::unique_ptr<net::NetworkDelegate> system_network_delegate;
+    std::unique_ptr<net::HostResolver> host_resolver;
+    std::unique_ptr<net::CertVerifier> cert_verifier;
     // The ChannelIDService must outlive the HttpTransactionFactory.
-    scoped_ptr<net::ChannelIDService> system_channel_id_service;
+    std::unique_ptr<net::ChannelIDService> system_channel_id_service;
     // This TransportSecurityState doesn't load or save any state. It's only
     // used to enforce pinning for system requests and will only use built-in
     // pins.
-    scoped_ptr<net::TransportSecurityState> transport_security_state;
+    std::unique_ptr<net::TransportSecurityState> transport_security_state;
     std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
-    scoped_ptr<net::CTVerifier> cert_transparency_verifier;
-    scoped_ptr<net::CTPolicyEnforcer> ct_policy_enforcer;
+    std::unique_ptr<net::CTVerifier> cert_transparency_verifier;
+    std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
-    scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
-    scoped_ptr<net::HttpServerProperties> http_server_properties;
-    scoped_ptr<net::ProxyService> proxy_script_fetcher_proxy_service;
-    scoped_ptr<net::HttpNetworkSession>
+    std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
+    std::unique_ptr<net::HttpServerProperties> http_server_properties;
+    std::unique_ptr<net::ProxyService> proxy_script_fetcher_proxy_service;
+    std::unique_ptr<net::HttpNetworkSession>
         proxy_script_fetcher_http_network_session;
-    scoped_ptr<net::HttpTransactionFactory>
+    std::unique_ptr<net::HttpTransactionFactory>
         proxy_script_fetcher_http_transaction_factory;
-    scoped_ptr<net::FtpTransactionFactory>
+    std::unique_ptr<net::FtpTransactionFactory>
         proxy_script_fetcher_ftp_transaction_factory;
-    scoped_ptr<net::URLRequestJobFactory>
+    std::unique_ptr<net::URLRequestJobFactory>
         proxy_script_fetcher_url_request_job_factory;
-    scoped_ptr<net::URLRequestBackoffManager> url_request_backoff_manager;
-    scoped_ptr<net::HttpAuthPreferences> http_auth_preferences;
+    std::unique_ptr<net::URLRequestBackoffManager> url_request_backoff_manager;
+    std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences;
     // TODO(willchan): Remove proxy script fetcher context since it's not
     // necessary now that I got rid of refcounting URLRequestContexts.
     //
     // The first URLRequestContext is |system_url_request_context|. We introduce
     // |proxy_script_fetcher_context| for the second context. It has a direct
     // ProxyService, since we always directly connect to fetch the PAC script.
-    scoped_ptr<net::URLRequestContext> proxy_script_fetcher_context;
-    scoped_ptr<net::ProxyService> system_proxy_service;
-    scoped_ptr<net::HttpNetworkSession> system_http_network_session;
-    scoped_ptr<net::HttpTransactionFactory> system_http_transaction_factory;
-    scoped_ptr<net::URLRequestJobFactory> system_url_request_job_factory;
-    scoped_ptr<net::URLRequestContext> system_request_context;
+    std::unique_ptr<net::URLRequestContext> proxy_script_fetcher_context;
+    std::unique_ptr<net::ProxyService> system_proxy_service;
+    std::unique_ptr<net::HttpNetworkSession> system_http_network_session;
+    std::unique_ptr<net::HttpTransactionFactory>
+        system_http_transaction_factory;
+    std::unique_ptr<net::URLRequestJobFactory> system_url_request_job_factory;
+    std::unique_ptr<net::URLRequestContext> system_request_context;
     SystemRequestContextLeakChecker system_request_context_leak_checker;
     // |system_cookie_store| and |system_channel_id_service| are shared
     // between |proxy_script_fetcher_context| and |system_request_context|.
-    scoped_ptr<net::CookieStore> system_cookie_store;
+    std::unique_ptr<net::CookieStore> system_cookie_store;
 #if defined(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::EventRouterForwarder>
         extension_event_router_forwarder;
 #endif
-    scoped_ptr<net::HostMappingRules> host_mapping_rules;
-    scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
-    scoped_ptr<net::NetworkQualityEstimator> network_quality_estimator;
+    std::unique_ptr<net::HostMappingRules> host_mapping_rules;
+    std::unique_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
+    std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator;
 
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
     // main frame load fails with a DNS error in order to provide more useful
     // information to the renderer so it can show a more specific error page.
-    scoped_ptr<chrome_browser_net::DnsProbeService> dns_probe_service;
+    std::unique_ptr<chrome_browser_net::DnsProbeService> dns_probe_service;
   };
 
   // Helper class to configure HttpNetworkSession::Params and
@@ -520,7 +521,7 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // Observer that logs network changes to the ChromeNetLog.
   class LoggingNetworkChangeObserver;
-  scoped_ptr<LoggingNetworkChangeObserver> network_change_observer_;
+  std::unique_ptr<LoggingNetworkChangeObserver> network_change_observer_;
 
   BooleanPrefMember system_enable_referrers_;
 
@@ -549,13 +550,14 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // This is an instance of the default SSLConfigServiceManager for the current
   // platform and it gets SSL preferences from local_state object.
-  scoped_ptr<ssl_config::SSLConfigServiceManager> ssl_config_service_manager_;
+  std::unique_ptr<ssl_config::SSLConfigServiceManager>
+      ssl_config_service_manager_;
 
   // These member variables are initialized by a task posted to the IO thread,
   // which gets posted by calling certain member functions of IOThread.
-  scoped_ptr<net::ProxyConfigService> system_proxy_config_service_;
+  std::unique_ptr<net::ProxyConfigService> system_proxy_config_service_;
 
-  scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
+  std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   scoped_refptr<net::URLRequestContextGetter>
       system_url_request_context_getter_;

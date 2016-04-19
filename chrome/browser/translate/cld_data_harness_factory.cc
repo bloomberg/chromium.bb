@@ -35,7 +35,7 @@ base::LazyInstance<test::CldDataHarnessFactory>::Leaky g_wrapped_static =
 
 namespace test {
 
-scoped_ptr<CldDataHarness> CldDataHarnessFactory::CreateCldDataHarness() {
+std::unique_ptr<CldDataHarness> CldDataHarnessFactory::CreateCldDataHarness() {
   // Cheat: Since the three "canned" implementations are all well-known, just
   // check to see if "this" points to one of the singletons and then return
   // the right answer. Embedder-provided CldDataHarnessFactory implementations

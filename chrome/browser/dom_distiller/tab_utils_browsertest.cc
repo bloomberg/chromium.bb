@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(after_web_contents != NULL);
   base::RunLoop new_url_loaded_runner;
-  scoped_ptr<WebContentsMainFrameHelper> distilled_page_loaded(
+  std::unique_ptr<WebContentsMainFrameHelper> distilled_page_loaded(
       new WebContentsMainFrameHelper(after_web_contents,
                                      new_url_loaded_runner.QuitClosure()));
   new_url_loaded_runner.Run();
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
 
   // Wait until the destination WebContents has fully navigated.
   base::RunLoop new_url_loaded_runner;
-  scoped_ptr<WebContentsMainFrameHelper> distilled_page_loaded(
+  std::unique_ptr<WebContentsMainFrameHelper> distilled_page_loaded(
       new WebContentsMainFrameHelper(destination_web_contents,
                                      new_url_loaded_runner.QuitClosure()));
   new_url_loaded_runner.Run();

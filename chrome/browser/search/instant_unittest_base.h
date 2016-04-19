@@ -47,7 +47,7 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
 
   InstantService* instant_service_;
   TemplateURLService* template_url_service_;
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
  private:
   // BrowserWithTestWindowTest override:

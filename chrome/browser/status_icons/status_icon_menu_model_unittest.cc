@@ -38,7 +38,7 @@ class StatusIconMenuModelTest : public testing::Test,
  private:
   void OnMenuStateChanged() override { ++changed_count_; }
 
-  scoped_ptr<StatusIconMenuModel> menu_;
+  std::unique_ptr<StatusIconMenuModel> menu_;
   int changed_count_;
 };
 

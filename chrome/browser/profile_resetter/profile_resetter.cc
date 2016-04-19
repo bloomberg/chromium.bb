@@ -88,7 +88,7 @@ ProfileResetter::~ProfileResetter() {
 
 void ProfileResetter::Reset(
     ProfileResetter::ResettableFlags resettable_flags,
-    scoped_ptr<BrandcodedDefaultSettings> master_settings,
+    std::unique_ptr<BrandcodedDefaultSettings> master_settings,
     const base::Closure& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(master_settings);
@@ -168,7 +168,7 @@ void ProfileResetter::ResetDefaultSearchEngine() {
     DCHECK(prefs);
     TemplateURLPrepopulateData::ClearPrepopulatedEnginesInPrefs(
         profile_->GetPrefs());
-    scoped_ptr<base::ListValue> search_engines(
+    std::unique_ptr<base::ListValue> search_engines(
         master_settings_->GetSearchProviderOverrides());
     if (search_engines) {
       // This Chrome distribution channel provides a custom search engine. We
@@ -279,7 +279,7 @@ void ProfileResetter::ResetStartupPages() {
   DCHECK(CalledOnValidThread());
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(prefs);
-  scoped_ptr<base::ListValue> url_list(
+  std::unique_ptr<base::ListValue> url_list(
       master_settings_->GetUrlsToRestoreOnStartup());
   if (url_list)
     ListPrefUpdate(prefs, prefs::kURLsToRestoreOnStartup)->Swap(url_list.get());

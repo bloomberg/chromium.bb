@@ -71,7 +71,7 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
 
  private:
 #if defined(GOOGLE_CHROME_BUILD)
-  scoped_ptr<DidRunUpdater> did_run_updater_;
+  std::unique_ptr<DidRunUpdater> did_run_updater_;
 #endif
 #if BUILDFLAG(ENABLE_KASKO)
   // Cleans up Kasko crash reports that exceeded the maximum upload attempts.

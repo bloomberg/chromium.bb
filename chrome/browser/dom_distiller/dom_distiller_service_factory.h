@@ -24,10 +24,10 @@ class DomDistillerContextKeyedService : public KeyedService,
                                         public DomDistillerService {
  public:
   DomDistillerContextKeyedService(
-      scoped_ptr<DomDistillerStoreInterface> store,
-      scoped_ptr<DistillerFactory> distiller_factory,
-      scoped_ptr<DistillerPageFactory> distiller_page_factory,
-      scoped_ptr<DistilledPagePrefs> distilled_page_prefs);
+      std::unique_ptr<DomDistillerStoreInterface> store,
+      std::unique_ptr<DistillerFactory> distiller_factory,
+      std::unique_ptr<DistillerPageFactory> distiller_page_factory,
+      std::unique_ptr<DistilledPagePrefs> distilled_page_prefs);
   ~DomDistillerContextKeyedService() override {}
 
  private:

@@ -217,7 +217,7 @@ void CheckReportSCTs(
 void CheckExpectCTReport(const std::string& serialized_report,
                          const net::HostPortPair& host_port,
                          const net::SSLInfo& ssl_info) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(serialized_report));
+  std::unique_ptr<base::Value> value(base::JSONReader::Read(serialized_report));
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
 

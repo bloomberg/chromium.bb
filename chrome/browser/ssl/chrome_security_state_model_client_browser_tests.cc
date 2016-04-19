@@ -458,7 +458,7 @@ void InstallLoadingInterceptor(const std::string& host) {
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddHostnameInterceptor(
       "http", host,
-      scoped_ptr<net::URLRequestInterceptor>(new PendingJobInterceptor()));
+      std::unique_ptr<net::URLRequestInterceptor>(new PendingJobInterceptor()));
 }
 
 class SecurityStateModelLoadingTest

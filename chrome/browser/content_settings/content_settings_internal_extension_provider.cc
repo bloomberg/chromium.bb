@@ -63,7 +63,7 @@ InternalExtensionProvider::~InternalExtensionProvider() {
   DCHECK(!registrar_.get());
 }
 
-scoped_ptr<RuleIterator> InternalExtensionProvider::GetRuleIterator(
+std::unique_ptr<RuleIterator> InternalExtensionProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
@@ -195,7 +195,7 @@ void InternalExtensionProvider::SetContentSettingForExtensionAndResource(
     const extensions::Extension* extension,
     const ResourceIdentifier& resource,
     ContentSetting setting) {
-  scoped_ptr<ContentSettingsPattern::BuilderInterface> pattern_builder(
+  std::unique_ptr<ContentSettingsPattern::BuilderInterface> pattern_builder(
       ContentSettingsPattern::CreateBuilder(false));
   pattern_builder->WithScheme(extensions::kExtensionScheme);
   pattern_builder->WithHost(extension->id());

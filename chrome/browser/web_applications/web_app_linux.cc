@@ -23,7 +23,7 @@ namespace internals {
 
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
-    scoped_ptr<ShortcutInfo> shortcut_info,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info,
     const ShortcutLocations& creation_locations,
     ShortcutCreationReason /*creation_reason*/) {
@@ -37,7 +37,7 @@ bool CreatePlatformShortcuts(
 }
 
 void DeletePlatformShortcuts(const base::FilePath& web_app_path,
-                             scoped_ptr<ShortcutInfo> shortcut_info) {
+                             std::unique_ptr<ShortcutInfo> shortcut_info) {
 #if !defined(OS_CHROMEOS)
   shell_integration_linux::DeleteDesktopShortcuts(shortcut_info->profile_path,
                                                   shortcut_info->extension_id);
@@ -47,11 +47,11 @@ void DeletePlatformShortcuts(const base::FilePath& web_app_path,
 void UpdatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const base::string16& /*old_app_title*/,
-    scoped_ptr<ShortcutInfo> shortcut_info,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   // Find out whether shortcuts are already installed.
   ShortcutLocations creation_locations =

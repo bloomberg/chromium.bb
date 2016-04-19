@@ -52,13 +52,13 @@ class CacheMaxAgeHandler {
   explicit CacheMaxAgeHandler(const std::string& path)
       : path_(path), request_count_(0) { }
 
-  scoped_ptr<net::test_server::HttpResponse> HandleRequest(
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
     if (request.relative_url != path_)
-      return scoped_ptr<net::test_server::HttpResponse>();
+      return std::unique_ptr<net::test_server::HttpResponse>();
 
     request_count_++;
-    scoped_ptr<net::test_server::BasicHttpResponse> response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse);
     response->set_content(base::StringPrintf("<title>%d</title>",
                                              request_count_));

@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(PreferenceServiceTest, Test) {
   // The window should open with the new reference profile, with window
   // placement values stored in the user data directory.
   JSONFileValueDeserializer deserializer(original_pref_file_);
-  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
+  std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
 
   ASSERT_TRUE(root.get());
   ASSERT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY));

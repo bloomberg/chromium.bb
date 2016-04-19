@@ -5,11 +5,12 @@
 #include "chrome/browser/predictors/resource_prefetcher.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/predictors/resource_prefetcher_manager.h"
 #include "chrome/test/base/testing_profile.h"
@@ -34,7 +35,7 @@ class TestResourcePrefetcher : public ResourcePrefetcher {
                          const ResourcePrefetchPredictorConfig& config,
                          const NavigationID& navigation_id,
                          PrefetchKeyType key_type,
-                         scoped_ptr<RequestVector> requests)
+                         std::unique_ptr<RequestVector> requests)
       : ResourcePrefetcher(delegate,
                            config,
                            navigation_id,
@@ -143,7 +144,7 @@ class ResourcePrefetcherTest : public testing::Test {
   content::TestBrowserThread io_thread_;
   ResourcePrefetchPredictorConfig config_;
   TestResourcePrefetcherDelegate prefetcher_delegate_;
-  scoped_ptr<TestResourcePrefetcher> prefetcher_;
+  std::unique_ptr<TestResourcePrefetcher> prefetcher_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetcherTest);
@@ -161,7 +162,7 @@ ResourcePrefetcherTest::~ResourcePrefetcherTest() {
 }
 
 TEST_F(ResourcePrefetcherTest, TestPrefetcherFinishes) {
-  scoped_ptr<ResourcePrefetcher::RequestVector> requests(
+  std::unique_ptr<ResourcePrefetcher::RequestVector> requests(
       new ResourcePrefetcher::RequestVector);
   requests->push_back(new ResourcePrefetcher::Request(GURL(
       "http://www.google.com/resource1.html")));
@@ -294,7 +295,7 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherFinishes) {
 }
 
 TEST_F(ResourcePrefetcherTest, TestPrefetcherStopped) {
-  scoped_ptr<ResourcePrefetcher::RequestVector> requests(
+  std::unique_ptr<ResourcePrefetcher::RequestVector> requests(
       new ResourcePrefetcher::RequestVector);
   requests->push_back(new ResourcePrefetcher::Request(GURL(
       "http://www.google.com/resource1.html")));

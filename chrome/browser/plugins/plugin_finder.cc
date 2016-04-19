@@ -175,7 +175,7 @@ void PluginFinder::Init() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Load the built-in plugin list first. If we have a newer version stored
   // locally or download one, we will replace this one with it.
-  scoped_ptr<base::DictionaryValue> plugin_list(LoadBuiltInPluginList());
+  std::unique_ptr<base::DictionaryValue> plugin_list(LoadBuiltInPluginList());
 
   // Gracefully handle the case where we couldn't parse the built-in plugin list
   // for some reason (https://crbug.com/388560). TODO(bauerb): Change back to a
@@ -193,7 +193,7 @@ base::DictionaryValue* PluginFinder::LoadBuiltInPluginList() {
           IDR_PLUGIN_DB_JSON));
   std::string error_str;
   int error_code = base::JSONReader::JSON_NO_ERROR;
-  scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
       json_resource, base::JSON_PARSE_RFC, &error_code, &error_str);
   if (!value) {
     DLOG(ERROR) << error_str;
@@ -257,7 +257,7 @@ bool PluginFinder::FindPlugin(
     const std::string& mime_type,
     const std::string& language,
     PluginInstaller** installer,
-    scoped_ptr<PluginMetadata>* plugin_metadata) {
+    std::unique_ptr<PluginMetadata>* plugin_metadata) {
   if (g_browser_process->local_state()->GetBoolean(prefs::kDisablePluginFinder))
     return false;
 
@@ -281,7 +281,7 @@ bool PluginFinder::FindPlugin(
 bool PluginFinder::FindPluginWithIdentifier(
     const std::string& identifier,
     PluginInstaller** installer,
-    scoped_ptr<PluginMetadata>* plugin_metadata) {
+    std::unique_ptr<PluginMetadata>* plugin_metadata) {
   base::AutoLock lock(mutex_);
   PluginMap::const_iterator metadata_it = identifier_plugin_.find(identifier);
   if (metadata_it == identifier_plugin_.end())
@@ -328,7 +328,7 @@ void PluginFinder::ReinitializePlugins(
   }
 }
 
-scoped_ptr<PluginMetadata> PluginFinder::GetPluginMetadata(
+std::unique_ptr<PluginMetadata> PluginFinder::GetPluginMetadata(
     const content::WebPluginInfo& plugin) {
   base::AutoLock lock(mutex_);
   for (PluginMap::const_iterator it = identifier_plugin_.begin();

@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/webplugininfo.h"
@@ -126,7 +127,7 @@ bool PluginMetadata::VersionComparator::operator() (const Version& lhs,
   return lhs.CompareTo(rhs) > 0;
 }
 
-scoped_ptr<PluginMetadata> PluginMetadata::Clone() const {
+std::unique_ptr<PluginMetadata> PluginMetadata::Clone() const {
   PluginMetadata* copy = new PluginMetadata(identifier_,
                                             name_,
                                             url_for_display_,
@@ -135,5 +136,5 @@ scoped_ptr<PluginMetadata> PluginMetadata::Clone() const {
                                             group_name_matcher_,
                                             language_);
   copy->versions_ = versions_;
-  return make_scoped_ptr(copy);
+  return base::WrapUnique(copy);
 }

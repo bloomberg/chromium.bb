@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_SERVICE_OBSERVER_H_
 #define CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_SERVICE_OBSERVER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 // Observes events and changes in the PushMessagingService.
 class PushMessagingServiceObserver {
  public:
   // Creates a new PushMessagingServiceObserver.
-  static scoped_ptr<PushMessagingServiceObserver> Create();
+  static std::unique_ptr<PushMessagingServiceObserver> Create();
 
   // Called when a push message has been fully handled.
   virtual void OnMessageHandled() = 0;

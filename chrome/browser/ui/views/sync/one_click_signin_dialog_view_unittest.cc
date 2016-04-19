@@ -4,12 +4,13 @@
 
 #include "chrome/browser/ui/views/sync/one_click_signin_dialog_view.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/sync/one_click_signin_links_delegate.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -49,7 +50,7 @@ class OneClickSigninDialogViewTest : public views::ViewsTestBase,
   OneClickSigninDialogView* ShowOneClickSigninDialog() {
     OneClickSigninDialogView::ShowDialog(
         base::string16(),
-        make_scoped_ptr(new TestOneClickSigninLinksDelegate(this)),
+        base::WrapUnique(new TestOneClickSigninLinksDelegate(this)),
         anchor_widget_->GetNativeWindow(),
         base::Bind(&OneClickSigninDialogViewTest::OnStartSync,
                    base::Unretained(this)));

@@ -41,7 +41,7 @@ KeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
   static_cast<Profile*>(context)->GetOriginalProfile()->GetPrefs()->ClearPref(
       prefs::kLastPromptedGoogleURL);
 
-  scoped_ptr<GoogleURLTrackerClient> client(
+  std::unique_ptr<GoogleURLTrackerClient> client(
       new ChromeGoogleURLTrackerClient(Profile::FromBrowserContext(context)));
   return new GoogleURLTracker(std::move(client), GoogleURLTracker::NORMAL_MODE);
 }

@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_ARC_ARC_PROCESS_TASK_PROVIDER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "chrome/browser/chromeos/arc/arc_process.h"
@@ -51,7 +51,7 @@ class ArcProcessTaskProvider : public TaskProvider {
 
   void ScheduleNextRequest();
 
-  std::map<base::ProcessId, scoped_ptr<ArcProcessTask>> nspid_to_task_;
+  std::map<base::ProcessId, std::unique_ptr<ArcProcessTask>> nspid_to_task_;
 
   // Whether to continue the periodical polling.
   bool is_updating_;

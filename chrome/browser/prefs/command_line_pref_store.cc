@@ -5,6 +5,7 @@
 #include "chrome/browser/prefs/command_line_pref_store.h"
 
 #include <stddef.h>
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
@@ -115,7 +117,7 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
   for (size_t i = 0; i < arraysize(string_switch_map_); ++i) {
     if (command_line_->HasSwitch(string_switch_map_[i].switch_name)) {
       SetValue(string_switch_map_[i].preference_path,
-               make_scoped_ptr(
+               base::WrapUnique(
                    new base::StringValue(command_line_->GetSwitchValueASCII(
                        string_switch_map_[i].switch_name))),
                WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
@@ -126,7 +128,7 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
     if (command_line_->HasSwitch(path_switch_map_[i].switch_name)) {
       SetValue(
           path_switch_map_[i].preference_path,
-          make_scoped_ptr(new base::StringValue(
+          base::WrapUnique(new base::StringValue(
               command_line_->GetSwitchValuePath(path_switch_map_[i].switch_name)
                   .value())),
           WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
@@ -145,7 +147,7 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
         continue;
       }
       SetValue(integer_switch_map_[i].preference_path,
-               make_scoped_ptr(new base::FundamentalValue(int_value)),
+               base::WrapUnique(new base::FundamentalValue(int_value)),
                WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
@@ -153,7 +155,7 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
   for (size_t i = 0; i < arraysize(boolean_switch_map_); ++i) {
     if (command_line_->HasSwitch(boolean_switch_map_[i].switch_name)) {
       SetValue(boolean_switch_map_[i].preference_path,
-               make_scoped_ptr(new base::FundamentalValue(
+               base::WrapUnique(new base::FundamentalValue(
                    boolean_switch_map_[i].set_value)),
                WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
@@ -163,18 +165,18 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
 void CommandLinePrefStore::ApplyProxyMode() {
   if (command_line_->HasSwitch(switches::kNoProxyServer)) {
     SetValue(proxy_config::prefs::kProxy,
-             make_scoped_ptr(ProxyConfigDictionary::CreateDirect()),
+             base::WrapUnique(ProxyConfigDictionary::CreateDirect()),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line_->HasSwitch(switches::kProxyPacUrl)) {
     std::string pac_script_url =
         command_line_->GetSwitchValueASCII(switches::kProxyPacUrl);
     SetValue(proxy_config::prefs::kProxy,
-             make_scoped_ptr(
+             base::WrapUnique(
                  ProxyConfigDictionary::CreatePacScript(pac_script_url, false)),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line_->HasSwitch(switches::kProxyAutoDetect)) {
     SetValue(proxy_config::prefs::kProxy,
-             make_scoped_ptr(ProxyConfigDictionary::CreateAutoDetect()),
+             base::WrapUnique(ProxyConfigDictionary::CreateAutoDetect()),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line_->HasSwitch(switches::kProxyServer)) {
     std::string proxy_server =
@@ -182,7 +184,7 @@ void CommandLinePrefStore::ApplyProxyMode() {
     std::string bypass_list =
         command_line_->GetSwitchValueASCII(switches::kProxyBypassList);
     SetValue(proxy_config::prefs::kProxy,
-             make_scoped_ptr(ProxyConfigDictionary::CreateFixedServers(
+             base::WrapUnique(ProxyConfigDictionary::CreateFixedServers(
                  proxy_server, bypass_list)),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
@@ -190,7 +192,7 @@ void CommandLinePrefStore::ApplyProxyMode() {
 
 void CommandLinePrefStore::ApplySSLSwitches() {
   if (command_line_->HasSwitch(switches::kCipherSuiteBlacklist)) {
-    scoped_ptr<base::ListValue> list_value(new base::ListValue());
+    std::unique_ptr<base::ListValue> list_value(new base::ListValue());
     list_value->AppendStrings(base::SplitString(
         command_line_->GetSwitchValueASCII(switches::kCipherSuiteBlacklist),
         ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
@@ -202,7 +204,7 @@ void CommandLinePrefStore::ApplySSLSwitches() {
 void CommandLinePrefStore::ApplyBackgroundModeSwitches() {
   if (command_line_->HasSwitch(switches::kDisableExtensions)) {
     SetValue(prefs::kBackgroundModeEnabled,
-             make_scoped_ptr(new base::FundamentalValue(false)),
+             base::WrapUnique(new base::FundamentalValue(false)),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }

@@ -72,7 +72,7 @@ class UpdateShortcutWorker : public content::NotificationObserver {
   web_app::IconInfoList unprocessed_icons_;
 
   // Cached shortcut data from the web_contents_.
-  scoped_ptr<web_app::ShortcutInfo> shortcut_info_;
+  std::unique_ptr<web_app::ShortcutInfo> shortcut_info_;
 
   // Our copy of profile path.
   base::FilePath profile_path_;

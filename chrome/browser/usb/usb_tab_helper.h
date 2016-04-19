@@ -22,7 +22,7 @@ class PermissionProvider;
 
 struct FrameUsbServices;
 
-typedef std::map<content::RenderFrameHost*, scoped_ptr<FrameUsbServices>>
+typedef std::map<content::RenderFrameHost*, std::unique_ptr<FrameUsbServices>>
     FrameUsbServicesMap;
 
 // Per-tab owner of USB services provided to render frames within that tab.

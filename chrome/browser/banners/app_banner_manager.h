@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_BANNERS_APP_BANNER_MANAGER_H_
 #define CHROME_BROWSER_BANNERS_APP_BANNER_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/banners/app_banner_data_fetcher.h"
 #include "content/public/browser/web_contents_observer.h"

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_PLUGINS_PLUGIN_METADATA_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/version.h"
 #include "url/gurl.h"
@@ -87,7 +87,7 @@ class PluginMetadata {
   // considered out-of-date, etc.)
   SecurityStatus GetSecurityStatus(const content::WebPluginInfo& plugin) const;
 
-  scoped_ptr<PluginMetadata> Clone() const;
+  std::unique_ptr<PluginMetadata> Clone() const;
 
  private:
   struct VersionComparator {

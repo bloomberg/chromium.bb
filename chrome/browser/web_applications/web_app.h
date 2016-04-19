@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"
@@ -107,15 +107,17 @@ enum ShortcutCreationReason {
 };
 
 // Called by GetInfoForApp after fetching the ShortcutInfo and FileHandlersInfo.
-typedef base::Callback<void(scoped_ptr<ShortcutInfo>,
-                            const extensions::FileHandlersInfo&)> InfoCallback;
+typedef base::Callback<void(std::unique_ptr<ShortcutInfo>,
+                            const extensions::FileHandlersInfo&)>
+    InfoCallback;
 
 // Called by GetShortcutInfoForApp after fetching the ShortcutInfo.
-typedef base::Callback<void(scoped_ptr<ShortcutInfo>)> ShortcutInfoCallback;
+typedef base::Callback<void(std::unique_ptr<ShortcutInfo>)>
+    ShortcutInfoCallback;
 
 #if defined(TOOLKIT_VIEWS)
 // Extracts shortcut info of the given WebContents.
-scoped_ptr<ShortcutInfo> GetShortcutInfoForTab(
+std::unique_ptr<ShortcutInfo> GetShortcutInfoForTab(
     content::WebContents* web_contents);
 #endif
 
@@ -126,7 +128,7 @@ scoped_ptr<ShortcutInfo> GetShortcutInfoForTab(
 // updates (recreates) them if they exits.
 void UpdateShortcutForTabContents(content::WebContents* web_contents);
 
-scoped_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
+std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* app,
     Profile* profile);
 
@@ -182,13 +184,13 @@ std::string GetExtensionIdFromApplicationName(const std::string& app_name);
 void CreateShortcutsWithInfo(
     ShortcutCreationReason reason,
     const ShortcutLocations& locations,
-    scoped_ptr<ShortcutInfo> shortcut_info,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info);
 
 // Currently only called by app_list_service_mac to create a shim for the
 // app launcher.
 void CreateNonAppShortcut(const ShortcutLocations& locations,
-                          scoped_ptr<ShortcutInfo> shortcut_info);
+                          std::unique_ptr<ShortcutInfo> shortcut_info);
 
 // Creates shortcuts for an app. This loads the app's icon from disk, and calls
 // CreateShortcutsWithInfo(). If you already have a ShortcutInfo with the app's
@@ -251,7 +253,7 @@ std::vector<base::FilePath> GetShortcutPaths(
 // |creation_locations| contains information about where to create them.
 bool CreatePlatformShortcuts(
     const base::FilePath& shortcut_data_path,
-    scoped_ptr<ShortcutInfo> shortcut_info,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info,
     const ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason);
@@ -260,7 +262,7 @@ bool CreatePlatformShortcuts(
 // platform specific implementation of the DeleteAllShortcuts function, and
 // is executed on the FILE thread.
 void DeletePlatformShortcuts(const base::FilePath& shortcut_data_path,
-                             scoped_ptr<ShortcutInfo> shortcut_info);
+                             std::unique_ptr<ShortcutInfo> shortcut_info);
 
 // Updates all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the UpdateAllShortcuts function, and
@@ -268,7 +270,7 @@ void DeletePlatformShortcuts(const base::FilePath& shortcut_data_path,
 void UpdatePlatformShortcuts(
     const base::FilePath& shortcut_data_path,
     const base::string16& old_app_title,
-    scoped_ptr<ShortcutInfo> shortcut_info,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info);
 
 // Delete all the shortcuts for an entire profile.

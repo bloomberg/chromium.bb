@@ -112,7 +112,7 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
 
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  scoped_ptr<base::DictionaryValue> sync_logs(
+  std::unique_ptr<base::DictionaryValue> sync_logs(
       sync_driver::sync_ui_util::ConstructAboutInformation(
           service, service->signin(), chrome::GetChannel()));
 

@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_PLUGINS_PLUGIN_OBSERVER_H_
 #define CHROME_BROWSER_PLUGINS_PLUGIN_OBSERVER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"

@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_INTERNAL_EXTENSION_PROVIDER_H_
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_INTERNAL_EXTENSION_PROVIDER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 #include "components/content_settings/core/browser/content_settings_origin_identifier_value_map.h"
@@ -37,7 +37,7 @@ class InternalExtensionProvider : public ObservableProvider,
   ~InternalExtensionProvider() override;
 
   // ProviderInterface methods:
-  scoped_ptr<RuleIterator> GetRuleIterator(
+  std::unique_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       bool incognito) const override;
@@ -80,7 +80,7 @@ class InternalExtensionProvider : public ObservableProvider,
 
   // Used around accesses to the |value_map_| list to guarantee thread safety.
   mutable base::Lock lock_;
-  scoped_ptr<content::NotificationRegistrar> registrar_;
+  std::unique_ptr<content::NotificationRegistrar> registrar_;
 
   // Extension IDs used by the Chrome Remote Desktop app.
   std::set<std::string> chrome_remote_desktop_;

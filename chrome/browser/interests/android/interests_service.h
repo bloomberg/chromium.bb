@@ -7,9 +7,10 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/interests/interests_fetcher.h"
 
@@ -29,9 +30,9 @@ class InterestsService {
 
  private:
   void OnObtainedInterests(
-      scoped_ptr<InterestsFetcher> fetcher,
+      std::unique_ptr<InterestsFetcher> fetcher,
       const base::android::ScopedJavaGlobalRef<jobject>& j_callback,
-      scoped_ptr<std::vector<InterestsFetcher::Interest>> interests);
+      std::unique_ptr<std::vector<InterestsFetcher::Interest>> interests);
 
   Profile* profile_;
 

@@ -198,7 +198,7 @@ class BrowsingDataCookieHelperTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> testing_profile_;
+  std::unique_ptr<TestingProfile> testing_profile_;
 
   std::vector<CookieExpectation> cookie_expectations_;
   net::CookieList cookie_list_;
@@ -396,7 +396,7 @@ TEST_F(BrowsingDataCookieHelperTest, CannedEmpty) {
   ASSERT_TRUE(helper->empty());
 
   net::CookieList cookies;
-  scoped_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+  std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
       url_google, "a=1", base::Time::Now(), net::CookieOptions()));
   cookies.push_back(*cookie);
 

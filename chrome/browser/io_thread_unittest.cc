@@ -75,7 +75,7 @@ class NetworkSessionConfiguratorTest : public testing::Test {
 
   bool is_spdy_allowed_by_policy_;
   bool is_quic_allowed_by_policy_;
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   net::HttpNetworkSession::Params params_;
 
  private:
@@ -810,7 +810,7 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
   // TestBrowserThreadBundle's destructor is responsible for calling
   // CleanUp(), the IOThread must be declared before the bundle, so that
   // the bundle is deleted first.
-  scoped_ptr<IOThread> io_thread_;
+  std::unique_ptr<IOThread> io_thread_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 

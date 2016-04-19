@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -114,7 +115,7 @@ class PlatformNotificationServiceTest : public testing::Test {
 
     service()->DisplayNotification(profile(), GURL("https://chrome.com/"),
                                    notification_data, NotificationResources(),
-                                   make_scoped_ptr(delegate), close_closure);
+                                   base::WrapUnique(delegate), close_closure);
 
     return delegate;
   }
@@ -131,8 +132,8 @@ class PlatformNotificationServiceTest : public testing::Test {
   StubNotificationUIManager* ui_manager() const { return ui_manager_.get(); }
 
  private:
-  scoped_ptr<StubNotificationUIManager> ui_manager_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<StubNotificationUIManager> ui_manager_;
+  std::unique_ptr<TestingProfile> profile_;
 
   content::TestBrowserThreadBundle thread_bundle_;
 };
@@ -200,7 +201,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
       = new MockDesktopNotificationDelegate();
   service()->DisplayNotification(profile(), GURL("https://chrome.com/"),
                                  notification_data, NotificationResources(),
-                                 make_scoped_ptr(delegate), nullptr);
+                                 base::WrapUnique(delegate), nullptr);
 
   ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
 

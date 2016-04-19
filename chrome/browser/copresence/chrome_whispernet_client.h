@@ -66,7 +66,7 @@ class ChromeWhispernetClient final : public audio_modem::WhispernetClient {
   // Fire an event to configure whispernet with the given audio parameters.
   void AudioConfiguration(const AudioParamData& params);
 
-  void SendEventIfLoaded(scoped_ptr<extensions::Event> event);
+  void SendEventIfLoaded(std::unique_ptr<extensions::Event> event);
 
   // This gets called when the proxy extension loads.
   void OnExtensionLoaded(bool success);

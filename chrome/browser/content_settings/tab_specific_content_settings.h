@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
@@ -286,11 +286,11 @@ class TabSpecificContentSettings
 
   // Creates a new copy of a CookiesTreeModel for all allowed, and blocked,
   // respectively, local shared objects.
-  scoped_ptr<CookiesTreeModel> CreateAllowedCookiesTreeModel() const {
+  std::unique_ptr<CookiesTreeModel> CreateAllowedCookiesTreeModel() const {
     return allowed_local_shared_objects_.CreateCookiesTreeModel();
   }
 
-  scoped_ptr<CookiesTreeModel> CreateBlockedCookiesTreeModel() const {
+  std::unique_ptr<CookiesTreeModel> CreateBlockedCookiesTreeModel() const {
     return blocked_local_shared_objects_.CreateCookiesTreeModel();
   }
 

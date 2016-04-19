@@ -959,7 +959,7 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::OnComplete(
 }
 
 bool WallpaperPrivateRecordWallpaperUMAFunction::RunSync() {
-  scoped_ptr<record_wallpaper_uma::Params> params(
+  std::unique_ptr<record_wallpaper_uma::Params> params(
       record_wallpaper_uma::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 

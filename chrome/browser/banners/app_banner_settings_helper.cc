@@ -5,11 +5,13 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -88,18 +90,18 @@ unsigned int gMinimumMinutesBetweenVisits = kNumberOfMinutesInADay;
 // Total engagement score required before a banner will actually be triggered.
 double gTotalEngagementToTrigger = kDefaultTotalEngagementToTrigger;
 
-scoped_ptr<base::DictionaryValue> GetOriginDict(
+std::unique_ptr<base::DictionaryValue> GetOriginDict(
     HostContentSettingsMap* settings,
     const GURL& origin_url) {
   if (!settings)
-    return make_scoped_ptr(new base::DictionaryValue());
+    return base::WrapUnique(new base::DictionaryValue());
 
-  scoped_ptr<base::DictionaryValue> dict =
+  std::unique_ptr<base::DictionaryValue> dict =
       base::DictionaryValue::From(settings->GetWebsiteSetting(
           origin_url, origin_url, CONTENT_SETTINGS_TYPE_APP_BANNER,
           std::string(), NULL));
   if (!dict)
-    return make_scoped_ptr(new base::DictionaryValue());
+    return base::WrapUnique(new base::DictionaryValue());
 
   return dict;
 }
@@ -111,7 +113,8 @@ base::DictionaryValue* GetAppDict(base::DictionaryValue* origin_dict,
     // Don't allow more than kMaxAppsPerSite dictionaries.
     if (origin_dict->size() < kMaxAppsPerSite) {
       app_dict = new base::DictionaryValue();
-      origin_dict->SetWithoutPathExpansion(key_name, make_scoped_ptr(app_dict));
+      origin_dict->SetWithoutPathExpansion(key_name,
+                                           base::WrapUnique(app_dict));
     }
   }
 
@@ -268,7 +271,7 @@ void AppBannerSettingsHelper::RecordBannerEvent(
 
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  scoped_ptr<base::DictionaryValue> origin_dict =
+  std::unique_ptr<base::DictionaryValue> origin_dict =
       GetOriginDict(settings, origin_url);
   if (!origin_dict)
     return;
@@ -309,7 +312,7 @@ void AppBannerSettingsHelper::RecordBannerCouldShowEvent(
 
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  scoped_ptr<base::DictionaryValue> origin_dict =
+  std::unique_ptr<base::DictionaryValue> origin_dict =
       GetOriginDict(settings, origin_url);
   if (!origin_dict)
     return;
@@ -325,7 +328,7 @@ void AppBannerSettingsHelper::RecordBannerCouldShowEvent(
   base::ListValue* could_show_list = nullptr;
   if (!app_dict->GetList(event_key, &could_show_list)) {
     could_show_list = new base::ListValue();
-    app_dict->Set(event_key, make_scoped_ptr(could_show_list));
+    app_dict->Set(event_key, base::WrapUnique(could_show_list));
   }
 
   // Trim any items that are older than we should care about. For comparisons
@@ -371,7 +374,7 @@ void AppBannerSettingsHelper::RecordBannerCouldShowEvent(
 
   // Dates are stored in their raw form (i.e. not local dates) to be resilient
   // to time zone changes.
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetDouble(kBannerTimeKey, time.ToInternalValue());
   value->SetDouble(kBannerEngagementKey, engagement);
   could_show_list->Append(std::move(value));
@@ -457,7 +460,7 @@ AppBannerSettingsHelper::GetCouldShowBannerEvents(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  scoped_ptr<base::DictionaryValue> origin_dict =
+  std::unique_ptr<base::DictionaryValue> origin_dict =
       GetOriginDict(settings, origin_url);
 
   if (!origin_dict)
@@ -503,7 +506,7 @@ base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  scoped_ptr<base::DictionaryValue> origin_dict =
+  std::unique_ptr<base::DictionaryValue> origin_dict =
       GetOriginDict(settings, origin_url);
 
   if (!origin_dict)

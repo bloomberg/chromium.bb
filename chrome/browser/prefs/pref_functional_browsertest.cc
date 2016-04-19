@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/net/prediction_options.h"
@@ -34,8 +35,9 @@ class PrefsFunctionalTest : public InProcessBrowserTest {
  protected:
   // Create a DownloadTestObserverTerminal that will wait for the
   // specified number of downloads to finish.
-  scoped_ptr<content::DownloadTestObserver> CreateWaiter(Browser* browser,
-                                                         int num_downloads) {
+  std::unique_ptr<content::DownloadTestObserver> CreateWaiter(
+      Browser* browser,
+      int num_downloads) {
     DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(browser->profile());
 
@@ -44,7 +46,7 @@ class PrefsFunctionalTest : public InProcessBrowserTest {
              download_manager,
              num_downloads,
              content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
-    return make_scoped_ptr(downloads_observer);
+    return base::WrapUnique(downloads_observer);
   }
 };
 
@@ -61,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestDownloadDirPref) {
       prefs::kDownloadDefaultDirectory, new_download_dir.path());
 
   // Create a downloads observer.
-  scoped_ptr<content::DownloadTestObserver> downloads_observer(
+  std::unique_ptr<content::DownloadTestObserver> downloads_observer(
       CreateWaiter(browser(), 1));
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/downloads/a_zip_file.zip"));

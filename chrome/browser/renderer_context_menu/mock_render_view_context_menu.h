@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_RENDERER_CONTEXT_MENU_MOCK_RENDER_VIEW_CONTEXT_MENU_H_
 
 #include <cstddef>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -85,7 +85,7 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   // A dummy profile used in this test. Call GetPrefs() when a test needs to
   // change this profile and use PrefService methods.
-  scoped_ptr<TestingProfile> original_profile_;
+  std::unique_ptr<TestingProfile> original_profile_;
 
   // Either |original_profile_| or its incognito profile.
   Profile* profile_;

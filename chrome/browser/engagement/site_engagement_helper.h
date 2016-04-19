@@ -57,7 +57,7 @@ class SiteEngagementHelper
     bool IsTimerRunning();
 
     // Set the timer object for testing.
-    void SetPauseTimerForTesting(scoped_ptr<base::Timer> timer);
+    void SetPauseTimerForTesting(std::unique_ptr<base::Timer> timer);
 
     SiteEngagementHelper* helper() { return helper_; }
 
@@ -76,7 +76,7 @@ class SiteEngagementHelper
 
    private:
     SiteEngagementHelper* helper_;
-    scoped_ptr<base::Timer> pause_timer_;
+    std::unique_ptr<base::Timer> pause_timer_;
   };
 
   // Class to encapsulate time-on-site engagement detection. Time-on-site is

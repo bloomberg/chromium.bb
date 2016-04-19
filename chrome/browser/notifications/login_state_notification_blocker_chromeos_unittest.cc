@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
+
+#include <memory>
+
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
 #include "chromeos/login/login_state.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -57,7 +59,7 @@ class LoginStateNotificationBlockerChromeOSTest
 
  private:
   int state_changed_count_;
-  scoped_ptr<message_center::NotificationBlocker> blocker_;
+  std::unique_ptr<message_center::NotificationBlocker> blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginStateNotificationBlockerChromeOSTest);
 };

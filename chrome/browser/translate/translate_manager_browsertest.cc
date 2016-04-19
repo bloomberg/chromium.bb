@@ -4,7 +4,8 @@
 
 #include "components/translate/core/browser/translate_manager.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -35,7 +36,7 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
  protected:
   // InProcessBrowserTest members.
   void SetUp() override {
-    scoped_ptr<test::CldDataHarness> cld_data_harness =
+    std::unique_ptr<test::CldDataHarness> cld_data_harness =
         test::CldDataHarnessFactory::Get()->CreateCldDataHarness();
     ASSERT_NO_FATAL_FAILURE(cld_data_harness->Init());
     InProcessBrowserTest::SetUp();
@@ -50,7 +51,7 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
       ui_test_utils::WindowedNotificationObserverWithDetails<
           translate::LanguageDetectionDetails>;
 
-  scoped_ptr<LangageDetectionObserver> language_detected_signal_;
+  std::unique_ptr<LangageDetectionObserver> language_detected_signal_;
 };
 
 // Tests that the CLD (Compact Language Detection) works properly.

@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 
 class ProcessResourceUsage;
@@ -57,7 +58,7 @@ class RendererResource : public Resource {
   // RenderViewHost we use to fetch stats.
   content::RenderViewHost* render_view_host_;
 
-  scoped_ptr<ProcessResourceUsage> process_resource_usage_;
+  std::unique_ptr<ProcessResourceUsage> process_resource_usage_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererResource);
 };

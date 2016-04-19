@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/profile_writer.h"
@@ -124,7 +125,7 @@ class ExternalProcessImporterHost
   importer::ImporterProgressObserver* observer_;
 
   // Firefox profile lock.
-  scoped_ptr<FirefoxProfileLock> firefox_lock_;
+  std::unique_ptr<FirefoxProfileLock> firefox_lock_;
 
   // Profile we're importing from.
   Profile* profile_;
@@ -134,7 +135,8 @@ class ExternalProcessImporterHost
 
   // May contain a Subscription waiting for the TemplateURLService to finish
   // loading.
-  scoped_ptr<TemplateURLService::Subscription> template_service_subscription_;
+  std::unique_ptr<TemplateURLService::Subscription>
+      template_service_subscription_;
 
   // Have we installed a listener on the bookmark model?
   bool installed_bookmark_observer_;

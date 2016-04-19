@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
+
+#include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 
 namespace {
@@ -35,7 +37,7 @@ class FromGWSPageLoadMetricsObserverTest
  public:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        make_scoped_ptr(new TestFromGWSPageLoadMetricsObserver(referrer_)));
+        base::WrapUnique(new TestFromGWSPageLoadMetricsObserver(referrer_)));
   }
 
   // Inject this referrer to FromGWS observers.

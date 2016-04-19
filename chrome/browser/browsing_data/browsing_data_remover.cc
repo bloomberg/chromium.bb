@@ -1034,7 +1034,7 @@ void BrowsingDataRemover::OverrideStoragePartitionForTesting(
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 void BrowsingDataRemover::OverrideWebappRegistryForTesting(
-    scoped_ptr<WebappRegistry> webapp_registry) {
+    std::unique_ptr<WebappRegistry> webapp_registry) {
   webapp_registry_.reset(webapp_registry.release());
 }
 #endif

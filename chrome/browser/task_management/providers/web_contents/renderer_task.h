@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/task_management/providers/task.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "content/public/browser/navigation_entry.h"
@@ -110,7 +111,7 @@ class RendererTask : public Task,
   // The Mojo service wrapper that will provide us with the V8 memory usage and
   // the WebCache resource stats of the render process represented by this
   // object.
-  scoped_ptr<ProcessResourceUsage> renderer_resources_sampler_;
+  std::unique_ptr<ProcessResourceUsage> renderer_resources_sampler_;
 
   // The unique ID of the RenderProcessHost.
   const int render_process_id_;

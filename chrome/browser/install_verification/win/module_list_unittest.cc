@@ -4,13 +4,15 @@
 
 #include "chrome/browser/install_verification/win/module_list.h"
 
-#include <stddef.h>
 #include <Windows.h>
+#include <stddef.h>
+
+#include <memory>
 #include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/win/win_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +20,7 @@ TEST(ModuleListTest, TestCase) {
   std::vector<HMODULE> snapshot;
   ASSERT_TRUE(
       base::win::GetLoadedModulesSnapshot(::GetCurrentProcess(), &snapshot));
-  scoped_ptr<ModuleList> module_list(
+  std::unique_ptr<ModuleList> module_list(
       ModuleList::FromLoadedModuleSnapshot(snapshot));
 
   // Lookup the number of loaded modules.

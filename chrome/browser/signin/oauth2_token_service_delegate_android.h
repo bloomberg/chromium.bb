@@ -6,14 +6,15 @@
 #define CHROME_BROWSER_SIGNIN_OAUTH2_TOKEN_SERVICE_DELEGATE_ANDROID_H_
 
 #include <jni.h>
+
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"

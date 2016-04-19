@@ -173,7 +173,7 @@ ProtocolHandlerRegistry::JobInterceptorFactory::~JobInterceptorFactory() {
 }
 
 void ProtocolHandlerRegistry::JobInterceptorFactory::Chain(
-    scoped_ptr<net::URLRequestJobFactory> job_factory) {
+    std::unique_ptr<net::URLRequestJobFactory> job_factory) {
   job_factory_ = std::move(job_factory);
 }
 
@@ -696,9 +696,10 @@ void ProtocolHandlerRegistry::Save() {
   if (is_loading_) {
     return;
   }
-  scoped_ptr<base::Value> registered_protocol_handlers(
+  std::unique_ptr<base::Value> registered_protocol_handlers(
       EncodeRegisteredHandlers());
-  scoped_ptr<base::Value> ignored_protocol_handlers(EncodeIgnoredHandlers());
+  std::unique_ptr<base::Value> ignored_protocol_handlers(
+      EncodeIgnoredHandlers());
   PrefService* prefs = user_prefs::UserPrefs::Get(context_);
 
   prefs->Set(prefs::kRegisteredProtocolHandlers,
@@ -920,12 +921,12 @@ ProtocolHandlerRegistry::GetDefaultWebClientCallback(
       weak_ptr_factory_.GetWeakPtr(), protocol);
 }
 
-scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
+std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
 ProtocolHandlerRegistry::CreateJobInterceptorFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // this is always created on the UI thread (in profile_io's
   // InitializeOnUIThread. Any method calls must be done
   // on the IO thread (this is checked).
-  return scoped_ptr<JobInterceptorFactory>(
+  return std::unique_ptr<JobInterceptorFactory>(
       new JobInterceptorFactory(io_thread_delegate_.get()));
 }

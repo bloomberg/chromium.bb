@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_PROFILE_RESETTER_RESETTABLE_SETTINGS_SNAPSHOT_H_
 #define CHROME_BROWSER_PROFILE_RESETTER_RESETTABLE_SETTINGS_SNAPSHOT_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -125,7 +125,7 @@ class ResettableSettingsSnapshot {
 
 // Serializes specified |snapshot| members to a protobuf. |field_mask| is a bit
 // mask of ResettableSettingsSnapshot::Field values.
-scoped_ptr<reset_report::ChromeResetReport> SerializeSettingsReportToProto(
+std::unique_ptr<reset_report::ChromeResetReport> SerializeSettingsReportToProto(
     const ResettableSettingsSnapshot& snapshot,
     int field_mask);
 
@@ -136,7 +136,7 @@ void SendSettingsFeedbackProto(const reset_report::ChromeResetReport& report,
 
 // Returns list of key/value pairs for all available reported information
 // from the |profile| and some additional fields.
-scoped_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
+std::unique_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
     Profile* profile,
     const ResettableSettingsSnapshot& snapshot);
 
