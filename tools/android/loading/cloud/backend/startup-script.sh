@@ -38,7 +38,7 @@ pip install --upgrade pip virtualenv
 
 # Download the Clovis deployment from Google Cloud Storage and unzip it.
 # It is expected that the contents of the deployment have been generated using
-# the tools/android/loading/gce/deploy.sh script.
+# the tools/android/loading/cloud/backend/deploy.sh script.
 CLOUD_STORAGE_PATH=`get_instance_metadata cloud-storage-path`
 DEPLOYMENT_PATH=$CLOUD_STORAGE_PATH/deployment
 
@@ -49,8 +49,8 @@ rm /opt/app/clovis/source.tgz
 
 # Install app dependencies
 virtualenv /opt/app/clovis/env
-/opt/app/clovis/env/bin/pip install \
-    -r /opt/app/clovis/src/tools/android/loading/gce/pip_requirements.txt
+/opt/app/clovis/env/bin/pip install -r \
+   /opt/app/clovis/src/tools/android/loading/cloud/backend/pip_requirements.txt
 
 mkdir /opt/app/clovis/binaries
 gsutil cp gs://$DEPLOYMENT_PATH/binaries/* /opt/app/clovis/binaries/
@@ -66,12 +66,14 @@ chown -R pythonapp:pythonapp /opt/app
 
 # Create the configuration file for this deployment.
 DEPLOYMENT_CONFIG_PATH=/opt/app/clovis/deployment_config.json
+TASKQUEUE_TAG=`get_instance_metadata taskqueue_tag`
 cat >$DEPLOYMENT_CONFIG_PATH << EOF
 {
   "project_name" : "$PROJECTID",
   "cloud_storage_path" : "$CLOUD_STORAGE_PATH",
   "chrome_path" : "/opt/app/clovis/binaries/chrome",
-  "src_path" : "/opt/app/clovis/src"
+  "src_path" : "/opt/app/clovis/src",
+  "taskqueue_tag" : "$TASKQUEUE_TAG"
 }
 EOF
 
@@ -79,17 +81,15 @@ EOF
 AUTO_START=`get_instance_metadata auto-start`
 
 # Exit early if auto start is not enabled.
-if [ "$AUTO_START" != "true" ]; then
+if [ "$AUTO_START" == "false" ]; then
   exit 1
 fi
 
-# Configure supervisor to start gunicorn inside of our virtualenv and run the
-# applicaiton.
+# Configure supervisor to start the worker inside of our virtualenv.
 cat >/etc/supervisor/conf.d/python-app.conf << EOF
 [program:pythonapp]
-directory=/opt/app/clovis/src/tools/android/loading/gce
-command=/opt/app/clovis/env/bin/gunicorn --workers=1 --bind 0.0.0.0:8080 \
-    'main:StartApp('\"$DEPLOYMENT_CONFIG_PATH\"')'
+directory=/opt/app/clovis/src/tools/android/loading/cloud/backend
+command=python worker.py --config $DEPLOYMENT_CONFIG_PATH
 autostart=true
 autorestart=true
 user=pythonapp

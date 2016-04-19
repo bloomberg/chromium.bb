@@ -21,9 +21,13 @@ src_suffix=src
 tmp_src_dir=$tmpdir/$src_suffix
 
 # Copy files from tools/android/loading.
-mkdir -p $tmp_src_dir/tools/android/loading
+mkdir -p $tmp_src_dir/tools/android/loading/cloud
+cp -r tools/android/loading/cloud/backend \
+  $tmp_src_dir/tools/android/loading/cloud/
+cp -r tools/android/loading/cloud/common \
+  $tmp_src_dir/tools/android/loading/cloud/
 cp tools/android/loading/*.py $tmp_src_dir/tools/android/loading
-cp -r tools/android/loading/gce $tmp_src_dir/tools/android/loading
+cp tools/android/loading/cloud/*.py $tmp_src_dir/tools/android/loading/cloud
 
 # Copy other dependencies.
 mkdir $tmp_src_dir/third_party

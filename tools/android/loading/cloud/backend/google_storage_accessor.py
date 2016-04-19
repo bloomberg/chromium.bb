@@ -3,17 +3,16 @@
 # found in the LICENSE file.
 
 from gcloud import storage
-from oauth2client.client import GoogleCredentials
 
 
 class GoogleStorageAccessor(object):
   """Utility class providing helpers for Google Cloud Storage.
   """
-  def __init__(self, project_name, bucket_name):
+  def __init__(self, credentials, project_name, bucket_name):
     """project_name is the name of the Google Cloud project.
     bucket_name is the name of the bucket that is used for Cloud Storage calls.
     """
-    self._credentials = GoogleCredentials.get_application_default()
+    self._credentials = credentials
     self._project_name = project_name
     self._bucket_name = bucket_name
 
