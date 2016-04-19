@@ -468,8 +468,6 @@ bool ContentSecurityPolicy::allowEval(ScriptState* scriptState, ContentSecurityP
 
 bool ContentSecurityPolicy::allowDynamic() const
 {
-    if (!experimentalFeaturesEnabled())
-        return false;
     for (const auto& policy : m_policies) {
         if (!policy->allowDynamic())
             return false;

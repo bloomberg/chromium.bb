@@ -132,8 +132,6 @@ bool CSPDirectiveList::checkHash(SourceListDirective* directive, const CSPHashVa
 
 bool CSPDirectiveList::checkDynamic(SourceListDirective* directive) const
 {
-    if (!m_policy->experimentalFeaturesEnabled())
-        return false;
     return !directive || directive->allowDynamic();
 }
 
