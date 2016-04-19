@@ -8,21 +8,14 @@
 #include "base/macros.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/controls/button/button.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "url/gurl.h"
 
 class Browser;
 
-namespace views {
-class Label;
-class LabelButton;
-}
-
 // This is the class that implements the UI for the bubble showing that there
 // is a 3rd party module loaded that conflicts with Chrome.
-class ConflictingModuleView : public views::BubbleDelegateView,
-                              public views::ButtonListener,
+class ConflictingModuleView : public views::BubbleDialogDelegateView,
                               public content::NotificationObserver {
  public:
   ConflictingModuleView(views::View* anchor_view,
@@ -38,20 +31,14 @@ class ConflictingModuleView : public views::BubbleDelegateView,
   // Shows the bubble and updates the counter for how often it has been shown.
   void ShowBubble();
 
-  // Dismiss and make sure the bubble is not shown again. This bubble is a
-  // single-appearance bubble.
-  void DismissBubble();
-
-  // views::BubbleDelegateView implementation:
+  // views::BubbleDialogDelegateView implementation:
+  void OnWidgetClosing(views::Widget* widget) override;
+  bool Accept() override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void Init() override;
-
-  // views::ButtonListener implementation.
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::View implementation.
   void GetAccessibleState(ui::AXViewState* state) override;
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
 
   // content::NotificationObserver implementation.
   void Observe(
@@ -62,11 +49,6 @@ class ConflictingModuleView : public views::BubbleDelegateView,
   Browser* browser_;
 
   content::NotificationRegistrar registrar_;
-
-  // The headline, labels and buttons on the bubble.
-  views::Label* explanation_;
-  views::LabelButton* learn_more_button_;
-  views::LabelButton* not_now_button_;
 
   // The link to the help center for this conflict.
   GURL help_center_url_;
