@@ -30,6 +30,7 @@
 #include "core/layout/line/AbstractInlineTextBox.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/paint/InlineTextBoxPainter.h"
+#include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/shaping/SimpleShaper.h"
 #include "wtf/Vector.h"
@@ -544,15 +545,13 @@ void InlineTextBox::characterWidths(Vector<float>& widths) const
     const ComputedStyle& styleToUse = getLineLayoutItem().styleRef(isFirstLineStyle());
     const Font& font = styleToUse.font();
 
-    float lastWidth = 0;
-    widths.resize(m_len);
-    for (unsigned i = 0; i < m_len; i++) {
-        StringView substringView = getLineLayoutItem().text().createView();
-        substringView.narrow(start(), 1 + i);
-        TextRun textRun = constructTextRun(styleToUse, font, substringView, m_len);
-        widths[i] = font.width(textRun, nullptr, nullptr) - lastWidth;
-        lastWidth = font.width(textRun, nullptr, nullptr);
-    }
+    TextRun textRun = constructTextRun(styleToUse, font);
+    Vector<CharacterRange> ranges = font.individualCharacterRanges(textRun);
+    DCHECK_EQ(ranges.size(), m_len);
+
+    widths.resize(ranges.size());
+    for (unsigned i = 0; i < ranges.size(); i++)
+        widths[i] = ranges[i].width();
 }
 
 TextRun InlineTextBox::constructTextRun(const ComputedStyle& style, const Font& font, StringBuilder* charactersWithHyphen) const
