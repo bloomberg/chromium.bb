@@ -103,7 +103,7 @@ configs['cros-bot-staging'] = dict(
 # Same as cros-bot, but launch in the staging network.
 configs['cros-bot-release'] = dict(
     machine_type=DEFAULT_MACHINE_TYPE_64,
-    zone='us-east1-c',
+    zone='us-east1-b',
     image=DEFAULT_IMAGE_NAME,
     scopes=DEFAULT_SCOPES,
 )
