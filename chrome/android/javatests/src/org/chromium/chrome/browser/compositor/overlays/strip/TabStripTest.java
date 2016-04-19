@@ -468,22 +468,41 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
 
     /**
      * Compares tab strips with models after switching between the ScrollingStripStacker and
-     * CascadingStripStacker when an incognito tab is present. Also tests tapping the incognito
+     * CascadingStripStacker when an incognito tab is present. Tests tapping the incognito
      * button while the strip is using the ScrollingStripStacker (other tests cover tapping
-     * the button while using the CascadingStripStacker).
+     * the button while using the CascadingStripStacker), and checks that switching between
+     * tab models scrolls to make the selected tab visible.
      */
     @LargeTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testSwitchStripStackersWithIncognito() throws InterruptedException {
-        // Open an incognito tab.
+        // Open an incognito tab to switch to the incognito model.
         newIncognitoTabFromMenu();
+
+        // Open enough regular tabs to cause the tabs to cascade or the strip to scroll depending
+        // on which stacker is being used.
+        ChromeTabUtils.newTabsFromMenu(getInstrumentation(), getActivity(), 10);
 
         // Switch to the ScrollingStripStacker.
         setShouldCascadeTabsAndCheckTabStrips(false);
 
-        // Switch tab models.
+        // Scroll so the selected tab is not visible.
+        assertSetTabStripScrollOffset(0);
+        TabModel model = getActivity().getTabModelSelector().getModel(false);
+        StripLayoutTab tab = TabStripUtils.findStripLayoutTab(getActivity(), false,
+                model.getTabAt(10).getId());
+        assertTabVisibility(false, tab);
+
+        // Open another incognito tab to switch to the incognito model.
+        newIncognitoTabFromMenu();
+
+        // Switch tab models to switch back to the regular tab strip.
         clickIncognitoToggleButton();
+        getInstrumentation().waitForIdleSync();
+
+        // Assert selected tab is visible.
+        assertTabVisibility(true, tab);
 
         // Switch to the CascadingStripStacker.
         setShouldCascadeTabsAndCheckTabStrips(true);

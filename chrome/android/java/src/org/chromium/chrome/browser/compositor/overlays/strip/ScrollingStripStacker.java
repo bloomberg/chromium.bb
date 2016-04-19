@@ -38,10 +38,10 @@ public class ScrollingStripStacker extends StripStacker {
 
     @Override
     public void performOcclusionPass(int selectedIndex, StripLayoutTab[] indexOrderedTabs,
-            float layoutWidth) {
+            float stripWidth) {
         for (int i = 0; i < indexOrderedTabs.length; i++) {
             StripLayoutTab tab = indexOrderedTabs[i];
-            tab.setVisible((tab.getDrawX() + tab.getWidth()) >= 0 && tab.getDrawX() <= layoutWidth);
+            tab.setVisible((tab.getDrawX() + tab.getWidth()) >= 0 && tab.getDrawX() <= stripWidth);
         }
     }
 

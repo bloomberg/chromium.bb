@@ -144,6 +144,7 @@ public class StripLayoutHelper {
     private float mBrightness;
     // Whether the CascadingStripStacker should be used.
     private boolean mShouldCascadeTabs;
+    private boolean mIsFirstLayoutPass;
 
     // Tab menu item IDs
     public static final int ID_CLOSE_ALL_TABS = 0;
@@ -208,9 +209,7 @@ public class StripLayoutHelper {
         int screenWidthDp = context.getResources().getConfiguration().screenWidthDp;
         mShouldCascadeTabs = screenWidthDp >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP;
         mStripStacker = mShouldCascadeTabs ? mCascadingStripStacker : mScrollingStripStacker;
-
-        // TODO(twellington): auto-scroll on cold start and when the tab model is switched
-        //                    so the selected tab is visible when !mShouldCascadeTabs.
+        mIsFirstLayoutPass = true;
     }
 
     /**
@@ -429,7 +428,21 @@ public class StripLayoutHelper {
         PerfTraceEvent.instant("StripLayoutHelper:updateLayout");
         final boolean doneAnimating = onUpdateAnimation(time, false);
         updateStrip();
+
+        // If this is the first layout pass, scroll to the selected tab so that it is visible.
+        // This is needed if the ScrollingStripStacker is being used because the selected tab is
+        // not guaranteed to be visible.
+        if (mIsFirstLayoutPass) bringSelectedTabToVisibleArea(time, false);
+        mIsFirstLayoutPass = false;
+
         return doneAnimating;
+    }
+
+    /**
+     * Called when the tab model this StripLayoutHelper visually represents has been selected.
+     */
+    public void tabModelSelected() {
+        bringSelectedTabToVisibleArea(0, false);
     }
 
     /**
@@ -446,10 +459,7 @@ public class StripLayoutHelper {
 
             // If the tab was selected through a method other than the user tapping on the strip, it
             // may not be currently visible. Scroll if necessary.
-            if (!mShouldCascadeTabs && !findTabById(id).isVisible()) {
-                float delta = calculateOffsetToMakeTabVisible(findTabById(id), true, true, true);
-                setScrollForScrollingTabStacker(delta, true, time);
-            }
+            bringSelectedTabToVisibleArea(time, true);
 
             mUpdateHost.requestUpdate();
         }
@@ -1617,6 +1627,28 @@ public class StripLayoutHelper {
         } else {
             mScrollOffset += delta;
         }
+    }
+
+    /**
+     * Scrolls to the selected tab if it's not fully visible.
+     */
+    private void bringSelectedTabToVisibleArea(long time, boolean animate) {
+        // The selected tab is always visible in the CascadingStripStacker.
+        if (mShouldCascadeTabs) return;
+
+        Tab selectedTab = mModel.getTabAt(mModel.index());
+        if (selectedTab == null) return;
+
+        StripLayoutTab selectedLayoutTab = findTabById(selectedTab.getId());
+        if (isSelectedTabCompletelyVisible(selectedLayoutTab)) return;
+
+        float delta = calculateOffsetToMakeTabVisible(selectedLayoutTab, true, true, true);
+        setScrollForScrollingTabStacker(delta, animate, time);
+    }
+
+    private boolean isSelectedTabCompletelyVisible(StripLayoutTab selectedTab) {
+        return selectedTab.isVisible() && selectedTab.getDrawX() >= 0
+                && selectedTab.getDrawX() + selectedTab.getWidth() <= mWidth;
     }
 
     /**

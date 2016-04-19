@@ -212,6 +212,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
     public void setTabModelSelector(TabModelSelector modelSelector,
             TabCreatorManager tabCreatorManager) {
         if (mTabModelSelector == modelSelector) return;
+
         mTabModelSelector = modelSelector;
         mNormalHelper.setTabModel(mTabModelSelector.getModel(false),
                 tabCreatorManager.getTabCreator(false));
@@ -278,6 +279,12 @@ public class StripLayoutHelperManager implements SceneOverlay {
     public void tabModelSwitched(boolean incognito) {
         if (incognito == mIsIncognito) return;
         mIsIncognito = incognito;
+
+        if (mIsIncognito) {
+            mIncognitoHelper.tabModelSelected();
+        } else {
+            mNormalHelper.tabModelSelected();
+        }
 
         updateModelSwitcherButton();
 
