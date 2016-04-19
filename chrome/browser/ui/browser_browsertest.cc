@@ -106,7 +106,6 @@
 #include "extensions/common/extension_set.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -3094,27 +3093,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
 
 namespace {
 
-// A URLRequestMockHTTPJob that mocks an SSL connection with an
-// obsolete protocol version.
-class URLRequestNonsecureConnection : public net::URLRequestMockHTTPJob {
- public:
-  void GetResponseInfo(net::HttpResponseInfo* info) override {
-    info->ssl_info.connection_status = (net::SSL_CONNECTION_VERSION_TLS1_1
-                                        << net::SSL_CONNECTION_VERSION_SHIFT);
-    // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from
-    // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
-    const uint16_t ciphersuite = 0xc02f;
-    net::SSLConnectionStatusSetCipherSuite(ciphersuite,
-                                           &info->ssl_info.connection_status);
-  }
-
- protected:
-  ~URLRequestNonsecureConnection() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(URLRequestNonsecureConnection);
-};
-
 class BrowserTestNonsecureURLRequest : public BrowserTest {
  public:
   BrowserTestNonsecureURLRequest() : BrowserTest() {}
@@ -3124,7 +3102,7 @@ class BrowserTestNonsecureURLRequest : public BrowserTest {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(
-            &URLRequestNonsecureConnection::AddUrlHandlers, root_http,
+            &net::URLRequestMockHTTPJob::AddUrlHandlers, root_http,
             make_scoped_refptr(content::BrowserThread::GetBlockingPool())));
   }
 
@@ -3143,7 +3121,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
   SecurityStyleTestObserver observer(web_contents);
 
   ui_test_utils::NavigateToURL(
-      browser(), URLRequestNonsecureConnection::GetMockHttpsUrl(std::string()));
+      browser(), net::URLRequestMockHTTPJob::GetMockHttpsUrl(std::string()));
   for (const auto& explanation :
        observer.latest_explanations().secure_explanations) {
     EXPECT_NE(l10n_util::GetStringUTF8(IDS_SECURE_PROTOCOL_AND_CIPHERSUITE),
