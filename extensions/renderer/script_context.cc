@@ -210,7 +210,7 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
 Feature::Availability ScriptContext::GetAvailability(
     const std::string& api_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (api_name == "test") {
+  if (base::StartsWith(api_name, "test", base::CompareCase::SENSITIVE)) {
     bool allowed = base::CommandLine::ForCurrentProcess()->
                        HasSwitch(::switches::kTestType);
     Feature::AvailabilityResult result =

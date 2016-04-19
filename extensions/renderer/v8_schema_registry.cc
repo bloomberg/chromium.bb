@@ -104,6 +104,7 @@ v8::Local<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
   CHECK(!value.IsEmpty());
 
   v8::Local<v8::Object> v8_schema(v8::Local<v8::Object>::Cast(value));
+  v8_schema->SetIntegrityLevel(context, v8::IntegrityLevel::kFrozen);
   schema_cache_->Set(api, v8_schema);
 
   return handle_scope.Escape(v8_schema);
