@@ -37,6 +37,7 @@
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/StdLibExtras.h"
 
 namespace blink {
 
@@ -45,11 +46,14 @@ public:
     class FakeImageObserver : public GarbageCollectedFinalized<FakeImageObserver>, public ImageObserver {
         USING_GARBAGE_COLLECTED_MIXIN(FakeImageObserver);
     public:
-        FakeImageObserver() : m_lastDecodedSizeChangedDelta(0) { }
+        FakeImageObserver()
+            : m_lastDecodedSize(0)
+            , m_lastDecodedSizeChangedDelta(0) { }
 
-        virtual void decodedSizeChanged(const Image*, int delta)
+        virtual void decodedSizeChangedTo(const Image*, size_t newSize)
         {
-            m_lastDecodedSizeChangedDelta = delta;
+            m_lastDecodedSizeChangedDelta = safeCast<int>(newSize) - safeCast<int>(m_lastDecodedSize);
+            m_lastDecodedSize = newSize;
         }
         void didDraw(const Image*) override { }
         bool shouldPauseAnimation(const Image*) override { return false; }
@@ -57,6 +61,7 @@ public:
 
         virtual void changedInRect(const Image*, const IntRect&) { }
 
+        size_t m_lastDecodedSize;
         int m_lastDecodedSizeChangedDelta;
     };
 

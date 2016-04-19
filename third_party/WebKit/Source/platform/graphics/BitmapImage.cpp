@@ -116,8 +116,8 @@ void BitmapImage::destroyDecodedData(bool destroyAll)
         m_frames[i].clear(false);
     }
 
-    size_t frameBytesCleared = m_source.clearCacheExceptFrame(destroyAll ? kNotFound : m_currentFrame);
-    notifyMemoryChanged(-safeCast<int>(frameBytesCleared));
+    m_source.clearCacheExceptFrame(destroyAll ? kNotFound : m_currentFrame);
+    notifyMemoryChanged();
 }
 
 void BitmapImage::destroyDecodedDataIfNecessary()
@@ -134,19 +134,19 @@ void BitmapImage::destroyDecodedDataIfNecessary()
     }
 }
 
-void BitmapImage::notifyMemoryChanged(int delta)
+void BitmapImage::notifyMemoryChanged()
 {
-    if (delta && getImageObserver())
-        getImageObserver()->decodedSizeChanged(this, delta);
+    if (getImageObserver())
+        getImageObserver()->decodedSizeChangedTo(this, totalFrameBytes());
 }
 
-int BitmapImage::totalFrameBytes()
+size_t BitmapImage::totalFrameBytes()
 {
     const size_t numFrames = frameCount();
     size_t totalBytes = 0;
     for (size_t i = 0; i < numFrames; ++i)
         totalBytes += m_source.frameBytesAtIndex(i);
-    return safeCast<int>(totalBytes);
+    return totalBytes;
 }
 
 void BitmapImage::cacheFrame(size_t index)
@@ -154,8 +154,6 @@ void BitmapImage::cacheFrame(size_t index)
     size_t numFrames = frameCount();
     if (m_frames.size() < numFrames)
         m_frames.grow(numFrames);
-
-    int deltaBytes = totalFrameBytes();
 
     // We are caching frame snapshots.  This is OK even for partially decoded frames,
     // as they are cleared by dataChanged() when new data arrives.
@@ -173,11 +171,7 @@ void BitmapImage::cacheFrame(size_t index)
     if (frameSize != m_size)
         m_hasUniformFrameSize = false;
 
-    // We need to check the total bytes before and after the decode call, not
-    // just the current frame size, because some multi-frame images may require
-    // decoding multiple frames to decode the current frame.
-    deltaBytes = totalFrameBytes() - deltaBytes;
-    notifyMemoryChanged(deltaBytes);
+    notifyMemoryChanged();
 }
 
 void BitmapImage::updateSize() const

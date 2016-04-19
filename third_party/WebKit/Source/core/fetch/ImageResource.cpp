@@ -37,7 +37,6 @@
 #include "platform/graphics/BitmapImage.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
-#include "wtf/CheckedNumeric.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 
@@ -422,14 +421,12 @@ void ImageResource::responseReceived(const ResourceResponse& response, PassOwnPt
     }
 }
 
-void ImageResource::decodedSizeChanged(const blink::Image* image, int delta)
+void ImageResource::decodedSizeChangedTo(const blink::Image* image, size_t newSize)
 {
     if (!image || image != m_image)
         return;
 
-    CheckedNumeric<intptr_t> signedDecodedSize(decodedSize());
-    signedDecodedSize += delta;
-    setDecodedSize(safeCast<size_t>(signedDecodedSize.ValueOrDie()));
+    setDecodedSize(newSize);
 }
 
 void ImageResource::didDraw(const blink::Image* image)
