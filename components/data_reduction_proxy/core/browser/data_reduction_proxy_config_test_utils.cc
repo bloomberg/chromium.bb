@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/single_thread_task_runner.h"
+#include "base/time/tick_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -26,6 +28,7 @@ namespace data_reduction_proxy {
 TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     int params_flags,
     unsigned int params_definitions,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     net::NetLog* net_log,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
@@ -33,20 +36,26 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
           base::WrapUnique(
               new TestDataReductionProxyParams(params_flags,
                                                params_definitions)),
+          io_task_runner,
           net_log,
           configurator,
           event_creator) {}
 
 TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     net::NetLog* net_log,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
-    : DataReductionProxyConfig(net_log,
+    : DataReductionProxyConfig(io_task_runner,
+                               net_log,
                                std::move(config_values),
                                configurator,
                                event_creator),
-      network_quality_prohibitively_slow_(false) {
+      tick_clock_(nullptr),
+      network_quality_prohibitively_slow_set_(false),
+      network_quality_prohibitively_slow_(false),
+      lofi_accuracy_recording_intervals_set_(false) {
   network_interfaces_.reset(new net::NetworkInterfaceList());
 }
 
@@ -55,7 +64,10 @@ TestDataReductionProxyConfig::~TestDataReductionProxyConfig() {
 
 bool TestDataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
     const net::NetworkQualityEstimator* network_quality_estimator) {
-  return network_quality_prohibitively_slow_;
+  if (network_quality_prohibitively_slow_set_)
+    return network_quality_prohibitively_slow_;
+  return DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
+      network_quality_estimator);
 }
 
 void TestDataReductionProxyConfig::GetNetworkList(
@@ -95,15 +107,41 @@ void TestDataReductionProxyConfig::ResetLoFiStatusForTest() {
 
 void TestDataReductionProxyConfig::SetNetworkProhibitivelySlow(
     bool network_quality_prohibitively_slow) {
+  network_quality_prohibitively_slow_set_ = true;
   network_quality_prohibitively_slow_ = network_quality_prohibitively_slow;
+}
+
+void TestDataReductionProxyConfig::SetLofiAccuracyRecordingIntervals(
+    const std::vector<base::TimeDelta>& lofi_accuracy_recording_intervals) {
+  lofi_accuracy_recording_intervals_set_ = true;
+  lofi_accuracy_recording_intervals_ = lofi_accuracy_recording_intervals;
+}
+
+const std::vector<base::TimeDelta>&
+TestDataReductionProxyConfig::GetLofiAccuracyRecordingIntervals() const {
+  if (lofi_accuracy_recording_intervals_set_)
+    return lofi_accuracy_recording_intervals_;
+  return DataReductionProxyConfig::GetLofiAccuracyRecordingIntervals();
+}
+
+void TestDataReductionProxyConfig::SetTickClock(base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
+}
+
+base::TimeTicks TestDataReductionProxyConfig::GetTicksNow() const {
+  if (tick_clock_)
+    return tick_clock_->NowTicks();
+  return DataReductionProxyConfig::GetTicksNow();
 }
 
 MockDataReductionProxyConfig::MockDataReductionProxyConfig(
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     net::NetLog* net_log,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
     : TestDataReductionProxyConfig(std::move(config_values),
+                                   io_task_runner,
                                    net_log,
                                    configurator,
                                    event_creator) {}

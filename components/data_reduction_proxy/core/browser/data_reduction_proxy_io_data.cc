@@ -124,11 +124,12 @@ DataReductionProxyIOData::DataReductionProxyIOData(
         DataReductionProxyMutableConfigValues::CreateFromParams(params.get());
     raw_mutable_config = mutable_config.get();
     config_.reset(new DataReductionProxyConfig(
-        net_log, std::move(mutable_config), configurator_.get(),
+        io_task_runner, net_log, std::move(mutable_config), configurator_.get(),
         event_creator_.get()));
   } else {
     config_.reset(new DataReductionProxyConfig(
-        net_log, std::move(params), configurator_.get(), event_creator_.get()));
+        io_task_runner, net_log, std::move(params), configurator_.get(),
+        event_creator_.get()));
   }
 
   // It is safe to use base::Unretained here, since it gets executed

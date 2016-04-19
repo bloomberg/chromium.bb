@@ -455,6 +455,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
   std::unique_ptr<net::URLRequest> fake_request(
       FetchURLRequest(GURL("http://www.google.com/"), nullptr, response_headers,
                       kResponseContentLength));
+  fake_request->SetLoadFlags(fake_request->load_flags() | net::LOAD_MAIN_FRAME);
 
   base::TimeDelta freshness_lifetime =
       fake_request->response_info().headers->GetFreshnessLifetimes(
@@ -531,6 +532,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
 
     fake_request = (FetchURLRequest(GURL("http://www.example.com/"), nullptr,
                                     response_headers, kResponseContentLength));
+    fake_request->SetLoadFlags(fake_request->load_flags() |
+                               net::LOAD_MAIN_FRAME);
 
     // Histograms are accumulative, so get the sum of all the tests so far.
     int expected_count = 0;

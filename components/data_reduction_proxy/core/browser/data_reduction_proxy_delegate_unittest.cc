@@ -146,8 +146,9 @@ TEST(DataReductionProxyDelegate, IsTrustedSpdyProxy) {
 
     std::unique_ptr<DataReductionProxyConfig> config(
         new DataReductionProxyConfig(
-            test_context->net_log(), std::move(config_values),
-            test_context->configurator(), test_context->event_creator()));
+            message_loop_.task_runner(), test_context->net_log(),
+            std::move(config_values), test_context->configurator(),
+            test_context->event_creator()));
 
     DataReductionProxyDelegate delegate(
         test_context->io_data()->request_options(), config.get(),

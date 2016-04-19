@@ -416,16 +416,16 @@ DataReductionProxyTestContext::Builder::Build() {
         DataReductionProxyMutableConfigValues::CreateFromParams(params.get());
     raw_mutable_config = mutable_config.get();
     config.reset(new TestDataReductionProxyConfig(
-        std::move(mutable_config), net_log.get(), configurator.get(),
-        event_creator.get()));
+        std::move(mutable_config), task_runner, net_log.get(),
+        configurator.get(), event_creator.get()));
   } else if (use_mock_config_) {
     test_context_flags |= USE_MOCK_CONFIG;
     config.reset(new MockDataReductionProxyConfig(
-        std::move(params), net_log.get(), configurator.get(),
+        std::move(params), task_runner, net_log.get(), configurator.get(),
         event_creator.get()));
   } else {
     config.reset(new TestDataReductionProxyConfig(
-        std::move(params), net_log.get(), configurator.get(),
+        std::move(params), task_runner, net_log.get(), configurator.get(),
         event_creator.get()));
   }
 

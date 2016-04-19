@@ -6756,6 +6756,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="DataReductionProxyAutoLoFiAccuracy">
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
+  <obsolete>
+    Replaced by DataReductionProxy.LoFi.Accuracy.
+  </obsolete>
   <summary>
     Counts the accuracy of estimated network quality when using Lo-Fi. Counters
     are incremented when a main frame URL request is handled by Data Reduction
@@ -7114,6 +7117,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="DataReductionProxy.LevelDBSize" units="KB">
   <owner>kundaji@chromium.org</owner>
   <summary>Size of Data Reduction Proxy LevelDB measured at startup.</summary>
+</histogram>
+
+<histogram name="DataReductionProxy.LoFi.Accuracy"
+    enum="DataReductionProxyAutoLoFiAccuracy">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Records the accuracy of estimated network quality when using Lo-Fi. Network
+    quality predicted at the time of navigation start is compared with the
+    network quality observed during the specified time interval following the
+    start of the navigation. This metric is recorded only when the session is in
+    Lo-Fi enabled field trial.
+  </summary>
 </histogram>
 
 <histogram name="DataReductionProxy.LoFi.ImplicitOptOutAction"
@@ -88401,6 +88417,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.PT_StartToFinish"/>
 </histogram_suffixes>
 
+<histogram_suffixes
+    name="DataReductionProxy.LoFi.Accuracy.DifferentRecordingIntervals"
+    separator=".">
+  <suffix name="15"
+      label="Recorded approximately 15 seconds after navigation start"/>
+  <suffix name="30"
+      label="Recorded approximately 30 seconds after navigation start"/>
+  <suffix name="60"
+      label="Recorded approximately 60 seconds after navigation start"/>
+  <affected-histogram name="DataReductionProxy.LoFi.Accuracy"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="DataReductionProxy.MimeType">
   <suffix name="Application" label="Application mime-type"/>
   <suffix name="Unknown"
@@ -88431,7 +88459,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="None" label="With no detected network"/>
   <suffix name="Bluetooth" label="On Bluetooth network"/>
   <affected-histogram name="DataReductionProxy.AutoLoFiAccuracy"/>
+  <obsolete>
+    Replaced by DataReductionProxy.LoFi.Accuracy.
+  </obsolete>
   <affected-histogram name="DataReductionProxy.AutoLoFiRequestHeaderState"/>
+  <affected-histogram name="DataReductionProxy.LoFi.Accuracy.15"/>
+  <affected-histogram name="DataReductionProxy.LoFi.Accuracy.30"/>
+  <affected-histogram name="DataReductionProxy.LoFi.Accuracy.60"/>
   <affected-histogram name="DataReductionProxy.LoFi.ImplicitOptOutAction"/>
 </histogram_suffixes>
 

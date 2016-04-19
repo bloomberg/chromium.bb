@@ -6,10 +6,19 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_TEST_UTILS_H_
 
 #include <memory>
+#include <vector>
 
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "net/base/network_interfaces.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+class TickClock;
+}
 
 namespace net {
 class NetworkQualityEstimator;
@@ -33,6 +42,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   TestDataReductionProxyConfig(
       int params_flags,
       unsigned int params_definitions,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       net::NetLog* net_log,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
@@ -42,6 +52,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // DataReductionProxyParams or DataReductionProxyMutableConfigValues).
   TestDataReductionProxyConfig(
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       net::NetLog* net_log,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
@@ -81,11 +92,31 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
     return network_interfaces_.get();
   }
 
+  void SetLofiAccuracyRecordingIntervals(
+      const std::vector<base::TimeDelta>& lofi_accuracy_recording_intervals);
+
+  const std::vector<base::TimeDelta>& GetLofiAccuracyRecordingIntervals()
+      const override;
+
+  // Sets the |tick_clock_| to |tick_clock|. Ownership of |tick_clock| is not
+  // passed to the callee.
+  void SetTickClock(base::TickClock* tick_clock);
+
+  base::TimeTicks GetTicksNow() const override;
+
  private:
+  base::TickClock* tick_clock_;
+
   std::unique_ptr<net::NetworkInterfaceList> network_interfaces_;
 
-  // True if network quality is slow enough to turn Auto Lo-Fi ON.
+  bool network_quality_prohibitively_slow_set_;
+  // True if the network quality is slow enough to turn Lo-Fi ON.
   bool network_quality_prohibitively_slow_;
+
+  bool lofi_accuracy_recording_intervals_set_;
+  std::vector<base::TimeDelta> lofi_accuracy_recording_intervals_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDataReductionProxyConfig);
 };
 
 // A |TestDataReductionProxyConfig| which permits mocking of methods for
@@ -95,6 +126,7 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
   // Creates a |MockDataReductionProxyConfig|.
   MockDataReductionProxyConfig(
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       net::NetLog* net_log,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
