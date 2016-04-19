@@ -149,7 +149,7 @@ if (enable_webrtc || !is_android) {
       "notifier/listener/xmpp_push_client_unittest.cc",
     ]
 
-    if (is_android) {
+    if (is_android || is_ios) {
       sources -= [
         # TODO(jrg):
         # EXPECT_DEBUG_DEATH() uses features not enabled.
