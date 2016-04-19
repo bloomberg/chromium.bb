@@ -50,6 +50,7 @@ class TracingTrack(devtools_monitor.Track):
     self._events = []
     self._base_msec = None
     self._interval_tree = None
+    self._main_frame_id = None
 
   def Handle(self, method, event):
     for e in event['params']['value']:
@@ -61,6 +62,16 @@ class TracingTrack(devtools_monitor.Track):
     # update.
     self._interval_tree = None
 
+  def _GetMainFrameID(self):
+    """Returns the main frame ID."""
+    if not self._main_frame_id:
+      navigation_start_events = [e for e in self.GetEvents()
+          if e.Matches('blink.user_timing', 'navigationStart')]
+      first_event = min(navigation_start_events, key=lambda e: e.start_msec)
+      self._main_frame_id = first_event.args['frame']
+
+    return self._main_frame_id
+
   def GetFirstEventMillis(self):
     """Find the canonical start time for this track.
 
@@ -71,6 +82,17 @@ class TracingTrack(devtools_monitor.Track):
 
   def GetEvents(self):
     return self._events
+
+  def GetMatchingEvents(self, category, name):
+    """Gets events matching |category| and |name|."""
+    return [e for e in self.GetEvents() if e.Matches(category, name)]
+
+  def GetMatchingMainFrameEvents(self, category, name):
+    """Gets events matching |category| and |name| that occur in the main frame.
+    Assumes that the events in question have a 'frame' key in their |args|."""
+    matching_events = self.GetMatchingEvents(category, name)
+    return [e for e in matching_events
+        if e.args['frame'] == self._GetMainFrameID()]
 
   def EventsAt(self, msec):
     """Gets events active at a timestamp.

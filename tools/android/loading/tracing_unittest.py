@@ -295,6 +295,48 @@ class TracingTrackTestCase(unittest.TestCase):
     tracing_track = self.track.Filter(2, 42)
     self.assertEquals(0, len(tracing_track.GetEvents()))
 
+  def testGetMainFrameID(self):
+    _MAIN_FRAME_ID = 0xffff
+    _SUBFRAME_ID = 0xaaaa
+    events = [
+        {'ts': 7, 'ph': 'X', 'dur': 10, 'pid': 2, 'tid': 1, 'id': '0x123',
+         'name': 'navigationStart', 'cat': 'blink.user_timing',
+         'args': {'frame': _SUBFRAME_ID}},
+        {'ts': 8, 'ph': 'X', 'dur': 2, 'pid': 2, 'tid': 1, 'id': '0x12343',
+        'name': 'A'},
+        {'ts': 3, 'ph': 'X', 'dur': 10, 'pid': 2, 'tid': 1, 'id': '0x125',
+         'name': 'navigationStart', 'cat': 'blink.user_timing',
+         'args': {'frame': _MAIN_FRAME_ID}},
+        ]
+    self._HandleEvents(events)
+    self.assertEquals(_MAIN_FRAME_ID, self.track._GetMainFrameID())
+
+  def testGetMatchingEvents(self):
+    _MAIN_FRAME_ID = 0xffff
+    _SUBFRAME_ID = 0xaaaa
+    events = [
+        {'ts': 7, 'ph': 'X', 'dur': 10, 'pid': 2, 'tid': 1, 'id': '0x123',
+         'name': 'navigationStart', 'cat': 'blink.user_timing',
+         'args': {'frame': _SUBFRAME_ID}},
+        {'ts': 8, 'ph': 'X', 'dur': 2, 'pid': 2, 'tid': 1, 'id': '0x12343',
+        'name': 'A'},
+        {'ts': 3, 'ph': 'X', 'dur': 10, 'pid': 2, 'tid': 1, 'id': '0x125',
+         'name': 'navigationStart', 'cat': 'blink.user_timing',
+         'args': {'frame': _MAIN_FRAME_ID}},
+        ]
+    self._HandleEvents(events)
+    matching_events = self.track.GetMatchingEvents('blink.user_timing',
+                                                   'navigationStart')
+    self.assertEquals(2, len(matching_events))
+    self.assertListEqual([self.track.GetEvents()[0],
+                         self.track.GetEvents()[2]], matching_events)
+
+    matching_main_frame_events = self.track.GetMatchingMainFrameEvents(
+        'blink.user_timing', 'navigationStart')
+    self.assertEquals(1, len(matching_main_frame_events))
+    self.assertListEqual([self.track.GetEvents()[2]],
+                         matching_main_frame_events)
+
   def testFilterCategories(self):
     events = [
         {'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 2, 'tid': 1, 'cat': 'A'},
