@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/toolchain/toolchain.gni")
+import("//build/config/mac/mac_sdk.gni")
 
 # This is used as the base template for both iOS and Mac frameworks..
 #
@@ -134,6 +135,94 @@ template("framework_bundle") {
         ":$_framework_target",
       ]
     }
+  }
+}
+
+# Template to combile .xib or .storyboard files.
+#
+#
+# Arguments
+#
+#     sources:
+#         list of string, sources to compile
+#
+#     ibtool_flags:
+#         (optional) list of string, additional flags to pass to the ibtool
+template("compile_xibs") {
+  action_foreach(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "visibility",
+                           ])
+    assert(defined(invoker.sources),
+           "Sources must be specified for $target_name")
+
+    ibtool_flags = []
+    if (defined(invoker.ibtool_flags)) {
+      ibtool_flags = invoker.ibtool_flags
+    }
+
+    script = "//build/config/mac/compile_xib.py"
+    sources = invoker.sources
+    outputs = [
+      "$target_gen_dir/{{source_name_part}}.nib",
+    ]
+    args = [
+             "--input",
+             "{{source}}",
+             "--output",
+             rebase_path("$target_gen_dir/{{source_name_part}}.nib"),
+           ] + ibtool_flags
+  }
+}
+
+# Template to compile and package Mac XIB files as bundle data.
+#
+# Arguments
+#
+#     sources:
+#         list of string, sources to comiple
+#
+#     output_path:
+#         (optional) string, the path to use for the outputs list in the
+#         bundle_data step. If unspecified, defaults to bundle_resources_dir.
+template("mac_xib_bundle_data") {
+  _target_name = target_name
+  _compile_target_name = _target_name + "_compile_ibtool"
+
+  compile_xibs(_compile_target_name) {
+    forward_variables_from(invoker, [ "testonly" ])
+    visibility = [ ":$_target_name" ]
+    sources = invoker.sources
+    ibtool_flags = [
+      "--minimum-deployment-target",
+      mac_deployment_target,
+      "--target-device",
+      "mac",
+    ]
+  }
+
+  bundle_data(_target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "visibility",
+                           ])
+
+    public_deps = [
+      ":$_compile_target_name",
+    ]
+    sources = get_target_outputs(":$_compile_target_name")
+
+    _output_path = "{{bundle_resources_dir}}"
+    if (defined(invoker.output_path)) {
+      _output_path = invoker.output_path
+    }
+
+    outputs = [
+      "$_output_path/{{source_file_part}}",
+    ]
   }
 }
 

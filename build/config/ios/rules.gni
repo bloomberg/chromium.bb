@@ -188,25 +188,19 @@ template("bundle_data_xib") {
   _target_name = target_name
   _compile_xib = target_name + "_compile_xib"
 
-  _nib_basename = get_path_info(invoker.source, "name")
-  _nib_filename = "$_nib_basename.nib"
-
-  action(_compile_xib) {
-    visibility = [ ":$_target_name" ]
-    script = "//build/config/ios/ios_compile_xib.py"
+  compile_xibs(_compile_xib) {
     sources = [
       invoker.source,
     ]
-    outputs = [
-      "$target_gen_dir/$_nib_filename",
-    ]
-    args = [
+    visibility = [ ":$_target_name" ]
+    ibtool_flags = [
       "--minimum-deployment-target",
       ios_deployment_target,
-      "--output",
-      rebase_path("$target_gen_dir/$_nib_filename"),
-      "--input",
-      rebase_path(invoker.source, root_out_dir),
+      "--auto-activate-custom-fonts",
+      "--target-device",
+      "iphone",
+      "--target-device",
+      "ipad",
     ]
   }
 
@@ -218,11 +212,10 @@ template("bundle_data_xib") {
     }
     public_deps += [ ":$_compile_xib" ]
 
-    sources = [
-      "$target_gen_dir/$_nib_filename",
-    ]
+    sources = get_target_outputs(":$_compile_xib")
+
     outputs = [
-      "{{bundle_resources_dir}}/$_nib_filename",
+      "{{bundle_resources_dir}}/{{source_file_part}}",
     ]
   }
 }
