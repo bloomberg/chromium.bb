@@ -58,6 +58,7 @@
         'edk/system/awakable_list.h',
         'edk/system/async_waiter.cc',
         'edk/system/async_waiter.h',
+        'edk/system/atomic_flag.h',
         'edk/system/broker.h',
         'edk/system/broker_host.h',
         'edk/system/broker_host_posix.cc',

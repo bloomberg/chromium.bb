@@ -107,7 +107,7 @@ bool MessagePipeDispatcher::Fuse(MessagePipeDispatcher* other) {
   {
     base::AutoLock lock(signal_lock_);
     port0 = port_;
-    port_closed_ = true;
+    port_closed_.Set(true);
     awakables_.CancelAll();
   }
 
@@ -115,7 +115,7 @@ bool MessagePipeDispatcher::Fuse(MessagePipeDispatcher* other) {
   {
     base::AutoLock lock(other->signal_lock_);
     port1 = other->port_;
-    other->port_closed_ = true;
+    other->port_closed_.Set(true);
     other->awakables_.CancelAll();
   }
 
@@ -163,11 +163,9 @@ MojoResult MessagePipeDispatcher::WriteMessage(
     uint32_t num_dispatchers,
     MojoWriteMessageFlags flags) {
 
-  {
-    base::AutoLock lock(signal_lock_);
-    if (port_closed_ || in_transit_)
-      return MOJO_RESULT_INVALID_ARGUMENT;
-  }
+
+  if (port_closed_ || in_transit_)
+    return MOJO_RESULT_INVALID_ARGUMENT;
 
   // A structure for retaining information about every Dispatcher we're about
   // to send. This information is collected by calling StartSerialize() on
@@ -316,12 +314,9 @@ MojoResult MessagePipeDispatcher::ReadMessage(void* bytes,
                                               MojoHandle* handles,
                                               uint32_t* num_handles,
                                               MojoReadMessageFlags flags) {
-  {
-    base::AutoLock lock(signal_lock_);
-    // We can't read from a port that's closed or in transit!
-    if (port_closed_ || in_transit_)
-      return MOJO_RESULT_INVALID_ARGUMENT;
-  }
+  // We can't read from a port that's closed or in transit!
+  if (port_closed_ || in_transit_)
+    return MOJO_RESULT_INVALID_ARGUMENT;
 
   bool no_space = false;
   bool may_discard = flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD;
@@ -549,7 +544,7 @@ bool MessagePipeDispatcher::BeginTransit() {
   base::AutoLock lock(signal_lock_);
   if (in_transit_ || port_closed_)
     return false;
-  in_transit_ = true;
+  in_transit_.Set(true);
   return in_transit_;
 }
 
@@ -557,14 +552,14 @@ void MessagePipeDispatcher::CompleteTransitAndClose() {
   node_controller_->SetPortObserver(port_, nullptr);
 
   base::AutoLock lock(signal_lock_);
-  in_transit_ = false;
   port_transferred_ = true;
+  in_transit_.Set(false);
   CloseNoLock();
 }
 
 void MessagePipeDispatcher::CancelTransit() {
   base::AutoLock lock(signal_lock_);
-  in_transit_ = false;
+  in_transit_.Set(false);
 
   // Something may have happened while we were waiting for potential transit.
   awakables_.AwakeForStateChange(GetHandleSignalsStateNoLock());
@@ -601,7 +596,7 @@ MojoResult MessagePipeDispatcher::CloseNoLock() {
   if (port_closed_ || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  port_closed_ = true;
+  port_closed_.Set(true);
   awakables_.CancelAll();
 
   if (!port_transferred_) {

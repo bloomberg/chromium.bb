@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/edk/system/atomic_flag.h"
 #include "mojo/edk/system/awakable_list.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/ports/port_ref.h"
@@ -107,10 +108,10 @@ class MessagePipeDispatcher : public Dispatcher {
 
   // This is not the same is |port_transferred_|. It's only held true between
   // BeginTransit() and Complete/CancelTransit().
-  bool in_transit_ = false;
+  AtomicFlag in_transit_;
 
   bool port_transferred_ = false;
-  bool port_closed_ = false;
+  AtomicFlag port_closed_;
   AwakableList awakables_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipeDispatcher);

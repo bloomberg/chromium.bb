@@ -256,6 +256,7 @@ void NodeController::RequestShutdown(const base::Closure& callback) {
   {
     base::AutoLock lock(shutdown_lock_);
     shutdown_callback_ = callback;
+    shutdown_callback_flag_.Set(true);
   }
 
   AttemptShutdownIfRequested();
@@ -480,7 +481,7 @@ void NodeController::SendPeerMessage(const ports::NodeName& name,
 }
 
 void NodeController::AcceptIncomingMessages() {
-  for (;;) {
+  while (incoming_messages_flag_) {
     // TODO: We may need to be more careful to avoid starving the rest of the
     // thread here. Revisit this if it turns out to be a problem. One
     // alternative would be to schedule a task to continue pumping messages
@@ -495,6 +496,7 @@ void NodeController::AcceptIncomingMessages() {
     // the size is 0. So avoid creating it until it is necessary.
     std::queue<ports::ScopedMessage> messages;
     std::swap(messages, incoming_messages_);
+    incoming_messages_flag_.Set(false);
     messages_lock_.Release();
 
     while (!messages.empty()) {
@@ -558,6 +560,7 @@ void NodeController::ForwardMessage(const ports::NodeName& node,
     // AcceptMessage, we flush the queue after calling any of those methods.
     base::AutoLock lock(messages_lock_);
     incoming_messages_.emplace(std::move(message));
+    incoming_messages_flag_.Set(true);
   } else {
     SendPeerMessage(node, std::move(message));
   }
@@ -975,6 +978,9 @@ void NodeController::DestroyOnIOThreadShutdown() {
 }
 
 void NodeController::AttemptShutdownIfRequested() {
+  if (!shutdown_callback_flag_)
+    return;
+
   base::Closure callback;
   {
     base::AutoLock lock(shutdown_lock_);
@@ -986,6 +992,7 @@ void NodeController::AttemptShutdownIfRequested() {
 
     callback = shutdown_callback_;
     shutdown_callback_.Reset();
+    shutdown_callback_flag_.Set(false);
   }
 
   DCHECK(!callback.is_null());

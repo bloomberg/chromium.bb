@@ -19,6 +19,7 @@
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/edk/system/atomic_flag.h"
 #include "mojo/edk/system/node_channel.h"
 #include "mojo/edk/system/ports/hash_functions.h"
 #include "mojo/edk/system/ports/name.h"
@@ -247,6 +248,8 @@ class NodeController : public ports::NodeDelegate,
   // Guards |incoming_messages_|.
   base::Lock messages_lock_;
   std::queue<ports::ScopedMessage> incoming_messages_;
+  // Flag to fast-path checking |incoming_messages_|.
+  AtomicFlag incoming_messages_flag_;
 
   // Guards |shutdown_callback_|.
   base::Lock shutdown_lock_;
@@ -255,6 +258,8 @@ class NodeController : public ports::NodeDelegate,
   // begin polling the Node to see if clean shutdown is possible any time the
   // Node's state is modified by the controller.
   base::Closure shutdown_callback_;
+  // Flag to fast-path checking |shutdown_callback_|.
+  AtomicFlag shutdown_callback_flag_;
 
   // All other fields below must only be accessed on the I/O thread, i.e., the
   // thread on which core_->io_task_runner() runs tasks.

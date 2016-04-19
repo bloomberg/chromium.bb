@@ -23,6 +23,7 @@ component("system") {
   sources = [
     "async_waiter.cc",
     "async_waiter.h",
+    "atomic_flag.h",
     "awakable.h",
     "awakable_list.cc",
     "awakable_list.h",
