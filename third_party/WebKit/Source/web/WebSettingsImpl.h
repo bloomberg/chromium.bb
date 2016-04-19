@@ -177,7 +177,7 @@ public:
     void setUnifiedTextCheckerEnabled(bool) override;
     void setUsesEncodingDetector(bool) override;
     void setUseLegacyBackgroundSizeShorthandBehavior(bool) override;
-    void setUseMobileViewportStyle(bool) override;
+    void setViewportStyle(WebViewportStyle) override;
     void setUseSolidColorScrollbars(bool) override;
     void setUseWideViewport(bool) override;
     void setV8CacheOptions(V8CacheOptions) override;

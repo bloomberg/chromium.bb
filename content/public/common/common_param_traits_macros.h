@@ -61,6 +61,9 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::HoverType,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::ImageAnimationPolicy,
                               content::IMAGE_ANIMATION_POLICY_ALLOWED,
                               content::IMAGE_ANIMATION_POLICY_NO_ANIMATION)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::ViewportStyle,
+                              content::ViewportStyle::DEFAULT,
+                              content::ViewportStyle::LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebPoint)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -193,6 +196,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(supports_multiple_windows)
   IPC_STRUCT_TRAITS_MEMBER(viewport_enabled)
   IPC_STRUCT_TRAITS_MEMBER(viewport_meta_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(viewport_style)
   IPC_STRUCT_TRAITS_MEMBER(main_frame_resizes_are_orientation_changes)
   IPC_STRUCT_TRAITS_MEMBER(initialize_at_minimum_page_scale)
   IPC_STRUCT_TRAITS_MEMBER(smart_insert_delete_enabled)

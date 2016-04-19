@@ -34,6 +34,7 @@
 #include "../platform/PointerProperties.h"
 #include "../platform/WebCommon.h"
 #include "../platform/WebSize.h"
+#include "../platform/WebViewportStyle.h"
 #include <unicode/uscript.h>
 
 namespace blink {
@@ -236,7 +237,7 @@ public:
     virtual void setTouchDragDropEnabled(bool) = 0;
     virtual void setUnifiedTextCheckerEnabled(bool) = 0;
     virtual void setUseLegacyBackgroundSizeShorthandBehavior(bool) = 0;
-    virtual void setUseMobileViewportStyle(bool) = 0;
+    virtual void setViewportStyle(WebViewportStyle) = 0;
     virtual void setUseSolidColorScrollbars(bool) = 0;
     virtual void setUseWideViewport(bool) = 0;
     virtual void setUsesEncodingDetector(bool) = 0;

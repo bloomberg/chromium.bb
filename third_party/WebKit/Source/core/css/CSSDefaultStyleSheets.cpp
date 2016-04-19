@@ -74,12 +74,14 @@ static StyleSheetContents* parseUASheet(const String& str)
 CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     : m_defaultStyle(nullptr)
     , m_defaultMobileViewportStyle(nullptr)
+    , m_defaultTelevisionViewportStyle(nullptr)
     , m_defaultQuirksStyle(nullptr)
     , m_defaultPrintStyle(nullptr)
     , m_defaultViewSourceStyle(nullptr)
     , m_defaultXHTMLMobileProfileStyle(nullptr)
     , m_defaultStyleSheet(nullptr)
     , m_mobileViewportStyleSheet(nullptr)
+    , m_televisionViewportStyleSheet(nullptr)
     , m_quirksStyleSheet(nullptr)
     , m_svgStyleSheet(nullptr)
     , m_mathmlStyleSheet(nullptr)
@@ -134,6 +136,16 @@ RuleSet* CSSDefaultStyleSheets::defaultMobileViewportStyle()
     return m_defaultMobileViewportStyle.get();
 }
 
+RuleSet* CSSDefaultStyleSheets::defaultTelevisionViewportStyle()
+{
+    if (!m_defaultTelevisionViewportStyle) {
+        m_defaultTelevisionViewportStyle = RuleSet::create();
+        m_televisionViewportStyleSheet = parseUASheet(loadResourceAsASCIIString("viewportTelevision.css"));
+        m_defaultTelevisionViewportStyle->addRulesFromSheet(m_televisionViewportStyleSheet.get(), screenEval());
+    }
+    return m_defaultTelevisionViewportStyle.get();
+}
+
 void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(const Element& element, bool& changedDefaultStyle)
 {
     // FIXME: We should assert that the sheet only styles SVG elements.
@@ -184,12 +196,14 @@ DEFINE_TRACE(CSSDefaultStyleSheets)
 {
     visitor->trace(m_defaultStyle);
     visitor->trace(m_defaultMobileViewportStyle);
+    visitor->trace(m_defaultTelevisionViewportStyle);
     visitor->trace(m_defaultQuirksStyle);
     visitor->trace(m_defaultPrintStyle);
     visitor->trace(m_defaultViewSourceStyle);
     visitor->trace(m_defaultXHTMLMobileProfileStyle);
     visitor->trace(m_defaultStyleSheet);
     visitor->trace(m_mobileViewportStyleSheet);
+    visitor->trace(m_televisionViewportStyleSheet);
     visitor->trace(m_quirksStyleSheet);
     visitor->trace(m_svgStyleSheet);
     visitor->trace(m_mathmlStyleSheet);

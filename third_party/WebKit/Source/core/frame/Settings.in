@@ -340,9 +340,10 @@ allowGeolocationOnInsecureOrigins initial=false
 logDnsPrefetchAndPreconnect initial=false
 logPreload initial=false
 
-# If true, the UA styles will include viewportAndroid.css. It is used for
-# Android, and dynamically set by the inspector for mobile emulation.
-useMobileViewportStyle initial=false, invalidate=ViewportRule
+# These values specify the UA intial viewport style.
+# It is dynamically set by the inspector for mobile emulation and can be
+# used by content embedders to specify custom style on certain platforms.
+viewportStyle type=WebViewportStyle, initial=WebViewportStyle::Default, invalidate=ViewportRule
 
 # Automatic track selection is performed based on user preference for track kind specified
 # by this setting.

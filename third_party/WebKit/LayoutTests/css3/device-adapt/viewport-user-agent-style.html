@@ -7,7 +7,6 @@
     <script>
         if (window.testRunner) {
             internals.settings.setViewportEnabled(true);
-            internals.settings.setUseMobileViewportStyle(true);
         }
     </script>
     <style>
@@ -18,8 +17,14 @@
     <div id="log"></div>
     <script>
         test(function(){
+            internals.settings.setViewportStyle("mobile");
             assert_equals(document.body.offsetWidth, 980);
-        }, "Check that we get a viewport width of 980px from the user agent stylesheet.");
+        }, "Check that we get a viewport width of 980px from viewportAndroid.css.");
+
+        test(function(){
+            internals.settings.setViewportStyle("television");
+            assert_equals(document.body.offsetWidth, 1280);
+        }, "Check that we get a viewport width of 1280px from viewportTelevision.css.");
     </script>
 </body>
 </html>

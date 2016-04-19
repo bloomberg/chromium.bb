@@ -7,6 +7,7 @@
 
 #include "platform/heap/Handle.h"
 #include "public/platform/PointerProperties.h"
+#include "public/platform/WebViewportStyle.h"
 #include "public/web/WebDeviceEmulationParams.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -28,7 +29,7 @@ public:
     void setTextAutosizingEnabled(bool);
     void setDeviceScaleAdjustment(float);
     void setPreferCompositingToLCDTextEnabled(bool);
-    void setUseMobileViewportStyle(bool);
+    void setViewportStyle(WebViewportStyle);
     void setPluginsEnabled(bool);
     void setScriptEnabled(bool);
     void setDoubleTapToZoomEnabled(bool);
@@ -69,7 +70,7 @@ private:
     bool m_embedderTextAutosizingEnabled;
     float m_embedderDeviceScaleAdjustment;
     bool m_embedderPreferCompositingToLCDTextEnabled;
-    bool m_embedderUseMobileViewport;
+    WebViewportStyle m_embedderViewportStyle;
     bool m_embedderPluginsEnabled;
     int m_embedderAvailablePointerTypes;
     PointerType m_embedderPrimaryPointerType;

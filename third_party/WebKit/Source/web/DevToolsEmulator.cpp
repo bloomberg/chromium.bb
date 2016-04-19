@@ -59,7 +59,7 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     , m_embedderTextAutosizingEnabled(webViewImpl->page()->settings().textAutosizingEnabled())
     , m_embedderDeviceScaleAdjustment(webViewImpl->page()->settings().deviceScaleAdjustment())
     , m_embedderPreferCompositingToLCDTextEnabled(webViewImpl->page()->settings().preferCompositingToLCDTextEnabled())
-    , m_embedderUseMobileViewport(webViewImpl->page()->settings().useMobileViewportStyle())
+    , m_embedderViewportStyle(webViewImpl->page()->settings().viewportStyle())
     , m_embedderPluginsEnabled(webViewImpl->page()->settings().pluginsEnabled())
     , m_embedderAvailablePointerTypes(webViewImpl->page()->settings().availablePointerTypes())
     , m_embedderPrimaryPointerType(webViewImpl->page()->settings().primaryPointerType())
@@ -114,12 +114,12 @@ void DevToolsEmulator::setPreferCompositingToLCDTextEnabled(bool enabled)
         m_webViewImpl->page()->settings().setPreferCompositingToLCDTextEnabled(enabled);
 }
 
-void DevToolsEmulator::setUseMobileViewportStyle(bool enabled)
+void DevToolsEmulator::setViewportStyle(WebViewportStyle style)
 {
-    m_embedderUseMobileViewport = enabled;
+    m_embedderViewportStyle = style;
     bool emulateMobileEnabled = m_deviceMetricsEnabled && m_emulateMobileEnabled;
     if (!emulateMobileEnabled)
-        m_webViewImpl->page()->settings().setUseMobileViewportStyle(enabled);
+        m_webViewImpl->page()->settings().setViewportStyle(style);
 }
 
 void DevToolsEmulator::setPluginsEnabled(bool enabled)
@@ -264,7 +264,7 @@ void DevToolsEmulator::enableMobileEmulation()
     m_isMobileLayoutThemeEnabled = RuntimeEnabledFeatures::mobileLayoutThemeEnabled();
     RuntimeEnabledFeatures::setMobileLayoutThemeEnabled(true);
     ComputedStyle::invalidateInitialStyle();
-    m_webViewImpl->page()->settings().setUseMobileViewportStyle(true);
+    m_webViewImpl->page()->settings().setViewportStyle(WebViewportStyle::Mobile);
     m_webViewImpl->page()->settings().setViewportEnabled(true);
     m_webViewImpl->page()->settings().setViewportMetaEnabled(true);
     m_webViewImpl->page()->frameHost().visualViewport().initializeScrollbars();
@@ -302,7 +302,7 @@ void DevToolsEmulator::disableMobileEmulation()
     m_webViewImpl->settings()->setShrinksViewportContentToFit(false);
     m_webViewImpl->page()->settings().setTextAutosizingEnabled(m_embedderTextAutosizingEnabled);
     m_webViewImpl->page()->settings().setPreferCompositingToLCDTextEnabled(m_embedderPreferCompositingToLCDTextEnabled);
-    m_webViewImpl->page()->settings().setUseMobileViewportStyle(m_embedderUseMobileViewport);
+    m_webViewImpl->page()->settings().setViewportStyle(m_embedderViewportStyle);
     m_webViewImpl->page()->settings().setPluginsEnabled(m_embedderPluginsEnabled);
     m_webViewImpl->page()->settings().setAvailablePointerTypes(m_embedderAvailablePointerTypes);
     m_webViewImpl->page()->settings().setPrimaryPointerType(m_embedderPrimaryPointerType);

@@ -32,6 +32,7 @@
       <include name="IDR_UASTYLE_FULLSCREEN_CSS" file="../Source/core/css/fullscreen.css" type="BINDATA"/>
       <include name="IDR_UASTYLE_XHTMLMP_CSS" file="../Source/core/css/xhtmlmp.css" type="BINDATA"/>
       <include name="IDR_UASTYLE_VIEWPORT_ANDROID_CSS" file="../Source/core/css/viewportAndroid.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_VIEWPORT_TELEVISION_CSS" file="../Source/core/css/viewportTelevision.css" type="BINDATA"/>
 
       <include name="IDR_INSPECTOR_OVERLAY_PAGE_HTML" file="../Source/core/inspector/InspectorOverlayPage.html" type="BINDATA"/>
       <include name="IDR_PRIVATE_SCRIPT_DOCUMENTEXECCOMMAND_JS" file="../Source/core/editing/js/DocumentExecCommand.js" type="BINDATA"/>

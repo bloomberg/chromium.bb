@@ -41,6 +41,7 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/PointerProperties.h"
 #include "public/platform/WebDisplayMode.h"
+#include "public/platform/WebViewportStyle.h"
 
 namespace blink {
 

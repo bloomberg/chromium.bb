@@ -52,6 +52,8 @@ enum ImageAnimationPolicy {
   IMAGE_ANIMATION_POLICY_NO_ANIMATION
 };
 
+enum class ViewportStyle { DEFAULT, MOBILE, TELEVISION, LAST = TELEVISION };
+
 // The ISO 15924 script code for undetermined script aka Common. It's the
 // default used on WebKit's side to get/set a font setting when no script is
 // specified.
@@ -166,6 +168,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool supports_multiple_windows;
   bool viewport_enabled;
   bool viewport_meta_enabled;
+  ViewportStyle viewport_style;
   bool main_frame_resizes_are_orientation_changes;
   bool initialize_at_minimum_page_scale;
   bool smart_insert_delete_enabled;

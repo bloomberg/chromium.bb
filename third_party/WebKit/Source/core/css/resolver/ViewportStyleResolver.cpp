@@ -55,8 +55,20 @@ void ViewportStyleResolver::collectViewportRules()
     CSSDefaultStyleSheets& defaultStyleSheets = CSSDefaultStyleSheets::instance();
     collectViewportRules(defaultStyleSheets.defaultStyle(), UserAgentOrigin);
 
-    if (m_document->settings() && m_document->settings()->useMobileViewportStyle())
-        collectViewportRules(defaultStyleSheets.defaultMobileViewportStyle(), UserAgentOrigin);
+    WebViewportStyle viewportStyle = m_document->settings() ? m_document->settings()->viewportStyle() : WebViewportStyle::Default;
+    RuleSet* viewportRules = nullptr;
+    switch (viewportStyle) {
+    case WebViewportStyle::Default:
+        break;
+    case WebViewportStyle::Mobile:
+        viewportRules = defaultStyleSheets.defaultMobileViewportStyle();
+        break;
+    case WebViewportStyle::Television:
+        viewportRules = defaultStyleSheets.defaultTelevisionViewportStyle();
+        break;
+    }
+    if (viewportRules)
+        collectViewportRules(viewportRules, UserAgentOrigin);
 
     if (m_document->isMobileDocument())
         collectViewportRules(defaultStyleSheets.defaultXHTMLMobileProfileStyle(), UserAgentOrigin);

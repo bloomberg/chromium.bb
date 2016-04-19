@@ -182,6 +182,19 @@ void InternalSettings::setViewportMetaEnabled(bool enabled, ExceptionState& exce
     settings()->setViewportMetaEnabled(enabled);
 }
 
+void InternalSettings::setViewportStyle(const String& style, ExceptionState& exceptionState)
+{
+    InternalSettingsGuardForSettings();
+    if (equalIgnoringCase(style, "default"))
+        settings()->setViewportStyle(WebViewportStyle::Default);
+    else if (equalIgnoringCase(style, "mobile"))
+        settings()->setViewportStyle(WebViewportStyle::Mobile);
+    else if (equalIgnoringCase(style, "television"))
+        settings()->setViewportStyle(WebViewportStyle::Television);
+    else
+        exceptionState.throwDOMException(SyntaxError, "The viewport style type provided ('" + style + "') is invalid.");
+}
+
 void InternalSettings::setStandardFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();

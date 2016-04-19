@@ -798,9 +798,9 @@ void WebSettingsImpl::setV8CacheOptions(V8CacheOptions options)
     m_settings->setV8CacheOptions(static_cast<blink::V8CacheOptions>(options));
 }
 
-void WebSettingsImpl::setUseMobileViewportStyle(bool enabled)
+void WebSettingsImpl::setViewportStyle(WebViewportStyle style)
 {
-    m_devToolsEmulator->setUseMobileViewportStyle(enabled);
+    m_devToolsEmulator->setViewportStyle(style);
 }
 
 } // namespace blink
