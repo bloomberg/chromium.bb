@@ -86,7 +86,8 @@
       </template>
       <template is="dom-if"
           if="[[!computeRouteDetailsHidden_(currentView_, issue)]]">
-        <route-details id="route-details" route="[[currentRoute_]]"
+        <route-details id="route-details" is-off-the-record="[[isOffTheRecord]]"
+            route="[[currentRoute_]]"
             on-close-route-click="onCloseRouteClick_">
         </route-details>
       </template>

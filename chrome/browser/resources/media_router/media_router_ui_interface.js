@@ -88,17 +88,20 @@ cr.define('media_router.ui', function() {
    *            showDomain: boolean
    *          },
    *          routes: !Array<!media_router.Route>,
-   *          castModes: !Array<!media_router.CastMode>}} data
+   *          castModes: !Array<!media_router.CastMode>,
+   *          isOffTheRecord: boolean}} data
    * Parameters in data:
    *   deviceMissingUrl - url to be opened on "Device missing?" clicked.
    *   sinksAndIdentity - list of sinks to be displayed and user identity.
    *   routes - list of routes that are associated with the sinks.
    *   castModes - list of available cast modes.
+   *   isOffTheRecord - whether or not the browser is currently incognito.
    */
   function setInitialData(data) {
     container.deviceMissingUrl = data['deviceMissingUrl'];
     container.castModeList = data['castModes'];
     this.setSinkListAndIdentity(data['sinksAndIdentity']);
+    container.isOffTheRecord = data['isOffTheRecord'];
     container.routeList = data['routes'];
     container.maybeShowRouteDetailsOnOpen();
     media_router.browserApi.onInitialDataReceived();

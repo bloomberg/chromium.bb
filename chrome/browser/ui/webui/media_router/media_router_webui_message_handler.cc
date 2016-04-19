@@ -409,6 +409,9 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
       cast_modes, media_router_ui_->GetPresentationRequestSourceName()));
   initial_data.Set("castModes", cast_modes_list.release());
 
+  Profile* profile = Profile::FromWebUI(web_ui());
+  initial_data.SetBoolean("isOffTheRecord", profile->IsOffTheRecord());
+
   web_ui()->CallJavascriptFunction(kSetInitialData, initial_data);
   media_router_ui_->UIInitialized();
 }

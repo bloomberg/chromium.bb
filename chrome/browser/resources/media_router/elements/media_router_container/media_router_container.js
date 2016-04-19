@@ -121,6 +121,15 @@ Polymer({
     },
 
     /**
+     * Whether the browser is currently incognito.
+     * @type {boolean}
+     */
+    isOffTheRecord: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Whether the search input is currently focused. This is used to prevent
      * window focus/blur events from interfering with input-focus-dependent
      * operations.
