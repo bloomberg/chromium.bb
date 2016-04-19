@@ -715,7 +715,6 @@
               'variables': {
                 'test_type': 'gtest',
                 'test_suite_name': '<(_target_name)',
-                'isolate_file': 'breakpad_unittests.isolate',
               },
               'includes': [ '../build/android/test_runner.gypi' ],
               'ldflags!': [
