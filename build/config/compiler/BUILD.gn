@@ -835,12 +835,6 @@ config("default_warnings") {
 
     if (visual_studio_version == "2015") {
       cflags += [
-        # VC++ 2015 changes 32-bit size_t truncation warnings from 4244 to 4267.
-        # Example: short TruncTest(size_t x) { return x; }
-        # Since we disable 4244 we need to disable 4267 during migration.
-        # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-        "/wd4267",
-
         # C4312 is a VS 2015 64-bit warning for integer to larger pointer.
         # TODO(brucedawson): fix warnings, crbug.com/554200
         "/wd4312",
@@ -851,6 +845,16 @@ config("default_warnings") {
         # See http://bugs.icu-project.org/trac/ticket/11122
         "/wd4595",
       ]
+
+      if (current_cpu == "x86") {
+        cflags += [
+          # VC++ 2015 changes 32-bit size_t truncation warnings from 4244 to
+          # 4267. Example: short TruncTest(size_t x) { return x; }
+          # Since we disable 4244 we need to disable 4267 during migration.
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          "/wd4267",
+        ]
+      }
     }
 
     # VS xtree header file needs to be patched or 4702 (unreachable code

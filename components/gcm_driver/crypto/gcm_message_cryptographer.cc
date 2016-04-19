@@ -54,11 +54,13 @@ std::string InfoForContentEncoding(
       break;
   }
 
-  uint16_t local_len = base::HostToNet16(recipient_public_key.size());
+  uint16_t local_len =
+      base::HostToNet16(static_cast<uint16_t>(recipient_public_key.size()));
   info_stream.write(reinterpret_cast<char*>(&local_len), sizeof(local_len));
   info_stream << recipient_public_key;
 
-  uint16_t peer_len = base::HostToNet16(sender_public_key.size());
+  uint16_t peer_len =
+      base::HostToNet16(static_cast<uint16_t>(sender_public_key.size()));
   info_stream.write(reinterpret_cast<char*>(&peer_len), sizeof(peer_len));
   info_stream << sender_public_key;
 

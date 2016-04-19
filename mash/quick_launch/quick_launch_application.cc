@@ -105,7 +105,8 @@ class QuickLaunchUI : public views::WidgetDelegateView,
         base::string16 suffix = name;
         base::ReplaceSubstringsAfterOffset(&suffix, 0, new_contents,
                                            base::string16());
-        gfx::Range range(new_contents.size(), name.size());
+        gfx::Range range(static_cast<uint32_t>(new_contents.size()),
+                         static_cast<uint32_t>(name.size()));
         prompt_->SetText(name);
         prompt_->SelectRange(range);
         break;
