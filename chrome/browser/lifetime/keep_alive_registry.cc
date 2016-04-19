@@ -113,7 +113,7 @@ void KeepAliveRegistry::OnRestartAllowedChanged(bool new_restart_allowed) {
                     OnKeepAliveRestartStateChanged(new_restart_allowed));
 }
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 std::ostream& operator<<(std::ostream& out, const KeepAliveRegistry& registry) {
   out << "{registered_count_=" << registry.registered_count_
       << ", restart_allowed_count_=" << registry.restart_allowed_count_
@@ -127,4 +127,4 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveRegistry& registry) {
   out << "]}";
   return out;
 }
-#endif  // ndef NDEBUG
+#endif

@@ -191,7 +191,7 @@ TEST_F(LoggingTest, CheckStreamsAreLazy) {
 #endif
 
 TEST_F(LoggingTest, DebugLoggingReleaseBehavior) {
-#if !defined(NDEBUG)
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   int debug_only_variable = 1;
 #endif
   // These should avoid emitting references to |debug_only_variable|
@@ -226,7 +226,7 @@ TEST_F(LoggingTest, Dcheck) {
   // Release build with real DCHECKS.
   SetLogAssertHandler(&LogSink);
   EXPECT_TRUE(DCHECK_IS_ON());
-  EXPECT_FALSE(DLOG_IS_ON(DCHECK));
+  EXPECT_TRUE(DLOG_IS_ON(DCHECK));
 #else
   // Debug build.
   SetLogAssertHandler(&LogSink);

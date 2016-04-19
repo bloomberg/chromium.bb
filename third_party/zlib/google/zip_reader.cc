@@ -517,7 +517,7 @@ FileWriterDelegate::FileWriterDelegate(base::File* file)
 }
 
 FileWriterDelegate::~FileWriterDelegate() {
-#if !defined(NDEBUG)
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   const bool success =
 #endif
       file_->SetLength(file_length_);

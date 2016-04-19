@@ -401,8 +401,10 @@ TEST_F(KeySystemsTest, Basic_UnrecognizedKeySystem) {
 
 #if defined(ENABLE_PEPPER_CDMS)
   std::string type;
-  EXPECT_DEBUG_DEATH(type = GetPepperType(kUnrecognized),
-                     "x-org.example.unrecognized is not a known system");
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+  EXPECT_DEATH(type = GetPepperType(kUnrecognized),
+               "x-org.example.unrecognized is not a known system");
+#endif
   EXPECT_TRUE(type.empty());
 #endif
 }
@@ -418,8 +420,10 @@ TEST_F(KeySystemsTest, Basic_UsesAesDecryptor) {
   EXPECT_TRUE(CanUseAesDecryptor(kUsesAes));
 #if defined(ENABLE_PEPPER_CDMS)
   std::string type;
-  EXPECT_DEBUG_DEATH(type = GetPepperType(kUsesAes),
-                     "x-org.example.clear is not Pepper-based");
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+  EXPECT_DEATH(type = GetPepperType(kUsesAes),
+               "x-org.example.clear is not Pepper-based");
+#endif
   EXPECT_TRUE(type.empty());
 #endif
 }

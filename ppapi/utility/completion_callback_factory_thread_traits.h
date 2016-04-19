@@ -85,7 +85,7 @@ class NonThreadSafeThreadTraits {
     /// Default constructor. In debug mode, this checks that the object is being
     /// created on the main thread.
     RefCount() : ref_(0) {
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
       is_main_thread_ = Module::Get()->core()->IsMainThread();
 #endif
     }
@@ -113,7 +113,7 @@ class NonThreadSafeThreadTraits {
 
    private:
     int32_t ref_;
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
     bool is_main_thread_;
 #endif
   };
@@ -126,7 +126,7 @@ class NonThreadSafeThreadTraits {
   class Lock {
    public:
     Lock() {
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
       is_main_thread_ = Module::Get()->core()->IsMainThread();
       lock_held_ = false;
 #endif
@@ -139,7 +139,7 @@ class NonThreadSafeThreadTraits {
     /// Acquires the fake "lock". This does nothing except perform checks in
     /// debug mode.
     void Acquire() {
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
       PP_DCHECK(!lock_held_);
       lock_held_ = true;
 #endif
@@ -148,14 +148,14 @@ class NonThreadSafeThreadTraits {
     /// Releases the fake "lock". This does nothing except perform checks in
     /// debug mode.
     void Release() {
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
       PP_DCHECK(lock_held_);
       lock_held_ = false;
 #endif
     }
 
    private:
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
     bool is_main_thread_;
     bool lock_held_;
 #endif
