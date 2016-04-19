@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+    .then(service => service.getCharacteristic('body_sensor_location'))
+    .then(characteristic => {
+      return assert_event_fires_after_promise(characteristic,
+                                              'readValue',
+                                              'characteristicvaluechanged',
+                                              3 /* attach 3 listeners */);
+    }).then(results => {
+      let read_value = results[0].buffer;
+      let event_values = results.slice(1).map(v => v.buffer);
+      for (let event_value of event_values) {
+        // TODO(ortuno): The DataView used to resolve the promise
+        // should be the same DataView as the one saved in the
+        // characteristic.
+        // http://crbug.com/543347
+        // assert_equals(event.target.value, value);
+        assert_array_equals(event_value, read_value);
+      }
+    });
+}, 'Add multiple event listeners then readValue().');
+</script>

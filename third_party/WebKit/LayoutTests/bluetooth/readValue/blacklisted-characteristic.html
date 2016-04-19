@@ -1,13 +1,9 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-
-test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
-     'window.testRunner is required for the following tests.');
-
 promise_test(() => {
   return setBluetoothFakeAdapter('BlacklistTestAdapter')
     .then(() => requestDeviceWithKeyDown({
@@ -21,8 +17,8 @@ promise_test(() => {
       return characteristic.writeValue(new Uint8Array(1 /* length */))
         .then(() => assert_promise_rejects_with_message(
           characteristic.readValue(), new DOMException(
-            'readValue() called on blacklisted object marked exclude-reads.' +
-            ' https://goo.gl/4NeimX',
+            'readValue() called on blacklisted object marked exclude-reads. ' +
+            'https://goo.gl/4NeimX',
             'SecurityError'),
           'readValue() should reject.'))
       });
