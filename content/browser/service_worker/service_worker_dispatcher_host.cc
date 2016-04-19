@@ -172,8 +172,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnProviderDestroyed)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SetVersionId,
                         OnSetHostedVersionId)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_DeprecatedPostMessageToWorker,
-                        OnDeprecatedPostMessageToWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToWorker,
                         OnPostMessageToWorker)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerReadyForInspection,
@@ -742,26 +740,6 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
       NOTREACHED() << sender_provider_host->provider_type();
       break;
   }
-}
-
-void ServiceWorkerDispatcherHost::OnDeprecatedPostMessageToWorker(
-    int handle_id,
-    const base::string16& message,
-    const std::vector<TransferredMessagePort>& sent_message_ports) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnDeprecatedPostMessageToWorker");
-  if (!GetContext())
-    return;
-
-  ServiceWorkerHandle* handle = handles_.Lookup(handle_id);
-  if (!handle) {
-    bad_message::ReceivedBadMessage(this, bad_message::SWDH_POST_MESSAGE);
-    return;
-  }
-
-  handle->version()->DispatchMessageEvent(
-      message, sent_message_ports,
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
 }
 
 void ServiceWorkerDispatcherHost::OnProviderCreated(

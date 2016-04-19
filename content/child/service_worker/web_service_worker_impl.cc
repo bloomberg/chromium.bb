@@ -22,7 +22,6 @@
 using blink::WebMessagePortChannel;
 using blink::WebMessagePortChannelArray;
 using blink::WebMessagePortChannelClient;
-using blink::WebRuntimeFeatures;
 using blink::WebSecurityOrigin;
 using blink::WebString;
 
@@ -51,17 +50,9 @@ void SendPostMessageToWorkerOnMainThread(
     const base::string16& message,
     const url::Origin& source_origin,
     std::unique_ptr<WebMessagePortChannelArray> channels) {
-  if (WebRuntimeFeatures::isServiceWorkerExtendableMessageEventEnabled()) {
-    thread_safe_sender->Send(new ServiceWorkerHostMsg_PostMessageToWorker(
-        handle_id, provider_id, message, source_origin,
-        WebMessagePortChannelImpl::ExtractMessagePortIDs(std::move(channels))));
-  } else {
-    thread_safe_sender->Send(
-        new ServiceWorkerHostMsg_DeprecatedPostMessageToWorker(
-            handle_id, message,
-            WebMessagePortChannelImpl::ExtractMessagePortIDs(
-                std::move(channels))));
-  }
+  thread_safe_sender->Send(new ServiceWorkerHostMsg_PostMessageToWorker(
+      handle_id, provider_id, message, source_origin,
+      WebMessagePortChannelImpl::ExtractMessagePortIDs(std::move(channels))));
 }
 
 }  // namespace

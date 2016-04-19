@@ -4,9 +4,7 @@
 
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#extendablemessage-event-section
 
-[
-    RuntimeEnabled=ServiceWorkerExtendableMessageEvent,
-] dictionary ExtendableMessageEventInit : ExtendableEventInit {
+dictionary ExtendableMessageEventInit : ExtendableEventInit {
      any data;
      DOMString origin;
      DOMString lastEventId;

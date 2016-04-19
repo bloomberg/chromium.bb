@@ -315,9 +315,4 @@ void WebRuntimeFeatures::enableRenderingPipelineThrottling(bool enable)
     RuntimeEnabledFeatures::setRenderingPipelineThrottlingEnabled(enable);
 }
 
-bool WebRuntimeFeatures::isServiceWorkerExtendableMessageEventEnabled()
-{
-    return RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled();
-}
-
 } // namespace blink

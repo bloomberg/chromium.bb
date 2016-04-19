@@ -213,13 +213,6 @@ class ServiceWorkerContextClient
                          const std::string& region_id,
                          const blink::WebCircularGeofencingRegion& region);
 
-  // TODO(nhiroki): Remove this after ExtendableMessageEvent is enabled by
-  // default (crbug.com/543198).
-  void OnPostMessage(
-      const base::string16& message,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
-      const std::vector<int>& new_routing_ids);
-
   void OnDidGetClient(int request_id, const ServiceWorkerClientInfo& client);
   void OnDidGetClients(
       int request_id, const std::vector<ServiceWorkerClientInfo>& clients);

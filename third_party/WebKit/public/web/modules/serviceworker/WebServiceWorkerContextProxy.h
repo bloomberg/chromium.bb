@@ -61,11 +61,6 @@ public:
     virtual void dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest) = 0;
     virtual void dispatchForeignFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest) = 0;
     virtual void dispatchGeofencingEvent(int eventID, WebGeofencingEventType, const WebString& regionID, const WebCircularGeofencingRegion&) = 0;
-
-    // TODO(nhiroki): Remove this after ExtendableMessageEvent is enabled by
-    // default (crbug.com/543198).
-    virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) = 0;
-
     virtual void dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData&, int actionIndex) = 0;
     virtual void dispatchNotificationCloseEvent(int eventID, int64_t notificationID, const WebNotificationData&) = 0;
     virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;

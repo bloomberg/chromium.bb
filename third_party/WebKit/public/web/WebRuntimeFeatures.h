@@ -114,10 +114,6 @@ public:
     BLINK_EXPORT static void enableXSLT(bool);
     BLINK_EXPORT static void forceOverlayFullscreenVideo(bool);
 
-    // TODO(nhiroki): Remove after ExtendableMessageEvent is shipped
-    // (crbug.com/543198).
-    BLINK_EXPORT static bool isServiceWorkerExtendableMessageEventEnabled();
-
 private:
     WebRuntimeFeatures();
 };

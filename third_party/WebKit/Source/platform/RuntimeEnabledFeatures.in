@@ -180,7 +180,6 @@ ScrollAnchoring
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop status=experimental
 ServiceWorkerClientAttributes status=stable
-ServiceWorkerExtendableMessageEvent status=stable
 ServiceWorkerClientsGetID status=stable
 ServiceWorkerWindowClientNavigate status=stable
 ShadowDOMV1 status=experimental

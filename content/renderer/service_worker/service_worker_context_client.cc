@@ -253,7 +253,6 @@ void ServiceWorkerContextClient::OnMessageReceived(
                         OnNotificationCloseEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_GeofencingEvent, OnGeofencingEvent)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToWorker, OnPostMessage)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClient, OnDidGetClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClients, OnDidGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowResponse,
@@ -835,26 +834,6 @@ void ServiceWorkerContextClient::OnGeofencingEvent(
       request_id, event_type, blink::WebString::fromUTF8(region_id), region);
   Send(new ServiceWorkerHostMsg_GeofencingEventFinished(
       GetRoutingID(), request_id, blink::WebServiceWorkerEventResultCompleted));
-}
-
-void ServiceWorkerContextClient::OnPostMessage(
-    const base::string16& message,
-    const std::vector<TransferredMessagePort>& sent_message_ports,
-    const std::vector<int>& new_routing_ids) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerContextClient::OnPostEvent");
-  blink::WebMessagePortChannelArray ports =
-      WebMessagePortChannelImpl::CreatePorts(
-          sent_message_ports, new_routing_ids,
-          main_thread_task_runner_);
-
-  // dispatchMessageEvent is expected to execute onmessage function
-  // synchronously.
-  base::TimeTicks before = base::TimeTicks::Now();
-  proxy_->dispatchMessageEvent(message, ports);
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "ServiceWorker.MessageEvent.Time",
-      base::TimeTicks::Now() - before);
 }
 
 void ServiceWorkerContextClient::OnDidGetClient(

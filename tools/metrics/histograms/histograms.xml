@@ -47132,6 +47132,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.ExtendableMessageEvent.Time" units="ms">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    The time taken between dispatching an ExtendableMessageEvent to a Service
+    Worker and receiving a message that it finished handling the event. Includes
+    the time for the waitUntil() promise to settle.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.FetchEvent.Fallback.Time" units="ms">
   <owner>jeremyarcher@chromium.org</owner>
   <summary>
@@ -47238,6 +47247,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ServiceWorker.MessageEvent.Time" units="ms">
   <owner>shimazu@chromium.org</owner>
+  <obsolete>
+    Deprecated 2016-04 in favor of ServiceWorker.ExtendableMessageEvent.Time.
+  </obsolete>
   <summary>Execution time of ServiceWorkerGlobalScope.onmessage.</summary>
 </histogram>
 

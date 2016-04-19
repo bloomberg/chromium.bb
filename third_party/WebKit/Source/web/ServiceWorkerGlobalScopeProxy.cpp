@@ -35,7 +35,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
-#include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
@@ -103,8 +102,6 @@ void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
 
 void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray& webChannels, const WebServiceWorkerClientInfo& client)
 {
-    DCHECK(RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled());
-
     WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
     MessagePortArray* ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
     String origin;
@@ -123,8 +120,6 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
 
 void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray& webChannels, std::unique_ptr<WebServiceWorker::Handle> handle)
 {
-    DCHECK(RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled());
-
     WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
     MessagePortArray* ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
     String origin;
@@ -180,13 +175,6 @@ void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)
     else
         event = ExtendableEvent::create(EventTypeNames::install, ExtendableEventInit(), observer);
     workerGlobalScope()->dispatchExtendableEvent(event, observer);
-}
-
-void ServiceWorkerGlobalScopeProxy::dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& webChannels)
-{
-    MessagePortArray* ports = MessagePort::toMessagePortArray(workerGlobalScope(), webChannels);
-    WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
-    workerGlobalScope()->dispatchEvent(MessageEvent::create(ports, value));
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData& data, int actionIndex)

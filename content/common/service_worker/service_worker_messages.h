@@ -200,15 +200,6 @@ IPC_MESSAGE_CONTROL5(
     url::Origin /* source_origin */,
     std::vector<content::TransferredMessagePort> /* sent_message_ports */)
 
-// Sends MessageEvent to a service worker (renderer->browser).
-// TODO(nhiroki): Remove this after ExtendableMessageEvent is enabled by
-// default (crbug.com/543198).
-IPC_MESSAGE_CONTROL3(
-    ServiceWorkerHostMsg_DeprecatedPostMessageToWorker,
-    int /* handle_id */,
-    base::string16 /* message */,
-    std::vector<content::TransferredMessagePort> /* sent_message_ports */)
-
 // Informs the browser of a new ServiceWorkerProvider in the child process,
 // |provider_id| is unique within its child process. When this provider is
 // created for a document, |route_id| is the frame ID of it. When this provider
@@ -501,14 +492,6 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_GeofencingEvent,
                      blink::WebGeofencingEventType /* event_type */,
                      std::string /* region_id */,
                      blink::WebCircularGeofencingRegion /* region */)
-
-// TODO(nhiroki): Remove this after ExtendableMessageEvent is enabled by
-// default (crbug.com/543198).
-IPC_MESSAGE_CONTROL3(
-    ServiceWorkerMsg_MessageToWorker,
-    base::string16 /* message */,
-    std::vector<content::TransferredMessagePort> /* sent_message_ports */,
-    std::vector<int> /* new_routing_ids */)
 
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidSkipWaiting,
                      int /* request_id */)

@@ -327,8 +327,8 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.PushEvent.Time", time);
       break;
     case EventType::MESSAGE:
-      // TODO(nhiroki): Record event duration for Message event after
-      // ExtendableMessageEvent is enabled by default (crbug.com/543198).
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.ExtendableMessageEvent.Time",
+                                 time);
       break;
 
     // For now event duration for these events is not recorded.

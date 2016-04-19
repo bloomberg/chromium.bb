@@ -148,13 +148,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
       const url::Origin& source_origin,
       const std::vector<TransferredMessagePort>& sent_message_ports);
 
-  // TODO(nhiroki): Remove this after ExtendableMessageEvent is enabled by
-  // default (crbug.com/543198).
-  void OnDeprecatedPostMessageToWorker(
-      int handle_id,
-      const base::string16& message,
-      const std::vector<TransferredMessagePort>& sent_message_ports);
-
   void OnTerminateWorker(int handle_id);
 
   void DispatchExtendableMessageEvent(

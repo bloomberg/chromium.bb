@@ -246,14 +246,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   template <typename ResponseMessage>
   void DispatchSimpleEvent(int request_id, const IPC::Message& message);
 
-  // Sends a message event to the associated embedded worker.
-  // TODO(nhiroki): Remove this after ExtendableMessageEvent is enabled by
-  // default (crbug.com/543198).
-  void DispatchMessageEvent(
-      const base::string16& message,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
-      const StatusCallback& callback);
-
   // Adds and removes |provider_host| as a controllee of this ServiceWorker.
   // A potential controllee is a host having the version as its .installing
   // or .waiting version.
@@ -494,11 +486,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnStartSentAndScriptEvaluated(ServiceWorkerStatusCode status);
-
-  void DispatchMessageEventInternal(
-      const base::string16& message,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
-      const StatusCallback& callback);
 
   // Message handlers.
 
