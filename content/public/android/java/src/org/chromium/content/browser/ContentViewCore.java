@@ -35,6 +35,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStructure;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityNodeProvider;
@@ -544,6 +545,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
     // System accessibility service.
     private final AccessibilityManager mAccessibilityManager;
+
+    // If true, the web contents are obscured by another view and we shouldn't
+    // return an AccessibilityNodeProvider or process touch exploration events.
+    private boolean mIsObscuredByAnotherView;
 
     // Notifies the ContentViewCore when platform closed caption settings have changed
     // if they are supported. Otherwise does nothing.
@@ -1709,7 +1714,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
         MotionEvent offset = createOffsetMotionEvent(event);
         try {
-            if (mBrowserAccessibilityManager != null) {
+            if (mBrowserAccessibilityManager != null && !mIsObscuredByAnotherView) {
                 return mBrowserAccessibilityManager.onHoverEvent(offset);
             }
 
@@ -3019,13 +3024,15 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     /**
-     * If native accessibility (not script injection) is enabled, and if this is
-     * running on JellyBean or later, returns an AccessibilityNodeProvider that
+     * If native accessibility is enabled and no other views are temporarily
+     * obscuring this one, returns an AccessibilityNodeProvider that
      * implements native accessibility for this view. Returns null otherwise.
      * Lazily initializes native accessibility here if it's allowed.
      * @return The AccessibilityNodeProvider, if available, or null otherwise.
      */
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
+        if (mIsObscuredByAnotherView) return null;
+
         if (mBrowserAccessibilityManager != null) {
             return mBrowserAccessibilityManager.getAccessibilityNodeProvider();
         }
@@ -3037,6 +3044,19 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         }
 
         return null;
+    }
+
+    /**
+     * Set whether or not the web contents are obscured by another view.
+     * If true, we won't return an accessibility node provider or respond
+     * to touch exploration events.
+     */
+    public void setObscuredByAnotherView(boolean isObscured) {
+        if (isObscured != mIsObscuredByAnotherView) {
+            mIsObscuredByAnotherView = isObscured;
+            getContainerView().sendAccessibilityEvent(
+                    AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.M)

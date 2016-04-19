@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -1301,9 +1302,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         for (TabObserver observer : mObservers) {
             observer.onDidChangeThemeColor(this, mDefaultThemeColor);
         }
-        for (TabObserver observer : mObservers) {
-            observer.onContentChanged(this);
-        }
+        notifyContentChanged();
         destroyNativePageInternal(previousNativePage);
     }
 
@@ -1326,7 +1325,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (mNativePage == null) return;
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
-        for (TabObserver observer : mObservers) observer.onContentChanged(this);
+        notifyContentChanged();
         destroyNativePageInternal(previousNativePage);
     }
 
@@ -1710,6 +1709,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mNativePage = null;
             destroyNativePageInternal(previousNativePage);
 
+            if (mContentViewCore != null) {
+                mContentViewCore.setObscuredByAnotherView(false);
+            }
+
             mContentViewCore = cvc;
             cvc.getContainerView().setOnHierarchyChangeListener(this);
             cvc.getContainerView().setOnSystemUiVisibilityChangeListener(this);
@@ -1757,7 +1760,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mSwipeRefreshHandler = new SwipeRefreshHandler(mThemedApplicationContext);
             mSwipeRefreshHandler.setContentViewCore(mContentViewCore);
 
-            for (TabObserver observer : mObservers) observer.onContentChanged(this);
+            notifyContentChanged();
 
             // For browser tabs, we want to set accessibility focus to the page
             // when it loads. This is not the default behavior for embedded
@@ -1853,7 +1856,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             getContentViewCore().getContainerView().addView(
                     mSadTabView, new FrameLayout.LayoutParams(
                             LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-            for (TabObserver observer : mObservers) observer.onContentChanged(this);
+            notifyContentChanged();
         }
         FullscreenManager fullscreenManager = getFullscreenManager();
         if (fullscreenManager != null) {
@@ -1867,7 +1870,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private void removeSadTabIfPresent() {
         if (isShowingSadTab()) {
             getContentViewCore().getContainerView().removeView(mSadTabView);
-            for (TabObserver observer : mObservers) observer.onContentChanged(this);
+            notifyContentChanged();
         }
         mSadTabView = null;
     }
@@ -1878,6 +1881,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     public boolean isShowingSadTab() {
         return mSadTabView != null && getContentViewCore() != null
                 && mSadTabView.getParent() == getContentViewCore().getContainerView();
+    }
+
+    /**
+     * Calls onContentChanged on all TabObservers and updates accessibility visibility.
+     */
+    private void notifyContentChanged() {
+        for (TabObserver observer : mObservers) observer.onContentChanged(this);
+        updateAccessibilityVisibility();
     }
 
     /**
@@ -2948,6 +2959,34 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         assert state != null;
         return new Tab(id, parentId, incognito, activity, nativeWindow,
                 TabLaunchType.FROM_RESTORE, TabCreationState.FROZEN_ON_RESTORE, state);
+    }
+
+    /**
+     * Update whether or not the current native tab and/or web contents are
+     * currently visible (from an accessibility perspective), or whether
+     * they're obscured by another view.
+     */
+    public void updateAccessibilityVisibility() {
+        int importantForAccessibility = isObscuredByAnotherViewForAccessibility()
+                ? View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                : View.IMPORTANT_FOR_ACCESSIBILITY_YES;
+        if (getView().getImportantForAccessibility() != importantForAccessibility) {
+            getView().setImportantForAccessibility(importantForAccessibility);
+            getView().sendAccessibilityEvent(
+                    AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        }
+
+        ContentViewCore cvc = getContentViewCore();
+        if (cvc != null) {
+            boolean isWebContentObscured = isObscuredByAnotherViewForAccessibility()
+                    || isShowingSadTab();
+            cvc.setObscuredByAnotherView(isWebContentObscured);
+        }
+    }
+
+    private boolean isObscuredByAnotherViewForAccessibility() {
+        ChromeActivity activity = getActivity();
+        return activity != null && activity.isViewObscuringAllTabs();
     }
 
     /**

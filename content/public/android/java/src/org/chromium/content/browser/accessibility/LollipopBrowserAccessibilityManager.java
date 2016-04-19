@@ -146,7 +146,7 @@ public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibil
 
         if (mAccessibilityFocusId == virtualViewId) {
             node.addAction(AccessibilityAction.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
-        } else if (mVisible) {
+        } else {
             node.addAction(AccessibilityAction.ACTION_ACCESSIBILITY_FOCUS);
         }
 

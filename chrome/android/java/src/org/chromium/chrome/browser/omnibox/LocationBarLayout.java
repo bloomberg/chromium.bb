@@ -90,7 +90,6 @@ import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.accessibility.BrowserAccessibilityManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
@@ -216,10 +215,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     private AnimatorSet mNavigationIconShowAnimator;
 
     private OmniboxPrerender mOmniboxPrerender;
-
-    private View mFocusedTabView;
-    private int mFocusedTabImportantForAccessibilityState;
-    private BrowserAccessibilityManager mFocusedTabAccessibilityManager;
 
     private boolean mSuggestionModalShown;
     private boolean mUseDarkColors;
@@ -2130,46 +2125,16 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     private void updateOmniboxResultsContainerVisibility(boolean visible) {
         boolean currentlyVisible = mOmniboxResultsContainer.getVisibility() == VISIBLE;
-        if (currentlyVisible == visible) {
-            // This early return is necessary. Otherwise, calling
-            // updateOmniboxResultsContainerVisibility(true) twice in a row will update
-            // mFocusedTabImportantForAccessibilityState incorrectly and cause
-            // mFocusedTabView to be stuck in IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS mode.
-            // http://crbug.com/445560
-            return;
-        }
+        if (currentlyVisible == visible) return;
+
+        ChromeActivity activity = (ChromeActivity) mWindowAndroid.getActivity().get();
 
         if (visible) {
             mOmniboxResultsContainer.setVisibility(VISIBLE);
-
-            if (getContentViewCore() != null) {
-                mFocusedTabAccessibilityManager =
-                        getContentViewCore().getBrowserAccessibilityManager();
-                if (mFocusedTabAccessibilityManager != null) {
-                    mFocusedTabAccessibilityManager.setVisible(false);
-                }
-            }
-
-            if (getCurrentTab() != null && getCurrentTab().getView() != null) {
-                mFocusedTabView = getCurrentTab().getView();
-                mFocusedTabImportantForAccessibilityState =
-                        mFocusedTabView.getImportantForAccessibility();
-                mFocusedTabView.setImportantForAccessibility(
-                        IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
-            }
+            if (activity != null) activity.addViewObscuringAllTabs(mOmniboxResultsContainer);
         } else {
             mOmniboxResultsContainer.setVisibility(INVISIBLE);
-
-            if (mFocusedTabAccessibilityManager != null) {
-                mFocusedTabAccessibilityManager.setVisible(true);
-                mFocusedTabAccessibilityManager = null;
-            }
-
-            if (mFocusedTabView != null) {
-                mFocusedTabView.setImportantForAccessibility(
-                        mFocusedTabImportantForAccessibilityState);
-                mFocusedTabView = null;
-            }
+            if (activity != null) activity.removeViewObscuringAllTabs(mOmniboxResultsContainer);
         }
     }
 

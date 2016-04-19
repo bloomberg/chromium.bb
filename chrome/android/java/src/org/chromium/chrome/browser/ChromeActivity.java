@@ -221,6 +221,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     private AssistStatusHandler mAssistStatusHandler;
 
+    // A set of views obscuring all tabs. When this set is nonempty,
+    // all tab content will be hidden from the accessibility tree.
+    private List<View> mViewsObscuringAllTabs = new ArrayList<View>();
+
     private static AppMenuHandlerFactory sAppMenuHandlerFactory = new AppMenuHandlerFactory() {
         @Override
         public AppMenuHandler get(
@@ -1463,6 +1467,39 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             return false;
         }
         return true;
+    }
+
+    /**
+     * Add a view to the set of views that obscure the content of all tabs for
+     * accessibility. As long as this set is nonempty, all tabs should be
+     * hidden from the accessibility tree.
+     *
+     * @param view The view that obscures the contents of all tabs.
+     */
+    public void addViewObscuringAllTabs(View view) {
+        mViewsObscuringAllTabs.add(view);
+
+        Tab tab = getActivityTab();
+        if (tab != null) tab.updateAccessibilityVisibility();
+    }
+
+    /**
+     * Remove a view that previously obscured the content of all tabs.
+     *
+     * @param view The view that no longer obscures the contents of all tabs.
+     */
+    public void removeViewObscuringAllTabs(View view) {
+        mViewsObscuringAllTabs.remove(view);
+
+        Tab tab = getActivityTab();
+        if (tab != null) tab.updateAccessibilityVisibility();
+    }
+
+    /**
+     * Returns whether or not any views obscure all tabs.
+     */
+    public boolean isViewObscuringAllTabs() {
+        return !mViewsObscuringAllTabs.isEmpty();
     }
 
     private void markSessionResume() {
