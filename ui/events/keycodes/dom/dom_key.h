@@ -8,7 +8,11 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "ipc/ipc_param_traits.h"
+#include "build/build_config.h"
+
+#if !defined(OS_IOS)
+#include "ipc/ipc_param_traits.h"  // nogncheck
+#endif
 
 namespace ui {
 
@@ -148,7 +152,9 @@ class DomKey {
   };
 
  private:
+#if !defined(OS_IOS)
   friend struct IPC::ParamTraits<ui::DomKey>;
+#endif
 
   Base value_;
 };

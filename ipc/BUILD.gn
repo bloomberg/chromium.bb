@@ -5,6 +5,8 @@
 import("//build/config/nacl/config.gni")
 import("//testing/test.gni")
 
+assert(!is_ios)
+
 component("ipc") {
   sources = [
     "attachment_broker.cc",

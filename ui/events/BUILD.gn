@@ -26,8 +26,11 @@ static_library("dom_keycode_converter") {
 
   deps = [
     "//base",
-    "//ipc:param_traits",
   ]
+
+  if (!is_ios) {
+    deps += [ "//ipc:param_traits" ]
+  }
 }
 
 component("events_base") {
