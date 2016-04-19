@@ -39,7 +39,7 @@ RemoveCSSPropertyCommand::RemoveCSSPropertyCommand(Document& document, Element* 
     , m_property(property)
     , m_important(false)
 {
-    ASSERT(m_element);
+    DCHECK(m_element);
 }
 
 RemoveCSSPropertyCommand::~RemoveCSSPropertyCommand()

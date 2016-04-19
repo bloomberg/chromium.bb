@@ -35,7 +35,7 @@ WrapContentsInDummySpanCommand::WrapContentsInDummySpanCommand(Element* element)
     : SimpleEditCommand(element->document())
     , m_element(element)
 {
-    ASSERT(m_element);
+    DCHECK(m_element);
 }
 
 void WrapContentsInDummySpanCommand::executeApply()
@@ -58,7 +58,7 @@ void WrapContentsInDummySpanCommand::doApply(EditingState*)
 
 void WrapContentsInDummySpanCommand::doUnapply()
 {
-    ASSERT(m_element);
+    DCHECK(m_element);
 
     if (!m_dummySpan || !m_element->hasEditableStyle())
         return;
@@ -74,7 +74,7 @@ void WrapContentsInDummySpanCommand::doUnapply()
 
 void WrapContentsInDummySpanCommand::doReapply()
 {
-    ASSERT(m_element);
+    DCHECK(m_element);
 
     if (!m_dummySpan || !m_element->hasEditableStyle())
         return;

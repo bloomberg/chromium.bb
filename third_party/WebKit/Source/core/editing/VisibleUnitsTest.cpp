@@ -1255,11 +1255,11 @@ TEST_F(VisibleUnitsTest, startOfParagraph)
     root->setInnerHTML("<style>* { display:inline-table; }</style><body contenteditable=true><svg><svg><foreignObject>abc<svg></svg></foreignObject></svg></svg></body>", ASSERT_NO_EXCEPTION);
     Element* oldBody = document().body();
     root->setInnerHTML("<body contenteditable=true><svg><foreignObject><style>def</style>", ASSERT_NO_EXCEPTION);
-    ASSERT(oldBody != document().body());
+    DCHECK_NE(oldBody, document().body());
     Node* foreignObject = document().body()->firstChild()->firstChild();
     foreignObject->insertBefore(oldBody, foreignObject->firstChild());
     Node* styleText = foreignObject->lastChild()->firstChild();
-    ASSERT(styleText->isTextNode());
+    DCHECK(styleText->isTextNode()) << styleText;
     updateLayoutAndStyleForPainting();
 
     EXPECT_FALSE(startOfParagraph(createVisiblePosition(Position(styleText, 0))).isNull());

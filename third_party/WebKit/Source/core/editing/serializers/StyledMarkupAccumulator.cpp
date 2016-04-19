@@ -97,8 +97,8 @@ void StyledMarkupAccumulator::appendTextWithInlineStyle(Text& text, EditingStyle
 {
     if (inlineStyle) {
         // wrappingStyleForAnnotatedSerialization should have removed -webkit-text-decorations-in-effect
-        ASSERT(!shouldAnnotate() || propertyMissingOrEqualToNone(inlineStyle->style(), CSSPropertyWebkitTextDecorationsInEffect));
-        ASSERT(m_document);
+        DCHECK(!shouldAnnotate() || propertyMissingOrEqualToNone(inlineStyle->style(), CSSPropertyWebkitTextDecorationsInEffect));
+        DCHECK(m_document);
 
         m_result.appendLiteral("<span style=\"");
         MarkupFormatter::appendAttributeValue(m_result, inlineStyle->style()->asText(), m_document->isHTMLDocument());
@@ -158,8 +158,8 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, const Element& e
 void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style)
 {
     // wrappingStyleForSerialization should have removed -webkit-text-decorations-in-effect
-    ASSERT(propertyMissingOrEqualToNone(style, CSSPropertyWebkitTextDecorationsInEffect));
-    ASSERT(m_document);
+    DCHECK(propertyMissingOrEqualToNone(style, CSSPropertyWebkitTextDecorationsInEffect));
+    DCHECK(m_document);
 
     StringBuilder openTag;
     openTag.appendLiteral("<div style=\"");

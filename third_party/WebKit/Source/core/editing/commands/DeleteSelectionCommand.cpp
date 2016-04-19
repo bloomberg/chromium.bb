@@ -48,7 +48,7 @@ using namespace HTMLNames;
 
 static bool isTableCellEmpty(Node* cell)
 {
-    ASSERT(isTableCell(cell));
+    DCHECK(isTableCell(cell)) << cell;
     return createVisiblePosition(firstPositionInNode(cell)).deepEquivalent() == createVisiblePosition(lastPositionInNode(cell)).deepEquivalent();
 }
 
@@ -166,15 +166,15 @@ void DeleteSelectionCommand::initializePositionData(EditingState* editingState)
 {
     Position start, end;
     initializeStartEnd(start, end);
-    ASSERT(start.isNotNull());
-    ASSERT(end.isNotNull());
+    DCHECK(start.isNotNull());
+    DCHECK(end.isNotNull());
     if (!isEditablePosition(start, ContentIsEditable, DoNotUpdateStyle)) {
         editingState->abort();
         return;
     }
     if (!isEditablePosition(end, ContentIsEditable, DoNotUpdateStyle)) {
         Node* highestRoot = highestEditableRoot(start);
-        ASSERT(highestRoot);
+        DCHECK(highestRoot);
         end = lastEditablePositionBeforePositionInRoot(end, *highestRoot);
     }
 
@@ -334,7 +334,7 @@ bool DeleteSelectionCommand::handleSpecialCaseBRDelete(EditingState* editingStat
 
 static Position firstEditablePositionInNode(Node* node)
 {
-    ASSERT(node);
+    DCHECK(node);
     Node* next = node;
     while (next && !next->hasEditableStyle())
         next = NodeTraversal::next(*next, node);
@@ -463,7 +463,7 @@ void DeleteSelectionCommand::handleGeneralDelete(EditingState* editingState)
 
     int startOffset = m_upstreamStart.computeEditingOffset();
     Node* startNode = m_upstreamStart.anchorNode();
-    ASSERT(startNode);
+    DCHECK(startNode);
 
     makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss(editingState);
     if (editingState->isAborted())
@@ -602,12 +602,12 @@ void DeleteSelectionCommand::fixupWhitespace()
     // |VisiblePosition::characterBefore()|
     if (m_leadingWhitespace.isNotNull() && !isRenderedCharacter(m_leadingWhitespace) && m_leadingWhitespace.anchorNode()->isTextNode()) {
         Text* textNode = toText(m_leadingWhitespace.anchorNode());
-        ASSERT(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
+        DCHECK(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace()) << textNode;
         replaceTextInNodePreservingMarkers(textNode, m_leadingWhitespace.computeOffsetInContainerNode(), 1, nonBreakingSpaceString());
     }
     if (m_trailingWhitespace.isNotNull() && !isRenderedCharacter(m_trailingWhitespace) && m_trailingWhitespace.anchorNode()->isTextNode()) {
         Text* textNode = toText(m_trailingWhitespace.anchorNode());
-        ASSERT(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
+        DCHECK(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace()) << textNode;
         replaceTextInNodePreservingMarkers(textNode, m_trailingWhitespace.computeOffsetInContainerNode(), 1, nonBreakingSpaceString());
     }
 }
@@ -630,7 +630,7 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState)
     }
 
     // It shouldn't have been asked to both try and merge content into the start block and prune it.
-    ASSERT(!m_pruneStartBlockIfNecessary);
+    DCHECK(!m_pruneStartBlockIfNecessary);
 
     // FIXME: Deletion should adjust selection endpoints as it removes nodes so that we never get into this state (4099839).
     if (!m_downstreamEnd.inShadowIncludingDocument() || !m_upstreamStart.inShadowIncludingDocument())

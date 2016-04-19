@@ -47,7 +47,7 @@ PositionTemplate<Strategy> BackwardsCharacterIteratorAlgorithm<Strategy>::endPos
             Node* n = m_textIterator.startContainer();
             return PositionTemplate<Strategy>::editingPositionOf(n, m_textIterator.endOffset() - m_runOffset);
         }
-        ASSERT(!m_runOffset);
+        DCHECK(!m_runOffset);
     }
     return m_textIterator.endPosition();
 }
@@ -56,7 +56,7 @@ template <typename Strategy>
 void BackwardsCharacterIteratorAlgorithm<Strategy>::advance(int count)
 {
     if (count <= 0) {
-        ASSERT(!count);
+        DCHECK(!count);
         return;
     }
 

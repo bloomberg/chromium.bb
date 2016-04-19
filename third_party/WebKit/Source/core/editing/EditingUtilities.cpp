@@ -87,8 +87,8 @@ bool isAtomicNode(const Node *node)
 template <typename Traversal>
 static int comparePositions(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected)
 {
-    ASSERT(containerA);
-    ASSERT(containerB);
+    DCHECK(containerA);
+    DCHECK(containerB);
 
     if (disconnected)
         *disconnected = false;
@@ -193,21 +193,21 @@ int comparePositionsInFlatTree(Node* containerA, int offsetA, Node* containerB, 
 // could be inside a shadow tree. Only works for non-null values.
 int comparePositions(const Position& a, const Position& b)
 {
-    ASSERT(a.isNotNull());
-    ASSERT(b.isNotNull());
+    DCHECK(a.isNotNull());
+    DCHECK(b.isNotNull());
     const TreeScope* commonScope = Position::commonAncestorTreeScope(a, b);
 
-    ASSERT(commonScope);
+    DCHECK(commonScope);
     if (!commonScope)
         return 0;
 
     Node* nodeA = commonScope->ancestorInThisScope(a.computeContainerNode());
-    ASSERT(nodeA);
+    DCHECK(nodeA);
     bool hasDescendentA = nodeA != a.computeContainerNode();
     int offsetA = hasDescendentA ? 0 : a.computeOffsetInContainerNode();
 
     Node* nodeB = commonScope->ancestorInThisScope(b.computeContainerNode());
-    ASSERT(nodeB);
+    DCHECK(nodeB);
     bool hasDescendentB = nodeB != b.computeContainerNode();
     int offsetB = hasDescendentB ? 0 : b.computeOffsetInContainerNode();
 
@@ -270,7 +270,7 @@ bool isEditablePosition(const Position& p, EditableType editableType, EUpdateSty
     if (updateStyle == UpdateStyle)
         node->document().updateLayoutIgnorePendingStylesheets();
     else
-        ASSERT(updateStyle == DoNotUpdateStyle);
+        DCHECK_EQ(updateStyle, DoNotUpdateStyle);
 
     if (isDisplayInsideTable(node))
         node = node->parentNode();
@@ -679,7 +679,8 @@ PositionInFlatTree previousPositionOf(const PositionInFlatTree& position, Positi
 template <typename Strategy>
 PositionTemplate<Strategy> nextPositionOfAlgorithm(const PositionTemplate<Strategy>& position, PositionMoveType moveType)
 {
-    ASSERT(moveType != PositionMoveType::BackwardDeletion);
+    // TODO(yosin): We should have printer for PositionMoveType.
+    DCHECK(moveType != PositionMoveType::BackwardDeletion);
 
     Node* node = position.anchorNode();
     if (!node)
@@ -843,7 +844,7 @@ String stringWithRebalancedWhitespace(const String& string, bool startIsStartOfP
         }
     }
 
-    ASSERT(rebalancedString.length() == length);
+    DCHECK_EQ(rebalancedString.length(), length);
 
     return rebalancedString.toString();
 }
@@ -1023,8 +1024,8 @@ VisiblePosition visiblePositionBeforeNode(Node& node)
 {
     if (node.hasChildren())
         return createVisiblePosition(firstPositionInOrBeforeNode(&node));
-    ASSERT(node.parentNode());
-    ASSERT(!node.parentNode()->isShadowRoot());
+    DCHECK(node.parentNode()) << node;
+    DCHECK(!node.parentNode()->isShadowRoot()) << node.parentNode();
     return createVisiblePosition(positionInParentBeforeNode(node));
 }
 
@@ -1033,8 +1034,8 @@ VisiblePosition visiblePositionAfterNode(Node& node)
 {
     if (node.hasChildren())
         return createVisiblePosition(lastPositionInOrAfterNode(&node));
-    ASSERT(node.parentNode());
-    ASSERT(!node.parentNode()->isShadowRoot());
+    DCHECK(node.parentNode()) << node.parentNode();
+    DCHECK(!node.parentNode()->isShadowRoot()) << node.parentNode();
     return createVisiblePosition(positionInParentAfterNode(node));
 }
 
@@ -1080,7 +1081,7 @@ template <typename Strategy>
 static Node* enclosingNodeOfTypeAlgorithm(const PositionTemplate<Strategy>& p, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule rule)
 {
     // TODO(yosin) support CanSkipCrossEditingBoundary
-    ASSERT(rule == CanCrossEditingBoundary || rule == CannotCrossEditingBoundary);
+    DCHECK(rule == CanCrossEditingBoundary || rule == CannotCrossEditingBoundary) << rule;
     if (p.isNull())
         return nullptr;
 
@@ -1268,7 +1269,7 @@ bool isDisplayInsideTable(const Node* node)
 
 bool isTableCell(const Node* node)
 {
-    ASSERT(node);
+    DCHECK(node);
     LayoutObject* r = node->layoutObject();
     return r ? r->isTableCell() : isHTMLTableCellElement(*node);
 }
@@ -1412,7 +1413,7 @@ static Position previousCharacterPosition(const Position& position, TextAffinity
 // This assumes that it starts in editable content.
 Position leadingWhitespacePosition(const Position& position, TextAffinity affinity, WhitespacePositionOption option)
 {
-    ASSERT(isEditablePosition(position, ContentIsEditable, DoNotUpdateStyle));
+    DCHECK(isEditablePosition(position, ContentIsEditable, DoNotUpdateStyle)) << position;
     if (position.isNull())
         return Position();
 
@@ -1440,7 +1441,7 @@ Position leadingWhitespacePosition(const Position& position, TextAffinity affini
 // This assumes that it starts in editable content.
 Position trailingWhitespacePosition(const Position& position, TextAffinity, WhitespacePositionOption option)
 {
-    ASSERT(isEditablePosition(position, ContentIsEditable, DoNotUpdateStyle));
+    DCHECK(isEditablePosition(position, ContentIsEditable, DoNotUpdateStyle)) << position;
     if (position.isNull())
         return Position();
 
@@ -1597,7 +1598,7 @@ EphemeralRange makeRange(const VisiblePosition &start, const VisiblePosition &en
 template <typename Strategy>
 static EphemeralRangeTemplate<Strategy> normalizeRangeAlgorithm(const EphemeralRangeTemplate<Strategy>& range)
 {
-    ASSERT(range.isNotNull());
+    DCHECK(range.isNotNull());
     range.document().updateLayoutIgnorePendingStylesheets();
 
     // TODO(yosin) We should not call |parentAnchoredEquivalent()|, it is

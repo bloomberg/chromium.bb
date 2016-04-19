@@ -83,8 +83,8 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState)
     VisibleSelection selection = selectionForParagraphIteration(endingSelection());
     VisiblePosition startOfSelection = selection.visibleStart();
     VisiblePosition endOfSelection = selection.visibleEnd();
-    ASSERT(!startOfSelection.isNull());
-    ASSERT(!endOfSelection.isNull());
+    DCHECK(!startOfSelection.isNull());
+    DCHECK(!endOfSelection.isNull());
     ContainerNode* startScope = nullptr;
     int startIndex = indexForVisiblePosition(startOfSelection, startScope);
     ContainerNode* endScope = nullptr;
@@ -96,9 +96,9 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState)
 
     document().updateLayoutIgnorePendingStylesheets();
 
-    ASSERT(startScope == endScope);
-    ASSERT(startIndex >= 0);
-    ASSERT(startIndex <= endIndex);
+    DCHECK_EQ(startScope, endScope);
+    DCHECK_GE(startIndex, 0);
+    DCHECK_LE(startIndex, endIndex);
     if (startScope == endScope && startIndex >= 0 && startIndex <= endIndex) {
         VisiblePosition start(visiblePositionForIndex(startIndex, startScope));
         VisiblePosition end(visiblePositionForIndex(endIndex, endScope));
@@ -212,11 +212,11 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
             splitTextNode(startText, startOffset);
             start = firstPositionInNode(startText);
             if (isStartAndEndOnSameNode) {
-                ASSERT(end.offsetInContainerNode() >= startOffset);
+                DCHECK_GE(end.offsetInContainerNode(), startOffset);
                 end = Position(startText, end.offsetInContainerNode() - startOffset);
             }
             if (isStartAndEndOfLastParagraphOnSameNode) {
-                ASSERT(m_endOfLastParagraph.offsetInContainerNode() >= startOffset);
+                DCHECK_GE(m_endOfLastParagraph.offsetInContainerNode(), startOffset);
                 m_endOfLastParagraph = Position(startText, m_endOfLastParagraph.offsetInContainerNode() - startOffset);
             }
         }
@@ -272,11 +272,11 @@ VisiblePosition ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfN
     splitTextNode(text, 1);
 
     if (text == start.computeContainerNode() && text->previousSibling() && text->previousSibling()->isTextNode()) {
-        ASSERT(start.offsetInContainerNode() < position.offsetInContainerNode());
+        DCHECK_LT(start.offsetInContainerNode(), position.offsetInContainerNode());
         start = Position(toText(text->previousSibling()), start.offsetInContainerNode());
     }
     if (text == end.computeContainerNode() && text->previousSibling() && text->previousSibling()->isTextNode()) {
-        ASSERT(end.offsetInContainerNode() < position.offsetInContainerNode());
+        DCHECK_LT(end.offsetInContainerNode(), position.offsetInContainerNode());
         end = Position(toText(text->previousSibling()), end.offsetInContainerNode());
     }
     if (text == m_endOfLastParagraph.computeContainerNode()) {

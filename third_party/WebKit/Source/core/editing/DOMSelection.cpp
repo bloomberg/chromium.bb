@@ -50,7 +50,7 @@ namespace blink {
 
 static Position createPosition(Node* node, int offset)
 {
-    ASSERT(offset >= 0);
+    DCHECK_GE(offset, 0);
     if (!node)
         return Position();
     return Position(node, offset);
@@ -81,7 +81,7 @@ void DOMSelection::clearTreeScope()
 
 const VisibleSelection& DOMSelection::visibleSelection() const
 {
-    ASSERT(m_frame);
+    DCHECK(m_frame);
     return m_frame->selection().selection();
 }
 
@@ -346,7 +346,7 @@ void DOMSelection::modify(const String& alterString, const String& directionStri
 
 void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState)
 {
-    ASSERT(node);
+    DCHECK(node);
 
     if (!m_frame)
         return;
@@ -377,7 +377,7 @@ Range* DOMSelection::getRangeAt(int index, ExceptionState& exceptionState)
     }
 
     // If you're hitting this, you've added broken multi-range selection support
-    ASSERT(rangeCount() == 1);
+    DCHECK_EQ(rangeCount(), 1);
 
     Position anchor = anchorPosition(visibleSelection());
     if (!anchor.anchorNode()->isInShadowTree())
@@ -400,7 +400,7 @@ void DOMSelection::removeAllRanges()
 
 void DOMSelection::addRange(Range* newRange)
 {
-    ASSERT(newRange);
+    DCHECK(newRange);
 
     if (!m_frame)
         return;
@@ -467,7 +467,7 @@ void DOMSelection::deleteFromDocument()
 
 bool DOMSelection::containsNode(const Node* n, bool allowPartial) const
 {
-    ASSERT(n);
+    DCHECK(n);
 
     if (!m_frame)
         return false;
@@ -496,7 +496,7 @@ bool DOMSelection::containsNode(const Node* n, bool allowPartial) const
 
     bool nodeFullyUnselected = (Range::compareBoundaryPoints(parentNode, nodeIndex, endPosition.computeContainerNode(), endPosition.offsetInContainerNode(), exceptionState) > 0 && !exceptionState.hadException())
         || (Range::compareBoundaryPoints(parentNode, nodeIndex + 1, startPosition.computeContainerNode(), startPosition.offsetInContainerNode(), exceptionState) < 0 && !exceptionState.hadException());
-    ASSERT(!exceptionState.hadException());
+    DCHECK(!exceptionState.hadException());
     if (nodeFullyUnselected)
         return false;
 
@@ -505,7 +505,7 @@ bool DOMSelection::containsNode(const Node* n, bool allowPartial) const
 
 void DOMSelection::selectAllChildren(Node* n, ExceptionState& exceptionState)
 {
-    ASSERT(n);
+    DCHECK(n);
 
     // This doesn't (and shouldn't) select text node characters.
     setBaseAndExtent(n, 0, n, n->countChildren(), exceptionState);
@@ -534,7 +534,7 @@ Node* DOMSelection::shadowAdjustedNode(const Position& position) const
     if (containerNode == adjustedNode)
         return containerNode;
 
-    ASSERT(!adjustedNode->isShadowRoot());
+    DCHECK(!adjustedNode->isShadowRoot()) << adjustedNode;
     return adjustedNode->parentOrShadowHostNode();
 }
 
@@ -557,7 +557,7 @@ int DOMSelection::shadowAdjustedOffset(const Position& position) const
 
 bool DOMSelection::isValidForPosition(Node* node) const
 {
-    ASSERT(m_frame);
+    DCHECK(m_frame);
     if (!node)
         return true;
     return node->document() == m_frame->document();

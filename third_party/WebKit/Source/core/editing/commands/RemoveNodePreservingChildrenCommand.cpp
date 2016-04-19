@@ -35,7 +35,7 @@ RemoveNodePreservingChildrenCommand::RemoveNodePreservingChildrenCommand(Node* n
     , m_node(node)
     , m_shouldAssumeContentIsAlwaysEditable(shouldAssumeContentIsAlwaysEditable)
 {
-    ASSERT(m_node);
+    DCHECK(m_node);
 }
 
 void RemoveNodePreservingChildrenCommand::doApply(EditingState* editingState)

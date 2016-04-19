@@ -16,7 +16,7 @@ EditingState::~EditingState()
 
 void EditingState::abort()
 {
-    ASSERT(!m_isAborted);
+    DCHECK(!m_isAborted);
     m_isAborted = true;
 }
 

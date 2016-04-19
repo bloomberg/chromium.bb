@@ -429,7 +429,7 @@ static bool intersectsNode(const VisibleSelection& selection, Node* node)
 
 void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, bool extentRemoved, bool startRemoved, bool endRemoved)
 {
-    ASSERT(node.document().isActive());
+    DCHECK(node.document().isActive()) << node;
 
     bool clearLayoutTreeSelection = false;
     bool clearDOMTreeSelection = false;
@@ -487,7 +487,7 @@ static Position updatePositionAfterAdoptingTextReplacement(const Position& posit
         return position;
 
     // See: http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html#Level-2-Range-Mutation
-    ASSERT(position.offsetInContainerNode() >= 0);
+    DCHECK_GE(position.offsetInContainerNode(), 0);
     unsigned positionOffset = static_cast<unsigned>(position.offsetInContainerNode());
     // Replacing text can be viewed as a deletion followed by insertion.
     if (positionOffset >= offset && positionOffset <= offset + oldLength)
@@ -528,7 +528,7 @@ static Position updatePostionAfterAdoptingTextNodesMerged(const Position& positi
     if (!position.anchorNode() || !position.isOffsetInAnchor())
         return position;
 
-    ASSERT(position.offsetInContainerNode() >= 0);
+    DCHECK_GE(position.offsetInContainerNode(), 0);
     unsigned positionOffset = static_cast<unsigned>(position.offsetInContainerNode());
 
     if (position.anchorNode() == &oldNode)
@@ -556,7 +556,7 @@ static Position updatePostionAfterAdoptingTextNodeSplit(const Position& position
     if (!position.anchorNode() || position.anchorNode() != &oldNode || !position.isOffsetInAnchor())
         return position;
     // See: http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html#Level-2-Range-Mutation
-    ASSERT(position.offsetInContainerNode() >= 0);
+    DCHECK_GE(position.offsetInContainerNode(), 0);
     unsigned positionOffset = static_cast<unsigned>(position.offsetInContainerNode());
     unsigned oldLength = oldNode.length();
     if (positionOffset <= oldLength)
@@ -680,7 +680,7 @@ static bool isTextFormControl(const VisibleSelection& selection)
 
 LayoutBlock* FrameSelection::caretLayoutObject() const
 {
-    ASSERT(selection().isValidFor(*m_frame->document()));
+    DCHECK(selection().isValidFor(*m_frame->document()));
     if (!isCaret())
         return nullptr;
     return CaretBase::caretLayoutObject(selection().start().anchorNode());
@@ -688,8 +688,8 @@ LayoutBlock* FrameSelection::caretLayoutObject() const
 
 IntRect FrameSelection::absoluteCaretBounds()
 {
-    ASSERT(selection().isValidFor(*m_frame->document()));
-    ASSERT(m_frame->document()->lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
+    DCHECK(selection().isValidFor(*m_frame->document()));
+    DCHECK_NE(m_frame->document()->lifecycle().state(), DocumentLifecycle::InPaintInvalidation);
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
     if (!isCaret()) {
         m_caretBase->clearCaretRect();
@@ -708,7 +708,7 @@ void FrameSelection::invalidateCaretRect()
         return;
     m_caretRectDirty = false;
 
-    ASSERT(selection().isValidFor(*m_frame->document()));
+    DCHECK(selection().isValidFor(*m_frame->document()));
     LayoutObject* layoutObject = nullptr;
     LayoutRect newRect;
     if (selection().isCaret())
@@ -876,7 +876,7 @@ bool FrameSelection::setSelectedRange(Range* range, TextAffinity affinity, Selec
 {
     if (!range || !range->inShadowIncludingDocument())
         return false;
-    ASSERT(range->startContainer()->document() == range->endContainer()->document());
+    DCHECK_EQ(range->startContainer()->document(), range->endContainer()->document());
     return setSelectedRange(EphemeralRange(range), affinity, directional, options);
 }
 
@@ -1058,8 +1058,8 @@ bool FrameSelection::shouldBlinkCaret() const
 
 void FrameSelection::caretBlinkTimerFired(Timer<FrameSelection>*)
 {
-    ASSERT(m_caretBase->caretIsVisible());
-    ASSERT(isCaret());
+    DCHECK(m_caretBase->caretIsVisible());
+    DCHECK(isCaret());
     if (isCaretBlinkingSuspended() && m_shouldPaintCaret)
         return;
     m_shouldPaintCaret = !m_shouldPaintCaret;
@@ -1236,7 +1236,7 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExt
     }
 
     Position start = this->start();
-    ASSERT(start.anchorNode());
+    DCHECK(start.anchorNode());
     if (start.anchorNode() && start.anchorNode()->layoutObject()) {
         // FIXME: This code only handles scrolling the startContainer's layer, but
         // the selection rect could intersect more than just that.

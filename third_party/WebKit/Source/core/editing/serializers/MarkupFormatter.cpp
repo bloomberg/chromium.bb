@@ -95,7 +95,7 @@ void MarkupFormatter::appendCharactersReplacingEntities(StringBuilder& result, c
     if (!(offset + length))
         return;
 
-    ASSERT(offset + length <= source.length());
+    DCHECK_LE(offset + length, source.length());
     if (source.is8Bit())
         appendCharactersReplacingEntitiesInternal(result, source.characters8() + offset, length, entityMaps, WTF_ARRAY_LENGTH(entityMaps), entityMask);
     else
@@ -191,7 +191,7 @@ void MarkupFormatter::appendAttributeValue(StringBuilder& result, const String& 
 
 void MarkupFormatter::appendQuotedURLAttributeValue(StringBuilder& result, const Element& element, const Attribute& attribute)
 {
-    ASSERT(element.isURLAttribute(attribute));
+    DCHECK(element.isURLAttribute(attribute)) << element;
     const String resolvedURLString = resolveURLIfNeeded(element, attribute.value());
     UChar quoteChar = '"';
     String strippedURLString = resolvedURLString.stripWhiteSpace();
@@ -375,7 +375,7 @@ void MarkupFormatter::appendAttribute(StringBuilder& result, const Element& elem
                         }
                     }
                 }
-                ASSERT(prefixedName.prefix());
+                DCHECK(prefixedName.prefix());
                 appendNamespace(result, prefixedName.prefix(), attribute.namespaceURI(), *namespaces);
             }
         }
@@ -420,7 +420,7 @@ bool MarkupFormatter::shouldAddNamespaceElement(const Element& element, Namespac
 bool MarkupFormatter::shouldAddNamespaceAttribute(const Attribute& attribute, const Element& element) const
 {
     // xmlns and xmlns:prefix attributes should be handled by another branch in appendAttribute.
-    ASSERT(attribute.namespaceURI() != XMLNSNames::xmlnsNamespaceURI);
+    DCHECK_NE(attribute.namespaceURI(), XMLNSNames::xmlnsNamespaceURI);
 
     // Attributes are in the null namespace by default.
     if (!attribute.namespaceURI())

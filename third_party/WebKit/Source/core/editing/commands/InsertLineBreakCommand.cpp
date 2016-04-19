@@ -154,7 +154,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
             Position positionBeforeTextNode(positionInParentBeforeNode(*textNode));
             // Clear out all whitespace and insert one non-breaking space
             deleteInsignificantTextDownstream(endingPosition);
-            ASSERT(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
+            DCHECK(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
             // Deleting insignificant whitespace will remove textNode if it contains nothing but insignificant whitespace.
             if (textNode->inShadowIncludingDocument()) {
                 insertTextIntoNode(textNode, 0, nonBreakingSpaceString());

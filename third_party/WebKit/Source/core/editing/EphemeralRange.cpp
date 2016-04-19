@@ -20,20 +20,20 @@ EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(const PositionTemplate<
 #endif
 {
     if (m_startPosition.isNull()) {
-        ASSERT(m_endPosition.isNull());
+        DCHECK(m_endPosition.isNull());
         return;
     }
-    ASSERT(m_endPosition.isNotNull());
-    ASSERT(m_startPosition.document() == m_endPosition.document());
-    ASSERT(m_startPosition.inShadowIncludingDocument());
-    ASSERT(m_endPosition.inShadowIncludingDocument());
+    DCHECK(m_endPosition.isNotNull());
+    DCHECK_EQ(m_startPosition.document(), m_endPosition.document());
+    DCHECK(m_startPosition.inShadowIncludingDocument());
+    DCHECK(m_endPosition.inShadowIncludingDocument());
 }
 
 template <typename Strategy>
 EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(const EphemeralRangeTemplate<Strategy>& other)
     : EphemeralRangeTemplate(other.m_startPosition, other.m_endPosition)
 {
-    ASSERT(other.isValid());
+    DCHECK(other.isValid());
 }
 
 template <typename Strategy>
@@ -47,7 +47,7 @@ EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(const Range* range)
 {
     if (!range)
         return;
-    ASSERT(range->inShadowIncludingDocument());
+    DCHECK(range->inShadowIncludingDocument());
     m_startPosition = fromPositionInDOMTree<Strategy>(range->startPosition());
     m_endPosition = fromPositionInDOMTree<Strategy>(range->endPosition());
 #if ENABLE(ASSERT)
@@ -68,7 +68,7 @@ EphemeralRangeTemplate<Strategy>::~EphemeralRangeTemplate()
 template <typename Strategy>
 EphemeralRangeTemplate<Strategy>& EphemeralRangeTemplate<Strategy>::operator=(const EphemeralRangeTemplate<Strategy>& other)
 {
-    ASSERT(other.isValid());
+    DCHECK(other.isValid());
     m_startPosition = other.m_startPosition;
     m_endPosition = other.m_endPosition;
 #if ENABLE(ASSERT)
@@ -92,28 +92,28 @@ bool EphemeralRangeTemplate<Strategy>::operator!=(const EphemeralRangeTemplate<S
 template <typename Strategy>
 Document& EphemeralRangeTemplate<Strategy>::document() const
 {
-    ASSERT(isNotNull());
+    DCHECK(isNotNull());
     return *m_startPosition.document();
 }
 
 template <typename Strategy>
 PositionTemplate<Strategy> EphemeralRangeTemplate<Strategy>::startPosition() const
 {
-    ASSERT(isValid());
+    DCHECK(isValid());
     return m_startPosition;
 }
 
 template <typename Strategy>
 PositionTemplate<Strategy> EphemeralRangeTemplate<Strategy>::endPosition() const
 {
-    ASSERT(isValid());
+    DCHECK(isValid());
     return m_endPosition;
 }
 
 template <typename Strategy>
 bool EphemeralRangeTemplate<Strategy>::isCollapsed() const
 {
-    ASSERT(isValid());
+    DCHECK(isValid());
     return m_startPosition == m_endPosition;
 }
 

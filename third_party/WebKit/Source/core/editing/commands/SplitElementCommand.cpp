@@ -38,9 +38,9 @@ SplitElementCommand::SplitElementCommand(Element* element, Node* atChild)
     , m_element2(element)
     , m_atChild(atChild)
 {
-    ASSERT(m_element2);
-    ASSERT(m_atChild);
-    ASSERT(m_atChild->parentNode() == m_element2);
+    DCHECK(m_element2);
+    DCHECK(m_atChild);
+    DCHECK_EQ(m_atChild->parentNode(), m_element2);
 }
 
 void SplitElementCommand::executeApply()

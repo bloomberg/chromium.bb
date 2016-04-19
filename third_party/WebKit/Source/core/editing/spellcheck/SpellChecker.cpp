@@ -298,8 +298,9 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         // takes precedence and we ignore any potential misspelled word. Select the grammar detail, update the spelling
         // panel, and store a marker so we draw the green squiggle later.
 
-        ASSERT(badGrammarPhrase.length() > 0);
-        ASSERT(grammarDetail.location != -1 && grammarDetail.length > 0);
+        DCHECK_GT(badGrammarPhrase.length(), 0u);
+        DCHECK_NE(grammarDetail.location, -1);
+        DCHECK_GT(grammarDetail.length, 0);
 
         // FIXME 4859190: This gets confused with doubled punctuation at the end of a paragraph
         const EphemeralRange badGrammarRange = calculateCharacterSubrange(EphemeralRange(grammarSearchStart, grammarSearchEnd), grammarPhraseOffset + grammarDetail.location, grammarDetail.length);
@@ -478,7 +479,7 @@ void SpellChecker::markBadGrammar(const VisibleSelection& selection)
 
 void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, const EphemeralRange& spellingRange, const EphemeralRange& grammarRange)
 {
-    ASSERT(unifiedTextCheckerEnabled());
+    DCHECK(unifiedTextCheckerEnabled());
 
     bool shouldMarkGrammar = textCheckingOptions & TextCheckingTypeGrammar;
 
@@ -500,18 +501,18 @@ void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask
 
 static EphemeralRange expandEndToSentenceBoundary(const EphemeralRange& range)
 {
-    ASSERT(range.isNotNull());
+    DCHECK(range.isNotNull());
     const VisiblePosition& visibleEnd = createVisiblePosition(range.endPosition());
-    ASSERT(visibleEnd.isNotNull());
+    DCHECK(visibleEnd.isNotNull());
     const Position& sentenceEnd = endOfSentence(visibleEnd).deepEquivalent();
     return EphemeralRange(range.startPosition(), sentenceEnd.isNotNull() ? sentenceEnd : range.endPosition());
 }
 
 static EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange& range)
 {
-    ASSERT(range.isNotNull());
+    DCHECK(range.isNotNull());
     const VisiblePosition& visibleStart = createVisiblePosition(range.startPosition());
-    ASSERT(visibleStart.isNotNull());
+    DCHECK(visibleStart.isNotNull());
     const Position& sentenceStart = startOfSentence(visibleStart).deepEquivalent();
     return expandEndToSentenceBoundary(EphemeralRange(sentenceStart.isNull() ? range.startPosition() : sentenceStart, range.endPosition()));
 }
@@ -566,7 +567,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
 void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<TextCheckingResult>& results)
 {
     TRACE_EVENT0("blink", "SpellChecker::markAndReplaceFor");
-    ASSERT(request);
+    DCHECK(request);
     if (!request->isValid())
         return;
 
@@ -609,21 +610,25 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
         // 3. The word in question doesn't end at an ambiguous boundary. For instance, we would not mark
         //    "wouldn'" as misspelled right after apostrophe is typed.
         if (shouldMarkSpelling && result->decoration == TextDecorationTypeSpelling && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset && !resultEndsAtAmbiguousBoundary) {
-            ASSERT(resultLength > 0 && resultLocation >= 0);
+            DCHECK_GT(resultLength, 0);
+            DCHECK_GE(resultLocation, 0);
             const EphemeralRange misspellingRange = calculateCharacterSubrange(paragraph.paragraphRange(), resultLocation, resultLength);
             frame().document()->markers().addMarker(misspellingRange.startPosition(), misspellingRange.endPosition(), DocumentMarker::Spelling, result->replacement, result->hash);
         } else if (shouldMarkGrammar && result->decoration == TextDecorationTypeGrammar && paragraph.checkingRangeCovers(resultLocation, resultLength)) {
-            ASSERT(resultLength > 0 && resultLocation >= 0);
+            DCHECK_GT(resultLength, 0);
+            DCHECK_GE(resultLocation, 0);
             for (unsigned j = 0; j < result->details.size(); j++) {
                 const GrammarDetail* detail = &result->details[j];
-                ASSERT(detail->length > 0 && detail->location >= 0);
+                DCHECK_GT(detail->length, 0);
+                DCHECK_GE(detail->location, 0);
                 if (paragraph.checkingRangeCovers(resultLocation + detail->location, detail->length)) {
                     const EphemeralRange badGrammarRange = calculateCharacterSubrange(paragraph.paragraphRange(), resultLocation + detail->location, detail->length);
                     frame().document()->markers().addMarker(badGrammarRange.startPosition(), badGrammarRange.endPosition(), DocumentMarker::Grammar, detail->userDescription, result->hash);
                 }
             }
         } else if (result->decoration == TextDecorationTypeInvisibleSpellcheck && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset) {
-            ASSERT(resultLength > 0 && resultLocation >= 0);
+            DCHECK_GT(resultLength, 0);
+            DCHECK_GE(resultLocation, 0);
             const EphemeralRange invisibleSpellcheckRange = calculateCharacterSubrange(paragraph.paragraphRange(), resultLocation, resultLength);
             frame().document()->markers().addMarker(invisibleSpellcheckRange.startPosition(), invisibleSpellcheckRange.endPosition(), DocumentMarker::InvisibleSpellcheck, result->replacement, result->hash);
         }
@@ -730,7 +735,7 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSele
     // we would like to remove the marker from word "avant" and whitespace as well. So we need to get the continous range of
     // of marker that contains the word in question, and remove marker on that whole range.
     Document* document = frame().document();
-    ASSERT(document);
+    DCHECK(document);
     const EphemeralRange wordRange(startOfFirstWord.deepEquivalent(), endOfLastWord.deepEquivalent());
     document->markers().removeMarkers(wordRange, DocumentMarker::MisspellingMarkers(), DocumentMarkerController::RemovePartiallyOverlappingMarker);
 }

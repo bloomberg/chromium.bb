@@ -45,7 +45,7 @@ bool EditingAlgorithm<Traversal>::editingIgnoresContent(const Node* node)
 template <typename Traversal>
 int EditingAlgorithm<Traversal>::lastOffsetForEditing(const Node* node)
 {
-    ASSERT(node);
+    DCHECK(node);
     if (!node)
         return 0;
     if (node->offsetInCharacters())

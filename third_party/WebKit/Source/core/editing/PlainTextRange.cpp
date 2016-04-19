@@ -46,16 +46,16 @@ PlainTextRange::PlainTextRange(int location)
     : m_start(location)
     , m_end(location)
 {
-    ASSERT(location >= 0);
+    DCHECK_GE(location, 0);
 }
 
 PlainTextRange::PlainTextRange(int start, int end)
     : m_start(start)
     , m_end(end)
 {
-    ASSERT(start >= 0);
-    ASSERT(end >= 0);
-    ASSERT(start <= end);
+    DCHECK_GE(start, 0);
+    DCHECK_GE(end, 0);
+    DCHECK_LE(start, end);
 }
 
 EphemeralRange PlainTextRange::createRange(const ContainerNode& scope) const
@@ -70,7 +70,7 @@ EphemeralRange PlainTextRange::createRangeForSelection(const ContainerNode& scop
 
 EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope, GetRangeFor getRangeFor) const
 {
-    ASSERT(isNotNull());
+    DCHECK(isNotNull());
 
     size_t docTextPosition = 0;
     bool startRangeFound = false;

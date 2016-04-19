@@ -43,10 +43,10 @@ SplitTextNodeCommand::SplitTextNodeCommand(Text* text, int offset)
     // the second node (i.e. the new node is inserted before the existing one).
     // That is not a fundamental dependency (i.e. it could be re-coded), but
     // rather is based on how this code happens to work.
-    ASSERT(m_text2);
-    ASSERT(m_text2->length() > 0);
-    ASSERT(m_offset > 0);
-    ASSERT(m_offset < m_text2->length());
+    DCHECK(m_text2);
+    DCHECK_GT(m_text2->length(), 0u);
+    DCHECK_GT(m_offset, 0u);
+    DCHECK_LT(m_offset, m_text2->length());
 }
 
 void SplitTextNodeCommand::doApply(EditingState*)
@@ -60,7 +60,7 @@ void SplitTextNodeCommand::doApply(EditingState*)
         return;
 
     m_text1 = Text::create(document(), prefixText);
-    ASSERT(m_text1);
+    DCHECK(m_text1);
     document().markers().copyMarkers(m_text2.get(), 0, m_offset, m_text1.get(), 0);
 
     insertText1AndTrimText2();
@@ -71,7 +71,7 @@ void SplitTextNodeCommand::doUnapply()
     if (!m_text1 || !m_text1->hasEditableStyle())
         return;
 
-    ASSERT(m_text1->document() == document());
+    DCHECK_EQ(m_text1->document(), document());
 
     String prefixText = m_text1->data();
 

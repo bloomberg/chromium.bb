@@ -54,7 +54,7 @@ static USet* getSmartSet(bool isPreviousCharacter)
         UErrorCode ec = U_ZERO_ERROR;
         String whitespaceAndNewline("[[:WSpace:] [\\u000A\\u000B\\u000C\\u000D\\u0085]]");
         smartSet = uset_openPattern(whitespaceAndNewline.charactersWithNullTermination().data(), whitespaceAndNewline.length(), &ec);
-        ASSERT(U_SUCCESS(ec));
+        DCHECK(U_SUCCESS(ec)) << ec;
 
         // CJK ranges
         uset_addRange(smartSet, 0x1100, 0x1100 + 256); // Hangul Jamo (0x1100 - 0x11FF)
@@ -78,7 +78,7 @@ static USet* getSmartSet(bool isPreviousCharacter)
             UErrorCode ec = U_ZERO_ERROR;
             String punctuationClass("[:P:]");
             USet* icuPunct = uset_openPattern(punctuationClass.charactersWithNullTermination().data(), punctuationClass.length(), &ec);
-            ASSERT(U_SUCCESS(ec));
+            DCHECK(U_SUCCESS(ec)) << ec;
             uset_addAll(smartSet, icuPunct);
             uset_close(icuPunct);
 

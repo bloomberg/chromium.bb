@@ -87,7 +87,7 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
     // This is a scenario that should never happen, but we want to
     // make sure we don't dereference a null pointer below.
 
-    ASSERT(!endingSelection().isNone());
+    DCHECK(!endingSelection().isNone());
 
     if (endingSelection().isNone())
         return;
@@ -143,7 +143,7 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
 
     // startNode is the first node that we need to move to the new blockquote.
     Node* startNode = pos.anchorNode();
-    ASSERT(startNode);
+    DCHECK(startNode);
 
     // Split at pos if in the middle of a text node.
     if (startNode->isTextNode()) {
@@ -151,14 +151,14 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
         int textOffset = pos.computeOffsetInContainerNode();
         if ((unsigned)textOffset >= textNode->length()) {
             startNode = NodeTraversal::next(*startNode);
-            ASSERT(startNode);
+            DCHECK(startNode);
         } else if (textOffset > 0) {
             splitTextNode(textNode, textOffset);
         }
     } else if (pos.computeEditingOffset() > 0) {
         Node* childAtOffset = NodeTraversal::childAt(*startNode, pos.computeEditingOffset());
         startNode = childAtOffset ? childAtOffset : NodeTraversal::next(*startNode);
-        ASSERT(startNode);
+        DCHECK(startNode);
     }
 
     // If there's nothing inside topBlockquote to move, we're finished.

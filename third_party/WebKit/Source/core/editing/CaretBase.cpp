@@ -73,7 +73,7 @@ static void mapCaretRectToCaretPainter(LayoutItem caretLayoutItem, LayoutBlockIt
     // FIXME: This should probably just use mapLocalToAncestor.
     // Compute an offset between the caretLayoutItem and the caretPainterItem.
 
-    ASSERT(caretLayoutItem.isDescendantOf(caretPainterItem));
+    DCHECK(caretLayoutItem.isDescendantOf(caretPainterItem));
 
     bool unrooted = false;
     while (caretLayoutItem != caretPainterItem) {
@@ -97,7 +97,7 @@ bool CaretBase::updateCaretRect(const PositionWithAffinity& caretPosition)
     if (caretPosition.position().isNull())
         return false;
 
-    ASSERT(caretPosition.position().anchorNode()->layoutObject());
+    DCHECK(caretPosition.position().anchorNode()->layoutObject());
 
     // First compute a rect local to the layoutObject at the selection start.
     LayoutObject* layoutObject;
@@ -157,7 +157,7 @@ bool CaretBase::shouldRepaintCaret(Node& node) const
 
 bool CaretBase::shouldRepaintCaret(const LayoutView* view) const
 {
-    ASSERT(view);
+    DCHECK(view);
     if (FrameView* frameView = view->frameView()) {
         LocalFrame& frame = frameView->frame(); // The frame where the selection started
         return frame.settings() && frame.settings()->caretBrowsingEnabled();

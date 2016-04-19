@@ -34,11 +34,11 @@ AppendNodeCommand::AppendNodeCommand(ContainerNode* parent, Node* node)
     , m_parent(parent)
     , m_node(node)
 {
-    ASSERT(m_parent);
-    ASSERT(m_node);
-    ASSERT(!m_node->parentNode());
+    DCHECK(m_parent);
+    DCHECK(m_node);
+    DCHECK(!m_node->parentNode()) << m_node;
 
-    ASSERT(m_parent->hasEditableStyle() || !m_parent->inActiveDocument());
+    DCHECK(m_parent->hasEditableStyle() || !m_parent->inActiveDocument()) << m_parent;
 }
 
 void AppendNodeCommand::doApply(EditingState*)

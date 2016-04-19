@@ -13,14 +13,14 @@ const UChar* BackwardsTextBuffer::data() const
 
 UChar* BackwardsTextBuffer::calcDestination(size_t length)
 {
-    ASSERT(size() + length <= capacity());
+    DCHECK_LE(size() + length, capacity());
     return bufferEnd() - size() - length;
 }
 
 void BackwardsTextBuffer::shiftData(size_t oldCapacity)
 {
-    ASSERT(oldCapacity <= capacity());
-    ASSERT(size() <= oldCapacity);
+    DCHECK_LE(oldCapacity, capacity());
+    DCHECK_LE(size(), oldCapacity);
     std::copy_backward(bufferBegin() + oldCapacity - size(), bufferBegin() + oldCapacity, bufferEnd());
 }
 

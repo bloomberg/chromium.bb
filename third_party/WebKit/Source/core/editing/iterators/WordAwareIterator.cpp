@@ -47,7 +47,7 @@ void WordAwareIterator::advance()
 
     // If last time we did a look-ahead, start with that looked-ahead chunk now
     if (!m_didLookAhead) {
-        ASSERT(!m_textIterator.atEnd());
+        DCHECK(!m_textIterator.atEnd());
         m_textIterator.advance();
     }
     m_didLookAhead = false;

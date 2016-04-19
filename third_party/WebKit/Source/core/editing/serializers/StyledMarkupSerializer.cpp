@@ -152,7 +152,7 @@ static bool needInterchangeNewlineAt(const VisiblePositionTemplate<Strategy>& v)
 template<typename Strategy>
 static bool areSameRanges(Node* node, const PositionTemplate<Strategy>& startPosition, const PositionTemplate<Strategy>& endPosition)
 {
-    ASSERT(node);
+    DCHECK(node);
     const EphemeralRange range = VisibleSelection::selectionFromContentsOfNode(node).toNormalizedEphemeralRange();
     return toPositionInDOMTree(startPosition) == range.startPosition() && toPositionInDOMTree(endPosition) == range.endPosition();
 }
@@ -197,7 +197,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
     if (m_highestNodeToBeSerialized && lastClosed) {
         // TODO(hajimehoshi): This is calculated at createMarkupInternal too.
         Node* commonAncestor = Strategy::commonAncestor(*m_start.computeContainerNode(), *m_end.computeContainerNode());
-        ASSERT(commonAncestor);
+        DCHECK(commonAncestor);
         HTMLBodyElement* body = toHTMLBodyElement(enclosingElementWithTag(firstPositionInNode(commonAncestor), bodyTag));
         HTMLBodyElement* fullySelectedRoot = nullptr;
         // FIXME: Do this for all fully selected blocks, not just the body.
@@ -262,7 +262,7 @@ StyledMarkupTraverser<Strategy>::StyledMarkupTraverser(StyledMarkupAccumulator* 
     , m_wrappingStyle(nullptr)
 {
     if (!m_accumulator) {
-        ASSERT(!m_lastClosed);
+        DCHECK_EQ(m_lastClosed, static_cast<decltype(m_lastClosed)>(nullptr));
         return;
     }
     if (!m_lastClosed)
@@ -323,7 +323,7 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode, Node* pastEnd)
         // Close up the ancestors.
         while (!ancestorsToClose.isEmpty()) {
             ContainerNode* ancestor = ancestorsToClose.last();
-            ASSERT(ancestor);
+            DCHECK(ancestor);
             if (next && next != pastEnd && Strategy::isDescendantOf(*next, *ancestor))
                 break;
             // Not at the end of the range, close ancestors up to sibling of next node.
@@ -337,15 +337,15 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode, Node* pastEnd)
         if (next == pastEnd || n == nextParent)
             continue;
 
-        ASSERT(n);
+        DCHECK(n);
         Node* lastAncestorClosedOrSelf = (lastClosed && Strategy::isDescendantOf(*n, *lastClosed)) ? lastClosed : n;
         for (ContainerNode* parent = Strategy::parent(*lastAncestorClosedOrSelf); parent && parent != nextParent; parent = Strategy::parent(*parent)) {
             // All ancestors that aren't in the ancestorsToClose list should either be a) unrendered:
             if (!parent->layoutObject())
                 continue;
             // or b) ancestors that we never encountered during a pre-order traversal starting at startNode:
-            ASSERT(startNode);
-            ASSERT(Strategy::isDescendantOf(*startNode, *parent));
+            DCHECK(startNode);
+            DCHECK(Strategy::isDescendantOf(*startNode, *parent));
             EditingStyle* style = createInlineStyleIfNeeded(*parent);
             wrapWithNode(*parent, style);
             lastClosed = parent;

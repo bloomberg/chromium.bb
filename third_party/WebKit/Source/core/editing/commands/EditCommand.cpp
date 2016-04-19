@@ -38,8 +38,8 @@ EditCommand::EditCommand(Document& document)
     : m_document(&document)
     , m_parent(nullptr)
 {
-    ASSERT(m_document);
-    ASSERT(m_document->frame());
+    DCHECK(m_document);
+    DCHECK(m_document->frame());
     setStartingSelection(m_document->frame()->selection().selection());
     setEndingSelection(m_startingSelection);
 }
@@ -64,7 +64,7 @@ void EditCommand::setStartingSelection(const VisibleSelection& selection)
 {
     for (EditCommand* command = this; ; command = command->m_parent) {
         if (EditCommandComposition* composition = compositionIfPossible(command)) {
-            ASSERT(command->isTopLevelCommand());
+            DCHECK(command->isTopLevelCommand());
             composition->setStartingSelection(selection);
         }
         command->m_startingSelection = selection;
@@ -77,7 +77,7 @@ void EditCommand::setEndingSelection(const VisibleSelection& selection)
 {
     for (EditCommand* command = this; command; command = command->m_parent) {
         if (EditCommandComposition* composition = compositionIfPossible(command)) {
-            ASSERT(command->isTopLevelCommand());
+            DCHECK(command->isTopLevelCommand());
             composition->setEndingSelection(selection);
         }
         command->m_endingSelection = selection;
@@ -93,7 +93,7 @@ bool EditCommand::isRenderedCharacter(const Position& position)
 {
     if (position.isNull())
         return false;
-    ASSERT(position.isOffsetInAnchor());
+    DCHECK(position.isOffsetInAnchor()) << position;
     if (!position.anchorNode()->isTextNode())
         return false;
 
@@ -106,8 +106,8 @@ bool EditCommand::isRenderedCharacter(const Position& position)
 
 void EditCommand::setParent(CompositeEditCommand* parent)
 {
-    ASSERT((parent && !m_parent) || (!parent && m_parent));
-    ASSERT(!parent || !isCompositeEditCommand() || !toCompositeEditCommand(this)->composition());
+    DCHECK((parent && !m_parent) || (!parent && m_parent));
+    DCHECK(!parent || !isCompositeEditCommand() || !toCompositeEditCommand(this)->composition());
     m_parent = parent;
     if (parent) {
         m_startingSelection = parent->m_endingSelection;

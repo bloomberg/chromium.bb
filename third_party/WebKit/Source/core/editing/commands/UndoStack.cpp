@@ -110,7 +110,7 @@ void UndoStack::redo()
         UndoStep* step(back->get());
         m_redoStack.remove(back);
 
-        ASSERT(!m_inRedo);
+        DCHECK(!m_inRedo);
         TemporaryChange<bool> redoScope(m_inRedo, true);
         step->reapply();
         // reapply will call us back to push this command onto the undo stack.

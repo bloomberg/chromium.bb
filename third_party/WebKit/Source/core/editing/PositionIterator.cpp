@@ -67,10 +67,10 @@ template <typename Strategy>
 PositionTemplate<Strategy> PositionIteratorAlgorithm<Strategy>::deprecatedComputePosition() const
 {
     // TODO(yoichio): Share code to check domTreeVersion with EphemeralRange.
-    ASSERT(isValid());
+    DCHECK(isValid());
     if (m_nodeAfterPositionInAnchor) {
-        ASSERT(Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode);
-        ASSERT(m_offsetsInAnchorNode[m_depthToAnchorNode] != kInvalidOffset);
+        DCHECK_EQ(Strategy::parent(*m_nodeAfterPositionInAnchor), m_anchorNode);
+        DCHECK_NE(m_offsetsInAnchorNode[m_depthToAnchorNode], kInvalidOffset);
         // FIXME: This check is inadaquete because any ancestor could be ignored by editing
         if (Strategy::editingIgnoresContent(Strategy::parent(*m_nodeAfterPositionInAnchor)))
             return PositionTemplate<Strategy>::beforeNode(m_anchorNode);
@@ -84,7 +84,7 @@ PositionTemplate<Strategy> PositionIteratorAlgorithm<Strategy>::deprecatedComput
 template <typename Strategy>
 PositionTemplate<Strategy> PositionIteratorAlgorithm<Strategy>::computePosition() const
 {
-    ASSERT(isValid());
+    DCHECK(isValid());
     // Assume that we have the following DOM tree:
     // A
     // |-B
@@ -97,8 +97,8 @@ PositionTemplate<Strategy> PositionIteratorAlgorithm<Strategy>::computePosition(
     //   +-H
     if (m_nodeAfterPositionInAnchor) {
         // For example, position is before E, F.
-        ASSERT(Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode);
-        ASSERT(m_offsetsInAnchorNode[m_depthToAnchorNode] != kInvalidOffset);
+        DCHECK_EQ(Strategy::parent(*m_nodeAfterPositionInAnchor), m_anchorNode);
+        DCHECK_NE(m_offsetsInAnchorNode[m_depthToAnchorNode], kInvalidOffset);
         // TODO(yoichio): This should be equivalent to
         // PositionTemplate<Strategy>(m_anchorNode, PositionAnchorType::BeforeAnchor);
         return PositionTemplate<Strategy>(m_anchorNode, m_offsetsInAnchorNode[m_depthToAnchorNode]);
@@ -118,7 +118,7 @@ PositionTemplate<Strategy> PositionIteratorAlgorithm<Strategy>::computePosition(
 template <typename Strategy>
 void PositionIteratorAlgorithm<Strategy>::increment()
 {
-    ASSERT(isValid());
+    DCHECK(isValid());
     if (!m_anchorNode)
         return;
 
@@ -170,7 +170,7 @@ void PositionIteratorAlgorithm<Strategy>::increment()
         m_anchorNode = Strategy::parent(*m_nodeAfterPositionInAnchor);
         if (!m_anchorNode)
             return;
-        ASSERT(m_depthToAnchorNode > 0);
+        DCHECK_GT(m_depthToAnchorNode, 0u);
         --m_depthToAnchorNode;
         // Increment offset of |child| or initialize if it have never been
         // used.
@@ -186,7 +186,7 @@ void PositionIteratorAlgorithm<Strategy>::increment()
 template <typename Strategy>
 void PositionIteratorAlgorithm<Strategy>::decrement()
 {
-    ASSERT(isValid());
+    DCHECK(isValid());
     if (!m_anchorNode)
         return;
 
@@ -218,7 +218,7 @@ void PositionIteratorAlgorithm<Strategy>::decrement()
                 m_offsetsInAnchorNode[m_depthToAnchorNode] = Strategy::index(*m_nodeAfterPositionInAnchor);
             else
                 --m_offsetsInAnchorNode[m_depthToAnchorNode];
-            ASSERT(m_offsetsInAnchorNode[m_depthToAnchorNode] >= 0);
+            DCHECK_GE(m_offsetsInAnchorNode[m_depthToAnchorNode], 0);
             // Increment depth intializing with last offset.
             ++m_depthToAnchorNode;
             if (m_depthToAnchorNode >= m_offsetsInAnchorNode.size())
@@ -237,7 +237,7 @@ void PositionIteratorAlgorithm<Strategy>::decrement()
                 return;
             m_offsetInAnchor = 0;
             // Decrement depth and intialize if needs.
-            ASSERT(m_depthToAnchorNode > 0);
+            DCHECK_GT(m_depthToAnchorNode, 0u);
             --m_depthToAnchorNode;
             if (m_offsetsInAnchorNode[m_depthToAnchorNode] == kInvalidOffset)
                 m_offsetsInAnchorNode[m_depthToAnchorNode] = Strategy::index(*m_nodeAfterPositionInAnchor);
@@ -276,7 +276,7 @@ void PositionIteratorAlgorithm<Strategy>::decrement()
             m_anchorNode = Strategy::parent(*m_anchorNode);
             if (!m_anchorNode)
                 return;
-            ASSERT(m_depthToAnchorNode > 0);
+            DCHECK_GT(m_depthToAnchorNode, 0u);
             --m_depthToAnchorNode;
             if (m_offsetsInAnchorNode[m_depthToAnchorNode] == kInvalidOffset)
                 m_offsetsInAnchorNode[m_depthToAnchorNode] = Strategy::index(*m_nodeAfterPositionInAnchor);
@@ -287,7 +287,7 @@ void PositionIteratorAlgorithm<Strategy>::decrement()
 template <typename Strategy>
 bool PositionIteratorAlgorithm<Strategy>::atStart() const
 {
-    ASSERT(isValid());
+    DCHECK(isValid());
     if (!m_anchorNode)
         return true;
     if (Strategy::parent(*m_anchorNode))
@@ -298,7 +298,7 @@ bool PositionIteratorAlgorithm<Strategy>::atStart() const
 template <typename Strategy>
 bool PositionIteratorAlgorithm<Strategy>::atEnd() const
 {
-    ASSERT(isValid());
+    DCHECK(isValid());
     if (!m_anchorNode)
         return true;
     if (m_nodeAfterPositionInAnchor)
@@ -309,7 +309,7 @@ bool PositionIteratorAlgorithm<Strategy>::atEnd() const
 template <typename Strategy>
 bool PositionIteratorAlgorithm<Strategy>::atStartOfNode() const
 {
-    ASSERT(isValid());
+    DCHECK(isValid());
     if (!m_anchorNode)
         return true;
     if (!m_nodeAfterPositionInAnchor)
@@ -320,7 +320,7 @@ bool PositionIteratorAlgorithm<Strategy>::atStartOfNode() const
 template <typename Strategy>
 bool PositionIteratorAlgorithm<Strategy>::atEndOfNode() const
 {
-    ASSERT(isValid());
+    DCHECK(isValid());
     if (!m_anchorNode)
         return true;
     if (m_nodeAfterPositionInAnchor)

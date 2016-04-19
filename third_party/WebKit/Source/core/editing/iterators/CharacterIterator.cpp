@@ -83,7 +83,7 @@ int CharacterIteratorAlgorithm<Strategy>::startOffset() const
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1)
             return m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
-        ASSERT(!m_runOffset);
+        DCHECK(!m_runOffset);
     }
     return m_textIterator.startOffsetInCurrentContainer();
 }
@@ -94,7 +94,7 @@ int CharacterIteratorAlgorithm<Strategy>::endOffset() const
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1)
             return m_textIterator.startOffsetInCurrentContainer() + m_runOffset + 1;
-        ASSERT(!m_runOffset);
+        DCHECK(!m_runOffset);
     }
     return m_textIterator.endOffsetInCurrentContainer();
 }
@@ -108,7 +108,7 @@ PositionTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::startPosition()
             int offset = m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
             return PositionTemplate<Strategy>::editingPositionOf(n, offset);
         }
-        ASSERT(!m_runOffset);
+        DCHECK(!m_runOffset);
     }
     return m_textIterator.startPositionInCurrentContainer();
 }
@@ -122,7 +122,7 @@ PositionTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::endPosition() c
             int offset = m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
             return PositionTemplate<Strategy>::editingPositionOf(n, offset + 1);
         }
-        ASSERT(!m_runOffset);
+        DCHECK(!m_runOffset);
     }
     return m_textIterator.endPositionInCurrentContainer();
 }
@@ -131,7 +131,7 @@ template <typename Strategy>
 void CharacterIteratorAlgorithm<Strategy>::advance(int count)
 {
     if (count <= 0) {
-        ASSERT(!count);
+        DCHECK(!count);
         return;
     }
 

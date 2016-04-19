@@ -158,7 +158,7 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
 
     TRACE_EVENT0("blink", "ReplacementFragment constructor");
     Element* editableRoot = selection.rootEditableElement();
-    ASSERT(editableRoot);
+    DCHECK(editableRoot);
     if (!editableRoot)
         return;
 
@@ -284,7 +284,7 @@ void ReplacementFragment::insertNodeBefore(Node* node, Node* refNode)
 HTMLElement* ReplacementFragment::insertFragmentForTestRendering(Element* rootEditableElement)
 {
     TRACE_EVENT0("blink", "ReplacementFragment::insertFragmentForTestRendering");
-    ASSERT(m_document);
+    DCHECK(m_document);
     HTMLElement* holder = createDefaultParagraphElement(*m_document.get());
 
     holder->appendChild(m_fragment);
@@ -528,7 +528,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
             if (element->isHTMLElement()) {
                 Vector<QualifiedName> attributes;
                 HTMLElement* htmlElement = toHTMLElement(element);
-                ASSERT(htmlElement);
+                DCHECK(htmlElement);
 
                 if (newInlineStyle->conflictsWithImplicitStyleOfElement(htmlElement)) {
                     // e.g. <b style="font-weight: normal;"> is converted to <span style="font-weight: normal;">
@@ -974,8 +974,8 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
 {
     TRACE_EVENT0("blink", "ReplaceSelectionCommand::doApply");
     const VisibleSelection selection = endingSelection();
-    ASSERT(selection.isCaretOrRange());
-    ASSERT(selection.start().anchorNode());
+    DCHECK(selection.isCaretOrRange());
+    DCHECK(selection.start().anchorNode());
     if (!selection.isNonOrphanedCaretOrRange() || !selection.start().anchorNode())
         return;
 
@@ -1041,7 +1041,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
                 return;
         }
     } else {
-        ASSERT(selection.isCaret());
+        DCHECK(selection.isCaret());
         if (fragment.hasInterchangeNewlineAtStart()) {
             const VisiblePosition next = nextPositionOf(visibleStart, CannotCrossEditingBoundary);
             if (isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart) && next.isNotNull())
@@ -1074,7 +1074,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
             return;
         // This will leave a br between the split.
         Node* br = endingSelection().start().anchorNode();
-        ASSERT(isHTMLBRElement(br));
+        DCHECK(isHTMLBRElement(br)) << br;
         // Insert content between the two blockquotes, but remove the br (since it was just a placeholder).
         insertionPos = positionInParentBeforeNode(*br);
         removeNode(br, editingState);
@@ -1102,7 +1102,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     // Adjust insertionPos to prevent nesting.
     // If the start was in a Mail blockquote, we will have already handled adjusting insertionPos above.
     if (m_preventNesting && enclosingBlockOfInsertionPos && !isTableCell(enclosingBlockOfInsertionPos) && !startIsInsideMailBlockquote) {
-        ASSERT(enclosingBlockOfInsertionPos != currentRoot);
+        DCHECK_NE(enclosingBlockOfInsertionPos, currentRoot);
         VisiblePosition visibleInsertionPos = createVisiblePosition(insertionPos);
         if (isEndOfBlock(visibleInsertionPos) && !(isStartOfBlock(visibleInsertionPos) && fragment.hasInterchangeNewlineAtEnd()))
             insertionPos = positionInParentAfterNode(*enclosingBlockOfInsertionPos);
@@ -1174,7 +1174,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
 
     InsertedNodes insertedNodes;
     Node* refNode = fragment.firstChild();
-    ASSERT(refNode);
+    DCHECK(refNode);
     Node* node = refNode->nextSibling();
 
     fragment.removeNode(refNode);
@@ -1491,7 +1491,7 @@ void ReplaceSelectionCommand::completeHTMLReplacement(const Position &lastPositi
         rebalanceWhitespaceAt(end);
 
         if (m_matchStyle) {
-            ASSERT(m_insertionStyle);
+            DCHECK(m_insertionStyle);
             applyStyle(m_insertionStyle.get(), start, end, editingState);
             if (editingState->isAborted())
                 return;

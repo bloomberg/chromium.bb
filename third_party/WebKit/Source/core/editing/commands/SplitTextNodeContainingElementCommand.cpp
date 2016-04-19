@@ -35,14 +35,14 @@ namespace blink {
 SplitTextNodeContainingElementCommand::SplitTextNodeContainingElementCommand(Text* text, int offset)
     : CompositeEditCommand(text->document()), m_text(text), m_offset(offset)
 {
-    ASSERT(m_text);
-    ASSERT(m_text->length() > 0);
+    DCHECK(m_text);
+    DCHECK_GT(m_text->length(), 0u);
 }
 
 void SplitTextNodeContainingElementCommand::doApply(EditingState*)
 {
-    ASSERT(m_text);
-    ASSERT(m_offset > 0);
+    DCHECK(m_text);
+    DCHECK_GT(m_offset, 0);
 
     splitTextNode(m_text.get(), m_offset);
 

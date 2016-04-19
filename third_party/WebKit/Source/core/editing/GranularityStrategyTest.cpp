@@ -77,7 +77,7 @@ void GranularityStrategyTest::SetUp()
 {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
     m_document = toHTMLDocument(&m_dummyPageHolder->document());
-    ASSERT(m_document);
+    DCHECK(m_document);
     dummyPageHolder().frame().settings()->setDefaultFontSize(12);
     dummyPageHolder().frame().settings()->setSelectionStrategy(SelectionStrategy::Direction);
 }

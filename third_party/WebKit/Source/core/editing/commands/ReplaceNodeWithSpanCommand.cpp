@@ -45,12 +45,12 @@ ReplaceNodeWithSpanCommand::ReplaceNodeWithSpanCommand(HTMLElement* element)
     : SimpleEditCommand(element->document())
     , m_elementToReplace(element)
 {
-    ASSERT(m_elementToReplace);
+    DCHECK(m_elementToReplace);
 }
 
 static void swapInNodePreservingAttributesAndChildren(HTMLElement* newElement, HTMLElement& elementToReplace)
 {
-    ASSERT(elementToReplace.inShadowIncludingDocument());
+    DCHECK(elementToReplace.inShadowIncludingDocument()) << elementToReplace;
     ContainerNode* parentNode = elementToReplace.parentNode();
     parentNode->insertBefore(newElement, &elementToReplace);
 

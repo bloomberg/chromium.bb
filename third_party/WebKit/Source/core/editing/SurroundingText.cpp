@@ -55,7 +55,7 @@ SurroundingText::SurroundingText(const Position& position, unsigned maxLength)
 
 void SurroundingText::initialize(const Position& startPosition, const Position& endPosition, unsigned maxLength)
 {
-    ASSERT(startPosition.document() == endPosition.document());
+    DCHECK_EQ(startPosition.document(), endPosition.document());
 
     const unsigned halfMaxLength = maxLength / 2;
 
@@ -86,7 +86,7 @@ void SurroundingText::initialize(const Position& startPosition, const Position& 
     m_startOffsetInContent = Range::create(*document, backwardsIterator.endPosition(), startPosition)->text().length();
     m_endOffsetInContent = Range::create(*document, backwardsIterator.endPosition(), endPosition)->text().length();
     m_contentRange = Range::create(*document, backwardsIterator.endPosition(), forwardRange.startPosition());
-    ASSERT(m_contentRange);
+    DCHECK(m_contentRange);
 }
 
 Range* SurroundingText::rangeFromContentOffsets(unsigned startOffsetInContent, unsigned endOffsetInContent)
@@ -96,17 +96,17 @@ Range* SurroundingText::rangeFromContentOffsets(unsigned startOffsetInContent, u
 
     CharacterIterator iterator(m_contentRange->startPosition(), m_contentRange->endPosition());
 
-    ASSERT(!iterator.atEnd());
+    DCHECK(!iterator.atEnd());
     iterator.advance(startOffsetInContent);
 
     Position start = iterator.startPosition();
 
-    ASSERT(!iterator.atEnd());
+    DCHECK(!iterator.atEnd());
     iterator.advance(endOffsetInContent - startOffsetInContent);
 
     Position end = iterator.startPosition();
 
-    ASSERT(start.document());
+    DCHECK(start.document());
     return Range::create(*start.document(), start, end);
 }
 

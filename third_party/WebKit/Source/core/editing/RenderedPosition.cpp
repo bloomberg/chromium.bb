@@ -41,7 +41,7 @@ namespace blink {
 
 static inline LayoutObject* layoutObjectFromPosition(const Position& position)
 {
-    ASSERT(position.isNotNull());
+    DCHECK(position.isNotNull());
     Node* layoutObjectNode = nullptr;
     switch (position.anchorType()) {
     case PositionAnchorType::OffsetInAnchor:
@@ -208,7 +208,7 @@ bool RenderedPosition::atRightBoundaryOfBidiRun(ShouldMatchBidiLevel shouldMatch
 
 Position RenderedPosition::positionAtLeftBoundaryOfBiDiRun() const
 {
-    ASSERT(atLeftBoundaryOfBidiRun());
+    DCHECK(atLeftBoundaryOfBidiRun());
 
     if (atLeftmostOffsetInBox())
         return Position::editingPositionOf(m_layoutObject->node(), m_offset);
@@ -218,7 +218,7 @@ Position RenderedPosition::positionAtLeftBoundaryOfBiDiRun() const
 
 Position RenderedPosition::positionAtRightBoundaryOfBiDiRun() const
 {
-    ASSERT(atRightBoundaryOfBidiRun());
+    DCHECK(atRightBoundaryOfBidiRun());
 
     if (atRightmostOffsetInBox())
         return Position::editingPositionOf(m_layoutObject->node(), m_offset);

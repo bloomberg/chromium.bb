@@ -60,7 +60,7 @@ public:
     bool isCollapsed() const;
     bool isNull() const
     {
-        ASSERT(isValid());
+        DCHECK(isValid());
         return m_startPosition.isNull();
     }
     bool isNotNull() const { return !isNull(); }

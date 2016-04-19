@@ -204,7 +204,7 @@ HTMLElementEquivalent::HTMLElementEquivalent(CSSPropertyID id, CSSValueID primit
     , m_primitiveValue(CSSPrimitiveValue::createIdentifier(primitiveValue))
     , m_tagName(&tagName)
 {
-    ASSERT(primitiveValue != CSSValueInvalid);
+    DCHECK_NE(primitiveValue, CSSValueInvalid);
 }
 
 bool HTMLElementEquivalent::valueIsPresentInStyle(HTMLElement* element, StylePropertySet* style) const
@@ -307,7 +307,7 @@ void HTMLAttributeEquivalent::addToStyle(Element* element, EditingStyle* style) 
 
 CSSValue* HTMLAttributeEquivalent::attributeValueAsCSSValue(Element* element) const
 {
-    ASSERT(element);
+    DCHECK(element);
     const AtomicString& value = element->getAttribute(m_attrName);
     if (value.isNull())
         return nullptr;
@@ -339,7 +339,7 @@ HTMLFontSizeEquivalent::HTMLFontSizeEquivalent()
 
 CSSValue* HTMLFontSizeEquivalent::attributeValueAsCSSValue(Element* element) const
 {
-    ASSERT(element);
+    DCHECK(element);
     const AtomicString& value = element->getAttribute(m_attrName);
     if (value.isNull())
         return nullptr;
@@ -506,7 +506,7 @@ void EditingStyle::setProperty(CSSPropertyID propertyID, const String& value, bo
 
 void EditingStyle::replaceFontSizeByKeywordIfPossible(const ComputedStyle* computedStyle, CSSComputedStyleDeclaration* cssComputedStyle)
 {
-    ASSERT(computedStyle);
+    DCHECK(computedStyle);
     if (computedStyle->getFontDescription().keywordSize())
         m_mutableStyle->setProperty(CSSPropertyFontSize, cssComputedStyle->getFontSizeCSSValuePreferringKeyword()->cssText());
 }
@@ -773,8 +773,8 @@ TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
 
 bool EditingStyle::conflictsWithInlineStyleOfElement(HTMLElement* element, EditingStyle* extractedStyle, Vector<CSSPropertyID>* conflictingProperties) const
 {
-    ASSERT(element);
-    ASSERT(!conflictingProperties || conflictingProperties->isEmpty());
+    DCHECK(element);
+    DCHECK(!conflictingProperties || conflictingProperties->isEmpty());
 
     const StylePropertySet* inlineStyle = element->inlineStyle();
     if (!m_mutableStyle || !inlineStyle)
@@ -881,7 +881,7 @@ static const HeapVector<Member<HTMLAttributeEquivalent>>& htmlAttributeEquivalen
 
 bool EditingStyle::conflictsWithImplicitStyleOfAttributes(HTMLElement* element) const
 {
-    ASSERT(element);
+    DCHECK(element);
     if (!m_mutableStyle)
         return false;
 
@@ -898,9 +898,10 @@ bool EditingStyle::conflictsWithImplicitStyleOfAttributes(HTMLElement* element) 
 bool EditingStyle::extractConflictingImplicitStyleOfAttributes(HTMLElement* element, ShouldPreserveWritingDirection shouldPreserveWritingDirection,
     EditingStyle* extractedStyle, Vector<QualifiedName>& conflictingAttributes, ShouldExtractMatchingStyle shouldExtractMatchingStyle) const
 {
-    ASSERT(element);
+    DCHECK(element);
     // HTMLAttributeEquivalent::addToStyle doesn't support unicode-bidi and direction properties
-    ASSERT(!extractedStyle || shouldPreserveWritingDirection == PreserveWritingDirection);
+    if (extractedStyle)
+        DCHECK_EQ(shouldPreserveWritingDirection, PreserveWritingDirection);
     if (!m_mutableStyle)
         return false;
 
@@ -933,7 +934,7 @@ bool EditingStyle::styleIsPresentInComputedStyleOfNode(Node* node) const
 
 bool EditingStyle::elementIsStyledSpanOrHTMLEquivalent(const HTMLElement* element)
 {
-    ASSERT(element);
+    DCHECK(element);
     bool elementIsSpanOrElementEquivalent = false;
     if (isHTMLSpanElement(*element)) {
         elementIsSpanOrElementEquivalent = true;
@@ -977,7 +978,7 @@ bool EditingStyle::elementIsStyledSpanOrHTMLEquivalent(const HTMLElement* elemen
     }
 
     // font with color attribute, span with style attribute, etc...
-    ASSERT(matchedAttributes <= attributes.size());
+    DCHECK_LE(matchedAttributes, attributes.size());
     return matchedAttributes >= attributes.size();
 }
 
@@ -1020,7 +1021,7 @@ void EditingStyle::prepareToApplyAt(const Position& position, ShouldPreserveWrit
 
 void EditingStyle::mergeTypingStyle(Document* document)
 {
-    ASSERT(document);
+    DCHECK(document);
 
     EditingStyle* typingStyle = document->frame()->selection().typingStyle();
     if (!typingStyle || typingStyle == this)
@@ -1031,7 +1032,7 @@ void EditingStyle::mergeTypingStyle(Document* document)
 
 void EditingStyle::mergeInlineStyleOfElement(HTMLElement* element, CSSPropertyOverrideMode mode, PropertiesToInclude propertiesToInclude)
 {
-    ASSERT(element);
+    DCHECK(element);
     if (!element->inlineStyle())
         return;
 
@@ -1230,7 +1231,7 @@ static void removePropertiesInStyle(MutableStylePropertySet* styleToRemoveProper
 
 void EditingStyle::removeStyleFromRulesAndContext(Element* element, ContainerNode* context)
 {
-    ASSERT(element);
+    DCHECK(element);
     if (!m_mutableStyle)
         return;
 
@@ -1369,7 +1370,7 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
     if (selection.isRange()) {
         end = mostBackwardCaretPosition(selection.end());
 
-        ASSERT(end.document());
+        DCHECK(end.document());
         Node* pastLast = Range::create(*end.document(), position.parentAnchoredEquivalent(), end.parentAnchoredEquivalent())->pastLastNode();
         for (Node* n = node; n && n != pastLast; n = NodeTraversal::next(*n)) {
             if (!n->isStyledElement())
@@ -1417,7 +1418,7 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
         if (unicodeBidiValue == CSSValueBidiOverride)
             return NaturalWritingDirection;
 
-        ASSERT(isEmbedOrIsolate(unicodeBidiValue));
+        DCHECK(isEmbedOrIsolate(unicodeBidiValue)) << unicodeBidiValue;
         CSSValue* direction = style->getPropertyCSSValue(CSSPropertyDirection);
         if (!direction || !direction->isPrimitiveValue())
             continue;
@@ -1449,7 +1450,7 @@ static void reconcileTextDecorationProperties(MutableStylePropertySet* style)
     CSSValue* textDecorationsInEffect = style->getPropertyCSSValue(CSSPropertyWebkitTextDecorationsInEffect);
     CSSValue* textDecoration = style->getPropertyCSSValue(textDecorationPropertyForEditing());
     // We shouldn't have both text-decoration and -webkit-text-decorations-in-effect because that wouldn't make sense.
-    ASSERT(!textDecorationsInEffect || !textDecoration);
+    DCHECK(!textDecorationsInEffect || !textDecoration);
     if (textDecorationsInEffect) {
         style->setProperty(textDecorationPropertyForEditing(), textDecorationsInEffect->cssText());
         style->removeProperty(CSSPropertyWebkitTextDecorationsInEffect);
@@ -1476,7 +1477,7 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
     CSSComputedStyleDeclaration* computedStyle = ensureComputedStyle(position);
     // FIXME: take care of background-color in effect
     MutableStylePropertySet* mutableStyle = getPropertiesNotIn(style->style(), computedStyle);
-    ASSERT(mutableStyle);
+    DCHECK(mutableStyle);
 
     reconcileTextDecorationProperties(mutableStyle);
     if (!document->frame()->editor().shouldStyleWithCSS())
@@ -1508,7 +1509,7 @@ static void setTextDecorationProperty(MutableStylePropertySet* style, const CSSV
 
 void StyleChange::extractTextStyles(Document* document, MutableStylePropertySet* style, bool isMonospaceFont)
 {
-    ASSERT(style);
+    DCHECK(style);
 
     if (getIdentifierValue(style, CSSPropertyFontWeight) == CSSValueBold) {
         style->removeProperty(CSSPropertyFontWeight);
@@ -1624,8 +1625,8 @@ static bool fontWeightNeedsResolving(CSSValue* fontWeight)
 
 MutableStylePropertySet* getPropertiesNotIn(StylePropertySet* styleWithRedundantProperties, CSSStyleDeclaration* baseStyle)
 {
-    ASSERT(styleWithRedundantProperties);
-    ASSERT(baseStyle);
+    DCHECK(styleWithRedundantProperties);
+    DCHECK(baseStyle);
     MutableStylePropertySet* result = styleWithRedundantProperties->mutableCopy();
 
     result->removeEquivalentProperties(baseStyle);

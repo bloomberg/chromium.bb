@@ -51,11 +51,11 @@ SpellCheckRequest::SpellCheckRequest(
     , m_requestData(unrequestedTextCheckingSequence, text, mask, processType, documentMarkersInRange, documentMarkerOffsets)
     , m_requestNumber(requestNumber)
 {
-    ASSERT(m_checkingRange);
-    ASSERT(m_checkingRange->inShadowIncludingDocument());
-    ASSERT(m_paragraphRange);
-    ASSERT(m_paragraphRange->inShadowIncludingDocument());
-    ASSERT(m_rootEditableElement);
+    DCHECK(m_checkingRange);
+    DCHECK(m_checkingRange->inShadowIncludingDocument());
+    DCHECK(m_paragraphRange);
+    DCHECK(m_paragraphRange->inShadowIncludingDocument());
+    DCHECK(m_rootEditableElement);
 }
 
 SpellCheckRequest::~SpellCheckRequest()
@@ -140,8 +140,8 @@ void SpellCheckRequest::didCancel()
 
 void SpellCheckRequest::setCheckerAndSequence(SpellCheckRequester* requester, int sequence)
 {
-    ASSERT(!m_requester);
-    ASSERT(m_requestData.sequence() == unrequestedTextCheckingSequence);
+    DCHECK(!m_requester);
+    DCHECK_EQ(m_requestData.sequence(), unrequestedTextCheckingSequence);
     m_requester = requester;
     m_requestData.m_sequence = sequence;
 }
@@ -165,7 +165,7 @@ TextCheckerClient& SpellCheckRequester::client() const
 
 void SpellCheckRequester::timerFiredToProcessQueuedRequest(Timer<SpellCheckRequester>*)
 {
-    ASSERT(!m_requestQueue.isEmpty());
+    DCHECK(!m_requestQueue.isEmpty());
     if (m_requestQueue.isEmpty())
         return;
 
@@ -192,7 +192,7 @@ void SpellCheckRequester::requestCheckingFor(SpellCheckRequest* request)
     if (!request || !canCheckAsynchronously(request->paragraphRange()))
         return;
 
-    ASSERT(request->data().sequence() == unrequestedTextCheckingSequence);
+    DCHECK_EQ(request->data().sequence(), unrequestedTextCheckingSequence);
     int sequence = ++m_lastRequestSequence;
     if (sequence == unrequestedTextCheckingSequence)
         sequence = ++m_lastRequestSequence;
@@ -228,7 +228,7 @@ void SpellCheckRequester::prepareForLeakDetection()
 
 void SpellCheckRequester::invokeRequest(SpellCheckRequest* request)
 {
-    ASSERT(!m_processingRequest);
+    DCHECK(!m_processingRequest);
     m_processingRequest = request;
     client().requestCheckingOfString(m_processingRequest);
 }
@@ -244,7 +244,7 @@ void SpellCheckRequester::clearProcessingRequest()
 
 void SpellCheckRequester::enqueueRequest(SpellCheckRequest* request)
 {
-    ASSERT(request);
+    DCHECK(request);
     bool continuation = false;
     if (!m_requestQueue.isEmpty()) {
         SpellCheckRequest* lastRequest = m_requestQueue.last();
@@ -270,8 +270,8 @@ void SpellCheckRequester::enqueueRequest(SpellCheckRequest* request)
 
 void SpellCheckRequester::didCheck(int sequence, const Vector<TextCheckingResult>& results)
 {
-    ASSERT(m_processingRequest);
-    ASSERT(m_processingRequest->data().sequence() == sequence);
+    DCHECK(m_processingRequest);
+    DCHECK_EQ(m_processingRequest->data().sequence(), sequence);
     if (m_processingRequest->data().sequence() != sequence) {
         m_requestQueue.clear();
         return;

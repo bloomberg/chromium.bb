@@ -33,7 +33,7 @@ void InputMethodControllerTest::SetUp()
 {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
     m_document = toHTMLDocument(&m_dummyPageHolder->document());
-    ASSERT(m_document);
+    DCHECK(m_document);
 }
 
 Element* InputMethodControllerTest::insertHTMLElement(

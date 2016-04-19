@@ -86,7 +86,7 @@ static bool hasNoAttributeOrOnlyStyleAttribute(const HTMLElement* element, Shoul
         || !element->inlineStyle() || element->inlineStyle()->isEmpty()))
         matchedAttributes++;
 
-    ASSERT(matchedAttributes <= attributes.size());
+    DCHECK_LE(matchedAttributes, attributes.size());
     return matchedAttributes == attributes.size();
 }
 
@@ -170,7 +170,7 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* sty
 
 void ApplyStyleCommand::updateStartEnd(const Position& newStart, const Position& newEnd)
 {
-    ASSERT(comparePositions(newEnd, newStart) >= 0);
+    DCHECK_GE(comparePositions(newEnd, newStart), 0);
 
     if (!m_useEndingSelection && (newStart != m_start || newEnd != m_end))
         m_useEndingSelection = true;
@@ -359,8 +359,8 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style, Editin
     // If the end node is before the start node (can only happen if the end node is
     // an ancestor of the start node), we gather nodes up to the next sibling of the end node
     Node* beyondEnd;
-    ASSERT(start.anchorNode());
-    ASSERT(end.anchorNode());
+    DCHECK(start.anchorNode());
+    DCHECK(end.anchorNode());
     if (start.anchorNode()->isDescendantOf(end.anchorNode()))
         beyondEnd = NodeTraversal::nextSkippingChildren(*end.anchorNode());
     else
@@ -368,7 +368,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style, Editin
 
     start = mostBackwardCaretPosition(start); // Move upstream to ensure we do not add redundant spans.
     Node* startNode = start.anchorNode();
-    ASSERT(startNode);
+    DCHECK(startNode);
 
     // Make sure we're not already at the end or the next NodeTraversal::next() will traverse
     // past it.
@@ -386,7 +386,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style, Editin
     // This ensures that changes to one node won't effect another.
     HeapHashMap<Member<Node>, float> startingFontSizes;
     for (Node* node = startNode; node != beyondEnd; node = NodeTraversal::next(*node)) {
-        ASSERT(node);
+        DCHECK(node);
         startingFontSizes.set(node, computedFontSize(node));
     }
 
@@ -395,7 +395,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style, Editin
 
     Node* lastStyledNode = nullptr;
     for (Node* node = startNode; node != beyondEnd; node = NodeTraversal::next(*node)) {
-        ASSERT(node);
+        DCHECK(node);
         HTMLElement* element = nullptr;
         if (node->isHTMLElement()) {
             // Only work on fully selected nodes.
@@ -703,7 +703,8 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style, EditingState* edit
         if (embeddingStartElement || embeddingEndElement) {
             Position embeddingApplyStart = embeddingStartElement ? positionInParentAfterNode(*embeddingStartElement) : start;
             Position embeddingApplyEnd = embeddingEndElement ? positionInParentBeforeNode(*embeddingEndElement) : end;
-            ASSERT(embeddingApplyStart.isNotNull() && embeddingApplyEnd.isNotNull());
+            DCHECK(embeddingApplyStart.isNotNull());
+            DCHECK(embeddingApplyEnd.isNotNull());
 
             if (!embeddingStyle) {
                 styleWithoutEmbedding = style->copy();
@@ -732,7 +733,7 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style, EditingState* edit
 void ApplyStyleCommand::fixRangeAndApplyInlineStyle(EditingStyle* style, const Position& start, const Position& end, EditingState* editingState)
 {
     Node* startNode = start.anchorNode();
-    ASSERT(startNode);
+    DCHECK(startNode);
 
     if (start.computeEditingOffset() >= caretMaxOffset(start.anchorNode())) {
         startNode = NodeTraversal::next(*startNode);
@@ -784,7 +785,7 @@ public:
         , end(end)
         , pastEndNode(pastEndNode)
     {
-        ASSERT(start->parentNode() == end->parentNode());
+        DCHECK_EQ(start->parentNode(), end->parentNode());
     }
 
     bool startAndEndAreStillInDocument()
@@ -868,7 +869,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, Node* s
             runEnd = sibling;
             sibling = runEnd->nextSibling();
         }
-        ASSERT(runEnd);
+        DCHECK(runEnd);
         next = NodeTraversal::nextSkippingChildren(*runEnd);
 
         Node* pastEndNode = NodeTraversal::nextSkippingChildren(*runEnd);
@@ -918,7 +919,8 @@ bool ApplyStyleCommand::isStyledInlineElementToRemove(Element* element) const
 
 bool ApplyStyleCommand::shouldApplyInlineStyleToRun(EditingStyle* style, Node* runStart, Node* pastEndNode)
 {
-    ASSERT(style && runStart);
+    DCHECK(style);
+    DCHECK(runStart);
 
     for (Node* node = runStart; node && node != pastEndNode; node = NodeTraversal::next(*node)) {
         if (node->hasChildren())
@@ -934,11 +936,12 @@ bool ApplyStyleCommand::shouldApplyInlineStyleToRun(EditingStyle* style, Node* r
 
 void ApplyStyleCommand::removeConflictingInlineStyleFromRun(EditingStyle* style, Member<Node>& runStart, Member<Node>& runEnd, Node* pastEndNode, EditingState* editingState)
 {
-    ASSERT(runStart && runEnd);
+    DCHECK(runStart);
+    DCHECK(runEnd);
     Node* next = runStart;
     for (Node* node = next; node && node->inShadowIncludingDocument() && node != pastEndNode; node = next) {
         if (editingIgnoresContent(node)) {
-            ASSERT(!node->contains(pastEndNode));
+            DCHECK(!node->contains(pastEndNode)) << node << " " << pastEndNode;
             next = NodeTraversal::nextSkippingChildren(*node);
         } else {
             next = NodeTraversal::next(*node);
@@ -965,7 +968,7 @@ void ApplyStyleCommand::removeConflictingInlineStyleFromRun(EditingStyle* style,
 
 bool ApplyStyleCommand::removeInlineStyleFromElement(EditingStyle* style, HTMLElement* element, EditingState* editingState, InlineStyleRemovalMode mode, EditingStyle* extractedStyle)
 {
-    ASSERT(element);
+    DCHECK(element);
 
     if (!element->parentNode() || !element->parentNode()->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable))
         return false;
@@ -1008,13 +1011,13 @@ void ApplyStyleCommand::replaceWithSpanOrRemoveIfWithoutAttributes(HTMLElement* 
 
 bool ApplyStyleCommand::removeImplicitlyStyledElement(EditingStyle* style, HTMLElement* element, InlineStyleRemovalMode mode, EditingStyle* extractedStyle, EditingState* editingState)
 {
-    ASSERT(style);
+    DCHECK(style);
     if (mode == RemoveNone) {
-        ASSERT(!extractedStyle);
+        DCHECK(!extractedStyle);
         return style->conflictsWithImplicitStyleOfElement(element) || style->conflictsWithImplicitStyleOfAttributes(element);
     }
 
-    ASSERT(mode == RemoveIfNeeded || mode == RemoveAlways);
+    DCHECK(mode == RemoveIfNeeded || mode == RemoveAlways);
     if (style->conflictsWithImplicitStyleOfElement(element, extractedStyle, mode == RemoveAlways ? EditingStyle::ExtractMatchingStyle : EditingStyle::DoNotExtractMatchingStyle)) {
         replaceWithSpanOrRemoveIfWithoutAttributes(element, editingState);
         if (editingState->isAborted())
@@ -1042,8 +1045,8 @@ bool ApplyStyleCommand::removeImplicitlyStyledElement(EditingStyle* style, HTMLE
 
 bool ApplyStyleCommand::removeCSSStyle(EditingStyle* style, HTMLElement* element, EditingState* editingState, InlineStyleRemovalMode mode, EditingStyle* extractedStyle)
 {
-    ASSERT(style);
-    ASSERT(element);
+    DCHECK(style);
+    DCHECK(element);
 
     if (mode == RemoveNone)
         return style->conflictsWithInlineStyleOfElement(element);
@@ -1084,7 +1087,7 @@ HTMLElement* ApplyStyleCommand::highestAncestorWithConflictingInlineStyle(Editin
 
 void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* style, EditingState* editingState)
 {
-    ASSERT(node);
+    DCHECK(node);
 
     node->document().updateLayoutTree();
 
@@ -1178,11 +1181,11 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node*
 
 void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &start, const Position &end, EditingState* editingState)
 {
-    ASSERT(start.isNotNull());
-    ASSERT(end.isNotNull());
-    ASSERT(start.inShadowIncludingDocument());
-    ASSERT(end.inShadowIncludingDocument());
-    ASSERT(Position::commonAncestorTreeScope(start, end));
+    DCHECK(start.isNotNull());
+    DCHECK(end.isNotNull());
+    DCHECK(start.inShadowIncludingDocument()) << start;
+    DCHECK(end.inShadowIncludingDocument()) << end;
+    DCHECK(Position::commonAncestorTreeScope(start, end)) << start << " " << end;
     DCHECK_LE(start, end);
     // FIXME: We should assert that start/end are not in the middle of a text node.
 
@@ -1225,7 +1228,7 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
     while (node) {
         Node* next = nullptr;
         if (editingIgnoresContent(node)) {
-            ASSERT(node == end.anchorNode() || !node->contains(end.anchorNode()));
+            DCHECK(node == end.anchorNode() || !node->contains(end.anchorNode())) << node << " " << end;
             next = NodeTraversal::nextSkippingChildren(*node);
         } else {
             next = NodeTraversal::next(*node);
@@ -1248,14 +1251,14 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
                 if (s.anchorNode() == elem) {
                     // Since elem must have been fully selected, and it is at the start
                     // of the selection, it is clear we can set the new s offset to 0.
-                    ASSERT(s.isBeforeAnchor() || s.isBeforeChildren() || s.offsetInContainerNode() <= 0);
+                    DCHECK(s.isBeforeAnchor() || s.isBeforeChildren() || s.offsetInContainerNode() <= 0) << s;
                     s = firstPositionInOrBeforeNode(next);
                 }
                 if (e.anchorNode() == elem) {
                     // Since elem must have been fully selected, and it is at the end
                     // of the selection, it is clear we can set the new e offset to
                     // the max range offset of prev.
-                    ASSERT(s.isAfterAnchor() || !offsetIsBeforeLastNodeOffset(s.offsetInContainerNode(), s.computeContainerNode()));
+                    DCHECK(s.isAfterAnchor() || !offsetIsBeforeLastNodeOffset(s.offsetInContainerNode(), s.computeContainerNode())) << s;
                     e = lastPositionInOrAfterNode(prev);
                 }
             }
@@ -1287,7 +1290,7 @@ bool ApplyStyleCommand::elementFullySelected(HTMLElement& element, const Positio
 
 void ApplyStyleCommand::splitTextAtStart(const Position& start, const Position& end)
 {
-    ASSERT(start.computeContainerNode()->isTextNode());
+    DCHECK(start.computeContainerNode()->isTextNode()) << start;
 
     Position newEnd;
     if (end.isOffsetInAnchor() && start.computeContainerNode() == end.computeContainerNode())
@@ -1302,7 +1305,7 @@ void ApplyStyleCommand::splitTextAtStart(const Position& start, const Position& 
 
 void ApplyStyleCommand::splitTextAtEnd(const Position& start, const Position& end)
 {
-    ASSERT(end.computeContainerNode()->isTextNode());
+    DCHECK(end.computeContainerNode()->isTextNode()) << end;
 
     bool shouldUpdateStart = start.isOffsetInAnchor() && start.computeContainerNode() == end.computeContainerNode();
     Text* text = toText(end.anchorNode());
@@ -1318,7 +1321,7 @@ void ApplyStyleCommand::splitTextAtEnd(const Position& start, const Position& en
 
 void ApplyStyleCommand::splitTextElementAtStart(const Position& start, const Position& end)
 {
-    ASSERT(start.computeContainerNode()->isTextNode());
+    DCHECK(start.computeContainerNode()->isTextNode()) << start;
 
     Position newEnd;
     if (start.computeContainerNode() == end.computeContainerNode())
@@ -1332,7 +1335,7 @@ void ApplyStyleCommand::splitTextElementAtStart(const Position& start, const Pos
 
 void ApplyStyleCommand::splitTextElementAtEnd(const Position& start, const Position& end)
 {
-    ASSERT(end.computeContainerNode()->isTextNode());
+    DCHECK(end.computeContainerNode()->isTextNode()) << end;
 
     bool shouldUpdateStart = start.computeContainerNode() == end.computeContainerNode();
     splitTextNodeContainingElement(toText(end.computeContainerNode()), end.offsetInContainerNode());
@@ -1358,7 +1361,7 @@ bool ApplyStyleCommand::shouldSplitTextElement(Element* element, EditingStyle* s
 
 bool ApplyStyleCommand::isValidCaretPositionInTextNode(const Position& position)
 {
-    ASSERT(position.isNotNull());
+    DCHECK(position.isNotNull());
 
     Node* node = position.computeContainerNode();
     if (!position.isOffsetInAnchor() || !node->isTextNode())
@@ -1392,7 +1395,7 @@ bool ApplyStyleCommand::mergeStartWithPreviousIfIdentical(const Position& start,
         Element* previousElement = toElement(previousSibling);
         Element* element = toElement(startNode);
         Node* startChild = element->firstChild();
-        ASSERT(startChild);
+        DCHECK(startChild);
         mergeIdenticalElements(previousElement, element, editingState);
         if (editingState->isAborted())
             return false;
@@ -1447,9 +1450,9 @@ bool ApplyStyleCommand::mergeEndWithNextIfIdentical(const Position& start, const
 
 void ApplyStyleCommand::surroundNodeRangeWithElement(Node* passedStartNode, Node* endNode, Element* elementToInsert, EditingState* editingState)
 {
-    ASSERT(passedStartNode);
-    ASSERT(endNode);
-    ASSERT(elementToInsert);
+    DCHECK(passedStartNode);
+    DCHECK(endNode);
+    DCHECK(elementToInsert);
     Node* node = passedStartNode;
     Element* element = elementToInsert;
 
@@ -1552,8 +1555,8 @@ void ApplyStyleCommand::applyInlineStyleChange(Node* passedStart, Node* passedEn
 {
     Node* startNode = passedStart;
     Node* endNode = passedEnd;
-    ASSERT(startNode->inShadowIncludingDocument());
-    ASSERT(endNode->inShadowIncludingDocument());
+    DCHECK(startNode->inShadowIncludingDocument()) << startNode;
+    DCHECK(endNode->inShadowIncludingDocument()) << endNode;
 
     // Find appropriate font and span elements top-down.
     HTMLFontElement* fontContainer = nullptr;
@@ -1669,7 +1672,8 @@ float ApplyStyleCommand::computedFontSize(Node* node)
     if (!value)
         return 0;
 
-    ASSERT(value->typeWithCalcResolved() == CSSPrimitiveValue::UnitType::Pixels);
+    // TODO(yosin): We should have printer for |CSSPrimitiveValue::UnitType|.
+    DCHECK(value->typeWithCalcResolved() == CSSPrimitiveValue::UnitType::Pixels);
     return value->getFloatValue();
 }
 

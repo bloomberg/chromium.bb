@@ -81,7 +81,7 @@ void InsertParagraphSeparatorCommand::calculateStyleBeforeInsertion(const Positi
     if (!isStartOfParagraph(visiblePos) && !isEndOfParagraph(visiblePos))
         return;
 
-    ASSERT(pos.isNotNull());
+    DCHECK(pos.isNotNull());
     m_style = EditingStyle::create(pos);
     m_style->mergeTypingStyle(pos.document());
 }
@@ -310,11 +310,11 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
             }
         } else if (isFirstInBlock && nestNewBlock) {
             // startBlock should always have children, otherwise isLastInBlock would be true and it's handled above.
-            ASSERT(startBlock->hasChildren());
+            DCHECK(startBlock->hasChildren());
             refNode = startBlock->firstChild();
         } else if (insertionPosition.anchorNode() == startBlock && nestNewBlock) {
             refNode = NodeTraversal::childAt(*startBlock, insertionPosition.computeEditingOffset());
-            ASSERT(refNode); // must be true or we'd be in the end of block case
+            DCHECK(refNode); // must be true or we'd be in the end of block case
         } else {
             refNode = insertionPosition.anchorNode();
         }
@@ -394,7 +394,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     // after the preserved newline, causing the newline to be turned into a nbsp.
     if (leadingWhitespace.isNotNull() && leadingWhitespace.anchorNode()->isTextNode()) {
         Text* textNode = toText(leadingWhitespace.anchorNode());
-        ASSERT(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
+        DCHECK(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
         replaceTextInNodePreservingMarkers(textNode, leadingWhitespace.computeOffsetInContainerNode(), 1, nonBreakingSpaceString());
     }
 
@@ -473,7 +473,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         // use |VisiblePosition::characterAfter()|.
         if (!isRenderedCharacter(positionAfterSplit)) {
             // Clear out all whitespace and insert one non-breaking space
-            ASSERT(!positionAfterSplit.computeContainerNode()->layoutObject() || positionAfterSplit.computeContainerNode()->layoutObject()->style()->collapseWhiteSpace());
+            DCHECK(!positionAfterSplit.computeContainerNode()->layoutObject() || positionAfterSplit.computeContainerNode()->layoutObject()->style()->collapseWhiteSpace());
             deleteInsignificantTextDownstream(positionAfterSplit);
             if (positionAfterSplit.anchorNode()->isTextNode())
                 insertTextIntoNode(toText(positionAfterSplit.computeContainerNode()), 0, nonBreakingSpaceString());

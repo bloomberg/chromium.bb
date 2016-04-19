@@ -285,7 +285,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     // If text is empty, then delete the old composition here. If text is non-empty, InsertTextCommand::input
     // will delete the old composition with an optimized replace operation.
     if (text.isEmpty()) {
-        ASSERT(frame().document());
+        DCHECK(frame().document());
         TypingCommand::deleteSelection(*frame().document(), TypingCommand::PreventSpellChecking);
     }
 
@@ -293,7 +293,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
 
     if (text.isEmpty())
         return;
-    ASSERT(frame().document());
+    DCHECK(frame().document());
     TypingCommand::insertText(*frame().document(), text, TypingCommand::SelectInsertedText | TypingCommand::PreventSpellChecking, TypingCommand::TextCompositionUpdate);
 
     // Find out what node has the composition now.
@@ -400,7 +400,7 @@ PlainTextRange InputMethodController::getSelectionOffsets() const
     if (range.isNull())
         return PlainTextRange();
     ContainerNode* editable = frame().selection().rootEditableElementOrTreeScopeRootNode();
-    ASSERT(editable);
+    DCHECK(editable);
     return PlainTextRange::create(*editable, range);
 }
 

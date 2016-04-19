@@ -37,7 +37,7 @@ SetNodeAttributeCommand::SetNodeAttributeCommand(Element* element,
     , m_attribute(attribute)
     , m_value(value)
 {
-    ASSERT(m_element);
+    DCHECK(m_element);
 }
 
 void SetNodeAttributeCommand::doApply(EditingState*)

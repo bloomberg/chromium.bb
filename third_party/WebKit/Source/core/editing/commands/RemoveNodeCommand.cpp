@@ -37,8 +37,8 @@ RemoveNodeCommand::RemoveNodeCommand(Node* node, ShouldAssumeContentIsAlwaysEdit
     , m_node(node)
     , m_shouldAssumeContentIsAlwaysEditable(shouldAssumeContentIsAlwaysEditable)
 {
-    ASSERT(m_node);
-    ASSERT(m_node->parentNode());
+    DCHECK(m_node);
+    DCHECK(m_node->parentNode());
 }
 
 void RemoveNodeCommand::doApply(EditingState* editingState)
@@ -47,7 +47,7 @@ void RemoveNodeCommand::doApply(EditingState* editingState)
     if (!parent || (m_shouldAssumeContentIsAlwaysEditable == DoNotAssumeContentIsAlwaysEditable
         && !parent->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable) && parent->inActiveDocument()))
         return;
-    ASSERT(parent->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable) || !parent->inActiveDocument());
+    DCHECK(parent->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable) || !parent->inActiveDocument()) << parent;
 
     m_parent = parent;
     m_refChild = m_node->nextSibling();

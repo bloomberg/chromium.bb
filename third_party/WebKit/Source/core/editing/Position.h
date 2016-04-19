@@ -100,7 +100,7 @@ public:
     // Inline O(1) access for Positions which callers know to be parent-anchored
     int offsetInContainerNode() const
     {
-        ASSERT(isOffsetInAnchor());
+        DCHECK(isOffsetInAnchor());
         return m_offset;
     }
 
@@ -240,10 +240,10 @@ bool operator!=(const PositionTemplate<Strategy>& a, const PositionTemplate<Stra
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::inParentBeforeNode(const Node& node)
 {
-    // FIXME: This should ASSERT(node.parentNode())
+    // FIXME: This should DCHECK(node.parentNode())
     // At least one caller currently hits this ASSERT though, which indicates
     // that the caller is trying to make a position relative to a disconnected node (which is likely an error)
-    // Specifically, editing/deleting/delete-ligature-001.html crashes with ASSERT(node->parentNode())
+    // Specifically, editing/deleting/delete-ligature-001.html crashes with DCHECK(node->parentNode())
     return PositionTemplate<Strategy>(Strategy::parent(node), Strategy::index(node));
 }
 
@@ -255,7 +255,7 @@ inline Position positionInParentBeforeNode(const Node& node)
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::inParentAfterNode(const Node& node)
 {
-    ASSERT(node.parentNode());
+    DCHECK(node.parentNode()) << node;
     return PositionTemplate<Strategy>(Strategy::parent(node), Strategy::index(node) + 1);
 }
 
@@ -268,7 +268,7 @@ inline Position positionInParentAfterNode(const Node& node)
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::beforeNode(Node* anchorNode)
 {
-    ASSERT(anchorNode);
+    DCHECK(anchorNode);
     return PositionTemplate<Strategy>(anchorNode, PositionAnchorType::BeforeAnchor);
 }
 
@@ -280,7 +280,7 @@ inline Position positionBeforeNode(Node* anchorNode)
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::afterNode(Node* anchorNode)
 {
-    ASSERT(anchorNode);
+    DCHECK(anchorNode);
     return PositionTemplate<Strategy>(anchorNode, PositionAnchorType::AfterAnchor);
 }
 

@@ -33,12 +33,12 @@ namespace blink {
 MoveSelectionCommand::MoveSelectionCommand(DocumentFragment* fragment, const Position& position, bool smartInsert, bool smartDelete)
     : CompositeEditCommand(*position.document()), m_fragment(fragment), m_position(position), m_smartInsert(smartInsert), m_smartDelete(smartDelete)
 {
-    ASSERT(m_fragment);
+    DCHECK(m_fragment);
 }
 
 void MoveSelectionCommand::doApply(EditingState* editingState)
 {
-    ASSERT(endingSelection().isNonOrphanedRange());
+    DCHECK(endingSelection().isNonOrphanedRange());
 
     Position pos = m_position;
     if (pos.isNull())

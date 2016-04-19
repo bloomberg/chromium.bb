@@ -79,7 +79,7 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::SimplifiedBackwardsTextItera
     , m_shouldStop(false)
     , m_emitsOriginalText(false)
 {
-    ASSERT(behavior == TextIteratorDefaultBehavior || behavior == TextIteratorStopsOnFormControls);
+    DCHECK(behavior == TextIteratorDefaultBehavior || behavior == TextIteratorStopsOnFormControls) << behavior;
 
     Node* startNode = start.anchorNode();
     if (!startNode)
@@ -137,7 +137,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::init(Node* startNode, N
 template <typename Strategy>
 void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::advance()
 {
-    ASSERT(m_positionNode);
+    DCHECK(m_positionNode);
 
     if (m_shouldStop)
         return;
@@ -235,9 +235,11 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::handleTextNode()
     m_positionNode = m_node;
     m_positionStartOffset = m_offset;
 
-    ASSERT(0 <= m_positionStartOffset - offsetInNode && m_positionStartOffset - offsetInNode <= static_cast<int>(text.length()));
-    ASSERT(1 <= m_positionEndOffset - offsetInNode && m_positionEndOffset - offsetInNode <= static_cast<int>(text.length()));
-    ASSERT(m_positionStartOffset <= m_positionEndOffset);
+    DCHECK_LE(0, m_positionStartOffset - offsetInNode);
+    DCHECK_LE(m_positionStartOffset - offsetInNode, static_cast<int>(text.length()));
+    DCHECK_LE(1, m_positionEndOffset - offsetInNode);
+    DCHECK_LE(m_positionEndOffset - offsetInNode, static_cast<int>(text.length()));
+    DCHECK_LE(m_positionStartOffset, m_positionEndOffset);
 
     m_textLength = m_positionEndOffset - m_positionStartOffset;
     m_textOffset = m_positionStartOffset - offsetInNode;
@@ -262,7 +264,7 @@ LayoutText* SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::handleFirstLette
     LayoutTextFragment* fragment = toLayoutTextFragment(layoutObject);
     int offsetAfterFirstLetter = fragment->start();
     if (startOffset >= offsetAfterFirstLetter) {
-        ASSERT(!m_shouldHandleFirstLetter);
+        DCHECK(!m_shouldHandleFirstLetter);
         offsetInNode = offsetAfterFirstLetter;
         return layoutObject;
     }
@@ -276,12 +278,12 @@ LayoutText* SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::handleFirstLette
     m_shouldHandleFirstLetter = false;
     offsetInNode = 0;
 
-    ASSERT(fragment->isRemainingTextLayoutObject());
-    ASSERT(fragment->firstLetterPseudoElement());
+    DCHECK(fragment->isRemainingTextLayoutObject());
+    DCHECK(fragment->firstLetterPseudoElement());
 
     LayoutObject* pseudoElementLayoutObject = fragment->firstLetterPseudoElement()->layoutObject();
-    ASSERT(pseudoElementLayoutObject);
-    ASSERT(pseudoElementLayoutObject->slowFirstChild());
+    DCHECK(pseudoElementLayoutObject);
+    DCHECK(pseudoElementLayoutObject->slowFirstChild());
     LayoutText* firstLetterLayoutObject = toLayoutText(pseudoElementLayoutObject->slowFirstChild());
 
     m_offset = firstLetterLayoutObject->caretMaxOffset();
@@ -396,8 +398,8 @@ UChar SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::characterAt(unsigned i
     if (!(index < static_cast<unsigned>(length())))
         return 0;
     if (m_singleCharacterBuffer) {
-        ASSERT(index == 0);
-        ASSERT(length() == 1);
+        DCHECK_EQ(index, 0u);
+        DCHECK_EQ(length(), 1);
         return m_singleCharacterBuffer;
     }
     return m_textContainer[m_textOffset + m_textLength - 1 - index];
@@ -406,7 +408,7 @@ UChar SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::characterAt(unsigned i
 template <typename Strategy>
 bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::isBetweenSurrogatePair(int position) const
 {
-    ASSERT(position >= 0);
+    DCHECK_GE(position, 0);
     return position > 0 && position < length() && U16_IS_TRAIL(characterAt(position - 1)) && U16_IS_LEAD(characterAt(position));
 }
 
@@ -430,14 +432,14 @@ int SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::copyTextTo(BackwardsText
 template <typename Strategy>
 void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::copyCodeUnitsTo(BackwardsTextBuffer* output, int position, int copyLength) const
 {
-    ASSERT(position >= 0);
-    ASSERT(copyLength >= 0);
-    ASSERT(position + copyLength <= m_textLength);
+    DCHECK_GE(position, 0);
+    DCHECK_GE(copyLength, 0);
+    DCHECK_LE(position + copyLength, m_textLength);
     // Make sure there's no integer overflow.
-    ASSERT(position + copyLength >= position);
+    DCHECK_GE(position + copyLength, position);
     if (m_textLength == 0 || copyLength == 0)
         return;
-    ASSERT(output);
+    DCHECK(output);
     if (m_singleCharacterBuffer) {
         output->pushCharacters(m_singleCharacterBuffer, 1);
         return;

@@ -97,7 +97,7 @@ void SelectionEditor::setVisibleSelection(const VisibleSelection& newSelection, 
 
 void SelectionEditor::setVisibleSelection(const VisibleSelectionInFlatTree& newSelection, FrameSelection::SetSelectionOptions options)
 {
-    ASSERT(!(options & FrameSelection::DoNotAdjustInFlatTree));
+    DCHECK(!(options & FrameSelection::DoNotAdjustInFlatTree));
     m_selectionInFlatTree = newSelection;
     SelectionAdjuster::adjustSelectionInDOMTree(&m_selection, m_selectionInFlatTree);
 }
@@ -863,7 +863,7 @@ DispatchEventResult SelectionEditor::dispatchSelectStart()
 
 void SelectionEditor::didChangeVisibleSelection()
 {
-    ASSERT(m_observingVisibleSelection);
+    DCHECK(m_observingVisibleSelection);
     // Invalidate the logical range when the underlying VisibleSelection has changed.
     if (m_logicalRange) {
         m_logicalRange->dispose();
@@ -875,7 +875,7 @@ void SelectionEditor::didChangeVisibleSelection()
 
 void SelectionEditor::startObservingVisibleSelectionChange()
 {
-    ASSERT(!m_observingVisibleSelection);
+    DCHECK(!m_observingVisibleSelection);
     m_selection.setChangeObserver(*this);
     m_observingVisibleSelection = true;
 }

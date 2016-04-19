@@ -86,7 +86,7 @@ void PendingSelection::commit(LayoutView& layoutView)
 {
     if (!hasPendingSelection())
         return;
-    ASSERT(!layoutView.needsLayout());
+    DCHECK(!layoutView.needsLayout());
     m_hasPendingSelection = false;
 
     const VisibleSelectionInFlatTree& originalSelection = m_frameSelection->visibleSelection<EditingInFlatTreeStrategy>();
@@ -130,7 +130,8 @@ void PendingSelection::commit(LayoutView& layoutView)
     LayoutObject* endLayoutObject = endPos.anchorNode()->layoutObject();
     if (!startLayoutObject || !endLayoutObject)
         return;
-    ASSERT(layoutView == startLayoutObject->view() && layoutView == endLayoutObject->view());
+    DCHECK(layoutView == startLayoutObject->view());
+    DCHECK(layoutView == endLayoutObject->view());
     layoutView.setSelection(startLayoutObject, startPos.computeEditingOffset(), endLayoutObject, endPos.computeEditingOffset());
 }
 

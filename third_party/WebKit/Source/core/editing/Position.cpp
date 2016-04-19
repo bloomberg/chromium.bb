@@ -34,7 +34,7 @@
 
 namespace blink {
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static bool canBeAnchorNode(Node* node)
 {
     return !node || !node->isPseudoElement();
@@ -64,7 +64,7 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::editingPositionOf(Node* a
 
     // Note: |offset| can be >= 1, if |anchorNode| have child nodes, e.g.
     // using Node.appendChild() to add a child node TEXTAREA.
-    ASSERT(offset >= 1);
+    DCHECK_GE(offset, 1);
     return PositionTemplate<Strategy>(anchorNode, PositionAnchorType::AfterAnchor);
 }
 
@@ -79,7 +79,7 @@ PositionTemplate<Strategy>::PositionTemplate(Node* anchorNode, PositionAnchorTyp
         return;
     }
     if (m_anchorNode->isTextNode()) {
-        ASSERT(m_anchorType == PositionAnchorType::BeforeAnchor || m_anchorType == PositionAnchorType::AfterAnchor);
+        DCHECK(m_anchorType == PositionAnchorType::BeforeAnchor || m_anchorType == PositionAnchorType::AfterAnchor);
         return;
     }
     if (m_anchorNode->isDocumentNode()) {
@@ -88,8 +88,10 @@ PositionTemplate<Strategy>::PositionTemplate(Node* anchorNode, PositionAnchorTyp
         DCHECK(isBeforeChildren() || isAfterChildren()) << m_anchorType;
         return;
     }
-    ASSERT(canBeAnchorNode(m_anchorNode.get()));
-    ASSERT(m_anchorType != PositionAnchorType::OffsetInAnchor);
+#if DCHECK_IS_ON()
+    DCHECK(canBeAnchorNode(m_anchorNode.get()));
+#endif
+    DCHECK_NE(m_anchorType, PositionAnchorType::OffsetInAnchor);
 }
 
 template <typename Strategy>
@@ -99,10 +101,12 @@ PositionTemplate<Strategy>::PositionTemplate(Node* anchorNode, int offset)
     , m_anchorType(PositionAnchorType::OffsetInAnchor)
 {
     if (m_anchorNode)
-        ASSERT(offset >= 0);
+        DCHECK_GE(offset, 0);
     else
-        ASSERT(offset == 0);
-    ASSERT(canBeAnchorNode(m_anchorNode.get()));
+        DCHECK_EQ(offset, 0);
+#if DCHECK_IS_ON()
+    DCHECK(canBeAnchorNode(m_anchorNode.get()));
+#endif
 }
 
 template <typename Strategy>
@@ -290,8 +294,8 @@ Node* PositionTemplate<Strategy>::commonAncestorContainer(const PositionTemplate
 
 int comparePositions(const PositionInFlatTree& positionA, const PositionInFlatTree& positionB)
 {
-    ASSERT(positionA.isNotNull());
-    ASSERT(positionB.isNotNull());
+    DCHECK(positionA.isNotNull());
+    DCHECK(positionB.isNotNull());
 
     positionA.anchorNode()->updateDistribution();
     Node* containerA = positionA.computeContainerNode();
@@ -421,7 +425,7 @@ PositionInFlatTree toPositionInFlatTree(const Position& pos)
         Node* anchor = pos.anchorNode();
         if (anchor->offsetInCharacters())
             return PositionInFlatTree(anchor, pos.computeOffsetInContainerNode());
-        ASSERT(!anchor->isSlotOrActiveInsertionPoint());
+        DCHECK(!anchor->isSlotOrActiveInsertionPoint());
         int offset = pos.computeOffsetInContainerNode();
         Node* child = NodeTraversal::childAt(*anchor, offset);
         if (!child) {

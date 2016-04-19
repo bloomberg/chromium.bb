@@ -126,7 +126,7 @@ bool InsertTextCommand::performOverwrite(const String& text, bool selectInserted
 
 void InsertTextCommand::doApply(EditingState* editingState)
 {
-    ASSERT(m_text.find('\n') == kNotFound);
+    DCHECK_EQ(m_text.find('\n'), kNotFound);
 
     if (!endingSelection().isNonOrphanedCaretOrRange())
         return;
@@ -177,7 +177,7 @@ void InsertTextCommand::doApply(EditingState* editingState)
 
     // It is possible for the node that contains startPosition to contain only unrendered whitespace,
     // and so deleteInsignificantText could remove it.  Save the position before the node in case that happens.
-    ASSERT(startPosition.computeContainerNode());
+    DCHECK(startPosition.computeContainerNode()) << startPosition;
     Position positionBeforeStartNode(positionInParentBeforeNode(*startPosition.computeContainerNode()));
     deleteInsignificantText(startPosition, mostForwardCaretPosition(startPosition));
     if (!startPosition.inShadowIncludingDocument())
@@ -203,9 +203,9 @@ void InsertTextCommand::doApply(EditingState* editingState)
         startPosition = positionInsideTextNode(startPosition, editingState);
         if (editingState->isAborted())
             return;
-        ASSERT(startPosition.isOffsetInAnchor());
-        ASSERT(startPosition.computeContainerNode());
-        ASSERT(startPosition.computeContainerNode()->isTextNode());
+        DCHECK(startPosition.isOffsetInAnchor()) << startPosition;
+        DCHECK(startPosition.computeContainerNode()) << startPosition;
+        DCHECK(startPosition.computeContainerNode()->isTextNode()) << startPosition;
         if (placeholder.isNotNull())
             removePlaceholderAt(placeholder);
         Text* textNode = toText(startPosition.computeContainerNode());
@@ -221,7 +221,7 @@ void InsertTextCommand::doApply(EditingState* editingState)
             if (!shouldRebalanceLeadingWhitespaceFor(m_text))
                 rebalanceWhitespaceAt(startPosition);
         } else {
-            ASSERT(m_rebalanceType == RebalanceAllWhitespaces);
+            DCHECK_EQ(m_rebalanceType, RebalanceAllWhitespaces);
             if (canRebalance(startPosition) && canRebalance(endPosition))
                 rebalanceWhitespaceOnTextSubstring(textNode, startPosition.offsetInContainerNode(), endPosition.offsetInContainerNode());
         }

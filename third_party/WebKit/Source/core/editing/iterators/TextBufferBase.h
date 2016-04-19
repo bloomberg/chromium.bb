@@ -19,7 +19,7 @@ public:
     size_t size() const { return m_size; }
     bool isEmpty() const { return m_size == 0; }
     size_t capacity() const { return m_buffer.capacity(); }
-    const UChar& operator[](size_t index) const { ASSERT(index < m_size); return data()[index]; }
+    const UChar& operator[](size_t index) const { DCHECK_LT(index, m_size); return data()[index]; }
     virtual const UChar* data() const = 0;
 
     void pushCharacters(UChar, size_t length);

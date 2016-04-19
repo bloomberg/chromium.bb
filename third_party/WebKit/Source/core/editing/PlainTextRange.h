@@ -46,11 +46,11 @@ public:
     explicit PlainTextRange(int location);
     PlainTextRange(int start, int end);
 
-    size_t end() const { ASSERT(!isNull()); return m_end; }
-    size_t start() const { ASSERT(!isNull()); return m_start; }
+    size_t end() const { DCHECK(isNotNull()); return m_end; }
+    size_t start() const { DCHECK(isNotNull()); return m_start; }
     bool isNull() const { return m_start == kNotFound; }
     bool isNotNull() const { return m_start != kNotFound; }
-    size_t length() const { ASSERT(!isNull()); return m_end - m_start; }
+    size_t length() const { DCHECK(isNotNull()); return m_end - m_start; }
 
     EphemeralRange createRange(const ContainerNode& scope) const;
     EphemeralRange createRangeForSelection(const ContainerNode& scope) const;

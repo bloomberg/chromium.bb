@@ -54,7 +54,7 @@ FullyClippedStateStackAlgorithm<Strategy>::~FullyClippedStateStackAlgorithm()
 template<typename Strategy>
 void FullyClippedStateStackAlgorithm<Strategy>::pushFullyClippedState(Node* node)
 {
-    ASSERT(size() == depthCrossingShadowBoundaries<Strategy>(*node));
+    DCHECK_EQ(size(), depthCrossingShadowBoundaries<Strategy>(*node));
 
     // FIXME: m_fullyClippedStack was added in response to <https://bugs.webkit.org/show_bug.cgi?id=26364>
     // ("Search can find text that's hidden by overflow:hidden"), but the logic here will not work correctly if
@@ -84,7 +84,7 @@ void FullyClippedStateStackAlgorithm<Strategy>::setUpFullyClippedStack(Node* nod
         pushFullyClippedState(ancestry[ancestrySize - i - 1]);
     pushFullyClippedState(node);
 
-    ASSERT(size() == 1 + depthCrossingShadowBoundaries<Strategy>(*node));
+    DCHECK_EQ(size(), 1 + depthCrossingShadowBoundaries<Strategy>(*node));
 }
 
 template class CORE_TEMPLATE_EXPORT FullyClippedStateStackAlgorithm<EditingStrategy>;

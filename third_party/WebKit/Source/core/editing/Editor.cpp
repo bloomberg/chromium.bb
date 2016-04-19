@@ -103,7 +103,7 @@ Editor::RevealSelectionScope::RevealSelectionScope(Editor* editor)
 
 Editor::RevealSelectionScope::~RevealSelectionScope()
 {
-    ASSERT(m_editor->m_preventRevealSelection);
+    DCHECK(m_editor->m_preventRevealSelection);
     --m_editor->m_preventRevealSelection;
     if (!m_editor->m_preventRevealSelection)
         m_editor->frame().selection().revealSelection(ScrollAlignment::alignToEdgeIfNeeded, RevealExtent);
@@ -295,7 +295,7 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
     EditingState editingState;
     if (frame().selection().isRange()) {
         if (isTypingAction) {
-            ASSERT(frame().document());
+            DCHECK(frame().document());
             TypingCommand::deleteKeyPressed(*frame().document(), canSmartCopyOrDelete() ? TypingCommand::SmartDelete : 0, granularity);
             revealSelectionAfterEditingOperation();
         } else {
@@ -313,14 +313,14 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
         switch (direction) {
         case DirectionForward:
         case DirectionRight:
-            ASSERT(frame().document());
+            DCHECK(frame().document());
             TypingCommand::forwardDeleteKeyPressed(*frame().document(), &editingState, options, granularity);
             if (editingState.isAborted())
                 return false;
             break;
         case DirectionBackward:
         case DirectionLeft:
-            ASSERT(frame().document());
+            DCHECK(frame().document());
             TypingCommand::deleteKeyPressed(*frame().document(), options, granularity);
             break;
         }
@@ -341,7 +341,7 @@ void Editor::deleteSelectionWithSmartDelete(bool smartDelete)
     if (frame().selection().isNone())
         return;
 
-    ASSERT(frame().document());
+    DCHECK(frame().document());
     DeleteSelectionCommand::create(*frame().document(), smartDelete)->apply();
 }
 
@@ -399,7 +399,7 @@ void Editor::pasteWithPasteboard(Pasteboard* pasteboard)
         KURL url;
         String markup = pasteboard->readHTML(url, fragmentStart, fragmentEnd);
         if (!markup.isEmpty()) {
-            ASSERT(frame().document());
+            DCHECK(frame().document());
             fragment = createFragmentFromMarkupWithContext(*frame().document(), markup, fragmentStart, fragmentEnd, url, DisallowScriptingAndPluginContent);
         }
     }
@@ -450,8 +450,8 @@ static PassRefPtr<Image> imageFromNode(const Node& node)
 
 static void writeImageNodeToPasteboard(Pasteboard* pasteboard, Node* node, const String& title)
 {
-    ASSERT(pasteboard);
-    ASSERT(node);
+    DCHECK(pasteboard);
+    DCHECK(node);
 
     RefPtr<Image> image = imageFromNode(*node);
     if (!image.get())
@@ -514,7 +514,7 @@ void Editor::replaceSelectionWithFragment(DocumentFragment* fragment, bool selec
         options |= ReplaceSelectionCommand::SmartReplace;
     if (matchStyle)
         options |= ReplaceSelectionCommand::MatchStyle;
-    ASSERT(frame().document());
+    DCHECK(frame().document());
     ReplaceSelectionCommand::create(*frame().document(), fragment, options, EditActionPaste)->apply();
     revealSelectionAfterEditingOperation();
 }
@@ -532,7 +532,7 @@ void Editor::replaceSelectionAfterDragging(DocumentFragment* fragment, bool smar
         options |= ReplaceSelectionCommand::SmartReplace;
     if (plainText)
         options |= ReplaceSelectionCommand::MatchStyle;
-    ASSERT(frame().document());
+    DCHECK(frame().document());
     ReplaceSelectionCommand::create(*frame().document(), fragment, options, EditActionDrag)->apply();
 }
 
@@ -574,7 +574,7 @@ void Editor::respondToChangedContents(const VisibleSelection& endingSelection)
 
 void Editor::removeFormattingAndStyle()
 {
-    ASSERT(frame().document());
+    DCHECK(frame().document());
     RemoveFormatCommand::create(*frame().document())->apply();
 }
 
@@ -608,7 +608,7 @@ void Editor::applyStyle(StylePropertySet* style, EditAction editingAction)
         break;
     case RangeSelection:
         if (style) {
-            ASSERT(frame().document());
+            DCHECK(frame().document());
             ApplyStyleCommand::create(*frame().document(), EditingStyle::create(style), editingAction)->apply();
         }
         break;
@@ -619,7 +619,7 @@ void Editor::applyParagraphStyle(StylePropertySet* style, EditAction editingActi
 {
     if (frame().selection().isNone() || !style)
         return;
-    ASSERT(frame().document());
+    DCHECK(frame().document());
     ApplyStyleCommand::create(*frame().document(), EditingStyle::create(style), editingAction, ApplyStyleCommand::ForceBlockProperties)->apply();
 }
 
@@ -681,7 +681,7 @@ void Editor::requestSpellcheckingAfterApplyingCommand(CompositeEditCommand* cmd)
         return;
     if (!SpellChecker::isSpellCheckingEnabledFor(cmd->endingSelection()))
         return;
-    ASSERT(cmd->isReplaceSelectionCommand());
+    DCHECK(cmd->isReplaceSelectionCommand());
     const EphemeralRange& insertedRange = toReplaceSelectionCommand(cmd)->insertedRange();
     if (insertedRange.isNull())
         return;
@@ -697,7 +697,7 @@ void Editor::appliedEditing(CompositeEditCommand* cmd)
     requestSpellcheckingAfterApplyingCommand(cmd);
 
     EditCommandComposition* composition = cmd->composition();
-    ASSERT(composition);
+    DCHECK(composition);
     dispatchEditableContentChangedEvents(composition->startingRootEditableElement(), composition->endingRootEditableElement());
     VisibleSelection newSelection(cmd->endingSelection());
 
@@ -709,7 +709,7 @@ void Editor::appliedEditing(CompositeEditCommand* cmd)
 
     // Command will be equal to last edit command only in the case of typing
     if (m_lastEditCommand.get() == cmd) {
-        ASSERT(cmd->isTypingCommand());
+        DCHECK(cmd->isTypingCommand());
     } else {
         // Only register a new undo command if the command passed in is
         // different from the last command
@@ -821,7 +821,7 @@ bool Editor::insertLineBreak()
 
     VisiblePosition caret = frame().selection().selection().visibleStart();
     bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
-    ASSERT(frame().document());
+    DCHECK(frame().document());
     if (!TypingCommand::insertLineBreak(*frame().document()))
         return false;
     revealSelectionAfterEditingOperation(alignToEdge ? ScrollAlignment::alignToEdgeIfNeeded : ScrollAlignment::alignCenterIfNeeded);
@@ -839,7 +839,7 @@ bool Editor::insertParagraphSeparator()
 
     VisiblePosition caret = frame().selection().selection().visibleStart();
     bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
-    ASSERT(frame().document());
+    DCHECK(frame().document());
     EditingState editingState;
     if (!TypingCommand::insertParagraphSeparator(*frame().document()))
         return false;
@@ -888,7 +888,7 @@ void Editor::copy()
 
 void Editor::paste()
 {
-    ASSERT(frame().document());
+    DCHECK(frame().document());
     if (tryDHTMLPaste(AllMimeTypes))
         return; // DHTML did the whole operation
     if (!canPaste())
@@ -1116,7 +1116,7 @@ void Editor::changeSelectionAfterCommand(const VisibleSelection& newSelection,  
 IntRect Editor::firstRectForRange(const EphemeralRange& range) const
 {
     LayoutUnit extraWidthToEndOfLine;
-    ASSERT(range.isNotNull());
+    DCHECK(range.isNotNull());
 
     IntRect startCaretRect = RenderedPosition(createVisiblePosition(range.startPosition()).deepEquivalent(), TextAffinity::Downstream).absoluteRect(&extraWidthToEndOfLine);
     if (startCaretRect.isEmpty())
@@ -1143,7 +1143,7 @@ IntRect Editor::firstRectForRange(const EphemeralRange& range) const
 
 IntRect Editor::firstRectForRange(const Range* range) const
 {
-    ASSERT(range);
+    DCHECK(range);
     return firstRectForRange(EphemeralRange(range));
 }
 
@@ -1168,7 +1168,7 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
     // Handle block styles, substracting these from the typing style.
     EditingStyle* blockStyle = typingStyle->extractAndRemoveBlockProperties();
     if (!blockStyle->isEmpty()) {
-        ASSERT(frame().document());
+        DCHECK(frame().document());
         ApplyStyleCommand::create(*frame().document(), blockStyle, editingAction)->apply();
     }
 
@@ -1360,7 +1360,7 @@ void Editor::tidyUpHTMLStructure(Document& document)
     if (document.documentElement() && body != document.documentElement())
         body->appendChild(document.documentElement());
     root->appendChild(body);
-    ASSERT(!document.documentElement());
+    DCHECK(!document.documentElement());
     document.appendChild(root);
 
     // TODO(tkent): Should we check and move Text node children of <html>?

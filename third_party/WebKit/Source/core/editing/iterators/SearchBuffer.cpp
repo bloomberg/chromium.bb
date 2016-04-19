@@ -52,7 +52,7 @@ static UStringSearch* createSearcher()
     UErrorCode status = U_ZERO_ERROR;
     String searchCollatorName = currentSearchLocaleID() + String("@collation=search");
     UStringSearch* searcher = usearch_open(&newlineCharacter, 1, &newlineCharacter, 1, searchCollatorName.utf8().data(), 0, &status);
-    ASSERT(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING || status == U_USING_DEFAULT_WARNING);
+    DCHECK(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING || status == U_USING_DEFAULT_WARNING) << status;
     return searcher;
 }
 
@@ -65,7 +65,7 @@ static UStringSearch* searcher()
 static inline void lockSearcher()
 {
 #if ENABLE(ASSERT)
-    ASSERT(!searcherInUse);
+    DCHECK(!searcherInUse);
     searcherInUse = true;
 #endif
 }
@@ -73,7 +73,7 @@ static inline void lockSearcher()
 static inline void unlockSearcher()
 {
 #if ENABLE(ASSERT)
-    ASSERT(searcherInUse);
+    DCHECK(searcherInUse);
     searcherInUse = false;
 #endif
 }
@@ -86,7 +86,7 @@ inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
     , m_needsMoreContext(options & AtWordStarts)
     , m_targetRequiresKanaWorkaround(containsKanaLetters(target))
 {
-    ASSERT(!target.isEmpty());
+    DCHECK(!target.isEmpty()) << target;
     target.appendTo(m_target);
 
     // FIXME: We'd like to tailor the searcher to fold quote marks for us instead
@@ -125,7 +125,7 @@ inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
 
     UErrorCode status = U_ZERO_ERROR;
     usearch_setPattern(searcher, m_target.data(), targetLength, &status);
-    ASSERT(status == U_ZERO_ERROR);
+    DCHECK_EQ(status, U_ZERO_ERROR);
 
     // The kana workaround requires a normalized copy of the target string.
     if (m_targetRequiresKanaWorkaround)
@@ -140,7 +140,7 @@ inline SearchBuffer::~SearchBuffer()
     UErrorCode status = U_ZERO_ERROR;
     usearch_setPattern(blink::searcher(), &newlineCharacter, 1, &status);
     usearch_setText(blink::searcher(), &newlineCharacter, 1, &status);
-    ASSERT(status == U_ZERO_ERROR);
+    DCHECK_EQ(status, U_ZERO_ERROR);
 
     unlockSearcher();
 }
@@ -148,7 +148,7 @@ inline SearchBuffer::~SearchBuffer()
 template<typename CharType>
 inline void SearchBuffer::append(const CharType* characters, size_t length)
 {
-    ASSERT(length);
+    DCHECK(length);
 
     if (m_atBreak) {
         m_buffer.shrink(0);
@@ -162,7 +162,7 @@ inline void SearchBuffer::append(const CharType* characters, size_t length)
 
     size_t oldLength = m_buffer.size();
     size_t usableLength = std::min(m_buffer.capacity() - oldLength, length);
-    ASSERT(usableLength);
+    DCHECK(usableLength);
     m_buffer.resize(oldLength + usableLength);
     UChar* destination = m_buffer.data() + oldLength;
     StringImpl::copyChars(destination, characters, usableLength);
@@ -177,8 +177,8 @@ inline bool SearchBuffer::needsMoreContext() const
 
 inline void SearchBuffer::prependContext(const UChar* characters, size_t length)
 {
-    ASSERT(m_needsMoreContext);
-    ASSERT(m_prefixLength == m_buffer.size());
+    DCHECK(m_needsMoreContext);
+    DCHECK_EQ(m_prefixLength, m_buffer.size());
 
     if (!length)
         return;
@@ -225,7 +225,7 @@ inline bool SearchBuffer::isBadMatch(const UChar* match, size_t matchLength) con
 
 inline bool SearchBuffer::isWordStartMatch(size_t start, size_t length) const
 {
-    ASSERT(m_options & AtWordStarts);
+    DCHECK(m_options & AtWordStarts);
 
     if (!start)
         return true;
@@ -297,17 +297,17 @@ inline size_t SearchBuffer::search(size_t& start)
 
     UErrorCode status = U_ZERO_ERROR;
     usearch_setText(searcher, m_buffer.data(), size, &status);
-    ASSERT(status == U_ZERO_ERROR);
+    DCHECK_EQ(status, U_ZERO_ERROR);
 
     usearch_setOffset(searcher, m_prefixLength, &status);
-    ASSERT(status == U_ZERO_ERROR);
+    DCHECK_EQ(status, U_ZERO_ERROR);
 
     int matchStart = usearch_next(searcher, &status);
-    ASSERT(status == U_ZERO_ERROR);
+    DCHECK_EQ(status, U_ZERO_ERROR);
 
 nextMatch:
     if (!(matchStart >= 0 && static_cast<size_t>(matchStart) < size)) {
-        ASSERT(matchStart == USEARCH_DONE);
+        DCHECK_EQ(matchStart, USEARCH_DONE);
         return 0;
     }
 
@@ -336,7 +336,7 @@ nextMatch:
     // If this match is "bad", move on to the next match.
     if (isBadMatch(m_buffer.data() + matchStart, matchedLength) || ((m_options & AtWordStarts) && !isWordStartMatch(matchStart, matchedLength))) {
         matchStart = usearch_next(searcher, &status);
-        ASSERT(status == U_ZERO_ERROR);
+        DCHECK_EQ(status, U_ZERO_ERROR);
         goto nextMatch;
     }
 
@@ -399,7 +399,7 @@ tryAgain:
         if (size_t newMatchLength = buffer.search(matchStartOffset)) {
             // Note that we found a match, and where we found it.
             size_t lastCharacterInBufferOffset = it.characterOffset();
-            ASSERT(lastCharacterInBufferOffset >= matchStartOffset);
+            DCHECK_GE(lastCharacterInBufferOffset, matchStartOffset);
             matchStart = lastCharacterInBufferOffset - matchStartOffset;
             matchLength = newMatchLength;
             // If searching forward, stop on the first match.
@@ -425,7 +425,7 @@ static EphemeralRangeTemplate<Strategy> findPlainTextAlgorithm(const EphemeralRa
     // CharacterIterator requires layoutObjects to be up-to-date.
     if (!inputRange.startPosition().inShadowIncludingDocument())
         return EphemeralRangeTemplate<Strategy>();
-    ASSERT(inputRange.startPosition().document() == inputRange.endPosition().document());
+    DCHECK_EQ(inputRange.startPosition().document(), inputRange.endPosition().document());
 
     // FIXME: Reduce the code duplication with above (but how?).
     size_t matchStart;

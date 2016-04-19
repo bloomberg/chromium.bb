@@ -180,7 +180,7 @@ TEST_F(EditingUtilitiesTest, AreaIdenticalElements)
     setBodyContent("<style>li:nth-child(even) { -webkit-user-modify: read-write; }</style><ul><li>first item</li><li>second item</li><li class=foo>third</li><li>fourth</li></ul>");
     updateLayoutAndStyleForPainting();
     StaticElementList* items = document().querySelectorAll("li", ASSERT_NO_EXCEPTION);
-    ASSERT(items->length() == 4);
+    DCHECK_EQ(items->length(), 4u);
 
     EXPECT_FALSE(areIdenticalElements(*items->item(0)->firstChild(), *items->item(1)->firstChild()))
         << "Can't merge non-elements.  e.g. Text nodes";

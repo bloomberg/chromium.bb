@@ -127,7 +127,7 @@ static void completeURLs(DocumentFragment& fragment, const String& baseURL)
 
 static bool isHTMLBlockElement(const Node* node)
 {
-    ASSERT(node);
+    DCHECK(node);
     return isHTMLTableCellElement(*node)
         || isNonTableCellHTMLBlockElement(node);
 }
@@ -186,7 +186,7 @@ static HTMLElement* highestAncestorToWrapMarkup(const PositionTemplate<Strategy>
     // For compatibility reason, we use container node of start and end
     // positions rather than first node and last node in selection.
     Node* commonAncestor = Strategy::commonAncestor(*startPosition.computeContainerNode(), *endPosition.computeContainerNode());
-    ASSERT(commonAncestor);
+    DCHECK(commonAncestor);
     HTMLElement* specialCommonAncestor = nullptr;
     if (shouldAnnotate == AnnotateForInterchange) {
         // Include ancestors that aren't completely inside the range but are required to retain
@@ -312,13 +312,13 @@ static void trimFragment(DocumentFragment* fragment, Comment* nodeBeforeContext,
             continue;
         }
         next = NodeTraversal::nextSkippingChildren(*node);
-        ASSERT(!node->contains(nodeAfterContext));
+        DCHECK(!node->contains(nodeAfterContext)) << node << " " << nodeAfterContext;
         node->parentNode()->removeChild(node, ASSERT_NO_EXCEPTION);
         if (nodeBeforeContext == node)
             break;
     }
 
-    ASSERT(nodeAfterContext->parentNode());
+    DCHECK(nodeAfterContext->parentNode()) << nodeAfterContext;
     for (Node* node = nodeAfterContext; node; node = next) {
         next = NodeTraversal::nextSkippingChildren(*node);
         node->parentNode()->removeChild(node, ASSERT_NO_EXCEPTION);
@@ -390,7 +390,7 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
         return;
     }
 
-    ASSERT(string.find('\n') == kNotFound);
+    DCHECK_EQ(string.find('\n'), kNotFound) << string;
 
     Vector<String> tabList;
     string.split('\t', true, tabList);
@@ -423,7 +423,7 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
 
 bool isPlainTextMarkup(Node* node)
 {
-    ASSERT(node);
+    DCHECK(node);
     if (!isHTMLDivElement(*node))
         return false;
 
@@ -515,7 +515,7 @@ DocumentFragment* createFragmentFromText(const EphemeralRange& context, const St
 
 DocumentFragment* createFragmentForInnerOuterHTML(const String& markup, Element* contextElement, ParserContentPolicy parserContentPolicy, const char* method, ExceptionState& exceptionState)
 {
-    ASSERT(contextElement);
+    DCHECK(contextElement);
     Document& document = isHTMLTemplateElement(*contextElement) ? contextElement->document().ensureTemplateDocument() : contextElement->document();
     DocumentFragment* fragment = DocumentFragment::create(document);
 
@@ -569,7 +569,7 @@ static inline void removeElementPreservingChildren(DocumentFragment* fragment, H
 
 static inline bool isSupportedContainer(Element* element)
 {
-    ASSERT(element);
+    DCHECK(element);
     if (!element->isHTMLElement())
         return true;
 
@@ -583,7 +583,7 @@ static inline bool isSupportedContainer(Element* element)
 
 DocumentFragment* createContextualFragment(const String& markup, Element* element, ParserContentPolicy parserContentPolicy, ExceptionState& exceptionState)
 {
-    ASSERT(element);
+    DCHECK(element);
     if (!isSupportedContainer(element)) {
         exceptionState.throwDOMException(NotSupportedError, "The range's container is '" + element->localName() + "', which is not supported.");
         return nullptr;
@@ -612,7 +612,7 @@ DocumentFragment* createContextualFragment(const String& markup, Element* elemen
 
 void replaceChildrenWithFragment(ContainerNode* container, DocumentFragment* fragment, ExceptionState& exceptionState)
 {
-    ASSERT(container);
+    DCHECK(container);
     ContainerNode* containerNode(container);
 
     ChildListMutationScope mutation(*containerNode);
@@ -640,7 +640,7 @@ void replaceChildrenWithFragment(ContainerNode* container, DocumentFragment* fra
 
 void replaceChildrenWithText(ContainerNode* container, const String& text, ExceptionState& exceptionState)
 {
-    ASSERT(container);
+    DCHECK(container);
     ContainerNode* containerNode(container);
 
     ChildListMutationScope mutation(*containerNode);
@@ -675,7 +675,7 @@ void replaceChildrenWithText(ContainerNode* container, const String& text, Excep
 
 void mergeWithNextTextNode(Text* textNode, ExceptionState& exceptionState)
 {
-    ASSERT(textNode);
+    DCHECK(textNode);
     Node* next = textNode->nextSibling();
     if (!next || !next->isTextNode())
         return;

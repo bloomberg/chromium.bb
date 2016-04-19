@@ -150,7 +150,7 @@ void InsertListCommand::doApply(EditingState* editingState)
     if (endingSelection().isRange()) {
         bool forceListCreation = false;
         VisibleSelection selection = selectionForParagraphIteration(endingSelection());
-        ASSERT(selection.isRange());
+        DCHECK(selection.isRange());
         VisiblePosition startOfSelection = selection.visibleStart();
         VisiblePosition endOfSelection = selection.visibleEnd();
         VisiblePosition startOfLastParagraph = startOfParagraph(endOfSelection, CanSkipOverEditingBoundary);
@@ -190,7 +190,7 @@ void InsertListCommand::doApply(EditingState* editingState)
                     endOfSelection = visiblePositionForIndex(indexForEndOfSelection, scopeForEndOfSelection);
                     // If endOfSelection is null, then some contents have been deleted from the document.
                     // This should never happen and if it did, exit early immediately because we've lost the loop invariant.
-                    ASSERT(endOfSelection.isNotNull());
+                    DCHECK(endOfSelection.isNotNull());
                     if (endOfSelection.isNull() || !rootEditableElementOf(endOfSelection))
                         return;
                     startOfLastParagraph = startOfParagraph(endOfSelection, CanSkipOverEditingBoundary);
@@ -218,7 +218,7 @@ void InsertListCommand::doApply(EditingState* editingState)
         return;
     }
 
-    ASSERT(firstRangeOf(endingSelection()));
+    DCHECK(firstRangeOf(endingSelection()));
     doApplyForSingleParagraph(false, listTag, *firstRangeOf(endingSelection()), editingState);
 }
 
@@ -255,8 +255,8 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             if (editingState->isAborted())
                 return false;
         }
-        ASSERT(listElement->hasEditableStyle());
-        ASSERT(listElement->parentNode()->hasEditableStyle());
+        DCHECK(listElement->hasEditableStyle());
+        DCHECK(listElement->parentNode()->hasEditableStyle());
         if (!listElement->hasTagName(listTag)) {
             // |listChildNode| will be removed from the list and a list of type
             // |m_type| will be created.
@@ -325,12 +325,12 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
 {
     // Since, unlistify paragraph inserts nodes into parent and removes node
     // from parent, if parent of |listElement| should be editable.
-    ASSERT(listElement->parentNode()->hasEditableStyle());
+    DCHECK(listElement->parentNode()->hasEditableStyle());
     Node* nextListChild;
     Node* previousListChild;
     VisiblePosition start;
     VisiblePosition end;
-    ASSERT(listChildNode);
+    DCHECK(listChildNode);
     if (isHTMLLIElement(*listChildNode)) {
         start = createVisiblePosition(firstPositionInNode(listChildNode));
         end = createVisiblePosition(lastPositionInNode(listChildNode));
@@ -341,9 +341,9 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         start = startOfParagraph(originalStart, CanSkipOverEditingBoundary);
         end = endOfParagraph(start, CanSkipOverEditingBoundary);
         nextListChild = enclosingListChild(nextPositionOf(end).deepEquivalent().anchorNode(), listElement);
-        ASSERT(nextListChild != listChildNode);
+        DCHECK_NE(nextListChild, listChildNode);
         previousListChild = enclosingListChild(previousPositionOf(start).deepEquivalent().anchorNode(), listElement);
-        ASSERT(previousListChild != listChildNode);
+        DCHECK_NE(previousListChild, listChildNode);
     }
     // When removing a list, we must always create a placeholder to act as a point of insertion
     // for the list content being removed.
@@ -485,7 +485,7 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, c
 
 void InsertListCommand::moveParagraphOverPositionIntoEmptyListItem(const VisiblePosition& pos, HTMLLIElement* listItemElement, EditingState* editingState)
 {
-    ASSERT(!listItemElement->hasChildren());
+    DCHECK(!listItemElement->hasChildren());
     HTMLBRElement* placeholder = HTMLBRElement::create(document());
     appendNode(placeholder, listItemElement, editingState);
     if (editingState->isAborted())

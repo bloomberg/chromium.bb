@@ -68,7 +68,7 @@ TypingCommand::TypingCommand(Document& document, ETypingCommand commandType, con
 void TypingCommand::deleteSelection(Document& document, Options options)
 {
     LocalFrame* frame = document.frame();
-    ASSERT(frame);
+    DCHECK(frame);
 
     if (!frame->selection().isRange())
         return;
@@ -124,7 +124,7 @@ void TypingCommand::forwardDeleteKeyPressed(Document& document, EditingState* ed
 
 void TypingCommand::updateSelectionIfDifferentFromCurrentSelection(TypingCommand* typingCommand, LocalFrame* frame)
 {
-    ASSERT(frame);
+    DCHECK(frame);
     VisibleSelection currentSelection = frame->selection().selection();
     if (equalSelectionsInDOMTree(currentSelection, typingCommand->endingSelection()))
         return;
@@ -153,7 +153,7 @@ static String dispatchBeforeTextInsertedEvent(const String& text, const VisibleS
 void TypingCommand::insertText(Document& document, const String& text, Options options, TextCompositionType composition)
 {
     LocalFrame* frame = document.frame();
-    ASSERT(frame);
+    DCHECK(frame);
 
     if (!text.isEmpty())
         document.frame()->spellChecker().updateMarkersForWordsAffectedByEditing(isSpaceOrNewline(text[0]));
@@ -165,7 +165,7 @@ void TypingCommand::insertText(Document& document, const String& text, Options o
 void TypingCommand::insertText(Document& document, const String& text, const VisibleSelection& selectionForInsertion, Options options, TextCompositionType compositionType)
 {
     LocalFrame* frame = document.frame();
-    ASSERT(frame);
+    DCHECK(frame);
 
     VisibleSelection currentSelection = frame->selection().selection();
 
@@ -239,7 +239,7 @@ bool TypingCommand::insertParagraphSeparator(Document& document)
 
 TypingCommand* TypingCommand::lastTypingCommandIfStillOpenForTyping(LocalFrame* frame)
 {
-    ASSERT(frame);
+    DCHECK(frame);
 
     CompositeEditCommand* lastEditCommand = frame->editor().lastEditCommand();
     if (!lastEditCommand || !lastEditCommand->isTypingCommand() || !static_cast<TypingCommand*>(lastEditCommand)->isOpenForMoreTyping())
@@ -562,7 +562,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
         break;
     }
 
-    ASSERT(!selectionToDelete.isNone());
+    DCHECK(!selectionToDelete.isNone());
     if (selectionToDelete.isNone())
         return;
 
@@ -656,7 +656,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         break;
     }
 
-    ASSERT(!selectionToDelete.isNone());
+    DCHECK(!selectionToDelete.isNone());
     if (selectionToDelete.isNone())
         return;
 
