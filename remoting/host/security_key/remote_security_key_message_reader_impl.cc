@@ -64,33 +64,20 @@ void RemoteSecurityKeyMessageReaderImpl::ReadMessage() {
       return;
     }
 
-    // Read the message header to retrieve the remaining message length.
-    uint32_t total_message_size_bytes;
-    int read_result = read_stream_.ReadAtCurrentPos(
-        reinterpret_cast<char*>(&total_message_size_bytes),
-        SecurityKeyMessage::kHeaderSizeBytes);
-    if (read_result != SecurityKeyMessage::kHeaderSizeBytes) {
-      // 0 means EOF which is normal and should not be logged as an error.
-      if (read_result != 0) {
-        LOG(ERROR) << "Failed to read message header, read returned "
-                   << read_result;
-      }
+    uint32_t message_length_bytes = 0;
+    if (!ReadFromStream(reinterpret_cast<char*>(&message_length_bytes), 4)) {
       NotifyError();
       return;
     }
 
-    if (!SecurityKeyMessage::IsValidMessageSize(total_message_size_bytes)) {
-      LOG(ERROR) << "Message size too large: " << total_message_size_bytes;
+    if (!SecurityKeyMessage::IsValidMessageSize(message_length_bytes)) {
+      LOG(ERROR) << "Message size is invalid: " << message_length_bytes;
       NotifyError();
       return;
     }
 
-    std::string message_data(total_message_size_bytes, '\0');
-    read_result = read_stream_.ReadAtCurrentPos(string_as_array(&message_data),
-                                                total_message_size_bytes);
-    // The static cast is safe as we know the value is smaller than max int.
-    if (read_result != static_cast<int>(total_message_size_bytes)) {
-      LOG(ERROR) << "Failed to read message: " << read_result;
+    std::string message_data(message_length_bytes, '\0');
+    if (!ReadFromStream(string_as_array(&message_data), message_data.size())) {
       NotifyError();
       return;
     }
@@ -108,6 +95,30 @@ void RemoteSecurityKeyMessageReaderImpl::ReadMessage() {
         base::Bind(&RemoteSecurityKeyMessageReaderImpl::InvokeMessageCallback,
                    weak_factory_.GetWeakPtr(), base::Passed(&message)));
   }
+}
+
+bool RemoteSecurityKeyMessageReaderImpl::ReadFromStream(char* buffer,
+                                                        size_t bytes_to_read) {
+  DCHECK(buffer);
+  DCHECK_GT(bytes_to_read, 0u);
+
+  size_t bytes_read = 0;
+  do {
+    int read_result = read_stream_.ReadAtCurrentPosNoBestEffort(
+        buffer + bytes_read, bytes_to_read - bytes_read);
+    if (read_result < 1) {
+      // 0 means EOF which is normal and should not be logged as an error.
+      if (read_result != 0) {
+        LOG(ERROR) << "Failed to read from stream, ReadAtCurrentPos returned "
+                   << read_result;
+      }
+      return false;
+    }
+    bytes_read += read_result;
+  } while (bytes_read < bytes_to_read);
+  DCHECK_EQ(bytes_read, bytes_to_read);
+
+  return true;
 }
 
 void RemoteSecurityKeyMessageReaderImpl::NotifyError() {

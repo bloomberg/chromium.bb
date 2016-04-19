@@ -148,6 +148,49 @@ TEST_F(RemoteSecurityKeyMessageReaderImplTest, SingleMessageWithPayload) {
   CloseWriteFileAndRunLoop();
 }
 
+TEST_F(RemoteSecurityKeyMessageReaderImplTest, SingleMessageViaSingleWrite) {
+  // All other tests write in 2-3 chunks, this writes the message in one shot.
+  std::string payload("LLLLTI am the best payload in the history of testing.");
+  // Overwite the 'L' values with the actual length.
+  uint8_t length = payload.size() - SecurityKeyMessage::kHeaderSizeBytes;
+  payload[0] = static_cast<char>(length);
+  payload[1] = 0;
+  payload[2] = 0;
+  payload[3] = 0;
+  // Overwite the 'T' value with the actual type.
+  payload[4] = static_cast<char>(kTestMessageType);
+  WriteData(payload.data(), payload.size());
+  RunLoop();
+  ASSERT_EQ(1u, messages_received_.size());
+  ASSERT_EQ(kTestMessageType, messages_received_[0]->type());
+  ASSERT_EQ(payload.substr(5), messages_received_[0]->payload());
+
+  CloseWriteFileAndRunLoop();
+}
+
+TEST_F(RemoteSecurityKeyMessageReaderImplTest, SingleMessageViaMultipleWrites) {
+  // All other tests write in 2-3 chunks, this writes the message byte by byte.
+  std::string payload("LLLLTI am the worst payload in the history of testing.");
+  // Overwite the 'L' values with the actual length.
+  uint8_t length = payload.size() - SecurityKeyMessage::kHeaderSizeBytes;
+  payload[0] = static_cast<char>(length);
+  payload[1] = 0;
+  payload[2] = 0;
+  payload[3] = 0;
+  // Overwite the 'T' value with the actual type.
+  payload[4] = static_cast<char>(kTestMessageType);
+
+  for (uint32_t i = 0; i < payload.size(); i++) {
+    WriteData(&payload[i], 1);
+  }
+  RunLoop();
+  ASSERT_EQ(1u, messages_received_.size());
+  ASSERT_EQ(kTestMessageType, messages_received_[0]->type());
+  ASSERT_EQ(payload.substr(5), messages_received_[0]->payload());
+
+  CloseWriteFileAndRunLoop();
+}
+
 TEST_F(RemoteSecurityKeyMessageReaderImplTest, SingleMessageWithLargePayload) {
   std::string payload(kMaxSecurityKeyMessageByteCount -
                           SecurityKeyMessage::kMessageTypeSizeBytes,
@@ -210,13 +253,11 @@ TEST_F(RemoteSecurityKeyMessageReaderImplTest, MultipleMessages) {
                                      "", "Short", "", "Medium Length", "",
                                      "Longer than medium, but not super long",
                                      "", std::string(2048, 'Y'), ""});
-
-  for (auto& payload : payloads) {
-    WriteMessage(kTestMessageType, payload);
+  for (size_t i = 0; i < payloads.size(); i++) {
+    WriteMessage(kTestMessageType, payloads[i]);
     RunLoop();
+    ASSERT_EQ(i + 1, messages_received_.size());
   }
-
-  ASSERT_EQ(payloads.size(), messages_received_.size());
   CloseWriteFileAndRunLoop();
 
   for (size_t i = 0; i < payloads.size(); i++) {

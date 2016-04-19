@@ -38,6 +38,10 @@ class RemoteSecurityKeyMessageReaderImpl
   // |message_callback_| on the originating thread. Run on |read_task_runner_|.
   void ReadMessage();
 
+  // Reads the nubmer of bytes indicated by |bytes_to_read| into |buffer| from
+  // |read_stream_|.  Returns true if all bytes were retrieved successfully.
+  bool ReadFromStream(char* buffer, size_t bytes_to_read);
+
   // Callback run on |read_task_runner_| when an error occurs or EOF is reached.
   void NotifyError();
 
