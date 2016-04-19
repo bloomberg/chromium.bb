@@ -15,8 +15,9 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/app_session.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
@@ -48,6 +49,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 
 namespace chromeos {
 
@@ -132,6 +134,16 @@ scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
   CHECK(pool);
   return pool->GetSequencedTaskRunnerWithShutdownBehavior(
       pool->GetSequenceToken(), base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+}
+
+base::Version GetPlatformVersion() {
+  int32_t major_version;
+  int32_t minor_version;
+  int32_t bugfix_version;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                               &bugfix_version);
+  return base::Version(base::StringPrintf("%d.%d.%d", major_version,
+                                          minor_version, bugfix_version));
 }
 
 }  // namespace
@@ -566,6 +578,48 @@ void KioskAppManager::PutValidatedExternalExtension(
     const std::string& version,
     const ExternalCache::PutExternalExtensionCallback& callback) {
   external_cache_->PutExternalExtension(app_id, crx_path, version, callback);
+}
+
+bool KioskAppManager::IsPlatformCompliant(
+    const std::string& required_platform_version) const {
+  // Empty required version is compliant with any platform version.
+  if (required_platform_version.empty())
+    return true;
+
+  // Not compliant for bad formatted required versions.
+  const base::Version required_version(required_platform_version);
+  if (!required_version.IsValid() ||
+      required_version.components().size() > 3u) {
+    LOG(ERROR) << "Bad formatted required platform version: "
+               << required_platform_version;
+    return false;
+  }
+
+  // Not compliant if the platform version components do not match.
+  const size_t count = required_version.components().size();
+  const base::Version platform_version = GetPlatformVersion();
+  const auto& platform_version_components = platform_version.components();
+  const auto& required_version_components = required_version.components();
+  for (size_t i = 0; i < count; ++i) {
+    if (platform_version_components[i] != required_version_components[i])
+      return false;
+  }
+
+  return true;
+}
+
+bool KioskAppManager::IsPlatformCompliantWithApp(
+    const extensions::Extension* app) const {
+  // Compliant if the app is not the auto launched with zero delay app.
+  if (currently_auto_launched_with_zero_delay_app_ != app->id())
+    return true;
+
+  // Compliant if the app does not specify required platform version.
+  const extensions::KioskModeInfo* info = extensions::KioskModeInfo::Get(app);
+  if (info == nullptr)
+    return true;
+
+  return IsPlatformCompliant(info->required_platform_version);
 }
 
 KioskAppManager::KioskAppManager()

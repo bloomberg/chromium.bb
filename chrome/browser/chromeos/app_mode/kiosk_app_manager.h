@@ -218,10 +218,12 @@ class KioskAppManager : public KioskAppDataDelegate,
       const std::string& version,
       const ExternalCache::PutExternalExtensionCallback& callback);
 
-  bool external_loader_created() const { return external_loader_created_; }
-  bool secondary_app_external_loader_created() const {
-    return secondary_app_external_loader_created_;
-  }
+  // Whether the current platform is compliant with the given required
+  // platform version.
+  bool IsPlatformCompliant(const std::string& required_platform_version) const;
+
+  // Whether the platform is compliant for the given app.
+  bool IsPlatformCompliantWithApp(const extensions::Extension* app) const;
 
   // Notifies the KioskAppManager that a given app was auto-launched
   // automatically with no delay on startup. Certain privacy-sensitive
@@ -233,6 +235,10 @@ class KioskAppManager : public KioskAppDataDelegate,
   void InitSession(Profile* profile, const std::string& app_id);
 
   AppSession* app_session() { return app_session_.get(); }
+  bool external_loader_created() const { return external_loader_created_; }
+  bool secondary_app_external_loader_created() const {
+    return secondary_app_external_loader_created_;
+  }
 
  private:
   friend struct base::DefaultLazyInstanceTraits<KioskAppManager>;

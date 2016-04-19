@@ -72,6 +72,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
     DELAY_REASON_GC = 1,
     DELAY_REASON_WAIT_FOR_IDLE = 2,
     DELAY_REASON_WAIT_FOR_IMPORTS = 3,
+    DELAY_REASON_WAIT_FOR_OS_UPDATE = 4,
   };
 
   // Creates base::Time classes. The default implementation is just to return

@@ -15,6 +15,8 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
@@ -99,7 +101,10 @@ scoped_refptr<extensions::Extension> MakeKioskApp(
   scripts->AppendString("main.js");
   value.Set("app.background.scripts", std::move(scripts));
   value.SetBoolean("kiosk_enabled", true);
-  value.SetString("kiosk.required_platform_version", required_platform_version);
+  if (!required_platform_version.empty()) {
+    value.SetString("kiosk.required_platform_version",
+                    required_platform_version);
+  }
 
   std::string err;
   scoped_refptr<extensions::Extension> app =
@@ -112,6 +117,12 @@ scoped_refptr<extensions::Extension> MakeKioskApp(
           &err);
   EXPECT_EQ(err, "");
   return app;
+}
+
+void SetPlatformVersion(const std::string& platform_version) {
+  const std::string lsb_release = base::StringPrintf(
+      "CHROMEOS_RELEASE_VERSION=%s", platform_version.c_str());
+  base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release, base::Time::Now());
 }
 
 class AppDataLoadWaiter : public KioskAppManagerObserver {
@@ -580,9 +591,10 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAppDataFromCrx) {
   base::FilePath test_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
   base::FilePath data_dir =
-      test_dir.AppendASCII("chromeos/app_mode/offline_enabled_kiosk_app");
-  base::FilePath crx_file =
-      data_dir.AppendASCII("v2_required_platform_version_added.crx");
+      test_dir.AppendASCII("chromeos/app_mode/webstore/downloads/");
+  base::FilePath crx_file = data_dir.AppendASCII(
+      "ajoggoflpgplnnjkjamcmbepjdjdnpdp_v2_required_platform_version_added."
+      "crx");
   crx_file = CopyFileToTempDir(crx_file);
 
   ExternalCachePutWaiter put_waiter;
@@ -872,6 +884,64 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest,
   settings_helper_.SetInteger(kAccountsPrefDeviceLocalAccountAutoLoginDelay, 0);
   EXPECT_EQ(kRequiredPlatformVersion,
             manager()->GetAutoLaunchAppRequiredPlatformVersion());
+}
+
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, IsPlatformCompliant) {
+  SetPlatformVersion("1234.1.2");
+
+  EXPECT_TRUE(manager()->IsPlatformCompliant(""));
+  EXPECT_TRUE(manager()->IsPlatformCompliant("1234"));
+  EXPECT_TRUE(manager()->IsPlatformCompliant("1234.1"));
+  EXPECT_TRUE(manager()->IsPlatformCompliant("1234.1.2"));
+
+  EXPECT_FALSE(manager()->IsPlatformCompliant("123"));
+  EXPECT_FALSE(manager()->IsPlatformCompliant("1234.2"));
+  EXPECT_FALSE(manager()->IsPlatformCompliant("1234.1.1"));
+  EXPECT_FALSE(manager()->IsPlatformCompliant("1234.1.3"));
+
+  EXPECT_FALSE(manager()->IsPlatformCompliant("1234.1.2.3"));
+  EXPECT_FALSE(manager()->IsPlatformCompliant("bad version"));
+}
+
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, IsPlatformCompliantWithApp) {
+  SetPlatformVersion("1234.1.2");
+
+  const char kAppId[] = "app_id";
+  SetExistingApp(kAppId, "App Name", "red16x16.png", "");
+
+  manager()->SetAutoLaunchApp(kAppId, owner_settings_service_.get());
+  manager()->SetEnableAutoLaunch(true);
+  manager()->SetAppWasAutoLaunchedWithZeroDelay(kAppId);
+
+  struct {
+    const std::string required_platform_version;
+    const bool expected_compliant;
+  } kTestCases[] = {
+      {"", true},          {"1234", true},      {"1234.1", true},
+      {"1234.1.2", true},  {"123", false},      {"1234.2", false},
+      {"1234.1.1", false}, {"1234.1.3", false},
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    scoped_refptr<extensions::Extension> app = MakeKioskApp(
+        "App Name", "1.0", kAppId, kTestCases[i].required_platform_version);
+    EXPECT_EQ(kTestCases[i].expected_compliant,
+              manager()->IsPlatformCompliantWithApp(app.get()))
+        << "Test case: " << i << ", required_platform_version="
+        << kTestCases[i].required_platform_version;
+  }
+
+  // If an app is not auto launched with zero delay, it is always compliant.
+  const char kNoneAutoLaucnhedAppId[] = "none_auto_launch_app_id";
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    scoped_refptr<extensions::Extension> app =
+        MakeKioskApp("App Name", "1.0", kNoneAutoLaucnhedAppId,
+                     kTestCases[i].required_platform_version);
+    EXPECT_TRUE(manager()->IsPlatformCompliantWithApp(app.get()))
+        << "Test case for non auto launch app: " << i
+        << ", required_platform_version="
+        << kTestCases[i].required_platform_version;
+  }
 }
 
 }  // namespace chromeos

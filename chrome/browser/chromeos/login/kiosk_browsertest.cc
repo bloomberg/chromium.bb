@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
+#include "base/sys_info.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
@@ -253,6 +254,12 @@ extensions::Manifest::Type GetAppType(const std::string& app_id) {
           ->GetInstalledExtension(app_id);
   DCHECK(app);
   return app->GetType();
+}
+
+void SetPlatformVersion(const std::string& platform_version) {
+  const std::string lsb_release = base::StringPrintf(
+      "CHROMEOS_RELEASE_VERSION=%s", platform_version.c_str());
+  base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release, base::Time::Now());
 }
 
 // Helper functions for CanConfigureNetwork mock.
@@ -1545,6 +1552,13 @@ class KioskUpdateTest : public KioskTest {
     LaunchKioskWithSecondaryApps(primary_app, secondary_apps);
   }
 
+  bool PrimaryAppUpdateIsPending() const {
+    Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
+    return !!extensions::ExtensionSystem::Get(app_profile)
+                 ->extension_service()
+                 ->GetPendingExtensionUpdate(test_app_id());
+  }
+
  private:
   class KioskAppExternalUpdateWaiter : public KioskAppManagerObserver {
    public:
@@ -1913,6 +1927,84 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PreserveLocalData) {
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// Tests the primary app install with required platform version. The test
+// has three runs:
+//   1. Install an app.
+//   2. App update is delayed because the required platform version is not
+//      compliant.
+//   3. Platform version changed and the new app is installed because it is
+//      compliant now.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       PRE_PRE_IncompliantPlatformDelayInstall) {
+  PreCacheAndLaunchApp(kTestOfflineEnabledKioskApp, "1.0.0",
+                       std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_IncompliantPlatformDelayInstall) {
+  SetPlatformVersion("1233.0.0");
+
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  set_test_app_version("2.0.0");
+  set_test_crx_file(test_app_id() + "_v2_required_platform_version_added.crx");
+
+  // Fake auto launch.
+  ReloadAutolaunchKioskApps();
+  KioskAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(
+      kTestOfflineEnabledKioskApp);
+
+  StartUIForAppLaunch();
+  SimulateNetworkOnline();
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchSuccess();
+
+  EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
+  EXPECT_TRUE(PrimaryAppUpdateIsPending());
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformDelayInstall) {
+  SetPlatformVersion("1234.0.0");
+
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  set_test_app_version("2.0.0");
+  set_test_crx_file(test_app_id() + "_v2_required_platform_version_added.crx");
+
+  // Fake auto launch.
+  ReloadAutolaunchKioskApps();
+  KioskAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(
+      kTestOfflineEnabledKioskApp);
+
+  StartUIForAppLaunch();
+  SimulateNetworkOnline();
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchSuccess();
+
+  EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
+  EXPECT_FALSE(PrimaryAppUpdateIsPending());
+}
+
+// Tests that app is installed for the first time even on an incompliant
+// platform.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformFirstInstall) {
+  SetPlatformVersion("1233.0.0");
+
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  set_test_app_version("2.0.0");
+  set_test_crx_file(test_app_id() + "_v2_required_platform_version_added.crx");
+
+  // Fake auto launch.
+  ReloadAutolaunchKioskApps();
+  KioskAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(
+      kTestOfflineEnabledKioskApp);
+
+  StartUIForAppLaunch();
+  SimulateNetworkOnline();
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchSuccess();
+
+  EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
+  EXPECT_FALSE(PrimaryAppUpdateIsPending());
 }
 
 /* ***** Test Kiosk multi-app feature ***** */

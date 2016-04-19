@@ -37,6 +37,8 @@
         'browser/chromeos/app_mode/kiosk_app_manager.cc',
         'browser/chromeos/app_mode/kiosk_app_manager.h',
         'browser/chromeos/app_mode/kiosk_app_manager_observer.h',
+        'browser/chromeos/app_mode/kiosk_app_update_install_gate.cc',
+        'browser/chromeos/app_mode/kiosk_app_update_install_gate.h',
         'browser/chromeos/app_mode/kiosk_app_update_service.cc',
         'browser/chromeos/app_mode/kiosk_app_update_service.h',
         'browser/chromeos/app_mode/kiosk_diagnosis_runner.cc',

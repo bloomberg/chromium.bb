@@ -64,6 +64,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_update_install_gate.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chromeos/chromeos_switches.h"
@@ -154,6 +155,15 @@ void ExtensionSystemImpl::Shared::InitInstallGates() {
   extension_service_->RegisterInstallGate(
       ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
       extension_service_->shared_module_service());
+#if defined(OS_CHROMEOS)
+  if (chrome::IsRunningInForcedAppMode()) {
+    kiosk_app_update_install_gate_.reset(
+        new chromeos::KioskAppUpdateInstallGate(profile_));
+    extension_service_->RegisterInstallGate(
+        ExtensionPrefs::DELAY_REASON_WAIT_FOR_OS_UPDATE,
+        kiosk_app_update_install_gate_.get());
+  }
+#endif
 }
 
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {

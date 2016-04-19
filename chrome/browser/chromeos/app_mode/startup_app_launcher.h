@@ -90,7 +90,7 @@ class StartupAppLauncher : public base::SupportsWeakPtr<StartupAppLauncher>,
 
   void BeginInstall();
   void OnReadyToLaunch();
-  void UpdateAppData();
+  void MaybeUpdateAppData();
 
   void InitializeTokenService();
   void MaybeInitializeNetwork();
@@ -114,6 +114,9 @@ class StartupAppLauncher : public base::SupportsWeakPtr<StartupAppLauncher>,
 
   // Returns true if secondary apps are declared in manifest.
   bool HasSecondaryApps() const;
+
+  // Returns true if the primary app has a pending update.
+  bool PrimaryAppHasPendingUpdate() const;
 
   // Returns true if the app with |id| failed, and it is the primary or one of
   // the secondary apps.
