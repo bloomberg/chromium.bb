@@ -114,7 +114,7 @@ class MHTMLGenerationSitePerProcessTest : public MHTMLGenerationTest {
     MHTMLGenerationTest::SetUpOnMainThread();
 
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->Started());
     content::SetupCrossSiteRedirector(embedded_test_server());
   }
 
@@ -123,10 +123,7 @@ class MHTMLGenerationSitePerProcessTest : public MHTMLGenerationTest {
 };
 
 // Test for crbug.com/538766.
-// Disabled because the test will fail until the bug is fixed
-// (but note that the test only fails with --site-per-process flag).
-IN_PROC_BROWSER_TEST_F(MHTMLGenerationSitePerProcessTest,
-                       DISABLED_GenerateMHTML) {
+IN_PROC_BROWSER_TEST_F(MHTMLGenerationSitePerProcessTest, GenerateMHTML) {
   base::FilePath path(temp_dir_.path());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
