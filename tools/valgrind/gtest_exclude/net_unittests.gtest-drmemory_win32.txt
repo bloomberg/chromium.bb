@@ -34,3 +34,6 @@ ProxyResolverV8TracingWrapperTest.*
 
 # https://crbug.com/598953
 *QuicConnectionTest.TooManyReceivedPackets*
+
+# https://crbug.com/604611
+BidirectionalStreamTest.*
