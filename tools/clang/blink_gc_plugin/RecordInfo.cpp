@@ -584,7 +584,7 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
 
   if (type->isPointerType() || type->isReferenceType()) {
     if (Edge* ptr = CreateEdge(type->getPointeeType().getTypePtrOrNull()))
-      return new RawPtr(ptr, false, type->isReferenceType());
+      return new RawPtr(ptr, type->isReferenceType());
     return 0;
   }
 
@@ -596,12 +596,6 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
   }
 
   TemplateArgs args;
-
-  if (Config::IsRawPtr(info->name()) && info->GetTemplateArgs(1, &args)) {
-    if (Edge* ptr = CreateEdge(args[0]))
-      return new RawPtr(ptr, true, false);
-    return 0;
-  }
 
   if (Config::IsRefPtr(info->name()) && info->GetTemplateArgs(1, &args)) {
     if (Edge* ptr = CreateEdge(args[0]))

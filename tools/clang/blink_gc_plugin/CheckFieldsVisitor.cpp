@@ -85,38 +85,22 @@ void CheckFieldsVisitor::AtValue(Value* edge) {
   if (!Parent() || !edge->value()->IsGCAllocated())
     return;
 
-  // In transition mode, disallow  OwnPtr<T>, RawPtr<T> to GC allocated T's,
-  // also disallow T* in stack-allocated types.
-  if (options_.enable_oilpan) {
-    if (Parent()->IsOwnPtr() ||
-        Parent()->IsRawPtrClass() ||
-        (stack_allocated_host_ && Parent()->IsRawPtr())) {
+  // Disallow  OwnPtr<T>, RefPtr<T> and T* to stack-allocated types.
+  if (Parent()->IsOwnPtr() ||
+      (Parent()->IsRefPtr() && !edge->value()->IsGCRefCounted()) ||
+      (stack_allocated_host_ && Parent()->IsRawPtr())) {
+    invalid_fields_.push_back(std::make_pair(
+        current_, InvalidSmartPtr(Parent())));
+    return;
+  }
+  if (options_.warn_raw_ptr && Parent()->IsRawPtr()) {
+    if (static_cast<RawPtr*>(Parent())->HasReferenceType()) {
       invalid_fields_.push_back(std::make_pair(
-          current_, InvalidSmartPtr(Parent())));
-      return;
+          current_, kReferencePtrToGCManagedWarning));
+    } else {
+      invalid_fields_.push_back(std::make_pair(
+          current_, kRawPtrToGCManagedWarning));
     }
-    if (options_.warn_raw_ptr && Parent()->IsRawPtr()) {
-      if (static_cast<RawPtr*>(Parent())->HasReferenceType()) {
-        invalid_fields_.push_back(std::make_pair(
-            current_, kReferencePtrToGCManagedWarning));
-      } else {
-        invalid_fields_.push_back(std::make_pair(
-            current_, kRawPtrToGCManagedWarning));
-      }
-    }
-    return;
-  }
-
-  if (Parent()->IsRawPtr() || Parent()->IsOwnPtr()) {
-    invalid_fields_.push_back(std::make_pair(
-        current_, InvalidSmartPtr(Parent())));
-    return;
-  }
-
-  if (Parent()->IsRefPtr() && !edge->value()->IsGCRefCounted()) {
-    invalid_fields_.push_back(std::make_pair(
-        current_, InvalidSmartPtr(Parent())));
-    return;
   }
 }
 

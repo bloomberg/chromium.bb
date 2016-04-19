@@ -11,11 +11,9 @@
 
 struct BlinkGCPluginOptions {
   BlinkGCPluginOptions()
-      : enable_oilpan(false),
-        dump_graph(false),
+      : dump_graph(false),
         warn_raw_ptr(false),
         warn_unneeded_finalizer(false) {}
-  bool enable_oilpan;
   bool dump_graph;
   bool warn_raw_ptr;
   bool warn_unneeded_finalizer;

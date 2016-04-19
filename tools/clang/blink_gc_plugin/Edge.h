@@ -87,7 +87,6 @@ class Edge {
 
   virtual bool IsValue() { return false; }
   virtual bool IsRawPtr() { return false; }
-  virtual bool IsRawPtrClass() { return false; }
   virtual bool IsRefPtr() { return false; }
   virtual bool IsOwnPtr() { return false; }
   virtual bool IsMember() { return false; }
@@ -126,16 +125,13 @@ class PtrEdge : public Edge {
 
 class RawPtr : public PtrEdge {
  public:
-  RawPtr(Edge* ptr, bool is_ptr_class, bool is_ref_type)
+  RawPtr(Edge* ptr, bool is_ref_type)
       : PtrEdge(ptr)
-      , is_ptr_class_(is_ptr_class)
       , is_ref_type_(is_ref_type)
   {
-      assert(!(is_ptr_class_ && is_ref_type_));
   }
 
   bool IsRawPtr() { return true; }
-  bool IsRawPtrClass() { return is_ptr_class_; }
   LivenessKind Kind() { return kWeak; }
   bool NeedsFinalization() { return false; }
   TracingStatus NeedsTracing(NeedsTracingOption) {
@@ -145,7 +141,6 @@ class RawPtr : public PtrEdge {
 
   bool HasReferenceType() { return is_ref_type_; }
  private:
-  bool is_ptr_class_;
   bool is_ref_type_;
 };
 

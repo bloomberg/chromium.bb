@@ -16,7 +16,6 @@ class PartObject {
 private:
     PartObject();
 
-    RawPtr<HeapObject> m_obj;
     HeapObject* m_rawObj;
     HeapObject& m_refObj;
 };

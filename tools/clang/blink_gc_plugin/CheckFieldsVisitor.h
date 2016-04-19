@@ -13,8 +13,8 @@ struct BlinkGCPluginOptions;
 class FieldPoint;
 
 // This visitor checks that the fields of a class are "well formed".
-// - OwnPtr, RefPtr and RawPtr must not point to a GC derived types.
-// - Part objects must not be GC derived types.
+// - OwnPtr and RefPtr must not point to a GC derived type.
+// - Part objects must not be a GC derived type.
 // - An on-heap class must never contain GC roots.
 // - Only stack-allocated types may point to stack-allocated types.
 
