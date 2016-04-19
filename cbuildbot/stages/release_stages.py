@@ -348,6 +348,25 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
 
     return super(PaygenStage, self)._HandleStageException(exc_info)
 
+  def WaitUntilReady(self):
+    """Block until signed images are ready.
+
+    Returns:
+      Boolean that tells if we can run this stage.
+    """
+    # If we did got an explicit channel list, there is no need to wait.
+    if self.channels is None:
+      # Wait for channels from signing stage.
+      self.channels = self.board_runattrs.GetParallel(
+          'signed_images_ready', timeout=None)
+
+      # If the signing stage errored out for any reason.
+      if self.channels is None:
+        # SigningStage failed. Payloads can't be generated.
+        return False
+
+    return True
+
   def PerformStage(self):
     """Do the work of generating our release payloads."""
     # Convert to release tools naming for boards.
@@ -366,16 +385,6 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
       raise PaygenNoPaygenConfigForBoard(
           'Golden Eye (%s) has no entry for board %s. Get a TPM to fix.' %
           (paygen_build_lib.BOARDS_URI, board))
-
-
-    # If we did not get an explicit channel list, we wait on the signing
-    # stage to give us a list, and so signal that signing is done.
-    if self.channels is None:
-      # Wait for channels from signing stage.
-      self.channels = self.board_runattrs.GetParallel(
-          'signed_images_ready', timeout=None)
-      if self.channels is None:
-        raise SignerFailure('SigningStage failed, no payloads generated.')
 
     with parallel.BackgroundTaskRunner(self._RunPaygenInProcess) as per_channel:
       logging.info("Using channels: %s", self.channels)

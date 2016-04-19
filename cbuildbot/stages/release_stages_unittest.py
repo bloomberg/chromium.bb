@@ -304,17 +304,41 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.validateMock = self.PatchObject(
         paygen_build_lib, 'ValidateBoardConfig')
 
-  def ConstructStage(self):
-    return release_stages.PaygenStage(self._run, self._current_board)
+  # pylint: disable=arguments-differ
+  def ConstructStage(self, channels=None):
+    return release_stages.PaygenStage(self._run, self._current_board,
+                                      channels=channels)
+
+  def testWaitUntilReadSigning(self):
+    """Test that PaygenStage works when signing works."""
+    stage = self.ConstructStage()
+    stage.board_runattrs.SetParallel('signed_images_ready',
+                                     ['stable', 'beta'])
+
+    self.assertEqual(stage.WaitUntilReady(), True)
+    self.assertEqual(stage.channels, ['stable', 'beta'])
+
+  def testWaitUntilReadSigningFailure(self):
+    """Test that PaygenStage works when signing works."""
+    stage = self.ConstructStage()
+    stage.board_runattrs.SetParallel('signed_images_ready', None)
+
+    self.assertEqual(stage.WaitUntilReady(), False)
+
+  def testWaitUntilReadSigningEmpty(self):
+    """Test that PaygenStage works when signing works."""
+    stage = self.ConstructStage()
+    stage.board_runattrs.SetParallel('signed_images_ready', [])
+
+    self.assertEqual(stage.WaitUntilReady(), True)
+    self.assertEqual(stage.channels, [])
 
   def testPerformStageSuccess(self):
     """Test that PaygenStage works when signing works."""
     with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
       queue = background().__enter__()
 
-      stage = self.ConstructStage()
-      stage.board_runattrs.SetParallel('signed_images_ready',
-                                       ['stable', 'beta'])
+      stage = self.ConstructStage(channels=['stable', 'beta'])
 
       stage.PerformStage()
 
@@ -329,24 +353,9 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
     with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
       queue = background().__enter__()
 
-      stage = self.ConstructStage()
-      stage.board_runattrs.SetParallel('signed_images_ready', [])
+      stage = self.ConstructStage(channels=[])
 
       stage.PerformStage()
-
-      # Verify that we queue up work
-      self.assertEqual(queue.put.call_args_list, [])
-
-  def testPerformStageSigningFailure(self):
-    """Test that PaygenStage works when signing works."""
-    with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
-      queue = background().__enter__()
-
-      stage = self.ConstructStage()
-      stage.board_runattrs.SetParallel('signed_images_ready', None)
-
-      with self.assertRaises(release_stages.SignerFailure):
-        stage.PerformStage()
 
       # Verify that we queue up work
       self.assertEqual(queue.put.call_args_list, [])
@@ -356,8 +365,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
       create_payloads.side_effect = failures_lib.TestLabFailure
 
-      stage = release_stages.PaygenStage(
-          self._run, self._current_board, channels=['foo', 'bar'])
+      stage = self.ConstructStage(channels=['foo', 'bar'])
 
       with patch(stage, '_HandleExceptionAsWarning') as warning_handler:
         warning_handler.return_value = (results_lib.Results.FORGIVEN,
@@ -376,8 +384,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
 
       # The stage is constructed differently for trybots, so don't use
       # ConstructStage.
-      stage = release_stages.PaygenStage(
-          self._run, self._current_board, channels=['foo', 'bar'])
+      stage = self.ConstructStage(channels=['foo', 'bar'])
       stage.PerformStage()
 
       # Notice that we didn't put anything in _wait_for_channel_signing, but
