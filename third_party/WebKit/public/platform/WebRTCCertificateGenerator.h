@@ -53,8 +53,13 @@ public:
         const WebRTCKeyParams&,
         const WebURL&,
         const WebURL& firstPartyForCookies,
-        std::unique_ptr<WebRTCCertificateCallback> observer)
-        = 0;
+        std::unique_ptr<WebRTCCertificateCallback> observer) = 0;
+    virtual void generateCertificateWithExpiration(
+        const WebRTCKeyParams&,
+        const WebURL&,
+        const WebURL& firstPartyForCookies,
+        uint64_t expiresMs,
+        std::unique_ptr<WebRTCCertificateCallback> observer) = 0;
 
     // Determines if the parameters are supported by generateCertificate.
     // For example, if the number of bits of some parameter is too small or too large we

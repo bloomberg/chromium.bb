@@ -672,6 +672,22 @@ ScriptPromise RTCPeerConnection::generateCertificate(ScriptState* scriptState, c
         return promise;
     }
 
+    // Check if |keygenAlgorithm| contains the optional DOMTimeStamp |expires| attribute.
+    Nullable<DOMTimeStamp> expires;
+    if (keygenAlgorithm.isDictionary()) {
+        Dictionary keygenAlgorithmDict = keygenAlgorithm.getAsDictionary();
+        if (keygenAlgorithmDict.hasProperty("expires")) {
+            v8::Local<v8::Value> expiresValue;
+            keygenAlgorithmDict.get("expires", expiresValue);
+            if (expiresValue->IsNumber()) {
+                double expiresDouble = expiresValue->ToNumber(scriptState->isolate()->GetCurrentContext()).ToLocalChecked()->Value();
+                if (expiresDouble >= 0) {
+                    expires.set(static_cast<DOMTimeStamp>(expiresDouble));
+                }
+            }
+        }
+    }
+
     // Convert from WebCrypto representation to recognized WebRTCKeyParams. WebRTC supports a small subset of what are valid AlgorithmIdentifiers.
     const char* unsupportedParamsString = "The 1st argument provided is an AlgorithmIdentifier with a supported algorithm name, but the parameters are not supported.";
     Nullable<WebRTCKeyParams> keyParams;
@@ -718,11 +734,20 @@ ScriptPromise RTCPeerConnection::generateCertificate(ScriptState* scriptState, c
 
     // Generate certificate. The |certificateObserver| will resolve the promise asynchronously upon completion.
     // The observer will manage its own destruction as well as the resolver's destruction.
-    certificateGenerator->generateCertificate(
-        keyParams.get(),
-        toDocument(scriptState->getExecutionContext())->url(),
-        toDocument(scriptState->getExecutionContext())->firstPartyForCookies(),
-        std::move(certificateObserver));
+    if (expires.isNull()) {
+        certificateGenerator->generateCertificate(
+            keyParams.get(),
+            toDocument(scriptState->getExecutionContext())->url(),
+            toDocument(scriptState->getExecutionContext())->firstPartyForCookies(),
+            std::move(certificateObserver));
+    } else {
+        certificateGenerator->generateCertificateWithExpiration(
+            keyParams.get(),
+            toDocument(scriptState->getExecutionContext())->url(),
+            toDocument(scriptState->getExecutionContext())->firstPartyForCookies(),
+            expires.get(),
+            std::move(certificateObserver));
+    }
 
     return promise;
 }

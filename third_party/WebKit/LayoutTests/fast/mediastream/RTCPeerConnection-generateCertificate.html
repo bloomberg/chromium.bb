@@ -7,11 +7,18 @@
 <script>
 description("Tests RTCPeerConnection.generateCertificate RSA/ECDSA.");
 
+// Constants
+var minuteInMs = 60 * 1000;
+var dayInMs = 24 * 60 * minuteInMs;
+
 // Signature of the last generateCertificate call.
 var generateCallString = null;
 // Global certificate variables so that the "should..." methods can evaluate them.
 var certRSA = null;
 var certECDSA = null;
+var certExpiresNegativeOneDay = null;
+var certExpiresZero = null;
+var certExpiresPositiveOneDay = null;
 
 // 1: RSA-2048 using public exponent = 65537.
 function generate1RSA()
@@ -24,7 +31,7 @@ function generate1RSASuccessful(certificate)
 {
     certRSA = certificate;
     testPassed(generateCallString);
-    certificateSanityCheck(certificate, 'certRSA');
+    certificateSanityCheck('certRSA');
     generate2ECDSA();
 }
 function generate1RSAFailed()
@@ -44,17 +51,53 @@ function generate2ECDSASuccessful(certificate)
 {
     certECDSA = certificate;
     testPassed(generateCallString);
-    certificateSanityCheck(certificate, 'certECDSA');
-    finishJSTest();
+    certificateSanityCheck('certECDSA');
+    generate3ExpiresNegativeOneDay();
 }
 function generate2ECDSAFailed()
 {
     testFailed(generateCallString);
+    generate3ExpiresNegativeOneDay();
+}
+
+// 3-5: Verify that the |expires| attribute works (generate ECDSA because its faster).
+function generate3ExpiresNegativeOneDay()
+{
+    generateCallString  =  'generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:-dayInMs })';
+    webkitRTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:-dayInMs })
+        .then(function(certificate) { certExpiresNegativeOneDay = certificate; generate4ExpiresZero(); }, generate4ExpiresZero);
+}
+function generate4ExpiresZero()
+{
+    generateCallString  =  'generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:0 })';
+    webkitRTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:0 })
+        .then(function(certificate) { certExpiresZero = certificate; generate5ExpiresPositiveOneDay(); }, generate5ExpiresPositiveOneDay);
+}
+function generate5ExpiresPositiveOneDay()
+{
+    generateCallString  =  'generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:dayInMs })';  // +1 day
+    webkitRTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:dayInMs })
+        .then(function(certificate) { certExpiresPositiveOneDay = certificate; generate3to5ExpiresResolved(); }, generate3to5ExpiresResolved);
+}
+function generate3to5ExpiresResolved()
+{
+    // A negative |expires| value is not a DOMTimeStamp, it should be ignored and
+    // generate a certificate that has not expired.
+    certificateSanityCheck('certExpiresNegativeOneDay');
+
+    // Check that the zero expiration certificate was generated but has expired.
+    shouldBeNonNull('certExpiresZero');
+    shouldBeTrue('new Date().getTime() >= certExpiresZero.expires');
+
+    // Check that the +1 day expiration certificate expires in approximately 1 day (+/- 1 minute).
+    shouldBeNonNull('certExpiresPositiveOneDay');
+    shouldBeTrue('Math.abs(certExpiresPositiveOneDay.expires - (new Date().getTime() + dayInMs)) <= minuteInMs');
+
     finishJSTest();
 }
 
 // Helper functions.
-function certificateSanityCheck(cert, certVariableName)
+function certificateSanityCheck(certVariableName)
 {
     shouldBeNonNull(certVariableName);
     shouldBeTrue('new Date().getTime() < ' + certVariableName + '.expires');

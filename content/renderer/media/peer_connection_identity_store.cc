@@ -18,6 +18,7 @@ namespace {
 const char kIdentityName[] = "WebRTC";
 static unsigned int kRSAChromiumKeyLength = 1024;
 static unsigned int kRSAChromiumPubExp = 0x10001;
+static uint64_t kYearInSeconds = 365 * 24 * 60 * 60;
 
 // Bridges identity requests between the main render thread and libjingle's
 // signaling thread.
@@ -116,7 +117,8 @@ PeerConnectionIdentityStore::~PeerConnectionIdentityStore() {
 }
 
 void PeerConnectionIdentityStore::RequestIdentity(
-    rtc::KeyParams key_params,
+    const rtc::KeyParams& key_params,
+    const rtc::Optional<uint64_t>& expires_ms,
     const rtc::scoped_refptr<webrtc::DtlsIdentityRequestObserver>& observer) {
   DCHECK(signaling_thread_->BelongsToCurrentThread());
   DCHECK(observer);
@@ -128,7 +130,8 @@ void PeerConnectionIdentityStore::RequestIdentity(
   // header file(s).
   if (key_params.type() == rtc::KT_RSA &&
       key_params.rsa_params().mod_size == kRSAChromiumKeyLength &&
-      key_params.rsa_params().pub_exp == kRSAChromiumPubExp) {
+      key_params.rsa_params().pub_exp == kRSAChromiumPubExp &&
+      !expires_ms) {
     // Use Chromium identity generation code for its hardwired parameters (RSA,
     // 1024, 0x10001). This generation code is preferred over WebRTC generation
     // code due to the performance benefits of caching.
@@ -141,8 +144,21 @@ void PeerConnectionIdentityStore::RequestIdentity(
   } else {
     // Fall back on WebRTC identity generation code for everything else, e.g.
     // RSA with any other parameters or ECDSA. These will not be cached.
-    std::unique_ptr<rtc::SSLIdentity> identity(
-        rtc::SSLIdentity::Generate(kIdentityName, key_params));
+    std::unique_ptr<rtc::SSLIdentity> identity;
+    if (!expires_ms) {
+      identity.reset(rtc::SSLIdentity::Generate(kIdentityName, key_params));
+    } else {
+      uint64_t expires_s = *expires_ms / 1000;
+      // Limit the expiration time to something reasonable (a year). This also
+      // ensures that the value is not too large for |time_t|.
+      if (expires_s > kYearInSeconds)
+        expires_s = kYearInSeconds;
+      // TODO(hbos,torbjorng): Update |SSLIdentity::GenerateWithExpiration| not
+      // to use |time_t| and stop using |time_t| here, its type is unspecified
+      // and shouldn't be used if we have a choice. bugs.webrtc.org/5720.
+      identity.reset(rtc::SSLIdentity::GenerateWithExpiration(
+          kIdentityName, key_params, static_cast<time_t>(expires_s)));
+    }
 
     // Invoke |observer| callbacks asynchronously. The callbacks of
     // DtlsIdentityStoreInterface implementations have to be async.

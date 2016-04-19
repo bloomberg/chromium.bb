@@ -9,6 +9,12 @@ PASS new Date().getTime() < certRSA.expires is true
 PASS generateCertificate({ name: "ECDSA", namedCurve: "P-256" })
 PASS certECDSA is non-null.
 PASS new Date().getTime() < certECDSA.expires is true
+PASS certExpiresNegativeOneDay is non-null.
+PASS new Date().getTime() < certExpiresNegativeOneDay.expires is true
+PASS certExpiresZero is non-null.
+PASS new Date().getTime() >= certExpiresZero.expires is true
+PASS certExpiresPositiveOneDay is non-null.
+PASS Math.abs(certExpiresPositiveOneDay.expires - (new Date().getTime() + dayInMs)) <= minuteInMs is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
