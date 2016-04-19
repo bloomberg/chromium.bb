@@ -185,22 +185,12 @@ public class OfflinePageBridge {
     }
 
     /**
-     * @return The mode of the offline pages feature. Uses
-     *     {@see org.chromium.components.offlinepages.FeatureMode} enum.
-     */
-    public static int getFeatureMode() {
-        ThreadUtils.assertOnUiThread();
-        if (sFeatureMode == null) sFeatureMode = nativeGetFeatureMode();
-        return sFeatureMode;
-    }
-
-    /**
      * @return True if the offline pages feature is enabled, regardless whether bookmark or saved
      *     page shown in UI strings.
      */
     public static boolean isEnabled() {
         ThreadUtils.assertOnUiThread();
-        return getFeatureMode() != FeatureMode.DISABLED;
+        return nativeGetFeatureMode() != FeatureMode.DISABLED;
     }
 
     /**
@@ -240,7 +230,7 @@ public class OfflinePageBridge {
      *
      * @param callback The callback to run when the operation completes.
      */
-
+    @VisibleForTesting
     public void getAllPages(final MultipleOfflinePageItemCallback callback) {
         List<OfflinePageItem> result = new ArrayList<>();
         nativeGetAllPages(mNativeOfflinePageBridge, result, callback);
@@ -287,6 +277,7 @@ public class OfflinePageBridge {
      * @return A {@link OfflinePageItem} matching the bookmark Id or <code>null</code> if none
      * exist.
      */
+    @VisibleForTesting
     public void getPagesByClientId(
             final ClientId clientId, final MultipleOfflinePageItemCallback callback) {
         runWhenLoaded(new Runnable() {
@@ -433,6 +424,7 @@ public class OfflinePageBridge {
      * @param callback Interface that contains a callback.
      * @see DeletePageCallback
      */
+    @VisibleForTesting
     public void deletePage(final ClientId clientId, DeletePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
         ArrayList<ClientId> ids = new ArrayList<ClientId>();

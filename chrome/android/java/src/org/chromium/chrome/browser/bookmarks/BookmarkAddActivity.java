@@ -48,8 +48,7 @@ public class BookmarkAddActivity extends AsyncInitializationActivity {
                 BookmarkId bookmarkId = BookmarkUtils.addBookmarkSilently(
                         BookmarkAddActivity.this, mModel, title, url);
                 if (bookmarkId != null) {
-                    BookmarkUtils.startEditActivity(BookmarkAddActivity.this,
-                            bookmarkId, null);
+                    BookmarkUtils.startEditActivity(BookmarkAddActivity.this, bookmarkId);
                 }
                 finish();
             }

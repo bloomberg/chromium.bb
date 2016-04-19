@@ -19,7 +19,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.widget.NumberRollView;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -56,18 +55,12 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
         inflateMenu(R.menu.bookmark_action_bar_menu);
         setOnMenuItemClickListener(this);
 
-        getMenu()
-                .findItem(R.id.search_menu_id)
-                .setTitle(OfflinePageUtils.getStringId(R.string.bookmark_action_bar_search));
-        getMenu()
-                .findItem(R.id.selection_mode_edit_menu_id)
-                .setTitle(OfflinePageUtils.getStringId(R.string.edit_bookmark));
-        getMenu()
-                .findItem(R.id.selection_mode_move_menu_id)
-                .setTitle(OfflinePageUtils.getStringId(R.string.bookmark_action_bar_move));
-        getMenu()
-                .findItem(R.id.selection_mode_delete_menu_id)
-                .setTitle(OfflinePageUtils.getStringId(R.string.bookmark_action_bar_delete));
+        getMenu().findItem(R.id.search_menu_id).setTitle(R.string.bookmark_action_bar_search);
+        getMenu().findItem(R.id.selection_mode_edit_menu_id).setTitle(R.string.edit_bookmark);
+        getMenu().findItem(R.id.selection_mode_move_menu_id)
+                .setTitle(R.string.bookmark_action_bar_move);
+        getMenu().findItem(R.id.selection_mode_delete_menu_id)
+                .setTitle(R.string.bookmark_action_bar_delete);
     }
 
     @Override
@@ -108,7 +101,7 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
             if (item.isFolder()) {
                 BookmarkAddEditFolderActivity.startEditFolderActivity(getContext(), item.getId());
             } else {
-                BookmarkUtils.startEditActivity(getContext(), item.getId(), null);
+                BookmarkUtils.startEditActivity(getContext(), item.getId());
             }
             return true;
         } else if (menuItem.getItemId() == R.id.selection_mode_move_menu_id) {
@@ -217,7 +210,7 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
 
     @Override
     public void onAllBookmarksStateSet() {
-        setTitle(getTitleForAllItems());
+        setTitle(R.string.bookmark_title_bar_all_items);
         setNavigationButton(NAVIGATION_BUTTON_MENU);
         getMenu().findItem(R.id.search_menu_id).setVisible(true);
         getMenu().findItem(R.id.edit_menu_id).setVisible(false);
@@ -234,7 +227,7 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
         if (mDelegate.getModel().getTopLevelFolderParentIDs().contains(
                 mCurrentFolder.getParentId())) {
             if (TextUtils.isEmpty(mCurrentFolder.getTitle())) {
-                setTitle(getTitleForAllItems());
+                setTitle(R.string.bookmark_title_bar_all_items);
             } else {
                 setTitle(mCurrentFolder.getTitle());
             }
@@ -243,14 +236,6 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
             setTitle(mCurrentFolder.getTitle());
             setNavigationButton(NAVIGATION_BUTTON_BACK);
         }
-    }
-
-    @Override
-    public void onFilterStateSet(BookmarkFilter filter) {
-        assert filter == BookmarkFilter.OFFLINE_PAGES;
-        setTitle(R.string.bookmark_title_bar_filter_offline_pages);
-        setNavigationButton(NAVIGATION_BUTTON_MENU);
-        getMenu().findItem(R.id.edit_menu_id).setVisible(false);
     }
 
     @Override
@@ -293,9 +278,5 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
 
             mDelegate.notifyStateChange(this);
         }
-    }
-
-    private int getTitleForAllItems() {
-        return OfflinePageUtils.getStringId(R.string.bookmark_title_bar_all_items);
     }
 }

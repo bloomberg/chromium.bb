@@ -49,13 +49,6 @@ interface BookmarkDelegate {
     void openFolder(BookmarkId folder);
 
     /**
-     * Corresponds to any filter named list item in the side drawer. Shows bookmarks that match
-     * that filter.
-     * @param filter A filter that will narrow down a list of bookmarks to show.
-     */
-    void openFilter(BookmarkFilter filter);
-
-    /**
      * Clear all selected items. After this call, {@link #isSelectionEnabled()} will return false.
      */
     void clearSelection();

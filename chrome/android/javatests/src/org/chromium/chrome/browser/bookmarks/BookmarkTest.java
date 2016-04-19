@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
@@ -16,10 +14,8 @@ import android.widget.TextView;
 import junit.framework.Assert;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -89,28 +85,6 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             BookmarkActivity activity = ActivityUtils.waitForActivity(getInstrumentation(),
                     BookmarkActivity.class, new MenuUtils.MenuActivityTrigger(
                             getInstrumentation(), getActivity(), R.id.all_bookmarks_menu_id));
-            mItemsContainer = (BookmarkRecyclerView) activity.findViewById(
-                    R.id.bookmark_items_container);
-        }
-    }
-
-    private void openBookmarkManager(final String url) throws InterruptedException {
-        if (DeviceFormFactor.isTablet(getActivity())) {
-            loadUrl(url);
-            mItemsContainer = (BookmarkRecyclerView) getActivity().findViewById(
-                    R.id.bookmark_items_container);
-        } else {
-            // phone
-            BookmarkActivity activity = ActivityUtils.waitForActivity(getInstrumentation(),
-                    BookmarkActivity.class, new Runnable() {
-                        @Override
-                        public void run() {
-                            Intent intent = new Intent(getActivity(),
-                                    BookmarkActivity.class);
-                            intent.setData(Uri.parse(url));
-                            getActivity().startActivity(intent);
-                        }
-                    });
             mItemsContainer = (BookmarkRecyclerView) activity.findViewById(
                     R.id.bookmark_items_container);
         }
@@ -189,13 +163,6 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 BookmarkUIState.createFolderUrl(bookmarkBarId).toString());
         assertEquals("chrome-native://bookmarks/folder/" + otherId,
                 BookmarkUIState.createFolderUrl(otherId).toString());
-
-        assertEquals("chrome-native://bookmarks/filter/OFFLINE_PAGES", BookmarkUIState
-                .createFilterUrl(BookmarkFilter.OFFLINE_PAGES, true).toString());
-        assertEquals(
-                "chrome-native://bookmarks/filter/OFFLINE_PAGES?persist=0",
-                BookmarkUIState.createFilterUrl(BookmarkFilter.OFFLINE_PAGES,
-                        false).toString());
     }
 
     @SmallTest
@@ -205,37 +172,6 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertEquals(BookmarkUIState.STATE_ALL_BOOKMARKS, delegate.getCurrentState());
         assertEquals(UrlConstants.BOOKMARKS_URL,
                 BookmarkUtils.getLastUsedUrl(getActivity()));
-    }
-
-    @SmallTest
-    @CommandLineFlags.Add(ChromeSwitches.ENABLE_OFFLINE_PAGES)
-    public void testOpenBookmarkManagerInOfflinePagePersist() throws InterruptedException {
-        BookmarkUtils.setLastUsedUrl(getActivity(), UrlConstants.BOOKMARKS_URL);
-        String url = "chrome-native://bookmarks/filter/OFFLINE_PAGES";
-        openBookmarkManager(url);
-        BookmarkDelegate delegate = mItemsContainer.getDelegateForTesting();
-        assertEquals(BookmarkUIState.STATE_FILTER, delegate.getCurrentState());
-        assertEquals(url, BookmarkUtils.getLastUsedUrl(getActivity()));
-    }
-
-    @SmallTest
-    @CommandLineFlags.Add(ChromeSwitches.ENABLE_OFFLINE_PAGES)
-    public void testOpenBookmarkManagerInOfflinePageNoPersist() throws InterruptedException {
-        BookmarkUtils.setLastUsedUrl(getActivity(), UrlConstants.BOOKMARKS_URL);
-        String url = "chrome-native://bookmarks/filter/OFFLINE_PAGES?persist=0";
-        openBookmarkManager(url);
-        BookmarkDelegate delegate = mItemsContainer.getDelegateForTesting();
-        assertEquals(BookmarkUIState.STATE_FILTER, delegate.getCurrentState());
-        assertEquals(UrlConstants.BOOKMARKS_URL,
-                BookmarkUtils.getLastUsedUrl(getActivity()));
-    }
-
-    @SmallTest
-    @CommandLineFlags.Add(ChromeSwitches.DISABLE_OFFLINE_PAGES)
-    public void testOpenBookmarkManagerInOfflinePageWhenDisabled() throws InterruptedException {
-        openBookmarkManager("chrome-native://bookmarks/filter/OFFLINE_PAGES");
-        BookmarkDelegate delegate = mItemsContainer.getDelegateForTesting();
-        assertEquals(BookmarkUIState.STATE_ALL_BOOKMARKS, delegate.getCurrentState());
     }
 
     /**

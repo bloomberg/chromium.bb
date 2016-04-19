@@ -128,12 +128,6 @@ public class BookmarkRecyclerView extends RecyclerView implements BookmarkUIObse
     }
 
     @Override
-    public void onFilterStateSet(BookmarkFilter filter) {
-        assert filter == BookmarkFilter.OFFLINE_PAGES;
-        scrollToPosition(0);
-    }
-
-    @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
         if (!mDelegate.isSelectionEnabled()) {
             for (int i = 0; i < getLayoutManager().getChildCount(); ++i) {

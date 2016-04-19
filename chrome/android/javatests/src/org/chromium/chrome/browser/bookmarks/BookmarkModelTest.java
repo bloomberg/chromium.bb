@@ -9,11 +9,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
-import org.chromium.chrome.browser.bookmarks.BookmarkModel.AddBookmarkCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -208,15 +205,6 @@ public class BookmarkModelTest extends NativeLibraryTestBase {
         verifyBookmark(folderAA, "faa", null, true, folderA);
     }
 
-    @UiThreadTest
-    @SmallTest
-    @CommandLineFlags.Add({ChromeSwitches.ENABLE_OFFLINE_PAGES})
-    @Feature({"Bookmark"})
-    public void testOfflineBridgeLoaded() {
-        assertTrue(mBookmarkModel.getOfflinePageBridge() != null);
-        assertTrue(mBookmarkModel.getOfflinePageBridge().isOfflinePageModelLoaded());
-    }
-
     private BookmarkId addBookmark(final BookmarkId parent, final int index, final String title,
             final String url) {
         final AtomicReference<BookmarkId> result = new AtomicReference<BookmarkId>();
@@ -224,15 +212,8 @@ public class BookmarkModelTest extends NativeLibraryTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mBookmarkModel.addBookmarkAsync(
-                        parent, index, title, url, null, new AddBookmarkCallback() {
-                            @Override
-                            public void onBookmarkAdded(
-                                    final BookmarkId bookmarkId, int saveResult) {
-                                result.set(bookmarkId);
-                                semaphore.release();
-                            }
-                        });
+                result.set(mBookmarkModel.addBookmark(parent, index, title, url));
+                semaphore.release();
             }
         });
         try {

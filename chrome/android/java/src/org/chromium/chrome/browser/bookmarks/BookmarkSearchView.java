@@ -367,10 +367,6 @@ public class BookmarkSearchView extends LinearLayout implements OnItemClickListe
     }
 
     @Override
-    public void onFilterStateSet(BookmarkFilter filter) {
-    }
-
-    @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
     }
 

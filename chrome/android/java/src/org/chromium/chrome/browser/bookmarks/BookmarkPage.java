@@ -14,7 +14,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkDelegate.BookmarkStateChangeListener;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -38,7 +37,7 @@ public class BookmarkPage implements NativePage, BookmarkStateChangeListener {
     public BookmarkPage(Activity activity, Tab tab) {
         mActivity = activity;
         mTab = tab;
-        mTitle = activity.getString(OfflinePageUtils.getStringId(R.string.bookmarks));
+        mTitle = activity.getString(R.string.bookmarks);
         mBackgroundColor = ApiCompatibilityUtils.getColor(activity.getResources(),
                 R.color.default_primary_color);
         mThemeColor = ApiCompatibilityUtils.getColor(

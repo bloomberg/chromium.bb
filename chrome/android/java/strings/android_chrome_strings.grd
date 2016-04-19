@@ -1868,9 +1868,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_MENU_BOOKMARKS" desc="Menu item for opening the bookmarks page that contains all the user's bookmarks. [CHAR-LIMIT=27]">
         Bookmarks
       </message>
-      <message name="IDS_MENU_BOOKMARKS_OFFLINE_PAGES" desc="Menu item for opening the saved pages page that contains all the user's saved pages (bookmarks and offline). [CHAR-LIMIT=27]">
-        Saved pages
-      </message>
       <message name="IDS_MENU_RECENT_TABS" desc="Menu item for opening the 'Recent tabs' page that shows recently closed tabs and pages the user has opened on his/her other devices. [CHAR-LIMIT=27]">
         Recent tabs
       </message>
@@ -1933,14 +1930,8 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_BOOKMARK_DRAWER_FOLDERS" desc="Title for the list of folders in the drawer view. [CHAR-LIMIT=32]">
         Folders
       </message>
-      <message name="IDS_BOOKMARK_DRAWER_FILTER_OFFLINE_PAGES" desc="Menu item for showing all bookmarks with an offline pages [CHAR-LIMIT=24]">
-        Saved offline
-      </message>
       <message name="IDS_BOOKMARK_TITLE_BAR_ALL_ITEMS" desc="Title bar text for showing all bookmark items in the bookmarks UI [CHAR-LIMIT=32]">
         Bookmarks
-      </message>
-      <message name="IDS_BOOKMARK_TITLE_BAR_FILTER_OFFLINE_PAGES" desc="Title bar text for showing all save pages with offline copy in the bookmarks UI. [CHAR-LIMIT=24]">
-        Saved offline
       </message>
       <message name="IDS_BOOKMARK_PARENT_FOLDER" desc="Header text for title of parent folder of the bookmark [CHAR-LIMIT=32]">
         Parent folder
@@ -1999,15 +1990,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_BOOKMARK_FOLDER" desc="Label specifying what folder a bookmark is in. [CHAR-LIMIT=32]">
         Folder
       </message>
-      <message name="IDS_BOOKMARK_OFFLINE_PAGE_NONE" desc="Label specifying that given saved page does not have an offline copy, but user has the page open.">
-        Not saved offline
-      </message>
-      <message name="IDS_BOOKMARK_OFFLINE_PAGE_SIZE" desc="Label specifying that given saved page has an offline copy of a specific size.">
-        <ph name="PAGE_SIZE_STRING">%1$s<ex>1.32 MB</ex></ph> page saved offline
-      </message>
-      <message name="IDS_BOOKMARK_BTN_OFFLINE_PAGE_VISIT" desc="Label for a button to visit an offline page. [CHAR-LIMIT=20]">
-        Visit
-      </message>
       <message name="IDS_BOOKMARK_MISSING_TITLE" desc="Error message appearing when a user tries to create/edit a bookmark or a folder without a title. [CHAR-LIMIT=32]">
         Title required
       </message>
@@ -2040,106 +2022,8 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       </message>
 
       <!-- Offline pages -->
-      <message name="IDS_OFFLINE_PAGES_ACTION_BAR_DELETE" desc="Button text to delete the saved web pages that are being selected [CHAR-LIMIT=32]">
-        Delete saved pages
-      </message>
-      <message name="IDS_OFFLINE_PAGES_ACTION_BAR_MOVE" desc="Button text to move the saved web pages that are being selected [CHAR-LIMIT=32]">
-        Move saved pages
-      </message>
-      <message name="IDS_OFFLINE_PAGES_ACTION_BAR_SEARCH" desc="Button text to search among the saved web pages [CHAR-LIMIT=32]">
-        Search saved pages
-      </message>
-      <message name="IDS_OFFLINE_PAGES_ALL_ITEMS" desc="Title button and text for showing the list of web pages that have been saved/bookmarked. [CHAR-LIMIT=32]">
-        All saved pages
-      </message>
-      <message name="IDS_OFFLINE_PAGES_EDIT_ITEM" desc="The string prompting the user to edit the content of a saved page. [CHAR-LIMIT=32]">
-        Edit saved page
-      </message>
-      <message name="IDS_OFFLINE_PAGES_FREE_UP_SPACE_TITLE" desc="Text on a button and title of the dialog offering to remove offline pages to free up storage space. [CHAR-LIMIT=32]">
-        Free up space
-      </message>
-      <message name="IDS_OFFLINE_PAGES_FREE_UP_SPACE_MESSAGE" desc="Text explaining how many offline copies of saved pages are going to be removed and how much storage is going to be freed.">
-        Delete <ph name="PAGES_NUMBER">%1$d<ex>8</ex></ph> offline copies not used in the past month? This will clear <ph name="TOTAL_PAGE_SIZE">%2$s<ex>8.3 MB</ex></ph> of space.
-      </message>
-      <message name="IDS_OFFLINE_PAGES_FOLDER_EMPTY" desc="Text explaining that the currently selected saved pages folder is empty.">
-        No saved pages here
-      </message>
-      <message name="IDS_OFFLINE_PAGES_NTP_BUTTON_NAME" desc="Text for saved pages button on the new tab page [CHAR-LIMIT=20]">
-        Saved pages
-      </message>
-      <message name="IDS_OFFLINE_PAGES_NTP_BUTTON_ACCESSIBILITY" desc="Content description for saved pages button on the new tab page.">
-        Saved pages
-      </message>
-      <message name="IDS_OFFLINE_PAGES_OPEN_STORAGE_SETTINGS_DIALOG_TEXT" desc="Text of the dialog asking if the user wants to open storage settings to remove files to make space.">
-        Your device storage is full. Please remove other media to make space.
-      </message>
-      <message name="IDS_OFFLINE_PAGES_PAGE_SAVED" desc="Message shown after user adds a new offline page.">
-        Page saved offline
-      </message>
-      <message name="IDS_OFFLINE_PAGES_PAGE_SAVED_FOLDER" desc="Message shown after user saves a new offline page. Also specifies in which folder the bookmark was added.">
-        Page saved offline to <ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph>
-      </message>
-      <message name="IDS_OFFLINE_PAGES_PAGE_SKIPPED" desc="Message shown after a page was saved as a bookmark, but an offline copy was not created due to that the page is not HTTP or HTTPS page.">
-        Page saved
-      </message>
-      <message name="IDS_OFFLINE_PAGES_PAGE_SAVED_STORAGE_NEAR_FULL" desc="Message shown after user adds a new offline page and the storage is almost full.">
-        Page saved offline. Storage almost full.
-      </message>
-      <message name="IDS_OFFLINE_PAGES_PAGE_FAILED_TO_SAVE" desc="Message shown after a page was saved as a bookmark, but an offline copy was not created due to problems other than storage.">
-        Saved page not available offline
-      </message>
-      <message name="IDS_OFFLINE_PAGES_PAGE_FAILED_TO_SAVE_STORAGE_NEAR_FULL" desc="Message shown after a page was saved as a bookmark, but an offline copy was not created due to storage problem.">
-        Saved page not available offline. Storage almost full.
-      </message>
-      <message name="IDS_OFFLINE_PAGES_SAVED_PAGES" desc="Title in recent tasks list for showing the list of web pages that have been saved.">
-        Saved pages
-      </message>
-      <message name="IDS_OFFLINE_PAGES_STORAGE_SPACE_TITLE" desc="Title of the promo header for managing offline pages storage. [CHAR-LIMIT=32]">
-        Storage space
-      </message>
-      <message name="IDS_OFFLINE_PAGES_STORAGE_SPACE_MESSAGE" desc="Text explaining how much storage is currently used for offline copies of saved pages.">
-        Saved pages are currently taking up <ph name="TOTAL_OFFLINE_STORAGE_SIZE">%1$s<ex>780 MB</ex></ph>.
-      </message>
-      <message name="IDS_OFFLINE_PAGES_STORAGE_CLEARED" desc="Text for the snackbar confirming clearing of the offline page storage space.">
-        Storage cleared
-      </message>
       <message name="IDS_OFFLINE_PAGES_VIEWING_OFFLINE_PAGE" desc="Text explaining that the user is viewing an offline copy of a web page.">
         Viewing an offline copy of this page
-      </message>
-      <message name="IDS_OFFLINE_PAGES_VIEW_BUTTON" desc="Label for a button to open a system settings page. [CHAR-LIMIT=20]">
-        View
-      </message>
-
-      <!-- Offline pages (Use 'bookmarks' name in UI strings) -->
-      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_OFFLINE_PAGE_SIZE" desc="Label specifying that given saved page has an offline copy of a specific size (Use 'bookmarks' name in UI strings).">
-        <ph name="PAGE_SIZE_STRING">%1$s<ex>1.32 MB</ex></ph> bookmark saved offline
-      </message>
-      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_OFFLINE_PAGE_VISIT" desc="Label specifying that given saved page does not have an offline copy, and user does not have that page open (Use 'bookmarks' name in UI strings).">
-        Visit bookmark to save offline
-      </message>
-      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_PAGE_SAVED" desc="Message shown after user adds a new offline page (Use 'bookmarks' name in UI strings).">
-        Bookmark saved offline
-      </message>
-      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_PAGE_SAVED_FOLDER" desc="Message shown after user saves a new offline page. Also specifies in which folder the bookmark was added (Use 'bookmarks' name in UI strings).">
-        Bookmark saved offline to <ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph>
-      </message>
-      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_PAGE_SKIPPED" desc="Message shown after a page was saved as a bookmark, but an offline copy was not created due to that the page is not HTTP or HTTPS page (Use 'bookmarks' name in UI strings).">
-        Bookmarked
-      </message>
-      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_PAGE_SAVED_STORAGE_NEAR_FULL" desc="Message shown after user adds a new offline page and the storage is almost full (Use 'bookmarks' name in UI strings).">
-        Bookmark saved offline. Storage almost full.
-      </message>
-      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_PAGE_FAILED_TO_SAVE" desc="Message shown after a page was saved as a bookmark, but an offline copy was not created due to problems other than storage (Use 'bookmarks' name in UI strings).">
-        Bookmark not available offline
-      </message>
-      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_PAGE_FAILED_TO_SAVE_STORAGE_NEAR_FULL" desc="Message shown after a page was saved as a bookmark, but an offline copy was not created due to storage problem (Use 'bookmarks' name in UI strings).">
-        Bookmark not available offline. Storage almost full.
-      </message>
-      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_STORAGE_SPACE_MESSAGE" desc="Text explaining how much storage is currently used for offline copies of saved pages (Use 'bookmarks' name in UI strings).">
-        Bookmarks are currently taking up <ph name="TOTAL_OFFLINE_STORAGE_SIZE">%1$s<ex>780 MB</ex></ph>.
-      </message>
-      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_VIEWING_OFFLINE_PAGE" desc="Text explaining that the user is viewing an offline copy of a web page (Use 'bookmarks' name in UI strings).">
-        Viewing an offline copy of this bookmark
       </message>
 
       <!-- Find in page -->
@@ -2303,11 +2187,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       </message>
       <message name="IDS_NEW_TAB_INCOGNITO_MESSAGE" desc="Message shown when a user opens an incognito tab explaining incognito mode">
         Pages you view in incognito tabs won’t stick around in your browser’s history, cookie store, or search history after you’ve closed all of your incognito tabs. Any files you download or bookmarks you create will be kept.
-
-However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your internet service provider, or the websites you visit.
-      </message>
-      <message name="IDS_OFFLINE_PAGES_NEW_TAB_INCOGNITO_MESSAGE" desc="Message shown when a user opens an incognito tab explaining incognito mode">
-        Pages you view in incognito tabs won’t stick around in your browser’s history, cookie store, or search history after you’ve closed all of your incognito tabs. Any downloaded files or saved pages will be kept.
 
 However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your internet service provider, or the websites you visit.
       </message>

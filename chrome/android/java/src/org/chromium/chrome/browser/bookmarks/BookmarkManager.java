@@ -269,9 +269,7 @@ public class BookmarkManager implements BookmarkDelegate {
 
         if (state.mState != BookmarkUIState.STATE_LOADING) {
             // Loading state may be pushed to the stack but should never be stored in preferences.
-            if (state.mShouldPersist) {
-                BookmarkUtils.setLastUsedUrl(mActivity, state.mUrl);
-            }
+            BookmarkUtils.setLastUsedUrl(mActivity, state.mUrl);
             // If a loading state is replaced by another loading state, do not notify this change.
             if (mUrlChangeListener != null) {
                 mUrlChangeListener.onBookmarkUIStateChange(state.mUrl);
@@ -302,11 +300,6 @@ public class BookmarkManager implements BookmarkDelegate {
     public void openAllBookmarks() {
         closeSearchUI();
         setState(BookmarkUIState.createAllBookmarksState(mBookmarkModel));
-    }
-
-    @Override
-    public void openFilter(BookmarkFilter filter) {
-        setState(BookmarkUIState.createFilterState(filter, mBookmarkModel));
     }
 
     @Override
@@ -359,9 +352,6 @@ public class BookmarkManager implements BookmarkDelegate {
                 // In loading state, onBookmarkDelegateInitialized() is not called for all
                 // UIObservers, which means that there will be no observers at the time. Do nothing.
                 assert mUIObservers.isEmpty();
-                break;
-            case BookmarkUIState.STATE_FILTER:
-                observer.onFilterStateSet(mStateStack.peek().mFilter);
                 break;
             default:
                 assert false : "State not valid";

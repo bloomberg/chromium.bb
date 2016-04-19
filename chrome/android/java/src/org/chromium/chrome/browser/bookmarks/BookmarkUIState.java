@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.components.bookmarks.BookmarkId;
 
 /**
@@ -21,7 +20,6 @@ class BookmarkUIState {
     static final int STATE_LOADING = 1;
     static final int STATE_ALL_BOOKMARKS = 2;
     static final int STATE_FOLDER = 3;
-    static final int STATE_FILTER = 4;
     private static final int STATE_INVALID = 0;
 
     /**
@@ -29,15 +27,11 @@ class BookmarkUIState {
      */
     int mState;
     String mUrl;
-    /** Whether this state should be persisted as user's last location. */
-    boolean mShouldPersist = true;
     BookmarkId mFolder;
-    BookmarkFilter mFilter;
 
     static BookmarkUIState createLoadingState() {
         BookmarkUIState state = new BookmarkUIState();
         state.mState = STATE_LOADING;
-        state.mShouldPersist = false;
         state.mUrl = "";
         return state;
     }
@@ -49,11 +43,6 @@ class BookmarkUIState {
     static BookmarkUIState createFolderState(BookmarkId folder,
             BookmarkModel bookmarkModel) {
         return createStateFromUrl(createFolderUrl(folder), bookmarkModel);
-    }
-
-    static BookmarkUIState createFilterState(
-            BookmarkFilter filter, BookmarkModel bookmarkModel) {
-        return createStateFromUrl(createFilterUrl(filter, true), bookmarkModel);
     }
 
     /**
@@ -71,7 +60,6 @@ class BookmarkUIState {
         BookmarkUIState state = new BookmarkUIState();
         state.mState = STATE_INVALID;
         state.mUrl = uri.toString();
-        state.mShouldPersist = shouldPersist(uri);
 
         if (state.mUrl.equals(UrlConstants.BOOKMARKS_URL)) {
             state.mState = STATE_ALL_BOOKMARKS;
@@ -80,12 +68,6 @@ class BookmarkUIState {
             if (!path.isEmpty()) {
                 state.mFolder = BookmarkId.getBookmarkIdFromString(path);
                 state.mState = STATE_FOLDER;
-            }
-        } else if (state.mUrl.startsWith(UrlConstants.BOOKMARKS_FILTER_URL)) {
-            String path = uri.getLastPathSegment();
-            if (!path.isEmpty()) {
-                state.mState = STATE_FILTER;
-                state.mFilter = BookmarkFilter.valueOf(path);
             }
         }
 
@@ -98,31 +80,11 @@ class BookmarkUIState {
     }
 
     static Uri createFolderUrl(BookmarkId folderId) {
-        return createUrl(UrlConstants.BOOKMARKS_FOLDER_URL, folderId.toString(), true);
-    }
-
-    static Uri createFilterUrl(BookmarkFilter filter, boolean shouldPersist) {
-        return createUrl(UrlConstants.BOOKMARKS_FILTER_URL, filter.value, shouldPersist);
-    }
-
-    /**
-     * Encodes the path and appends it to the base url. A simple appending
-     * does not work because there might be spaces in suffix.
-     * @param shouldPersist Whether this url should be saved to preferences as
-     *                      user's last location.
-     */
-    private static Uri createUrl(String baseUrl, String pathSuffix, boolean shouldPersist) {
-        Uri.Builder builder = Uri.parse(baseUrl).buildUpon();
-        builder.appendPath(pathSuffix);
-        if (!shouldPersist) {
-            builder.appendQueryParameter(URI_PERSIST_QUERY_NAME, "0");
-        }
+        Uri.Builder builder = Uri.parse(UrlConstants.BOOKMARKS_FOLDER_URL).buildUpon();
+        // Encodes the path and appends it to the base url. A simple appending
+        // does not work because there might be spaces in suffix.
+        builder.appendPath(folderId.toString());
         return builder.build();
-    }
-
-    private static boolean shouldPersist(Uri uri) {
-        String queryString = uri.getQueryParameter(URI_PERSIST_QUERY_NAME);
-        return !("0".equals(queryString));
     }
 
     private BookmarkUIState() {}
@@ -148,13 +110,6 @@ class BookmarkUIState {
         if (mState == STATE_FOLDER) {
             return mFolder != null && bookmarkModel.doesBookmarkExist(mFolder)
                     && !mFolder.equals(bookmarkModel.getRootFolderId());
-        }
-
-        if (mState == STATE_FILTER) {
-            if (mFilter == null) return false;
-            if (mFilter == BookmarkFilter.OFFLINE_PAGES) {
-                return OfflinePageBridge.isEnabled();
-            }
         }
 
         return true;

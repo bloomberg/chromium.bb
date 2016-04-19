@@ -83,39 +83,6 @@
                     android:singleLine="true"
                     chrome:alertMessage="@string/bookmark_missing_url" />
             </org.chromium.chrome.browser.widget.FloatLabelLayout>
-
-            <LinearLayout
-                android:id="@+id/offline_page_group"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="28dp"
-                android:visibility="gone" >
-
-                <TextView
-                    android:id="@+id/offline_page_info_text"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginStart="3dp"
-                    android:text="@string/bookmark_offline_page_none"
-                    android:textAlignment="viewStart"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                    android:textColor="@color/dark_mode_tint"
-                    android:textSize="15sp" />
-
-                <Button
-                    android:id="@+id/offline_page_save_remove_button"
-                    style="@style/ButtonCompatBorderless"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:textAllCaps="true"
-                    android:textColor="@color/light_active_color"
-                    android:textSize="15sp" />
-
-            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

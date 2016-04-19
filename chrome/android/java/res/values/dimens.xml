@@ -317,9 +317,6 @@
          icon but otherwise, the icon is meant to be a flat color so it doesn't really matter. -->
     <dimen name="media_session_icon_size">48dp</dimen>
 
-    <!-- Offline pages dimensions -->
-    <dimen name="offline_page_item_vertical_spacing">16dp</dimen>
-
     <!-- Account chooser dialog dimensions -->
     <dimen name="account_chooser_dialog_margin">24dp</dimen>
     <dimen name="account_chooser_dialog_item_margin">20dp</dimen>

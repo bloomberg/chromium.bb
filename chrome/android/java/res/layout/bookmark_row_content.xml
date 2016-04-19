@@ -22,34 +22,17 @@
             android:contentDescription="@null"
             android:scaleType="center" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:minHeight="48dp"
+            android:singleLine="true"
             android:gravity="center_vertical"
-            android:orientation="vertical" >
-
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:textAlignment="viewStart"
-                android:textColor="@color/default_text_color"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/offline_page_size"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:textAlignment="viewStart"
-                android:textColor="@color/secondary_text_default_material_light"
-                android:textSize="15sp"
-                android:visibility="gone" />
-
-        </LinearLayout>
+            android:textAlignment="viewStart"
+            android:textColor="@color/default_text_color"
+            android:textSize="16sp" />
 
         <org.chromium.chrome.browser.widget.TintedImageButton
             android:id="@+id/more"

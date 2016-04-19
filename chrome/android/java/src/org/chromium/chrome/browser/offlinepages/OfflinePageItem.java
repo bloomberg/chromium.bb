@@ -57,11 +57,13 @@ public class OfflinePageItem {
     }
 
     /** @return Size of the offline copy of the page. */
+    @VisibleForTesting
     public long getFileSize() {
         return mFileSize;
     }
 
     /** @return Time in milliseconds the offline page was created. */
+    @VisibleForTesting
     public long getCreationTimeMs() {
         return mCreationTimeMs;
     }
@@ -73,6 +75,7 @@ public class OfflinePageItem {
     }
 
     /** @return Last time in milliseconds the offline page has been accessed. */
+    @VisibleForTesting
     public long getLastAccessTimeMs() {
         return mLastAccessTimeMs;
     }

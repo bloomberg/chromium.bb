@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.LoadingView;
@@ -45,7 +44,7 @@ public class BookmarkContentView extends RelativeLayout implements
         super.onFinishInflate();
         mItemsContainer = (BookmarkRecyclerView) findViewById(R.id.bookmark_items_container);
         TextView emptyView = (TextView) findViewById(R.id.bookmark_empty_view);
-        emptyView.setText(OfflinePageUtils.getStringId(R.string.bookmarks_folder_empty));
+        emptyView.setText(R.string.bookmarks_folder_empty);
         mItemsContainer.setEmptyView(emptyView);
         mActionBar = (BookmarkActionBar) findViewById(R.id.bookmark_action_bar);
         mLoadingView = (LoadingView) findViewById(R.id.bookmark_initial_loading_view);
@@ -98,11 +97,6 @@ public class BookmarkContentView extends RelativeLayout implements
 
     @Override
     public void onFolderStateSet(BookmarkId folder) {
-        mLoadingView.hideLoadingUI();
-    }
-
-    @Override
-    public void onFilterStateSet(BookmarkFilter filter) {
         mLoadingView.hideLoadingUI();
     }
 

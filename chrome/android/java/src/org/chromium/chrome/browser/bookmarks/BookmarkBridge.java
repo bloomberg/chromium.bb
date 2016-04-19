@@ -680,6 +680,11 @@ public class BookmarkBridge {
         return nativeIsEditBookmarksEnabled(mNativeBookmarkBridge);
     }
 
+    /** Gets the profile. */
+    protected Profile getProfile() {
+        return mProfile;
+    }
+
     /**
      * Notifies the observer that bookmark model has been loaded.
      */

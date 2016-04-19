@@ -157,8 +157,7 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
                             BookmarkAddEditFolderActivity.startEditFolderActivity(
                                     getContext(), item.getId());
                         } else {
-                            BookmarkUtils.startEditActivity(
-                                    getContext(), item.getId(), null);
+                            BookmarkUtils.startEditActivity(getContext(), item.getId());
                         }
                     } else if (position == 2) {
                         BookmarkFolderSelectActivity.startFolderSelectActivity(getContext(),
@@ -278,10 +277,6 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
 
     @Override
     public void onFolderStateSet(BookmarkId folder) {
-    }
-
-    @Override
-    public void onFilterStateSet(BookmarkFilter filter) {
     }
 
     @Override

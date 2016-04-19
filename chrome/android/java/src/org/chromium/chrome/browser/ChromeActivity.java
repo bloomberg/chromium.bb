@@ -121,6 +121,7 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
 import org.chromium.chrome.browser.widget.ControlContainer;
+import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.common.ContentSwitches;
@@ -1061,8 +1062,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 if (!tabToBookmark.isClosing() && tabToBookmark.isInitialized()) {
                     // The BookmarkModel will be destroyed by BookmarkUtils#addOrEditBookmark() when
                     // done.
-                    BookmarkUtils.addOrEditBookmark(bookmarkId, bookmarkModel,
-                            tabToBookmark, getSnackbarManager(), ChromeActivity.this);
+                    BookmarkId newBookmarkId =
+                            BookmarkUtils.addOrEditBookmark(bookmarkId, bookmarkModel,
+                                    tabToBookmark, getSnackbarManager(), ChromeActivity.this);
+                    // If a new bookmark was created, try to save an offline page for it.
+                    if (newBookmarkId != null && newBookmarkId.getId() != bookmarkId) {
+                        OfflinePageUtils.saveBookmarkOffline(newBookmarkId, tabToBookmark);
+                    }
                 } else {
                     bookmarkModel.destroy();
                 }

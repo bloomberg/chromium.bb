@@ -4,26 +4,12 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.offlinepages.ClientId;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
-import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
-import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
-import org.chromium.components.offlinepages.SavePageResult;
-import org.chromium.content_public.browser.WebContents;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -33,22 +19,6 @@ import java.util.List;
  */
 public class BookmarkModel extends BookmarkBridge {
     private static final int FAVICON_MAX_CACHE_SIZE = 10 * 1024 * 1024; // 10MB
-
-    /**
-     * Callback for use with addBookmarkAsync / saveOfflinePage.
-     */
-    public interface AddBookmarkCallback {
-        static final int SAVED = 0;
-        static final int SKIPPED = 1;
-        static final int ERROR = 2;
-
-        /**
-         * Called when the bookmark has been added.
-         * @param bookmarkId ID of the bookmark that has been added.
-         * @param result of saving an offline copy of the bookmarked page.
-         */
-        void onBookmarkAdded(BookmarkId bookmarkId, int saveResult);
-    }
 
     /**
      * Observer that listens to delete event. This interface is used by undo controllers to know
@@ -65,25 +35,7 @@ public class BookmarkModel extends BookmarkBridge {
         void onDeleteBookmarks(String[] titles, boolean isUndoable);
     }
 
-    /** A comparator to sort the offline pages according to the most recent access time. */
-    private static final Comparator<OfflinePageItem> sOfflinePageComparator =
-            new Comparator<OfflinePageItem>() {
-                @Override
-                public int compare(OfflinePageItem o1, OfflinePageItem o2) {
-                    if (o1.getLastAccessTimeMs() > o2.getLastAccessTimeMs()) {
-                        return -1;
-                    } else if (o1.getLastAccessTimeMs() < o2.getLastAccessTimeMs()) {
-                        return 1;
-                    } else {
-                        return 0;
-                    }
-                }
-            };
-
     private ObserverList<BookmarkDeleteObserver> mDeleteObservers = new ObserverList<>();
-    private OfflinePageBridge mOfflinePageBridge;
-    private boolean mIsOfflinePageModelLoaded;
-    private OfflinePageModelObserver mOfflinePageModelObserver;
 
     /**
      * Initialize bookmark model for last used non-incognito profile.
@@ -95,27 +47,6 @@ public class BookmarkModel extends BookmarkBridge {
     @VisibleForTesting
     public BookmarkModel(Profile profile) {
         super(profile);
-
-        // Note: we check if mOfflinePageBridge is null after this to determine if offline pages
-        // feature is enabled. When it is enabled by default, we should check all the places
-        // that checks for nullability of mOfflinePageBridge.
-        if (OfflinePageBridge.isEnabled()) {
-            mOfflinePageBridge = OfflinePageBridge.getForProfile(profile);
-            if (mOfflinePageBridge.isOfflinePageModelLoaded()) {
-                mIsOfflinePageModelLoaded = true;
-            } else {
-                mOfflinePageModelObserver = new OfflinePageModelObserver() {
-                    @Override
-                    public void offlinePageModelLoaded() {
-                        mIsOfflinePageModelLoaded = true;
-                        if (isBookmarkModelLoaded()) {
-                            notifyBookmarkModelLoaded();
-                        }
-                    }
-                };
-                mOfflinePageBridge.addObserver(mOfflinePageModelObserver);
-            }
-        }
     }
 
     /**
@@ -123,18 +54,12 @@ public class BookmarkModel extends BookmarkBridge {
      */
     @Override
     public void destroy() {
-        if (mOfflinePageBridge != null) {
-            mOfflinePageBridge.removeObserver(mOfflinePageModelObserver);
-            mOfflinePageBridge = null;
-        }
-
         super.destroy();
     }
 
     @Override
     public boolean isBookmarkModelLoaded() {
-        return super.isBookmarkModelLoaded()
-                && (mOfflinePageBridge == null || mIsOfflinePageModelLoaded);
+        return super.isBookmarkModelLoaded();
     }
 
     /**
@@ -198,67 +123,6 @@ public class BookmarkModel extends BookmarkBridge {
     }
 
     /**
-     * Add a new bookmark asynchronously.
-     *
-     * @param parent Folder where to add.
-     * @param index The position where the bookmark will be placed in parent folder
-     * @param title Title of the new bookmark.
-     * @param url Url of the new bookmark
-     * @param webContents A {@link WebContents} object for saving the offline copy. If null, the
-     *        saving should be skipped.
-     * @param callback The callback to be invoked when the bookmark is added.
-     */
-    public void addBookmarkAsync(BookmarkId parent, int index, String title, String url,
-                                 WebContents webContents, final AddBookmarkCallback callback) {
-        url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
-        final BookmarkId bookmarkId = addBookmark(parent, index, title, url);
-
-        // If bookmark was not created return an error.
-        if (bookmarkId == null) {
-            callback.onBookmarkAdded(null, AddBookmarkCallback.ERROR);
-            return;
-        }
-
-        // If there is no need to save offline page, return now.
-        if (mOfflinePageBridge == null || webContents == null) {
-            callback.onBookmarkAdded(bookmarkId, AddBookmarkCallback.SKIPPED);
-            return;
-        }
-
-        saveOfflinePage(bookmarkId, webContents, callback);
-    }
-
-    /**
-    * Save an offline copy for the bookmarked page asynchronously.
-    *
-    * @param bookmarkId The ID of the page to save an offline copy.
-    * @param webContents A {@link WebContents} object.
-    * @param callback The callback to be invoked when the offline copy is saved.
-    */
-    public void saveOfflinePage(final BookmarkId bookmarkId, WebContents webContents,
-            final AddBookmarkCallback callback) {
-        if (mOfflinePageBridge != null) {
-            RecordHistogram.recordBooleanHistogram("OfflinePages.IncognitoSave",
-                    webContents.isIncognito());
-            ClientId clientId = ClientId.createClientIdForBookmarkId(bookmarkId);
-            mOfflinePageBridge.savePage(webContents, clientId, new SavePageCallback() {
-                @Override
-                public void onSavePageDone(int savePageResult, String url, long offlineId) {
-                    int saveResult;
-                    if (savePageResult == SavePageResult.SUCCESS) {
-                        saveResult = AddBookmarkCallback.SAVED;
-                    } else if (savePageResult == SavePageResult.SKIPPED) {
-                        saveResult = AddBookmarkCallback.SKIPPED;
-                    } else {
-                        saveResult = AddBookmarkCallback.ERROR;
-                    }
-                    callback.onBookmarkAdded(bookmarkId, saveResult);
-                }
-            });
-        }
-    }
-
-    /**
      * @see org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem#getTitle()
      */
     public String getBookmarkTitle(BookmarkId bookmarkId) {
@@ -266,79 +130,9 @@ public class BookmarkModel extends BookmarkBridge {
     }
 
     /**
-     * Retrieves the url to launch a bookmark or saved page. If latter, also marks it as being
-     * accessed and reports the UMAs.
-     *
-     * @param bookmarkId ID of the bookmark to launch.
-     * @return The launch URL.
-     */
-    public String getLaunchUrlAndMarkAccessed(BookmarkId bookmarkId) {
-        String url = getBookmarkById(bookmarkId).getUrl();
-        if (mOfflinePageBridge == null) return url;
-
-        return mOfflinePageBridge.getLaunchUrlFromOnlineUrl(url);
-    }
-
-    /**
      * @return The id of the default folder to add bookmarks/folders to.
      */
     public BookmarkId getDefaultFolder() {
         return getMobileFolderId();
-    }
-
-    /**
-     * Gets a list of bookmark IDs for all offline pages.
-     *
-     * @return A list of bookmark IDs of bookmarks matching the offline pages filter.
-     */
-    public void getBookmarkIDsByFilter(
-            BookmarkFilter filter, final Callback<List<BookmarkId>> callback) {
-        assert filter == BookmarkFilter.OFFLINE_PAGES;
-        assert mOfflinePageBridge != null;
-
-        mOfflinePageBridge.getAllPages(new OfflinePageBridge.MultipleOfflinePageItemCallback() {
-            @Override
-            public void onResult(List<OfflinePageItem> offlinePages) {
-                callback.onResult(filterBookmarkIdsByOfflinePages(offlinePages));
-            }
-        });
-    }
-
-    /**
-     * Gets all bookmarks that correspond to the given list of offline pages, in MRU order.
-     * @see http://crbug.com/537806
-     */
-    private List<BookmarkId> filterBookmarkIdsByOfflinePages(List<OfflinePageItem> offlinePages) {
-        Collections.sort(offlinePages, sOfflinePageComparator);
-
-        HashSet<BookmarkId> existingBookmarks =
-                new HashSet<>(getAllBookmarkIDsOrderedByCreationDate());
-
-        List<BookmarkId> bookmarkIds = new ArrayList<>();
-        for (OfflinePageItem offlinePage : offlinePages) {
-            BookmarkId bookmarkId = getBookmarkIdForOfflineClientId(offlinePage.getClientId());
-            if (existingBookmarks.contains(bookmarkId)) {
-                bookmarkIds.add(bookmarkId);
-            }
-        }
-        return bookmarkIds;
-    }
-
-    /**
-     * @return Offline page bridge.
-     */
-    public OfflinePageBridge getOfflinePageBridge() {
-        return mOfflinePageBridge;
-    }
-
-    /**
-     * @param id The client id to convert.
-     * @return The bookmark id contained in the specified client id.
-     */
-    public static BookmarkId getBookmarkIdForOfflineClientId(ClientId id) {
-        if (!id.getNamespace().equals(OfflinePageBridge.BOOKMARK_NAMESPACE)) {
-            return new BookmarkId(-1, BookmarkType.NORMAL);
-        }
-        return BookmarkId.getBookmarkIdFromString(id.getId());
     }
 }

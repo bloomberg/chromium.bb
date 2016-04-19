@@ -12,7 +12,6 @@ import android.view.WindowManager;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -40,8 +39,7 @@ public class BookmarkActivity extends BookmarkActivityBase implements SnackbarMa
         mBookmarkManager.updateForUrl(url);
 
         setContentView(mBookmarkManager.getView());
-        BookmarkUtils.setTaskDescriptionInDocumentMode(
-                this, getString(OfflinePageUtils.getStringId(R.string.bookmarks)));
+        BookmarkUtils.setTaskDescriptionInDocumentMode(this, getString(R.string.bookmarks));
 
         // Hack to work around inferred theme false lint error: http://crbug.com/445633
         assert (R.layout.bookmark_main_content != 0);

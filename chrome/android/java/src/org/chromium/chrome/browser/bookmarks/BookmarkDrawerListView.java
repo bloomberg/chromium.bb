@@ -11,10 +11,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.List;
@@ -49,29 +46,12 @@ class BookmarkDrawerListView extends ListView implements BookmarkUIObserver {
                 BookmarkDrawerListViewAdapter.Item item =
                         (BookmarkDrawerListViewAdapter.Item) mAdapter.getItem(position);
 
-                if (OfflinePageBridge.isEnabled()) {
-                    int currentState = mDelegate.getCurrentState();
-                    boolean isConnected = OfflinePageUtils.isConnected();
-                    if (item.mType == BookmarkDrawerListViewAdapter.TYPE_FILTER
-                            && currentState != BookmarkUIState.STATE_FILTER) {
-                        RecordHistogram.recordBooleanHistogram(
-                                "OfflinePages.Filter.OnlineWhenEntering", isConnected);
-                    } else if (item.mType != BookmarkDrawerListViewAdapter.TYPE_FILTER
-                            && currentState == BookmarkUIState.STATE_FILTER) {
-                        RecordHistogram.recordBooleanHistogram(
-                                "OfflinePages.Filter.OnlineWhenLeaving", isConnected);
-                    }
-                }
-
                 switch (item.mType) {
                     case BookmarkDrawerListViewAdapter.TYPE_FOLDER:
                         mDelegate.openFolder(item.mFolderId);
                         break;
                     case BookmarkDrawerListViewAdapter.TYPE_ALL_ITEMS:
                         mDelegate.openAllBookmarks();
-                        break;
-                    case BookmarkDrawerListViewAdapter.TYPE_FILTER:
-                        mDelegate.openFilter(item.mFilter);
                         break;
                     default:
                         assert false;
@@ -113,13 +93,6 @@ class BookmarkDrawerListView extends ListView implements BookmarkUIObserver {
     public void onFolderStateSet(BookmarkId folder) {
         mAdapter.updateList();
         setItemChecked(mAdapter.getItemPosition(BookmarkUIState.STATE_FOLDER, folder),
-                true);
-    }
-
-    @Override
-    public void onFilterStateSet(BookmarkFilter filter) {
-        mAdapter.updateList();
-        setItemChecked(mAdapter.getItemPosition(BookmarkUIState.STATE_FILTER, filter),
                 true);
     }
 

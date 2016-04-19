@@ -32,11 +32,6 @@ interface BookmarkUIObserver {
     void onFolderStateSet(BookmarkId folder);
 
     /**
-     * @see BookmarkDelegate#openFilter(BookmarkFilter)
-     */
-    void onFilterStateSet(BookmarkFilter filter);
-
-    /**
      * Please refer to
      * {@link BookmarkDelegate#toggleSelectionForBookmark(BookmarkId)},
      * {@link BookmarkDelegate#clearSelection()} and
