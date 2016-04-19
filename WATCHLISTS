@@ -608,7 +608,8 @@
     },
     'offline_pages': {
       'filepath': 'components/offline_pages/'\
-                  '|chrome/browser/android/offline_pages/'
+                  '|chrome/browser/android/offline_pages/'\
+                  '|chrome/android/java/src/org/chromium/chrome/browser/offlinepages/'
     },
     'omnibox': {
       'filepath': 'chrome/browser/autocomplete/'\
@@ -1499,7 +1500,8 @@
             'pedrosimonetti+watch@chromium.org'],
     'ntp_snippets': ['mcwilliams+watch@chromium.org',
                      'dgn+watch@chromium.org'],
-    'offline_pages': ['dimich+watch@chromium.org'],
+    'offline_pages': ['dimich+watch@chromium.org',
+                      'fgorski+watch@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
     'options': ['dbeam+watch-options@chromium.org',
                 'michaelpg+watch-options@chromium.org'],
