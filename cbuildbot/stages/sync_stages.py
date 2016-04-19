@@ -1679,7 +1679,7 @@ class PreCQLauncherStage(SyncStage):
     validation_pool.ValidationPool.AcquirePool(
         self._run.config.overlays, self.repo,
         self._run.buildnumber,
-        constants.PRE_CQ_LAUNCHER_NAME,
+        self._run.GetBuilderName(),
         query,
         dryrun=self._run.options.debug,
         check_tree_open=False, change_filter=self.ProcessChanges,

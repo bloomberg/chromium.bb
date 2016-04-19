@@ -455,7 +455,8 @@ PRE_CQ_DEFAULT_CONFIGS = ['rambi-pre-cq', 'mixed-a-pre-cq', 'mixed-b-pre-cq',
 PRE_CQ_LAUNCHER_CONFIG = 'pre-cq-launcher'
 
 # The name of the Pre-CQ launcher on the waterfall.
-PRE_CQ_LAUNCHER_NAME = 'Pre-CQ Launcher'
+# As of crbug.com/591117 this is the same as the config name.
+PRE_CQ_LAUNCHER_NAME = PRE_CQ_LAUNCHER_CONFIG
 
 # The COMMIT-QUEUE.ini and commit message option that overrides pre-cq configs
 # to test with.
