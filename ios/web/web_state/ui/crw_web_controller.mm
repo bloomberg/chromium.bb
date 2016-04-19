@@ -150,6 +150,17 @@ struct UserInteractionEvent {
   CFAbsoluteTime time;
 };
 
+// Values of the UMA |Web.URLVerificationFailure| histogram.
+enum WebViewDocumentType {
+  // Generic contents (e.g. PDF documents).
+  WEB_VIEW_DOCUMENT_TYPE_GENERIC = 0,
+  // HTML contents.
+  WEB_VIEW_DOCUMENT_TYPE_HTML,
+  // Unknown contents.
+  WEB_VIEW_DOCUMENT_TYPE_UNKNOWN,
+  WEB_VIEW_DOCUMENT_TYPE_COUNT,
+};
+
 }  // namespace web
 
 namespace {
@@ -467,9 +478,17 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)setWebView:(WKWebView*)webView;
 // Destroys the web view by setting webView property to nil.
 - (void)resetWebView;
+// Called when web view process has been terminated.
+- (void)webViewWebProcessDidCrash;
 // Returns the WKWebViewConfigurationProvider associated with the web
 // controller's BrowserState.
 - (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider;
+// Returns the type of document object loaded in the web view.
+- (web::WebViewDocumentType)webViewDocumentType;
+// Converts MIME type string to WebViewDocumentType.
+- (web::WebViewDocumentType)documentTypeFromMIMEType:(NSString*)MIMEType;
+// Extracts Referer value from WKNavigationAction request header.
+- (NSString*)refererFromNavigationAction:(WKNavigationAction*)action;
 
 // Returns the current URL of the web view, and sets |trustLevel| accordingly
 // based on the confidence in the verification.
@@ -520,6 +539,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // the URL don't incorrectly trigger |-pageChanged| calls.
 - (void)setPushedOrReplacedURL:(const GURL&)URL
                    stateObject:(NSString*)stateObject;
+// Called before loading current URL in WebView.
+- (void)willLoadCurrentURLInWebView;
 - (BOOL)isLoaded;
 // Extracts the current page's viewport tag information and calls |completion|.
 // If the page has changed before the viewport tag is successfully extracted,
@@ -541,6 +562,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Calls the zoom-completion UIScrollViewDelegate callbacks on the web view.
 // This is called after |-applyWebViewScrollZoomScaleFromScrollState:|.
 - (void)finishApplyingWebViewScrollZoomScale;
+// Sets zoom scale value for webview scroll view from |zoomState|.
+- (void)applyWebViewScrollZoomScaleFromZoomState:
+    (const web::PageZoomState&)zoomState;
 // Sets scroll offset value for webview scroll view from |scrollState|.
 - (void)applyWebViewScrollOffsetFromScrollState:
     (const web::PageScrollState&)scrollState;
@@ -594,6 +618,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Returns YES if the given WKBackForwardListItem is valid to use for
 // navigation.
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item;
+// Compares the two URLs being navigated between during a history navigation to
+// determine if a # needs to be appended to the URL of |toItem| to trigger a
+// hashchange event. If so, also saves the modified URL into |toItem|.
+- (GURL)URLForHistoryNavigationFromItem:(web::NavigationItem*)fromItem
+                                 toItem:(web::NavigationItem*)toItem;
 
 // Finds all the scrollviews in the view hierarchy and makes sure they do not
 // interfere with scroll to top when tapping the statusbar.
@@ -1418,6 +1447,41 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
          [list.backList indexOfObject:item] != NSNotFound;
 }
 
+- (GURL)URLForHistoryNavigationFromItem:(web::NavigationItem*)fromItem
+                                 toItem:(web::NavigationItem*)toItem {
+  // If navigating with native API, i.e. using a back forward list item,
+  // hashchange events will be triggered automatically, so no URL tampering is
+  // required.
+  web::WKBackForwardListItemHolder* holder =
+      web::WKBackForwardListItemHolder::FromNavigationItem(toItem);
+  if (holder->back_forward_list_item()) {
+    return toItem->GetURL();
+  }
+
+  const GURL& startURL = fromItem->GetURL();
+  const GURL& endURL = toItem->GetURL();
+
+  // Check the state of the fragments on both URLs (aka, is there a '#' in the
+  // url or not).
+  if (!startURL.has_ref() || endURL.has_ref()) {
+    return endURL;
+  }
+
+  // startURL contains a fragment and endURL doesn't. Remove the fragment from
+  // startURL and compare the resulting string to endURL. If they are equal, add
+  // # to endURL to cause a hashchange event.
+  GURL hashless = web::GURLByRemovingRefFromGURL(startURL);
+
+  if (hashless != endURL)
+    return endURL;
+
+  url::StringPieceReplacements<std::string> emptyRef;
+  emptyRef.SetRefStr("");
+  GURL newEndURL = endURL.ReplaceComponents(emptyRef);
+  toItem->SetURL(newEndURL);
+  return newEndURL;
+}
+
 - (void)clearInjectedScriptManagers {
   _injectedScriptManagers.reset([[NSMutableSet alloc] init]);
 }
@@ -1681,6 +1745,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
          strongSelf.get()->_URLOnStartLoading = urlCopy;
          strongSelf.get()->_lastRegisteredRequestURL = urlCopy;
        }];
+}
+
+- (void)willLoadCurrentURLInWebView {
+  // TODO(stuartmorgan): Get a WKWebView version of the request ID verification
+  // code working for debug builds.
 }
 
 // Load the current URL in a web view, first ensuring the web view is visible.
@@ -2263,32 +2332,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     NSString* stateObject = currentItem->GetSerializedStateObject();
     [self setPushedOrReplacedURL:currentItem->GetURL() stateObject:stateObject];
   }
-}
-
-- (GURL)URLForHistoryNavigationFromItem:(web::NavigationItem*)fromItem
-                                 toItem:(web::NavigationItem*)toItem {
-  const GURL& startURL = fromItem->GetURL();
-  const GURL& endURL = toItem->GetURL();
-
-  // Check the state of the fragments on both URLs (aka, is there a '#' in the
-  // url or not).
-  if (!startURL.has_ref() || endURL.has_ref()) {
-    return endURL;
-  }
-
-  // startURL contains a fragment and endURL doesn't. Remove the fragment from
-  // startURL and compare the resulting string to endURL. If they are equal, add
-  // # to endURL to cause a hashchange event.
-  GURL hashless = web::GURLByRemovingRefFromGURL(startURL);
-
-  if (hashless != endURL)
-    return endURL;
-
-  url::StringPieceReplacements<std::string> emptyRef;
-  emptyRef.SetRefStr("");
-  GURL newEndURL = endURL.ReplaceComponents(emptyRef);
-  toItem->SetURL(newEndURL);
-  return newEndURL;
 }
 
 - (void)evaluateJavaScript:(NSString*)script
@@ -3923,6 +3966,28 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     _applyingPageState = NO;
   }
 }
+
+#pragma mark -
+#pragma mark CRWWebViewScrollViewProxyObserver
+
+// Under WKWebView, JavaScript can execute asynchronously. User can start
+// scrolling and calls to window.scrollTo executed during scrolling will be
+// treated as "during user interaction" and can cause app to go fullscreen.
+// This is a workaround to use this webViewScrollViewIsDragging flag to ignore
+// window.scrollTo while user is scrolling. See crbug.com/554257
+- (void)webViewScrollViewWillBeginDragging:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  [self evaluateJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(true)"
+       stringResultHandler:nil];
+}
+
+- (void)webViewScrollViewDidEndDragging:
+            (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
+                         willDecelerate:(BOOL)decelerate {
+  [self evaluateJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(false)"
+       stringResultHandler:nil];
+}
+
 #pragma mark -
 #pragma mark Page State
 
@@ -4101,8 +4166,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)applyWebViewScrollZoomScaleFromZoomState:
     (const web::PageZoomState&)zoomState {
-  // Subclasses must implement this method.
-  NOTREACHED();
+  // After rendering a web page, WKWebView keeps the |minimumZoomScale| and
+  // |maximumZoomScale| properties of its scroll view constant while adjusting
+  // the |zoomScale| property accordingly.  The maximum-scale or minimum-scale
+  // meta tags of a page may have changed since the state was recorded, so clamp
+  // the zoom scale to the current range if necessary.
+  DCHECK(zoomState.IsValid());
+  CGFloat zoomScale = zoomState.zoom_scale();
+  if (zoomScale < self.webScrollView.minimumZoomScale)
+    zoomScale = self.webScrollView.minimumZoomScale;
+  if (zoomScale > self.webScrollView.maximumZoomScale)
+    zoomScale = self.webScrollView.maximumZoomScale;
+  self.webScrollView.zoomScale = zoomScale;
 }
 
 - (void)applyWebViewScrollOffsetFromScrollState:
@@ -4548,6 +4623,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self setWebView:nil];
 }
 
+- (void)webViewWebProcessDidCrash {
+  [self setWebProcessIsDead:YES];
+
+  SEL cancelDialogsSelector = @selector(cancelDialogsForWebController:);
+  if ([self.UIDelegate respondsToSelector:cancelDialogsSelector])
+    [self.UIDelegate cancelDialogsForWebController:self];
+
+  SEL rendererCrashSelector = @selector(webControllerWebProcessDidCrash:);
+  if ([self.delegate respondsToSelector:rendererCrashSelector])
+    [self.delegate webControllerWebProcessDidCrash:self];
+}
+
 - (void)loadPOSTRequest:(NSMutableURLRequest*)request {
   if (!_POSTRequestLoader) {
     _POSTRequestLoader.reset([[CRWJSPOSTRequestLoader alloc] init]);
@@ -4570,6 +4657,16 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider {
   web::BrowserState* browserState = self.webStateImpl->GetBrowserState();
   return web::WKWebViewConfigurationProvider::FromBrowserState(browserState);
+}
+
+- (web::WebViewDocumentType)webViewDocumentType {
+  // This happens during tests.
+  if (!self.webView) {
+    return web::WEB_VIEW_DOCUMENT_TYPE_GENERIC;
+  }
+
+  std::string MIMEType = self.webState->GetContentsMimeType();
+  return [self documentTypeFromMIMEType:base::SysUTF8ToNSString(MIMEType)];
 }
 
 - (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL {

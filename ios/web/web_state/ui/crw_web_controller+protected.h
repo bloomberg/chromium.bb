@@ -27,19 +27,6 @@ struct FrameInfo;
 class NavigationItem;
 }  // namespace web
 
-namespace web {
-// Values of the UMA |Web.URLVerificationFailure| histogram.
-enum WebViewDocumentType {
-  // Generic contents (e.g. PDF documents).
-  WEB_VIEW_DOCUMENT_TYPE_GENERIC = 0,
-  // HTML contents.
-  WEB_VIEW_DOCUMENT_TYPE_HTML,
-  // Unknown contents.
-  WEB_VIEW_DOCUMENT_TYPE_UNKNOWN,
-  WEB_VIEW_DOCUMENT_TYPE_COUNT,
-};
-}  // namespace web
-
 using web::NavigationManager;
 namespace {
 // Constants for storing the source of NSErrors received by WKWebViews:
@@ -92,20 +79,7 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Downloader for PassKit files. Lazy initialized.
 @property(nonatomic, readonly) CRWPassKitDownloader* passKitDownloader;
 
-// Returns the type of document object loaded in the web view.
-- (web::WebViewDocumentType)webViewDocumentType;
-
 - (void)loadRequest:(NSMutableURLRequest*)request;
-
-// Called before loading current URL in WebView.
-- (void)willLoadCurrentURLInWebView;
-
-// Called when web view process has been terminated.
-- (void)webViewWebProcessDidCrash;
-
-// Sets zoom scale value for webview scroll view from |zoomState|.
-- (void)applyWebViewScrollZoomScaleFromZoomState:
-    (const web::PageZoomState&)zoomState;
 
 // Called when web controller receives a new message from the web page.
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
@@ -142,12 +116,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 // Returns a NSMutableURLRequest that represents the current NavigationItem.
 - (NSMutableURLRequest*)requestForCurrentNavigationItem;
-
-// Compares the two URLs being navigated between during a history navigation to
-// determine if a # needs to be appended to the URL of |toItem| to trigger a
-// hashchange event. If so, also saves the modified URL into |toItem|.
-- (GURL)URLForHistoryNavigationFromItem:(web::NavigationItem*)fromItem
-                                 toItem:(web::NavigationItem*)toItem;
 
 // Updates the internal state and informs the delegate that any outstanding load
 // operations are cancelled.
@@ -380,12 +348,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 // Resets pending navigation info.
 - (void)resetPendingNavigationInfo;
-
-// Converts MIME type string to WebViewDocumentType.
-- (web::WebViewDocumentType)documentTypeFromMIMEType:(NSString*)MIMEType;
-
-// Extracts Referer value from WKNavigationAction request header.
-- (NSString*)refererFromNavigationAction:(WKNavigationAction*)action;
 
 // Loads POST request with body in |_wkWebView| by constructing an HTML page
 // that executes the request through JavaScript and replaces document with the
