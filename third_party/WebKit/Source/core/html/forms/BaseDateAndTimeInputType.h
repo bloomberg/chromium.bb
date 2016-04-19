@@ -57,6 +57,8 @@ protected:
 
 private:
     virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const = 0;
+
+    InputTypeView* createView() override;
     double valueAsDate() const override;
     void setValueAsDate(double, ExceptionState&) const override;
     double valueAsDouble() const override;

@@ -139,6 +139,11 @@ InputType::~InputType()
 {
 }
 
+InputTypeView* InputType::createView()
+{
+    return this;
+}
+
 bool InputType::isTextField() const
 {
     return false;

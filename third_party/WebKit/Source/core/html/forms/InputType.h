@@ -60,6 +60,7 @@ public:
     static const AtomicString& normalizeTypeName(const AtomicString&);
     ~InputType() override;
 
+    virtual InputTypeView* createView();
     virtual const AtomicString& formControlType() const = 0;
 
     // Type query functions

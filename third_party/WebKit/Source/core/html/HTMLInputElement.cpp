@@ -475,7 +475,7 @@ void HTMLInputElement::updateType()
     if (openShadowRoot())
         m_inputTypeView = InputTypeView::create(*this);
     else
-        m_inputTypeView = m_inputType;
+        m_inputTypeView = m_inputType->createView();
     m_inputTypeView->createShadowSubtree();
 
     updateTouchEventHandlerRegistry();

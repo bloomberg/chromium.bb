@@ -46,6 +46,15 @@ using namespace HTMLNames;
 static const int msecPerMinute = 60 * 1000;
 static const int msecPerSecond = 1000;
 
+InputTypeView* BaseDateAndTimeInputType::createView()
+{
+    // TODO(tkent): Returns ChooserOnlyDateAndTimeInputTypeView or
+    // MultipleFieldsDateAndTimeInputTypeView, depending on
+    // RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled().
+    // crbug.com/243714
+    return this;
+}
+
 double BaseDateAndTimeInputType::valueAsDate() const
 {
     return valueAsDouble();
