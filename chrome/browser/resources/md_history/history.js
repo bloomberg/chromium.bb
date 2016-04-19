@@ -128,8 +128,10 @@ function setForeignSessions(sessionList, isTabSyncEnabled) {
   waitForUpgrade(syncedDeviceElem).then(function() {
     var syncedDeviceManager =
         /** @type {HistorySyncedDeviceManagerElement} */(syncedDeviceElem);
-    if (isTabSyncEnabled)
+    if (isTabSyncEnabled) {
       syncedDeviceManager.setSyncedHistory(sessionList);
+      /** @type {HistoryToolbarElement} */($('toolbar')).hasSidebar = true;
+    }
   });
 }
 

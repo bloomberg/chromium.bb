@@ -24,18 +24,6 @@
       flex: 0 0 56px;
     }
 
-    #toolbar:unresolved {
-      align-items: center;
-      background: rgb(63, 85, 102);
-      color: #fff;
-      display: flex;
-      flex-direction: row;
-      font-size: 16px;
-      font-weight: 400;
-      height: 56px;
-      padding-left: 24px;
-    }
-
     #history-list {
       flex: 1 0 0;
       overflow: auto;
@@ -51,17 +39,32 @@
       overflow: hidden;
     }
 
+    /* Minimal styling required to display app shim. */
     .loading #main-container,
-    #loading-message {
+    .loading history-toolbar,
+    .app-shim {
       display: none;
+    }
+
+    .loading .app-shim {
+      display: flex;
+      font-size: 123%;
+    }
+
+    .loading #loading-toolbar {
+      -webkit-padding-start: 24px;
+      align-items: center;
+      background: rgb(63, 85, 102);
+      color: #fff;
+      flex-direction: row;
+      font-weight: 400;
+      height: 56px;
     }
 
     .loading #loading-message {
       align-items: center;
       color: #b4b4b4;
-      display: flex;
       flex: 1;
-      font-size: 16px;
       font-weight: 500;
       justify-content: center;
     }
@@ -69,16 +72,16 @@
 </head>
 
 <body class="loading">
-  <history-toolbar class="paper-header" id="toolbar">
-    $i18n{title}
-  </history-toolbar>
+  <history-toolbar class="paper-header" id="toolbar"></history-toolbar>
   <div id="main-container">
     <history-side-bar id="history-side-bar"></history-side-bar>
     <history-list id="history-list"></history-list>
     <history-synced-device-manager id="history-synced-device-manager" hidden>
     </history-synced-device-manager>
   </div>
-  <span id="loading-message">$i18n{loading}</span>
+
+  <span class="app-shim" id="loading-toolbar">$i18n{title}</span>
+  <span class="app-shim" id="loading-message">$i18n{loading}</span>
 
   <link rel="import" href="chrome://resources/html/cr.html">
   <link rel="import" href="chrome://resources/html/util.html">

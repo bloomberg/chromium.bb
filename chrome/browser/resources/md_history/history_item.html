@@ -10,12 +10,11 @@
 
 <dom-module id="history-item">
   <template>
-    <style include="shared-style"></style>
-    <style>
+    <style include="shared-style">
       :host {
         @apply(--layout-center);
         @apply(--layout-vertical);
-        padding: 0 24px;
+        padding: 0 var(--card-padding-side);
       }
 
       #main-container {

@@ -4,13 +4,14 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://history/shared_style.html">
 
 <dom-module id="history-side-bar">
   <template>
-    <style>
+    <style include="shared-style">
       :host {
         padding-top: 5px;
-        width: 200px;
+        width: var(--side-bar-width);
       }
 
       paper-item {

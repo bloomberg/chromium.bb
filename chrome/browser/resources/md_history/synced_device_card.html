@@ -9,12 +9,11 @@
 
 <dom-module id="history-synced-device-card">
   <template>
-    <style include="shared-style"></style>
-    <style>
+    <style include="shared-style">
       :host {
         @apply(--layout-center);
         @apply(--layout-vertical);
-        padding: 0 24px 20px;
+        padding: 0 var(--card-padding-side) 20px;
       }
 
       #card-heading {

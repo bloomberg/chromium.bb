@@ -7,8 +7,7 @@
 
 <dom-module id="history-toolbar">
   <template>
-    <style include="shared-style"></style>
-    <style>
+    <style include="shared-style">
       :host {
         background: rgb(63, 85, 102);
         color: #fff;
@@ -17,7 +16,8 @@
       }
 
       :host,
-      #items,
+      #overlay-buttons,
+      #overlay-wrapper,
       #main-content,
       #button-container,
       #toolbar-container {
@@ -32,18 +32,37 @@
 
       h1 {
         @apply(--layout-flex);
-        font-size: 16px;
+        -webkit-padding-start: 24px;
+        font-size: 123%;
         font-weight: 400;
-        padding-left: 24px;
+      }
+
+      #left-content,
+      #right-content {
+        flex: 1 0 0;
+      }
+
+      :host([has-sidebar]) #left-content {
+        flex: 1 0 var(--side-bar-width);
+      }
+
+      #centered-buttons {
+        flex: 0 1 var(--card-max-width);
+        padding: 0 var(--card-padding-side);
       }
 
       #search-input {
         -webkit-padding-end: 20px;
       }
 
-      #items {
+      #overlay-buttons {
         margin: 0 auto;
         max-width: var(--card-max-width);
+        padding: 0 var(--card-padding-side);
+      }
+
+      :host([has-sidebar]) #overlay-wrapper {
+        -webkit-margin-start: var(--side-bar-width);
       }
 
       #number-selected {
@@ -51,67 +70,48 @@
       }
 
       paper-icon-button {
+        -webkit-margin-end: 24px;
+        -webkit-margin-start: 2px;
         height: 36px;
-        margin: 0 24px 0 2px;
         min-width: 36px;
         width: 36px;
-      }
-
-      #centered-buttons {
-        flex: 0 1 var(--card-max-width);
       }
 
       paper-button {
         pointer-events: auto;
       }
-
-      .toolbar-overlay  {
-        height: inherit;
-        left: 0;
-        pointer-events: none;
-        position: absolute;
-        top: 0;
-      }
-
-      #front-padding {
-        flex: 1 1 0;
-        min-width: 100px;
-      }
-
-      #back-padding {
-        flex: 1 1 0;
-      }
     </style>
     <div id="toolbar-container">
       <div id="main-content" hidden$="[[itemsSelected_]]">
-        <h1 id="title">$i18n{title}</h1>
-        <cr-search-field id="search-input" label="$i18n{search}"
-            clear-label="$i18n{clearSearch}">
-        </cr-search-field>
+        <div id="left-content">
+          <h1 id="title">$i18n{title}</h1>
+        </div>
+        <div id="centered-buttons">
+          <paper-button on-tap="onClearBrowsingDataTap_"
+              id="clear-browsing-data-button">
+            $i18n{clearBrowsingData}
+          </paper-button>
+        </div>
+        <div id="right-content">
+          <cr-search-field id="search-input" label="$i18n{search}"
+              clear-label="$i18n{clearSearch}">
+          </cr-search-field>
+        </div>
       </div>
 
-      <div id="items" hidden$="[[!itemsSelected_]]">
-        <paper-icon-button icon="clear" id="cancel-icon-button"
-            on-tap="onClearSelectionTap_"></paper-icon-button>
-        <div id="number-selected">[[numberOfItemsSelected_(count)]]</div>
-        <paper-button id="cancel-button" on-tap="onClearSelectionTap_">
-          $i18n{cancel}
-        </paper-button>
-        <paper-button id="delete-button" on-tap="onDeleteTap_">
-          $i18n{delete}
-        </paper-button>
+      <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
+        <div id="overlay-buttons">
+          <paper-icon-button icon="clear" id="cancel-icon-button"
+              on-tap="onClearSelectionTap_"></paper-icon-button>
+          <div id="number-selected">[[numberOfItemsSelected_(count)]]</div>
+          <paper-button id="cancel-button" on-tap="onClearSelectionTap_">
+            $i18n{cancel}
+          </paper-button>
+          <paper-button id="delete-button" on-tap="onDeleteTap_">
+            $i18n{delete}
+          </paper-button>
+        </div>
       </div>
-    </div>
-
-    <div id="button-container" class="toolbar-overlay">
-      <div id="front-padding"></div>
-      <div id="centered-buttons" hidden$="[[itemsSelected_]]">
-        <paper-button on-tap="onClearBrowsingDataTap_"
-            id="clear-browsing-data-button">
-          $i18n{clearBrowsingData}
-        </paper-button>
-      </div>
-      <div id="back-padding"></div>
     </div>
   </template>
   <script src="chrome://history/history_toolbar.js"></script>
