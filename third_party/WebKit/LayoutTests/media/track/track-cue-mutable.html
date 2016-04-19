@@ -1,112 +1,92 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests modifying attributes of a VTTCue</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track id="captions" src="captions-webvtt/captions.vtt" kind="captions" default>
+</video>
+<script>
+async_test(function(t) {
+    var track = document.querySelector("track");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    track.onload = t.step_func_done(function() {
+        var cues = track.track.cues;
 
-            var cues;
+        // Test initial values.
+        textCue = cues.getCueById("1");
 
-            function logSpecURL(url, description)
-            {
-                consoleWrite("<br><i>" + description + "</i>");
-                consoleWrite("<a href=" + url + ">" + url + "<" + "/a>");
-            }
+        assert_equals(textCue.startTime, 0);
+        assert_equals(textCue.endTime, 1.0);
+        assert_equals(textCue.pauseOnExit, false);
+        assert_equals(textCue.vertical, "");
+        assert_equals(textCue.snapToLines, true);
+        assert_equals(textCue.line, "auto");
+        assert_equals(textCue.position, "auto");
+        assert_equals(textCue.size, 100);
+        assert_equals(textCue.align, "middle");
 
-            function trackLoaded()
-            {
-                track = document.getElementById('captions');
-                cues = track.track.cues;
+        // Modify cue values.
+        textCue.startTime = 1.1;
+        assert_equals(textCue.startTime, 1.1);
 
-                consoleWrite("** Test initial values.");
-                run("textCue = cues.getCueById('1')");
+        textCue.endTime = 3.9;
+        assert_equals(textCue.endTime, 3.9);
 
-                testExpected("textCue.startTime", 0);
-                testExpected("textCue.endTime", 1.0);
-                testExpected("textCue.pauseOnExit", false);
-                testExpected("textCue.vertical", "");
-                testExpected("textCue.snapToLines", true);
-                testExpected("textCue.line", "auto");
-                testExpected("textCue.position", "auto");
-                testExpected("textCue.size", 100);
-                testExpected("textCue.align", "middle");
+        textCue.pauseOnExit = true;
+        assert_equals(textCue.pauseOnExit, true);
 
-                consoleWrite("<br>** Modify cue values.");
+        // http://dev.w3.org/html5/webvtt/#dfn-dom-vttcue-vertical
+        // On setting, the text track cue writing direction must be set to the value given in the first cell
+        // of the row in the table above whose second cell is a case-sensitive match for the new value.
+        textCue.vertical = "RL";
+        assert_equals(textCue.vertical, "");
+        textCue.vertical = "rl";
+        assert_equals(textCue.vertical, "rl");
 
-                run("textCue.startTime = 1.1");
-                testExpected("textCue.startTime", 1.1);
+        textCue.snapToLines = false;
+        assert_equals(textCue.snapToLines, false);
 
-                consoleWrite("");
-                run("textCue.endTime = 3.9");
-                testExpected("textCue.endTime", 3.9);
+        // http://dev.w3.org/html5/webvtt/#dfn-vttcue-line
+        // On setting, the text track cue line position must be set to the new value;
+        // if the new value is the string "auto", then it must be interpreted as the special value auto.
+        assert_equals(textCue.line, "auto");
+        assert_throws(new TypeError, function() { textCue.line = "gazonk"; });
+        assert_equals(textCue.line, "auto");
+        textCue.line = 42;
+        assert_equals(textCue.line, 42);
+        textCue.line = -2;
+        assert_equals(textCue.line, -2);
+        textCue.line = 102;
+        assert_equals(textCue.line, 102);
+        textCue.snapToLines = true;
+        textCue.line = -2;
+        assert_equals(textCue.line, -2);
+        textCue.line = 102;
+        assert_equals(textCue.line, 102);
 
-                consoleWrite("");
-                run("textCue.pauseOnExit = true");
-                testExpected("textCue.pauseOnExit", true);
+        // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-line
+        // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError exception.
+        // Otherwise, set the text track cue text position to the new value.
+        assert_throws("IndexSizeError", function() { textCue.position = -200; });
+        assert_throws("IndexSizeError", function() { textCue.position = 110; });
+        textCue.position = 11;
+        assert_equals(textCue.position, 11);
 
-                logSpecURL("http://dev.w3.org/html5/webvtt/#dfn-dom-vttcue-vertical",
-                           "On setting, the text track cue writing direction must be set to the value given in the first cell of the row in the table above whose second cell is a case-sensitive match for the new value.");
-                run("textCue.vertical = 'RL'");
-                testExpected("textCue.vertical", "");
-                run("textCue.vertical = 'rl'");
-                testExpected("textCue.vertical", "rl");
+        // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-size
+        // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError exception.
+        // Otherwise, set the text track cue size to the new value.
+        assert_throws("IndexSizeError", function() { textCue.size = -200 });
+        assert_throws("IndexSizeError", function() { textCue.size = 110 });
+        textCue.size = 57;
+        assert_equals(textCue.size, 57);
 
-                consoleWrite("");
-                run("textCue.snapToLines = false");
-                testExpected("textCue.snapToLines", false);
-
-                logSpecURL("http://dev.w3.org/html5/webvtt/#dfn-vttcue-line",
-                           "On setting, the text track cue line position must be set to the new value; if the new value is the string 'auto', then it must be interpreted as the special value auto.");
-                testExpected("textCue.line", "auto");
-                testException("textCue.line = 'gazonk'", '"TypeError: Failed to set the \'line\' property on \'VTTCue\': \'gazonk\' is not a valid enum value."');
-                testExpected("textCue.line", "auto");
-                run("textCue.line = 42");
-                testExpected("textCue.line", 42);
-                run("textCue.line = -2");
-                testExpected("textCue.line", -2);
-                run("textCue.line = 102");
-                testExpected("textCue.line", 102);
-                run("textCue.snapToLines = true");
-                run("textCue.line = -2");
-                testExpected("textCue.line", -2);
-                run("textCue.line = 102");
-                testExpected("textCue.line", 102);
-
-                logSpecURL("http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-line",
-                           "On setting, if the new value is negative or greater than 100, then throw an IndexSizeError exception. Otherwise, set the text track cue text position to the new value.");
-                testDOMException("textCue.position = -200", "DOMException.INDEX_SIZE_ERR");
-                testDOMException("textCue.position = 110", "DOMException.INDEX_SIZE_ERR");
-                run("textCue.position = 11");
-                testExpected("textCue.position", 11);
-
-                logSpecURL("http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-size",
-                           "On setting, if the new value is negative or greater than 100, then throw an IndexSizeError exception. Otherwise, set the text track cue size to the new value.");
-                testDOMException("textCue.size = -200", "DOMException.INDEX_SIZE_ERR");
-                testDOMException("textCue.size = 110", "DOMException.INDEX_SIZE_ERR");
-                run("textCue.size = 57");
-                testExpected("textCue.size", 57);
-
-                logSpecURL("http://dev.w3.org/html5/webvtt/#dfn-dom-vttcue-align",
-                           "On setting, the text track cue text alignment must be set to the value given in the first cell of the row in the table above whose second cell is a case-sensitive match for the new value.");
-                run("textCue.align = 'End'");
-                testExpected("textCue.align", "middle");
-                run("textCue.align = 'end'");
-                testExpected("textCue.align", "end");
-
-                consoleWrite("");
-                endTest();
-            }
-
-        </script>
-    </head>
-    <body>
-        <p>Tests modifying attributes of a VTTCue</p>
-        <video controls>
-            <track id="captions" src="captions-webvtt/captions.vtt" kind="captions" onload="trackLoaded()" default>
-        </video>
-    </body>
-</html>
+        // http://dev.w3.org/html5/webvtt/#dfn-dom-vttcue-align
+        // On setting, the text track cue text alignment must be set to the value given in the first cell
+        // of the row in the table above whose second cell is a case-sensitive match for the new value.
+        textCue.align = "End";
+        assert_equals(textCue.align, "middle");
+        textCue.align = "end";
+        assert_equals(textCue.align, "end");
+    });
+});
+</script>

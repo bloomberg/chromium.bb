@@ -1,98 +1,86 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Test that cue fragment is mutable.</title>
+<script src="../media-file.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+p, div { display: none; }
+</style>
+<video>
+    <track src="captions-webvtt/captions-html.vtt" kind="captions" default >
+</video>
+<p>Fragment 1</p>
+<div></div>
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script src=../media-controls.js></script>
+<p>Fragment 2</p>
+<div></div>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    var testTrack = document.querySelector("track");
 
-        <script>
+    video.oncanplaythrough = t.step_func(testMutability);
+    testTrack.onload = t.step_func(testMutability);
 
-        var testTrack;
-        var testCue;
-        var fragment;
+    var fragment;
+    var eventCount = 0;
+    function testMutability() {
+        eventCount++;
+        if (eventCount != 2)
+            return;
 
-        function createExpectedFragment(rootNode)
-        {
-            fragment = rootNode;
-            fragment.appendChild(document.createTextNode("Lorem "));
+        var testCue = testTrack.track.cues[0];
 
-            var bold = document.createElement("b");
-            bold.appendChild(document.createTextNode("ipsum"));
-            fragment.appendChild(bold);
+        // Test initial cue contents.
+        assert_equals(testCue.text, "Lorem <b>ipsum</b> <u>dolor</u> <i.sit>sit</i> amet,");
 
-            fragment.appendChild(document.createTextNode(" "));
+        // Cue getCueAsHTML() should return a correct fragment.
+        createExpectedFragment(document.createDocumentFragment());
+        assert_true(fragment.isEqualNode(testCue.getCueAsHTML()));
 
-            var underline = document.createElement("u");
-            underline.appendChild(document.createTextNode("dolor"));
-            fragment.appendChild(underline);
+        // Appending getCuesAsHTML() twice to the DOM should be succesful.
+        document.getElementsByTagName("div")[0].appendChild(testCue.getCueAsHTML());
+        document.getElementsByTagName("div")[1].appendChild(testCue.getCueAsHTML());
 
-            fragment.appendChild(document.createTextNode(" "));
+        createExpectedFragment(document.createElement("div"));
+        assert_true(fragment.isEqualNode(document.getElementsByTagName("div")[0]));
+        assert_true(fragment.isEqualNode(document.getElementsByTagName("div")[1]));
 
-            var italics = document.createElement("i");
-            italics.className = "sit";
-            italics.appendChild(document.createTextNode("sit"));
-            fragment.appendChild(italics);
+        // The fragment returned by getCuesAsHTML() should be independently mutable.
+        document.getElementsByTagName("div")[0].firstChild.textContent = "Different text ";
+        assert_false(fragment.isEqualNode(document.getElementsByTagName("div")[0]));
+        assert_true(fragment.isEqualNode(document.getElementsByTagName("div")[1]));
 
-            fragment.appendChild(document.createTextNode(" amet,"));
-        }
+        // Calling twice getCueAsHTML() should not return the same fragment.
+        assert_not_equals(testCue.getCueAsHTML(), testCue.getCueAsHTML());
 
-        function testMutability()
-        {
-            run("testCue = testTrack.track.cues[0]");
+        t.done();
+    }
 
-            consoleWrite("<br>** Test initial cue contents");
-            testExpected("testCue.text", "Lorem <b>ipsum</b> <u>dolor</u> <i.sit>sit</i> amet,");
+    function createExpectedFragment(rootNode) {
+        fragment = rootNode;
+        fragment.appendChild(document.createTextNode("Lorem "));
 
-            consoleWrite("<br>** Cue getCueAsHTML() should return a correct fragment");
-            createExpectedFragment(document.createDocumentFragment());
-            testExpected("fragment.isEqualNode(testCue.getCueAsHTML())", true);
+        var bold = document.createElement("b");
+        bold.appendChild(document.createTextNode("ipsum"));
+        fragment.appendChild(bold);
 
-            consoleWrite("<br>** Appending getCuesAsHTML() twice to the DOM should be succesful");
-            run("document.getElementsByTagName('div')[0].appendChild(testCue.getCueAsHTML())");
-            run("document.getElementsByTagName('div')[1].appendChild(testCue.getCueAsHTML())");
+        fragment.appendChild(document.createTextNode(" "));
 
-            createExpectedFragment(document.createElement('div'));
-            testExpected("fragment.isEqualNode(document.getElementsByTagName('div')[0])", true);
-            testExpected("fragment.isEqualNode(document.getElementsByTagName('div')[1])", true);
+        var underline = document.createElement("u");
+        underline.appendChild(document.createTextNode("dolor"));
+        fragment.appendChild(underline);
 
-            consoleWrite("<br>** The fragment returned by getCuesAsHTML() should be independently mutable");
-            run("document.getElementsByTagName('div')[0].firstChild.textContent = 'Different text '");
-            testExpected("fragment.isEqualNode(document.getElementsByTagName('div')[0])", false);
-            testExpected("fragment.isEqualNode(document.getElementsByTagName('div')[1])", true);
+        fragment.appendChild(document.createTextNode(" "));
 
-            consoleWrite("<br>** Calling twice getCueAsHTML() should not return the same fragment");
-            testExpected("testCue.getCueAsHTML() == testCue.getCueAsHTML()", false);
+        var italics = document.createElement("i");
+        italics.className = "sit";
+        italics.appendChild(document.createTextNode("sit"));
+        fragment.appendChild(italics);
 
-            consoleWrite("");
-            endTest();
-        }
+        fragment.appendChild(document.createTextNode(" amet,"));
+    }
 
-        function loaded()
-        {
-            findMediaElement();
-            testTrack = document.querySelector('track');
-
-            waitForEventsAndCall([[video, 'canplaythrough'], [testTrack, 'load']], testMutability);
-
-            video.src = findMediaFile('video', '../content/counting');
-        }
-
-        </script>
-    </head>
-    <body onload="loaded()">
-        <video controls >
-            <track src="captions-webvtt/captions-html.vtt" kind="captions" default >
-        </video>
-        <p>Test that cue text is mutable.</p>
-
-        <p>Fragment 1</p>
-        <div></div>
-
-        <p>Fragment 2</p>
-        <div></div>
-    </body>
-</html>
+    video.src = findMediaFile("video", "../content/counting");
+});
+</script>

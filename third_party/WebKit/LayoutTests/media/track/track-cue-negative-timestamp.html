@@ -1,45 +1,34 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests negative timestamps.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track id="testTrack" src="captions-webvtt/tc013-settings.vtt" default>
+</video>
+<script>
+async_test(function(t) {
+    var track = document.querySelector("track");
 
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    track.onload = t.step_func_done(function() {
+        // Test that cues with negative startTime are not added.
+        assert_equals(testTrack.track.cues.length, 4);
+        textCue = new VTTCue(-3439332606, 3.4, "Sausage?");
+        testTrack.track.addCue(textCue);
+        assert_equals(testTrack.track.cues.length, 4);
 
-            function trackLoaded()
-            {
-                consoleWrite("Test that cues with negative startTime are not added:");
-                testExpected("testTrack.track.cues.length", 4);
-                run("textCue = new VTTCue(-3439332606, 3.4, 'Sausage?')");
-                run("testTrack.track.addCue(textCue)");
-                testExpected("testTrack.track.cues.length", 4);
+        // Test that cues with negative startTime and negative endTime are not added.
+        assert_equals(testTrack.track.cues.length, 4);
+        textCue = new VTTCue(-110, -3.4, "Pepperoni?");
+        testTrack.track.addCue(textCue);
+        assert_equals(testTrack.track.cues.length, 4);
 
-                consoleWrite("<br>Test that cues with negative startTime and negative endTime are not added:");
-                testExpected("testTrack.track.cues.length", 4);
-                run("textCue = new VTTCue(-110, -3.4, 'Pepperoni?')");
-                run("testTrack.track.addCue(textCue)");
-                testExpected("testTrack.track.cues.length", 4);
-
-                consoleWrite("<br>Test that setting startTime and endTime to negative values does not affect the value:");
-                testExpected("testTrack.track.cues[3].startTime", 121);
-                run("testTrack.track.cues[3].startTime = -5");
-                testExpected("testTrack.track.cues[3].startTime", 121);
-                testExpected("testTrack.track.cues[3].endTime", 361200.5);
-                run("testTrack.track.cues[3].endTime = -3439332606");
-                testExpected("testTrack.track.cues[3].endTime", 361200.5);
-
-                endTest();
-            }
-
-        </script>
-
-    </head>
-    <body>
-        <p>Tests negative timestamps.</p>
-        <video>
-            <track id="testTrack" src="captions-webvtt/tc013-settings.vtt" onload="trackLoaded()" default>
-        </video>
-    </body>
-</html>
+        // Test that setting startTime and endTime to negative values does not affect the value.
+        assert_equals(testTrack.track.cues[3].startTime, 121);
+        testTrack.track.cues[3].startTime = -5;
+        assert_equals(testTrack.track.cues[3].startTime, 121);
+        assert_equals(testTrack.track.cues[3].endTime, 361200.5);
+        testTrack.track.cues[3].endTime = -3439332606;
+        assert_equals(testTrack.track.cues[3].endTime, 361200.5);
+    });
+});
+</script>
