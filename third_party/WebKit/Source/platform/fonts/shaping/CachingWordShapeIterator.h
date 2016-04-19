@@ -105,8 +105,7 @@ private:
 
     static bool isWordDelimiter(UChar ch)
     {
-        return ch == spaceCharacter || ch == tabulationCharacter
-            || ch == '.' || ch == ',';
+        return ch == spaceCharacter || ch == tabulationCharacter;
     }
 
     unsigned nextWordEndIndex()

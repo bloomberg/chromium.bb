@@ -65,14 +65,8 @@ TEST_F(CachingWordShaperTest, LatinLeftToRightByWord)
     ASSERT_TRUE(iterator.next(&result));
     ASSERT_TRUE(testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
     EXPECT_EQ(0u, startIndex);
-    EXPECT_EQ(3u, numGlyphs);
+    EXPECT_EQ(4u, numGlyphs);
     EXPECT_EQ(HB_SCRIPT_LATIN, script);
-
-    ASSERT_TRUE(iterator.next(&result));
-    ASSERT_TRUE(testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
-    EXPECT_EQ(0u, startIndex);
-    EXPECT_EQ(1u, numGlyphs);
-    EXPECT_EQ(HB_SCRIPT_COMMON, script);
 
     ASSERT_FALSE(iterator.next(&result));
 }
@@ -88,14 +82,7 @@ TEST_F(CachingWordShaperTest, CommonAccentLeftToRightByWord)
     ASSERT_TRUE(iterator.next(&result));
     ASSERT_TRUE(testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
     EXPECT_EQ(0u, offset + startIndex);
-    EXPECT_EQ(2u, numGlyphs);
-    EXPECT_EQ(HB_SCRIPT_COMMON, script);
-    offset += result->numCharacters();
-
-    ASSERT_TRUE(iterator.next(&result));
-    ASSERT_TRUE(testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
-    EXPECT_EQ(2u, offset + startIndex);
-    EXPECT_EQ(1u, numGlyphs);
+    EXPECT_EQ(3u, numGlyphs);
     EXPECT_EQ(HB_SCRIPT_COMMON, script);
     offset += result->numCharacters();
 
