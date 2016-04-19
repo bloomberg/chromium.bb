@@ -161,7 +161,7 @@ void LayoutSVGRoot::layout()
         || (normalChildNeedsLayout() && SVGLayoutSupport::hasFilterResource(*this));
 
     const bool transformToRootChanged = false;
-    SVGLayoutSupport::layoutChildren(this, forceLayoutOfChildren, transformToRootChanged, layoutSizeChanged);
+    SVGLayoutSupport::layoutChildren(firstChild(), forceLayoutOfChildren, transformToRootChanged, layoutSizeChanged);
 
     if (m_needsBoundariesOrTransformUpdate) {
         updateCachedBoundaries();

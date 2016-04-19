@@ -71,7 +71,7 @@ void LayoutSVGContainer::layout()
     // the descendants.
     bool forceLayoutOfChildren = selfNeedsLayout()
         || (normalChildNeedsLayout() && SVGLayoutSupport::hasFilterResource(*this));
-    SVGLayoutSupport::layoutChildren(this, forceLayoutOfChildren, transformChanged, layoutSizeChanged);
+    SVGLayoutSupport::layoutChildren(firstChild(), forceLayoutOfChildren, transformChanged, layoutSizeChanged);
 
     // Invalidate all resources of this client if our layout changed.
     if (everHadLayout() && needsLayout())

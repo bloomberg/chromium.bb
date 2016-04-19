@@ -41,7 +41,7 @@ void LayoutSVGHiddenContainer::layout()
     bool layoutSizeChanged = element()->hasRelativeLengths()
         && SVGLayoutSupport::layoutSizeOfNearestViewportChanged(this);
 
-    SVGLayoutSupport::layoutChildren(this, selfNeedsLayout(), transformChanged, layoutSizeChanged);
+    SVGLayoutSupport::layoutChildren(firstChild(), selfNeedsLayout(), transformChanged, layoutSizeChanged);
     updateCachedBoundaries();
     clearNeedsLayout();
 }

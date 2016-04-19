@@ -271,9 +271,9 @@ bool SVGLayoutSupport::transformToRootChanged(const LayoutObject* ancestor)
     return false;
 }
 
-void SVGLayoutSupport::layoutChildren(LayoutObject* start, bool forceLayout, bool transformChanged, bool layoutSizeChanged)
+void SVGLayoutSupport::layoutChildren(LayoutObject* firstChild, bool forceLayout, bool transformChanged, bool layoutSizeChanged)
 {
-    for (LayoutObject* child = start->slowFirstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = firstChild; child; child = child->nextSibling()) {
         bool forceChildLayout = forceLayout;
 
         if (transformChanged) {
