@@ -227,15 +227,13 @@ TEST(OptionalTest, AssignValue) {
   }
 
   {
-    // Using |const char*| because |std::string| can't be assigned string
-    // literals because of the decay-only perfect forwarding assignment rule.
-    Optional<const char*> a;
+    Optional<std::string> a;
     EXPECT_FALSE(a);
-    a = "foo";
+    a = std::string("foo");
     EXPECT_TRUE(a);
 
-    Optional<const char*> b("foo");
-    EXPECT_TRUE(a == b);
+    Optional<std::string> b(std::string("foo"));
+    EXPECT_EQ(a, b);
   }
 
   {
@@ -361,7 +359,7 @@ TEST(OptionalTest, OperatorStar) {
 
 TEST(OptionalTest, OperatorStar_rvalue) {
   EXPECT_EQ(0.1f, *Optional<float>(0.1f));
-  EXPECT_EQ("foo", *Optional<const char*>("foo"));
+  EXPECT_EQ(std::string("foo"), *Optional<std::string>("foo"));
   EXPECT_TRUE(TestObject(3, 0.1) == *Optional<TestObject>(TestObject(3, 0.1)));
 }
 
@@ -372,7 +370,7 @@ TEST(OptionalTest, OperatorArrow) {
 
 TEST(OptionalTest, Value_rvalue) {
   EXPECT_EQ(0.1f, Optional<float>(0.1f).value());
-  EXPECT_EQ("foo", Optional<const char*>("foo").value());
+  EXPECT_EQ(std::string("foo"), Optional<std::string>("foo").value());
   EXPECT_TRUE(TestObject(3, 0.1) ==
               Optional<TestObject>(TestObject(3, 0.1)).value());
 }
@@ -390,16 +388,14 @@ TEST(OptionalTest, ValueOr) {
   }
 
   {
-    // Using |const char*| because |std::string| can't be assigned string
-    // literals because of the decay-only perfect forwarding assignment rule.
-    Optional<const char*> a;
+    Optional<std::string> a;
     EXPECT_EQ("bar", a.value_or("bar"));
 
-    a = "foo";
-    EXPECT_EQ("foo", a.value_or("bar"));
+    a = std::string("foo");
+    EXPECT_EQ(std::string("foo"), a.value_or("bar"));
 
     a = base::nullopt;
-    EXPECT_EQ("bar", a.value_or("bar"));
+    EXPECT_EQ(std::string("bar"), a.value_or("bar"));
   }
 
   {
@@ -1120,14 +1116,14 @@ TEST(OptionalTest, MakeOptional) {
   }
 
   {
-    Optional<const char*> o = base::make_optional("foo");
+    Optional<std::string> o = base::make_optional(std::string("foo"));
     EXPECT_TRUE(o);
     EXPECT_EQ("foo", *o);
 
-    const char* value = "bar";
+    std::string value = "bar";
     o = base::make_optional(std::move(value));
     EXPECT_TRUE(o);
-    EXPECT_EQ("bar", *o);
+    EXPECT_EQ(std::string("bar"), *o);
   }
 
   {
