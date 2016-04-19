@@ -42,16 +42,6 @@ class DockedWindowResizerTest;
 class Shelf;
 class WorkspaceController;
 
-struct WindowWithHeight {
-  explicit WindowWithHeight(aura::Window* window) :
-    window_(window),
-    height_(window->bounds().height()) { }
-  aura::Window* window() { return window_; }
-  const aura::Window* window() const { return window_; }
-  aura::Window* window_;
-  int height_;
-};
-
 // DockedWindowLayoutManager is responsible for organizing windows when they are
 // docked to the side of a screen. It is associated with a specific container
 // window (i.e. kShellWindowId_DockContainer) and controls the layout of any
@@ -178,7 +168,11 @@ class ASH_EXPORT DockedWindowLayoutManager
       aura::Window* lost_active) override;
 
  private:
+  struct CompareMinimumHeight;
+  struct CompareWindowPos;
   class ShelfWindowObserver;
+  struct WindowWithHeight;
+
   friend class DockedWindowLayoutManagerTest;
   friend class DockedWindowResizerTest;
 

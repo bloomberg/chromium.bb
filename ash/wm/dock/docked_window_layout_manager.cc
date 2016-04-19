@@ -296,11 +296,20 @@ int GetWindowHeightCloseTo(const aura::Window* window, int target_height) {
   return target_height;
 }
 
+}  // namespace
+
+struct DockedWindowLayoutManager::WindowWithHeight {
+  explicit WindowWithHeight(aura::Window* window)
+      : window(window), height(window->bounds().height()) {}
+  aura::Window* window;
+  int height;
+};
+
 // A functor used to sort the windows in order of their minimum height.
-struct CompareMinimumHeight {
-  bool operator()(WindowWithHeight win1, WindowWithHeight win2) {
-    return GetWindowHeightCloseTo(win1.window(), 0) <
-        GetWindowHeightCloseTo(win2.window(), 0);
+struct DockedWindowLayoutManager::CompareMinimumHeight {
+  bool operator()(const WindowWithHeight& win1, const WindowWithHeight& win2) {
+    return GetWindowHeightCloseTo(win1.window, 0) <
+           GetWindowHeightCloseTo(win2.window, 0);
   }
 };
 
@@ -309,7 +318,7 @@ struct CompareMinimumHeight {
 // of the next. Its value can be positive (gap) or negative (overlap).
 // Half of |delta| is used as a transition point at which windows could ideally
 // swap positions.
-struct CompareWindowPos {
+struct DockedWindowLayoutManager::CompareWindowPos {
   CompareWindowPos(aura::Window* dragged_window,
                    aura::Window* docked_container,
                    float delta)
@@ -317,18 +326,18 @@ struct CompareWindowPos {
         docked_container_(docked_container),
         delta_(delta / 2) {}
 
-  bool operator()(WindowWithHeight window_with_height1,
-                  WindowWithHeight window_with_height2) {
+  bool operator()(const WindowWithHeight& window_with_height1,
+                  const WindowWithHeight& window_with_height2) {
     // Use target coordinates since animations may be active when windows are
     // reordered.
-    aura::Window* win1(window_with_height1.window());
-    aura::Window* win2(window_with_height2.window());
+    aura::Window* win1(window_with_height1.window);
+    aura::Window* win2(window_with_height2.window);
     gfx::Rect win1_bounds = ScreenUtil::ConvertRectToScreen(
         docked_container_, win1->GetTargetBounds());
     gfx::Rect win2_bounds = ScreenUtil::ConvertRectToScreen(
         docked_container_, win2->GetTargetBounds());
-    win1_bounds.set_height(window_with_height1.height_);
-    win2_bounds.set_height(window_with_height2.height_);
+    win1_bounds.set_height(window_with_height1.height);
+    win2_bounds.set_height(window_with_height2.height);
     // If one of the windows is the |dragged_window_| attempt to make an
     // earlier swap between the windows than just based on their centers.
     // This is possible if the dragged window is at least as tall as the other
@@ -369,8 +378,6 @@ struct CompareWindowPos {
   aura::Window* docked_container_;
   float delta_;
 };
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // A class that observes shelf for bounds changes.
@@ -1147,10 +1154,10 @@ int DockedWindowLayoutManager::CalculateWindowHeightsAndRemainingRoom(
   for (std::vector<WindowWithHeight>::reverse_iterator iter =
            visible_windows->rbegin();
       iter != visible_windows->rend(); ++iter) {
-    iter->height_ = GetWindowHeightCloseTo(
-        iter->window(),
+    iter->height = GetWindowHeightCloseTo(
+        iter->window,
         (available_room + gap_height) / remaining_windows - gap_height);
-    available_room -= (iter->height_ + gap_height);
+    available_room -= (iter->height + gap_height);
     remaining_windows--;
   }
   return available_room + gap_height;
@@ -1167,7 +1174,7 @@ int DockedWindowLayoutManager::CalculateIdealWidth(
   for (std::vector<WindowWithHeight>::const_iterator iter =
            visible_windows.begin();
        iter != visible_windows.end(); ++iter) {
-    const aura::Window* window = iter->window();
+    const aura::Window* window = iter->window;
     int min_window_width = window->bounds().width();
     int max_window_width = min_window_width;
     if (!wm::GetWindowState(window)->bounds_changed_by_user()) {
@@ -1203,7 +1210,7 @@ void DockedWindowLayoutManager::FanOutChildren(
   int new_width = ideal_docked_width;
   if (visible_windows->empty() ||
       (visible_windows->size() == 1 &&
-          (*visible_windows)[0].window() == dragged_window_)) {
+       (*visible_windows)[0].window == dragged_window_)) {
     new_width = 0;
   }
   UpdateDockedWidth(new_width);
@@ -1214,7 +1221,7 @@ void DockedWindowLayoutManager::FanOutChildren(
                              dock_container_, delta));
   for (std::vector<WindowWithHeight>::iterator iter = visible_windows->begin();
        iter != visible_windows->end(); ++iter) {
-    aura::Window* window = iter->window();
+    aura::Window* window = iter->window;
     gfx::Rect bounds = ScreenUtil::ConvertRectToScreen(
         dock_container_, window->GetTargetBounds());
     // A window is extended or shrunk to be as close as possible to the ideal
@@ -1232,7 +1239,7 @@ void DockedWindowLayoutManager::FanOutChildren(
       alignment = GetEdgeNearestWindow(window);
 
     // Fan out windows evenly distributing the overlap or remaining free space.
-    bounds.set_height(iter->height_);
+    bounds.set_height(iter->height);
     bounds.set_y(std::max(work_area.y(),
                           std::min(work_area.bottom() - bounds.height(),
                                    static_cast<int>(y_pos + 0.5))));
