@@ -14,11 +14,28 @@ apt_config_val() {
   fi
 }
 
-# Install the repository signing key (see also:
-# https://www.google.com/linuxrepositories/)
+# Install the repository/package signing keys, if they aren't already.
+# (see also: https://www.google.com/linuxrepositories/)
 install_key() {
   APT_KEY="`which apt-key 2> /dev/null`"
-  if [ -x "$APT_KEY" ]; then
+  if [ ! -x "$APT_KEY" ]; then
+    return
+  fi
+
+  NEED_KEYS=0
+  "$APT_KEY" export 7fac5991 2>&1 | \
+    grep -q -- "-----BEGIN PGP PUBLIC KEY BLOCK-----"
+  if [ $? -ne 0 ]; then
+    NEED_KEYS=1
+  fi
+
+  "$APT_KEY" export d38b4796 2>&1 | \
+    grep -q -- "-----BEGIN PGP PUBLIC KEY BLOCK-----"
+  if [ $? -ne 0 ]; then
+    NEED_KEYS=1
+  fi
+
+  if [ $NEED_KEYS -eq 1 ]; then
     "$APT_KEY" add - >/dev/null 2>&1 <<KEYDATA
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG v1.4.2.2 (GNU/Linux)

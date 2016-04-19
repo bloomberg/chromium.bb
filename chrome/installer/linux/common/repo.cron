@@ -25,8 +25,9 @@ if [ -r "$DEFAULTS_FILE" ]; then
   . "$DEFAULTS_FILE"
 fi
 
+install_key
+
 if [ "$repo_add_once" = "true" ]; then
-  install_key
   create_sources_lists
   RES=$?
   # Sources creation succeeded, so stop trying.

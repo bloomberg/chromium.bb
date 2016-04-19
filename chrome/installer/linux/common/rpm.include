@@ -3,14 +3,9 @@
 # Install the repository signing key (see also:
 # https://www.google.com/linuxrepositories/)
 install_rpm_key() {
-  # Check to see if key already exists.
-  rpm -q gpg-pubkey-7fac5991-4615767f > /dev/null 2>&1
-  if [ "$?" -eq "0" ]; then
-    # Key already exists
-    return 0
-  fi
-  # This is to work around a bug in RPM 4.7.0. (see http://crbug.com/22312)
-  rpm -q gpg-pubkey-7fac5991-45f06f46 > /dev/null 2>&1
+  # Check to see if all keys already exists.
+  rpm -q gpg-pubkey-7fac5991-4615767f \
+         gpg-pubkey-d38b4796-570c8cd3 > /dev/null 2>&1
   if [ "$?" -eq "0" ]; then
     # Key already exists
     return 0
