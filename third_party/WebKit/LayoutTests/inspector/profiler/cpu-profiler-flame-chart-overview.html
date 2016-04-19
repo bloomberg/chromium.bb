@@ -809,6 +809,8 @@ function test()
     var profile = profileAndExpectations._profile;
     var startTime = profile.startTime * 1000;
     var endTime = profile.endTime * 1000;
+    profile.startTime /= 1000;
+    profile.endTime /= 1000;
     var samplingInterval = (endTime - startTime) / (profile.samples.length - 1);
     profile.timestamps = [];
     for (var i = 0; i < profile.samples.length; ++i)

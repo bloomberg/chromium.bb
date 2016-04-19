@@ -104,15 +104,15 @@ function test()
             ]
         },
         "idleTime": 202.88199791684747,
-        "startTime": 1375445600.000847,
-        "endTime": 1375445601.070847,
+        "startTime": 100000,
+        "endTime":   100000 + 111.110 + 22.220 + 1.000,
         "samples": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
     };
     var model = new WebInspector.CPUProfileDataModel(profile);
     printTree("", model.profileHead);
     function printTree(padding, node)
     {
-        InspectorTest.addResult(padding + node.functionName + " id:" + node.id + " hits:" + node.hitCount + " depth:" + node.depth);
+        InspectorTest.addResult(`${padding}${node.functionName} id:${node.id} total:${node.total} self:${node.self} depth:${node.depth}`);
         node.children.forEach(printTree.bind(null, padding + "  "));
     }
     InspectorTest.addResult(model.samples.join(", "));
