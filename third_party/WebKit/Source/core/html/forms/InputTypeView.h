@@ -36,6 +36,7 @@
 #include "core/CoreExport.h"
 #include "core/events/EventDispatcher.h"
 #include "platform/heap/Handle.h"
+#include "platform/text/TextDirection.h"
 #include "public/platform/WebFocusType.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
@@ -47,6 +48,7 @@ class AXObject;
 class BeforeTextInsertedEvent;
 class Element;
 class Event;
+class FormControlState;
 class HTMLFormElement;
 class HTMLInputElement;
 class KeyboardEvent;
@@ -75,6 +77,9 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     virtual bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const;
+
+    // Event handling functions
+
     virtual void handleClickEvent(MouseEvent*);
     virtual void handleMouseDownEvent(MouseEvent*);
     virtual ClickHandlingState* willDispatchClick();
@@ -91,11 +96,16 @@ public:
     virtual void handleFocusEvent(Element* oldFocusedElement, WebFocusType);
     virtual void handleFocusInEvent(Element* oldFocusedElement, WebFocusType);
     virtual void handleBlurEvent();
-    virtual void subtreeHasChanged();
+    virtual void handleDOMActivateEvent(Event*);
+    virtual void accessKeyAction(bool sendMouseEvents);
     virtual bool hasTouchEventHandler() const;
     virtual void blur();
+    void dispatchSimulatedClickIfActive(KeyboardEvent*) const;
+
+    virtual void subtreeHasChanged();
     virtual LayoutObject* createLayoutObject(const ComputedStyle&) const;
     virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject(PassRefPtr<ComputedStyle>);
+    virtual TextDirection computedTextDirection();
     virtual void startResourceLoading();
     virtual void closePopupView();
     virtual void createShadowSubtree();
@@ -118,6 +128,11 @@ public:
     virtual void ensureFallbackContent() { }
     virtual void ensurePrimaryContent() { }
     virtual bool hasFallbackContent() const { return false; }
+    virtual FormControlState saveFormControlState() const;
+    virtual void restoreFormControlState(const FormControlState&);
+
+    // Validation functions
+    virtual bool hasBadInput() const;
 
 protected:
     InputTypeView(HTMLInputElement& element) : m_element(&element) { }

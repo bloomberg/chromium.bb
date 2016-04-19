@@ -49,7 +49,6 @@
 #include "core/html/forms/DateTimeLocalInputType.h"
 #include "core/html/forms/EmailInputType.h"
 #include "core/html/forms/FileInputType.h"
-#include "core/html/forms/FormController.h"
 #include "core/html/forms/HiddenInputType.h"
 #include "core/html/forms/ImageInputType.h"
 #include "core/html/forms/MonthInputType.h"
@@ -150,19 +149,6 @@ bool InputType::shouldSaveAndRestoreFormControlState() const
     return true;
 }
 
-FormControlState InputType::saveFormControlState() const
-{
-    String currentValue = element().value();
-    if (currentValue == element().defaultValue())
-        return FormControlState();
-    return FormControlState(currentValue);
-}
-
-void InputType::restoreFormControlState(const FormControlState& state)
-{
-    element().setValue(state[0]);
-}
-
 bool InputType::isFormDataAppendable() const
 {
     // There is no form data unless there's a name for non-image types.
@@ -230,11 +216,6 @@ bool InputType::supportsRequired() const
 }
 
 bool InputType::valueMissing(const String&) const
-{
-    return false;
-}
-
-bool InputType::hasBadInput() const
 {
     return false;
 }
@@ -448,13 +429,6 @@ String InputType::serialize(const Decimal&) const
     return String();
 }
 
-void InputType::dispatchSimulatedClickIfActive(KeyboardEvent* event) const
-{
-    if (element().active())
-        element().dispatchSimulatedClick(event);
-    event->setDefaultHandled();
-}
-
 ChromeClient* InputType::chromeClient() const
 {
     if (FrameHost* host = element().document().frameHost())
@@ -493,11 +467,6 @@ void InputType::enableSecureTextInput()
 
 void InputType::disableSecureTextInput()
 {
-}
-
-void InputType::accessKeyAction(bool)
-{
-    element().focus(FocusParams(SelectionBehaviorOnFocus::Reset, WebFocusTypeNone, nullptr));
 }
 
 void InputType::countUsage()
@@ -711,10 +680,6 @@ Decimal InputType::findClosestTickMarkValue(const Decimal&)
     return Decimal::nan();
 }
 
-void InputType::handleDOMActivateEvent(Event*)
-{
-}
-
 bool InputType::hasLegalLinkAttribute(const QualifiedName&) const
 {
     return false;
@@ -759,11 +724,6 @@ unsigned InputType::height() const
 unsigned InputType::width() const
 {
     return 0;
-}
-
-TextDirection InputType::computedTextDirection()
-{
-    return element().ensureComputedStyle()->direction();
 }
 
 ColorChooserClient* InputType::colorChooserClient()

@@ -78,8 +78,6 @@ public:
     // Form value functions
 
     virtual bool shouldSaveAndRestoreFormControlState() const;
-    virtual FormControlState saveFormControlState() const;
-    virtual void restoreFormControlState(const FormControlState&);
     virtual bool isFormDataAppendable() const;
     virtual void appendToFormData(FormData&) const;
     virtual String resultForDialogSubmit() const;
@@ -109,7 +107,6 @@ public:
     virtual bool typeMismatch() const;
     virtual bool supportsRequired() const;
     virtual bool valueMissing(const String&) const;
-    virtual bool hasBadInput() const;
     virtual bool patternMismatch(const String&) const;
     virtual bool tooLong(const String&, HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const;
     virtual bool tooShort(const String&, HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const;
@@ -144,7 +141,6 @@ public:
     virtual bool shouldShowFocusRingOnMouseFocus() const;
     virtual void enableSecureTextInput();
     virtual void disableSecureTextInput();
-    virtual void accessKeyAction(bool sendMouseEvents);
     virtual bool canBeSuccessfulSubmitButton();
     virtual bool matchesDefaultPseudoClass();
 
@@ -176,7 +172,6 @@ public:
     virtual bool supportsReadOnly() const;
     virtual String defaultToolTip() const;
     virtual Decimal findClosestTickMarkValue(const Decimal&);
-    virtual void handleDOMActivateEvent(Event*);
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const;
     virtual const QualifiedName& subResourceAttributeName() const;
     virtual bool supportsAutocapitalize() const;
@@ -203,10 +198,6 @@ public:
     // element is image. It returns 0 if the element is not image type.
     virtual unsigned height() const;
     virtual unsigned width() const;
-
-    virtual TextDirection computedTextDirection();
-
-    void dispatchSimulatedClickIfActive(KeyboardEvent*) const;
 
     // InputTypeView override
     bool shouldSubmitImplicitly(Event*) override;
