@@ -35,7 +35,13 @@ void LayoutSVGHiddenContainer::layout()
     LayoutAnalyzer::Scope analyzer(*this);
     // TODO(fs): In what cases do we need this?
     bool transformChanged = SVGLayoutSupport::transformToRootChanged(this);
-    SVGLayoutSupport::layoutChildren(this, selfNeedsLayout(), transformChanged);
+
+    // When hasRelativeLengths() is false, no descendants have relative lengths
+    // (hence no one is interested in viewport size changes).
+    bool layoutSizeChanged = element()->hasRelativeLengths()
+        && SVGLayoutSupport::layoutSizeOfNearestViewportChanged(this);
+
+    SVGLayoutSupport::layoutChildren(this, selfNeedsLayout(), transformChanged, layoutSizeChanged);
     updateCachedBoundaries();
     clearNeedsLayout();
 }

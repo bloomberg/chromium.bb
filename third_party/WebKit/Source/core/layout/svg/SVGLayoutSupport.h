@@ -50,7 +50,7 @@ class CORE_EXPORT SVGLayoutSupport {
     STATIC_ONLY(SVGLayoutSupport);
 public:
     // Shares child layouting code between LayoutSVGRoot/LayoutSVG(Hidden)Container
-    static void layoutChildren(LayoutObject*, bool forceLayout, bool transformChanged);
+    static void layoutChildren(LayoutObject*, bool forceLayout, bool transformChanged, bool layoutSizeChanged);
 
     // Layout resources used by this node.
     static void layoutResourcesIfNeeded(const LayoutObject*);
@@ -91,6 +91,9 @@ public:
     // Determines if any ancestor's transform has changed.
     static bool transformToRootChanged(const LayoutObject*);
 
+    // Determines if any ancestor's layout size has changed.
+    static bool layoutSizeOfNearestViewportChanged(const LayoutObject*);
+
     // FIXME: These methods do not belong here.
     static const LayoutSVGRoot* findTreeRootObject(const LayoutObject*);
 
@@ -112,7 +115,6 @@ public:
 
 private:
     static void updateObjectBoundingBox(FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, LayoutObject* other, FloatRect otherBoundingBox);
-    static bool layoutSizeOfNearestViewportChanged(const LayoutObject* start);
 };
 
 class SubtreeContentTransformScope {

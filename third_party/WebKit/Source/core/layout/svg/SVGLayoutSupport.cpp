@@ -247,17 +247,16 @@ const LayoutSVGRoot* SVGLayoutSupport::findTreeRootObject(const LayoutObject* st
     return toLayoutSVGRoot(start);
 }
 
-inline bool SVGLayoutSupport::layoutSizeOfNearestViewportChanged(const LayoutObject* start)
+bool SVGLayoutSupport::layoutSizeOfNearestViewportChanged(const LayoutObject* start)
 {
-    while (start && !start->isSVGRoot() && !start->isSVGViewportContainer())
-        start = start->parent();
-
-    ASSERT(start);
-    ASSERT(start->isSVGRoot() || start->isSVGViewportContainer());
-    if (start->isSVGViewportContainer())
-        return toLayoutSVGViewportContainer(start)->isLayoutSizeChanged();
-
-    return toLayoutSVGRoot(start)->isLayoutSizeChanged();
+    for (; start; start = start->parent()) {
+        if (start->isSVGRoot())
+            return toLayoutSVGRoot(start)->isLayoutSizeChanged();
+        if (start->isSVGViewportContainer())
+            return toLayoutSVGViewportContainer(start)->isLayoutSizeChanged();
+    }
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
 bool SVGLayoutSupport::transformToRootChanged(const LayoutObject* ancestor)
@@ -272,13 +271,8 @@ bool SVGLayoutSupport::transformToRootChanged(const LayoutObject* ancestor)
     return false;
 }
 
-void SVGLayoutSupport::layoutChildren(LayoutObject* start, bool forceLayout, bool transformChanged)
+void SVGLayoutSupport::layoutChildren(LayoutObject* start, bool forceLayout, bool transformChanged, bool layoutSizeChanged)
 {
-    // When hasRelativeLengths() is false, no descendants have relative lengths
-    // (hence no one is interested in viewport size changes).
-    bool layoutSizeChanged = toSVGElement(start->node())->hasRelativeLengths()
-        && layoutSizeOfNearestViewportChanged(start);
-
     for (LayoutObject* child = start->slowFirstChild(); child; child = child->nextSibling()) {
         bool forceChildLayout = forceLayout;
 
