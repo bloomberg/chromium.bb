@@ -752,11 +752,15 @@
         'libraries': [
           '$(SDKROOT)/System/Library/Frameworks/CoreGraphics.framework',
           '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+          '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+          '$(SDKROOT)/System/Library/Frameworks/UIKit.framework',
         ],
       },
       'sources': [
         'common/channel_info.h',
         'common/channel_info.mm',
+        'common/material_timing.h',
+        'common/material_timing.mm',
         'common/string_util.h',
         'common/string_util.mm',
       ],
