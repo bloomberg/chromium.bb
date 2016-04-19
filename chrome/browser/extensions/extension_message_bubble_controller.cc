@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
@@ -103,7 +103,9 @@ ExtensionMessageBubbleController::ExtensionMessageBubbleController(
       user_action_(ACTION_BOUNDARY),
       delegate_(delegate),
       initialized_(false),
-      did_highlight_(false) {
+      did_highlight_(false),
+      browser_list_observer_(this) {
+  browser_list_observer_.Add(BrowserList::GetInstance());
 }
 
 ExtensionMessageBubbleController::~ExtensionMessageBubbleController() {
@@ -234,6 +236,13 @@ void ExtensionMessageBubbleController::ClearProfileListForTesting() {
 void ExtensionMessageBubbleController::set_should_ignore_learn_more_for_testing(
     bool should_ignore) {
   g_should_ignore_learn_more_for_testing = should_ignore;
+}
+
+void ExtensionMessageBubbleController::OnBrowserRemoved(Browser* browser) {
+  if (browser == browser_ && did_highlight_) {
+    ToolbarActionsModel::Get(profile())->StopHighlighting();
+    did_highlight_ = false;
+  }
 }
 
 void ExtensionMessageBubbleController::AcknowledgeExtensions() {

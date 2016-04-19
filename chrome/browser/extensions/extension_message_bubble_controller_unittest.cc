@@ -10,12 +10,14 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/dev_mode_bubble_delegate.h"
+#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
@@ -24,6 +26,8 @@
 #include "chrome/browser/extensions/settings_api_bubble_delegate.h"
 #include "chrome/browser/extensions/suspicious_extension_bubble_delegate.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -51,6 +55,14 @@ std::unique_ptr<KeyedService> BuildOverrideRegistrar(
     content::BrowserContext* context) {
   return base::WrapUnique(
       new extensions::ExtensionWebUIOverrideRegistrar(context));
+}
+
+// Creates a new ToolbarActionsModel for the given |context|.
+std::unique_ptr<KeyedService> BuildToolbarModel(
+    content::BrowserContext* context) {
+  return base::WrapUnique(
+      new ToolbarActionsModel(Profile::FromBrowserContext(context),
+                              extensions::ExtensionPrefs::Get(context)));
 }
 
 }  // namespace
@@ -980,6 +992,31 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
                                extensions::UNINSTALL_REASON_FOR_TESTING,
                                base::Bind(&base::DoNothing),
                                NULL);
+}
+
+// Tests that a bubble outliving the associated browser object doesn't crash.
+// crbug.com/604003
+TEST_F(ExtensionMessageBubbleTest, TestBubbleOutlivesBrowser) {
+  FeatureSwitch::ScopedOverride force_dev_mode_highlighting(
+      FeatureSwitch::force_dev_mode_highlighting(), true);
+  Init();
+  ToolbarActionsModelFactory::GetInstance()->SetTestingFactory(
+      profile(), &BuildToolbarModel);
+  ToolbarActionsModel* model = ToolbarActionsModel::Get(profile());
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(LoadExtensionWithAction("1", kId1, Manifest::UNPACKED));
+
+  std::unique_ptr<TestExtensionMessageBubbleController> controller(
+      new TestExtensionMessageBubbleController(
+          new DevModeBubbleDelegate(browser()->profile()), browser()));
+  EXPECT_TRUE(controller->ShouldShow());
+  EXPECT_EQ(1u, model->toolbar_items().size());
+  controller->HighlightExtensionsIfNecessary();
+  EXPECT_TRUE(ToolbarActionsModel::Get(profile())->is_highlighting());
+  set_browser(nullptr);
+  EXPECT_FALSE(ToolbarActionsModel::Get(profile())->is_highlighting());
+  controller.reset();
 }
 
 }  // namespace extensions
