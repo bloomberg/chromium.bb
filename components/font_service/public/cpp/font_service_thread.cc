@@ -65,7 +65,7 @@ scoped_refptr<MappedFontFile> FontServiceThread::OpenStream(
   done_event.Wait();
 
   if (!stream_file.IsValid()) {
-    NOTREACHED();
+    // The font-service may have been killed.
     return nullptr;
   }
 
@@ -91,6 +91,12 @@ void FontServiceThread::MatchFamilyNameImpl(
     SkString* out_family_name,
     SkFontStyle* out_style) {
   DCHECK_EQ(GetThreadId(), base::PlatformThread::CurrentId());
+
+  if (font_service_.encountered_error()) {
+    *out_valid = false;
+    done_event->Signal();
+    return;
+  }
 
   TypefaceStylePtr style(TypefaceStyle::New());
   style->weight = requested_style.weight();
@@ -136,6 +142,10 @@ void FontServiceThread::OpenStreamImpl(base::WaitableEvent* done_event,
                                        base::File* output_file,
                                        const uint32_t id_number) {
   DCHECK_EQ(GetThreadId(), base::PlatformThread::CurrentId());
+  if (font_service_.encountered_error()) {
+    done_event->Signal();
+    return;
+  }
 
   font_service_->OpenStream(
       id_number, base::Bind(&FontServiceThread::OnOpenStreamComplete, this,
