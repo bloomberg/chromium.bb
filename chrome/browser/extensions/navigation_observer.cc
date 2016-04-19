@@ -21,8 +21,11 @@ using content::NavigationEntry;
 namespace extensions {
 
 NavigationObserver::NavigationObserver(Profile* profile)
-    : profile_(profile), weak_factory_(this) {
+    : profile_(profile),
+      extension_registry_observer_(this),
+      weak_factory_(this) {
   RegisterForNotifications();
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 }
 
 NavigationObserver::~NavigationObserver() {}
@@ -94,15 +97,19 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
 
 void NavigationObserver::OnInstallPromptDone(
     ExtensionInstallPrompt::Result result) {
+  // The extension was already uninstalled.
+  if (in_progress_prompt_extension_id_.empty())
+    return;
+
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   const Extension* extension = extension_service->GetExtensionById(
       in_progress_prompt_extension_id_, true);
+  CHECK(extension);
 
   if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
     NavigationController* nav_controller =
         in_progress_prompt_navigation_controller_;
-    CHECK(extension);
     CHECK(nav_controller);
 
     // Grant permissions, re-enable the extension, and then reload the tab.
@@ -110,11 +117,25 @@ void NavigationObserver::OnInstallPromptDone(
     nav_controller->Reload(true);
   } else {
     std::string histogram_name =
-        result == ExtensionInstallPrompt::Result::USER_CANCELED
+       result == ExtensionInstallPrompt::Result::USER_CANCELED
             ? "ReEnableCancel"
             : "ReEnableAbort";
     ExtensionService::RecordPermissionMessagesHistogram(extension,
                                                         histogram_name.c_str());
+  }
+
+  in_progress_prompt_extension_id_ = std::string();
+  in_progress_prompt_navigation_controller_ = nullptr;
+  extension_install_prompt_.reset();
+}
+
+void NavigationObserver::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UninstallReason reason) {
+  if (in_progress_prompt_extension_id_.empty() ||
+      in_progress_prompt_extension_id_ != extension->id()) {
+    return;
   }
 
   in_progress_prompt_extension_id_ = std::string();

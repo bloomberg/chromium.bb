@@ -20,7 +20,9 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
@@ -177,6 +179,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, UninstallFromDialog) {
   EXPECT_FALSE(registry_->GetExtensionById(extension_id,
                                            ExtensionRegistry::EVERYTHING));
   EXPECT_FALSE(GetExtensionDisabledGlobalError());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
+                       UninstallWhilePromptBeingShown) {
+  const Extension* extension = InstallAndUpdateIncreasingPermissionsExtension();
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(GetExtensionDisabledGlobalError());
+
+  // Navigate a tab to the disabled extension, it will show a permission
+  // increase dialog.
+  GURL url = extension->GetResourceURL("");
+  int starting_tab_count = browser()->tab_strip_model()->count();
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  int tab_count = browser()->tab_strip_model()->count();
+  EXPECT_EQ(starting_tab_count + 1, tab_count);
+
+  // Uninstall the extension while the dialog is being shown.
+  // Although the dialog is modal, a user can still uninstall the extension by
+  // other means, e.g. if the user had two browser windows open they can use the
+  // second browser window that does not contain the modal dialog, navigate to
+  // chrome://extensions and uninstall the extension.
+  UninstallExtension(extension->id());
 }
 
 // Tests that no error appears if the user disabled the extension.
