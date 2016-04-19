@@ -131,7 +131,7 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       model_observer_(this),
       suppress_layout_(false),
       suppress_animation_(true),
-      checked_extension_bubble_(false),
+      should_check_extension_bubble_(!main_bar),
       is_drag_in_progress_(false),
       popped_out_action_(nullptr),
       is_popped_out_sticky_(false),
@@ -398,8 +398,8 @@ void ToolbarActionsBar::CreateActions() {
   // haven't already shown the bubble.
   // Extension bubbles can also highlight a subset of actions, so don't show the
   // bubble if the toolbar is already highlighting a different set.
-  if (!checked_extension_bubble_ && !is_highlighting()) {
-    checked_extension_bubble_ = true;
+  if (should_check_extension_bubble_ && !is_highlighting()) {
+    should_check_extension_bubble_ = false;
     // CreateActions() can be called as part of the browser window set up, which
     // we need to let finish before showing the actions.
     std::unique_ptr<extensions::ExtensionMessageBubbleController> controller =
@@ -597,6 +597,7 @@ void ToolbarActionsBar::RemoveObserver(ToolbarActionsBarObserver* observer) {
 
 void ToolbarActionsBar::ShowToolbarActionBubble(
     std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
+  DCHECK(!in_overflow_mode());
   if (delegate_->IsAnimating()) {
     // If the toolbar is animating, we can't effectively anchor the bubble,
     // so wait until animation stops.

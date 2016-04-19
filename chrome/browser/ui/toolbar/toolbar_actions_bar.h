@@ -325,9 +325,10 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // See also TabOrderHelper in the .cc file.
   static bool pop_out_actions_to_run_;
 
-  // True if we have checked to see if there is an extension bubble that should
-  // be displayed, and, if there is, shown that bubble.
-  bool checked_extension_bubble_;
+  // True if we should check to see if there is an extension bubble that should
+  // be displayed, and, if there is, started the process for showing that
+  // bubble. This is only ever true for the main bar.
+  bool should_check_extension_bubble_;
 
   // Whether or not the user is in the middle of a drag-and-drop operation.
   bool is_drag_in_progress_;
