@@ -16,6 +16,24 @@ source_set("json_schema") {
   ]
 }
 
+bundle_data("unit_tests_bundle_data") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//components/test/data/json_schema/array_tuple_schema.json",
+    "//components/test/data/json_schema/choices_schema.json",
+    "//components/test/data/json_schema/complex_instance.json",
+    "//components/test/data/json_schema/complex_schema.json",
+    "//components/test/data/json_schema/enum_schema.json",
+    "//components/test/data/json_schema/pattern_properties_dot.json",
+    "//components/test/data/json_schema/reference_types.json",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -25,6 +43,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":json_schema",
+    ":unit_tests_bundle_data",
     "//base",
     "//testing/gtest",
   ]

@@ -16,6 +16,23 @@ source_set("webp_transcode") {
   ]
 }
 
+bundle_data("unit_tests_bundle_data") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//components/test/data/webp_transcode/test.jpg",
+    "//components/test/data/webp_transcode/test.webp",
+    "//components/test/data/webp_transcode/test_alpha.png",
+    "//components/test/data/webp_transcode/test_alpha.webp",
+    "//components/test/data/webp_transcode/test_small.tiff",
+    "//components/test/data/webp_transcode/test_small.webp",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -23,6 +40,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":unit_tests_bundle_data",
     ":webp_transcode",
     "//base",
     "//net",

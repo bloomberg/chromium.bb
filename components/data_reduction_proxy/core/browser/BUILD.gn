@@ -122,6 +122,25 @@ source_set("test_support") {
   ]
 }
 
+bundle_data("unit_tests_bundle_data") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//components/test/data/data_reduction_proxy/direct/block10.html",
+    "//components/test/data/data_reduction_proxy/direct/block10.html.mock-http-headers",
+    "//components/test/data/data_reduction_proxy/direct/noblock.html",
+    "//components/test/data/data_reduction_proxy/direct/noblock.html.mock-http-headers",
+    "//components/test/data/data_reduction_proxy/proxy/block10.html",
+    "//components/test/data/data_reduction_proxy/proxy/block10.html.mock-http-headers",
+    "//components/test/data/data_reduction_proxy/proxy/noblock.html",
+    "//components/test/data/data_reduction_proxy/proxy/noblock.html.mock-http-headers",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -149,6 +168,7 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     ":test_support",
+    ":unit_tests_bundle_data",
     "//base",
     "//base/test:test_support",
     "//components/data_reduction_proxy/core/common:test_support",

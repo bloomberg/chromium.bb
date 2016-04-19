@@ -254,6 +254,29 @@ source_set("test_support") {
   ]
 }
 
+bundle_data("unit_tests_bundle_data") {
+  sources = [
+    "//components/test/data/autofill/merge/input/ambiguous.in",
+    "//components/test/data/autofill/merge/input/case.in",
+    "//components/test/data/autofill/merge/input/email.in",
+    "//components/test/data/autofill/merge/input/identical.in",
+    "//components/test/data/autofill/merge/input/primarycase.in",
+    "//components/test/data/autofill/merge/input/singlemerge.in",
+    "//components/test/data/autofill/merge/input/validation.in",
+    "//components/test/data/autofill/merge/output/ambiguous.out",
+    "//components/test/data/autofill/merge/output/case.out",
+    "//components/test/data/autofill/merge/output/email.out",
+    "//components/test/data/autofill/merge/output/identical.out",
+    "//components/test/data/autofill/merge/output/primarycase.out",
+    "//components/test/data/autofill/merge/output/singlemerge.out",
+    "//components/test/data/autofill/merge/output/validation.out",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -299,6 +322,7 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     ":test_support",
+    ":unit_tests_bundle_data",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/common",

@@ -41,12 +41,8 @@ static_library("user_prefs_tracked") {
     "tracked_split_preference.h",
   ]
 
-  if (is_win || (is_mac && !is_ios)) {
+  if (is_win || is_mac) {
     sources -= [ "device_id_stub.cc" ]
-  }
-
-  if (is_ios) {
-    sources -= [ "device_id_mac.cc" ]
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

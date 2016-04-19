@@ -90,6 +90,27 @@ source_set("test_support") {
   ]
 }
 
+bundle_data("unit_tests_bundle_data") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//components/test/data/update_client/binary_bsdiff_patch.bin",
+    "//components/test/data/update_client/binary_courgette_patch.bin",
+    "//components/test/data/update_client/binary_input.bin",
+    "//components/test/data/update_client/binary_output.bin",
+    "//components/test/data/update_client/ihfokbkgjpifnbbojhneepfflplebdkc_1.crx",
+    "//components/test/data/update_client/ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx",
+    "//components/test/data/update_client/ihfokbkgjpifnbbojhneepfflplebdkc_2.crx",
+    "//components/test/data/update_client/jebgalgnebhfojomionfpkfelancnnkf.crx",
+    "//components/test/data/update_client/updatecheck_reply_1.xml",
+    "//components/test/data/update_client/updatecheck_reply_4.xml",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -107,6 +128,7 @@ source_set("unit_tests") {
 
   deps = [
     ":test_support",
+    ":unit_tests_bundle_data",
     ":update_client",
     "//base",
     "//components/prefs",

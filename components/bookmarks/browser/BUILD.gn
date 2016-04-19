@@ -68,6 +68,19 @@ source_set("browser") {
   }
 }
 
+bundle_data("unit_tests_bundle_data") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//components/test/data/bookmarks/meta_info_as_string.json",
+    "//components/test/data/bookmarks/model_without_sync.json",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -86,6 +99,7 @@ source_set("unit_tests") {
 
   deps = [
     ":browser",
+    ":unit_tests_bundle_data",
     "//components/bookmarks/common",
     "//components/bookmarks/test",
     "//components/favicon_base",

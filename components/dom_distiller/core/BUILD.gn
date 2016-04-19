@@ -111,6 +111,19 @@ source_set("test_support") {
   ]
 }
 
+bundle_data("unit_tests_bundle_data") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//components/test/data/dom_distiller/core_features.json",
+    "//components/test/data/dom_distiller/derived_features.json",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -133,6 +146,7 @@ source_set("unit_tests") {
   deps = [
     ":core",
     ":test_support",
+    ":unit_tests_bundle_data",
     "//base",
     "//components/leveldb_proto:test_support",
     "//components/pref_registry:test_support",

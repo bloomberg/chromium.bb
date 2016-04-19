@@ -191,6 +191,21 @@ static_library("test_support") {
   ]
 }
 
+bundle_data("unit_tests_bundle_data") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//components/test/data/omnibox/Shortcuts.no_fill_into_edit.sql",
+    "//components/test/data/omnibox/Shortcuts.v0.sql",
+    "//components/test/data/omnibox/in_memory_url_index_test.db.txt",
+    "//components/test/data/omnibox/in_memory_url_index_test_limited.db.txt",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -223,6 +238,7 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     ":test_support",
+    ":unit_tests_bundle_data",
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/browser",

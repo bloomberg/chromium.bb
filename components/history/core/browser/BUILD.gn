@@ -134,6 +134,44 @@ static_library("browser") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
+bundle_data("unit_tests_bundle_data") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//components/test/data/history/Favicons.v3.sql",
+    "//components/test/data/history/Favicons.v4.sql",
+    "//components/test/data/history/Favicons.v5.sql",
+    "//components/test/data/history/Favicons.v6.sql",
+    "//components/test/data/history/Favicons.v7.sql",
+    "//components/test/data/history/Favicons.v8.sql",
+    "//components/test/data/history/HistoryNoDuration",
+    "//components/test/data/history/HistoryNoSource",
+    "//components/test/data/history/History_with_starred",
+    "//components/test/data/history/TopSites.v1.sql",
+    "//components/test/data/history/TopSites.v2.sql",
+    "//components/test/data/history/TopSites.v3.sql",
+    "//components/test/data/history/history.22.sql",
+    "//components/test/data/history/history.26.sql",
+    "//components/test/data/history/history.27.sql",
+    "//components/test/data/history/history.28.sql",
+    "//components/test/data/history/history.29.sql",
+    "//components/test/data/history/history.30.sql",
+    "//components/test/data/history/thumbnail_wild/Favicons.corrupt_meta.disable",
+    "//components/test/data/history/thumbnail_wild/Favicons.v2.init.sql",
+    "//components/test/data/history/thumbnail_wild/Favicons.v3.init.sql",
+    "//components/test/data/history/thumbnail_wild/Favicons.v4.init.sql",
+    "//components/test/data/history/thumbnail_wild/Favicons.v5.icon_type.sql",
+    "//components/test/data/history/thumbnail_wild/Favicons.v5.icon_type2.sql",
+    "//components/test/data/history/thumbnail_wild/Favicons.v5.init.sql",
+    "//components/test/data/history/thumbnail_wild/Favicons.v5.sizes.sql",
+    "//components/test/data/history/thumbnail_wild/Favicons.v6.init.sql",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -157,6 +195,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":browser",
+    ":unit_tests_bundle_data",
     "//base",
     "//base/test:test_support",
     "//components/favicon_base",
@@ -170,7 +209,8 @@ source_set("unit_tests") {
     "//sql:test_support",
     "//sync:test_support_sync_api",
     "//testing/gtest",
-    "//ui/gfx:gfx",
+    "//ui/gfx",
+    "//ui/gfx:test_support",
     "//url",
   ]
   if (is_android) {

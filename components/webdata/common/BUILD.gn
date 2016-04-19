@@ -33,6 +33,31 @@ component("common") {
   ]
 }
 
+bundle_data("unit_tests_bundle_data") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//components/test/data/web_database/version_50.sql",
+    "//components/test/data/web_database/version_52.sql",
+    "//components/test/data/web_database/version_53.sql",
+    "//components/test/data/web_database/version_54.sql",
+    "//components/test/data/web_database/version_55.sql",
+    "//components/test/data/web_database/version_56.sql",
+    "//components/test/data/web_database/version_57.sql",
+    "//components/test/data/web_database/version_58.sql",
+    "//components/test/data/web_database/version_59.sql",
+    "//components/test/data/web_database/version_60.sql",
+    "//components/test/data/web_database/version_61.sql",
+    "//components/test/data/web_database/version_62.sql",
+    "//components/test/data/web_database/version_63.sql",
+    "//components/test/data/web_database/version_64.sql",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -41,6 +66,7 @@ source_set("unit_tests") {
 
   deps = [
     ":common",
+    ":unit_tests_bundle_data",
     "//base",
     "//components/autofill/core/browser",
     "//components/password_manager/core/browser",
