@@ -31,11 +31,15 @@ template("ash_test_resources") {
     ]
 
     if (percent == "100") {
-      sources += [ "$root_gen_dir/ui/resources/webui_resources.pak" ]
+      sources += [
+        "$root_gen_dir/content/content_resources.pak",
+        "$root_gen_dir/ui/resources/webui_resources.pak",
+      ]
     }
 
     deps = [
       "//ash/resources",
+      "//content:resources",
       "//ui/resources",
     ]
 
