@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,25 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/workers/WorkerGlobalScopeProxyProvider.h"
+#ifndef InProcessWorkerGlobalScopeProxy_h
+#define InProcessWorkerGlobalScopeProxy_h
 
-#include "core/page/Page.h"
+#include "core/CoreExport.h"
+#include "core/dom/MessagePort.h"
+#include "core/workers/WorkerThread.h"
+#include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
-WorkerGlobalScopeProxyProvider* WorkerGlobalScopeProxyProvider::from(Page& page)
-{
-    return static_cast<WorkerGlobalScopeProxyProvider*>(Supplement<Page>::from(page, supplementName()));
-}
+class KURL;
 
-const char* WorkerGlobalScopeProxyProvider::supplementName()
-{
-    return "WorkerGlobalScopeProxyProvider";
-}
+// A proxy to talk to the in-process worker global scope.
+class CORE_EXPORT InProcessWorkerGlobalScopeProxy {
+    USING_FAST_MALLOC(InProcessWorkerGlobalScopeProxy);
+public:
+    virtual ~InProcessWorkerGlobalScopeProxy() { }
 
-void provideWorkerGlobalScopeProxyProviderTo(Page& page, WorkerGlobalScopeProxyProvider* provider)
-{
-    Supplement<Page>::provideTo(page, WorkerGlobalScopeProxyProvider::supplementName(), provider);
-}
+    virtual void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode) = 0;
+
+    virtual void terminateWorkerGlobalScope() = 0;
+
+    virtual void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) = 0;
+
+    virtual bool hasPendingActivity() const = 0;
+
+    virtual void workerObjectDestroyed() = 0;
+};
 
 } // namespace blink
+
+#endif // InProcessWorkerGlobalScopeProxy_h

@@ -26,7 +26,7 @@
  */
 
 
-#include "core/workers/WorkerMessagingProxy.h"
+#include "core/workers/InProcessWorkerMessagingProxy.h"
 
 #include "bindings/core/v8/V8GCController.h"
 #include "core/dom/CrossThreadTask.h"
@@ -71,7 +71,7 @@ void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message
 
 } // namespace
 
-WorkerMessagingProxy::WorkerMessagingProxy(InProcessWorkerBase* workerObject, WorkerClients* workerClients)
+InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(InProcessWorkerBase* workerObject, WorkerClients* workerClients)
     : m_executionContext(workerObject->getExecutionContext())
     , m_workerObjectProxy(WorkerObjectProxy::create(this))
     , m_workerObject(workerObject)
@@ -87,7 +87,7 @@ WorkerMessagingProxy::WorkerMessagingProxy(InProcessWorkerBase* workerObject, Wo
         || (m_executionContext->isWorkerGlobalScope() && toWorkerGlobalScope(m_executionContext.get())->thread()->isCurrentThread()));
 }
 
-WorkerMessagingProxy::~WorkerMessagingProxy()
+InProcessWorkerMessagingProxy::~InProcessWorkerMessagingProxy()
 {
     ASSERT(!m_workerObject);
     ASSERT((m_executionContext->isDocument() && isMainThread())
@@ -96,7 +96,7 @@ WorkerMessagingProxy::~WorkerMessagingProxy()
         m_loaderProxy->detachProvider(this);
 }
 
-void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode)
+void InProcessWorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode)
 {
     // FIXME: This need to be revisited when we support nested worker one day
     ASSERT(m_executionContext->isDocument());
@@ -121,7 +121,7 @@ void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const S
     m_workerInspectorProxy->workerThreadCreated(document, m_workerThread.get(), scriptURL);
 }
 
-void WorkerMessagingProxy::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)
+void InProcessWorkerMessagingProxy::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)
 {
     if (!m_workerObject || m_askedToTerminate)
         return;
@@ -130,7 +130,7 @@ void WorkerMessagingProxy::postMessageToWorkerObject(PassRefPtr<SerializedScript
     m_workerObject->dispatchEvent(MessageEvent::create(ports, message));
 }
 
-void WorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)
+void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)
 {
     if (m_askedToTerminate)
         return;
@@ -144,7 +144,7 @@ void WorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<SerializedS
     }
 }
 
-bool WorkerMessagingProxy::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
+bool InProcessWorkerMessagingProxy::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
 {
     if (m_askedToTerminate)
         return false;
@@ -154,14 +154,14 @@ bool WorkerMessagingProxy::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionConte
     return true;
 }
 
-void WorkerMessagingProxy::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
+void InProcessWorkerMessagingProxy::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
 {
     // FIXME: In case of nested workers, this should go directly to the root Document context.
     ASSERT(m_executionContext->isDocument());
     m_executionContext->postTask(BLINK_FROM_HERE, task);
 }
 
-void WorkerMessagingProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId)
+void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId)
 {
     if (!m_workerObject)
         return;
@@ -174,7 +174,7 @@ void WorkerMessagingProxy::reportException(const String& errorMessage, int lineN
     postTaskToWorkerGlobalScope(createCrossThreadTask(&processExceptionOnWorkerGlobalScope, exceptionId, dispatchResult != DispatchEventResult::NotCanceled));
 }
 
-void WorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, int lineNumber, const String& sourceURL)
+void InProcessWorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, int lineNumber, const String& sourceURL)
 {
     if (m_askedToTerminate)
         return;
@@ -190,7 +190,7 @@ void WorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLev
     frame->console().addMessage(consoleMessage);
 }
 
-void WorkerMessagingProxy::workerThreadCreated()
+void InProcessWorkerMessagingProxy::workerThreadCreated()
 {
     ASSERT(!m_askedToTerminate);
     ASSERT(m_workerThread);
@@ -204,17 +204,17 @@ void WorkerMessagingProxy::workerThreadCreated()
     m_queuedEarlyTasks.clear();
 }
 
-void WorkerMessagingProxy::workerObjectDestroyed()
+void InProcessWorkerMessagingProxy::workerObjectDestroyed()
 {
     // workerObjectDestroyed() is called in InProcessWorkerBase's destructor.
     // Thus it should be guaranteed that a weak pointer m_workerObject has been cleared
     // before this method gets called.
     ASSERT(!m_workerObject);
 
-    m_executionContext->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::workerObjectDestroyedInternal, this));
+    m_executionContext->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::workerObjectDestroyedInternal, this));
 }
 
-void WorkerMessagingProxy::workerObjectDestroyedInternal()
+void InProcessWorkerMessagingProxy::workerObjectDestroyedInternal()
 {
     m_mayBeDestroyed = true;
     if (m_workerThread)
@@ -223,7 +223,7 @@ void WorkerMessagingProxy::workerObjectDestroyedInternal()
         workerThreadTerminated();
 }
 
-void WorkerMessagingProxy::workerThreadTerminated()
+void InProcessWorkerMessagingProxy::workerThreadTerminated()
 {
     // This method is always the last to be performed, so the proxy is not needed for communication
     // in either side any more. However, the Worker object may still exist, and it assumes that the proxy exists, too.
@@ -234,7 +234,7 @@ void WorkerMessagingProxy::workerThreadTerminated()
         delete this;
 }
 
-void WorkerMessagingProxy::terminateWorkerGlobalScope()
+void InProcessWorkerMessagingProxy::terminateWorkerGlobalScope()
 {
     if (m_askedToTerminate)
         return;
@@ -246,19 +246,19 @@ void WorkerMessagingProxy::terminateWorkerGlobalScope()
     terminateInternally();
 }
 
-void WorkerMessagingProxy::postMessageToPageInspector(const String& message)
+void InProcessWorkerMessagingProxy::postMessageToPageInspector(const String& message)
 {
     if (m_workerInspectorProxy)
         m_workerInspectorProxy->dispatchMessageFromWorker(message);
 }
 
-void WorkerMessagingProxy::postWorkerConsoleAgentEnabled()
+void InProcessWorkerMessagingProxy::postWorkerConsoleAgentEnabled()
 {
     if (m_workerInspectorProxy)
         m_workerInspectorProxy->workerConsoleAgentEnabled();
 }
 
-void WorkerMessagingProxy::confirmMessageFromWorkerObject(bool hasPendingActivity)
+void InProcessWorkerMessagingProxy::confirmMessageFromWorkerObject(bool hasPendingActivity)
 {
     if (!m_askedToTerminate) {
         ASSERT(m_unconfirmedMessageCount);
@@ -267,17 +267,17 @@ void WorkerMessagingProxy::confirmMessageFromWorkerObject(bool hasPendingActivit
     reportPendingActivity(hasPendingActivity);
 }
 
-void WorkerMessagingProxy::reportPendingActivity(bool hasPendingActivity)
+void InProcessWorkerMessagingProxy::reportPendingActivity(bool hasPendingActivity)
 {
     m_workerThreadHadPendingActivity = hasPendingActivity;
 }
 
-bool WorkerMessagingProxy::hasPendingActivity() const
+bool InProcessWorkerMessagingProxy::hasPendingActivity() const
 {
     return (m_unconfirmedMessageCount || m_workerThreadHadPendingActivity) && !m_askedToTerminate;
 }
 
-void WorkerMessagingProxy::terminateInternally()
+void InProcessWorkerMessagingProxy::terminateInternally()
 {
     m_workerInspectorProxy->workerThreadTerminated();
 

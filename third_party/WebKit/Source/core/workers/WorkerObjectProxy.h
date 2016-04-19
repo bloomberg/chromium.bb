@@ -43,19 +43,19 @@ namespace blink {
 class ConsoleMessage;
 class ExecutionContext;
 class ExecutionContextTask;
-class WorkerMessagingProxy;
+class InProcessWorkerMessagingProxy;
 
 // A proxy to talk to the worker object. This object is created on the
 // worker object thread (i.e. usually the main thread), passed on to
 // the worker thread, and used just to proxy messages to the
-// WorkerMessagingProxy on the worker object thread.
+// InProcessWorkerMessagingProxy on the worker object thread.
 //
 // Used only by in-process workers (DedicatedWorker and CompositorWorker.)
 class CORE_EXPORT WorkerObjectProxy : public WorkerReportingProxy {
     USING_FAST_MALLOC(WorkerObjectProxy);
     WTF_MAKE_NONCOPYABLE(WorkerObjectProxy);
 public:
-    static PassOwnPtr<WorkerObjectProxy> create(WorkerMessagingProxy*);
+    static PassOwnPtr<WorkerObjectProxy> create(InProcessWorkerMessagingProxy*);
     ~WorkerObjectProxy() override { }
 
     void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
@@ -75,12 +75,12 @@ public:
     void willDestroyWorkerGlobalScope() override { }
 
 protected:
-    WorkerObjectProxy(WorkerMessagingProxy*);
+    WorkerObjectProxy(InProcessWorkerMessagingProxy*);
     virtual ExecutionContext* getExecutionContext();
 
 private:
     // This object always outlives this proxy.
-    WorkerMessagingProxy* m_messagingProxy;
+    InProcessWorkerMessagingProxy* m_messagingProxy;
 };
 
 } // namespace blink

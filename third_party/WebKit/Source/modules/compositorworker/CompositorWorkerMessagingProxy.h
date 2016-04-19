@@ -5,12 +5,12 @@
 #ifndef CompositorWorkerMessagingProxy_h
 #define CompositorWorkerMessagingProxy_h
 
-#include "core/workers/WorkerMessagingProxy.h"
+#include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
 
-class CompositorWorkerMessagingProxy final : public WorkerMessagingProxy {
+class CompositorWorkerMessagingProxy final : public InProcessWorkerMessagingProxy {
     USING_FAST_MALLOC(CompositorWorkerMessagingProxy);
 public:
     explicit CompositorWorkerMessagingProxy(InProcessWorkerBase*);

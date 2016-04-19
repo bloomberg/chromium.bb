@@ -24,12 +24,12 @@
  *
  */
 
-#ifndef WorkerMessagingProxy_h
-#define WorkerMessagingProxy_h
+#ifndef InProcessWorkerMessagingProxy_h
+#define InProcessWorkerMessagingProxy_h
 
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/workers/WorkerGlobalScopeProxy.h"
+#include "core/workers/InProcessWorkerGlobalScopeProxy.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -47,12 +47,15 @@ class InProcessWorkerBase;
 class WorkerClients;
 class WorkerInspectorProxy;
 
-class CORE_EXPORT WorkerMessagingProxy
-    : public WorkerGlobalScopeProxy
+// TODO(nhiroki): "MessagingProxy" is not well-defined term among worker
+// components. Probably we should rename this to something more suitable.
+// (http://crbug.com/603785)
+class CORE_EXPORT InProcessWorkerMessagingProxy
+    : public InProcessWorkerGlobalScopeProxy
     , private WorkerLoaderProxyProvider {
-    WTF_MAKE_NONCOPYABLE(WorkerMessagingProxy);
+    WTF_MAKE_NONCOPYABLE(InProcessWorkerMessagingProxy);
 public:
-    // Implementations of WorkerGlobalScopeProxy.
+    // Implementations of InProcessWorkerGlobalScopeProxy.
     // (Only use these methods in the worker object thread.)
     void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode) override;
     void terminateWorkerGlobalScope() override;
@@ -76,8 +79,8 @@ public:
     ExecutionContext* getExecutionContext() const { return m_executionContext.get(); }
 
 protected:
-    WorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
-    ~WorkerMessagingProxy() override;
+    InProcessWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
+    ~InProcessWorkerMessagingProxy() override;
 
     virtual PassOwnPtr<WorkerThread> createWorkerThread(double originTime) = 0;
 
@@ -115,4 +118,4 @@ private:
 
 } // namespace blink
 
-#endif // WorkerMessagingProxy_h
+#endif // InProcessWorkerMessagingProxy_h

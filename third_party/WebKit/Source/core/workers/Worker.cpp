@@ -8,8 +8,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
-#include "core/workers/WorkerGlobalScopeProxy.h"
-#include "core/workers/WorkerGlobalScopeProxyProvider.h"
+#include "core/workers/DedicatedWorkerGlobalScopeProxyProvider.h"
+#include "core/workers/InProcessWorkerGlobalScopeProxy.h"
 
 namespace blink {
 
@@ -43,10 +43,10 @@ const AtomicString& Worker::interfaceName() const
     return EventTargetNames::Worker;
 }
 
-WorkerGlobalScopeProxy* Worker::createWorkerGlobalScopeProxy(ExecutionContext* context)
+InProcessWorkerGlobalScopeProxy* Worker::createInProcessWorkerGlobalScopeProxy(ExecutionContext* context)
 {
     Document* document = toDocument(context);
-    WorkerGlobalScopeProxyProvider* proxyProvider = WorkerGlobalScopeProxyProvider::from(*document->page());
+    DedicatedWorkerGlobalScopeProxyProvider* proxyProvider = DedicatedWorkerGlobalScopeProxyProvider::from(*document->page());
     ASSERT(proxyProvider);
     return proxyProvider->createWorkerGlobalScopeProxy(this);
 }

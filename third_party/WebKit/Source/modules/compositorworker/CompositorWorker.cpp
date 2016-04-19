@@ -42,7 +42,7 @@ const AtomicString& CompositorWorker::interfaceName() const
     return EventTargetNames::CompositorWorker;
 }
 
-WorkerGlobalScopeProxy* CompositorWorker::createWorkerGlobalScopeProxy(ExecutionContext* worker)
+InProcessWorkerGlobalScopeProxy* CompositorWorker::createInProcessWorkerGlobalScopeProxy(ExecutionContext* worker)
 {
     ASSERT(getExecutionContext()->isDocument());
     return new CompositorWorkerMessagingProxy(this);

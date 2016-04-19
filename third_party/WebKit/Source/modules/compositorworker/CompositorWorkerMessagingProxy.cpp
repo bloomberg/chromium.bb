@@ -10,7 +10,7 @@
 namespace blink {
 
 CompositorWorkerMessagingProxy::CompositorWorkerMessagingProxy(InProcessWorkerBase* worker)
-    : WorkerMessagingProxy(worker, nullptr)
+    : InProcessWorkerMessagingProxy(worker, nullptr)
 {
 }
 

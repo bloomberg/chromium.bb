@@ -36,7 +36,6 @@
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "core/workers/WorkerGlobalScopeProxy.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/text/StringBuilder.h"

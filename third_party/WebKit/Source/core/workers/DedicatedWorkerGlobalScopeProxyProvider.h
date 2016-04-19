@@ -28,36 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerGlobalScopeProxyProviderImpl_h
-#define WorkerGlobalScopeProxyProviderImpl_h
+#ifndef DedicatedWorkerGlobalScopeProxyProvider_h
+#define DedicatedWorkerGlobalScopeProxyProvider_h
 
-#include "core/workers/WorkerGlobalScopeProxyProvider.h"
+#include "core/CoreExport.h"
+#include "core/page/Page.h"
+#include "platform/Supplementable.h"
+#include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
+class InProcessWorkerGlobalScopeProxy;
+class Page;
 class Worker;
-class WorkerGlobalScopeProxy;
 
-class WorkerGlobalScopeProxyProviderImpl final : public GarbageCollectedFinalized<WorkerGlobalScopeProxyProviderImpl>, public WorkerGlobalScopeProxyProvider {
-    USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeProxyProviderImpl);
-    WTF_MAKE_NONCOPYABLE(WorkerGlobalScopeProxyProviderImpl);
+class DedicatedWorkerGlobalScopeProxyProvider : public Supplement<Page> {
+    WTF_MAKE_NONCOPYABLE(DedicatedWorkerGlobalScopeProxyProvider);
 public:
-    static WorkerGlobalScopeProxyProviderImpl* create()
-    {
-        return new WorkerGlobalScopeProxyProviderImpl();
-    }
+    DedicatedWorkerGlobalScopeProxyProvider() { }
+    virtual ~DedicatedWorkerGlobalScopeProxyProvider() { }
 
-    ~WorkerGlobalScopeProxyProviderImpl() override { }
-    WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(Worker*) override;
+    virtual InProcessWorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(Worker*) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { WorkerGlobalScopeProxyProvider::trace(visitor); }
-
-private:
-    WorkerGlobalScopeProxyProviderImpl() { }
+    static DedicatedWorkerGlobalScopeProxyProvider* from(Page&);
+    static const char* supplementName();
 };
+
+CORE_EXPORT void provideDedicatedWorkerGlobalScopeProxyProviderTo(Page&, DedicatedWorkerGlobalScopeProxyProvider*);
 
 } // namespace blink
 
-#endif // WorkerGlobalScopeProxyProviderImpl_h
+#endif // DedicatedWorkerGlobalScopeProxyProvider_h
