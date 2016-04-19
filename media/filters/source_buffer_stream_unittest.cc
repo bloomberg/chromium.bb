@@ -3002,39 +3002,6 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected3) {
   CheckNoNextBuffer();
 }
 
-// Currently disabled because of bug: crbug.com/140875.
-TEST_F(SourceBufferStreamTest, DISABLED_GarbageCollection_WaitingForKeyframe) {
-  // Set memory limit to 10 buffers.
-  SetMemoryLimit(10);
-
-  // Append 5 buffers at positions 10 through 14 and exhaust the buffers.
-  NewCodedFrameGroupAppend(10, 5, &kDataA);
-  Seek(10);
-  CheckExpectedBuffers(10, 14, &kDataA);
-  CheckExpectedRanges("{ [10,14) }");
-
-  // We are now stalled at position 15.
-  CheckNoNextBuffer();
-
-  // Do an end overlap that causes the latter half of the range to be deleted.
-  NewCodedFrameGroupAppend(5, 6, &kDataA);
-  CheckNoNextBuffer();
-  CheckExpectedRanges("{ [5,10) }");
-
-  // Append buffers from position 20 to 29. This should trigger GC.
-  NewCodedFrameGroupAppend(20, 10, &kDataA);
-
-  // GC should keep the keyframe before the seek position 15, and the next 9
-  // buffers closest to the seek position.
-  CheckNoNextBuffer();
-  CheckExpectedRanges("{ [10,10) [20,28) }");
-
-  // Fulfill the seek by appending one buffer at 15.
-  NewCodedFrameGroupAppend(15, 1, &kDataA);
-  CheckExpectedBuffers(15, 15, &kDataA);
-  CheckExpectedRanges("{ [15,15) [20,28) }");
-}
-
 // Test the performance of garbage collection.
 TEST_F(SourceBufferStreamTest, GarbageCollection_Performance) {
   // Force |keyframes_per_second_| to be equal to kDefaultFramesPerSecond.
