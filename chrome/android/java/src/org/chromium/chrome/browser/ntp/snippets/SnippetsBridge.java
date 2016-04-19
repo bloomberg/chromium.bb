@@ -65,19 +65,18 @@ public class SnippetsBridge {
     }
 
     /**
-     * Sets the recipient for the fetched snippets.
+     * Sets the recipient for the fetched snippets. This method should be called only once.
      *
-     * An observer needs to be set before the native code attempts to transmit snippets them to
-     * java. Upon registration, the observer will be notified of already fetched snippets.
+     * Before the observer is set, the native code will not attempt to transmit them to java. Upon
+     * registration, the observer will be notified of already fetched snippets.
      *
-     * @param observer object to notify when snippets are received, or {@code null} if we want to
-     *                 stop observing.
+     * @param observer object to notify when snippets are received.
      */
     public void setObserver(SnippetsObserver observer) {
-        assert mObserver == null || mObserver == observer;
+        assert mObserver == null;
 
         mObserver = observer;
-        nativeSetObserver(mNativeSnippetsBridge, observer == null ? null : this);
+        nativeSetObserver(mNativeSnippetsBridge, this);
     }
 
     @CalledByNative

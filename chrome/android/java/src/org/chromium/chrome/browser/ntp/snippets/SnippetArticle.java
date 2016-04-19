@@ -45,17 +45,6 @@ public class SnippetArticle implements NewTabPageListItem {
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (!(other instanceof SnippetArticle)) return false;
-        return mUrl.equals(((SnippetArticle) other).mUrl);
-    }
-
-    @Override
-    public int hashCode() {
-        return mUrl.hashCode();
-    }
-
-    @Override
     public int getType() {
         return NewTabPageListItem.VIEW_TYPE_SNIPPET;
     }
@@ -64,12 +53,12 @@ public class SnippetArticle implements NewTabPageListItem {
      * Returns this article's tumbnail as a {@link Bitmap}. Can return {@code null} as it is
      * initially unset.
      */
-    public Bitmap getThumbnailBitmap() {
+    Bitmap getThumbnailBitmap() {
         return mThumbnailBitmap;
     }
 
     /** Sets the tumbnail bitmap for this article. */
-    public void setThumbnailBitmap(Bitmap bitmap) {
+    void setThumbnailBitmap(Bitmap bitmap) {
         mThumbnailBitmap = bitmap;
     }
 }

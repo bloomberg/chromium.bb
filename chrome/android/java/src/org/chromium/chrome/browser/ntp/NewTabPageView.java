@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetItemDecoration;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
-import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -163,9 +162,6 @@ public class NewTabPageView extends FrameLayout
 
         /** Sets the observer that will be notified of new snippets. */
         void setSnippetsObserver(SnippetsObserver observer);
-
-        /** Registers a {@link TabObserver} for the NTP. */
-        void addTabObserver(TabObserver tabObserver);
 
         /**
          * Gets a cached thumbnail of a URL.

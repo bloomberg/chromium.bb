@@ -239,6 +239,7 @@ void NTPSnippetsService::ClearDiscardedSnippets() {
 
 void NTPSnippetsService::AddObserver(NTPSnippetsServiceObserver* observer) {
   observers_.AddObserver(observer);
+  observer->NTPSnippetsServiceLoaded();
 }
 
 void NTPSnippetsService::RemoveObserver(NTPSnippetsServiceObserver* observer) {

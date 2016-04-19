@@ -17,8 +17,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
-import org.chromium.chrome.browser.tab.Tab;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,14 +79,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mNewTabPageListItems.add(mAboveTheFoldListItem);
 
         mNewTabPageManager.setSnippetsObserver(this);
-
-        // Fetch new snippets when switching back to the NTP, from another tab or another app.
-        mNewTabPageManager.addTabObserver(new EmptyTabObserver() {
-            @Override
-            public void onShown(Tab tab) {
-                mNewTabPageManager.setSnippetsObserver(NewTabPageAdapter.this);
-            }
-        });
     }
 
     /** Returns callbacks to configure the interactions with the RecyclerView's items. */
@@ -100,29 +90,15 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     public void onSnippetsReceived(List<SnippetArticle> listSnippets) {
         int newSnippetCount = listSnippets.size();
         Log.d(TAG, "Received %d new snippets.", newSnippetCount);
-
-        // At first, there might be no snippets available, we wait until they have been fetched.
-        if (newSnippetCount == 0) return;
-
-        // Copy thumbnails over
-        for (SnippetArticle newSnippet : listSnippets) {
-            int existingSnippetIdx = mNewTabPageListItems.indexOf(newSnippet);
-            if (existingSnippetIdx == -1) continue;
-
-            newSnippet.setThumbnailBitmap(
-                    ((SnippetArticle) mNewTabPageListItems.get(existingSnippetIdx))
-                            .getThumbnailBitmap());
-        }
-
         mNewTabPageListItems.clear();
         mNewTabPageListItems.add(mAboveTheFoldListItem);
-        mNewTabPageListItems.add(new SnippetHeaderListItem());
-        mNewTabPageListItems.addAll(listSnippets);
+
+        if (newSnippetCount > 0) {
+            mNewTabPageListItems.add(new SnippetHeaderListItem());
+            mNewTabPageListItems.addAll(listSnippets);
+        }
 
         notifyDataSetChanged();
-
-        // We don't want to get notified of other changes.
-        mNewTabPageManager.setSnippetsObserver(null);
     }
 
     @Override
@@ -173,9 +149,5 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         }
 
         notifyItemRangeRemoved(position, numRemovedItems);
-    }
-
-    List<NewTabPageListItem> getItemsForTesting() {
-        return mNewTabPageListItems;
     }
 }
