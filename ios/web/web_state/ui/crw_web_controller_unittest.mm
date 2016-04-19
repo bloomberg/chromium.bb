@@ -801,18 +801,25 @@ TEST_F(CRWWebControllerPageScrollStateTest, FLAKY_AtTop) {
   ASSERT_FALSE(web_controller.atTop);
 };
 
-// Real WKWebView is required for JSEvaluationTest.
-typedef web::WebTestWithWebController CRWWebControllerJSEvaluationTest;
+// Real WKWebView is required for CRWWebControllerJSExecutionTest.
+typedef web::WebTestWithWebController CRWWebControllerJSExecutionTest;
 
 // Tests that a script correctly evaluates to string.
-TEST_F(CRWWebControllerJSEvaluationTest, Evaluation) {
+TEST_F(CRWWebControllerJSExecutionTest, LegacyAPIExecution) {
   LoadHtml(@"<p></p>");
   EXPECT_NSEQ(@"true", EvaluateJavaScriptAsString(@"true"));
   EXPECT_NSEQ(@"false", EvaluateJavaScriptAsString(@"false"));
 }
 
+// Tests that a script correctly evaluates to boolean.
+TEST_F(CRWWebControllerJSExecutionTest, Execution) {
+  LoadHtml(@"<p></p>");
+  EXPECT_NSEQ(@YES, ExecuteJavaScript(@"true"));
+  EXPECT_NSEQ(@NO, ExecuteJavaScript(@"false"));
+}
+
 // Tests that a script is not evaluated on windowID mismatch.
-TEST_F(CRWWebControllerJSEvaluationTest, WindowIdMissmatch) {
+TEST_F(CRWWebControllerJSExecutionTest, LegacyAPIWindowIdMissmatch) {
   LoadHtml(@"<p></p>");
   // Script is evaluated since windowID is matched.
   EvaluateJavaScriptAsString(@"window.test1 = '1';");
@@ -824,6 +831,21 @@ TEST_F(CRWWebControllerJSEvaluationTest, WindowIdMissmatch) {
   // Script is not evaluated because of windowID mismatch.
   EvaluateJavaScriptAsString(@"window.test2 = '2';");
   EXPECT_NSEQ(@"", EvaluateJavaScriptAsString(@"window.test2"));
+}
+
+// Tests that a script is not executed on windowID mismatch.
+TEST_F(CRWWebControllerJSExecutionTest, WindowIdMissmatch) {
+  LoadHtml(@"<p></p>");
+  // Script is evaluated since windowID is matched.
+  ExecuteJavaScript(@"window.test1 = '1';");
+  EXPECT_NSEQ(@"1", ExecuteJavaScript(@"window.test1"));
+
+  // Change windowID.
+  ExecuteJavaScript(@"__gCrWeb['windowId'] = '';");
+
+  // Script is not evaluated because of windowID mismatch.
+  ExecuteJavaScript(@"window.test2 = '2';");
+  EXPECT_FALSE(ExecuteJavaScript(@"window.test2"));
 }
 
 TEST_F(CRWWebControllerTest, WebUrlWithTrustLevel) {

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/test/ios/wait_util.h"
+#include "base/values.h"
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
 #import "ios/web/public/web_view_creation_util.h"
@@ -43,6 +44,61 @@ class WebViewJsUtilsTest : public web::WebTest {
   // WKWebView created for testing.
   base::scoped_nsobject<WKWebView> web_view_;
 };
+
+// Tests that ValueResultFromWKResult converts nil value to nullptr.
+TEST_F(WebViewJsUtilsTest, ValueResultFromUndefinedWKResult) {
+  EXPECT_FALSE(ValueResultFromWKResult(nil));
+}
+
+// Tests that ValueResultFromWKResult converts string to Value::TYPE_STRING.
+TEST_F(WebViewJsUtilsTest, ValueResultFromStringWKResult) {
+  std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(@"test"));
+  EXPECT_TRUE(value);
+  EXPECT_EQ(base::Value::TYPE_STRING, value->GetType());
+  std::string converted_result;
+  value->GetAsString(&converted_result);
+  EXPECT_EQ("test", converted_result);
+}
+
+// Tests that ValueResultFromWKResult converts inetger to Value::TYPE_DOUBLE.
+// NOTE: WKWebView API returns all numbers as kCFNumberFloat64Type, so there is
+// no way to tell if the result is integer or double.
+TEST_F(WebViewJsUtilsTest, ValueResultFromIntegerWKResult) {
+  std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(@1));
+  EXPECT_TRUE(value);
+  EXPECT_EQ(base::Value::TYPE_DOUBLE, value->GetType());
+  double converted_result = 0;
+  value->GetAsDouble(&converted_result);
+  EXPECT_EQ(1, converted_result);
+}
+
+// Tests that ValueResultFromWKResult converts double to Value::TYPE_DOUBLE.
+TEST_F(WebViewJsUtilsTest, ValueResultFromDoubleWKResult) {
+  std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(@3.14));
+  EXPECT_TRUE(value);
+  EXPECT_EQ(base::Value::TYPE_DOUBLE, value->GetType());
+  double converted_result = 0;
+  value->GetAsDouble(&converted_result);
+  EXPECT_EQ(3.14, converted_result);
+}
+
+// Tests that ValueResultFromWKResult converts bool to Value::TYPE_BOOLEAN.
+TEST_F(WebViewJsUtilsTest, ValueResultFromBoolWKResult) {
+  std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(@YES));
+  EXPECT_TRUE(value);
+  EXPECT_EQ(base::Value::TYPE_BOOLEAN, value->GetType());
+  bool converted_result = false;
+  value->GetAsBoolean(&converted_result);
+  EXPECT_TRUE(converted_result);
+}
+
+// Tests that ValueResultFromWKResult converts null to Value::TYPE_NULL.
+TEST_F(WebViewJsUtilsTest, ValueResultFromNullWKResult) {
+  std::unique_ptr<base::Value> value(
+      web::ValueResultFromWKResult([NSNull null]));
+  EXPECT_TRUE(value);
+  EXPECT_EQ(base::Value::TYPE_NULL, value->GetType());
+}
 
 // Tests that a script with undefined result correctly evaluates to string.
 TEST_F(WebViewJsUtilsTest, UndefinedEvaluation) {

@@ -175,6 +175,20 @@ NSString* WebTestWithWebController::EvaluateJavaScriptAsString(
   return [[evaluationResult retain] autorelease];
 }
 
+id WebTestWithWebController::ExecuteJavaScript(NSString* script) {
+  __block base::scoped_nsprotocol<id> executionResult;
+  __block bool executionCompleted = false;
+  [webController_ executeJavaScript:script
+                  completionHandler:^(id result, NSError*) {
+                    executionResult.reset([result copy]);
+                    executionCompleted = true;
+                  }];
+  base::test::ios::WaitUntilCondition(^{
+    return executionCompleted;
+  });
+  return [[executionResult retain] autorelease];
+}
+
 void WebTestWithWebController::WillProcessTask(
     const base::PendingTask& pending_task) {
   // Nothing to do.

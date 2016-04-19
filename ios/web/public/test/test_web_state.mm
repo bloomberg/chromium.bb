@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ios/web/public/test/test_web_state.h"
+
 #include <stdint.h>
 
-#include "ios/web/public/test/test_web_state.h"
+#include "base/callback.h"
 
 namespace web {
 
@@ -33,6 +35,13 @@ NavigationManager* TestWebState::GetNavigationManager() {
 
 CRWJSInjectionReceiver* TestWebState::GetJSInjectionReceiver() const {
   return nullptr;
+}
+
+void TestWebState::ExecuteJavaScript(const base::string16& javascript) {}
+
+void TestWebState::ExecuteJavaScript(const base::string16& javascript,
+                                     const JavaScriptResultCallback& callback) {
+  callback.Run(nullptr);
 }
 
 const std::string& TestWebState::GetContentsMimeType() const {

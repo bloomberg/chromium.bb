@@ -41,6 +41,11 @@
   [_evaluator evaluateJavaScript:script stringResultHandler:handler];
 }
 
+- (void)executeJavaScript:(NSString*)script
+        completionHandler:(web::JavaScriptResultBlock)completionHandler {
+  [_evaluator executeJavaScript:script completionHandler:completionHandler];
+}
+
 - (BOOL)scriptHasBeenInjectedForClass:(Class)jsInjectionManagerClass
                        presenceBeacon:(NSString*)beacon {
   return [_evaluator scriptHasBeenInjectedForClass:jsInjectionManagerClass

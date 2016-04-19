@@ -520,6 +520,26 @@ CRWJSInjectionReceiver* WebStateImpl::GetJSInjectionReceiver() const {
   return [web_controller_ jsInjectionReceiver];
 }
 
+void WebStateImpl::ExecuteJavaScript(const base::string16& javascript) {
+  [web_controller_ executeJavaScript:base::SysUTF16ToNSString(javascript)
+                   completionHandler:nil];
+}
+
+void WebStateImpl::ExecuteJavaScript(const base::string16& javascript,
+                                     const JavaScriptResultCallback& callback) {
+  JavaScriptResultCallback stackCallback = callback;
+  [web_controller_ executeJavaScript:base::SysUTF16ToNSString(javascript)
+                   completionHandler:^(id value, NSError* error) {
+                     if (error) {
+                       DLOG(WARNING)
+                           << "Script execution has failed: "
+                           << base::SysNSStringToUTF16(
+                                  error.userInfo[NSLocalizedDescriptionKey]);
+                     }
+                     stackCallback.Run(ValueResultFromWKResult(value).get());
+                   }];
+}
+
 const std::string& WebStateImpl::GetContentLanguageHeader() const {
   return content_language_header_;
 }

@@ -32,6 +32,7 @@ typedef UIView<CRWScrollableContent> CRWContentView;
 
 namespace base {
 class DictionaryValue;
+class Value;
 }
 
 namespace web {
@@ -107,6 +108,16 @@ class WebState : public base::SupportsUserData {
 
   // Gets the CRWJSInjectionReceiver associated with this WebState.
   virtual CRWJSInjectionReceiver* GetJSInjectionReceiver() const = 0;
+
+  // Runs JavaScript in the main frame's context. If a callback is provided, it
+  // will be used to return the result, when the result is available or script
+  // execution has failed due to an error.
+  // NOTE: Integer values will be returned as TYPE_DOUBLE because of underlying
+  // library limitation.
+  typedef base::Callback<void(const base::Value*)> JavaScriptResultCallback;
+  virtual void ExecuteJavaScript(const base::string16& javascript) = 0;
+  virtual void ExecuteJavaScript(const base::string16& javascript,
+                                 const JavaScriptResultCallback& callback) = 0;
 
   // Gets the contents MIME type.
   virtual const std::string& GetContentsMimeType() const = 0;

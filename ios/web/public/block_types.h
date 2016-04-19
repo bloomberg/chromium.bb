@@ -11,7 +11,12 @@ namespace web {
 
 // The type of the completion handler block that is called to inform about
 // JavaScript evaluation completion.
+// TODO(crbug.com/595761): Remove this completion handler.
 typedef void (^JavaScriptCompletion)(NSString*, NSError*);
+
+// The type of the completion handler block that is called to inform about
+// JavaScript evaluation completion.
+typedef void (^JavaScriptResultBlock)(id, NSError*);
 
 }  // namespace
 

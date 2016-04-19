@@ -8,8 +8,12 @@
 
 #include <memory>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/mac/bind_objc_block.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/ios/wait_util.h"
 #include "base/values.h"
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/test/test_browser_state.h"
@@ -250,6 +254,28 @@ class WebStateTest : public web::WebTest {
  protected:
   void SetUp() override {
     web_state_.reset(new WebStateImpl(&browser_state_));
+  }
+
+  // Loads specified html page into WebState.
+  void LoadHtml(std::string html) {
+    web_state_->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, 0);
+
+    // Use data: url for loading html page.
+    std::string encoded_html;
+    base::Base64Encode(html, &encoded_html);
+    GURL url("data:text/html;charset=utf8;base64," + encoded_html);
+    web::NavigationManager::WebLoadParams params(url);
+    web_state_->GetNavigationManager()->LoadURLWithParams(params);
+
+    // Trigger the load.
+    web_state_->GetWebController().webUsageEnabled = YES;
+    web_state_->GetView();
+
+    // Wait until load is completed.
+    EXPECT_TRUE(web_state_->IsLoading());
+    base::test::ios::WaitUntilCondition(^bool() {
+      return !web_state_->IsLoading();
+    });
   }
 
   web::TestBrowserState browser_state_;
@@ -530,6 +556,29 @@ TEST_F(WebStateTest, ScriptCommand) {
   EXPECT_TRUE(is_called_2);
 
   web_state_->RemoveScriptCommandCallback(kPrefix2);
+}
+
+// Tests script execution with and without callback.
+TEST_F(WebStateTest, ScriptExecution) {
+  LoadHtml("<html></html>");
+
+  // Execute script without callback.
+  web_state_->ExecuteJavaScript(base::UTF8ToUTF16("window.foo = 'bar'"));
+
+  // Execute script with callback.
+  __block std::unique_ptr<base::Value> execution_result;
+  web_state_->ExecuteJavaScript(base::UTF8ToUTF16("window.foo"),
+                                base::BindBlock(^(const base::Value* value) {
+                                  ASSERT_TRUE(value);
+                                  execution_result = value->CreateDeepCopy();
+                                }));
+  base::test::ios::WaitUntilCondition(^bool() {
+    return execution_result.get();
+  });
+
+  std::string string_result;
+  execution_result->GetAsString(&string_result);
+  EXPECT_EQ("bar", string_result);
 }
 
 }  // namespace

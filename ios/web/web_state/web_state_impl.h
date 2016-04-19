@@ -223,6 +223,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void OpenURL(const WebState::OpenURLParams& params) override;
   NavigationManager* GetNavigationManager() override;
   CRWJSInjectionReceiver* GetJSInjectionReceiver() const override;
+  void ExecuteJavaScript(const base::string16& javascript) override;
+  void ExecuteJavaScript(const base::string16& javascript,
+                         const JavaScriptResultCallback& callback) override;
   const std::string& GetContentLanguageHeader() const override;
   const std::string& GetContentsMimeType() const override;
   bool ContentIsHTML() const override;

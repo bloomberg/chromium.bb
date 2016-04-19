@@ -2431,6 +2431,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   web::EvaluateJavaScript(self.webView, safeScript, handler);
 }
 
+- (void)executeJavaScript:(NSString*)script
+        completionHandler:(web::JavaScriptResultBlock)completionHandler {
+  NSString* safeScript = [self scriptByAddingWindowIDCheckForScript:script];
+  web::ExecuteJavaScript(self.webView, safeScript, completionHandler);
+}
+
 - (BOOL)scriptHasBeenInjectedForClass:(Class)JSInjectionManagerClass
                        presenceBeacon:(NSString*)beacon {
   return [_injectedScriptManagers containsObject:JSInjectionManagerClass];
@@ -2443,7 +2449,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // Every injection except windowID requires windowID check.
     if (JSInjectionManagerClass != [CRWJSWindowIdManager class])
       script = [self scriptByAddingWindowIDCheckForScript:script];
-    web::EvaluateJavaScript(self.webView, script, nil);
+    web::ExecuteJavaScript(self.webView, script, nil);
   }
   [_injectedScriptManagers addObject:JSInjectionManagerClass];
 }
@@ -2452,7 +2458,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)evaluateUserJavaScript:(NSString*)script {
   [self setUserInteractionRegistered:YES];
-  web::EvaluateJavaScript(self.webView, script, nil);
+  web::ExecuteJavaScript(self.webView, script, nil);
 }
 
 - (void)didFinishNavigation {
@@ -4943,7 +4949,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // TODO(crbug.com/546350): Investigate using
   // WKUserScriptInjectionTimeAtDocumentEnd to inject this material at the
   // appropriate time rather than invoking here.
-  web::EvaluateJavaScript(webView, @"__gCrWeb.didFinishNavigation()", nil);
+  web::ExecuteJavaScript(webView, @"__gCrWeb.didFinishNavigation()", nil);
   [self didFinishNavigation];
 }
 

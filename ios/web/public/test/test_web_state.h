@@ -30,6 +30,9 @@ class TestWebState : public WebState {
   void OpenURL(const OpenURLParams& params) override {}
   NavigationManager* GetNavigationManager() override;
   CRWJSInjectionReceiver* GetJSInjectionReceiver() const override;
+  void ExecuteJavaScript(const base::string16& javascript) override;
+  void ExecuteJavaScript(const base::string16& javascript,
+                         const JavaScriptResultCallback& callback) override;
   const std::string& GetContentsMimeType() const override;
   const std::string& GetContentLanguageHeader() const override;
   bool ContentIsHTML() const override;
