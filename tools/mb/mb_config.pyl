@@ -314,6 +314,42 @@
       'Linux Tests': 'none',
     },
 
+    'chromium.lkgr': {
+      'ASAN Debug': 'gyp_asan_lsan_edge_fuzzer_debug_bot',
+      'ASAN Release (symbolized)':
+        'gyp_asan_lsan_edge_fuzzer_v8_heap_symbolized_release_bot',
+      'ASAN Release Media':
+        'gyp_asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot',
+      'ASAN Release': 'gyp_asan_lsan_edge_fuzzer_v8_heap_release_bot',
+      'ASan Debug (32-bit x86 with V8-ARM)':
+        'gyp_asan_edge_fuzzer_v8_heap_debug_bot_hybrid',
+      'ASan Release (32-bit x86 with V8-ARM)':
+        'gyp_asan_edge_fuzzer_v8_heap_release_bot_hybrid',
+      'ASan Release (32-bit x86 with V8-ARM, symbolized)':
+        'gyp_asan_edge_fuzzer_v8_heap_symbolized_release_bot_hybrid',
+      'ASan Release Media (32-bit x86 with V8-ARM)':
+        'gyp_asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid',
+      'ChromiumOS ASAN Release':
+        'gyp_chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot',
+      'MSAN Release (chained origins)': 'gyp_msan_edge_release_bot',
+      'MSAN Release (no origins)': 'gyp_msan_no_origins_edge_release_bot',
+      'Mac ASAN Debug': 'gyp_asan_fuzzer_v8_heap_debug_symbols_static_bot',
+      'Mac ASAN Release Media':
+        'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_bot',
+      'Mac ASAN Release': 'gyp_asan_fuzzer_v8_heap_release_bot',
+      'TSAN Debug': 'gyp_tsan_disable_nacl_line_tables_debug_bot',
+      'TSAN Release': 'gyp_tsan_disable_nacl_line_tables_release_bot',
+      'Telemetry Harness Upload': 'none',
+      'UBSan Release': 'gyp_ubsan_release_bot',
+      'UBSan vptr Release': 'gyp_ubsan_vptr_edge_release_bot',
+      'Win ASan Release Coverage':
+        'gyp_asan_edge_fuzzer_v8_heap_release_static_x86',
+      'Win ASan Release Media':
+        'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_static_x86',
+      'Win ASan Release': 'gyp_asan_fuzzer_v8_heap_release_static_x86',
+      'Win SyzyASAN LKGR': 'gyp_syzyasan_no_pch_win_z7_x86',
+    },
+
     'chromium.mac': {
       'Mac Builder': 'swarming_gpu_tests_gyp_release_bot',
       'Mac Builder (dbg)': 'swarming_gyp_debug_bot',
@@ -1100,6 +1136,99 @@
       'gn', 'release_trybot', 'x86',
     ],
 
+    'gyp_asan_lsan_edge_fuzzer_debug_bot': [
+      'gyp', 'asan', 'lsan', 'edge', 'fuzzer', 'debug_bot',
+    ],
+
+    'gyp_asan_lsan_edge_fuzzer_v8_heap_symbolized_release_bot': [
+      'gyp', 'asan', 'lsan', 'edge', 'v8_heap', 'symbolized', 'release_bot',
+    ],
+
+    'gyp_asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot': [
+      'gyp', 'asan', 'lsan', 'edge', 'v8_heap', 'chromeos_codecs', 
+      'release_bot',
+    ],
+
+    'gyp_asan_lsan_edge_fuzzer_v8_heap_release_bot': [
+      'gyp', 'asan', 'lsan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
+    ],
+
+    'gyp_asan_edge_fuzzer_v8_heap_debug_bot_hybrid': [
+      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'debug_bot', 'hybrid',
+    ],
+
+    'gyp_asan_edge_fuzzer_v8_heap_release_bot_hybrid': [
+      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot', 'hybrid',
+    ],
+
+    'gyp_asan_edge_fuzzer_v8_heap_symbolized_release_bot_hybrid': [
+      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'symbolized',
+      'release_bot', 'hybrid',
+    ],
+
+    'gyp_asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid': [
+      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'chromeos_codecs',
+      'release_bot', 'hybrid',
+    ],
+
+    'gyp_chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot': [
+      'gyp', 'chromeos', 'asan', 'lsan', 'edge', 'fuzzer', 'v8_heap',
+      'release_bot',
+    ],
+
+    'gyp_msan_edge_release_bot': [
+      'gyp', 'msan', 'edge', 'release_bot',
+    ],
+
+    'gyp_msan_no_origins_edge_release_bot': [
+      'gyp', 'msan_no_origins', 'edge', 'release_bot',
+    ],
+
+    'gyp_asan_fuzzer_v8_heap_debug_symbols_static_bot': [
+      'gyp', 'asan', 'fuzzer', 'v8_heap',  'debug_symbols_static_bot',
+    ],
+
+    'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_bot': [
+      'gyp', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 'release_bot',
+    ],
+
+    'gyp_asan_fuzzer_v8_heap_release_bot': [
+      'gyp', 'asan', 'fuzzer', 'v8_heap', 'release_bot',
+    ],
+
+    'gyp_tsan_disable_nacl_line_tables_debug_bot': [
+      'gyp', 'tsan', 'disable_nacl', 'line_tables', 'debug_bot',
+    ],
+
+    'gyp_tsan_disable_nacl_line_tables_release_bot': [
+      'gyp', 'tsan', 'disable_nacl', 'line_tables', 'release_bot',
+    ],
+
+    'gyp_ubsan_release_bot': [
+      'gyp', 'ubsan', 'release_bot',
+    ],
+
+    'gyp_ubsan_vptr_edge_release_bot': [
+      'gyp', 'ubsan_vptr', 'edge', 'release_bot',
+    ],
+
+    'gyp_asan_edge_fuzzer_v8_heap_release_static_x86': [
+      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release', 'static', 'x86',
+    ],
+
+    'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_static_x86': [
+      'gyp', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 
+      'release', 'static', 'x86',
+    ],
+
+    'gyp_asan_fuzzer_v8_heap_release_static_x86': [
+      'gyp', 'asan', 'fuzzer', 'v8_heap', 'release', 'static', 'x86',
+    ],
+
+    'gyp_syzyasan_no_pch_win_z7_x86': [
+      'gyp', 'syzyasan', 'no_pch', 'win_z7', 'x86',
+    ],
+
     'gyp_official': [
       'gyp', 'official',
     ],
@@ -1638,8 +1767,12 @@
       'gyp_defines': 'chromeos=1',
     },
 
+    'chromeos_codecs': {
+      'mixins': ['ffmpeg_branding_chromeos', 'proprietary_codecs'],
+    },
+
     'chromeos_with_codecs': {
-      'mixins': ['ffmpeg_branding_chromeos', 'chromeos', 'proprietary_codecs'],
+      'mixins': ['chromeos', 'chromeos_codecs'],
     },
 
     'clang_no_chrome_plugins': {
@@ -1692,6 +1825,10 @@
       'mixins': ['debug_bot', 'minimal_symbols'],
     },
 
+    'debug_symbols_static_bot': {
+      'mixins': ['debug', 'static', 'goma'],
+    },
+
     'debug_static_bot': {
       'mixins': ['debug', 'static', 'minimal_symbols', 'goma'],
     },
@@ -1710,6 +1847,11 @@
       'gyp_defines': 'chromium_win_pch=0',
     },
 
+    'edge': {
+      'gn_args': 'sanitizer_coverage_flags="edge"',
+      'gyp_defines': 'sanitizer_coverage=edge',
+    },
+
     'embedded': {
       'gn_args': 'error',
       'gyp_defines': 'embedded=1',
@@ -1724,9 +1866,19 @@
       'gyp_defines': 'target_arch=unknown',
     },
 
+    'ffmpeg_branding_chromeos': {
+      'gn_args': 'ffmpeg_branding="ChromeOS"',
+      'gyp_defines': 'ffmpeg_branding=ChromeOS',
+    },
+
     'findbugs': {
       'gn_args': 'run_findbugs=true',
       'gyp_defines': 'run_findbugs=1',
+    },
+
+    'fuzzer': {
+      'gn_args': 'error', # TODO(GYP): implement enable_ipc_fuzzer=true
+      'gyp_defines': 'enable_ipc_fuzzer=1',
     },
 
     'gn_linux_upload': {
@@ -1754,15 +1906,26 @@
 
     'gyp': {'type': 'gyp'},
 
+    'hybrid': {
+      'gn_args': 'error', # TODO(GYP): figure out the equivalent for this
+      'gyp_defines': 'v8_target_arch=arm target_arch=ia32, host_arch=x86_64',
+      'mixins': ['disable_nacl'],
+    },
+
     'internal_gles2_conform_tests': {
       'gn_args': 'internal_gles2_conform_tests=true',
       'gyp_defines': 'internal_gles2_conform_tests=1',
     },
 
-    'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },
-
     'java_coverage': {
       'gn_args': 'emma_coverage=true emma_filter="org.chromium.*"',
+    },
+
+    'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },
+
+    'line_tables': {
+      'gn_args': '', # TODO(GYP): check that this is not needed
+      'gyp_defines': 'debug_extra_cflags="-gline-tables-only"',
     },
 
     'ubsan_security': { 'gn_args': 'is_ubsan_security=true' },
@@ -1797,6 +1960,18 @@
                   'use_prebuilt_instrumented_libraries=true'),
       'gyp_defines': ('msan=1 msan_track_origins=2 '
                       'use_prebuilt_instrumented_libraries=1'),
+    },
+
+    'msan_no_origins': {
+      'gn_args': ('is_msan=true msan_track_origins=0 '
+                  'use_prebuilt_instrumented_libraries=true'),
+      'gyp_defines': ('msan=1 msan_track_origins=0 '
+                      'use_prebuilt_instrumented_libraries=1'),
+    },
+
+    'no_pch': {
+      'gn_args': 'disable_precompiled_headers=true',
+      'gyp_defines': 'chromium_win_pch=0',
     },
 
     'no_symbols': {
@@ -1866,6 +2041,12 @@
       'gyp_defines': 'test_isolation_mode=prepare',
     },
 
+    'symbolized': {
+      'gn_args': 'error', # TODO(GYP): add an equivalent flag for this
+      'gyp_defines':
+        'release_extra_cflags="-O1 -fno-inline-functions -fno-inline"',
+    },
+
     'syzyasan': {
       'gn_args': 'is_syzyasan=true',
       'gyp_defines': 'syzyasan=1'
@@ -1876,9 +2057,29 @@
       'gyp_defines': 'tsan=1',
     },
 
+    'ubsan': {
+      'gn_args': 'is_ubsan=true',
+      'gyp_defines': 'ubsan=1',
+    },
+
+    'ubsan_vptr': {
+      'gn_args': 'is_ubsan_vptr=true',
+      'gyp_defines': 'ubsan_vptr=1',
+    },
+
+    'v8_heap': {
+      'gn_args': 'error', # TODO(GYP): implement v8_enable_verify_heap=true
+      'gyp_defines': 'v8_enable_verify_heap=1',
+    },
+
     'win_analyze': {
       'gn_args': 'use_vs_code_analysis=true',
       'gyp_defines': 'win_analyze=1',
+    },
+
+    'win_z7': {
+      'gn_args': 'error', # TODO(GYP): implement win_z7=true
+      'gyp_defines': 'win_z7=1',
     },
 
     'x64': {
@@ -1899,7 +2100,7 @@
     },
 
     'valgrind': {
-      # TODO: add gn_args for 'build_for_tool=memcheck'
+      'gn_args': 'error', # TODO(GYP): implement build_for_tool=memcheck
       'gyp_defines': 'build_for_tool=memcheck',
     }
   },
