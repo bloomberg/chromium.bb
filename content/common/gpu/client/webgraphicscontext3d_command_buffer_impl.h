@@ -108,7 +108,7 @@ class WebGraphicsContext3DCommandBufferImpl
     DISALLOW_COPY_AND_ASSIGN(ShareGroup);
   };
 
-  WebGraphicsContext3DCommandBufferImpl(
+  CONTENT_EXPORT WebGraphicsContext3DCommandBufferImpl(
       gpu::SurfaceHandle surface_handle,
       const GURL& active_url,
       gpu::GpuChannelHost* host,
@@ -130,19 +130,6 @@ class WebGraphicsContext3DCommandBufferImpl
   gpu::gles2::GLES2Implementation* GetImplementation() {
     return real_gl_.get();
   }
-
-  // Create & initialize a WebGraphicsContext3DCommandBufferImpl.  Return NULL
-  // on any failure.
-  static CONTENT_EXPORT WebGraphicsContext3DCommandBufferImpl*
-  CreateOffscreenContext(
-      gpu::GpuChannelHost* host,
-      const gpu::gles2::ContextCreationAttribHelper& attributes,
-      gfx::GpuPreference gpu_preference,
-      bool share_resources,
-      bool automatic_flushes,
-      const GURL& active_url,
-      const SharedMemoryLimits& limits,
-      WebGraphicsContext3DCommandBufferImpl* share_context);
 
   size_t GetMappedMemoryLimit() {
     return mem_limits_.mapped_memory_reclaim_limit;

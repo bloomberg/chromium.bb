@@ -99,6 +99,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       gpu_preference_(gpu_preference),
       mem_limits_(limits),
       weak_ptr_factory_(this) {
+  DCHECK(host);
   switch (attributes.context_type) {
     case gpu::gles2::CONTEXT_TYPE_OPENGLES2:
     case gpu::gles2::CONTEXT_TYPE_OPENGLES3:
@@ -308,23 +309,6 @@ void WebGraphicsContext3DCommandBufferImpl::Destroy() {
 gpu::ContextSupport*
 WebGraphicsContext3DCommandBufferImpl::GetContextSupport() {
   return real_gl_.get();
-}
-
-// static
-WebGraphicsContext3DCommandBufferImpl*
-WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-    gpu::GpuChannelHost* host,
-    const gpu::gles2::ContextCreationAttribHelper& attributes,
-    gfx::GpuPreference gpu_preference,
-    bool share_resources,
-    bool automatic_flushes,
-    const GURL& active_url,
-    const SharedMemoryLimits& limits,
-    WebGraphicsContext3DCommandBufferImpl* share_context) {
-  DCHECK(host);
-  return new WebGraphicsContext3DCommandBufferImpl(
-      gpu::kNullSurfaceHandle, active_url, host, attributes, gpu_preference,
-      share_resources, automatic_flushes, limits, share_context);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {

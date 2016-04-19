@@ -550,7 +550,7 @@ void CompositorImpl::CreateOutputSurface() {
   // DidInitializeOutputSurface() or DidFailToInitializeOutputSurface().
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
   scoped_refptr<ContextProviderCommandBuffer> context_provider(
-      ContextProviderCommandBuffer::Create(
+      new ContextProviderCommandBuffer(
           CreateGpuProcessViewContext(gpu_channel_host, attributes,
                                       surface_id_),
           DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT));

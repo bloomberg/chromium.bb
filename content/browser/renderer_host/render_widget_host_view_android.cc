@@ -190,7 +190,7 @@ void GLHelperHolder::Initialize() {
           gpu::kNullSurfaceHandle,  // offscreen
           url, gpu_channel_host.get(), attributes, gfx::PreferIntegratedGpu,
           share_resources, automatic_flushes, limits, nullptr));
-  provider_ = ContextProviderCommandBuffer::Create(
+  provider_ = new ContextProviderCommandBuffer(
       std::move(context), BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   if (!provider_->BindToCurrentThread())
     return;

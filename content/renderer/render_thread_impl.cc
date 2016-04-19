@@ -446,6 +446,32 @@ void StringToUintVector(const std::string& str, std::vector<unsigned>* vector) {
   }
 }
 
+std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> CreateOffscreenContext(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+  DCHECK(gpu_channel_host);
+  // This is used to create a few different offscreen contexts:
+  // - The shared main thread context (offscreen) used by blink for canvas.
+  // - The worker context (offscreen) used for GPU raster and video decoding.
+  // This is for an offscreen context, so the default framebuffer doesn't need
+  // alpha, depth, stencil, antialiasing.
+  gpu::gles2::ContextCreationAttribHelper attributes;
+  attributes.alpha_size = -1;
+  attributes.depth_size = 0;
+  attributes.stencil_size = 0;
+  attributes.samples = 0;
+  attributes.sample_buffers = 0;
+  attributes.bind_generates_resource = false;
+  attributes.lose_context_when_out_of_memory = true;
+  bool share_resources = true;
+  bool automatic_flushes = false;
+  return base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
+      gpu::kNullSurfaceHandle,
+      GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext3d"),
+      gpu_channel_host.get(), attributes, gfx::PreferIntegratedGpu,
+      share_resources, automatic_flushes,
+      WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(), nullptr));
+}
+
 }  // namespace
 
 // For measuring memory usage after each task. Behind a command line flag.
@@ -1488,47 +1514,26 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   return nullptr;
 }
 
-std::unique_ptr<WebGraphicsContext3DCommandBufferImpl>
-RenderThreadImpl::CreateOffscreenContext3d() {
-  // This is used to create a few different offscreen contexts:
-  // - The shared main thread context (offscreen) used by blink for canvas.
-  // - The worker context (offscreen) used for GPU raster and video decoding.
-  // This is for an offscreen context, so the default framebuffer doesn't need
-  // alpha, depth, stencil, antialiasing.
-  gpu::gles2::ContextCreationAttribHelper attributes;
-  attributes.alpha_size = -1;
-  attributes.depth_size = 0;
-  attributes.stencil_size = 0;
-  attributes.samples = 0;
-  attributes.sample_buffers = 0;
-  attributes.bind_generates_resource = false;
-  attributes.lose_context_when_out_of_memory = true;
-  bool share_resources = true;
-  bool automatic_flushes = false;
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
-  if (!gpu_channel_host)
-    return nullptr;
-  return base::WrapUnique(
-      WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-          gpu_channel_host.get(), attributes, gfx::PreferIntegratedGpu,
-          share_resources, automatic_flushes,
-          GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext3d"),
-          WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(), NULL));
-}
-
 scoped_refptr<cc_blink::ContextProviderWebContext>
 RenderThreadImpl::SharedMainThreadContextProvider() {
   DCHECK(IsMainThread());
-  if (!shared_main_thread_contexts_.get() ||
-      shared_main_thread_contexts_->ContextGL()->GetGraphicsResetStatusKHR() !=
-          GL_NO_ERROR) {
-    shared_main_thread_contexts_ = ContextProviderCommandBuffer::Create(
-        CreateOffscreenContext3d(), RENDERER_MAINTHREAD_CONTEXT);
-    if (shared_main_thread_contexts_.get() &&
-        !shared_main_thread_contexts_->BindToCurrentThread())
-      shared_main_thread_contexts_ = NULL;
+  if (shared_main_thread_contexts_ &&
+      shared_main_thread_contexts_->ContextGL()->GetGraphicsResetStatusKHR() ==
+          GL_NO_ERROR)
+    return shared_main_thread_contexts_;
+
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
+      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
+  if (!gpu_channel_host) {
+    shared_main_thread_contexts_ = nullptr;
+    return nullptr;
   }
+
+  shared_main_thread_contexts_ = new ContextProviderCommandBuffer(
+      CreateOffscreenContext(std::move(gpu_channel_host)),
+      RENDERER_MAINTHREAD_CONTEXT);
+  if (!shared_main_thread_contexts_->BindToCurrentThread())
+    shared_main_thread_contexts_ = nullptr;
   return shared_main_thread_contexts_;
 }
 
@@ -2027,25 +2032,29 @@ scoped_refptr<ContextProviderCommandBuffer>
 RenderThreadImpl::SharedWorkerContextProvider() {
   DCHECK(IsMainThread());
   // Try to reuse existing shared worker context provider.
-  bool shared_worker_context_provider_lost = false;
   if (shared_worker_context_provider_) {
     // Note: If context is lost, delete reference after releasing the lock.
     cc::ContextProvider::ScopedContextLock lock(
         shared_worker_context_provider_.get());
     if (shared_worker_context_provider_->ContextGL()
-            ->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
-      shared_worker_context_provider_lost = true;
-    }
+            ->GetGraphicsResetStatusKHR() == GL_NO_ERROR)
+      return shared_worker_context_provider_;
   }
-  if (!shared_worker_context_provider_ || shared_worker_context_provider_lost) {
-    shared_worker_context_provider_ = ContextProviderCommandBuffer::Create(
-        CreateOffscreenContext3d(), RENDER_WORKER_CONTEXT);
-    if (shared_worker_context_provider_ &&
-        !shared_worker_context_provider_->BindToCurrentThread())
-      shared_worker_context_provider_ = nullptr;
-    if (shared_worker_context_provider_)
-      shared_worker_context_provider_->SetupLock();
+
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
+      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
+  if (!gpu_channel_host) {
+    shared_worker_context_provider_ = nullptr;
+    return shared_worker_context_provider_;
   }
+
+  shared_worker_context_provider_ = new ContextProviderCommandBuffer(
+      CreateOffscreenContext(std::move(gpu_channel_host)),
+      RENDER_WORKER_CONTEXT);
+  if (!shared_worker_context_provider_->BindToCurrentThread())
+    shared_worker_context_provider_ = nullptr;
+  if (shared_worker_context_provider_)
+    shared_worker_context_provider_->SetupLock();
   return shared_worker_context_provider_;
 }
 

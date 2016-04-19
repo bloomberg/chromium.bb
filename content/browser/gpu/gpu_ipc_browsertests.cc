@@ -41,12 +41,10 @@ std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext(
   attributes.bind_generates_resource = false;
   bool share_resources = false;
   bool automatic_flushes = false;
-  return base::WrapUnique(
-      WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-          gpu_channel_host, attributes, gfx::PreferIntegratedGpu,
-          share_resources, automatic_flushes, GURL(),
-          WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
-          nullptr));
+  return base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
+      gpu::kNullSurfaceHandle, GURL(), gpu_channel_host, attributes,
+      gfx::PreferIntegratedGpu, share_resources, automatic_flushes,
+      WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(), nullptr));
 }
 
 class ContextTestBase : public content::ContentBrowserTest {
@@ -70,7 +68,7 @@ class ContextTestBase : public content::ContentBrowserTest {
         factory->GetGpuChannel());
     CHECK(gpu_channel_host);
 
-    provider_ = content::ContextProviderCommandBuffer::Create(
+    provider_ = new content::ContextProviderCommandBuffer(
         CreateContext(gpu_channel_host.get()),
         content::OFFSCREEN_CONTEXT_FOR_TESTING);
     bool bound = provider_->BindToCurrentThread();
@@ -229,8 +227,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   // Step 2: verify that holding onto the provider's GrContext will
   // retain the host after provider is destroyed.
   scoped_refptr<ContextProviderCommandBuffer> provider =
-      ContextProviderCommandBuffer::Create(CreateContext(GetGpuChannel()),
-                                           OFFSCREEN_CONTEXT_FOR_TESTING);
+      new ContextProviderCommandBuffer(CreateContext(GetGpuChannel()),
+                                       OFFSCREEN_CONTEXT_FOR_TESTING);
   EXPECT_TRUE(provider->BindToCurrentThread());
 
   sk_sp<GrContext> gr_context = sk_ref_sp(provider->GrContext());
@@ -277,8 +275,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   scoped_refptr<gpu::GpuChannelHost> host = GetGpuChannel();
 
   scoped_refptr<ContextProviderCommandBuffer> provider =
-      ContextProviderCommandBuffer::Create(CreateContext(GetGpuChannel()),
-                                           OFFSCREEN_CONTEXT_FOR_TESTING);
+      new ContextProviderCommandBuffer(CreateContext(GetGpuChannel()),
+                                       OFFSCREEN_CONTEXT_FOR_TESTING);
   base::RunLoop run_loop;
   int counter = 0;
   provider->SetLostContextCallback(

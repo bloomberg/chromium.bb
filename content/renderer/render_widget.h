@@ -561,10 +561,6 @@ class CONTENT_EXPORT RenderWidget
   // by script, not by user input.
   void didUpdateTextOfFocusedElementByNonUserInput() override;
 
-  // Creates a 3D context associated with this view.
-  std::unique_ptr<WebGraphicsContext3DCommandBufferImpl>
-  CreateGraphicsContext3D(gpu::GpuChannelHost* gpu_channel_host);
-
   // Sends an ACK to the browser process during the next compositor frame.
   void OnWaitNextFrameForTests(int routing_id);
 

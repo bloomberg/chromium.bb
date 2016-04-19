@@ -48,9 +48,6 @@ class GpuProcessTransportFactory
 
   ~GpuProcessTransportFactory() override;
 
-  std::unique_ptr<WebGraphicsContext3DCommandBufferImpl>
-  CreateOffscreenCommandBufferContext();
-
   // ui::ContextFactory implementation.
   void CreateOutputSurface(base::WeakPtr<ui::Compositor> compositor) override;
   std::unique_ptr<ui::Reflector> CreateReflector(ui::Compositor* source,
@@ -94,9 +91,6 @@ class GpuProcessTransportFactory
   void EstablishedGpuChannel(base::WeakPtr<ui::Compositor> compositor,
                              bool create_gpu_output_surface,
                              int num_attempts);
-  std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContextCommon(
-      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
-      gpu::SurfaceHandle surface_handle);
 
   void OnLostMainThreadSharedContextInsideCallback();
   void OnLostMainThreadSharedContext();

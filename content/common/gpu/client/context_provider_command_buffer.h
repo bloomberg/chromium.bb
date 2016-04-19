@@ -29,7 +29,7 @@ namespace content {
 class CONTENT_EXPORT ContextProviderCommandBuffer
     : NON_EXPORTED_BASE(public cc_blink::ContextProviderWebContext) {
  public:
-  static scoped_refptr<ContextProviderCommandBuffer> Create(
+  ContextProviderCommandBuffer(
       std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
       CommandBufferContextType type);
 
@@ -53,9 +53,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
       const LostContextCallback& lost_context_callback) override;
 
  protected:
-  ContextProviderCommandBuffer(
-      std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
-      CommandBufferContextType type);
   ~ContextProviderCommandBuffer() override;
 
   void OnLostContext();
