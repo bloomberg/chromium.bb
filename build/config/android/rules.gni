@@ -2282,6 +2282,9 @@ template("create_native_executable_dist") {
     ]
 
     dest = invoker.dist_dir
+    data = [
+      "${invoker.dist_dir}/",
+    ]
 
     _rebased_libraries_list = rebase_path(_libraries_list, root_build_dir)
     _rebased_binaries_list = rebase_path([ invoker.binary ], root_build_dir)

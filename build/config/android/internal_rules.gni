@@ -1935,6 +1935,7 @@ template("copy_ex") {
     sources = []
     forward_variables_from(invoker,
                            [
+                             "data",
                              "deps",
                              "inputs",
                              "sources",
