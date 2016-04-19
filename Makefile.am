@@ -1102,6 +1102,7 @@ weston_tests =					\
 	button.weston				\
 	text.weston				\
 	presentation.weston			\
+	viewporter.weston			\
 	roles.weston				\
 	subsurface.weston			\
 	devices.weston
@@ -1253,6 +1254,15 @@ presentation_weston_LDADD = libtest-client.la
 roles_weston_SOURCES = tests/roles-test.c
 roles_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 roles_weston_LDADD = libtest-client.la
+
+viewporter_weston_SOURCES = 			\
+	tests/viewporter-test.c		\
+	shared/helpers.h
+nodist_viewporter_weston_SOURCES =		\
+	protocol/viewporter-protocol.c	\
+	protocol/viewporter-client-protocol.h
+viewporter_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
+viewporter_weston_LDADD = libtest-client.la
 
 if ENABLE_EGL
 weston_tests += buffer-count.weston
