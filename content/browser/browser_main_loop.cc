@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -907,20 +909,6 @@ int BrowserMainLoop::CreateThreads() {
 }
 
 int BrowserMainLoop::PreMainMessageLoopRun() {
-  if (IsRunningInMojoShell()) {
-    if (!MojoShellConnectionImpl::CreateUsingFactory()) {
-      mojo::edk::SetParentPipeHandleFromCommandLine();
-      MojoShellConnectionImpl::Create();
-      MojoShellConnectionImpl::Get()->BindToRequestFromCommandLine();
-    }
-#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-    if (MojoShellConnection::Get()) {
-      views::WindowManagerConnection::Create(
-          MojoShellConnection::Get()->GetConnector());
-    }
-#endif
-  }
-
   if (parts_) {
     TRACE_EVENT0("startup",
         "BrowserMainLoop::CreateThreads:PreMainMessageLoopRun");
@@ -1171,6 +1159,21 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   mojo_ipc_support_.reset(new IPC::ScopedIPCSupport(
       BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
           ->task_runner()));
+
+  if (IsRunningInMojoShell()) {
+    if (!MojoShellConnectionImpl::CreateUsingFactory()) {
+      mojo::edk::SetParentPipeHandleFromCommandLine();
+      MojoShellConnectionImpl::Create();
+      MojoShellConnectionImpl::Get()->BindToRequestFromCommandLine();
+    }
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+    if (MojoShellConnection::Get()) {
+      views::WindowManagerConnection::Create(
+          MojoShellConnection::Get()->GetConnector());
+    }
+#endif
+  }
+
   mojo_shell_context_.reset(new MojoShellContext);
 #if defined(OS_MACOSX)
   mojo::edk::SetMachPortProvider(MachBroker::GetInstance());
