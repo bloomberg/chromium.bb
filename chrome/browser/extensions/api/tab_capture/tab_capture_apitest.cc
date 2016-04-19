@@ -6,6 +6,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/test_timeouts.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -403,8 +404,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_Constraints) {
 #if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_TabIndicator DISABLED_TabIndicator
 #else
-// Also flaky everywhere else: https://crbug.com/530657
-#define MAYBE_TabIndicator DISABLED_TabIndicator
+#define MAYBE_TabIndicator TabIndicator
 #endif
 // Tests that the tab indicator (in the tab strip) is shown during tab capture.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
@@ -412,19 +412,20 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
             chrome::GetTabAlertStateForContents(
                 browser()->tab_strip_model()->GetActiveWebContents()));
 
-  // Run an extension test that just turns on tab capture, which should cause
-  // the indicator to turn on.
-  AddExtensionToCommandLineWhitelist();
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "start_tab_capture.html"))
-      << message_;
-
   // A TabStripModelObserver that quits the MessageLoop whenever the UI's model
   // is sent an event that changes the indicator status.
   class IndicatorChangeObserver : public TabStripModelObserver {
    public:
     explicit IndicatorChangeObserver(Browser* browser)
-        : last_alert_state_(chrome::GetTabAlertStateForContents(
-              browser->tab_strip_model()->GetActiveWebContents())) {}
+        : browser_(browser),
+          last_alert_state_(chrome::GetTabAlertStateForContents(
+              browser->tab_strip_model()->GetActiveWebContents())) {
+      browser_->tab_strip_model()->AddObserver(this);
+    }
+
+    ~IndicatorChangeObserver() override {
+      browser_->tab_strip_model()->RemoveObserver(this);
+    }
 
     TabAlertState last_alert_state() const { return last_alert_state_; }
 
@@ -433,32 +434,37 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
                       TabChangeType change_type) override {
       const TabAlertState alert_state =
           chrome::GetTabAlertStateForContents(contents);
-      const bool has_changed = alert_state != last_alert_state_;
-      last_alert_state_ = alert_state;
-      if (has_changed) {
+      if (alert_state != last_alert_state_) {
+        last_alert_state_ = alert_state;
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
       }
     }
 
    private:
+    Browser* const browser_;
     TabAlertState last_alert_state_;
   };
 
-  // Run the browser until the indicator turns on.
   IndicatorChangeObserver observer(browser());
-  browser()->tab_strip_model()->AddObserver(&observer);
+  ASSERT_EQ(TabAlertState::NONE, observer.last_alert_state());
+
+  // Run an extension test that just turns on tab capture, which should cause
+  // the indicator to turn on.
+  AddExtensionToCommandLineWhitelist();
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "start_tab_capture.html"))
+      << message_;
+
+  // Run the browser until the indicator turns on.
   const base::TimeTicks start_time = base::TimeTicks::Now();
   while (observer.last_alert_state() != TabAlertState::TAB_CAPTURING) {
     if (base::TimeTicks::Now() - start_time >
-            base::TimeDelta::FromSeconds(10)) {
+            TestTimeouts::action_max_timeout()) {
       EXPECT_EQ(TabAlertState::TAB_CAPTURING, observer.last_alert_state());
-      browser()->tab_strip_model()->RemoveObserver(&observer);
       return;
     }
     content::RunMessageLoop();
   }
-  browser()->tab_strip_model()->RemoveObserver(&observer);
 }
 
 }  // namespace
