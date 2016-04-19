@@ -880,7 +880,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
     request.setHTTPMethod(m_method);
     request.setRequestContext(WebURLRequest::RequestContextXMLHttpRequest);
     request.setFetchCredentialsMode(m_includeCredentials ? WebURLRequest::FetchCredentialsModeInclude : WebURLRequest::FetchCredentialsModeSameOrigin);
-    request.setSkipServiceWorker(m_isolatedWorldSecurityOrigin);
+    request.setSkipServiceWorker(m_isolatedWorldSecurityOrigin.get());
     request.setExternalRequestStateFromRequestorAddressSpace(executionContext.securityContext().addressSpace());
 
     InspectorInstrumentation::willLoadXHR(&executionContext, this, this, m_method, m_url, m_async, httpBody ? httpBody->deepCopy() : nullptr, m_requestHeaders, m_includeCredentials);

@@ -68,7 +68,7 @@ class FontDataForRangeSet final {
     bool contains(UChar32 testChar) const { return m_rangeSet->contains(testChar); }
     bool isEntireRange() const { return m_rangeSet->isEntireRange(); }
     PassRefPtr<UnicodeRangeSet> ranges() const { return m_rangeSet; }
-    bool hasFontData() const { return fontData(); }
+    bool hasFontData() const { return m_fontData.get(); }
     PassRefPtr<SimpleFontData> fontData() const { return m_fontData; }
 
 private:

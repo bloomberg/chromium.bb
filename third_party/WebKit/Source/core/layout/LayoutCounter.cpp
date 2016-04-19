@@ -227,7 +227,7 @@ static bool findPlaceForCounter(LayoutObject& counterOwner, const AtomicString& 
                             // we are a root node if that reset is a root.
                             parent = currentCounter->parent();
                             previousSibling = parent ? currentCounter : nullptr;
-                            return parent;
+                            return parent.get();
                         }
                         // We are not a reset node or the previous reset must be on an ancestor of our owner layoutObject
                         // hence we must be a child of that reset counter.
@@ -261,7 +261,7 @@ static bool findPlaceForCounter(LayoutObject& counterOwner, const AtomicString& 
                         if (isReset && areLayoutObjectsElementsSiblings(*currentLayoutObject, counterOwner)) {
                             parent = currentCounter->parent();
                             previousSibling = currentCounter;
-                            return parent;
+                            return parent.get();
                         }
                         parent = currentCounter;
                         previousSibling = previousSiblingProtector.get();

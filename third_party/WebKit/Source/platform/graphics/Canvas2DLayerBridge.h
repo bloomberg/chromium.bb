@@ -115,7 +115,7 @@ public:
 
     void beginDestruction();
     void hibernate();
-    bool isHibernating() const { return m_hibernationImage; }
+    bool isHibernating() const { return m_hibernationImage.get(); }
 
     PassRefPtr<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason);
 

@@ -52,9 +52,9 @@ public:
     virtual ViewType type() const = 0;
     const char* typeName();
 
-    PassRefPtr<ArrayBuffer> buffer() const
+    ArrayBuffer* buffer() const
     {
-        return m_buffer;
+        return m_buffer.get();
     }
 
     void* baseAddress() const

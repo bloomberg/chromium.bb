@@ -131,7 +131,7 @@ public:
 
         DECLARE_TRACE();
     private:
-        bool hasData() const { return m_dataBuffer; }
+        bool hasData() const { return m_dataBuffer.get(); }
         size_t dataLength() const;
         void appendData(const char* data, size_t dataLength);
         size_t decodeDataToContent();

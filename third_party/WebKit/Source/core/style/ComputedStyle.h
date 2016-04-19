@@ -913,7 +913,7 @@ public:
     bool transformDataEquivalent(const ComputedStyle& otherStyle) const { return rareNonInheritedData->m_transform == otherStyle.rareNonInheritedData->m_transform; }
 
     StylePath* motionPath() const { return rareNonInheritedData->m_transform->m_motion.m_path.get(); }
-    bool hasMotionPath() const { return rareNonInheritedData->m_transform->m_motion.m_path; }
+    bool hasMotionPath() const { return motionPath(); }
     const Length& motionOffset() const { return rareNonInheritedData->m_transform->m_motion.m_offset; }
     const StyleMotionRotation& motionRotation() const { return rareNonInheritedData->m_transform->m_motion.m_rotation; }
 
