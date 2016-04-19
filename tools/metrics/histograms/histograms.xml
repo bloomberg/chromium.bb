@@ -47388,6 +47388,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.StartWorker.AfterFailureStreak"
+    enum="ServiceWorkerStatusCode">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The result of trying to start a service worker after it has failed
+    consecutively. Recorded only for installed workers.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.StartWorker.FailureStreak" units="count">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The number of consecutive startup failures of a service worker. Recorded
+    each time the service worker failed (so there is double counting: failing
+    twice results in 1 and 2 being logged). Only for installed workers.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.StartWorker.FailureStreakEnded" units="count">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    When a worker startup succeeded after failing, the number of times the
+    worker had consecutively failed. Recorded only for installed workers.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.StartWorker.Purpose"
     enum="ServiceWorkerMetrics.EventType">
   <owner>falken@chromium.org</owner>
@@ -92601,6 +92627,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="interstitial.decision"/>
   <affected-histogram name="interstitial.decision.repeat_visit"/>
   <affected-histogram name="interstitial.interaction"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ServiceWorker.FailureStreak">
+  <affected-histogram name="ServiceWorker.StartWorker.AfterFailureStreak"/>
+  <suffix name="1" label="Failed one time."/>
+  <suffix name="2" label="Failed two times."/>
+  <suffix name="3" label="Failed three times."/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorker.StartSituation">

@@ -1542,7 +1542,7 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
   base::TimeTicks start_time = start_time_;
   ClearTick(&start_time_);
 
-  if (context_)
+  if (context_ && IsInstalled(prestart_status))
     context_->UpdateVersionFailureCount(version_id_, status);
 
   ServiceWorkerMetrics::RecordStartWorkerStatus(status, purpose,

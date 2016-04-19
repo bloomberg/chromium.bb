@@ -4,6 +4,9 @@
 
 #include "content/browser/service_worker/service_worker_metrics.h"
 
+#include <limits>
+#include <string>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
@@ -475,6 +478,31 @@ ServiceWorkerMetrics::StartSituation ServiceWorkerMetrics::GetStartSituation(
   if (is_new_process)
     return StartSituation::NEW_PROCESS;
   return StartSituation::EXISTING_PROCESS;
+}
+
+void ServiceWorkerMetrics::RecordStartStatusAfterFailure(
+    int failure_count,
+    ServiceWorkerStatusCode status) {
+  DCHECK_GT(failure_count, 0);
+
+  if (status == SERVICE_WORKER_OK) {
+    UMA_HISTOGRAM_COUNTS_1000("ServiceWorker.StartWorker.FailureStreakEnded",
+                              failure_count);
+  } else if (failure_count < std::numeric_limits<int>::max()) {
+    UMA_HISTOGRAM_COUNTS_1000("ServiceWorker.StartWorker.FailureStreak",
+                              failure_count + 1);
+  }
+
+  if (failure_count == 1) {
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.AfterFailureStreak_1",
+                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+  } else if (failure_count == 2) {
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.AfterFailureStreak_2",
+                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+  } else if (failure_count == 3) {
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.AfterFailureStreak_3",
+                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+  }
 }
 
 }  // namespace content

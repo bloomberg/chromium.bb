@@ -694,6 +694,11 @@ void ServiceWorkerContextCore::UpdateVersionFailureCount(
     return;
 
   auto it = failure_counts_.find(version_id);
+  if (it != failure_counts_.end()) {
+    ServiceWorkerMetrics::RecordStartStatusAfterFailure(it->second.count,
+                                                        status);
+  }
+
   if (status == SERVICE_WORKER_OK) {
     if (it != failure_counts_.end())
       failure_counts_.erase(it);
@@ -701,11 +706,17 @@ void ServiceWorkerContextCore::UpdateVersionFailureCount(
   }
 
   if (it != failure_counts_.end()) {
-    DCHECK_GT(it->second, 0);
-    if (it->second < std::numeric_limits<int>::max())
-      ++it->second;
+    FailureInfo& info = it->second;
+    DCHECK_GT(info.count, 0);
+    if (info.count < std::numeric_limits<int>::max()) {
+      ++info.count;
+      info.last_failure = status;
+    }
   } else {
-    failure_counts_[version_id] = 1;
+    FailureInfo info;
+    info.count = 1;
+    info.last_failure = status;
+    failure_counts_[version_id] = info;
   }
 }
 
@@ -713,7 +724,7 @@ int ServiceWorkerContextCore::GetVersionFailureCount(int64_t version_id) {
   auto it = failure_counts_.find(version_id);
   if (it == failure_counts_.end())
     return 0;
-  return it->second;
+  return it->second.count;
 }
 
 void ServiceWorkerContextCore::OnRunningStateChanged(

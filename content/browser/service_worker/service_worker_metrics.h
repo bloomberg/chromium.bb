@@ -215,6 +215,11 @@ class ServiceWorkerMetrics {
   static StartSituation GetStartSituation(bool is_browser_startup_complete,
                                           bool is_new_process);
 
+  // Records the result of a start attempt that occurred after the worker had
+  // failed |failure_count| consecutive times.
+  static void RecordStartStatusAfterFailure(int failure_count,
+                                            ServiceWorkerStatusCode status);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);
 };

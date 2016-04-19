@@ -292,8 +292,16 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   }
 
  private:
+  friend class ServiceWorkerContextCoreTest;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextCoreTest, FailureInfo);
+
   typedef std::map<int64_t, ServiceWorkerRegistration*> RegistrationsMap;
   typedef std::map<int64_t, ServiceWorkerVersion*> VersionMap;
+
+  struct FailureInfo {
+    int count;
+    ServiceWorkerStatusCode last_failure;
+  };
 
   ProviderMap* GetProviderMapForProcess(int process_id) {
     return providers_->Lookup(process_id);
@@ -342,7 +350,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   std::map<int64_t, ServiceWorkerRegistration*> live_registrations_;
   std::map<int64_t, ServiceWorkerVersion*> live_versions_;
   std::map<int64_t, scoped_refptr<ServiceWorkerVersion>> protected_versions_;
-  std::map<int64_t /* version_id */, int /* count */> failure_counts_;
+
+  std::map<int64_t /* version_id */, FailureInfo> failure_counts_;
 
   // PlzNavigate
   // Map of ServiceWorkerNavigationHandleCores used for navigation requests.
