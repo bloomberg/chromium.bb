@@ -67,6 +67,10 @@ void BrowserActionsBarBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
   ToolbarActionsBar::disable_animations_for_testing_ = true;
+  // We need to disable Media Router since having Media Router enabled will
+  // result in auto-enabling the redesign and breaking the test.
+  override_media_router_.reset(new extensions::FeatureSwitch::ScopedOverride(
+      extensions::FeatureSwitch::media_router(), false));
   // These tests are deliberately testing behavior without the redesign.
   // Forcefully disable it.
   override_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(

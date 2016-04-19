@@ -52,6 +52,8 @@ class BrowserActionsBarBrowserTest : public ExtensionBrowserTest {
  protected:
   // Enable or disable the feature redesign switch.
   std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> override_redesign_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride>
+      override_media_router_;
 
  private:
   std::unique_ptr<BrowserActionTestUtil> browser_actions_bar_;

@@ -57,7 +57,9 @@ class LocationBarBrowserTest : public ExtensionBrowserTest {
 
  private:
   std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> enable_override_;
-  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> disable_redesign_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride>
+      disable_media_router_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarBrowserTest);
 };
@@ -67,9 +69,13 @@ void LocationBarBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   // enable the switch.
   enable_override_.reset(new extensions::FeatureSwitch::ScopedOverride(
       extensions::FeatureSwitch::enable_override_bookmarks_ui(), true));
+  // We need to disable Media Router since having Media Router enabled will
+  // result in auto-enabling the redesign and breaking the test.
+  disable_media_router_.reset(new extensions::FeatureSwitch::ScopedOverride(
+      extensions::FeatureSwitch::media_router(), false));
   // For testing page actions in the location bar, we also have to be sure to
   // *not* have the redesign turned on.
-  enable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
+  disable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
       extensions::FeatureSwitch::extension_action_redesign(), false));
   ExtensionBrowserTest::SetUpCommandLine(command_line);
 }
@@ -176,7 +182,7 @@ class LocationBarBrowserTestWithRedesign : public LocationBarBrowserTest {
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
-  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> disable_redesign_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarBrowserTestWithRedesign);
 };
@@ -184,7 +190,7 @@ class LocationBarBrowserTestWithRedesign : public LocationBarBrowserTest {
 void LocationBarBrowserTestWithRedesign::SetUpCommandLine(
     base::CommandLine* command_line) {
   LocationBarBrowserTest::SetUpCommandLine(command_line);
-  enable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
+  disable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
       extensions::FeatureSwitch::extension_action_redesign(), true));
 }
 

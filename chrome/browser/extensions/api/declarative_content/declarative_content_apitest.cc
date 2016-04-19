@@ -750,12 +750,20 @@ class ShowPageActionWithoutPageActionTest : public DeclarativeContentApiTest {
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DeclarativeContentApiTest::SetUpCommandLine(command_line);
+    // If disabling the redesign, we need to disable Media Router since having
+    // Media Router enabled will result in auto-enabling the redesign and
+    // breaking the test.
+    if (!enable_redesign_) {
+      override_media_router_.reset(new FeatureSwitch::ScopedOverride(
+          FeatureSwitch::media_router(), false));
+    }
     override_toolbar_redesign_.reset(new FeatureSwitch::ScopedOverride(
         FeatureSwitch::extension_action_redesign(), enable_redesign_));
   }
 
   bool enable_redesign_;
   std::unique_ptr<FeatureSwitch::ScopedOverride> override_toolbar_redesign_;
+  std::unique_ptr<FeatureSwitch::ScopedOverride> override_media_router_;
   DISALLOW_COPY_AND_ASSIGN(ShowPageActionWithoutPageActionTest);
 };
 

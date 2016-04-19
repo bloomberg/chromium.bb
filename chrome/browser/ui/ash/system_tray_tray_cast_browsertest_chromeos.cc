@@ -16,6 +16,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/feature_switch.h"
 
 namespace {
 
@@ -132,11 +133,21 @@ class SystemTrayTrayCastChromeOSTest : public ExtensionBrowserTest {
   SystemTrayTrayCastChromeOSTest() : ExtensionBrowserTest() {}
   ~SystemTrayTrayCastChromeOSTest() override {}
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // SystemTrayTrayCastChromeOSTest tests the behavior of the system tray
+    // without Media Router, so we explicitly disable it.
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    override_media_router_.reset(new extensions::FeatureSwitch::ScopedOverride(
+        extensions::FeatureSwitch::media_router(), false));
+  }
+
   const extensions::Extension* LoadCastTestExtension() {
     return LoadExtension(test_data_dir_.AppendASCII("tray_cast"));
   }
 
  private:
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride>
+      override_media_router_;
   DISALLOW_COPY_AND_ASSIGN(SystemTrayTrayCastChromeOSTest);
 };
 

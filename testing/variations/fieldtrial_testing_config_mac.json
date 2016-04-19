@@ -62,6 +62,16 @@
             "group_name": "Button"
         }
     ],
+    "EnableMediaRouter": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
+    "EnableMediaRouterWithCastExtension": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "ExtensionActionRedesign": [
         {
             "group_name": "Enabled"

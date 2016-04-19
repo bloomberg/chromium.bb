@@ -77,6 +77,16 @@
             "group_name": "Button"
         }
     ],
+    "EnableMediaRouter": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
+    "EnableMediaRouterWithCastExtension": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "EnableSessionCrashedBubbleUI": [
         {
             "group_name": "Enabled"
