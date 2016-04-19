@@ -1782,6 +1782,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_PROTECT_SYNC_CREDENTIAL_ON_REAUTH_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kProtectSyncCredentialOnReauth)},
+    {"password-import-export", IDS_FLAGS_PASSWORD_IMPORT_EXPORT_NAME,
+     IDS_FLAGS_PASSWORD_IMPORT_EXPORT_DESCRIPTION,
+     kOsWin | kOsMac | kOsCrOS | kOsLinux,
+     FEATURE_VALUE_TYPE(password_manager::features::kPasswordImportExport)},
 #if defined(OS_CHROMEOS)
     {"enable-experimental-accessibility-features",
      IDS_FLAGS_EXPERIMENTAL_ACCESSIBILITY_FEATURES_NAME,

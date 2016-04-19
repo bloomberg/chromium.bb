@@ -5990,6 +5990,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PROTECT_SYNC_CREDENTIAL_DESCRIPTION" desc="Description of the flag specifying how the browser will handle autofilling the users sync credential.">
         How the password manager handles autofill for the sync credential.
       </message>
+      <message name="IDS_FLAGS_PASSWORD_IMPORT_EXPORT_NAME" desc="Name of the flag for showing the Import and Export buttons for importing and exporting passwords in Chrome's settings.">
+        Password import and export
+      </message>
+      <message name="IDS_FLAGS_PASSWORD_IMPORT_EXPORT_DESCRIPTION" desc="Description of the flag for showing the Import and Export buttons for importing and exporting passwords in Chrome's settings.">
+        Import and Export functionality in password settings.
+      </message>
       <message name="IDS_FLAGS_PROTECT_SYNC_CREDENTIAL_ON_REAUTH_NAME" desc="Name of the flag specifying how the browser will handle autofilling the users sync credential.">
         Autofill sync credential only for transactional reauth pages
       </message>
