@@ -37,11 +37,6 @@ bool MojoMediaApplication::AcceptConnection(shell::Connection* connection) {
   return true;
 }
 
-bool MojoMediaApplication::ShellConnectionLost() {
-  mojo_media_client_->WillQuit();
-  return true;
-}
-
 void MojoMediaApplication::Create(
     shell::Connection* connection,
     mojo::InterfaceRequest<interfaces::ServiceFactory> request) {

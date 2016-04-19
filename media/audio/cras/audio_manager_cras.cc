@@ -135,13 +135,8 @@ bool AudioManagerCras::HasAudioInputDevices() {
   return false;
 }
 
-AudioManagerCras::AudioManagerCras(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-    AudioLogFactory* audio_log_factory)
-    : AudioManagerBase(std::move(task_runner),
-                       std::move(worker_task_runner),
-                       audio_log_factory),
+AudioManagerCras::AudioManagerCras(AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(audio_log_factory),
       beamforming_on_device_id_(nullptr),
       beamforming_off_device_id_(nullptr) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);

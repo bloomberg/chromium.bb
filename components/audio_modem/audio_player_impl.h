@@ -65,6 +65,10 @@ class AudioPlayerImpl final
                  uint32_t frames_skipped) override;
   void OnError(media::AudioOutputStream* stream) override;
 
+  // Flushes the audio loop, making sure that any queued operations are
+  // performed.
+  void FlushAudioLoopForTesting();
+
   bool is_playing_;
 
   // Self-deleting object.

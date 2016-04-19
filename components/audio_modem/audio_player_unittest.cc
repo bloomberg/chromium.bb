@@ -8,12 +8,11 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/run_loop.h"
-#include "base/test/test_message_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "components/audio_modem/audio_player_impl.h"
 #include "components/audio_modem/public/audio_modem_types.h"
 #include "components/audio_modem/test/random_samples.h"
+#include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/base/audio_bus.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,9 +77,8 @@ class AudioPlayerTest : public testing::Test,
                         public base::SupportsWeakPtr<AudioPlayerTest> {
  public:
   AudioPlayerTest() : buffer_index_(0), player_(nullptr) {
-    audio_manager_ = media::AudioManager::CreateForTesting(
-        base::ThreadTaskRunnerHandle::Get());
-    base::RunLoop().RunUntilIdle();
+    if (!media::AudioManager::Get())
+      media::AudioManager::CreateForTesting();
   }
 
   ~AudioPlayerTest() override { DeletePlayer(); }
@@ -93,7 +91,6 @@ class AudioPlayerTest : public testing::Test,
         kMaxFrameCount,
         base::Bind(&AudioPlayerTest::GatherSamples, AsWeakPtr())));
     player_->Initialize();
-    base::RunLoop().RunUntilIdle();
   }
 
   void DeletePlayer() {
@@ -101,7 +98,6 @@ class AudioPlayerTest : public testing::Test,
       return;
     player_->Finalize();
     player_ = nullptr;
-    base::RunLoop().RunUntilIdle();
   }
 
   void PlayAndVerifySamples(
@@ -111,8 +107,8 @@ class AudioPlayerTest : public testing::Test,
     buffer_ = media::AudioBus::Create(1, kMaxFrameCount);
     buffer_index_ = 0;
     player_->Play(samples);
+    player_->FlushAudioLoopForTesting();
     player_->Stop();
-    base::RunLoop().RunUntilIdle();
 
     int differences = 0;
     for (int i = 0; i < kMaxFrameCount; ++i) {
@@ -133,20 +129,19 @@ class AudioPlayerTest : public testing::Test,
 
  protected:
   bool IsPlaying() {
-    base::RunLoop().RunUntilIdle();
+    player_->FlushAudioLoopForTesting();
     return player_->is_playing_;
   }
 
   static const int kDefaultFrameCount = 1024;
   static const int kMaxFrameCount = 1024 * 100;
 
-  base::TestMessageLoop message_loop_;
-  media::ScopedAudioManagerPtr audio_manager_;
   scoped_ptr<media::AudioBus> buffer_;
   int buffer_index_;
 
   // Deleted by calling Finalize() on the object.
   AudioPlayerImpl* player_;
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(AudioPlayerTest, BasicPlayAndStop) {
@@ -156,19 +151,16 @@ TEST_F(AudioPlayerTest, BasicPlayAndStop) {
 
   player_->Play(samples);
   EXPECT_TRUE(IsPlaying());
-
   player_->Stop();
   EXPECT_FALSE(IsPlaying());
-
   player_->Play(samples);
-  EXPECT_TRUE(IsPlaying());
 
+  EXPECT_TRUE(IsPlaying());
   player_->Stop();
   EXPECT_FALSE(IsPlaying());
-
   player_->Play(samples);
-  EXPECT_TRUE(IsPlaying());
 
+  EXPECT_TRUE(IsPlaying());
   player_->Stop();
   EXPECT_FALSE(IsPlaying());
 

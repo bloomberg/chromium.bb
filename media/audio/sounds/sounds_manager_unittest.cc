@@ -7,10 +7,10 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
-#include "base/test/test_message_loop.h"
-#include "base/thread_task_runner_handle.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/simple_sources.h"
 #include "media/audio/sounds/audio_stream_handler.h"
@@ -26,15 +26,13 @@ class SoundsManagerTest : public testing::Test {
   ~SoundsManagerTest() override {}
 
   void SetUp() override {
-    audio_manager_ =
-        AudioManager::CreateForTesting(base::ThreadTaskRunnerHandle::Get());
+    audio_manager_.reset(AudioManager::CreateForTesting());
     SoundsManager::Create();
-    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
     SoundsManager::Shutdown();
-    base::RunLoop().RunUntilIdle();
+    audio_manager_.reset();
   }
 
   void SetObserverForTesting(AudioStreamHandler::TestObserver* observer) {
@@ -47,8 +45,9 @@ class SoundsManagerTest : public testing::Test {
   }
 
  private:
-  base::TestMessageLoop message_loop_;
-  ScopedAudioManagerPtr audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
+
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(SoundsManagerTest, Play) {

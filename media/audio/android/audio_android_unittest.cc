@@ -415,16 +415,11 @@ class AudioAndroidOutputTest : public testing::Test {
  public:
   AudioAndroidOutputTest()
       : loop_(new base::MessageLoopForUI()),
-        audio_manager_(AudioManager::CreateForTesting(loop_->task_runner())),
+        audio_manager_(AudioManager::CreateForTesting()),
         audio_output_stream_(NULL) {
-    // Flush the message loop to ensure that AudioManager is fully initialized.
-    loop_->RunUntilIdle();
   }
 
-  ~AudioAndroidOutputTest() override {
-    audio_manager_.reset();
-    loop_->RunUntilIdle();
-  }
+  ~AudioAndroidOutputTest() override {}
 
  protected:
   AudioManager* audio_manager() { return audio_manager_.get(); }
@@ -566,7 +561,7 @@ class AudioAndroidOutputTest : public testing::Test {
   }
 
   scoped_ptr<base::MessageLoopForUI> loop_;
-  ScopedAudioManagerPtr audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
   AudioParameters audio_output_parameters_;
   AudioOutputStream* audio_output_stream_;
   base::TimeTicks start_time_;

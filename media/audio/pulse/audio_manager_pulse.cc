@@ -47,13 +47,18 @@ static const base::FilePath::CharType kPulseLib[] =
     FILE_PATH_LITERAL("libpulse.so.0");
 #endif
 
-AudioManagerPulse::AudioManagerPulse(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-    AudioLogFactory* audio_log_factory)
-    : AudioManagerBase(std::move(task_runner),
-                       std::move(worker_task_runner),
-                       audio_log_factory),
+// static
+AudioManager* AudioManagerPulse::Create(AudioLogFactory* audio_log_factory) {
+  scoped_ptr<AudioManagerPulse> ret(new AudioManagerPulse(audio_log_factory));
+  if (ret->Init())
+    return ret.release();
+
+  DVLOG(1) << "PulseAudio is not available on the OS";
+  return NULL;
+}
+
+AudioManagerPulse::AudioManagerPulse(AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(audio_log_factory),
       input_mainloop_(NULL),
       input_context_(NULL),
       devices_(NULL),
@@ -63,18 +68,10 @@ AudioManagerPulse::AudioManagerPulse(
 
 AudioManagerPulse::~AudioManagerPulse() {
   Shutdown();
+
   // The Pulse objects are the last things to be destroyed since Shutdown()
   // needs them.
   DestroyPulse();
-}
-
-bool AudioManagerPulse::Init() {
-  // TODO(alokp): Investigate if InitPulse can happen on the audio thread.
-  // It currently needs to happen on the main thread so that is InitPulse fails,
-  // we can fallback to ALSA implementation. Initializing it on audio thread
-  // would unblock the main thread and make InitPulse consistent with
-  // DestroyPulse which happens on the audio thread.
-  return InitPulse();
 }
 
 // Implementation of AudioManager.
@@ -220,7 +217,7 @@ int AudioManagerPulse::GetNativeSampleRate() {
   return native_input_sample_rate_;
 }
 
-bool AudioManagerPulse::InitPulse() {
+bool AudioManagerPulse::Init() {
   DCHECK(!input_mainloop_);
 
 #if defined(DLOPEN_PULSEAUDIO)

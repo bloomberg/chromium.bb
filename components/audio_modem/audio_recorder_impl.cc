@@ -198,4 +198,20 @@ void AudioRecorderImpl::OnError(media::AudioInputStream* /* stream */) {
                  base::Unretained(this)));
 }
 
+void AudioRecorderImpl::FlushAudioLoopForTesting() {
+  if (media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread())
+    return;
+
+  // Queue task on the audio thread, when it is executed, that means we've
+  // successfully executed all the tasks before us.
+  base::RunLoop rl;
+  media::AudioManager::Get()->GetTaskRunner()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(&AudioRecorderImpl::FlushAudioLoopForTesting),
+          base::Unretained(this)),
+      rl.QuitClosure());
+  rl.Run();
+}
+
 }  // namespace audio_modem

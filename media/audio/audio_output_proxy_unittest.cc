@@ -8,7 +8,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
@@ -88,11 +87,10 @@ class MockAudioOutputStream : public AudioOutputStream {
 
 class MockAudioManager : public AudioManagerBase {
  public:
-  MockAudioManager()
-      : AudioManagerBase(base::ThreadTaskRunnerHandle::Get(),
-                         base::ThreadTaskRunnerHandle::Get(),
-                         &fake_audio_log_factory_) {}
-  ~MockAudioManager() override { Shutdown(); }
+  MockAudioManager() : AudioManagerBase(&fake_audio_log_factory_) {}
+  virtual ~MockAudioManager() {
+    Shutdown();
+  }
 
   MOCK_METHOD0(HasAudioOutputDevices, bool());
   MOCK_METHOD0(HasAudioInputDevices, bool());
@@ -145,6 +143,10 @@ namespace media {
 class AudioOutputProxyTest : public testing::Test {
  protected:
   void SetUp() override {
+    EXPECT_CALL(manager_, GetTaskRunner())
+        .WillRepeatedly(Return(message_loop_.task_runner()));
+    EXPECT_CALL(manager_, GetWorkerTaskRunner())
+        .WillRepeatedly(Return(message_loop_.task_runner()));
     // Use a low sample rate and large buffer size when testing otherwise the
     // FakeAudioOutputStream will keep the message loop busy indefinitely; i.e.,
     // RunUntilIdle() will never terminate.

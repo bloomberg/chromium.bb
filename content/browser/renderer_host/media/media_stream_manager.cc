@@ -1128,7 +1128,7 @@ void MediaStreamManager::ReadOutputParamsAndPostRequestToUI(
     // its task runner, and MediaStreamManager is deleted on the UI thread,
     // after the IO thread has been stopped.
     base::PostTaskAndReplyWithResult(
-        audio_manager_->GetTaskRunner(), FROM_HERE,
+        audio_manager_->GetTaskRunner().get(), FROM_HERE,
         base::Bind(&media::AudioManager::GetDefaultOutputStreamParameters,
                    base::Unretained(audio_manager_)),
         base::Bind(&MediaStreamManager::PostRequestToUI, base::Unretained(this),

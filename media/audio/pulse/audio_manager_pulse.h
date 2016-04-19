@@ -17,12 +17,10 @@ namespace media {
 
 class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
  public:
-  AudioManagerPulse(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-      AudioLogFactory* audio_log_factory);
+  AudioManagerPulse(AudioLogFactory* audio_log_factory);
+  ~AudioManagerPulse() override;
 
-  bool Init();
+  static AudioManager* Create(AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
   bool HasAudioOutputDevices() override;
@@ -47,14 +45,12 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
       const std::string& device_id) override;
 
  protected:
-  ~AudioManagerPulse() override;
-
   AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
       const AudioParameters& input_params) override;
 
  private:
-  bool InitPulse();
+  bool Init();
   void DestroyPulse();
 
   void GetAudioDeviceNames(bool input, media::AudioDeviceNames* device_names);

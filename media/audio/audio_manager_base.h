@@ -63,6 +63,8 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   ~AudioManagerBase() override;
 
   // AudioManager:
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetWorkerTaskRunner() override;
   base::string16 GetAudioInputDeviceModel() override;
   void ShowAudioInputSettings() override;
   void GetAudioInputDeviceNames(AudioDeviceNames* device_names) override;
@@ -120,14 +122,11 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   int output_stream_count() const { return num_output_streams_; }
 
  protected:
-  AudioManagerBase(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-      AudioLogFactory* audio_log_factory);
+  AudioManagerBase(AudioLogFactory* audio_log_factory);
 
-  // Releases all the audio output dispatchers.
-  // All audio streams should be closed before Shutdown() is called.
-  // This must be called in the destructor of every AudioManagerBase
+  // Shuts down the audio thread and releases all the audio output dispatchers
+  // on the audio thread.  All audio streams should be freed before Shutdown()
+  // is called.  This must be called in the destructor of every AudioManagerBase
   // implementation.
   void Shutdown();
 
@@ -163,6 +162,9 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
 
   class CompareByParams;
 
+  // Called by Shutdown().
+  void ShutdownOnAudioThread();
+
   // Max number of open output streams, modified by
   // SetMaxOutputStreamsAllowed().
   int max_num_output_streams_;
@@ -178,6 +180,9 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
 
   // Track output state change listeners.
   base::ObserverList<AudioDeviceListener> output_listeners_;
+
+  // Thread used to interact with audio streams created by this audio manager.
+  scoped_ptr<base::Thread> audio_thread_;
 
   // Map of cached AudioOutputDispatcher instances.  Must only be touched
   // from the audio thread (no locking).

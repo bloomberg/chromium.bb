@@ -89,12 +89,8 @@ bool AudioManagerBase::UseSessionIdToSelectDevice(
   return session_id && device_id.empty();
 }
 
-AudioManagerBase::AudioManagerBase(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-    AudioLogFactory* audio_log_factory)
-    : AudioManager(std::move(task_runner), std::move(worker_task_runner)),
-      max_num_output_streams_(kDefaultMaxOutputStreams),
+AudioManagerBase::AudioManagerBase(AudioLogFactory* audio_log_factory)
+    : max_num_output_streams_(kDefaultMaxOutputStreams),
       max_num_input_streams_(kDefaultMaxInputStreams),
       num_output_streams_(0),
       num_input_streams_(0),
@@ -103,19 +99,40 @@ AudioManagerBase::AudioManagerBase(
       // block the UI thread when swapping devices.
       output_listeners_(
           base::ObserverList<AudioDeviceListener>::NOTIFY_EXISTING_ONLY),
-      audio_log_factory_(audio_log_factory) {}
+      audio_log_factory_(audio_log_factory) {
+}
 
 AudioManagerBase::~AudioManagerBase() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-
+  // The platform specific AudioManager implementation must have already
+  // stopped the audio thread. Otherwise, we may destroy audio streams before
+  // stopping the thread, resulting an unexpected behavior.
+  // This way we make sure activities of the audio streams are all stopped
+  // before we destroy them.
+  CHECK(!audio_thread_);
   // All the output streams should have been deleted.
-  CHECK_EQ(0, num_output_streams_);
+  DCHECK_EQ(0, num_output_streams_);
   // All the input streams should have been deleted.
-  CHECK_EQ(0, num_input_streams_);
+  DCHECK_EQ(0, num_input_streams_);
 }
 
 base::string16 AudioManagerBase::GetAudioInputDeviceModel() {
   return base::string16();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> AudioManagerBase::GetTaskRunner() {
+  if (!audio_thread_) {
+    audio_thread_.reset(new base::Thread("AudioThread"));
+#if defined(OS_WIN)
+    audio_thread_->init_com_with_mta(true);
+#endif
+    CHECK(audio_thread_->Start());
+  }
+  return audio_thread_->task_runner();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+AudioManagerBase::GetWorkerTaskRunner() {
+  return GetTaskRunner();
 }
 
 AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
@@ -312,8 +329,26 @@ void AudioManagerBase::ReleaseInputStream(AudioInputStream* stream) {
 }
 
 void AudioManagerBase::Shutdown() {
+  // Only true when we're sharing the UI message loop with the browser.  The UI
+  // loop is no longer running at this time and browser destruction is imminent.
+  auto task_runner = GetTaskRunner();
+  if (task_runner->BelongsToCurrentThread()) {
+    ShutdownOnAudioThread();
+  } else {
+    task_runner->PostTask(FROM_HERE,
+                          base::Bind(&AudioManagerBase::ShutdownOnAudioThread,
+                                     base::Unretained(this)));
+  }
+
+  // Stop() will wait for any posted messages to be processed first.
+  if (audio_thread_) {
+    audio_thread_->Stop();
+    audio_thread_.reset();
+  }
+}
+
+void AudioManagerBase::ShutdownOnAudioThread() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  // Close all output streams.
   while (!output_dispatchers_.empty()) {
     output_dispatchers_.back()->dispatcher->Shutdown();
     output_dispatchers_.pop_back();

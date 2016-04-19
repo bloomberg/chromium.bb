@@ -117,7 +117,7 @@ void AudioOutputDeviceEnumerator::DoEnumerateDevices() {
   is_enumeration_ongoing_ = true;
   seq_last_enumeration_ = NewEventSequence();
   base::PostTaskAndReplyWithResult(
-      audio_manager_->GetTaskRunner(), FROM_HERE,
+      audio_manager_->GetTaskRunner().get(), FROM_HERE,
       base::Bind(&EnumerateDevicesOnDeviceThread, audio_manager_),
       base::Bind(&AudioOutputDeviceEnumerator::DevicesEnumerated,
                  weak_factory_.GetWeakPtr()));

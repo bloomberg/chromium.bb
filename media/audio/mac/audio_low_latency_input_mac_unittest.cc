@@ -107,16 +107,12 @@ class MacAudioInputTest : public testing::Test {
  protected:
   MacAudioInputTest()
       : message_loop_(base::MessageLoop::TYPE_UI),
-        audio_manager_(
-            AudioManager::CreateForTesting(message_loop_.task_runner())) {
+        audio_manager_(AudioManager::CreateForTesting()) {
     // Wait for the AudioManager to finish any initialization on the audio loop.
     base::RunLoop().RunUntilIdle();
   }
 
-  ~MacAudioInputTest() override {
-    audio_manager_.reset();
-    base::RunLoop().RunUntilIdle();
-  }
+  ~MacAudioInputTest() override { base::RunLoop().RunUntilIdle(); }
 
   bool InputDevicesAvailable() {
     return audio_manager_->HasAudioInputDevices();
@@ -150,7 +146,7 @@ class MacAudioInputTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  ScopedAudioManagerPtr audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
 };
 
 // Test Create(), Close().

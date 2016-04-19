@@ -7,9 +7,10 @@
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/test_message_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "media/audio/audio_io.h"
@@ -49,16 +50,16 @@ class TestInputCallback : public AudioInputStream::AudioInputCallback {
 };
 
 class AudioInputTest : public testing::Test {
- public:
-  AudioInputTest()
-      : message_loop_(base::MessageLoop::TYPE_UI),
-        audio_manager_(AudioManager::CreateForTesting(
-            base::ThreadTaskRunnerHandle::Get())),
-        audio_input_stream_(NULL) {
+  public:
+   AudioInputTest() :
+      message_loop_(base::MessageLoop::TYPE_UI),
+      audio_manager_(AudioManager::CreateForTesting()),
+      audio_input_stream_(NULL) {
+    // Wait for the AudioManager to finish any initialization on the audio loop.
     base::RunLoop().RunUntilIdle();
   }
 
-  ~AudioInputTest() override {}
+  ~AudioInputTest() override { base::RunLoop().RunUntilIdle(); }
 
  protected:
   bool InputDevicesAvailable() {
@@ -143,12 +144,29 @@ class AudioInputTest : public testing::Test {
 
   // Synchronously runs the provided callback/closure on the audio thread.
   void RunOnAudioThread(const base::Closure& closure) {
-    DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
-    closure.Run();
+    if (!audio_manager_->GetTaskRunner()->BelongsToCurrentThread()) {
+      base::WaitableEvent event(false, false);
+      audio_manager_->GetTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(&AudioInputTest::RunOnAudioThreadImpl,
+                     base::Unretained(this),
+                     closure,
+                     &event));
+      event.Wait();
+    } else {
+      closure.Run();
+    }
   }
 
-  base::TestMessageLoop message_loop_;
-  ScopedAudioManagerPtr audio_manager_;
+  void RunOnAudioThreadImpl(const base::Closure& closure,
+                            base::WaitableEvent* event) {
+    DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+    closure.Run();
+    event->Signal();
+  }
+
+  base::MessageLoop message_loop_;
+  scoped_ptr<AudioManager> audio_manager_;
   AudioInputStream* audio_input_stream_;
 
  private:
@@ -204,11 +222,10 @@ TEST_F(AudioInputTest, MAYBE_Record) {
   TestInputCallback test_callback;
   OpenAndStartAudioInputStreamOnAudioThread(&test_callback);
 
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(500));
-  run_loop.Run();
+  message_loop_.PostDelayedTask(FROM_HERE,
+                                base::MessageLoop::QuitWhenIdleClosure(),
+                                base::TimeDelta::FromMilliseconds(500));
+  message_loop_.Run();
   EXPECT_GE(test_callback.callback_count(), 2);
   EXPECT_FALSE(test_callback.had_error());
 

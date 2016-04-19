@@ -36,7 +36,6 @@ class MojoMediaApplication
                   const shell::Identity& identity,
                   uint32_t id) final;
   bool AcceptConnection(shell::Connection* connection) final;
-  bool ShellConnectionLost() final;
 
   // shell::InterfaceFactory<interfaces::ServiceFactory> implementation.
   void Create(shell::Connection* connection,

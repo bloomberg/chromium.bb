@@ -6,10 +6,7 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/test_message_loop.h"
-#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
@@ -34,41 +31,6 @@
 #endif  // defined(USE_PULSEAUDIO)
 
 namespace media {
-
-namespace {
-template <typename T>
-struct TestAudioManagerFactory {
-  static ScopedAudioManagerPtr Create(AudioLogFactory* audio_log_factory) {
-    return ScopedAudioManagerPtr(new T(base::ThreadTaskRunnerHandle::Get(),
-                                       base::ThreadTaskRunnerHandle::Get(),
-                                       audio_log_factory));
-  }
-};
-
-#if defined(USE_PULSEAUDIO)
-template <>
-struct TestAudioManagerFactory<AudioManagerPulse> {
-  static ScopedAudioManagerPtr Create(AudioLogFactory* audio_log_factory) {
-    std::unique_ptr<AudioManagerPulse, AudioManagerDeleter> manager(
-        new AudioManagerPulse(base::ThreadTaskRunnerHandle::Get(),
-                              base::ThreadTaskRunnerHandle::Get(),
-                              audio_log_factory));
-    if (!manager->Init())
-      manager.reset();
-    return std::move(manager);
-  }
-};
-#endif  // defined(USE_PULSEAUDIO)
-
-template <>
-struct TestAudioManagerFactory<std::nullptr_t> {
-  static ScopedAudioManagerPtr Create(AudioLogFactory* audio_log_factory) {
-    return AudioManager::Create(base::ThreadTaskRunnerHandle::Get(),
-                                base::ThreadTaskRunnerHandle::Get(), nullptr,
-                                audio_log_factory);
-  }
-};
-}  // namespace
 
 // Test fixture which allows us to override the default enumeration API on
 // Windows.
@@ -115,8 +77,14 @@ class AudioManagerTest : public ::testing::Test {
   }
 
  protected:
-  AudioManagerTest() { CreateAudioManagerForTesting(); }
-  ~AudioManagerTest() override {}
+  AudioManagerTest() : audio_manager_(AudioManager::CreateForTesting()) {
+    // Wait for audio thread initialization to complete.  Otherwise the
+    // enumeration type may not have been set yet.
+    base::WaitableEvent event(false, false);
+    audio_manager_->GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
+        &base::WaitableEvent::Signal, base::Unretained(&event)));
+    event.Wait();
+  }
 
 #if defined(OS_WIN)
   bool SetMMDeviceEnumeration() {
@@ -181,41 +149,71 @@ class AudioManagerTest : public ::testing::Test {
     }
   }
 
-  bool InputDevicesAvailable() {
-    return audio_manager_->HasAudioInputDevices();
-  }
-  bool OutputDevicesAvailable() {
-    return audio_manager_->HasAudioOutputDevices();
+  void HasInputDevicesAvailable(bool* has_devices) {
+    *has_devices = audio_manager_->HasAudioInputDevices();
   }
 
-  template <typename T = std::nullptr_t>
+  void HasOutputDevicesAvailable(bool* has_devices) {
+    *has_devices = audio_manager_->HasAudioOutputDevices();
+  }
+
+  bool InputDevicesAvailable() {
+    bool has_devices = false;
+    RunOnAudioThread(base::Bind(&AudioManagerTest::HasInputDevicesAvailable,
+                                base::Unretained(this), &has_devices));
+    return has_devices;
+  }
+
+  bool OutputDevicesAvailable() {
+    bool has_devices = false;
+    RunOnAudioThread(base::Bind(&AudioManagerTest::HasOutputDevicesAvailable,
+                                base::Unretained(this), &has_devices));
+    return has_devices;
+  }
+
+#if defined(USE_ALSA) || defined(USE_PULSEAUDIO)
+  template <class T>
   void CreateAudioManagerForTesting() {
     // Only one AudioManager may exist at a time, so destroy the one we're
     // currently holding before creating a new one.
-    // Flush the message loop to run any shutdown tasks posted by AudioManager.
     audio_manager_.reset();
-    base::RunLoop().RunUntilIdle();
+    audio_manager_.reset(T::Create(&fake_audio_log_factory_));
+  }
+#endif
 
-    audio_manager_ =
-        TestAudioManagerFactory<T>::Create(&fake_audio_log_factory_);
-    // A few AudioManager implementations post initialization tasks to
-    // audio thread. Flush the thread to ensure that |audio_manager_| is
-    // initialized and ready to use before returning from this function.
-    // TODO(alokp): We should perhaps do this in AudioManager::Create().
-    base::RunLoop().RunUntilIdle();
+  // Synchronously runs the provided callback/closure on the audio thread.
+  void RunOnAudioThread(const base::Closure& closure) {
+    if (!audio_manager_->GetTaskRunner()->BelongsToCurrentThread()) {
+      base::WaitableEvent event(false, false);
+      audio_manager_->GetTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(&AudioManagerTest::RunOnAudioThreadImpl,
+                     base::Unretained(this),
+                     closure,
+                     &event));
+      event.Wait();
+    } else {
+      closure.Run();
+    }
   }
 
-  base::TestMessageLoop message_loop_;
+  void RunOnAudioThreadImpl(const base::Closure& closure,
+                            base::WaitableEvent* event) {
+    DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+    closure.Run();
+    event->Signal();
+  }
+
   FakeAudioLogFactory fake_audio_log_factory_;
-  ScopedAudioManagerPtr audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
 };
 
 TEST_F(AudioManagerTest, HandleDefaultDeviceIDs) {
   // Use a fake manager so we can makeup device ids, this will still use the
   // AudioManagerBase code.
-  CreateAudioManagerForTesting<FakeAudioManager>();
-  HandleDefaultDeviceIDsTest();
-  base::RunLoop().RunUntilIdle();
+  audio_manager_.reset(new FakeAudioManager(&fake_audio_log_factory_));
+  RunOnAudioThread(base::Bind(&AudioManagerTest::HandleDefaultDeviceIDsTest,
+                              base::Unretained(this)));
 }
 
 // Test that devices can be enumerated.
@@ -223,7 +221,10 @@ TEST_F(AudioManagerTest, EnumerateInputDevices) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
   AudioDeviceNames device_names;
-  audio_manager_->GetAudioInputDeviceNames(&device_names);
+  RunOnAudioThread(
+      base::Bind(&AudioManager::GetAudioInputDeviceNames,
+                 base::Unretained(audio_manager_.get()),
+                 &device_names));
   CheckDeviceNames(device_names);
 }
 
@@ -232,7 +233,10 @@ TEST_F(AudioManagerTest, EnumerateOutputDevices) {
   ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
 
   AudioDeviceNames device_names;
-  audio_manager_->GetAudioOutputDeviceNames(&device_names);
+  RunOnAudioThread(
+      base::Bind(&AudioManager::GetAudioOutputDeviceNames,
+                 base::Unretained(audio_manager_.get()),
+                 &device_names));
   CheckDeviceNames(device_names);
 }
 
@@ -399,7 +403,9 @@ TEST_F(AudioManagerTest, GetDefaultOutputStreamParameters) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
   AudioParameters params;
-  GetDefaultOutputStreamParameters(&params);
+  RunOnAudioThread(
+      base::Bind(&AudioManagerTest::GetDefaultOutputStreamParameters,
+                 base::Unretained(this), &params));
   EXPECT_TRUE(params.IsValid());
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
@@ -409,7 +415,9 @@ TEST_F(AudioManagerTest, GetAssociatedOutputDeviceID) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable() && OutputDevicesAvailable());
 
   AudioDeviceNames device_names;
-  audio_manager_->GetAudioInputDeviceNames(&device_names);
+  RunOnAudioThread(base::Bind(&AudioManager::GetAudioInputDeviceNames,
+                              base::Unretained(audio_manager_.get()),
+                              &device_names));
   bool found_an_associated_device = false;
   for (AudioDeviceNames::iterator it = device_names.begin();
        it != device_names.end();
@@ -417,7 +425,9 @@ TEST_F(AudioManagerTest, GetAssociatedOutputDeviceID) {
     EXPECT_FALSE(it->unique_id.empty());
     EXPECT_FALSE(it->device_name.empty());
     std::string output_device_id;
-    GetAssociatedOutputDeviceID(it->unique_id, &output_device_id);
+    RunOnAudioThread(base::Bind(&AudioManagerTest::GetAssociatedOutputDeviceID,
+                                base::Unretained(this), it->unique_id,
+                                &output_device_id));
     if (!output_device_id.empty()) {
       DVLOG(2) << it->unique_id << " matches with " << output_device_id;
       found_an_associated_device = true;
