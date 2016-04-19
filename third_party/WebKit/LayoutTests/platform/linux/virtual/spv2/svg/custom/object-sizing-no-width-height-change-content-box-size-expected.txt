@@ -7,29 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineBox",
-          "rect": [0, 0, 0, 0],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 8, 402, 405],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutEmbeddedObject object",
-          "rect": [209, 9, 200, 400],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [89, 189, 40, 40],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [169, 169, 80, 80],
-          "reason": "location change"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -47,18 +27,35 @@
           "reason": "full"
         },
         {
+          "object": "LayoutEmbeddedObject object",
+          "rect": [209, 9, 200, 400],
+          "reason": "incremental"
+        },
+        {
           "object": "LayoutView #document",
           "rect": [209, 9, 200, 400],
           "reason": "incremental"
         },
         {
-          "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "object": "LayoutSVGEllipse circle",
+          "rect": [169, 169, 80, 80],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [89, 189, 40, 40],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineBox",
           "reason": "full"
         },
         {
           "object": "RootInlineBox",
-          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
           "reason": "full"
         }
       ]

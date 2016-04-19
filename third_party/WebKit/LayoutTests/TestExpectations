@@ -49,9 +49,6 @@ crbug.com/581990 [ Win ] fast/writing-mode/english-lr-text.html [ Pass Failure ]
 # See also crbug.com/521730 for the these two text/emphasis tests (non-Oilpan) Win10 failures.
 crbug.com/574660 [ Win7 ] fast/text/emphasis-combined-text.html [ Pass Failure ]
 
-# TODO(wangxianzhu): verify this after rebaseline for crbug.com/602483
-crbug.com/584211 [ Mac ] svg/transforms/animated-path-inside-transformed-html.xhtml [ Pass Failure ]
-
 # This test violates lifecycle assertions.
 # Timeout because of crbug.com/603231
 crbug.com/372245 media/track/track-word-breaking.html [ Crash Timeout ]
@@ -431,9 +428,7 @@ crbug.com/600618 virtual/spv2/svg/custom/object-current-scale.html [ Pass ]
 crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-height.xhtml [ Pass ]
 crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-width-height.xhtml [ Pass ]
 crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-width.xhtml [ Pass ]
-# TODO(wangxianzhu): restore this after rebaseline
-#crbug.com/600618 virtual/spv2/svg/custom/object-sizing-no-width-height-change-content-box-size.xhtml [ Pass ]
-crbug.com/600618 virtual/spv2/svg/custom/object-sizing-no-width-height-change-content-box-size.xhtml [ NeedsManualRebaseline ]
+crbug.com/600618 virtual/spv2/svg/custom/object-sizing-no-width-height-change-content-box-size.xhtml [ Pass ]
 crbug.com/600618 virtual/spv2/svg/custom/svg-root-padding-left.html [ Pass ]
 crbug.com/600618 virtual/spv2/svg/custom/svg-root-padding-top.html [ Pass ]
 crbug.com/600618 virtual/spv2/svg/custom/viewport-em.svg [ Pass ]
@@ -1261,9 +1256,6 @@ crbug.com/587136 [ Linux Debug ] http/tests/security/xss-DENIED-cross-origin-sta
 
 crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ Pass Failure ]
 
-# TODO(wangxianzhu): Examine bot result.
-crbug.com/602614 svg/carto.net/tabgroup.svg [ Pass Failure ]
-
 crbug.com/587779 [ Linux Mac10.10 Mac10.11 Retina ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
 crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
 
@@ -1512,6 +1504,7 @@ crbug.com/601166 [ Mac10.9 ]  fast/text/word-space.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text/zero-font-size.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  ietestcenter/css3/text/textshadow-003.htm [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  ietestcenter/css3/text/textshadow-004.htm [ Failure ]
+crbug.com/601166 [ Mac10.9 ]  svg/transforms/animated-path-inside-transformed-html.xhtml [ Failure ]
 
 crbug.com/600261 imported/web-platform-tests/mediacapture-streams/GUM-deny.html [ Failure ]
 crbug.com/600261 imported/web-platform-tests/mediacapture-streams/MediaStream-MediaElement-srcObject.html [ Failure ]
