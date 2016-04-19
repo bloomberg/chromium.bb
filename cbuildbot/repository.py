@@ -360,6 +360,11 @@ class RepoRepository(object):
   def _CleanUpAndRunCommand(self, *args, **kwargs):
     """Clean up repository and run command"""
     ClearBuildRoot(self.directory, self.preserve_paths)
+    local_manifest = kwargs.pop('local_manifest', None)
+    # Always re-initialize to the current branch.
+    self.Initialize(local_manifest)
+    # Fix existing broken mirroring configurations.
+    self._EnsureMirroring()
     cros_build_lib.RunCommand(*args, **kwargs)
 
   def Sync(self, local_manifest=None, jobs=None, all_branches=True,
@@ -404,7 +409,8 @@ class RepoRepository(object):
           # decrement max_retry for this command
           retry_util.RetryCommand(self._CleanUpAndRunCommand,
                                   constants.SYNC_RETRIES - 1,
-                                  cmd + ['-n'], cwd=self.directory)
+                                  cmd + ['-n'], cwd=self.directory,
+                                  local_manifest=local_manifest)
         else:
           # No need to retry
           raise

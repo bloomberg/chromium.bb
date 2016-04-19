@@ -146,7 +146,9 @@ class RepoSyncTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
     cmd = ['repo', '--time', 'sync', '-n']
 
     # _CleanUpAndRunCommand should be called once in exception handler
-    clean_up_run_command_mock.assert_called_once_with(cmd, cwd=self.tempdir)
+    clean_up_run_command_mock.assert_called_once_with(cmd, cwd=self.tempdir,
+                                                      local_manifest=
+                                                      'local_manifest')
 
   def testSyncWithoutException(self):
     """Test successful repo sync without exception and retry"""
