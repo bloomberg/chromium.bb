@@ -117,7 +117,7 @@ test("command_buffer_gles2_tests") {
     libs += [ "android" ]
     deps += [ "//ui/android:ui_java" ]
   }
-  if (!is_component_build) {
+  if (is_linux && !is_component_build) {
     configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
   }
 }
