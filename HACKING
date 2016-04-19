@@ -151,17 +151,6 @@ Tests are run with
 
   make check
 
-This however doesn't include the harness tests. Running the harness
-tests requires Python and nose (https://nose.readthedocs.org). Also,
-you need to have compiled with --enable-ucs4. To run all harness
-tests, go into the tests/harness directory and run:
-
-  make runall
-
-To run a single test:
-
-  make <name of harness file>
-
 ** How to debug
 First you have to build liblouis with debugging info enabled.
 
