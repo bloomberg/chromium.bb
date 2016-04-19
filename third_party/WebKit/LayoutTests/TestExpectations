@@ -1304,6 +1304,10 @@ crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 
 crbug.com/587737 [ Mac10.11 Retina ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Timeout Failure ]
 
+crbug.com/602933 fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
+crbug.com/602933 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
+crbug.com/602933 virtual/display_list_2d_canvas/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
+
 crbug.com/599975 [ Android ] media/video-autoplay.html [ Timeout ]
 
 # DocumentWriteEvaluator is still experimental

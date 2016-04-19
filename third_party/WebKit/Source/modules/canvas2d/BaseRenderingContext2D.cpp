@@ -912,19 +912,25 @@ void BaseRenderingContext2D::drawImageInternal(SkCanvas* c, CanvasImageSource* i
     SkPaint imagePaint = *paint;
 
     if (paint->getImageFilter()) {
+        SkMatrix ctm = c->getTotalMatrix();
         SkMatrix invCtm;
-        if (!c->getTotalMatrix().invert(&invCtm)) {
+        if (!ctm.invert(&invCtm)) {
             // There is an earlier check for invertibility, but the arithmetic
             // in AffineTransform is not exactly identical, so it is possible
             // for SkMatrix to find the transform to be non-invertible at this stage.
             // crbug.com/504687
             return;
         }
+        c->save();
+        c->concat(invCtm);
         SkRect bounds = dstRect;
+        ctm.mapRect(&bounds);
         SkPaint layerPaint;
         layerPaint.setXfermode(sk_ref_sp(paint->getXfermode()));
-        layerPaint.setImageFilter(paint->getImageFilter()->makeWithLocalMatrix(invCtm));
+        layerPaint.setImageFilter(paint->getImageFilter());
+
         c->saveLayer(&bounds, &layerPaint);
+        c->concat(ctm);
         imagePaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
         imagePaint.setImageFilter(nullptr);
     }
