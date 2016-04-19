@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "courgette/assembly_program.h"
 #include "courgette/base_test_unittest.h"
@@ -18,6 +19,23 @@
 namespace courgette {
 
 namespace {
+
+class TestDisassemblerElf32X86 : public DisassemblerElf32X86 {
+ public:
+  TestDisassemblerElf32X86(const void* start, size_t length)
+    : DisassemblerElf32X86(start, length) { }
+  ~TestDisassemblerElf32X86() override { }
+
+  void TestSectionHeaderFileOffsetOrder() {
+    std::vector<FileOffset> file_offsets;
+    for (Elf32_Half section_id : section_header_file_offset_order_) {
+      const Elf32_Shdr* section_header = SectionHeader(section_id);
+      file_offsets.push_back(section_header->sh_offset);
+    }
+    EXPECT_EQ(static_cast<size_t>(SectionHeaderCount()), file_offsets.size());
+    EXPECT_TRUE(std::is_sorted(file_offsets.begin(), file_offsets.end()));
+  }
+};
 
 class DisassemblerElf32X86Test : public BaseTest {
  public:
@@ -32,8 +50,8 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
   using TypedRVA = DisassemblerElf32::TypedRVA;
   std::string file1 = FileContents(file_name);
 
-  std::unique_ptr<DisassemblerElf32X86> disassembler(
-      new DisassemblerElf32X86(file1.c_str(), file1.length()));
+  std::unique_ptr<TestDisassemblerElf32X86> disassembler(
+      new TestDisassemblerElf32X86(file1.c_str(), file1.length()));
 
   bool can_parse_header = disassembler->ParseHeader();
   EXPECT_TRUE(can_parse_header);
@@ -84,12 +102,15 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
     }
   }
   EXPECT_FALSE(found_match);
+
+  disassembler->TestSectionHeaderFileOffsetOrder();
 }
 
 }  // namespace
 
 TEST_F(DisassemblerElf32X86Test, All) {
   TestExe("elf-32-1", 200, 3441);
+  TestExe("elf-32-high-bss", 0, 13);
 }
 
 }  // namespace courgette

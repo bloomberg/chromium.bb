@@ -162,13 +162,19 @@ class DisassemblerElf32 : public Disassembler {
   CheckBool ParseRel32RelocsFromSections() WARN_UNUSED_RESULT;
 
   const Elf32_Ehdr* header_;
-  std::vector<Elf32_Shdr> section_header_table_;
+
   Elf32_Half section_header_table_size_;
+
+  // Section header table, ordered by section id.
+  std::vector<Elf32_Shdr> section_header_table_;
+
+  // An ordering of |section_header_table_|, sorted by file offset.
+  std::vector<Elf32_Half> section_header_file_offset_order_;
 
   const Elf32_Phdr* program_header_table_;
   Elf32_Half program_header_table_size_;
 
-  // Section header for default
+  // Pointer to section names.
   const char* default_string_section_;
 
   std::vector<RVA> abs32_locations_;
