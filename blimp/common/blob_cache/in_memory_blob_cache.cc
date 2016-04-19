@@ -15,7 +15,7 @@ InMemoryBlobCache::InMemoryBlobCache() {}
 
 InMemoryBlobCache::~InMemoryBlobCache() {}
 
-void InMemoryBlobCache::Put(const BlobId& id, BlobData data) {
+void InMemoryBlobCache::Put(const BlobId& id, BlobDataPtr data) {
   if (Contains(id)) {
     // In cases where the engine has miscalculated what is already available
     // on the client, Put() might be called unnecessarily, which should be
@@ -30,7 +30,7 @@ bool InMemoryBlobCache::Contains(const BlobId& id) const {
   return cache_.find(id) != cache_.end();
 }
 
-BlobData InMemoryBlobCache::Get(const BlobId& id) const {
+BlobDataPtr InMemoryBlobCache::Get(const BlobId& id) const {
   if (!Contains(id)) {
     return nullptr;
   }

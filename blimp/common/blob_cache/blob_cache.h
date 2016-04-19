@@ -14,7 +14,8 @@
 namespace blimp {
 
 using BlobId = std::string;
-using BlobData = scoped_refptr<base::RefCountedData<const std::string>>;
+using BlobData = base::RefCountedData<const std::string>;
+using BlobDataPtr = scoped_refptr<BlobData>;
 
 // An interface for a cache of blobs.
 class BLIMP_COMMON_EXPORT BlobCache {
@@ -26,11 +27,11 @@ class BLIMP_COMMON_EXPORT BlobCache {
 
   // Stores |data| with the identifier |id| in the cache.
   // Command is ignored if there is already a cache item stored under |id|.
-  virtual void Put(const BlobId& id, BlobData data) = 0;
+  virtual void Put(const BlobId& id, BlobDataPtr data) = 0;
 
   // Returns a pointer to the cache item |id|, or nullptr if no cache item
   // exists under that identifier.
-  virtual BlobData Get(const BlobId& id) const = 0;
+  virtual BlobDataPtr Get(const BlobId& id) const = 0;
 };
 
 }  // namespace blimp

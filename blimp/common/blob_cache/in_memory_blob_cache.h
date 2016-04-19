@@ -24,11 +24,11 @@ class BLIMP_COMMON_EXPORT InMemoryBlobCache : public BlobCache {
 
   // BlobCache implementation.
   bool Contains(const BlobId& id) const override;
-  void Put(const BlobId& id, BlobData data) override;
-  BlobData Get(const BlobId& id) const override;
+  void Put(const BlobId& id, BlobDataPtr data) override;
+  BlobDataPtr Get(const BlobId& id) const override;
 
  private:
-  std::map<const BlobId, BlobData> cache_;
+  std::map<const BlobId, BlobDataPtr> cache_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryBlobCache);
 };

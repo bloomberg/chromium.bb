@@ -21,8 +21,8 @@ const char kBar[] = "bar";
 const char kDeadbeef[] = "\xde\xad\xbe\xef";
 const char kForbiddenCode[] = "\x4b\x1d\xc0\xd3";
 
-BlobData CreateBlobData(const std::string& data) {
-  return new base::RefCountedData<const std::string>(data);
+BlobDataPtr CreateBlobDataPtr(const std::string& data) {
+  return new BlobData(data);
 }
 
 class InMemoryBlobCacheTest : public testing::Test {
@@ -38,29 +38,29 @@ TEST_F(InMemoryBlobCacheTest, SimplePutContainsAndGetOperations) {
   EXPECT_FALSE(cache_.Contains(kFoo));
   EXPECT_EQ(nullptr, cache_.Get(kFoo));
 
-  BlobData blob_data = CreateBlobData(kDeadbeef);
+  BlobDataPtr blob_data = CreateBlobDataPtr(kDeadbeef);
   cache_.Put(kFoo, blob_data);
 
   EXPECT_TRUE(cache_.Contains(kFoo));
   EXPECT_FALSE(cache_.Contains(kBar));
 
-  BlobData out = cache_.Get(kFoo);
+  BlobDataPtr out = cache_.Get(kFoo);
 
   EXPECT_EQ(blob_data, out);
 }
 
 TEST_F(InMemoryBlobCacheTest, TestDuplicatePut) {
-  BlobData first = CreateBlobData(kDeadbeef);
-  BlobData duplicate = CreateBlobData(kForbiddenCode);
+  BlobDataPtr first = CreateBlobDataPtr(kDeadbeef);
+  BlobDataPtr duplicate = CreateBlobDataPtr(kForbiddenCode);
   cache_.Put(kFoo, first);
 
-  BlobData out1 = cache_.Get(kFoo);
+  BlobDataPtr out1 = cache_.Get(kFoo);
   EXPECT_EQ(first, out1);
 
   // The second put should be ignored and retrieving kFoo should still retrieve
   // the first item.
   cache_.Put(kFoo, duplicate);
-  BlobData out2 = cache_.Get(kFoo);
+  BlobDataPtr out2 = cache_.Get(kFoo);
   EXPECT_EQ(first, out2);
 }
 

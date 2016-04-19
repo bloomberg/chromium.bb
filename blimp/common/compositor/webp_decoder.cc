@@ -54,7 +54,7 @@ bool WebPDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
   std::string hex_id = FormatBlobId(deserialized.id());
 
   // Declared here to still be in scope while decoding WebP data.
-  BlobData cached;
+  BlobDataPtr cached;
 
   // Set to true if the client already has the data in its cache. If it does not
   // keeping |found_in_cache| as false will trigger caching the input in the
@@ -131,7 +131,7 @@ bool WebPDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
   if (!found_in_cache) {
     DVLOG(2) << "Inserting image to cache with SHA1: " << hex_id
              << " size: " << webp_data.size;
-    BlobData to_cache(new base::RefCountedData<const std::string>(std::string(
+    BlobDataPtr to_cache(new BlobData(std::string(
         reinterpret_cast<const char*>(webp_data.bytes), webp_data.size)));
     g_blob_cache.Get().Put(deserialized.id(), std::move(to_cache));
   }
