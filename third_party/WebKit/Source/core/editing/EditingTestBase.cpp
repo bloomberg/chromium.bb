@@ -35,22 +35,23 @@ ShadowRoot* EditingTestBase::createShadowRootForElementWithIDAndSetInnerHTML(Tre
 {
     ShadowRoot* shadowRoot = scope.getElementById(AtomicString::fromUTF8(hostElementID))->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
     shadowRoot->setInnerHTML(String::fromUTF8(shadowRootContent), ASSERT_NO_EXCEPTION);
+    scope.document().view()->updateAllLifecyclePhases();
     return shadowRoot;
 }
 
 void EditingTestBase::setBodyContent(const std::string& bodyContent)
 {
     document().body()->setInnerHTML(String::fromUTF8(bodyContent.c_str()), ASSERT_NO_EXCEPTION);
+    updateAllLifecyclePhases();
 }
 
 ShadowRoot* EditingTestBase::setShadowContent(const char* shadowContent, const char* host)
 {
     ShadowRoot* shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), host, shadowContent);
-    document().updateDistribution();
     return shadowRoot;
 }
 
-void EditingTestBase::updateLayoutAndStyleForPainting()
+void EditingTestBase::updateAllLifecyclePhases()
 {
     document().view()->updateAllLifecyclePhases();
 }

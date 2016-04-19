@@ -53,7 +53,6 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     const char* shadowContent = "<p><b id=three>333</b><content select=#two></content><b id=four>4444</b><span id=space>  </span><content select=#one></content><b id=five>55555</b></p>";
     setBodyContent(bodyContent);
     ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
     Node* two = document().getElementById("two")->firstChild();

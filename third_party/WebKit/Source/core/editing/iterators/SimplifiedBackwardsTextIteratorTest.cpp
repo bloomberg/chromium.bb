@@ -31,7 +31,6 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, SubrangeWithReplacedElements)
     const char* shadowContent = "three <content select=#two></content> <content select=#one></content> zero";
     setBodyContent(bodyContent);
     setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
 
     Element* host = document().getElementById("host");
 
@@ -48,7 +47,6 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, characterAt)
     const char* shadowContent = "three <content select=#two></content> <content select=#one></content> zero";
     setBodyContent(bodyContent);
     setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
 
     Element* host = document().getElementById("host");
 
@@ -96,7 +94,6 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, copyTextTo)
     const char* shadowContent = "three <content select=#two></content> <content select=#one></content> zero";
     setBodyContent(bodyContent);
     setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
 
     Element* host = document().getElementById("host");
     const char* message = "|backIter%d| should have emitted '%s' in reverse order.";
@@ -145,7 +142,6 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, CopyWholeCodePoints)
 {
     const char* bodyContent = "&#x13000;&#x13001;&#x13002; &#x13140;&#x13141;.";
     setBodyContent(bodyContent);
-    updateLayoutAndStyleForPainting();
 
     const UChar expected[] = {0xD80C, 0xDC00, 0xD80C, 0xDC01, 0xD80C, 0xDC02, ' ', 0xD80C, 0xDD40, 0xD80C, 0xDD41, '.'};
 

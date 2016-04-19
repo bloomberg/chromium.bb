@@ -17,15 +17,14 @@ class TextTest : public EditingTestBase {
 
 TEST_F(TextTest, RemoveFirstLetterPseudoElementWhenNoLetter)
 {
-    document().documentElement()->setInnerHTML("<style>*::first-letter{font:icon;}</style><pre>AB\n</pre>", ASSERT_NO_EXCEPTION);
-    updateLayoutAndStyleForPainting();
+    setBodyContent("<style>*::first-letter{font:icon;}</style><pre>AB\n</pre>");
 
     Element* pre = document().querySelector("pre", ASSERT_NO_EXCEPTION);
     Text* text = toText(pre->firstChild());
 
     Range* range = Range::create(document(), text, 0, text, 2);
     range->deleteContents(ASSERT_NO_EXCEPTION);
-    updateLayoutAndStyleForPainting();
+    updateAllLifecyclePhases();
 
     EXPECT_FALSE(text->layoutObject()->isTextFragment());
 }

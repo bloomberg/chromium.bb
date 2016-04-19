@@ -400,7 +400,6 @@ TEST_F(TextIteratorTest, copyTextTo)
     const char* shadowContent = "three <content select=#two></content> <content select=#one></content> zero";
     setBodyContent(bodyContent);
     setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
 
     Element* host = document().getElementById("host");
     const char* message = "|iter%d| should have emitted '%s'.";
@@ -451,7 +450,6 @@ TEST_F(TextIteratorTest, characterAt)
     const char* shadowContent = "three <content select=#two></content> <content select=#one></content> zero";
     setBodyContent(bodyContent);
     setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
 
     Element* host = document().getElementById("host");
 
@@ -497,7 +495,6 @@ TEST_F(TextIteratorTest, CopyWholeCodePoints)
 {
     const char* bodyContent = "&#x13000;&#x13001;&#x13002; &#x13140;&#x13141;.";
     setBodyContent(bodyContent);
-    updateLayoutAndStyleForPainting();
 
     const UChar expected[] = {0xD80C, 0xDC00, 0xD80C, 0xDC01, 0xD80C, 0xDC02, ' ', 0xD80C, 0xDD40, 0xD80C, 0xDD41, '.'};
 

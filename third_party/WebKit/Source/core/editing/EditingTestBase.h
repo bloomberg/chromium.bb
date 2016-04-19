@@ -29,7 +29,7 @@ protected:
 
     void setBodyContent(const std::string&);
     ShadowRoot* setShadowContent(const char* shadowContent, const char* shadowHostId);
-    void updateLayoutAndStyleForPainting();
+    void updateAllLifecyclePhases();
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;

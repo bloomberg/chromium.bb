@@ -18,7 +18,6 @@ TEST_F(EditingUtilitiesTest, directionOfEnclosingBlock)
     const char* shadowContent = "<content select=#two></content><p dir=rtl><content select=#one></content><p>";
     setBodyContent(bodyContent);
     setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
     Node* one = document().getElementById("one");
 
     EXPECT_EQ(LTR, directionOfEnclosingBlock(Position(one, 0)));
@@ -31,7 +30,6 @@ TEST_F(EditingUtilitiesTest, firstEditablePositionAfterPositionInRoot)
     const char* shadowContent = "<content select=#two></content><content select=#one></content><b id='three'>333</b>";
     setBodyContent(bodyContent);
     ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
     Element* host = document().getElementById("host");
     Node* one = document().getElementById("one");
     Node* two = document().getElementById("two");
@@ -55,7 +53,6 @@ TEST_F(EditingUtilitiesTest, enclosingBlock)
     const char* shadowContent = "<content select=#two></content><div id='three'><content select=#one></content></div>";
     setBodyContent(bodyContent);
     ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
     Node* host = document().getElementById("host");
     Node* one = document().getElementById("one");
     Node* three = shadowRoot->getElementById("three");
@@ -70,7 +67,6 @@ TEST_F(EditingUtilitiesTest, enclosingNodeOfType)
     const char* shadowContent = "<content select=#two></content><div id='three'><content select=#one></div></content>";
     setBodyContent(bodyContent);
     ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
     Node* host = document().getElementById("host");
     Node* one = document().getElementById("one");
     Node* three = shadowRoot->getElementById("three");
@@ -92,7 +88,7 @@ TEST_F(EditingUtilitiesTest, isEditablePositionWithTable)
         document().firstChild()->remove();
     document().appendChild(table);
     document().setDesignMode("on");
-    updateLayoutAndStyleForPainting();
+    updateAllLifecyclePhases();
 
     EXPECT_FALSE(isEditablePosition(Position(table, 0)));
 }
@@ -103,7 +99,6 @@ TEST_F(EditingUtilitiesTest, isFirstPositionAfterTable)
     const char* shadowContent = "<content select=#two></content><content select=#table></content>";
     setBodyContent(bodyContent);
     setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
     Node* host = document().getElementById("host");
     Node* table = document().getElementById("table");
 
@@ -129,7 +124,6 @@ TEST_F(EditingUtilitiesTest, lastEditablePositionBeforePositionInRoot)
     const char* shadowContent = "<content select=#two></content><content select=#one></content><b id='three'>333</b>";
     setBodyContent(bodyContent);
     ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
     Element* host = document().getElementById("host");
     Node* one = document().getElementById("one");
     Node* two = document().getElementById("two");
@@ -166,7 +160,6 @@ TEST_F(EditingUtilitiesTest, NextVisuallyDistinctCandidate)
     const char* shadowContent = "<content select=#two></content><content select=#one></content><content select=#three></content>";
     setBodyContent(bodyContent);
     setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
     Node* one = document().getElementById("one");
     Node* two = document().getElementById("two");
     Node* three = document().getElementById("three");
@@ -178,7 +171,6 @@ TEST_F(EditingUtilitiesTest, NextVisuallyDistinctCandidate)
 TEST_F(EditingUtilitiesTest, AreaIdenticalElements)
 {
     setBodyContent("<style>li:nth-child(even) { -webkit-user-modify: read-write; }</style><ul><li>first item</li><li>second item</li><li class=foo>third</li><li>fourth</li></ul>");
-    updateLayoutAndStyleForPainting();
     StaticElementList* items = document().querySelectorAll("li", ASSERT_NO_EXCEPTION);
     DCHECK_EQ(items->length(), 4u);
 
@@ -211,7 +203,7 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset_FirstLetter)
     EXPECT_EQ(2, nextGraphemeBoundaryOf(node, 1));
     EXPECT_EQ(3, nextGraphemeBoundaryOf(node, 2));
 
-    updateLayoutAndStyleForPainting();
+    updateAllLifecyclePhases();
     EXPECT_NE(nullptr, node->layoutObject());
     EXPECT_EQ(2, previousGraphemeBoundaryOf(node, 3));
     EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 2));
@@ -232,7 +224,7 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset_textTransform)
     EXPECT_EQ(2, nextGraphemeBoundaryOf(node, 1));
     EXPECT_EQ(3, nextGraphemeBoundaryOf(node, 2));
 
-    updateLayoutAndStyleForPainting();
+    updateAllLifecyclePhases();
     EXPECT_NE(nullptr, node->layoutObject());
     EXPECT_EQ(2, previousGraphemeBoundaryOf(node, 3));
     EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 2));

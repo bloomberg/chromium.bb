@@ -15,7 +15,6 @@ TEST_F(NodeTest, canStartSelection)
 {
     const char* bodyContent = "<a id=one href='http://www.msn.com'>one</a><b id=two>two</b>";
     setBodyContent(bodyContent);
-    updateLayoutAndStyleForPainting();
     Node* one = document().getElementById("one");
     Node* two = document().getElementById("two");
 
@@ -31,7 +30,6 @@ TEST_F(NodeTest, canStartSelectionWithShadowDOM)
     const char* shadowContent = "<a href='http://www.msn.com'><content></content></a>";
     setBodyContent(bodyContent);
     setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
     Node* one = document().getElementById("one");
 
     EXPECT_FALSE(one->canStartSelection());

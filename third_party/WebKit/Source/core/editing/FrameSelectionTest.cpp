@@ -211,7 +211,6 @@ TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree)
 {
     setBodyContent("<span id=host></span>one");
     setShadowContent("two<content></content>", "host");
-    updateLayoutAndStyleForPainting();
     Element* host = document().getElementById("host");
     Node* const two = FlatTreeTraversal::firstChild(*host);
     // Select "two" for selection in DOM tree
@@ -252,7 +251,6 @@ TEST_F(FrameSelectionTest, setNonDirectionalSelectionIfNeeded)
     const char* shadowContent = "<span id=bottom>bottom</span>";
     setBodyContent(bodyContent);
     ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
-    updateLayoutAndStyleForPainting();
 
     Node* top = document().getElementById("top")->firstChild();
     Node* bottom = shadowRoot->getElementById("bottom")->firstChild();
