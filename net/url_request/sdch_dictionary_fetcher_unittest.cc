@@ -21,6 +21,7 @@
 #include "net/url_request/url_request_data_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
+#include "net/url_request/url_request_redirect_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +30,8 @@ namespace net {
 namespace {
 
 const char kSampleBufferContext[] = "This is a sample buffer.";
-const char kTestDomain[] = "top.domain.test";
+const char kTestDomain1[] = "top.domain.test";
+const char kTestDomain2[] = "top2.domain.test";
 
 class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
  public:
@@ -82,34 +84,65 @@ class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
   DISALLOW_COPY_AND_ASSIGN(URLRequestSpecifiedResponseJob);
 };
 
-class SpecifiedResponseJobInterceptor : public URLRequestInterceptor {
+// Wrap URLRequestRedirectJob in a destruction callback.
+class TestURLRequestRedirectJob : public URLRequestRedirectJob {
  public:
-  // A callback to be called whenever a URLRequestSpecifiedResponseJob is
-  // created or destroyed.  The first argument will be the change in number of
-  // jobs (i.e. +1 for created, -1 for destroyed).
-  // The second argument will be undefined if the job is being created,
-  // and will contain the load flags passed to the request the
-  // job was created for if the job is being destroyed.
+  TestURLRequestRedirectJob(URLRequest* request,
+                            NetworkDelegate* network_delegate,
+                            const GURL& redirect_destination,
+                            ResponseCode response_code,
+                            const std::string& redirect_reason,
+                            base::Closure destruction_callback)
+      : URLRequestRedirectJob(request,
+                              network_delegate,
+                              redirect_destination,
+                              response_code,
+                              redirect_reason),
+        destruction_callback_(destruction_callback) {}
+  ~TestURLRequestRedirectJob() override { destruction_callback_.Run(); }
+
+ private:
+  const base::Closure destruction_callback_;
+};
+
+static const char* redirect_signal = "/redirect/";
+class SDCHTestRequestInterceptor : public URLRequestInterceptor {
+ public:
+  // A callback to be called whenever a URLRequestJob child of this
+  // interceptor is created or destroyed.  The first argument will be the
+  // change in number of jobs (i.e. +1 for created, -1 for destroyed).
+  // The second argument will be undefined if the job is being created
+  // or a redirect job is being destroyed, and (for non-redirect job
+  // destruction) will contain the load flags passed to the request the
+  // job was created for.
   typedef base::Callback<void(int outstanding_job_delta,
                               int destruction_load_flags)> LifecycleCallback;
 
   // |*info| will be returned from all child URLRequestSpecifiedResponseJobs.
   // Note that: a) this pointer is shared with the caller, and the caller must
-  // guarantee that |*info| outlives the SpecifiedResponseJobInterceptor, and
+  // guarantee that |*info| outlives the SDCHTestRequestInterceptor, and
   // b) |*info| is mutable, and changes to should propagate to
   // URLRequestSpecifiedResponseJobs created after any change.
-  SpecifiedResponseJobInterceptor(HttpResponseInfo* http_response_info,
-                                  const LifecycleCallback& lifecycle_callback)
+  SDCHTestRequestInterceptor(HttpResponseInfo* http_response_info,
+                             const LifecycleCallback& lifecycle_callback)
       : http_response_info_(http_response_info),
         lifecycle_callback_(lifecycle_callback) {
     DCHECK(!lifecycle_callback_.is_null());
   }
-  ~SpecifiedResponseJobInterceptor() override {}
+  ~SDCHTestRequestInterceptor() override {}
 
   URLRequestJob* MaybeInterceptRequest(
       URLRequest* request,
       NetworkDelegate* network_delegate) const override {
     lifecycle_callback_.Run(1, 0);
+
+    std::string path = request->url().path();
+    if (path.substr(0, strlen(redirect_signal)) == redirect_signal) {
+      return new TestURLRequestRedirectJob(
+          request, network_delegate, GURL(path.substr(strlen(redirect_signal))),
+          URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT, "testing",
+          base::Bind(lifecycle_callback_, -1, 0));
+    }
 
     return new URLRequestSpecifiedResponseJob(
         request, network_delegate, *http_response_info_,
@@ -118,25 +151,45 @@ class SpecifiedResponseJobInterceptor : public URLRequestInterceptor {
 
   // The caller must ensure that both |*http_response_info| and the
   // callback remain valid for the lifetime of the
-  // SpecifiedResponseJobInterceptor (i.e. until Unregister() is called).
+  // SDCHTestRequestInterceptor (i.e. until Unregister() is called).
   static void RegisterWithFilter(HttpResponseInfo* http_response_info,
                                  const LifecycleCallback& lifecycle_callback) {
-    std::unique_ptr<SpecifiedResponseJobInterceptor> interceptor(
-        new SpecifiedResponseJobInterceptor(http_response_info,
-                                            lifecycle_callback));
+    URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "http", kTestDomain1,
+        std::unique_ptr<URLRequestInterceptor>(new SDCHTestRequestInterceptor(
+            http_response_info, lifecycle_callback)));
 
     URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        "http", kTestDomain, std::move(interceptor));
+        "https", kTestDomain1,
+        std::unique_ptr<URLRequestInterceptor>(new SDCHTestRequestInterceptor(
+            http_response_info, lifecycle_callback)));
+
+    URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "http", kTestDomain2,
+        std::unique_ptr<URLRequestInterceptor>(new SDCHTestRequestInterceptor(
+            http_response_info, lifecycle_callback)));
+
+    URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "https", kTestDomain2,
+        std::unique_ptr<URLRequestInterceptor>(new SDCHTestRequestInterceptor(
+            http_response_info, lifecycle_callback)));
   }
 
   static void Unregister() {
-    URLRequestFilter::GetInstance()->RemoveHostnameHandler("http", kTestDomain);
+    URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",
+                                                           kTestDomain1);
+    URLRequestFilter::GetInstance()->RemoveHostnameHandler("https",
+                                                           kTestDomain1);
+    URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",
+                                                           kTestDomain2);
+    URLRequestFilter::GetInstance()->RemoveHostnameHandler("https",
+                                                           kTestDomain2);
   }
 
  private:
   HttpResponseInfo* http_response_info_;
   LifecycleCallback lifecycle_callback_;
-  DISALLOW_COPY_AND_ASSIGN(SpecifiedResponseJobInterceptor);
+  DISALLOW_COPY_AND_ASSIGN(SDCHTestRequestInterceptor);
 };
 
 // Local test infrastructure
@@ -147,17 +200,19 @@ class SpecifiedResponseJobInterceptor : public URLRequestInterceptor {
 //   that is called when the class is destroyed.  That callback
 //   takes as arguemnt the load flags used for the request the
 //   job was created for.
-// * SpecifiedResponseJobInterceptor: This class is a
-//   URLRequestInterceptor that generates the class above.  It is constructed
+// * SDCHTestRequestInterceptor: This class is a
+//   URLRequestInterceptor that generates either the class above or an
+//   instance of URLRequestRedirectJob (if the first component of the path
+//   is "redirect").  It is constructed
 //   with a pointer to the (mutable) resposne info that should be
-//   returned from the URLRequestSpecifiedResponseJob children, as well as
+//   returned from constructed URLRequestSpecifiedResponseJobs, as well as
 //   a callback that is run when URLRequestSpecifiedResponseJobs are
 //   created or destroyed.
 // * SdchDictionaryFetcherTest: This class registers the above interceptor,
 //   tracks the number of jobs requested and the subset of those
 //   that are still outstanding.  It exports an interface to wait until there
 //   are no jobs outstanding.  It shares an HttpResponseInfo structure
-//   with the SpecifiedResponseJobInterceptor to control the response
+//   with the SDCHTestRequestInterceptor to control the response
 //   information returned by the jbos.
 // The standard pattern for tests is to schedule a dictionary fetch, wait
 // for no jobs outstanding, then test that the fetch results are as expected.
@@ -182,14 +237,14 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
         factory_(this) {
     response_info_to_return_.request_time = base::Time::Now();
     response_info_to_return_.response_time = base::Time::Now();
-    SpecifiedResponseJobInterceptor::RegisterWithFilter(
+    SDCHTestRequestInterceptor::RegisterWithFilter(
         &response_info_to_return_,
         base::Bind(&SdchDictionaryFetcherTest::OnNumberJobsChanged,
                    factory_.GetWeakPtr()));
   }
 
   ~SdchDictionaryFetcherTest() override {
-    SpecifiedResponseJobInterceptor::Unregister();
+    SDCHTestRequestInterceptor::Unregister();
   }
 
   void OnDictionaryFetched(const std::string& dictionary_text,
@@ -214,7 +269,7 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
 
   GURL PathToGurl(const char* path) const {
     std::string gurl_string("http://");
-    gurl_string += kTestDomain;
+    gurl_string += kTestDomain1;
     gurl_string += "/";
     gurl_string += path;
     return GURL(gurl_string);
@@ -432,6 +487,35 @@ TEST_F(SdchDictionaryFetcherTest, CancelAllowsFutureFetches) {
 
   WaitForNoJobs();
   EXPECT_EQ(2, jobs_requested());
+}
+
+TEST_F(SdchDictionaryFetcherTest, Redirect) {
+  GURL dictionary_url(PathToGurl("dictionary"));
+  GURL local_redirect_url(dictionary_url.GetWithEmptyPath().spec() +
+                          "redirect/" + dictionary_url.spec());
+  EXPECT_TRUE(fetcher()->Schedule(local_redirect_url, GetDefaultCallback()));
+  WaitForNoJobs();
+
+  // The redirect should have been rejected with no dictionary added.
+  EXPECT_EQ(1, jobs_requested());
+  std::vector<DictionaryAdditions> additions;
+  GetDictionaryAdditions(&additions);
+  EXPECT_EQ(0u, additions.size());
+
+  // Simple SDCH dictionary fetch test, to make sure the fetcher was left
+  // in reasonable shape by the above.
+
+  GURL dictionary2_url(PathToGurl("dictionary2"));
+  fetcher()->Schedule(dictionary2_url, GetDefaultCallback());
+  WaitForNoJobs();
+
+  EXPECT_EQ(2, jobs_requested());
+  GetDictionaryAdditions(&additions);
+  ASSERT_EQ(1u, additions.size());
+  EXPECT_EQ(
+      URLRequestSpecifiedResponseJob::ExpectedResponseForURL(dictionary2_url),
+      additions[0].dictionary_text);
+  EXPECT_FALSE(last_load_flags_seen() & LOAD_ONLY_FROM_CACHE);
 }
 
 }  // namespace

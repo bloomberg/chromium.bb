@@ -62,6 +62,9 @@ class NET_EXPORT SdchDictionaryFetcher : public URLRequest::Delegate,
   virtual void Cancel();
 
   // Implementation of URLRequest::Delegate methods.
+  void OnReceivedRedirect(URLRequest* request,
+                          const RedirectInfo& redirect_info,
+                          bool* defer_redirect) override;
   void OnResponseStarted(URLRequest* request) override;
   void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
@@ -69,7 +72,8 @@ class NET_EXPORT SdchDictionaryFetcher : public URLRequest::Delegate,
   enum State {
     STATE_NONE,
     STATE_SEND_REQUEST,
-    STATE_SEND_REQUEST_COMPLETE,
+    STATE_RECEIVED_REDIRECT,
+    STATE_SEND_REQUEST_PENDING,
     STATE_READ_BODY,
     STATE_READ_BODY_COMPLETE,
     STATE_REQUEST_COMPLETE,
@@ -90,7 +94,8 @@ class NET_EXPORT SdchDictionaryFetcher : public URLRequest::Delegate,
   // State machine implementation.
   int DoLoop(int rv);
   int DoSendRequest(int rv);
-  int DoSendRequestComplete(int rv);
+  int DoReceivedRedirect(int rv);
+  int DoSendRequestPending(int rv);
   int DoReadBody(int rv);
   int DoReadBodyComplete(int rv);
   int DoCompleteRequest(int rv);

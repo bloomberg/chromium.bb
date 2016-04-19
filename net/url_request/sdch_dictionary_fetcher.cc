@@ -18,6 +18,7 @@
 #include "net/base/sdch_net_log_params.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_throttler_manager.h"
@@ -143,10 +144,21 @@ void SdchDictionaryFetcher::Cancel() {
   fetch_queue_->Clear();
 }
 
+void SdchDictionaryFetcher::OnReceivedRedirect(
+    URLRequest* request,
+    const RedirectInfo& redirect_info,
+    bool* defer_redirect) {
+  DCHECK_EQ(next_state_, STATE_SEND_REQUEST_PENDING);
+
+  next_state_ = STATE_RECEIVED_REDIRECT;
+
+  DoLoop(OK);
+}
+
 void SdchDictionaryFetcher::OnResponseStarted(URLRequest* request) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(request, current_request_.get());
-  DCHECK_EQ(next_state_, STATE_SEND_REQUEST_COMPLETE);
+  DCHECK_EQ(next_state_, STATE_SEND_REQUEST_PENDING);
   DCHECK(!in_loop_);
 
   // Confirm that the response isn't a stale read from the cache (as
@@ -228,8 +240,11 @@ int SdchDictionaryFetcher::DoLoop(int rv) {
       case STATE_SEND_REQUEST:
         rv = DoSendRequest(rv);
         break;
-      case STATE_SEND_REQUEST_COMPLETE:
-        rv = DoSendRequestComplete(rv);
+      case STATE_RECEIVED_REDIRECT:
+        rv = DoReceivedRedirect(rv);
+        break;
+      case STATE_SEND_REQUEST_PENDING:
+        rv = DoSendRequestPending(rv);
         break;
       case STATE_READ_BODY:
         rv = DoReadBody(rv);
@@ -259,7 +274,7 @@ int SdchDictionaryFetcher::DoSendRequest(int rv) {
     return OK;
   }
 
-  next_state_ = STATE_SEND_REQUEST_COMPLETE;
+  next_state_ = STATE_SEND_REQUEST_PENDING;
 
   FetchInfo info;
   bool success = fetch_queue_->Pop(&info);
@@ -279,7 +294,16 @@ int SdchDictionaryFetcher::DoSendRequest(int rv) {
   return ERR_IO_PENDING;
 }
 
-int SdchDictionaryFetcher::DoSendRequestComplete(int rv) {
+int SdchDictionaryFetcher::DoReceivedRedirect(int rv) {
+  // Fetching SDCH through a redirect is forbidden; it raises possible
+  // security issues cross-origin, and isn't obviously useful within
+  // an origin.
+  ResetRequest();
+  next_state_ = STATE_SEND_REQUEST;
+  return ERR_UNSAFE_REDIRECT;
+}
+
+int SdchDictionaryFetcher::DoSendRequestPending(int rv) {
   DCHECK(CalledOnValidThread());
 
   // If there's been an error, abort the current request.
