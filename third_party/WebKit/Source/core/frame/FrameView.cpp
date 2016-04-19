@@ -232,7 +232,7 @@ void FrameView::reset()
 // Call function for each non-throttled frame view in pre tree order.
 // Note it needs a null check of the frame's layoutView to access it in case of detached frames.
 template <typename Function>
-void FrameView::forAllNonThrottledFrameViews(Function function)
+void FrameView::forAllNonThrottledFrameViews(const Function& function)
 {
     if (shouldThrottleRendering())
         return;

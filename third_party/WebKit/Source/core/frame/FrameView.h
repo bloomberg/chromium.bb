@@ -752,7 +752,7 @@ private:
     void collectFrameTimingRequests(GraphicsLayerFrameTimingRequests&);
     void collectFrameTimingRequestsRecursive(GraphicsLayerFrameTimingRequests&);
 
-    template <typename Function> void forAllNonThrottledFrameViews(Function);
+    template <typename Function> void forAllNonThrottledFrameViews(const Function&);
 
     void setNeedsUpdateViewportIntersection();
     void updateViewportIntersectionsForSubtree(LifeCycleUpdateOption);
