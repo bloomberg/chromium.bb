@@ -614,10 +614,6 @@ void ProxyImpl::ScheduledActionInvalidateOutputSurface() {
   layer_tree_host_impl_->output_surface()->Invalidate();
 }
 
-void ProxyImpl::SendBeginFramesToChildren(const BeginFrameArgs& args) {
-  NOTREACHED() << "Only used by SingleThreadProxy";
-}
-
 void ProxyImpl::SendBeginMainFrameNotExpectedSoon() {
   DCHECK(IsImplThread());
   channel_impl_->BeginMainFrameNotExpectedSoon();

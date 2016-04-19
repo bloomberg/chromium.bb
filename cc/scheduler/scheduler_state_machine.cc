@@ -55,7 +55,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       critical_begin_main_frame_to_activate_is_fast_(true),
       main_thread_missed_last_deadline_(false),
       skip_next_begin_main_frame_to_reduce_latency_(false),
-      children_need_begin_frames_(false),
       defer_commits_(false),
       video_needs_begin_frames_(false),
       last_commit_had_no_updates_(false),
@@ -256,7 +255,6 @@ void SchedulerStateMachine::AsValueInto(
                     main_thread_missed_last_deadline_);
   state->SetBoolean("skip_next_begin_main_frame_to_reduce_latency",
                     skip_next_begin_main_frame_to_reduce_latency_);
-  state->SetBoolean("children_need_begin_frames", children_need_begin_frames_);
   state->SetBoolean("video_needs_begin_frames", video_needs_begin_frames_);
   state->SetBoolean("defer_commits", defer_commits_);
   state->SetBoolean("last_commit_had_no_updates", last_commit_had_no_updates_);
@@ -765,10 +763,6 @@ void SchedulerStateMachine::SetSkipNextBeginMainFrameToReduceLatency() {
   skip_next_begin_main_frame_to_reduce_latency_ = true;
 }
 
-bool SchedulerStateMachine::BeginFrameRequiredForChildren() const {
-  return children_need_begin_frames_;
-}
-
 bool SchedulerStateMachine::BeginFrameNeededForVideo() const {
   return video_needs_begin_frames_;
 }
@@ -783,13 +777,8 @@ bool SchedulerStateMachine::BeginFrameNeeded() const {
   if (!visible_)
     return false;
 
-  return (BeginFrameRequiredForAction() || BeginFrameRequiredForChildren() ||
-          BeginFrameNeededForVideo() || ProactiveBeginFrameWanted());
-}
-
-void SchedulerStateMachine::SetChildrenNeedBeginFrames(
-    bool children_need_begin_frames) {
-  children_need_begin_frames_ = children_need_begin_frames;
+  return BeginFrameRequiredForAction() || BeginFrameNeededForVideo() ||
+         ProactiveBeginFrameWanted();
 }
 
 void SchedulerStateMachine::SetVideoNeedsBeginFrames(

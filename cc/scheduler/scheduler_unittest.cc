@@ -67,7 +67,6 @@ class FakeSchedulerClient : public SchedulerClient {
     draw_will_happen_ = true;
     swap_will_happen_if_draw_happens_ = true;
     num_draws_ = 0;
-    begin_frame_args_sent_to_children_ = BeginFrameArgs();
     last_begin_main_frame_args_ = BeginFrameArgs();
   }
 
@@ -166,10 +165,6 @@ class FakeSchedulerClient : public SchedulerClient {
     states_.push_back(scheduler_->AsValue());
   }
 
-  void SendBeginFramesToChildren(const BeginFrameArgs& args) override {
-    begin_frame_args_sent_to_children_ = args;
-  }
-
   void SendBeginMainFrameNotExpectedSoon() override {
     PushAction("SendBeginMainFrameNotExpectedSoon");
   }
@@ -178,14 +173,6 @@ class FakeSchedulerClient : public SchedulerClient {
     return base::Bind(&FakeSchedulerClient::ImplFrameDeadlinePendingCallback,
                       base::Unretained(this),
                       state);
-  }
-
-  bool begin_frame_is_sent_to_children() const {
-    return begin_frame_args_sent_to_children_.IsValid();
-  }
-
-  const BeginFrameArgs& begin_frame_args_sent_to_children() const {
-    return begin_frame_args_sent_to_children_;
   }
 
   void PushAction(const char* description) {
@@ -204,7 +191,6 @@ class FakeSchedulerClient : public SchedulerClient {
   bool swap_will_happen_if_draw_happens_;
   bool automatic_swap_ack_;
   int num_draws_;
-  BeginFrameArgs begin_frame_args_sent_to_children_;
   BeginFrameArgs last_begin_main_frame_args_;
   base::TimeTicks posted_begin_impl_frame_deadline_;
   std::vector<const char*> actions_;
@@ -461,69 +447,6 @@ TEST_F(SchedulerTest, InitializeOutputSurfaceDoesNotBeginImplFrame) {
   client_->Reset();
   scheduler_->DidCreateAndInitializeOutputSurface();
   EXPECT_NO_ACTION(client_);
-}
-
-TEST_F(SchedulerTest, SendBeginFramesToChildren) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
-
-  EXPECT_FALSE(client_->begin_frame_is_sent_to_children());
-  scheduler_->SetNeedsBeginMainFrame();
-  EXPECT_SINGLE_ACTION("AddObserver(this)", client_);
-  EXPECT_TRUE(scheduler_->begin_frames_expected());
-
-  scheduler_->SetChildrenNeedBeginFrames(true);
-
-  client_->Reset();
-  EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_TRUE(client_->begin_frame_is_sent_to_children());
-  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
-  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
-  EXPECT_TRUE(scheduler_->begin_frames_expected());
-}
-
-TEST_F(SchedulerTest, SendBeginFramesToChildrenWithoutCommit) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
-
-  EXPECT_FALSE(scheduler_->begin_frames_expected());
-  scheduler_->SetChildrenNeedBeginFrames(true);
-  EXPECT_SINGLE_ACTION("AddObserver(this)", client_);
-  EXPECT_TRUE(scheduler_->begin_frames_expected());
-
-  client_->Reset();
-  EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_TRUE(client_->begin_frame_is_sent_to_children());
-}
-
-TEST_F(SchedulerTest, SendBeginFramesToChildrenDeadlineNotAdjusted) {
-  // Set up client with specified estimates.
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
-
-  fake_compositor_timing_history_
-      ->SetBeginMainFrameStartToCommitDurationEstimate(
-          base::TimeDelta::FromMilliseconds(2));
-  fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
-      base::TimeDelta::FromMilliseconds(4));
-  fake_compositor_timing_history_->SetDrawDurationEstimate(
-      base::TimeDelta::FromMilliseconds(1));
-
-  EXPECT_FALSE(scheduler_->begin_frames_expected());
-  scheduler_->SetChildrenNeedBeginFrames(true);
-  EXPECT_SINGLE_ACTION("AddObserver(this)", client_);
-  EXPECT_TRUE(scheduler_->begin_frames_expected());
-
-  client_->Reset();
-
-  BeginFrameArgs frame_args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now_src());
-  fake_external_begin_frame_source()->TestOnBeginFrame(frame_args);
-
-  EXPECT_TRUE(client_->begin_frame_is_sent_to_children());
-  EXPECT_EQ(client_->begin_frame_args_sent_to_children().deadline,
-            frame_args.deadline);
 }
 
 TEST_F(SchedulerTest, VideoNeedsBeginFrames) {

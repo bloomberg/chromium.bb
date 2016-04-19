@@ -90,7 +90,6 @@ class TestHooks : public AnimationDelegate {
   virtual void ScheduledActionBeginOutputSurfaceCreation() {}
   virtual void ScheduledActionPrepareTiles() {}
   virtual void ScheduledActionInvalidateOutputSurface() {}
-  virtual void SendBeginFramesToChildren(const BeginFrameArgs& args) {}
   virtual void SendBeginMainFrameNotExpectedSoon() {}
 
   // Hooks for ProxyImpl

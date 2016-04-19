@@ -74,8 +74,6 @@ class CC_EXPORT Proxy {
 
   virtual bool SupportsImplScrolling() const = 0;
 
-  virtual void SetChildrenNeedBeginFrames(bool children_need_begin_frames) = 0;
-
   virtual void SetAuthoritativeVSyncInterval(
       const base::TimeDelta& interval) = 0;
 

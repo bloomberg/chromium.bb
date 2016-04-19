@@ -397,24 +397,6 @@ bool Compositor::HasAnimationObserver(
   return animation_observer_list_.HasObserver(observer);
 }
 
-void Compositor::AddBeginFrameObserver(CompositorBeginFrameObserver* observer) {
-  if (!begin_frame_observer_list_.might_have_observers())
-    host_->SetChildrenNeedBeginFrames(true);
-
-  begin_frame_observer_list_.AddObserver(observer);
-
-  if (missed_begin_frame_args_.IsValid())
-    observer->OnSendBeginFrame(missed_begin_frame_args_);
-}
-
-void Compositor::RemoveBeginFrameObserver(
-    CompositorBeginFrameObserver* observer) {
-  begin_frame_observer_list_.RemoveObserver(observer);
-
-  // As this call may take place while iterating over observers, unsubscription
-  // from |host_| is performed after iteration in |SendBeginFramesToChildren()|.
-}
-
 void Compositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
   FOR_EACH_OBSERVER(CompositorAnimationObserver,
                     animation_observer_list_,
@@ -484,24 +466,6 @@ void Compositor::DidAbortSwapBuffers() {
 void Compositor::SetOutputIsSecure(bool output_is_secure) {
   host_->SetOutputIsSecure(output_is_secure);
   host_->SetNeedsRedraw();
-}
-
-void Compositor::SendBeginFramesToChildren(const cc::BeginFrameArgs& args) {
-  FOR_EACH_OBSERVER(CompositorBeginFrameObserver, begin_frame_observer_list_,
-                    OnSendBeginFrame(args));
-
-  // Unsubscription is performed here, after iteration, to handle the case where
-  // the last BeginFrame observer is removed while iterating over the observers.
-  if (!begin_frame_observer_list_.might_have_observers()) {
-    host_->SetChildrenNeedBeginFrames(false);
-    // Unsubscription should reset |missed_begin_frame_args_|, avoiding stale
-    // BeginFrame dispatch when the next BeginFrame observer is added.
-    missed_begin_frame_args_ = cc::BeginFrameArgs();
-    return;
-  }
-
-  missed_begin_frame_args_ = args;
-  missed_begin_frame_args_.type = cc::BeginFrameArgs::MISSED;
 }
 
 const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {

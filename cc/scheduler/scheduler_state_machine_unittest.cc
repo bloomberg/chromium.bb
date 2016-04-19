@@ -2060,16 +2060,6 @@ TEST(SchedulerStateMachineTest,
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 }
 
-TEST(SchedulerStateMachineTest, TestForwardBeginFramesToChildren) {
-  SchedulerSettings settings;
-  StateMachine state(settings);
-  SET_UP_STATE(state)
-
-  EXPECT_FALSE(state.BeginFrameNeeded());
-  state.SetChildrenNeedBeginFrames(true);
-  EXPECT_TRUE(state.BeginFrameNeeded());
-}
-
 TEST(SchedulerStateMachineTest, TestDeferCommit) {
   SchedulerSettings settings;
   StateMachine state(settings);

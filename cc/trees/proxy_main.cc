@@ -429,10 +429,6 @@ bool ProxyMain::MainFrameWillHappenForTesting() {
   return main_frame_will_happen;
 }
 
-void ProxyMain::SetChildrenNeedBeginFrames(bool children_need_begin_frames) {
-  NOTREACHED() << "Only used by SingleThreadProxy";
-}
-
 void ProxyMain::SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) {
   NOTREACHED() << "Only used by SingleProxyMain";
 }

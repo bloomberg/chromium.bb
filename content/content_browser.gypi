@@ -1195,8 +1195,6 @@
       'browser/quota_dispatcher_host.cc',
       'browser/quota_dispatcher_host.h',
       'browser/renderer_data_memoizing_store.h',
-      'browser/renderer_host/begin_frame_observer_proxy.cc',
-      'browser/renderer_host/begin_frame_observer_proxy.h',
       'browser/renderer_host/clipboard_message_filter.cc',
       'browser/renderer_host/clipboard_message_filter.h',
       'browser/renderer_host/clipboard_message_filter_mac.mm',
@@ -2102,7 +2100,6 @@
         'browser/media/session/media_session_delegate_default.cc',
         'browser/power_usage_monitor_impl.cc',
         'browser/power_usage_monitor_impl.h',
-        'browser/renderer_host/begin_frame_observer_proxy.cc',
         'browser/renderer_host/native_web_keyboard_event.cc',
       ]
     }],

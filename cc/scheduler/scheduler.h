@@ -46,7 +46,6 @@ class SchedulerClient {
   virtual void ScheduledActionPrepareTiles() = 0;
   virtual void ScheduledActionInvalidateOutputSurface() = 0;
   virtual void DidFinishImplFrame() = 0;
-  virtual void SendBeginFramesToChildren(const BeginFrameArgs& args) = 0;
   virtual void SendBeginMainFrameNotExpectedSoon() = 0;
 
  protected:
@@ -138,7 +137,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* value) const override;
 
-  void SetChildrenNeedBeginFrames(bool children_need_begin_frames);
   void SetVideoNeedsBeginFrames(bool video_needs_begin_frames);
 
   const BeginFrameSource* begin_frame_source() const {

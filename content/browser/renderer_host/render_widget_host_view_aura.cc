@@ -366,8 +366,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       in_shutdown_(false),
       in_bounds_changed_(false),
       is_fullscreen_(false),
-      popup_parent_host_view_(NULL),
-      popup_child_host_view_(NULL),
+      popup_parent_host_view_(nullptr),
+      popup_child_host_view_(nullptr),
       is_loading_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
@@ -375,15 +375,16 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       can_compose_inline_(true),
       has_composition_text_(false),
       accept_return_character_(false),
+      begin_frame_source_(nullptr),
+      needs_begin_frames_(false),
       synthetic_move_sent_(false),
       cursor_visibility_state_in_renderer_(UNKNOWN),
 #if defined(OS_WIN)
-      legacy_render_widget_host_HWND_(NULL),
+      legacy_render_widget_host_HWND_(nullptr),
       legacy_window_destroyed_(false),
 #endif
       has_snapped_to_boundary_(false),
       is_guest_view_hack_(is_guest_view_hack),
-      begin_frame_observer_proxy_(this),
       set_focus_on_mouse_down_or_key_event_(false),
       device_scale_factor_(0.0f),
       disable_input_event_router_for_testing_(false),
@@ -656,12 +657,29 @@ ui::TextInputClient* RenderWidgetHostViewAura::GetTextInputClient() {
 }
 
 void RenderWidgetHostViewAura::OnSetNeedsBeginFrames(bool needs_begin_frames) {
-  begin_frame_observer_proxy_.SetNeedsBeginFrames(needs_begin_frames);
+  if (needs_begin_frames_ == needs_begin_frames)
+    return;
+
+  needs_begin_frames_ = needs_begin_frames;
+  if (begin_frame_source_) {
+    if (needs_begin_frames_)
+      begin_frame_source_->AddObserver(this);
+    else
+      begin_frame_source_->RemoveObserver(this);
+  }
 }
 
-void RenderWidgetHostViewAura::SendBeginFrame(const cc::BeginFrameArgs& args) {
+bool RenderWidgetHostViewAura::OnBeginFrameDerivedImpl(
+    const cc::BeginFrameArgs& args) {
   delegated_frame_host_->SetVSyncParameters(args.frame_time, args.interval);
   host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
+  return true;
+}
+
+void RenderWidgetHostViewAura::OnBeginFrameSourcePausedChanged(bool paused) {
+  // Ignored for now.  If the begin frame source is paused, the renderer
+  // doesn't need to be informed about it and will just not receive more
+  // begin frames.
 }
 
 void RenderWidgetHostViewAura::SetKeyboardFocus() {
@@ -2648,8 +2666,6 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
 #endif
 
   delegated_frame_host_->SetCompositor(window_->GetHost()->compositor());
-  if (window_->GetHost()->compositor())
-    begin_frame_observer_proxy_.SetCompositor(window_->GetHost()->compositor());
 }
 
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
@@ -2662,7 +2678,6 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
 
   window_->GetHost()->RemoveObserver(this);
   delegated_frame_host_->ResetCompositor();
-  begin_frame_observer_proxy_.ResetCompositor();
 
 #if defined(OS_WIN)
   // Update the legacy window's parent temporarily to the desktop window. It
@@ -2901,6 +2916,15 @@ void RenderWidgetHostViewAura::DelegatedFrameHostUpdateVSyncParameters(
     const base::TimeTicks& timebase,
     const base::TimeDelta& interval) {
   host_->UpdateVSyncParameters(timebase, interval);
+}
+
+void RenderWidgetHostViewAura::SetBeginFrameSource(
+    cc::BeginFrameSource* source) {
+  if (begin_frame_source_ && needs_begin_frames_)
+    begin_frame_source_->RemoveObserver(this);
+  begin_frame_source_ = source;
+  if (begin_frame_source_ && needs_begin_frames_)
+    begin_frame_source_->AddObserver(this);
 }
 
 void RenderWidgetHostViewAura::OnDidNavigateMainFrameToNewPage() {

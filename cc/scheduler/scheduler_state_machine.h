@@ -272,17 +272,11 @@ class CC_EXPORT SchedulerStateMachine {
 
   void SetDeferCommits(bool defer_commits);
 
-  void SetChildrenNeedBeginFrames(bool children_need_begin_frames);
-  bool children_need_begin_frames() const {
-    return children_need_begin_frames_;
-  }
-
   void SetVideoNeedsBeginFrames(bool video_needs_begin_frames);
   bool video_needs_begin_frames() const { return video_needs_begin_frames_; }
 
  protected:
   bool BeginFrameRequiredForAction() const;
-  bool BeginFrameRequiredForChildren() const;
   bool BeginFrameNeededForVideo() const;
   bool ProactiveBeginFrameWanted() const;
 
@@ -353,7 +347,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool critical_begin_main_frame_to_activate_is_fast_;
   bool main_thread_missed_last_deadline_;
   bool skip_next_begin_main_frame_to_reduce_latency_;
-  bool children_need_begin_frames_;
   bool defer_commits_;
   bool video_needs_begin_frames_;
   bool last_commit_had_no_updates_;

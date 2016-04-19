@@ -290,11 +290,6 @@ bool Scheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
   BeginFrameArgs adjusted_args(args);
   adjusted_args.deadline -= EstimatedParentDrawTime();
 
-  // Deliver BeginFrames to children.
-  // TODO(brianderson): Move this responsibility to the DisplayScheduler.
-  if (state_machine_.children_need_begin_frames())
-    client_->SendBeginFramesToChildren(adjusted_args);
-
   if (settings_.using_synchronous_renderer_compositor) {
     BeginImplFrameSynchronous(adjusted_args);
     return true;
@@ -326,11 +321,6 @@ bool Scheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
     BeginImplFrameWithDeadline(adjusted_args);
   }
   return true;
-}
-
-void Scheduler::SetChildrenNeedBeginFrames(bool children_need_begin_frames) {
-  state_machine_.SetChildrenNeedBeginFrames(children_need_begin_frames);
-  ProcessScheduledActions();
 }
 
 void Scheduler::SetVideoNeedsBeginFrames(bool video_needs_begin_frames) {

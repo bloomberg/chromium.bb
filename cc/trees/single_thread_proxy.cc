@@ -728,12 +728,6 @@ bool SingleThreadProxy::MainFrameWillHappenForTesting() {
   return scheduler_on_impl_thread_->MainFrameForTestingWillHappen();
 }
 
-void SingleThreadProxy::SetChildrenNeedBeginFrames(
-    bool children_need_begin_frames) {
-  scheduler_on_impl_thread_->SetChildrenNeedBeginFrames(
-      children_need_begin_frames);
-}
-
 void SingleThreadProxy::SetAuthoritativeVSyncInterval(
     const base::TimeDelta& interval) {
   authoritative_vsync_interval_ = interval;
@@ -912,10 +906,6 @@ void SingleThreadProxy::DidFinishImplFrame() {
       << "DidFinishImplFrame called while not inside an impl frame!";
   inside_impl_frame_ = false;
 #endif
-}
-
-void SingleThreadProxy::SendBeginFramesToChildren(const BeginFrameArgs& args) {
-  layer_tree_host_->SendBeginFramesToChildren(args);
 }
 
 }  // namespace cc

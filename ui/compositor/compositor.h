@@ -147,13 +147,6 @@ class COMPOSITOR_EXPORT CompositorLock
   DISALLOW_COPY_AND_ASSIGN(CompositorLock);
 };
 
-// This class observes BeginFrame notification from LayerTreeHost.
-class COMPOSITOR_EXPORT CompositorBeginFrameObserver {
- public:
-  virtual ~CompositorBeginFrameObserver() {}
-  virtual void OnSendBeginFrame(const cc::BeginFrameArgs& args) = 0;
-};
-
 // Compositor object to take care of GPU painting.
 // A Browser compositor object is responsible for generating the final
 // displayable form of pixels comprising a single widget's contents. It draws an
@@ -263,9 +256,6 @@ class COMPOSITOR_EXPORT Compositor
   void RemoveAnimationObserver(CompositorAnimationObserver* observer);
   bool HasAnimationObserver(const CompositorAnimationObserver* observer) const;
 
-  void AddBeginFrameObserver(CompositorBeginFrameObserver* observer);
-  void RemoveBeginFrameObserver(CompositorBeginFrameObserver* observer);
-
   // Change the timeout behavior for all future locks that are created. Locks
   // should time out if there is an expectation that the compositor will be
   // responsive.
@@ -308,7 +298,6 @@ class COMPOSITOR_EXPORT Compositor
   void DidCommitAndDrawFrame() override;
   void DidCompleteSwapBuffers() override;
   void DidCompletePageScaleAnimation() override {}
-  void SendBeginFramesToChildren(const cc::BeginFrameArgs& args) override;
   void RecordFrameTimingEvents(
       std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
           composite_events,
@@ -354,8 +343,6 @@ class COMPOSITOR_EXPORT Compositor
 
   base::ObserverList<CompositorObserver, true> observer_list_;
   base::ObserverList<CompositorAnimationObserver> animation_observer_list_;
-  base::ObserverList<CompositorBeginFrameObserver, true>
-      begin_frame_observer_list_;
 
   gfx::AcceleratedWidget widget_;
   bool widget_valid_;
@@ -380,9 +367,6 @@ class COMPOSITOR_EXPORT Compositor
 
   LayerAnimatorCollection layer_animator_collection_;
   scoped_refptr<cc::AnimationTimeline> animation_timeline_;
-
-  // Used to send to any new CompositorBeginFrameObserver immediately.
-  cc::BeginFrameArgs missed_begin_frame_args_;
 
   base::WeakPtrFactory<Compositor> weak_ptr_factory_;
 

@@ -348,9 +348,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void set_surface_id_namespace(uint32_t id_namespace);
   SurfaceSequence CreateSurfaceSequence();
 
-  void SetChildrenNeedBeginFrames(bool children_need_begin_frames) const;
-  void SendBeginFramesToChildren(const BeginFrameArgs& args) const;
-
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
 
   PropertyTrees* property_trees() { return &property_trees_; }

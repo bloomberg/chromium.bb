@@ -1276,16 +1276,6 @@ SurfaceSequence LayerTreeHost::CreateSurfaceSequence() {
   return SurfaceSequence(surface_id_namespace_, next_surface_sequence_++);
 }
 
-void LayerTreeHost::SetChildrenNeedBeginFrames(
-    bool children_need_begin_frames) const {
-  proxy_->SetChildrenNeedBeginFrames(children_need_begin_frames);
-}
-
-void LayerTreeHost::SendBeginFramesToChildren(
-    const BeginFrameArgs& args) const {
-  client_->SendBeginFramesToChildren(args);
-}
-
 void LayerTreeHost::SetAuthoritativeVSyncInterval(
     const base::TimeDelta& interval) {
   proxy_->SetAuthoritativeVSyncInterval(interval);

@@ -73,6 +73,7 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual void DelegatedFrameHostUpdateVSyncParameters(
       const base::TimeTicks& timebase,
       const base::TimeDelta& interval) = 0;
+  virtual void SetBeginFrameSource(cc::BeginFrameSource* source) = 0;
 };
 
 // The DelegatedFrameHost is used to host all of the RenderWidgetHostView state

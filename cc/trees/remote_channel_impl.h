@@ -159,7 +159,6 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
       std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
   void Stop() override;
   bool SupportsImplScrolling() const override;
-  void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override;
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) override;
   void UpdateTopControlsState(TopControlsState constraints,
                               TopControlsState current,

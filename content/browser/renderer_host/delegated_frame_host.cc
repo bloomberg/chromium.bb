@@ -551,8 +551,7 @@ void DelegatedFrameHost::WillDrawSurface(cc::SurfaceId id,
 
 void DelegatedFrameHost::SetBeginFrameSource(
     cc::BeginFrameSource* begin_frame_source) {
-  // TODO(enne): forward this to DelegatedFrameHostClient to observe and then to
-  // the renderer as an external begin frame source.
+  client_->SetBeginFrameSource(begin_frame_source);
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
