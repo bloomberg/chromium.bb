@@ -26,6 +26,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ImportantFileWriterAndroid;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTaskDescriptionIconGenerator;
 import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
@@ -204,7 +205,7 @@ public class DocumentMigrationHelper {
 
         @Override
         public void onFaviconAvailable(final Bitmap favicon, String iconUrl) {
-            mIcon = new DocumentActivityIcon(mActivity).getBitmap(mUrl, favicon);
+            mIcon = new ActivityTaskDescriptionIconGenerator(mActivity).getBitmap(mUrl, favicon);
             mTabContentManager.getThumbnailForId(mTabId, this);
         }
 

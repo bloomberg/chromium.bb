@@ -8,15 +8,17 @@ import android.content.Intent;
 import android.os.Build;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabTaskDescriptionHelper;
 
 /**
  * Simple wrapper around the CustomTabActivity to be used when launching each CustomTab in a
  * separate task.
  */
-// TODO(tedchoc): Add support for updating the Android task info on L+.
 public class SeparateTaskCustomTabActivity extends CustomTabActivity {
 
     private boolean mDidFinishForReparenting;
+    private ActivityTabTaskDescriptionHelper mTaskDescriptionHelper;
 
     @Override
     public void preInflationStartup() {
@@ -34,10 +36,27 @@ public class SeparateTaskCustomTabActivity extends CustomTabActivity {
     }
 
     @Override
+    public void finishNativeInitialization() {
+        super.finishNativeInitialization();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mTaskDescriptionHelper = new ActivityTabTaskDescriptionHelper(this,
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color));
+        }
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
 
         mDidFinishForReparenting = false;
+    }
+
+    @Override
+    protected void onDestroyInternal() {
+        super.onDestroyInternal();
+
+        if (mTaskDescriptionHelper != null) mTaskDescriptionHelper.destroy();
     }
 
     @Override

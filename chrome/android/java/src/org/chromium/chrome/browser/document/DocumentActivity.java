@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.document;
 
 import android.annotation.TargetApi;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
 import android.text.TextUtils;
@@ -25,6 +24,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabTaskDescriptionHelper;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
@@ -65,9 +65,7 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
-import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -110,70 +108,15 @@ public class DocumentActivity extends ChromeActivity {
         }
 
         @Override
-        public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
-            if (!didStartLoad) return;
-            resetIcon();
-        }
-
-        @Override
-        public void onFaviconUpdated(Tab tab, Bitmap icon) {
-            if (icon == null) return;
-            if (mLargestFavicon == null || icon.getWidth() > mLargestFavicon.getWidth()
-                    || icon.getHeight() > mLargestFavicon.getHeight()) {
-                mLargestFavicon = icon;
-                updateTaskDescription();
-            }
-        }
-
-        @Override
         public void onUrlUpdated(Tab tab) {
             assert mTab == tab;
-
-            updateTaskDescription();
             mTabModel.updateEntry(getIntent(), mTab);
-        }
-
-        @Override
-        public void onTitleUpdated(Tab tab) {
-            super.onTitleUpdated(tab);
-            updateTaskDescription();
-        }
-
-        @Override
-        public void onSSLStateUpdated(Tab tab) {
-            if (hasSecurityWarningOrError(tab)) resetIcon();
-        }
-
-        @Override
-        public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
-                boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
-                int statusCode) {
-            if (!isNavigationToDifferentPage) return;
-            mLargestFavicon = null;
-            updateTaskDescription();
         }
 
         @Override
         public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
             assert mTab == tab;
-
-            updateTaskDescription();
             mTabModel.updateEntry(getIntent(), mTab);
-        }
-
-        @Override
-        public void onDidChangeThemeColor(Tab tab, int color) {
-            updateTaskDescription();
-        }
-
-        @Override
-        public void onDidAttachInterstitialPage(Tab tab) {
-            resetIcon();
-        }
-
-        @Override
-        public void onDidDetachInterstitialPage(Tab tab) {
-            resetIcon();
         }
 
         @Override
@@ -194,28 +137,11 @@ public class DocumentActivity extends ChromeActivity {
             // eventually destroy the Activities, anyway (crbug.com/450292).
             if (!isIncognito()) finish();
         }
-
-        private boolean hasSecurityWarningOrError(Tab tab) {
-            int securityLevel = tab.getSecurityLevel();
-            return securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
-                    || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
-                    || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING;
-        }
     }
     private DocumentTabModel mTabModel;
     private InitializationObserver mTabInitializationObserver;
 
-    /**
-     * Generates the icon to use in the recent task list.
-     */
-    private DocumentActivityIcon mIcon;
-
-    /**
-     * The tab's largest favicon.
-     */
-    private Bitmap mLargestFavicon;
-
-    private int mDefaultThemeColor;
+    private ActivityTabTaskDescriptionHelper mTaskDescriptionHelper;
 
     private Tab mTab;
     private FindToolbarManager mFindToolbarManager;
@@ -461,6 +387,13 @@ public class DocumentActivity extends ChromeActivity {
         StartupMetrics.getInstance().recordHistogram(true);
     }
 
+    @Override
+    protected void onDestroyInternal() {
+        super.onDestroyInternal();
+
+        if (mTaskDescriptionHelper != null) mTaskDescriptionHelper.destroy();
+    }
+
     private void handleDocumentUma() {
         if (mRecordedStartupUma) {
             DocumentUma.recordStartedBy(
@@ -587,10 +520,10 @@ public class DocumentActivity extends ChromeActivity {
     }
 
     private void initializeUI() {
-        mIcon = new DocumentActivityIcon(this);
-        mDefaultThemeColor = isIncognito()
+        int defaultThemeColor = isIncognito()
                 ? ApiCompatibilityUtils.getColor(getResources(), R.color.incognito_primary_color)
                 : ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color);
+        mTaskDescriptionHelper = new ActivityTabTaskDescriptionHelper(this, defaultThemeColor);
 
         AsyncTabParams params = AsyncTabParamsManager.remove(
                 ActivityDelegate.getTabIdFromIntent(getIntent()));
@@ -648,7 +581,7 @@ public class DocumentActivity extends ChromeActivity {
                             ActivityDelegate.getTabIdFromIntent(getIntent()), asyncParams);
 
                     // Use the URL as the document title until tab is loaded.
-                    updateTaskDescription(loadUrlParams.getUrl(), null);
+                    mTaskDescriptionHelper.updateTaskDescription(loadUrlParams.getUrl(), null);
                 } else {
                     loadLastKnownUrl(asyncParams);
                 }
@@ -736,11 +669,6 @@ public class DocumentActivity extends ChromeActivity {
         mTab.addObserver(new DocumentTabObserver());
 
         removeWindowBackground();
-    }
-
-    private void resetIcon() {
-        mLargestFavicon = null;
-        updateTaskDescription();
     }
 
     private void updateLastTabId() {
@@ -905,44 +833,6 @@ public class DocumentActivity extends ChromeActivity {
     protected void showAppMenuForKeyboardEvent() {
         if (!getToolbarManager().isInitialized()) return;
         super.showAppMenuForKeyboardEvent();
-    }
-
-    private void updateTaskDescription() {
-        if (mTab == null) {
-            updateTaskDescription(null, null);
-            return;
-        }
-
-        if (isNewTabPage() && !isIncognito()) {
-            // NTP needs a new color in recents, but uses the default application title and icon;
-            updateTaskDescription(null, null);
-            return;
-        }
-
-        String label = mTab.getTitle();
-        String domain = UrlUtilities.getDomainAndRegistry(mTab.getUrl(), false);
-        if (TextUtils.isEmpty(label)) {
-            label = domain;
-        }
-        if (mLargestFavicon == null && TextUtils.isEmpty(label)) {
-            updateTaskDescription(null, null);
-            return;
-        }
-
-        Bitmap bitmap = null;
-        if (!isIncognito()) {
-            bitmap = mIcon.getBitmap(mTab.getUrl(), mLargestFavicon);
-        }
-
-        updateTaskDescription(label, bitmap);
-    }
-
-    private void updateTaskDescription(String label, Bitmap icon) {
-        int color = mDefaultThemeColor;
-        if (getActivityTab() != null && !getActivityTab().isDefaultThemeColor()) {
-            color = getActivityTab().getThemeColor();
-        }
-        ApiCompatibilityUtils.setTaskDescription(this, label, icon, color);
     }
 
     /**
