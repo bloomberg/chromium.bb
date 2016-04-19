@@ -471,8 +471,10 @@ void TabsEventRouter::TabChangedAt(WebContents* contents,
                                    int index,
                                    TabChangeType change_type) {
   TabEntry* entry = GetTabEntry(contents);
-  CHECK(entry);
-  TabUpdated(entry, entry->UpdateLoadState());
+  // TabClosingAt() may have already removed the entry for |contents| even
+  // though the tab has not yet been detached.
+  if (entry)
+    TabUpdated(entry, entry->UpdateLoadState());
 }
 
 void TabsEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,
