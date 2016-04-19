@@ -637,7 +637,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
 
     # GYP version:
     # //remoting/remoting_host_win.gypi:remoting_me2me_native_messaging_host
-    executable("remoting_me2me_native_messaging_host") {
+    executable("remoting_native_messaging_host") {
       configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
       deps = [
@@ -968,8 +968,132 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
           "//third_party/icu:icudata",
         ]
       }
+    } else if (is_win) {
+      # GYP version: //remoting/remoting_host_win.gypi:remoting_me2me_host_archive
+      action("remoting_me2me_host_archive") {
+        script = "//remoting/host/installer/build-installer-archive.py"
+
+        deps = [
+          ":credits",
+          ":remote_security_key",
+          ":remoting_core",
+          ":remoting_desktop",
+          ":remoting_me2me_host",
+          ":remoting_native_messaging_host",
+          ":remoting_native_messaging_manifests",
+          "it2me:remote_assistance_host",
+          "//third_party/icu:icudata",
+        ]
+
+        _output = "$root_out_dir/remoting-me2me-host-$target_os.zip"
+
+        outputs = [
+          _output,
+        ]
+        if (is_chrome_branded) {
+          _branding = "Chrome"
+        } else {
+          _branding = "Chromium"
+        }
+
+        if (is_official_build) {
+          _official_build = "1"
+        } else {
+          _official_build = "0"
+        }
+
+        _generated_files = rebase_path(
+                [
+                  "$root_out_dir/remote_assistance_host.exe",
+                  "$root_out_dir/remote_security_key.exe",
+                  "$root_out_dir/remoting_core.dll",
+                  "$root_out_dir/remoting_desktop.exe",
+                  "$root_out_dir/remoting_host.exe",
+                  "$root_out_dir/remoting_native_messaging_host.exe",
+                  "$root_gen_dir/remoting/CREDITS.txt",
+                  "$root_out_dir/remoting/com.google.chrome.remote_assistance.json",
+                  "$root_out_dir/remoting/com.google.chrome.remote_desktop.json",
+                  "$root_out_dir/icudtl.dat",
+                ],
+                root_build_dir)
+        _extra_files = []
+        if (is_chrome_branded) {
+          if (target_cpu == "x64") {
+            _redist_cpu_path = "amd64"
+          } else {
+            _redist_cpu_path = "x64"
+          }
+          _generated_files +=
+              [ rebase_path("//third_party/platformsdk_win7/files/Redist/" +
+                                "$_redist_cpu_path/sas.dll",
+                            root_build_dir) ]
+          _extra_files += [ "files/sas.dll" ]
+        }
+
+        args = [
+                 rebase_path("$root_gen_dir/installation", root_build_dir),
+                 rebase_path(_output, root_build_dir),
+                 "--source-file-roots",
+                 rebase_path("//remoting/host/installer/win"),
+                 "--source-files",
+                 rebase_path("//remoting/host/installer/win/chromoting.wxs"),
+                 rebase_path("//remoting/host/installer/win/parameters.json"),
+
+                 # Input files
+                 "--generated-files",
+               ] + _generated_files +
+               [
+                 rebase_path("//remoting/resources/chromoting.ico"),
+
+                 # Position of files in zip file
+                 "--generated-files-dst",
+                 "files/remote_assistance_host.exe",
+                 "files/remote_security_key.exe",
+                 "files/remoting_core.dll",
+                 "files/remoting_desktop.exe",
+                 "files/remoting_host.exe",
+                 "files/remoting_native_messaging_host.exe",
+                 "files/CREDITS.txt",
+                 "files/com.google.chrome.remote_assistance.json",
+                 "files/com.google.chrome.remote_desktop.json",
+                 "files/chromoting.ico",
+                 "files/icudtl.dat",
+               ] + _extra_files +  # Defs
+               [
+                 "--defs",
+                 "BRANDING=$_branding",
+                 "DAEMON_CONTROLLER_CLSID=$daemon_controller_clsid",
+                 "RDP_DESKTOP_SESSION_CLSID=$rdp_desktop_session_clsid",
+                 "VERSION=$chrome_version_full",
+                 "OFFICIAL_BUILD=$_official_build",
+               ]
+      }
     } else {
       group("remoting_me2me_host_archive") {
+      }
+    }
+
+    if (is_win && is_chrome_branded) {
+      # GYP version: remoting/remoting_host_win.gyp:remoting_host_installation
+      action("remoting_host_installation") {
+        deps = [
+          "//remoting/host:remoting_me2me_host_archive",
+        ]
+        script = "../tools/zip2msi.py"
+        outputs = [
+          "$root_out_dir/chromoting.msi",
+        ]
+        args = [
+          "--wix_path",
+          rebase_path("//third_party/wix"),
+          "--intermediate_dir",
+          rebase_path("$root_gen_dir/installation", root_build_dir),
+          "--target_arch",
+          "$target_cpu",
+          rebase_path("$root_out_dir/remoting-me2me-host-$current_os.zip",
+                      root_build_dir),
+          rebase_path(outputs[0], root_build_dir),
+        ]
       }
     }
   }

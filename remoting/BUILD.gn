@@ -41,9 +41,11 @@ group("remoting_all") {
       "//remoting:remoting_breakpad_tester",
       "//remoting/host:remoting_console",
       "//remoting/host:remoting_desktop",
-
-      # "//remoting:remoting_host_installation",
     ]
+
+    if (is_chrome_branded) {
+      deps += [ "//remoting/host:remoting_host_installation" ]
+    }
   }
 
   if (is_android) {
