@@ -18,13 +18,6 @@ namespace {
 
 // We are leaking these strings.
 const char* StrDupJString(const base::android::JavaRef<jstring>& java_string) {
-  // Some of the Java methods on BuildInfo can return null
-  // (https://crbug.com/601081), which can't be represented as a std::string, so
-  // use an empty string instead.
-  // TODO(bauerb): Do this only for methods that can legitimately return null.
-  if (java_string.is_null())
-    return "";
-
   std::string str = ConvertJavaStringToUTF8(java_string);
   return strdup(str.c_str());
 }

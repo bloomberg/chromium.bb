@@ -90,7 +90,10 @@ public class BuildInfo {
         try {
             PackageManager pm = context.getPackageManager();
             PackageInfo pi = pm.getPackageInfo(context.getPackageName(), 0);
-            msg = pi.versionName;
+            msg = "";
+            if (pi.versionName != null) {
+                msg = pi.versionName;
+            }
         } catch (NameNotFoundException e) {
             Log.d(TAG, msg);
         }
