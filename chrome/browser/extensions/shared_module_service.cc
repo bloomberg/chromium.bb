@@ -134,6 +134,22 @@ std::unique_ptr<ExtensionSet> SharedModuleService::GetDependentExtensions(
   return dependents;
 }
 
+InstallGate::Action SharedModuleService::ShouldDelay(const Extension* extension,
+                                                     bool install_immediately) {
+  ImportStatus status = SatisfyImports(extension);
+  switch (status) {
+    case IMPORT_STATUS_OK:
+      return INSTALL;
+    case IMPORT_STATUS_UNSATISFIED:
+      return DELAY;
+    case IMPORT_STATUS_UNRECOVERABLE:
+      return ABORT;
+  }
+
+  NOTREACHED();
+  return INSTALL;
+}
+
 void SharedModuleService::PruneSharedModules() {
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
   ExtensionService* service =

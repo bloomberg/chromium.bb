@@ -266,7 +266,6 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     extension_service_ = extension_system->Get(profile())->extension_service();
     extension_service_->set_extensions_enabled(true);
     extension_service_->set_show_extensions_prompts(false);
-    extension_service_->set_install_updates_when_idle_for_test(false);
 
     // Create GCMProfileService that talks with fake GCMClient.
     gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(

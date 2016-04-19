@@ -21,6 +21,7 @@ class ExtensionSystemSharedFactory;
 class NavigationObserver;
 class StateStoreNotificationObserver;
 class UninstallPingSender;
+class InstallGate;
 class ValueStoreFactory;
 class ValueStoreFactoryImpl;
 
@@ -80,6 +81,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     virtual void InitPrefs();
     // This must not be called until all the providers have been created.
     void RegisterManagementPolicyProviders();
+    void InitInstallGates();
     void Init(bool extensions_enabled);
 
     // KeyedService implementation.
@@ -122,6 +124,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_refptr<InfoMap> extension_info_map_;
     std::unique_ptr<QuotaService> quota_service_;
     std::unique_ptr<AppSorting> app_sorting_;
+    std::unique_ptr<InstallGate> update_install_gate_;
 
     // For verifying the contents of extensions read from disk.
     scoped_refptr<ContentVerifier> content_verifier_;

@@ -19,10 +19,12 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_management.h"
+#include "chrome/browser/extensions/install_gate.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/crx_file_info.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/process_manager.h"
@@ -346,14 +348,6 @@ class ExtensionService
   void SetFileTaskRunnerForTesting(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
-  // Postpone installations so that we don't have to worry about race
-  // conditions.
-  void OnGarbageCollectIsolatedStorageStart();
-
-  // Restart any extension installs which were delayed for isolated storage
-  // garbage collection.
-  void OnGarbageCollectIsolatedStorageFinished();
-
   // Record a histogram using the PermissionMessage enum values for each
   // permission in |e|.
   // NOTE: If this is ever called with high frequency, the implementation may
@@ -373,6 +367,11 @@ class ExtensionService
   // Adds/Removes update observers.
   void AddUpdateObserver(extensions::UpdateObserver* observer);
   void RemoveUpdateObserver(extensions::UpdateObserver* observer);
+
+  // Register/unregister an InstallGate with the service.
+  void RegisterInstallGate(extensions::ExtensionPrefs::DelayReason reason,
+                           extensions::InstallGate* install_delayer);
+  void UnregisterInstallGate(extensions::InstallGate* install_delayer);
 
   //////////////////////////////////////////////////////////////////////////////
   // Simple Accessors
@@ -448,13 +447,6 @@ class ExtensionService
 
   void set_browser_terminating_for_test(bool value) {
     browser_terminating_ = value;
-  }
-
-  // By default ExtensionService will wait with installing an updated extension
-  // until the extension is idle. Tests might not like this behavior, so you can
-  // disable it with this method.
-  void set_install_updates_when_idle_for_test(bool value) {
-    install_updates_when_idle_ = value;
   }
 
   // Set a callback to be called when all external providers are ready and their
@@ -558,10 +550,17 @@ class ExtensionService
   // Helper method to determine if an extension can be blocked.
   bool CanBlockExtension(const extensions::Extension* extension) const;
 
-  // Helper to determine if updating an extensions should proceed immediately,
-  // or if we should delay the update until further notice.
-  bool ShouldDelayExtensionUpdate(const std::string& extension_id,
-                                  bool install_immediately) const;
+  // Helper to determine if installing an extensions should proceed immediately,
+  // or if we should delay the install until further notice, or if the install
+  // should be aborted. A pending install is delayed or aborted when any of the
+  // delayers say so and only proceeds when all delayers return INSTALL.
+  // |extension| is the extension to be installed. |install_immediately| is the
+  // install flag set with the install. |reason| is the reason associated with
+  // the install delayer that wants to defer or abort the install.
+  extensions::InstallGate::Action ShouldDelayExtensionInstall(
+      const extensions::Extension* extension,
+      bool install_immediately,
+      extensions::ExtensionPrefs::DelayReason* reason) const;
 
   // Manages the blacklisted extensions, intended as callback from
   // Blacklist::GetBlacklistedIDs.
@@ -634,10 +633,6 @@ class ExtensionService
   // Whether to notify users when they attempt to install an extension.
   bool show_extensions_prompts_ = true;
 
-  // Whether to delay installing of extension updates until the extension is
-  // idle.
-  bool install_updates_when_idle_ = true;
-
   // Signaled when all extensions are loaded.
   extensions::OneShotEvent* const ready_;
 
@@ -683,12 +678,6 @@ class ExtensionService
   // decide to abort.
   bool browser_terminating_ = false;
 
-  // Set to true to delay all new extension installations. Acts as a lock to
-  // allow background processing of garbage collection of on-disk state without
-  // needing to worry about race conditions caused by extension installation and
-  // reinstallation.
-  bool installs_delayed_for_gc_ = false;
-
   // Set to true if this is the first time this ExtensionService has run.
   // Used for specially handling external extensions that are installed the
   // first time.
@@ -726,6 +715,10 @@ class ExtensionService
 
   // Migrates app data when upgrading a legacy packaged app to a platform app
   std::unique_ptr<extensions::AppDataMigrator> app_data_migrator_;
+
+  using InstallGateRegistry = std::map<extensions::ExtensionPrefs::DelayReason,
+                                       extensions::InstallGate*>;
+  InstallGateRegistry install_delayer_registry_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            DestroyingProfileClearsExtensions);

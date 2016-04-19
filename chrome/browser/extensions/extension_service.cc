@@ -70,7 +70,6 @@
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -1770,55 +1769,38 @@ void ExtensionService::OnExtensionInstalled(
   else
     extension_prefs_->SetExtensionDisabled(id, disable_reasons);
 
-  if (ShouldDelayExtensionUpdate(
-          id,
-          !!(install_flags & extensions::kInstallFlagInstallImmediately))) {
-    extension_prefs_->SetDelayedInstallInfo(
-        extension,
-        initial_state,
-        install_flags,
-        extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
-        page_ordinal,
-        install_parameter);
+  extensions::ExtensionPrefs::DelayReason delay_reason;
+  extensions::InstallGate::Action action = ShouldDelayExtensionInstall(
+      extension, !!(install_flags & extensions::kInstallFlagInstallImmediately),
+      &delay_reason);
+  switch (action) {
+    case extensions::InstallGate::INSTALL:
+      AddNewOrUpdatedExtension(extension, initial_state, install_flags,
+                               page_ordinal, install_parameter);
+      return;
+    case extensions::InstallGate::DELAY:
+      extension_prefs_->SetDelayedInstallInfo(extension, initial_state,
+                                              install_flags, delay_reason,
+                                              page_ordinal, install_parameter);
 
-    // Transfer ownership of |extension|.
-    delayed_installs_.Insert(extension);
-
-    // Notify observers that app update is available.
-    FOR_EACH_OBSERVER(extensions::UpdateObserver, update_observers_,
-                      OnAppUpdateAvailable(extension));
-    return;
-  }
-
-  extensions::SharedModuleService::ImportStatus status =
-      shared_module_service_->SatisfyImports(extension);
-  if (installs_delayed_for_gc_) {
-    extension_prefs_->SetDelayedInstallInfo(
-        extension,
-        initial_state,
-        install_flags,
-        extensions::ExtensionPrefs::DELAY_REASON_GC,
-        page_ordinal,
-        install_parameter);
-    delayed_installs_.Insert(extension);
-  } else if (status != SharedModuleService::IMPORT_STATUS_OK) {
-    if (status == SharedModuleService::IMPORT_STATUS_UNSATISFIED) {
-      extension_prefs_->SetDelayedInstallInfo(
-          extension,
-          initial_state,
-          install_flags,
-          extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
-          page_ordinal,
-          install_parameter);
+      // Transfer ownership of |extension|.
       delayed_installs_.Insert(extension);
-    }
-  } else {
-    AddNewOrUpdatedExtension(extension,
-                             initial_state,
-                             install_flags,
-                             page_ordinal,
-                             install_parameter);
+
+      if (delay_reason ==
+          extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE) {
+        // Notify observers that app update is available.
+        FOR_EACH_OBSERVER(extensions::UpdateObserver, update_observers_,
+                          OnAppUpdateAvailable(extension));
+      }
+      return;
+    case extensions::InstallGate::ABORT:
+      // Do nothing to abort the install. One such case is the shared module
+      // service gets IMPORT_STATUS_UNRECOVERABLE status for the pending
+      // install.
+      return;
   }
+
+  NOTREACHED() << "Unknown action for delayed install: " << action;
 }
 
 void ExtensionService::OnExtensionManagementSettingsChanged() {
@@ -1869,33 +1851,26 @@ void ExtensionService::AddNewOrUpdatedExtension(
 void ExtensionService::MaybeFinishDelayedInstallation(
     const std::string& extension_id) {
   // Check if the extension already got installed.
-  if (!delayed_installs_.Contains(extension_id))
-    return;
-  extensions::ExtensionPrefs::DelayReason reason =
-      extension_prefs_->GetDelayedInstallReason(extension_id);
-
-  // Check if the extension is idle. DELAY_REASON_NONE is used for older
-  // preferences files that will not have set this field but it was previously
-  // only used for idle updates.
-  if ((reason == extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE ||
-       reason == extensions::ExtensionPrefs::DELAY_REASON_NONE) &&
-       is_ready() && !extensions::util::IsExtensionIdle(extension_id, profile_))
-    return;
-
   const Extension* extension = delayed_installs_.GetByID(extension_id);
-  if (reason == extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS) {
-    extensions::SharedModuleService::ImportStatus status =
-        shared_module_service_->SatisfyImports(extension);
-    if (status != SharedModuleService::IMPORT_STATUS_OK) {
-      if (status == SharedModuleService::IMPORT_STATUS_UNRECOVERABLE) {
-        delayed_installs_.Remove(extension_id);
-        // Make sure no version of the extension is actually installed, (i.e.,
-        // that this delayed install was not an update).
-        CHECK(!extension_prefs_->GetInstalledExtensionInfo(extension_id).get());
-        extension_prefs_->DeleteExtensionPrefs(extension_id);
-      }
+  if (!extension)
+    return;
+
+  extensions::ExtensionPrefs::DelayReason reason;
+  const extensions::InstallGate::Action action = ShouldDelayExtensionInstall(
+      extension, false /* install_immediately*/, &reason);
+  switch (action) {
+    case extensions::InstallGate::INSTALL:
+      break;
+    case extensions::InstallGate::DELAY:
+      // Bail out and continue to delay the install.
       return;
-    }
+    case extensions::InstallGate::ABORT:
+      delayed_installs_.Remove(extension_id);
+      // Make sure no version of the extension is actually installed, (i.e.,
+      // that this delayed install was not an update).
+      CHECK(!extension_prefs_->GetInstalledExtensionInfo(extension_id).get());
+      extension_prefs_->DeleteExtensionPrefs(extension_id);
+      return;
   }
 
   FinishDelayedInstallation(extension_id);
@@ -2246,41 +2221,21 @@ bool ExtensionService::CanBlockExtension(const Extension* extension) const {
          !system_->management_policy()->MustRemainEnabled(extension, nullptr);
 }
 
-bool ExtensionService::ShouldDelayExtensionUpdate(
-    const std::string& extension_id,
-    bool install_immediately) const {
-  const char kOnUpdateAvailableEvent[] = "runtime.onUpdateAvailable";
-
-  // If delayed updates are globally disabled, or just for this extension,
-  // don't delay.
-  if (!install_updates_when_idle_ || install_immediately)
-    return false;
-
-  const Extension* old = GetInstalledExtension(extension_id);
-  // If there is no old extension, this is not an update, so don't delay.
-  if (!old)
-    return false;
-
-  if (extensions::BackgroundInfo::HasPersistentBackgroundPage(old)) {
-    // Delay installation if the extension listens for the onUpdateAvailable
-    // event.
-    return extensions::EventRouter::Get(profile_)
-        ->ExtensionHasEventListener(extension_id, kOnUpdateAvailableEvent);
-  } else {
-    // Delay installation if the extension is not idle.
-    return !extensions::util::IsExtensionIdle(extension_id, profile_);
+extensions::InstallGate::Action ExtensionService::ShouldDelayExtensionInstall(
+    const extensions::Extension* extension,
+    bool install_immediately,
+    extensions::ExtensionPrefs::DelayReason* reason) const {
+  for (const auto& entry : install_delayer_registry_) {
+    extensions::InstallGate* const delayer = entry.second;
+    extensions::InstallGate::Action action =
+        delayer->ShouldDelay(extension, install_immediately);
+    if (action != extensions::InstallGate::INSTALL) {
+      *reason = entry.first;
+      return action;
+    }
   }
-}
 
-void ExtensionService::OnGarbageCollectIsolatedStorageStart() {
-  DCHECK(!installs_delayed_for_gc_);
-  installs_delayed_for_gc_ = true;
-}
-
-void ExtensionService::OnGarbageCollectIsolatedStorageFinished() {
-  DCHECK(installs_delayed_for_gc_);
-  installs_delayed_for_gc_ = false;
-  MaybeFinishDelayedInstallations();
+  return extensions::InstallGate::INSTALL;
 }
 
 void ExtensionService::MaybeFinishDelayedInstallations() {
@@ -2436,6 +2391,25 @@ void ExtensionService::AddUpdateObserver(extensions::UpdateObserver* observer) {
 void ExtensionService::RemoveUpdateObserver(
     extensions::UpdateObserver* observer) {
   update_observers_.RemoveObserver(observer);
+}
+
+void ExtensionService::RegisterInstallGate(
+    extensions::ExtensionPrefs::DelayReason reason,
+    extensions::InstallGate* install_delayer) {
+  DCHECK(install_delayer_registry_.end() ==
+         install_delayer_registry_.find(reason));
+  install_delayer_registry_[reason] = install_delayer;
+}
+
+void ExtensionService::UnregisterInstallGate(
+    extensions::InstallGate* install_delayer) {
+  for (auto it = install_delayer_registry_.begin();
+       it != install_delayer_registry_.end(); ++it) {
+    if (it->second == install_delayer) {
+      install_delayer_registry_.erase(it);
+      return;
+    }
+  }
 }
 
 // Used only by test code.

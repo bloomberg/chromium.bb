@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/extension_garbage_collector.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/extensions/shared_user_script_master.h"
 #include "chrome/browser/extensions/state_store_notification_observer.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/extensions/update_install_gate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -142,6 +144,18 @@ void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
   management_policy_->RegisterProvider(InstallVerifier::Get(profile_));
 }
 
+void ExtensionSystemImpl::Shared::InitInstallGates() {
+  update_install_gate_.reset(new UpdateInstallGate(extension_service_.get()));
+  extension_service_->RegisterInstallGate(
+      ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE, update_install_gate_.get());
+  extension_service_->RegisterInstallGate(
+      ExtensionPrefs::DELAY_REASON_GC,
+      ExtensionGarbageCollector::Get(profile_));
+  extension_service_->RegisterInstallGate(
+      ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
+      extension_service_->shared_module_service());
+}
+
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   TRACE_EVENT0("browser,startup", "ExtensionSystemImpl::Shared::Init");
   const base::CommandLine* command_line =
@@ -226,6 +240,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   }
 
   app_sorting_.reset(new ChromeAppSorting(profile_));
+
+  InitInstallGates();
 
   extension_service_->Init();
 

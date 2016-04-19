@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_garbage_collector_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -318,7 +319,6 @@ void ExtensionServiceTestBase::CreateExtensionService(
       base::ThreadTaskRunnerHandle::Get().get());
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
-  service_->set_install_updates_when_idle_for_test(false);
   service_->component_loader()->set_ignore_whitelist_for_testing(true);
 
   // When we start up, we want to make sure there is no external provider,
@@ -327,6 +327,9 @@ void ExtensionServiceTestBase::CreateExtensionService(
   // interfere with the tests. Those tests that need an external provider
   // will register one specifically.
   service_->ClearProvidersForTesting();
+
+  service_->RegisterInstallGate(ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
+                                service_->shared_module_service());
 
 #if defined(OS_CHROMEOS)
   InstallLimiter::Get(profile_.get())->DisableForTest();

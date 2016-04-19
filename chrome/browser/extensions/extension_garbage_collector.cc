@@ -234,13 +234,22 @@ void ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded() {
     }
   }
 
-  ExtensionService* service =
-      ExtensionSystem::Get(context_)->extension_service();
-  service->OnGarbageCollectIsolatedStorageStart();
+  DCHECK(!installs_delayed_for_gc_);
+  installs_delayed_for_gc_ = true;
   content::BrowserContext::GarbageCollectStoragePartitions(
       context_, std::move(active_paths),
-      base::Bind(&ExtensionService::OnGarbageCollectIsolatedStorageFinished,
-                 service->AsWeakPtr()));
+      base::Bind(
+          &ExtensionGarbageCollector::OnGarbageCollectIsolatedStorageFinished,
+          weak_factory_.GetWeakPtr()));
+}
+
+void ExtensionGarbageCollector::OnGarbageCollectIsolatedStorageFinished() {
+  DCHECK(installs_delayed_for_gc_);
+  installs_delayed_for_gc_ = false;
+
+  ExtensionSystem::Get(context_)
+      ->extension_service()
+      ->MaybeFinishDelayedInstallations();
 }
 
 void ExtensionGarbageCollector::OnBeginCrxInstall(
@@ -261,6 +270,12 @@ void ExtensionGarbageCollector::OnFinishCrxInstall(
     // an install is actually in progress.
     crx_installs_in_progress_ = 0;
   }
+}
+
+InstallGate::Action ExtensionGarbageCollector::ShouldDelay(
+    const Extension* extension,
+    bool install_immediately) {
+  return installs_delayed_for_gc_ ? DELAY : INSTALL;
 }
 
 }  // namespace extensions
