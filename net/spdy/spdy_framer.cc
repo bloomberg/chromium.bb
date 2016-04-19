@@ -420,6 +420,8 @@ const char* SpdyFramer::ErrorCodeToString(int error_code) {
   switch (error_code) {
     case SPDY_NO_ERROR:
       return "NO_ERROR";
+    case SPDY_INVALID_STREAM_ID:
+      return "INVALID_STREAM_ID";
     case SPDY_INVALID_CONTROL_FRAME:
       return "INVALID_CONTROL_FRAME";
     case SPDY_CONTROL_PAYLOAD_TOO_LARGE:
@@ -680,6 +682,68 @@ void SpdyFramer::SpdySettingsScratch::Reset() {
   last_setting_id = -1;
 }
 
+SpdyFrameType SpdyFramer::ValidateFrameHeader(bool is_control_frame,
+                                              int frame_type_field) {
+  if (!SpdyConstants::IsValidFrameType(protocol_version_, frame_type_field)) {
+    if (protocol_version_ == SPDY3) {
+      if (is_control_frame) {
+        DLOG(WARNING) << "Invalid control frame type " << frame_type_field
+                      << " (protocol version: " << protocol_version_ << ")";
+        set_error(SPDY_INVALID_CONTROL_FRAME);
+      } else {
+        // Else it's a SPDY3 data frame which we don't validate further here
+      }
+    } else {
+      // In HTTP2 we ignore unknown frame types for extensibility, as long as
+      // the rest of the control frame header is valid.
+      // We rely on the visitor to check validity of current_frame_stream_id_.
+      bool valid_stream =
+          visitor_->OnUnknownFrame(current_frame_stream_id_, frame_type_field);
+      if (valid_stream) {
+        DLOG(WARNING) << "Ignoring unknown frame type.";
+        CHANGE_STATE(SPDY_IGNORE_REMAINING_PAYLOAD);
+      } else {
+        // Report an invalid frame error and close the stream if the
+        // stream_id is not valid.
+        DLOG(WARNING) << "Unknown control frame type " << frame_type_field
+                      << " received on invalid stream "
+                      << current_frame_stream_id_;
+        set_error(SPDY_INVALID_CONTROL_FRAME);
+      }
+    }
+    return DATA;
+  }
+
+  SpdyFrameType frame_type =
+      SpdyConstants::ParseFrameType(protocol_version_, frame_type_field);
+
+  if (protocol_version_ == HTTP2) {
+    if (!SpdyConstants::IsValidHTTP2FrameStreamId(current_frame_stream_id_,
+                                                  frame_type)) {
+      DLOG(ERROR) << "The framer received an invalid streamID of "
+                  << current_frame_stream_id_ << " for a frame of type "
+                  << FrameTypeToString(frame_type);
+      set_error(SPDY_INVALID_STREAM_ID);
+      return frame_type;
+    }
+
+    // Ensure that we see a CONTINUATION frame iff we expect to.
+    if ((frame_type == CONTINUATION) != (expect_continuation_ != 0)) {
+      if (expect_continuation_ != 0) {
+        DLOG(ERROR) << "The framer was expecting to receive a CONTINUATION "
+                    << "frame, but instead received a frame of type "
+                    << FrameTypeToString(frame_type);
+      } else {
+        DLOG(ERROR) << "The framer received an unexpected CONTINUATION frame.";
+      }
+      set_error(SPDY_UNEXPECTED_FRAME);
+      return frame_type;
+    }
+  }
+
+  return frame_type;
+}
+
 size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   // This should only be called when we're in the SPDY_READING_COMMON_HEADER
   // state.
@@ -722,8 +786,6 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
         set_error(SPDY_UNSUPPORTED_VERSION);
         return 0;
       }
-      // We check control_frame_type_field's validity in
-      // ProcessControlFrameHeader().
       uint16_t control_frame_type_field_uint16;
       successful_read = reader.ReadUInt16(&control_frame_type_field_uint16);
       control_frame_type_field = control_frame_type_field_uint16;
@@ -769,24 +831,8 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     DCHECK(successful_read);
 
     remaining_data_length_ = current_frame_length_ - reader.GetBytesConsumed();
-
-    // Before we accept a DATA frame, we need to make sure we're not in the
-    // middle of processing a header block.
-    const bool is_continuation_frame =
-        (control_frame_type_field ==
-         SpdyConstants::SerializeFrameType(protocol_version_, CONTINUATION));
-    if ((expect_continuation_ != 0) != is_continuation_frame) {
-      if (expect_continuation_ != 0) {
-        DLOG(ERROR) << "The framer was expecting to receive a CONTINUATION "
-                    << "frame, but instead received frame type "
-                    << control_frame_type_field;
-      } else {
-        DLOG(ERROR) << "The framer received an unexpected CONTINUATION frame.";
-      }
-      set_error(SPDY_UNEXPECTED_FRAME);
-      return original_len - len;
-    }
   }
+
   DCHECK_EQ(is_control_frame ? GetControlFrameHeaderSize()
                              : GetDataFrameMinimumSize(),
             reader.GetBytesConsumed());
@@ -806,6 +852,13 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
       LOG(WARNING) << "Unexpectedly large frame.  " << display_protocol_
                    << " session is likely corrupt.";
     }
+  }
+
+  current_frame_type_ =
+      ValidateFrameHeader(is_control_frame, control_frame_type_field);
+
+  if (state_ == SPDY_ERROR || state_ == SPDY_IGNORE_REMAINING_PAYLOAD) {
+    return original_len - len;
   }
 
   // if we're here, then we have the common header all received.
@@ -855,38 +908,6 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
 void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
   DCHECK_EQ(SPDY_NO_ERROR, error_code_);
   DCHECK_LE(GetControlFrameHeaderSize(), current_frame_buffer_.len());
-
-  if (!SpdyConstants::IsValidFrameType(protocol_version_,
-                                       control_frame_type_field)) {
-    if (protocol_version_ == SPDY3) {
-      DLOG(WARNING) << "Invalid control frame type " << control_frame_type_field
-                    << " (protocol version: " << protocol_version_ << ")";
-      set_error(SPDY_INVALID_CONTROL_FRAME);
-      return;
-    } else {
-      // In HTTP2 we ignore unknown frame types for extensibility, as long as
-      // the rest of the control frame header is valid.
-      // We rely on the visitor to check validity of current_frame_stream_id_.
-      bool valid_stream = visitor_->OnUnknownFrame(current_frame_stream_id_,
-                                                   control_frame_type_field);
-      if (valid_stream) {
-        DVLOG(1) << "Ignoring unknown frame type.";
-        CHANGE_STATE(SPDY_IGNORE_REMAINING_PAYLOAD);
-      } else {
-        // Report an invalid frame error and close the stream if the
-        // stream_id is not valid.
-        DLOG(WARNING) << "Unknown control frame type "
-                      << control_frame_type_field
-                      << " received on invalid stream "
-                      << current_frame_stream_id_;
-        set_error(SPDY_INVALID_CONTROL_FRAME);
-      }
-      return;
-    }
-  }
-
-  current_frame_type_ = SpdyConstants::ParseFrameType(protocol_version_,
-                                                      control_frame_type_field);
 
   // Do some sanity checking on the control frame sizes and flags.
   switch (current_frame_type_) {

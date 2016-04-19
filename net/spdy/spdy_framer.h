@@ -328,6 +328,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // SPDY error codes.
   enum SpdyError {
     SPDY_NO_ERROR,
+    SPDY_INVALID_STREAM_ID,            // Stream ID is invalid
     SPDY_INVALID_CONTROL_FRAME,        // Control frame is mal-formatted.
     SPDY_CONTROL_PAYLOAD_TOO_LARGE,    // Control frame payload was too large.
     SPDY_ZLIB_INIT_FAILURE,            // The Zlib library could not initialize.
@@ -630,6 +631,18 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t ProcessSettingsFramePayload(const char* data, size_t len);
   size_t ProcessAltSvcFramePayload(const char* data, size_t len);
   size_t ProcessIgnoredControlFramePayload(/*const char* data,*/ size_t len);
+
+  // Validates the frame header against the current protocol, e.g.
+  // Frame type must be known, must specify a non-zero stream id.
+  //
+  // is_control_frame: the control bit for SPDY3
+  // frame_type_field: the unparsed frame type octet(s)
+  //
+  // For valid frames, returns the correct SpdyFrameType.
+  // Otherwise returns a best guess at invalid frame type,
+  // after setting the appropriate SpdyError.
+  SpdyFrameType ValidateFrameHeader(bool is_control_frame,
+                                    int frame_type_field);
 
   // TODO(jgraettinger): To be removed with migration to
   // SpdyHeadersHandlerInterface.  Serializes the last-processed

@@ -98,6 +98,7 @@ enum SpdyProtocolErrorDetails {
   SPDY_ERROR_INVALID_CONTROL_FRAME_FLAGS = 9,
   SPDY_ERROR_UNEXPECTED_FRAME = 31,
   SPDY_ERROR_INVALID_CONTROL_FRAME_SIZE = 37,
+  SPDY_ERROR_INVALID_STREAM_ID = 38,
   // SpdyRstStreamStatus mappings.
   // RST_STREAM_INVALID not mapped.
   STATUS_CODE_PROTOCOL_ERROR = 11,
@@ -126,7 +127,7 @@ enum SpdyProtocolErrorDetails {
   PROTOCOL_ERROR_RECEIVE_WINDOW_VIOLATION = 28,
 
   // Next free value.
-  NUM_SPDY_PROTOCOL_ERROR_DETAILS = 38,
+  NUM_SPDY_PROTOCOL_ERROR_DETAILS = 39,
 };
 SpdyProtocolErrorDetails NET_EXPORT_PRIVATE
     MapFramerErrorToProtocolError(SpdyFramer::SpdyError error);
@@ -137,7 +138,7 @@ SpdyGoAwayStatus NET_EXPORT_PRIVATE MapNetErrorToGoAwayStatus(Error err);
 
 // If these compile asserts fail then SpdyProtocolErrorDetails needs
 // to be updated with new values, as do the mapping functions above.
-static_assert(13 == SpdyFramer::LAST_ERROR,
+static_assert(14 == SpdyFramer::LAST_ERROR,
               "SpdyProtocolErrorDetails / Spdy Errors mismatch");
 static_assert(17 == RST_STREAM_NUM_STATUS_CODES,
               "SpdyProtocolErrorDetails / RstStreamStatus mismatch");

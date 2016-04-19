@@ -178,6 +178,35 @@ int SpdyConstants::DataFrameType(SpdyMajorVersion version) {
   return 0;
 }
 
+bool SpdyConstants::IsValidHTTP2FrameStreamId(
+    SpdyStreamId current_frame_stream_id,
+    SpdyFrameType frame_type_field) {
+  if (current_frame_stream_id == 0) {
+    switch (frame_type_field) {
+      case DATA:
+      case HEADERS:
+      case PRIORITY:
+      case RST_STREAM:
+      case CONTINUATION:
+      case PUSH_PROMISE:
+        // These frame types must specify a stream
+        return false;
+      default:
+        return true;
+    }
+  } else {
+    switch (frame_type_field) {
+      case GOAWAY:
+      case SETTINGS:
+      case PING:
+        // These frame types must not specify a stream
+        return false;
+      default:
+        return true;
+    }
+  }
+}
+
 bool SpdyConstants::IsValidSettingId(SpdyMajorVersion version,
                                      int setting_id_field) {
   switch (version) {

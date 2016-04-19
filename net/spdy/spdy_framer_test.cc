@@ -825,6 +825,29 @@ TEST_P(SpdyFramerTest, SynReplyWithStreamIdZero) {
       << SpdyFramer::ErrorCodeToString(framer.error_code());
 }
 
+// Test that if we receive a DATA with stream ID zero, we signal an error
+// (but don't crash).
+TEST_P(SpdyFramerTest, DataWithStreamIdZero) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  const char bytes[] = "hello";
+  SpdyDataIR data_ir(0, bytes);
+  SpdySerializedFrame frame(framer.SerializeData(data_ir));
+
+  // We shouldn't have to read the whole frame before we signal an error.
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
+}
+
 // Test that if we receive a HEADERS with stream ID zero, we signal an error
 // (but don't crash).
 TEST_P(SpdyFramerTest, HeadersWithStreamIdZero) {
@@ -840,7 +863,145 @@ TEST_P(SpdyFramerTest, HeadersWithStreamIdZero) {
   EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
   EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_TRUE(framer.HasError());
-  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code())
+  if (IsHttp2()) {
+    EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.error_code())
+        << SpdyFramer::ErrorCodeToString(framer.error_code());
+  } else {
+    EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code())
+        << SpdyFramer::ErrorCodeToString(framer.error_code());
+  }
+}
+
+// Test that if we receive a PRIORITY with stream ID zero, we signal an error
+// (but don't crash).
+TEST_P(SpdyFramerTest, PriorityWithStreamIdZero) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  SpdyPriorityIR priority_ir(0, 1, 16, true);
+  SpdySerializedFrame frame(framer.SerializeFrame(priority_ir));
+
+  // We shouldn't have to read the whole frame before we signal an error.
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
+}
+
+// Test that if we receive a RST_STREAM with stream ID zero, we signal an error
+// (but don't crash).
+TEST_P(SpdyFramerTest, RstStreamWithStreamIdZero) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  SpdyRstStreamIR rst_stream_ir(0, RST_STREAM_PROTOCOL_ERROR);
+  SpdySerializedFrame frame(framer.SerializeRstStream(rst_stream_ir));
+
+  // We shouldn't have to read the whole frame before we signal an error.
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
+}
+
+// Test that if we receive a SETTINGS with stream ID other than zero,
+// we signal an error (but don't crash).
+TEST_P(SpdyFramerTest, SettingsWithStreamIdNotZero) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  // Settings frame with invalid StreamID of 0x01
+  char kH2FrameData[] = {
+      0x00, 0x00, 0x06,        // Length
+      0x04,                    // Type (SETTINGS)
+      0x00,                    // Flags
+      0x00, 0x00, 0x00, 0x01,  // Stream id
+      0x00, 0x04,              // Setting id
+      0x0a, 0x0b, 0x0c, 0x0d,  // Setting value
+  };
+
+  SpdySerializedFrame frame(kH2FrameData, sizeof(kH2FrameData), false);
+
+  // We shouldn't have to read the whole frame before we signal an error.
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
+}
+
+// Test that if we receive a GOAWAY with stream ID other than zero,
+// we signal an error (but don't crash).
+TEST_P(SpdyFramerTest, GoawayWithStreamIdNotZero) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  // GOAWAY frame with invalid StreamID of 0x01
+  char kH2FrameData[] = {
+      0x00, 0x00, 0x0a,        // Length
+      0x07,                    // Type (GOAWAY)
+      0x00,                    // Flags
+      0x00, 0x00, 0x00, 0x01,  // Stream id
+      0x00, 0x00, 0x00, 0x00,  // Last-stream ID
+      0x00, 0x00, 0x00, 0x00,  // Error code
+      0x47, 0x41,              // Opaque Description
+  };
+
+  SpdySerializedFrame frame(kH2FrameData, sizeof(kH2FrameData), false);
+
+  // We shouldn't have to read the whole frame before we signal an error.
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
+}
+
+// Test that if we receive a CONTINUATION with stream ID zero, we signal an
+// error
+// (but don't crash).
+TEST_P(SpdyFramerTest, ContinuationWithStreamIdZero) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  SpdyContinuationIR continuation(0);
+  continuation.SetHeader("bar", "foo");
+  continuation.SetHeader("foo", "bar");
+  continuation.set_end_headers(true);
+  SpdySerializedFrame frame(framer.SerializeContinuation(continuation));
+
+  // We shouldn't have to read the whole frame before we signal an error.
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.error_code())
       << SpdyFramer::ErrorCodeToString(framer.error_code());
 }
 
@@ -863,7 +1024,7 @@ TEST_P(SpdyFramerTest, PushPromiseWithStreamIdZero) {
   EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
   EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_TRUE(framer.HasError());
-  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code())
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.error_code())
       << SpdyFramer::ErrorCodeToString(framer.error_code());
 }
 
@@ -3964,20 +4125,16 @@ TEST_P(SpdyFramerTest, ExpectContinuationReceiveControlFrame) {
   }
 
   const unsigned char kInput[] = {
-    0x00, 0x00, 0x18, 0x01, 0x00,  // HEADERS
-    0x00, 0x00, 0x00, 0x01,  // Stream 1
-    0x00, 0x06, 0x63, 0x6f,
-    0x6f, 0x6b, 0x69, 0x65,
-    0x07, 0x66, 0x6f, 0x6f,
-    0x3d, 0x62, 0x61, 0x72,
+      0x00, 0x00, 0x10, 0x01, 0x00,  // HEADERS
+      0x00, 0x00, 0x00, 0x01,        // Stream 1
+      0x00, 0x06, 0x63, 0x6f, 0x6f, 0x6b, 0x69, 0x65,
+      0x07, 0x66, 0x6f, 0x6f, 0x3d, 0x62, 0x61, 0x72,
 
-    0x00, 0x00, 0x1c, 0x08, 0x00,  // HEADERS
-    0x00, 0x00, 0x00, 0x01,  // Stream 1
-    0x00, 0x06, 0x63, 0x6f,  // (Note this is a valid continued encoding).
-    0x6f, 0x6b, 0x69, 0x65,
-    0x08, 0x62, 0x61, 0x7a,
-    0x3d, 0x62, 0x69, 0x6e,
-    0x67, 0x00, 0x06, 0x63,
+      0x00, 0x00, 0x1c, 0x08, 0x00,  // HEADERS
+      0x00, 0x00, 0x00, 0x01,        // Stream 1
+      0x00, 0x06, 0x63, 0x6f,  // (Note this is a valid continued encoding).
+      0x6f, 0x6b, 0x69, 0x65, 0x08, 0x62, 0x61, 0x7a,
+      0x3d, 0x62, 0x69, 0x6e, 0x67, 0x00, 0x06, 0x63,
   };
 
   SpdyFramer framer(spdy_version_);
@@ -4221,6 +4378,8 @@ TEST_P(SpdyFramerTest, StateToStringTest) {
 TEST_P(SpdyFramerTest, ErrorCodeToStringTest) {
   EXPECT_STREQ("NO_ERROR",
                SpdyFramer::ErrorCodeToString(SpdyFramer::SPDY_NO_ERROR));
+  EXPECT_STREQ("INVALID_STREAM_ID", SpdyFramer::ErrorCodeToString(
+                                        SpdyFramer::SPDY_INVALID_STREAM_ID));
   EXPECT_STREQ("INVALID_CONTROL_FRAME",
                SpdyFramer::ErrorCodeToString(
                    SpdyFramer::SPDY_INVALID_CONTROL_FRAME));
@@ -5675,8 +5834,11 @@ TEST_P(SpdyFramerTest, ReadIncorrectlySizedPing) {
 
   // PING frame of size 4, which isn't correct.
   const unsigned char kFrameData[] = {
-      0x00, 0x00, 0x04, 0x06, 0x00, 0x00, 0x00,
-      0x00, 0x03, 0x00, 0x00, 0x00, 0x01,
+      0x00, 0x00, 0x04,        // Length
+      0x06,                    // Type (PING)
+      0x00,                    // Flags
+      0x00, 0x00, 0x00, 0x00,  // Stream id
+      0x00, 0x00, 0x00, 0x01,  // Opaque data
   };
 
   TestSpdyVisitor visitor(spdy_version_);

@@ -84044,6 +84044,7 @@ To add a new entry, add it with any value and run test to compute valid value.
 <!-- More SpdyFramer::SpdyErrors -->
 
   <int value="37" label="Invalid control frame size."/>
+  <int value="38" label="Invalid stream ID."/>
 </enum>
 
 <enum name="SpdyProtocolVersion" type="int">
