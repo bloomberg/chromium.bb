@@ -16,7 +16,6 @@
 #include "content/public/common/service_registry.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/core.h"
-#include "services/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace content {
 
@@ -29,17 +28,10 @@ class CONTENT_EXPORT ServiceRegistryImpl
   ServiceRegistryImpl();
   ~ServiceRegistryImpl() override;
 
-  // Binds this ServiceProvider implementation to a message pipe endpoint.
-  void Bind(shell::mojom::InterfaceProviderRequest request);
-
-  // Binds to a remote ServiceProvider. This will expose added services to the
-  // remote ServiceProvider with the corresponding handle and enable
-  // ConnectToRemoteService to provide access to services exposed by the remote
-  // ServiceProvider.
-  void BindRemoteServiceProvider(
-      shell::mojom::InterfaceProviderPtr service_provider);
-
   // ServiceRegistry overrides.
+  void Bind(shell::mojom::InterfaceProviderRequest request) override;
+  void BindRemoteServiceProvider(
+      shell::mojom::InterfaceProviderPtr service_provider) override;
   void AddService(const std::string& service_name,
                   const ServiceFactory service_factory) override;
   void RemoveService(const std::string& service_name) override;

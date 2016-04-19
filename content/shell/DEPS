@@ -45,9 +45,4 @@ specific_include_rules = {
   "content_browser_tests_android\.cc": [
     "+media/base"
   ],
-  # Test hook.
-  "shell_mojo_test_utils_android\.cc": [
-    "+content/browser/mojo",
-    "+content/common/mojo",
-  ],
 }

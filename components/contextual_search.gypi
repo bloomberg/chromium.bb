@@ -31,6 +31,7 @@
       'dependencies': [
         'contextual_search_mojo_bindings',
         '../base/base.gyp:base',
+        '../content/content.gyp:content_common',
       ],
       'sources': [
         'contextual_search/renderer/contextual_search_wrapper.cc',

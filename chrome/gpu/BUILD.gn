@@ -4,6 +4,7 @@
 
 static_library("gpu") {
   deps = [
+    "//content/public/common",
     "//content/public/gpu",
   ]
 

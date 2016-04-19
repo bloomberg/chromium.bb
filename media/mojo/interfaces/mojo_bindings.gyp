@@ -29,10 +29,12 @@
       # GN version: //media/mojo/interfaces
       'target_name': 'provision_fetcher_mojo_bindings',
       'type': 'none',
-      'sources': [
-        'provision_fetcher.mojom',
-      ],
-      'includes': [ '../../../mojo/mojom_bindings_generator.gypi' ],
+      'variables': {
+        'mojom_files': [
+          'provision_fetcher.mojom',
+        ],
+      },
+      'includes': [ '../../../mojo/mojom_bindings_generator_explicit.gypi' ],
     },
     {
       'target_name': 'provision_fetcher_api',
@@ -41,10 +43,6 @@
         'provision_fetcher_mojo_bindings',
         '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../../../services/shell/shell.gyp:shell_public',
-      ],
-      'sources': [
-        '<(SHARED_INTERMEDIATE_DIR)/media/mojo/interfaces/provision_fetcher.mojom.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/media/mojo/interfaces/provision_fetcher.mojom.h',
       ],
     },
   ],

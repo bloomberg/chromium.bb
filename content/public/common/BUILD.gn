@@ -95,6 +95,7 @@ source_set("common_sources") {
   public_deps = [
     "//content/common",
     "//mojo/public/cpp/bindings",
+    "//services/shell/public/interfaces",
     "//ui/accessibility",
     "//url/ipc:url_ipc",
   ]

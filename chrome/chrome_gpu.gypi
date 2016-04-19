@@ -16,6 +16,10 @@
         'gpu/chrome_content_gpu_client.cc',
         'gpu/chrome_content_gpu_client.h',
       ],
+      'dependencies': [
+        '../content/content.gyp:content_common',
+        '../content/content.gyp:content_gpu',
+      ],
       'conditions': [
         ['chromeos==1', {
           'dependencies': [

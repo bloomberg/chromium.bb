@@ -10,6 +10,10 @@
 
 namespace content {
 
+ServiceRegistry* ServiceRegistry::Create() {
+  return new ServiceRegistryImpl;
+}
+
 ServiceRegistryImpl::ServiceRegistryImpl()
     : binding_(this), weak_factory_(this) {}
 

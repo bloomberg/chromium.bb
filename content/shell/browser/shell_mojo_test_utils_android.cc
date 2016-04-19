@@ -9,15 +9,15 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "content/common/mojo/service_registry_impl.h"
 #include "content/public/browser/android/service_registry_android.h"
+#include "content/public/common/service_registry.h"
 #include "jni/ShellMojoTestUtils_jni.h"
 
 namespace {
 
 struct TestEnvironment {
   base::MessageLoop message_loop;
-  ScopedVector<content::ServiceRegistryImpl> registries;
+  ScopedVector<content::ServiceRegistry> registries;
   ScopedVector<content::ServiceRegistryAndroid> wrappers;
 };
 
@@ -43,9 +43,9 @@ static ScopedJavaLocalRef<jobject> CreateServiceRegistryPair(
   TestEnvironment* test_environment =
       reinterpret_cast<TestEnvironment*>(native_test_environment);
 
-  content::ServiceRegistryImpl* registry_a = new ServiceRegistryImpl();
+  content::ServiceRegistry* registry_a = ServiceRegistry::Create();
   test_environment->registries.push_back(registry_a);
-  content::ServiceRegistryImpl* registry_b = new ServiceRegistryImpl();
+  content::ServiceRegistry* registry_b = ServiceRegistry::Create();
   test_environment->registries.push_back(registry_b);
 
   shell::mojom::InterfaceProviderPtr exposed_services_a;

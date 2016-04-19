@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/core.h"
+#include "services/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace content {
 
@@ -24,7 +25,18 @@ namespace content {
 // ConnectToRemoteService.
 class CONTENT_EXPORT ServiceRegistry {
  public:
+  static ServiceRegistry* Create();
   virtual ~ServiceRegistry() {}
+
+  // Binds this ServiceProvider implementation to a message pipe endpoint.
+  virtual void Bind(shell::mojom::InterfaceProviderRequest request) = 0;
+
+  // Binds to a remote ServiceProvider. This will expose added services to the
+  // remote ServiceProvider with the corresponding handle and enable
+  // ConnectToRemoteService to provide access to services exposed by the remote
+  // ServiceProvider.
+  virtual void BindRemoteServiceProvider(
+      shell::mojom::InterfaceProviderPtr service_provider) = 0;
 
   // Make the service created by |service_factory| available to the remote
   // ServiceProvider. In response to each request for a service,
