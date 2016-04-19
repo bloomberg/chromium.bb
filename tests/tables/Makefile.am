@@ -2,6 +2,7 @@ SUBDIRS = moreTables resolve_table
 
 EXTRA_DIST =					\
 	bad.ctb					\
+	begcaps_endcaps.utb			\
 	empty.ctb				\
 	inpos_match_replace.ctb			\
 	inpos_pass0.ctb				\

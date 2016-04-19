@@ -1,6 +1,7 @@
 EXTRA_DIST =					\
 	ar-ar-g1_harness.yaml			\
 	ar-fa_harness.yaml			\
+	begcaps_endcaps.yaml			\
 	chr-us-g1_harness.yaml			\
 	da-dk-g16-dictionary_harness.yaml	\
 	da-dk-g18-dictionary_harness.yaml	\

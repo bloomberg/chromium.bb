@@ -213,6 +213,7 @@ XFAIL_TESTS += yaml/en-ueb-symbols_harness.yaml
 dist_yaml_TESTS =				\
 	yaml/ar-ar-g1_harness.yaml		\
 	yaml/ar-fa_harness.yaml			\
+	yaml/begcaps_endcaps.yaml		\
 	yaml/chr-us-g1_harness.yaml		\
 	yaml/da-dk-g16-dictionary_harness.yaml	\
 	yaml/da-dk-g18-dictionary_harness.yaml	\
