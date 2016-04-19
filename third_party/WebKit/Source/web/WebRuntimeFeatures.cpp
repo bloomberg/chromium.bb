@@ -145,6 +145,11 @@ void WebRuntimeFeatures::enableImageColorProfiles(bool enable)
     RuntimeEnabledFeatures::setImageColorProfilesEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableInputMultipleFieldsUI(bool enable)
+{
+    RuntimeEnabledFeatures::setInputMultipleFieldsUIEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableMediaCapture(bool enable)
 {
     RuntimeEnabledFeatures::setMediaCaptureEnabled(enable);
