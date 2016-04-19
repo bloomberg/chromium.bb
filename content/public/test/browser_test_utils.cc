@@ -58,7 +58,7 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/latency_info/latency_info.h"
+#include "ui/events/latency_info.h"
 #include "ui/resources/grit/webui_resources.h"
 
 #if defined(USE_AURA)

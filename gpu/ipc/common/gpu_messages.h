@@ -26,13 +26,13 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/events/ipc/latency_info_param_traits.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
-#include "ui/latency_info/ipc/latency_info_param_traits.h"
-#include "ui/latency_info/latency_info.h"
 #include "url/ipc/url_param_traits.h"
 
 #if defined(OS_ANDROID)

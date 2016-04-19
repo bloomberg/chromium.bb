@@ -54,8 +54,8 @@
 #include "ipc/message_filter.h"
 #include "media/base/media_switches.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/events/latency_info.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/latency_info/latency_info.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"

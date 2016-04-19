@@ -28,8 +28,8 @@
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/gpu_export.h"
 #include "ipc/ipc_listener.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/swap_result.h"
-#include "ui/latency_info/latency_info.h"
 
 struct GPUCommandBufferConsoleMessage;
 

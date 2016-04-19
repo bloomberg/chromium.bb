@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_INPUT_EVENT_WITH_LATENCY_INFO_H_
 #define CONTENT_COMMON_INPUT_EVENT_WITH_LATENCY_INFO_H_
 
-#include "ui/latency_info/latency_info.h"
+#include "ui/events/latency_info.h"
 
 #include "content/common/input/web_input_event_traits.h"
 

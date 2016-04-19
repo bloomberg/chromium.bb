@@ -16,8 +16,8 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/vsync_provider.h"
-#include "ui/latency_info/latency_info.h"
 
 namespace content {
 

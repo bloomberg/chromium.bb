@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_LATENCY_INFO_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
-#define UI_LATENCY_INFO_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
+#ifndef UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
+#define UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
 
 #include "ipc/ipc_message_macros.h"
-#include "ui/latency_info/ipc/latency_info_ipc_export.h"
-#include "ui/latency_info/latency_info.h"
+#include "ui/events/ipc/events_ipc_export.h"
+#include "ui/events/latency_info.h"
 
 #undef IPC_MESSAGE_EXPORT
-#define IPC_MESSAGE_EXPORT LATENCY_INFO_IPC_EXPORT
+#define IPC_MESSAGE_EXPORT EVENTS_IPC_EXPORT
 
 IPC_ENUM_TRAITS_MAX_VALUE(ui::LatencyComponentType,
                           ui::LATENCY_COMPONENT_TYPE_LAST)
@@ -26,4 +26,4 @@ IPC_STRUCT_TRAITS_BEGIN(ui::LatencyInfo::InputCoordinate)
   IPC_STRUCT_TRAITS_MEMBER(y)
 IPC_STRUCT_TRAITS_END()
 
-#endif  // UI_LATENCY_INFO_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
+#endif // UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_

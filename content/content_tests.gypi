@@ -869,7 +869,6 @@
         '../ui/events/events.gyp:events_test_support',
         '../ui/events/events.gyp:gesture_detection',
         '../ui/gfx/gfx.gyp:gfx_test_support',
-        '../ui/latency_info/latency_info.gyp:latency_info',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/surface/surface.gyp:surface',
         '../url/url.gyp:url_lib',

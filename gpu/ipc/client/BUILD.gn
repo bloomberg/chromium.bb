@@ -57,9 +57,9 @@ source_set("ipc_client_sources") {
     "//gpu/config:config_sources",
     "//gpu/ipc/common:ipc_common_sources",
     "//ipc",
+    "//ui/events/ipc",
     "//ui/gfx/ipc",
     "//ui/gl",
-    "//ui/latency_info/ipc",
     "//url/ipc:url_ipc",
   ]
   if (use_ozone) {

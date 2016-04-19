@@ -12,7 +12,7 @@
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/common/input/web_input_event_queue.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/latency_info/latency_info.h"
+#include "ui/events/latency_info.h"
 
 namespace content {
 

@@ -10,7 +10,7 @@
 #include "content/common/input_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/event.h"
-#include "ui/latency_info/latency_info.h"
+#include "ui/events/latency_info.h"
 
 using blink::WebInputEvent;
 using blink::WebTouchEvent;

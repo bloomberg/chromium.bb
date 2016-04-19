@@ -20,10 +20,10 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_start.h"
+#include "ui/events/ipc/latency_info_param_traits.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
-#include "ui/latency_info/ipc/latency_info_param_traits.h"
 #include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
 

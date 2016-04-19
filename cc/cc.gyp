@@ -19,10 +19,10 @@
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/protobuf/protobuf.gyp:protobuf_lite',
+        '<(DEPTH)/ui/events/events.gyp:events_base',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
-        "<(DEPTH)/ui/latency_info/latency_info.gyp:latency_info",
       ],
       'variables': {
         'optimize': 'max',
@@ -665,9 +665,9 @@
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/gpu/gpu.gyp:gpu',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/ui/events/events.gyp:events_base',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
-        "<(DEPTH)/ui/latency_info/latency_info.gyp:latency_info",
       ],
       'defines': [
         'CC_SURFACES_IMPLEMENTATION=1',

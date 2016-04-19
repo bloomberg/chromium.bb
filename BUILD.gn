@@ -208,7 +208,6 @@ group("both_gn_and_gyp") {
       "//ui/display:display_unittests",
       "//ui/events:events_unittests",
       "//ui/gl:gl_unittests",
-      "//ui/latency_info:latency_info_unittests",
       "//ui/touch_selection:ui_touch_selection_unittests",
       "//url/ipc:url_ipc_unittests",
     ]

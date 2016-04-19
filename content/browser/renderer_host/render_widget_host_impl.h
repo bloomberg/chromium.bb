@@ -43,8 +43,8 @@
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/latency_info/latency_info.h"
 
 struct FrameHostMsg_HittestData_Params;
 struct ViewHostMsg_SelectionBounds_Params;

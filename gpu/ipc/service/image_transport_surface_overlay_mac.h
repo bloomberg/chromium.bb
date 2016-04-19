@@ -14,9 +14,9 @@
 #include "gpu/ipc/service/gpu_command_buffer_stub.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/events/latency_info.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_switching_observer.h"
-#include "ui/latency_info/latency_info.h"
 
 @class CAContext;
 @class CALayer;

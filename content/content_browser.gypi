@@ -64,7 +64,6 @@
     '../ui/events/events.gyp:gesture_detection',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
-    '../ui/latency_info/latency_info.gyp:latency_info',
     '../ui/resources/ui_resources.gyp:ui_resources',
     '../ui/snapshot/snapshot.gyp:snapshot',
     '../ui/surface/surface.gyp:surface',

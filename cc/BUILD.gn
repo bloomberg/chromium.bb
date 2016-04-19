@@ -552,10 +552,10 @@ component("cc") {
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
     "//media",
+    "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
-    "//ui/latency_info",
   ]
 
   defines = [ "CC_IMPLEMENTATION=1" ]
@@ -950,12 +950,12 @@ test("cc_unittests") {
     "//media",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/gl:test_support",
-    "//ui/latency_info",
   ]
 
   data_deps = [
