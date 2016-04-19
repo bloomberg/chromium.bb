@@ -10,6 +10,10 @@ class DepotToolsApi(recipe_api.RecipeApi):
     return self.package_repo_resource('download_from_google_storage.py')
 
   @property
+  def gsutil_py_path(self):
+    return self.package_repo_resource('gsutil.py')
+
+  @property
   def ninja_path(self):
     ninja_exe = 'ninja.exe' if self.m.platform.is_win else 'ninja'
     return self.package_repo_resource(ninja_exe)
