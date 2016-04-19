@@ -79,6 +79,9 @@ class NTPSnippet {
     expiry_date_ = expiry_date;
   }
 
+  const GURL& amp_url() const { return amp_url_; }
+  void set_amp_url(const GURL& amp_url) { amp_url_ = amp_url; }
+
   // Public for testing.
   static base::Time TimeFromJsonString(const std::string& timestamp_str);
   static std::string TimeToJsonString(const base::Time& time);
@@ -92,6 +95,7 @@ class NTPSnippet {
   std::string snippet_;
   base::Time publish_date_;
   base::Time expiry_date_;
+  GURL amp_url_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippet);
 };

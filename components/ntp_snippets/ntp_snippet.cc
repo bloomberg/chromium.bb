@@ -17,6 +17,8 @@ const char kSalientImageUrl[] = "thumbnailUrl";
 const char kSnippet[] = "snippet";
 const char kPublishDate[] = "creationTimestampSec";
 const char kExpiryDate[] = "expiryTimestampSec";
+const char kSourceCorpusInfo[] = "sourceCorpusInfo";
+const char kAmpUrl[] = "ampUrl";
 
 }  // namespace
 
@@ -64,6 +66,20 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
   if (dict.GetString(kExpiryDate, &expiry_timestamp_str))
     snippet->set_expiry_date(TimeFromJsonString(expiry_timestamp_str));
 
+  const base::ListValue* corpus_infos_list = nullptr;
+  if (dict.GetList(kSourceCorpusInfo, &corpus_infos_list)) {
+    for (base::Value* value : *corpus_infos_list) {
+      const base::DictionaryValue* dict_value = nullptr;
+      if (value->GetAsDictionary(&dict_value)) {
+        std::string amp_url;
+        if (dict_value->GetString(kAmpUrl, &amp_url)) {
+          snippet->set_amp_url(GURL(amp_url));
+          break;
+        }
+      }
+    }
+  }
+
   return snippet;
 }
 
@@ -85,7 +101,14 @@ std::unique_ptr<base::DictionaryValue> NTPSnippet::ToDictionary() const {
     dict->SetString(kPublishDate, TimeToJsonString(publish_date_));
   if (!expiry_date_.is_null())
     dict->SetString(kExpiryDate, TimeToJsonString(expiry_date_));
-
+  if (amp_url_.is_valid()) {
+    std::unique_ptr<base::ListValue> corpus_infos_list(new base::ListValue);
+    std::unique_ptr<base::DictionaryValue> corpus_info_dict(
+        new base::DictionaryValue);
+    corpus_info_dict->SetString(kAmpUrl, amp_url_.spec());
+    corpus_infos_list->Set(0, std::move(corpus_info_dict));
+    dict->Set(kSourceCorpusInfo, std::move(corpus_infos_list));
+  }
   return dict;
 }
 

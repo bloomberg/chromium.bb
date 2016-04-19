@@ -39,7 +39,10 @@ std::string GetTestJson(const std::string& content_creation_time_str,
       "\"snippet\" : \"Snippet\","
       "\"thumbnailUrl\" : \"http://localhost/salient_image\","
       "\"creationTimestampSec\" : \"%s\","
-      "\"expiryTimestampSec\" : \"%s\""
+      "\"expiryTimestampSec\" : \"%s\","
+      "\"sourceCorpusInfo\" : [ "
+      "{\"ampUrl\" : \"http://localhost/amp\"},"
+      "{\"corpusId\" : \"id\"}]"
       "}}"
       "]}";
 
@@ -181,6 +184,7 @@ TEST_F(NTPSnippetsServiceTest, Full) {
     EXPECT_EQ(snippet.salient_image_url(),
               GURL("http://localhost/salient_image"));
     EXPECT_EQ(GetDefaultCreationTime(), snippet.publish_date());
+    EXPECT_EQ(snippet.amp_url(), GURL("http://localhost/amp"));
   }
 }
 
