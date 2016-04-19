@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <functional>
+#include <memory>
 #include <queue>
 #include <unordered_map>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -291,14 +291,14 @@ class GPU_EXPORT SyncPointManager {
   ~SyncPointManager();
 
   // Creates/Destroy a sync point client which message processors should hold.
-  scoped_ptr<SyncPointClient> CreateSyncPointClient(
+  std::unique_ptr<SyncPointClient> CreateSyncPointClient(
       scoped_refptr<SyncPointOrderData> order_data,
       CommandBufferNamespace namespace_id,
       CommandBufferId client_id);
 
   // Creates a sync point client which cannot process order numbers but can only
   // Wait out of order.
-  scoped_ptr<SyncPointClient> CreateSyncPointClientWaiter();
+  std::unique_ptr<SyncPointClient> CreateSyncPointClientWaiter();
 
   // Finds the state of an already created sync point client.
   scoped_refptr<SyncPointClientState> GetSyncPointClientState(

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "gpu/vulkan/tests/native_window.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -40,7 +42,7 @@ class BasicVulkanTest : public testing::Test {
 };
 
 TEST_F(BasicVulkanTest, BasicVulkanSurface) {
-  scoped_ptr<VulkanSurface> surface =
+  std::unique_ptr<VulkanSurface> surface =
       VulkanSurface::CreateViewSurface(window());
   EXPECT_TRUE(surface);
   EXPECT_TRUE(surface->Initialize(GetDeviceQueue(),
@@ -49,7 +51,7 @@ TEST_F(BasicVulkanTest, BasicVulkanSurface) {
 }
 
 TEST_F(BasicVulkanTest, EmptyVulkanSwaps) {
-  scoped_ptr<VulkanSurface> surface =
+  std::unique_ptr<VulkanSurface> surface =
       VulkanSurface::CreateViewSurface(window());
   ASSERT_TRUE(surface);
   ASSERT_TRUE(surface->Initialize(GetDeviceQueue(),
@@ -67,7 +69,7 @@ TEST_F(BasicVulkanTest, EmptyVulkanSwaps) {
 }
 
 TEST_F(BasicVulkanTest, BasicRenderPass) {
-  scoped_ptr<VulkanSurface> surface =
+  std::unique_ptr<VulkanSurface> surface =
       VulkanSurface::CreateViewSurface(window());
   ASSERT_TRUE(surface);
   ASSERT_TRUE(surface->Initialize(GetDeviceQueue(),

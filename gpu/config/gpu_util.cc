@@ -4,6 +4,7 @@
 
 #include "gpu/config/gpu_util.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/command_line.h"
@@ -56,7 +57,7 @@ void MergeFeatureSets(std::set<int>* dst, const std::set<int>& src) {
 
 void ApplyGpuDriverBugWorkarounds(const GPUInfo& gpu_info,
                                   base::CommandLine* command_line) {
-  scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
+  std::unique_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
   list->LoadList(kGpuDriverBugListJson,
                  GpuControlList::kCurrentOsOnly);
   std::set<int> workarounds = list->MakeDecision(

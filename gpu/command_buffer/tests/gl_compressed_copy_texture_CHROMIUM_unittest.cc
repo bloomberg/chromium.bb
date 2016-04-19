@@ -11,6 +11,9 @@
 #include <GLES2/gl2extchromium.h>
 #include <stdint.h>
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -161,37 +164,30 @@ TEST_F(GLCompressedCopyTextureCHROMIUMTest, InternalFormat) {
     Image(const GLint format, const uint8_t* data, const GLsizei data_size)
         : format(format), data(data), data_size(data_size) {}
   };
-  std::vector<scoped_ptr<Image>> supported_formats;
+  std::vector<std::unique_ptr<Image>> supported_formats;
 
   if (GLTestHelper::HasExtension("GL_AMD_compressed_ATC_texture") ||
       GLTestHelper::HasExtension("GL_ATI_texture_compression_atitc")) {
-    supported_formats.push_back(make_scoped_ptr(new Image(
-        GL_ATC_RGB_AMD,
-        kCompressedImageATC,
-        sizeof(kCompressedImageATC))));
-    supported_formats.push_back(make_scoped_ptr(new Image(
-        GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD,
-        kCompressedImageATCIA,
-        sizeof(kCompressedImageATCIA))));
+    supported_formats.push_back(base::WrapUnique(new Image(
+        GL_ATC_RGB_AMD, kCompressedImageATC, sizeof(kCompressedImageATC))));
+    supported_formats.push_back(base::WrapUnique(
+        new Image(GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD, kCompressedImageATCIA,
+                  sizeof(kCompressedImageATCIA))));
   }
   if (GLTestHelper::HasExtension("GL_EXT_texture_compression_dxt1")) {
-    supported_formats.push_back(make_scoped_ptr(new Image(
-        GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
-        kCompressedImageDXT1,
-        sizeof(kCompressedImageDXT1))));
+    supported_formats.push_back(base::WrapUnique(
+        new Image(GL_COMPRESSED_RGB_S3TC_DXT1_EXT, kCompressedImageDXT1,
+                  sizeof(kCompressedImageDXT1))));
   }
   if (GLTestHelper::HasExtension("GL_ANGLE_texture_compression_dxt5") ||
       GLTestHelper::HasExtension("GL_EXT_texture_compression_s3tc")) {
-    supported_formats.push_back(make_scoped_ptr(new Image(
-        GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
-        kCompressedImageDXT5,
-        sizeof(kCompressedImageDXT5))));
+    supported_formats.push_back(base::WrapUnique(
+        new Image(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, kCompressedImageDXT5,
+                  sizeof(kCompressedImageDXT5))));
   }
   if (GLTestHelper::HasExtension("GL_OES_compressed_ETC1_RGB8_texture")) {
-    supported_formats.push_back(make_scoped_ptr(new Image(
-        GL_ETC1_RGB8_OES,
-        kCompressedImageETC1,
-        sizeof(kCompressedImageETC1))));
+    supported_formats.push_back(base::WrapUnique(new Image(
+        GL_ETC1_RGB8_OES, kCompressedImageETC1, sizeof(kCompressedImageETC1))));
   }
 
   for (const auto& image : supported_formats) {

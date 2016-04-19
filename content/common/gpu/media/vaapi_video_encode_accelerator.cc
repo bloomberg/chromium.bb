@@ -5,6 +5,8 @@
 #include "content/common/gpu/media/vaapi_video_encode_accelerator.h"
 
 #include <string.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/memory.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -25,7 +26,7 @@ GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
     const gfx::Size& size,
     gfx::BufferFormat format,
     const DestructionCallback& callback,
-    scoped_ptr<base::SharedMemory> shared_memory,
+    std::unique_ptr<base::SharedMemory> shared_memory,
     size_t offset,
     int stride)
     : GpuMemoryBufferImpl(id, size, format, callback),
@@ -38,7 +39,7 @@ GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
 GpuMemoryBufferImplSharedMemory::~GpuMemoryBufferImplSharedMemory() {}
 
 // static
-scoped_ptr<GpuMemoryBufferImplSharedMemory>
+std::unique_ptr<GpuMemoryBufferImplSharedMemory>
 GpuMemoryBufferImplSharedMemory::Create(gfx::GpuMemoryBufferId id,
                                         const gfx::Size& size,
                                         gfx::BufferFormat format,
@@ -47,11 +48,11 @@ GpuMemoryBufferImplSharedMemory::Create(gfx::GpuMemoryBufferId id,
   if (!gfx::BufferSizeForBufferFormatChecked(size, format, &buffer_size))
     return nullptr;
 
-  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   if (!shared_memory->CreateAndMapAnonymous(buffer_size))
     return nullptr;
 
-  return make_scoped_ptr(new GpuMemoryBufferImplSharedMemory(
+  return base::WrapUnique(new GpuMemoryBufferImplSharedMemory(
       id, size, format, callback, std::move(shared_memory), 0,
       gfx::RowSizeForBufferFormat(size.width(), format, 0)));
 }
@@ -82,7 +83,7 @@ GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
 }
 
 // static
-scoped_ptr<GpuMemoryBufferImplSharedMemory>
+std::unique_ptr<GpuMemoryBufferImplSharedMemory>
 GpuMemoryBufferImplSharedMemory::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
@@ -91,9 +92,9 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
     const DestructionCallback& callback) {
   DCHECK(base::SharedMemory::IsHandleValid(handle.handle));
 
-  return make_scoped_ptr(new GpuMemoryBufferImplSharedMemory(
+  return base::WrapUnique(new GpuMemoryBufferImplSharedMemory(
       handle.id, size, format, callback,
-      make_scoped_ptr(new base::SharedMemory(handle.handle, false)),
+      base::WrapUnique(new base::SharedMemory(handle.handle, false)),
       handle.offset, handle.stride));
 }
 

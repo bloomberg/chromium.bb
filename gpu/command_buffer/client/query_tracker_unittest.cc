@@ -10,9 +10,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
@@ -45,10 +45,10 @@ class QuerySyncManagerTest : public testing::Test {
     command_buffer_.reset();
   }
 
-  scoped_ptr<CommandBuffer> command_buffer_;
-  scoped_ptr<GLES2CmdHelper> helper_;
-  scoped_ptr<MappedMemoryManager> mapped_memory_;
-  scoped_ptr<QuerySyncManager> sync_manager_;
+  std::unique_ptr<CommandBuffer> command_buffer_;
+  std::unique_ptr<GLES2CmdHelper> helper_;
+  std::unique_ptr<MappedMemoryManager> mapped_memory_;
+  std::unique_ptr<QuerySyncManager> sync_manager_;
 };
 
 TEST_F(QuerySyncManagerTest, Basic) {
@@ -113,10 +113,10 @@ class QueryTrackerTest : public testing::Test {
 
   uint32_t GetFlushGeneration() { return helper_->flush_generation(); }
 
-  scoped_ptr<CommandBuffer> command_buffer_;
-  scoped_ptr<GLES2CmdHelper> helper_;
-  scoped_ptr<MappedMemoryManager> mapped_memory_;
-  scoped_ptr<QueryTracker> query_tracker_;
+  std::unique_ptr<CommandBuffer> command_buffer_;
+  std::unique_ptr<GLES2CmdHelper> helper_;
+  std::unique_ptr<MappedMemoryManager> mapped_memory_;
+  std::unique_ptr<QueryTracker> query_tracker_;
 };
 
 TEST_F(QueryTrackerTest, Basic) {

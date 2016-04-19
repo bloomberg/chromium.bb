@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
@@ -105,7 +106,7 @@ void CommandBufferService::SetGetBuffer(int32_t transfer_buffer_id) {
 }
 
 void CommandBufferService::SetSharedStateBuffer(
-    scoped_ptr<BufferBacking> shared_state_buffer) {
+    std::unique_ptr<BufferBacking> shared_state_buffer) {
   shared_state_buffer_ = std::move(shared_state_buffer);
   DCHECK(shared_state_buffer_->GetSize() >= sizeof(*shared_state_));
 
@@ -124,7 +125,7 @@ scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(size_t size,
                                                                  int32_t* id) {
   *id = -1;
 
-  scoped_ptr<SharedMemory> shared_memory(new SharedMemory());
+  std::unique_ptr<SharedMemory> shared_memory(new SharedMemory());
   if (!shared_memory->CreateAndMapAnonymous(size)) {
     if (error_ == error::kNoError)
       error_ = gpu::error::kOutOfBounds;
@@ -162,7 +163,7 @@ scoped_refptr<Buffer> CommandBufferService::GetTransferBuffer(int32_t id) {
 
 bool CommandBufferService::RegisterTransferBuffer(
     int32_t id,
-    scoped_ptr<BufferBacking> buffer) {
+    std::unique_ptr<BufferBacking> buffer) {
   return transfer_buffer_manager_->RegisterTransferBuffer(id,
                                                           std::move(buffer));
 }

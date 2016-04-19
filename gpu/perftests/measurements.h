@@ -5,9 +5,9 @@
 #ifndef GPU_PERFTESTS_MEASUREMENTS_H_
 #define GPU_PERFTESTS_MEASUREMENTS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
 namespace gfx {
@@ -49,7 +49,7 @@ class MeasurementTimers {
  private:
   base::TimeTicks wall_time_start_;
   base::ThreadTicks cpu_time_start_;
-  scoped_ptr<gfx::GPUTimer> gpu_timer_;
+  std::unique_ptr<gfx::GPUTimer> gpu_timer_;
 
   base::TimeDelta wall_time_;
   base::TimeDelta cpu_time_;

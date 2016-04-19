@@ -11,6 +11,8 @@
 #include <stddef.h>
 #include <string.h>
 
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
 
@@ -61,7 +63,7 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
       GpuMemoryBufferImpl::DestructionCallback destroy_callback =
           TestFixture::AllocateGpuMemoryBuffer(kBufferSize, format, usage,
                                                &handle, &destroyed);
-      scoped_ptr<TypeParam> buffer(TypeParam::CreateFromHandle(
+      std::unique_ptr<TypeParam> buffer(TypeParam::CreateFromHandle(
           handle, kBufferSize, format, usage, destroy_callback));
       ASSERT_TRUE(buffer);
       EXPECT_EQ(buffer->GetFormat(), format);
@@ -88,7 +90,7 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, Map) {
         TestFixture::AllocateGpuMemoryBuffer(
             kBufferSize, format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
             &handle, nullptr);
-    scoped_ptr<TypeParam> buffer(TypeParam::CreateFromHandle(
+    std::unique_ptr<TypeParam> buffer(TypeParam::CreateFromHandle(
         handle, kBufferSize, format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
         destroy_callback));
     ASSERT_TRUE(buffer);
@@ -104,7 +106,7 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, Map) {
           gfx::RowSizeForBufferFormat(kBufferSize.width(), format, plane);
       EXPECT_GT(row_size_in_bytes, 0u);
 
-      scoped_ptr<char[]> data(new char[row_size_in_bytes]);
+      std::unique_ptr<char[]> data(new char[row_size_in_bytes]);
       memset(data.get(), 0x2a + plane, row_size_in_bytes);
 
       size_t height = kBufferSize.height() /
@@ -139,7 +141,7 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
             kBufferSize, format,
             gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT, &handle,
             nullptr);
-    scoped_ptr<TypeParam> buffer(TypeParam::CreateFromHandle(
+    std::unique_ptr<TypeParam> buffer(TypeParam::CreateFromHandle(
         handle, kBufferSize, format,
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT,
         destroy_callback));
@@ -155,7 +157,7 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
           gfx::RowSizeForBufferFormat(kBufferSize.width(), format, plane);
       EXPECT_GT(row_size_in_bytes, 0u);
 
-      scoped_ptr<char[]> data(new char[row_size_in_bytes]);
+      std::unique_ptr<char[]> data(new char[row_size_in_bytes]);
       memset(data.get(), 0x2a + plane, row_size_in_bytes);
 
       size_t height = kBufferSize.height() /
@@ -179,7 +181,7 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
       const size_t row_size_in_bytes =
           gfx::RowSizeForBufferFormat(kBufferSize.width(), format, plane);
 
-      scoped_ptr<char[]> data(new char[row_size_in_bytes]);
+      std::unique_ptr<char[]> data(new char[row_size_in_bytes]);
       memset(data.get(), 0x2a + plane, row_size_in_bytes);
 
       size_t height = kBufferSize.height() /

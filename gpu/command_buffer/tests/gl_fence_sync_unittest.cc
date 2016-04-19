@@ -6,7 +6,8 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
@@ -36,7 +37,7 @@ class GLFenceSyncTest : public testing::Test {
     sync_point_manager_.reset();
   }
 
-  scoped_ptr<SyncPointManager> sync_point_manager_;
+  std::unique_ptr<SyncPointManager> sync_point_manager_;
   GLManager gl1_;
   GLManager gl2_;
 };

@@ -6,12 +6,12 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/containers/small_map.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/perftests/measurements.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -84,7 +84,7 @@ GLuint LoadShader(const GLenum type, const char* const src) {
     GLint len = 0;
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
     if (len > 1) {
-      scoped_ptr<char[]> error_log(new char[len]);
+      std::unique_ptr<char[]> error_log(new char[len]);
       glGetShaderInfoLog(shader, len, NULL, error_log.get());
       LOG(ERROR) << "Error compiling shader: " << error_log.get();
     }

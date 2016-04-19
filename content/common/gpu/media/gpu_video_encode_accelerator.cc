@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"

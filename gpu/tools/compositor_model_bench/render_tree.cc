@@ -4,6 +4,7 @@
 
 #include "gpu/tools/compositor_model_bench/render_tree.h"
 
+#include <memory>
 #include <sstream>
 #include <vector>
 
@@ -12,9 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-
 #include "gpu/tools/compositor_model_bench/shaders.h"
 
 using base::JSONReader;
@@ -459,7 +458,7 @@ RenderNode* BuildRenderTreeFromFile(const base::FilePath& path) {
 
   int error_code = 0;
   string error_message;
-  scoped_ptr<base::Value> root = JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> root = JSONReader::ReadAndReturnError(
       contents, base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error_message);
   if (!root) {
     LOG(ERROR) << "Failed to parse JSON file " << path.LossyDisplayName() <<

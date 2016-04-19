@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
 #include "gpu/config/gpu_blacklist.h"
+
+#include <memory>
+
 #include "gpu/config/gpu_control_list_jsons.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
@@ -46,7 +48,7 @@ class GpuBlacklistTest : public testing::Test {
         "  ]\n"
         "}";
 
-    scoped_ptr<GpuBlacklist> blacklist(GpuBlacklist::Create());
+    std::unique_ptr<GpuBlacklist> blacklist(GpuBlacklist::Create());
     EXPECT_TRUE(blacklist->LoadList(json, GpuBlacklist::kAllOs));
     std::set<int> type = blacklist->MakeDecision(
         GpuBlacklist::kOsMacosx, kOsVersion, gpu_info());
@@ -74,7 +76,7 @@ class GpuBlacklistTest : public testing::Test {
 };
 
 TEST_F(GpuBlacklistTest, CurrentBlacklistValidation) {
-  scoped_ptr<GpuBlacklist> blacklist(GpuBlacklist::Create());
+  std::unique_ptr<GpuBlacklist> blacklist(GpuBlacklist::Create());
   EXPECT_TRUE(blacklist->LoadList(
       kSoftwareRenderingListJson, GpuBlacklist::kAllOs));
 }

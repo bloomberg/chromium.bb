@@ -5,6 +5,8 @@
 #include "content/common/gpu/media/gpu_jpeg_decode_accelerator.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"

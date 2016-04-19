@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 
 #include "base/bind.h"
@@ -37,12 +38,12 @@ class SyncPointManagerTest : public testing::Test {
     *client_id_ptr = client_id;
   }
 
-  scoped_ptr<SyncPointManager> sync_point_manager_;
+  std::unique_ptr<SyncPointManager> sync_point_manager_;
 };
 
 struct SyncPointStream {
   scoped_refptr<SyncPointOrderData> order_data;
-  scoped_ptr<SyncPointClient> client;
+  std::unique_ptr<SyncPointClient> client;
   std::queue<uint32_t> order_numbers;
 
   SyncPointStream(SyncPointManager* sync_point_manager,
@@ -120,7 +121,7 @@ TEST_F(SyncPointManagerTest, SyncPointClientRegistration) {
 
   scoped_refptr<SyncPointOrderData> order_data = SyncPointOrderData::Create();
 
-  scoped_ptr<SyncPointClient> client =
+  std::unique_ptr<SyncPointClient> client =
       sync_point_manager_->CreateSyncPointClient(order_data, kNamespaceId,
                                                  kBufferId);
 
@@ -136,7 +137,7 @@ TEST_F(SyncPointManagerTest, BasicFenceSyncRelease) {
   const CommandBufferId kBufferId = CommandBufferId::FromUnsafeValue(0x123);
 
   scoped_refptr<SyncPointOrderData> order_data = SyncPointOrderData::Create();
-  scoped_ptr<SyncPointClient> client =
+  std::unique_ptr<SyncPointClient> client =
       sync_point_manager_->CreateSyncPointClient(order_data, kNamespaceId,
                                                  kBufferId);
   scoped_refptr<SyncPointClientState> client_state = client->client_state();
@@ -161,10 +162,10 @@ TEST_F(SyncPointManagerTest, MultipleClientsPerOrderData) {
   const CommandBufferId kBufferId2 = CommandBufferId::FromUnsafeValue(0x234);
 
   scoped_refptr<SyncPointOrderData> order_data = SyncPointOrderData::Create();
-  scoped_ptr<SyncPointClient> client1 =
+  std::unique_ptr<SyncPointClient> client1 =
       sync_point_manager_->CreateSyncPointClient(order_data, kNamespaceId,
                                                  kBufferId1);
-  scoped_ptr<SyncPointClient> client2 =
+  std::unique_ptr<SyncPointClient> client2 =
       sync_point_manager_->CreateSyncPointClient(order_data, kNamespaceId,
                                                  kBufferId2);
 

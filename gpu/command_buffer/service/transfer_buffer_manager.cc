@@ -7,9 +7,9 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -58,7 +58,7 @@ bool TransferBufferManager::Initialize() {
 
 bool TransferBufferManager::RegisterTransferBuffer(
     int32_t id,
-    scoped_ptr<BufferBacking> buffer_backing) {
+    std::unique_ptr<BufferBacking> buffer_backing) {
   if (id <= 0) {
     DVLOG(0) << "Cannot register transfer buffer with non-positive ID.";
     return false;

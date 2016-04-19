@@ -5,7 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "gpu/gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -19,14 +20,14 @@ class GPU_EXPORT GpuMemoryBufferManager {
   GpuMemoryBufferManager();
 
   // Allocates a GpuMemoryBuffer that can be shared with another process.
-  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+  virtual std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       int32_t surface_id) = 0;
 
   // Creates a GpuMemoryBuffer from existing handle.
-  virtual scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(
+  virtual std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format) = 0;

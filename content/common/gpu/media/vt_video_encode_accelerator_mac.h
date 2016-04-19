@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_VT_VIDEO_ENCODE_ACCELERATOR_MAC_H_
 #define CONTENT_COMMON_GPU_MEDIA_VT_VIDEO_ENCODE_ACCELERATOR_MAC_H_
 
+#include <memory>
+
 #include "base/mac/scoped_cftyperef.h"
 #include "content/common/content_export.h"
 #include "media/base/mac/videotoolbox_glue.h"

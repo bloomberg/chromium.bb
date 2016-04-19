@@ -8,9 +8,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -201,7 +201,7 @@ bool GLTestHelper::CheckPixels(GLint x,
                                GLint tolerance,
                                const uint8_t* color) {
   GLsizei size = width * height * 4;
-  scoped_ptr<uint8_t[]> pixels(new uint8_t[size]);
+  std::unique_ptr<uint8_t[]> pixels(new uint8_t[size]);
   memset(pixels.get(), kCheckClearValue, size);
   glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
   int bad_count = 0;
@@ -273,7 +273,7 @@ bool GLTestHelper::SaveBackbufferAsBMP(
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
   int num_pixels = width * height;
   int size = num_pixels * 4;
-  scoped_ptr<uint8_t[]> data(new uint8_t[size]);
+  std::unique_ptr<uint8_t[]> data(new uint8_t[size]);
   uint8_t* pixels = data.get();
   glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 

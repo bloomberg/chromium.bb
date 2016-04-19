@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -250,10 +251,10 @@ class GPU_EXPORT GpuCommandBufferStub
   const int32_t route_id_;
   uint32_t last_flush_count_;
 
-  scoped_ptr<CommandBufferService> command_buffer_;
-  scoped_ptr<gles2::GLES2Decoder> decoder_;
-  scoped_ptr<CommandExecutor> executor_;
-  scoped_ptr<SyncPointClient> sync_point_client_;
+  std::unique_ptr<CommandBufferService> command_buffer_;
+  std::unique_ptr<gles2::GLES2Decoder> decoder_;
+  std::unique_ptr<CommandExecutor> executor_;
+  std::unique_ptr<SyncPointClient> sync_point_client_;
   scoped_refptr<gfx::GLSurface> surface_;
   gfx::GLSurface::Format surface_format_;
 
@@ -274,8 +275,8 @@ class GPU_EXPORT GpuCommandBufferStub
   GURL active_url_;
   size_t active_url_hash_;
 
-  scoped_ptr<WaitForCommandState> wait_for_token_;
-  scoped_ptr<WaitForCommandState> wait_for_get_offset_;
+  std::unique_ptr<WaitForCommandState> wait_for_token_;
+  std::unique_ptr<WaitForCommandState> wait_for_get_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };

@@ -2359,7 +2359,7 @@ void TextureManager::ValidateAndDoTexImage(
       return;
     }
     DoTexImageArguments new_args = args;
-    scoped_ptr<char[]> zero(new char[args.pixels_size]);
+    std::unique_ptr<char[]> zero(new char[args.pixels_size]);
     memset(zero.get(), 0, args.pixels_size);
     for (GLenum face : undefined_faces) {
       new_args.target = face;

@@ -4,9 +4,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/config/gpu_control_list_jsons.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
@@ -47,13 +48,13 @@ class GpuDriverBugListTest : public testing::Test {
 };
 
 TEST_F(GpuDriverBugListTest, CurrentDriverBugListValidation) {
-  scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
+  std::unique_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
   std::string json;
   EXPECT_TRUE(list->LoadList(kGpuDriverBugListJson, GpuControlList::kAllOs));
 }
 
 TEST_F(GpuDriverBugListTest, CurrentListForARM) {
-  scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
+  std::unique_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
   EXPECT_TRUE(list->LoadList(kGpuDriverBugListJson, GpuControlList::kAllOs));
 
   GPUInfo gpu_info;
@@ -65,7 +66,7 @@ TEST_F(GpuDriverBugListTest, CurrentListForARM) {
 }
 
 TEST_F(GpuDriverBugListTest, CurrentListForImagination) {
-  scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
+  std::unique_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
   EXPECT_TRUE(list->LoadList(kGpuDriverBugListJson, GpuControlList::kAllOs));
 
   GPUInfo gpu_info;
@@ -103,7 +104,7 @@ TEST_F(GpuDriverBugListTest, GpuSwitching) {
         ]
       }
   );
-  scoped_ptr<GpuDriverBugList> driver_bug_list(GpuDriverBugList::Create());
+  std::unique_ptr<GpuDriverBugList> driver_bug_list(GpuDriverBugList::Create());
   EXPECT_TRUE(driver_bug_list->LoadList(json, GpuControlList::kAllOs));
   std::set<int> switching = driver_bug_list->MakeDecision(
       GpuControlList::kOsMacosx, "10.8", gpu_info());
@@ -179,7 +180,7 @@ TEST_F(GpuDriverBugListTest, NVIDIANumberingScheme) {
       }
   );
 
-  scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
+  std::unique_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
   EXPECT_TRUE(list->LoadList(json, GpuControlList::kAllOs));
 
   GPUInfo gpu_info;

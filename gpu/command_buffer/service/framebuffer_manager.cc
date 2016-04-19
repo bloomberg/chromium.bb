@@ -444,7 +444,7 @@ void Framebuffer::ClearUnclearedIntRenderbufferAttachments(
 }
 
 bool Framebuffer::PrepareDrawBuffersForClear() const {
-  scoped_ptr<GLenum[]> buffers(new GLenum[manager_->max_draw_buffers_]);
+  std::unique_ptr<GLenum[]> buffers(new GLenum[manager_->max_draw_buffers_]);
   for (uint32_t i = 0; i < manager_->max_draw_buffers_; ++i)
     buffers[i] = GL_NONE;
   for (AttachmentMap::const_iterator it = attachments_.begin();

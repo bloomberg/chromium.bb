@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_GPU_GPU_VIDEO_DECODE_ACCELERATOR_FACTORY_H_
 #define CONTENT_PUBLIC_GPU_GPU_VIDEO_DECODE_ACCELERATOR_FACTORY_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"

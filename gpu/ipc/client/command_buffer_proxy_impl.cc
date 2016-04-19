@@ -69,7 +69,7 @@ CommandBufferProxyImpl::~CommandBufferProxyImpl() {
 }
 
 bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
-  scoped_ptr<base::AutoLock> lock;
+  std::unique_ptr<base::AutoLock> lock;
   if (lock_)
     lock.reset(new base::AutoLock(*lock_));
   bool handled = true;
@@ -92,7 +92,7 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void CommandBufferProxyImpl::OnChannelError() {
-  scoped_ptr<base::AutoLock> lock;
+  std::unique_ptr<base::AutoLock> lock;
   if (lock_)
     lock.reset(new base::AutoLock(*lock_));
 
@@ -135,7 +135,7 @@ void CommandBufferProxyImpl::OnConsoleMessage(
 }
 
 void CommandBufferProxyImpl::AddDeletionObserver(DeletionObserver* observer) {
-  scoped_ptr<base::AutoLock> lock;
+  std::unique_ptr<base::AutoLock> lock;
   if (lock_)
     lock.reset(new base::AutoLock(*lock_));
   deletion_observers_.AddObserver(observer);
@@ -143,7 +143,7 @@ void CommandBufferProxyImpl::AddDeletionObserver(DeletionObserver* observer) {
 
 void CommandBufferProxyImpl::RemoveDeletionObserver(
     DeletionObserver* observer) {
-  scoped_ptr<base::AutoLock> lock;
+  std::unique_ptr<base::AutoLock> lock;
   if (lock_)
     lock.reset(new base::AutoLock(*lock_));
   deletion_observers_.RemoveObserver(observer);
@@ -346,7 +346,7 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
 
   int32_t new_id = channel_->ReserveTransferBufferId();
 
-  scoped_ptr<base::SharedMemory> shared_memory(
+  std::unique_ptr<base::SharedMemory> shared_memory(
       channel_->factory()->AllocateSharedMemory(size));
   if (!shared_memory) {
     if (last_state_.error == gpu::error::kNoError)
@@ -475,7 +475,7 @@ int32_t CommandBufferProxyImpl::CreateGpuMemoryBufferImage(
     unsigned internal_format,
     unsigned usage) {
   CheckLock();
-  scoped_ptr<gfx::GpuMemoryBuffer> buffer(
+  std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
       channel_->gpu_memory_buffer_manager()->AllocateGpuMemoryBuffer(
           gfx::Size(width, height),
           gpu::DefaultBufferFormatForImageFormat(internal_format),
@@ -719,7 +719,7 @@ void CommandBufferProxyImpl::InvalidGpuReply() {
 }
 
 void CommandBufferProxyImpl::InvalidGpuReplyOnClientThread() {
-  scoped_ptr<base::AutoLock> lock;
+  std::unique_ptr<base::AutoLock> lock;
   if (lock_)
     lock.reset(new base::AutoLock(*lock_));
   OnDestroyed(gpu::error::kInvalidGpuMessage, gpu::error::kLostContext);

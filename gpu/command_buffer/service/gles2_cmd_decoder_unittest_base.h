@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -631,11 +633,11 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const char* kOutputVariable1NameESSL3;
 
   // Use StrictMock to make 100% sure we know how GL will be called.
-  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
+  std::unique_ptr<::testing::StrictMock<::gfx::MockGLInterface>> gl_;
   scoped_refptr<gfx::GLSurfaceStub> surface_;
   scoped_refptr<GLContextMock> context_;
-  scoped_ptr<MockGLES2Decoder> mock_decoder_;
-  scoped_ptr<GLES2Decoder> decoder_;
+  std::unique_ptr<MockGLES2Decoder> mock_decoder_;
+  std::unique_ptr<GLES2Decoder> decoder_;
   MemoryTracker* memory_tracker_;
 
   GLuint client_buffer_id_;
@@ -758,7 +760,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
 
   void SetupInitStateManualExpectations(bool es3_capable);
 
-  scoped_ptr< ::testing::StrictMock<MockCommandBufferEngine> > engine_;
+  std::unique_ptr<::testing::StrictMock<MockCommandBufferEngine>> engine_;
   GpuPreferences gpu_preferences_;
   scoped_refptr<ContextGroup> group_;
   MockGLStates gl_states_;

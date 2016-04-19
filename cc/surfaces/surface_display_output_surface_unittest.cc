@@ -4,6 +4,8 @@
 
 #include "cc/surfaces/surface_display_output_surface.h"
 
+#include <memory>
+
 #include "cc/surfaces/onscreen_display_client.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
@@ -115,7 +117,7 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
  protected:
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
-  scoped_ptr<BackToBackBeginFrameSource> begin_frame_source_;
+  std::unique_ptr<BackToBackBeginFrameSource> begin_frame_source_;
   SurfaceIdAllocator allocator_;
 
   const gfx::Size display_size_;

@@ -8,10 +8,10 @@
 #ifndef GPU_TOOLS_COMPOSITOR_MODEL_BENCH_RENDER_MODELS_H_
 #define GPU_TOOLS_COMPOSITOR_MODEL_BENCH_RENDER_MODELS_H_
 
-#include "gpu/tools/compositor_model_bench/render_tree.h"
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "gpu/tools/compositor_model_bench/render_tree.h"
 
 enum RenderModel {
   ForwardRenderModel
@@ -27,7 +27,7 @@ class RenderModelSimulator {
 
  protected:
   explicit RenderModelSimulator(RenderNode* root);
-  scoped_ptr<RenderNode> root_;
+  std::unique_ptr<RenderNode> root_;
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(RenderModelSimulator);

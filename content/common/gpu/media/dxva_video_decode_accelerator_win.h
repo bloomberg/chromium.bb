@@ -9,6 +9,7 @@
 #include <d3d9.h>
 #include <initguid.h>
 #include <stdint.h>
+
 // Work around bug in this header by disabling the relevant warning for it.
 // https://connect.microsoft.com/VisualStudio/feedback/details/911260/dxva2api-h-in-win8-sdk-triggers-c4201-with-w4
 #pragma warning(push)
@@ -19,6 +20,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"

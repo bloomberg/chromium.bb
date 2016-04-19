@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -572,8 +574,8 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(GLint in_read_x,
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 
   GLint unpadded_row_size = emu.ComputeImageDataSize(in_read_width, 1);
-  scoped_ptr<int8_t[]> zero(new int8_t[unpadded_row_size]);
-  scoped_ptr<int8_t[]> pack(new int8_t[kPackAlignment]);
+  std::unique_ptr<int8_t[]> zero(new int8_t[unpadded_row_size]);
+  std::unique_ptr<int8_t[]> pack(new int8_t[kPackAlignment]);
   memset(zero.get(), kInitialMemoryValue, unpadded_row_size);
   memset(pack.get(), kInitialMemoryValue, kPackAlignment);
   for (GLint yy = 0; yy < in_read_height; ++yy) {

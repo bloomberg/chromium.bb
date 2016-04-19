@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/media/vt_video_encode_accelerator_mac.h"
 
+#include <memory>
+
 #include "base/thread_task_runner_handle.h"
 #include "media/base/mac/coremedia_glue.h"
 #include "media/base/mac/corevideo_glue.h"

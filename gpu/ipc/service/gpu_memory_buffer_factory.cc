@@ -5,6 +5,7 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)
@@ -22,15 +23,16 @@
 namespace gpu {
 
 // static
-scoped_ptr<GpuMemoryBufferFactory> GpuMemoryBufferFactory::CreateNativeType() {
+std::unique_ptr<GpuMemoryBufferFactory>
+GpuMemoryBufferFactory::CreateNativeType() {
 #if defined(OS_MACOSX)
-  return make_scoped_ptr(new GpuMemoryBufferFactoryIOSurface);
+  return base::WrapUnique(new GpuMemoryBufferFactoryIOSurface);
 #endif
 #if defined(OS_ANDROID)
-  return make_scoped_ptr(new GpuMemoryBufferFactorySurfaceTexture);
+  return base::WrapUnique(new GpuMemoryBufferFactorySurfaceTexture);
 #endif
 #if defined(USE_OZONE)
-  return make_scoped_ptr(new GpuMemoryBufferFactoryOzoneNativePixmap);
+  return base::WrapUnique(new GpuMemoryBufferFactoryOzoneNativePixmap);
 #endif
   NOTREACHED();
   return nullptr;

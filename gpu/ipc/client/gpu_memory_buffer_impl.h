@@ -5,9 +5,10 @@
 #ifndef GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
 #define GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/gpu_export.h"
 #include "ui/gfx/geometry/size.h"
@@ -26,7 +27,7 @@ class GPU_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // should match what was used to allocate the |handle|. |callback| is
   // called when instance is deleted, which is not necessarily on the same
   // thread as this function was called on and instance was created on.
-  static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
+  static std::unique_ptr<GpuMemoryBufferImpl> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,

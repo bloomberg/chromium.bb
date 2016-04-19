@@ -4,6 +4,7 @@
 
 #include "gpu/ipc/service/gpu_channel_test_common.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -84,13 +85,13 @@ TestGpuChannelManager::~TestGpuChannelManager() {
   gpu_channels_.clear();
 }
 
-scoped_ptr<GpuChannel> TestGpuChannelManager::CreateGpuChannel(
+std::unique_ptr<GpuChannel> TestGpuChannelManager::CreateGpuChannel(
     int client_id,
     uint64_t client_tracing_id,
     bool preempts,
     bool allow_view_command_buffers,
     bool allow_real_time_streams) {
-  return make_scoped_ptr(new TestGpuChannel(
+  return base::WrapUnique(new TestGpuChannel(
       this, sync_point_manager(), share_group(), mailbox_manager(),
       preempts ? preemption_flag() : nullptr,
       preempts ? nullptr : preemption_flag(), task_runner_.get(),

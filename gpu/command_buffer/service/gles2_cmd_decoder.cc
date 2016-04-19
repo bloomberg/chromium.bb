@@ -13,13 +13,13 @@
 #include <cmath>
 #include <list>
 #include <map>
+#include <memory>
 #include <queue>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -401,7 +401,7 @@ class ScopedFrameBufferReadPixelHelper {
  private:
   GLuint temp_texture_id_ = 0;
   GLuint temp_fbo_id_ = 0;
-  scoped_ptr<ScopedFrameBufferBinder> fbo_binder_;
+  std::unique_ptr<ScopedFrameBufferBinder> fbo_binder_;
   DISALLOW_COPY_AND_ASSIGN(ScopedFrameBufferReadPixelHelper);
 };
 
@@ -527,7 +527,7 @@ struct FenceCallback {
     DCHECK(fence);
   }
   std::vector<base::Closure> callbacks;
-  scoped_ptr<gfx::GLFence> fence;
+  std::unique_ptr<gfx::GLFence> fence;
 };
 
 // }  // anonymous namespace.
@@ -2016,11 +2016,11 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // depth and stencil buffers are separate. With regular GL there is a single
   // packed depth stencil buffer in offscreen_target_depth_render_buffer_.
   // offscreen_target_stencil_render_buffer_ is unused.
-  scoped_ptr<BackFramebuffer> offscreen_target_frame_buffer_;
-  scoped_ptr<BackTexture> offscreen_target_color_texture_;
-  scoped_ptr<BackRenderbuffer> offscreen_target_color_render_buffer_;
-  scoped_ptr<BackRenderbuffer> offscreen_target_depth_render_buffer_;
-  scoped_ptr<BackRenderbuffer> offscreen_target_stencil_render_buffer_;
+  std::unique_ptr<BackFramebuffer> offscreen_target_frame_buffer_;
+  std::unique_ptr<BackTexture> offscreen_target_color_texture_;
+  std::unique_ptr<BackRenderbuffer> offscreen_target_color_render_buffer_;
+  std::unique_ptr<BackRenderbuffer> offscreen_target_depth_render_buffer_;
+  std::unique_ptr<BackRenderbuffer> offscreen_target_stencil_render_buffer_;
   GLenum offscreen_target_color_format_;
   GLenum offscreen_target_depth_format_;
   GLenum offscreen_target_stencil_format_;
@@ -2028,21 +2028,21 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   GLboolean offscreen_target_buffer_preserved_;
 
   // The copy that is saved when SwapBuffers is called.
-  scoped_ptr<BackFramebuffer> offscreen_saved_frame_buffer_;
-  scoped_ptr<BackTexture> offscreen_saved_color_texture_;
+  std::unique_ptr<BackFramebuffer> offscreen_saved_frame_buffer_;
+  std::unique_ptr<BackTexture> offscreen_saved_color_texture_;
   scoped_refptr<TextureRef>
       offscreen_saved_color_texture_info_;
 
   // The copy that is used as the destination for multi-sample resolves.
-  scoped_ptr<BackFramebuffer> offscreen_resolved_frame_buffer_;
-  scoped_ptr<BackTexture> offscreen_resolved_color_texture_;
+  std::unique_ptr<BackFramebuffer> offscreen_resolved_frame_buffer_;
+  std::unique_ptr<BackTexture> offscreen_resolved_color_texture_;
   GLenum offscreen_saved_color_format_;
 
-  scoped_ptr<QueryManager> query_manager_;
+  std::unique_ptr<QueryManager> query_manager_;
 
-  scoped_ptr<VertexArrayManager> vertex_array_manager_;
+  std::unique_ptr<VertexArrayManager> vertex_array_manager_;
 
-  scoped_ptr<ImageManager> image_manager_;
+  std::unique_ptr<ImageManager> image_manager_;
 
   FenceSyncReleaseCallback fence_sync_release_callback_;
   WaitFenceSyncCallback wait_fence_sync_callback_;
@@ -2118,8 +2118,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   TextureToIOSurfaceMap texture_to_io_surface_map_;
 #endif
 
-  scoped_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_CHROMIUM_;
-  scoped_ptr<ClearFramebufferResourceManager> clear_framebuffer_blit_;
+  std::unique_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_CHROMIUM_;
+  std::unique_ptr<ClearFramebufferResourceManager> clear_framebuffer_blit_;
 
   // Cached values of the currently assigned viewport dimensions.
   GLsizei viewport_max_width_;
@@ -2132,8 +2132,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   DecoderTextureState texture_state_;
   DecoderFramebufferState framebuffer_state_;
 
-  scoped_ptr<GPUTracer> gpu_tracer_;
-  scoped_ptr<GPUStateTracer> gpu_state_tracer_;
+  std::unique_ptr<GPUTracer> gpu_tracer_;
+  std::unique_ptr<GPUStateTracer> gpu_state_tracer_;
   const unsigned char* gpu_decoder_category_;
   int gpu_trace_level_;
   bool gpu_trace_commands_;
@@ -2422,7 +2422,7 @@ bool BackTexture::AllocateStorage(
     return false;
   }
 
-  scoped_ptr<char[]> zero_data;
+  std::unique_ptr<char[]> zero_data;
   if (zero) {
     zero_data.reset(new char[image_size]);
     memset(zero_data.get(), 0, image_size);
@@ -3447,7 +3447,7 @@ bool GLES2DecoderImpl::GenBuffersHelper(GLsizei n, const GLuint* client_ids) {
       return false;
     }
   }
-  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
+  std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
   glGenBuffersARB(n, service_ids.get());
   for (GLsizei ii = 0; ii < n; ++ii) {
     CreateBuffer(client_ids[ii], service_ids[ii]);
@@ -3462,7 +3462,7 @@ bool GLES2DecoderImpl::GenFramebuffersHelper(
       return false;
     }
   }
-  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
+  std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
   glGenFramebuffersEXT(n, service_ids.get());
   for (GLsizei ii = 0; ii < n; ++ii) {
     CreateFramebuffer(client_ids[ii], service_ids[ii]);
@@ -3477,7 +3477,7 @@ bool GLES2DecoderImpl::GenRenderbuffersHelper(
       return false;
     }
   }
-  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
+  std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
   glGenRenderbuffersEXT(n, service_ids.get());
   for (GLsizei ii = 0; ii < n; ++ii) {
     CreateRenderbuffer(client_ids[ii], service_ids[ii]);
@@ -3504,7 +3504,7 @@ bool GLES2DecoderImpl::GenTexturesHelper(GLsizei n, const GLuint* client_ids) {
       return false;
     }
   }
-  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
+  std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
   glGenTextures(n, service_ids.get());
   for (GLsizei ii = 0; ii < n; ++ii) {
     CreateTexture(client_ids[ii], service_ids[ii]);
@@ -3518,7 +3518,7 @@ bool GLES2DecoderImpl::GenSamplersHelper(GLsizei n, const GLuint* client_ids) {
       return false;
     }
   }
-  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
+  std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
   glGenSamplers(n, service_ids.get());
   for (GLsizei ii = 0; ii < n; ++ii) {
     CreateSampler(client_ids[ii], service_ids[ii]);
@@ -5111,7 +5111,7 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
   // If the default framebuffer is bound but we are still rendering to an
   // FBO, translate attachment names that refer to default framebuffer
   // channels to corresponding framebuffer attachments.
-  scoped_ptr<GLenum[]> translated_attachments(new GLenum[count]);
+  std::unique_ptr<GLenum[]> translated_attachments(new GLenum[count]);
   for (GLsizei i = 0; i < count; ++i) {
     GLenum attachment = attachments[i];
     if (!framebuffer && GetBackbufferServiceId()) {
@@ -5795,7 +5795,7 @@ void GLES2DecoderImpl::DoGetBooleanv(GLenum pname, GLboolean* params) {
   DCHECK(params);
   GLsizei num_written = 0;
   if (GetNumValuesReturnedForGLGet(pname, &num_written)) {
-    scoped_ptr<GLint[]> values(new GLint[num_written]);
+    std::unique_ptr<GLint[]> values(new GLint[num_written]);
     if (!state_.GetStateAsGLint(pname, values.get(), &num_written)) {
       GetHelper(pname, values.get(), &num_written);
     }
@@ -5813,7 +5813,7 @@ void GLES2DecoderImpl::DoGetFloatv(GLenum pname, GLfloat* params) {
   GLsizei num_written = 0;
   if (!state_.GetStateAsGLfloat(pname, params, &num_written)) {
     if (GetHelper(pname, NULL, &num_written)) {
-      scoped_ptr<GLint[]> values(new GLint[num_written]);
+      std::unique_ptr<GLint[]> values(new GLint[num_written]);
       GetHelper(pname, values.get(), &num_written);
       for (GLsizei ii = 0; ii < num_written; ++ii) {
         params[ii] = static_cast<GLfloat>(values[ii]);
@@ -7477,7 +7477,7 @@ void GLES2DecoderImpl::DoUniform1fv(
     return;
   }
   if (type == GL_BOOL) {
-    scoped_ptr<GLint[]> temp(new GLint[count]);
+    std::unique_ptr<GLint[]> temp(new GLint[count]);
     for (GLsizei ii = 0; ii < count; ++ii) {
       temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
@@ -7501,7 +7501,7 @@ void GLES2DecoderImpl::DoUniform2fv(
   }
   if (type == GL_BOOL_VEC2) {
     GLsizei num_values = count * 2;
-    scoped_ptr<GLint[]> temp(new GLint[num_values]);
+    std::unique_ptr<GLint[]> temp(new GLint[num_values]);
     for (GLsizei ii = 0; ii < num_values; ++ii) {
       temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
@@ -7525,7 +7525,7 @@ void GLES2DecoderImpl::DoUniform3fv(
   }
   if (type == GL_BOOL_VEC3) {
     GLsizei num_values = count * 3;
-    scoped_ptr<GLint[]> temp(new GLint[num_values]);
+    std::unique_ptr<GLint[]> temp(new GLint[num_values]);
     for (GLsizei ii = 0; ii < num_values; ++ii) {
       temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
@@ -7549,7 +7549,7 @@ void GLES2DecoderImpl::DoUniform4fv(
   }
   if (type == GL_BOOL_VEC4) {
     GLsizei num_values = count * 4;
-    scoped_ptr<GLint[]> temp(new GLint[num_values]);
+    std::unique_ptr<GLint[]> temp(new GLint[num_values]);
     for (GLsizei ii = 0; ii < num_values; ++ii) {
       temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
@@ -8278,7 +8278,7 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
       int num_elements = attrib->size() * num_vertices;
       const int src_size = num_elements * sizeof(int32_t);
       const int dst_size = num_elements * sizeof(float);
-      scoped_ptr<float[]> data(new float[num_elements]);
+      std::unique_ptr<float[]> data(new float[num_elements]);
       const int32_t* src = reinterpret_cast<const int32_t*>(
           attrib->buffer()->GetRange(attrib->offset(), src_size));
       const int32_t* end = src + num_elements;
@@ -9681,7 +9681,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glReadPixels");
 
   ScopedResolvedFrameBufferBinder binder(this, false, true);
-  scoped_ptr<ScopedFrameBufferReadPixelHelper> helper;
+  std::unique_ptr<ScopedFrameBufferReadPixelHelper> helper;
   if (NeedsIOSurfaceReadbackWorkaround())
     helper.reset(new ScopedFrameBufferReadPixelHelper(&state_, this));
 
@@ -10480,7 +10480,7 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
   }
 
   // Assumes the size has already been checked.
-  scoped_ptr<char[]> zero(new char[size]);
+  std::unique_ptr<char[]> zero(new char[size]);
   memset(zero.get(), 0, size);
   glBindTexture(texture->target(), texture->service_id());
 
@@ -10592,7 +10592,7 @@ bool GLES2DecoderImpl::ClearLevel3D(Texture* texture,
     // Include padding as some drivers incorrectly requires padding for the
     // last row.
     buffer_size += padding;
-    scoped_ptr<char[]> zero(new char[buffer_size]);
+    std::unique_ptr<char[]> zero(new char[buffer_size]);
     memset(zero.get(), 0, buffer_size);
     // TODO(zmo): Consider glMapBufferRange instead.
     glBufferData(
@@ -11102,7 +11102,7 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
     framebuffer_state_.clear_state_dirty = true;
   }
 
-  scoped_ptr<int8_t[]> zero;
+  std::unique_ptr<int8_t[]> zero;
   if (!data) {
     zero.reset(new int8_t[image_size]);
     memset(zero.get(), 0, image_size);
@@ -11297,7 +11297,7 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage3D(
     framebuffer_state_.clear_state_dirty = true;
   }
 
-  scoped_ptr<int8_t[]> zero;
+  std::unique_ptr<int8_t[]> zero;
   if (!data) {
     zero.reset(new int8_t[image_size]);
     memset(zero.get(), 0, image_size);
@@ -11863,7 +11863,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
       copyWidth != width ||
       copyHeight != height) {
     // some part was clipped so clear the rect.
-    scoped_ptr<char[]> zero(new char[pixels_size]);
+    std::unique_ptr<char[]> zero(new char[pixels_size]);
     memset(zero.get(), 0, pixels_size);
     glTexImage2D(target, level,
                  texture_manager()->AdjustTexInternalFormat(internal_format),
@@ -12385,7 +12385,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformfv(uint32_t immediate_data_size,
     if (result_type == GL_BOOL || result_type == GL_BOOL_VEC2 ||
         result_type == GL_BOOL_VEC3 || result_type == GL_BOOL_VEC4) {
       GLsizei num_values = result_size / sizeof(GLfloat);
-      scoped_ptr<GLint[]> temp(new GLint[num_values]);
+      std::unique_ptr<GLint[]> temp(new GLint[num_values]);
       glGetUniformiv(service_id, real_location, temp.get());
       GLfloat* dst = result->GetData();
       for (GLsizei ii = 0; ii < num_values; ++ii) {
@@ -12746,7 +12746,7 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(uint32_t immediate_data_size,
   if (shaders == NULL || binary == NULL) {
     return error::kOutOfBounds;
   }
-  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
+  std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
   for (GLsizei ii = 0; ii < n; ++ii) {
     Shader* shader = GetShader(shaders[ii]);
     if (!shader) {
@@ -13585,7 +13585,7 @@ bool GLES2DecoderImpl::GenVertexArraysOESHelper(
       CreateVertexAttribManager(client_ids[ii], 0, true);
     }
   } else {
-    scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
+    std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
 
     glGenVertexArraysOES(n, service_ids.get());
     for (GLsizei ii = 0; ii < n; ++ii) {
@@ -15489,7 +15489,7 @@ class PathCommandValidatorContext {
   bool GetPathNameData(const Cmd& cmd,
                        GLuint num_paths,
                        GLenum path_name_type,
-                       scoped_ptr<GLuint[]>* out_buffer) {
+                       std::unique_ptr<GLuint[]>* out_buffer) {
     DCHECK(validators_->path_name_type.IsValid(path_name_type));
     GLuint path_base = static_cast<GLuint>(cmd.pathBase);
     uint32_t shm_id = static_cast<uint32_t>(cmd.paths_shm_id);
@@ -15576,7 +15576,7 @@ class PathCommandValidatorContext {
                            GLuint path_base,
                            uint32_t shm_id,
                            uint32_t shm_offset,
-                           scoped_ptr<GLuint[]>* out_buffer) {
+                           std::unique_ptr<GLuint[]>* out_buffer) {
     uint32_t paths_size = 0;
     if (!SafeMultiplyUint32(num_paths, sizeof(T), &paths_size)) {
       error_ = error::kOutOfBounds;
@@ -15587,7 +15587,7 @@ class PathCommandValidatorContext {
       error_ = error::kOutOfBounds;
       return false;
     }
-    scoped_ptr<GLuint[]> result_paths(new GLuint[num_paths]);
+    std::unique_ptr<GLuint[]> result_paths(new GLuint[num_paths]);
     bool has_paths = false;
     for (GLuint i = 0; i < num_paths; ++i) {
       GLuint service_id = 0;
@@ -15702,7 +15702,7 @@ error::Error GLES2DecoderImpl::HandlePathCommandsCHROMIUM(
     return error::kNoError;
   }
 
-  scoped_ptr<GLubyte[]> commands;
+  std::unique_ptr<GLubyte[]> commands;
   base::CheckedNumeric<GLsizei> num_coords_expected = 0;
 
   if (num_commands > 0) {
@@ -16040,7 +16040,7 @@ error::Error GLES2DecoderImpl::HandleStencilFillPathInstancedCHROMIUM(
   if (num_paths == 0)
     return error::kNoError;
 
-  scoped_ptr<GLuint[]> paths;
+  std::unique_ptr<GLuint[]> paths;
   if (!v.GetPathNameData(c, num_paths, path_name_type, &paths))
     return v.error();
 
@@ -16074,7 +16074,7 @@ error::Error GLES2DecoderImpl::HandleStencilStrokePathInstancedCHROMIUM(
   if (num_paths == 0)
     return error::kNoError;
 
-  scoped_ptr<GLuint[]> paths;
+  std::unique_ptr<GLuint[]> paths;
   if (!v.GetPathNameData(c, num_paths, path_name_type, &paths))
     return v.error();
 
@@ -16112,7 +16112,7 @@ error::Error GLES2DecoderImpl::HandleCoverFillPathInstancedCHROMIUM(
   if (num_paths == 0)
     return error::kNoError;
 
-  scoped_ptr<GLuint[]> paths;
+  std::unique_ptr<GLuint[]> paths;
   if (!v.GetPathNameData(c, num_paths, path_name_type, &paths))
     return v.error();
 
@@ -16148,7 +16148,7 @@ error::Error GLES2DecoderImpl::HandleCoverStrokePathInstancedCHROMIUM(
   if (num_paths == 0)
     return error::kNoError;
 
-  scoped_ptr<GLuint[]> paths;
+  std::unique_ptr<GLuint[]> paths;
   if (!v.GetPathNameData(c, num_paths, path_name_type, &paths))
     return v.error();
 
@@ -16188,7 +16188,7 @@ error::Error GLES2DecoderImpl::HandleStencilThenCoverFillPathInstancedCHROMIUM(
   if (num_paths == 0)
     return error::kNoError;
 
-  scoped_ptr<GLuint[]> paths;
+  std::unique_ptr<GLuint[]> paths;
   if (!v.GetPathNameData(c, num_paths, path_name_type, &paths))
     return v.error();
 
@@ -16227,7 +16227,7 @@ GLES2DecoderImpl::HandleStencilThenCoverStrokePathInstancedCHROMIUM(
   if (num_paths == 0)
     return error::kNoError;
 
-  scoped_ptr<GLuint[]> paths;
+  std::unique_ptr<GLuint[]> paths;
   if (!v.GetPathNameData(c, num_paths, path_name_type, &paths))
     return v.error();
 

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -26,8 +27,9 @@ class MemoryTracker;
 class GPU_EXPORT TransferBufferManagerInterface :
     public base::RefCounted<TransferBufferManagerInterface> {
  public:
-  virtual bool RegisterTransferBuffer(int32_t id,
-                                      scoped_ptr<BufferBacking> buffer) = 0;
+  virtual bool RegisterTransferBuffer(
+      int32_t id,
+      std::unique_ptr<BufferBacking> buffer) = 0;
   virtual void DestroyTransferBuffer(int32_t id) = 0;
   virtual scoped_refptr<Buffer> GetTransferBuffer(int32_t id) = 0;
 
@@ -50,7 +52,7 @@ class GPU_EXPORT TransferBufferManager
   bool Initialize();
   bool RegisterTransferBuffer(
       int32_t id,
-      scoped_ptr<BufferBacking> buffer_backing) override;
+      std::unique_ptr<BufferBacking> buffer_backing) override;
   void DestroyTransferBuffer(int32_t id) override;
   scoped_refptr<Buffer> GetTransferBuffer(int32_t id) override;
 

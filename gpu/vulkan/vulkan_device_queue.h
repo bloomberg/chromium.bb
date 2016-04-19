@@ -7,9 +7,10 @@
 
 #include <vulkan/vulkan.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/vulkan/vulkan_export.h"
 
 namespace gpu {
@@ -47,7 +48,7 @@ class VULKAN_EXPORT VulkanDeviceQueue {
 
   uint32_t GetVulkanQueueIndex() const { return vk_queue_index_; }
 
-  scoped_ptr<gpu::VulkanCommandPool> CreateCommandPool();
+  std::unique_ptr<gpu::VulkanCommandPool> CreateCommandPool();
 
  private:
   VkPhysicalDevice vk_physical_device_ = VK_NULL_HANDLE;

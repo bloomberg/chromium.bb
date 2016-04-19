@@ -166,8 +166,8 @@ void VulkanDeviceQueue::Destroy() {
   vk_physical_device_ = VK_NULL_HANDLE;
 }
 
-scoped_ptr<VulkanCommandPool> VulkanDeviceQueue::CreateCommandPool() {
-  scoped_ptr<VulkanCommandPool> command_pool(new VulkanCommandPool(this));
+std::unique_ptr<VulkanCommandPool> VulkanDeviceQueue::CreateCommandPool() {
+  std::unique_ptr<VulkanCommandPool> command_pool(new VulkanCommandPool(this));
   if (!command_pool->Initialize())
     return nullptr;
 

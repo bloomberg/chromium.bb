@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
@@ -28,7 +29,7 @@ GpuMemoryBufferImplOzoneNativePixmap::GpuMemoryBufferImplOzoneNativePixmap(
     const gfx::Size& size,
     gfx::BufferFormat format,
     const DestructionCallback& callback,
-    scoped_ptr<ui::ClientNativePixmap> pixmap)
+    std::unique_ptr<ui::ClientNativePixmap> pixmap)
     : GpuMemoryBufferImpl(id, size, format, callback),
       pixmap_(std::move(pixmap)),
       data_(nullptr) {}
@@ -36,18 +37,18 @@ GpuMemoryBufferImplOzoneNativePixmap::GpuMemoryBufferImplOzoneNativePixmap(
 GpuMemoryBufferImplOzoneNativePixmap::~GpuMemoryBufferImplOzoneNativePixmap() {}
 
 // static
-scoped_ptr<GpuMemoryBufferImplOzoneNativePixmap>
+std::unique_ptr<GpuMemoryBufferImplOzoneNativePixmap>
 GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     const DestructionCallback& callback) {
-  scoped_ptr<ui::ClientNativePixmap> native_pixmap =
+  std::unique_ptr<ui::ClientNativePixmap> native_pixmap =
       ui::ClientNativePixmapFactory::GetInstance()->ImportFromHandle(
           handle.native_pixmap_handle, size, usage);
   DCHECK(native_pixmap);
-  return make_scoped_ptr(new GpuMemoryBufferImplOzoneNativePixmap(
+  return base::WrapUnique(new GpuMemoryBufferImplOzoneNativePixmap(
       handle.id, size, format, callback, std::move(native_pixmap)));
 }
 

@@ -8,13 +8,13 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/program_cache.h"
 
@@ -130,7 +130,7 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
 
     const GLsizei length_;
     const GLenum format_;
-    const scoped_ptr<const char[]> data_;
+    const std::unique_ptr<const char[]> data_;
     const std::string program_hash_;
     const std::string shader_0_hash_;
     const AttributeMap attrib_map_0_;

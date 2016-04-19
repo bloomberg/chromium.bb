@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/common/command_buffer.h"
@@ -85,19 +87,20 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   virtual void SetParseErrorCallback(const base::Closure& callback);
 
   // Setup the shared memory that shared state should be copied into.
-  void SetSharedStateBuffer(scoped_ptr<BufferBacking> shared_state_buffer);
+  void SetSharedStateBuffer(std::unique_ptr<BufferBacking> shared_state_buffer);
 
   // Copy the current state into the shared state transfer buffer.
   void UpdateState();
 
   // Registers an existing shared memory object and get an ID that can be used
   // to identify it in the command buffer.
-  bool RegisterTransferBuffer(int32_t id, scoped_ptr<BufferBacking> buffer);
+  bool RegisterTransferBuffer(int32_t id,
+                              std::unique_ptr<BufferBacking> buffer);
 
  private:
   int32_t ring_buffer_id_;
   scoped_refptr<Buffer> ring_buffer_;
-  scoped_ptr<BufferBacking> shared_state_buffer_;
+  std::unique_ptr<BufferBacking> shared_state_buffer_;
   CommandBufferSharedState* shared_state_;
   int32_t num_entries_;
   int32_t get_offset_;

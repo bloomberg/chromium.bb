@@ -46,9 +46,9 @@ void VulkanCommandPool::Destroy() {
   }
 }
 
-scoped_ptr<VulkanCommandBuffer>
+std::unique_ptr<VulkanCommandBuffer>
 VulkanCommandPool::CreatePrimaryCommandBuffer() {
-  scoped_ptr<VulkanCommandBuffer> command_buffer(
+  std::unique_ptr<VulkanCommandBuffer> command_buffer(
       new VulkanCommandBuffer(device_queue_, this, true));
   if (!command_buffer->Initialize())
     return nullptr;
@@ -56,9 +56,9 @@ VulkanCommandPool::CreatePrimaryCommandBuffer() {
   return command_buffer;
 }
 
-scoped_ptr<VulkanCommandBuffer>
+std::unique_ptr<VulkanCommandBuffer>
 VulkanCommandPool::CreateSecondaryCommandBuffer() {
-  scoped_ptr<VulkanCommandBuffer> command_buffer(
+  std::unique_ptr<VulkanCommandBuffer> command_buffer(
       new VulkanCommandBuffer(device_queue_, this, false));
   if (!command_buffer->Initialize())
     return nullptr;

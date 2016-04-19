@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
@@ -57,7 +57,8 @@ class GPU_EXPORT GpuChannelHostFactory {
   virtual bool IsMainThread() = 0;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetIOThreadTaskRunner() = 0;
-  virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) = 0;
+  virtual std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
+      size_t size) = 0;
 };
 
 // Encapsulates an IPC channel between the client and one GPU process.
@@ -108,7 +109,7 @@ class GPU_EXPORT GpuChannelHost
   void FlushPendingStream(int32_t stream_id);
 
   // Create and connect to a command buffer in the GPU process.
-  scoped_ptr<CommandBufferProxyImpl> CreateCommandBuffer(
+  std::unique_ptr<CommandBufferProxyImpl> CreateCommandBuffer(
       gpu::SurfaceHandle surface_handle,
       const gfx::Size& size,
       CommandBufferProxyImpl* share_group,
@@ -289,7 +290,7 @@ class GPU_EXPORT GpuChannelHost
 
   // Protects channel_ and stream_flush_info_.
   mutable base::Lock context_lock_;
-  scoped_ptr<IPC::SyncChannel> channel_;
+  std::unique_ptr<IPC::SyncChannel> channel_;
   base::hash_map<int32_t, StreamFlushInfo> stream_flush_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);

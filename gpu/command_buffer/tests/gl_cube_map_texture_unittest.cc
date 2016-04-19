@@ -5,6 +5,8 @@
 #include <GLES2/gl2.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
@@ -135,7 +137,7 @@ TEST_P(GLCubeMapTextureTest, ReadPixelsFromIncompleteCubeTexture) {
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
             glCheckFramebufferStatus(GL_FRAMEBUFFER));
   GLsizei size = width_ * width_ * 4;
-  scoped_ptr<uint8_t[]> pixels(new uint8_t[size]);
+  std::unique_ptr<uint8_t[]> pixels(new uint8_t[size]);
   glReadPixels(0, 0, width_, width_, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_FRAMEBUFFER_OPERATION),
             glGetError());

@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/vulkan/vulkan_export.h"
 
 namespace gpu {

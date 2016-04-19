@@ -162,7 +162,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
     transfer_buffer_manager_ = manager;
     manager->Initialize();
   }
-  scoped_ptr<gpu::CommandBufferService> command_buffer(
+  std::unique_ptr<gpu::CommandBufferService> command_buffer(
       new gpu::CommandBufferService(transfer_buffer_manager_.get()));
   if (!command_buffer->Initialize())
     return NULL;
@@ -233,13 +233,13 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   command_buffer->SetGetBufferChangeCallback(base::Bind(
       &gpu::CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
 
-  scoped_ptr<gpu::gles2::GLES2CmdHelper> cmd_helper(
+  std::unique_ptr<gpu::gles2::GLES2CmdHelper> cmd_helper(
       new gpu::gles2::GLES2CmdHelper(command_buffer.get()));
   if (!cmd_helper->Initialize(kCommandBufferSize))
     return NULL;
 
-  scoped_ptr<gpu::TransferBuffer> transfer_buffer(new gpu::TransferBuffer(
-      cmd_helper.get()));
+  std::unique_ptr<gpu::TransferBuffer> transfer_buffer(
+      new gpu::TransferBuffer(cmd_helper.get()));
 
   command_buffer_.reset(command_buffer.release());
   transfer_buffer_.reset(transfer_buffer.release());

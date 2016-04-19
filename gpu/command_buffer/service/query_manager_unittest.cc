@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
@@ -97,19 +99,21 @@ class QueryManagerTest : public GpuServiceTest {
     EXPECT_TRUE(manager_->EndQuery(query, submit_count));
   }
 
-  scoped_ptr<MockGLES2Decoder> decoder_;
-  scoped_ptr<QueryManager> manager_;
+  std::unique_ptr<MockGLES2Decoder> decoder_;
+  std::unique_ptr<QueryManager> manager_;
 
  private:
   class MockCommandBufferEngine : public CommandBufferEngine {
    public:
     MockCommandBufferEngine() {
-      scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+      std::unique_ptr<base::SharedMemory> shared_memory(
+          new base::SharedMemory());
       shared_memory->CreateAndMapAnonymous(kSharedBufferSize);
       valid_buffer_ = MakeBufferFromSharedMemory(std::move(shared_memory),
                                                  kSharedBufferSize);
 
-      scoped_ptr<base::SharedMemory> shared_memory2(new base::SharedMemory());
+      std::unique_ptr<base::SharedMemory> shared_memory2(
+          new base::SharedMemory());
       shared_memory2->CreateAndMapAnonymous(kSharedBufferSize);
       valid_buffer2_ = MakeBufferFromSharedMemory(std::move(shared_memory2),
                                                   kSharedBufferSize);
@@ -157,7 +161,7 @@ class QueryManagerTest : public GpuServiceTest {
     scoped_refptr<gpu::Buffer> invalid_buffer_;
   };
 
-  scoped_ptr<MockCommandBufferEngine> engine_;
+  std::unique_ptr<MockCommandBufferEngine> engine_;
 };
 
 class QueryManagerManualSetupTest : public QueryManagerTest {
@@ -510,7 +514,7 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery2) {
       "GL_ARB_occlusion_query2");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
   feature_info->InitializeForTesting();
-  scoped_ptr<QueryManager> manager(
+  std::unique_ptr<QueryManager> manager(
       new QueryManager(decoder_.get(), feature_info.get()));
 
   EXPECT_CALL(*gl_, GenQueries(1, _))
@@ -544,7 +548,7 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery) {
       "GL_ARB_occlusion_query");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
   feature_info->InitializeForTesting();
-  scoped_ptr<QueryManager> manager(
+  std::unique_ptr<QueryManager> manager(
       new QueryManager(decoder_.get(), feature_info.get()));
 
   EXPECT_CALL(*gl_, GenQueries(1, _))
@@ -577,7 +581,7 @@ TEST_F(QueryManagerTest, ARBOcclusionPauseResume) {
       "GL_ARB_occlusion_query");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
   feature_info->InitializeForTesting();
-  scoped_ptr<QueryManager> manager(
+  std::unique_ptr<QueryManager> manager(
       new QueryManager(decoder_.get(), feature_info.get()));
 
   EXPECT_CALL(*gl_, GenQueries(1, _))
@@ -920,7 +924,7 @@ TEST_F(QueryManagerTest, GetErrorQuery) {
   TestHelper::SetupFeatureInfoInitExpectations(gl_.get(), "");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
   feature_info->InitializeForTesting();
-  scoped_ptr<QueryManager> manager(
+  std::unique_ptr<QueryManager> manager(
       new QueryManager(decoder_.get(), feature_info.get()));
 
   QueryManager::Query* query = manager->CreateQuery(

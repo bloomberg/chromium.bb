@@ -49,7 +49,7 @@ class RenderbufferManagerTestBase : public GpuServiceTest {
   }
 
   scoped_refptr<FeatureInfo> feature_info_;
-  scoped_ptr<RenderbufferManager> manager_;
+  std::unique_ptr<RenderbufferManager> manager_;
 };
 
 class RenderbufferManagerTest : public RenderbufferManagerTestBase {

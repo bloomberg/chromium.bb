@@ -6,11 +6,11 @@
 #define GPU_COMMAND_BUFFER_SERVICE_SHADER_MANAGER_H_
 
 #include <string>
+
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "gpu/gpu_export.h"

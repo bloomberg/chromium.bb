@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
@@ -173,7 +175,7 @@ TEST_F(CHROMIUMFramebufferMixedSamplesTest, CoverageModulation) {
   }
   static const float kBlue[] = {0.0f, 0.0f, 1.0f, 1.0f};
   static const float kGreen[] = {0.0f, 1.0f, 0.0f, 1.0f};
-  scoped_ptr<uint8_t[]> results[3];
+  std::unique_ptr<uint8_t[]> results[3];
   const GLint kResultSize = kWidth * kHeight * 4;
 
   for (int pass = 0; pass < 3; ++pass) {
@@ -213,7 +215,7 @@ TEST_F(CHROMIUMFramebufferMixedSamplesTest, MultisampleStencilEffective) {
   static const float kBlue[] = {0.0f, 0.0f, 1.0f, 1.0f};
   static const float kGreen[] = {0.0f, 1.0f, 0.0f, 1.0f};
 
-  scoped_ptr<uint8_t[]> results[3];
+  std::unique_ptr<uint8_t[]> results[3];
   const GLint kResultSize = kWidth * kHeight * 4;
 
   for (int pass = 0; pass < 3; ++pass) {

@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/json/json_reader.h"
 #include "gpu/config/gpu_control_list.h"
 #include "gpu/config/gpu_info.h"
@@ -32,7 +34,7 @@ class GpuControlListEntryTest : public testing::Test {
 
   static ScopedEntry GetEntryFromString(
       const std::string& json, bool supports_feature_type_all) {
-    scoped_ptr<base::Value> root = base::JSONReader::Read(json);
+    std::unique_ptr<base::Value> root = base::JSONReader::Read(json);
     base::DictionaryValue* value = NULL;
     if (!root || !root->GetAsDictionary(&value))
       return NULL;

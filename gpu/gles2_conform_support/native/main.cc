@@ -4,9 +4,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -36,7 +37,7 @@ int main(int argc, char *argv[]) {
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
 
-  scoped_ptr<const char*[]> argsArray(new const char*[args.size()+1]);
+  std::unique_ptr<const char* []> argsArray(new const char*[args.size() + 1]);
   argsArray[0] = argv[0];
 
 #if defined(OS_WIN)

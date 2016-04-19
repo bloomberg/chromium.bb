@@ -8,6 +8,8 @@
 #include <android/native_window.h>
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
@@ -20,7 +22,7 @@ class GPU_EXPORT GpuMemoryBufferImplSurfaceTexture
  public:
   ~GpuMemoryBufferImplSurfaceTexture() override;
 
-  static scoped_ptr<GpuMemoryBufferImplSurfaceTexture> CreateFromHandle(
+  static std::unique_ptr<GpuMemoryBufferImplSurfaceTexture> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,

@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 
 #include "base/atomicops.h"
 #include "base/bind.h"

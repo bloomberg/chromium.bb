@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
@@ -18,7 +20,7 @@ class GPU_EXPORT GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
  public:
   ~GpuMemoryBufferImplSharedMemory() override;
 
-  static scoped_ptr<GpuMemoryBufferImplSharedMemory> Create(
+  static std::unique_ptr<GpuMemoryBufferImplSharedMemory> Create(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::BufferFormat format,
@@ -30,7 +32,7 @@ class GPU_EXPORT GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
       gfx::BufferFormat format,
       base::ProcessHandle child_process);
 
-  static scoped_ptr<GpuMemoryBufferImplSharedMemory> CreateFromHandle(
+  static std::unique_ptr<GpuMemoryBufferImplSharedMemory> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
@@ -56,15 +58,16 @@ class GPU_EXPORT GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
   gfx::GpuMemoryBufferHandle GetHandle() const override;
 
  private:
-  GpuMemoryBufferImplSharedMemory(gfx::GpuMemoryBufferId id,
-                                  const gfx::Size& size,
-                                  gfx::BufferFormat format,
-                                  const DestructionCallback& callback,
-                                  scoped_ptr<base::SharedMemory> shared_memory,
-                                  size_t offset,
-                                  int stride);
+  GpuMemoryBufferImplSharedMemory(
+      gfx::GpuMemoryBufferId id,
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      const DestructionCallback& callback,
+      std::unique_ptr<base::SharedMemory> shared_memory,
+      size_t offset,
+      int stride);
 
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
   size_t offset_;
   int stride_;
 

@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <memory>
+
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"

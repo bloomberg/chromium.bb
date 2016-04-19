@@ -8,7 +8,9 @@
 #include <linux/videodev2.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "base/files/scoped_file.h"

@@ -1363,7 +1363,7 @@ GpuControlList::~GpuControlList() {
 bool GpuControlList::LoadList(
     const std::string& json_context,
     GpuControlList::OsFilter os_filter) {
-  scoped_ptr<base::Value> root = base::JSONReader::Read(json_context);
+  std::unique_ptr<base::Value> root = base::JSONReader::Read(json_context);
   if (root.get() == NULL || !root->IsType(base::Value::TYPE_DICTIONARY))
     return false;
 

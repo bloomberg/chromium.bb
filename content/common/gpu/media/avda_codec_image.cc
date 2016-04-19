@@ -6,6 +6,8 @@
 
 #include <string.h>
 
+#include <memory>
+
 #include "base/metrics/histogram_macros.h"
 #include "content/common/gpu/media/avda_shared_state.h"
 #include "gpu/command_buffer/service/context_group.h"

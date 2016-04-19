@@ -4,7 +4,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
@@ -75,7 +76,7 @@ class TestGpuChannelManager : public GpuChannelManager {
   ~TestGpuChannelManager() override;
 
  protected:
-  scoped_ptr<GpuChannel> CreateGpuChannel(
+  std::unique_ptr<GpuChannel> CreateGpuChannel(
       int client_id,
       uint64_t client_tracing_id,
       bool preempts,
@@ -127,9 +128,9 @@ class GpuChannelTestCommon : public testing::Test {
   GpuPreferences gpu_preferences_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> io_task_runner_;
-  scoped_ptr<SyncPointManager> sync_point_manager_;
-  scoped_ptr<TestGpuChannelManagerDelegate> channel_manager_delegate_;
-  scoped_ptr<GpuChannelManager> channel_manager_;
+  std::unique_ptr<SyncPointManager> sync_point_manager_;
+  std::unique_ptr<TestGpuChannelManagerDelegate> channel_manager_delegate_;
+  std::unique_ptr<GpuChannelManager> channel_manager_;
 };
 
 }  // namespace gpu

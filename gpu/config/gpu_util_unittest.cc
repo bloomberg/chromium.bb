@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "gpu/config/gpu_util.h"
-#include "base/memory/scoped_ptr.h"
+
+#include <memory>
+
 #include "base/strings/string_split.h"
 #include "gpu/config/gpu_control_list_jsons.h"
 #include "gpu/config/gpu_driver_bug_list.h"
@@ -79,7 +81,7 @@ TEST(GpuUtilTest,
      ApplyGpuDriverBugWorkarounds_DisabledExtensions) {
   GPUInfo gpu_info;
   CollectBasicGraphicsInfo(&gpu_info);
-  scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
+  std::unique_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
   list->LoadList(kGpuDriverBugListJson, GpuControlList::kCurrentOsOnly);
   list->MakeDecision(GpuControlList::kOsAny, std::string(), gpu_info);
   std::vector<std::string> expected_disabled_extensions =

@@ -13,6 +13,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <queue>
 #include <utility>
 #include <vector>

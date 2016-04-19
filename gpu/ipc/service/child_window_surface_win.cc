@@ -4,6 +4,8 @@
 
 #include "gpu/ipc/service/child_window_surface_win.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/wrapped_window_proc.h"
@@ -160,7 +162,7 @@ bool ChildWindowSurfaceWin::Resize(const gfx::Size& size,
       alpha_ = has_alpha;
       config_ = nullptr;
 
-      scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
+      std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
       gfx::GLContext* current_context = gfx::GLContext::GetCurrent();
       bool was_current = current_context && current_context->IsCurrent(this);
       if (was_current) {

@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <cmath>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bit_cast.h"
@@ -274,7 +275,7 @@ TEST_F(GLReadbackTest, ReadPixelsFloat) {
 
         switch (read_type) {
           case GL_HALF_FLOAT_OES: {
-            scoped_ptr<GLushort[]> buf(
+            std::unique_ptr<GLushort[]> buf(
                 new GLushort[kTextureSize * kTextureSize * read_comp_count]);
             glReadPixels(
                 0, 0, kTextureSize, kTextureSize, read_format, read_type,
@@ -291,7 +292,7 @@ TEST_F(GLReadbackTest, ReadPixelsFloat) {
             break;
           }
           case GL_FLOAT: {
-            scoped_ptr<GLfloat[]> buf(
+            std::unique_ptr<GLfloat[]> buf(
                 new GLfloat[kTextureSize * kTextureSize * read_comp_count]);
             glReadPixels(
                 0, 0, kTextureSize, kTextureSize, read_format, read_type,

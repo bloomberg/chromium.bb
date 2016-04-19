@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -83,7 +85,7 @@ class MockCommandBufferEngine : public CommandBufferEngine {
       : CommandBufferEngine(),
         token_(),
         get_offset_(0) {
-    scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+    std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
     shared_memory->CreateAndMapAnonymous(kBufferSize);
     buffer_ = MakeBufferFromSharedMemory(std::move(shared_memory), kBufferSize);
   }

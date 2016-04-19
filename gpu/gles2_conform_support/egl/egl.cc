@@ -5,6 +5,8 @@
 #include <EGL/egl.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/strings/string_split.h"
@@ -116,7 +118,7 @@ EGLAPI EGLBoolean EGLAPIENTRY eglInitialize(EGLDisplay dpy,
   // being called multiple times.
   if (gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
     base::CommandLine::StringVector argv;
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
     std::string env_string;
     env->GetVar("CHROME_COMMAND_BUFFER_GLES2_ARGS", &env_string);
 #if defined(OS_WIN)

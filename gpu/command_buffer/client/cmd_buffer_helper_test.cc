@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -258,11 +259,11 @@ class CommandBufferHelperTest : public testing::Test {
 
   CommandBufferOffset get_helper_put() { return helper_->put_; }
 
-  scoped_ptr<AsyncAPIMock> api_mock_;
+  std::unique_ptr<AsyncAPIMock> api_mock_;
   scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
-  scoped_ptr<CommandBufferServiceLocked> command_buffer_;
-  scoped_ptr<CommandExecutor> executor_;
-  scoped_ptr<CommandBufferHelper> helper_;
+  std::unique_ptr<CommandBufferServiceLocked> command_buffer_;
+  std::unique_ptr<CommandExecutor> executor_;
+  std::unique_ptr<CommandBufferHelper> helper_;
   std::list<linked_ptr<std::vector<CommandBufferEntry> > > test_command_args_;
   unsigned int test_command_next_id_;
   Sequence sequence_;

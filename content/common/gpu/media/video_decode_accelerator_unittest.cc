@@ -19,9 +19,11 @@
 #include <stdint.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
 #include <algorithm>
 #include <deque>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/at_exit.h"

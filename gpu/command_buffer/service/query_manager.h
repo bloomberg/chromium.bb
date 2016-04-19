@@ -8,13 +8,14 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <vector>
+
 #include "base/atomicops.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/gpu_export.h"
 
@@ -261,7 +262,7 @@ class GPU_EXPORT QueryManager {
     return decoder_;
   }
 
-  scoped_ptr<gfx::GPUTimer> CreateGPUTimer(bool elapsed_time);
+  std::unique_ptr<gfx::GPUTimer> CreateGPUTimer(bool elapsed_time);
   bool GPUTimingAvailable();
 
   void GenQueries(GLsizei n, const GLuint* queries);

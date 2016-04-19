@@ -214,7 +214,7 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
   shader_b->set_output_variable_list(value->output_variable_list_1());
 
   if (!shader_callback.is_null() && !disable_gpu_shader_disk_cache_) {
-    scoped_ptr<GpuProgramProto> proto(
+    std::unique_ptr<GpuProgramProto> proto(
         GpuProgramProto::default_instance().New());
     proto->set_sha(sha, kHashLength);
     proto->set_format(value->format());
@@ -242,7 +242,7 @@ void MemoryProgramCache::SaveLinkedProgram(
   if (length == 0 || static_cast<unsigned int>(length) > max_size_bytes_) {
     return;
   }
-  scoped_ptr<char[]> binary(new char[length]);
+  std::unique_ptr<char[]> binary(new char[length]);
   glGetProgramBinary(program,
                      length,
                      NULL,
@@ -283,7 +283,7 @@ void MemoryProgramCache::SaveLinkedProgram(
   }
 
   if (!shader_callback.is_null() && !disable_gpu_shader_disk_cache_) {
-    scoped_ptr<GpuProgramProto> proto(
+    std::unique_ptr<GpuProgramProto> proto(
         GpuProgramProto::default_instance().New());
     proto->set_sha(sha, kHashLength);
     proto->set_format(format);
@@ -308,7 +308,8 @@ void MemoryProgramCache::SaveLinkedProgram(
 }
 
 void MemoryProgramCache::LoadProgram(const std::string& program) {
-  scoped_ptr<GpuProgramProto> proto(GpuProgramProto::default_instance().New());
+  std::unique_ptr<GpuProgramProto> proto(
+      GpuProgramProto::default_instance().New());
   if (proto->ParseFromString(program)) {
     AttributeMap vertex_attribs;
     UniformMap vertex_uniforms;
@@ -353,7 +354,7 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
           &fragment_output_variables);
     }
 
-    scoped_ptr<char[]> binary(new char[proto->program().length()]);
+    std::unique_ptr<char[]> binary(new char[proto->program().length()]);
     memcpy(binary.get(), proto->program().c_str(), proto->program().length());
 
     store_.Put(

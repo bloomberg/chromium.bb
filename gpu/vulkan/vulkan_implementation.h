@@ -7,8 +7,6 @@
 
 #include <vulkan/vulkan.h>
 
-#include "base/memory/scoped_ptr.h"
-
 namespace gpu {
 
 class VulkanCommandPool;

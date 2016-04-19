@@ -10,8 +10,12 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 #include <GLES3/gl3.h>
+
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -535,11 +539,11 @@ class GLES2ImplementationTest : public testing::Test {
       memset(ring_buffer->memory(), kInitialValue, ring_buffer->size());
     }
 
-    scoped_ptr<MockClientCommandBuffer> command_buffer_;
-    scoped_ptr<MockClientGpuControl> gpu_control_;
-    scoped_ptr<GLES2CmdHelper> helper_;
-    scoped_ptr<MockTransferBuffer> transfer_buffer_;
-    scoped_ptr<GLES2Implementation> gl_;
+    std::unique_ptr<MockClientCommandBuffer> command_buffer_;
+    std::unique_ptr<MockClientGpuControl> gpu_control_;
+    std::unique_ptr<GLES2CmdHelper> helper_;
+    std::unique_ptr<MockTransferBuffer> transfer_buffer_;
+    std::unique_ptr<GLES2Implementation> gl_;
     CommandBufferEntry* commands_;
     int token_;
   };
@@ -863,7 +867,7 @@ TEST_F(GLES2ImplementationTest, GetBucketContents) {
   const uint32_t kBucketId = GLES2Implementation::kResultBucketId;
   const uint32_t kTestSize = MaxTransferBufferSize() + 32;
 
-  scoped_ptr<uint8_t[]> buf(new uint8_t[kTestSize]);
+  std::unique_ptr<uint8_t[]> buf(new uint8_t[kTestSize]);
   uint8_t* expected_data = buf.get();
   for (uint32_t ii = 0; ii < kTestSize; ++ii) {
     expected_data[ii] = ii * 3;
@@ -1730,7 +1734,8 @@ TEST_F(GLES2ImplementationTest, ReadPixels2Reads) {
       0, kHeight / 2, kWidth, kHeight / 2, kFormat, kType,
       mem2.id, mem2.offset, result2.id, result2.offset, false);
   expected.set_token2.Init(GetNextToken());
-  scoped_ptr<int8_t[]> buffer(new int8_t[kWidth * kHeight * kBytesPerPixel]);
+  std::unique_ptr<int8_t[]> buffer(
+      new int8_t[kWidth * kHeight * kBytesPerPixel]);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
       .WillOnce(SetMemory(result1.ptr, static_cast<uint32_t>(1)))
@@ -1762,7 +1767,8 @@ TEST_F(GLES2ImplementationTest, ReadPixelsBadFormatType) {
       0, 0, kWidth, kHeight, kFormat, kType,
       mem1.id, mem1.offset, result1.id, result1.offset, false);
   expected.set_token.Init(GetNextToken());
-  scoped_ptr<int8_t[]> buffer(new int8_t[kWidth * kHeight * kBytesPerPixel]);
+  std::unique_ptr<int8_t[]> buffer(
+      new int8_t[kWidth * kHeight * kBytesPerPixel]);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
       .Times(1)
@@ -2432,7 +2438,7 @@ TEST_F(GLES2ImplementationTest, TexImage2DViaMappedMem) {
       kWidth, kHeight, 1, kFormat, kType, kPixelStoreUnpackAlignment,
       &size, &unpadded_row_size, &padded_row_size));
 
-  scoped_ptr<uint8_t[]> pixels(new uint8_t[size]);
+  std::unique_ptr<uint8_t[]> pixels(new uint8_t[size]);
   for (uint32_t ii = 0; ii < size; ++ii) {
     pixels[ii] = static_cast<uint8_t>(ii);
   }
@@ -2488,7 +2494,7 @@ TEST_F(GLES2ImplementationTest, TexImage2DViaTexSubImage2D) {
       kWidth, kHeight / 2, 1, kFormat, kType, kPixelStoreUnpackAlignment,
       &half_size, NULL, NULL));
 
-  scoped_ptr<uint8_t[]> pixels(new uint8_t[size]);
+  std::unique_ptr<uint8_t[]> pixels(new uint8_t[size]);
   for (uint32_t ii = 0; ii < size; ++ii) {
     pixels[ii] = static_cast<uint8_t>(ii);
   }
@@ -2569,7 +2575,7 @@ TEST_F(GLES2ImplementationTest, SubImage2DUnpack) {
   ASSERT_TRUE(GLES2Util::ComputeImageDataSizesES3(
       kSrcWidth, kSrcSubImageY1, 1, kFormat, kType,
       pixel_params, &pixel_size, nullptr, nullptr, nullptr, nullptr));
-  scoped_ptr<uint8_t[]> src_pixels;
+  std::unique_ptr<uint8_t[]> src_pixels;
   src_pixels.reset(new uint8_t[pixel_size]);
   for (size_t i = 0; i < pixel_size; ++i) {
     src_pixels[i] = static_cast<uint8_t>(i % 255);
@@ -2710,7 +2716,7 @@ TEST_F(GLES3ImplementationTest, SubImage3DUnpack) {
   ASSERT_TRUE(GLES2Util::ComputeImageDataSizesES3(
       kSrcWidth, kSrcSubImageY1, kSrcSubImageZ1, kFormat, kType,
       pixel_params, &pixel_size, nullptr, nullptr, nullptr, nullptr));
-  scoped_ptr<uint8_t[]> src_pixels;
+  std::unique_ptr<uint8_t[]> src_pixels;
   src_pixels.reset(new uint8_t[pixel_size]);
   for (size_t i = 0; i < pixel_size; ++i) {
     src_pixels[i] = static_cast<uint8_t>(i % 255);
@@ -2925,7 +2931,7 @@ TEST_F(GLES2ImplementationTest, TexImage3DSingleCommand) {
       kWidth, kHeight, kDepth, kFormat, kType, kPixelStoreUnpackAlignment,
       &size, NULL, NULL));
 
-  scoped_ptr<uint8_t[]> pixels(new uint8_t[size]);
+  std::unique_ptr<uint8_t[]> pixels(new uint8_t[size]);
   for (uint32_t ii = 0; ii < size; ++ii) {
     pixels[ii] = static_cast<uint8_t>(ii);
   }
@@ -2978,7 +2984,7 @@ TEST_F(GLES2ImplementationTest, TexImage3DViaMappedMem) {
       kWidth, kHeight, kDepth, kFormat, kType, kPixelStoreUnpackAlignment,
       &size, NULL, NULL));
 
-  scoped_ptr<uint8_t[]> pixels(new uint8_t[size]);
+  std::unique_ptr<uint8_t[]> pixels(new uint8_t[size]);
   for (uint32_t ii = 0; ii < size; ++ii) {
     pixels[ii] = static_cast<uint8_t>(ii);
   }
@@ -3035,7 +3041,7 @@ TEST_F(GLES2ImplementationTest, TexImage3DViaTexSubImage3D) {
   EXPECT_EQ(size, first_size + second_size);
   ExpectedMemoryInfo mem1 = GetExpectedMemory(first_size);
   ExpectedMemoryInfo mem2 = GetExpectedMemory(second_size);
-  scoped_ptr<uint8_t[]> pixels(new uint8_t[size]);
+  std::unique_ptr<uint8_t[]> pixels(new uint8_t[size]);
   for (uint32_t ii = 0; ii < size; ++ii) {
     pixels[ii] = static_cast<uint8_t>(ii);
   }
@@ -3095,7 +3101,7 @@ TEST_F(GLES2ImplementationTest, TexSubImage3D4Writes) {
   uint32_t fourth_size = second_size - (padded_row_size - unpadded_row_size);
   EXPECT_EQ(size, first_size + second_size + third_size + fourth_size);
 
-  scoped_ptr<uint8_t[]> pixels(new uint8_t[size]);
+  std::unique_ptr<uint8_t[]> pixels(new uint8_t[size]);
   for (uint32_t ii = 0; ii < size; ++ii) {
     pixels[ii] = static_cast<uint8_t>(ii);
   }

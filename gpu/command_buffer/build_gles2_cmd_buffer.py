@@ -6161,7 +6161,7 @@ class GENnHandler(TypeHandler):
       return error::kInvalidArguments;
     }
   }
-  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
+  std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
   gl%(func_name)s(n, service_ids.get());
   for (GLsizei ii = 0; ii < n; ++ii) {
     group_->Add%(resource_name)sId(%(last_arg_name)s[ii], service_ids[ii]);
@@ -10936,6 +10936,8 @@ extern const NameToFunc g_gles2_function_table[] = {
     comment = ("// This file is included by gles2_interface.h to declare the\n"
                "// GL api functions.\n")
     code = """
+#include <memory>
+
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "mojo/public/c/gles2/gles2.h"
 

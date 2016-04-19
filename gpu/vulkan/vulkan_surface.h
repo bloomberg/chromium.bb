@@ -5,7 +5,8 @@
 #ifndef GPU_VULKAN_VULKAN_SURFACE_H_
 #define GPU_VULKAN_VULKAN_SURFACE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -42,7 +43,7 @@ class VULKAN_EXPORT VulkanSurface {
   virtual void Finish() = 0;
 
   // Create a surface that render directlys into a surface.
-  static scoped_ptr<VulkanSurface> CreateViewSurface(
+  static std::unique_ptr<VulkanSurface> CreateViewSurface(
       gfx::AcceleratedWidget window);
 
  protected:

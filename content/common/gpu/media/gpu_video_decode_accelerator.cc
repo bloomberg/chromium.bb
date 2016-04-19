@@ -4,6 +4,7 @@
 
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"

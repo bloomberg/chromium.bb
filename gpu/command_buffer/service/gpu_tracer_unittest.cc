@@ -747,8 +747,8 @@ class GPUTracerTest : public GpuServiceTest {
     decoder_ = nullptr;
     GpuServiceTest::TearDown();
   }
-  scoped_ptr<MockGLES2Decoder> decoder_;
-  scoped_ptr<GPUTracerTester> tracer_tester_;
+  std::unique_ptr<MockGLES2Decoder> decoder_;
+  std::unique_ptr<GPUTracerTester> tracer_tester_;
 };
 
 TEST_F(GPUTracerTest, IsTracingTest) {

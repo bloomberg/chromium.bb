@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
@@ -17,7 +18,6 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -169,7 +169,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     scoped_refptr<gles2::MailboxManager> mailbox_manager_;
     scoped_refptr<gles2::SubscriptionRefSet> subscription_ref_set_;
     scoped_refptr<gpu::ValueStateMap> pending_valuebuffer_state_;
-    scoped_ptr<gpu::gles2::ProgramCache> program_cache_;
+    std::unique_ptr<gpu::gles2::ProgramCache> program_cache_;
   };
 
  private:
@@ -242,12 +242,12 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // creation):
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
   scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
-  scoped_ptr<CommandExecutor> executor_;
-  scoped_ptr<gles2::GLES2Decoder> decoder_;
+  std::unique_ptr<CommandExecutor> executor_;
+  std::unique_ptr<gles2::GLES2Decoder> decoder_;
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
   scoped_refptr<SyncPointOrderData> sync_point_order_data_;
-  scoped_ptr<SyncPointClient> sync_point_client_;
+  std::unique_ptr<SyncPointClient> sync_point_client_;
   base::Closure context_lost_callback_;
   // Used to throttle PerformDelayedWorkOnGpuThread.
   bool delayed_work_pending_;
@@ -267,7 +267,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   uint64_t flushed_fence_sync_release_;
 
   // Accessed on both threads:
-  scoped_ptr<CommandBufferServiceBase> command_buffer_;
+  std::unique_ptr<CommandBufferServiceBase> command_buffer_;
   base::Lock command_buffer_lock_;
   base::WaitableEvent flush_event_;
   scoped_refptr<Service> service_;
@@ -278,7 +278,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 
   // Only used with explicit scheduling and the gpu thread is the same as
   // the client thread.
-  scoped_ptr<base::SequenceChecker> sequence_checker_;
+  std::unique_ptr<base::SequenceChecker> sequence_checker_;
 
   base::WeakPtr<InProcessCommandBuffer> client_thread_weak_ptr_;
   base::WeakPtr<InProcessCommandBuffer> gpu_thread_weak_ptr_;

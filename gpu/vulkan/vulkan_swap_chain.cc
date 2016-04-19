@@ -41,7 +41,7 @@ gfx::SwapResult VulkanSwapChain::SwapBuffers() {
   VkDevice device = device_queue_->GetVulkanDevice();
   VkQueue queue = device_queue_->GetVulkanQueue();
 
-  scoped_ptr<ImageData>& current_image_data = images_[current_image_];
+  std::unique_ptr<ImageData>& current_image_data = images_[current_image_];
 
   // Default image subresource range.
   VkImageSubresourceRange image_subresource_range = {};
@@ -190,7 +190,7 @@ bool VulkanSwapChain::InitializeSwapImages(
   images_.resize(image_count);
   for (uint32_t i = 0; i < image_count; ++i) {
     images_[i].reset(new ImageData);
-    scoped_ptr<ImageData>& image_data = images_[i];
+    std::unique_ptr<ImageData>& image_data = images_[i];
     image_data->image = images[i];
 
     // Setup semaphores.
@@ -258,7 +258,7 @@ void VulkanSwapChain::DestroySwapImages() {
     next_present_semaphore_ = VK_NULL_HANDLE;
   }
 
-  for (const scoped_ptr<ImageData>& image_data : images_) {
+  for (const std::unique_ptr<ImageData>& image_data : images_) {
     if (image_data->command_buffer) {
       // Make sure command buffer is done processing.
       image_data->command_buffer->Wait(UINT64_MAX);

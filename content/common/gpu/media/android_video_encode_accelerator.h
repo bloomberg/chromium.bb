@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <queue>
 #include <vector>
 

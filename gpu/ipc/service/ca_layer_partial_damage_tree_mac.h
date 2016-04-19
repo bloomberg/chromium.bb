@@ -7,10 +7,11 @@
 
 #include <IOSurface/IOSurface.h>
 #include <QuartzCore/QuartzCore.h>
+
 #include <deque>
+#include <memory>
 
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -25,7 +26,7 @@ class CALayerPartialDamageTree {
 
   base::ScopedCFTypeRef<IOSurfaceRef> RootLayerIOSurface();
   void CommitCALayers(CALayer* superlayer,
-                      scoped_ptr<CALayerPartialDamageTree> old_tree,
+                      std::unique_ptr<CALayerPartialDamageTree> old_tree,
                       float scale_factor,
                       const gfx::Rect& pixel_damage_rect);
 
@@ -41,14 +42,14 @@ class CALayerPartialDamageTree {
                                  const gfx::Rect& pixel_damage_rect);
 
   void UpdateRootAndPartialDamagePlanes(
-      scoped_ptr<CALayerPartialDamageTree> old_tree,
+      std::unique_ptr<CALayerPartialDamageTree> old_tree,
       const gfx::Rect& pixel_damage_rect);
 
   void UpdateCALayers(CALayer* superlayer, float scale_factor);
 
   const bool allow_partial_swap_;
-  scoped_ptr<OverlayPlane> root_plane_;
-  std::deque<scoped_ptr<OverlayPlane>> partial_damage_planes_;
+  std::unique_ptr<OverlayPlane> root_plane_;
+  std::deque<std::unique_ptr<OverlayPlane>> partial_damage_planes_;
 };
 
 }  // content

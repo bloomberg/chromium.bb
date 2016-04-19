@@ -10,6 +10,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <queue>
 #include <set>
 #include <string>
@@ -18,7 +19,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/client/buffer_tracker.h"
@@ -747,7 +747,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // unpack skip images as last set by glPixelStorei
   GLint unpack_skip_images_;
 
-  scoped_ptr<TextureUnit[]> texture_units_;
+  std::unique_ptr<TextureUnit[]> texture_units_;
 
   // 0 to gl_state_.max_combined_texture_image_units.
   GLuint active_texture_unit_;
@@ -774,7 +774,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   // Client side management for vertex array objects. Needed to correctly
   // track client side arrays.
-  scoped_ptr<VertexArrayObjectManager> vertex_array_object_manager_;
+  std::unique_ptr<VertexArrayObjectManager> vertex_array_object_manager_;
 
   GLuint reserved_ids_[2];
 
@@ -816,15 +816,15 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   typedef std::map<const void*, MappedTexture> MappedTextureMap;
   MappedTextureMap mapped_textures_;
 
-  scoped_ptr<MappedMemoryManager> mapped_memory_;
+  std::unique_ptr<MappedMemoryManager> mapped_memory_;
 
   scoped_refptr<ShareGroup> share_group_;
   ShareGroupContextData share_group_context_data_;
 
-  scoped_ptr<QueryTracker> query_tracker_;
-  scoped_ptr<IdAllocator> query_id_allocator_;
+  std::unique_ptr<QueryTracker> query_tracker_;
+  std::unique_ptr<IdAllocator> query_id_allocator_;
 
-  scoped_ptr<BufferTracker> buffer_tracker_;
+  std::unique_ptr<BufferTracker> buffer_tracker_;
 
   base::Callback<void(const char*, int32_t)> error_message_callback_;
   base::Closure lost_context_callback_;

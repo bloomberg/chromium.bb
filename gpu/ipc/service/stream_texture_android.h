@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
@@ -64,7 +66,7 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
   // GpuCommandBufferStub::DestructionObserver implementation.
   void OnWillDestroyStub() override;
 
-  scoped_ptr<ui::ScopedMakeCurrent> MakeStubCurrent();
+  std::unique_ptr<ui::ScopedMakeCurrent> MakeStubCurrent();
 
   void UpdateTexImage();
 

@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -156,7 +156,7 @@ class GPU_EXPORT GpuChannelManager {
   }
 
  protected:
-  virtual scoped_ptr<GpuChannel> CreateGpuChannel(
+  virtual std::unique_ptr<GpuChannel> CreateGpuChannel(
       int client_id,
       uint64_t client_tracing_id,
       bool preempts,
@@ -181,7 +181,7 @@ class GPU_EXPORT GpuChannelManager {
   // These objects manage channels to individual renderer processes there is
   // one channel for each renderer process that has connected to this GPU
   // process.
-  base::ScopedPtrHashMap<int32_t, scoped_ptr<GpuChannel>> gpu_channels_;
+  base::ScopedPtrHashMap<int32_t, std::unique_ptr<GpuChannel>> gpu_channels_;
 
  private:
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
@@ -211,8 +211,8 @@ class GPU_EXPORT GpuChannelManager {
   GpuMemoryManager gpu_memory_manager_;
   // SyncPointManager guaranteed to outlive running MessageLoop.
   SyncPointManager* sync_point_manager_;
-  scoped_ptr<SyncPointClient> sync_point_client_waiter_;
-  scoped_ptr<gles2::ProgramCache> program_cache_;
+  std::unique_ptr<SyncPointClient> sync_point_client_waiter_;
+  std::unique_ptr<gles2::ProgramCache> program_cache_;
   scoped_refptr<gles2::ShaderTranslatorCache> shader_translator_cache_;
   scoped_refptr<gles2::FramebufferCompletenessCache>
       framebuffer_completeness_cache_;

@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/threading/thread.h"
@@ -53,7 +55,7 @@ class CommandBufferServiceTest : public testing::Test {
   }
 
   scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
-  scoped_ptr<CommandBufferService> command_buffer_;
+  std::unique_ptr<CommandBufferService> command_buffer_;
 };
 
 TEST_F(CommandBufferServiceTest, InitializesCommandBuffer) {
@@ -84,7 +86,7 @@ class MockCallbackTest : public CallbackTest {
 TEST_F(CommandBufferServiceTest, CanSyncGetAndPutOffset) {
   Initialize(1024);
 
-  scoped_ptr<StrictMock<MockCallbackTest> > change_callback(
+  std::unique_ptr<StrictMock<MockCallbackTest>> change_callback(
       new StrictMock<MockCallbackTest>);
   command_buffer_->SetPutOffsetChangeCallback(
       base::Bind(
@@ -117,7 +119,7 @@ TEST_F(CommandBufferServiceTest, SetGetBuffer) {
   command_buffer_->CreateTransferBuffer(1024, &ring_buffer_id);
   EXPECT_GT(ring_buffer_id, 0);
 
-  scoped_ptr<StrictMock<MockCallbackTest> > change_callback(
+  std::unique_ptr<StrictMock<MockCallbackTest>> change_callback(
       new StrictMock<MockCallbackTest>);
   command_buffer_->SetGetBufferChangeCallback(
       base::Bind(

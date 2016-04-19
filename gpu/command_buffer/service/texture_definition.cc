@@ -10,7 +10,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
 // gl_stream_texture_image.h is included to work around crbug.com/595189, a

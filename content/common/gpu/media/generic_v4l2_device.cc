@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 //
 
+#include "content/common/gpu/media/generic_v4l2_device.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <libdrm/drm_fourcc.h>
@@ -13,12 +15,13 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
+#include <memory>
+
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "content/common/gpu/media/generic_v4l2_device.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl_test_template.h"
 
@@ -23,7 +25,7 @@ TEST(GpuMemoryBufferImplSharedMemoryTest, Create) {
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
     bool destroyed = false;
-    scoped_ptr<GpuMemoryBufferImplSharedMemory> buffer(
+    std::unique_ptr<GpuMemoryBufferImplSharedMemory> buffer(
         GpuMemoryBufferImplSharedMemory::Create(
             kBufferId, buffer_size, format,
             base::Bind(&BufferDestroyed, base::Unretained(&destroyed))));

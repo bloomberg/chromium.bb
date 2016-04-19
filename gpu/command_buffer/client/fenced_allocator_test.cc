@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/aligned_memory.h"
@@ -69,11 +71,11 @@ class BaseFencedAllocatorTest : public testing::Test {
 
   int32_t GetToken() { return command_buffer_->GetLastState().token; }
 
-  scoped_ptr<AsyncAPIMock> api_mock_;
+  std::unique_ptr<AsyncAPIMock> api_mock_;
   scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
-  scoped_ptr<CommandBufferService> command_buffer_;
-  scoped_ptr<CommandExecutor> executor_;
-  scoped_ptr<CommandBufferHelper> helper_;
+  std::unique_ptr<CommandBufferService> command_buffer_;
+  std::unique_ptr<CommandExecutor> executor_;
+  std::unique_ptr<CommandBufferHelper> helper_;
   base::MessageLoop message_loop_;
 };
 
@@ -101,7 +103,7 @@ class FencedAllocatorTest : public BaseFencedAllocatorTest {
     BaseFencedAllocatorTest::TearDown();
   }
 
-  scoped_ptr<FencedAllocator> allocator_;
+  std::unique_ptr<FencedAllocator> allocator_;
 };
 
 // Checks basic alloc and free.
@@ -413,8 +415,8 @@ class FencedAllocatorWrapperTest : public BaseFencedAllocatorTest {
     BaseFencedAllocatorTest::TearDown();
   }
 
-  scoped_ptr<FencedAllocatorWrapper> allocator_;
-  scoped_ptr<char, base::AlignedFreeDeleter> buffer_;
+  std::unique_ptr<FencedAllocatorWrapper> allocator_;
+  std::unique_ptr<char, base::AlignedFreeDeleter> buffer_;
 };
 
 // Checks basic alloc and free.

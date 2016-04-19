@@ -4,7 +4,8 @@
 
 #include "gpu/command_buffer/service/program_cache.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -91,7 +92,7 @@ class ProgramCacheTest : public testing::Test {
     cache_(new NoBackendProgramCache()) { }
 
  protected:
-  scoped_ptr<NoBackendProgramCache> cache_;
+  std::unique_ptr<NoBackendProgramCache> cache_;
   std::vector<std::string> varyings_;
 };
 

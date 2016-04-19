@@ -4,10 +4,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/test_helper.h"
@@ -40,7 +41,7 @@ class VertexArrayManagerTest : public GpuServiceTest {
     GpuServiceTest::TearDown();
   }
 
-  scoped_ptr<VertexArrayManager> manager_;
+  std::unique_ptr<VertexArrayManager> manager_;
 };
 
 // GCC requires these declarations, but MSVC requires they not be present

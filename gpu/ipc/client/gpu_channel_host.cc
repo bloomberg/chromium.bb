@@ -10,6 +10,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
@@ -100,7 +101,7 @@ void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle,
 bool GpuChannelHost::Send(IPC::Message* msg) {
   // Callee takes ownership of message, regardless of whether Send is
   // successful. See IPC::Sender.
-  scoped_ptr<IPC::Message> message(msg);
+  std::unique_ptr<IPC::Message> message(msg);
   // The GPU process never sends synchronous IPCs so clear the unblock flag to
   // preserve order.
   message->set_unblock(false);
@@ -188,7 +189,7 @@ void GpuChannelHost::InternalFlush(StreamFlushInfo* flush_info) {
   flush_info->flushed_stream_flush_id = flush_info->flush_id;
 }
 
-scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateCommandBuffer(
+std::unique_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateCommandBuffer(
     gpu::SurfaceHandle surface_handle,
     const gfx::Size& size,
     CommandBufferProxyImpl* share_group,
@@ -234,8 +235,8 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateCommandBuffer(
     return nullptr;
   }
 
-  scoped_ptr<CommandBufferProxyImpl> command_buffer =
-      make_scoped_ptr(new CommandBufferProxyImpl(this, route_id, stream_id));
+  std::unique_ptr<CommandBufferProxyImpl> command_buffer =
+      base::WrapUnique(new CommandBufferProxyImpl(this, route_id, stream_id));
   AddRoute(route_id, command_buffer->AsWeakPtr());
 
   return command_buffer;

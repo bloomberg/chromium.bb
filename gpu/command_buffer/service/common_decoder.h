@@ -9,11 +9,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <stack>
 #include <string>
+
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/gpu_export.h"
@@ -104,7 +105,7 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
     }
 
     size_t size_;
-    ::scoped_ptr<int8_t[]> data_;
+    ::std::unique_ptr<int8_t[]> data_;
 
     DISALLOW_COPY_AND_ASSIGN(Bucket);
   };

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_GLES2_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_
 #define COMPONENTS_MUS_GLES2_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 
@@ -16,12 +18,12 @@ class MojoGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   ~MojoGpuMemoryBufferManager() override;
 
   // Overridden from gpu::GpuMemoryBufferManager:
-  scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+  std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       int32_t surface_id) override;
-  scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(
+  std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format) override;

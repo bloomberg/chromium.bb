@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"

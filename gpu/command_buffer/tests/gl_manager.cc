@@ -15,6 +15,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -215,18 +216,18 @@ GLManager::~GLManager() {
   }
 }
 
-scoped_ptr<gfx::GpuMemoryBuffer> GLManager::CreateGpuMemoryBuffer(
+std::unique_ptr<gfx::GpuMemoryBuffer> GLManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format) {
 #if defined(OS_MACOSX)
   if (use_iosurface_memory_buffers_) {
-    return make_scoped_ptr<gfx::GpuMemoryBuffer>(
+    return base::WrapUnique<gfx::GpuMemoryBuffer>(
         new IOSurfaceGpuMemoryBuffer(size, format));
   }
 #endif  // defined(OS_MACOSX)
   std::vector<uint8_t> data(gfx::BufferSizeForBufferFormat(size, format), 0);
   scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes(data));
-  return make_scoped_ptr<gfx::GpuMemoryBuffer>(
+  return base::WrapUnique<gfx::GpuMemoryBuffer>(
       new GpuMemoryBufferImpl(bytes.get(), size, format));
 }
 
@@ -567,7 +568,7 @@ int32_t GLManager::CreateGpuMemoryBufferImage(size_t width,
                                               unsigned internalformat,
                                               unsigned usage) {
   DCHECK_EQ(usage, static_cast<unsigned>(GL_READ_WRITE_CHROMIUM));
-  scoped_ptr<gfx::GpuMemoryBuffer> buffer = CreateGpuMemoryBuffer(
+  std::unique_ptr<gfx::GpuMemoryBuffer> buffer = CreateGpuMemoryBuffer(
       gfx::Size(width, height), gfx::BufferFormat::RGBA_8888);
   return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
 }

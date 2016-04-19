@@ -6,8 +6,12 @@
 
 #include <GLES2/gl2ext.h>
 #include <GLES3/gl3.h>
+
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -29,7 +33,7 @@ class VertexArrayObjectManagerTest : public testing::Test {
   }
   void TearDown() override {}
 
-  scoped_ptr<VertexArrayObjectManager> manager_;
+  std::unique_ptr<VertexArrayObjectManager> manager_;
 };
 
 // GCC requires these declarations, but MSVC requires they not be present

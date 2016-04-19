@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_GPU_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 #define CONTENT_BROWSER_COMPOSITOR_GPU_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 
+#include <memory>
+
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"

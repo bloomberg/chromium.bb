@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -226,8 +228,8 @@ class BufferManagerTestBase : public GpuServiceTest {
         40, 1, GL_UNSIGNED_INT, enable_primitive_restart, &max_value));
   }
 
-  scoped_ptr<BufferManager> manager_;
-  scoped_ptr<MockErrorState> error_state_;
+  std::unique_ptr<BufferManager> manager_;
+  std::unique_ptr<MockErrorState> error_state_;
 };
 
 class BufferManagerTest : public BufferManagerTestBase {
@@ -363,7 +365,7 @@ TEST_F(BufferManagerTest, DoBufferSubData) {
   EXPECT_FALSE(DoBufferSubData(buffer, kTarget, 0, -1, data));
   DoBufferData(buffer, kTarget, 1, GL_STATIC_DRAW, NULL, GL_NO_ERROR);
   const int size = 0x20000;
-  scoped_ptr<uint8_t[]> temp(new uint8_t[size]);
+  std::unique_ptr<uint8_t[]> temp(new uint8_t[size]);
   EXPECT_FALSE(DoBufferSubData(buffer, kTarget, 0 - size, size, temp.get()));
   EXPECT_FALSE(DoBufferSubData(buffer, kTarget, 1, size / 2, temp.get()));
 }

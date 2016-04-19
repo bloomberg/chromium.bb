@@ -10,7 +10,9 @@
 #include <GLES2/gl2ext.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "base/memory/scoped_ptr.h"
+
+#include <memory>
+
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
@@ -67,10 +69,10 @@ class BufferTrackerTest : public testing::Test {
     command_buffer_.reset();
   }
 
-  scoped_ptr<MockClientCommandBufferImpl> command_buffer_;
-  scoped_ptr<GLES2CmdHelper> helper_;
-  scoped_ptr<MappedMemoryManager> mapped_memory_;
-  scoped_ptr<BufferTracker> buffer_tracker_;
+  std::unique_ptr<MockClientCommandBufferImpl> command_buffer_;
+  std::unique_ptr<GLES2CmdHelper> helper_;
+  std::unique_ptr<MappedMemoryManager> mapped_memory_;
+  std::unique_ptr<BufferTracker> buffer_tracker_;
 };
 
 TEST_F(BufferTrackerTest, Basic) {

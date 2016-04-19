@@ -5,7 +5,9 @@
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
+#include <memory>
 #include <queue>
 #include <string>
 #include <utility>

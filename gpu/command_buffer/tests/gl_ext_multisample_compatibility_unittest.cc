@@ -7,6 +7,8 @@
 #include <GLES2/gl2extchromium.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "gpu/config/gpu_test_config.h"
@@ -154,7 +156,7 @@ TEST_F(EXTMultisampleCompatibilityTest, DrawAndResolve) {
   // values. These might be due to different MSAA sample counts causing
   // different samples to hit.  Other option is driver bugs. Just test that
   // disabling multisample causes a difference.
-  scoped_ptr<uint8_t[]> results[3];
+  std::unique_ptr<uint8_t[]> results[3];
   const GLint kResultSize = kWidth * kHeight * 4;
   for (int pass = 0; pass < 3; pass++) {
     PrepareForDraw();
@@ -206,7 +208,7 @@ TEST_F(EXTMultisampleCompatibilityTest, DrawAlphaOneAndResolve) {
   // even approximate sample values is not that easy.  Thus, just test
   // representative positions which have fractional pixels, inspecting that
   // normal rendering is different to SAMPLE_ALPHA_TO_ONE rendering.
-  scoped_ptr<uint8_t[]> results[3];
+  std::unique_ptr<uint8_t[]> results[3];
   const GLint kResultSize = kWidth * kHeight * 4;
 
   for (int pass = 0; pass < 3; ++pass) {

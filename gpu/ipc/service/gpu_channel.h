@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/threading/thread_checker.h"
@@ -181,7 +181,7 @@ class GPU_EXPORT GpuChannel
   scoped_refptr<GpuChannelMessageFilter> filter_;
 
   // Map of routing id to command buffer stub.
-  base::ScopedPtrHashMap<int32_t, scoped_ptr<GpuCommandBufferStub>> stubs_;
+  base::ScopedPtrHashMap<int32_t, std::unique_ptr<GpuCommandBufferStub>> stubs_;
 
  private:
   bool OnControlMessageReceived(const IPC::Message& msg);
@@ -226,7 +226,7 @@ class GPU_EXPORT GpuChannel
   // message loop.
   SyncPointManager* const sync_point_manager_;
 
-  scoped_ptr<IPC::SyncChannel> channel_;
+  std::unique_ptr<IPC::SyncChannel> channel_;
 
   IPC::Listener* unhandled_message_listener_;
 
@@ -453,7 +453,7 @@ class GpuChannelMessageQueue
   bool enabled_;
   bool scheduled_;
   GpuChannel* const channel_;
-  std::deque<scoped_ptr<GpuChannelMessage>> channel_messages_;
+  std::deque<std::unique_ptr<GpuChannelMessage>> channel_messages_;
   mutable base::Lock channel_lock_;
 
   // The following are accessed on the IO thread only.
@@ -464,7 +464,7 @@ class GpuChannelMessageQueue
   // It is reset when we transition to IDLE.
   base::TimeDelta max_preemption_time_;
   // This timer is used and runs tasks on the IO thread.
-  scoped_ptr<base::OneShotTimer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
   base::ThreadChecker io_thread_checker_;
 
   // Keeps track of sync point related state such as message order numbers.

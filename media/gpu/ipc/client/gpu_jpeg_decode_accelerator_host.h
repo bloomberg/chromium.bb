@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -66,7 +68,7 @@ class GpuJpegDecodeAcceleratorHost : public JpegDecodeAccelerator,
   // GPU IO task runner.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  scoped_ptr<Receiver> receiver_;
+  std::unique_ptr<Receiver> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuJpegDecodeAcceleratorHost);
 };

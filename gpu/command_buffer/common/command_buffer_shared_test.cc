@@ -8,9 +8,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +25,7 @@ class CommandBufferSharedTest : public testing::Test {
     shared_state_->Initialize();
   }
 
-  scoped_ptr<CommandBufferSharedState> shared_state_;
+  std::unique_ptr<CommandBufferSharedState> shared_state_;
 };
 
 TEST_F(CommandBufferSharedTest, TestBasic) {
@@ -57,7 +58,7 @@ void WriteToState(int32_t* buffer, CommandBufferSharedState* shared_state) {
 }
 
 TEST_F(CommandBufferSharedTest, TestConsistency) {
-  scoped_ptr<int32_t[]> buffer;
+  std::unique_ptr<int32_t[]> buffer;
   buffer.reset(new int32_t[kSize]);
   base::Thread consumer("Reader Thread");
 

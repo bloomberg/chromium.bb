@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/android/build_info.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"

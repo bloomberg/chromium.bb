@@ -8,6 +8,8 @@
 #include <GLES2/gl2extchromium.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
@@ -172,7 +174,7 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
   // Create the gpu memory buffer.
-  scoped_ptr<gfx::GpuMemoryBuffer> buffer(gl_.CreateGpuMemoryBuffer(
+  std::unique_ptr<gfx::GpuMemoryBuffer> buffer(gl_.CreateGpuMemoryBuffer(
       gfx::Size(kImageWidth, kImageHeight), GetParam()));
 
   // Map buffer for writing.

@@ -5,10 +5,11 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_FEATURE_INFO_H_
 #define GPU_COMMAND_BUFFER_SERVICE_FEATURE_INFO_H_
 
+#include <memory>
 #include <string>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
@@ -188,7 +189,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   bool oes_texture_half_float_linear_available_;
 
   bool disable_shader_translator_;
-  scoped_ptr<gfx::GLVersionInfo> gl_version_info_;
+  std::unique_ptr<gfx::GLVersionInfo> gl_version_info_;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureInfo);
 };

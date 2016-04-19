@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "gpu/gpu_export.h"
@@ -193,7 +193,7 @@ class GPU_EXPORT GpuControlList {
 
    private:
     OsType type_;
-    scoped_ptr<VersionInfo> version_info_;
+    std::unique_ptr<VersionInfo> version_info_;
   };
 
   class GPU_EXPORT FloatInfo {
@@ -436,29 +436,29 @@ class GPU_EXPORT GpuControlList {
     std::vector<int> cr_bugs_;
     std::vector<int> webkit_bugs_;
     std::vector<std::string> disabled_extensions_;
-    scoped_ptr<OsInfo> os_info_;
+    std::unique_ptr<OsInfo> os_info_;
     uint32_t vendor_id_;
     std::vector<uint32_t> device_id_list_;
     MultiGpuStyle multi_gpu_style_;
     MultiGpuCategory multi_gpu_category_;
     GLType gl_type_;
     std::string driver_vendor_info_;
-    scoped_ptr<VersionInfo> driver_version_info_;
-    scoped_ptr<VersionInfo> driver_date_info_;
-    scoped_ptr<VersionInfo> gl_version_info_;
+    std::unique_ptr<VersionInfo> driver_version_info_;
+    std::unique_ptr<VersionInfo> driver_date_info_;
+    std::unique_ptr<VersionInfo> gl_version_info_;
     std::string gl_vendor_info_;
     std::string gl_renderer_info_;
     std::string gl_extensions_info_;
-    scoped_ptr<IntInfo> gl_reset_notification_strategy_info_;
+    std::unique_ptr<IntInfo> gl_reset_notification_strategy_info_;
     std::string cpu_brand_;
-    scoped_ptr<FloatInfo> perf_graphics_info_;
-    scoped_ptr<FloatInfo> perf_gaming_info_;
-    scoped_ptr<FloatInfo> perf_overall_info_;
+    std::unique_ptr<FloatInfo> perf_graphics_info_;
+    std::unique_ptr<FloatInfo> perf_gaming_info_;
+    std::unique_ptr<FloatInfo> perf_overall_info_;
     std::vector<std::string> machine_model_name_list_;
-    scoped_ptr<VersionInfo> machine_model_version_info_;
-    scoped_ptr<IntInfo> gpu_count_info_;
-    scoped_ptr<BoolInfo> direct_rendering_info_;
-    scoped_ptr<BoolInfo> in_process_gpu_info_;
+    std::unique_ptr<VersionInfo> machine_model_version_info_;
+    std::unique_ptr<IntInfo> gpu_count_info_;
+    std::unique_ptr<BoolInfo> direct_rendering_info_;
+    std::unique_ptr<BoolInfo> in_process_gpu_info_;
     std::set<int> features_;
     std::vector<ScopedGpuControlListEntry> exceptions_;
   };

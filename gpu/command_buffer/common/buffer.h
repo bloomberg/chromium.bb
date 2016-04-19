@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "gpu/gpu_export.h"
@@ -30,7 +31,7 @@ class GPU_EXPORT BufferBacking {
 
 class GPU_EXPORT SharedMemoryBufferBacking : public BufferBacking {
  public:
-  SharedMemoryBufferBacking(scoped_ptr<base::SharedMemory> shared_memory,
+  SharedMemoryBufferBacking(std::unique_ptr<base::SharedMemory> shared_memory,
                             size_t size);
   ~SharedMemoryBufferBacking() override;
   void* GetMemory() const override;
@@ -38,7 +39,7 @@ class GPU_EXPORT SharedMemoryBufferBacking : public BufferBacking {
   base::SharedMemory* shared_memory() { return shared_memory_.get(); }
 
  private:
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
   size_t size_;
   DISALLOW_COPY_AND_ASSIGN(SharedMemoryBufferBacking);
 };
@@ -46,7 +47,7 @@ class GPU_EXPORT SharedMemoryBufferBacking : public BufferBacking {
 // Buffer owns a piece of shared-memory of a certain size.
 class GPU_EXPORT Buffer : public base::RefCountedThreadSafe<Buffer> {
  public:
-  explicit Buffer(scoped_ptr<BufferBacking> backing);
+  explicit Buffer(std::unique_ptr<BufferBacking> backing);
 
   BufferBacking* backing() const { return backing_.get(); }
   void* memory() const { return memory_; }
@@ -59,22 +60,22 @@ class GPU_EXPORT Buffer : public base::RefCountedThreadSafe<Buffer> {
   friend class base::RefCountedThreadSafe<Buffer>;
   ~Buffer();
 
-  scoped_ptr<BufferBacking> backing_;
+  std::unique_ptr<BufferBacking> backing_;
   void* memory_;
   size_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
 
-static inline scoped_ptr<BufferBacking> MakeBackingFromSharedMemory(
-    scoped_ptr<base::SharedMemory> shared_memory,
+static inline std::unique_ptr<BufferBacking> MakeBackingFromSharedMemory(
+    std::unique_ptr<base::SharedMemory> shared_memory,
     size_t size) {
-  return scoped_ptr<BufferBacking>(
+  return std::unique_ptr<BufferBacking>(
       new SharedMemoryBufferBacking(std::move(shared_memory), size));
 }
 
 static inline scoped_refptr<Buffer> MakeBufferFromSharedMemory(
-    scoped_ptr<base::SharedMemory> shared_memory,
+    std::unique_ptr<base::SharedMemory> shared_memory,
     size_t size) {
   return new Buffer(
       MakeBackingFromSharedMemory(std::move(shared_memory), size));

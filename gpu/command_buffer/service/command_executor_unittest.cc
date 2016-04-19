@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "gpu/command_buffer/common/command_buffer_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
@@ -31,7 +33,7 @@ class CommandExecutorTest : public testing::Test {
   static const int32_t kTransferBufferId = 123;
 
   void SetUp() override {
-    scoped_ptr<base::SharedMemory> shared_memory(new ::base::SharedMemory);
+    std::unique_ptr<base::SharedMemory> shared_memory(new ::base::SharedMemory);
     shared_memory->CreateAndMapAnonymous(kRingBufferSize);
     buffer_ = static_cast<int32_t*>(shared_memory->memory());
     shared_memory_buffer_ =
@@ -68,11 +70,11 @@ class CommandExecutorTest : public testing::Test {
 
   error::Error GetError() { return command_buffer_->GetLastState().error; }
 
-  scoped_ptr<MockCommandBuffer> command_buffer_;
+  std::unique_ptr<MockCommandBuffer> command_buffer_;
   scoped_refptr<Buffer> shared_memory_buffer_;
   int32_t* buffer_;
-  scoped_ptr<gles2::MockGLES2Decoder> decoder_;
-  scoped_ptr<CommandExecutor> executor_;
+  std::unique_ptr<gles2::MockGLES2Decoder> decoder_;
+  std::unique_ptr<CommandExecutor> executor_;
   base::MessageLoop message_loop_;
 };
 

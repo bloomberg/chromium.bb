@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -78,7 +79,7 @@ class GLManager : private GpuControl {
   GLManager();
   ~GLManager() override;
 
-  scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
+  std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format);
 
@@ -162,17 +163,17 @@ class GLManager : private GpuControl {
   SyncPointManager* sync_point_manager_;  // Non-owning.
 
   scoped_refptr<SyncPointOrderData> sync_point_order_data_;
-  scoped_ptr<SyncPointClient> sync_point_client_;
+  std::unique_ptr<SyncPointClient> sync_point_client_;
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
-  scoped_ptr<CommandBufferService> command_buffer_;
-  scoped_ptr<gles2::GLES2Decoder> decoder_;
-  scoped_ptr<CommandExecutor> executor_;
+  std::unique_ptr<CommandBufferService> command_buffer_;
+  std::unique_ptr<gles2::GLES2Decoder> decoder_;
+  std::unique_ptr<CommandExecutor> executor_;
   scoped_refptr<gfx::GLSurface> surface_;
   scoped_refptr<gfx::GLContext> context_;
-  scoped_ptr<gles2::GLES2CmdHelper> gles2_helper_;
-  scoped_ptr<TransferBuffer> transfer_buffer_;
-  scoped_ptr<gles2::GLES2Implementation> gles2_implementation_;
+  std::unique_ptr<gles2::GLES2CmdHelper> gles2_helper_;
+  std::unique_ptr<TransferBuffer> transfer_buffer_;
+  std::unique_ptr<gles2::GLES2Implementation> gles2_implementation_;
   bool context_lost_allowed_;
   bool pause_commands_;
   uint32_t paused_order_num_;

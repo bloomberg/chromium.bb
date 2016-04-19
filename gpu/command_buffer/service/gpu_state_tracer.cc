@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "context_state.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -19,7 +20,7 @@ const int kBytesPerPixel = 4;
 
 class Snapshot : public base::trace_event::ConvertableToTraceFormat {
  public:
-  static scoped_ptr<Snapshot> Create(const ContextState* state);
+  static std::unique_ptr<Snapshot> Create(const ContextState* state);
 
   ~Snapshot() override {}
 
@@ -44,8 +45,8 @@ class Snapshot : public base::trace_event::ConvertableToTraceFormat {
 
 Snapshot::Snapshot(const ContextState* state) : state_(state) {}
 
-scoped_ptr<Snapshot> Snapshot::Create(const ContextState* state) {
-  return make_scoped_ptr(new Snapshot(state));
+std::unique_ptr<Snapshot> Snapshot::Create(const ContextState* state) {
+  return base::WrapUnique(new Snapshot(state));
 }
 
 bool Snapshot::SaveScreenshot(const gfx::Size& size) {
@@ -99,8 +100,9 @@ void Snapshot::AppendAsTraceFormat(std::string* out) const {
   *out += "}";
 }
 
-scoped_ptr<GPUStateTracer> GPUStateTracer::Create(const ContextState* state) {
-  return scoped_ptr<GPUStateTracer>(new GPUStateTracer(state));
+std::unique_ptr<GPUStateTracer> GPUStateTracer::Create(
+    const ContextState* state) {
+  return std::unique_ptr<GPUStateTracer>(new GPUStateTracer(state));
 }
 
 GPUStateTracer::GPUStateTracer(const ContextState* state) : state_(state) {
@@ -117,7 +119,7 @@ void GPUStateTracer::TakeSnapshotWithCurrentFramebuffer(const gfx::Size& size) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("gpu.debug"),
                "GPUStateTracer::TakeSnapshotWithCurrentFramebuffer");
 
-  scoped_ptr<Snapshot> snapshot(Snapshot::Create(state_));
+  std::unique_ptr<Snapshot> snapshot(Snapshot::Create(state_));
 
   // Only save a screenshot for now.
   if (!snapshot->SaveScreenshot(size))

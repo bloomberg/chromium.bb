@@ -4,6 +4,7 @@
 
 #include "content/common/gpu/media/media_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"

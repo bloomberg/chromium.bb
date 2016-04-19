@@ -4,6 +4,7 @@
 
 #include "content/common/gpu/media/android_video_encode_accelerator.h"
 
+#include <memory>
 #include <set>
 
 #include "base/bind.h"

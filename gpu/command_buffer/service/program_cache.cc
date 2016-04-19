@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
-#include "base/memory/scoped_ptr.h"
+
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "third_party/angle/src/common/version.h"
 
@@ -123,7 +124,7 @@ void ProgramCache::ComputeProgramHash(
   const size_t total_size = shader0_size + shader1_size + angle_commit_size
       + map_size + var_size + sizeof(transform_feedback_buffer_mode);
 
-  scoped_ptr<unsigned char[]> buffer(new unsigned char[total_size]);
+  std::unique_ptr<unsigned char[]> buffer(new unsigned char[total_size]);
   memcpy(buffer.get(), hashed_shader_0, shader0_size);
   memcpy(&buffer[shader0_size], hashed_shader_1, shader1_size);
   size_t current_pos = shader0_size + shader1_size;

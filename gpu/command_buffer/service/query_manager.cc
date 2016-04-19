@@ -479,7 +479,7 @@ class CommandsCompletedQuery : public QueryManager::Query {
   ~CommandsCompletedQuery() override;
 
  private:
-  scoped_ptr<gfx::GLFence> fence_;
+  std::unique_ptr<gfx::GLFence> fence_;
   base::TimeTicks begin_time_;
 };
 
@@ -559,7 +559,7 @@ class TimeElapsedQuery : public QueryManager::Query {
   ~TimeElapsedQuery() override;
 
  private:
-  scoped_ptr<gfx::GPUTimer> gpu_timer_;
+  std::unique_ptr<gfx::GPUTimer> gpu_timer_;
 };
 
 TimeElapsedQuery::TimeElapsedQuery(QueryManager* manager,
@@ -636,7 +636,7 @@ class TimeStampQuery : public QueryManager::Query {
   ~TimeStampQuery() override;
 
  private:
-  scoped_ptr<gfx::GPUTimer> gpu_timer_;
+  std::unique_ptr<gfx::GPUTimer> gpu_timer_;
 };
 
 TimeStampQuery::TimeStampQuery(QueryManager* manager,
@@ -809,7 +809,7 @@ QueryManager::Query* QueryManager::CreateQuery(GLenum target,
   return query.get();
 }
 
-scoped_ptr<gfx::GPUTimer> QueryManager::CreateGPUTimer(bool elapsed_time) {
+std::unique_ptr<gfx::GPUTimer> QueryManager::CreateGPUTimer(bool elapsed_time) {
   return gpu_timing_client_->CreateGPUTimer(elapsed_time);
 }
 

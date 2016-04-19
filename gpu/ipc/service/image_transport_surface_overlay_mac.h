@@ -6,6 +6,7 @@
 #define GPU_IPC_SERVICE_IMAGE_TRANSPORT_SURFACE_OVERLAY_MAC_H_
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #import "base/mac/scoped_nsobject.h"
@@ -99,12 +100,12 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
   // Planes that have been scheduled, but have not had a subsequent SwapBuffers
   // call made yet.
-  scoped_ptr<CALayerPartialDamageTree> pending_partial_damage_tree_;
-  scoped_ptr<CALayerTree> pending_ca_layer_tree_;
+  std::unique_ptr<CALayerPartialDamageTree> pending_partial_damage_tree_;
+  std::unique_ptr<CALayerTree> pending_ca_layer_tree_;
 
   // The planes that are currently being displayed on the screen.
-  scoped_ptr<CALayerPartialDamageTree> current_partial_damage_tree_;
-  scoped_ptr<CALayerTree> current_ca_layer_tree_;
+  std::unique_ptr<CALayerPartialDamageTree> current_partial_damage_tree_;
+  std::unique_ptr<CALayerTree> current_ca_layer_tree_;
 
   // The vsync information provided by the browser.
   bool vsync_parameters_valid_;

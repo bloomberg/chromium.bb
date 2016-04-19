@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/ring_buffer.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -97,7 +98,7 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
   void AllocateRingBuffer(unsigned int size);
 
   CommandBufferHelper* helper_;
-  scoped_ptr<RingBuffer> ring_buffer_;
+  std::unique_ptr<RingBuffer> ring_buffer_;
 
   // size reserved for results
   unsigned int result_size_;

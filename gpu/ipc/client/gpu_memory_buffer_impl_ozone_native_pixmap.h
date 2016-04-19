@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
@@ -23,7 +25,7 @@ class GPU_EXPORT GpuMemoryBufferImplOzoneNativePixmap
  public:
   ~GpuMemoryBufferImplOzoneNativePixmap() override;
 
-  static scoped_ptr<GpuMemoryBufferImplOzoneNativePixmap> CreateFromHandle(
+  static std::unique_ptr<GpuMemoryBufferImplOzoneNativePixmap> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
@@ -51,9 +53,9 @@ class GPU_EXPORT GpuMemoryBufferImplOzoneNativePixmap
       const gfx::Size& size,
       gfx::BufferFormat format,
       const DestructionCallback& callback,
-      scoped_ptr<ui::ClientNativePixmap> native_pixmap);
+      std::unique_ptr<ui::ClientNativePixmap> native_pixmap);
 
-  scoped_ptr<ui::ClientNativePixmap> pixmap_;
+  std::unique_ptr<ui::ClientNativePixmap> pixmap_;
   void* data_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplOzoneNativePixmap);

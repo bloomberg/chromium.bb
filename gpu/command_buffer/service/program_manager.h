@@ -9,8 +9,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -506,7 +508,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   bool uniforms_cleared_;
 
   // Log info
-  scoped_ptr<std::string> log_info_;
+  std::unique_ptr<std::string> log_info_;
 
   // attribute-location binding map from glBindAttribLocation() calls.
   LocationMap bind_attrib_location_map_;

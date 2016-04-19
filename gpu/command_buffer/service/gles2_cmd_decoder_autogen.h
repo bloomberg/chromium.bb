@@ -1310,7 +1310,7 @@ error::Error GLES2DecoderImpl::HandleGenTransformFeedbacksImmediate(
       return error::kInvalidArguments;
     }
   }
-  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
+  std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
   glGenTransformFeedbacks(n, service_ids.get());
   for (GLsizei ii = 0; ii < n; ++ii) {
     group_->AddTransformFeedbackId(ids[ii], service_ids[ii]);

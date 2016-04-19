@@ -12,6 +12,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -120,7 +121,7 @@ void* MappedMemoryManager::Alloc(unsigned int size,
   DCHECK(shm.get());
   MemoryChunk* mc = new MemoryChunk(id, shm, helper_);
   allocated_memory_ += mc->GetSize();
-  chunks_.push_back(make_scoped_ptr(mc));
+  chunks_.push_back(base::WrapUnique(mc));
   void* mem = mc->Alloc(size);
   DCHECK(mem);
   *shm_id = mc->shm_id();

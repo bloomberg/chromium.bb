@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -86,7 +86,7 @@ class ProgramManagerTestBase : public GpuServiceTest {
     GpuServiceTest::TearDown();
   }
 
-  scoped_ptr<ProgramManager> manager_;
+  std::unique_ptr<ProgramManager> manager_;
   GpuPreferences gpu_preferences_;
   scoped_refptr<FeatureInfo> feature_info_;
 };
@@ -2118,7 +2118,7 @@ class ProgramManagerWithCacheTest : public ProgramManagerTestBase {
         .Times(1);
   }
 
-  scoped_ptr<MockProgramCache> cache_;
+  std::unique_ptr<MockProgramCache> cache_;
 
   Shader* vertex_shader_;
   Shader* fragment_shader_;

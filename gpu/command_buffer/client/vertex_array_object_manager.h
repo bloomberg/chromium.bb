@@ -8,9 +8,10 @@
 #include <GLES2/gl2.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "gles2_impl_export.h"
 
 namespace gpu {
@@ -113,7 +114,7 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
   GLuint element_array_buffer_id_;
   GLsizei element_array_buffer_size_;
   GLsizei collection_buffer_size_;
-  scoped_ptr<int8_t[]> collection_buffer_;
+  std::unique_ptr<int8_t[]> collection_buffer_;
 
   VertexArrayObject* default_vertex_array_object_;
   VertexArrayObject* bound_vertex_array_object_;

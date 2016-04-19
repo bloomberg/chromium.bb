@@ -85,7 +85,7 @@ struct GpuInProcessThreadHolder {
   GpuInProcessThreadHolder()
       : sync_point_manager(new SyncPointManager(false)),
         gpu_thread(new GpuInProcessThread(sync_point_manager.get())) {}
-  scoped_ptr<SyncPointManager> sync_point_manager;
+  std::unique_ptr<SyncPointManager> sync_point_manager;
   scoped_refptr<InProcessCommandBuffer::Service> gpu_thread;
 };
 
@@ -327,7 +327,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   transfer_buffer_manager_ = manager;
   manager->Initialize();
 
-  scoped_ptr<CommandBufferService> command_buffer(
+  std::unique_ptr<CommandBufferService> command_buffer(
       new CommandBufferService(transfer_buffer_manager_.get()));
   command_buffer->SetPutOffsetChangeCallback(base::Bind(
       &InProcessCommandBuffer::PumpCommandsOnGpuThread, gpu_thread_weak_ptr_));
@@ -839,7 +839,7 @@ int32_t InProcessCommandBuffer::CreateGpuMemoryBufferImage(
   CheckSequencedThread();
 
   DCHECK(gpu_memory_buffer_manager_);
-  scoped_ptr<gfx::GpuMemoryBuffer> buffer(
+  std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
       gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
           gfx::Size(width, height),
           gpu::DefaultBufferFormatForImageFormat(internalformat),
@@ -1014,7 +1014,7 @@ void PostCallback(
   }
 }
 
-void RunOnTargetThread(scoped_ptr<base::Closure> callback) {
+void RunOnTargetThread(std::unique_ptr<base::Closure> callback) {
   DCHECK(callback.get());
   callback->Run();
 }
@@ -1025,7 +1025,7 @@ base::Closure InProcessCommandBuffer::WrapCallback(
     const base::Closure& callback) {
   // Make sure the callback gets deleted on the target thread by passing
   // ownership.
-  scoped_ptr<base::Closure> scoped_callback(new base::Closure(callback));
+  std::unique_ptr<base::Closure> scoped_callback(new base::Closure(callback));
   base::Closure callback_on_client_thread =
       base::Bind(&RunOnTargetThread, base::Passed(&scoped_callback));
   base::Closure wrapped_callback =

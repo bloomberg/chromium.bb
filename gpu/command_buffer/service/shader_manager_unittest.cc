@@ -4,7 +4,6 @@
 
 #include "gpu/command_buffer/service/shader_manager.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/test_helper.h"

@@ -100,7 +100,8 @@ void StreamTexture::OnWillDestroyStub() {
   owner_stub_->channel()->RemoveRoute(route_id_);
 
   if (framebuffer_) {
-    scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current(MakeStubCurrent());
+    std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current(
+        MakeStubCurrent());
 
     glDeleteProgram(program_);
     glDeleteShader(vertex_shader_);
@@ -126,8 +127,8 @@ void StreamTexture::Destroy(bool have_context) {
   NOTREACHED();
 }
 
-scoped_ptr<ui::ScopedMakeCurrent> StreamTexture::MakeStubCurrent() {
-  scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
+std::unique_ptr<ui::ScopedMakeCurrent> StreamTexture::MakeStubCurrent() {
+  std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
   bool needs_make_current =
       !owner_stub_->decoder()->GetGLContext()->IsCurrent(NULL);
   if (needs_make_current) {
@@ -143,7 +144,7 @@ void StreamTexture::UpdateTexImage() {
 
   if (!has_pending_frame_) return;
 
-  scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current(MakeStubCurrent());
+  std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current(MakeStubCurrent());
 
   surface_texture_->UpdateTexImage();
 

@@ -7,11 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
+
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -281,23 +282,23 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   ProgramCache* program_cache_;
 
-  scoped_ptr<BufferManager> buffer_manager_;
+  std::unique_ptr<BufferManager> buffer_manager_;
 
-  scoped_ptr<FramebufferManager> framebuffer_manager_;
+  std::unique_ptr<FramebufferManager> framebuffer_manager_;
 
-  scoped_ptr<RenderbufferManager> renderbuffer_manager_;
+  std::unique_ptr<RenderbufferManager> renderbuffer_manager_;
 
-  scoped_ptr<TextureManager> texture_manager_;
+  std::unique_ptr<TextureManager> texture_manager_;
 
-  scoped_ptr<PathManager> path_manager_;
+  std::unique_ptr<PathManager> path_manager_;
 
-  scoped_ptr<ProgramManager> program_manager_;
+  std::unique_ptr<ProgramManager> program_manager_;
 
-  scoped_ptr<ShaderManager> shader_manager_;
+  std::unique_ptr<ShaderManager> shader_manager_;
 
-  scoped_ptr<SamplerManager> sampler_manager_;
+  std::unique_ptr<SamplerManager> sampler_manager_;
 
-  scoped_ptr<ValuebufferManager> valuebuffer_manager_;
+  std::unique_ptr<ValuebufferManager> valuebuffer_manager_;
 
   scoped_refptr<FeatureInfo> feature_info_;
 

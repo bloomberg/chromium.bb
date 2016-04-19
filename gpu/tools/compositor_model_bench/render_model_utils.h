@@ -10,11 +10,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/tools/compositor_model_bench/render_tree.h"
 
 // This is a visitor that runs over the tree structure that was built from the
@@ -23,7 +23,7 @@
 // texture ID's in the tree, replacing them with the matching new textures.
 class TextureGenerator : public RenderNodeVisitor {
  public:
-  typedef scoped_ptr<uint8_t[]> ImagePtr;
+  typedef std::unique_ptr<uint8_t[]> ImagePtr;
   typedef std::vector<Tile>::iterator tile_iter;
 
   explicit TextureGenerator(RenderNode* root);
@@ -53,9 +53,9 @@ class TextureGenerator : public RenderNodeVisitor {
 
   TextureGenStage stage_;
   std::set<int> discovered_ids_;
-  scoped_ptr<GLuint[]> tex_ids_;
+  std::unique_ptr<GLuint[]> tex_ids_;
   std::map<int, int> remapped_ids_;
-  scoped_ptr<ImagePtr[]> image_data_;
+  std::unique_ptr<ImagePtr[]> image_data_;
   int images_generated_;
   std::set<int> ids_for_completed_textures_;
 };

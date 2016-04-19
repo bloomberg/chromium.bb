@@ -4,7 +4,8 @@
 
 #include "gpu/command_buffer/service/path_manager.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +30,7 @@ class PathManagerTest : public GpuServiceTest {
     GpuServiceTest::TearDown();
   }
 
-  scoped_ptr<PathManager> manager_;
+  std::unique_ptr<PathManager> manager_;
 };
 
 TEST_F(PathManagerTest, Basic) {

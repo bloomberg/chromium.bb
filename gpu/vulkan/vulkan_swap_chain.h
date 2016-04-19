@@ -5,10 +5,10 @@
 #ifndef GPU_VULKAN_VULKAN_SWAP_CHAIN_H_
 #define GPU_VULKAN_VULKAN_SWAP_CHAIN_H_
 
+#include <memory>
 #include <vector>
 #include <vulkan/vulkan.h>
 
-#include "base/memory/scoped_ptr.h"
 #include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/swap_result.h"
@@ -64,7 +64,7 @@ class VulkanSwapChain {
   VulkanDeviceQueue* device_queue_;
   VkSwapchainKHR swap_chain_ = VK_NULL_HANDLE;
 
-  scoped_ptr<VulkanCommandPool> command_pool_;
+  std::unique_ptr<VulkanCommandPool> command_pool_;
 
   gfx::Size size_;
 
@@ -73,13 +73,13 @@ class VulkanSwapChain {
     ~ImageData();
 
     VkImage image = VK_NULL_HANDLE;
-    scoped_ptr<VulkanImageView> image_view;
-    scoped_ptr<VulkanCommandBuffer> command_buffer;
+    std::unique_ptr<VulkanImageView> image_view;
+    std::unique_ptr<VulkanCommandBuffer> command_buffer;
 
     VkSemaphore render_semaphore = VK_NULL_HANDLE;
     VkSemaphore present_semaphore = VK_NULL_HANDLE;
   };
-  std::vector<scoped_ptr<ImageData>> images_;
+  std::vector<std::unique_ptr<ImageData>> images_;
   uint32_t current_image_ = 0;
 
   VkSemaphore next_present_semaphore_ = VK_NULL_HANDLE;

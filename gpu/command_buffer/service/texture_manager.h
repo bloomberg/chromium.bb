@@ -10,9 +10,11 @@
 
 #include <algorithm>
 #include <list>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
+
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -1094,7 +1096,7 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
                       TextureRef* ref);
 
   MemoryTypeTracker* GetMemTracker();
-  scoped_ptr<MemoryTypeTracker> memory_type_tracker_;
+  std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
   MemoryTracker* memory_tracker_;
 
   scoped_refptr<FeatureInfo> feature_info_;

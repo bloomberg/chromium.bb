@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -23,7 +24,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -75,10 +75,10 @@ class GLInProcessContextImpl
   void Destroy();
   void OnSignalSyncPoint(const base::Closure& callback);
 
-  scoped_ptr<gles2::GLES2CmdHelper> gles2_helper_;
-  scoped_ptr<TransferBuffer> transfer_buffer_;
-  scoped_ptr<gles2::GLES2Implementation> gles2_implementation_;
-  scoped_ptr<InProcessCommandBuffer> command_buffer_;
+  std::unique_ptr<gles2::GLES2CmdHelper> gles2_helper_;
+  std::unique_ptr<TransferBuffer> transfer_buffer_;
+  std::unique_ptr<gles2::GLES2Implementation> gles2_implementation_;
+  std::unique_ptr<InProcessCommandBuffer> command_buffer_;
 
   const GLInProcessContextSharedMemoryLimits mem_limits_;
 
@@ -230,7 +230,7 @@ GLInProcessContext* GLInProcessContext::Create(
     DCHECK_EQ(gfx::kNullAcceleratedWidget, window);
   }
 
-  scoped_ptr<GLInProcessContextImpl> context(
+  std::unique_ptr<GLInProcessContextImpl> context(
       new GLInProcessContextImpl(memory_limits));
   if (!context->Initialize(surface,
                            is_offscreen,

@@ -5,6 +5,7 @@
 #include "gpu/ipc/client/gpu_memory_buffer_impl_io_surface.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/mac/io_surface.h"
@@ -43,7 +44,7 @@ GpuMemoryBufferImplIOSurface::GpuMemoryBufferImplIOSurface(
 GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {}
 
 // static
-scoped_ptr<GpuMemoryBufferImplIOSurface>
+std::unique_ptr<GpuMemoryBufferImplIOSurface>
 GpuMemoryBufferImplIOSurface::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
@@ -55,7 +56,7 @@ GpuMemoryBufferImplIOSurface::CreateFromHandle(
   if (!io_surface)
     return nullptr;
 
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new GpuMemoryBufferImplIOSurface(handle.id, size, format, callback,
                                        io_surface.release(), LockFlags(usage)));
 }

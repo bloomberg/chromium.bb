@@ -8,8 +8,9 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -68,11 +69,11 @@ class MappedMemoryTestBase : public testing::Test {
 
   int32_t GetToken() { return command_buffer_->GetLastState().token; }
 
-  scoped_ptr<AsyncAPIMock> api_mock_;
+  std::unique_ptr<AsyncAPIMock> api_mock_;
   scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
-  scoped_ptr<CommandBufferService> command_buffer_;
-  scoped_ptr<CommandExecutor> executor_;
-  scoped_ptr<CommandBufferHelper> helper_;
+  std::unique_ptr<CommandBufferService> command_buffer_;
+  std::unique_ptr<CommandExecutor> executor_;
+  std::unique_ptr<CommandBufferHelper> helper_;
   base::MessageLoop message_loop_;
 };
 
@@ -89,7 +90,7 @@ class MemoryChunkTest : public MappedMemoryTestBase {
   static const int32_t kShmId = 123;
   void SetUp() override {
     MappedMemoryTestBase::SetUp();
-    scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+    std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
     shared_memory->CreateAndMapAnonymous(kBufferSize);
     buffer_ = MakeBufferFromSharedMemory(std::move(shared_memory), kBufferSize);
     chunk_.reset(new MemoryChunk(kShmId, buffer_, helper_.get()));
@@ -104,7 +105,7 @@ class MemoryChunkTest : public MappedMemoryTestBase {
 
   uint8_t* buffer_memory() { return static_cast<uint8_t*>(buffer_->memory()); }
 
-  scoped_ptr<MemoryChunk> chunk_;
+  std::unique_ptr<MemoryChunk> chunk_;
   scoped_refptr<gpu::Buffer> buffer_;
 };
 
@@ -162,7 +163,7 @@ class MappedMemoryManagerTest : public MappedMemoryTestBase {
     MappedMemoryTestBase::TearDown();
   }
 
-  scoped_ptr<MappedMemoryManager> manager_;
+  std::unique_ptr<MappedMemoryManager> manager_;
 };
 
 TEST_F(MappedMemoryManagerTest, Basic) {

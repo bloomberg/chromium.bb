@@ -61,8 +61,8 @@ class FramebufferManagerTest : public GpuServiceTest {
  protected:
   FramebufferManager manager_;
   scoped_refptr<FeatureInfo> feature_info_;
-  scoped_ptr<TextureManager> texture_manager_;
-  scoped_ptr<RenderbufferManager> renderbuffer_manager_;
+  std::unique_ptr<TextureManager> texture_manager_;
+  std::unique_ptr<RenderbufferManager> renderbuffer_manager_;
 };
 
 TEST_F(FramebufferManagerTest, Basic) {
@@ -158,10 +158,10 @@ class FramebufferInfoTestBase : public GpuServiceTest {
   FramebufferManager manager_;
   Framebuffer* framebuffer_;
   scoped_refptr<FeatureInfo> feature_info_;
-  scoped_ptr<TextureManager> texture_manager_;
-  scoped_ptr<RenderbufferManager> renderbuffer_manager_;
-  scoped_ptr<MockErrorState> error_state_;
-  scoped_ptr<MockGLES2Decoder> decoder_;
+  std::unique_ptr<TextureManager> texture_manager_;
+  std::unique_ptr<RenderbufferManager> renderbuffer_manager_;
+  std::unique_ptr<MockErrorState> error_state_;
+  std::unique_ptr<MockGLES2Decoder> decoder_;
 };
 
 class FramebufferInfoTest : public FramebufferInfoTestBase {

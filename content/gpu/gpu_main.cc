@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/lazy_instance.h"

@@ -5,8 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_STATE_TRACER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_STATE_TRACER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace gfx {
 class Size;
@@ -20,7 +21,7 @@ struct ContextState;
 // Saves GPU state such as framebuffer contents while tracing.
 class GPUStateTracer {
  public:
-  static scoped_ptr<GPUStateTracer> Create(const ContextState* state);
+  static std::unique_ptr<GPUStateTracer> Create(const ContextState* state);
   ~GPUStateTracer();
 
   // Take a state snapshot with a screenshot of the currently bound framebuffer.

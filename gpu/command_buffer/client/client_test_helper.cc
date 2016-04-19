@@ -9,6 +9,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -72,7 +74,7 @@ scoped_refptr<gpu::Buffer> MockCommandBufferBase::CreateTransferBuffer(
   *id = GetNextFreeTransferBufferId();
   if (*id >= 0) {
     int32_t ndx = *id - kTransferBufferBaseId;
-    scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+    std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
     shared_memory->CreateAndMapAnonymous(size);
     transfer_buffer_buffers_[ndx] =
         MakeBufferFromSharedMemory(std::move(shared_memory), size);

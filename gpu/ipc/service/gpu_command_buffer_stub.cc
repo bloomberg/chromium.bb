@@ -11,6 +11,7 @@
 #include "base/hash.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -56,7 +57,7 @@ struct WaitForCommandState {
 
   int32_t start;
   int32_t end;
-  scoped_ptr<IPC::Message> reply;
+  std::unique_ptr<IPC::Message> reply;
 };
 
 namespace {
@@ -93,7 +94,7 @@ class GpuCommandBufferMemoryTracker : public gles2::MemoryTracker {
 
  private:
   ~GpuCommandBufferMemoryTracker() override {}
-  scoped_ptr<GpuMemoryTrackingGroup> tracking_group_;
+  std::unique_ptr<GpuMemoryTrackingGroup> tracking_group_;
   const uint64_t client_tracing_id_;
   const int client_id_;
   const uint64_t share_group_tracing_guid_;
@@ -130,7 +131,7 @@ const int64_t kMaxTimeSinceIdleMs = 10;
 
 class DevToolsChannelData : public base::trace_event::ConvertableToTraceFormat {
  public:
-  static scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+  static std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   CreateForChannel(GpuChannel* channel);
   ~DevToolsChannelData() override {}
 
@@ -142,16 +143,16 @@ class DevToolsChannelData : public base::trace_event::ConvertableToTraceFormat {
 
  private:
   explicit DevToolsChannelData(base::Value* value) : value_(value) {}
-  scoped_ptr<base::Value> value_;
+  std::unique_ptr<base::Value> value_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsChannelData);
 };
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 DevToolsChannelData::CreateForChannel(GpuChannel* channel) {
-  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> res(new base::DictionaryValue);
   res->SetInteger("renderer_pid", channel->GetClientPID());
   res->SetDouble("used_bytes", channel->GetMemoryUsage());
-  return make_scoped_ptr(new DevToolsChannelData(res.release()));
+  return base::WrapUnique(new DevToolsChannelData(res.release()));
 }
 
 CommandBufferId GetCommandBufferID(int channel_id, int32_t route_id) {
@@ -529,7 +530,7 @@ void GpuCommandBufferStub::OnInitialize(
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnInitialize");
   DCHECK(!command_buffer_.get());
 
-  scoped_ptr<base::SharedMemory> shared_state_shm(
+  std::unique_ptr<base::SharedMemory> shared_state_shm(
       new base::SharedMemory(shared_state_handle, false));
 
   command_buffer_.reset(new CommandBufferService(
@@ -749,7 +750,7 @@ void GpuCommandBufferStub::OnWaitForTokenInRange(int32_t start,
   if (wait_for_token_)
     LOG(ERROR) << "Got WaitForToken command while currently waiting for token.";
   wait_for_token_ =
-      make_scoped_ptr(new WaitForCommandState(start, end, reply_message));
+      base::WrapUnique(new WaitForCommandState(start, end, reply_message));
   CheckCompleteWaits();
 }
 
@@ -765,7 +766,7 @@ void GpuCommandBufferStub::OnWaitForGetOffsetInRange(
         << "Got WaitForGetOffset command while currently waiting for offset.";
   }
   wait_for_get_offset_ =
-      make_scoped_ptr(new WaitForCommandState(start, end, reply_message));
+      base::WrapUnique(new WaitForCommandState(start, end, reply_message));
   CheckCompleteWaits();
 }
 
@@ -838,7 +839,7 @@ void GpuCommandBufferStub::OnRegisterTransferBuffer(
 
   // Take ownership of the memory and map it into this process.
   // This validates the size.
-  scoped_ptr<base::SharedMemory> shared_memory(
+  std::unique_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(transfer_buffer, false));
   if (!shared_memory->Map(size)) {
     DVLOG(0) << "Failed to map shared memory.";

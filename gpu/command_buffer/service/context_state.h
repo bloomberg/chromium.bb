@@ -7,15 +7,16 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_CONTEXT_STATE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_CONTEXT_STATE_H_
 
+#include <memory>
 #include <vector>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/sampler_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
-#include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
+#include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -308,7 +309,7 @@ struct GPU_EXPORT ContextState {
   void InitStateManual(const ContextState* prev_state) const;
 
   FeatureInfo* feature_info_;
-  scoped_ptr<ErrorState> error_state_;
+  std::unique_ptr<ErrorState> error_state_;
 };
 
 }  // namespace gles2

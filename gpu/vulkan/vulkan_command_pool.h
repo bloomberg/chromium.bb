@@ -7,8 +7,9 @@
 
 #include <vulkan/vulkan.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace gpu {
 
@@ -23,8 +24,8 @@ class VulkanCommandPool {
   bool Initialize();
   void Destroy();
 
-  scoped_ptr<VulkanCommandBuffer> CreatePrimaryCommandBuffer();
-  scoped_ptr<VulkanCommandBuffer> CreateSecondaryCommandBuffer();
+  std::unique_ptr<VulkanCommandBuffer> CreatePrimaryCommandBuffer();
+  std::unique_ptr<VulkanCommandBuffer> CreateSecondaryCommandBuffer();
 
   VkCommandPool handle() { return handle_; }
 

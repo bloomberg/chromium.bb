@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -15,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -320,7 +320,7 @@ void Program::UpdateLogInfo() {
     set_log_info(NULL);
     return;
   }
-  scoped_ptr<char[]> temp(new char[max_len]);
+  std::unique_ptr<char[]> temp(new char[max_len]);
   GLint len = 0;
   glGetProgramInfoLog(service_id_, max_len, &len, temp.get());
   DCHECK(max_len == 0 || len < max_len);
@@ -464,7 +464,7 @@ void Program::Update() {
   glGetProgramiv(service_id_, GL_ACTIVE_ATTRIBUTES, &num_attribs);
   glGetProgramiv(service_id_, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
   // TODO(gman): Should we check for error?
-  scoped_ptr<char[]> name_buffer(new char[max_len]);
+  std::unique_ptr<char[]> name_buffer(new char[max_len]);
   for (GLint ii = 0; ii < num_attribs; ++ii) {
     GLsizei length = 0;
     GLsizei size = 0;
@@ -552,7 +552,7 @@ void Program::UpdateUniforms() {
   glGetProgramiv(service_id_, GL_ACTIVE_UNIFORM_MAX_LENGTH,
                  &name_buffer_length);
   DCHECK(name_buffer_length > 0);
-  scoped_ptr<char[]> name_buffer(new char[name_buffer_length]);
+  std::unique_ptr<char[]> name_buffer(new char[name_buffer_length]);
 
   size_t unused_client_location_cursor = 0;
 
@@ -726,7 +726,7 @@ void Program::UpdateFragmentInputs() {
                           &max_len);
   DCHECK(max_len > 0);
 
-  scoped_ptr<char[]> name_buffer(new char[max_len]);
+  std::unique_ptr<char[]> name_buffer(new char[max_len]);
 
   Shader* fragment_shader =
       attached_shaders_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)].get();
@@ -1787,7 +1787,7 @@ bool Program::CheckVaryingsPacking(
 
   if (combined_map.size() == 0)
     return true;
-  scoped_ptr<ShVariableInfo[]> variables(
+  std::unique_ptr<ShVariableInfo[]> variables(
       new ShVariableInfo[combined_map.size()]);
   size_t index = 0;
   for (const auto& key_value : combined_map) {

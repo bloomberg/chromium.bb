@@ -14,7 +14,7 @@
 
 namespace gpu {
 SharedMemoryBufferBacking::SharedMemoryBufferBacking(
-    scoped_ptr<base::SharedMemory> shared_memory,
+    std::unique_ptr<base::SharedMemory> shared_memory,
     size_t size)
     : shared_memory_(std::move(shared_memory)), size_(size) {}
 
@@ -26,7 +26,7 @@ void* SharedMemoryBufferBacking::GetMemory() const {
 
 size_t SharedMemoryBufferBacking::GetSize() const { return size_; }
 
-Buffer::Buffer(scoped_ptr<BufferBacking> backing)
+Buffer::Buffer(std::unique_ptr<BufferBacking> backing)
     : backing_(std::move(backing)),
       memory_(backing_->GetMemory()),
       size_(backing_->GetSize()) {

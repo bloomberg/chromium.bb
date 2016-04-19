@@ -4,7 +4,8 @@
 
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -54,7 +55,7 @@ class ValuebufferManagerTest : public GpuServiceTest {
 
   scoped_refptr<SubscriptionRefSet> subscription_ref_set_;
   scoped_refptr<ValueStateMap> pending_state_map_;
-  scoped_ptr<ValuebufferManager> manager_;
+  std::unique_ptr<ValuebufferManager> manager_;
 };
 
 TEST_F(ValuebufferManagerTest, Basic) {

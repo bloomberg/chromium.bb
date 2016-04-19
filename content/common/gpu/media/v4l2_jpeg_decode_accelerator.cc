@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/gpu/media/v4l2_jpeg_decode_accelerator.h"
+
 #include <errno.h>
 #include <linux/videodev2.h>
 #include <string.h>
 #include <sys/mman.h>
 
+#include <memory>
+
 #include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/common/gpu/media/v4l2_jpeg_decode_accelerator.h"
 #include "media/filters/jpeg_parser.h"
 #include "third_party/libyuv/include/libyuv.h"
 

@@ -14,6 +14,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
@@ -370,7 +371,7 @@ SyncPointManager::~SyncPointManager() {
   }
 }
 
-scoped_ptr<SyncPointClient> SyncPointManager::CreateSyncPointClient(
+std::unique_ptr<SyncPointClient> SyncPointManager::CreateSyncPointClient(
     scoped_refptr<SyncPointOrderData> order_data,
     CommandBufferNamespace namespace_id,
     CommandBufferId client_id) {
@@ -384,11 +385,12 @@ scoped_ptr<SyncPointClient> SyncPointManager::CreateSyncPointClient(
                                                     namespace_id, client_id)));
   DCHECK(result.second);
 
-  return make_scoped_ptr(result.first->second);
+  return base::WrapUnique(result.first->second);
 }
 
-scoped_ptr<SyncPointClient> SyncPointManager::CreateSyncPointClientWaiter() {
-  return make_scoped_ptr(new SyncPointClient);
+std::unique_ptr<SyncPointClient>
+SyncPointManager::CreateSyncPointClientWaiter() {
+  return base::WrapUnique(new SyncPointClient);
 }
 
 scoped_refptr<SyncPointClientState> SyncPointManager::GetSyncPointClientState(

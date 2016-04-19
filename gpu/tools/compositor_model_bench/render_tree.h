@@ -10,11 +10,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "gpu/tools/compositor_model_bench/shaders.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -146,11 +147,11 @@ class ContentLayerNode : public RenderNode {
   }
 
   void add_child(RenderNode* child) {
-    children_.push_back(make_scoped_ptr(child));
+    children_.push_back(base::WrapUnique(child));
   }
 
  private:
-  std::vector<scoped_ptr<RenderNode>> children_;
+  std::vector<std::unique_ptr<RenderNode>> children_;
   bool skipsDraw_;
 };
 

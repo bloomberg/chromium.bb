@@ -7,12 +7,13 @@
 
 #include <IOSurface/IOSurface.h>
 #include <QuartzCore/QuartzCore.h>
+
 #include <deque>
+#include <memory>
 #include <vector>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/gpu_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -53,7 +54,7 @@ class GPU_EXPORT CALayerTree {
   // be destroyed at the end of the function, and any CALayers in it which were
   // not re-used by |this| will be removed from the CALayer hierarchy.
   void CommitScheduledCALayers(CALayer* superlayer,
-                               scoped_ptr<CALayerTree> old_tree,
+                               std::unique_ptr<CALayerTree> old_tree,
                                float scale_factor);
 
  private:

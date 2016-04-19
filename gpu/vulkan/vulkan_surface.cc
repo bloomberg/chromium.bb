@@ -158,9 +158,9 @@ bool VulkanSurface::InitializeOneOff() {
 VulkanSurface::~VulkanSurface() {}
 
 // static
-scoped_ptr<VulkanSurface> VulkanSurface::CreateViewSurface(
+std::unique_ptr<VulkanSurface> VulkanSurface::CreateViewSurface(
     gfx::AcceleratedWidget window) {
-  return scoped_ptr<VulkanSurface>(new VulkanWSISurface(window));
+  return std::unique_ptr<VulkanSurface>(new VulkanWSISurface(window));
 }
 
 VulkanSurface::VulkanSurface() {}

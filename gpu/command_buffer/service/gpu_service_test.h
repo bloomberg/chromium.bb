@@ -5,8 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_SERVICE_TEST_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_SERVICE_TEST_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,7 +32,7 @@ class GpuServiceTest : public testing::Test {
   void TearDown() override;
   gfx::GLContext* GetGLContext();
 
-  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
+  std::unique_ptr<::testing::StrictMock<::gfx::MockGLInterface>> gl_;
 
  private:
   bool ran_setup_;

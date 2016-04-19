@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
+
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -12,6 +14,8 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -21,7 +25,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/common/gpu/media/shared_memory_region.h"
-#include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
 #include "media/base/media_switches.h"
 #include "media/filters/h264_parser.h"
 #include "ui/gfx/geometry/rect.h"

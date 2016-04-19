@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <string>
 
@@ -207,7 +208,7 @@ class GPU_EXPORT CommandBufferProxyImpl
   State last_state_;
 
   // The shared memory area used to update state.
-  scoped_ptr<base::SharedMemory> shared_state_shm_;
+  std::unique_ptr<base::SharedMemory> shared_state_shm_;
 
   // |*this| is owned by |*channel_| and so is always outlived by it, so using a
   // raw pointer is ok.

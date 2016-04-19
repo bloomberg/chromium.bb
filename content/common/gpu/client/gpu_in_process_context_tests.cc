@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <stdio.h>
+
 #include <cmath>
+#include <memory>
 #include <string>
 #include <vector>
 

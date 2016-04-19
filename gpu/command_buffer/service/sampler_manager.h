@@ -6,11 +6,11 @@
 #define GPU_COMMAND_BUFFER_SERVICE_SAMPLER_MANAGER_H_
 
 #include <vector>
+
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/gpu_export.h"

@@ -143,7 +143,7 @@ bool CALayerTree::ScheduleCALayer(
 }
 
 void CALayerTree::CommitScheduledCALayers(CALayer* superlayer,
-                                          scoped_ptr<CALayerTree> old_tree,
+                                          std::unique_ptr<CALayerTree> old_tree,
                                           float scale_factor) {
   TRACE_EVENT0("gpu", "CALayerTree::CommitScheduledCALayers");
   RootLayer* old_root_layer = nullptr;

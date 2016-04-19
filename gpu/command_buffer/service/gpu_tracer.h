@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <stack>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -193,7 +193,7 @@ class GPU_EXPORT GPUTrace
   const std::string category_;
   const std::string name_;
   scoped_refptr<Outputter> outputter_;
-  scoped_ptr<gfx::GPUTimer> gpu_timer_;
+  std::unique_ptr<gfx::GPUTimer> gpu_timer_;
   const bool service_enabled_ = false;
   const bool device_enabled_ = false;
 

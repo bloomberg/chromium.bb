@@ -5,11 +5,11 @@
 #ifndef GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_H_
 #define GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/geometry/size.h"
@@ -24,7 +24,7 @@ class GPU_EXPORT GpuMemoryBufferFactory {
   virtual ~GpuMemoryBufferFactory() {}
 
   // Creates a new factory instance for native GPU memory buffers.
-  static scoped_ptr<GpuMemoryBufferFactory> CreateNativeType();
+  static std::unique_ptr<GpuMemoryBufferFactory> CreateNativeType();
 
   // Creates a new GPU memory buffer instance. A valid handle is returned on
   // success. It can be called on any thread.

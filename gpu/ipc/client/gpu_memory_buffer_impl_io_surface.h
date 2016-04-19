@@ -9,6 +9,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "gpu/gpu_export.h"
@@ -21,7 +23,7 @@ class GPU_EXPORT GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
  public:
   ~GpuMemoryBufferImplIOSurface() override;
 
-  static scoped_ptr<GpuMemoryBufferImplIOSurface> CreateFromHandle(
+  static std::unique_ptr<GpuMemoryBufferImplIOSurface> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,

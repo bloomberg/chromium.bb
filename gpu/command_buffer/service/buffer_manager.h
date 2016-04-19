@@ -9,13 +9,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -205,7 +205,7 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   GLenum usage_;
 
   // Data cached from last glMapBufferRange call.
-  scoped_ptr<MappedRange> mapped_range_;
+  std::unique_ptr<MappedRange> mapped_range_;
 
   // A map of ranges to the highest value in that range of a certain type.
   typedef std::map<Range, GLuint, Range::Less> RangeToMaxValueMap;
@@ -328,7 +328,7 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
                GLenum usage,
                bool use_shadow);
 
-  scoped_ptr<MemoryTypeTracker> memory_type_tracker_;
+  std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
   MemoryTracker* memory_tracker_;
   scoped_refptr<FeatureInfo> feature_info_;
 

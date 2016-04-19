@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "gpu/command_buffer/client/program_info_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -165,7 +167,7 @@ class ProgramInfoManagerTest : public testing::Test {
     memcpy(data->name1, kName[1], arraysize(data->name1));
   }
 
-  scoped_ptr<ProgramInfoManager> program_info_manager_;
+  std::unique_ptr<ProgramInfoManager> program_info_manager_;
   Program* program_;
 };
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
+
 #include <fcntl.h>
 #include <linux/videodev2.h>
 #include <poll.h>
@@ -9,6 +11,8 @@
 #include <sys/eventfd.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
@@ -18,7 +22,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/media/shared_memory_region.h"
-#include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 

@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/android_video_decode_accelerator.h"

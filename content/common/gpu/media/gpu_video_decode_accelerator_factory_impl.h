@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_GPU_VIDEO_DECODE_ACCELERATOR_FACTORY_IMPL_H_
 #define CONTENT_COMMON_GPU_MEDIA_GPU_VIDEO_DECODE_ACCELERATOR_FACTORY_IMPL_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"

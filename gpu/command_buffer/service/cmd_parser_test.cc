@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,14 +62,14 @@ class CommandParserTest : public testing::Test {
   CommandBufferEntry *buffer() { return buffer_.get(); }
  private:
   unsigned int buffer_entry_count_;
-  scoped_ptr<AsyncAPIMock> api_mock_;
-  scoped_ptr<CommandBufferEntry[]> buffer_;
+  std::unique_ptr<AsyncAPIMock> api_mock_;
+  std::unique_ptr<CommandBufferEntry[]> buffer_;
   Sequence sequence_;
 };
 
 // Tests initialization conditions.
 TEST_F(CommandParserTest, TestInit) {
-  scoped_ptr<CommandParser> parser(MakeParser(10));
+  std::unique_ptr<CommandParser> parser(MakeParser(10));
   EXPECT_EQ(0, parser->get());
   EXPECT_EQ(0, parser->put());
   EXPECT_TRUE(parser->IsEmpty());
@@ -76,7 +77,7 @@ TEST_F(CommandParserTest, TestInit) {
 
 // Tests simple commands.
 TEST_F(CommandParserTest, TestSimple) {
-  scoped_ptr<CommandParser> parser(MakeParser(10));
+  std::unique_ptr<CommandParser> parser(MakeParser(10));
   CommandBufferOffset put = parser->put();
   CommandHeader header;
 
@@ -109,7 +110,7 @@ TEST_F(CommandParserTest, TestSimple) {
 
 // Tests having multiple commands in the buffer.
 TEST_F(CommandParserTest, TestMultipleCommands) {
-  scoped_ptr<CommandParser> parser(MakeParser(10));
+  std::unique_ptr<CommandParser> parser(MakeParser(10));
   CommandBufferOffset put = parser->put();
   CommandHeader header;
 
@@ -161,7 +162,7 @@ TEST_F(CommandParserTest, TestMultipleCommands) {
 
 // Tests that the parser will wrap correctly at the end of the buffer.
 TEST_F(CommandParserTest, TestWrap) {
-  scoped_ptr<CommandParser> parser(MakeParser(5));
+  std::unique_ptr<CommandParser> parser(MakeParser(5));
   CommandBufferOffset put = parser->put();
   CommandHeader header;
 
@@ -213,7 +214,7 @@ TEST_F(CommandParserTest, TestWrap) {
 // Tests error conditions.
 TEST_F(CommandParserTest, TestError) {
   const unsigned int kNumEntries = 5;
-  scoped_ptr<CommandParser> parser(MakeParser(kNumEntries));
+  std::unique_ptr<CommandParser> parser(MakeParser(kNumEntries));
   CommandBufferOffset put = parser->put();
   CommandHeader header;
 
@@ -285,7 +286,7 @@ TEST_F(CommandParserTest, TestError) {
 }
 
 TEST_F(CommandParserTest, SetBuffer) {
-  scoped_ptr<CommandParser> parser(MakeParser(3));
+  std::unique_ptr<CommandParser> parser(MakeParser(3));
   CommandBufferOffset put = parser->put();
   CommandHeader header;
 
@@ -303,7 +304,7 @@ TEST_F(CommandParserTest, SetBuffer) {
   EXPECT_EQ(2, parser->get());
   Mock::VerifyAndClearExpectations(api_mock());
 
-  scoped_ptr<CommandBufferEntry[]> buffer2(new CommandBufferEntry[2]);
+  std::unique_ptr<CommandBufferEntry[]> buffer2(new CommandBufferEntry[2]);
   parser->SetBuffer(
       buffer2.get(), sizeof(CommandBufferEntry) * 2, 0,
       sizeof(CommandBufferEntry) * 2);

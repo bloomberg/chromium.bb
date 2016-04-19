@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_CHILD_GPU_MEMORY_BUFFER_MANAGER_H_
 #define CONTENT_CHILD_CHILD_GPU_MEMORY_BUFFER_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "content/child/thread_safe_sender.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"

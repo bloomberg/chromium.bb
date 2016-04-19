@@ -8,11 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
+
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/gpu_export.h"
@@ -187,7 +188,7 @@ class GPU_EXPORT RenderbufferManager
   void StartTracking(Renderbuffer* renderbuffer);
   void StopTracking(Renderbuffer* renderbuffer);
 
-  scoped_ptr<MemoryTypeTracker> memory_type_tracker_;
+  std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
   MemoryTracker* memory_tracker_;
 
   GLint max_renderbuffer_size_;

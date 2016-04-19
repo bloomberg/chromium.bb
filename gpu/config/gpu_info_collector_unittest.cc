@@ -5,7 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_split.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_info_collector.h"
@@ -173,7 +174,7 @@ class GPUInfoCollectorTest
 
  public:
   // Use StrictMock to make 100% sure we know how GL will be called.
-  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
+  std::unique_ptr<::testing::StrictMock<::gfx::MockGLInterface>> gl_;
   GPUInfo test_values_;
   const char* gl_shading_language_version_ = nullptr;
 

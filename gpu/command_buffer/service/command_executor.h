@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 
 #include "base/atomic_ref_count.h"
@@ -15,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
@@ -114,7 +114,7 @@ class GPU_EXPORT CommandExecutor
 
   // TODO(apatrick): The CommandExecutor currently creates and owns the parser.
   // This should be an argument to the constructor.
-  scoped_ptr<CommandParser> parser_;
+  std::unique_ptr<CommandParser> parser_;
 
   // Whether the scheduler is currently able to process more commands.
   bool scheduled_;

@@ -125,7 +125,7 @@ void CALayerPartialDamageTree::UpdatePartialDamagePlanes(
   // Find the last partial damage plane to re-use the CALayer from. Grow the
   // new rect for this layer to include this damage, and all nearby partial
   // damage layers.
-  scoped_ptr<OverlayPlane> plane_for_swap;
+  std::unique_ptr<OverlayPlane> plane_for_swap;
   {
     auto plane_to_reuse_iter = old_tree->partial_damage_planes_.end();
     gfx::Rect plane_to_reuse_enlarged_pixel_damage_rect;
@@ -207,7 +207,7 @@ void CALayerPartialDamageTree::UpdatePartialDamagePlanes(
 }
 
 void CALayerPartialDamageTree::UpdateRootAndPartialDamagePlanes(
-    scoped_ptr<CALayerPartialDamageTree> old_tree,
+    std::unique_ptr<CALayerPartialDamageTree> old_tree,
     const gfx::Rect& pixel_damage_rect) {
   // First update the partial damage tree.
   UpdatePartialDamagePlanes(old_tree.get(), pixel_damage_rect);
@@ -276,7 +276,7 @@ CALayerPartialDamageTree::RootLayerIOSurface() {
 
 void CALayerPartialDamageTree::CommitCALayers(
     CALayer* superlayer,
-    scoped_ptr<CALayerPartialDamageTree> old_tree,
+    std::unique_ptr<CALayerPartialDamageTree> old_tree,
     float scale_factor,
     const gfx::Rect& pixel_damage_rect) {
   TRACE_EVENT0("gpu", "CALayerPartialDamageTree::CommitCALayers");
