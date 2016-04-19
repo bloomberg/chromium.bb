@@ -55,41 +55,44 @@ namespace blink {
 WorkerInspectorController* WorkerInspectorController::create(WorkerGlobalScope* workerGlobalScope)
 {
     WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(workerGlobalScope->thread()->isolate());
-    if (!debugger)
-        return nullptr;
-    OwnPtr<V8InspectorSession> session = debugger->debugger()->connect(debugger->contextGroupId());
-    return new WorkerInspectorController(workerGlobalScope, session.release());
+    return debugger ? new WorkerInspectorController(workerGlobalScope, debugger) : nullptr;
 }
 
-WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGlobalScope, PassOwnPtr<V8InspectorSession> session)
-    : m_workerGlobalScope(workerGlobalScope)
+WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGlobalScope, WorkerThreadDebugger* debugger)
+    : m_debugger(debugger)
+    , m_workerGlobalScope(workerGlobalScope)
     , m_instrumentingAgents(InstrumentingAgents::create())
     , m_agents(m_instrumentingAgents.get())
-    , m_v8Session(session)
 {
-    WorkerRuntimeAgent* workerRuntimeAgent = WorkerRuntimeAgent::create(m_v8Session->runtimeAgent(), workerGlobalScope, this);
-    m_workerRuntimeAgent = workerRuntimeAgent;
-    m_agents.append(workerRuntimeAgent);
-
-    WorkerDebuggerAgent* workerDebuggerAgent = WorkerDebuggerAgent::create(m_v8Session->debuggerAgent(), workerGlobalScope);
-    m_workerDebuggerAgent = workerDebuggerAgent;
-    m_agents.append(workerDebuggerAgent);
-
-    m_agents.append(InspectorProfilerAgent::create(m_v8Session->profilerAgent(), nullptr));
-    m_agents.append(InspectorHeapProfilerAgent::create(workerGlobalScope->thread()->isolate(), m_v8Session->heapProfilerAgent()));
-
-    WorkerConsoleAgent* workerConsoleAgent = WorkerConsoleAgent::create(m_v8Session->runtimeAgent(), m_v8Session->debuggerAgent(), workerGlobalScope);
-    m_agents.append(workerConsoleAgent);
-
-    m_v8Session->runtimeAgent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, workerConsoleAgent));
 }
 
 WorkerInspectorController::~WorkerInspectorController()
 {
 }
 
+void WorkerInspectorController::initializeAgents()
+{
+    m_v8Session = m_debugger->debugger()->connect(m_debugger->contextGroupId());
+    m_agents.append(WorkerRuntimeAgent::create(m_v8Session->runtimeAgent(), m_workerGlobalScope, this));
+    m_agents.append(WorkerDebuggerAgent::create(m_v8Session->debuggerAgent(), m_workerGlobalScope));
+    m_agents.append(InspectorProfilerAgent::create(m_v8Session->profilerAgent(), nullptr));
+    m_agents.append(InspectorHeapProfilerAgent::create(m_workerGlobalScope->thread()->isolate(), m_v8Session->heapProfilerAgent()));
+
+    WorkerConsoleAgent* workerConsoleAgent = WorkerConsoleAgent::create(m_v8Session->runtimeAgent(), m_v8Session->debuggerAgent(), m_workerGlobalScope);
+    m_agents.append(workerConsoleAgent);
+    m_v8Session->runtimeAgent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, workerConsoleAgent));
+}
+
+void WorkerInspectorController::destroyAgents()
+{
+    m_agents.discardAgents();
+    m_instrumentingAgents->reset();
+    m_v8Session.clear();
+}
+
 void WorkerInspectorController::connectFrontend()
 {
+    initializeAgents();
     ASSERT(!m_frontend);
     m_frontend = adoptPtr(new protocol::Frontend(this));
     m_backendDispatcher = protocol::Dispatcher::create(this);
@@ -106,6 +109,7 @@ void WorkerInspectorController::disconnectFrontend()
     m_backendDispatcher.clear();
     m_agents.clearFrontend();
     m_frontend.clear();
+    destroyAgents();
     InspectorInstrumentation::frontendDeleted();
 }
 
@@ -120,9 +124,6 @@ void WorkerInspectorController::dispatchMessageFromFrontend(const String& messag
 void WorkerInspectorController::dispose()
 {
     disconnectFrontend();
-    m_instrumentingAgents->reset();
-    m_agents.discardAgents();
-    m_v8Session.clear();
 }
 
 void WorkerInspectorController::resumeStartup()
@@ -150,8 +151,6 @@ DEFINE_TRACE(WorkerInspectorController)
     visitor->trace(m_workerGlobalScope);
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_agents);
-    visitor->trace(m_workerDebuggerAgent);
-    visitor->trace(m_workerRuntimeAgent);
 }
 
 } // namespace blink

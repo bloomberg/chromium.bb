@@ -46,9 +46,8 @@ namespace blink {
 class InstrumentingAgents;
 class V8Debugger;
 class V8InspectorSession;
-class WorkerDebuggerAgent;
 class WorkerGlobalScope;
-class WorkerRuntimeAgent;
+class WorkerThreadDebugger;
 
 namespace protocol {
 class Dispatcher;
@@ -71,7 +70,10 @@ public:
     void dispose();
 
 private:
-    WorkerInspectorController(WorkerGlobalScope*, PassOwnPtr<V8InspectorSession>);
+    WorkerInspectorController(WorkerGlobalScope*, WorkerThreadDebugger*);
+
+    void initializeAgents();
+    void destroyAgents();
 
     // InspectorRuntimeAgent::Client implementation.
     void resumeStartup() override;
@@ -81,14 +83,13 @@ private:
     void sendProtocolNotification(PassOwnPtr<protocol::DictionaryValue> message) override;
     void flush() override;
 
+    WorkerThreadDebugger* m_debugger;
     Member<WorkerGlobalScope> m_workerGlobalScope;
     Member<InstrumentingAgents> m_instrumentingAgents;
     InspectorAgentRegistry m_agents;
     OwnPtr<V8InspectorSession> m_v8Session;
     OwnPtr<protocol::Frontend> m_frontend;
     OwnPtr<protocol::Dispatcher> m_backendDispatcher;
-    Member<WorkerDebuggerAgent> m_workerDebuggerAgent;
-    Member<WorkerRuntimeAgent> m_workerRuntimeAgent;
 };
 
 } // namespace blink

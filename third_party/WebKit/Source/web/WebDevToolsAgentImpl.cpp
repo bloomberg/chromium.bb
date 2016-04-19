@@ -315,7 +315,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_layerTreeAgent(nullptr)
     , m_tracingAgent(nullptr)
     , m_agents(m_instrumentingAgents.get())
-    , m_deferredAgentsInitialized(false)
     , m_includeViewAgents(includeViewAgents)
     , m_sessionId(0)
     , m_stateMuted(false)
@@ -384,12 +383,8 @@ void WebDevToolsAgentImpl::willBeDestroyed()
     m_v8Session.clear();
 }
 
-void WebDevToolsAgentImpl::initializeDeferredAgents()
+void WebDevToolsAgentImpl::initializeAgents()
 {
-    if (m_deferredAgentsInitialized)
-        return;
-    m_deferredAgentsInitialized = true;
-
     ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
@@ -469,6 +464,22 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
         m_overlay->init(cssAgent, debuggerAgent, m_domAgent);
 }
 
+void WebDevToolsAgentImpl::destroyAgents()
+{
+    if (m_overlay)
+        m_overlay->clear();
+
+    m_tracingAgent.clear();
+    m_layerTreeAgent.clear();
+    m_resourceAgent.clear();
+    m_pageAgent.clear();
+    m_domAgent.clear();
+
+    m_agents.discardAgents();
+    m_instrumentingAgents->reset();
+    m_v8Session.clear();
+}
+
 void WebDevToolsAgentImpl::attach(const WebString& hostId, int sessionId)
 {
     if (m_attached)
@@ -478,7 +489,7 @@ void WebDevToolsAgentImpl::attach(const WebString& hostId, int sessionId)
     m_attached = true;
     m_sessionId = sessionId;
 
-    initializeDeferredAgents();
+    initializeAgents();
     m_resourceAgent->setHostId(hostId);
 
     m_inspectorFrontend = adoptPtr(new protocol::Frontend(this));
@@ -520,9 +531,7 @@ void WebDevToolsAgentImpl::detach()
     m_agents.clearFrontend();
     m_inspectorFrontend.clear();
 
-    // Release overlay resources.
-    if (m_overlay)
-        m_overlay->clear();
+    destroyAgents();
     InspectorInstrumentation::frontendDeleted();
     InspectorInstrumentation::unregisterInstrumentingAgents(m_instrumentingAgents.get());
 

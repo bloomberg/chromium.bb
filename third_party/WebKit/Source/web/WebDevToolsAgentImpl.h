@@ -137,7 +137,8 @@ private:
     void willProcessTask() override;
     void didProcessTask() override;
 
-    void initializeDeferredAgents();
+    void initializeAgents();
+    void destroyAgents();
 
     friend class WebDevToolsAgent;
     static void runDebuggerTask(int sessionId, PassOwnPtr<WebDevToolsAgent::MessageDescriptor>);
@@ -165,7 +166,6 @@ private:
     OwnPtr<protocol::Dispatcher> m_inspectorBackendDispatcher;
     OwnPtr<protocol::Frontend> m_inspectorFrontend;
     InspectorAgentRegistry m_agents;
-    bool m_deferredAgentsInitialized;
     bool m_includeViewAgents;
 
     typedef Vector<std::pair<int, OwnPtr<protocol::Value>>> NotificationQueue;

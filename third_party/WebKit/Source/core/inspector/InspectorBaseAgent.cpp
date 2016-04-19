@@ -125,6 +125,8 @@ void InspectorAgentRegistry::discardAgents()
 {
     for (size_t i = m_agents.size(); i > 0; i--)
         m_agents[i - 1]->discardAgent();
+    m_agents.clear();
+    m_state = protocol::DictionaryValue::create();
 }
 
 void InspectorAgentRegistry::flushPendingProtocolNotifications()

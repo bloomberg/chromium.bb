@@ -589,6 +589,11 @@ void InspectorOverlay::clear()
     m_inspectMode = InspectorDOMAgent::NotSearching;
     m_timer.stop();
     hideHighlight();
+
+    m_debuggerAgent.clear();
+    m_domAgent.clear();
+    m_cssAgent.clear();
+    m_overlayHost->setListener(nullptr);
 }
 
 void InspectorOverlay::overlayResumed()
