@@ -35,6 +35,11 @@ const int kFetchingIntervalWifiChargingSeconds = 30 * 60;
 const int kFetchingIntervalWifiSeconds = 2 * 60 * 60;
 const int kFetchingIntervalFallbackSeconds = 24 * 60 * 60;
 
+// These define the times of day during which we will fetch via Wifi (without
+// charging) - 6 AM to 10 PM.
+const int kWifiFetchingHourMin = 6;
+const int kWifiFetchingHourMax = 22;
+
 const int kDefaultExpiryTimeMins = 24 * 60;
 
 base::TimeDelta GetFetchingInterval(const char* switch_name,
@@ -57,14 +62,46 @@ base::TimeDelta GetFetchingIntervalWifiCharging() {
                              kFetchingIntervalWifiChargingSeconds);
 }
 
-base::TimeDelta GetFetchingIntervalWifi() {
-  return GetFetchingInterval(switches::kFetchingIntervalWifiSeconds,
-                             kFetchingIntervalWifiSeconds);
+base::TimeDelta GetFetchingIntervalWifi(const base::Time& now) {
+  // Only fetch via Wifi (without charging) during the proper times of day.
+  base::Time::Exploded exploded;
+  now.LocalExplode(&exploded);
+  if (kWifiFetchingHourMin <= exploded.hour &&
+      exploded.hour < kWifiFetchingHourMax) {
+    return GetFetchingInterval(switches::kFetchingIntervalWifiSeconds,
+                               kFetchingIntervalWifiSeconds);
+  }
+  return base::TimeDelta();
 }
 
 base::TimeDelta GetFetchingIntervalFallback() {
   return GetFetchingInterval(switches::kFetchingIntervalFallbackSeconds,
                              kFetchingIntervalFallbackSeconds);
+}
+
+base::Time GetRescheduleTime(const base::Time& now) {
+  base::Time::Exploded exploded;
+  now.LocalExplode(&exploded);
+  // The scheduling changes at both |kWifiFetchingHourMin| and
+  // |kWifiFetchingHourMax|. Find the time of the next one that we'll hit.
+  bool next_day = false;
+  if (exploded.hour < kWifiFetchingHourMin) {
+    exploded.hour = kWifiFetchingHourMin;
+  } else if (exploded.hour < kWifiFetchingHourMax) {
+    exploded.hour = kWifiFetchingHourMax;
+  } else {
+    next_day = true;
+    exploded.hour = kWifiFetchingHourMin;
+  }
+  // In any case, reschedule at the full hour.
+  exploded.minute = 0;
+  exploded.second = 0;
+  exploded.millisecond = 0;
+  base::Time reschedule = base::Time::FromLocalExploded(exploded);
+  if (next_day)
+    reschedule += base::TimeDelta::FromDays(1);
+
+  return reschedule;
 }
 
 // Extracts the hosts from |suggestions| and returns them in a set.
@@ -124,7 +161,8 @@ NTPSnippetsService::NTPSnippetsService(
     NTPSnippetsScheduler* scheduler,
     scoped_ptr<NTPSnippetsFetcher> snippets_fetcher,
     const ParseJSONCallback& parse_json_callback)
-    : pref_service_(pref_service),
+    : enabled_(false),
+      pref_service_(pref_service),
       suggestions_service_(suggestions_service),
       file_task_runner_(file_task_runner),
       application_language_code_(application_language_code),
@@ -146,7 +184,8 @@ void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 void NTPSnippetsService::Init(bool enabled) {
-  if (enabled) {
+  enabled_ = enabled;
+  if (enabled_) {
     // |suggestions_service_| can be null in tests.
     if (suggestions_service_) {
       suggestions_service_subscription_ = suggestions_service_->AddCallback(
@@ -163,22 +202,13 @@ void NTPSnippetsService::Init(bool enabled) {
       FetchSnippets();
   }
 
-  // The scheduler only exists on Android so far, it's null on other platforms.
-  if (!scheduler_)
-    return;
-
-  if (enabled) {
-    scheduler_->Schedule(GetFetchingIntervalWifiCharging(),
-                         GetFetchingIntervalWifi(),
-                         GetFetchingIntervalFallback());
-  } else {
-    scheduler_->Unschedule();
-  }
+  RescheduleFetching();
 }
 
 void NTPSnippetsService::Shutdown() {
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceShutdown());
+  enabled_ = false;
 }
 
 void NTPSnippetsService::FetchSnippets() {
@@ -194,6 +224,21 @@ void NTPSnippetsService::FetchSnippetsFromHosts(
   }
   if (!hosts.empty())
     snippets_fetcher_->FetchSnippets(hosts);
+}
+
+void NTPSnippetsService::RescheduleFetching() {
+  // The scheduler only exists on Android so far, it's null on other platforms.
+  if (!scheduler_)
+    return;
+
+  if (enabled_) {
+    base::Time now = base::Time::Now();
+    scheduler_->Schedule(
+        GetFetchingIntervalWifiCharging(), GetFetchingIntervalWifi(now),
+        GetFetchingIntervalFallback(), GetRescheduleTime(now));
+  } else {
+    scheduler_->Unschedule();
+  }
 }
 
 void NTPSnippetsService::ClearSnippets() {

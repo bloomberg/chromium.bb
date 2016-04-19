@@ -29,6 +29,7 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
     static class MockTaskService extends ChromeBackgroundService {
         private boolean mDidLaunchBrowser = false;
         private boolean mDidFetchSnippets = false;
+        private boolean mDidRescheduleSnippets = false;
         private boolean mHasPrecacheInstance = true;
         private boolean mPrecachingStarted = false;
 
@@ -40,6 +41,11 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         @Override
         protected void fetchSnippets() {
             mDidFetchSnippets = true;
+        }
+
+        @Override
+        protected void rescheduleSnippets() {
+            mDidRescheduleSnippets = true;
         }
 
         @Override
@@ -58,13 +64,16 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         // to onRunTask, it will be enqueued after any possible call to launchBrowser, and we
         // can reliably check whether launchBrowser was called.
         protected void checkExpectations(final boolean expectedLaunchBrowser,
-                final boolean expectedPrecacheStarted, final boolean expectedFetchSnippets) {
+                final boolean expectedPrecacheStarted, final boolean expectedFetchSnippets,
+                final boolean expectedRescheduleSnippets) {
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     assertEquals("StartedService", expectedLaunchBrowser, mDidLaunchBrowser);
                     assertEquals("StartedPrecache", expectedPrecacheStarted, mPrecachingStarted);
                     assertEquals("FetchedSnippets", expectedFetchSnippets, mDidFetchSnippets);
+                    assertEquals("RescheduledSnippets", expectedRescheduleSnippets,
+                            mDidRescheduleSnippets);
                 }
             });
         }
@@ -95,51 +104,87 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
     }
 
     private void startOnRunTaskAndVerify(String taskTag, boolean shouldStart,
-            boolean shouldPrecache, boolean shouldFetchSnippets) {
+            boolean shouldPrecache, boolean shouldFetchSnippets, boolean shouldRescheduleSnippets) {
         mTaskService.onRunTask(new TaskParams(taskTag));
-        mTaskService.checkExpectations(shouldStart, shouldPrecache, shouldFetchSnippets);
+        mTaskService.checkExpectations(
+                shouldStart, shouldPrecache, shouldFetchSnippets, shouldRescheduleSnippets);
     }
 
     @SmallTest
     @Feature({"BackgroundSync"})
     public void testBackgroundSyncNoLaunchBrowserWhenInstanceExists() {
-        startOnRunTaskAndVerify(BackgroundSyncLauncher.TASK_TAG, false, false, false);
+        startOnRunTaskAndVerify(BackgroundSyncLauncher.TASK_TAG, false, false, false, false);
     }
 
     @SmallTest
     @Feature({"BackgroundSync"})
     public void testBackgroundSyncLaunchBrowserWhenInstanceDoesNotExist() {
         deleteSyncLauncherInstance();
-        startOnRunTaskAndVerify(BackgroundSyncLauncher.TASK_TAG, true, false, false);
+        startOnRunTaskAndVerify(BackgroundSyncLauncher.TASK_TAG, true, false, false, false);
     }
 
     @SmallTest
     @Feature({"NTPSnippets"})
-    public void testNTPSnippetsNoLaunchBrowserWhenInstanceExists() {
-        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI_CHARGING, false, false, true);
-        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI, false, false, true);
-        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_FALLBACK, false, false, true);
+    public void testNTPSnippetsFetchWifiChargingNoLaunchBrowserWhenInstanceExists() {
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI_CHARGING, false, false, true, false);
     }
 
     @SmallTest
     @Feature({"NTPSnippets"})
-    public void testNTPSnippetsLaunchBrowserWhenInstanceDoesNotExist() {
+    public void testNTPSnippetsFetchWifiNoLaunchBrowserWhenInstanceExists() {
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI, false, false, true, false);
+    }
+
+    @SmallTest
+    @Feature({"NTPSnippets"})
+    public void testNTPSnippetsFetchFallbackNoLaunchBrowserWhenInstanceExists() {
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_FALLBACK, false, false, true, false);
+    }
+
+    @SmallTest
+    @Feature({"NTPSnippets"})
+    public void testNTPSnippetsRescheduleNoLaunchBrowserWhenInstanceExists() {
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_RESCHEDULE, false, false, false, true);
+    }
+
+    @SmallTest
+    @Feature({"NTPSnippets"})
+    public void testNTPSnippetsFetchWifiChargingLaunchBrowserWhenInstanceDoesNotExist() {
         deleteSnippetsLauncherInstance();
-        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI_CHARGING, true, false, true);
-        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI, true, false, true);
-        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_FALLBACK, true, false, true);
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI_CHARGING, true, false, true, false);
+    }
+
+    @SmallTest
+    @Feature({"NTPSnippets"})
+    public void testNTPSnippetsFetchWifiLaunchBrowserWhenInstanceDoesNotExist() {
+        deleteSnippetsLauncherInstance();
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI, true, false, true, false);
+    }
+
+    @SmallTest
+    @Feature({"NTPSnippets"})
+    public void testNTPSnippetsFetchFallbackLaunchBrowserWhenInstanceDoesNotExist() {
+        deleteSnippetsLauncherInstance();
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_FALLBACK, true, false, true, false);
+    }
+
+    @SmallTest
+    @Feature({"NTPSnippets"})
+    public void testNTPSnippetsRescheduleLaunchBrowserWhenInstanceDoesNotExist() {
+        deleteSnippetsLauncherInstance();
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_RESCHEDULE, true, false, false, true);
     }
 
     @SmallTest
     @Feature({"Precache"})
     public void testPrecacheNoLaunchBrowserWhenInstanceExists() {
-        startOnRunTaskAndVerify(PrecacheController.PERIODIC_TASK_TAG, false, false, false);
+        startOnRunTaskAndVerify(PrecacheController.PERIODIC_TASK_TAG, false, false, false, false);
     }
 
     @SmallTest
     @Feature({"Precache"})
     public void testPrecacheLaunchBrowserWhenInstanceDoesNotExist() {
         mTaskService.deletePrecacheInstance();
-        startOnRunTaskAndVerify(PrecacheController.PERIODIC_TASK_TAG, true, true, false);
+        startOnRunTaskAndVerify(PrecacheController.PERIODIC_TASK_TAG, true, true, false, false);
     }
 }

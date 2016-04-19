@@ -79,6 +79,10 @@ class NTPSnippetsService : public KeyedService {
   // suggestions from the suggestion service) and adds them to the current ones.
   void FetchSnippetsFromHosts(const std::set<std::string>& hosts);
 
+  // (Re)schedules the periodic fetching of snippets. This is necessary because
+  // the schedule depends on the time of day
+  void RescheduleFetching();
+
   // Deletes all currently stored snippets.
   void ClearSnippets();
 
@@ -147,6 +151,8 @@ class NTPSnippetsService : public KeyedService {
   bool HasDiscardedSnippet(const GURL& url) const;
 
   void RemoveExpiredSnippets();
+
+  bool enabled_;
 
   PrefService* pref_service_;
 

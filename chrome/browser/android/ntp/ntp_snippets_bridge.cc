@@ -36,6 +36,14 @@ static void FetchSnippets(JNIEnv* env,
   NTPSnippetsServiceFactory::GetForProfile(profile)->FetchSnippets();
 }
 
+// Reschedules the fetching of snippets. Used to support different fetching
+// intervals for different times of day.
+static void RescheduleFetching(JNIEnv* env,
+                               const JavaParamRef<jclass>& caller) {
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  NTPSnippetsServiceFactory::GetForProfile(profile)->RescheduleFetching();
+}
+
 NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
                                      const JavaParamRef<jobject>& j_profile)
     : snippet_service_observer_(this) {

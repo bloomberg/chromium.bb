@@ -53,6 +53,10 @@ public class ChromeBackgroundService extends GcmTaskService {
                         handleFetchSnippets(context);
                         break;
 
+                    case SnippetsLauncher.TASK_TAG_RESCHEDULE:
+                        handleRescheduleSnippets(context);
+                        break;
+
                     case PrecacheController.PERIODIC_TASK_TAG:
                     case PrecacheController.CONTINUATION_TASK_TAG:
                         handlePrecache(context, params.getTag());
@@ -89,6 +93,18 @@ public class ChromeBackgroundService extends GcmTaskService {
     @VisibleForTesting
     protected void fetchSnippets() {
         SnippetsBridge.fetchSnippets();
+    }
+
+    private void handleRescheduleSnippets(Context context) {
+        if (!SnippetsLauncher.hasInstance()) {
+            launchBrowser(context);
+        }
+        rescheduleSnippets();
+    }
+
+    @VisibleForTesting
+    protected void rescheduleSnippets() {
+        SnippetsBridge.rescheduleFetching();
     }
 
     private void handlePrecache(Context context, String tag) {
