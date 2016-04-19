@@ -12,7 +12,9 @@ from telemetry.internal.browser import browser_finder
 from telemetry.page import page_test
 from telemetry.story.story_set import StorySet
 
-
+extensions_path = os.path.join(
+    path_util.GetChromiumSrcDir(),
+    'content', 'test', 'data', 'gpu')
 conformance_path = os.path.join(
     path_util.GetChromiumSrcDir(),
     'third_party', 'webgl', 'src', 'sdk', 'tests')
@@ -126,6 +128,48 @@ class Webgl2ConformanceValidator(WebglConformanceValidator):
           '--disable-accelerated-video-decode'
       ])
 
+class WebglExtensionPage(gpu_test_base.PageBase):
+  def __init__(self, story_set, extension, webgl_version, expectations):
+    super(WebglExtensionPage, self).__init__(
+      url='file://' + extensions_path + '/webgl_extension_test.html',
+      page_set=story_set, base_dir=extensions_path,
+      shared_page_state_class=gpu_test_base.DesktopGpuSharedPageState,
+      name=('WebglExtension.%s' % extension),
+      expectations=expectations)
+    self.extension = extension
+    self.context_type = "webgl2" if webgl_version == 2 else "webgl"
+    self.script_to_evaluate_on_commit = conformance_harness_script
+
+  def RunNavigateSteps(self, action_runner):
+    super(WebglExtensionPage, self).RunNavigateSteps(action_runner)
+    action_runner.EvaluateJavaScript('checkExtension("%s", "%s")' %
+        (self.extension, self.context_type))
+    action_runner.WaitForJavaScriptCondition(
+        'webglTestHarness._finished', timeout_in_seconds=3)
+
+class WebglExtensionListPage(gpu_test_base.PageBase):
+  def __init__(self, story_set, extension_list, webgl_version, expectations):
+    super(WebglExtensionListPage, self).__init__(
+      url='file://' + extensions_path + '/webgl_extension_test.html',
+      page_set=story_set, base_dir=extensions_path,
+      shared_page_state_class=gpu_test_base.DesktopGpuSharedPageState,
+      name=('WebglExtension.TestCoverage'),
+      expectations=expectations)
+    self.extension_list = extension_list
+    self.context_type = "webgl2" if webgl_version == 2 else "webgl"
+    self.script_to_evaluate_on_commit = conformance_harness_script
+
+  def RunNavigateSteps(self, action_runner):
+    super(WebglExtensionListPage, self).RunNavigateSteps(action_runner)
+    extension_list_string = "["
+    for extension in self.extension_list:
+      extension_list_string = extension_list_string + extension + ", "
+    extension_list_string = extension_list_string + "]"
+    action_runner.EvaluateJavaScript('checkSupportedExtensions("%s", "%s")' %
+        (extension_list_string, self.context_type))
+    action_runner.WaitForJavaScriptCondition(
+        'webglTestHarness._finished', timeout_in_seconds=3)
+
 class WebglConformancePage(gpu_test_base.PageBase):
   def __init__(self, story_set, test, expectations):
     super(WebglConformancePage, self).__init__(
@@ -179,6 +223,14 @@ class WebglConformance(gpu_test_base.TestBase):
     ps = StorySet(serving_dirs=[''], base_dir=conformance_path)
 
     expectations = self.GetExpectations()
+
+    extension_tests = self.GetExtensionList()
+    ps.AddStory(WebglExtensionListPage(ps, extension_tests, self._webgl_version,
+          expectations))
+    for extension in extension_tests:
+      ps.AddStory(WebglExtensionPage(ps, extension, self._webgl_version,
+          expectations))
+
     for test in tests:
       ps.AddStory(WebglConformancePage(ps, test, expectations))
 
@@ -192,6 +244,50 @@ class WebglConformance(gpu_test_base.TestBase):
     else:
       return webgl2_conformance_expectations.WebGL2ConformanceExpectations(
           conformance_path)
+
+  def GetExtensionList(self):
+    if self._webgl_version == 1:
+      return [
+        'ANGLE_instanced_arrays',
+        'EXT_blend_minmax',
+        'EXT_disjoint_timer_query',
+        'EXT_frag_depth',
+        'EXT_shader_texture_lod',
+        'EXT_sRGB',
+        'EXT_texture_filter_anisotropic',
+        'OES_element_index_uint',
+        'OES_standard_derivatives',
+        'OES_texture_float',
+        'OES_texture_float_linear',
+        'OES_texture_half_float',
+        'OES_texture_half_float_linear',
+        'OES_vertex_array_object',
+        'WEBGL_compressed_texture_astc',
+        'WEBGL_compressed_texture_atc',
+        'WEBGL_compressed_texture_etc1',
+        'WEBGL_compressed_texture_pvrtc',
+        'WEBGL_compressed_texture_s3tc',
+        'WEBGL_debug_renderer_info',
+        'WEBGL_debug_shaders',
+        'WEBGL_depth_texture',
+        'WEBGL_draw_buffers',
+        'WEBGL_lose_context',
+      ]
+    else:
+      return [
+        'EXT_color_buffer_float',
+        'EXT_disjoint_timer_query',
+        'EXT_texture_filter_anisotropic',
+        'OES_texture_float_linear',
+        'WEBGL_compressed_texture_astc',
+        'WEBGL_compressed_texture_atc',
+        'WEBGL_compressed_texture_etc1',
+        'WEBGL_compressed_texture_pvrtc',
+        'WEBGL_compressed_texture_s3tc',
+        'WEBGL_debug_renderer_info',
+        'WEBGL_debug_shaders',
+        'WEBGL_lose_context',
+      ]
 
   @staticmethod
   def _ParseTests(path, version, webgl2_only, folder_min_version):
