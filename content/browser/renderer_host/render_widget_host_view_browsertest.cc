@@ -43,7 +43,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "ui/gfx/win/dpi.h"
 #endif
 
 namespace content {

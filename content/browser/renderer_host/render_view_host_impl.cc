@@ -91,8 +91,8 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
+#include "ui/display/win/dpi.h"
 #include "ui/gfx/platform_font_win.h"
-#include "ui/gfx/win/dpi.h"
 #endif
 
 using base::TimeDelta;
@@ -154,13 +154,13 @@ void GetWindowsSpecificPrefs(RendererPreferences* prefs) {
       metrics.lfMessageFont);
 
   prefs->vertical_scroll_bar_width_in_dips =
-      gfx::win::GetSystemMetricsInDIP(SM_CXVSCROLL);
+      display::win::GetSystemMetricsInDIP(SM_CXVSCROLL);
   prefs->horizontal_scroll_bar_height_in_dips =
-      gfx::win::GetSystemMetricsInDIP(SM_CYHSCROLL);
+      display::win::GetSystemMetricsInDIP(SM_CYHSCROLL);
   prefs->arrow_bitmap_height_vertical_scroll_bar_in_dips =
-      gfx::win::GetSystemMetricsInDIP(SM_CYVSCROLL);
+      display::win::GetSystemMetricsInDIP(SM_CYVSCROLL);
   prefs->arrow_bitmap_width_horizontal_scroll_bar_in_dips =
-      gfx::win::GetSystemMetricsInDIP(SM_CXHSCROLL);
+      display::win::GetSystemMetricsInDIP(SM_CXHSCROLL);
 }
 #endif
 

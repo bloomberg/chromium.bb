@@ -6,7 +6,6 @@
 
 #include "ui/display/win/display_info.h"
 #include "ui/display/win/screen_win.h"
-#include "ui/gfx/win/dpi.h"
 
 namespace display {
 namespace win {

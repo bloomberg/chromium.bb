@@ -34,6 +34,7 @@ component("views") {
     "//skia",
     "//third_party/icu",
     "//ui/accessibility",
+    "//ui/display",
     "//ui/latency_info",
     "//ui/native_theme",
     "//ui/resources",

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "ui/display/win/display_info.h"
+#include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win_display.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point.h"
@@ -16,7 +17,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/win/dpi.h"
 
 namespace display {
 namespace win {
@@ -57,7 +57,7 @@ BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
       reinterpret_cast<std::vector<DisplayInfo>*>(data);
   DCHECK(display_infos);
   display_infos->push_back(DisplayInfo(MonitorInfoFromHMONITOR(monitor),
-                                       gfx::GetDPIScale()));
+                                       GetDPIScale()));
   return TRUE;
 }
 
@@ -80,12 +80,12 @@ ScreenWin::~ScreenWin() = default;
 
 // static
 gfx::Point ScreenWin::ScreenToDIPPoint(const gfx::Point& pixel_point) {
-  return ScaleToFlooredPoint(pixel_point, 1.0f / gfx::GetDPIScale());
+  return ScaleToFlooredPoint(pixel_point, 1.0f / GetDPIScale());
 }
 
 // static
 gfx::Point ScreenWin::DIPToScreenPoint(const gfx::Point& dip_point) {
-  return ScaleToFlooredPoint(dip_point, gfx::GetDPIScale());
+  return ScaleToFlooredPoint(dip_point, GetDPIScale());
 }
 
 // static
@@ -134,14 +134,14 @@ gfx::Size ScreenWin::ScreenToDIPSize(HWND hwnd,
                                      const gfx::Size& size_in_pixels) {
   // Always ceil sizes. Otherwise we may be leaving off part of the bounds.
   // TODO(robliao): Get the scale factor from |hwnd|.
-  return ScaleToCeiledSize(size_in_pixels, 1.0f / gfx::GetDPIScale());
+  return ScaleToCeiledSize(size_in_pixels, 1.0f / GetDPIScale());
 }
 
 // static
 gfx::Size ScreenWin::DIPToScreenSize(HWND hwnd, const gfx::Size& dip_size) {
   // Always ceil sizes. Otherwise we may be leaving off part of the bounds.
   // TODO(robliao): Get the scale factor from |hwnd|.
-  return ScaleToCeiledSize(dip_size, gfx::GetDPIScale());
+  return ScaleToCeiledSize(dip_size, GetDPIScale());
 }
 
 HWND ScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {

@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_win.h"
 #include "chrome/browser/ui/views/apps/glass_app_window_frame_view_win.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/dpi.h"
 #include "ui/views/controls/menu/native_menu_win.h"
 
 AppWindowDesktopWindowTreeHostWin::AppWindowDesktopWindowTreeHostWin(
@@ -69,7 +69,7 @@ void AppWindowDesktopWindowTreeHostWin::UpdateDWMFrame() {
     gfx::Insets insets = app_window_->glass_frame_view()->GetGlassInsets();
     // The DWM API's expect values in pixels. We need to convert from DIP to
     // pixels here.
-    insets = insets.Scale(gfx::GetDPIScale());
+    insets = insets.Scale(display::win::GetDPIScale());
     margins.cxLeftWidth = insets.left();
     margins.cxRightWidth = insets.right();
     margins.cyBottomHeight = insets.bottom();

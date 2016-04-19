@@ -11,10 +11,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/display/win/dpi.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/win/dpi.h"
 
 // static
 IconGroupID IconLoader::ReadGroupIDFromFilepath(
@@ -61,7 +61,8 @@ void IconLoader::ReadIcon() {
     std::unique_ptr<SkBitmap> bitmap(
         IconUtil::CreateSkBitmapFromHICON(file_info.hIcon));
     if (bitmap.get()) {
-      gfx::ImageSkia image_skia(gfx::ImageSkiaRep(*bitmap, gfx::GetDPIScale()));
+      gfx::ImageSkia image_skia(gfx::ImageSkiaRep(*bitmap,
+                                                  display::win::GetDPIScale()));
       image_skia.MakeThreadSafe();
       image_.reset(new gfx::Image(image_skia));
       DestroyIcon(file_info.hIcon);

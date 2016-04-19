@@ -32,8 +32,8 @@
 #include "sandbox/win/src/sandbox.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
+#include "ui/display/win/dpi.h"
 #include "ui/gfx/win/direct_write.h"
-#include "ui/gfx/win/dpi.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -156,7 +156,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   }
 
   blink::WebFontRendering::setUseDirectWrite(use_direct_write);
-  blink::WebFontRendering::setDeviceScaleFactor(gfx::GetDPIScale());
+  blink::WebFontRendering::setDeviceScaleFactor(display::win::GetDPIScale());
 #endif
 
   main_message_loop.Run();

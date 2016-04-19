@@ -36,7 +36,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/dpi.h"
 #endif
 
 namespace {
@@ -133,7 +133,7 @@ int DemoMain() {
   gfx::GLSurface::InitializeOneOff();
 
 #if defined(OS_WIN)
-  gfx::SetDefaultDeviceScaleFactor(1.0f);
+  display::win::SetDefaultDeviceScaleFactor(1.0f);
 #endif
 
   // The ContextFactory must exist before any Compositors are created.

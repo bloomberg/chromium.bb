@@ -20,7 +20,7 @@
 #include "ui/gl/test/gl_surface_test_support.h"
 
 #if defined(OS_WIN)
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/dpi.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -75,7 +75,7 @@ void ContentTestSuite::Initialize() {
 #endif
 
 #if defined(OS_WIN)
-  gfx::SetDefaultDeviceScaleFactor(1.0f);
+  display::win::SetDefaultDeviceScaleFactor(1.0f);
 #endif
 
   ContentTestSuiteBase::Initialize();

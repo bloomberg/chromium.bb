@@ -24,7 +24,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/dpi.h"
 #endif
 
 namespace {
@@ -49,7 +49,7 @@ void UIBaseTestSuite::Initialize() {
   base::TestSuite::Initialize();
 
 #if defined(OS_WIN)
-  gfx::SetDefaultDeviceScaleFactor(1.0);
+  display::win::SetDefaultDeviceScaleFactor(1.0);
 #endif
 
 #if defined(OS_ANDROID)

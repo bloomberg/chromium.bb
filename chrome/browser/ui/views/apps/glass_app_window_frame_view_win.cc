@@ -7,7 +7,7 @@
 #include "base/win/windows_version.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/base/hit_test.h"
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/dpi.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -30,11 +30,11 @@ GlassAppWindowFrameViewWin::~GlassAppWindowFrameViewWin() {
 }
 
 gfx::Insets GlassAppWindowFrameViewWin::GetGlassInsets() const {
-  int caption_height = gfx::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME) +
-                       gfx::win::GetSystemMetricsInDIP(SM_CYCAPTION);
+  int caption_height = display::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME) +
+                       display::win::GetSystemMetricsInDIP(SM_CYCAPTION);
 
   int frame_size = base::win::GetVersion() < base::win::VERSION_WIN10
-                       ? gfx::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME)
+                       ? display::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME)
                        : 0;
 
   return gfx::Insets(caption_height, frame_size, frame_size, frame_size);
@@ -55,7 +55,7 @@ gfx::Insets GlassAppWindowFrameViewWin::GetClientAreaInsets() const {
   } else {
     // On Windows 10 we use a 1 pixel non client border which is too thin as a
     // resize target. This inset extends the resize region.
-    int resize_border = gfx::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
+    int resize_border = display::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
     insets.Set(0, resize_border, resize_border, resize_border);
   }
   return insets;
@@ -103,7 +103,7 @@ int GlassAppWindowFrameViewWin::NonClientHitTest(const gfx::Point& point) {
                              : false;
   // Don't allow overlapping resize handles when the window is maximized or
   // fullscreen, as it can't be resized in those states.
-  int resize_border = gfx::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
+  int resize_border = display::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
   int frame_component =
       GetHTComponentForFrame(point,
                              resize_border,

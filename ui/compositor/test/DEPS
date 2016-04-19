@@ -3,4 +3,5 @@ include_rules = [
   "+gpu/command_buffer/common",
   "+gpu/skia_bindings",
   "+skia/ext",
+  "+ui/display",
 ]

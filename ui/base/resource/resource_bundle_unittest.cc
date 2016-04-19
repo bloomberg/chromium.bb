@@ -29,7 +29,7 @@
 #include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(OS_WIN)
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/dpi.h"
 #endif
 
 using ::testing::_;
@@ -461,7 +461,7 @@ TEST_F(ResourceBundleImageTest, GetRawDataResource) {
 // via ResourceBundle::GetImageNamed().
 TEST_F(ResourceBundleImageTest, GetImageNamed) {
 #if defined(OS_WIN)
-  gfx::SetDefaultDeviceScaleFactor(2.0);
+  display::win::SetDefaultDeviceScaleFactor(2.0);
 #endif
   std::vector<ScaleFactor> supported_factors;
   supported_factors.push_back(SCALE_FACTOR_100P);

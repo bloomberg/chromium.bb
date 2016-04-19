@@ -14,7 +14,6 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
-#include "ui/gfx/win/dpi.h"
 
 namespace ui {
 

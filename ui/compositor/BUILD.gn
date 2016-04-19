@@ -143,6 +143,7 @@ source_set("test_support") {
     "//skia",
     "//testing/gtest",
     "//ui/base",
+    "//ui/display",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl:test_support",

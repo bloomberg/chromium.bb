@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/i18n/rtl.h"
 #include "ui/base/win/shell.h"
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/dpi.h"
 
 namespace {
 
@@ -32,7 +32,7 @@ int GetMinimizeButtonOffsetForWindow(HWND hwnd) {
   // returning it.
   POINT minimize_button_corner = { titlebar_info.rgrect[2].left, 0 };
   MapWindowPoints(HWND_DESKTOP, hwnd, &minimize_button_corner, 1);
-  return minimize_button_corner.x / gfx::GetDPIScale();
+  return minimize_button_corner.x / display::win::GetDPIScale();
 }
 
 }  // namespace

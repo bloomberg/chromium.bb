@@ -23,7 +23,7 @@
 #include "url/url_util.h"
 
 #if defined(OS_WIN)
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/dpi.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -108,7 +108,7 @@ void SetUpBlinkTestEnvironment() {
 #endif
 
 #if defined(OS_WIN)
-  gfx::SetDefaultDeviceScaleFactor(1.0f);
+  display::win::SetDefaultDeviceScaleFactor(1.0f);
 #endif
 
   // Explicitly initialize the GURL library before spawning any threads.

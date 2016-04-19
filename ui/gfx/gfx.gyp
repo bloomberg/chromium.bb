@@ -310,8 +310,6 @@
         'win/direct_manipulation.h',
         'win/direct_write.cc',
         'win/direct_write.h',
-        'win/dpi.cc',
-        'win/dpi.h',
         'win/hwnd_util.cc',
         'win/hwnd_util.h',
         "win/physical_size.cc",

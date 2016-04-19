@@ -197,7 +197,7 @@
 #include "content/common/font_cache_dispatcher_win.h"
 #include "content/common/sandbox_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/dpi.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -1368,8 +1368,9 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
     command_line->AppendSwitch(switches::kEnablePinch);
 
 #if defined(OS_WIN)
-  command_line->AppendSwitchASCII(switches::kDeviceScaleFactor,
-                                  base::DoubleToString(gfx::GetDPIScale()));
+  command_line->AppendSwitchASCII(
+      switches::kDeviceScaleFactor,
+      base::DoubleToString(display::win::GetDPIScale()));
 #endif
 
   AppendCompositorCommandLineFlags(command_line);

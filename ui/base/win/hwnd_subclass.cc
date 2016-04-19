@@ -11,7 +11,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
-#include "ui/gfx/win/dpi.h"
 #include "ui/gfx/win/hwnd_util.h"
 
 namespace {

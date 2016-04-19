@@ -44,7 +44,7 @@
 #include "content/common/sandbox_win.h"
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox_policy.h"
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/dpi.h"
 #endif
 
 namespace content {
@@ -435,8 +435,9 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   }
 
 #if defined(OS_WIN)
-  cmd_line->AppendSwitchASCII(switches::kDeviceScaleFactor,
-                              base::DoubleToString(gfx::GetDPIScale()));
+  cmd_line->AppendSwitchASCII(
+      switches::kDeviceScaleFactor,
+      base::DoubleToString(display::win::GetDPIScale()));
 #endif
 
   if (!plugin_launcher.empty())

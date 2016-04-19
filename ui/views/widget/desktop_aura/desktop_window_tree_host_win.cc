@@ -17,13 +17,13 @@
 #include "ui/base/win/shell.h"
 #include "ui/compositor/compositor_constants.h"
 #include "ui/compositor/paint_context.h"
+#include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_win.h"
-#include "ui/gfx/win/dpi.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_win.h"
 #include "ui/views/corewm/tooltip_win.h"
@@ -306,9 +306,9 @@ void DesktopWindowTreeHostWin::SetShape(SkRegion* native_region) {
     // See crbug.com/410593.
     SkRegion* shape = native_region;
     SkRegion device_region;
-    if (gfx::GetDPIScale() > 1.0) {
+    if (display::win::GetDPIScale() > 1.0) {
       shape = &device_region;
-      const float& scale = gfx::GetDPIScale();
+      const float& scale = display::win::GetDPIScale();
       std::vector<SkIRect> rects;
       for (SkRegion::Iterator it(*native_region); !it.done(); it.next()) {
         const SkIRect& rect = it.rect();

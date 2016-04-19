@@ -79,7 +79,7 @@
 #include "base/trace_event/trace_event_etw_export_win.h"
 #include "base/win/process_startup_helper.h"
 #include "ui/base/win/atl_module.h"
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/dpi.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/power_monitor/power_monitor_device_source.h"
@@ -532,7 +532,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
           switches::kDeviceScaleFactor);
       double scale_factor = 0;
       if (base::StringToDouble(scale_factor_string, &scale_factor))
-        gfx::SetDefaultDeviceScaleFactor(scale_factor);
+        display::win::SetDefaultDeviceScaleFactor(scale_factor);
     }
 #endif
 

@@ -1,10 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/dpi.h"
 
 #include <windows.h>
+
 #include "base/win/scoped_hdc.h"
 #include "ui/gfx/display.h"
 
@@ -17,19 +18,20 @@ float g_device_scale_factor = 0.f;
 float GetUnforcedDeviceScaleFactor() {
   return g_device_scale_factor ?
       g_device_scale_factor :
-      static_cast<float>(gfx::GetDPI().width()) / kDefaultDPI;
+      static_cast<float>(display::win::GetDPI().width()) / kDefaultDPI;
 }
 
 }  // namespace
 
-namespace gfx {
+namespace display {
+namespace win {
 
 void SetDefaultDeviceScaleFactor(float scale) {
   DCHECK_NE(0.f, scale);
   g_device_scale_factor = scale;
 }
 
-Size GetDPI() {
+gfx::Size GetDPI() {
   static int dpi_x = 0;
   static int dpi_y = 0;
   static bool should_initialize = true;
@@ -43,7 +45,7 @@ Size GetDPI() {
     dpi_x = GetDeviceCaps(screen_dc, LOGPIXELSX);
     dpi_y = GetDeviceCaps(screen_dc, LOGPIXELSY);
   }
-  return Size(dpi_x, dpi_y);
+  return gfx::Size(dpi_x, dpi_y);
 }
 
 float GetDPIScale() {
@@ -53,8 +55,6 @@ float GetDPIScale() {
   return (dpi_scale <= 1.25f) ? 1.f : dpi_scale;
 }
 
-namespace win {
-
 int GetSystemMetricsInDIP(int metric) {
   // The system metrics always reflect the system DPI, not whatever scale we've
   // forced or decided to use.
@@ -63,4 +63,4 @@ int GetSystemMetricsInDIP(int metric) {
 }
 
 }  // namespace win
-}  // namespace gfx
+}  // namespace display

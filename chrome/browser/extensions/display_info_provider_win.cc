@@ -12,8 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
 #include "extensions/common/api/system_display.h"
+#include "ui/display/win/dpi.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/win/dpi.h"
 
 namespace extensions {
 
@@ -38,7 +38,7 @@ EnumMonitorCallback(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data) {
   if (!EnumDisplayDevices(monitor_info.szDevice, 0, &device, 0))
     return FALSE;
 
-  gfx::Size dpi(gfx::GetDPI());
+  gfx::Size dpi(display::win::GetDPI());
   unit.id =
       base::Int64ToString(base::Hash(base::WideToUTF8(monitor_info.szDevice)));
   unit.name = base::WideToUTF8(device.DeviceString);

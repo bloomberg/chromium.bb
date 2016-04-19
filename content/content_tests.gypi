@@ -863,6 +863,7 @@
         '../ui/base/ui_base.gyp:ui_base_test_support',
         '../ui/base/ui_base.gyp:ui_data_pack',
         '../ui/compositor/compositor.gyp:compositor_test_support',
+        '../ui/display/display.gyp:display',
         '../ui/events/events.gyp:dom_keycode_converter',
         '../ui/events/events.gyp:events_base',
         '../ui/events/events.gyp:events_test_support',

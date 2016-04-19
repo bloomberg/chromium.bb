@@ -213,6 +213,7 @@
         '../base/ui_base.gyp:ui_base',
         '../compositor/compositor.gyp:compositor',
         '../compositor/compositor.gyp:compositor_test_support',
+        '../display/display.gyp:display',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',

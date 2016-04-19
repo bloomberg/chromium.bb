@@ -80,6 +80,8 @@
         'manager/display_layout_builder.h',
         'win/display_info.cc',
         'win/display_info.h',
+        'win/dpi.cc',
+        'win/dpi.h',
         'win/screen_win.cc',
         'win/screen_win.h',
         'win/screen_win_display.cc',

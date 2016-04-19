@@ -39,7 +39,6 @@
 #include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "ui/gfx/win/dpi.h"
 
 namespace {
 

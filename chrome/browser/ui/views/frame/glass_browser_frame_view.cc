@@ -26,11 +26,11 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #include "ui/base/theme_provider.h"
+#include "ui/display/win/dpi.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/win/dpi.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/layout_constants.h"
@@ -228,10 +228,11 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
   int nonclient_border_thickness = NonClientBorderThickness(false);
-  if (gfx::Rect(nonclient_border_thickness,
-                gfx::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME),
-                gfx::win::GetSystemMetricsInDIP(SM_CXSMICON),
-                gfx::win::GetSystemMetricsInDIP(SM_CYSMICON)).Contains(point))
+  gfx::Rect sys_menu_region(nonclient_border_thickness,
+                            display::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME),
+                            display::win::GetSystemMetricsInDIP(SM_CXSMICON),
+                            display::win::GetSystemMetricsInDIP(SM_CYSMICON));
+  if (sys_menu_region.Contains(point))
     return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
 
   if (frame_component != HTNOWHERE)
@@ -300,7 +301,7 @@ bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
 
 int GlassBrowserFrameView::FrameBorderThickness() const {
   return (frame()->IsMaximized() || frame()->IsFullscreen()) ?
-      0 : gfx::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
+      0 : display::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
 }
 
 int GlassBrowserFrameView::FrameTopBorderHeight(bool restored) const {
@@ -308,7 +309,7 @@ int GlassBrowserFrameView::FrameTopBorderHeight(bool restored) const {
   // frame has a 0 frame border around most edges and a CYSIZEFRAME-thick border
   // at the top (see AeroGlassFrame::OnGetMinMaxInfo()).
   return (frame()->IsFullscreen() && !restored) ?
-      0 : gfx::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME);
+      0 : display::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME);
 }
 
 int GlassBrowserFrameView::NonClientBorderThickness(bool restored) const {
@@ -520,7 +521,7 @@ void GlassBrowserFrameView::LayoutNewStyleAvatar() {
   int button_y = frame()->IsMaximized() ? (FrameTopBorderHeight(false) - 1) : 1;
   profile_switcher_.view()->SetBounds(
       button_x, button_y, label_size.width(),
-      gfx::win::GetSystemMetricsInDIP(SM_CYMENUSIZE) + 1);
+      display::win::GetSystemMetricsInDIP(SM_CYMENUSIZE) + 1);
 }
 
 void GlassBrowserFrameView::LayoutIncognitoIcon() {

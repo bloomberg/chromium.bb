@@ -52,7 +52,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "ui/gfx/win/dpi.h"
+#include "ui/display/win/dpi.h"
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -392,7 +392,9 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     ui::ScaleFactor scale_factor_to_load = GetMaxScaleFactor();
 #elif defined(OS_WIN)
     ui::ScaleFactor scale_factor_to_load =
-        gfx::GetDPIScale() > 1.25 ? GetMaxScaleFactor() : ui::SCALE_FACTOR_100P;
+        display::win::GetDPIScale() > 1.25
+            ? GetMaxScaleFactor()
+            : ui::SCALE_FACTOR_100P;
 #else
     ui::ScaleFactor scale_factor_to_load = ui::SCALE_FACTOR_100P;
 #endif

@@ -15,8 +15,8 @@
 #include <shellapi.h>
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "ui/display/win/dpi.h"
 #include "ui/gfx/icon_util.h"
-#include "ui/gfx/win/dpi.h"
 #endif
 
 
@@ -81,7 +81,7 @@ void ElevationIconSetter::SetButtonIcon(const base::Closure& callback,
 #if defined(OS_WIN)
     // Windows gives us back a correctly-scaled image for the current DPI, so
     // mark this image as having been scaled for the current DPI already.
-    device_scale_factor = gfx::GetDPIScale();
+    device_scale_factor = display::win::GetDPIScale();
 #endif
     button_->SetImage(
         views::Button::STATE_NORMAL,

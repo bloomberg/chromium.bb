@@ -25,8 +25,8 @@
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
+#include "ui/display/win/dpi.h"
 #include "ui/gfx/win/direct_write.h"
-#include "ui/gfx/win/dpi.h"
 
 namespace content {
 namespace {
@@ -75,7 +75,8 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
     }
   }
   blink::WebFontRendering::setUseDirectWrite(use_direct_write);
-  blink::WebFontRendering::setDeviceScaleFactor(gfx::GetDPIScale());
+  // TODO(robliao): This should use WebScreenInfo. See http://crbug.com/604555.
+  blink::WebFontRendering::setDeviceScaleFactor(display::win::GetDPIScale());
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {

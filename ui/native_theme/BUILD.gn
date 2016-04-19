@@ -49,6 +49,7 @@ component("native_theme") {
     "//base/third_party/dynamic_annotations",
     "//skia",
     "//ui/base",
+    "//ui/display",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/resources",

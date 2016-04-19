@@ -236,6 +236,7 @@ executable("demo") {
     "//ui/base",
     "//ui/compositor",
     "//ui/compositor:test_support",
+    "//ui/display",
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",

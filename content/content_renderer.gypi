@@ -38,6 +38,7 @@
     '../third_party/libyuv/libyuv.gyp:libyuv',
     '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
     '../ui/accessibility/accessibility.gyp:accessibility',
+    '../ui/display/display.gyp:display',
     '../ui/events/blink/events_blink.gyp:events_blink',
     '../ui/events/events.gyp:dom_keycode_converter',
     '../ui/gfx/gfx.gyp:gfx',
