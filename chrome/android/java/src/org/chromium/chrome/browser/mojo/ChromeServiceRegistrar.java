@@ -4,11 +4,10 @@
 
 package org.chromium.chrome.browser.mojo;
 
-import android.content.Context;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.payments.PaymentRequestFactory;
 import org.chromium.content.browser.ServiceRegistry;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojom.payments.PaymentRequest;
 
 /**
@@ -17,8 +16,7 @@ import org.chromium.mojom.payments.PaymentRequest;
 class ChromeServiceRegistrar {
     @CalledByNative
     private static void registerRenderFrameMojoServices(
-            ServiceRegistry registry, Context applicationContext) {
-        assert applicationContext != null;
-        registry.addService(PaymentRequest.MANAGER, new PaymentRequestFactory(applicationContext));
+            ServiceRegistry registry, WebContents webContents) {
+        registry.addService(PaymentRequest.MANAGER, new PaymentRequestFactory(webContents));
     }
 }

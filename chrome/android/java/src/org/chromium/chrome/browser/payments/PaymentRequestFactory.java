@@ -4,28 +4,27 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.content.Context;
-
 import org.chromium.content.browser.ServiceRegistry.ImplementationFactory;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojom.payments.PaymentRequest;
 
 /**
  * Creates instances of PaymentRequest.
  */
 public class PaymentRequestFactory implements ImplementationFactory<PaymentRequest> {
-    private final Context mApplicationContext;
+    private final WebContents mWebContents;
 
     /**
      * Builds a factory for PaymentRequest.
      *
-     * @param applicationContext The application context.
+     * @param webContents The web contents that may invoke the PaymentRequest API.
      */
-    public PaymentRequestFactory(Context applicationContext) {
-        mApplicationContext = applicationContext;
+    public PaymentRequestFactory(WebContents webContents) {
+        mWebContents = webContents;
     }
 
     @Override
     public PaymentRequest createImpl() {
-        return new PaymentRequestDialog(mApplicationContext);
+        return new PaymentRequestImpl(mWebContents);
     }
 }

@@ -8,6 +8,7 @@
 #include <jni.h>
 
 namespace content {
+class RenderFrameHost;
 class ServiceRegistry;
 }
 
@@ -15,7 +16,8 @@ class ChromeServiceRegistrarAndroid {
  public:
   static bool Register(JNIEnv* env);
   static void RegisterRenderFrameMojoServices(
-      content::ServiceRegistry* registry);
+      content::ServiceRegistry* registry,
+      content::RenderFrameHost* render_frame_host);
 
  private:
   ChromeServiceRegistrarAndroid() {}

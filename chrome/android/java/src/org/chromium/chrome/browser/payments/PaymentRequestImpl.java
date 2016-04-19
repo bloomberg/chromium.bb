@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.content.Context;
-
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojom.payments.PaymentDetails;
 import org.chromium.mojom.payments.PaymentOptions;
@@ -16,43 +15,51 @@ import org.chromium.mojom.payments.PaymentRequestClient;
  * Android implementation of the PaymentRequest service defined in
  * third_party/WebKit/public/platform/modules/payments/payment_request.mojom.
  */
-public class PaymentRequestDialog implements PaymentRequest {
-    private final Context mApplicationContext;
-    private PaymentRequestClient mClient;
-
+public class PaymentRequestImpl implements PaymentRequest {
     /**
      * Builds the dialog.
      *
-     * @param applicationContext The application context.
+     * @param webContents The web contents that have invoked the PaymentRequest API.
      */
-    public PaymentRequestDialog(Context applicationContext) {
-        mApplicationContext = applicationContext;
-    }
+    public PaymentRequestImpl(WebContents webContents) {}
 
+    /**
+     * Called by the renderer to provide an endpoint for callbacks.
+     */
     @Override
     public void setClient(PaymentRequestClient client) {
-        mClient = client;
+        assert client != null;
+        client.onError();
     }
 
+    /**
+     * Called by the merchant website to show the payment request to the user.
+     */
     @Override
     public void show(String[] supportedMethods, PaymentDetails details, PaymentOptions options,
-            String stringifiedData) {
-        assert mClient != null;
-        mClient.onError();
-    }
+            String stringifiedData) {}
 
+    /**
+     * Called by the merchant website to abort the payment.
+     */
     @Override
     public void abort() {}
 
+    /**
+     * Called when the merchant website has processed the payment.
+     */
     @Override
-    public void complete(boolean success) {
-        assert mClient != null;
-        mClient.onComplete();
-    }
+    public void complete(boolean success) {}
 
+    /**
+     * Called when the renderer closes the Mojo connection.
+     */
     @Override
     public void close() {}
 
+    /**
+     * Called when the Mojo connection encounters an error.
+     */
     @Override
     public void onConnectionError(MojoException e) {}
 }

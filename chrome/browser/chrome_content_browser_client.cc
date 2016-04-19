@@ -2785,7 +2785,8 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
   }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  ChromeServiceRegistrarAndroid::RegisterRenderFrameMojoServices(registry);
+  ChromeServiceRegistrarAndroid::RegisterRenderFrameMojoServices(
+      registry, render_frame_host);
 #endif
 }
 
