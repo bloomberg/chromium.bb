@@ -811,7 +811,8 @@ glScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                           GLboolean is_clipped,
                           const GLfloat* clip_rect,
                           GLint sorting_context_id,
-                          const GLfloat* transform);
+                          const GLfloat* transform,
+                          GLuint filter);
 #endif
 typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERCHROMIUMPROC)(
     GLuint contents_texture_id,
@@ -823,7 +824,8 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERCHROMIUMPROC)(
     GLboolean is_clipped,
     const GLfloat* clip_rect,
     GLint sorting_context_id,
-    const GLfloat* transform);
+    const GLfloat* transform,
+    GLuint filter);
 #endif /* GL_CHROMIUM_schedule_ca_layer */
 
 /* GL_CHROMIUM_sync_query */

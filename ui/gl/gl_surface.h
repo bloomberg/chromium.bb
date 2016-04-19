@@ -189,7 +189,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
                                bool is_clipped,
                                const RectF& clip_rect,
                                const Transform& transform,
-                               int sorting_content_id);
+                               int sorting_content_id,
+                               unsigned filter);
 
   virtual bool IsSurfaceless() const;
 

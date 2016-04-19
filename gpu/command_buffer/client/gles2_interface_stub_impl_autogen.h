@@ -1033,7 +1033,8 @@ void GLES2InterfaceStub::ScheduleCALayerCHROMIUM(
     GLboolean /* is_clipped */,
     const GLfloat* /* clip_rect */,
     GLint /* sorting_context_id */,
-    const GLfloat* /* transform */) {}
+    const GLfloat* /* transform */,
+    GLuint /* filter */) {}
 void GLES2InterfaceStub::CommitOverlayPlanesCHROMIUM() {}
 void GLES2InterfaceStub::SwapInterval(GLint /* interval */) {}
 void GLES2InterfaceStub::FlushDriverCachesCHROMIUM() {}

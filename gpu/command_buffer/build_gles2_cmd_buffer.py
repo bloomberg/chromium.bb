@@ -4460,7 +4460,7 @@ _FUNCTION_INFO = {
     'cmd_args': 'GLuint contents_texture_id, GLfloat opacity, '
                 'GLuint background_color, GLuint edge_aa_mask, '
                 'GLboolean is_clipped, GLint sorting_context_id, '
-                'GLuint shm_id, GLuint shm_offset',
+                'GLuint filter, GLuint shm_id, GLuint shm_offset',
     'extension': 'CHROMIUM_schedule_ca_layer',
     'chromium': True,
   },

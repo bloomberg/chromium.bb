@@ -4768,7 +4768,8 @@ void GLES2Implementation::ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                                   GLboolean is_clipped,
                                                   const GLfloat* clip_rect,
                                                   GLint sorting_context_id,
-                                                  const GLfloat* transform) {
+                                                  const GLfloat* transform,
+                                                  GLuint filter) {
   size_t shm_size = 28 * sizeof(GLfloat);
   ScopedTransferBufferPtr buffer(shm_size, helper_, transfer_buffer_);
   if (!buffer.valid() || buffer.size() < shm_size) {
@@ -4783,7 +4784,7 @@ void GLES2Implementation::ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
   memcpy(mem + 12, transform, 16 * sizeof(GLfloat));
   helper_->ScheduleCALayerCHROMIUM(contents_texture_id, opacity,
                                    background_color, edge_aa_mask, is_clipped,
-                                   sorting_context_id, buffer.shm_id(),
+                                   sorting_context_id, filter, buffer.shm_id(),
                                    buffer.offset());
 }
 

@@ -8,7 +8,7 @@ Name Strings
 
 Version
 
-    Last Modified Date: December 16, 2015
+    Last Modified Date: April 12, 2016
 
 Dependencies
 
@@ -47,7 +47,8 @@ New Procedures and Functions
                                   const GLfloat* bounds_rect,
                                   GLboolean is_clipped,
                                   const GLfloat* clip_rect,
-                                  const GLfloat* transform);
+                                  const GLfloat* transform,
+                                  GLuint filter);
 
     Set the CALayer parameters to be presented at the time of the next call to
     swap buffers. The order of the calls schedule CALayers determines their
@@ -69,6 +70,8 @@ New Procedures and Functions
     the rectangle to clip the layer to, if it is to be clipped.
     <transform> contains sixteen values indicating the row major order 4x4
     transformation matrix to apply to the CALayer.
+    <filter> will be used for both minification and magnification filtering. The
+    only valid values are GL_LINEAR and GL_NEAREST.
 
 Errors
 
@@ -80,6 +83,8 @@ New State
 
 Revision History
 
+    4/12/2016    Add a parameter to support minification and magnification
+                 filtering.
     12/16/2015   Add clipping and edge anti-aliasing.
     11/7/2015    Initial checkin
 

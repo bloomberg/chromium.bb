@@ -777,7 +777,8 @@ virtual void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                      GLboolean is_clipped,
                                      const GLfloat* clip_rect,
                                      GLint sorting_context_id,
-                                     const GLfloat* transform) = 0;
+                                     const GLfloat* transform,
+                                     GLuint filter) = 0;
 virtual void CommitOverlayPlanesCHROMIUM() = 0;
 virtual void SwapInterval(GLint interval) = 0;
 virtual void FlushDriverCachesCHROMIUM() = 0;

@@ -9960,9 +9960,17 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
     const void* cmd_data) {
   const gles2::cmds::ScheduleCALayerCHROMIUM& c =
       *static_cast<const gles2::cmds::ScheduleCALayerCHROMIUM*>(cmd_data);
+  GLuint filter = c.filter;
+  if (filter != GL_NEAREST && filter != GL_LINEAR) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleCALayerCHROMIUM",
+                       "invalid filter");
+    return error::kNoError;
+  }
+
   gl::GLImage* image = nullptr;
-  if (c.contents_texture_id) {
-    TextureRef* ref = texture_manager()->GetTexture(c.contents_texture_id);
+  GLuint contents_texture_id = c.contents_texture_id;
+  if (contents_texture_id) {
+    TextureRef* ref = texture_manager()->GetTexture(contents_texture_id);
     if (!ref) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleCALayerCHROMIUM",
                          "unknown texture");
@@ -9990,10 +9998,10 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
                            mem[13], mem[17], mem[21], mem[25],
                            mem[14], mem[18], mem[22], mem[26],
                            mem[15], mem[19], mem[23], mem[27]);
-  if (!surface_->ScheduleCALayer(image, contents_rect, c.opacity,
-                                 c.background_color, c.edge_aa_mask,
-                                 bounds_rect, c.is_clipped ? true : false,
-                                 clip_rect, transform, c.sorting_context_id)) {
+  if (!surface_->ScheduleCALayer(
+          image, contents_rect, c.opacity, c.background_color, c.edge_aa_mask,
+          bounds_rect, c.is_clipped ? true : false, clip_rect, transform,
+          c.sorting_context_id, filter)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleCALayerCHROMIUM",
                        "failed to schedule CALayer");
   }

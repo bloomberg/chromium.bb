@@ -754,7 +754,8 @@ void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                              GLboolean is_clipped,
                              const GLfloat* clip_rect,
                              GLint sorting_context_id,
-                             const GLfloat* transform) override;
+                             const GLfloat* transform,
+                             GLuint filter) override;
 void CommitOverlayPlanesCHROMIUM() override;
 void SwapInterval(GLint interval) override;
 void FlushDriverCachesCHROMIUM() override;

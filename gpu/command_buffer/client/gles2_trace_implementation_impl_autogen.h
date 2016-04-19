@@ -2201,12 +2201,13 @@ void GLES2TraceImplementation::ScheduleCALayerCHROMIUM(
     GLboolean is_clipped,
     const GLfloat* clip_rect,
     GLint sorting_context_id,
-    const GLfloat* transform) {
+    const GLfloat* transform,
+    GLuint filter) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ScheduleCALayerCHROMIUM");
   gl_->ScheduleCALayerCHROMIUM(contents_texture_id, contents_rect, opacity,
                                background_color, edge_aa_mask, bounds_rect,
                                is_clipped, clip_rect, sorting_context_id,
-                               transform);
+                               transform, filter);
 }
 
 void GLES2TraceImplementation::CommitOverlayPlanesCHROMIUM() {

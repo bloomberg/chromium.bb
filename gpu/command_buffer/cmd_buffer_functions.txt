@@ -312,7 +312,7 @@ GL_APICALL void         GL_APIENTRY glWaitSyncTokenCHROMIUM (const GLbyte* sync_
 GL_APICALL void         GL_APIENTRY glDrawBuffersEXT (GLsizei count, const GLenum* bufs);
 GL_APICALL void         GL_APIENTRY glDiscardBackbufferCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glScheduleOverlayPlaneCHROMIUM (GLint plane_z_order, GLenum plane_transform, GLuint overlay_texture_id, GLint bounds_x, GLint bounds_y, GLint bounds_width, GLint bounds_height, GLfloat uv_x, GLfloat uv_y, GLfloat uv_width, GLfloat uv_height);
-GL_APICALL void         GL_APIENTRY glScheduleCALayerCHROMIUM (GLuint contents_texture_id, const GLfloat* contents_rect, GLfloat opacity, GLuint background_color, GLuint edge_aa_mask, const GLfloat* bounds_rect, GLboolean is_clipped, const GLfloat* clip_rect, GLint sorting_context_id, const GLfloat* transform);
+GL_APICALL void         GL_APIENTRY glScheduleCALayerCHROMIUM (GLuint contents_texture_id, const GLfloat* contents_rect, GLfloat opacity, GLuint background_color, GLuint edge_aa_mask, const GLfloat* bounds_rect, GLboolean is_clipped, const GLfloat* clip_rect, GLint sorting_context_id, const GLfloat* transform, GLuint filter);
 GL_APICALL void         GL_APIENTRY glCommitOverlayPlanesCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glSwapInterval (GLint interval);
 GL_APICALL void         GL_APIENTRY glFlushDriverCachesCHROMIUM (void);

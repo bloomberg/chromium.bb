@@ -60,7 +60,8 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
                        bool is_clipped,
                        const gfx::RectF& clip_rect,
                        const gfx::Transform& transform,
-                       int sorting_context_id) override;
+                       int sorting_context_id,
+                       unsigned filter) override;
   bool IsSurfaceless() const override;
 
   // ui::GpuSwitchingObserver implementation.

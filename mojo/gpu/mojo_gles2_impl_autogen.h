@@ -779,7 +779,8 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
                                GLboolean is_clipped,
                                const GLfloat* clip_rect,
                                GLint sorting_context_id,
-                               const GLfloat* transform) override;
+                               const GLfloat* transform,
+                               GLuint filter) override;
   void CommitOverlayPlanesCHROMIUM() override;
   void SwapInterval(GLint interval) override;
   void FlushDriverCachesCHROMIUM() override;

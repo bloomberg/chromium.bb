@@ -298,7 +298,8 @@ bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
     bool is_clipped,
     const gfx::RectF& clip_rect,
     const gfx::Transform& transform,
-    int sorting_context_id) {
+    int sorting_context_id,
+    unsigned filter) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
   if (contents_image) {
     io_surface =

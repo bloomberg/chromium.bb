@@ -365,7 +365,8 @@ VISIT_GL_CALL(ScheduleCALayerCHROMIUM,
                GLboolean is_clipped,
                const GLfloat* clip_rect,
                GLint sorting_context_id,
-               const GLfloat* transform),
+               const GLfloat* transform,
+               GLuint filter),
               (contents_texture_id,
                contents_rect,
                opacity,
@@ -375,7 +376,8 @@ VISIT_GL_CALL(ScheduleCALayerCHROMIUM,
                is_clipped,
                clip_rect,
                sorting_context_id,
-               transform))
+               transform,
+               filter))
 VISIT_GL_CALL(CommitOverlayPlanesCHROMIUM, void, (), ())
 VISIT_GL_CALL(SwapInterval, void, (GLint interval), (interval))
 VISIT_GL_CALL(FlushDriverCachesCHROMIUM, void, (), ())
