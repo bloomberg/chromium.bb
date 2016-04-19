@@ -29,7 +29,7 @@ namespace blink {
 class MultiColumnFragmentainerGroup {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    MultiColumnFragmentainerGroup(LayoutMultiColumnSet&);
+    MultiColumnFragmentainerGroup(const LayoutMultiColumnSet&);
 
     const LayoutMultiColumnSet& columnSet() const { return m_columnSet; }
 
@@ -60,7 +60,7 @@ public:
     LayoutUnit logicalHeightInFlowThread() const { return m_logicalBottomInFlowThread - m_logicalTopInFlowThread; }
 
     void resetColumnHeight();
-    bool recalculateColumnHeight();
+    bool recalculateColumnHeight(LayoutMultiColumnSet&);
 
     LayoutSize flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread) const;
     LayoutUnit columnLogicalTopForOffset(LayoutUnit offsetInFlowThread) const;
@@ -103,7 +103,7 @@ private:
     // Get the first and the last column intersecting the specified visual rectangle.
     void columnIntervalForVisualRect(const LayoutRect&, unsigned& firstColumn, unsigned& lastColumn) const;
 
-    LayoutMultiColumnSet& m_columnSet;
+    const LayoutMultiColumnSet& m_columnSet;
 
     LayoutUnit m_logicalTop;
     LayoutUnit m_logicalTopInFlowThread;

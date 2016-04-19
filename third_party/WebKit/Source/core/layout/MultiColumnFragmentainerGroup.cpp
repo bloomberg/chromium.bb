@@ -10,7 +10,7 @@
 
 namespace blink {
 
-MultiColumnFragmentainerGroup::MultiColumnFragmentainerGroup(LayoutMultiColumnSet& columnSet)
+MultiColumnFragmentainerGroup::MultiColumnFragmentainerGroup(const LayoutMultiColumnSet& columnSet)
     : m_columnSet(columnSet)
 {
 }
@@ -57,7 +57,7 @@ void MultiColumnFragmentainerGroup::resetColumnHeight()
     }
 }
 
-bool MultiColumnFragmentainerGroup::recalculateColumnHeight()
+bool MultiColumnFragmentainerGroup::recalculateColumnHeight(LayoutMultiColumnSet& columnSet)
 {
     LayoutUnit oldColumnHeight = m_columnHeight;
 
@@ -66,18 +66,18 @@ bool MultiColumnFragmentainerGroup::recalculateColumnHeight()
     // Only the last row may have auto height, and thus be balanced. There are no good reasons to
     // balance the preceding rows, and that could potentially lead to an insane number of layout
     // passes as well.
-    if (isLastGroup() && m_columnSet.heightIsAuto()) {
+    if (isLastGroup() && columnSet.heightIsAuto()) {
         LayoutUnit newColumnHeight;
-        if (!m_columnSet.isInitialHeightCalculated()) {
+        if (!columnSet.isInitialHeightCalculated()) {
             // Initial balancing: Start with the lowest imaginable column height. Also calculate the
             // height of the tallest piece of unbreakable content. Columns should never get any
             // shorter than that (unless constrained by max-height). Propagate this to our
             // containing column set, in case there is an outer multicol container that also needs
             // to balance. After having calculated the initial column height, the multicol container
             // needs another layout pass with the column height that we just calculated.
-            InitialColumnHeightFinder initialHeightFinder(columnSet(), logicalTopInFlowThread(), logicalBottomInFlowThread());
+            InitialColumnHeightFinder initialHeightFinder(columnSet, logicalTopInFlowThread(), logicalBottomInFlowThread());
             LayoutUnit tallestUnbreakableLogicalHeight = initialHeightFinder.tallestUnbreakableLogicalHeight();
-            m_columnSet.propagateTallestUnbreakableLogicalHeight(tallestUnbreakableLogicalHeight);
+            columnSet.propagateTallestUnbreakableLogicalHeight(tallestUnbreakableLogicalHeight);
             newColumnHeight = std::max(initialHeightFinder.initialMinimalBalancedHeight(), tallestUnbreakableLogicalHeight);
         } else {
             // Rebalancing: After having laid out again, we'll need to rebalance if the height

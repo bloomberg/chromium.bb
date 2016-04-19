@@ -313,7 +313,7 @@ bool LayoutMultiColumnSet::recalculateColumnHeight()
 
     bool changed = false;
     for (auto& group : m_fragmentainerGroups)
-        changed = group.recalculateColumnHeight() || changed;
+        changed = group.recalculateColumnHeight(*this) || changed;
     m_initialHeightCalculated = true;
     return changed;
 }
