@@ -369,6 +369,7 @@ class TestWindowServerDelegate : public WindowServerDelegate {
       mojom::WindowTreeRequest* tree_request,
       mojom::WindowTreeClientPtr* client) override;
   void CreateDefaultDisplays() override;
+  bool IsTestConfig() const override;
 
  private:
   // If CreateDefaultDisplays() this is the number of Displays that are

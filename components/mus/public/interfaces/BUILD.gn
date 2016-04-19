@@ -23,6 +23,7 @@ mojom("interfaces") {
     "window_manager.mojom",
     "window_manager_constants.mojom",
     "window_manager_factory.mojom",
+    "window_server_test.mojom",
     "window_tree.mojom",
     "window_tree_host.mojom",
   ]

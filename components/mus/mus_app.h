@@ -16,6 +16,7 @@
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/user_access_manager.mojom.h"
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
+#include "components/mus/public/interfaces/window_server_test.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/platform_display_init_params.h"
@@ -52,6 +53,7 @@ class MandolineUIServicesApp
       public shell::InterfaceFactory<mojom::WindowManagerFactoryService>,
       public shell::InterfaceFactory<mojom::WindowTreeFactory>,
       public shell::InterfaceFactory<mojom::WindowTreeHostFactory>,
+      public shell::InterfaceFactory<mojom::WindowServerTest>,
       public shell::InterfaceFactory<mojom::Gpu> {
  public:
   MandolineUIServicesApp();
@@ -84,6 +86,7 @@ class MandolineUIServicesApp
   // WindowServerDelegate:
   void OnFirstDisplayReady() override;
   void OnNoMoreDisplays() override;
+  bool IsTestConfig() const override;
   void CreateDefaultDisplays() override;
 
   // shell::InterfaceFactory<mojom::DisplayManager> implementation.
@@ -106,6 +109,10 @@ class MandolineUIServicesApp
   void Create(shell::Connection* connection,
               mojom::WindowTreeHostFactoryRequest request) override;
 
+  // shell::InterfaceFactory<mojom::WindowServerTest> implementation.
+  void Create(shell::Connection* connection,
+              mojom::WindowServerTestRequest request) override;
+
   // shell::InterfaceFactory<mojom::Gpu> implementation.
   void Create(shell::Connection* connection,
               mojom::GpuRequest request) override;
@@ -119,6 +126,7 @@ class MandolineUIServicesApp
 
   UserIdToUserState user_id_to_user_state_;
 
+  bool test_config_;
 #if defined(USE_OZONE)
   scoped_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif

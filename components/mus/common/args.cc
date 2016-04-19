@@ -8,7 +8,8 @@
 namespace mus {
 
 // Initializes X11 in threaded mode, and sets the |override_redirect| flag when
-// creating X11 windows.
-const char MUS_COMMON_EXPORT kUseX11TestConfig[] = "use-x11-test-config";
+// creating X11 windows. Also, exposes the WindowServerTest interface to clients
+// when launched with this flag.
+const char kUseTestConfig[] = "use-test-config";
 
 }  // namespace mus

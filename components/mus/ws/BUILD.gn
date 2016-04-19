@@ -116,6 +116,20 @@ source_set("lib") {
   }
 }
 
+source_set("test_interface") {
+  sources = [
+    "window_server_test_impl.cc",
+    "window_server_test_impl.h",
+  ]
+
+  deps = [
+    ":lib",
+    "//components/mus/public/interfaces",
+    "//mojo/public/cpp/bindings:bindings",
+    "//ui/gfx",
+  ]
+}
+
 source_set("test_support") {
   testonly = true
 

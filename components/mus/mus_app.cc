@@ -6,8 +6,9 @@
 
 #include <set>
 
+#include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
-#include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "components/mus/common/args.h"
@@ -17,6 +18,7 @@
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/user_display_manager.h"
 #include "components/mus/ws/window_server.h"
+#include "components/mus/ws/window_server_test_impl.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "components/mus/ws/window_tree_factory.h"
@@ -34,7 +36,6 @@
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
-#include "base/command_line.h"
 #include "ui/platform_window/x11/x11_window.h"
 #elif defined(USE_OZONE)
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
@@ -44,8 +45,9 @@
 
 using shell::Connection;
 using mojo::InterfaceRequest;
-using mus::mojom::WindowTreeHostFactory;
 using mus::mojom::Gpu;
+using mus::mojom::WindowServerTest;
+using mus::mojom::WindowTreeHostFactory;
 
 namespace mus {
 
@@ -64,11 +66,10 @@ struct MandolineUIServicesApp::PendingRequest {
 };
 
 struct MandolineUIServicesApp::UserState {
-  scoped_ptr<ws::WindowTreeFactory> window_tree_factory;
   scoped_ptr<ws::WindowTreeHostFactory> window_tree_host_factory;
 };
 
-MandolineUIServicesApp::MandolineUIServicesApp() {}
+MandolineUIServicesApp::MandolineUIServicesApp() : test_config_(false) {}
 
 MandolineUIServicesApp::~MandolineUIServicesApp() {
   // Destroy |window_server_| first, since it depends on |event_source_|.
@@ -130,12 +131,12 @@ void MandolineUIServicesApp::Initialize(shell::Connector* connector,
   tracing_.Initialize(connector, identity.name());
   TRACE_EVENT0("mus", "MandolineUIServicesApp::Initialize started");
 
+  test_config_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(kUseTestConfig);
 #if defined(USE_X11)
   XInitThreads();
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(kUseX11TestConfig)) {
+  if (test_config_)
     ui::test::SetUseOverrideRedirectWindowByDefault(true);
-  }
 #endif
 
   InitializeResources(connector);
@@ -179,6 +180,8 @@ bool MandolineUIServicesApp::AcceptConnection(Connection* connection) {
   connection->AddInterface<WindowTreeHostFactory>(this);
   connection->AddInterface<mojom::WindowManagerFactoryService>(this);
   connection->AddInterface<mojom::WindowTreeFactory>(this);
+  if (test_config_)
+    connection->AddInterface<WindowServerTest>(this);
   return true;
 }
 
@@ -193,6 +196,10 @@ void MandolineUIServicesApp::OnNoMoreDisplays() {
   // We may get here from the destructor, in which case there is no messageloop.
   if (base::MessageLoop::current())
     base::MessageLoop::current()->QuitWhenIdle();
+}
+
+bool MandolineUIServicesApp::IsTestConfig() const {
+  return test_config_;
 }
 
 void MandolineUIServicesApp::CreateDefaultDisplays() {
@@ -235,12 +242,9 @@ void MandolineUIServicesApp::Create(Connection* connection,
     return;
   }
   AddUserIfNecessary(connection);
-  UserState* user_state = GetUserState(connection);
-  if (!user_state->window_tree_factory) {
-    user_state->window_tree_factory.reset(new ws::WindowTreeFactory(
-        window_server_.get(), connection->GetRemoteIdentity().user_id()));
-  }
-  user_state->window_tree_factory->AddBinding(std::move(request));
+  new ws::WindowTreeFactory(
+      window_server_.get(), connection->GetRemoteIdentity().user_id(),
+      connection->GetRemoteIdentity().name(), std::move(request));
 }
 
 void MandolineUIServicesApp::Create(
@@ -253,6 +257,13 @@ void MandolineUIServicesApp::Create(
         platform_display_init_params_));
   }
   user_state->window_tree_host_factory->AddBinding(std::move(request));
+}
+
+void MandolineUIServicesApp::Create(Connection* connection,
+                                    mojom::WindowServerTestRequest request) {
+  if (!test_config_)
+    return;
+  new ws::WindowServerTestImpl(window_server_.get(), std::move(request));
 }
 
 void MandolineUIServicesApp::Create(shell::Connection* connection,

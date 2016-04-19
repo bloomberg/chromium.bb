@@ -90,6 +90,8 @@ class WindowServer : public ServerWindowDelegate,
   // Returns the connection by id.
   WindowTree* GetTreeWithId(ConnectionSpecificId connection_id);
 
+  WindowTree* GetTreeWithConnectionName(const std::string& connection_name);
+
   size_t num_trees() const { return tree_map_.size(); }
 
   // Returns the Window identified by |id|.
@@ -185,6 +187,10 @@ class WindowServer : public ServerWindowDelegate,
   void ProcessWindowDeleted(const ServerWindow* window);
   void ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
                                                int32_t cursor_id);
+
+  // Sets a callback to be called whenever a ServerWindow is scheduled for
+  // a [re]paint. This should only be called in a test configuration.
+  void SetPaintCallback(const base::Callback<void(ServerWindow*)>& callback);
 
  private:
   friend class Operation;
@@ -297,6 +303,8 @@ class WindowServer : public ServerWindowDelegate,
 
   // Next id supplied to the window manager.
   uint32_t next_wm_change_id_;
+
+  base::Callback<void(ServerWindow*)> window_paint_callback_;
 
   WindowManagerFactoryRegistry window_manager_factory_registry_;
 

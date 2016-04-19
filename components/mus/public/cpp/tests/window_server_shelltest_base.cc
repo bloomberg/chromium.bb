@@ -45,7 +45,7 @@ void EnsureCommandLineSwitch(const std::string& name) {
 
 WindowServerShellTestBase::WindowServerShellTestBase()
     : ShellTest(kTestAppName) {
-  EnsureCommandLineSwitch(kUseX11TestConfig);
+  EnsureCommandLineSwitch(kUseTestConfig);
   EnsureCommandLineSwitch(switches::kOverrideUseGLWithOSMesaForTests);
 }
 

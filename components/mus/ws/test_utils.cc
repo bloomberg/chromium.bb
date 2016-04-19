@@ -329,6 +329,10 @@ void TestWindowServerDelegate::CreateDefaultDisplays() {
     AddDisplay();
 }
 
+bool TestWindowServerDelegate::IsTestConfig() const {
+  return true;
+}
+
 ServerWindow* FirstRoot(WindowTree* tree) {
   return tree->roots().size() == 1u
              ? tree->GetWindow((*tree->roots().begin())->id())

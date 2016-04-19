@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/user_id.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mus {
 namespace ws {
@@ -17,21 +17,21 @@ class WindowServer;
 
 class WindowTreeFactory : public mus::mojom::WindowTreeFactory {
  public:
-  WindowTreeFactory(WindowServer* window_server, const UserId& user_id);
+  WindowTreeFactory(WindowServer* window_server,
+                    const UserId& user_id,
+                    const std::string& connection_name,
+                    mojom::WindowTreeFactoryRequest request);
+ private:
   ~WindowTreeFactory() override;
-
-  void AddBinding(
-      mojo::InterfaceRequest<mus::mojom::WindowTreeFactory> request);
 
   // mus::mojom::WindowTreeFactory:
   void CreateWindowTree(mojo::InterfaceRequest<mojom::WindowTree> tree_request,
                         mojom::WindowTreeClientPtr client) override;
 
- private:
   WindowServer* window_server_;
   const UserId user_id_;
-
-  mojo::BindingSet<mus::mojom::WindowTreeFactory> binding_;
+  const std::string connection_name_;
+  mojo::StrongBinding<mus::mojom::WindowTreeFactory> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeFactory);
 };

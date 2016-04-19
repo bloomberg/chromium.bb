@@ -53,16 +53,16 @@ void ServerWindowSurfaceManager::CreateSurface(
   type_to_surface_map_[surface_type] = std::move(surface);
 }
 
-ServerWindowSurface* ServerWindowSurfaceManager::GetDefaultSurface() {
+ServerWindowSurface* ServerWindowSurfaceManager::GetDefaultSurface() const {
   return GetSurfaceByType(mojom::SurfaceType::DEFAULT);
 }
 
-ServerWindowSurface* ServerWindowSurfaceManager::GetUnderlaySurface() {
+ServerWindowSurface* ServerWindowSurfaceManager::GetUnderlaySurface() const {
   return GetSurfaceByType(mojom::SurfaceType::UNDERLAY);
 }
 
 ServerWindowSurface* ServerWindowSurfaceManager::GetSurfaceByType(
-    mojom::SurfaceType type) {
+    mojom::SurfaceType type) const {
   auto iter = type_to_surface_map_.find(type);
   return iter == type_to_surface_map_.end() ? nullptr : iter->second.get();
 }
@@ -72,7 +72,7 @@ bool ServerWindowSurfaceManager::HasSurfaceOfType(
   return type_to_surface_map_.count(type) > 0;
 }
 
-bool ServerWindowSurfaceManager::HasAnySurface() {
+bool ServerWindowSurfaceManager::HasAnySurface() const {
   return GetDefaultSurface() || GetUnderlaySurface();
 }
 

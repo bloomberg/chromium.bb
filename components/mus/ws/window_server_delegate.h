@@ -46,6 +46,8 @@ class WindowServerDelegate {
 
   virtual void OnNoMoreDisplays() = 0;
 
+  virtual bool IsTestConfig() const = 0;
+
   // Creates a WindowTreeBinding. Default implementation returns null, which
   // creates DefaultBinding.
   virtual scoped_ptr<WindowTreeBinding> CreateWindowTreeBinding(

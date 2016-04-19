@@ -79,6 +79,7 @@ source_set("lib") {
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
     "//components/mus/ws:lib",
+    "//components/mus/ws:test_interface",
     "//components/resource_provider/public/cpp",
     "//mojo/common:common_base",
     "//services/shell/public/cpp",

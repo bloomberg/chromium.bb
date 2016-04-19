@@ -138,6 +138,7 @@ source_set("unittests") {
 
   sources = [
     "accelerator_registrar_unittest.cc",
+    "app_launch_unittest.cc",
     "frame/move_loop_unittest.cc",
     "layout_manager_unittest.cc",
     "window_manager_unittest.cc",
@@ -168,5 +169,6 @@ source_set("unittests") {
 
   data_deps = [
     ":wm",
+    "//mash/quick_launch",
   ]
 }

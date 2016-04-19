@@ -40,11 +40,11 @@ class ServerWindowSurfaceManager {
 
   ServerWindow* window() { return window_; }
 
-  ServerWindowSurface* GetDefaultSurface();
-  ServerWindowSurface* GetUnderlaySurface();
-  ServerWindowSurface* GetSurfaceByType(mojom::SurfaceType type);
+  ServerWindowSurface* GetDefaultSurface() const;
+  ServerWindowSurface* GetUnderlaySurface() const;
+  ServerWindowSurface* GetSurfaceByType(mojom::SurfaceType type) const;
   bool HasSurfaceOfType(mojom::SurfaceType type) const;
-  bool HasAnySurface();
+  bool HasAnySurface() const;
 
   uint32_t id_namespace() const { return surface_id_allocator_.id_namespace(); }
   cc::SurfaceManager* GetSurfaceManager();
