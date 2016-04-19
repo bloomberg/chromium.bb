@@ -121,6 +121,7 @@ public:
     virtual void readonlyAttributeChanged();
     virtual void requiredAttributeChanged();
     virtual void valueAttributeChanged();
+    virtual void didSetValue(const String&, bool valueChanged);
     virtual void listAttributeTargetChanged();
     virtual void updateClearButtonVisibility();
     virtual void updatePlaceholderText();

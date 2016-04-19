@@ -97,9 +97,8 @@ void BaseChooserOnlyDateAndTimeInputType::updateView()
     toHTMLElement(node)->setTextContent(displayValue);
 }
 
-void BaseChooserOnlyDateAndTimeInputType::setValue(const String& value, bool valueChanged, TextFieldEventBehavior eventBehavior)
+void BaseChooserOnlyDateAndTimeInputType::didSetValue(const String& value, bool valueChanged)
 {
-    BaseDateAndTimeInputType::setValue(value, valueChanged, eventBehavior);
     if (valueChanged)
         updateView();
 }

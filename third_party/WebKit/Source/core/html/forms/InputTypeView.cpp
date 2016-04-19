@@ -222,6 +222,10 @@ void InputTypeView::valueAttributeChanged()
 {
 }
 
+void InputTypeView::didSetValue(const String&, bool)
+{
+}
+
 void InputTypeView::subtreeHasChanged()
 {
     ASSERT_NOT_REACHED();

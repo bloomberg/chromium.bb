@@ -49,10 +49,10 @@ protected:
 private:
     void closeDateTimeChooser();
 
-    // InputType functions:
+    // InputTypeView functions:
     void createShadowSubtree() override;
     void closePopupView() override;
-    void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
+    void didSetValue(const String&, bool valueChanged) override;
     void handleDOMActivateEvent(Event*) override;
     void handleKeydownEvent(KeyboardEvent*) override;
     void handleKeypressEvent(KeyboardEvent*) override;

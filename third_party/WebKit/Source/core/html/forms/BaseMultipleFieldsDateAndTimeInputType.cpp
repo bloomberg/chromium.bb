@@ -479,9 +479,8 @@ FormControlState BaseMultipleFieldsDateAndTimeInputType::saveFormControlState() 
     return FormControlState();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::setValue(const String& sanitizedValue, bool valueChanged, TextFieldEventBehavior eventBehavior)
+void BaseMultipleFieldsDateAndTimeInputType::didSetValue(const String& sanitizedValue, bool valueChanged)
 {
-    InputType::setValue(sanitizedValue, valueChanged, eventBehavior);
     DateTimeEditElement* edit = dateTimeEditElement();
     if (valueChanged || (sanitizedValue.isEmpty() && edit && edit->anyEditableFieldsHaveValues())) {
         element().updateView();

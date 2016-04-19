@@ -1077,6 +1077,7 @@ void HTMLInputElement::setValue(const String& value, TextFieldEventBehavior even
     m_suggestedValue = String(); // Prevent TextFieldInputType::setValue from using the suggested value.
 
     m_inputType->setValue(sanitizedValue, valueChanged, eventBehavior);
+    m_inputTypeView->didSetValue(sanitizedValue, valueChanged);
 
     if (valueChanged && eventBehavior == DispatchNoEvent)
         setTextAsOfLastFormControlChangeEvent(sanitizedValue.isNull() ? defaultValue() : sanitizedValue);

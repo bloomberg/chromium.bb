@@ -111,7 +111,7 @@ private:
     void requiredAttributeChanged() final;
     void restoreFormControlState(const FormControlState&) final;
     FormControlState saveFormControlState() const final;
-    void setValue(const String&, bool valueChanged, TextFieldEventBehavior) final;
+    void didSetValue(const String&, bool valueChanged) final;
     void stepAttributeChanged() final;
     void updateView() final;
     void valueAttributeChanged() override;
