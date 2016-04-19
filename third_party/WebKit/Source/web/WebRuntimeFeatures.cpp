@@ -160,11 +160,6 @@ void WebRuntimeFeatures::enableMediaDocumentDownloadButton(bool enable)
     RuntimeEnabledFeatures::setMediaDocumentDownloadButtonEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableNotificationActionIcons(bool enable)
-{
-    RuntimeEnabledFeatures::setNotificationActionIconsEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableNotificationConstructor(bool enable)
 {
     RuntimeEnabledFeatures::setNotificationConstructorEnabled(enable);

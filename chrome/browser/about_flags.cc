@@ -1191,12 +1191,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_NOTIFICATIONS_NATIVE_FLAG_DESCRIPTION, kOsMac,
      SINGLE_VALUE_TYPE(switches::kEnableNativeNotifications)},
 #endif
-#if defined(ENABLE_NOTIFICATIONS)
-    {"enable-notification-action-icons",
-     IDS_FLAGS_ENABLE_NOTIFICATION_ACTION_ICONS_NAME,
-     IDS_FLAGS_ENABLE_NOTIFICATION_ACTION_ICONS_DESCRIPTION, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableNotificationActionIcons)},
-#endif
 #if defined(TOOLKIT_VIEWS)
     {"disable-views-rect-based-targeting",  // FLAGS:RECORD_UMA
      IDS_FLAGS_VIEWS_RECT_BASED_TARGETING_NAME,

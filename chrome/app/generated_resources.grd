@@ -11661,12 +11661,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_FLAGS_ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS_DESCRIPTION" desc="Description for the flag to enable custom layouts for Web Notifications.">
           Enable custom layouts for Web Notifications. They will have subtle layout improvements that are otherwise not possible.
         </message>
-        <message name="IDS_FLAGS_ENABLE_NOTIFICATION_ACTION_ICONS_NAME" desc="Name of the flag to enable action icons for Web Notifications.">
-          Enable action icons for Web Notifications.
-        </message>
-        <message name="IDS_FLAGS_ENABLE_NOTIFICATION_ACTION_ICONS_DESCRIPTION" desc="Description of the flag to enable action icons for Web Notifications.">
-          Enable icons in action buttons for Web Notifications.
-        </message>
       </if>
 
       <!-- Mac AppleScript -->

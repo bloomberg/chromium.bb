@@ -84,7 +84,6 @@ public:
     BLINK_EXPORT static void enableNavigatorContentUtils(bool);
     BLINK_EXPORT static void enableNetworkInformation(bool);
     BLINK_EXPORT static void enableNewMediaPlaybackUi(bool);
-    BLINK_EXPORT static void enableNotificationActionIcons(bool);
     BLINK_EXPORT static void enableNotificationConstructor(bool);
     BLINK_EXPORT static void enableNotifications(bool);
     BLINK_EXPORT static void enableOrientationEvent(bool);

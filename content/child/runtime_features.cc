@@ -82,9 +82,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enablePushMessaging(false);
   }
 
-  if (command_line.HasSwitch(switches::kEnableNotificationActionIcons))
-    WebRuntimeFeatures::enableNotificationActionIcons(true);
-
   if (command_line.HasSwitch(switches::kDisableSharedWorkers))
     WebRuntimeFeatures::enableSharedWorker(false);
 

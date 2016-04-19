@@ -13,6 +13,6 @@ dictionary NotificationAction {
     [RuntimeEnabled=NotificationInlineReplies] NotificationActionType type = "button";
     required DOMString action;
     required DOMString title;
-    [RuntimeEnabled=NotificationActionIcons] USVString icon;
+    USVString icon;
     [RuntimeEnabled=NotificationInlineReplies] DOMString? placeholder = null;
 };

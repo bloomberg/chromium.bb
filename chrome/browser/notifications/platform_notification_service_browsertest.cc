@@ -112,7 +112,6 @@ PlatformNotificationServiceBrowserTest::PlatformNotificationServiceBrowserTest()
 void PlatformNotificationServiceBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
-  command_line->AppendSwitch(switches::kEnableNotificationActionIcons);
 
   InProcessBrowserTest::SetUpCommandLine(command_line);
 }

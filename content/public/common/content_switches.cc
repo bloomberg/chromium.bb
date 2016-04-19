@@ -398,10 +398,6 @@ const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 // Enables the network information API.
 const char kEnableNetworkInformation[]      = "enable-network-information";
 
-// Enables action button icons for the Web Notification API.
-const char kEnableNotificationActionIcons[] =
-    "enable-notification-action-icons";
-
 // Enables compositor-accelerated touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
 
