@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/service/gpu_memory_manager.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -121,6 +122,9 @@ class GPU_EXPORT GpuChannelManager {
   const GpuPreferences& gpu_preferences() const {
     return gpu_preferences_;
   }
+  const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds() const {
+    return gpu_driver_bug_workarounds_;
+  }
   gles2::ProgramCache* program_cache();
   gles2::ShaderTranslatorCache* shader_translator_cache();
   gles2::FramebufferCompletenessCache* framebuffer_completeness_cache();
@@ -189,6 +193,7 @@ class GPU_EXPORT GpuChannelManager {
 #endif
 
   const GpuPreferences& gpu_preferences_;
+  GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
 
   GpuChannelManagerDelegate* const delegate_;
 #if defined(OS_MACOSX)

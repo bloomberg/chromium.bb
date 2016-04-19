@@ -11,6 +11,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
@@ -69,6 +70,7 @@ void ReleaseAtExitManager() {
 
 Display::Display(EGLNativeDisplayType display_id)
     : display_id_(display_id),
+      gpu_driver_bug_workarounds_(base::CommandLine::ForCurrentProcess()),
       is_initialized_(false),
       create_offscreen_(false),
       create_offscreen_width_(0),
@@ -165,10 +167,13 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   if (!command_buffer->Initialize())
     return NULL;
 
+  scoped_refptr<gpu::gles2::FeatureInfo> feature_info(
+      new gpu::gles2::FeatureInfo(gpu_driver_bug_workarounds_));
   scoped_refptr<gpu::gles2::ContextGroup> group(new gpu::gles2::ContextGroup(
       gpu_preferences_, NULL, NULL,
       new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
-      new gpu::gles2::FramebufferCompletenessCache, NULL, NULL, NULL, true));
+      new gpu::gles2::FramebufferCompletenessCache, feature_info, NULL, NULL,
+      true));
 
   decoder_.reset(gpu::gles2::GLES2Decoder::Create(group.get()));
   if (!decoder_.get())

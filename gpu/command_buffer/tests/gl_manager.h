@@ -84,7 +84,7 @@ class GLManager : private GpuControl {
 
   void Initialize(const Options& options);
   void InitializeWithCommandLine(const Options& options,
-                                 base::CommandLine* command_line);
+                                 const base::CommandLine& command_line);
   void Destroy();
 
   bool IsInitialized() const { return gles2_implementation() != nullptr; }
@@ -119,7 +119,7 @@ class GLManager : private GpuControl {
     return context_.get();
   }
 
-  const gpu::gles2::FeatureInfo::Workarounds& workarounds() const;
+  const GpuDriverBugWorkarounds& workarounds() const;
 
   // GpuControl implementation.
   void SetGpuControlClient(GpuControlClient*) override;

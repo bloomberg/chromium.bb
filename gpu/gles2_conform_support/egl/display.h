@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
@@ -108,6 +109,7 @@ class Display : private gpu::GpuControl {
   EGLNativeDisplayType display_id_;
 
   gpu::GpuPreferences gpu_preferences_;
+  const gpu::GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
   bool is_initialized_;
 
   bool create_offscreen_;

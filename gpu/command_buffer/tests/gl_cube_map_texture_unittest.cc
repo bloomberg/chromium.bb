@@ -31,7 +31,7 @@ class GLCubeMapTextureTest : public testing::TestWithParam<GLenum> {
     // workaround.
     command_line.AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
                                    base::IntToString(gpu::FORCE_CUBE_COMPLETE));
-    gl_.InitializeWithCommandLine(GLManager::Options(), &command_line);
+    gl_.InitializeWithCommandLine(GLManager::Options(), command_line);
     DCHECK(gl_.workarounds().force_cube_complete);
     for (int i = 0; i < 256; i++) {
       pixels_[i * 4] = 255u;
