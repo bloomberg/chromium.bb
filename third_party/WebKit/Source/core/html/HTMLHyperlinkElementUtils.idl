@@ -1,0 +1,30 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://html.spec.whatwg.org/#htmlhyperlinkelementutils
+
+[
+    NoInterfaceObject, // Always used on target of 'implements'
+] interface HTMLHyperlinkElementUtils {
+    // TODO(sof): 'stringifier' entails an enumerable toString(),
+    //   http://heycam.github.io/webidl/#es-stringifier
+    // something implementations of HTMLHyperlinkElementUtils currently
+    // provide. Make them to comply with the spec (http://crbug.com/306606).
+    //
+    // Until that time, do not use 'stringifier'.
+    // stringifier attribute USVString href;
+    attribute USVString href;
+    [NotEnumerable, ImplementedAs=href] USVString toString();
+    readonly attribute USVString origin;
+
+    attribute USVString protocol;
+    attribute USVString username;
+    attribute USVString password;
+    attribute USVString host;
+    attribute USVString hostname;
+    attribute USVString port;
+    attribute USVString pathname;
+    attribute USVString search;
+    attribute USVString hash;
+};

@@ -42,4 +42,4 @@ interface HTMLAnchorElement : HTMLElement {
     [Reflect] attribute DOMString shape;
 };
 
-HTMLAnchorElement implements URLUtils;
+HTMLAnchorElement implements HTMLHyperlinkElementUtils;

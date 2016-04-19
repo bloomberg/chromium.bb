@@ -35,4 +35,4 @@ interface HTMLAreaElement : HTMLElement {
     [Reflect] attribute boolean noHref;
 };
 
-HTMLAreaElement implements URLUtils;
+HTMLAreaElement implements HTMLHyperlinkElementUtils;
