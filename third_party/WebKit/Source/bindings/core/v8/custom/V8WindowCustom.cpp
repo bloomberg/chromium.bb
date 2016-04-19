@@ -344,33 +344,4 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
     }
 }
 
-static bool securityCheck(v8::Local<v8::Object> host)
-{
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::Local<v8::Object> window = V8Window::findInstanceInPrototypeChain(host, isolate);
-    if (window.IsEmpty())
-        return false; // the frame is gone.
-
-    DOMWindow* targetWindow = V8Window::toImpl(window);
-    ASSERT(targetWindow);
-    if (!targetWindow->isLocalDOMWindow())
-        return false;
-
-    LocalFrame* target = toLocalDOMWindow(targetWindow)->frame();
-    if (!target)
-        return false;
-
-    // Notify the loader's client if the initial document has been accessed.
-    if (target->loader().stateMachine()->isDisplayingInitialEmptyDocument())
-        target->loader().didAccessInitialDocument();
-
-    return BindingSecurity::shouldAllowAccessTo(isolate, callingDOMWindow(isolate), targetWindow, DoNotReportSecurityError);
-}
-
-bool V8Window::securityCheckCustom(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> data)
-{
-    // TODO(jochen): Take accessingContext into account.
-    return securityCheck(accessedObject);
-}
-
 } // namespace blink

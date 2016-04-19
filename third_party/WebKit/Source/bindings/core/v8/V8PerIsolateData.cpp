@@ -52,8 +52,53 @@ static void microtasksCompletedCallback(v8::Isolate* isolate)
     V8PerIsolateData::from(isolate)->runEndOfScopeTasks();
 }
 
-static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeature feature)
+V8PerIsolateData::V8PerIsolateData()
+    : m_isolateHolder(adoptPtr(new gin::IsolateHolder()))
+    , m_stringCache(adoptPtr(new StringCache(isolate())))
+    , m_hiddenValue(V8HiddenValue::create())
+    , m_constructorMode(ConstructorMode::CreateNewObject)
+    , m_useCounterDisabled(false)
+    , m_isHandlingRecursionLevelError(false)
+    , m_isReportingException(false)
 {
+    // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
+    isolate()->Enter();
+    isolate()->AddBeforeCallEnteredCallback(&beforeCallEnteredCallback);
+    isolate()->AddMicrotasksCompletedCallback(&microtasksCompletedCallback);
+    if (isMainThread())
+        mainThreadPerIsolateData = this;
+    isolate()->SetUseCounterCallback(&useCounterCallback);
+}
+
+V8PerIsolateData::~V8PerIsolateData()
+{
+}
+
+v8::Isolate* V8PerIsolateData::mainThreadIsolate()
+{
+    ASSERT(isMainThread());
+    ASSERT(mainThreadPerIsolateData);
+    return mainThreadPerIsolateData->isolate();
+}
+
+v8::Isolate* V8PerIsolateData::initialize()
+{
+    V8PerIsolateData* data = new V8PerIsolateData();
+    v8::Isolate* isolate = data->isolate();
+    isolate->SetData(gin::kEmbedderBlink, data);
+    return isolate;
+}
+
+void V8PerIsolateData::enableIdleTasks(v8::Isolate* isolate, PassOwnPtr<gin::V8IdleTaskRunner> taskRunner)
+{
+    from(isolate)->m_isolateHolder->EnableIdleTasks(std::unique_ptr<gin::V8IdleTaskRunner>(taskRunner.leakPtr()));
+}
+
+void V8PerIsolateData::useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeature feature)
+{
+    if (V8PerIsolateData::from(isolate)->m_useCounterDisabled)
+        return;
+
     UseCounter::Feature blinkFeature;
     bool deprecated = false;
     switch (feature) {
@@ -127,47 +172,6 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
         Deprecation::countDeprecation(currentExecutionContext(isolate), blinkFeature);
     else
         UseCounter::count(currentExecutionContext(isolate), blinkFeature);
-}
-
-V8PerIsolateData::V8PerIsolateData()
-    : m_isolateHolder(adoptPtr(new gin::IsolateHolder()))
-    , m_stringCache(adoptPtr(new StringCache(isolate())))
-    , m_hiddenValue(V8HiddenValue::create())
-    , m_constructorMode(ConstructorMode::CreateNewObject)
-    , m_isHandlingRecursionLevelError(false)
-    , m_isReportingException(false)
-{
-    // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
-    isolate()->Enter();
-    isolate()->AddBeforeCallEnteredCallback(&beforeCallEnteredCallback);
-    isolate()->AddMicrotasksCompletedCallback(&microtasksCompletedCallback);
-    if (isMainThread())
-        mainThreadPerIsolateData = this;
-    isolate()->SetUseCounterCallback(&useCounterCallback);
-}
-
-V8PerIsolateData::~V8PerIsolateData()
-{
-}
-
-v8::Isolate* V8PerIsolateData::mainThreadIsolate()
-{
-    ASSERT(isMainThread());
-    ASSERT(mainThreadPerIsolateData);
-    return mainThreadPerIsolateData->isolate();
-}
-
-v8::Isolate* V8PerIsolateData::initialize()
-{
-    V8PerIsolateData* data = new V8PerIsolateData();
-    v8::Isolate* isolate = data->isolate();
-    isolate->SetData(gin::kEmbedderBlink, data);
-    return isolate;
-}
-
-void V8PerIsolateData::enableIdleTasks(v8::Isolate* isolate, PassOwnPtr<gin::V8IdleTaskRunner> taskRunner)
-{
-    from(isolate)->m_isolateHolder->EnableIdleTasks(std::unique_ptr<gin::V8IdleTaskRunner>(taskRunner.leakPtr()));
 }
 
 v8::Persistent<v8::Value>& V8PerIsolateData::ensureLiveRoot()

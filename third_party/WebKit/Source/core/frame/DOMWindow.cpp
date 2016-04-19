@@ -44,7 +44,7 @@ DOMWindow::~DOMWindow()
 v8::Local<v8::Object> DOMWindow::wrap(v8::Isolate*, v8::Local<v8::Object> creationContext)
 {
     // DOMWindow must never be wrapped with wrap method.  The wrappers must be
-    // created at WindowProxy::installDOMWindow().
+    // created at WindowProxy::createContext() and setupWindowPrototypeChain().
     RELEASE_NOTREACHED();
     return v8::Local<v8::Object>();
 }

@@ -105,8 +105,15 @@ private:
     // Updates Activity Logger for the current context.
     void updateActivityLogger();
 
+    // Creates a new v8::Context with the window wrapper object as the global
+    // object (aka the inner global).  Note that the window wrapper and its
+    // prototype chain do not get fully initialized yet, e.g. the window
+    // wrapper is not yet associated with the native DOMWindow object.
     void createContext();
-    bool installDOMWindow();
+
+    // Associates the window wrapper and its prototype chain with the native
+    // DOMWindow object.  Also does some more Window-specific initialization.
+    bool setupWindowPrototypeChain();
 
     Member<Frame> m_frame;
     v8::Isolate* m_isolate;

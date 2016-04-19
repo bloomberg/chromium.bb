@@ -94,9 +94,33 @@ static bool {{cpp_class}}CreateDataProperty(v8::Local<v8::Name> name, v8::Local<
 {% if has_access_check_callbacks and not is_partial %}
 bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> data)
 {
+    {% if interface_name == 'Window' %}
+    // TODO(jochen): Take accessingContext into account.
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Local<v8::Object> window = V8Window::findInstanceInPrototypeChain(accessedObject, isolate);
+    if (window.IsEmpty())
+        return false; // the frame is gone.
+
+    DOMWindow* targetWindow = V8Window::toImpl(window);
+    ASSERT(targetWindow);
+    if (!targetWindow->isLocalDOMWindow())
+        return false;
+
+    LocalFrame* targetFrame = toLocalDOMWindow(targetWindow)->frame();
+    if (!targetFrame)
+        return false;
+
+    // Notify the loader's client if the initial document has been accessed.
+    if (targetFrame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
+        targetFrame->loader().didAccessInitialDocument();
+
+    return BindingSecurity::shouldAllowAccessTo(isolate, callingDOMWindow(isolate), targetWindow, DoNotReportSecurityError);
+    {% else %}{# if interface_name == 'Window' #}
+    {# Not 'Window' means it\'s Location. #}
     // TODO(jochen): Take accessingContext into account.
     {{cpp_class}}* impl = {{v8_class}}::toImpl(accessedObject);
     return BindingSecurity::shouldAllowAccessTo(v8::Isolate::GetCurrent(), callingDOMWindow(v8::Isolate::GetCurrent()), impl, DoNotReportSecurityError);
+    {% endif %}{# if interface_name == 'Window' #}
 }
 
 {% endif %}
@@ -267,13 +291,8 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
     v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
 
-    {%- if not is_partial %}
-    {% if interface_name == 'Window' %}{{newline}}
+    {%- if interface_name == 'Window' and not is_partial %}{{newline}}
     prototypeTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
-    {% endif %}
-    {% if is_global %}{{newline}}
-    interfaceTemplate->SetHiddenPrototype(true);
-    {% endif %}
     {% endif %}
 
     // Register DOM constants, attributes and operations.

@@ -245,7 +245,7 @@ bool WindowProxy::initialize()
         }
     }
 
-    if (!installDOMWindow()) {
+    if (!setupWindowPrototypeChain()) {
         disposeContext(DoNotDetachGlobal);
         return false;
     }
@@ -272,32 +272,6 @@ bool WindowProxy::initialize()
     return true;
 }
 
-namespace {
-
-void configureInnerGlobalObjectTemplate(v8::Local<v8::ObjectTemplate> templ, v8::Isolate* isolate)
-{
-    // Install a security handler with V8.
-    templ->SetAccessCheckCallback(V8Window::securityCheckCustom, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)));
-    templ->SetInternalFieldCount(V8Window::internalFieldCount);
-}
-
-v8::Local<v8::ObjectTemplate> getInnerGlobalObjectTemplate(v8::Isolate* isolate)
-{
-    // It is OK to share the same object template between the main world and
-    // non-main worlds because the inner global object doesn't install any
-    // DOM attributes/methods.
-    DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, innerGlobalObjectTemplate, ());
-    if (innerGlobalObjectTemplate.IsEmpty()) {
-        TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
-        v8::Local<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
-        configureInnerGlobalObjectTemplate(templ, isolate);
-        innerGlobalObjectTemplate.Reset(isolate, templ);
-    }
-    return v8::Local<v8::ObjectTemplate>::New(isolate, innerGlobalObjectTemplate);
-}
-
-} // namespace
-
 void WindowProxy::createContext()
 {
     // FIXME: This should be a null check of m_frame->client(), but there are still some edge cases
@@ -305,9 +279,12 @@ void WindowProxy::createContext()
     if (m_frame->isLocalFrame() && !toLocalFrame(m_frame)->loader().documentLoader())
         return;
 
-    // Create a new environment using an empty template for the shadow
-    // object. Reuse the global object if one has been created earlier.
-    v8::Local<v8::ObjectTemplate> globalTemplate = getInnerGlobalObjectTemplate(m_isolate);
+    // Create a new v8::Context with the window object as the global object
+    // (aka the inner global).  Reuse the global proxy object (aka the outer
+    // global) if it already exists.  See the comments in
+    // setupWindowPrototypeChain for the structure of the prototype chain of
+    // the global object.
+    v8::Local<v8::ObjectTemplate> globalTemplate = V8Window::domTemplate(m_isolate, *m_world)->InstanceTemplate();
     if (globalTemplate.IsEmpty())
         return;
 
@@ -331,55 +308,63 @@ void WindowProxy::createContext()
     }
     v8::ExtensionConfiguration extensionConfiguration(extensionNames.size(), extensionNames.data());
 
-    v8::Local<v8::Context> context = v8::Context::New(m_isolate, &extensionConfiguration, globalTemplate, m_global.newLocal(m_isolate));
+    v8::Local<v8::Context> context;
+    {
+        V8PerIsolateData::UseCounterDisabledScope useCounterDisabled(V8PerIsolateData::from(m_isolate));
+        context = v8::Context::New(m_isolate, &extensionConfiguration, globalTemplate, m_global.newLocal(m_isolate));
+    }
     if (context.IsEmpty())
         return;
     m_scriptState = ScriptState::create(context, m_world);
 }
 
-static v8::Local<v8::Object> toInnerGlobalObject(v8::Local<v8::Context> context)
+bool WindowProxy::setupWindowPrototypeChain()
 {
-    return v8::Local<v8::Object>::Cast(context->Global()->GetPrototype());
-}
-
-bool WindowProxy::installDOMWindow()
-{
-    DOMWindow* window = m_frame->domWindow();
-    const WrapperTypeInfo* wrapperTypeInfo = window->wrapperTypeInfo();
-    v8::Local<v8::Object> windowWrapper;
-    v8::Local<v8::Function> constructor = m_scriptState->perContextData()->constructorForType(wrapperTypeInfo);
-    if (constructor.IsEmpty())
-        return false;
-    if (!V8ObjectConstructor::newInstance(m_isolate, constructor).ToLocal(&windowWrapper))
-        return false;
-    windowWrapper = V8DOMWrapper::associateObjectWithWrapper(m_isolate, window, wrapperTypeInfo, windowWrapper);
-
-    v8::Local<v8::Object> windowPrototype = v8::Local<v8::Object>::Cast(windowWrapper->GetPrototype());
-    RELEASE_ASSERT(!windowPrototype.IsEmpty());
-    V8DOMWrapper::setNativeInfo(windowPrototype, wrapperTypeInfo, window);
-    v8::Local<v8::Object> windowProperties = v8::Local<v8::Object>::Cast(windowPrototype->GetPrototype());
-    RELEASE_ASSERT(!windowProperties.IsEmpty());
-    V8DOMWrapper::setNativeInfo(windowProperties, wrapperTypeInfo, window);
-
-    // Install the windowWrapper as the prototype of the innerGlobalObject.
-    // The full structure of the global object is as follows:
+    // Associate the window wrapper object and its prototype chain with the
+    // corresponding native DOMWindow object.
+    // The full structure of the global object's prototype chain is as follows:
     //
-    // outerGlobalObject (Empty object, remains after navigation)
-    //   -- has prototype --> innerGlobalObject (Holds global variables, changes during navigation)
-    //   -- has prototype --> DOMWindow instance
+    // global proxy object [1]
+    //   -- has prototype --> global object (window wrapper object) [2]
     //   -- has prototype --> Window.prototype
-    //   -- has prototype --> WindowProperties (named properties object)
+    //   -- has prototype --> WindowProperties [3]
     //   -- has prototype --> EventTarget.prototype
     //   -- has prototype --> Object.prototype
+    //   -- has prototype --> null
     //
-    // Note: Much of this prototype structure is hidden from web content. The
-    //       outer, inner, and DOMWindow instance all appear to be the same
-    //       JavaScript object.
+    // [1] Global proxy object is as known as "outer global object".  It's an
+    //   empty object and remains after navigation.  When navigated, points to
+    //   a different global object as the prototype object.
+    // [2] Global object is as known as "inner global object" or "window wrapper
+    //   object".  The prototype chain between global proxy object and global
+    //   object is NOT observable from user JavaScript code.  All other
+    //   prototype chains are observable.  Global proxy object and global object
+    //   together appear to be the same single JavaScript object.  See also:
+    //     https://wiki.mozilla.org/Gecko:SplitWindow
+    //   global object (= window wrapper object) provides most of Window's DOM
+    //   attributes and operations.  Also global variables defined by user
+    //   JavaScript are placed on this object.  When navigated, a new global
+    //   object is created together with a new v8::Context, but the global proxy
+    //   object doesn't change.
+    // [3] WindowProperties is a named properties object of Window interface.
+
+    DOMWindow* window = m_frame->domWindow();
+    const WrapperTypeInfo* wrapperTypeInfo = window->wrapperTypeInfo();
+
     v8::Local<v8::Context> context = m_scriptState->context();
-    v8::Local<v8::Object> innerGlobalObject = toInnerGlobalObject(m_scriptState->context());
-    V8DOMWrapper::setNativeInfo(innerGlobalObject, wrapperTypeInfo, window);
-    if (!v8CallBoolean(innerGlobalObject->SetPrototype(context, windowWrapper)))
-        return false;
+    // The global proxy object.  Note this is not the global object.
+    v8::Local<v8::Object> globalProxy = context->Global();
+    // The global object, aka window wrapper object.
+    v8::Local<v8::Object> windowWrapper = globalProxy->GetPrototype().As<v8::Object>();
+    windowWrapper = V8DOMWrapper::associateObjectWithWrapper(m_isolate, window, wrapperTypeInfo, windowWrapper);
+    // The prototype object of Window interface.
+    v8::Local<v8::Object> windowPrototype = windowWrapper->GetPrototype().As<v8::Object>();
+    RELEASE_ASSERT(!windowPrototype.IsEmpty());
+    V8DOMWrapper::setNativeInfo(windowPrototype, wrapperTypeInfo, window);
+    // The named properties object of Window interface.
+    v8::Local<v8::Object> windowProperties = windowPrototype->GetPrototype().As<v8::Object>();
+    RELEASE_ASSERT(!windowProperties.IsEmpty());
+    V8DOMWrapper::setNativeInfo(windowProperties, wrapperTypeInfo, window);
 
     // TODO(keishi): Remove installPagePopupController and implement
     // PagePopupController in another way.

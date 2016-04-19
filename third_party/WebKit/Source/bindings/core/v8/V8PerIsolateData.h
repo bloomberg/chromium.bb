@@ -59,6 +59,31 @@ public:
         virtual void run() = 0;
     };
 
+    // Disables the UseCounter.
+    // UseCounter depends on the current context, but it's not available during
+    // the initialization of v8::Context and the global object.  So we need to
+    // disable the UseCounter while the initialization of the context and global
+    // object.
+    // TODO(yukishiino): Come up with an idea to remove this hack.
+    class UseCounterDisabledScope {
+        STACK_ALLOCATED();
+    public:
+        explicit UseCounterDisabledScope(V8PerIsolateData* perIsolateData)
+            : m_perIsolateData(perIsolateData)
+            , m_originalUseCounterDisabled(m_perIsolateData->m_useCounterDisabled)
+        {
+            m_perIsolateData->m_useCounterDisabled = true;
+        }
+        ~UseCounterDisabledScope()
+        {
+            m_perIsolateData->m_useCounterDisabled = m_originalUseCounterDisabled;
+        }
+
+    private:
+        V8PerIsolateData* m_perIsolateData;
+        const bool m_originalUseCounterDisabled;
+    };
+
     static v8::Isolate* initialize();
 
     static V8PerIsolateData* from(v8::Isolate* isolate)
@@ -117,6 +142,8 @@ private:
     V8PerIsolateData();
     ~V8PerIsolateData();
 
+    static void useCounterCallback(v8::Isolate*, v8::Isolate::UseCounterFeature);
+
     typedef HashMap<const void*, v8::Eternal<v8::FunctionTemplate>> V8FunctionTemplateMap;
     V8FunctionTemplateMap& selectInterfaceTemplateMap(const DOMWrapperWorld&);
     V8FunctionTemplateMap& selectOperationTemplateMap(const DOMWrapperWorld&);
@@ -141,6 +168,9 @@ private:
 
     bool m_constructorMode;
     friend class ConstructorMode;
+
+    bool m_useCounterDisabled;
+    friend class UseCounterDisabledScope;
 
     bool m_isHandlingRecursionLevelError;
     bool m_isReportingException;
