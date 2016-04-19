@@ -1336,7 +1336,7 @@ void PaintLayer::insertOnlyThisLayerAfterStyleChange()
         }
     }
 
-    if (!didSetPaintInvalidation && isSelfPaintingLayer()) {
+    if (!didSetPaintInvalidation && isSelfPaintingLayer() && m_parent) {
         if (PaintLayer* enclosingSelfPaintingLayer = m_parent->enclosingSelfPaintingLayer())
             mergeNeedsPaintPhaseFlagsFrom(*enclosingSelfPaintingLayer);
     }
