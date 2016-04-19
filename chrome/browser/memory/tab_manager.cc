@@ -35,6 +35,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -141,7 +142,7 @@ TabManager::TabManager()
       under_memory_pressure_(false),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
-  delegate_.reset(new TabManagerDelegate);
+  delegate_.reset(new TabManagerDelegate(weak_ptr_factory_.GetWeakPtr()));
 #endif
   browser_tab_strip_tracker_.Init(
       BrowserTabStripTracker::InitWith::ALL_BROWERS);
@@ -278,8 +279,7 @@ void TabManager::DiscardTab() {
   // handling process.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kEnableArcMemoryManagement)) {
-    delegate_->LowMemoryKill(weak_ptr_factory_.GetWeakPtr(),
-                             GetUnsortedTabStats());
+    delegate_->LowMemoryKill(GetUnsortedTabStats());
     return;
   }
 #endif
@@ -462,17 +462,17 @@ int TabManager::GetTabCount() const {
 
 void TabManager::AddTabStats(TabStatsList* stats_list) {
   BrowserList* browser_list = BrowserList::GetInstance();
-  // The first window will be the active one.
-  bool browser_active = true;
   for (BrowserList::const_reverse_iterator browser_iterator =
            browser_list->begin_last_active();
        browser_iterator != browser_list->end_last_active();
        ++browser_iterator) {
     Browser* browser = *browser_iterator;
-    AddTabStats(browser->tab_strip_model(), browser->is_app(), browser_active,
+    // |is_active_window| tells us whether this browser window is active. It is
+    // possible that none of the browser windows is active because it's some
+    // other application window in the foreground.
+    bool is_active_window = browser->window()->IsActive();
+    AddTabStats(browser->tab_strip_model(), browser->is_app(), is_active_window,
                 stats_list);
-    // The active browser window is processed in the first iteration.
-    browser_active = false;
   }
 }
 

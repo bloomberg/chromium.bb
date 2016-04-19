@@ -117,6 +117,10 @@ class TabManager : public TabStripModelObserver {
   // |test_tick_clock_| for more details.
   void set_test_tick_clock(base::TickClock* test_tick_clock);
 
+  // Returns the list of the stats for all renderers. Must be called on the UI
+  // thread.
+  TabStatsList GetUnsortedTabStats();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ChildProcessNotifications);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, Comparator);
@@ -235,10 +239,6 @@ class TabManager : public TabStripModelObserver {
 
   // Implementation of DiscardTab.
   bool DiscardTabImpl();
-
-  // Returns the list of the stats for all renderers. Must be called on the UI
-  // thread.
-  TabStatsList GetUnsortedTabStats();
 
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;

@@ -9,9 +9,11 @@
 #include <string>
 #include <vector>
 
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_monitor_chromeos.h"
+#include "base/process/process_handle.h"  // kNullProcessHandle.
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -20,17 +22,22 @@
 #include "chrome/browser/chromeos/arc/arc_process.h"
 #include "chrome/browser/chromeos/arc/arc_process_service.h"
 #include "chrome/browser/memory/tab_stats.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/process.mojom.h"
+#include "components/exo/shell_surface.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/zygote_host_linux.h"
+#include "ui/aura/window.h"
+#include "ui/wm/public/activation_client.h"
 
 using base::ProcessHandle;
 using base::TimeDelta;
@@ -39,14 +46,36 @@ using content::BrowserThread;
 namespace memory {
 namespace {
 
+const char kExoShellSurfaceWindowName[] = "ExoShellSurface";
+const char kArcProcessNamePrefix[] = "org.chromium.arc.";
+
 // When switching to a new tab the tab's renderer's OOM score needs to be
 // updated to reflect its front-most status and protect it from discard.
 // However, doing this immediately might slow down tab switch time, so wait
 // a little while before doing the adjustment.
-const int kFocusedTabScoreAdjustIntervalMs = 500;
+const int kFocusedProcessScoreAdjustIntervalMs = 500;
 
-// TODO(cylee): Check whether the app is in foreground or not.
-int AppStateToPriority(const arc::mojom::ProcessState& process_state) {
+aura::client::ActivationClient* GetActivationClient() {
+  if (!ash::Shell::HasInstance())
+    return nullptr;
+  return aura::client::GetActivationClient(ash::Shell::GetPrimaryRootWindow());
+}
+
+// Checks if a window renders ARC apps.
+bool IsArcWindow(aura::Window* window) {
+  if (!window || window->name() != kExoShellSurfaceWindowName)
+    return false;
+  std::string application_id = exo::ShellSurface::GetApplicationId(window);
+  return application_id.find(kArcProcessNamePrefix) == 0;
+}
+
+bool IsArcWindowInForeground() {
+  auto activation_client = GetActivationClient();
+  return activation_client && IsArcWindow(activation_client->GetActiveWindow());
+}
+
+int AppStateToPriority(
+    const arc::mojom::ProcessState& process_state) {
   // Logic copied from Android:
   // frameworks/base/core/java/android/app/ActivityManager.java
   // Note that ProcessState enumerates from most important (lower value) to
@@ -67,16 +96,21 @@ int AppStateToPriority(const arc::mojom::ProcessState& process_state) {
   } else if (process_state >= arc::mojom::ProcessState::FOREGROUND_SERVICE) {
     return ProcessPriority::ANDROID_FOREGROUND_SERVICE;
   } else if (process_state >= arc::mojom::ProcessState::TOP) {
-    return ProcessPriority::ANDROID_TOP;
+    return IsArcWindowInForeground() ?
+        ProcessPriority::ANDROID_TOP :
+        ProcessPriority::ANDROID_TOP_INACTIVE;
   } else if (process_state >= arc::mojom::ProcessState::PERSISTENT) {
     return ProcessPriority::ANDROID_PERSISTENT;
   }
   return ProcessPriority::ANDROID_NON_EXISTS;
 }
 
-// TODO(cylee): Check whether the tab is in foreground or not.
 int TabStatsToPriority(const TabStats& tab) {
+  if (tab.is_selected)
+    return ProcessPriority::CHROME_SELECTED;
+
   int priority = 0;
+
   if (tab.is_app) {
     priority = ProcessPriority::CHROME_APP;
   } else if (tab.is_internal_page) {
@@ -84,9 +118,6 @@ int TabStatsToPriority(const TabStats& tab) {
   } else {
     priority = ProcessPriority::CHROME_NORMAL;
   }
-
-  if (tab.is_selected)
-    priority |= ProcessPriority::CHROME_SELECTED;
   if (tab.is_pinned)
     priority |= ProcessPriority::CHROME_PINNED;
   if (tab.is_media)
@@ -104,8 +135,84 @@ bool IsArcMemoryManagementEnabled() {
 
 }  // namespace
 
-TabManagerDelegate::TabManagerDelegate()
-    : focused_tab_process_info_(std::make_pair(0, 0)),
+// Holds the info of a newly focused tab or app window. The focused process is
+// set to highest priority (lowest OOM score), but not immediately. To avoid
+// redundant settings the OOM score adjusting only happens after a timeout. If
+// the process loses focus before the timeout, the adjustment is canceled.
+//
+// This information might be set on UI thread and looked up on FILE thread. So a
+// lock is needed to avoid racing.
+class TabManagerDelegate::FocusedProcess {
+ public:
+  static const int kInvalidArcAppNspid = 0;
+  struct Data {
+    union {
+      // If a chrome tqab.
+      base::ProcessHandle pid;
+      // If an ARC app.
+      int nspid;
+    };
+    bool is_arc_app;
+  };
+
+  void SetTabPid(base::ProcessHandle pid) {
+    Data* data = new Data();
+    data->is_arc_app = false;
+    data->pid = pid;
+
+    base::AutoLock lock(lock_);
+    data_.reset(data);
+  }
+
+  void SetArcAppNspid(int nspid) {
+    Data* data = new Data();
+    data->is_arc_app = true;
+    data->nspid = nspid;
+
+    base::AutoLock lock(lock_);
+    data_.reset(data);
+  }
+
+  // Getter. Returns kNullProcessHandle if the process is not a tab.
+  base::ProcessHandle GetTabPid() {
+    base::AutoLock lock(lock_);
+    if (data_ && !data_->is_arc_app)
+      return data_->pid;
+    return base::kNullProcessHandle;
+  }
+
+  // Getter. Returns kInvalidArcAppNspid if the process is not an arc app.
+  int GetArcAppNspid() {
+    base::AutoLock lock(lock_);
+    if (data_ && data_->is_arc_app)
+      return data_->nspid;
+    return kInvalidArcAppNspid;
+  }
+
+  // An atomic operation which checks whether the containing instance is an ARC
+  // app. If so it resets the data and returns true. Useful when canceling an
+  // ongoing OOM score setting for a focused ARC app because the focus has been
+  // shifted away shortly.
+  bool ResetIfIsArcApp() {
+    base::AutoLock lock(lock_);
+    if (data_ && data_->is_arc_app) {
+      data_.reset();
+      return true;
+    }
+    return false;
+  }
+
+ private:
+  scoped_ptr<Data> data_;
+  // Protects rw access to data_;
+  base::Lock lock_;
+};
+
+
+TabManagerDelegate::TabManagerDelegate(
+    const base::WeakPtr<TabManager>& tab_manager)
+    : tab_manager_(tab_manager),
+      focused_process_(new FocusedProcess()),
       arc_process_instance_(nullptr),
       arc_process_instance_version_(0),
       weak_ptr_factory_(this) {
@@ -118,12 +225,36 @@ TabManagerDelegate::TabManagerDelegate()
   auto arc_bridge_service = arc::ArcBridgeService::Get();
   if (arc_bridge_service)
     arc_bridge_service->AddObserver(this);
+  auto activation_client = GetActivationClient();
+  if (activation_client)
+    activation_client->AddObserver(this);
+  BrowserList::GetInstance()->AddObserver(this);
 }
 
 TabManagerDelegate::~TabManagerDelegate() {
+  BrowserList::GetInstance()->RemoveObserver(this);
+  auto activation_client = GetActivationClient();
+  if (activation_client)
+    activation_client->RemoveObserver(this);
   auto arc_bridge_service = arc::ArcBridgeService::Get();
   if (arc_bridge_service)
     arc_bridge_service->RemoveObserver(this);
+}
+
+void TabManagerDelegate::OnBrowserSetLastActive(Browser* browser) {
+  // Set OOM score to the selected tab when a browser window is activated.
+  // content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED didn't catch the
+  // case (like when switching focus between 2 browser windows) so we need to
+  // handle it here.
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
+  int selected_index = tab_strip_model->active_index();
+  content::WebContents* contents =
+      tab_strip_model->GetWebContentsAt(selected_index);
+  if (!contents)
+    return;
+
+  base::ProcessHandle pid = contents->GetRenderProcessHost()->GetHandle();
+  AdjustFocusedTabScore(pid);
 }
 
 void TabManagerDelegate::OnProcessInstanceReady() {
@@ -152,23 +283,57 @@ void TabManagerDelegate::OnProcessInstanceClosed() {
   arc_process_instance_version_ = 0;
 }
 
+void TabManagerDelegate::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
+  if (IsArcWindow(gained_active)) {
+    // Currently there is no way to know which app is displayed in the ARC
+    // window, so schedule an early adjustment for all processes to reflect
+    // the change.
+    // Put a dummy FocusedProcess with nspid = kInvalidArcAppNspid for now to
+    // indicate the focused process is an arc app.
+    // TODO(cylee): Fix it when we have nspid info in ARC windows.
+    focused_process_->SetArcAppNspid(FocusedProcess::kInvalidArcAppNspid);
+    // If the timer is already running (possibly for a tab), it'll be reset
+    // here.
+    focus_process_score_adjust_timer_.Start(
+        FROM_HERE,
+        TimeDelta::FromMilliseconds(kFocusedProcessScoreAdjustIntervalMs),
+        this, &TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment);
+  }
+  if (IsArcWindow(lost_active)) {
+    // Do not bother adjusting OOM score if the ARC window is deactivated
+    // shortly.
+    if (focused_process_->ResetIfIsArcApp() &&
+        focus_process_score_adjust_timer_.IsRunning())
+      focus_process_score_adjust_timer_.Stop();
+  }
+}
+
+void TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (tab_manager_) {
+    AdjustOomPriorities(tab_manager_->GetUnsortedTabStats());
+  }
+}
+
 // If able to get the list of ARC procsses, prioritize tabs and apps as a whole.
 // Otherwise try to kill tabs only.
 void TabManagerDelegate::LowMemoryKill(
-    const base::WeakPtr<TabManager>& tab_manager,
     const TabStatsList& tab_list) {
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
   if (arc_process_service &&
       arc_process_service->RequestProcessList(
           base::Bind(&TabManagerDelegate::LowMemoryKillImpl,
-                     weak_ptr_factory_.GetWeakPtr(), tab_manager, tab_list))) {
+                     weak_ptr_factory_.GetWeakPtr(), tab_list))) {
     // LowMemoryKillImpl will be called asynchronously so nothing left to do.
     return;
   }
   // If the list of ARC processes is not available, call LowMemoryKillImpl
   // synchronously with an empty list of apps.
   std::vector<arc::ArcProcess> dummy_apps;
-  LowMemoryKillImpl(tab_manager, tab_list, dummy_apps);
+  LowMemoryKillImpl(tab_list, dummy_apps);
 }
 
 int TabManagerDelegate::GetCachedOomScore(ProcessHandle process_handle) {
@@ -183,10 +348,13 @@ int TabManagerDelegate::GetCachedOomScore(ProcessHandle process_handle) {
 
 void TabManagerDelegate::AdjustFocusedTabScoreOnFileThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  base::ProcessHandle pid = 0;
+  base::ProcessHandle pid = focused_process_->GetTabPid();
+  // The focused process doesn't render a tab. Could happen when the focus
+  // just switched to an ARC app. We can not avoid the race.
+  if (pid == base::kNullProcessHandle)
+    return;
   {
     base::AutoLock oom_score_autolock(oom_score_lock_);
-    pid = focused_tab_process_info_.second;
     oom_score_map_[pid] = chrome::kLowestRendererOomScore;
   }
   content::ZygoteHost::GetInstance()->AdjustRendererOOMScore(
@@ -197,7 +365,36 @@ void TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&TabManagerDelegate::AdjustFocusedTabScoreOnFileThread,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 base::Unretained(this)));
+}
+
+void TabManagerDelegate::AdjustFocusedTabScore(base::ProcessHandle pid) {
+  // Clear running timer if one was set for a previous focused tab/app.
+  if (focus_process_score_adjust_timer_.IsRunning())
+    focus_process_score_adjust_timer_.Stop();
+  focused_process_->SetTabPid(pid);
+
+  bool not_lowest_score = false;
+  {
+    base::AutoLock oom_score_autolock(oom_score_lock_);
+    // If the currently focused tab already has a lower score, do not
+    // set it. This can happen in case the newly focused tab is script
+    // connected to the previous tab.
+    ProcessScoreMap::iterator it = oom_score_map_.find(pid);
+    not_lowest_score = (it == oom_score_map_.end() ||
+                        it->second != chrome::kLowestRendererOomScore);
+  }
+  if (not_lowest_score) {
+    // By starting a timer we guarantee that the tab is focused for
+    // certain amount of time. Secondly, it also does not add overhead
+    // to the tab switching time.
+    // If there's an existing running timer (could be for ARC app), it
+    // would be replaced by a new task.
+    focus_process_score_adjust_timer_.Start(
+        FROM_HERE,
+        TimeDelta::FromMilliseconds(kFocusedProcessScoreAdjustIntervalMs),
+        this, &TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout);
+  }
 }
 
 void TabManagerDelegate::Observe(int type,
@@ -232,35 +429,19 @@ void TabManagerDelegate::Observe(int type,
       if (visible) {
         content::RenderProcessHost* render_host =
             content::Source<content::RenderWidgetHost>(source)
-                .ptr()
-                ->GetProcess();
-        ProcessScoreMap::iterator it;
-        bool not_lowest_score = false;
-        {
-          base::AutoLock oom_score_autolock(oom_score_lock_);
-          focused_tab_process_info_ =
-              std::make_pair(render_host->GetID(), render_host->GetHandle());
-
-          // If the currently focused tab already has a lower score, do not
-          // set it. This can happen in case the newly focused tab is script
-          // connected to the previous tab.
-          it = oom_score_map_.find(focused_tab_process_info_.second);
-          not_lowest_score = it == oom_score_map_.end() ||
-                             it->second != chrome::kLowestRendererOomScore;
-        }
-        if (not_lowest_score) {
-          // By starting a timer we guarantee that the tab is focused for
-          // certain amount of time. Secondly, it also does not add overhead
-          // to the tab switching time.
-          if (focus_tab_score_adjust_timer_.IsRunning())
-            focus_tab_score_adjust_timer_.Reset();
-          else
-            focus_tab_score_adjust_timer_.Start(
-                FROM_HERE,
-                TimeDelta::FromMilliseconds(kFocusedTabScoreAdjustIntervalMs),
-                this, &TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout);
-        }
+            .ptr()
+            ->GetProcess();
+        AdjustFocusedTabScore(render_host->GetHandle());
       }
+      // Do not handle the "else" case when it changes to invisible because
+      // 1. The behavior is a bit awkward in that when switching from tab A to
+      // tab B, the event "invisible of B" comes after "visible of A". It can
+      // cause problems when the 2 tabs have the same content (e.g., New Tab
+      // Page). To be more clear, if we try to cancel the timer when losing
+      // focus it may cancel the timer for the same renderer process.
+      // 2. When another window is launched on top of an existing browser
+      // window, the selected tab in the existing browser didn't receive this
+      // event, so an attempt to cancel timer in this case doesn't work.
       break;
     }
     default:
@@ -279,15 +460,14 @@ void TabManagerDelegate::Observe(int type,
 // 2) last time a tab was selected
 // 3) is the tab currently selected
 void TabManagerDelegate::AdjustOomPriorities(const TabStatsList& tab_list) {
-  if (!IsArcMemoryManagementEnabled())
-    return;
-
-  arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
-  if (arc_process_service &&
-      arc_process_service->RequestProcessList(
-          base::Bind(&TabManagerDelegate::AdjustOomPrioritiesImpl,
-                     weak_ptr_factory_.GetWeakPtr(), tab_list))) {
-    return;
+  if (IsArcMemoryManagementEnabled()) {
+    arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
+    if (arc_process_service &&
+        arc_process_service->RequestProcessList(
+            base::Bind(&TabManagerDelegate::AdjustOomPrioritiesImpl,
+                       weak_ptr_factory_.GetWeakPtr(), tab_list))) {
+      return;
+    }
   }
   // Pass in a dummy list if unable to get ARC processes or
   // --enable-arc-memory-management is off.
@@ -308,8 +488,11 @@ TabManagerDelegate::GetSortedKillCandidates(
   }
 
   for (const auto& app : arc_processes) {
-    candidates.push_back(
-        KillCandidate(&app, AppStateToPriority(app.process_state)));
+    KillCandidate candidate(&app, AppStateToPriority(app.process_state));
+    // Skip persistent processes since we should never kill them.
+    if (candidate.priority >= ProcessPriority::ANDROID_PERSISTENT)
+      continue;
+    candidates.push_back(candidate);
   }
 
   // Sort candidates according to priority.
@@ -320,17 +503,14 @@ TabManagerDelegate::GetSortedKillCandidates(
 }
 
 void TabManagerDelegate::LowMemoryKillImpl(
-    const base::WeakPtr<TabManager>& tab_manager,
     const TabStatsList& tab_list,
     const std::vector<arc::ArcProcess>& arc_processes) {
 
   std::vector<TabManagerDelegate::KillCandidate> candidates =
       GetSortedKillCandidates(tab_list, arc_processes);
   for (const auto& entry : candidates) {
-    // Never kill persistent process.
-    if (entry.priority >= ProcessPriority::ANDROID_PERSISTENT) {
-      break;
-    }
+    // Ensure we never kill persistent apps.
+    DCHECK(entry.priority != ProcessPriority::ANDROID_PERSISTENT);
     if (entry.is_arc_app) {
       if (arc_process_instance_) {
         arc_process_instance_->KillProcess(entry.app->nspid, "LowMemoryKill");
@@ -338,10 +518,10 @@ void TabManagerDelegate::LowMemoryKillImpl(
       }
     } else {
       int64_t tab_id = entry.tab->tab_contents_id;
-      // Check |tab_manager| is alive before taking tabs into consideration.
-      if (tab_manager &&
-          tab_manager->CanDiscardTab(tab_id) &&
-          tab_manager->DiscardTabById(tab_id)) {
+      // Check |tab_manager_| is alive before taking tabs into consideration.
+      if (tab_manager_ &&
+          tab_manager_->CanDiscardTab(tab_id) &&
+          tab_manager_->DiscardTabById(tab_id)) {
         break;
       }
     }
@@ -365,7 +545,7 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
   // Higher values are more likely to be killed by the OOM killer.
 
   // Break the processes into 2 parts. This is to help lower the chance of
-  // altering oom score for many processes on any small change.
+  // altering OOM score for many processes on any small change.
   int range_middle =
       (chrome::kLowestRendererOomScore + chrome::kHighestRendererOomScore) / 2;
 
@@ -411,7 +591,7 @@ void TabManagerDelegate::SetOomScoreAdjForTabs(
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&TabManagerDelegate::SetOomScoreAdjForTabsOnFileThread,
-                 weak_ptr_factory_.GetWeakPtr(), entries));
+                 base::Unretained(this), entries));
 }
 
 void TabManagerDelegate::SetOomScoreAdjForTabsOnFileThread(
@@ -458,7 +638,7 @@ void TabManagerDelegate::DistributeOomScoreInRange(
       // 1. tab_list contains entries for already-discarded tabs. If the PID
       // (renderer_handle) is zero, we don't need to adjust the oom_score.
       // 2. Only add unseen process handle so if there's multiple tab maps to
-      // the same process, the process is set to an oom score based on its "most
+      // the same process, the process is set to an OOM score based on its "most
       // important" tab.
       if (process_handle != 0 &&
           new_map->find(process_handle) == new_map->end()) {

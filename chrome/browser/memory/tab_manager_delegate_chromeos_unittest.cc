@@ -5,22 +5,65 @@
 #include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
+#include "ash/shell.h"
+#include "ash/test/ash_test_base.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/arc/arc_process.h"
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/common/url_constants.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
+#include "components/exo/shell_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window.h"
+#include "ui/wm/public/activation_client.h"
 #include "url/gurl.h"
 
 namespace memory {
 
-typedef testing::Test TabManagerDelegateTest;
+namespace {
 
-TEST_F(TabManagerDelegateTest, LowMemoryKill) {
+const char kExoShellSurfaceWindowName[] = "ExoShellSurface";
+const char kArcProcessNamePrefix[] = "org.chromium.arc.";
+
+}  // namespace
+
+class TabManagerDelegateTest : public ash::test::AshTestBase {
+ public:
+  TabManagerDelegateTest() : application_id_(kArcProcessNamePrefix) {}
+  ~TabManagerDelegateTest() override {}
+
+  void SetUp() override {
+    AshTestBase::SetUp();
+
+    arc_window_ = CreateTestWindowInShellWithId(0);
+    arc_window_->SetName(kExoShellSurfaceWindowName);
+    exo::ShellSurface::SetApplicationId(arc_window_,
+                                        &application_id_);
+  }
+
+ protected:
+  void ActivateArcWindow() {
+    GetActivationClient()->ActivateWindow(arc_window_);
+  }
+  void DeactivateArcWindow() {
+    GetActivationClient()->DeactivateWindow(arc_window_);
+  }
+
+ private:
+  aura::client::ActivationClient* GetActivationClient() {
+    return aura::client::GetActivationClient(
+        ash::Shell::GetPrimaryRootWindow());
+  }
+
+  aura::Window* arc_window_;
+  std::string application_id_;
+};
+
+TEST_F(TabManagerDelegateTest, KillCandidatesSorted) {
   std::vector<arc::ArcProcess> arc_processes = {
       {1, 10, "top", arc::mojom::ProcessState::TOP},
       {2, 20, "foreground", arc::mojom::ProcessState::FOREGROUND_SERVICE},
@@ -46,24 +89,65 @@ TEST_F(TabManagerDelegateTest, LowMemoryKill) {
     tab1, tab2, tab3, tab4, tab5
   };
 
-  std::vector<TabManagerDelegate::KillCandidate> candidates =
-      TabManagerDelegate::GetSortedKillCandidates(
+  std::vector<TabManagerDelegate::KillCandidate> candidates;
+
+  // Case 1: ARC window in the foreground.
+  ActivateArcWindow();
+  candidates = TabManagerDelegate::GetSortedKillCandidates(
           tab_list, arc_processes);
   EXPECT_EQ(8U, candidates.size());
 
   EXPECT_EQ("service", candidates[0].app->process_name);
   EXPECT_EQ("foreground", candidates[1].app->process_name);
+  // internal page.
   EXPECT_EQ(200, candidates[2].tab->tab_contents_id);
+  // chrome app.
   EXPECT_EQ(500, candidates[3].tab->tab_contents_id);
+  // pinned.
   EXPECT_EQ(100, candidates[4].tab->tab_contents_id);
+  // media.
   EXPECT_EQ(400, candidates[5].tab->tab_contents_id);
+  // pinned and media.
   EXPECT_EQ(300, candidates[6].tab->tab_contents_id);
+  // ARC window is the active window, so top app has highest priority.
   EXPECT_EQ("top", candidates[7].app->process_name);
+
+  // Case 2: ARC window in the background.
+  DeactivateArcWindow();
+  candidates = TabManagerDelegate::GetSortedKillCandidates(
+          tab_list, arc_processes);
+  EXPECT_EQ(8U, candidates.size());
+
+  EXPECT_EQ("service", candidates[0].app->process_name);
+  EXPECT_EQ("foreground", candidates[1].app->process_name);
+  // internal page.
+  EXPECT_EQ(200, candidates[2].tab->tab_contents_id);
+
+  // Chrome app and android app are tied, so both orders are correct.
+  if (candidates[3].is_arc_app) {
+    EXPECT_EQ("top", candidates[3].app->process_name);
+    // chrome app.
+    EXPECT_EQ(500, candidates[4].tab->tab_contents_id);
+  } else {
+    // chrome app.
+    EXPECT_EQ(500, candidates[3].tab->tab_contents_id);
+    EXPECT_EQ("top", candidates[4].app->process_name);
+  }
+
+  // pinned.
+  EXPECT_EQ(100, candidates[5].tab->tab_contents_id);
+  // media.
+  EXPECT_EQ(400, candidates[6].tab->tab_contents_id);
+  // pinned and media.
+  EXPECT_EQ(300, candidates[7].tab->tab_contents_id);
 }
 
 class MockTabManagerDelegate : public TabManagerDelegate {
+ public:
+  MockTabManagerDelegate(): TabManagerDelegate(nullptr) {
+  }
  protected:
-  // Nullify the operation for nuit test.
+  // Nullify the operation for unit test.
   void SetOomScoreAdjForTabs(
       const std::vector<std::pair<base::ProcessHandle, int>>& entries)
       override {}
@@ -73,6 +157,7 @@ TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
   arc::FakeArcBridgeService fake_arc_bridge_service;
   MockTabManagerDelegate tab_manager_delegate;
 
+  ActivateArcWindow();
   std::vector<arc::ArcProcess> arc_processes = {
       {1, 10, "top", arc::mojom::ProcessState::TOP},
       {2, 20, "foreground", arc::mojom::ProcessState::FOREGROUND_SERVICE},
