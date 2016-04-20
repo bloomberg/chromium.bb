@@ -293,6 +293,10 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
     if (!m_filterValue)
         return nullptr;
 
+    // StyleResolverState cannot be used in frame-less documents.
+    if (!styleResolutionHost->document().frame())
+        return nullptr;
+
     if (!m_resolvedFilter) {
         RefPtr<ComputedStyle> filterStyle = ComputedStyle::create();
         // Must set font in case the filter uses any font-relative units (em, ex)

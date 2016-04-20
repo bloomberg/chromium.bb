@@ -382,6 +382,10 @@ SkImageFilter* CanvasRenderingContext2D::stateGetFilter()
 
 void CanvasRenderingContext2D::snapshotStateForFilter()
 {
+    // The style resolution required for fonts is not available in frame-less documents.
+    if (!canvas()->document().frame())
+        return;
+
     modifiableState().setFontForFilter(accessFont());
 }
 
