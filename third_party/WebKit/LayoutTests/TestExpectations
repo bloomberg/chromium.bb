@@ -2709,8 +2709,6 @@ crbug.com/593679 virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picke
 
 crbug.com/603703 [ Linux ] imported/web-platform-tests/web-animations/animation-timeline/document-timeline.html [ Failure Pass ]
 
-crbug.com/600248 imported/web-platform-tests/web-animations/keyframe-effect/getComputedTiming-progress.html [ Crash Failure ]
-crbug.com/600248 imported/web-platform-tests/web-animations/keyframe-effect/getComputedTiming-currentIteration.html [ Crash Failure ]
 crbug.com/600248 imported/web-platform-tests/web-animations/animation-effect-timing/endDelay.html [ Failure ]
 crbug.com/600248 imported/web-platform-tests/web-animations/animation/constructor.html [ Failure Timeout ]
 

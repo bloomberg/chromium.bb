@@ -158,7 +158,16 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
             const double iterationTime = calculateIterationTime(iterationDuration, repeatedDuration(), scaledActiveTime, startOffset, m_timing);
 
             currentIteration = calculateCurrentIteration(iterationDuration, iterationTime, scaledActiveTime, m_timing);
-            timeFraction = calculateTransformedTime(currentIteration, iterationDuration, iterationTime, m_timing) / iterationDuration;
+            const double transformedTime = calculateTransformedTime(currentIteration, iterationDuration, iterationTime, m_timing);
+
+            // The infinite iterationDuration case here is a workaround because
+            // the specified behaviour does not handle infinite durations well.
+            // There is an open issue against the spec to fix this:
+            // https://github.com/w3c/web-animations/issues/142
+            if (!std::isfinite(iterationDuration))
+                timeFraction = fmod(m_timing.iterationStart, 1.0);
+            else
+                timeFraction = transformedTime / iterationDuration;
 
             if (!isNull(iterationTime)) {
                 timeToNextIteration = (iterationDuration - iterationTime) / std::abs(m_timing.playbackRate);

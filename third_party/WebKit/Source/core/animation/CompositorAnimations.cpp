@@ -654,7 +654,14 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, in
     ASSERT(!properties.isEmpty());
     for (const auto& property : properties) {
         PropertySpecificKeyframeVector values;
-        getKeyframeValuesForProperty(&effect, property, compositorTiming.scaledDuration, values);
+        // If the animation duration is infinite, it doesn't make sense to scale
+        // the keyframe offset, so use a scale of 1.0. This is connected to
+        // the known issue of how the Web Animations spec handles infinite
+        // durations. See https://github.com/w3c/web-animations/issues/142
+        double scale = compositorTiming.scaledDuration;
+        if (!std::isfinite(scale))
+            scale = 1.0;
+        getKeyframeValuesForProperty(&effect, property, scale, values);
 
         CompositorTargetProperty::Type targetProperty;
         OwnPtr<CompositorAnimationCurve> curve;
