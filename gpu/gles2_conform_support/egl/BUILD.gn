@@ -8,17 +8,11 @@ source_set("egl") {
   sources = [
     "config.cc",
     "config.h",
-    "context.cc",
-    "context.h",
     "display.cc",
     "display.h",
     "egl.cc",
     "surface.cc",
     "surface.h",
-    "test_support.cc",
-    "test_support.h",
-    "thread_state.cc",
-    "thread_state.h",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -34,7 +28,6 @@ source_set("egl") {
     "//gpu:command_buffer_gles2",
     "//gpu/command_buffer/client:gles2_c_lib_nocheck",
     "//gpu/command_buffer/client:gles2_implementation_no_check",
-    "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/service",
     "//ui/base",
     "//ui/gfx",

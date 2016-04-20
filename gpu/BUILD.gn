@@ -57,8 +57,6 @@ shared_library("command_buffer_gles2") {
     # TODO(hendrikw): Move egl out of gles2_conform_support.
     "gles2_conform_support/egl/config.cc",
     "gles2_conform_support/egl/config.h",
-    "gles2_conform_support/egl/context.cc",
-    "gles2_conform_support/egl/context.h",
     "gles2_conform_support/egl/display.cc",
     "gles2_conform_support/egl/display.h",
     "gles2_conform_support/egl/egl.cc",
@@ -66,8 +64,6 @@ shared_library("command_buffer_gles2") {
     "gles2_conform_support/egl/surface.h",
     "gles2_conform_support/egl/test_support.cc",
     "gles2_conform_support/egl/test_support.h",
-    "gles2_conform_support/egl/thread_state.cc",
-    "gles2_conform_support/egl/thread_state.h",
   ]
 
   deps = [
@@ -75,7 +71,6 @@ shared_library("command_buffer_gles2") {
     "//base",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/command_buffer/common:gles2_utils",
     "//ui/gl:gl",
   ]
 

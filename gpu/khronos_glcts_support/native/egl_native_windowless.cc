@@ -74,9 +74,9 @@ class Platform : public tcu::EglPlatform {
                                   int height,
                                   qpVisibility visibility) override {
     tcu::egl::Display& eglDisplay = dpy.getEglDisplay();
-    EGLDisplay display = eglDisplay.getEGLDisplay();
-    CommandBufferGLESSetNextCreateWindowSurfaceCreatesPBuffer(eglDisplay, width,
-                                                              height);
+    egl::Display* display =
+        static_cast<egl::Display*>(eglDisplay.getEGLDisplay());
+    display->SetCreateOffscreen(width, height);
     return new Window(eglDisplay, config, attribList, width, height);
   }
 };

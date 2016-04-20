@@ -518,7 +518,6 @@
         '../gpu/gpu.gyp:command_buffer_service',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gl/gl.gyp:gl',
-        'command_buffer/command_buffer.gyp:gles2_utils',
         'gles2_c_lib',
         'gles2_implementation',
       ],
@@ -527,8 +526,6 @@
         # TODO(hendrikw): Move egl out of gles2_conform_support.
         'gles2_conform_support/egl/config.cc',
         'gles2_conform_support/egl/config.h',
-        'gles2_conform_support/egl/context.cc',
-        'gles2_conform_support/egl/context.h',
         'gles2_conform_support/egl/display.cc',
         'gles2_conform_support/egl/display.h',
         'gles2_conform_support/egl/egl.cc',
@@ -536,8 +533,6 @@
         'gles2_conform_support/egl/surface.h',
         'gles2_conform_support/egl/test_support.cc',
         'gles2_conform_support/egl/test_support.h',
-        'gles2_conform_support/egl/thread_state.cc',
-        'gles2_conform_support/egl/thread_state.h',
       ],
       'defines': [
         'COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY',
