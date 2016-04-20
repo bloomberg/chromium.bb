@@ -10,6 +10,9 @@
 #include "base/macros.h"
 
 namespace ash {
+namespace wm {
+class WmGlobals;
+}
 
 // WindowResizer is used by ToplevelWindowEventFilter to handle dragging, moving
 // or resizing a window. All coordinates passed to this are in the parent
@@ -39,6 +42,8 @@ class ASH_EXPORT DefaultWindowResizer : public WindowResizer {
 
   // Set to true once Drag() is invoked and the bounds of the window change.
   bool did_move_or_resize_;
+
+  wm::WmGlobals* globals_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultWindowResizer);
 };

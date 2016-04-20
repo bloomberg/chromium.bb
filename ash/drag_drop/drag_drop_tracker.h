@@ -21,8 +21,7 @@ namespace ash {
 // Provides functions for handling drag events inside and outside the root
 // window where drag is started. This internally sets up a capture window for
 // tracking drag events outside the root window where drag is initiated.
-// ash/wm/coordinate_conversion.h is used internally and only X11 environment
-// is supported for now.
+// Only X11 environment is supported for now.
 class ASH_EXPORT DragDropTracker {
  public:
   DragDropTracker(aura::Window* context_root,

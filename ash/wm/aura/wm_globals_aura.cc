@@ -70,6 +70,14 @@ bool WmGlobalsAura::IsForceMaximizeOnFirstRun() {
   return Shell::GetInstance()->delegate()->IsForceMaximizeOnFirstRun();
 }
 
+void WmGlobalsAura::LockCursor() {
+  ash::Shell::GetInstance()->cursor_manager()->LockCursor();
+}
+
+void WmGlobalsAura::UnlockCursor() {
+  ash::Shell::GetInstance()->cursor_manager()->UnlockCursor();
+}
+
 std::vector<WmWindow*> WmGlobalsAura::GetAllRootWindows() {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::vector<WmWindow*> wm_windows(root_windows.size());

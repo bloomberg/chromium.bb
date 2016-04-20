@@ -60,7 +60,7 @@
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/aura/wm_globals_aura.h"
-#include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/common/root_window_finder.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
@@ -299,8 +299,8 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
   if (session_state_delegate_->IsScreenLocked())
     return;
 
-  aura::Window* root =
-      wm::GetRootWindowMatching(gfx::Rect(location_in_screen, gfx::Size()));
+  aura::Window* root = wm::WmWindowAura::GetAuraWindow(
+      wm::GetRootWindowMatching(gfx::Rect(location_in_screen, gfx::Size())));
   GetRootWindowController(root)
       ->ShowContextMenu(location_in_screen, source_type);
 }

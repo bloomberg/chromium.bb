@@ -15,7 +15,6 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/common/window_animation_types.h"
 #include "ash/wm/common/window_parenting_utils.h"
-#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_resizer.h"

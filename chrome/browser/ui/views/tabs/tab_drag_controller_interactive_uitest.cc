@@ -57,7 +57,8 @@
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/aura/wm_window_aura.h"
+#include "ash/wm/common/root_window_finder.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -387,7 +388,8 @@ class DetachToBrowserTabDragControllerTest
       return;
 #if defined(OS_CHROMEOS)
     event_generator_.reset(new ui::test::EventGenerator(
-        new ScreenEventGeneratorDelegate(ash::wm::GetRootWindowAt(point))));
+        new ScreenEventGeneratorDelegate(ash::wm::WmWindowAura::GetAuraWindow(
+            ash::wm::GetRootWindowAt(point)))));
 #endif
   }
 

@@ -2,14 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_COORDINATE_CONVERSION_H_
-#define ASH_WM_COORDINATE_CONVERSION_H_
+#ifndef ASH_WM_COMMON_ROOT_WINDOW_FINDER_H_
+#define ASH_WM_COMMON_ROOT_WINDOW_FINDER_H_
 
 #include "ash/ash_export.h"
-
-namespace aura {
-class Window;
-}  // namespace gfx
 
 namespace gfx {
 class Point;
@@ -19,16 +15,18 @@ class Rect;
 namespace ash {
 namespace wm {
 
+class WmWindow;
+
 // Returns the RootWindow at |point| in the virtual screen coordinates.
 // Returns NULL if the root window does not exist at the given
 // point.
-ASH_EXPORT aura::Window* GetRootWindowAt(const gfx::Point& point);
+ASH_EXPORT WmWindow* GetRootWindowAt(const gfx::Point& point);
 
 // Returns the RootWindow that shares the most area with |rect| in
 // the virtual scren coordinates.
-ASH_EXPORT aura::Window* GetRootWindowMatching(const gfx::Rect& rect);
+ASH_EXPORT WmWindow* GetRootWindowMatching(const gfx::Rect& rect);
 
 }  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_COORDINATE_CONVERSION_H_
+#endif  // ASH_WM_COMMON_ROOT_WINDOW_FINDER_H_

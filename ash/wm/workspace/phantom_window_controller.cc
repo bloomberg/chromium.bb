@@ -8,7 +8,8 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/aura/wm_window_aura.h"
+#include "ash/wm/common/root_window_finder.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -97,7 +98,8 @@ void PhantomWindowController::Show(const gfx::Rect& bounds_in_screen) {
       floor((start_bounds_in_screen.width() - start_width) / 2.0f),
       floor((start_bounds_in_screen.height() - start_height) / 2.0f));
   phantom_widget_ = CreatePhantomWidget(
-      wm::GetRootWindowMatching(target_bounds_in_screen_),
+      wm::WmWindowAura::GetAuraWindow(
+          wm::GetRootWindowMatching(target_bounds_in_screen_)),
       start_bounds_in_screen);
 
   AnimateToBounds(phantom_widget_.get(), target_bounds_in_screen_);

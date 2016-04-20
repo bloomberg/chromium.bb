@@ -19,7 +19,6 @@
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
-#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"

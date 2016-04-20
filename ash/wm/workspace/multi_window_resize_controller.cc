@@ -471,7 +471,7 @@ void MultiWindowResizeController::Resize(const gfx::Point& location_in_screen,
 
 void MultiWindowResizeController::CompleteResize() {
   window_resizer_->CompleteDrag();
-  wm::GetWindowState(window_resizer_->GetTarget())->DeleteDragDetails();
+  wm::GetWindowState(window_resizer_->GetAuraTarget())->DeleteDragDetails();
   window_resizer_.reset();
 
   // Mouse may still be over resizer, if not hide.
@@ -494,7 +494,7 @@ void MultiWindowResizeController::CancelResize() {
   if (!window_resizer_)
     return;  // Happens if window was destroyed and we nuked the WindowResizer.
   window_resizer_->RevertDrag();
-  wm::GetWindowState(window_resizer_->GetTarget())->DeleteDragDetails();
+  wm::GetWindowState(window_resizer_->GetAuraTarget())->DeleteDragDetails();
   window_resizer_.reset();
   Hide();
 }

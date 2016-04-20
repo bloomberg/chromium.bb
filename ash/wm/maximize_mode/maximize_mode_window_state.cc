@@ -12,7 +12,6 @@
 #include "ash/wm/common/window_animation_types.h"
 #include "ash/wm/common/window_state_util.h"
 #include "ash/wm/common/wm_event.h"
-#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"

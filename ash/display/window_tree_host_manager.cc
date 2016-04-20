@@ -28,7 +28,6 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"

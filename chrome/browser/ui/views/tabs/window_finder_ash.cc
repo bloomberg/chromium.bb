@@ -5,7 +5,8 @@
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 
 #include "ash/shell_window_ids.h"
-#include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/aura/wm_window_aura.h"
+#include "ash/wm/common/root_window_finder.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -56,5 +57,6 @@ gfx::NativeWindow GetLocalProcessWindowAtPointAsh(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeWindow>& ignore) {
   return GetLocalProcessWindowAtPointImpl(
-      screen_point, ignore, ::ash::wm::GetRootWindowAt(screen_point));
+      screen_point, ignore, ash::wm::WmWindowAura::GetAuraWindow(
+                                ash::wm::GetRootWindowAt(screen_point)));
 }

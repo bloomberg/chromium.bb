@@ -27,7 +27,8 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/aura/wm_window_aura.h"
+#include "ash/wm/common/root_window_finder.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"
 #include "grit/ash_strings.h"
@@ -651,7 +652,9 @@ bool ShelfView::StartDrag(const std::string& app_id,
   views::View::ConvertPointFromScreen(drag_and_drop_view, &pt);
   gfx::Point point_in_root = location_in_screen_coordinates;
   ::wm::ConvertPointFromScreen(
-      ash::wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
+      wm::WmWindowAura::GetAuraWindow(
+          ash::wm::GetRootWindowAt(location_in_screen_coordinates)),
+      &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_PRESSED, pt, point_in_root,
                        ui::EventTimeForNow(), 0, 0);
   PointerPressedOnButton(drag_and_drop_view, DRAG_AND_DROP, event);
@@ -672,7 +675,9 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
   ConvertPointFromScreen(drag_and_drop_view, &pt);
   gfx::Point point_in_root = location_in_screen_coordinates;
   ::wm::ConvertPointFromScreen(
-      ash::wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
+      wm::WmWindowAura::GetAuraWindow(
+          ash::wm::GetRootWindowAt(location_in_screen_coordinates)),
+      &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, point_in_root,
                        ui::EventTimeForNow(), 0, 0);
   PointerDraggedOnButton(drag_and_drop_view, DRAG_AND_DROP, event);
