@@ -19,10 +19,10 @@
       }
     </style>
     <settings-dialog id="dialog">
-      <div class="title" i18n-content="clearBrowsingData"></div>
+      <div class="title">$i18n{clearBrowsingData}</div>
       <div class="body">
         <div class="row">
-          <span class="start" i18n-content="clearFollowingItemsFrom"></span>
+          <span class="start">$i18n{clearFollowingItemsFrom}</span>
           <settings-dropdown-menu id="clearFrom"
               pref="{{prefs.browser.clear_data.time_period}}"
               menu-options="[[clearFromOptions_]]" no-label-float>
@@ -30,48 +30,49 @@
         </div>
         <settings-checkbox id="browsingCheckbox"
             pref="{{prefs.browser.clear_data.browsing_history}}"
-            i18n-values="label:clearBrowsingHistory">
+            label="$i18n{clearBrowsingHistory}">
         </settings-checkbox>
         <settings-checkbox id="downloadCheckbox"
             pref="{{prefs.browser.clear_data.download_history}}"
-            i18n-values="label:clearDownloadHistory">
+            label="$i18n{clearDownloadHistory}">
         </settings-checkbox>
         <settings-checkbox
             pref="{{prefs.browser.clear_data.cache}}"
-            i18n-values="label:clearCache">
+            label="$i18n{clearCache}">
         </settings-checkbox>
         <settings-checkbox
             pref="{{prefs.browser.clear_data.cookies}}"
-            i18n-values="label:clearCookies">
+            label="$i18n{clearCookies}">
         </settings-checkbox>
         <settings-checkbox
             pref="{{prefs.browser.clear_data.passwords}}"
-            i18n-values="label:clearPasswords">
+            label="$i18n{clearPasswords}">
         </settings-checkbox>
         <settings-checkbox
             pref="{{prefs.browser.clear_data.form_data}}"
-            i18n-values="label:clearFormData">
+            label="$i18n{clearFormData}">
         </settings-checkbox>
         <settings-checkbox
             pref="{{prefs.browser.clear_data.hosted_apps_data}}"
-            i18n-values="label:clearHostedAppData">
+            label="$i18n{clearHostedAppData}">
         </settings-checkbox>
         <settings-checkbox
             pref="{{prefs.browser.clear_data.content_licenses}}"
-            i18n-values="label:clearDeauthorizeContentLicenses">
+            label="$i18n{clearDeauthorizeContentLicenses}">
         </settings-checkbox>
       </div>
       <div class="button-container">
         <paper-spinner active="[[clearingInProgress_]]"></paper-spinner>
-        <paper-button class="cancel-button" i18n-content="cancel"
-            dialog-dismiss disabled="[[clearingInProgress_]]"></paper-button>
-        <paper-button class="action-button" i18n-content="clearBrowsingData"
-            on-tap="onClearBrowsingDataTap_" disabled="[[clearingInProgress_]]">
+        <paper-button class="cancel-button" disabled="[[clearingInProgress_]]"
+            dialog-dismiss>$i18n{cancel}</paper-button>
+        <paper-button class="action-button" disabled="[[clearingInProgress_]]"
+            on-tap="onClearBrowsingDataTap_">
+          $i18n{clearBrowsingData}
         </paper-button>
       </div>
       <div class="footer">
-        <span i18n-content="warnAboutNonClearedData"></span>
-        <span i18n-content="clearsSyncedData"></span>
+        <span>$i18n{warnAboutNonClearedData}</span>
+        <span>$i18n{clearsSyncedData}</span>
       </div>
     </settings-dialog>
   </template>
