@@ -219,7 +219,11 @@ def UnzipDirectoryContent(archive_path, directory_dest_path):
           f.write(zip_input.read(file_archive_name))
 
     assert timestamps
-    for relative_path, stats in timestamps.iteritems():
+    # os.utime(file_path, ...) modifies modification time of file_path's parent
+    # directories. Therefore we call os.utime on files and directories that have
+    # longer relative paths first.
+    for relative_path in sorted(timestamps.keys(), key=len, reverse=True):
+      stats = timestamps[relative_path]
       output_path = os.path.join(directory_dest_path, relative_path)
       if not os.path.exists(output_path):
         os.makedirs(output_path)
