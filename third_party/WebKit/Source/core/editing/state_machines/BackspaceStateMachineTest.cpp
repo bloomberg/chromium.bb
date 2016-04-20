@@ -49,9 +49,9 @@ TEST(BackspaceStateMachineTest, SurrogatePair)
 {
     BackspaceStateMachine machine;
 
-    // U+1F5FA(WORLD MAP) is \uD83D\uDDFA in UTF-16.
-    const UChar leadSurrogate = 0xD83D;
-    const UChar trailSurrogate = 0xDDFA;
+    // U+20BB7 is \uD83D\uDDFA in UTF-16.
+    const UChar leadSurrogate = 0xD842;
+    const UChar trailSurrogate = 0xDFB7;
 
     EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(trailSurrogate));
     EXPECT_EQ(kFinished, machine.feedPrecedingCodeUnit(leadSurrogate));
@@ -433,10 +433,10 @@ TEST(BackspaceStateMachineTest, VariationSequencec)
 {
     BackspaceStateMachine machine;
 
-    UChar vs16 = 0xFE0F;
-    UChar vs16Base = '0';
-    UChar vs16BaseLead = 0xD83C;
-    UChar vs16BaseTrail = 0xDD70;
+    UChar vs01 = 0xFE00;
+    UChar vs01Base = 0xA85E;
+    UChar vs01BaseLead = 0xD802;
+    UChar vs01BaseTrail = 0xDEC6;
 
     UChar vs17Lead = 0xDB40;
     UChar vs17Trail = 0xDD00;
@@ -453,8 +453,8 @@ TEST(BackspaceStateMachineTest, VariationSequencec)
 
     // VS_BASE + VS
     machine.reset();
-    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(vs16));
-    EXPECT_EQ(kFinished, machine.feedPrecedingCodeUnit(vs16Base));
+    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(vs01));
+    EXPECT_EQ(kFinished, machine.feedPrecedingCodeUnit(vs01Base));
     EXPECT_EQ(-2, machine.finalizeAndGetBoundaryOffset());
     EXPECT_EQ(-2, machine.finalizeAndGetBoundaryOffset());
 
@@ -468,9 +468,9 @@ TEST(BackspaceStateMachineTest, VariationSequencec)
 
     // VS_BASE(surrogate pairs) + VS
     machine.reset();
-    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(vs16));
-    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(vs16BaseTrail));
-    EXPECT_EQ(kFinished, machine.feedPrecedingCodeUnit(vs16BaseLead));
+    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(vs01));
+    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(vs01BaseTrail));
+    EXPECT_EQ(kFinished, machine.feedPrecedingCodeUnit(vs01BaseLead));
     EXPECT_EQ(-3, machine.finalizeAndGetBoundaryOffset());
     EXPECT_EQ(-3, machine.finalizeAndGetBoundaryOffset());
 
@@ -493,7 +493,7 @@ TEST(BackspaceStateMachineTest, VariationSequencec)
     // Followings are edge case. Delete only variation selector.
     // Not VS_BASE + VS
     machine.reset();
-    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(vs16));
+    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(vs01));
     EXPECT_EQ(kFinished, machine.feedPrecedingCodeUnit(notvsBase));
     EXPECT_EQ(-1, machine.finalizeAndGetBoundaryOffset());
     EXPECT_EQ(-1, machine.finalizeAndGetBoundaryOffset());
@@ -508,7 +508,7 @@ TEST(BackspaceStateMachineTest, VariationSequencec)
 
     // Not VS_BASE(surrogate pairs) + VS
     machine.reset();
-    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(vs16));
+    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(vs01));
     EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(notvsBaseTrail));
     EXPECT_EQ(kFinished, machine.feedPrecedingCodeUnit(notvsBaseLead));
     EXPECT_EQ(-1, machine.finalizeAndGetBoundaryOffset());
@@ -540,7 +540,7 @@ TEST(BackspaceStateMachineTest, VariationSequencec)
 
     // Sot + VS
     machine.reset();
-    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(vs16));
+    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(vs01));
     EXPECT_EQ(-1, machine.finalizeAndGetBoundaryOffset());
     EXPECT_EQ(-1, machine.finalizeAndGetBoundaryOffset());
 

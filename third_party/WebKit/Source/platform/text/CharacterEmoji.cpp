@@ -84,6 +84,11 @@ static void applyPatternAndFreeze(icu::UnicodeSet* unicodeSet, const char* patte
     ASSERT(err == U_ZERO_ERROR);
 }
 
+bool Character::isEmoji(UChar32 ch)
+{
+    return Character::isEmojiTextDefault(ch) || Character::isEmojiEmojiDefault(ch);
+}
+
 bool Character::isEmojiTextDefault(UChar32 ch)
 {
     DEFINE_STATIC_LOCAL(icu::UnicodeSet, emojiTextSet, ());

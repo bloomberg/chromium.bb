@@ -11,23 +11,6 @@
 
 namespace blink {
 
-namespace {
-
-// Returns true if the code point can be a part of ZWJ sequence.
-bool isZwjEmoji(uint32_t codePoint)
-{
-    return codePoint == WTF::Unicode::boyCharacter
-        || codePoint == WTF::Unicode::eyeCharacter
-        || codePoint == WTF::Unicode::girlCharacter
-        || codePoint == WTF::Unicode::heavyBlackHeartCharacter
-        || codePoint == WTF::Unicode::kissMarkCharacter
-        || codePoint == WTF::Unicode::leftSpeechBubbleCharacter
-        || codePoint == WTF::Unicode::manCharacter
-        || codePoint == WTF::Unicode::womanCharacter;
-}
-
-} // namespace
-
 #define FOR_EACH_BACKSPACE_STATE_MACHINE_STATE(V)                          \
     /* Initial state */                                                    \
     V(Start)                                                               \
@@ -118,12 +101,12 @@ BackspaceStateMachine::feedPrecedingCodeUnit(UChar codeUnit)
             return moveToNextState(BackspaceState::BeforeLF);
         if (u_hasBinaryProperty(codePoint, UCHAR_VARIATION_SELECTOR))
             return moveToNextState(BackspaceState::BeforeVS);
-        if (isZwjEmoji(codePoint))
-            return moveToNextState(BackspaceState::BeforeZWJEmoji);
         if (Character::isRegionalIndicator(codePoint))
             return moveToNextState(BackspaceState::OddNumberedRIS);
         if (Character::isModifier(codePoint))
             return moveToNextState(BackspaceState::BeforeEmojiModifier);
+        if (Character::isEmoji(codePoint))
+            return moveToNextState(BackspaceState::BeforeZWJEmoji);
         if (codePoint == combiningEnclosingKeycapCharacter)
             return moveToNextState(BackspaceState::BeforeKeycap);
         return finish();
@@ -166,7 +149,7 @@ BackspaceStateMachine::feedPrecedingCodeUnit(UChar codeUnit)
         }
         return finish();
     case BackspaceState::BeforeVS:
-        if (isZwjEmoji(codePoint)) {
+        if (Character::isEmoji(codePoint)) {
             m_codeUnitsToBeDeleted += U16_LENGTH(codePoint);
             return moveToNextState(BackspaceState::BeforeZWJEmoji);
         }
@@ -178,7 +161,7 @@ BackspaceStateMachine::feedPrecedingCodeUnit(UChar codeUnit)
         return codePoint == zeroWidthJoinerCharacter ?
             moveToNextState(BackspaceState::BeforeZWJ) : finish();
     case BackspaceState::BeforeZWJ:
-        if (isZwjEmoji(codePoint)) {
+        if (Character::isEmoji(codePoint)) {
             m_codeUnitsToBeDeleted += U16_LENGTH(codePoint) + 1; // +1 for ZWJ
             return moveToNextState(BackspaceState::BeforeZWJEmoji);
         }
@@ -189,7 +172,7 @@ BackspaceStateMachine::feedPrecedingCodeUnit(UChar codeUnit)
         }
         return finish();
     case BackspaceState::BeforeVSAndZWJ:
-        if (!isZwjEmoji(codePoint))
+        if (!Character::isEmoji(codePoint))
             return finish();
 
         DCHECK_GT(m_lastSeenVSCodeUnits, 0);

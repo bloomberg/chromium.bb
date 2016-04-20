@@ -542,6 +542,15 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
     EXPECT_EQ(4, nextGraphemeBoundaryOf(node, 0));
     EXPECT_EQ(5, nextGraphemeBoundaryOf(node, 4));
 
+    // Not only Glue_After_ZWJ or EBG but also other emoji shouldn't break
+    // before ZWJ.
+    // U+1F5FA(WORLD MAP) doesn't have either Glue_After_Zwj or EBG but has
+    // Emoji property.
+    setBodyContent("<p id='target'>&#x200D;&#x1F5FA;</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(0, previousGraphemeBoundaryOf(node, 3));
+    EXPECT_EQ(3, nextGraphemeBoundaryOf(node, 0));
+
     // GB999: Otherwise break everywhere.
     // Breaks between Hangul syllable except for GB6, GB7, GB8.
     setBodyContent("<p id='target'>" + L + T + "</p>");
@@ -618,9 +627,9 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
 
     // For GB11, if trailing character is not Glue_After_Zwj or EBG, break happens after ZWJ.
     // U+1F5FA(WORLD MAP) doesn't have either Glue_After_Zwj or EBG.
-    setBodyContent("<p id='target'>&#x200D;&#x1F5FA;</p>");
+    setBodyContent("<p id='target'>&#x200D;a</p>");
     node = document().getElementById("target")->firstChild();
-    EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 3));
+    EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 2));
     EXPECT_EQ(1, nextGraphemeBoundaryOf(node, 0));
 }
 

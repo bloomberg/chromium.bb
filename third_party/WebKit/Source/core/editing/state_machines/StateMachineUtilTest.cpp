@@ -135,16 +135,23 @@ TEST(StateMachineUtilTest, IsGraphmeBreak_ZWJSequecne)
     const UChar32 kGlueAfterZwj = 0x2764;
     // U+1F466 (BOY) has E_Base_GAZ grapheme property.
     const UChar32 kEBaseGAZ = 0x1F466;
+    // U+1F5FA (WORLD MAP) doesn'T have Glue_After_Zwj or E_Base_GAZ property
+    // but has Emoji property.
+    const UChar32 kEmoji = 0x1F5FA;
 
     // Grapheme Cluster Boundary Rule GB11: ZWJ x (Glue_After_Zwj | EBG)
     EXPECT_FALSE(isGraphemeBreak(WTF::Unicode::zeroWidthJoinerCharacter,
         kGlueAfterZwj));
     EXPECT_FALSE(isGraphemeBreak(WTF::Unicode::zeroWidthJoinerCharacter,
         kEBaseGAZ));
+    EXPECT_FALSE(isGraphemeBreak(WTF::Unicode::zeroWidthJoinerCharacter,
+        kEmoji));
 
     EXPECT_TRUE(isGraphemeBreak(kGlueAfterZwj, kEBaseGAZ));
     EXPECT_TRUE(isGraphemeBreak(kGlueAfterZwj, kGlueAfterZwj));
     EXPECT_TRUE(isGraphemeBreak(kEBaseGAZ, kGlueAfterZwj));
+
+    EXPECT_TRUE(isGraphemeBreak(WTF::Unicode::zeroWidthJoinerCharacter, 'a'));
 }
 
 TEST(StateMachineUtilTest, IsGraphmeBreak_IndicSyllabicCategoryVirama)

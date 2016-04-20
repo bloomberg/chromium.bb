@@ -13,15 +13,6 @@ namespace blink {
 
 namespace {
 
-// Returns true if the code point has Glue_After_Zwj grapheme break property.
-// See http://www.unicode.org/Public/9.0.0/ucd/auxiliary/GraphemeBreakProperty-9.0.0d18.txt
-bool isGlueAfterZwj(uint32_t codePoint)
-{
-    return codePoint == WTF::Unicode::heavyBlackHeartCharacter
-        || codePoint == WTF::Unicode::kissMarkCharacter
-        || codePoint == WTF::Unicode::leftSpeechBubbleCharacter;
-}
-
 // Returns true if the code point has E_Basae_GAZ grapheme break property.
 // See http://www.unicode.org/Public/9.0.0/ucd/auxiliary/GraphemeBreakProperty-9.0.0d18.txt
 bool isEBaseGAZ(uint32_t codePoint)
@@ -128,9 +119,9 @@ bool isGraphemeBreak(UChar32 prevCodePoint, UChar32 nextCodePoint)
         && Character::isModifier(nextCodePoint))
         return false;
 
-    // Proposed Rule GB11, ZWJ x (Glue_After_Zwj | EBG)
+    // Proposed Rule GB11, ZWJ x Emoji
     if (prevCodePoint == zeroWidthJoinerCharacter
-        && (isGlueAfterZwj(nextCodePoint) || isEBaseGAZ(nextCodePoint)))
+        && (Character::isEmoji(nextCodePoint)))
         return false;
 
     // Rule GB999 any ÷ any

@@ -112,6 +112,9 @@ public:
         return u_hasBinaryProperty(c, UCHAR_GRAPHEME_EXTEND);
     }
 
+    // Returns true if the character has a Emoji property.
+    // See http://www.unicode.org/Public/emoji/3.0/emoji-data.txt
+    static bool isEmoji(UChar32);
     // Default presentation style according to:
     // http://www.unicode.org/reports/tr51/#Presentation_Style
     static bool isEmojiTextDefault(UChar32);
