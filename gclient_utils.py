@@ -1084,7 +1084,11 @@ def RunEditor(content, git, git_editor=None):
         '!! Please remove \\r from your change description !!')
   fileobj = os.fdopen(file_handle, 'w')
   # Still remove \r if present.
-  fileobj.write(re.sub('\r?\n', '\n', content))
+  content = re.sub('\r?\n', '\n', content)
+  # Some editors complain when the file doesn't end in \n.
+  if not content.endswith('\n'):
+    content += '\n'
+  fileobj.write(content)
   fileobj.close()
 
   try:
