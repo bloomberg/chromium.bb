@@ -147,8 +147,8 @@ void NotificationUIManagerMac::Add(const Notification& notification,
       DCHECK(
           [toast respondsToSelector:@selector(_alternateActionButtonTitles)]);
 
-      // utf8 ellipsis:
-      [toast setActionButtonTitle:@"\u2026"];
+      [toast setActionButtonTitle:l10n_util::GetNSString(
+                                      IDS_NOTIFICATION_BUTTON_OPTIONS)];
       [toast setValue:@YES
                forKey:@"_alwaysShowAlternateActionMenu"];
 
