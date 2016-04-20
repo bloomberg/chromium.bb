@@ -166,6 +166,19 @@ function createCustomType(type) {
   var jsModuleName = type.js_module;
   logging.CHECK(jsModuleName, 'Custom type ' + type.id +
                 ' has no "js_module" property.');
+  // This list contains all types that has a js_module property. It is ugly to
+  // hard-code them here, but the number of APIs that use js_module has not
+  // changed since the introduction of js_modules in crbug.com/222156.
+  // This whitelist serves as an extra line of defence to avoid exposing
+  // arbitrary extension modules when the |type| definition is poisoned.
+  var whitelistedModules = [
+    'ChromeDirectSetting',
+    'ChromeSetting',
+    'ContentSetting',
+    'StorageArea',
+  ];
+  logging.CHECK($Array.indexOf(whitelistedModules, jsModuleName) !== -1,
+                'Module ' + jsModuleName + ' does not define a custom type.');
   var jsModule = require(jsModuleName);
   logging.CHECK(jsModule, 'No module ' + jsModuleName + ' found for ' +
                 type.id + '.');
