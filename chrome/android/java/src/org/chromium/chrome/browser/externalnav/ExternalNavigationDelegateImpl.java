@@ -127,6 +127,10 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                             } else if (PDF_VIEWER.equals(pName)) {
                                 if (isPdfIntent(intent)) {
                                     intent.setClassName(pName, resolveInfo.activityInfo.name);
+                                    Uri referrer = new Uri.Builder().scheme(
+                                            IntentHandler.ANDROID_APP_REFERRER_SCHEME).authority(
+                                                    packageName).build();
+                                    intent.putExtra(Intent.EXTRA_REFERRER, referrer);
                                     hasPdfViewer = true;
                                     break;
                                 }

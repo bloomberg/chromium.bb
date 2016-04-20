@@ -29,7 +29,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.content.browser.DownloadController;
 import org.chromium.content.browser.DownloadInfo;
@@ -979,10 +978,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
         launchIntent.setDataAndType(uri, manager.getMimeTypeForDownloadedFile(downloadId));
         launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        Uri referrer = new Uri.Builder().scheme(
-                IntentHandler.ANDROID_APP_REFERRER_SCHEME).authority(
-                        context.getPackageName()).build();
-        launchIntent.putExtra(Intent.EXTRA_REFERRER, referrer);
         return launchIntent;
     }
 
