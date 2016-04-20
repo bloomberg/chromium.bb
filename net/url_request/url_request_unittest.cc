@@ -1906,6 +1906,8 @@ LoadTimingInfo RunURLRequestInterceptorLoadTimingTest(
   EXPECT_EQ(job_load_timing.send_end, resulting_load_timing.send_end);
   EXPECT_EQ(job_load_timing.receive_headers_end,
             resulting_load_timing.receive_headers_end);
+  EXPECT_EQ(job_load_timing.push_start, resulting_load_timing.push_start);
+  EXPECT_EQ(job_load_timing.push_end, resulting_load_timing.push_end);
 
   return resulting_load_timing;
 }

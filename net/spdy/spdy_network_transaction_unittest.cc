@@ -606,6 +606,16 @@ class SpdyNetworkTransactionTest
     EXPECT_TRUE(data->AllReadDataConsumed());
     EXPECT_TRUE(data->AllWriteDataConsumed());
 
+    LoadTimingInfo load_timing_info;
+    EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+    EXPECT_TRUE(load_timing_info.push_start.is_null());
+    EXPECT_TRUE(load_timing_info.push_end.is_null());
+
+    LoadTimingInfo load_timing_info2;
+    EXPECT_TRUE(trans2->GetLoadTimingInfo(&load_timing_info2));
+    EXPECT_FALSE(load_timing_info2.push_start.is_null());
+    EXPECT_FALSE(load_timing_info2.push_end.is_null());
+
     // Verify that the received push data is same as the expected push data.
     EXPECT_EQ(result2.compare(expected), 0) << "Received data: "
                                             << result2

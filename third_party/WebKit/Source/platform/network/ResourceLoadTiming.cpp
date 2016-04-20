@@ -23,6 +23,8 @@ ResourceLoadTiming::ResourceLoadTiming()
     , m_receiveHeadersEnd(0)
     , m_sslStart(0)
     , m_sslEnd(0)
+    , m_pushStart(0)
+    , m_pushEnd(0)
 {
 }
 
@@ -48,6 +50,8 @@ PassRefPtr<ResourceLoadTiming> ResourceLoadTiming::deepCopy()
     timing->m_receiveHeadersEnd = m_receiveHeadersEnd;
     timing->m_sslStart = m_sslStart;
     timing->m_sslEnd = m_sslEnd;
+    timing->m_pushStart = m_pushStart;
+    timing->m_pushEnd = m_pushEnd;
     return timing.release();
 }
 
@@ -66,7 +70,9 @@ bool ResourceLoadTiming::operator==(const ResourceLoadTiming& other) const
         && m_sendEnd == other.m_sendEnd
         && m_receiveHeadersEnd == other.m_receiveHeadersEnd
         && m_sslStart == other.m_sslStart
-        && m_sslEnd == other.m_sslEnd;
+        && m_sslEnd == other.m_sslEnd
+        && m_pushStart == other.m_pushStart
+        && m_pushEnd == other.m_pushEnd;
 }
 
 bool ResourceLoadTiming::operator!=(const ResourceLoadTiming& other) const
@@ -143,6 +149,16 @@ void ResourceLoadTiming::setSslStart(double sslStart)
 void ResourceLoadTiming::setSslEnd(double sslEnd)
 {
     m_sslEnd = sslEnd;
+}
+
+void ResourceLoadTiming::setPushStart(double pushStart)
+{
+    m_pushStart = pushStart;
+}
+
+void ResourceLoadTiming::setPushEnd(double pushEnd)
+{
+    m_pushEnd = pushEnd;
 }
 
 double ResourceLoadTiming::calculateMillisecondDelta(double time) const

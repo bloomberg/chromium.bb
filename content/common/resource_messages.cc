@@ -226,6 +226,8 @@ void ParamTraits<net::LoadTimingInfo>::Write(base::Pickle* m,
   WriteParam(m, p.send_start);
   WriteParam(m, p.send_end);
   WriteParam(m, p.receive_headers_end);
+  WriteParam(m, p.push_start);
+  WriteParam(m, p.push_end);
 }
 
 bool ParamTraits<net::LoadTimingInfo>::Read(const base::Pickle* m,
@@ -253,7 +255,9 @@ bool ParamTraits<net::LoadTimingInfo>::Read(const base::Pickle* m,
       ReadParam(m, iter, &r->connect_timing.ssl_end) &&
       ReadParam(m, iter, &r->send_start) &&
       ReadParam(m, iter, &r->send_end) &&
-      ReadParam(m, iter, &r->receive_headers_end);
+      ReadParam(m, iter, &r->receive_headers_end) &&
+      ReadParam(m, iter, &r->push_start) &&
+      ReadParam(m, iter, &r->push_end);
 }
 
 void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
@@ -288,6 +292,10 @@ void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
   LogParam(p.send_end, l);
   l->append(", ");
   LogParam(p.receive_headers_end, l);
+  l->append(", ");
+  LogParam(p.push_start, l);
+  l->append(", ");
+  LogParam(p.push_end, l);
   l->append(")");
 }
 

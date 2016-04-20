@@ -98,6 +98,12 @@ public:
     BLINK_PLATFORM_EXPORT double sslEnd() const;
     BLINK_PLATFORM_EXPORT void setSSLEnd(double);
 
+    BLINK_PLATFORM_EXPORT double pushStart() const;
+    BLINK_PLATFORM_EXPORT void setPushStart(double);
+
+    BLINK_PLATFORM_EXPORT double pushEnd() const;
+    BLINK_PLATFORM_EXPORT void setPushEnd(double);
+
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebURLLoadTiming(const WTF::PassRefPtr<ResourceLoadTiming>&);
     BLINK_PLATFORM_EXPORT WebURLLoadTiming& operator=(const WTF::PassRefPtr<ResourceLoadTiming>&);

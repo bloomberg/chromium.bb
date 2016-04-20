@@ -281,6 +281,8 @@ static PassOwnPtr<protocol::Network::ResourceTiming> buildObjectForTiming(const 
         .setSendStart(timing.calculateMillisecondDelta(timing.sendStart()))
         .setSendEnd(timing.calculateMillisecondDelta(timing.sendEnd()))
         .setReceiveHeadersEnd(timing.calculateMillisecondDelta(timing.receiveHeadersEnd()))
+        .setPushStart(timing.pushStart())
+        .setPushEnd(timing.pushEnd())
         .build();
 }
 

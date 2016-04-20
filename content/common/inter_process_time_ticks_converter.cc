@@ -52,9 +52,16 @@ LocalTimeTicks InterProcessTimeTicksConverter::ToLocalTimeTicks(
   // If input time is "null", return another "null" time.
   if (remote_ms.value_ == 0)
     return LocalTimeTicks(0);
-  DCHECK_LE(remote_lower_bound_, remote_ms.value_);
-  DCHECK_GE(remote_upper_bound_, remote_ms.value_);
+
   RemoteTimeDelta remote_delta = remote_ms - remote_lower_bound_;
+
+  DCHECK_LE(remote_ms.value_, remote_upper_bound_);
+  // For remote times that come before remote time range, apply just time
+  // offset and ignore scaling, so as to avoid extrapolation error for values
+  // long in the past.
+  if (remote_ms.value_ < remote_lower_bound_)
+    return LocalTimeTicks(local_base_time_ + remote_delta.value_);
+
   return LocalTimeTicks(local_base_time_ +
                         ToLocalTimeDelta(remote_delta).value_);
 }

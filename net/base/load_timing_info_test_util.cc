@@ -54,6 +54,8 @@ void ExpectLoadTimingHasOnlyConnectionTimes(
   EXPECT_TRUE(load_timing_info.send_start.is_null());
   EXPECT_TRUE(load_timing_info.send_end.is_null());
   EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
+  EXPECT_TRUE(load_timing_info.push_start.is_null());
+  EXPECT_TRUE(load_timing_info.push_end.is_null());
 }
 
 }  // namespace net

@@ -128,6 +128,8 @@ void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
       (load_timing.send_end - kNullTicks).InSecondsF());
   url_timing->setReceiveHeadersEnd(
       (load_timing.receive_headers_end - kNullTicks).InSecondsF());
+  url_timing->setPushStart((load_timing.push_start - kNullTicks).InSecondsF());
+  url_timing->setPushEnd((load_timing.push_end - kNullTicks).InSecondsF());
 }
 
 net::RequestPriority ConvertWebKitPriorityToNetPriority(

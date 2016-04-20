@@ -135,6 +135,13 @@ class SpdyStreamTest : public ::testing::Test,
     return writes_.size();
   }
 
+  void ActivatePushStream(SpdySession* session, SpdyStream* stream) {
+    std::unique_ptr<SpdyStream> activated =
+        session->ActivateCreatedStream(stream);
+    activated->set_stream_id(2);
+    session->InsertActivatedStream(std::move(activated));
+  }
+
   SpdyTestUtil spdy_util_;
   SpdySessionDependencies session_deps_;
   std::unique_ptr<HttpNetworkSession> session_;
@@ -305,36 +312,51 @@ TEST_P(SpdyStreamTest, PushedStream) {
   base::WeakPtr<SpdySession> spdy_session(CreateDefaultSpdySession());
 
   // Conjure up a stream.
-  SpdyStream stream(SPDY_PUSH_STREAM, spdy_session, GURL(), DEFAULT_PRIORITY,
-                    SpdySession::GetDefaultInitialWindowSize(kProtoSPDY31),
-                    SpdySession::GetDefaultInitialWindowSize(kProtoSPDY31),
-                    BoundNetLog());
-  stream.set_stream_id(2);
-  EXPECT_FALSE(stream.HasUrlFromHeaders());
+  SpdyStreamRequest stream_request;
+  int result = stream_request.StartRequest(SPDY_PUSH_STREAM, spdy_session,
+                                           GURL(), DEFAULT_PRIORITY,
+                                           BoundNetLog(), CompletionCallback());
+  ASSERT_EQ(OK, result);
+  base::WeakPtr<SpdyStream> stream = stream_request.ReleaseStream();
+  ActivatePushStream(spdy_session.get(), stream.get());
+
+  EXPECT_FALSE(stream->HasUrlFromHeaders());
 
   // Set required request headers.
   SpdyHeaderBlock request_headers;
   spdy_util_.AddUrlToHeaderBlock(kStreamUrl, &request_headers);
-  stream.OnPushPromiseHeadersReceived(request_headers);
+  stream->OnPushPromiseHeadersReceived(request_headers);
 
+  base::Time response_time = base::Time::Now();
+  base::TimeTicks first_byte_time = base::TimeTicks::Now();
   // Send some basic response headers.
   SpdyHeaderBlock response;
   response[spdy_util_.GetStatusKey()] = "200";
   response[spdy_util_.GetVersionKey()] = "OK";
-  stream.OnInitialResponseHeadersReceived(
-      response, base::Time::Now(), base::TimeTicks::Now());
+  stream->OnInitialResponseHeadersReceived(response, response_time,
+                                           first_byte_time);
 
   // And some more headers.
   // TODO(baranovich): not valid for HTTP 2.
   SpdyHeaderBlock headers;
   headers["alpha"] = "beta";
-  stream.OnAdditionalResponseHeadersReceived(headers);
+  stream->OnAdditionalResponseHeadersReceived(headers);
 
-  EXPECT_TRUE(stream.HasUrlFromHeaders());
-  EXPECT_EQ(kStreamUrl, stream.GetUrlFromHeaders().spec());
+  EXPECT_TRUE(stream->HasUrlFromHeaders());
+  EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
-  StreamDelegateDoNothing delegate(stream.GetWeakPtr());
-  stream.SetDelegate(&delegate);
+  StreamDelegateDoNothing delegate(stream->GetWeakPtr());
+  stream->SetDelegate(&delegate);
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(stream->GetLoadTimingInfo(&load_timing_info));
+  EXPECT_EQ(first_byte_time, load_timing_info.push_start);
+  EXPECT_TRUE(load_timing_info.push_end.is_null());
+
+  stream->OnDataReceived(nullptr);
+  LoadTimingInfo load_timing_info2;
+  EXPECT_TRUE(stream->GetLoadTimingInfo(&load_timing_info2));
+  EXPECT_FALSE(load_timing_info2.push_end.is_null());
 
   base::RunLoop().RunUntilIdle();
 

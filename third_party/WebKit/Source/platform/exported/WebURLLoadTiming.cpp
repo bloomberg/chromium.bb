@@ -190,6 +190,26 @@ void WebURLLoadTiming::setSSLEnd(double end)
     m_private->setSslEnd(end);
 }
 
+double WebURLLoadTiming::pushStart() const
+{
+    return m_private->pushStart();
+}
+
+void WebURLLoadTiming::setPushStart(double start)
+{
+    m_private->setPushStart(start);
+}
+
+double WebURLLoadTiming::pushEnd() const
+{
+    return m_private->pushEnd();
+}
+
+void WebURLLoadTiming::setPushEnd(double end)
+{
+    m_private->setPushEnd(end);
+}
+
 WebURLLoadTiming::WebURLLoadTiming(const PassRefPtr<ResourceLoadTiming>& value)
     : m_private(value)
 {

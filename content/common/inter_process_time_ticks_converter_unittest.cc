@@ -249,6 +249,32 @@ TEST(InterProcessTimeTicksConverterTest, DisjointRanges) {
   EXPECT_EQ(0, results.result_delta);
 }
 
+TEST(InterProcessTimeTicksConverterTest, ValuesOutsideOfRange) {
+  InterProcessTimeTicksConverter converter(
+      LocalTimeTicks::FromTimeTicks(TimeTicks::FromInternalValue(15)),
+      LocalTimeTicks::FromTimeTicks(TimeTicks::FromInternalValue(20)),
+      RemoteTimeTicks::FromTimeTicks(TimeTicks::FromInternalValue(10)),
+      RemoteTimeTicks::FromTimeTicks(TimeTicks::FromInternalValue(25)));
+
+  RemoteTimeTicks remote_ticks =
+      RemoteTimeTicks::FromTimeTicks(TimeTicks::FromInternalValue(10));
+  int64_t result =
+      converter.ToLocalTimeTicks(remote_ticks).ToTimeTicks().ToInternalValue();
+  EXPECT_EQ(15, result);
+
+  remote_ticks =
+      RemoteTimeTicks::FromTimeTicks(TimeTicks::FromInternalValue(25));
+  result =
+      converter.ToLocalTimeTicks(remote_ticks).ToTimeTicks().ToInternalValue();
+  EXPECT_EQ(20, result);
+
+  remote_ticks =
+      RemoteTimeTicks::FromTimeTicks(TimeTicks::FromInternalValue(9));
+  result =
+      converter.ToLocalTimeTicks(remote_ticks).ToTimeTicks().ToInternalValue();
+  EXPECT_EQ(14, result);
+}
+
 }  // anonymous namespace
 
 }  // namespace content

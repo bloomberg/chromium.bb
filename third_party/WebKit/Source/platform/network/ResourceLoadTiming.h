@@ -55,6 +55,8 @@ public:
     void setReceiveHeadersEnd(double);
     void setSslStart(double);
     void setSslEnd(double);
+    void setPushStart(double);
+    void setPushEnd(double);
 
     double dnsStart() const { return m_dnsStart; }
     double requestTime() const { return m_requestTime; }
@@ -70,6 +72,8 @@ public:
     double receiveHeadersEnd() const { return m_receiveHeadersEnd; }
     double sslStart() const { return m_sslStart; }
     double sslEnd() const { return m_sslEnd; }
+    double pushStart() const { return m_pushStart; }
+    double pushEnd() const { return m_pushEnd; }
 
     double calculateMillisecondDelta(double) const;
 
@@ -97,6 +101,8 @@ private:
     double m_receiveHeadersEnd;
     double m_sslStart;
     double m_sslEnd;
+    double m_pushStart;
+    double m_pushEnd;
 };
 
 } // namespace blink
