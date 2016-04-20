@@ -71,8 +71,8 @@ void CanvasPathMethods::lineTo(float x, float y)
     FloatPoint p1 = FloatPoint(x, y);
     if (!m_path.hasCurrentPoint())
         m_path.moveTo(p1);
-    else if (p1 != m_path.currentPoint())
-        m_path.addLineTo(p1);
+
+    m_path.addLineTo(p1);
 }
 
 void CanvasPathMethods::quadraticCurveTo(float cpx, float cpy, float x, float y)
@@ -86,8 +86,8 @@ void CanvasPathMethods::quadraticCurveTo(float cpx, float cpy, float x, float y)
 
     FloatPoint p1 = FloatPoint(x, y);
     FloatPoint cp = FloatPoint(cpx, cpy);
-    if (p1 != m_path.currentPoint() || p1 != cp)
-        m_path.addQuadCurveTo(cp, p1);
+
+    m_path.addQuadCurveTo(cp, p1);
 }
 
 void CanvasPathMethods::bezierCurveTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y)
@@ -102,8 +102,8 @@ void CanvasPathMethods::bezierCurveTo(float cp1x, float cp1y, float cp2x, float 
     FloatPoint p1 = FloatPoint(x, y);
     FloatPoint cp1 = FloatPoint(cp1x, cp1y);
     FloatPoint cp2 = FloatPoint(cp2x, cp2y);
-    if (p1 != m_path.currentPoint() || p1 != cp1 ||  p1 != cp2)
-        m_path.addBezierCurveTo(cp1, cp2, p1);
+
+    m_path.addBezierCurveTo(cp1, cp2, p1);
 }
 
 void CanvasPathMethods::arcTo(float x1, float y1, float x2, float y2, float r, ExceptionState& exceptionState)
@@ -314,11 +314,6 @@ void CanvasPathMethods::rect(float x, float y, float width, float height)
 
     if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(width) || !std::isfinite(height))
         return;
-
-    if (!width && !height) {
-        m_path.moveTo(FloatPoint(x, y));
-        return;
-    }
 
     m_path.addRect(FloatRect(x, y, width, height));
 }
