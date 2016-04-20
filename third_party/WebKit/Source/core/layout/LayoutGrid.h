@@ -74,6 +74,11 @@ public:
 
     LayoutUnit guttersSize(GridTrackSizingDirection, size_t span) const;
 
+    LayoutUnit offsetBetweenTracks(GridTrackSizingDirection direction) const
+    {
+        return direction == ForColumns ? m_offsetBetweenColumns : m_offsetBetweenRows;
+    }
+
     typedef Vector<LayoutBox*, 1> GridCell;
     const GridCell& gridCell(int row, int column) const
     {
