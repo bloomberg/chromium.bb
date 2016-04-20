@@ -63,9 +63,7 @@ struct TestAudioManagerFactory<AudioManagerPulse> {
 template <>
 struct TestAudioManagerFactory<std::nullptr_t> {
   static ScopedAudioManagerPtr Create(AudioLogFactory* audio_log_factory) {
-    return AudioManager::Create(base::ThreadTaskRunnerHandle::Get(),
-                                base::ThreadTaskRunnerHandle::Get(), nullptr,
-                                audio_log_factory);
+    return AudioManager::CreateForTesting(base::ThreadTaskRunnerHandle::Get());
   }
 };
 }  // namespace
