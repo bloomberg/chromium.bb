@@ -34,6 +34,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.chromoting.accountswitcher.AccountSwitcher;
 import org.chromium.chromoting.accountswitcher.AccountSwitcherFactory;
+import org.chromium.chromoting.base.OAuthTokenFetcher;
 import org.chromium.chromoting.help.HelpContext;
 import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.Client;
@@ -52,6 +53,10 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
 
     /** Only accounts of this type will be selectable for authentication. */
     private static final String ACCOUNT_TYPE = "com.google";
+
+    /** Scope to use when fetching the OAuth token. */
+    private static final String TOKEN_SCOPE = "oauth2:https://www.googleapis.com/auth/chromoting "
+            + "https://www.googleapis.com/auth/googletalk";
 
     /** Result code used for starting {@link DesktopActivity}. */
     public static final int DESKTOP_ACTIVITY = 0;
@@ -490,7 +495,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     private void requestAuthToken(boolean expireCurrentToken) {
         mWaitingForAuthToken = true;
 
-        OAuthTokenFetcher fetcher = new OAuthTokenFetcher(this, mAccount,
+        OAuthTokenFetcher fetcher = new OAuthTokenFetcher(this, mAccount, TOKEN_SCOPE,
                 new OAuthTokenFetcher.Callback() {
                     @Override
                     public void onTokenFetched(String token) {
@@ -500,10 +505,11 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
                     }
 
                     @Override
-                    public void onError(int errorResource) {
+                    public void onError(OAuthTokenFetcher.Error error) {
                         mWaitingForAuthToken = false;
                         updateHostListView();
-                        String explanation = getString(errorResource);
+                        String explanation = getString(error == OAuthTokenFetcher.Error.NETWORK
+                                ? R.string.error_network_error : R.string.error_unexpected);
                         Toast.makeText(Chromoting.this, explanation, Toast.LENGTH_LONG).show();
                     }
                 });

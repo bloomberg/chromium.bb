@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chromoting;
+package org.chromium.chromoting.base;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -32,17 +32,15 @@ public class OAuthTokenFetcher {
 
         /**
          * Called if an unrecoverable error prevents fetching a token.
-         * @param errorResource String resource of error-message to be displayed.
          */
-        void onError(int errorResource);
+        void onError(Error error);
     }
+
+    /** Error types that can be returned as non-recoverable errors from the token-fetcher. */
+    public enum Error { NETWORK, UNEXPECTED }
 
     /** Request code used for starting the OAuth recovery activity. */
     public static final int REQUEST_CODE_RECOVER_FROM_OAUTH_ERROR = 100;
-
-    /** Scopes at which the authentication token we request will be valid. */
-    private static final String TOKEN_SCOPE = "oauth2:https://www.googleapis.com/auth/chromoting "
-            + "https://www.googleapis.com/auth/googletalk";
 
     /**
      * Reference to the main activity. Used for running tasks on the main thread, and for
@@ -53,11 +51,16 @@ public class OAuthTokenFetcher {
     /** Account name (e-mail) for which the token will be fetched. */
     private String mAccountName;
 
+    /** OAuth scope used for the token request. */
+    private String mTokenScope;
+
     private Callback mCallback;
 
-    public OAuthTokenFetcher(Activity activity, String accountName, Callback callback) {
+    public OAuthTokenFetcher(Activity activity, String accountName, String tokenScope,
+            Callback callback) {
         mActivity = activity;
         mAccountName = accountName;
+        mTokenScope = tokenScope;
         mCallback = callback;
     }
 
@@ -87,14 +90,14 @@ public class OAuthTokenFetcher {
                     // This method is deprecated but its replacement is not yet available.
                     // TODO(lambroslambrou): Fix this by replacing |mAccountName| with an instance
                     // of android.accounts.Account.
-                    String token = GoogleAuthUtil.getToken(mActivity, mAccountName, TOKEN_SCOPE);
+                    String token = GoogleAuthUtil.getToken(mActivity, mAccountName, mTokenScope);
                     handleTokenReceived(token);
                 } catch (IOException ioException) {
-                    handleError(R.string.error_network_error);
+                    handleError(Error.NETWORK);
                 } catch (UserRecoverableAuthException recoverableException) {
                     handleRecoverableException(recoverableException);
                 } catch (GoogleAuthException fatalException) {
-                    handleError(R.string.error_unexpected);
+                    handleError(Error.UNEXPECTED);
                 }
                 return null;
             }
@@ -110,7 +113,7 @@ public class OAuthTokenFetcher {
         });
     }
 
-    private void handleError(final int error) {
+    private void handleError(final Error error) {
         mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
