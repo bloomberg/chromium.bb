@@ -119,7 +119,7 @@ gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
   gfx::Size min_size = delegate_->GetBrowserViewMinimumSize();
   int border_thickness = NonClientBorderThickness();
   min_size.Enlarge(2 * border_thickness,
-                   NonClientTopBorderHeight(false) + border_thickness);
+                   NonClientTopHeight(false) + border_thickness);
 
   // Ensure that we can, at minimum, hold our window controls and avatar icon.
   min_size.set_width(std::max(min_size.width(), minimum_size_for_buttons_));
@@ -138,7 +138,7 @@ gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
 
 gfx::Rect OpaqueBrowserFrameViewLayout::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  int top_height = NonClientTopBorderHeight(false);
+  int top_height = NonClientTopHeight(false);
   int border_thickness = NonClientBorderThickness();
   return gfx::Rect(std::max(0, client_bounds.x() - border_thickness),
                    std::max(0, client_bounds.y() - top_height),
@@ -158,8 +158,7 @@ int OpaqueBrowserFrameViewLayout::NonClientBorderThickness() const {
       frame : (frame + views::NonClientFrameView::kClientEdgeThickness);
 }
 
-int OpaqueBrowserFrameViewLayout::NonClientTopBorderHeight(
-    bool restored) const {
+int OpaqueBrowserFrameViewLayout::NonClientTopHeight(bool restored) const {
   if (delegate_->ShouldShowWindowTitle()) {
     // The + 2 here puts at least 1 px of space on top and bottom of the icon.
     const int icon_height =
@@ -180,7 +179,7 @@ int OpaqueBrowserFrameViewLayout::NonClientTopBorderHeight(
 }
 
 int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {
-  const int top = NonClientTopBorderHeight(restored);
+  const int top = NonClientTopHeight(restored);
   // Annoyingly, the pre-MD layout uses different heights for the hit-test
   // exclusion region (which we want here, since we're trying to size the border
   // so that the region above the tab's hit-test zone matches) versus the shadow
@@ -212,7 +211,7 @@ gfx::Rect OpaqueBrowserFrameViewLayout::IconBounds() const {
 gfx::Rect OpaqueBrowserFrameViewLayout::CalculateClientAreaBounds(
     int width,
     int height) const {
-  int top_height = NonClientTopBorderHeight(false);
+  int top_height = NonClientTopHeight(false);
   int border_thickness = NonClientBorderThickness();
   return gfx::Rect(border_thickness, top_height,
                    std::max(0, width - (2 * border_thickness)),
@@ -299,8 +298,8 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
     // the title, and the majority of the font weight is below the centerline.
     const int icon_height =
         unavailable_px_at_top + size + kContentEdgeShadowThickness;
-    const int y = unavailable_px_at_top +
-        (NonClientTopBorderHeight(false) - icon_height) / 2;
+    const int y =
+        unavailable_px_at_top + (NonClientTopHeight(false) - icon_height) / 2;
 
     window_icon_bounds_ = gfx::Rect(leading_button_start_ + kIconLeftSpacing, y,
                                     size, size);

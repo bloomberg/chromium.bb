@@ -73,10 +73,10 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // borders, including both the window frame and any client edge.
   int NonClientBorderThickness() const;
 
-  // Returns the height of the entire nonclient top border, including the window
-  // frame, any title area, and any connected client edge.  If |restored| is
-  // true, acts as if the window is restored regardless of the real mode.
-  int NonClientTopBorderHeight(bool restored) const;
+  // Returns the height of the entire nonclient top border, from the edge of the
+  // window to the top of the tabs. If |restored| is true, this is calculated as
+  // if the window was restored, regardless of its current state.
+  int NonClientTopHeight(bool restored) const;
 
   int GetTabStripInsetsTop(bool restored) const;
 

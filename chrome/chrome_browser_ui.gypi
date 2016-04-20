@@ -2289,8 +2289,6 @@
       'browser/ui/views/frame/browser_command_handler_linux.h',
       'browser/ui/views/frame/browser_frame.cc',
       'browser/ui/views/frame/browser_frame.h',
-      'browser/ui/views/frame/browser_frame_common_win.cc',
-      'browser/ui/views/frame/browser_frame_common_win.h',
       'browser/ui/views/frame/browser_frame_mac.h',
       'browser/ui/views/frame/browser_frame_mac.mm',
       'browser/ui/views/frame/browser_non_client_frame_view.cc',

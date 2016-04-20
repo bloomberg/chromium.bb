@@ -153,9 +153,9 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
 }
 
 int OpaqueBrowserFrameView::GetTopInset(bool restored) const {
-  return browser_view()->IsTabStripVisible() ?
-      layout_->GetTabStripInsetsTop(restored) :
-      layout_->NonClientTopBorderHeight(restored);
+  return browser_view()->IsTabStripVisible()
+             ? layout_->GetTabStripInsetsTop(restored)
+             : layout_->NonClientTopHeight(restored);
 }
 
 int OpaqueBrowserFrameView::GetThemeBackgroundXInset() const {

@@ -52,29 +52,41 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
 
-  // Returns the thickness of the border that makes up the window left, right,
-  // and bottom frame edges.  This does not include any client edge.
-  int FrameBorderThickness() const;
-
-  // Returns the height of the window top frame edge.  If |restored| is true,
-  // this is calculated as if the window was restored, regardless of its current
-  // state.
-  int FrameTopBorderHeight(bool restored) const;
-
-  // Returns the thickness of the entire nonclient left, right, and bottom
-  // borders, including both the window frame and any client edge. If |restored|
+  // Returns the thickness of the border around the client area (web content,
+  // toolbar, and tabs) that separates it from the frame border. If |restored|
   // is true, this is calculated as if the window was restored, regardless of
   // its current state.
-  int NonClientBorderThickness(bool restored) const;
+  int ClientBorderThickness(bool restored) const;
 
-  // Returns the height of the entire nonclient top border, including the window
-  // frame, any title area, and any connected client edge.  If |restored| is
-  // true, this is calculated as if the window was restored, regardless of its
-  // current state.
-  int NonClientTopBorderHeight(bool restored) const;
+  // Returns the thickness of the window border for the left, right, and bottom
+  // edges of the frame. On Windows 10 this is a mostly-transparent handle that
+  // allows you to resize the window.
+  int FrameBorderThickness() const;
+
+  // Returns the thickness of the window border for the top edge of the frame,
+  // which is sometimes different than FrameBorderThickness(). Does not include
+  // the titlebar/tabstrip area. If |restored| is true, this is calculated as if
+  // the window was restored, regardless of its current state.
+  int FrameTopBorderThickness(bool restored) const;
+
+  // Returns the height of everything above the tabstrip's hit-test region,
+  // including both the window border (i.e. FrameTopBorderThickness()) and any
+  // additional draggable area that's considered part of the window frame rather
+  // than the tabstrip. If |restored| is true, this is calculated as if the
+  // window was restored, regardless of its current state.
+  int TopAreaHeight(bool restored) const;
+
+  // Returns the y coordinate for the top of the frame, which in maximized mode
+  // is the top of the screen and in restored mode is 1 pixel below the top of
+  // the window to leave room for the visual border that Windows draws.
+  int WindowTopY() const;
 
   // Returns whether the toolbar is currently visible.
   bool IsToolbarVisible() const;
+
+  // Returns whether the caption buttons are drawn at the leading edge (i.e. the
+  // left in LTR mode, or the right in RTL mode).
+  bool CaptionButtonsOnLeadingEdge() const;
 
   // Paint various sub-components of this view.
   void PaintToolbarBackground(gfx::Canvas* canvas) const;
@@ -88,7 +100,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
 
   // Layout various sub-components of this view.
   void LayoutIncognitoIcon();
-  void LayoutNewStyleAvatar();
+  void LayoutProfileSwitcher();
   void LayoutClientView();
 
   // Returns the insets of the client area. If |restored| is true, this is
@@ -117,7 +129,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
   // The big icon created from the bitmap image of the window icon.
   base::win::ScopedHICON big_window_icon_;
 
-  // Wrapper around the in-frame avatar switcher.
+  // Wrapper around the in-frame profile switcher.
   AvatarButtonManager profile_switcher_;
 
   // Whether or not the window throbber is currently animating.
