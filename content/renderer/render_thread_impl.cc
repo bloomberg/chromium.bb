@@ -1641,10 +1641,6 @@ scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
   return renderer_scheduler_.get();
 }
 
-cc::ContextProvider* RenderThreadImpl::GetSharedMainThreadContextProvider() {
-  return SharedMainThreadContextProvider().get();
-}
-
 std::unique_ptr<cc::BeginFrameSource>
 RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
 #if defined(OS_ANDROID)

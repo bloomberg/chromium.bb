@@ -216,7 +216,6 @@ class CONTENT_EXPORT RenderThreadImpl
   GetCompositorImplThreadTaskRunner() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   scheduler::RendererScheduler* GetRendererScheduler() override;
-  cc::ContextProvider* GetSharedMainThreadContextProvider() override;
   std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
   cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;

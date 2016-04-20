@@ -53,7 +53,6 @@ class CompositorDependencies {
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
   virtual scheduler::RendererScheduler* GetRendererScheduler() = 0;
-  virtual cc::ContextProvider* GetSharedMainThreadContextProvider() = 0;
   virtual std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) = 0;
   virtual cc::ImageSerializationProcessor* GetImageSerializationProcessor() = 0;

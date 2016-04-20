@@ -85,12 +85,6 @@ FakeCompositorDependencies::GetRendererScheduler() {
   return &renderer_scheduler_;
 }
 
-cc::ContextProvider*
-FakeCompositorDependencies::GetSharedMainThreadContextProvider() {
-  NOTREACHED();
-  return nullptr;
-}
-
 std::unique_ptr<cc::BeginFrameSource>
 FakeCompositorDependencies::CreateExternalBeginFrameSource(int routing_id) {
   double refresh_rate = 200.0;
