@@ -487,12 +487,28 @@
     return stream[readableStreamBits] & DISTURBED;
   }
 
+  function SetReadableStreamDisturbed(stream) {
+    return stream[readableStreamBits] |= DISTURBED;
+  }
+
   function IsReadableStreamLocked(stream) {
     return stream[readableStreamReader] !== undefined;
   }
 
   function IsReadableStreamController(x) {
     return hasOwnProperty(x, readableStreamControllerControlledReadableStream);
+  }
+
+  function IsReadableStreamReadable(stream) {
+    return stream[readableStreamState] === STATE_READABLE;
+  }
+
+  function IsReadableStreamClosed(stream) {
+    return stream[readableStreamState] === STATE_CLOSED;
+  }
+
+  function IsReadableStreamErrored(stream) {
+    return stream[readableStreamState] === STATE_ERRORED;
   }
 
   function IsReadableStreamReader(x) {
@@ -784,7 +800,11 @@
   binding.AcquireReadableStreamReader = AcquireReadableStreamReader;
   binding.IsReadableStream = IsReadableStream;
   binding.IsReadableStreamDisturbed = IsReadableStreamDisturbed;
+  binding.SetReadableStreamDisturbed = SetReadableStreamDisturbed;
   binding.IsReadableStreamLocked = IsReadableStreamLocked;
+  binding.IsReadableStreamReadable = IsReadableStreamReadable;
+  binding.IsReadableStreamClosed = IsReadableStreamClosed;
+  binding.IsReadableStreamErrored = IsReadableStreamErrored;
   binding.IsReadableStreamReader = IsReadableStreamReader;
   binding.ReadFromReadableStreamReader = ReadFromReadableStreamReader;
 

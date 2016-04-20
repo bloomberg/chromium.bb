@@ -43,9 +43,25 @@ public:
     // This function assumes |isReadableStream(stream)|.
     static bool isDisturbed(ScriptState*, ScriptValue stream);
 
+    // SetReadableStreamDisturbed
+    // This function assumes |isReadableStream(stream)|.
+    static void setDisturbed(ScriptState*, ScriptValue stream);
+
     // IsReadableStreamLocked
     // This function assumes |isReadableStream(stream)|.
     static bool isLocked(ScriptState*, ScriptValue stream);
+
+    // IsReadableStreamReadable
+    // This function assumes |isReadableStream(stream)|.
+    static bool isReadable(ScriptState*, ScriptValue stream);
+
+    // IsReadableStreamClosed
+    // This function assumes |isReadableStream(stream)|.
+    static bool isClosed(ScriptState*, ScriptValue stream);
+
+    // IsReadableStreamErrored
+    // This function assumes |isReadableStream(stream)|.
+    static bool isErrored(ScriptState*, ScriptValue stream);
 
     // IsReadableStreamReader
     static bool isReadableStreamReader(ScriptState*, ScriptValue);

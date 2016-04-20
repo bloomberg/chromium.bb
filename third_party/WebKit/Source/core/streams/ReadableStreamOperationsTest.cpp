@@ -334,6 +334,58 @@ TEST_F(ReadableStreamOperationsTest, CreateReadableStreamWithCustomUnderlyingSou
     EXPECT_TRUE(it3->isDone());
 }
 
+TEST_F(ReadableStreamOperationsTest, SetDisturbed)
+{
+    ScriptValue stream = evalWithPrintingError("new ReadableStream()");
+    ASSERT_FALSE(stream.isEmpty());
+
+    EXPECT_FALSE(ReadableStreamOperations::isDisturbed(getScriptState(), stream));
+    ReadableStreamOperations::setDisturbed(getScriptState(), stream);
+    EXPECT_TRUE(ReadableStreamOperations::isDisturbed(getScriptState(), stream));
+}
+
+TEST_F(ReadableStreamOperationsTest, IsReadable)
+{
+    ScriptValue readable = evalWithPrintingError("new ReadableStream()");
+    ScriptValue closed = evalWithPrintingError("new ReadableStream({start: c => c.close()})");
+    ScriptValue errored = evalWithPrintingError("new ReadableStream({start: c => c.error()})");
+    ASSERT_FALSE(readable.isEmpty());
+    ASSERT_FALSE(closed.isEmpty());
+    ASSERT_FALSE(errored.isEmpty());
+
+    EXPECT_TRUE(ReadableStreamOperations::isReadable(getScriptState(), readable));
+    EXPECT_FALSE(ReadableStreamOperations::isReadable(getScriptState(), closed));
+    EXPECT_FALSE(ReadableStreamOperations::isReadable(getScriptState(), errored));
+}
+
+TEST_F(ReadableStreamOperationsTest, IsClosed)
+{
+    ScriptValue readable = evalWithPrintingError("new ReadableStream()");
+    ScriptValue closed = evalWithPrintingError("new ReadableStream({start: c => c.close()})");
+    ScriptValue errored = evalWithPrintingError("new ReadableStream({start: c => c.error()})");
+    ASSERT_FALSE(readable.isEmpty());
+    ASSERT_FALSE(closed.isEmpty());
+    ASSERT_FALSE(errored.isEmpty());
+
+    EXPECT_FALSE(ReadableStreamOperations::isClosed(getScriptState(), readable));
+    EXPECT_TRUE(ReadableStreamOperations::isClosed(getScriptState(), closed));
+    EXPECT_FALSE(ReadableStreamOperations::isClosed(getScriptState(), errored));
+}
+
+TEST_F(ReadableStreamOperationsTest, IsErrored)
+{
+    ScriptValue readable = evalWithPrintingError("new ReadableStream()");
+    ScriptValue closed = evalWithPrintingError("new ReadableStream({start: c => c.close()})");
+    ScriptValue errored = evalWithPrintingError("new ReadableStream({start: c => c.error()})");
+    ASSERT_FALSE(readable.isEmpty());
+    ASSERT_FALSE(closed.isEmpty());
+    ASSERT_FALSE(errored.isEmpty());
+
+    EXPECT_FALSE(ReadableStreamOperations::isErrored(getScriptState(), readable));
+    EXPECT_FALSE(ReadableStreamOperations::isErrored(getScriptState(), closed));
+    EXPECT_TRUE(ReadableStreamOperations::isErrored(getScriptState(), errored));
+}
+
 } // namespace
 
 } // namespace blink

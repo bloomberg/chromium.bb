@@ -65,12 +65,44 @@ bool ReadableStreamOperations::isDisturbed(ScriptState* scriptState, ScriptValue
     return V8ScriptRunner::callExtraOrCrash(scriptState, "IsReadableStreamDisturbed", args)->ToBoolean()->Value();
 }
 
+void ReadableStreamOperations::setDisturbed(ScriptState* scriptState, ScriptValue stream)
+{
+    ASSERT(isReadableStream(scriptState, stream));
+
+    v8::Local<v8::Value> args[] = { stream.v8Value() };
+    V8ScriptRunner::callExtraOrCrash(scriptState, "SetReadableStreamDisturbed", args);
+}
+
 bool ReadableStreamOperations::isLocked(ScriptState* scriptState, ScriptValue stream)
 {
     ASSERT(isReadableStream(scriptState, stream));
 
     v8::Local<v8::Value> args[] = { stream.v8Value() };
     return V8ScriptRunner::callExtraOrCrash(scriptState, "IsReadableStreamLocked", args)->ToBoolean()->Value();
+}
+
+bool ReadableStreamOperations::isReadable(ScriptState* scriptState, ScriptValue stream)
+{
+    ASSERT(isReadableStream(scriptState, stream));
+
+    v8::Local<v8::Value> args[] = { stream.v8Value() };
+    return V8ScriptRunner::callExtraOrCrash(scriptState, "IsReadableStreamReadable", args)->ToBoolean()->Value();
+}
+
+bool ReadableStreamOperations::isClosed(ScriptState* scriptState, ScriptValue stream)
+{
+    ASSERT(isReadableStream(scriptState, stream));
+
+    v8::Local<v8::Value> args[] = { stream.v8Value() };
+    return V8ScriptRunner::callExtraOrCrash(scriptState, "IsReadableStreamClosed", args)->ToBoolean()->Value();
+}
+
+bool ReadableStreamOperations::isErrored(ScriptState* scriptState, ScriptValue stream)
+{
+    ASSERT(isReadableStream(scriptState, stream));
+
+    v8::Local<v8::Value> args[] = { stream.v8Value() };
+    return V8ScriptRunner::callExtraOrCrash(scriptState, "IsReadableStreamErrored", args)->ToBoolean()->Value();
 }
 
 bool ReadableStreamOperations::isReadableStreamReader(ScriptState* scriptState, ScriptValue value)
