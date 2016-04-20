@@ -118,7 +118,7 @@ void AshTestHelper::SetUp(bool start_session) {
 
   // Reset the global state for the cursor manager. This includes the
   // last cursor visibility state, etc.
-  wm::CursorManager::ResetCursorVisibilityStateForTest();
+  ::wm::CursorManager::ResetCursorVisibilityStateForTest();
 
   // ContentTestSuiteBase might have already initialized
   // MaterialDesignController in unit_tests suite.
@@ -176,7 +176,7 @@ void AshTestHelper::TearDown() {
   ui::ShutdownInputMethodForTesting();
   zero_duration_mode_.reset();
 
-  CHECK(!wm::ScopedCaptureClient::IsActive());
+  CHECK(!::wm::ScopedCaptureClient::IsActive());
 
   views_delegate_.reset();
 }

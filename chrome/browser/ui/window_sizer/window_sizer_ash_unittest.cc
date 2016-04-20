@@ -518,53 +518,53 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewBrowserWindowOnEmptyDesktop) {
   gfx::Rect window_bounds;
   ui::WindowShowState out_show_state1 = ui::SHOW_STATE_DEFAULT;
   GetWindowBoundsAndShowState(
-      p1366x768,                    // The screen resolution.
-      p1366x768,                    // The monitor work area.
-      gfx::Rect(),                  // The second monitor.
-      gfx::Rect(),                  // The (persisted) bounds.
-      p1366x768,                    // The overall work area.
-      ui::SHOW_STATE_NORMAL,        // The persisted show state.
-      ui::SHOW_STATE_DEFAULT,       // The last show state.
-      DEFAULT,                      // No persisted values.
-      browser.get(),                // Use this browser.
-      gfx::Rect(),                  // Don't request valid bounds.
-      &window_bounds,
-      &out_show_state1);
+      p1366x768,               // The screen resolution.
+      p1366x768,               // The monitor work area.
+      gfx::Rect(),             // The second monitor.
+      gfx::Rect(),             // The (persisted) bounds.
+      p1366x768,               // The overall work area.
+      ui::SHOW_STATE_NORMAL,   // The persisted show state.
+      ui::SHOW_STATE_DEFAULT,  // The last show state.
+      DEFAULT,                 // No persisted values.
+      browser.get(),           // Use this browser.
+      gfx::Rect(),             // Don't request valid bounds.
+      0u,                      // Display index.
+      &window_bounds, &out_show_state1);
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, out_show_state1);
 
   // If there is a stored coordinate however, that should be taken instead.
   ui::WindowShowState out_show_state2 = ui::SHOW_STATE_DEFAULT;
   GetWindowBoundsAndShowState(
-      p1366x768,                    // The screen resolution.
-      p1366x768,                    // The monitor work area.
-      gfx::Rect(),                  // The second monitor.
-      gfx::Rect(50, 100, 300, 150), // The (persisted) bounds.
-      p1366x768,                    // The overall work area.
-      ui::SHOW_STATE_NORMAL,        // The persisted show state.
-      ui::SHOW_STATE_DEFAULT,       // The last show state.
-      PERSISTED,                    // Set the persisted values.
-      browser.get(),                // Use this browser.
-      gfx::Rect(),                  // Don't request valid bounds.
-      &window_bounds,
-      &out_show_state2);
+      p1366x768,                     // The screen resolution.
+      p1366x768,                     // The monitor work area.
+      gfx::Rect(),                   // The second monitor.
+      gfx::Rect(50, 100, 300, 150),  // The (persisted) bounds.
+      p1366x768,                     // The overall work area.
+      ui::SHOW_STATE_NORMAL,         // The persisted show state.
+      ui::SHOW_STATE_DEFAULT,        // The last show state.
+      PERSISTED,                     // Set the persisted values.
+      browser.get(),                 // Use this browser.
+      gfx::Rect(),                   // Don't request valid bounds.
+      0u,                            // Display index.
+      &window_bounds, &out_show_state2);
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, out_show_state2);
   EXPECT_EQ("50,100 300x150", window_bounds.ToString());
 
   // A larger monitor should not trigger auto-maximize.
   ui::WindowShowState out_show_state3 = ui::SHOW_STATE_DEFAULT;
   GetWindowBoundsAndShowState(
-      p1600x1200,                   // The screen resolution.
-      p1600x1200,                   // The monitor work area.
-      gfx::Rect(),                  // The second monitor.
-      gfx::Rect(),                  // The (persisted) bounds.
-      p1600x1200,                   // The overall work area.
-      ui::SHOW_STATE_NORMAL,        // The persisted show state.
-      ui::SHOW_STATE_DEFAULT,       // The last show state.
-      DEFAULT,                      // No persisted values.
-      browser.get(),                // Use this browser.
-      gfx::Rect(),                  // Don't request valid bounds.
-      &window_bounds,
-      &out_show_state3);
+      p1600x1200,              // The screen resolution.
+      p1600x1200,              // The monitor work area.
+      gfx::Rect(),             // The second monitor.
+      gfx::Rect(),             // The (persisted) bounds.
+      p1600x1200,              // The overall work area.
+      ui::SHOW_STATE_NORMAL,   // The persisted show state.
+      ui::SHOW_STATE_DEFAULT,  // The last show state.
+      DEFAULT,                 // No persisted values.
+      browser.get(),           // Use this browser.
+      gfx::Rect(),             // Don't request valid bounds.
+      0u,                      // Display index.
+      &window_bounds, &out_show_state3);
 #if defined(OS_WIN)
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, out_show_state3);
 #else
@@ -644,9 +644,11 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
     EXPECT_NE(ash::Shell::GetPrimaryRootWindow(),
               ash::Shell::GetTargetRootWindow());
     gfx::Rect window_bounds;
-    GetWindowBounds(p1600x1200, p1600x1200, secondary_bounds, gfx::Rect(),
-                    secondary_bounds, PERSISTED, new_browser.get(), gfx::Rect(),
-                    &window_bounds);
+    ui::WindowShowState out_show_state = ui::SHOW_STATE_DEFAULT;
+    GetWindowBoundsAndShowState(
+        p1600x1200, p1600x1200, secondary_bounds, gfx::Rect(), secondary_bounds,
+        ui::SHOW_STATE_DEFAULT, ui::SHOW_STATE_DEFAULT, PERSISTED,
+        new_browser.get(), gfx::Rect(), 1u, &window_bounds, &out_show_state);
     // TODO(oshima): Use exact bounds when the window_sizer_ash is
     // moved to ash and changed to include the result from
     // RearrangeVisibleWindowOnShow.

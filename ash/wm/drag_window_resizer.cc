@@ -7,6 +7,7 @@
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/common/window_positioning_utils.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/window_state.h"

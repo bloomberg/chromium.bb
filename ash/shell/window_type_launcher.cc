@@ -177,8 +177,7 @@ void InitWindowTypeLauncher() {
           Shell::GetPrimaryRootWindow(),
           gfx::Rect(120, 150, 300, 410));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
-  wm::SetShadowType(widget->GetNativeView(),
-                               wm::SHADOW_TYPE_RECTANGULAR);
+  ::wm::SetShadowType(widget->GetNativeView(), ::wm::SHADOW_TYPE_RECTANGULAR);
   widget->Show();
 }
 

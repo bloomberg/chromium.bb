@@ -10,6 +10,7 @@
 namespace ash {
 namespace wm {
 
+class WmGlobals;
 class WmWindow;
 
 class ASH_EXPORT WmRootWindowController {
@@ -17,6 +18,8 @@ class ASH_EXPORT WmRootWindowController {
   virtual ~WmRootWindowController() {}
 
   virtual bool HasShelf() = 0;
+
+  virtual WmGlobals* GetGlobals() = 0;
 };
 
 }  // namespace wm

@@ -460,13 +460,12 @@ void TrayBackgroundView::HideTransformation() {
 
 void TrayBackgroundView::InitializeBubbleAnimations(
     views::Widget* bubble_widget) {
-  wm::SetWindowVisibilityAnimationType(
+  ::wm::SetWindowVisibilityAnimationType(
       bubble_widget->GetNativeWindow(),
-      wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-  wm::SetWindowVisibilityAnimationTransition(
-      bubble_widget->GetNativeWindow(),
-      wm::ANIMATE_HIDE);
-  wm::SetWindowVisibilityAnimationDuration(
+      ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  ::wm::SetWindowVisibilityAnimationTransition(bubble_widget->GetNativeWindow(),
+                                               ::wm::ANIMATE_HIDE);
+  ::wm::SetWindowVisibilityAnimationDuration(
       bubble_widget->GetNativeWindow(),
       base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMs));
 }

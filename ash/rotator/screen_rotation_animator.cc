@@ -169,7 +169,7 @@ void RotateScreen(int64_t display_id,
   const gfx::Tween::Type tween_type = gfx::Tween::FAST_OUT_LINEAR_IN;
 
   std::unique_ptr<ui::LayerTreeOwner> old_layer_tree =
-      wm::RecreateLayers(root_window);
+      ::wm::RecreateLayers(root_window);
 
   // Add the cloned layer tree in to the root, so it will be rendered.
   root_window->layer()->Add(old_layer_tree->root());

@@ -94,6 +94,8 @@ enum Source { DEFAULT, LAST_ACTIVE, PERSISTED, BOTH };
 // last active window, the persisted value which was stored earlier, both or
 // none. For all these states the |bounds| and |work_area| get used, for the
 // show states either |show_state_persisted| or |show_state_last| will be used.
+// |display_index| is the index of the display to return from
+// GetDisplayNearestWindow(), and is only used on aura.
 void GetWindowBoundsAndShowState(const gfx::Rect& monitor1_bounds,
                                  const gfx::Rect& monitor1_work_area,
                                  const gfx::Rect& monitor2_bounds,
@@ -104,6 +106,7 @@ void GetWindowBoundsAndShowState(const gfx::Rect& monitor1_bounds,
                                  Source source,
                                  const Browser* browser,
                                  const gfx::Rect& passed_in,
+                                 size_t display_index,
                                  gfx::Rect* out_bounds,
                                  ui::WindowShowState* out_show_state);
 

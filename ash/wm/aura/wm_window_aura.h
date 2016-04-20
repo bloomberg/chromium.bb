@@ -36,6 +36,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   // WmWindow:
   const WmWindow* GetRootWindow() const override;
   WmRootWindowController* GetRootWindowController() override;
+  WmGlobals* GetGlobals() const override;
   int GetShellWindowId() override;
   WmWindow* GetChildByShellWindowId(int id) override;
   ui::wm::WindowType GetType() const override;
@@ -54,11 +55,14 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   bool GetTargetVisibility() const override;
   bool IsVisible() const override;
   bool GetBoolProperty(WmWindowProperty key) override;
-  WindowState* GetWindowState() override;
+  const WindowState* GetWindowState() const override;
   WmWindow* GetToplevelWindow() override;
   WmWindow* GetParent() override;
   WmWindow* GetTransientParent() override;
+  std::vector<WmWindow*> GetTransientChildren() override;
   void SetBounds(const gfx::Rect& bounds) override;
+  void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
+                                    base::TimeDelta delta) override;
   void SetBoundsDirect(const gfx::Rect& bounds) override;
   void SetBoundsDirectAnimated(const gfx::Rect& bounds) override;
   void SetBoundsDirectCrossFade(const gfx::Rect& bounds) override;

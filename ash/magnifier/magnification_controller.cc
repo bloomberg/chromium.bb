@@ -817,7 +817,7 @@ void MagnificationControllerImpl::OnCaretBoundsChanged(
 
   caret_point_ = caret_bounds.CenterPoint();
   // |caret_point_| in |root_window_| coordinates.
-  wm::ConvertPointFromScreen(root_window_, &caret_point_);
+  ::wm::ConvertPointFromScreen(root_window_, &caret_point_);
 
   // If the feature for centering the text input focus is disabled, the
   // magnifier window will be moved to follow the focus with a panning margin.

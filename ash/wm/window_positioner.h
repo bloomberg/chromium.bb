@@ -8,20 +8,17 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/geometry/rect.h"
-
-namespace aura {
-class Window;
-class RootWindow;
-}
 
 namespace gfx {
 class Display;
 class Rect;
-class Screen;
 }
 
 namespace ash {
+namespace wm {
+class WmGlobals;
+class WmWindow;
+}
 
 namespace test {
 class WindowPositionerTest;
@@ -50,8 +47,7 @@ class ASH_EXPORT WindowPositioner {
   // |is_saved_bounds| indicates the |bounds_in_out| is the saved
   // bounds.
   static void GetBoundsAndShowStateForNewWindow(
-      const gfx::Screen* screen,
-      const aura::Window* new_window,
+      const wm::WmWindow* new_window,
       bool is_saved_bounds,
       ui::WindowShowState show_state_in,
       gfx::Rect* bounds_in_out,
@@ -64,7 +60,7 @@ class ASH_EXPORT WindowPositioner {
   // automated desktop location management can be performed and
   // rearrange accordingly.
   static void RearrangeVisibleWindowOnHideOrRemove(
-      const aura::Window* removed_window);
+      const wm::WmWindow* removed_window);
 
   // Turn the automatic positioning logic temporarily off. Returns the previous
   // state.
@@ -73,9 +69,9 @@ class ASH_EXPORT WindowPositioner {
   // Check if after insertion or showing of the given |added_window|
   // an automated desktop location management can be performed and
   // rearrange accordingly.
-  static void RearrangeVisibleWindowOnShow(aura::Window* added_window);
+  static void RearrangeVisibleWindowOnShow(wm::WmWindow* added_window);
 
-  WindowPositioner();
+  explicit WindowPositioner(wm::WmGlobals* globals);
   ~WindowPositioner();
 
   // Find a suitable screen position for a popup window and return it. The
@@ -109,6 +105,8 @@ class ASH_EXPORT WindowPositioner {
 
   // Constant exposed for unittest.
   static const int kMinimumWindowOffset;
+
+  wm::WmGlobals* globals_;
 
   // The offset in X and Y for the next popup which opens.
   int pop_position_offset_increment_x;

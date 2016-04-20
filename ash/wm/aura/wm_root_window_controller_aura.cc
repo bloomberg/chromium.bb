@@ -5,6 +5,7 @@
 #include "ash/wm/aura/wm_root_window_controller_aura.h"
 
 #include "ash/root_window_controller.h"
+#include "ash/wm/aura/wm_globals_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 
@@ -50,6 +51,10 @@ const WmRootWindowControllerAura* WmRootWindowControllerAura::Get(
 
 bool WmRootWindowControllerAura::HasShelf() {
   return root_window_controller_->shelf() != nullptr;
+}
+
+WmGlobals* WmRootWindowControllerAura::GetGlobals() {
+  return WmGlobalsAura::Get();
 }
 
 }  // namespace wm

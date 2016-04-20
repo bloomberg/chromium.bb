@@ -11,6 +11,7 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
 #include "ash/wm/window_animations.h"
@@ -86,7 +87,7 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(Window* child) {
   UpdateFullscreenState();
   if (backdrop_delegate_)
     backdrop_delegate_->OnWindowAddedToLayout(child);
-  WindowPositioner::RearrangeVisibleWindowOnShow(child);
+  WindowPositioner::RearrangeVisibleWindowOnShow(wm::WmWindowAura::Get(child));
 }
 
 void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(Window* child) {
@@ -94,8 +95,10 @@ void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(Window* child) {
   child->RemoveObserver(this);
   wm::GetWindowState(child)->RemoveObserver(this);
 
-  if (child->TargetVisibility())
-    WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
+  if (child->TargetVisibility()) {
+    WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(
+        wm::WmWindowAura::Get(child));
+  }
 }
 
 void WorkspaceLayoutManager::OnWindowRemovedFromLayout(Window* child) {
@@ -112,10 +115,13 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
   if (visible && window_state->IsMinimized())
     window_state->Unminimize();
 
-  if (child->TargetVisibility())
-    WindowPositioner::RearrangeVisibleWindowOnShow(child);
-  else
-    WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
+  if (child->TargetVisibility()) {
+    WindowPositioner::RearrangeVisibleWindowOnShow(
+        wm::WmWindowAura::Get(child));
+  } else {
+    WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(
+        wm::WmWindowAura::Get(child));
+  }
   UpdateFullscreenState();
   UpdateShelfVisibility();
   if (backdrop_delegate_)

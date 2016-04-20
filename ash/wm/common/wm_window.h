@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "base/time/time.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/wm/public/window_types.h"
 
@@ -26,6 +27,7 @@ namespace ash {
 namespace wm {
 
 class WMEvent;
+class WmGlobals;
 class WmRootWindowController;
 class WmWindowObserver;
 enum class WmWindowProperty;
@@ -42,6 +44,9 @@ class ASH_EXPORT WmWindow {
   }
   virtual const WmWindow* GetRootWindow() const = 0;
   virtual WmRootWindowController* GetRootWindowController() = 0;
+
+  // TODO(sky): fix constness.
+  virtual WmGlobals* GetGlobals() const = 0;
 
   virtual int GetShellWindowId() = 0;
   virtual WmWindow* GetChildByShellWindowId(int id) = 0;
@@ -75,15 +80,22 @@ class ASH_EXPORT WmWindow {
 
   virtual bool GetBoolProperty(WmWindowProperty key) = 0;
 
-  virtual WindowState* GetWindowState() = 0;
+  WindowState* GetWindowState() {
+    return const_cast<WindowState*>(
+        const_cast<const WmWindow*>(this)->GetWindowState());
+  }
+  virtual const WindowState* GetWindowState() const = 0;
 
   virtual WmWindow* GetToplevelWindow() = 0;
 
   virtual WmWindow* GetParent() = 0;
 
   virtual WmWindow* GetTransientParent() = 0;
+  virtual std::vector<WmWindow*> GetTransientChildren() = 0;
 
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
+  virtual void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
+                                            base::TimeDelta delta) = 0;
   // Sets the bounds in such a way that LayoutManagers are circumvented.
   virtual void SetBoundsDirect(const gfx::Rect& bounds) = 0;
   virtual void SetBoundsDirectAnimated(const gfx::Rect& bounds) = 0;

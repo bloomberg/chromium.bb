@@ -189,9 +189,9 @@ ToastOverlay::ToastOverlay(Delegate* delegate, const std::string& text)
   overlay_widget_->GetNativeView()->SetName("ToastOverlay");
 
   gfx::NativeWindow native_view = overlay_widget_->GetNativeView();
-  wm::SetWindowVisibilityAnimationType(
-      native_view, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-  wm::SetWindowVisibilityAnimationDuration(
+  ::wm::SetWindowVisibilityAnimationType(
+      native_view, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+  ::wm::SetWindowVisibilityAnimationDuration(
       native_view,
       base::TimeDelta::FromMilliseconds(kSlideAnimationDurationMs));
 }

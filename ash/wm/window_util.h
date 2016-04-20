@@ -24,9 +24,6 @@ class Event;
 }
 
 namespace ash {
-// We force at least this many DIPs for any window on the screen.
-const int kMinimumOnScreenArea = 25;
-
 namespace wm {
 
 class WmWindow;
@@ -68,26 +65,6 @@ ASH_EXPORT gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(
 // coordinates.
 ASH_EXPORT gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(
     aura::Window* window);
-
-// Adjusts |bounds| so that the size does not exceed |max_size|.
-ASH_EXPORT void AdjustBoundsSmallerThan(const gfx::Size& max_size,
-                                        gfx::Rect* bounds);
-
-// Move the given bounds inside the given |visible_area| in parent coordinates,
-// including a safety margin given by |kMinimumOnScreenArea|.
-// This also ensures that the top of the bounds is visible.
-ASH_EXPORT void AdjustBoundsToEnsureMinimumWindowVisibility(
-    const gfx::Rect& visible_area,
-    gfx::Rect* bounds);
-
-// Move the given bounds inside the given |visible_area| in parent coordinates,
-// including a safety margin given by |min_width| and |min_height|.
-// This also ensures that the top of the bounds is visible.
-ASH_EXPORT void AdjustBoundsToEnsureWindowVisibility(
-    const gfx::Rect& visible_area,
-    int min_width,
-    int min_height,
-    gfx::Rect* bounds);
 
 // Moves |window| to the root window where the |event| occured if it is not
 // already in the same root window. Returns true if |window| was moved.

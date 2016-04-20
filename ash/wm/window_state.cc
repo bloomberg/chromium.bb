@@ -10,6 +10,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/common/window_positioning_utils.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/common/wm_screen_util.h"
 #include "ash/wm/default_state.h"

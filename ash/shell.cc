@@ -59,6 +59,7 @@
 #include "ash/utility/partial_screenshot_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
+#include "ash/wm/aura/wm_globals_aura.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/lock_state_controller.h"
@@ -640,7 +641,6 @@ Shell::Shell(ShellDelegate* delegate, base::SequencedWorkerPool* blocking_pool)
       scoped_target_root_window_(nullptr),
       delegate_(delegate),
       shelf_model_(new ShelfModel),
-      window_positioner_(new WindowPositioner),
       activation_client_(nullptr),
 #if defined(OS_CHROMEOS)
       display_configurator_(new ui::DisplayConfigurator()),
@@ -852,6 +852,10 @@ Shell::~Shell() {
 
 void Shell::Init(const ShellInitParams& init_params) {
   in_mus_ = init_params.in_mus;
+
+  wm_globals_.reset(new wm::WmGlobalsAura);
+  window_positioner_.reset(new WindowPositioner(wm_globals_.get()));
+
   if (!in_mus_) {
     native_cursor_manager_ = new AshNativeCursorManager;
 #if defined(OS_CHROMEOS)

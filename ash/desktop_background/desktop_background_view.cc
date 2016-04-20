@@ -221,8 +221,8 @@ views::Widget* CreateDesktopBackground(aura::Window* root_window,
   desktop_widget->SetContentsView(
       new LayerControlView(new DesktopBackgroundView()));
   int animation_type = wallpaper_delegate->GetAnimationType();
-  wm::SetWindowVisibilityAnimationType(
-      desktop_widget->GetNativeView(), animation_type);
+  ::wm::SetWindowVisibilityAnimationType(desktop_widget->GetNativeView(),
+                                         animation_type);
 
   RootWindowController* root_window_controller =
       GetRootWindowController(root_window);
@@ -235,18 +235,18 @@ views::Widget* CreateDesktopBackground(aura::Window* root_window,
   if (wallpaper_delegate->ShouldShowInitialAnimation() ||
       root_window_controller->animating_wallpaper_controller() ||
       Shell::GetInstance()->session_state_delegate()->NumberOfLoggedInUsers()) {
-    wm::SetWindowVisibilityAnimationTransition(
-        desktop_widget->GetNativeView(), wm::ANIMATE_SHOW);
+    ::wm::SetWindowVisibilityAnimationTransition(
+        desktop_widget->GetNativeView(), ::wm::ANIMATE_SHOW);
     int duration_override = wallpaper_delegate->GetAnimationDurationOverride();
     if (duration_override) {
-      wm::SetWindowVisibilityAnimationDuration(
+      ::wm::SetWindowVisibilityAnimationDuration(
           desktop_widget->GetNativeView(),
           base::TimeDelta::FromMilliseconds(duration_override));
     }
   } else {
     // Disable animation if transition to login screen from an empty background.
-    wm::SetWindowVisibilityAnimationTransition(
-        desktop_widget->GetNativeView(), wm::ANIMATE_NONE);
+    ::wm::SetWindowVisibilityAnimationTransition(
+        desktop_widget->GetNativeView(), ::wm::ANIMATE_NONE);
   }
 
   desktop_widget->SetBounds(params.parent->bounds());

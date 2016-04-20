@@ -26,8 +26,16 @@ namespace {
 
 class TestScreen : public gfx::Screen {
  public:
-  TestScreen() {}
-  ~TestScreen() override {}
+  TestScreen() : previous_screen_(gfx::Screen::GetScreen()) {
+    gfx::Screen::SetScreenInstance(this);
+  }
+  ~TestScreen() override { gfx::Screen::SetScreenInstance(previous_screen_); }
+
+  // Sets the index of the display returned from GetDisplayNearestWindow().
+  // Only used on aura.
+  void set_index_of_display_nearest_window(int index) {
+    index_of_display_nearest_window_ = index;
+  }
 
   // Overridden from gfx::Screen:
   gfx::Point GetCursorScreenPoint() override {
@@ -53,7 +61,7 @@ class TestScreen : public gfx::Screen {
 
   gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const override {
 #if defined(USE_AURA)
-    return GetDisplayMatching(view->GetBoundsInScreen());
+    return displays_[index_of_display_nearest_window_];
 #else
     NOTREACHED();
     return gfx::Display();
@@ -95,6 +103,8 @@ class TestScreen : public gfx::Screen {
   }
 
  private:
+  gfx::Screen* previous_screen_;
+  size_t index_of_display_nearest_window_ = 0u;
   std::vector<gfx::Display> displays_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScreen);
@@ -118,12 +128,11 @@ public:
 
 }  // namespace
 
-TestStateProvider::TestStateProvider():
-    has_persistent_data_(false),
-    persistent_show_state_(ui::SHOW_STATE_DEFAULT),
-    has_last_active_data_(false),
-    last_active_show_state_(ui::SHOW_STATE_DEFAULT) {
-}
+TestStateProvider::TestStateProvider()
+    : has_persistent_data_(false),
+      persistent_show_state_(ui::SHOW_STATE_DEFAULT),
+      has_last_active_data_(false),
+      last_active_show_state_(ui::SHOW_STATE_DEFAULT) {}
 
 void TestStateProvider::SetPersistentState(const gfx::Rect& bounds,
                                            const gfx::Rect& work_area,
@@ -168,24 +177,25 @@ bool TestStateProvider::GetLastActiveWindowState(
 int kWindowTilePixels = WindowSizer::kWindowTilePixels;
 
 // The window sizer commonly used test functions.
-void GetWindowBoundsAndShowState(
-    const gfx::Rect& monitor1_bounds,
-    const gfx::Rect& monitor1_work_area,
-    const gfx::Rect& monitor2_bounds,
-    const gfx::Rect& bounds,
-    const gfx::Rect& work_area,
-    ui::WindowShowState show_state_persisted,
-    ui::WindowShowState show_state_last,
-    Source source,
-    const Browser* browser,
-    const gfx::Rect& passed_in,
-    gfx::Rect* out_bounds,
-    ui::WindowShowState* out_show_state) {
+void GetWindowBoundsAndShowState(const gfx::Rect& monitor1_bounds,
+                                 const gfx::Rect& monitor1_work_area,
+                                 const gfx::Rect& monitor2_bounds,
+                                 const gfx::Rect& bounds,
+                                 const gfx::Rect& work_area,
+                                 ui::WindowShowState show_state_persisted,
+                                 ui::WindowShowState show_state_last,
+                                 Source source,
+                                 const Browser* browser,
+                                 const gfx::Rect& passed_in,
+                                 size_t display_index,
+                                 gfx::Rect* out_bounds,
+                                 ui::WindowShowState* out_show_state) {
   DCHECK(out_show_state);
   TestScreen test_screen;
   test_screen.AddDisplay(monitor1_bounds, monitor1_work_area);
   if (!monitor2_bounds.IsEmpty())
     test_screen.AddDisplay(monitor2_bounds, monitor2_bounds);
+  test_screen.set_index_of_display_nearest_window(display_index);
   std::unique_ptr<TestStateProvider> sp(new TestStateProvider);
   if (source == PERSISTED || source == BOTH)
     sp->SetPersistentState(bounds, work_area, show_state_persisted, true);
@@ -199,7 +209,6 @@ void GetWindowBoundsAndShowState(
                                           out_bounds,
                                           out_show_state);
 }
-
 void GetWindowBounds(const gfx::Rect& monitor1_bounds,
                             const gfx::Rect& monitor1_work_area,
                             const gfx::Rect& monitor2_bounds,
@@ -213,7 +222,7 @@ void GetWindowBounds(const gfx::Rect& monitor1_bounds,
   GetWindowBoundsAndShowState(
       monitor1_bounds, monitor1_work_area, monitor2_bounds, bounds, work_area,
       ui::SHOW_STATE_DEFAULT, ui::SHOW_STATE_DEFAULT, source, browser,
-      passed_in, out_bounds, &out_show_state);
+      passed_in, 0u, out_bounds, &out_show_state);
 }
 
 ui::WindowShowState GetWindowShowState(

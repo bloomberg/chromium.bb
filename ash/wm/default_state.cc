@@ -9,6 +9,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/common/window_positioning_utils.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
@@ -440,10 +441,10 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
       // visibility which should be enough to see where the window gets
       // moved.
       gfx::Rect display_area = ScreenUtil::GetDisplayBoundsInParent(window);
-      int min_width = bounds.width() * kMinimumPercentOnScreenArea;
-      int min_height = bounds.height() * kMinimumPercentOnScreenArea;
-      AdjustBoundsToEnsureWindowVisibility(
-          display_area, min_width, min_height, &bounds);
+      int min_width = bounds.width() * wm::kMinimumPercentOnScreenArea;
+      int min_height = bounds.height() * wm::kMinimumPercentOnScreenArea;
+      wm::AdjustBoundsToEnsureWindowVisibility(display_area, min_width,
+                                               min_height, &bounds);
       window_state->AdjustSnappedBounds(&bounds);
       if (window->bounds() != bounds)
         window_state->SetBoundsConstrained(bounds);
@@ -484,7 +485,8 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
           ScreenUtil::GetDisplayWorkAreaBoundsInParent(
               window_state->aura_window());
       gfx::Rect bounds = window_state->aura_window()->bounds();
-      AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent, &bounds);
+      wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
+                                                      &bounds);
       window_state->AdjustSnappedBounds(&bounds);
       if (window_state->aura_window()->bounds() != bounds)
         window_state->SetBoundsDirectAnimated(bounds);
@@ -540,7 +542,7 @@ void DefaultState::SetBounds(WindowState* window_state,
         ScreenUtil::GetDisplayWorkAreaBoundsInParent(
             window_state->aura_window());
     gfx::Rect child_bounds(event->requested_bounds());
-    AdjustBoundsSmallerThan(work_area_in_parent.size(), &child_bounds);
+    wm::AdjustBoundsSmallerThan(work_area_in_parent.size(), &child_bounds);
     window_state->AdjustSnappedBounds(&child_bounds);
     window_state->SetBoundsDirect(child_bounds);
   } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
@@ -677,8 +679,8 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
         bounds_in_parent = window->bounds();
       }
       // Make sure that part of the window is always visible.
-      AdjustBoundsToEnsureMinimumWindowVisibility(
-          work_area_in_parent, &bounds_in_parent);
+      wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
+                                                      &bounds_in_parent);
       break;
     }
     case WINDOW_STATE_TYPE_MAXIMIZED:

@@ -166,6 +166,10 @@ namespace test {
 class ShellTestApi;
 }
 
+namespace wm {
+class WmGlobalsAura;
+}
+
 // Shell is a singleton object that presents the Shell API and implements the
 // RootWindow's delegate interface.
 //
@@ -642,6 +646,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // when the screen is initially created.
   static bool initially_hide_cursor_;
 
+  std::unique_ptr<wm::WmGlobalsAura> wm_globals_;
+
   // When no explicit target display/RootWindow is given, new windows are
   // created on |scoped_target_root_window_| , unless NULL in
   // which case they are created on |target_root_window_|.
@@ -695,6 +701,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<aura::client::FocusClient> focus_client_;
 
   aura::client::ActivationClient* activation_client_;
+
   std::unique_ptr<PartialScreenshotController> partial_screenshot_controller_;
 
   std::unique_ptr<MouseCursorEventFilter> mouse_cursor_filter_;

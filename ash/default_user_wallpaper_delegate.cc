@@ -11,7 +11,7 @@
 namespace ash {
 
 int DefaultUserWallpaperDelegate::GetAnimationType() {
-  return wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
+  return ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
 }
 
 int DefaultUserWallpaperDelegate::GetAnimationDurationOverride() {

@@ -12,6 +12,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ash/wm/common/window_positioning_utils.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
@@ -916,8 +917,8 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, -window_width, 0), 0);
   EXPECT_EQ(base::IntToString(window_x) + ",100 " +
-            base::IntToString(kMinimumOnScreenArea - window_x) +
-            "x380", window_->bounds().ToString());
+                base::IntToString(wm::kMinimumOnScreenArea - window_x) + "x380",
+            window_->bounds().ToString());
 }
 
 TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
@@ -933,11 +934,11 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
       CreateResizerForTest(window_.get(), gfx::Point(window_x, 0), HTLEFT));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
-  EXPECT_EQ(base::IntToString(right - kMinimumOnScreenArea) +
-            ",100 " +
-            base::IntToString(window_width - pixels_to_right_border +
-                              kMinimumOnScreenArea) +
-            "x380", window_->bounds().ToString());
+  EXPECT_EQ(base::IntToString(right - wm::kMinimumOnScreenArea) + ",100 " +
+                base::IntToString(window_width - pixels_to_right_border +
+                                  wm::kMinimumOnScreenArea) +
+                "x380",
+            window_->bounds().ToString());
 }
 
 TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
@@ -952,11 +953,10 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
       window_.get(), gfx::Point(0, bottom - delta_to_bottom), HTTOP));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, 0, bottom), 0);
-  EXPECT_EQ("100," +
-            base::IntToString(bottom - kMinimumOnScreenArea) +
-            " 300x" +
-            base::IntToString(height - (delta_to_bottom -
-                                        kMinimumOnScreenArea)),
+  EXPECT_EQ("100," + base::IntToString(bottom - wm::kMinimumOnScreenArea) +
+                " 300x" +
+                base::IntToString(height -
+                                  (delta_to_bottom - wm::kMinimumOnScreenArea)),
             window_->bounds().ToString());
 }
 
@@ -977,10 +977,9 @@ TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
       CreateResizerForTest(window_.get(), gfx::Point(window_x, 0), HTCAPTION));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
-  EXPECT_EQ(base::IntToString(right - kMinimumOnScreenArea) +
-            ",100 " +
-            base::IntToString(window_width) +
-            "x380", window_->bounds().ToString());
+  EXPECT_EQ(base::IntToString(right - wm::kMinimumOnScreenArea) + ",100 " +
+                base::IntToString(window_width) + "x380",
+            window_->bounds().ToString());
 
   if (!SupportsMultipleDisplays())
     return;

@@ -124,7 +124,7 @@ class MagnificationControllerTest: public test::AshTestBase {
     // Convert origin to screen coordinates.
     views::View::ConvertPointToScreen(text_input_view_, &origin);
     // Convert origin to root_window_ coordinates.
-    wm::ConvertPointFromScreen(GetRootWindow(), &origin);
+    ::wm::ConvertPointFromScreen(GetRootWindow(), &origin);
     return gfx::Rect(origin.x(), origin.y(), bounds.width(), bounds.height());
   }
 
@@ -133,7 +133,7 @@ class MagnificationControllerTest: public test::AshTestBase {
     gfx::Rect caret_bounds =
         GetInputMethod()->GetTextInputClient()->GetCaretBounds();
     gfx::Point origin = caret_bounds.origin();
-    wm::ConvertPointFromScreen(GetRootWindow(), &origin);
+    ::wm::ConvertPointFromScreen(GetRootWindow(), &origin);
     return gfx::Rect(
         origin.x(), origin.y(), caret_bounds.width(), caret_bounds.height());
   }

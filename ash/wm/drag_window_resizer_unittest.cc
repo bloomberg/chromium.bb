@@ -13,6 +13,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ash/wm/common/window_positioning_utils.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -211,7 +212,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     // root window's bounds.
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
     // Window origin should be adjusted for minimum visibility (25px).
-    int expected_x = -50 + kMinimumOnScreenArea;
+    int expected_x = -50 + wm::kMinimumOnScreenArea;
 
     EXPECT_EQ(base::IntToString(expected_x) + ",10 50x60",
               window_->bounds().ToString());

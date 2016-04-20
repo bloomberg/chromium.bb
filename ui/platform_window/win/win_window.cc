@@ -42,10 +42,13 @@ WinWindow::WinWindow(PlatformWindowDelegate* delegate,
                      const gfx::Rect& bounds)
     : delegate_(delegate) {
   CHECK(delegate_);
-  if (use_popup_as_root_window_for_test)
+  DWORD window_style = WS_OVERLAPPEDWINDOW;
+  if (use_popup_as_root_window_for_test) {
     set_window_style(WS_POPUP);
-  gfx::Rect window_bounds = GetWindowBoundsForClientBounds(
-      WS_OVERLAPPEDWINDOW, window_ex_style(), bounds);
+    window_style = WS_POPUP;
+  }
+  gfx::Rect window_bounds =
+      GetWindowBoundsForClientBounds(window_style, window_ex_style(), bounds);
   gfx::WindowImpl::Init(NULL, window_bounds);
   SetWindowText(hwnd(), L"WinWindow");
 }

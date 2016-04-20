@@ -5,6 +5,7 @@
 #include "ash/wm/aura/wm_window_aura.h"
 
 #include "ash/screen_util.h"
+#include "ash/wm/aura/wm_globals_aura.h"
 #include "ash/wm/aura/wm_root_window_controller_aura.h"
 #include "ash/wm/common/wm_window_observer.h"
 #include "ash/wm/common/wm_window_property.h"
@@ -93,6 +94,10 @@ WmRootWindowController* WmWindowAura::GetRootWindowController() {
   return root ? WmRootWindowControllerAura::Get(root) : nullptr;
 }
 
+WmGlobals* WmWindowAura::GetGlobals() const {
+  return WmGlobalsAura::Get();
+}
+
 int WmWindowAura::GetShellWindowId() {
   return window_->id();
 }
@@ -177,7 +182,7 @@ bool WmWindowAura::GetBoolProperty(WmWindowProperty key) {
   return false;
 }
 
-WindowState* WmWindowAura::GetWindowState() {
+const WindowState* WmWindowAura::GetWindowState() const {
   return ash::wm::GetWindowState(window_);
 }
 
@@ -193,7 +198,28 @@ WmWindow* WmWindowAura::GetTransientParent() {
   return Get(::wm::GetTransientParent(window_));
 }
 
+std::vector<WmWindow*> WmWindowAura::GetTransientChildren() {
+  const std::vector<aura::Window*> aura_windows(
+      ::wm::GetTransientChildren(window_));
+  std::vector<WmWindow*> wm_windows(aura_windows.size());
+  for (size_t i = 0; i < aura_windows.size(); ++i)
+    wm_windows[i] = Get(aura_windows[i]);
+  return wm_windows;
+}
+
 void WmWindowAura::SetBounds(const gfx::Rect& bounds) {
+  window_->SetBounds(bounds);
+}
+
+void WmWindowAura::SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
+                                                base::TimeDelta delta) {
+  if (::wm::WindowAnimationsDisabled(window_)) {
+    window_->SetBounds(bounds);
+    return;
+  }
+
+  ui::ScopedLayerAnimationSettings settings(window_->layer()->GetAnimator());
+  settings.SetTransitionDuration(delta);
   window_->SetBounds(bounds);
 }
 

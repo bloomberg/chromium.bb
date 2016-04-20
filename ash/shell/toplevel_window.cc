@@ -84,9 +84,8 @@ bool ToplevelWindow::GetSavedWindowPlacement(
     // Initial default bounds.
     bounds->SetRect(10, 150, 300, 300);
   }
-  ash::WindowPositioner::GetBoundsAndShowStateForNewWindow(
-      gfx::Screen::GetScreen(), NULL, is_saved_bounds, *show_state, bounds,
-      show_state);
+  WindowPositioner::GetBoundsAndShowStateForNewWindow(
+      nullptr, is_saved_bounds, *show_state, bounds, show_state);
   return true;
 }
 

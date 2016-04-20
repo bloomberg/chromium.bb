@@ -13,7 +13,7 @@
 namespace ash {
 
 class ASH_EXPORT AcceleratorDelegate
-    : NON_EXPORTED_BASE(public wm::AcceleratorDelegate) {
+    : NON_EXPORTED_BASE(public ::wm::AcceleratorDelegate) {
  public:
   AcceleratorDelegate();
   ~AcceleratorDelegate() override;

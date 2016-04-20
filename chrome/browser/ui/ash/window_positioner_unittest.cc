@@ -8,6 +8,7 @@
 
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ash/wm/aura/wm_globals_aura.h"
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -80,7 +81,7 @@ void WindowPositionerTest::SetUp() {
   // as he needs it.
   window()->Hide();
   popup()->Hide();
-  window_positioner_.reset(new WindowPositioner());
+  window_positioner_.reset(new WindowPositioner(wm::WmGlobalsAura::Get()));
 }
 
 void WindowPositionerTest::TearDown() {
