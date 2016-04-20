@@ -16,6 +16,7 @@ import org.chromium.blimp.auth.RetryingTokenSource;
 import org.chromium.blimp.auth.TokenSource;
 import org.chromium.blimp.auth.TokenSourceImpl;
 import org.chromium.blimp.input.WebInputBox;
+import org.chromium.blimp.preferences.PreferencesUtil;
 import org.chromium.blimp.session.BlimpClientSession;
 import org.chromium.blimp.session.EngineInfo;
 import org.chromium.blimp.session.TabControlFeature;
@@ -143,7 +144,7 @@ public class BlimpRendererActivity
 
         setContentView(R.layout.blimp_main);
 
-        mBlimpClientSession = new BlimpClientSession();
+        mBlimpClientSession = new BlimpClientSession(PreferencesUtil.findAssignerUrl(this));
         mBlimpClientSession.addObserver(this);
 
         mBlimpView = (BlimpView) findViewById(R.id.renderer);

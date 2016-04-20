@@ -169,6 +169,15 @@
       <message name="IDS_BLIMP_ASSIGNER_URL" desc="Blimp Assigner URL.">
         Assigner URL
       </message>
+      <message name="IDS_BLIMP_ASSIGNER_CHANGED_PLEASE_RESTART" desc="Blimp assigner changed, restart message.">
+        Please restart the application to use the new assigner configuration.
+      </message>
+      <message name="IDS_RESTART_BLIMP" desc="Blimp restart message.">
+        Restart Blimp
+      </message>
+      <message name="IDS_RESTART_NOW" desc="Restart now message">
+        Restart Now
+      </message>
     </messages>
   </release>
 </grit>

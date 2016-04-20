@@ -49,15 +49,12 @@ public class BlimpClientSession {
         void onDisconnected(String reason);
     }
 
-    private static final String DEFAULT_ASSIGNER_URL =
-            "https://blimp-pa.googleapis.com/v1/assignment";
-
     private final String mAssignerUrl;
     private final List<ConnectionObserver> mObservers;
     private long mNativeBlimpClientSessionAndroidPtr;
 
-    public BlimpClientSession() {
-        mAssignerUrl = DEFAULT_ASSIGNER_URL;
+    public BlimpClientSession(String assignerUrl) {
+        mAssignerUrl = assignerUrl;
         mObservers = new ArrayList<ConnectionObserver>();
         mNativeBlimpClientSessionAndroidPtr = nativeInit(mAssignerUrl);
     }

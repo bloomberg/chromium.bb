@@ -17,7 +17,9 @@
     <Preference
         android:key="blimp_engine_version"
         android:title="@string/blimp_engine_version" />
-    <Preference
+    <ListPreference
         android:key="blimp_assigner_url"
-        android:title="@string/blimp_assigner_url" />
+        android:title="@string/blimp_assigner_url"
+        android:entries="@array/assigner_envs"
+        android:entryValues="@array/assigner_urls" />
 </PreferenceScreen>

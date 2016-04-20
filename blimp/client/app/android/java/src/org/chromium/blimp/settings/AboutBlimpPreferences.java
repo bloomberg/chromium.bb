@@ -5,17 +5,24 @@
 package org.chromium.blimp.settings;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
+import org.chromium.blimp.BrowserRestartActivity;
 import org.chromium.blimp.R;
+import org.chromium.blimp.preferences.PreferencesUtil;
 
 /**
  * Fragment to display blimp client and engine version related info.
@@ -38,8 +45,14 @@ public class AboutBlimpPreferences extends PreferenceFragment {
         getActivity().setTitle(R.string.about_blimp_preferences);
         addPreferencesFromResource(R.xml.about_blimp_preferences);
 
-        Activity activity = getActivity();
-        PackageManager pm = getActivity().getPackageManager();
+        setAppVersion(getActivity());
+        setOSVersion();
+        setEngineIPandVersion(getActivity().getIntent());
+        setupAssignerPreferences();
+    }
+
+    private void setAppVersion(Activity activity) {
+        PackageManager pm = activity.getPackageManager();
         try {
             ApplicationInfo applicationInfo = pm.getApplicationInfo(activity.getPackageName(), 0);
             PackageInfo packageInfo = pm.getPackageInfo(activity.getPackageName(), 0);
@@ -58,20 +71,68 @@ public class AboutBlimpPreferences extends PreferenceFragment {
         } catch (PackageManager.NameNotFoundException e) {
             Log.d(TAG, "Fetching ApplicationInfo failed.", e);
         }
+    }
 
+    private void setOSVersion() {
         Preference p = findPreference(PREF_OS_VERSION);
         p.setSummary("Android " + Build.VERSION.RELEASE);
+    }
 
-        String engineIP = getActivity().getIntent().getStringExtra(EXTRA_ENGINE_IP);
-        p = findPreference(PREF_ENGINE_IP);
+    private void setEngineIPandVersion(Intent intent) {
+        String engineIP = intent.getStringExtra(EXTRA_ENGINE_IP);
+        Preference p = findPreference(PREF_ENGINE_IP);
         p.setSummary(engineIP == null ? "" : engineIP);
 
-        String engineVersion = getActivity().getIntent().getStringExtra(EXTRA_ENGINE_VERSION);
+        String engineVersion = intent.getStringExtra(EXTRA_ENGINE_VERSION);
         p = findPreference(PREF_ENGINE_VERSION);
         p.setSummary(engineVersion == null ? "" : engineVersion);
+    }
 
-        String assigner = getActivity().getIntent().getStringExtra(EXTRA_ASSIGNER_URL);
-        p = findPreference(PREF_ASSIGNER_URL);
-        p.setSummary(assigner == null ? "" : assigner);
+    /**
+     * When the user taps on the current assigner, a list of available assigners pops up.
+     * User is allowed to change the assigner which is saved to shared preferences.
+     * A dialog is displayed which prompts the user to restart the application.
+     */
+    private void setupAssignerPreferences() {
+        final Activity activity = getActivity();
+        String assigner = PreferencesUtil.getLastUsedAssigner(activity);
+
+        final ListPreference lp = (ListPreference) findPreference(PREF_ASSIGNER_URL);
+        lp.setSummary(assigner == null ? "" : assigner);
+
+        lp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                String newAssignmentUrl = (String) newValue;
+                lp.setSummary(newAssignmentUrl);
+                lp.setValue(newAssignmentUrl);
+
+                PreferencesUtil.setLastUsedAssigner(activity, newAssignmentUrl);
+                showRestartDialog(activity);
+
+                return true;
+            }
+        });
+    }
+
+    private void showRestartDialog(final Context context) {
+        // TODO(shaktisahu): Change this to use android.support.v7.app.AlertDialog later.
+        new AlertDialog.Builder(context)
+                .setTitle(R.string.restart_blimp)
+                .setMessage(R.string.blimp_assigner_changed_please_restart)
+                .setPositiveButton(R.string.restart_now,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                restartBrowser(context);
+                            }
+                        })
+                .create()
+                .show();
+    }
+
+    private void restartBrowser(Context context) {
+        Intent intent = BrowserRestartActivity.createRestartIntent(context);
+        context.startActivity(intent);
     }
 }
