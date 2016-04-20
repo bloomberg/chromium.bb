@@ -13,9 +13,13 @@
 #include "base/time/time.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
+#include "components/ntp_snippets/ntp_snippets_scheduler.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
 
 namespace ntp_snippets {
 
@@ -100,6 +104,16 @@ void ParseJson(
   }
 }
 
+class MockScheduler : public NTPSnippetsScheduler {
+ public:
+  MOCK_METHOD4(Schedule,
+               bool(base::TimeDelta period_wifi_charging,
+                    base::TimeDelta period_wifi,
+                    base::TimeDelta period_fallback,
+                    base::Time reschedule_time));
+  MOCK_METHOD0(Unschedule, bool());
+};
+
 }  // namespace
 
 class NTPSnippetsServiceTest : public testing::Test {
@@ -114,24 +128,32 @@ class NTPSnippetsServiceTest : public testing::Test {
     CreateSnippetsService();
   }
 
-  void CreateSnippetsService() {
+  virtual void CreateSnippetsService() {
+    CreateSnippetsServiceEnabled(true);
+  }
+
+  void CreateSnippetsServiceEnabled(bool enabled) {
+    scheduler_.reset(new MockScheduler);
     scoped_refptr<base::SingleThreadTaskRunner> task_runner(
         base::ThreadTaskRunnerHandle::Get());
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
         new net::TestURLRequestContextGetter(task_runner.get());
 
     service_.reset(new NTPSnippetsService(
-        pref_service_.get(), nullptr, task_runner, std::string("fr"), nullptr,
+        pref_service_.get(), nullptr, task_runner, std::string("fr"),
+        scheduler_.get(),
         make_scoped_ptr(new NTPSnippetsFetcher(
             task_runner, std::move(request_context_getter), true)),
         base::Bind(&ParseJson, true)));
-    service_->Init(true);
+    if (enabled)
+      EXPECT_CALL(*scheduler_, Schedule(_, _, _, _));
+    else
+      EXPECT_CALL(*scheduler_, Unschedule());
+    service_->Init(enabled);
   }
 
  protected:
-  NTPSnippetsService* service() {
-    return service_.get();
-  }
+  NTPSnippetsService* service() { return service_.get(); }
 
   void LoadFromJSONString(const std::string& json) {
     service_->OnSnippetsDownloaded(json);
@@ -145,9 +167,25 @@ class NTPSnippetsServiceTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_ptr<NTPSnippetsService> service_;
+  scoped_ptr<MockScheduler> scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
 };
+
+class NTPSnippetsServiceDisabledTest : public NTPSnippetsServiceTest {
+ public:
+  void CreateSnippetsService() override {
+    CreateSnippetsServiceEnabled(false);
+  }
+};
+
+TEST_F(NTPSnippetsServiceTest, Schedule) {
+  // CreateSnippetsServiceEnabled checks that Schedule is called.
+}
+
+TEST_F(NTPSnippetsServiceDisabledTest, Unschedule) {
+  // CreateSnippetsServiceEnabled checks that Unschedule is called.
+}
 
 TEST_F(NTPSnippetsServiceTest, Loop) {
   std::string json_str(
