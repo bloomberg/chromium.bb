@@ -137,7 +137,8 @@ Chrome extensions. There are three kinds of worlds: a main world,
 an isolated world and a worker world.
 A main world is a world where a normal JavaScript downloaded from the web
 is executed.
-An isolated world is a world where a content script of a Chrome extension.
+An isolated world is a world where a content script of a Chrome extension is
+executed.
 An isolate of the main thread has 1 main world and N isolated worlds.
 An isolate of a worker thread has 1 worker world and 0 isolated world.
 [This diagram](https://drive.google.com/file/d/0B1obCOyvTnPKQmJEWkVtOEN2TmM/view?usp=sharing)

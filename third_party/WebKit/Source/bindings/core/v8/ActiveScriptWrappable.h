@@ -11,6 +11,7 @@
 namespace blink {
 
 class ScriptWrappable;
+class ScriptWrappableVisitor;
 
 /**
  * Classes deriving from ActiveScriptWrappable will be registered in a
@@ -21,6 +22,8 @@ class CORE_EXPORT ActiveScriptWrappable {
     WTF_MAKE_NONCOPYABLE(ActiveScriptWrappable);
 public:
     explicit ActiveScriptWrappable(ScriptWrappable*);
+
+    static void traceActiveScriptWrappables(ScriptWrappableVisitor*);
 
     virtual bool hasPendingActivity() const = 0;
 

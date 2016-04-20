@@ -1269,6 +1269,32 @@ The code generates a function called `YYY::visitDOMWrapper` which is called by `
 
 The `[SetWrapperReferenceTo]` extended attribute takes a value, which is the method name to call to get the target object. For example, with the above declaration a call will be made to `YYY::targetMethod()` to get the target of the reference.
 
+### [TraceWrappers=(list)] _(i)_
+
+Summary: This generates code that traces script-wrappable references (which are used to keep wrappers alive during V8 GC).
+
+Usage: `[TraceWrappers=(list)]` can be specified on an interface.
+
+```webidl
+[
+  TraceWrappers=(element1, element2)
+] interface XXX : YYY { ... };
+```
+
+The generator generates a function called `XXX::traceWrappers` which is called by `ScriptWrappableVisitor` during V8 GC. The function adds references from the XXX instance to this object's element1() and element2() children.
+
+The generated code is then:
+
+```c++
+DEFINE_TRACE_WRAPPERS(XXX)
+{
+    visitor->traceWrappers(element1());
+    visitor->traceWrappers(element2());
+
+    YYY::traceWrappers(visitor);
+}
+```
+
 ## Rare Blink-specific IDL Extended Attributes
 
 These extended attributes are rarely used, generally only in one or two places. These are often replacements for `[Custom]` bindings, and may be candidates for deprecation and removal.

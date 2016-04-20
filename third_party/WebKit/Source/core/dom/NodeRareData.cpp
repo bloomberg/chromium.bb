@@ -30,6 +30,7 @@
 
 #include "core/dom/NodeRareData.h"
 
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementRareData.h"
 #include "core/frame/FrameHost.h"

@@ -40,6 +40,7 @@
     Iterable,
     RuntimeEnabled=FeatureName,
     SetWrapperReferenceTo(TestInterface referencedName),
+    TraceWrappers=(firstChild,nextSibling,prevSibling,parent),
     Exposed=(Worker,Window),
 ] interface TestInterface : TestInterfaceEmpty {
     // members needed to test [ImplementedAs], as this affect attribute

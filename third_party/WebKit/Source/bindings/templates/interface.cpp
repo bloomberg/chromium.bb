@@ -534,6 +534,21 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {% endif %}
 {% endblock %}
 
+{##############################################################################}
+
+{% block trace_wrappers %}
+{% if trace_wrappers %}
+DEFINE_TRACE_WRAPPERS({{cpp_class_or_partial}})
+{
+    {% for traceable in trace_wrappers %}
+    visitor->traceWrappers({{traceable}}());
+    {% endfor %}
+    {% if parent_interface %}
+    {{parent_interface}}::traceWrappers(visitor);
+    {% endif %}
+}
+{% endif %}
+{% endblock %}
 
 {##############################################################################}
 {% block visit_dom_wrapper %}

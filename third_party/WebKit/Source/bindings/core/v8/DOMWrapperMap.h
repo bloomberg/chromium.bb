@@ -93,6 +93,11 @@ public:
         m_map.Remove(key);
     }
 
+    void markWrapper(KeyType* object)
+    {
+        m_map.RegisterExternallyReferencedObject(object);
+    }
+
 private:
     class PersistentValueMapTraits {
         STATIC_ONLY(PersistentValueMapTraits);

@@ -54,6 +54,7 @@ enum WorldIdConstants {
 };
 
 class DOMObjectHolderBase;
+class DOMWrapperWorldVisitor;
 template<typename T> class DOMObjectHolder;
 
 // This class represent a collection of DOM wrappers for a specific world.
@@ -69,6 +70,7 @@ public:
 
     static bool isolatedWorldsExist() { return isolatedWorldCount; }
     static void allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld>>& worlds);
+    static void markWrappersInAllWorlds(ScriptWrappable*, v8::Isolate*);
 
     static DOMWrapperWorld& world(v8::Local<v8::Context> context)
     {

@@ -334,6 +334,10 @@ static void initializeV8Common(v8::Isolate* isolate)
 {
     isolate->AddGCPrologueCallback(V8GCController::gcPrologue);
     isolate->AddGCEpilogueCallback(V8GCController::gcEpilogue);
+    if (RuntimeEnabledFeatures::traceWrappablesEnabled()) {
+        ScriptWrappableVisitor* visitor = new ScriptWrappableVisitor(isolate);
+        isolate->SetEmbedderHeapTracer(visitor);
+    }
 
     v8::Debug::SetLiveEditEnabled(isolate, false);
 

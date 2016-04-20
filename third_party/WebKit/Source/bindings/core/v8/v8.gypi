@@ -127,6 +127,8 @@
             'V8EventListenerList.h',
             'V8GCController.cpp',
             'V8GCController.h',
+            'ScriptWrappableVisitor.cpp',
+            'ScriptWrappableVisitor.h',
             'V8GCForContextDispose.cpp',
             'V8GCForContextDispose.h',
             'V8GlobalValueMap.h',

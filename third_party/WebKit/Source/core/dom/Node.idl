@@ -22,6 +22,7 @@
 
 [
     DependentLifetime,
+    TraceWrappers=(ownerDocument,parentNode,parentElement,nextSibling,previousSibling,firstChild)
 ] interface Node : EventTarget {
     const unsigned short ELEMENT_NODE = 1;
     // FIXME: Attr should not inherit from Node. crbug.com/305105

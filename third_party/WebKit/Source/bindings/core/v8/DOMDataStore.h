@@ -153,6 +153,11 @@ public:
         return m_wrapperMap->newLocal(isolate, object);
     }
 
+    void markWrapper(ScriptWrappable* scriptWrappable)
+    {
+        m_wrapperMap->markWrapper(scriptWrappable);
+    }
+
     void setReference(const v8::Persistent<v8::Object>& parent, ScriptWrappable* child, v8::Isolate* isolate)
     {
         if (m_isMainWorld) {

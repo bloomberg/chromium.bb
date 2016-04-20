@@ -31,6 +31,7 @@
 #ifndef ScriptWrappable_h
 #define ScriptWrappable_h
 
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -148,6 +149,15 @@ public:
     }
 
     bool containsWrapper() const { return !m_wrapper.IsEmpty(); }
+
+    /**
+     *  Mark wrapper of this ScriptWrappable as alive in V8. Only marks
+     *  wrapper in the main world. To mark wrappers in all worlds call
+     *  ScriptWrappableVisitor::markWrapper(ScriptWrappable*, v8::Isolate*)
+     */
+    void markWrapper(v8::Isolate*) const;
+
+    DECLARE_VIRTUAL_TRACE_WRAPPERS() {};
 
     // With Oilpan we don't need a ScriptWrappable destructor.
     //

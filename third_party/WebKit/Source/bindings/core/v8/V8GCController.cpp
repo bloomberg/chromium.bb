@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/RetainedDOMInfo.h"
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8MutationObserver.h"
@@ -168,7 +169,7 @@ public:
         if (type->hasPendingActivity(wrapper)) {
             // If you hit this assert, you'll need to add a [DependentiLifetime]
             // extended attribute to the DOM interface. A DOM interface that
-            // overrides hasPendingActivity must be marked as [DependentiLifetime].
+            // overrides hasPendingActivity must be marked as [DependentLifetime].
             RELEASE_ASSERT(!value->IsIndependent());
             m_isolate->SetObjectGroupId(*value, liveRootId());
             ++m_domObjectsWithPendingActivity;
@@ -259,6 +260,9 @@ void objectGroupingForMajorGC(v8::Isolate* isolate, bool constructRetainedObject
 
 void gcPrologueForMajorGC(v8::Isolate* isolate, bool constructRetainedObjectInfos)
 {
+    if (RuntimeEnabledFeatures::traceWrappablesEnabled())
+        return;
+
     objectGroupingForMajorGC(isolate, constructRetainedObjectInfos);
 }
 

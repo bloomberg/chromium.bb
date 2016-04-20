@@ -4,6 +4,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "wtf/HashSet.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
@@ -36,6 +37,16 @@ ActiveScriptWrappable::~ActiveScriptWrappable()
 ScriptWrappable* ActiveScriptWrappable::toScriptWrappable() const
 {
     return m_scriptWrappable;
+}
+
+void ActiveScriptWrappable::traceActiveScriptWrappables(ScriptWrappableVisitor* visitor)
+{
+    for (auto activeWrappable : activeScriptWrappables()) {
+        if (!activeWrappable->hasPendingActivity())
+            continue;
+
+        visitor->traceWrappers(activeWrappable->toScriptWrappable());
+    }
 }
 
 } // namespace blink

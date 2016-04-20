@@ -11,6 +11,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
@@ -1979,6 +1980,14 @@ void V8TestInterface::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scr
     }
 }
 
+DEFINE_TRACE_WRAPPERS(TestInterfaceImplementation)
+{
+    visitor->traceWrappers(firstChild());
+    visitor->traceWrappers(nextSibling());
+    visitor->traceWrappers(prevSibling());
+    visitor->traceWrappers(parent());
+    TestInterfaceEmpty::traceWrappers(visitor);
+}
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
 // and does not depend on another global objects.
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
