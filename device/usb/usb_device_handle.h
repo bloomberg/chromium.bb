@@ -120,7 +120,6 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
   friend class base::RefCountedThreadSafe<UsbDeviceHandle>;
 
   UsbDeviceHandle();
-
   virtual ~UsbDeviceHandle();
 
  private:

@@ -4,12 +4,14 @@
 
 #include "device/usb/usb_device_impl.h"
 
+#include <fcntl.h>
 #include <stddef.h>
 
 #include <algorithm>
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -18,9 +20,14 @@
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_context.h"
 #include "device/usb/usb_descriptors.h"
-#include "device/usb/usb_device_handle_impl.h"
 #include "device/usb/usb_error.h"
 #include "third_party/libusb/src/libusb/libusb.h"
+
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_LINUX)
+#include "device/usb/usb_device_handle_usbfs.h"
+#else
+#include "device/usb/usb_device_handle_impl.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -201,9 +208,9 @@ void UsbDeviceImpl::Open(const OpenCallback& callback) {
 #endif  // defined(OS_CHROMEOS)
 }
 
-void UsbDeviceImpl::HandleClosed(scoped_refptr<UsbDeviceHandle> handle) {
+void UsbDeviceImpl::HandleClosed(UsbDeviceHandle* handle) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  handles_.remove(handle.get());
+  handles_.remove(handle);
 }
 
 const UsbConfigDescriptor* UsbDeviceImpl::GetActiveConfiguration() const {
@@ -250,6 +257,15 @@ void UsbDeviceImpl::ReadAllConfigurations() {
   }
 }
 
+void UsbDeviceImpl::ActiveConfigurationChanged(int configuration_value) {
+  for (const auto& config : configurations_) {
+    if (config.configuration_value == configuration_value) {
+      active_configuration_ = &config;
+      return;
+    }
+  }
+}
+
 void UsbDeviceImpl::RefreshActiveConfiguration() {
   active_configuration_ = nullptr;
   libusb_config_descriptor* platform_config;
@@ -261,13 +277,7 @@ void UsbDeviceImpl::RefreshActiveConfiguration() {
     return;
   }
 
-  for (const auto& config : configurations_) {
-    if (config.configuration_value == platform_config->bConfigurationValue) {
-      active_configuration_ = &config;
-      break;
-    }
-  }
-
+  ActiveConfigurationChanged(platform_config->bConfigurationValue);
   libusb_free_config_descriptor(platform_config);
 }
 
@@ -291,21 +301,32 @@ void UsbDeviceImpl::OnOpenRequestError(const OpenCallback& callback,
 void UsbDeviceImpl::OpenOnBlockingThreadWithFd(dbus::FileDescriptor fd,
                                                const OpenCallback& callback) {
   fd.CheckValidity();
-  DCHECK(fd.is_valid());
-
-  PlatformUsbDeviceHandle handle;
-  const int rv = libusb_open_fd(platform_device_, fd.TakeValue(), &handle);
-  if (LIBUSB_SUCCESS == rv) {
-    task_runner_->PostTask(
-        FROM_HERE, base::Bind(&UsbDeviceImpl::Opened, this, handle, callback));
+  if (fd.is_valid()) {
+    base::ScopedFD scoped_fd(fd.TakeValue());
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&UsbDeviceImpl::Opened, this,
+                                      base::Passed(&scoped_fd), callback));
   } else {
-    USB_LOG(EVENT) << "Failed to open device: "
-                   << ConvertPlatformUsbErrorToString(rv);
+    USB_LOG(EVENT) << "Did not get valid device handle from permission broker.";
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
   }
 }
 
-#endif  // defined(OS_CHROMEOS)
+#else
+#if defined(OS_LINUX)
+
+void UsbDeviceImpl::OpenOnBlockingThread(const OpenCallback& callback) {
+  base::ScopedFD fd(HANDLE_EINTR(open(device_path_.c_str(), O_RDWR)));
+  if (fd.is_valid()) {
+    task_runner_->PostTask(FROM_HERE, base::Bind(&UsbDeviceImpl::Opened, this,
+                                                 base::Passed(&fd), callback));
+  } else {
+    USB_PLOG(EVENT) << "Failed to open device";
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+  }
+}
+
+#else
 
 void UsbDeviceImpl::OpenOnBlockingThread(const OpenCallback& callback) {
   PlatformUsbDeviceHandle handle;
@@ -320,13 +341,30 @@ void UsbDeviceImpl::OpenOnBlockingThread(const OpenCallback& callback) {
   }
 }
 
+#endif  // defined(OS_LINUX)
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_LINUX)
+
+void UsbDeviceImpl::Opened(base::ScopedFD fd, const OpenCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  scoped_refptr<UsbDeviceHandle> device_handle =
+      new UsbDeviceHandleUsbfs(this, std::move(fd), blocking_task_runner_);
+  handles_.push_back(device_handle.get());
+  callback.Run(device_handle);
+}
+
+#else
+
 void UsbDeviceImpl::Opened(PlatformUsbDeviceHandle platform_handle,
                            const OpenCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  scoped_refptr<UsbDeviceHandleImpl> device_handle = new UsbDeviceHandleImpl(
+  scoped_refptr<UsbDeviceHandle> device_handle = new UsbDeviceHandleImpl(
       context_, this, platform_handle, blocking_task_runner_);
   handles_.push_back(device_handle.get());
   callback.Run(device_handle);
 }
+
+#endif  // defined(OS_LINUX)
 
 }  // namespace device

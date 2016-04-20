@@ -253,6 +253,36 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
   handle->Close();
 }
 
+TEST_F(UsbDeviceHandleTest, ControlTransfer) {
+  if (!UsbTestGadget::IsTestEnabled())
+    return;
+
+  std::unique_ptr<UsbTestGadget> gadget =
+      UsbTestGadget::Claim(io_thread_->task_runner());
+  ASSERT_TRUE(gadget.get());
+
+  TestOpenCallback open_device;
+  gadget->GetDevice()->Open(open_device.callback());
+  scoped_refptr<UsbDeviceHandle> handle = open_device.WaitForResult();
+  ASSERT_TRUE(handle.get());
+
+  scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(255));
+  TestCompletionCallback completion;
+  handle->ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
+                          UsbDeviceHandle::DEVICE, 0x06, 0x0301, 0x0409, buffer,
+                          buffer->size(), 0, completion.callback());
+  completion.WaitForResult();
+  ASSERT_EQ(USB_TRANSFER_COMPLETED, completion.status());
+  const char expected_str[] = "\x18\x03G\0o\0o\0g\0l\0e\0 \0I\0n\0c\0.\0";
+  EXPECT_EQ(sizeof(expected_str) - 1, completion.transferred());
+  for (size_t i = 0; i < completion.transferred(); ++i) {
+    EXPECT_EQ(expected_str[i], buffer->data()[i]) << "Mismatch at index " << i
+                                                  << ".";
+  }
+
+  handle->Close();
+}
+
 TEST_F(UsbDeviceHandleTest, SetInterfaceAlternateSetting) {
   if (!UsbTestGadget::IsTestEnabled()) {
     return;
