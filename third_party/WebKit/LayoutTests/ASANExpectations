@@ -20,19 +20,6 @@ crbug.com/145940 [ Linux ] plugins/iframe-shims.html [ Skip ]
 crbug.com/144118 [ Linux ] plugins/destroy-on-setwindow.html [ Skip ]
 
 
-# heap-use-after-free in bluethooth notifications tests. http://crbug.com/604318
-#0 0xd038118 in size buildtools/third_party/libc++/trunk/include/vector:639:46
-#1 0xd038118 in size base/observer_list.h:114:0
-#2 0xd038118 in might_have_observers base/observer_list.h:232:0
-#3 0xd038118 in DoNotify device/bluetooth/test/mock_bluetooth_gatt_notify_session.cc:44:0
-crbug.com/604318 bluetooth/notifications/concurrent-starts.html [ Skip ]
-crbug.com/604318 bluetooth/notifications/start-before-stop-resolves.html [ Skip ]
-crbug.com/604318 bluetooth/notifications/add-listener-after-promise.html [ Skip ]
-crbug.com/604318 bluetooth/notifications/gc-with-pending-start.html [ Skip ]
-crbug.com/604318 bluetooth/notifications/start-twice-in-a-row.html [ Skip ]
-crbug.com/604318 bluetooth/notifications/start-succeeds.html [ Skip ]
-
-
 # Use-after-free in NPP_DestroyStream, http://crbug.com/166932
 # ==17332== ERROR: AddressSanitizer: heap-use-after-free on address 0x7f48e8a05a58
 # WRITE of size 1 at 0x7f48e8a05a58 thread T0

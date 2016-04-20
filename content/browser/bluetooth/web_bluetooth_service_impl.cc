@@ -91,7 +91,15 @@ void WebBluetoothServiceImpl::DidFinishNavigation(
       navigation_handle->GetRenderFrameHost() == render_frame_host_ &&
       !navigation_handle->IsSamePage()) {
     // After navigation we need to clear the frame's state.
-    characteristic_id_to_notify_session_.clear();
+    ClearState();
+  }
+}
+
+void WebBluetoothServiceImpl::AdapterPresentChanged(
+    device::BluetoothAdapter* adapter,
+    bool present) {
+  if (!present) {
+    ClearState();
   }
 }
 
@@ -374,6 +382,10 @@ void WebBluetoothServiceImpl::CrashRendererAndClosePipe(
 
 url::Origin WebBluetoothServiceImpl::GetOrigin() {
   return render_frame_host_->GetLastCommittedOrigin();
+}
+
+void WebBluetoothServiceImpl::ClearState() {
+  characteristic_id_to_notify_session_.clear();
 }
 
 }  // namespace content

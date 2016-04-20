@@ -483,6 +483,12 @@ void BluetoothDispatcherHost::set_adapter(
     for (device::BluetoothAdapter::Observer* observer : adapter_observers_) {
       adapter_->AddObserver(observer);
     }
+  } else {
+    // Notify that the adapter has been removed and observers should clean up
+    // their state.
+    for (device::BluetoothAdapter::Observer* observer : adapter_observers_) {
+      observer->AdapterPresentChanged(nullptr, false);
+    }
   }
 }
 

@@ -21,14 +21,6 @@ crbug.com/420606 [ Linux ] fast/workers/worker-constructor.html [ Skip ]
 crbug.com/420606 [ Linux ] virtual/slimmingpaint/fast/workers/worker-constructor.html [ Skip ]
 crbug.com/420606 [ Linux ] virtual/sharedarraybuffer/fast/workers/worker-constructor.html [ Skip ]
 
-# heap-use-after-free in bluethooth notifications tests. http://crbug.com/604318
-crbug.com/604318 bluetooth/notifications/concurrent-starts.html [ Skip ]
-crbug.com/604318 bluetooth/notifications/start-before-stop-resolves.html [ Skip ]
-crbug.com/604318 bluetooth/notifications/add-listener-after-promise.html [ Skip ]
-crbug.com/604318 bluetooth/notifications/gc-with-pending-start.html [ Skip ]
-crbug.com/604318 bluetooth/notifications/start-twice-in-a-row.html [ Skip ]
-crbug.com/604318 bluetooth/notifications/start-succeeds.html [ Skip ]
-
 # Flaky under MSan (hang forever).
 crbug.com/422982 [ Linux ] virtual/threaded [ Skip ]
 

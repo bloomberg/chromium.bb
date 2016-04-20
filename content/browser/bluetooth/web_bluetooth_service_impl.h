@@ -60,6 +60,8 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
   // BluetoothAdapter::Observer:
+  void AdapterPresentChanged(device::BluetoothAdapter* adapter,
+                             bool present) override;
   void GattCharacteristicValueChanged(
       device::BluetoothAdapter* adapter,
       device::BluetoothGattCharacteristic* characteristic,
@@ -123,8 +125,8 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   void CrashRendererAndClosePipe(bad_message::BadMessageReason reason);
   url::Origin GetOrigin();
 
-  // All state (maps, sets, etc.) should be cleaned after navigations
-  // that are not in the same page.
+  // Clears all state (maps, sets, etc).
+  void ClearState();
 
   // Map to keep track of the characteristics' notify sessions.
   std::unordered_map<std::string,
