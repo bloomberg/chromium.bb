@@ -16,8 +16,7 @@ import org.chromium.content.common.CleanupReference;
  * Simple Java abstraction and wrapper for the native DrawGLFunctor flow.
  * An instance of this class can be constructed, bound to a single view context (i.e. AwContennts)
  * and then drawn and detached from the view tree any number of times (using requestDrawGL and
- * detach respectively). Then when finished with, it can be explicitly released by calling
- * destroy() or will clean itself up as required via finalizer / CleanupReference.
+ * detach respectively).
  */
 class DrawGLFunctor {
     private static final String TAG = DrawGLFunctor.class.getSimpleName();
@@ -34,17 +33,6 @@ class DrawGLFunctor {
         mDestroyRunnable = new DestroyRunnable(mNativeDrawGLFunctor);
         mCleanupReference = new CleanupReference(this, mDestroyRunnable);
         mWebViewDelegate = webViewDelegate;
-    }
-
-    public void destroy() {
-        detach();
-        if (mCleanupReference != null) {
-            mCleanupReference.cleanupNow();
-            mCleanupReference = null;
-            mDestroyRunnable = null;
-            mWebViewDelegate = null;
-            mContainerView = null;
-        }
     }
 
     public void detach() {

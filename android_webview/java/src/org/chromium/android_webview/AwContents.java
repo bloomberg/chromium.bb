@@ -322,18 +322,17 @@ public class AwContents implements SmartClipProvider,
         // Hold onto a reference to the window (via its wrapper), so that it is not destroyed
         // until we are done here.
         private final WindowAndroidWrapper mWindowAndroid;
-        private final Runnable mAwGLFunctorDestroyRunnable;
+        private final Object mAwGLFunctorNativeLifetimeObject;
 
         private DestroyRunnable(long nativeAwContents, WindowAndroidWrapper windowAndroid,
                 AwGLFunctor awGLFunctor) {
             mNativeAwContents = nativeAwContents;
             mWindowAndroid = windowAndroid;
-            mAwGLFunctorDestroyRunnable = awGLFunctor.getDestroyRunnable();
+            mAwGLFunctorNativeLifetimeObject = awGLFunctor.getNativeLifetimeObject();
         }
         @Override
         public void run() {
             nativeDestroy(mNativeAwContents);
-            mAwGLFunctorDestroyRunnable.run();
         }
     }
 

@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content.common.CleanupReference;
 
 /**
  * Manages state associated with the Android render thread and the draw functor
@@ -33,6 +34,7 @@ class AwGLFunctor {
 
     private final long mNativeAwGLFunctor;
     private final DestroyRunnable mDestroyRunnable;
+    private final CleanupReference mCleanupReference;
     private final AwContents.NativeGLDelegate mNativeGLDelegate;
     private final ViewGroup mContainerView;
     private final Runnable mFunctorReleasedCallback;
@@ -40,6 +42,7 @@ class AwGLFunctor {
     public AwGLFunctor(AwContents.NativeGLDelegate nativeGLDelegate, ViewGroup containerView) {
         mNativeAwGLFunctor = nativeCreate(this);
         mDestroyRunnable = new DestroyRunnable(mNativeAwGLFunctor);
+        mCleanupReference = new CleanupReference(mDestroyRunnable, mDestroyRunnable);
         mNativeGLDelegate = nativeGLDelegate;
         mContainerView = containerView;
         if (mNativeGLDelegate.supportsDrawGLFunctorReleasedCallback()) {
@@ -63,7 +66,7 @@ class AwGLFunctor {
         return mNativeAwGLFunctor;
     }
 
-    public Runnable getDestroyRunnable() {
+    public Object getNativeLifetimeObject() {
         return mDestroyRunnable;
     }
 

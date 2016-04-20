@@ -461,10 +461,6 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         mContentsClientAdapter.setDownloadListener(null);
 
         mAwContents.destroy();
-        if (mGLfunctor != null) {
-            mGLfunctor.destroy();
-            mGLfunctor = null;
-        }
     }
 
     @Override
