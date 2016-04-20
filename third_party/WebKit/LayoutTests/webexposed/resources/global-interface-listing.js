@@ -144,9 +144,7 @@ function collectPropertyKeys(object) {
        return propertyKeys = Object.keys(object).
            concat(ownEnumerableSymbols(object)).
            filter(function(name) {
-                // TODO(johnme): Stop filtering out 'toString' once
-                //               https://crbug.com/547773 is fixed.
-               return !protoProperties.has(name) && name !== 'toString';
+               return !protoProperties.has(name);
            });
    }
    return Object.getOwnPropertyNames(object).concat(Object.getOwnPropertySymbols(object));

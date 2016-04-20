@@ -108,9 +108,7 @@ interface_names.forEach(function(interface_name) {
       var proto_properties = new Set(Object.keys(object.prototype).concat(
                                      Object.keys(object.__proto__)));
       var property_names = Object.keys(object).filter(function(name) {
-        // TODO(johnme): Stop filtering out 'toString' once
-        //               https://crbug.com/547773 is fixed.
-        return !proto_properties.has(name) && name !== 'toString';
+        return !proto_properties.has(name);
       });
     } else {
       var property_names = Object.getOwnPropertyNames(object);
