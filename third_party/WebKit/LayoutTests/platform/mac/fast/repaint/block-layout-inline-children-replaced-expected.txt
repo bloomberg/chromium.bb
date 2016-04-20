@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='target' class='target'",
-          "rect": [0, 36, 402, 152],
+          "rect": [0, 34, 402, 152],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutImage IMG",
-          "rect": [154, 37, 94, 100],
+          "rect": [154, 35, 94, 100],
           "reason": "location change"
         },
         {
