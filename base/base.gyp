@@ -546,6 +546,7 @@
         'system_monitor/system_monitor_unittest.cc',
         'task/cancelable_task_tracker_unittest.cc',
         'task_runner_util_unittest.cc',
+        'task_scheduler/delayed_task_manager_unittest.cc',
         'task_scheduler/priority_queue_unittest.cc',
         'task_scheduler/scheduler_lock_unittest.cc',
         'task_scheduler/scheduler_thread_pool_unittest.cc',

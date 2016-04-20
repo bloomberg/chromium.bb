@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/task_scheduler/delayed_task_manager.h"
 #include "base/task_scheduler/priority_queue.h"
 #include "base/task_scheduler/scheduler_task_executor.h"
 #include "base/task_scheduler/sequence.h"
@@ -33,8 +34,8 @@ class MockSchedulerTaskExecutor : public SchedulerTaskExecutor {
                void(const Task* task, const Sequence* sequence));
 };
 
-// Verifies that when PostTaskToExecutor receives a Task that is allowed to be
-// posted, it forwards it to a SchedulerTaskExecutor.
+// Verifies that when PostTaskToExecutor receives a non-delayed Task that is
+// allowed to be posted, it forwards it to a SchedulerTaskExecutor.
 TEST(TaskSchedulerPostTaskToExecutorTest, PostTaskAllowed) {
   std::unique_ptr<Task> task(
       new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeTicks()));
@@ -42,9 +43,27 @@ TEST(TaskSchedulerPostTaskToExecutorTest, PostTaskAllowed) {
   scoped_refptr<Sequence> sequence(new Sequence);
   testing::StrictMock<MockSchedulerTaskExecutor> executor;
   TaskTracker task_tracker;
+  DelayedTaskManager delayed_task_manager(Bind(&DoNothing));
 
   EXPECT_CALL(executor, PostTaskWithSequenceMock(task_raw, sequence.get()));
-  PostTaskToExecutor(std::move(task), sequence, &executor, &task_tracker);
+  PostTaskToExecutor(std::move(task), sequence, &executor, &task_tracker,
+                     &delayed_task_manager);
+}
+
+// Verifies that when PostTaskToExecutor receives a delayed Task that is allowed
+// to be posted, it forwards it to a DelayedTaskManager.
+TEST(TaskSchedulerPostTaskToExecutorTest, PostDelayedTaskAllowed) {
+  scoped_refptr<Sequence> sequence(new Sequence);
+  testing::StrictMock<MockSchedulerTaskExecutor> executor;
+  TaskTracker task_tracker;
+  DelayedTaskManager delayed_task_manager(Bind(&DoNothing));
+
+  EXPECT_TRUE(delayed_task_manager.GetDelayedRunTime().is_null());
+  PostTaskToExecutor(
+      WrapUnique(new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(),
+                          TimeTicks::Now() + TimeDelta::FromSeconds(10))),
+      sequence, &executor, &task_tracker, &delayed_task_manager);
+  EXPECT_FALSE(delayed_task_manager.GetDelayedRunTime().is_null());
 }
 
 // Verifies that when PostTaskToExecutor receives a Task that isn't allowed to
@@ -54,12 +73,13 @@ TEST(TaskSchedulerPostTaskToExecutorTest, PostTaskNotAllowed) {
   // call to the mock method of |executor|.
   testing::StrictMock<MockSchedulerTaskExecutor> executor;
   TaskTracker task_tracker;
+  DelayedTaskManager delayed_task_manager(Bind(&DoNothing));
   task_tracker.Shutdown();
 
   PostTaskToExecutor(WrapUnique(new Task(FROM_HERE, Bind(&DoNothing),
                                          TaskTraits(), TimeTicks())),
-                     make_scoped_refptr(new Sequence), &executor,
-                     &task_tracker);
+                     make_scoped_refptr(new Sequence), &executor, &task_tracker,
+                     &delayed_task_manager);
 }
 
 // Verifies that when AddTaskToSequenceAndPriorityQueue is called with an empty

@@ -29,6 +29,7 @@
 namespace base {
 namespace internal {
 
+class DelayedTaskManager;
 struct SequenceSortKey;
 class TaskTracker;
 
@@ -47,13 +48,15 @@ class BASE_EXPORT SchedulerThreadPool : public SchedulerTaskExecutor {
   // Creates a SchedulerThreadPool with up to |max_threads| threads of priority
   // |thread_priority|. |enqueue_sequence_callback| will be invoked after a
   // thread of this thread pool tries to run a Task. |task_tracker| is used to
-  // handle shutdown behavior of Tasks. Returns nullptr on failure to create a
-  // thread pool with at least one thread.
+  // handle shutdown behavior of Tasks. |delayed_task_manager| handles Tasks
+  // posted with a delay. Returns nullptr on failure to create a thread pool
+  // with at least one thread.
   static std::unique_ptr<SchedulerThreadPool> CreateThreadPool(
       ThreadPriority thread_priority,
       size_t max_threads,
       const EnqueueSequenceCallback& enqueue_sequence_callback,
-      TaskTracker* task_tracker);
+      TaskTracker* task_tracker,
+      DelayedTaskManager* delayed_task_manager);
 
   // Returns a TaskRunner whose PostTask invocations will result in scheduling
   // Tasks with |traits| and |execution_mode| in this thread pool.
@@ -83,7 +86,8 @@ class BASE_EXPORT SchedulerThreadPool : public SchedulerTaskExecutor {
   class SchedulerWorkerThreadDelegateImpl;
 
   SchedulerThreadPool(const EnqueueSequenceCallback& enqueue_sequence_callback,
-                      TaskTracker* task_tracker);
+                      TaskTracker* task_tracker,
+                      DelayedTaskManager* delayed_task_manager);
 
   bool Initialize(ThreadPriority thread_priority, size_t max_threads);
 
@@ -124,6 +128,7 @@ class BASE_EXPORT SchedulerThreadPool : public SchedulerTaskExecutor {
   std::unique_ptr<SchedulerWorkerThread::Delegate> worker_thread_delegate_;
 
   TaskTracker* const task_tracker_;
+  DelayedTaskManager* const delayed_task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerThreadPool);
 };

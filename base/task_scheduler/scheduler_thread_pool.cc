@@ -31,9 +31,13 @@ class SchedulerParallelTaskRunner : public TaskRunner {
   // long as |executor| is alive.
   // TODO(robliao): Find a concrete way to manage |executor|'s memory.
   SchedulerParallelTaskRunner(const TaskTraits& traits,
+                              SchedulerTaskExecutor* executor,
                               TaskTracker* task_tracker,
-                              SchedulerTaskExecutor* executor)
-      : traits_(traits), task_tracker_(task_tracker), executor_(executor) {}
+                              DelayedTaskManager* delayed_task_manager)
+      : traits_(traits),
+        executor_(executor),
+        task_tracker_(task_tracker),
+        delayed_task_manager_(delayed_task_manager) {}
 
   // TaskRunner:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
@@ -44,7 +48,8 @@ class SchedulerParallelTaskRunner : public TaskRunner {
         WrapUnique(
             new Task(from_here, closure, traits_,
                      delay.is_zero() ? TimeTicks() : TimeTicks::Now() + delay)),
-        make_scoped_refptr(new Sequence), executor_, task_tracker_);
+        make_scoped_refptr(new Sequence), executor_, task_tracker_,
+        delayed_task_manager_);
   }
 
   bool RunsTasksOnCurrentThread() const override {
@@ -55,8 +60,9 @@ class SchedulerParallelTaskRunner : public TaskRunner {
   ~SchedulerParallelTaskRunner() override = default;
 
   const TaskTraits traits_;
-  TaskTracker* const task_tracker_;
   SchedulerTaskExecutor* const executor_;
+  TaskTracker* const task_tracker_;
+  DelayedTaskManager* const delayed_task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerParallelTaskRunner);
 };
@@ -68,9 +74,13 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
   // long as |executor| is alive.
   // TODO(robliao): Find a concrete way to manage |executor|'s memory.
   SchedulerSequencedTaskRunner(const TaskTraits& traits,
+                               SchedulerTaskExecutor* executor,
                                TaskTracker* task_tracker,
-                               SchedulerTaskExecutor* executor)
-      : traits_(traits), task_tracker_(task_tracker), executor_(executor) {}
+                               DelayedTaskManager* delayed_task_manager)
+      : traits_(traits),
+        executor_(executor),
+        task_tracker_(task_tracker),
+        delayed_task_manager_(delayed_task_manager) {}
 
   // SequencedTaskRunner:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
@@ -81,7 +91,7 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
         WrapUnique(
             new Task(from_here, closure, traits_,
                      delay.is_zero() ? TimeTicks() : TimeTicks::Now() + delay)),
-        sequence_, executor_, task_tracker_);
+        sequence_, executor_, task_tracker_, delayed_task_manager_);
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
@@ -102,8 +112,9 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
   const scoped_refptr<Sequence> sequence_ = new Sequence;
 
   const TaskTraits traits_;
-  TaskTracker* const task_tracker_;
   SchedulerTaskExecutor* const executor_;
+  TaskTracker* const task_tracker_;
+  DelayedTaskManager* const delayed_task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerSequencedTaskRunner);
 };
@@ -141,9 +152,10 @@ std::unique_ptr<SchedulerThreadPool> SchedulerThreadPool::CreateThreadPool(
     ThreadPriority thread_priority,
     size_t max_threads,
     const EnqueueSequenceCallback& enqueue_sequence_callback,
-    TaskTracker* task_tracker) {
-  std::unique_ptr<SchedulerThreadPool> thread_pool(
-      new SchedulerThreadPool(enqueue_sequence_callback, task_tracker));
+    TaskTracker* task_tracker,
+    DelayedTaskManager* delayed_task_manager) {
+  std::unique_ptr<SchedulerThreadPool> thread_pool(new SchedulerThreadPool(
+      enqueue_sequence_callback, task_tracker, delayed_task_manager));
   if (thread_pool->Initialize(thread_priority, max_threads))
     return thread_pool;
   return nullptr;
@@ -154,12 +166,12 @@ scoped_refptr<TaskRunner> SchedulerThreadPool::CreateTaskRunnerWithTraits(
     ExecutionMode execution_mode) {
   switch (execution_mode) {
     case ExecutionMode::PARALLEL:
-      return make_scoped_refptr(
-          new SchedulerParallelTaskRunner(traits, task_tracker_, this));
+      return make_scoped_refptr(new SchedulerParallelTaskRunner(
+          traits, this, task_tracker_, delayed_task_manager_));
 
     case ExecutionMode::SEQUENCED:
-      return make_scoped_refptr(
-          new SchedulerSequencedTaskRunner(traits, task_tracker_, this));
+      return make_scoped_refptr(new SchedulerSequencedTaskRunner(
+          traits, this, task_tracker_, delayed_task_manager_));
 
     case ExecutionMode::SINGLE_THREADED:
       // TODO(fdoray): Support SINGLE_THREADED TaskRunners.
@@ -269,7 +281,8 @@ void SchedulerThreadPool::SchedulerWorkerThreadDelegateImpl::EnqueueSequence(
 
 SchedulerThreadPool::SchedulerThreadPool(
     const EnqueueSequenceCallback& enqueue_sequence_callback,
-    TaskTracker* task_tracker)
+    TaskTracker* task_tracker,
+    DelayedTaskManager* delayed_task_manager)
     : idle_worker_threads_stack_lock_(shared_priority_queue_.container_lock()),
       idle_worker_threads_stack_cv_for_testing_(
           idle_worker_threads_stack_lock_.CreateConditionVariable()),
@@ -277,8 +290,10 @@ SchedulerThreadPool::SchedulerThreadPool(
       worker_thread_delegate_(
           new SchedulerWorkerThreadDelegateImpl(this,
                                                 enqueue_sequence_callback)),
-      task_tracker_(task_tracker) {
+      task_tracker_(task_tracker),
+      delayed_task_manager_(delayed_task_manager) {
   DCHECK(task_tracker_);
+  DCHECK(delayed_task_manager_);
 }
 
 bool SchedulerThreadPool::Initialize(ThreadPriority thread_priority,

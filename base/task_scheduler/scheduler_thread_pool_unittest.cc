@@ -19,6 +19,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
+#include "base/task_scheduler/delayed_task_manager.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task_tracker.h"
@@ -37,14 +38,14 @@ const size_t kNumTasksPostedPerThread = 150;
 class TaskSchedulerThreadPoolTest
     : public testing::TestWithParam<ExecutionMode> {
  protected:
-  TaskSchedulerThreadPoolTest() = default;
+  TaskSchedulerThreadPoolTest() : delayed_task_manager_(Bind(&DoNothing)) {}
 
   void SetUp() override {
     thread_pool_ = SchedulerThreadPool::CreateThreadPool(
         ThreadPriority::NORMAL, kNumThreadsInThreadPool,
         Bind(&TaskSchedulerThreadPoolTest::EnqueueSequenceCallback,
              Unretained(this)),
-        &task_tracker_);
+        &task_tracker_, &delayed_task_manager_);
     ASSERT_TRUE(thread_pool_);
   }
 
@@ -65,6 +66,7 @@ class TaskSchedulerThreadPoolTest
   }
 
   TaskTracker task_tracker_;
+  DelayedTaskManager delayed_task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerThreadPoolTest);
 };

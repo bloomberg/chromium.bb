@@ -15,16 +15,19 @@
 namespace base {
 namespace internal {
 
+class DelayedTaskManager;
 class PriorityQueue;
 class SchedulerTaskExecutor;
 class TaskTracker;
 
 // Attempts to post |task| to the provided |sequence| and |executor| conditional
-// on |task_tracker|. Returns true if the task is posted.
+// on |task_tracker|. If |task| has a delayed run time, it is handled by
+// |delayed_task_manager|. Returns true if the task is posted.
 bool BASE_EXPORT PostTaskToExecutor(std::unique_ptr<Task> task,
                                     scoped_refptr<Sequence> sequence,
                                     SchedulerTaskExecutor* executor,
-                                    TaskTracker* task_tracker);
+                                    TaskTracker* task_tracker,
+                                    DelayedTaskManager* delayed_task_manager);
 
 // Posts |task| to the provided |sequence| and |priority_queue|. This must only
 // be called after |task|'s delayed run time. Returns true if |sequence| was

@@ -638,6 +638,8 @@
           'task_runner.cc',
           'task_runner.h',
           'task_runner_util.h',
+          'task_scheduler/delayed_task_manager.cc',
+          'task_scheduler/delayed_task_manager.h',
           'task_scheduler/priority_queue.cc',
           'task_scheduler/priority_queue.h',
           'task_scheduler/scheduler_lock.h',
