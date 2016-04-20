@@ -40,19 +40,13 @@
 *
 * Where:
 *   methodAttributes - optional list of method attributes.
-*       Attributes containing "=" are code generation options:
-*           Inline=Custom - do not generate the public inline method.
-*           Inline=FastReturn - return early from the inline method if there are no frontends.
-*           Inline=Forward - generate a simple forwarding inline method that does not
-                             modify the parameter list (implies Inline=FastReturn)
 *       Attributes without "=" are the names of the agents to be invoked.
 *           Examples: DOM, Page, Debugger.
 *
 *   paramAttr - optional attribute controlling the parameters handling (one attribute per parameter max).
 *       Keep - pass first parameter (used to access the InstrumentingAgents instance) to agents.
-*       FastReturn - return early from the inline method if this parameter is 0/false.
 *
-*   returnValue: C++ return value. Only "void" and "InspectorInstrumentationCookie" are supported.
+*   returnValue: C++ return value. Only "void", "bool" and "InspectorInstrumentationCookie" are supported.
 *
 *   methodName: C++ name for the public instrumentation method and agents methods.
 *
@@ -80,91 +74,91 @@ class XMLHttpRequest;
     [PageRuntime, Page, Animation]
     void didClearDocumentOfWindowObject([Keep] LocalFrame*);
 
-    [DOMDebugger, Inline=FastReturn]
+    [DOMDebugger]
     void willInsertDOMNode([Keep] Node* parent);
 
-    [DOM, DOMDebugger, Inline=FastReturn]
+    [DOM, DOMDebugger]
     void didInsertDOMNode([Keep] Node*);
 
-    [DOMDebugger, DOM, Inline=FastReturn]
+    [DOMDebugger, DOM]
     void willRemoveDOMNode([Keep] Node*);
 
-    [DOMDebugger, DOM, Inline=FastReturn]
+    [DOMDebugger, DOM]
     void willModifyDOMAttr([Keep] Element*, const AtomicString& oldValue, const AtomicString& newValue);
 
-    [DOM, Inline=FastReturn]
+    [DOM]
     void didModifyDOMAttr([Keep] Element*, const QualifiedName& name, const AtomicString& value);
 
-    [DOM, Inline=FastReturn]
+    [DOM]
     void didRemoveDOMAttr([Keep] Element*, const QualifiedName& name);
 
-    [DOM, Inline=FastReturn]
+    [DOM]
     void characterDataModified([Keep] CharacterData*);
 
-    [DOM, DOMDebugger, Inline=FastReturn]
+    [DOM, DOMDebugger]
     void didInvalidateStyleAttr([Keep] Node*);
 
-    [DOM, Inline=FastReturn]
+    [DOM]
     void didPerformElementShadowDistribution([Keep] Element*);
 
     [CSS]
     void documentDetached([Keep] Document*);
 
-    [CSS, Inline=FastReturn]
+    [CSS]
     void activeStyleSheetsUpdated([Keep] Document*);
 
-    [CSS, Inline=FastReturn]
+    [CSS]
     void mediaQueryResultChanged(Document*);
 
-    [DOM, Inline=FastReturn]
+    [DOM]
     void didPushShadowRoot([Keep] Element* host, ShadowRoot*);
 
-    [DOM, Inline=FastReturn]
+    [DOM]
     void willPopShadowRoot([Keep] Element* host, ShadowRoot*);
 
-    [DOMDebugger, Inline=FastReturn]
+    [DOMDebugger]
     void willSendXMLHttpRequest(ExecutionContext*, const String& url);
 
-    [DOMDebugger, Inline=FastReturn]
+    [DOMDebugger]
     void didFireWebGLError(Element*, const String& errorName);
 
-    [DOMDebugger, Inline=FastReturn]
+    [DOMDebugger]
     void didFireWebGLWarning(Element*);
 
-    [DOMDebugger, Inline=FastReturn]
+    [DOMDebugger]
     void didFireWebGLErrorOrWarning(Element*, const String& message);
 
-    [Debugger, Inline=FastReturn]
+    [Debugger]
     InspectorInstrumentationCookie willExecuteScript(ExecutionContext*, int scriptId);
 
-    [Debugger, Inline=FastReturn]
+    [Debugger]
     void didExecuteScript(const InspectorInstrumentationCookie&);
 
-    [DOMDebugger, Inline=FastReturn]
+    [DOMDebugger]
     InspectorInstrumentationCookie willHandleEvent([Keep] EventTarget*, Event*, EventListener* listener, bool useCapture);
 
-    [DOMDebugger, Inline=FastReturn]
+    [DOMDebugger]
     void cancelPauseOnNextStatement(const InspectorInstrumentationCookie&);
 
-    [Page, Inline=FastReturn]
+    [Page]
     void didUpdateLayout(LocalFrame*);
 
-    [Page, Inline=FastReturn]
+    [Page]
     void didResizeMainFrame(LocalFrame*);
 
-    [LayerTree, Inline=FastReturn]
+    [LayerTree]
     void didPaint(LocalFrame*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
 
-    [Resource, Inline=FastReturn]
+    [Resource]
     InspectorInstrumentationCookie willRecalculateStyle([Keep] Document*);
 
-    [Resource, Page, Inline=FastReturn]
+    [Resource, Page]
     void didRecalculateStyle(const InspectorInstrumentationCookie&, int elementCount);
 
-    [Resource, Inline=FastReturn]
+    [Resource]
     void didScheduleStyleRecalculation([Keep] Document*);
 
-    [Resource, Inline=FastReturn]
+    [Resource]
     void applyUserAgentOverride(LocalFrame*, String* userAgent);
 
     [Resource]
@@ -179,13 +173,7 @@ class XMLHttpRequest;
     [Resource]
     void didReceiveResourceResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
 
-    [Inline=Forward]
-    void continueAfterXFrameOptionsDenied(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
-
-    [Inline=Forward]
-    void continueWithPolicyIgnore(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
-
-    [Resource, Inline=FastReturn]
+    [Resource]
     void didReceiveData([Keep] LocalFrame*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 
     [Resource]
@@ -254,7 +242,7 @@ class XMLHttpRequest;
     [Resource, DOM, Page]
     void didCommitLoad([Keep] LocalFrame*, DocumentLoader*);
 
-    [DOM, Inline=FastReturn]
+    [DOM]
     void frameDocumentUpdated([Keep] LocalFrame*);
 
     [Page]
@@ -269,14 +257,11 @@ class XMLHttpRequest;
     [Page, Resource]
     void frameClearedScheduledNavigation([Keep] LocalFrame*);
 
-    [Page, Inline=FastReturn]
+    [Page]
     InspectorInstrumentationCookie willRunJavaScriptDialog(LocalFrame*, const String& message, ChromeClient::DialogType dialogType);
 
-    [Page, Inline=FastReturn]
+    [Page]
     void didRunJavaScriptDialog(const InspectorInstrumentationCookie&, bool result);
-
-    [Inline=Forward]
-    void removedResourceFromMemoryCache(Resource* cachedResource);
 
     [DOMDebugger]
     InspectorInstrumentationCookie allowNativeBreakpoint(ExecutionContext*, const String& name, bool sync);
@@ -320,40 +305,40 @@ class XMLHttpRequest;
     [Resource]
     void didReceiveWebSocketFrameError(Document*, unsigned long identifier, const String& errorMessage);
 
-    [ApplicationCache, Inline=FastReturn]
+    [ApplicationCache]
     void networkStateChanged([Keep] LocalFrame*, bool online);
 
-    [ApplicationCache, Inline=FastReturn]
+    [ApplicationCache]
     void updateApplicationCacheStatus([Keep] LocalFrame*);
 
-    [LayerTree, Inline=FastReturn]
+    [LayerTree]
     void layerTreeDidChange(LocalFrame*);
 
-    [DOM, Inline=FastReturn]
+    [DOM]
     void pseudoElementCreated([Keep] PseudoElement*);
 
-    [DOM, Inline=FastReturn]
+    [DOM]
     void pseudoElementDestroyed([Keep] PseudoElement*);
 
-    [Debugger, Inline=FastReturn]
+    [Debugger]
     void asyncTaskScheduled(ExecutionContext*, const String& name, void*);
 
-    [Debugger, Inline=FastReturn]
+    [Debugger]
     void asyncTaskScheduled(ExecutionContext*, const String& name, void*, bool recurring);
 
-    [Debugger, Inline=FastReturn]
+    [Debugger]
     void asyncTaskCanceled(ExecutionContext*, void*);
 
-    [Debugger, Inline=FastReturn]
+    [Debugger]
     void allAsyncTasksCanceled(ExecutionContext*);
 
-    [Animation, Inline=FastReturn]
+    [Animation]
     void didCreateAnimation(Document*, unsigned);
 
-    [Animation, Inline=FastReturn]
+    [Animation]
     void animationPlayStateChanged(Document*, Animation*, Animation::AnimationPlayState oldPlayState, Animation::AnimationPlayState newPlayState);
 
-    [Page, Inline=FastReturn]
+    [Page]
     void windowCreated(LocalFrame* opener, LocalFrame* created);
 }
 
@@ -366,10 +351,10 @@ class ConsoleMessage;
     [Console]
     void addMessageToConsole(ExecutionContext* context, ConsoleMessage* consoleMessage);
 
-    [Profiler, Inline=FastReturn]
+    [Profiler]
     void consoleProfile([Keep] ExecutionContext* context, const String& title);
 
-    [Profiler, Inline=FastReturn]
+    [Profiler]
     void consoleProfileEnd(ExecutionContext* context, const String& title);
 
     [Console]
@@ -377,12 +362,12 @@ class ConsoleMessage;
 }
 
 interface InspectorOverrides {
-    [CSS, Inline=FastReturn]
+    [CSS]
     bool forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState);
 
-    [Worker, Inline=FastReturn]
+    [Worker]
     bool shouldWaitForDebuggerOnWorkerStart(ExecutionContext* context);
 
-    [Resource, Inline=FastReturn]
+    [Resource]
     bool shouldForceCORSPreflight(Document*);
 }

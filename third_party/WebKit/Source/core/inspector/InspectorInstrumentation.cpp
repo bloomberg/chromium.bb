@@ -111,29 +111,31 @@ InspectorInstrumentationCookie::~InspectorInstrumentationCookie()
 
 namespace InspectorInstrumentation {
 
-bool isDebuggerPausedImpl(InstrumentingAgents* instrumentingAgents)
+bool isDebuggerPaused(LocalFrame* frame)
 {
-    if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
-        return debuggerAgent->isPaused();
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(frame)) {
+        if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
+            return debuggerAgent->isPaused();
+    }
     return false;
 }
 
-void didReceiveResourceResponseButCanceledImpl(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
+void didReceiveResourceResponseButCanceled(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
 {
     didReceiveResourceResponse(frame, identifier, loader, r, 0);
 }
 
-void continueAfterXFrameOptionsDeniedImpl(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
+void continueAfterXFrameOptionsDenied(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
 {
-    didReceiveResourceResponseButCanceledImpl(frame, loader, identifier, r);
+    didReceiveResourceResponseButCanceled(frame, loader, identifier, r);
 }
 
-void continueWithPolicyIgnoreImpl(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
+void continueWithPolicyIgnore(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
 {
-    didReceiveResourceResponseButCanceledImpl(frame, loader, identifier, r);
+    didReceiveResourceResponseButCanceled(frame, loader, identifier, r);
 }
 
-void removedResourceFromMemoryCacheImpl(Resource* cachedResource)
+void removedResourceFromMemoryCache(Resource* cachedResource)
 {
     ASSERT(isMainThread());
     for (InstrumentingAgents* instrumentingAgents: instrumentingAgentsSet()) {
@@ -142,10 +144,12 @@ void removedResourceFromMemoryCacheImpl(Resource* cachedResource)
     }
 }
 
-bool collectingHTMLParseErrorsImpl(InstrumentingAgents* instrumentingAgents)
+bool collectingHTMLParseErrors(Document* document)
 {
     ASSERT(isMainThread());
-    return instrumentingAgentsSet().contains(instrumentingAgents);
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(document))
+        return instrumentingAgentsSet().contains(instrumentingAgents);
+    return false;
 }
 
 bool consoleAgentEnabled(ExecutionContext* executionContext)

@@ -37,27 +37,12 @@ namespace blink {
 
 namespace InspectorInstrumentation {
 
-bool isDebuggerPausedImpl(InstrumentingAgents*);
-bool collectingHTMLParseErrorsImpl(InstrumentingAgents*);
-CORE_EXPORT void appendAsyncCallStack(ExecutionContext*, ScriptCallStack*);
-
+CORE_EXPORT bool isDebuggerPaused(LocalFrame*);
+CORE_EXPORT bool collectingHTMLParseErrors(Document*);
+CORE_EXPORT void continueAfterXFrameOptionsDenied(LocalFrame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
+CORE_EXPORT void continueWithPolicyIgnore(LocalFrame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
 CORE_EXPORT bool consoleAgentEnabled(ExecutionContext*);
-
-inline bool isDebuggerPaused(LocalFrame* frame)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(false);
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(frame))
-        return isDebuggerPausedImpl(instrumentingAgents);
-    return false;
-}
-
-inline bool collectingHTMLParseErrors(Document* document)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(false);
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(document))
-        return collectingHTMLParseErrorsImpl(instrumentingAgents);
-    return false;
-}
+CORE_EXPORT void removedResourceFromMemoryCache(Resource*);
 
 } // namespace InspectorInstrumentation
 

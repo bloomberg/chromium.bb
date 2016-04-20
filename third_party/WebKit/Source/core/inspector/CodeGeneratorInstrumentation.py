@@ -53,31 +53,6 @@ $methods
 #endif // !defined(${file_name}_h)
 """)
 
-template_inline = string.Template("""
-inline void ${name}(${params_public})
-{   ${fast_return}
-    if (${condition})
-        ${name}Impl(${params_impl});
-}
-""")
-
-template_inline_forward = string.Template("""
-inline void ${name}(${params_public})
-{   ${fast_return}
-    ${name}Impl(${params_impl});
-}
-""")
-
-template_inline_returns_value = string.Template("""
-inline ${return_type} ${name}(${params_public})
-{   ${fast_return}
-    if (${condition})
-        return ${name}Impl(${params_impl});
-    return ${default_return_value};
-}
-""")
-
-
 template_cpp = string.Template("""// Code generated from InspectorInstrumentation.idl
 
 ${includes}
@@ -93,14 +68,16 @@ $methods
 } // namespace blink
 """)
 
-template_outofline = string.Template("""
-${return_type} ${name}Impl(${params_impl})
-{${impl_lines}
+template_impl = string.Template("""
+${return_type} ${name}(${params})
+{
+    if (${condition}) {${impl_lines}
+    }${default_return}
 }""")
 
 template_agent_call = string.Template("""
-    if (${agent_class}* agent = ${agent_fetch})
-        ${maybe_return}agent->${name}(${params_agent});""")
+        if (${agent_class}* agent = ${agent_fetch})
+            ${maybe_return}agent->${name}(${params_agent});""")
 
 template_instrumenting_agents_h = string.Template("""// Code generated from InspectorInstrumentation.idl
 
@@ -250,94 +227,61 @@ class Method:
 
         if self.return_type == "bool":
             self.default_return_value = "false"
-        elif self.return_type == "int":
-            self.default_return_value = "0"
-        elif self.return_type == "String":
-            self.default_return_value = "\"\""
-        else:
+        elif self.returns_cookie:
             self.default_return_value = self.return_type + "()"
-
-        for param in self.params:
-            if "DefaultReturn" in param.options:
-                self.default_return_value = param.name
+        elif self.returns_value:
+            sys.stderr.write("Can only return bool or cookie: %s\n" % self.name)
+            sys.exit(1)
 
         self.params_impl = self.params
-        if not self.accepts_cookie and not "Inline=Forward" in self.options:
+        if not self.accepts_cookie:
             if not "Keep" in self.params_impl[0].options:
                 self.params_impl = self.params_impl[1:]
-            self.params_impl = [Parameter("InstrumentingAgents* agents")] + self.params_impl
+        else:
+            self.params_impl = self.params_impl[1:]
 
         self.agents = filter(lambda option: not "=" in option, self.options)
 
+        if self.returns_value and not self.returns_cookie and len(self.agents) > 1:
+            sys.stderr.write("Can only return value from a single agent: %s\n" % self.name)
+            sys.exit(1)
+
     def generate_header(self, header_lines):
-        if "Inline=Custom" in self.options:
-            return
-
-        header_lines.append("CORE_EXPORT %s %sImpl(%s);" % (
-            self.return_type, self.name, ", ".join(map(Parameter.to_str_class, self.params_impl))))
-
-        if "Inline=FastReturn" in self.options or "Inline=Forward" in self.options:
-            fast_return = "\n    FAST_RETURN_IF_NO_FRONTENDS(%s);" % self.default_return_value
-        else:
-            fast_return = ""
-
-        for param in self.params:
-            if "FastReturn" in param.options:
-                fast_return += "\n    if (!%s)\n        return %s;" % (param.name, self.default_return_value)
-
-        if self.accepts_cookie:
-            condition = "%s.isValid()" % self.params_impl[0].name
-            template = template_inline
-        elif "Inline=Forward" in self.options:
-            condition = ""
-            template = template_inline_forward
-        else:
-            condition = "InstrumentingAgents* agents = instrumentingAgentsFor(%s)" % self.params[0].name
-
-            if self.returns_value:
-                template = template_inline_returns_value
-            else:
-                template = template_inline
-
-        header_lines.append(template.substitute(
-            None,
-            name=self.name,
-            fast_return=fast_return,
-            return_type=self.return_type,
-            default_return_value=self.default_return_value,
-            params_public=", ".join(map(Parameter.to_str_full, self.params)),
-            params_impl=", ".join(map(Parameter.to_str_name, self.params_impl)),
-            condition=condition))
+        header_lines.append("CORE_EXPORT %s %s(%s);" % (
+            self.return_type, self.name, ", ".join(map(Parameter.to_str_class, self.params))))
 
     def generate_cpp(self, cpp_lines):
-        if len(self.agents) == 0:
-            return
+        if self.accepts_cookie:
+            condition = "%s.isValid()" % self.params[0].name
+        else:
+            condition = "InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(%s)" % self.params[0].name
+
+        default_return = ""
+        if self.returns_value:
+            default_return = "\n    return %s;" % self.default_return_value
 
         body_lines = map(self.generate_ref_ptr, self.params)
         body_lines += map(self.generate_agent_call, self.agents)
 
         if self.returns_cookie:
-            body_lines.append("\n    return InspectorInstrumentationCookie(agents);")
-        elif self.returns_value:
-            body_lines.append("\n    return %s;" % self.default_return_value)
+            body_lines.append("\n        return InspectorInstrumentationCookie(instrumentingAgents);")
 
-        generated_outofline = template_outofline.substitute(
+        cpp_lines.append(template_impl.substitute(
             None,
-            return_type=self.return_type,
             name=self.name,
-            params_impl=", ".join(map(Parameter.to_str_class_and_name, self.params_impl)),
-            impl_lines="".join(body_lines))
-        if generated_outofline not in cpp_lines:
-            cpp_lines.append(generated_outofline)
+            return_type=self.return_type,
+            params=", ".join(map(Parameter.to_str_class_and_name, self.params)),
+            default_return=default_return,
+            impl_lines="".join(body_lines),
+            condition=condition))
 
     def generate_agent_call(self, agent):
         agent_class, agent_getter = agent_getter_signature(agent)
 
-        leading_param_name = self.params_impl[0].name
         if not self.accepts_cookie:
-            agent_fetch = "%s->%s()" % (leading_param_name, agent_getter)
+            agent_fetch = "instrumentingAgents->%s()" % agent_getter
         else:
-            agent_fetch = "%s.instrumentingAgents()->%s()" % (leading_param_name, agent_getter)
+            agent_fetch = "%s.instrumentingAgents()->%s()" % (self.params[0].name, agent_getter)
 
         template = template_agent_call
 
@@ -352,11 +296,11 @@ class Method:
             agent_class=agent_class,
             agent_fetch=agent_fetch,
             maybe_return=maybe_return,
-            params_agent=", ".join(map(Parameter.to_str_value, self.params_impl)[1:]))
+            params_agent=", ".join(map(Parameter.to_str_value, self.params_impl)))
 
     def generate_ref_ptr(self, param):
         if param.is_prp:
-            return "\n    RefPtr<%s> %s = %s;" % (param.inner_type, param.value, param.name)
+            return "\n        RefPtr<%s> %s = %s;" % (param.inner_type, param.value, param.name)
         else:
             return ""
 

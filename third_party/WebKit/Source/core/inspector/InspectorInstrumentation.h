@@ -41,8 +41,6 @@ namespace blink {
 class InstrumentingAgents;
 class WorkerGlobalScope;
 
-#define FAST_RETURN_IF_NO_FRONTENDS(value) if (!hasFrontends()) return value;
-
 class CORE_EXPORT InspectorInstrumentationCookie {
     STACK_ALLOCATED();
 public:
