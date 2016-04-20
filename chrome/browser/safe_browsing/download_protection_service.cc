@@ -887,8 +887,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     request.set_url(SanitizeUrl(item_->GetUrlChain().back()));
     request.mutable_digests()->set_sha256(item_->GetHash());
     request.set_length(item_->GetReceivedBytes());
-    request.set_skipped_url_whitelist(true);
-    request.set_skipped_certificate_whitelist(true);
+    request.set_skipped_url_whitelist(skipped_url_whitelist_);
+    request.set_skipped_certificate_whitelist(skipped_certificate_whitelist_);
     for (size_t i = 0; i < item_->GetUrlChain().size(); ++i) {
       ClientDownloadRequest::Resource* resource = request.add_resources();
       resource->set_url(SanitizeUrl(item_->GetUrlChain()[i]));

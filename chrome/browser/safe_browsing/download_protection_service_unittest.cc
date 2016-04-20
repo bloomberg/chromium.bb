@@ -662,6 +662,8 @@ TEST_F(DownloadProtectionServiceTest,
 
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   EXPECT_TRUE(HasClientDownloadRequest());
+  EXPECT_FALSE(GetClientDownloadRequest()->skipped_url_whitelist());
+  EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
   ClearClientDownloadRequest();
 
   // Check that the referrer is not matched against the whitelist.
@@ -674,6 +676,8 @@ TEST_F(DownloadProtectionServiceTest,
 
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   EXPECT_TRUE(HasClientDownloadRequest());
+  EXPECT_FALSE(GetClientDownloadRequest()->skipped_url_whitelist());
+  EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
   ClearClientDownloadRequest();
 
   // Redirect from a site shouldn't be checked either.
@@ -686,6 +690,8 @@ TEST_F(DownloadProtectionServiceTest,
 
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   EXPECT_TRUE(HasClientDownloadRequest());
+  EXPECT_FALSE(GetClientDownloadRequest()->skipped_url_whitelist());
+  EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
   ClearClientDownloadRequest();
 
   // Only if the final url is whitelisted should it be SAFE.
