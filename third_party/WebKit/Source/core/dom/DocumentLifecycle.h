@@ -80,7 +80,6 @@ public:
         // to the style/layout/compositing states.
         Stopping,
         Stopped,
-        Disposed,
     };
 
     class Scope {

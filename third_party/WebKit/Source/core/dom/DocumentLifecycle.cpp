@@ -100,8 +100,6 @@ bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
     case Inactive:
         if (nextState == StyleClean)
             return true;
-        if (nextState == Disposed)
-            return true;
         break;
     case VisualUpdatePending:
         if (nextState == InPreLayout)
@@ -239,11 +237,7 @@ bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
     case Stopping:
         return nextState == Stopped;
     case Stopped:
-        return nextState == Disposed;
-    case Disposed:
-        // FIXME: We can dispose a document multiple times. This seems wrong.
-        // See https://code.google.com/p/chromium/issues/detail?id=301668.
-        return nextState == Disposed;
+        return false;
     }
     return false;
 }
@@ -320,7 +314,6 @@ const char* DocumentLifecycle::stateAsDebugString(const LifecycleState state)
         DEBUG_STRING_CASE(PaintClean);
         DEBUG_STRING_CASE(Stopping);
         DEBUG_STRING_CASE(Stopped);
-        DEBUG_STRING_CASE(Disposed);
     }
 
     ASSERT_NOT_REACHED();
