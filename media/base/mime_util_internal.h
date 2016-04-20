@@ -111,14 +111,16 @@ class MEDIA_EXPORT MimeUtil {
 
   // Converts a codec ID into an Codec enum value and indicates
   // whether the conversion was ambiguous.
-  // Returns true if this method was able to map |codec_id| to a specific
-  // Codec enum value. |codec| and |is_ambiguous| are only valid if true
-  // is returned. Otherwise their value is undefined after the call.
+  // Returns true if this method was able to map |codec_id| with
+  // |mime_type_lower_case| to a specific Codec enum value. |codec| and
+  // |is_ambiguous| are only valid if true is returned. Otherwise their value is
+  // undefined after the call.
   // |is_ambiguous| is true if |codec_id| did not have enough information to
   // unambiguously determine the proper Codec enum value. If |is_ambiguous|
   // is true |codec| contains the best guess for the intended Codec enum value.
   // |is_encrypted| means the codec will be used with encrypted blocks.
-  bool StringToCodec(const std::string& codec_id,
+  bool StringToCodec(const std::string& mime_type_lower_case,
+                     const std::string& codec_id,
                      Codec* codec,
                      bool* is_ambiguous,
                      bool is_encrypted) const;

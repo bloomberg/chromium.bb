@@ -594,26 +594,6 @@ FourCC VideoSampleEntry::BoxType() const {
   return FOURCC_NULL;
 }
 
-namespace {
-
-bool IsFormatValidH264(const FourCC& format,
-                       const ProtectionSchemeInfo& sinf) {
-  return format == FOURCC_AVC1 || format == FOURCC_AVC3 ||
-      (format == FOURCC_ENCV && (sinf.format.format == FOURCC_AVC1 ||
-                                 sinf.format.format == FOURCC_AVC3));
-}
-
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-bool IsFormatValidHEVC(const FourCC& format,
-                       const ProtectionSchemeInfo& sinf) {
-  return format == FOURCC_HEV1 || format == FOURCC_HVC1 ||
-      (format == FOURCC_ENCV && (sinf.format.format == FOURCC_HEV1 ||
-                                 sinf.format.format == FOURCC_HVC1));
-}
-#endif
-
-}
-
 bool VideoSampleEntry::Parse(BoxReader* reader) {
   format = reader->type();
   RCHECK(reader->SkipBytes(6) &&
@@ -635,44 +615,72 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
     }
   }
 
-  if (IsFormatValidH264(format, sinf)) {
-    DVLOG(2) << __FUNCTION__
-             << " reading AVCDecoderConfigurationRecord (avcC)";
-    std::unique_ptr<AVCDecoderConfigurationRecord> avcConfig(
-        new AVCDecoderConfigurationRecord());
-    RCHECK(reader->ReadChild(avcConfig.get()));
-    frame_bitstream_converter =
-        make_scoped_refptr(new AVCBitstreamConverter(std::move(avcConfig)));
-    video_codec = kCodecH264;
-    video_codec_profile = H264PROFILE_MAIN;
+  const FourCC actual_format =
+      format == FOURCC_ENCV ? sinf.format.format : format;
+  switch (actual_format) {
+    case FOURCC_AVC1:
+    case FOURCC_AVC3: {
+      DVLOG(2) << __FUNCTION__
+               << " reading AVCDecoderConfigurationRecord (avcC)";
+      std::unique_ptr<AVCDecoderConfigurationRecord> avcConfig(
+          new AVCDecoderConfigurationRecord());
+      RCHECK(reader->ReadChild(avcConfig.get()));
+      frame_bitstream_converter =
+          make_scoped_refptr(new AVCBitstreamConverter(std::move(avcConfig)));
+      video_codec = kCodecH264;
+      video_codec_profile = H264PROFILE_MAIN;
+      break;
+    }
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  } else if (IsFormatValidHEVC(format, sinf)) {
-    DVLOG(2) << __FUNCTION__
-             << " parsing HEVCDecoderConfigurationRecord (hvcC)";
-    std::unique_ptr<HEVCDecoderConfigurationRecord> hevcConfig(
-        new HEVCDecoderConfigurationRecord());
-    RCHECK(reader->ReadChild(hevcConfig.get()));
-    frame_bitstream_converter =
-        make_scoped_refptr(new HEVCBitstreamConverter(std::move(hevcConfig)));
-    video_codec = kCodecHEVC;
+    case FOURCC_HEV1:
+    case FOURCC_HVC1: {
+      DVLOG(2) << __FUNCTION__
+               << " parsing HEVCDecoderConfigurationRecord (hvcC)";
+      std::unique_ptr<HEVCDecoderConfigurationRecord> hevcConfig(
+          new HEVCDecoderConfigurationRecord());
+      RCHECK(reader->ReadChild(hevcConfig.get()));
+      frame_bitstream_converter =
+          make_scoped_refptr(new HEVCBitstreamConverter(std::move(hevcConfig)));
+      video_codec = kCodecHEVC;
+      break;
+    }
 #endif
-  } else {
-    // Unknown/unsupported format
-    MEDIA_LOG(ERROR, reader->media_log()) << __FUNCTION__
-                                          << " unsupported video format "
-                                          << FourCCToString(format);
-    return false;
+#if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
+    case FOURCC_VP09:
+      frame_bitstream_converter = NULL;
+      video_codec = kCodecVP9;
+      // TODO(kqyang): Read VPCodecConfiguration and extract profile
+      // (crbug.com/604863).
+      break;
+#endif
+    default:
+      // Unknown/unsupported format
+      MEDIA_LOG(ERROR, reader->media_log()) << __FUNCTION__
+                                            << " unsupported video format "
+                                            << FourCCToString(actual_format);
+      return false;
   }
 
   return true;
 }
 
 bool VideoSampleEntry::IsFormatValid() const {
+  const FourCC actual_format =
+      format == FOURCC_ENCV ? sinf.format.format : format;
+  switch (actual_format) {
+    case FOURCC_AVC1:
+    case FOURCC_AVC3:
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  if (IsFormatValidHEVC(format, sinf))
-    return true;
+    case FOURCC_HEV1:
+    case FOURCC_HVC1:
 #endif
-  return IsFormatValidH264(format, sinf);
+#if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
+    case FOURCC_VP09:
+#endif
+      return true;
+    default:
+      return false;
+  }
 }
 
 ElementaryStreamDescriptor::ElementaryStreamDescriptor()
