@@ -173,6 +173,20 @@ bool compareValue(T a, T b, MediaFeaturePrefix op)
     return false;
 }
 
+bool compareDoubleValue(double a, double b, MediaFeaturePrefix op)
+{
+    const double precision = std::numeric_limits<double>::epsilon();
+    switch (op) {
+    case MinPrefix:
+        return a >= (b - precision);
+    case MaxPrefix:
+        return a <= (b + precision);
+    case NoPrefix:
+        return std::abs(a - b) <= precision;
+    }
+    return false;
+}
+
 static bool compareAspectRatioValue(const MediaQueryExpValue& value, int width, int height, MediaFeaturePrefix op)
 {
     if (value.isRatio)
@@ -374,7 +388,7 @@ static bool computeLength(const MediaQueryExpValue& value, const MediaValues& me
 static bool computeLengthAndCompare(const MediaQueryExpValue& value, MediaFeaturePrefix op, const MediaValues& mediaValues, double compareToValue)
 {
     double length;
-    return computeLength(value, mediaValues, length) && compareValue(compareToValue, length, op);
+    return computeLength(value, mediaValues, length) && compareDoubleValue(compareToValue, length, op);
 }
 
 static bool deviceHeightMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix op, const MediaValues& mediaValues)

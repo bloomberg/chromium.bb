@@ -159,61 +159,52 @@ bool MediaValues::computeLengthImpl(double value, CSSPrimitiveValue::UnitType ty
     // CSSToLengthConversionData::zoomedComputedPixels() more generic (to solve both cases) without hurting performance.
 
     // FIXME - Unite the logic here with CSSToLengthConversionData in a performant way.
-    double factor = 0;
     switch (type) {
     case CSSPrimitiveValue::UnitType::Ems:
     case CSSPrimitiveValue::UnitType::Rems:
-        factor = defaultFontSize;
-        break;
+        result = value * defaultFontSize;
+        return true;
     case CSSPrimitiveValue::UnitType::Pixels:
     case CSSPrimitiveValue::UnitType::UserUnits:
-        factor = 1;
-        break;
+        result = value;
+        return true;
     case CSSPrimitiveValue::UnitType::Exs:
         // FIXME: We have a bug right now where the zoom will be applied twice to EX units.
-        // FIXME: We don't seem to be able to cache fontMetrics related values.
-        // Trying to access them is triggering some sort of microtask. Serving the spec's default instead.
-        factor = defaultFontSize / 2.0;
-        break;
     case CSSPrimitiveValue::UnitType::Chs:
         // FIXME: We don't seem to be able to cache fontMetrics related values.
-        // Trying to access them is triggering some sort of microtask. Serving the (future) spec default instead.
-        factor = defaultFontSize / 2.0;
-        break;
+        // Trying to access them is triggering some sort of microtask. Serving the spec's default instead.
+        result = (value * defaultFontSize) / 2.0;
+        return true;
     case CSSPrimitiveValue::UnitType::ViewportWidth:
-        factor = viewportWidth / 100.0;
-        break;
+        result = (value * viewportWidth) / 100.0;
+        return true;
     case CSSPrimitiveValue::UnitType::ViewportHeight:
-        factor = viewportHeight / 100.0;
-        break;
+        result = (value * viewportHeight) / 100.0;
+        return true;
     case CSSPrimitiveValue::UnitType::ViewportMin:
-        factor = std::min(viewportWidth, viewportHeight) / 100.0;
-        break;
+        result = (value * std::min(viewportWidth, viewportHeight)) / 100.0;
+        return true;
     case CSSPrimitiveValue::UnitType::ViewportMax:
-        factor = std::max(viewportWidth, viewportHeight) / 100.0;
-        break;
+        result = (value * std::max(viewportWidth, viewportHeight)) / 100.0;
+        return true;
     case CSSPrimitiveValue::UnitType::Centimeters:
-        factor = cssPixelsPerCentimeter;
-        break;
+        result = value * cssPixelsPerCentimeter;
+        return true;
     case CSSPrimitiveValue::UnitType::Millimeters:
-        factor = cssPixelsPerMillimeter;
-        break;
+        result = value * cssPixelsPerMillimeter;
+        return true;
     case CSSPrimitiveValue::UnitType::Inches:
-        factor = cssPixelsPerInch;
-        break;
+        result = value * cssPixelsPerInch;
+        return true;
     case CSSPrimitiveValue::UnitType::Points:
-        factor = cssPixelsPerPoint;
-        break;
+        result = value * cssPixelsPerPoint;
+        return true;
     case CSSPrimitiveValue::UnitType::Picas:
-        factor = cssPixelsPerPica;
-        break;
+        result = value * cssPixelsPerPica;
+        return true;
     default:
         return false;
     }
-
-    ASSERT(factor >= 0);
-    result = value * factor;
-    return true;
 }
 
 LocalFrame* MediaValues::frameFrom(Document& document)

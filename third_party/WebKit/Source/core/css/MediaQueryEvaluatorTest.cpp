@@ -115,6 +115,18 @@ TestCase floatViewportTestCases[] = {
     {0, 0} // Do not remove the terminator line.
 };
 
+TestCase floatNonFriendlyViewportTestCases[] = {
+    {"(min-width: 821px)", 1},
+    {"(max-width: 821px)", 1},
+    {"(width: 821px)", 1},
+    {"(min-height: 821px)", 1},
+    {"(max-height: 821px)", 1},
+    {"(height: 821px)", 1},
+    {"(width: 100vw)", 1},
+    {"(height: 100vh)", 1},
+    {0, 0} // Do not remove the terminator line.
+};
+
 TestCase printTestCases[] = {
     {"print and (min-resolution: 1dppx)", 1},
     {"print and (min-resolution: 118dpcm)", 1},
@@ -127,7 +139,7 @@ void testMQEvaluator(TestCase* testCases, const MediaQueryEvaluator& mediaQueryE
     Persistent<MediaQuerySet> querySet = nullptr;
     for (unsigned i = 0; testCases[i].input; ++i) {
         querySet = MediaQuerySet::create(testCases[i].input);
-        ASSERT_EQ(testCases[i].output, mediaQueryEvaluator.eval(querySet.get()));
+        EXPECT_EQ(testCases[i].output, mediaQueryEvaluator.eval(querySet.get()));
     }
 }
 
@@ -191,6 +203,17 @@ TEST(MediaQueryEvaluatorTest, CachedFloatViewport)
 
     MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);
     testMQEvaluator(floatViewportTestCases, mediaQueryEvaluator);
+}
+
+TEST(MediaQueryEvaluatorTest, CachedFloatViewportNonFloatFriendly)
+{
+    MediaValuesCached::MediaValuesCachedData data;
+    data.viewportWidth = 821;
+    data.viewportHeight = 821;
+    MediaValues* mediaValues = MediaValuesCached::create(data);
+
+    MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);
+    testMQEvaluator(floatNonFriendlyViewportTestCases, mediaQueryEvaluator);
 }
 
 } // namespace blink
