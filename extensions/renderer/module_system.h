@@ -6,6 +6,7 @@
 #define EXTENSIONS_RENDERER_MODULE_SYSTEM_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -13,7 +14,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/renderer/native_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "gin/modules/module_registry_observer.h"
@@ -106,7 +106,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   // calls to requireNative(|name|) from JS will return a new object created by
   // |native_handler|.
   void RegisterNativeHandler(const std::string& name,
-                             scoped_ptr<NativeHandler> native_handler);
+                             std::unique_ptr<NativeHandler> native_handler);
 
   // Causes requireNative(|name|) to look for its module in |source_map_|
   // instead of using a registered native handler. This can be used in unit
@@ -142,7 +142,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
                           const std::string& module_field);
 
   // Passes exceptions to |handler| rather than console::Fatal.
-  void SetExceptionHandlerForTest(scoped_ptr<ExceptionHandler> handler) {
+  void SetExceptionHandlerForTest(std::unique_ptr<ExceptionHandler> handler) {
     exception_handler_ = std::move(handler);
   }
 
@@ -152,7 +152,8 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   void Invalidate() override;
 
  private:
-  typedef std::map<std::string, scoped_ptr<NativeHandler>> NativeHandlerMap;
+  typedef std::map<std::string, std::unique_ptr<NativeHandler>>
+      NativeHandlerMap;
 
   // Retrieves the lazily defined field specified by |property|.
   static void LazyFieldGetter(v8::Local<v8::Name> property,
@@ -204,8 +205,9 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   // Invoked when a module is loaded in response to a requireAsync call.
   // Resolves |resolver| with |value|.
-  void OnModuleLoaded(scoped_ptr<v8::Global<v8::Promise::Resolver>> resolver,
-                      v8::Local<v8::Value> value);
+  void OnModuleLoaded(
+      std::unique_ptr<v8::Global<v8::Promise::Resolver>> resolver,
+      v8::Local<v8::Value> value);
 
   // gin::ModuleRegistryObserver overrides.
   void OnDidAddPendingModule(
@@ -231,7 +233,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   // Called when an exception is thrown but not caught in JS. Overridable by
   // tests.
-  scoped_ptr<ExceptionHandler> exception_handler_;
+  std::unique_ptr<ExceptionHandler> exception_handler_;
 
   // A set of native handlers that should actually be require()d as non-native
   // handlers. This is used for tests to mock out native handlers in JS.
@@ -241,7 +243,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   // registering a NativeHandler when one was already registered with the same
   // name, or due to OverrideNativeHandlerForTest. This is needed so that they
   // can be later Invalidated. It should only happen in tests.
-  std::vector<scoped_ptr<NativeHandler>> clobbered_native_handlers_;
+  std::vector<std::unique_ptr<NativeHandler>> clobbered_native_handlers_;
 
   base::WeakPtrFactory<ModuleSystem> weak_factory_;
 

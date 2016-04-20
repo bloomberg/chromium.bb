@@ -5,8 +5,9 @@
 #ifndef EXTENSIONS_RENDERER_WORKER_SCRIPT_CONTEXT_SET_H_
 #define EXTENSIONS_RENDERER_WORKER_SCRIPT_CONTEXT_SET_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_local.h"
 #include "content/public/child/worker_thread.h"
@@ -25,7 +26,7 @@ class WorkerScriptContextSet : public content::WorkerThread::Observer {
   ~WorkerScriptContextSet() override;
 
   // Inserts |context| into the set. Contexts are stored in TLS.
-  void Insert(scoped_ptr<ScriptContext> context);
+  void Insert(std::unique_ptr<ScriptContext> context);
 
   // Removes the ScriptContext associated with |v8_context| which was added for
   // |url| (used for sanity checking).

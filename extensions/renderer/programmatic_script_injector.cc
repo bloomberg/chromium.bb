@@ -118,7 +118,7 @@ void ProgrammaticScriptInjector::GetRunInfo(
 }
 
 void ProgrammaticScriptInjector::OnInjectionComplete(
-    scoped_ptr<base::Value> execution_result,
+    std::unique_ptr<base::Value> execution_result,
     UserScript::RunLocation run_location,
     content::RenderFrame* render_frame) {
   DCHECK(results_.empty());

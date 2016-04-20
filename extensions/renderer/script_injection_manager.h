@@ -53,7 +53,7 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   using FrameStatusMap =
       std::map<content::RenderFrame*, UserScript::RunLocation>;
 
-  using ScriptInjectionVector = std::vector<scoped_ptr<ScriptInjection>>;
+  using ScriptInjectionVector = std::vector<std::unique_ptr<ScriptInjection>>;
 
   // Notifies that an injection has been finished.
   void OnInjectionFinished(ScriptInjection* injection);
@@ -77,7 +77,7 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
                      UserScript::RunLocation run_location);
 
   // Try to inject and store injection if it has not finished.
-  void TryToInject(scoped_ptr<ScriptInjection> injection,
+  void TryToInject(std::unique_ptr<ScriptInjection> injection,
                    UserScript::RunLocation run_location,
                    ScriptsRunInfo* scripts_run_info);
 
@@ -103,7 +103,7 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   std::set<content::RenderFrame*> active_injection_frames_;
 
   // The collection of RFOHelpers.
-  std::vector<scoped_ptr<RFOHelper>> rfo_helpers_;
+  std::vector<std::unique_ptr<RFOHelper>> rfo_helpers_;
 
   // The set of UserScripts associated with extensions. Owned by the Dispatcher.
   UserScriptSetManager* user_script_set_manager_;

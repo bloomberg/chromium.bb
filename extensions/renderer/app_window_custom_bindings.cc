@@ -72,7 +72,7 @@ void AppWindowCustomBindings::GetWindowControlsHtmlTemplate(
         ResourceBundle::GetSharedInstance()
             .GetRawDataResource(IDR_WINDOW_CONTROLS_TEMPLATE_HTML)
             .as_string());
-    scoped_ptr<content::V8ValueConverter> converter(
+    std::unique_ptr<content::V8ValueConverter> converter(
         content::V8ValueConverter::create());
     result = converter->ToV8Value(&value, context()->v8_context());
   }

@@ -73,12 +73,12 @@ class WiFiDisplaySession: public DisplaySourceSession,
   void RunTerminateCallback(bool success, const std::string& error = "");
 
  private:
-  scoped_ptr<wds::Source> wfd_source_;
-  scoped_ptr<WiFiDisplayMediaManager> media_manager_;
+  std::unique_ptr<wds::Source> wfd_source_;
+  std::unique_ptr<WiFiDisplayMediaManager> media_manager_;
   WiFiDisplaySessionServicePtr service_;
   mojo::Binding<WiFiDisplaySessionServiceClient> binding_;
   std::string local_ip_address_;
-  std::map<int, scoped_ptr<base::Timer>> timers_;
+  std::map<int, std::unique_ptr<base::Timer>> timers_;
 
   DisplaySourceSessionParams params_;
   CompletionCallback start_completion_callback_;

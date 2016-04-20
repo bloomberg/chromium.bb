@@ -5,13 +5,13 @@
 #ifndef EXTENSIONS_RENDERER_WAKE_EVENT_PAGE_H_
 #define EXTENSIONS_RENDERER_WAKE_EVENT_PAGE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/public/renderer/render_thread_observer.h"
@@ -103,7 +103,7 @@ class WakeEventPage : public content::RenderThreadObserver {
 
   // All in-flight requests, keyed by request ID. Used on multiple threads, so
   // must be guarded by |requests_lock_|.
-  base::ScopedPtrHashMap<int, scoped_ptr<RequestData>> requests_;
+  base::ScopedPtrHashMap<int, std::unique_ptr<RequestData>> requests_;
 
   // Lock for |requests_|.
   base::Lock requests_lock_;

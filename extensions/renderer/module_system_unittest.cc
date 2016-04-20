@@ -6,9 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "extensions/renderer/module_system_test.h"
 #include "gin/modules/module_registry.h"
 
@@ -56,7 +56,7 @@ TEST_F(ModuleSystemTest, TestExceptionHandling) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
       env()->module_system());
   TestExceptionHandler* handler = new TestExceptionHandler;
-  scoped_ptr<ModuleSystem::ExceptionHandler> scoped_handler(handler);
+  std::unique_ptr<ModuleSystem::ExceptionHandler> scoped_handler(handler);
   ASSERT_FALSE(handler->handled_exception());
   env()->module_system()->SetExceptionHandlerForTest(std::move(scoped_handler));
 
@@ -188,7 +188,7 @@ TEST_F(ModuleSystemTest, TestLazyFieldIsOnlyEvaledOnce) {
       env()->module_system());
   env()->module_system()->RegisterNativeHandler(
       "counter",
-      scoped_ptr<NativeHandler>(new CounterNatives(env()->context())));
+      std::unique_ptr<NativeHandler>(new CounterNatives(env()->context())));
   env()->RegisterModule("lazy",
                         "requireNative('counter').Increment();"
                         "exports.$set('x', 5);");
@@ -243,7 +243,7 @@ TEST_F(ModuleSystemTest, TestModulesOnlyGetEvaledOnce) {
       env()->module_system());
   env()->module_system()->RegisterNativeHandler(
       "counter",
-      scoped_ptr<NativeHandler>(new CounterNatives(env()->context())));
+      std::unique_ptr<NativeHandler>(new CounterNatives(env()->context())));
 
   env()->RegisterModule("incrementsWhenEvaled",
                         "requireNative('counter').Increment();");
@@ -408,7 +408,7 @@ TEST_F(ModuleSystemTest, TestRequireAsyncFromAnotherContext) {
       "    requireNative('assert').AssertTrue(result == 'pong');"
       "  });"
       "});");
-  scoped_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
+  std::unique_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
   other_env->RegisterModule("ping",
                             "define('ping', ['natives'], function(natives) {"
                             "  return function() {"
@@ -445,7 +445,7 @@ TEST_F(ModuleSystemTest, TestRequireAsyncBetweenContexts) {
       "    requireNative('assert').AssertTrue(result == 'done');"
       "  });"
       "});");
-  scoped_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
+  std::unique_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
   other_env->RegisterModule("ping",
                             "define('ping', ['natives'], function(natives) {"
                             "  return function() {"
@@ -477,7 +477,7 @@ TEST_F(ModuleSystemTest, TestRequireAsyncFromContextWithNoModuleRegistry) {
                         "               'Extension view no longer exists');"
                         "  });"
                         "});");
-  scoped_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
+  std::unique_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
   gin::ModuleRegistry::From(env()->context()->v8_context())
       ->AddBuiltinModule(
           env()->isolate(), "natives",
@@ -495,7 +495,7 @@ TEST_F(ModuleSystemTest, TestRequireAsyncFromContextWithNoModuleSystem) {
                         "  requireNative('assert').AssertTrue("
                         "      natives.requireAsync('foo') === undefined);"
                         "});");
-  scoped_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
+  std::unique_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
   gin::ModuleRegistry::From(env()->context()->v8_context())
       ->AddBuiltinModule(
           env()->isolate(), "natives",

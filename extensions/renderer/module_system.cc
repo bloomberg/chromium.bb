@@ -337,7 +337,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
 
 void ModuleSystem::RegisterNativeHandler(
     const std::string& name,
-    scoped_ptr<NativeHandler> native_handler) {
+    std::unique_ptr<NativeHandler> native_handler) {
   ClobberExistingNativeHandler(name);
   native_handler_map_[name] = std::move(native_handler);
 }
@@ -566,7 +566,7 @@ void ModuleSystem::RequireAsync(
   v8::Local<v8::Promise::Resolver> resolver(
       v8::Promise::Resolver::New(v8_context).ToLocalChecked());
   args.GetReturnValue().Set(resolver->GetPromise());
-  scoped_ptr<v8::Global<v8::Promise::Resolver>> global_resolver(
+  std::unique_ptr<v8::Global<v8::Promise::Resolver>> global_resolver(
       new v8::Global<v8::Promise::Resolver>(GetIsolate(), resolver));
   gin::ModuleRegistry* module_registry =
       gin::ModuleRegistry::From(v8_context);
@@ -735,7 +735,7 @@ void ModuleSystem::OnDidAddPendingModule(
 }
 
 void ModuleSystem::OnModuleLoaded(
-    scoped_ptr<v8::Global<v8::Promise::Resolver>> resolver,
+    std::unique_ptr<v8::Global<v8::Promise::Resolver>> resolver,
     v8::Local<v8::Value> value) {
   if (!is_valid())
     return;

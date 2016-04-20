@@ -105,7 +105,7 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
 
   // A URL loader to load the |original_url_| when the plugin is embedded. In
   // the embedded case, no URL request is made automatically.
-  scoped_ptr<blink::WebURLLoader> loader_;
+  std::unique_ptr<blink::WebURLLoader> loader_;
 
   // The scriptable object that backs the plugin.
   v8::Global<v8::Object> scriptable_object_;

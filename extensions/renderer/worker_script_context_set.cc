@@ -33,7 +33,7 @@ WorkerScriptContextSet::WorkerScriptContextSet() {}
 
 WorkerScriptContextSet::~WorkerScriptContextSet() {}
 
-void WorkerScriptContextSet::Insert(scoped_ptr<ScriptContext> context) {
+void WorkerScriptContextSet::Insert(std::unique_ptr<ScriptContext> context) {
   DCHECK_GT(content::WorkerThread::GetCurrentId(), 0)
       << "Must be called on a worker thread";
   ContextVector* contexts = contexts_tls_.Get();

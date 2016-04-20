@@ -288,7 +288,7 @@ void DispatchOnConnectToScriptContext(
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
 
-  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
 
   const std::string& source_url_spec = info.source_url.spec();
   std::string target_extension_id = script_context->GetExtensionID();
@@ -395,8 +395,9 @@ void DeliverMessageToScriptContext(const Message& message,
   arguments.push_back(v8_data);
   arguments.push_back(port_id_handle);
 
-  scoped_ptr<blink::WebScopedUserGesture> web_user_gesture;
-  scoped_ptr<blink::WebScopedWindowFocusAllowedIndicator> allow_window_focus;
+  std::unique_ptr<blink::WebScopedUserGesture> web_user_gesture;
+  std::unique_ptr<blink::WebScopedWindowFocusAllowedIndicator>
+      allow_window_focus;
   if (message.user_gesture) {
     web_user_gesture.reset(new blink::WebScopedUserGesture);
 

@@ -128,15 +128,10 @@ void ApiTestEnvironment::RegisterModules() {
                                      NULL,
                                      v8_schema_registry_.get());
   env()->module_system()->RegisterNativeHandler(
-      "process",
-      scoped_ptr<NativeHandler>(new ProcessInfoNativeHandler(
-          env()->context(),
-          env()->context()->GetExtensionID(),
-          env()->context()->GetContextTypeDescription(),
-          false,
-          false,
-          2,
-          false)));
+      "process", std::unique_ptr<NativeHandler>(new ProcessInfoNativeHandler(
+                     env()->context(), env()->context()->GetExtensionID(),
+                     env()->context()->GetContextTypeDescription(), false,
+                     false, 2, false)));
   env()->RegisterTestFile("test_environment_specific_bindings",
                           "unit_test_environment_specific_bindings.js");
 

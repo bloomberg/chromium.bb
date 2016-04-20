@@ -67,19 +67,15 @@ void UserScriptSet::GetActiveExtensionIds(
 }
 
 void UserScriptSet::GetInjections(
-    std::vector<scoped_ptr<ScriptInjection>>* injections,
+    std::vector<std::unique_ptr<ScriptInjection>>* injections,
     content::RenderFrame* render_frame,
     int tab_id,
     UserScript::RunLocation run_location) {
   GURL document_url = GetDocumentUrlForFrame(render_frame->GetWebFrame());
   for (const UserScript* script : scripts_) {
-    scoped_ptr<ScriptInjection> injection = GetInjectionForScript(
-        script,
-        render_frame,
-        tab_id,
-        run_location,
-        document_url,
-        false /* is_declarative */);
+    std::unique_ptr<ScriptInjection> injection =
+        GetInjectionForScript(script, render_frame, tab_id, run_location,
+                              document_url, false /* is_declarative */);
     if (injection.get())
       injections->push_back(std::move(injection));
   }
@@ -118,7 +114,7 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
   scripts_.clear();
   scripts_.reserve(num_scripts);
   for (uint32_t i = 0; i < num_scripts; ++i) {
-    scoped_ptr<UserScript> script(new UserScript());
+    std::unique_ptr<UserScript> script(new UserScript());
     script->Unpickle(pickle, &iter);
 
     // Note that this is a pointer into shared memory. We don't own it. It gets
@@ -159,7 +155,7 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
   return true;
 }
 
-scoped_ptr<ScriptInjection> UserScriptSet::GetDeclarativeScriptInjection(
+std::unique_ptr<ScriptInjection> UserScriptSet::GetDeclarativeScriptInjection(
     int script_id,
     content::RenderFrame* render_frame,
     int tab_id,
@@ -175,18 +171,18 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetDeclarativeScriptInjection(
                                    true /* is_declarative */);
     }
   }
-  return scoped_ptr<ScriptInjection>();
+  return std::unique_ptr<ScriptInjection>();
 }
 
-scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
+std::unique_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
     const UserScript* script,
     content::RenderFrame* render_frame,
     int tab_id,
     UserScript::RunLocation run_location,
     const GURL& document_url,
     bool is_declarative) {
-  scoped_ptr<ScriptInjection> injection;
-  scoped_ptr<const InjectionHost> injection_host;
+  std::unique_ptr<ScriptInjection> injection;
+  std::unique_ptr<const InjectionHost> injection_host;
   blink::WebLocalFrame* web_frame = render_frame->GetWebFrame();
 
   const HostID& host_id = script->host_id();
@@ -208,9 +204,8 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   if (!script->MatchesURL(effective_document_url))
     return injection;
 
-  scoped_ptr<ScriptInjector> injector(new UserScriptInjector(script,
-                                                             this,
-                                                             is_declarative));
+  std::unique_ptr<ScriptInjector> injector(
+      new UserScriptInjector(script, this, is_declarative));
 
   if (injector->CanExecuteOnFrame(
           injection_host.get(),

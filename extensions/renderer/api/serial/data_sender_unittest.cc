@@ -49,7 +49,7 @@ class DataSenderTest : public ApiTestBase {
         base::Bind(base::DoNothing));
   }
 
-  void ReadyToReceive(scoped_ptr<device::ReadOnlyBuffer> buffer) {
+  void ReadyToReceive(std::unique_ptr<device::ReadOnlyBuffer> buffer) {
     std::string data(buffer->GetData(), buffer->GetSize());
     if (expected_data_.empty()) {
       buffer_ = std::move(buffer);
@@ -85,7 +85,7 @@ class DataSenderTest : public ApiTestBase {
   }
 
   scoped_refptr<device::DataSinkReceiver> receiver_;
-  scoped_ptr<device::ReadOnlyBuffer> buffer_;
+  std::unique_ptr<device::ReadOnlyBuffer> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(DataSenderTest);
 };

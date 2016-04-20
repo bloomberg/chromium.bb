@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
-#include "base/values.h"
 #include "extensions/renderer/activity_log_converter_strategy.h"
+
+#include <memory>
+
+#include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
@@ -29,7 +31,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
   }
 
   testing::AssertionResult VerifyNull(v8::Local<v8::Value> v8_value) {
-    scoped_ptr<base::Value> value(
+    std::unique_ptr<base::Value> value(
         converter_->FromV8Value(v8_value, context()));
     if (value->IsType(base::Value::TYPE_NULL))
       return testing::AssertionSuccess();
@@ -39,7 +41,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
   testing::AssertionResult VerifyBoolean(v8::Local<v8::Value> v8_value,
                                          bool expected) {
     bool out;
-    scoped_ptr<base::Value> value(
+    std::unique_ptr<base::Value> value(
         converter_->FromV8Value(v8_value, context()));
     if (value->IsType(base::Value::TYPE_BOOLEAN)
         && value->GetAsBoolean(&out)
@@ -51,7 +53,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
   testing::AssertionResult VerifyInteger(v8::Local<v8::Value> v8_value,
                                          int expected) {
     int out;
-    scoped_ptr<base::Value> value(
+    std::unique_ptr<base::Value> value(
         converter_->FromV8Value(v8_value, context()));
     if (value->IsType(base::Value::TYPE_INTEGER)
         && value->GetAsInteger(&out)
@@ -63,7 +65,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
   testing::AssertionResult VerifyDouble(v8::Local<v8::Value> v8_value,
                                         double expected) {
     double out;
-    scoped_ptr<base::Value> value(
+    std::unique_ptr<base::Value> value(
         converter_->FromV8Value(v8_value, context()));
     if (value->IsType(base::Value::TYPE_DOUBLE)
         && value->GetAsDouble(&out)
@@ -75,7 +77,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
   testing::AssertionResult VerifyString(v8::Local<v8::Value> v8_value,
                                         const std::string& expected) {
     std::string out;
-    scoped_ptr<base::Value> value(
+    std::unique_ptr<base::Value> value(
         converter_->FromV8Value(v8_value, context()));
     if (value->IsType(base::Value::TYPE_STRING)
         && value->GetAsString(&out)
@@ -92,8 +94,8 @@ class ActivityLogConverterStrategyTest : public testing::Test {
   v8::HandleScope handle_scope_;
   v8::Global<v8::Context> context_;
   v8::Context::Scope context_scope_;
-  scoped_ptr<V8ValueConverter> converter_;
-  scoped_ptr<ActivityLogConverterStrategy> strategy_;
+  std::unique_ptr<V8ValueConverter> converter_;
+  std::unique_ptr<ActivityLogConverterStrategy> strategy_;
 };
 
 TEST_F(ActivityLogConverterStrategyTest, ConversionTest) {

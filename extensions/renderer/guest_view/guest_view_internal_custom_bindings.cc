@@ -147,10 +147,10 @@ void GuestViewInternalCustomBindings::AttachGuest(
 
   int guest_instance_id = args[1]->Int32Value();
 
-  scoped_ptr<base::DictionaryValue> params;
+  std::unique_ptr<base::DictionaryValue> params;
   {
-    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    scoped_ptr<base::Value> params_as_value(
+    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+    std::unique_ptr<base::Value> params_as_value(
         converter->FromV8Value(args[2], context()->v8_context()));
     params = base::DictionaryValue::From(std::move(params_as_value));
     CHECK(params);
@@ -221,10 +221,10 @@ void GuestViewInternalCustomBindings::AttachIframeGuest(
   int element_instance_id = args[0]->Int32Value();
   int guest_instance_id = args[1]->Int32Value();
 
-  scoped_ptr<base::DictionaryValue> params;
+  std::unique_ptr<base::DictionaryValue> params;
   {
-    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    scoped_ptr<base::Value> params_as_value(
+    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+    std::unique_ptr<base::Value> params_as_value(
         converter->FromV8Value(args[2], context()->v8_context()));
     params = base::DictionaryValue::From(std::move(params_as_value));
     CHECK(params);

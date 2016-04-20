@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_RENDERER_USER_SCRIPT_INJECTOR_H_
 #define EXTENSIONS_RENDERER_USER_SCRIPT_INJECTOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "extensions/common/user_script.h"
 #include "extensions/renderer/script_injection.h"
@@ -53,7 +53,7 @@ class UserScriptInjector : public ScriptInjector,
       UserScript::RunLocation run_location) const override;
   void GetRunInfo(ScriptsRunInfo* scripts_run_info,
                   UserScript::RunLocation run_location) const override;
-  void OnInjectionComplete(scoped_ptr<base::Value> execution_result,
+  void OnInjectionComplete(std::unique_ptr<base::Value> execution_result,
                            UserScript::RunLocation run_location,
                            content::RenderFrame* render_frame) override;
   void OnWillNotInject(InjectFailureReason reason,

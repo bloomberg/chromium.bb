@@ -56,11 +56,11 @@ void APIActivityLogger::LogInternal(
   // Get the array of api call arguments.
   v8::Local<v8::Array> arg_array = v8::Local<v8::Array>::Cast(args[2]);
   if (arg_array->Length() > 0) {
-    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
     ActivityLogConverterStrategy strategy;
     converter->SetFunctionAllowed(true);
     converter->SetStrategy(&strategy);
-    scoped_ptr<base::ListValue> arg_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> arg_list(new base::ListValue());
     for (size_t i = 0; i < arg_array->Length(); ++i) {
       arg_list->Set(
           i,

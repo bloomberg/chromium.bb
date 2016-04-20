@@ -6,11 +6,11 @@
 #define EXTENSIONS_RENDERER_V8_SCHEMA_REGISTRY_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "gin/public/context_holder.h"
 #include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
@@ -26,7 +26,7 @@ class V8SchemaRegistry {
   ~V8SchemaRegistry();
 
   // Creates a NativeHandler wrapper |this|. Supports GetSchema.
-  scoped_ptr<NativeHandler> AsNativeHandler();
+  std::unique_ptr<NativeHandler> AsNativeHandler();
 
   // Returns a v8::Array with all the schemas for the APIs in |apis|.
   v8::Local<v8::Array> GetSchemas(const std::vector<std::string>& apis);
@@ -41,11 +41,11 @@ class V8SchemaRegistry {
 
   // Cache of schemas. Created lazily by GetOrCreateContext.
   typedef v8::StdGlobalValueMap<std::string, v8::Object> SchemaCache;
-  scoped_ptr<SchemaCache> schema_cache_;
+  std::unique_ptr<SchemaCache> schema_cache_;
 
   // Single per-instance gin::ContextHolder to create v8::Values.
   // Created lazily via GetOrCreateContext.
-  scoped_ptr<gin::ContextHolder> context_holder_;
+  std::unique_ptr<gin::ContextHolder> context_holder_;
 
   DISALLOW_COPY_AND_ASSIGN(V8SchemaRegistry);
 };

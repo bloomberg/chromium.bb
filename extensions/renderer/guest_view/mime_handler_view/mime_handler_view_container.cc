@@ -275,7 +275,7 @@ void MimeHandlerViewContainer::PostMessageFromValue(
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(frame->mainWorldScriptContext());
-  scoped_ptr<content::V8ValueConverter> converter(
+  std::unique_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
   PostMessage(isolate,
               converter->ToV8Value(&message, frame->mainWorldScriptContext()));

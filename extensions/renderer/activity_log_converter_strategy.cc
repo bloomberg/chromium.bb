@@ -4,8 +4,9 @@
 
 #include "extensions/renderer/activity_log_converter_strategy.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "v8/include/v8.h"
 
@@ -16,8 +17,8 @@ namespace {
 // Summarize a V8 value. This performs a shallow conversion in all cases, and
 // returns only a string with a description of the value (e.g.,
 // "[HTMLElement]").
-scoped_ptr<base::Value> SummarizeV8Value(v8::Isolate* isolate,
-                                         v8::Local<v8::Object> object) {
+std::unique_ptr<base::Value> SummarizeV8Value(v8::Isolate* isolate,
+                                              v8::Local<v8::Object> object) {
   v8::TryCatch try_catch(isolate);
   v8::Isolate::DisallowJavascriptExecutionScope scope(
       isolate, v8::Isolate::DisallowJavascriptExecutionScope::THROW_ON_FAILURE);
@@ -38,11 +39,11 @@ scoped_ptr<base::Value> SummarizeV8Value(v8::Isolate* isolate,
   name = v8::String::Concat(name, v8::String::NewFromUtf8(isolate, "]"));
 
   if (try_catch.HasCaught()) {
-    return scoped_ptr<base::Value>(
+    return std::unique_ptr<base::Value>(
         new base::StringValue("[JS Execution Exception]"));
   }
 
-  return scoped_ptr<base::Value>(
+  return std::unique_ptr<base::Value>(
       new base::StringValue(std::string(*v8::String::Utf8Value(name))));
 }
 
@@ -73,7 +74,7 @@ bool ActivityLogConverterStrategy::FromV8Internal(
     base::Value** out,
     v8::Isolate* isolate,
     const FromV8ValueCallback& callback) const {
-  scoped_ptr<base::Value> parsed_value;
+  std::unique_ptr<base::Value> parsed_value;
   parsed_value = SummarizeV8Value(isolate, value);
   *out = parsed_value.release();
 

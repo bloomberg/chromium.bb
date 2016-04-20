@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/common/user_script.h"
 #include "extensions/renderer/injection_host.h"
@@ -51,9 +52,9 @@ class ScriptInjection {
   // Remove the isolated world associated with the given injection host.
   static void RemoveIsolatedWorld(const std::string& host_id);
 
-  ScriptInjection(scoped_ptr<ScriptInjector> injector,
+  ScriptInjection(std::unique_ptr<ScriptInjector> injector,
                   content::RenderFrame* render_frame,
-                  scoped_ptr<const InjectionHost> injection_host,
+                  std::unique_ptr<const InjectionHost> injection_host,
                   UserScript::RunLocation run_location);
   ~ScriptInjection();
 
@@ -109,13 +110,13 @@ class ScriptInjection {
   void NotifyWillNotInject(ScriptInjector::InjectFailureReason reason);
 
   // The injector for this injection.
-  scoped_ptr<ScriptInjector> injector_;
+  std::unique_ptr<ScriptInjector> injector_;
 
   // The RenderFrame into which this should inject the script.
   content::RenderFrame* render_frame_;
 
   // The associated injection host.
-  scoped_ptr<const InjectionHost> injection_host_;
+  std::unique_ptr<const InjectionHost> injection_host_;
 
   // The location in the document load at which we inject the script.
   UserScript::RunLocation run_location_;
@@ -132,13 +133,13 @@ class ScriptInjection {
   bool did_inject_js_;
 
   // Results storage.
-  scoped_ptr<base::Value> execution_result_;
+  std::unique_ptr<base::Value> execution_result_;
 
   // The callback to run upon completing asynchronously.
   CompletionCallback async_completion_callback_;
 
   // A helper class to hold the render frame and watch for its deletion.
-  scoped_ptr<FrameWatcher> frame_watcher_;
+  std::unique_ptr<FrameWatcher> frame_watcher_;
 
   base::WeakPtrFactory<ScriptInjection> weak_ptr_factory_;
 

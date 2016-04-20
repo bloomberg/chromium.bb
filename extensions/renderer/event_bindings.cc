@@ -7,11 +7,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
@@ -44,7 +45,7 @@ base::LazyInstance<std::map<std::string, EventListenerCounts>>
 // we transition between 0 and 1.
 using FilteredEventListenerKey = std::pair<std::string, std::string>;
 using FilteredEventListenerCounts =
-    std::map<FilteredEventListenerKey, scoped_ptr<ValueCounter>>;
+    std::map<FilteredEventListenerKey, std::unique_ptr<ValueCounter>>;
 base::LazyInstance<FilteredEventListenerCounts> g_filtered_listener_counts =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -124,9 +125,10 @@ bool AddFilter(const std::string& event_name,
   FilteredEventListenerCounts& all_counts = g_filtered_listener_counts.Get();
   FilteredEventListenerCounts::const_iterator counts = all_counts.find(key);
   if (counts == all_counts.end()) {
-    counts = all_counts.insert(std::make_pair(
-                                   key, make_scoped_ptr(new ValueCounter())))
-                 .first;
+    counts =
+        all_counts
+            .insert(std::make_pair(key, base::WrapUnique(new ValueCounter())))
+            .first;
   }
   return counts->second->Add(filter);
 }
@@ -257,11 +259,11 @@ void EventBindings::AttachFilteredEvent(
   if (!context()->HasAccessOrThrowError(event_name))
     return;
 
-  scoped_ptr<base::DictionaryValue> filter;
+  std::unique_ptr<base::DictionaryValue> filter;
   {
-    scoped_ptr<content::V8ValueConverter> converter(
+    std::unique_ptr<content::V8ValueConverter> converter(
         content::V8ValueConverter::create());
-    scoped_ptr<base::Value> filter_value(converter->FromV8Value(
+    std::unique_ptr<base::Value> filter_value(converter->FromV8Value(
         v8::Local<v8::Object>::Cast(args[1]), context()->v8_context()));
     if (!filter_value || !filter_value->IsType(base::Value::TYPE_DICTIONARY)) {
       args.GetReturnValue().Set(static_cast<int32_t>(-1));
@@ -339,9 +341,9 @@ void EventBindings::MatchAgainstEventFilter(
   args.GetReturnValue().Set(array);
 }
 
-scoped_ptr<EventMatcher> EventBindings::ParseEventMatcher(
-    scoped_ptr<base::DictionaryValue> filter) {
-  return make_scoped_ptr(new EventMatcher(
+std::unique_ptr<EventMatcher> EventBindings::ParseEventMatcher(
+    std::unique_ptr<base::DictionaryValue> filter) {
+  return base::WrapUnique(new EventMatcher(
       std::move(filter), context()->GetRenderFrame()->GetRoutingID()));
 }
 

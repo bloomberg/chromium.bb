@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -15,7 +16,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "content/public/renderer/render_thread_observer.h"
@@ -267,17 +267,17 @@ class Dispatcher : public content::RenderThreadObserver,
 
   // All the bindings contexts that are currently loaded for this renderer.
   // There is zero or one for each v8 context.
-  scoped_ptr<ScriptContextSet> script_context_set_;
+  std::unique_ptr<ScriptContextSet> script_context_set_;
 
-  scoped_ptr<ContentWatcher> content_watcher_;
+  std::unique_ptr<ContentWatcher> content_watcher_;
 
-  scoped_ptr<UserScriptSetManager> user_script_set_manager_;
+  std::unique_ptr<UserScriptSetManager> user_script_set_manager_;
 
-  scoped_ptr<ScriptInjectionManager> script_injection_manager_;
+  std::unique_ptr<ScriptInjectionManager> script_injection_manager_;
 
   // Same as above, but on a longer timer and will run even if the process is
   // not idle, to ensure that IdleHandle gets called eventually.
-  scoped_ptr<base::RepeatingTimer> forced_idle_timer_;
+  std::unique_ptr<base::RepeatingTimer> forced_idle_timer_;
 
   // The extensions and apps that are active in this process.
   ExtensionIdSet active_extension_ids_;
@@ -285,10 +285,10 @@ class Dispatcher : public content::RenderThreadObserver,
   ResourceBundleSourceMap source_map_;
 
   // Cache for the v8 representation of extension API schemas.
-  scoped_ptr<V8SchemaRegistry> v8_schema_registry_;
+  std::unique_ptr<V8SchemaRegistry> v8_schema_registry_;
 
   // Sends API requests to the extension host.
-  scoped_ptr<RequestSender> request_sender_;
+  std::unique_ptr<RequestSender> request_sender_;
 
   // The platforms system font family and size;
   std::string system_font_family_;

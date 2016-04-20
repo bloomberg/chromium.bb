@@ -76,7 +76,7 @@ class GCCallbackTest : public testing::Test {
   ExtensionIdSet active_extensions_;
   ScriptContextSet script_context_set_;
   v8::Global<v8::Context> v8_context_;
-  scoped_ptr<gin::ContextHolder> gin_context_holder_;
+  std::unique_ptr<gin::ContextHolder> gin_context_holder_;
 
   DISALLOW_COPY_AND_ASSIGN(GCCallbackTest);
 };

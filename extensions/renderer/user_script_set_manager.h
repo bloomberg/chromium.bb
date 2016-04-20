@@ -60,7 +60,7 @@ class UserScriptSetManager : public content::RenderThreadObserver {
   // Looks up the script injection associated with |script_id| and
   // |extension_id| in the context of the given |web_frame|, |tab_id|,
   // and |url|.
-  scoped_ptr<ScriptInjection> GetInjectionForDeclarativeScript(
+  std::unique_ptr<ScriptInjection> GetInjectionForDeclarativeScript(
       int script_id,
       content::RenderFrame* render_frame,
       int tab_id,
@@ -69,10 +69,11 @@ class UserScriptSetManager : public content::RenderThreadObserver {
 
   // Append all injections from |static_scripts| and each of
   // |programmatic_scripts_| to |injections|.
-  void GetAllInjections(std::vector<scoped_ptr<ScriptInjection>>* injections,
-                        content::RenderFrame* render_frame,
-                        int tab_id,
-                        UserScript::RunLocation run_location);
+  void GetAllInjections(
+      std::vector<std::unique_ptr<ScriptInjection>>* injections,
+      content::RenderFrame* render_frame,
+      int tab_id,
+      UserScript::RunLocation run_location);
 
   // Get active extension IDs from |static_scripts| and each of
   // |programmatic_scripts_|.

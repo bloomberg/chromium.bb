@@ -30,7 +30,7 @@ void UserScriptSetManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-scoped_ptr<ScriptInjection>
+std::unique_ptr<ScriptInjection>
 UserScriptSetManager::GetInjectionForDeclarativeScript(
     int script_id,
     content::RenderFrame* render_frame,
@@ -40,7 +40,7 @@ UserScriptSetManager::GetInjectionForDeclarativeScript(
   UserScriptSet* user_script_set =
       GetProgrammaticScriptsByHostID(HostID(HostID::EXTENSIONS, extension_id));
   if (!user_script_set)
-    return scoped_ptr<ScriptInjection>();
+    return std::unique_ptr<ScriptInjection>();
 
   return user_script_set->GetDeclarativeScriptInjection(
       script_id,
@@ -61,7 +61,7 @@ bool UserScriptSetManager::OnControlMessageReceived(
 }
 
 void UserScriptSetManager::GetAllInjections(
-    std::vector<scoped_ptr<ScriptInjection>>* injections,
+    std::vector<std::unique_ptr<ScriptInjection>>* injections,
     content::RenderFrame* render_frame,
     int tab_id,
     UserScript::RunLocation run_location) {

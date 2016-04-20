@@ -194,7 +194,8 @@ class ExtensionImpl : public v8::Extension {
 
     v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
     int argc = args_length - first_arg_index;
-    scoped_ptr<v8::Local<v8::Value> []> argv(new v8::Local<v8::Value>[argc]);
+    std::unique_ptr<v8::Local<v8::Value>[]> argv(
+        new v8::Local<v8::Value>[argc]);
     for (int i = 0; i < argc; ++i) {
       CHECK(IsTrue(args->Has(context, i + first_arg_index)));
       // Getting a property value could throw an exception.

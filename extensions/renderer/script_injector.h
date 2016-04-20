@@ -5,9 +5,9 @@
 #ifndef EXTENSIONS_RENDERER_SCRIPT_INJECTOR_H_
 #define EXTENSIONS_RENDERER_SCRIPT_INJECTOR_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
@@ -82,7 +82,7 @@ class ScriptInjector {
   // |render_frame| contains the render frame, or null if the frame was
   // invalidated.
   virtual void OnInjectionComplete(
-      scoped_ptr<base::Value> execution_result,
+      std::unique_ptr<base::Value> execution_result,
       UserScript::RunLocation run_location,
       content::RenderFrame* render_frame) = 0;
 

@@ -91,7 +91,7 @@ class ApiTestEnvironment {
 
   ModuleSystemTestEnvironment* env_;
   TestServiceProvider* service_provider_;
-  scoped_ptr<V8SchemaRegistry> v8_schema_registry_;
+  std::unique_ptr<V8SchemaRegistry> v8_schema_registry_;
 };
 
 // A base class for unit testing apps/extensions API custom bindings implemented
@@ -116,7 +116,7 @@ class ApiTestBase : public ModuleSystemTest {
 
  private:
   base::MessageLoop message_loop_;
-  scoped_ptr<ApiTestEnvironment> test_env_;
+  std::unique_ptr<ApiTestEnvironment> test_env_;
 };
 
 }  // namespace extensions

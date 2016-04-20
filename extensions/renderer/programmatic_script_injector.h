@@ -5,8 +5,9 @@
 #ifndef EXTENSIONS_RENDERER_PROGRAMMATIC_SCRIPT_INJECTOR_H_
 #define EXTENSIONS_RENDERER_PROGRAMMATIC_SCRIPT_INJECTOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/renderer/script_injection.h"
 #include "url/gurl.h"
@@ -44,7 +45,7 @@ class ProgrammaticScriptInjector : public ScriptInjector {
       UserScript::RunLocation run_location) const override;
   void GetRunInfo(ScriptsRunInfo* scripts_run_info,
                   UserScript::RunLocation run_location) const override;
-  void OnInjectionComplete(scoped_ptr<base::Value> execution_result,
+  void OnInjectionComplete(std::unique_ptr<base::Value> execution_result,
                            UserScript::RunLocation run_location,
                            content::RenderFrame* render_frame) override;
   void OnWillNotInject(InjectFailureReason reason,
@@ -61,7 +62,7 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   void Finish(const std::string& error, content::RenderFrame* render_frame);
 
   // The parameters for injecting the script.
-  scoped_ptr<ExtensionMsg_ExecuteCode_Params> params_;
+  std::unique_ptr<ExtensionMsg_ExecuteCode_Params> params_;
 
   // The url of the frame into which we are injecting.
   GURL url_;

@@ -39,7 +39,7 @@ void SendRequestNatives::StartRequest(
   int request_id = request_sender_->GetNextRequestId();
   args.GetReturnValue().Set(static_cast<int32_t>(request_id));
 
-  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
 
   // See http://crbug.com/149880. The context menus APIs relies on this, but
   // we shouldn't really be doing it (e.g. for the sake of the storage API).
@@ -48,7 +48,7 @@ void SendRequestNatives::StartRequest(
   if (!preserve_null_in_objects)
     converter->SetStripNullFromObjects(true);
 
-  scoped_ptr<base::Value> value_args(
+  std::unique_ptr<base::Value> value_args(
       converter->FromV8Value(args[1], context()->v8_context()));
   if (!value_args.get() || !value_args->IsType(base::Value::TYPE_LIST)) {
     NOTREACHED() << "Unable to convert args passed to StartRequest";

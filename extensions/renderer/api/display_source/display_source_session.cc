@@ -35,10 +35,11 @@ void DisplaySourceSession::SetNotificationCallbacks(
   error_callback_ = error_callback;
 }
 
-scoped_ptr<DisplaySourceSession> DisplaySourceSessionFactory::CreateSession(
+std::unique_ptr<DisplaySourceSession>
+DisplaySourceSessionFactory::CreateSession(
     const DisplaySourceSessionParams& params) {
 #if defined(ENABLE_WIFI_DISPLAY)
-  return scoped_ptr<DisplaySourceSession>(new WiFiDisplaySession(params));
+  return std::unique_ptr<DisplaySourceSession>(new WiFiDisplaySession(params));
 #endif
   return nullptr;
 }

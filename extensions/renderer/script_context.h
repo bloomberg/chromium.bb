@@ -89,7 +89,7 @@ class ScriptContext : public RequestSender::Source {
     return effective_context_type_;
   }
 
-  void set_module_system(scoped_ptr<ModuleSystem> module_system) {
+  void set_module_system(std::unique_ptr<ModuleSystem> module_system) {
     module_system_ = std::move(module_system);
   }
 
@@ -231,7 +231,7 @@ class ScriptContext : public RequestSender::Source {
   Feature::Context effective_context_type_;
 
   // Owns and structures the JS that is injected to set up extension bindings.
-  scoped_ptr<ModuleSystem> module_system_;
+  std::unique_ptr<ModuleSystem> module_system_;
 
   // Contains safe copies of builtin objects like Function.prototype.
   SafeBuiltins safe_builtins_;
@@ -247,7 +247,7 @@ class ScriptContext : public RequestSender::Source {
 
   GURL url_;
 
-  scoped_ptr<Runner> runner_;
+  std::unique_ptr<Runner> runner_;
 
   base::ThreadChecker thread_checker_;
 

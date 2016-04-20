@@ -99,7 +99,7 @@ class DataReceiverTest : public ApiTestBase {
         base::Bind(base::DoNothing));
   }
 
-  void ReadyToSend(scoped_ptr<device::WritableBuffer> buffer) {
+  void ReadyToSend(std::unique_ptr<device::WritableBuffer> buffer) {
     if (data_to_send_.empty() && error_to_send_.empty())
       return;
 

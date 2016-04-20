@@ -21,7 +21,7 @@ class ExtensionInjectionHost : public InjectionHost {
 
   // Create an ExtensionInjectionHost object. If the extension is gone, returns
   // a null scoped ptr.
-  static scoped_ptr<const InjectionHost> Create(
+  static std::unique_ptr<const InjectionHost> Create(
       const std::string& extension_id);
 
  private:

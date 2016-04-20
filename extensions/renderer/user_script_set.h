@@ -5,12 +5,12 @@
 #ifndef EXTENSIONS_RENDERER_USER_SCRIPT_SET_H_
 #define EXTENSIONS_RENDERER_USER_SCRIPT_SET_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/observer_list.h"
@@ -51,12 +51,12 @@ class UserScriptSet {
   // |tab_id|, at the given |run_location|, to |injections|.
   // |extensions| is passed in to verify the corresponding extension is still
   // valid.
-  void GetInjections(std::vector<scoped_ptr<ScriptInjection>>* injections,
+  void GetInjections(std::vector<std::unique_ptr<ScriptInjection>>* injections,
                      content::RenderFrame* render_frame,
                      int tab_id,
                      UserScript::RunLocation run_location);
 
-  scoped_ptr<ScriptInjection> GetDeclarativeScriptInjection(
+  std::unique_ptr<ScriptInjection> GetDeclarativeScriptInjection(
       int script_id,
       content::RenderFrame* render_frame,
       int tab_id,
@@ -74,7 +74,7 @@ class UserScriptSet {
  private:
   // Returns a new ScriptInjection for the given |script| to execute in the
   // |render_frame|, or NULL if the script should not execute.
-  scoped_ptr<ScriptInjection> GetInjectionForScript(
+  std::unique_ptr<ScriptInjection> GetInjectionForScript(
       const UserScript* script,
       content::RenderFrame* render_frame,
       int tab_id,
@@ -83,7 +83,7 @@ class UserScriptSet {
       bool is_declarative);
 
   // Shared memory containing raw script data.
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
 
   // The UserScripts this injector manages.
   ScopedVector<UserScript> scripts_;

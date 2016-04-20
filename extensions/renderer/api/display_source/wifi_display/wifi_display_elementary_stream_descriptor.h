@@ -6,9 +6,10 @@
 #define EXTENSIONS_RENDERER_API_DISPLAY_SOURCE_WIFI_DISPLAY_WIFI_DISPLAY_ELEMENTARY_STREAM_DESCRIPTOR_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <type_traits>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace extensions {
 
@@ -77,7 +78,7 @@ class WiFiDisplayElementaryStreamDescriptor {
   uint8_t* private_data() { return data() + kHeaderSize; }
 
  private:
-  scoped_ptr<uint8_t[]> data_;
+  std::unique_ptr<uint8_t[]> data_;
 };
 
 // LPCM (Linear pulse-code modulation) audio stream descriptor provides basic

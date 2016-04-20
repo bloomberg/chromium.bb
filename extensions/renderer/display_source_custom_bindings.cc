@@ -129,13 +129,13 @@ void DisplaySourceCustomBindings::StartSession(
     }
   }
 
-  scoped_ptr<DisplaySourceAuthInfo> auth_info;
+  std::unique_ptr<DisplaySourceAuthInfo> auth_info;
   v8::Local<v8::Value> auth_info_v8_val =
       GetChildValue(start_info, "authenticationInfo", isolate);
   if (!auth_info_v8_val->IsNull()) {
     CHECK(auth_info_v8_val->IsObject());
-    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    scoped_ptr<base::Value> auth_info_val(
+    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+    std::unique_ptr<base::Value> auth_info_val(
         converter->FromV8Value(auth_info_v8_val, context()->v8_context()));
     CHECK(auth_info_val);
     auth_info = DisplaySourceAuthInfo::FromValue(*auth_info_val);
@@ -150,7 +150,7 @@ void DisplaySourceCustomBindings::StartSession(
     session_params.auth_method = auth_info->method;
     session_params.auth_data = auth_info->data ? *auth_info->data : "";
   }
-  scoped_ptr<DisplaySourceSession> session =
+  std::unique_ptr<DisplaySourceSession> session =
       DisplaySourceSessionFactory::CreateSession(session_params);
   if (!session) {
     isolate->ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(
@@ -271,7 +271,7 @@ void DisplaySourceCustomBindings::DispatchSessionError(
   if (!message.empty())
     error_info.description.reset(new std::string(message));
 
-  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   v8::Local<v8::Value> info_arg =
       converter->ToV8Value(error_info.ToValue().get(),
                            context()->v8_context());

@@ -422,7 +422,7 @@ class SerialApiTest : public ApiTestBase {
 
   scoped_refptr<TestIoHandlerBase> io_handler_;
 
-  scoped_ptr<StashBackend> stash_backend_;
+  std::unique_ptr<StashBackend> stash_backend_;
 
  private:
   scoped_refptr<device::SerialIoHandler> GetIoHandler() {
@@ -437,7 +437,7 @@ class SerialApiTest : public ApiTestBase {
         new device::SerialConnectionFactory(
             base::Bind(&SerialApiTest::GetIoHandler, base::Unretained(this)),
             base::ThreadTaskRunnerHandle::Get()),
-        scoped_ptr<device::SerialDeviceEnumerator>(
+        std::unique_ptr<device::SerialDeviceEnumerator>(
             new FakeSerialDeviceEnumerator),
         std::move(request));
   }
@@ -702,7 +702,7 @@ TEST_F(SerialApiTest, SendUnknownConnectionId) {
 // https://crbug.com/538774
 TEST_F(SerialApiTest, DISABLED_StashAndRestoreDuringEcho) {
   ASSERT_NO_FATAL_FAILURE(RunTest("serial_unittest.js", "testSendAndStash"));
-  scoped_ptr<ModuleSystemTestEnvironment> new_env(CreateEnvironment());
+  std::unique_ptr<ModuleSystemTestEnvironment> new_env(CreateEnvironment());
   ApiTestEnvironment new_api_test_env(new_env.get());
   PrepareEnvironment(&new_api_test_env, stash_backend_.get());
   new_api_test_env.RunTest("serial_unittest.js", "testRestoreAndReceive");
@@ -713,7 +713,7 @@ TEST_F(SerialApiTest, DISABLED_StashAndRestoreDuringEchoError) {
       new ReceiveErrorTestIoHandler(device::serial::ReceiveError::DEVICE_LOST);
   ASSERT_NO_FATAL_FAILURE(
       RunTest("serial_unittest.js", "testRestoreAndReceiveErrorSetUp"));
-  scoped_ptr<ModuleSystemTestEnvironment> new_env(CreateEnvironment());
+  std::unique_ptr<ModuleSystemTestEnvironment> new_env(CreateEnvironment());
   ApiTestEnvironment new_api_test_env(new_env.get());
   PrepareEnvironment(&new_api_test_env, stash_backend_.get());
   new_api_test_env.RunTest("serial_unittest.js", "testRestoreAndReceiveError");
@@ -729,7 +729,7 @@ TEST_F(SerialApiTest, MAYBE_StashAndRestoreNoConnections) {
   ASSERT_NO_FATAL_FAILURE(
       RunTest("serial_unittest.js", "testStashNoConnections"));
   io_handler_ = nullptr;
-  scoped_ptr<ModuleSystemTestEnvironment> new_env(CreateEnvironment());
+  std::unique_ptr<ModuleSystemTestEnvironment> new_env(CreateEnvironment());
   ApiTestEnvironment new_api_test_env(new_env.get());
   PrepareEnvironment(&new_api_test_env, stash_backend_.get());
   new_api_test_env.RunTest("serial_unittest.js", "testRestoreNoConnections");

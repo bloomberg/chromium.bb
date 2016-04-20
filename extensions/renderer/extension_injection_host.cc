@@ -23,13 +23,13 @@ ExtensionInjectionHost::~ExtensionInjectionHost() {
 }
 
 // static
-scoped_ptr<const InjectionHost> ExtensionInjectionHost::Create(
+std::unique_ptr<const InjectionHost> ExtensionInjectionHost::Create(
     const std::string& extension_id) {
   const Extension* extension =
       RendererExtensionRegistry::Get()->GetByID(extension_id);
   if (!extension)
-    return scoped_ptr<const ExtensionInjectionHost>();
-  return scoped_ptr<const ExtensionInjectionHost>(
+    return std::unique_ptr<const ExtensionInjectionHost>();
+  return std::unique_ptr<const ExtensionInjectionHost>(
       new ExtensionInjectionHost(extension));
 }
 

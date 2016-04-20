@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -37,7 +38,7 @@ struct DetectedLanguage {
 
   // Returns a new v8::Local<v8::Value> representing the serialized form of
   // this DetectedLanguage object.
-  scoped_ptr<base::DictionaryValue> ToDictionary() const;
+  std::unique_ptr<base::DictionaryValue> ToDictionary() const;
 
   std::string language;
   int percentage;
@@ -62,14 +63,15 @@ struct LanguageDetectionResult {
 
   // Array of detectedLanguage of size 1-3. The null is returned if
   // there were no languages detected
-  std::vector<scoped_ptr<DetectedLanguage>> languages;
+  std::vector<std::unique_ptr<DetectedLanguage>> languages;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LanguageDetectionResult);
 };
 
-scoped_ptr<base::DictionaryValue> DetectedLanguage::ToDictionary() const {
-  scoped_ptr<base::DictionaryValue> dict_value(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> DetectedLanguage::ToDictionary() const {
+  std::unique_ptr<base::DictionaryValue> dict_value(
+      new base::DictionaryValue());
   dict_value->SetString("language", language.c_str());
   dict_value->SetInteger("percentage", percentage);
   return dict_value;
@@ -78,7 +80,7 @@ scoped_ptr<base::DictionaryValue> DetectedLanguage::ToDictionary() const {
 v8::Local<v8::Value> LanguageDetectionResult::ToValue(ScriptContext* context) {
   base::DictionaryValue dict_value;
   dict_value.SetBoolean("isReliable", is_reliable);
-  scoped_ptr<base::ListValue> languages_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> languages_list(new base::ListValue());
   for (const auto& language : languages)
     languages_list->Append(language->ToDictionary());
   dict_value.Set("languages", std::move(languages_list));
@@ -87,7 +89,7 @@ v8::Local<v8::Value> LanguageDetectionResult::ToValue(ScriptContext* context) {
   v8::Isolate* isolate = v8_context->GetIsolate();
   v8::EscapableHandleScope handle_scope(isolate);
 
-  scoped_ptr<content::V8ValueConverter> converter(
+  std::unique_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
   v8::Local<v8::Value> result = converter->ToV8Value(&dict_value, v8_context);
   return handle_scope.Escape(result);
@@ -96,7 +98,7 @@ v8::Local<v8::Value> LanguageDetectionResult::ToValue(ScriptContext* context) {
 void InitDetectedLanguages(
     CLD2::Language* languages,
     int* percents,
-    std::vector<scoped_ptr<DetectedLanguage>>* detected_languages) {
+    std::vector<std::unique_ptr<DetectedLanguage>>* detected_languages) {
   for (int i = 0; i < kCldNumLangs; i++) {
     std::string language_code;
     // Convert LanguageCode 'zh' to 'zh-CN' and 'zh-Hant' to 'zh-TW' for
@@ -111,7 +113,7 @@ void InitDetectedLanguages(
           CLD2::LanguageCode(static_cast<CLD2::Language>(languages[i]));
     }
     detected_languages->push_back(
-        make_scoped_ptr(new DetectedLanguage(language_code, percents[i])));
+        base::WrapUnique(new DetectedLanguage(language_code, percents[i])));
   }
 }
 
