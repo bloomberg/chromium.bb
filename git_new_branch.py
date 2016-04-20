@@ -3,6 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""
+Create new branch tracking origin/master by default.
+"""
+
 import argparse
 import sys
 
@@ -14,7 +18,8 @@ from git_common import hash_one
 
 def main(args):
   parser = argparse.ArgumentParser(
-    formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    description=__doc__,
   )
   parser.add_argument('branch_name')
   g = parser.add_mutually_exclusive_group()
