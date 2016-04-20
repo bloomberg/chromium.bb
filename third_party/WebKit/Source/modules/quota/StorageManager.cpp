@@ -5,10 +5,13 @@
 #include "modules/quota/StorageManager.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/modules/v8/V8StorageEstimate.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/permissions/Permissions.h"
+#include "modules/quota/StorageEstimate.h"
+#include "platform/StorageQuotaCallbacks.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/modules/permissions/WebPermissionClient.h"
@@ -70,6 +73,37 @@ private:
     Persistent<ScriptPromiseResolver> m_resolver;
 };
 
+class EstimateCallbacks final : public StorageQuotaCallbacks {
+    WTF_MAKE_NONCOPYABLE(EstimateCallbacks);
+public:
+    explicit EstimateCallbacks(ScriptPromiseResolver* resolver)
+        : m_resolver(resolver) {}
+
+    ~EstimateCallbacks() override {}
+
+    void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) override
+    {
+        StorageEstimate estimate;
+        estimate.setUsage(usageInBytes);
+        estimate.setQuota(quotaInBytes);
+        m_resolver->resolve(estimate);
+    }
+
+    void didFail(WebStorageQuotaError error) override
+    {
+        m_resolver->reject(DOMException::create(static_cast<ExceptionCode>(error)));
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_resolver);
+        StorageQuotaCallbacks::trace(visitor);
+    }
+
+private:
+    Member<ScriptPromiseResolver> m_resolver;
+};
+
 } // namespace
 
 ScriptPromise StorageManager::requestPersistent(ScriptState* scriptState)
@@ -111,6 +145,28 @@ ScriptPromise StorageManager::persistentPermission(ScriptState* scriptState)
         return promise;
     }
     permissionClient->queryPermission(WebPermissionTypeDurableStorage, KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new DurableStorageQueryCallbacks(resolver));
+    return promise;
+}
+
+ScriptPromise StorageManager::estimate(ScriptState* scriptState)
+{
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
+    SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
+    if (securityOrigin->isUnique()) {
+        resolver->reject(DOMException::create(NotSupportedError));
+        return promise;
+    }
+    // IDL has: [SecureContext]
+    String errorMessage;
+    if (!executionContext->isSecureContext(errorMessage)) {
+        resolver->reject(DOMException::create(SecurityError, errorMessage));
+        return promise;
+    }
+
+    KURL storagePartition = KURL(KURL(), securityOrigin->toString());
+    Platform::current()->queryStorageUsageAndQuota(storagePartition, WebStorageQuotaTypeTemporary, new EstimateCallbacks(resolver));
     return promise;
 }
 

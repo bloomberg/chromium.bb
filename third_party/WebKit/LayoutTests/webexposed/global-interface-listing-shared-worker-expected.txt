@@ -649,6 +649,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface StorageManager
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
+[Worker]     method estimate
 [Worker]     method persistentPermission
 [Worker] interface SubtleCrypto
 [Worker]     attribute @@toStringTag

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<title>StorageManager: estimate()</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/testharness-helpers.js"></script>
+<script>
+
+test(function(t) {
+    assert_true('estimate' in window.navigator.storage);
+    assert_equals(typeof window.navigator.storage.estimate, 'function');
+    assert_true(window.navigator.storage.estimate() instanceof Promise);
+}, 'estimate() method exists and returns a Promise');
+
+promise_test(function(t) {
+    return window.navigator.storage.estimate().then(function(result) {
+        assert_true(typeof result === 'object');
+        assert_true('usage' in result);
+        assert_equals(typeof result.usage, 'number');
+        assert_true('quota' in result);
+        assert_equals(typeof result.quota, 'number');
+    });
+}, 'estimate() resolves to dictionary with members');
+
+
+// Simple Promise wrappers for IndexedDB to make async testing easier.
+function deleteDB(name) {
+    return new Promise(function(resolve, reject) {
+        var del = indexedDB.deleteDatabase(name);
+        del.onerror = function() { reject(del.error); };
+        del.onsuccess = function() { resolve(); };
+    });
+}
+function openDB(name, upgrade) {
+    return new Promise(function(resolve, reject) {
+        var open = indexedDB.open(name);
+        open.onerror = function() { reject(open.error); };
+        open.onupgradeneeded = function() { upgrade(open.result); };
+        open.onsuccess = function() { resolve(open.result); };
+    });
+}
+function transactionToPromise(tx) {
+    return new Promise(function(resolve, reject) {
+        tx.onabort = function() { reject(tx.error); };
+        tx.oncomplete = function() { resolve(); };
+    });
+}
+
+promise_test(function(t) {
+    var large_value = new Uint8Array(1e6);
+    var dbname = 'db' + window.location;
+    var db, before, after;
+
+    return deleteDB(name)
+        .then(() => openDB(name, db => { db.createObjectStore('store'); }))
+        .then(connection => {
+            db = connection;
+            return navigator.storage.estimate();
+        })
+        .then(estimate => {
+            before = estimate.usage;
+            var tx = db.transaction('store', 'readwrite');
+            tx.objectStore('store').put(large_value, 'k');
+            return transactionToPromise(tx);
+        })
+        .then(() => {
+            return navigator.storage.estimate();
+        })
+        .then(estimate => {
+            after = estimate.usage;
+            assert_greater_than(after, before,
+                'estimated usage should increase');
+            // This assertion may not hold, e.g. if the implementation compresses
+            // the data or pre-allocate blocks larger than the value being stored.
+            assert_greater_than_equal(after - before, large_value.length,
+                'increase should be at least as large as value stored');
+
+            db.close();
+            return deleteDB(name);
+        });
+}, 'estimate() shows usage increase after large value is stored');
+
+</script>

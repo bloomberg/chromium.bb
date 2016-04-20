@@ -643,6 +643,7 @@ interface ServiceWorkerRegistration : EventTarget
     setter onupdatefound
 interface StorageManager
     method constructor
+    method estimate
     method persistentPermission
 interface SubtleCrypto
     method constructor

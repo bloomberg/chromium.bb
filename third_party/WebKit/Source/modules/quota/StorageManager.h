@@ -18,6 +18,7 @@ DEFINE_WRAPPERTYPEINFO();
 public:
     ScriptPromise requestPersistent(ScriptState*);
     ScriptPromise persistentPermission(ScriptState*);
+    ScriptPromise estimate(ScriptState*);
     DECLARE_TRACE();
 };
 

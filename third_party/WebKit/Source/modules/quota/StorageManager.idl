@@ -13,5 +13,5 @@ enum PersistentStoragePermission { "default", "denied", "granted" };
     [Exposed=Window, CallWith=ScriptState] Promise<boolean> requestPersistent();
     [CallWith=ScriptState] Promise<PersistentStoragePermission> persistentPermission();
 
-    // TODO(dgrogan): Implement estimate() and persistentEstimate().
+    [CallWith=ScriptState] Promise<StorageEstimate> estimate();
 };
