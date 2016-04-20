@@ -4,6 +4,7 @@
 
 #include "tools/gn/visual_studio_writer.h"
 
+#include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/test_with_scope.h"
 #include "tools/gn/visual_studio_utils.h"
@@ -100,11 +101,15 @@ TEST_F(VisualStudioWriterTest, ResolveSolutionFolders_AbsPath) {
       "bar", path, MakeGuid(path, "project"), MakeTestPath("/foo/bar"),
       "Win32"));
 
+  std::string baz_label_dir_path = MakeTestPath("/foo/bar/baz");
+#if defined(OS_WIN)
+  // Make sure mixed lower and upper-case drive letters are handled properly.
+  baz_label_dir_path[0] = base::ToLowerASCII(baz_label_dir_path[0]);
+#endif
   path = MakeTestPath(
       "/foo/chromium/src/out/Debug/obj/ABS_PATH/C/foo/bar/baz/baz.vcxproj");
   writer.projects_.emplace_back(new VisualStudioWriter::SolutionProject(
-      "baz", path, MakeGuid(path, "project"), MakeTestPath("/foo/bar/baz"),
-      "Win32"));
+      "baz", path, MakeGuid(path, "project"), baz_label_dir_path, "Win32"));
 
   writer.ResolveSolutionFolders();
 

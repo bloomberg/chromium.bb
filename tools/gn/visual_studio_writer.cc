@@ -181,7 +181,11 @@ VisualStudioWriter::SolutionProject::SolutionProject(
     const std::string& _config_platform)
     : SolutionEntry(_name, _path, _guid),
       label_dir_path(_label_dir_path),
-      config_platform(_config_platform) {}
+      config_platform(_config_platform) {
+  // Make sure all paths use the same drive letter case. This is especially
+  // important when searching for the common path prefix.
+  label_dir_path[0] = base::ToUpperASCII(label_dir_path[0]);
+}
 
 VisualStudioWriter::SolutionProject::~SolutionProject() = default;
 
