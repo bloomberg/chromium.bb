@@ -95,10 +95,14 @@ void HeadlessDevToolsClientImpl::DispatchProtocolMessage(
     NOTREACHED() << "Unexpected reply";
     return;
   }
-  base::DictionaryValue* result_dict;
-  if (message_dict->GetDictionary("result", &result_dict)) {
+  if (!it->second.callback_with_result.is_null()) {
+    base::DictionaryValue* result_dict;
+    if (!message_dict->GetDictionary("result", &result_dict)) {
+      NOTREACHED() << "Badly formed reply result";
+      return;
+    }
     it->second.callback_with_result.Run(*result_dict);
-  } else {
+  } else if (!it->second.callback.is_null()) {
     it->second.callback.Run();
   }
   pending_messages_.erase(it);

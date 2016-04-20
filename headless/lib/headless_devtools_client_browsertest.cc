@@ -110,4 +110,39 @@ class HeadlessDevToolsClientEvalTest : public HeadlessDevToolsClientTest {
 
 DEVTOOLS_CLIENT_TEST_F(HeadlessDevToolsClientEvalTest);
 
+class HeadlessDevToolsClientCallbackTest : public HeadlessDevToolsClientTest {
+ public:
+  HeadlessDevToolsClientCallbackTest() : first_result_received_(false) {}
+
+  void RunDevToolsClientTest() override {
+    // Null callback without parameters.
+    devtools_client_->GetRuntime()->Run();
+    // Null callback with parameters.
+    devtools_client_->GetRuntime()->Evaluate("true");
+    // Non-null callback without parameters.
+    devtools_client_->GetRuntime()->Disable(
+        base::Bind(&HeadlessDevToolsClientCallbackTest::OnFirstResult,
+                   base::Unretained(this)));
+    // Non-null callback with parameters.
+    devtools_client_->GetRuntime()->Evaluate(
+        "true", base::Bind(&HeadlessDevToolsClientCallbackTest::OnSecondResult,
+                           base::Unretained(this)));
+  }
+
+  void OnFirstResult() {
+    EXPECT_FALSE(first_result_received_);
+    first_result_received_ = true;
+  }
+
+  void OnSecondResult(std::unique_ptr<runtime::EvaluateResult> result) {
+    EXPECT_TRUE(first_result_received_);
+    FinishAsynchronousTest();
+  }
+
+ private:
+  bool first_result_received_;
+};
+
+DEVTOOLS_CLIENT_TEST_F(HeadlessDevToolsClientCallbackTest);
+
 }  // namespace headless
