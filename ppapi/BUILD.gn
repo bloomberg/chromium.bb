@@ -42,7 +42,7 @@ import("//build/config/nacl/rules.gni")
 import("//ppapi/ppapi_sources.gni")
 import("//testing/test.gni")
 
-shared_library("ppapi_tests") {
+source_set("ppapi_tests_sources") {
   sources = ppapi_sources.test_common_source_files +
             ppapi_sources.test_trusted_source_files
 
@@ -63,7 +63,21 @@ shared_library("ppapi_tests") {
   ]
 }
 
-shared_library("power_saver_test_plugin") {
+if (!is_mac) {
+  shared_library("ppapi_tests") {
+    deps = [
+      ":ppapi_tests_sources",
+    ]
+  }
+} else {
+  mac_plugin_bundle("ppapi_tests") {
+    deps = [
+      ":ppapi_tests_sources",
+    ]
+  }
+}
+
+source_set("power_saver_test_plugin_sources") {
   sources = [
     "tests/power_saver_test_plugin.cc",
     "tests/test_utils.cc",
@@ -74,6 +88,20 @@ shared_library("power_saver_test_plugin") {
     "//ppapi/cpp",
     "//ppapi/shared_impl",
   ]
+}
+
+if (!is_mac) {
+  shared_library("power_saver_test_plugin") {
+    deps = [
+      ":power_saver_test_plugin_sources",
+    ]
+  }
+} else {
+  mac_plugin_bundle("power_saver_test_plugin") {
+    deps = [
+      ":power_saver_test_plugin_sources",
+    ]
+  }
 }
 
 source_set("blink_deprecated_test_plugin_sources") {
