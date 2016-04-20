@@ -7,4 +7,4 @@ nyquist@chromium.org
 tedchoc@chromium.org
 yfriedman@chromium.org
 
-per-file java_sources.gni=twellington@chromium.org
+per-file java_sources.gni=*
