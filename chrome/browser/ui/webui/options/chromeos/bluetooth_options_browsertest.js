@@ -312,7 +312,8 @@ TEST_F('BluetoothWebUITestAsync', 'testDisconnect', function() {
   }.bind(this));
 });
 
-TEST_F('BluetoothWebUITestAsync', 'testForget', function() {
+// TODO(crbug.com/605090): Disabled because of flakiness.
+TEST_F('BluetoothWebUITestAsync', 'DISABLED_testForget', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   // Enable bluetooth.
