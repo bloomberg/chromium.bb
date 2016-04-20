@@ -52,28 +52,30 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
 # TODO(bashi): Workaround for http://crbug.com/532075
 # @benchmark.Enabled('android') shouldn't be needed.
 @benchmark.Enabled('android')
-class MemoryHealthPlan(_MemoryInfra):
-  """Timeline based benchmark for the Memory Health Plan."""
-
-  _PREFIX_WHITELIST = ('memory_allocator_', 'memory_android_memtrack_',
-                       'memory_mmaps_', 'process_count_')
-
+class MemoryHealthQuick(_MemoryInfra):
+  """Timeline based benchmark for the Memory Health Plan (1 iteration)."""
   page_set = page_sets.MemoryHealthStory
 
   @classmethod
   def Name(cls):
-    return 'memory.memory_health_plan'
-
-  @classmethod
-  def ValueCanBeAddedPredicate(cls, value, is_first_result):
-    return (value.tir_label in ['foreground', 'background']
-            and any(value.name.startswith(p) for p in cls._PREFIX_WHITELIST))
+    return 'memory.memory_health_quick'
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
     # Benchmark requires DeskClock app only available on Nexus devices.
     # See http://crbug.com/546842
     return 'nexus' not in possible_browser.platform.GetDeviceTypeName().lower()
+
+
+# Benchmark is disabled by default because it takes too long to run.
+@benchmark.Disabled('all')
+class MemoryHealthPlan(MemoryHealthQuick):
+  """Timeline based benchmark for the Memory Health Plan (5 iterations)."""
+  options = {'pageset_repeat': 5}
+
+  @classmethod
+  def Name(cls):
+    return 'memory.memory_health_plan'
 
 
 # TODO(bashi): Workaround for http://crbug.com/532075
