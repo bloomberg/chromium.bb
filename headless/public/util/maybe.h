@@ -13,6 +13,7 @@
 namespace headless {
 
 // A simple Maybe which may or may not have a value. Based on v8::Maybe.
+// TODO(skyostil): Replace this with base::Optional once it is available.
 template <typename T>
 class Maybe {
  public:

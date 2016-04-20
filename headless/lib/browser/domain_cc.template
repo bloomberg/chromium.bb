@@ -1,0 +1,57 @@
+// This file is generated
+
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "headless/public/domains/{{domain.domain | camelcase_to_hacker_style}}.h"
+
+#include "base/bind.h"
+
+namespace headless {
+
+namespace {{domain.domain | camelcase_to_hacker_style}} {
+
+Domain::Domain(internal::MessageDispatcher* dispatcher) : dispatcher_(dispatcher) {}
+
+Domain::~Domain() {}
+  {% for command in domain.commands %}
+    {# Skip redirected commands. #}
+    {% if "redirect" in command %}{% continue %}{% endif %}
+
+    {% set method_name = command.name | to_title_case %}
+    {% if "parameters" in command and "returns" in command %}
+void Domain::{{method_name}}(std::unique_ptr<{{method_name}}Params> params, base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback) {
+  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), base::Bind(&Domain::Handle{{method_name}}Response, callback));
+    {% elif "parameters" in command %}
+void Domain::{{method_name}}(std::unique_ptr<{{method_name}}Params> params, base::Callback<void()> callback) {
+  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), std::move(callback));
+    {% elif "returns" in command %}
+void Domain::{{method_name}}(base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback) {
+  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", base::Bind(&Domain::Handle{{method_name}}Response, callback));
+    {% else %}
+void Domain::{{method_name}}(base::Callback<void()> callback) {
+  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", std::move(callback));
+    {% endif %}
+}
+  {% endfor %}
+
+{# Generate response handlers for commands that need them. #}
+{% for command in domain.commands %}
+  {% if not "returns" in command %}{% continue %}{% endif %}
+  {% set method_name = command.name | to_title_case %}
+
+// static
+void Domain::Handle{{method_name}}Response(base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback, const base::Value& response) {
+  if (callback.is_null())
+    return;
+  ErrorReporter errors;
+  std::unique_ptr<{{method_name}}Result> result = {{method_name}}Result::Parse(response, &errors);
+  DCHECK(!errors.HasErrors());
+  callback.Run(std::move(result));
+}
+{% endfor %}
+
+}  // namespace {{domain.domain | camelcase_to_hacker_style}}
+
+} // namespace headless

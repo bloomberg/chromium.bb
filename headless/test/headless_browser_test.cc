@@ -98,6 +98,7 @@ bool HeadlessBrowserTest::WaitForLoad(HeadlessWebContents* web_contents) {
 void HeadlessBrowserTest::RunAsynchronousTest() {
   base::MessageLoop::ScopedNestableTaskAllower nestable_allower(
       base::MessageLoop::current());
+  EXPECT_FALSE(run_loop_);
   run_loop_ = base::WrapUnique(new base::RunLoop());
   run_loop_->Run();
   run_loop_ = nullptr;

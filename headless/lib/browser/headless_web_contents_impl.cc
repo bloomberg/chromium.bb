@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -19,6 +20,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
+#include "headless/lib/browser/headless_devtools_client_impl.h"
 #include "ui/aura/window.h"
 
 namespace headless {
@@ -31,7 +33,10 @@ class WebContentsObserverAdapter : public content::WebContentsObserver {
 
   ~WebContentsObserverAdapter() override {}
 
-  void RenderViewReady() override { observer_->WebContentsReady(); }
+  void RenderViewReady() override {
+    DCHECK(web_contents()->GetMainFrame()->IsRenderFrameLive());
+    observer_->DevToolsTargetReady();
+  }
 
   void DocumentOnLoadCompletedInMainFrame() override {
     observer_->DocumentOnLoadCompletedInMainFrame();
@@ -105,6 +110,21 @@ void HeadlessWebContentsImpl::RemoveObserver(Observer* observer) {
   ObserverMap::iterator it = observer_map_.find(observer);
   DCHECK(it != observer_map_.end());
   observer_map_.erase(it);
+}
+
+HeadlessDevToolsTarget* HeadlessWebContentsImpl::GetDevToolsTarget() {
+  return web_contents()->GetMainFrame()->IsRenderFrameLive() ? this : nullptr;
+}
+
+void HeadlessWebContentsImpl::AttachClient(HeadlessDevToolsClient* client) {
+  if (!agent_host_)
+    agent_host_ = content::DevToolsAgentHost::GetOrCreateFor(web_contents());
+  HeadlessDevToolsClientImpl::From(client)->AttachToHost(agent_host_.get());
+}
+
+void HeadlessWebContentsImpl::DetachClient(HeadlessDevToolsClient* client) {
+  DCHECK(agent_host_);
+  HeadlessDevToolsClientImpl::From(client)->DetachFromHost(agent_host_.get());
 }
 
 content::WebContents* HeadlessWebContentsImpl::web_contents() const {

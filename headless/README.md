@@ -55,10 +55,14 @@ The main embedder API classes are:
   - `SetProxyServer` - Configures an HTTP/HTTPS proxy server to be used for
     accessing the network.
 
-## Client API
+## Client/DevTools API
 
 The headless client API is used to drive the browser and interact with loaded
 web pages. Its main classes are:
 
 - `HeadlessBrowser` - Represents the global headless browser instance.
 - `HeadlessWebContents` - Represents a single "tab" within the browser.
+- `HeadlessDevToolsClient` - Provides a C++ interface for inspecting and
+  controlling a tab. The API functions corresponds to [DevTools commands](https://developer.chrome.com/devtools/docs/debugger-protocol).
+  See the [client API documentation](https://docs.google.com/document/d/1rlqcp8nk-ZQvldNJWdbaMbwfDbJoOXvahPCDoPGOwhQ/edit#)
+  for more information.

@@ -13,13 +13,18 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/public/common/content_switches.h"
 #include "headless/app/headless_shell_switches.h"
+#include "headless/public/domains/page.h"
 #include "headless/public/headless_browser.h"
+#include "headless/public/headless_devtools_client.h"
+#include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
 #include "net/base/ip_address.h"
 #include "ui/gfx/geometry/size.h"
 
 using headless::HeadlessBrowser;
+using headless::HeadlessDevToolsClient;
 using headless::HeadlessWebContents;
+namespace page = headless::page;
 
 namespace {
 // Address where to listen to incoming DevTools connections.
@@ -29,10 +34,14 @@ const char kDevToolsHttpServerAddress[] = "127.0.0.1";
 // A sample application which demonstrates the use of the headless API.
 class HeadlessShell : public HeadlessWebContents::Observer {
  public:
-  HeadlessShell() : browser_(nullptr) {}
-  ~HeadlessShell() override {
-    if (web_contents_)
-      web_contents_->RemoveObserver(this);
+  HeadlessShell()
+      : browser_(nullptr), devtools_client_(HeadlessDevToolsClient::Create()) {}
+  ~HeadlessShell() override {}
+
+  void DevToolsTargetReady() override {
+    if (!RemoteDebuggingEnabled())
+      web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
+    // TODO(skyostil): Implement more features to demonstrate the devtools API.
   }
 
   void OnStart(HeadlessBrowser* browser) {
@@ -58,9 +67,9 @@ class HeadlessShell : public HeadlessWebContents::Observer {
   }
 
   void ShutdownIfNeeded() {
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
-    if (!command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
+    if (!RemoteDebuggingEnabled()) {
+      web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
+      web_contents_->RemoveObserver(this);
       web_contents_ = nullptr;
       browser_->Shutdown();
     }
@@ -71,8 +80,15 @@ class HeadlessShell : public HeadlessWebContents::Observer {
     ShutdownIfNeeded();
   }
 
+  bool RemoteDebuggingEnabled() const {
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
+    return command_line.HasSwitch(switches::kRemoteDebuggingPort);
+  }
+
  private:
   HeadlessBrowser* browser_;  // Not owned.
+  std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
   std::unique_ptr<HeadlessWebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessShell);

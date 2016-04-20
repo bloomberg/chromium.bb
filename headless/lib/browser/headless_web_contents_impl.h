@@ -5,6 +5,7 @@
 #ifndef HEADLESS_LIB_BROWSER_HEADLESS_WEB_CONTENTS_IMPL_H_
 #define HEADLESS_LIB_BROWSER_HEADLESS_WEB_CONTENTS_IMPL_H_
 
+#include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
 
 #include <memory>
@@ -15,8 +16,9 @@ class Window;
 }
 
 namespace content {
-class WebContents;
 class BrowserContext;
+class DevToolsAgentHost;
+class WebContents;
 }
 
 namespace gfx {
@@ -24,9 +26,11 @@ class Size;
 }
 
 namespace headless {
+class HeadlessDevToolsHostImpl;
 class WebContentsObserverAdapter;
 
-class HeadlessWebContentsImpl : public HeadlessWebContents {
+class HeadlessWebContentsImpl : public HeadlessWebContents,
+                                public HeadlessDevToolsTarget {
  public:
   HeadlessWebContentsImpl(content::BrowserContext* context,
                           aura::Window* parent_window,
@@ -36,6 +40,11 @@ class HeadlessWebContentsImpl : public HeadlessWebContents {
   // HeadlessWebContents implementation:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
+  HeadlessDevToolsTarget* GetDevToolsTarget() override;
+
+  // HeadlessDevToolsTarget implementation:
+  void AttachClient(HeadlessDevToolsClient* client) override;
+  void DetachClient(HeadlessDevToolsClient* client) override;
 
   content::WebContents* web_contents() const;
   bool OpenURL(const GURL& url);
@@ -44,6 +53,7 @@ class HeadlessWebContentsImpl : public HeadlessWebContents {
   class Delegate;
   std::unique_ptr<Delegate> web_contents_delegate_;
   std::unique_ptr<content::WebContents> web_contents_;
+  scoped_refptr<content::DevToolsAgentHost> agent_host_;
 
   using ObserverMap =
       std::unordered_map<HeadlessWebContents::Observer*,
