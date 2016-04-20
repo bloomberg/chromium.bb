@@ -64,12 +64,6 @@
           # Use the PCI lib to collect GPU information.
           'use_libpci%': 1,
 
-          # Use OpenSSL instead of NSS as the underlying SSL and crypto
-          # implementation. Certificate verification will in most cases be
-          # handled by the OS. If OpenSSL's struct X509 is used to represent
-          # certificates, use_openssl_certs must be set.
-          'use_openssl%': 1,
-
           # Use OpenSSL for representing certificates. When targeting Android,
           # the platform certificate library is used for certificate
           # verification. On other targets, this flag also enables OpenSSL for
@@ -168,7 +162,6 @@
         'use_ozone%': '<(use_ozone)',
         'embedded%': '<(embedded)',
         'use_libpci%': '<(use_libpci)',
-        'use_openssl%': '<(use_openssl)',
         'use_openssl_certs%': '<(use_openssl_certs)',
         'enable_viewport%': '<(enable_viewport)',
         'enable_hidpi%': '<(enable_hidpi)',
@@ -355,7 +348,6 @@
       'use_ozone_evdev%': '<(use_ozone_evdev)',
       'use_clipboard_aurax11%': '<(use_clipboard_aurax11)',
       'embedded%': '<(embedded)',
-      'use_openssl%': '<(use_openssl)',
       'use_openssl_certs%': '<(use_openssl_certs)',
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
@@ -1158,7 +1150,6 @@
     'use_ash%': '<(use_ash)',
     'use_cras%': '<(use_cras)',
     'use_libpci%': '<(use_libpci)',
-    'use_openssl%': '<(use_openssl)',
     'use_openssl_certs%': '<(use_openssl_certs)',
     'use_nss_certs%': '<(use_nss_certs)',
     'use_udev%': '<(use_udev)',

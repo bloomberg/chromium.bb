@@ -11,10 +11,6 @@
 # required. See the declare_args block of BUILDCONFIG.gn for advice on how
 # to set up feature flags.
 
-declare_args() {
-  use_openssl = true
-}
-
 # True when we're using OpenSSL for representing certificates. When targeting
 # Android, the platform certificate library is used for certificate
 # verification. On NaCl, verification isn't supported. On other targets, this
