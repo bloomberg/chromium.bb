@@ -61,8 +61,8 @@ def main(argv):
   blacklist = (device_blacklist.Blacklist(options.blacklist_file)
                if options.blacklist_file
                else None)
-  device = device_utils.DeviceUtils.HealthyDevices(blacklist=blacklist,
-                                                   device_arg=options.device)
+  device = device_utils.DeviceUtils.HealthyDevices(
+      blacklist=blacklist, device_arg=options.device)[0]
   constants.SetBuildType(options.build_type)
   try:
     forwarder.Forwarder.Map(port_pairs, device)
