@@ -228,12 +228,19 @@ void ChromeOSMetricsProvider::ProvideGeneralMetrics(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   std::vector<SampledProfile> sampled_profiles;
   if (perf_provider_.GetSampledProfiles(&sampled_profiles)) {
-    for (std::vector<SampledProfile>::iterator iter = sampled_profiles.begin();
-         iter != sampled_profiles.end();
-         ++iter) {
-      uma_proto->add_sampled_profile()->Swap(&(*iter));
+    for (auto& profile : sampled_profiles) {
+      uma_proto->add_sampled_profile()->Swap(&profile);
     }
   }
+
+  if (leak_detector_controller_) {
+    std::vector<metrics::MemoryLeakReportProto> reports;
+    leak_detector_controller_->GetLeakReports(&reports);
+    for (auto& report : reports) {
+      uma_proto->add_memory_leak_report()->Swap(&report);
+    }
+  }
+
   RecordEnrollmentStatus();
 }
 
