@@ -324,6 +324,9 @@ bool Target::OnResolved(Err* err) {
     CheckSourcesGenerated();
   }
 
+  if (!write_runtime_deps_output_.value().empty())
+    g_scheduler->AddWriteRuntimeDepsTarget(this);
+
   return true;
 }
 

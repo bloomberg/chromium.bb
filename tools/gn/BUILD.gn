@@ -277,7 +277,6 @@ test("gn_unittests") {
     "function_write_file_unittest.cc",
     "functions_target_unittest.cc",
     "functions_unittest.cc",
-    "group_target_generator_unittest.cc",
     "header_checker_unittest.cc",
     "inherited_libraries_unittest.cc",
     "input_conversion_unittest.cc",

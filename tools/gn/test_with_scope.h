@@ -34,6 +34,7 @@ class TestWithScope {
   Toolchain* toolchain() { return &toolchain_; }
   const Toolchain* toolchain() const { return &toolchain_; }
   Scope* scope() { return &scope_; }
+  const Scope::ItemVector& items() { return items_; }
 
   // This buffer accumulates output from any print() commands executed in the
   // context of this test. Note that the implementation of this is not
@@ -43,6 +44,11 @@ class TestWithScope {
   // Parse the given string into a label in the default toolchain. This will
   // assert if the label isn't valid (this is intended for hardcoded labels).
   Label ParseLabel(const std::string& str) const;
+
+  // Parses, evaluates, and resolves targets from the given snippet of code.
+  // All targets must be defined in dependency order (does not use a Builder,
+  // just blindly resolves all targets in order).
+  bool ExecuteSnippet(const std::string& str, Err* err);
 
   // Fills in the tools for the given toolchain with reasonable default values.
   // The toolchain in this object will be automatically set up with this
@@ -62,6 +68,7 @@ class TestWithScope {
   Settings settings_;
   Toolchain toolchain_;
   Scope scope_;
+  Scope::ItemVector items_;
 
   // Supplies the scope with built-in variables like root_out_dir.
   ScopePerFileProvider scope_progammatic_provider_;

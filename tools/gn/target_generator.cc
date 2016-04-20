@@ -403,6 +403,5 @@ bool TargetGenerator::FillWriteRuntimeDeps() {
   OutputFile output_file(GetBuildSettings(), source_file);
   target_->set_write_runtime_deps_output(output_file);
 
-  g_scheduler->AddWriteRuntimeDepsTarget(target_);
   return true;
 }

@@ -8,6 +8,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/runtime_deps.h"
+#include "tools/gn/scheduler.h"
 #include "tools/gn/target.h"
 #include "tools/gn/test_with_scope.h"
 
@@ -281,4 +282,32 @@ TEST(RuntimeDeps, Dupe) {
   EXPECT_TRUE(std::find(result.begin(), result.end(),
                         MakePair("../../action.output", &action)) !=
               result.end()) << GetVectorDescription(result);
+}
+
+// Tests that actions can't have output substitutions.
+TEST(RuntimeDeps, WriteRuntimeDepsVariable) {
+  Scheduler scheduler;
+  TestWithScope setup;
+  Err err;
+
+  // Should refuse to write files outside of the output dir.
+  EXPECT_FALSE(setup.ExecuteSnippet(
+      "group(\"foo\") { write_runtime_deps = \"//foo.txt\" }", &err));
+
+  // Should fail for garbage inputs.
+  err = Err();
+  EXPECT_FALSE(setup.ExecuteSnippet(
+      "group(\"foo\") { write_runtime_deps = 0 }", &err));
+
+  // Should be able to write inside the out dir, and shouldn't write the one
+  // in the else clause.
+  err = Err();
+  EXPECT_TRUE(setup.ExecuteSnippet(
+      "if (true) {\n"
+      "  group(\"foo\") { write_runtime_deps = \"//out/Debug/foo.txt\" }\n"
+      "} else {\n"
+      "  group(\"bar\") { write_runtime_deps = \"//out/Debug/bar.txt\" }\n"
+      "}", &err));
+  EXPECT_EQ(1U, setup.items().size());
+  EXPECT_EQ(1U, scheduler.GetWriteRuntimeDepsTargets().size());
 }
