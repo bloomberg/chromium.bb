@@ -71,6 +71,13 @@ def _CompareVersion(version1, version2):
   size = min(len(ver_num1), len(ver_num2))
   return cmp(ver_num1[0:size], ver_num2[0:size])
 
+
+def GenerateTestNameFromTestPath(test_path):
+  return  ('WebglConformance.%s' %
+           test_path.replace('/', '_').replace('-', '_').
+           replace('\\', '_').rpartition('.')[0].replace('.', '_'))
+
+
 class WebglConformanceValidator(gpu_test_base.ValidatorBase):
   def __init__(self):
     super(WebglConformanceValidator, self).__init__()
@@ -175,9 +182,7 @@ class WebglConformancePage(gpu_test_base.PageBase):
     super(WebglConformancePage, self).__init__(
       url='file://' + test, page_set=story_set, base_dir=story_set.base_dir,
       shared_page_state_class=gpu_test_base.DesktopGpuSharedPageState,
-      name=('WebglConformance.%s' %
-              test.replace('/', '_').replace('-', '_').
-                 replace('\\', '_').rpartition('.')[0].replace('.', '_')),
+      name=(GenerateTestNameFromTestPath(test)),
       expectations=expectations)
     self.script_to_evaluate_on_commit = conformance_harness_script
 
