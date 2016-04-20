@@ -33,7 +33,8 @@ class AwGLFunctor {
     }
 
     private final long mNativeAwGLFunctor;
-    private final DestroyRunnable mDestroyRunnable;
+    // Same gc-life time as this, but does not reference any members like |mContainerView|.
+    private final Object mLifetimeObject;
     private final CleanupReference mCleanupReference;
     private final AwContents.NativeGLDelegate mNativeGLDelegate;
     private final ViewGroup mContainerView;
@@ -41,8 +42,9 @@ class AwGLFunctor {
 
     public AwGLFunctor(AwContents.NativeGLDelegate nativeGLDelegate, ViewGroup containerView) {
         mNativeAwGLFunctor = nativeCreate(this);
-        mDestroyRunnable = new DestroyRunnable(mNativeAwGLFunctor);
-        mCleanupReference = new CleanupReference(mDestroyRunnable, mDestroyRunnable);
+        mLifetimeObject = new Object();
+        mCleanupReference =
+                new CleanupReference(mLifetimeObject, new DestroyRunnable(mNativeAwGLFunctor));
         mNativeGLDelegate = nativeGLDelegate;
         mContainerView = containerView;
         if (mNativeGLDelegate.supportsDrawGLFunctorReleasedCallback()) {
@@ -67,7 +69,7 @@ class AwGLFunctor {
     }
 
     public Object getNativeLifetimeObject() {
-        return mDestroyRunnable;
+        return mLifetimeObject;
     }
 
     public boolean requestDrawGLForCanvas(Canvas canvas) {
