@@ -30,15 +30,8 @@ import tracing
 
 
 # List of selected trace event categories when running chrome.
-CATEGORIES = [
-    # Need blink network trace events for prefetch_view.PrefetchSimulationView
-    'blink.net',
-
-    # Need to get mark trace events for _GetWebPageTrackedEvents()
-    'blink.user_timing',
-
-    # Need to memory dump trace event for _GetBrowserDumpEvents()
-    'disabled-by-default-memory-infra']
+ADDITIONAL_CATEGORIES = (
+    'disabled-by-default-memory-infra',)  # Used by _GetBrowserDumpEvents()
 
 CSV_FIELD_NAMES = [
     'id',
@@ -145,6 +138,11 @@ def _PullMetricsFromLoadingTrace(loading_trace):
   Returns:
     Dictionary with all CSV_FIELD_NAMES's field set (except the 'id').
   """
+  assert all(
+      cat in loading_trace.tracing_track.Categories()
+      for cat in ADDITIONAL_CATEGORIES), (
+          'This trace was not generated with the required set of categories '
+          'to be processed by this script.')
   browser_dump_events = _GetBrowserDumpEvents(loading_trace.tracing_track)
   web_page_tracked_events = _GetWebPageTrackedEvents(
       loading_trace.tracing_track)

@@ -52,6 +52,7 @@
     }
   },
   "tracing_track": {
+   "categories": [],
     "events": [
       {
         "args": {

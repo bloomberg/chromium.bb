@@ -204,14 +204,14 @@ class SandwichRunner(object):
               url=url,
               connection=connection,
               chrome_metadata=self._chrome_ctl.ChromeMetadata(),
-              categories=sandwich_metrics.CATEGORIES,
+              additional_categories=sandwich_metrics.ADDITIONAL_CATEGORIES,
               timeout_seconds=_DEVTOOLS_TIMEOUT)
       else:
         trace = loading_trace.LoadingTrace.RecordUrlNavigation(
             url=url,
             connection=connection,
             chrome_metadata=self._chrome_ctl.ChromeMetadata(),
-            categories=sandwich_metrics.CATEGORIES,
+            additional_categories=sandwich_metrics.ADDITIONAL_CATEGORIES,
             timeout_seconds=_DEVTOOLS_TIMEOUT)
     if run_path is not None:
       trace_path = os.path.join(run_path, 'trace.json')

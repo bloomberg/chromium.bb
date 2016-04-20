@@ -12,7 +12,11 @@ import operator
 import devtools_monitor
 
 
-DEFAULT_CATEGORIES = None
+_DISABLED_CATEGORIES = ('cc',) # Contains a lot of events, none of which we use.
+INITIAL_CATEGORIES = (
+    'toplevel', 'blink', 'v8', 'java', 'devtools.timeline',
+    'blink.user_timing', 'blink.net') + tuple(
+        '-' + cat for cat in _DISABLED_CATEGORIES)
 
 
 class TracingTrack(devtools_monitor.Track):
@@ -20,16 +24,16 @@ class TracingTrack(devtools_monitor.Track):
 
   See https://goo.gl/Qabkqk for details on the protocol.
   """
-  def __init__(self, connection,
-               categories=DEFAULT_CATEGORIES,
+  def __init__(self, connection, additional_categories=None,
                fetch_stream=False):
     """Initialize this TracingTrack.
 
     Args:
       connection: a DevToolsConnection.
-      categories: None, or a string, or list of strings, of tracing categories
-        to filter.
-
+      additional_categories: ([str] or None) If set, a list of additional
+                             categories to add. This cannot be used to re-enable
+                             a category which is disabled by default (see
+                             INITIAL_CATEGORIES), nor to disable a category.
       fetch_stream: if true, use a websocket stream to fetch tracing data rather
         than dataCollected events. It appears based on very limited testing that
         a stream is slower than the default reporting as dataCollected events.
@@ -37,10 +41,15 @@ class TracingTrack(devtools_monitor.Track):
     super(TracingTrack, self).__init__(connection)
     if connection:
       connection.RegisterListener('Tracing.dataCollected', self)
+    extra_categories = additional_categories or []
+    assert not (set(extra_categories) & set(_DISABLED_CATEGORIES)), (
+        'Cannot enable a disabled category')
+    assert not any(cat.startswith('-') for cat in extra_categories), (
+        'Cannot disable a category')
+    self._categories = set(
+        itertools.chain(INITIAL_CATEGORIES, extra_categories))
     params = {}
-    if categories:
-      params['categories'] = (categories if type(categories) is str
-                              else ','.join(categories))
+    params['categories'] = ','.join(self._categories)
     if fetch_stream:
       params['transferMode'] = 'ReturnAsStream'
 
@@ -62,15 +71,9 @@ class TracingTrack(devtools_monitor.Track):
     # update.
     self._interval_tree = None
 
-  def _GetMainFrameID(self):
-    """Returns the main frame ID."""
-    if not self._main_frame_id:
-      navigation_start_events = [e for e in self.GetEvents()
-          if e.Matches('blink.user_timing', 'navigationStart')]
-      first_event = min(navigation_start_events, key=lambda e: e.start_msec)
-      self._main_frame_id = first_event.args['frame']
-
-    return self._main_frame_id
+  def Categories(self):
+    """Returns the set of categories in this trace."""
+    return self._categories
 
   def GetFirstEventMillis(self):
     """Find the canonical start time for this track.
@@ -110,9 +113,6 @@ class TracingTrack(devtools_monitor.Track):
     self._IndexEvents()
     return self._interval_tree.EventsAt(msec)
 
-  def ToJsonDict(self):
-    return {'events': [e.ToJsonDict() for e in self._events]}
-
   def Filter(self, pid=None, tid=None, categories=None):
     """Returns a new TracingTrack with a subset of the events.
 
@@ -133,7 +133,14 @@ class TracingTrack(devtools_monitor.Track):
           events)
     tracing_track = TracingTrack(None)
     tracing_track._events = events
+    tracing_track._categories = self._categories
+    if categories is not None:
+      tracing_track._categories = self._categories.intersection(categories)
     return tracing_track
+
+  def ToJsonDict(self):
+    return {'categories': list(self._categories),
+            'events': [e.ToJsonDict() for e in self._events]}
 
   @classmethod
   def FromJsonDict(cls, json_dict):
@@ -142,6 +149,7 @@ class TracingTrack(devtools_monitor.Track):
     assert 'events' in json_dict
     events = [Event(e) for e in json_dict['events']]
     tracing_track = TracingTrack(None)
+    tracing_track._categories = set(json_dict.get('categories', []))
     tracing_track._events = events
     tracing_track._base_msec = events[0].start_msec if events else 0
     for e in events[1:]:
@@ -188,6 +196,16 @@ class TracingTrack(devtools_monitor.Track):
           and event.name == step_event.name and event.id == step_event.id):
         return event
     return None
+
+  def _GetMainFrameID(self):
+    """Returns the main frame ID."""
+    if not self._main_frame_id:
+      navigation_start_events = [e for e in self.GetEvents()
+          if e.Matches('blink.user_timing', 'navigationStart')]
+      first_event = min(navigation_start_events, key=lambda e: e.start_msec)
+      self._main_frame_id = first_event.args['frame']
+
+    return self._main_frame_id
 
   def _IndexEvents(self, strict=False):
     if self._interval_tree:

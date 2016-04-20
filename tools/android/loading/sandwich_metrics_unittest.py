@@ -44,7 +44,9 @@ _MINIMALIST_TRACE_EVENTS = [
 
 
 def TracingTrack(events):
-  return tracing.TracingTrack.FromJsonDict({'events': events})
+  return tracing.TracingTrack.FromJsonDict({
+      'events': events,
+      'categories': tracing.INITIAL_CATEGORIES + puller.ADDITIONAL_CATEGORIES})
 
 
 def LoadingTrace(events):
@@ -103,7 +105,7 @@ class PageTrackTest(unittest.TestCase):
         {'pid': 354, 'ts': 11000, 'cat': 'whatever0', 'ph': 'R'},
         {'pid': 672, 'ts': 12000, 'cat': _MEM_CAT, 'ph': 'v', 'name': NAME}]
 
-    self.assertTrue(_MEM_CAT in puller.CATEGORIES)
+    self.assertTrue(_MEM_CAT in puller.ADDITIONAL_CATEGORIES)
 
     bump_events = RunHelper(TRACE_EVENTS, 123)
     self.assertEquals(2, len(bump_events))
@@ -124,8 +126,6 @@ class PageTrackTest(unittest.TestCase):
       RunHelper(TRACE_EVENTS, 895)
 
   def testGetWebPageTrackedEvents(self):
-    self.assertTrue(_BLINK_CAT in puller.CATEGORIES)
-
     trace_events = puller._GetWebPageTrackedEvents(TracingTrack([
         {'ph': 'R', 'ts':  0000, 'args': {},             'cat': 'whatever',
             'name': _START},
