@@ -122,7 +122,6 @@ class VideoFramePump : public VideoStream,
   };
 
   // webrtc::DesktopCapturer::Callback interface.
-  webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
   void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
   // Callback for CaptureScheduler.

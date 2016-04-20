@@ -84,11 +84,6 @@ bool WebRtcFrameScheduler::ClearAndGetKeyFrameRequest() {
   return key_frame_request;
 }
 
-webrtc::SharedMemory* WebRtcFrameScheduler::CreateSharedMemory(size_t size) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return nullptr;
-}
-
 void WebRtcFrameScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

@@ -112,11 +112,6 @@ void VideoFramePump::SetSizeCallback(const SizeCallback& size_callback) {
   size_callback_ = size_callback;
 }
 
-webrtc::SharedMemory* VideoFramePump::CreateSharedMemory(size_t size) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return nullptr;
-}
-
 void VideoFramePump::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
