@@ -470,7 +470,7 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
     }
 
     if (clearLayoutTreeSelection)
-        selection().start().document()->layoutView()->clearSelection();
+        selection().start().document()->layoutViewItem().clearSelection();
 
     if (clearDOMTreeSelection)
         setSelection(VisibleSelection(), DoNotSetFocus);
@@ -742,7 +742,7 @@ void FrameSelection::paintCaret(GraphicsContext& context, const LayoutPoint& pai
 bool FrameSelection::contains(const LayoutPoint& point)
 {
     Document* document = m_frame->document();
-    if (!document->layoutView())
+    if (document->layoutViewItem().isNull())
         return false;
 
     // Treat a collapsed selection like no selection.
@@ -752,7 +752,7 @@ bool FrameSelection::contains(const LayoutPoint& point)
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult result(request, point);
-    document->layoutView()->hitTest(result);
+    document->layoutViewItem().hitTest(result);
     Node* innerNode = result.innerNode();
     if (!innerNode || !innerNode->layoutObject())
         return false;
@@ -933,8 +933,9 @@ void FrameSelection::focusedOrActiveStateChanged()
     // Because LayoutObject::selectionBackgroundColor() and
     // LayoutObject::selectionForegroundColor() check if the frame is active,
     // we have to update places those colors were painted.
-    if (LayoutView* view = document->layoutView())
-        view->invalidatePaintForSelection();
+    LayoutViewItem view = document->layoutViewItem();
+    if (!view.isNull())
+        view.invalidatePaintForSelection();
 
     // Caret appears in the active frame.
     if (activeAndFocused)

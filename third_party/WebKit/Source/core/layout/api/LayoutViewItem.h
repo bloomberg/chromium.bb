@@ -80,6 +80,11 @@ public:
         return toView()->selectionBounds();
     }
 
+    void invalidatePaintForSelection()
+    {
+        return toView()->invalidatePaintForSelection();
+    }
+
 private:
     LayoutView* toView() { return toLayoutView(layoutObject()); }
     const LayoutView* toView() const { return toLayoutView(layoutObject()); }
