@@ -36,6 +36,7 @@ LayoutSVGContainer::LayoutSVGContainer(SVGElement* node)
     : LayoutSVGModelObject(node)
     , m_objectBoundingBoxValid(false)
     , m_needsBoundariesUpdate(true)
+    , m_didTransformToRootUpdate(false)
     , m_hasNonIsolatedBlendingDescendants(false)
     , m_hasNonIsolatedBlendingDescendantsDirty(false)
 {
@@ -55,11 +56,10 @@ void LayoutSVGContainer::layout()
 
     // Allow LayoutSVGTransformableContainer to update its transform.
     bool updatedTransform = calculateLocalTransform();
+    m_didTransformToRootUpdate = updatedTransform || SVGLayoutSupport::transformToRootChanged(parent());
 
     // LayoutSVGViewportContainer needs to set the 'layout size changed' flag.
     determineIfLayoutSizeChanged();
-
-    bool transformChanged = SVGLayoutSupport::transformToRootChanged(this);
 
     // When hasRelativeLengths() is false, no descendants have relative lengths
     // (hence no one is interested in viewport size changes).
@@ -71,7 +71,7 @@ void LayoutSVGContainer::layout()
     // the descendants.
     bool forceLayoutOfChildren = selfNeedsLayout()
         || (normalChildNeedsLayout() && SVGLayoutSupport::hasFilterResource(*this));
-    SVGLayoutSupport::layoutChildren(firstChild(), forceLayoutOfChildren, transformChanged, layoutSizeChanged);
+    SVGLayoutSupport::layoutChildren(firstChild(), forceLayoutOfChildren, m_didTransformToRootUpdate, layoutSizeChanged);
 
     // Invalidate all resources of this client if our layout changed.
     if (everHadLayout() && needsLayout())

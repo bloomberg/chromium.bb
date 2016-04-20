@@ -38,14 +38,12 @@ public:
     const FloatSize& additionalTranslation() const { return m_additionalTranslation; }
 
     void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
-    bool didTransformToRootUpdate() const override { return m_didTransformToRootUpdate; }
 
 private:
     bool calculateLocalTransform() override;
     AffineTransform localSVGTransform() const override { return m_localTransform; }
 
     bool m_needsTransformUpdate : 1;
-    bool m_didTransformToRootUpdate : 1;
     AffineTransform m_localTransform;
     FloatSize m_additionalTranslation;
 };

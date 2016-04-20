@@ -35,7 +35,6 @@ public:
     FloatRect viewport() const { return m_viewport; }
 
     bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
-    bool didTransformToRootUpdate() const override { return m_didTransformToRootUpdate; }
 
     void determineIfLayoutSizeChanged() override;
     void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
@@ -57,7 +56,6 @@ private:
 
     FloatRect m_viewport;
     mutable AffineTransform m_localToParentTransform;
-    bool m_didTransformToRootUpdate : 1;
     bool m_isLayoutSizeChanged : 1;
     bool m_needsTransformUpdate : 1;
 };

@@ -31,7 +31,6 @@ namespace blink {
 LayoutSVGTransformableContainer::LayoutSVGTransformableContainer(SVGGraphicsElement* node)
     : LayoutSVGContainer(node)
     , m_needsTransformUpdate(true)
-    , m_didTransformToRootUpdate(false)
 {
 }
 
@@ -94,7 +93,6 @@ bool LayoutSVGTransformableContainer::calculateLocalTransform()
         m_additionalTranslation = translation;
     }
 
-    m_didTransformToRootUpdate = m_needsTransformUpdate || SVGLayoutSupport::transformToRootChanged(parent());
     if (!m_needsTransformUpdate)
         return false;
 

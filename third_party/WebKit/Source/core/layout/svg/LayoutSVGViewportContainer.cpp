@@ -32,7 +32,6 @@ namespace blink {
 
 LayoutSVGViewportContainer::LayoutSVGViewportContainer(SVGElement* node)
     : LayoutSVGContainer(node)
-    , m_didTransformToRootUpdate(false)
     , m_isLayoutSizeChanged(false)
     , m_needsTransformUpdate(true)
 {
@@ -67,7 +66,6 @@ void LayoutSVGViewportContainer::calcViewport()
 
 bool LayoutSVGViewportContainer::calculateLocalTransform()
 {
-    m_didTransformToRootUpdate = m_needsTransformUpdate || SVGLayoutSupport::transformToRootChanged(parent());
     if (!m_needsTransformUpdate)
         return false;
 
