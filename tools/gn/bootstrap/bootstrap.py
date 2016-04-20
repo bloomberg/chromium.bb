@@ -118,18 +118,18 @@ def build_gn_with_ninja_manually(tempdir, options):
   root_gen_dir = os.path.join(tempdir, 'gen')
   mkdir_p(root_gen_dir)
 
-  if is_linux:
-    mkdir_p(os.path.join(root_gen_dir, 'base', 'allocator'))
-    with tempfile.NamedTemporaryFile() as f:
-      f.write('--flags USE_EXPERIMENTAL_ALLOCATOR_SHIM=true')
-      f.flush()
+  mkdir_p(os.path.join(root_gen_dir, 'base', 'allocator'))
+  with tempfile.NamedTemporaryFile() as f:
+    f.write('--flags USE_EXPERIMENTAL_ALLOCATOR_SHIM=%s'
+            % ('true' if is_linux else 'false'))
+    f.flush()
 
-      check_call([
-          os.path.join(SRC_ROOT, 'build', 'write_buildflag_header.py'),
-          '--output', 'base/allocator/features.h',
-          '--gen-dir', root_gen_dir,
-          '--definitions', f.name,
-      ])
+    check_call([
+        os.path.join(SRC_ROOT, 'build', 'write_buildflag_header.py'),
+        '--output', 'base/allocator/features.h',
+        '--gen-dir', root_gen_dir,
+        '--definitions', f.name,
+    ])
 
   if is_mac:
     # //base/build_time.cc needs base/generated_build_date.h,
@@ -198,8 +198,8 @@ def write_ninja(path, root_gen_dir, options):
       'base/third_party/superfasthash/superfasthash.c',
   ])
   static_libraries['base']['sources'].extend([
+      'base/allocator/allocator_check.cc',
       'base/allocator/allocator_extension.cc',
-      'base/allocator/allocator_shim.cc',
       'base/at_exit.cc',
       'base/base_paths.cc',
       'base/base_switches.cc',
@@ -385,6 +385,7 @@ def write_ninja(path, root_gen_dir, options):
         'tool': 'cxx',
     }
     static_libraries['base']['sources'].extend([
+        'base/allocator/allocator_shim.cc',
         'base/allocator/allocator_shim_default_dispatch_to_glibc.cc',
         'base/memory/shared_memory_posix.cc',
         'base/nix/xdg_util.cc',
