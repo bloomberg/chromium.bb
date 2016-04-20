@@ -2316,6 +2316,9 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
 {
     // https://code.google.com/p/chromium/issues/detail?id=343772
     DisableCompositingQueryAsserts disabler;
+    // Allow throttling to make sure no painting paths (e.g.,
+    // ContentLayerDelegate::paintContents) try to paint throttled content.
+    DocumentLifecycle::AllowThrottlingScope allowThrottling(m_owningLayer.layoutObject()->document().lifecycle());
 #if ENABLE(ASSERT)
     // FIXME: once the state machine is ready, this can be removed and we can refer to that instead.
     if (Page* page = layoutObject()->frame()->page())

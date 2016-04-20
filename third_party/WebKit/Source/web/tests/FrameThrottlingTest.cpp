@@ -11,6 +11,7 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebLayer.h"
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebSettings.h"
@@ -22,11 +23,34 @@
 #include "web/tests/sim/SimRequest.h"
 #include "web/tests/sim/SimTest.h"
 
+using testing::_;
+
 namespace blink {
 
 using namespace HTMLNames;
 
 // NOTE: This test uses <iframe sandbox> to create cross origin iframes.
+
+namespace {
+
+class MockWebDisplayItemList : public WebDisplayItemList {
+public:
+    ~MockWebDisplayItemList() override {}
+
+    MOCK_METHOD2(appendDrawingItem, void(const WebRect&, sk_sp<const SkPicture>));
+};
+
+void paintRecursively(GraphicsLayer* layer, WebDisplayItemList* displayItems)
+{
+    if (layer->drawsContent()) {
+        layer->setNeedsDisplay();
+        layer->contentLayerDelegateForTesting()->paintContents(displayItems, ContentLayerDelegate::PaintDefaultBehaviorForTest);
+    }
+    for (const auto& child : layer->children())
+        paintRecursively(child, displayItems);
+}
+
+} // namespace
 
 class FrameThrottlingTest : public SimTest {
 protected:
@@ -619,6 +643,38 @@ TEST_F(FrameThrottlingTest, ThrottledEventHandlerIgnored)
     compositeFrame(); // Unthrottle the frame.
     compositeFrame(); // Update touch handler regions.
     EXPECT_EQ(1u, touchHandlerRegionSize());
+}
+
+TEST_F(FrameThrottlingTest, PaintingViaContentLayerDelegateIsThrottled)
+{
+    webView().settings()->setAcceleratedCompositingEnabled(true);
+    webView().settings()->setPreferCompositingToLCDTextEnabled(true);
+
+    // Create a hidden frame which is throttled.
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame sandbox src=iframe.html></iframe>");
+    frameResource.complete("throttled");
+    compositeFrame();
+
+    // Move the frame offscreen to throttle it and make sure it is backed by a
+    // graphics layer.
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px) translateZ(0px)");
+    EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+    compositeFrame();
+    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+
+    // If painting of the iframe is throttled, we should only receive two
+    // drawing items.
+    MockWebDisplayItemList displayItems;
+    EXPECT_CALL(displayItems, appendDrawingItem(_, _))
+        .Times(2);
+
+    GraphicsLayer* layer = webView().rootGraphicsLayer();
+    paintRecursively(layer, &displayItems);
 }
 
 } // namespace blink
