@@ -1469,66 +1469,6 @@ TEST_F(ChromeLauncherControllerTest, ArcAppPin) {
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerTest, ArcAppShelf) {
-  InitLauncherController();
-
-  const arc::mojom::AppInfo& app_info = arc_test_.fake_apps()[0];
-  const std::string arc_app_id = ArcAppTest::GetAppId(app_info);
-
-  InstallArcApps();
-
-  EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
-  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
-
-  arc_test_.app_instance()->SetTaskInfo(100, app_info.package_name,
-                                        app_info.activity);
-
-  std::string win_app_id = "org.chromium.arc.100";
-  views::Widget* arc_app_window = CreateAppWindow(&win_app_id);
-
-  // Item is not created until bridge returns task information.
-  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
-  EXPECT_EQ(2, model_->item_count());
-
-  arc_test_.app_instance()->WaitForIncomingMethodCall();
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
-  ASSERT_EQ(3, model_->item_count());
-  // Activation notification does not properly works in unit_tests.
-  EXPECT_TRUE(model_->items().back().status == ash::STATUS_RUNNING ||
-              model_->items().back().status == ash::STATUS_ACTIVE);
-
-  // Destroying window removes shelf item.
-  arc_app_window->CloseNow();
-  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
-  EXPECT_EQ(2, model_->item_count());
-
-  // Test with pinned app.
-  launcher_controller_->PinAppWithID(arc_app_id);
-  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
-  ASSERT_EQ(3, model_->item_count());
-  EXPECT_EQ(ash::STATUS_CLOSED, model_->items().back().status);
-
-  // Run Arc task and status should change.
-  arc_app_window = CreateAppWindow(&win_app_id);
-  arc_test_.app_instance()->WaitForIncomingMethodCall();
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
-  ASSERT_EQ(3, model_->item_count());
-  EXPECT_TRUE(model_->items().back().status == ash::STATUS_RUNNING ||
-              model_->items().back().status == ash::STATUS_ACTIVE);
-
-  // Close Arc task and status should change back to ash::STATUS_CLOSED.
-  arc_app_window->CloseNow();
-  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
-  ASSERT_EQ(3, model_->item_count());
-  EXPECT_EQ(ash::STATUS_CLOSED, model_->items().back().status);
-}
-
 // Check that with multi profile V1 apps are properly added / removed from the
 // shelf.
 TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
