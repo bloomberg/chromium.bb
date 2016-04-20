@@ -185,6 +185,10 @@
 #include "ui/views/mus/window_manager_connection.h"
 #endif
 
+#if defined(ENABLE_VULKAN)
+#include "gpu/vulkan/vulkan_implementation.h"
+#endif
+
 // One of the linux specific headers defines this as a macro.
 #ifdef DestroyAll
 #undef DestroyAll
@@ -1186,6 +1190,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   // Up the priority of the UI thread.
   base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
+#endif
+
+#if defined(ENABLE_VULKAN)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableVulkan)) {
+    gpu::InitializeVulkan();
+  }
 #endif
 
   bool always_uses_gpu = true;

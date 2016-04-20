@@ -121,16 +121,12 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
 OutputSurface::OutputSurface(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
-#if defined(ENABLE_VULKAN)
     scoped_refptr<VulkanContextProvider> vulkan_context_provider,
-#endif
     std::unique_ptr<SoftwareOutputDevice> software_device)
     : client_(NULL),
       context_provider_(std::move(context_provider)),
       worker_context_provider_(std::move(worker_context_provider)),
-#if defined(ENABLE_VULKAN)
       vulkan_context_provider_(vulkan_context_provider),
-#endif
       software_device_(std::move(software_device)),
       device_scale_factor_(-1),
       has_alpha_(true),
@@ -142,9 +138,7 @@ OutputSurface::OutputSurface(
 OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
     : OutputSurface(std::move(context_provider),
                     nullptr,
-#if defined(ENABLE_VULKAN)
                     nullptr,
-#endif
                     nullptr) {
 }
 
@@ -153,28 +147,15 @@ OutputSurface::OutputSurface(
     scoped_refptr<ContextProvider> worker_context_provider)
     : OutputSurface(std::move(context_provider),
                     std::move(worker_context_provider),
-#if defined(ENABLE_VULKAN)
                     nullptr,
-#endif
                     nullptr) {
 }
-
-#if defined(ENABLE_VULKAN)
-OutputSurface::OutputSurface(
-    scoped_refptr<VulkanContextProvider> vulkan_context_provider)
-    : OutputSurface(nullptr,
-                    nullptr,
-                    std::move(vulkan_context_provider),
-                    nullptr) {}
-#endif
 
 OutputSurface::OutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device)
     : OutputSurface(nullptr,
                     nullptr,
-#if defined(ENABLE_VULKAN)
                     nullptr,
-#endif
                     std::move(software_device)) {
 }
 
@@ -183,9 +164,7 @@ OutputSurface::OutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device)
     : OutputSurface(std::move(context_provider),
                     nullptr,
-#if defined(ENABLE_VULKAN)
                     nullptr,
-#endif
                     std::move(software_device)) {
 }
 

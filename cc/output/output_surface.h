@@ -16,10 +16,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/output/software_output_device.h"
-
-#if defined(ENABLE_VULKAN)
 #include "cc/output/vulkan_context_provider.h"
-#endif
 
 namespace base { class SingleThreadTaskRunner; }
 
@@ -51,17 +48,11 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
  public:
   OutputSurface(scoped_refptr<ContextProvider> context_provider,
                 scoped_refptr<ContextProvider> worker_context_provider,
-#if defined(ENABLE_VULKAN)
                 scoped_refptr<VulkanContextProvider> vulkan_context_provider,
-#endif
                 std::unique_ptr<SoftwareOutputDevice> software_device);
   OutputSurface(scoped_refptr<ContextProvider> context_provider,
                 scoped_refptr<ContextProvider> worker_context_provider);
   explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
-#if defined(ENABLE_VULKAN)
-  explicit OutputSurface(
-      scoped_refptr<VulkanContextProvider> vulkan_context_provider);
-#endif
   explicit OutputSurface(std::unique_ptr<SoftwareOutputDevice> software_device);
 
   OutputSurface(scoped_refptr<ContextProvider> context_provider,
@@ -111,11 +102,9 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   ContextProvider* worker_context_provider() const {
     return worker_context_provider_.get();
   }
-#if defined(ENABLE_VULKAN)
   VulkanContextProvider* vulkan_context_provider() const {
     return vulkan_context_provider_.get();
   }
-#endif
   SoftwareOutputDevice* software_device() const {
     return software_device_.get();
   }
@@ -190,9 +179,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   struct OutputSurface::Capabilities capabilities_;
   scoped_refptr<ContextProvider> context_provider_;
   scoped_refptr<ContextProvider> worker_context_provider_;
-#if defined(ENABLE_VULKAN)
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
-#endif
   std::unique_ptr<SoftwareOutputDevice> software_device_;
   gfx::Size surface_size_;
   float device_scale_factor_;

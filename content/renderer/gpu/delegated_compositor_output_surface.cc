@@ -12,17 +12,13 @@ DelegatedCompositorOutputSurface::DelegatedCompositorOutputSurface(
     uint32_t output_surface_id,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     const scoped_refptr<ContextProviderCommandBuffer>& worker_context_provider,
-#if defined(ENABLE_VULKAN)
     const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
-#endif
     scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)
     : CompositorOutputSurface(routing_id,
                               output_surface_id,
                               context_provider,
                               worker_context_provider,
-#if defined(ENABLE_VULKAN)
                               vulkan_context_provider,
-#endif
                               std::unique_ptr<cc::SoftwareOutputDevice>(),
                               swap_frame_message_queue,
                               true) {

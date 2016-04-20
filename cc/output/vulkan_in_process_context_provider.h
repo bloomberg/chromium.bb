@@ -23,6 +23,7 @@ class CC_EXPORT VulkanInProcessContextProvider : public VulkanContextProvider {
   bool Initialize();
   void Destroy();
 
+  // VulkanContextProvider implementation
   gpu::VulkanDeviceQueue* GetDeviceQueue() override;
 
  protected:
@@ -30,7 +31,11 @@ class CC_EXPORT VulkanInProcessContextProvider : public VulkanContextProvider {
   ~VulkanInProcessContextProvider() override;
 
  private:
+#if defined(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanDeviceQueue> device_queue_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(VulkanInProcessContextProvider);
 };
 
 }  // namespace cc

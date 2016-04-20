@@ -70,6 +70,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
     : cc::OutputSurface(
           context_provider,
           worker_context_provider,
+          nullptr,
           std::unique_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
       routing_id_(routing_id),
       output_surface_id_(output_surface_id),

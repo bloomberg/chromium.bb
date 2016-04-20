@@ -5,13 +5,13 @@
 #include "base/command_line.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "gpu/vulkan/vulkan_surface.h"
+#include "gpu/vulkan/vulkan_implementation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
 
 int RunHelper(base::TestSuite* testSuite) {
-  const bool success = gpu::VulkanSurface::InitializeOneOff();
+  const bool success = gpu::InitializeVulkan();
   DCHECK(success);
   return testSuite->Run();
 }

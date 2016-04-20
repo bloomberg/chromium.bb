@@ -54,6 +54,15 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
   Initialize();
 }
 
+BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
+    const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
+    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
+    : OutputSurface(nullptr, nullptr, vulkan_context_provider, nullptr),
+      vsync_manager_(vsync_manager),
+      reflector_(nullptr) {
+  Initialize();
+}
+
 BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
   if (reflector_)
     reflector_->DetachFromOutputSurface();

@@ -265,6 +265,9 @@ component("cc") {
     "output/texture_mailbox_deleter.h",
     "output/viewport_selection_bound.cc",
     "output/viewport_selection_bound.h",
+    "output/vulkan_context_provider.h",
+    "output/vulkan_in_process_context_provider.cc",
+    "output/vulkan_in_process_context_provider.h",
     "playback/clip_display_item.cc",
     "playback/clip_display_item.h",
     "playback/clip_path_display_item.cc",
@@ -562,9 +565,6 @@ component("cc") {
 
   if (enable_vulkan) {
     sources += [
-      "output/vulkan_context_provider.h",
-      "output/vulkan_in_process_context_provider.cc",
-      "output/vulkan_in_process_context_provider.h",
       "output/vulkan_renderer.cc",
       "output/vulkan_renderer.h",
     ]

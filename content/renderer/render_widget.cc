@@ -26,6 +26,7 @@
 #include "cc/base/switches.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/output/output_surface.h"
+#include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/scheduler/renderer/render_widget_scheduling_state.h"
@@ -105,10 +106,6 @@
 #if defined(MOJO_SHELL_CLIENT)
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
-#endif
-
-#if defined(ENABLE_VULKAN)
-#include "cc/output/vulkan_in_process_context_provider.h"
 #endif
 
 #include "third_party/WebKit/public/web/WebWidget.h"
@@ -764,22 +761,20 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
       use_software = true;
   }
 
-#if defined(ENABLE_VULKAN)
   scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider;
-#endif
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   scoped_refptr<ContextProviderCommandBuffer> worker_context_provider;
   if (!use_software) {
-#if defined(ENABLE_VULKAN)
-    vulkan_context_provider = cc::VulkanInProcessContextProvider::Create();
-    if (vulkan_context_provider) {
-      uint32_t output_surface_id = next_output_surface_id_++;
-      return base::WrapUnique(new DelegatedCompositorOutputSurface(
-          routing_id(), output_surface_id, context_provider,
-          worker_context_provider, vulkan_context_provider,
-          frame_swap_message_queue_));
+    if (command_line.HasSwitch(switches::kEnableVulkan)) {
+      vulkan_context_provider = cc::VulkanInProcessContextProvider::Create();
+      if (vulkan_context_provider) {
+        uint32_t output_surface_id = next_output_surface_id_++;
+        return base::WrapUnique(new DelegatedCompositorOutputSurface(
+            routing_id(), output_surface_id, context_provider,
+            worker_context_provider, vulkan_context_provider,
+            frame_swap_message_queue_));
+      }
     }
-#endif
 
     gpu::SharedMemoryLimits limits;
     // The renderer compositor context doesn't do a lot of stuff, so we don't
@@ -823,9 +818,7 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
     return base::WrapUnique(new DelegatedCompositorOutputSurface(
         routing_id(), output_surface_id, std::move(context_provider),
         std::move(worker_context_provider),
-#if defined(ENABLE_VULKAN)
         vulkan_context_provider,
-#endif
         frame_swap_message_queue_));
   }
 
@@ -834,10 +827,7 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
         new cc::SoftwareOutputDevice());
 
     return base::WrapUnique(new CompositorOutputSurface(
-        routing_id(), output_surface_id, nullptr, nullptr,
-#if defined(ENABLE_VULKAN)
-        nullptr,
-#endif
+        routing_id(), output_surface_id, nullptr, nullptr, nullptr,
         std::move(software_device), frame_swap_message_queue_, true));
   }
 

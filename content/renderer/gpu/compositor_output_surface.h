@@ -48,9 +48,7 @@ class CompositorOutputSurface
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       const scoped_refptr<ContextProviderCommandBuffer>&
           worker_context_provider,
-#if defined(ENABLE_VULKAN)
       const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
-#endif
       std::unique_ptr<cc::SoftwareOutputDevice> software,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue,
       bool use_swap_compositor_frame_message);

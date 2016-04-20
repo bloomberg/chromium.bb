@@ -19,8 +19,6 @@ class VulkanSwapChain;
 
 class VULKAN_EXPORT VulkanSurface {
  public:
-  static bool InitializeOneOff();
-
   // Minimum bit depth of surface.
   enum Format {
     FORMAT_BGRA8888,

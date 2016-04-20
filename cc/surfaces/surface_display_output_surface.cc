@@ -33,6 +33,22 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
   capabilities_.delegated_sync_points_required = false;
 }
 
+SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
+    SurfaceManager* surface_manager,
+    SurfaceIdAllocator* allocator,
+    scoped_refptr<VulkanContextProvider> vulkan_context_provider)
+    : OutputSurface(nullptr,
+                    nullptr,
+                    std::move(vulkan_context_provider),
+                    nullptr),
+      display_client_(NULL),
+      factory_(surface_manager, this),
+      allocator_(allocator) {
+  capabilities_.delegated_rendering = true;
+  capabilities_.adjust_deadline_for_parent = true;
+  capabilities_.can_force_reclaim_resources = true;
+}
+
 SurfaceDisplayOutputSurface::~SurfaceDisplayOutputSurface() {
   if (HasClient())
     DetachFromClient();

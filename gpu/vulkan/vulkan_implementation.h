@@ -7,11 +7,13 @@
 
 #include <vulkan/vulkan.h>
 
+#include "gpu/vulkan/vulkan_export.h"
 namespace gpu {
 
 class VulkanCommandPool;
 
-bool InitializeVulkan();
+VULKAN_EXPORT bool InitializeVulkan();
+VULKAN_EXPORT bool VulkanSupported();
 
 VkInstance GetVulkanInstance();
 

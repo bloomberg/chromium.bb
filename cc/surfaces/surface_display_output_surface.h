@@ -30,6 +30,10 @@ class CC_SURFACES_EXPORT SurfaceDisplayOutputSurface
       SurfaceIdAllocator* allocator,
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> worker_context_provider);
+  SurfaceDisplayOutputSurface(
+      SurfaceManager* surface_manager,
+      SurfaceIdAllocator* allocator,
+      scoped_refptr<VulkanContextProvider> vulkan_context_provider);
   ~SurfaceDisplayOutputSurface() override;
 
   void set_display_client(OnscreenDisplayClient* display_client) {

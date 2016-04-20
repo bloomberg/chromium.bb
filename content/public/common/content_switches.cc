@@ -482,6 +482,9 @@ const char kEnableViewport[]                = "enable-viewport";
 // Enable the Vtune profiler support.
 const char kEnableVtune[]                   = "enable-vtune-support";
 
+// Enable Vulkan support, must also have ENABLE_VULKAN defined.
+const char kEnableVulkan[] = "enable-vulkan";
+
 // Enable WebFonts intervention and trigger the signal always.
 const char kEnableWebFontsInterventionTrigger[] =
     "enable-webfonts-intervention-trigger";

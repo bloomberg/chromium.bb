@@ -477,6 +477,13 @@ source_set("browser") {
     deps += [ "//ui/compositor" ]
   }
 
+  if (enable_vulkan) {
+    sources += [
+      "compositor/vulkan_browser_compositor_output_surface.cc",
+      "compositor/vulkan_browser_compositor_output_surface.h",
+    ]
+  }
+
   if (enable_web_speech) {
     deps += [ "//third_party/flac" ]
   }

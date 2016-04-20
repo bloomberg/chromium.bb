@@ -186,6 +186,11 @@ bool InitializeVulkan() {
   return vulkan_instance->valid;
 }
 
+bool VulkanSupported() {
+  DCHECK(vulkan_instance);
+  return vulkan_instance->valid;
+}
+
 VkInstance GetVulkanInstance() {
   DCHECK(vulkan_instance);
   DCHECK(vulkan_instance->valid);

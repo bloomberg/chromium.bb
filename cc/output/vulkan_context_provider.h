@@ -6,6 +6,7 @@
 #define CC_OUTPUT_VULKAN_CONTEXT_PROVIDER_H_
 
 #include "base/memory/ref_counted.h"
+#include "cc/base/cc_export.h"
 
 namespace gpu {
 class VulkanDeviceQueue;
@@ -14,7 +15,7 @@ class VulkanDeviceQueue;
 namespace cc {
 
 // The VulkanContextProvider groups sharing of vulkan objects synchronously.
-class VulkanContextProvider
+class CC_EXPORT VulkanContextProvider
     : public base::RefCountedThreadSafe<VulkanContextProvider> {
  public:
   virtual gpu::VulkanDeviceQueue* GetDeviceQueue() = 0;

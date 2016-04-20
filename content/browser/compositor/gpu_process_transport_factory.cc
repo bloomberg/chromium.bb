@@ -19,6 +19,7 @@
 #include "cc/base/histograms.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
+#include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/raster/task_graph_runner.h"
 #include "cc/surfaces/onscreen_display_client.h"
@@ -77,6 +78,10 @@
 #include "ui/base/cocoa/remote_layer_api.h"
 #elif defined(OS_ANDROID)
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator_android.h"
+#endif
+
+#if defined(ENABLE_VULKAN)
+#include "content/browser/compositor/vulkan_browser_compositor_output_surface.h"
 #endif
 
 using cc::ContextProvider;
@@ -256,9 +261,11 @@ void GpuProcessTransportFactory::CreateOutputSurface(
       compositor->widget());
 #endif
 
-  bool create_gpu_output_surface =
+  const bool use_vulkan = SharedVulkanContextProvider();
+
+  const bool create_gpu_output_surface =
       ShouldCreateGpuOutputSurface(compositor.get());
-  if (create_gpu_output_surface) {
+  if (create_gpu_output_surface && !use_vulkan) {
     CauseForGpuLaunch cause =
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
     BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
@@ -299,8 +306,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       compositor->widget());
 #endif
 
+  scoped_refptr<cc::VulkanInProcessContextProvider> vulkan_context_provider =
+      SharedVulkanContextProvider();
+
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
-  if (create_gpu_output_surface) {
+  if (create_gpu_output_surface && !vulkan_context_provider) {
     // Try to reuse existing worker context provider.
     if (shared_worker_context_provider_) {
       bool lost;
@@ -370,42 +380,58 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   }
 
   std::unique_ptr<BrowserCompositorOutputSurface> surface;
-  if (!create_gpu_output_surface) {
-    surface = base::WrapUnique(new SoftwareBrowserCompositorOutputSurface(
-        CreateSoftwareOutputDevice(compositor.get()),
-        compositor->vsync_manager(), compositor->task_runner().get()));
-  } else {
-    DCHECK(context_provider);
-    const auto& capabilities = context_provider->ContextCapabilities();
-    if (!data->surface_id) {
-      surface = base::WrapUnique(new OffscreenBrowserCompositorOutputSurface(
-          context_provider, shared_worker_context_provider_,
-          compositor->vsync_manager(), compositor->task_runner().get(),
-          std::unique_ptr<BrowserCompositorOverlayCandidateValidator>()));
-    } else if (capabilities.surfaceless) {
-      GLenum target = GL_TEXTURE_2D;
-      GLenum format = GL_RGB;
-#if defined(OS_MACOSX)
-      target = GL_TEXTURE_RECTANGLE_ARB;
-      format = GL_RGBA;
-#endif
-      surface =
-          base::WrapUnique(new GpuSurfacelessBrowserCompositorOutputSurface(
-              context_provider, shared_worker_context_provider_,
-              data->surface_id, compositor->vsync_manager(),
-              compositor->task_runner().get(),
-              CreateOverlayCandidateValidator(compositor->widget()), target,
-              format, BrowserGpuMemoryBufferManager::current()));
+#if defined(ENABLE_VULKAN)
+  std::unique_ptr<VulkanBrowserCompositorOutputSurface> vulkan_surface;
+  if (vulkan_context_provider) {
+    vulkan_surface.reset(new VulkanBrowserCompositorOutputSurface(
+        vulkan_context_provider, compositor->vsync_manager()));
+    if (!vulkan_surface->Initialize(compositor.get()->widget())) {
+      vulkan_surface->Destroy();
+      vulkan_surface.reset();
     } else {
-      std::unique_ptr<BrowserCompositorOverlayCandidateValidator> validator;
-#if !defined(OS_MACOSX)
-      // Overlays are only supported on surfaceless output surfaces on Mac.
-      validator = CreateOverlayCandidateValidator(compositor->widget());
+      surface = std::move(vulkan_surface);
+    }
+  }
 #endif
-      surface = base::WrapUnique(new GpuBrowserCompositorOutputSurface(
-          context_provider, shared_worker_context_provider_,
-          compositor->vsync_manager(), compositor->task_runner().get(),
-          std::move(validator)));
+
+  if (!surface) {
+    if (!create_gpu_output_surface) {
+      surface = base::WrapUnique(new SoftwareBrowserCompositorOutputSurface(
+          CreateSoftwareOutputDevice(compositor.get()),
+          compositor->vsync_manager(), compositor->task_runner().get()));
+    } else {
+      DCHECK(context_provider);
+      const auto& capabilities = context_provider->ContextCapabilities();
+      if (!data->surface_id) {
+        surface = base::WrapUnique(new OffscreenBrowserCompositorOutputSurface(
+            context_provider, shared_worker_context_provider_,
+            compositor->vsync_manager(), compositor->task_runner().get(),
+            std::unique_ptr<BrowserCompositorOverlayCandidateValidator>()));
+      } else if (capabilities.surfaceless) {
+        GLenum target = GL_TEXTURE_2D;
+        GLenum format = GL_RGB;
+#if defined(OS_MACOSX)
+        target = GL_TEXTURE_RECTANGLE_ARB;
+        format = GL_RGBA;
+#endif
+        surface =
+            base::WrapUnique(new GpuSurfacelessBrowserCompositorOutputSurface(
+                context_provider, shared_worker_context_provider_,
+                data->surface_id, compositor->vsync_manager(),
+                compositor->task_runner().get(),
+                CreateOverlayCandidateValidator(compositor->widget()), target,
+                format, BrowserGpuMemoryBufferManager::current()));
+      } else {
+        std::unique_ptr<BrowserCompositorOverlayCandidateValidator> validator;
+#if !defined(OS_MACOSX)
+        // Overlays are only supported on surfaceless output surfaces on Mac.
+        validator = CreateOverlayCandidateValidator(compositor->widget());
+#endif
+        surface = base::WrapUnique(new GpuBrowserCompositorOutputSurface(
+            context_provider, shared_worker_context_provider_,
+            compositor->vsync_manager(), compositor->task_runner().get(),
+            std::move(validator)));
+      }
     }
   }
 
@@ -434,9 +460,14 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           compositor->surface_id_allocator()->id_namespace()));
 
   std::unique_ptr<cc::SurfaceDisplayOutputSurface> output_surface(
-      new cc::SurfaceDisplayOutputSurface(
-          manager, compositor->surface_id_allocator(), context_provider,
-          shared_worker_context_provider_));
+      vulkan_context_provider
+          ? new cc::SurfaceDisplayOutputSurface(
+                manager, compositor->surface_id_allocator(),
+                static_cast<scoped_refptr<cc::VulkanContextProvider>>(
+                    vulkan_context_provider))
+          : new cc::SurfaceDisplayOutputSurface(
+                manager, compositor->surface_id_allocator(), context_provider,
+                shared_worker_context_provider_));
   display_client->set_surface_output_surface(output_surface.get());
   output_surface->set_display_client(display_client.get());
   display_client->display()->Resize(compositor->size());
@@ -683,6 +714,20 @@ void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
   // Kill things that use the shared context before killing the shared context.
   lost_gl_helper.reset();
   lost_shared_main_thread_contexts  = NULL;
+}
+
+scoped_refptr<cc::VulkanInProcessContextProvider>
+GpuProcessTransportFactory::SharedVulkanContextProvider() {
+  if (!shared_vulkan_context_provider_initialized_) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableVulkan)) {
+      shared_vulkan_context_provider_ =
+          cc::VulkanInProcessContextProvider::Create();
+    }
+
+    shared_vulkan_context_provider_initialized_ = true;
+  }
+  return shared_vulkan_context_provider_;
 }
 
 }  // namespace content

@@ -30,6 +30,7 @@ namespace cc {
 class SingleThreadTaskGraphRunner;
 class SoftwareOutputDevice;
 class SurfaceManager;
+class VulkanInProcessContextProvider;
 }
 
 namespace content {
@@ -95,6 +96,9 @@ class GpuProcessTransportFactory
   void OnLostMainThreadSharedContextInsideCallback();
   void OnLostMainThreadSharedContext();
 
+  scoped_refptr<cc::VulkanInProcessContextProvider>
+  SharedVulkanContextProvider();
+
   typedef std::map<ui::Compositor*, PerCompositorData*> PerCompositorDataMap;
   PerCompositorDataMap per_compositor_data_;
   scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
@@ -104,6 +108,10 @@ class GpuProcessTransportFactory
   uint32_t next_surface_id_namespace_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
   scoped_refptr<ContextProviderCommandBuffer> shared_worker_context_provider_;
+
+  bool shared_vulkan_context_provider_initialized_ = false;
+  scoped_refptr<cc::VulkanInProcessContextProvider>
+      shared_vulkan_context_provider_;
 
 #if defined(OS_WIN)
   std::unique_ptr<OutputDeviceBacking> software_backing_;

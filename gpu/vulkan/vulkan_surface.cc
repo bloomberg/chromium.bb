@@ -147,14 +147,6 @@ class VulkanWSISurface : public VulkanSurface {
   VulkanSwapChain swap_chain_;
 };
 
-// static
-bool VulkanSurface::InitializeOneOff() {
-  if (!InitializeVulkan())
-    return false;
-
-  return true;
-}
-
 VulkanSurface::~VulkanSurface() {}
 
 // static
