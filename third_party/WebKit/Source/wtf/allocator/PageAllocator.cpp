@@ -31,6 +31,7 @@
 #include "wtf/allocator/PageAllocator.h"
 
 #include "wtf/Assertions.h"
+#include "wtf/Atomics.h"
 #include "wtf/allocator/AddressSpaceRandomization.h"
 
 #include <limits.h>
@@ -50,7 +51,7 @@
 
 // On POSIX memmap uses a nearby address if the hint address is blocked.
 static const bool kHintIsAdvisory = true;
-static uint32_t allocPageErrorCode = 0;
+static uint32_t s_allocPageErrorCode = 0;
 
 #elif OS(WIN)
 
@@ -58,7 +59,7 @@ static uint32_t allocPageErrorCode = 0;
 
 // VirtualAlloc will fail if allocation at the hint address is blocked.
 static const bool kHintIsAdvisory = false;
-static uint32_t allocPageErrorCode = ERROR_SUCCESS;
+static uint32_t s_allocPageErrorCode = ERROR_SUCCESS;
 
 #else
 #error Unknown OS
@@ -80,12 +81,12 @@ static void* systemAllocPages(void* hint, size_t len, PageAccessibilityConfigura
     DWORD accessFlag = pageAccessibility == PageAccessible ? PAGE_READWRITE : PAGE_NOACCESS;
     ret = VirtualAlloc(hint, len, MEM_RESERVE | MEM_COMMIT, accessFlag);
     if (!ret)
-        allocPageErrorCode = GetLastError();
+        releaseStore(&s_allocPageErrorCode, GetLastError());
 #else
     int accessFlag = pageAccessibility == PageAccessible ? (PROT_READ | PROT_WRITE) : PROT_NONE;
     ret = mmap(hint, len, accessFlag, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     if (ret == MAP_FAILED) {
-        allocPageErrorCode = errno;
+        releaseStore(&s_allocPageErrorCode, errno);
         ret = 0;
     }
 #endif
@@ -270,7 +271,7 @@ void discardSystemPages(void* addr, size_t len)
 
 uint32_t getAllocPageErrorCode()
 {
-    return allocPageErrorCode;
+    return acquireLoad(&s_allocPageErrorCode);
 }
 
 } // namespace WTF
