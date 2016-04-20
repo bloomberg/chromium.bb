@@ -226,8 +226,10 @@ void NinePieceImageGrid::setDrawInfoMiddle(NinePieceDrawInfo& drawInfo) const
     drawInfo.tileRule = { m_horizontalTileRule, m_verticalTileRule };
 }
 
-NinePieceImageGrid::NinePieceDrawInfo NinePieceImageGrid::getNinePieceDrawInfo(NinePiece piece) const
+NinePieceImageGrid::NinePieceDrawInfo NinePieceImageGrid::getNinePieceDrawInfo(NinePiece piece, float imageScaleFactor) const
 {
+    DCHECK_NE(imageScaleFactor, 0);
+
     NinePieceDrawInfo drawInfo;
     drawInfo.isCornerPiece =
         piece == TopLeftPiece || piece == TopRightPiece || piece == BottomLeftPiece || piece == BottomRightPiece;
@@ -238,6 +240,15 @@ NinePieceImageGrid::NinePieceDrawInfo NinePieceImageGrid::getNinePieceDrawInfo(N
         setDrawInfoEdge(drawInfo, piece);
     else
         setDrawInfoMiddle(drawInfo);
+
+    if (imageScaleFactor != 1) {
+        // The nine piece grid is computed in unscaled image coordinates but must be drawn using
+        // scaled image coordinates.
+        drawInfo.source.scale(imageScaleFactor);
+
+        // Compensate for source scaling by scaling down the individual tiles.
+        drawInfo.tileScale.scale(1 / imageScaleFactor);
+    }
 
     return drawInfo;
 }

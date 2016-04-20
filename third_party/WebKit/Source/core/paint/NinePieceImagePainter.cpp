@@ -60,11 +60,7 @@ bool NinePieceImagePainter::paint(GraphicsContext& graphicsContext, const Layout
         InspectorPaintImageEvent::data(m_layoutObject, *styleImage));
 
     for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-        NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece);
-
-        // The nine piece grid is computed in unscaled image coordinates but must be drawn using
-        // scaled image coordinates.
-        drawInfo.source.scale(styleImage->imageScaleFactor());
+        NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece, styleImage->imageScaleFactor());
 
         if (drawInfo.isDrawable) {
             if (drawInfo.isCornerPiece) {

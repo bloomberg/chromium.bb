@@ -42,7 +42,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_NoDrawables)
 
     NinePieceImageGrid grid = NinePieceImageGrid(ninePiece, imageSize, borderImageArea, borderWidths);
     for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-        NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece);
+        NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece, 1);
         EXPECT_FALSE(drawInfo.isDrawable);
     }
 }
@@ -60,7 +60,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_AllDrawable)
 
     NinePieceImageGrid grid = NinePieceImageGrid(ninePiece, imageSize, borderImageArea, borderWidths);
     for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-        NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece);
+        NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece, 1);
         EXPECT_TRUE(drawInfo.isDrawable);
     }
 }
@@ -78,7 +78,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_NoFillMiddleNotDrawable)
 
     NinePieceImageGrid grid = NinePieceImageGrid(ninePiece, imageSize, borderImageArea, borderWidths);
     for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-        NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece);
+        NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece, 1);
         if (piece != MiddlePiece)
             EXPECT_TRUE(drawInfo.isDrawable);
         else
@@ -109,7 +109,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_TopLeftDrawable)
     for (const auto& testCase : testCases) {
         NinePieceImageGrid grid = NinePieceImageGrid(ninePiece, imageSize, borderImageArea, testCase.borderWidths);
         for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-            NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece);
+            NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece, 1);
             if (piece == TopLeftPiece)
                 EXPECT_EQ(drawInfo.isDrawable, testCase.expectedIsDrawable);
         }
@@ -132,7 +132,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_ScaleDownBorder)
 
     NinePieceImageGrid grid = NinePieceImageGrid(ninePiece, imageSize, borderImageArea, borderWidths);
     for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-        NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece);
+        NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece, 1);
         if (drawInfo.isCornerPiece)
             EXPECT_EQ(drawInfo.destination.size(), FloatSize(50, 50));
         else
@@ -239,7 +239,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting)
 
         NinePieceImageGrid grid = NinePieceImageGrid(ninePiece, testCase.imageSize, testCase.borderImageArea, testCase.borderWidths);
         for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-            NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece);
+            NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece, 1);
             EXPECT_EQ(testCase.pieces[piece].isDrawable, drawInfo.isDrawable);
             if (!testCase.pieces[piece].isDrawable)
                 continue;

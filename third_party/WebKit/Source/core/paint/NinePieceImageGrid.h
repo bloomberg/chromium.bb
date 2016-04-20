@@ -79,7 +79,7 @@ public:
             Image::TileRule vertical;
         } tileRule;
     };
-    NinePieceDrawInfo getNinePieceDrawInfo(NinePiece) const;
+    NinePieceDrawInfo getNinePieceDrawInfo(NinePiece, float) const;
 
     struct Edge {
         DISALLOW_NEW();
