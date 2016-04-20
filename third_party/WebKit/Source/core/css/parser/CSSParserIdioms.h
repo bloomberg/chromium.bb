@@ -42,6 +42,20 @@ inline bool isCSSSpace(UChar c)
     return c == ' ' || c == '\t' || c == '\n';
 }
 
+// http://dev.w3.org/csswg/css-syntax/#name-start-code-point
+template <typename CharacterType>
+bool isNameStartCodePoint(CharacterType c)
+{
+    return isASCIIAlpha(c) || c == '_' || !isASCII(c);
+}
+
+// http://dev.w3.org/csswg/css-syntax/#name-code-point
+template <typename CharacterType>
+bool isNameCodePoint(CharacterType c)
+{
+    return isNameStartCodePoint(c) || isASCIIDigit(c) || c == '-';
+}
+
 }
 
 #endif

@@ -28,8 +28,14 @@ PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is
 PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "none"
 Test grid-template-areas: inherit
 PASS window.getComputedStyle(parentElement).getPropertyValue('grid-template-areas') is "\"foo bar\""
+PASS window.getComputedStyle(parentElement).getPropertyValue('grid-template-areas') is "\"foo bar\""
+PASS window.getComputedStyle(parentElement).getPropertyValue('grid-template-areas') is "\"foo bar\""
 PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "\"foo bar\""
 Test invalid grid-template-areas values.
+PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "none"
+PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "none"
+PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "none"
+PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "none"
 PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "none"
 PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "none"
 PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "none"

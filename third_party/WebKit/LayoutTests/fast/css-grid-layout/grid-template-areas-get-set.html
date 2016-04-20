@@ -155,6 +155,10 @@
     document.body.appendChild(parentElement);
     parentElement.style.gridTemplateAreas = "'foo bar'";
     shouldBeEqualToString("window.getComputedStyle(parentElement).getPropertyValue('grid-template-areas')", '"foo bar"')
+    parentElement.style.gridTemplateAreas = "'foo" + "\t" + "bar'";
+    shouldBeEqualToString("window.getComputedStyle(parentElement).getPropertyValue('grid-template-areas')", '"foo bar"')
+    parentElement.style.gridTemplateAreas = "'foo" + "\n" + "bar'";
+    shouldBeEqualToString("window.getComputedStyle(parentElement).getPropertyValue('grid-template-areas')", '"foo bar"')
 
     var element = document.createElement("div");
     parentElement.appendChild(element);
@@ -184,6 +188,16 @@
 
     // Empty rows.
     element.style.gridTemplateAreas = "'' ''";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", "none")
+
+    element.style.gridTemplateAreas = "'^nav'";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", "none")
+    element.style.gridTemplateAreas = "'n^av'";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", "none")
+
+    element.style.gridTemplateAreas = "'\x04nav'";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", "none")
+    element.style.gridTemplateAreas = "'n\x04av'";
     shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", "none")
 
     debug("");

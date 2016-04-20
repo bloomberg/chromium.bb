@@ -8,6 +8,7 @@ namespace blink {
 #include "core/CSSTokenizerCodepoints.cpp"
 }
 
+#include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSParserObserverWrapper.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizerInputStream.h"
@@ -81,22 +82,6 @@ CSSParserTokenRange CSSTokenizer::Scope::tokenRange()
 unsigned CSSTokenizer::Scope::tokenCount()
 {
     return m_tokens.size();
-}
-
-// http://dev.w3.org/csswg/css-syntax/#name-start-code-point
-static bool isNameStart(UChar c)
-{
-    if (isASCIIAlpha(c))
-        return true;
-    if (c == '_')
-        return true;
-    return !isASCII(c);
-}
-
-// http://dev.w3.org/csswg/css-syntax/#name-code-point
-static bool isNameChar(UChar c)
-{
-    return isNameStart(c) || isASCIIDigit(c) || c == '-';
 }
 
 static bool isNewLine(UChar cc)
@@ -271,7 +256,7 @@ CSSParserToken CSSTokenizer::semiColon(UChar cc)
 CSSParserToken CSSTokenizer::hash(UChar cc)
 {
     UChar nextChar = m_input.nextInputChar();
-    if (isNameChar(nextChar) || twoCharsAreValidEscape(nextChar, m_input.peek(1))) {
+    if (isNameCodePoint(nextChar) || twoCharsAreValidEscape(nextChar, m_input.peek(1))) {
         HashTokenType type = nextCharsAreIdentifier() ? HashTokenId : HashTokenUnrestricted;
         return CSSParserToken(type, consumeName());
     }
@@ -684,7 +669,7 @@ CSSParserString CSSTokenizer::consumeName()
         UChar cc = m_input.peekWithoutReplacement(size);
         if (cc == '\0' || cc == '\\')
             break;
-        if (!isNameChar(cc)) {
+        if (!isNameCodePoint(cc)) {
             unsigned startOffset = m_input.offset();
             m_input.advance(size);
             return m_input.rangeAsCSSParserString(startOffset, size);
@@ -694,7 +679,7 @@ CSSParserString CSSTokenizer::consumeName()
     StringBuilder result;
     while (true) {
         UChar cc = consume();
-        if (isNameChar(cc)) {
+        if (isNameCodePoint(cc)) {
             result.append(cc);
             continue;
         }
@@ -765,11 +750,11 @@ bool CSSTokenizer::nextCharsAreNumber()
 bool CSSTokenizer::nextCharsAreIdentifier(UChar first)
 {
     UChar second = m_input.nextInputChar();
-    if (isNameStart(first) || twoCharsAreValidEscape(first, second))
+    if (isNameStartCodePoint(first) || twoCharsAreValidEscape(first, second))
         return true;
 
     if (first == '-')
-        return isNameStart(second) || second == '-' || nextTwoCharsAreValidEscape();
+        return isNameStartCodePoint(second) || second == '-' || nextTwoCharsAreValidEscape();
 
     return false;
 }

@@ -37,6 +37,7 @@
 #include "core/css/FontFace.h"
 #include "core/css/HashTools.h"
 #include "core/css/parser/CSSParserFastPaths.h"
+#include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/frame/UseCounter.h"
@@ -3172,10 +3173,7 @@ static Vector<String> parseGridTemplateAreasColumnNames(const String& gridRowNam
 
     StringBuilder areaName;
     for (unsigned i = 0; i < text.length(); ++i) {
-        // TODO(rob.buis): this whitespace check misses \n and \t.
-        // https://drafts.csswg.org/css-grid/#valdef-grid-template-areas-string
-        // https://drafts.csswg.org/css-syntax-3/#whitespace
-        if (text[i] == ' ') {
+        if (isCSSSpace(text[i])) {
             if (!areaName.isEmpty()) {
                 columnNames.append(areaName.toString());
                 areaName.clear();
@@ -3190,7 +3188,8 @@ static Vector<String> parseGridTemplateAreasColumnNames(const String& gridRowNam
                 areaName.clear();
             }
         } else {
-            // TODO(rob.buis): only allow name code points here.
+            if (!isNameCodePoint(text[i]))
+                return Vector<String>();
             if (areaName == ".") {
                 columnNames.append(areaName.toString());
                 areaName.clear();
@@ -3214,7 +3213,8 @@ static bool parseGridTemplateAreasRow(const String& gridRowNames, NamedGridAreaM
     Vector<String> columnNames = parseGridTemplateAreasColumnNames(gridRowNames);
     if (rowCount == 0) {
         columnCount = columnNames.size();
-        ASSERT(columnCount);
+        if (columnCount == 0)
+            return false;
     } else if (columnCount != columnNames.size()) {
         // The declaration is invalid if all the rows don't have the number of columns.
         return false;
