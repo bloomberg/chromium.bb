@@ -206,7 +206,7 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
   if (GetRenderWidgetHost())
     impl = RenderWidgetHostImpl::From(GetRenderWidgetHost());
 
-  if (impl)
+  if (impl && impl->delegate())
     impl->delegate()->SendScreenRects();
 
   if (HasDisplayPropertyChanged(view) && impl)

@@ -1092,6 +1092,64 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 namespace {
 
+void CloseTabsWhileDetachedStep2(const BrowserList* browser_list) {
+  ASSERT_EQ(2u, browser_list->size());
+  Browser* old_browser = browser_list->get(0);
+  EXPECT_EQ("0 3", IDString(old_browser->tab_strip_model()));
+  Browser* new_browser = browser_list->get(1);
+  EXPECT_EQ("1 2", IDString(new_browser->tab_strip_model()));
+  chrome::CloseTab(new_browser);
+}
+
+}  // namespace
+
+#if defined(OS_CHROMEOS)
+// TODO(sky,sad): Disabled as it fails due to resize locks with a real
+// compositor. crbug.com/331924
+#define MAYBE_DeleteTabsWhileDetached DISABLED_DeleteTabsWhileDetached
+#else
+#define MAYBE_DeleteTabsWhileDetached DeleteTabsWhileDetached
+#endif
+// Selects 2 tabs out of 4, drags them out and closes the new browser window
+// while dragging tabs.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       MAYBE_DeleteTabsWhileDetached) {
+  // Add 3 tabs for a total of 4 tabs.
+  AddTabAndResetBrowser(browser());
+  AddTabAndResetBrowser(browser());
+  AddTabAndResetBrowser(browser());
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  EXPECT_EQ("0 1 2 3", IDString(browser()->tab_strip_model()));
+
+  // Click the first tab and select two middle tabs.
+  gfx::Point tab_1_center(GetCenterInScreenCoordinates(tab_strip->tab_at(1)));
+  gfx::Point tab_2_center(GetCenterInScreenCoordinates(tab_strip->tab_at(2)));
+  ASSERT_TRUE(PressInput(tab_1_center));
+  ASSERT_TRUE(ReleaseInput());
+  browser()->tab_strip_model()->AddTabAtToSelection(1);
+  browser()->tab_strip_model()->AddTabAtToSelection(2);
+  // Press mouse button in the second tab and drag it enough to detach.
+  ASSERT_TRUE(PressInput(tab_2_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_2_center.x(), tab_2_center.y() + GetDetachY(tab_strip),
+      base::Bind(&CloseTabsWhileDetachedStep2, browser_list)));
+  QuitWhenNotDragging();
+
+  // Should not be dragging.
+  ASSERT_EQ(1u, browser_list->size());
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+
+  // Only tab "1" gets closed; tab "2" which was also selected gets restored.
+  // TODO(varkha): fix this expectation once closing a tab while dragging
+  // stops the drag and causes all selected tabs to get closed.
+  EXPECT_EQ("0 3 2", IDString(browser()->tab_strip_model()));
+
+  EXPECT_FALSE(GetIsDragged(browser()));
+}
+
+namespace {
+
 void DeleteSourceDetachedStep2(WebContents* tab,
                                const BrowserList* browser_list) {
   ASSERT_EQ(2u, browser_list->size());
