@@ -18,6 +18,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/task_runner_util.h"
+#include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/media/android_copying_backing_strategy.h"
 #include "content/common/gpu/media/android_deferred_rendering_backing_strategy.h"
@@ -181,16 +182,25 @@ class AndroidVideoDecodeAccelerator::OnFrameAvailableHandler
 class AVDATimerManager {
  public:
   // Make sure that the construction thread is started for |avda_instance|.
-  void StartThread(AndroidVideoDecodeAccelerator* avda_instance) {
-    if (thread_avda_instances_.empty())
-      construction_thread_.Start();
+  bool StartThread(AndroidVideoDecodeAccelerator* avda_instance) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    if (thread_avda_instances_.empty()) {
+      if (!construction_thread_.Start()) {
+        LOG(ERROR) << "Failed to start construction thread.";
+        return false;
+      }
+    }
 
     thread_avda_instances_.insert(avda_instance);
+    return true;
   }
 
   // |avda_instance| will no longer need the construction thread.  Stop the
   // thread if this is the last instance.
   void StopThread(AndroidVideoDecodeAccelerator* avda_instance) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
     thread_avda_instances_.erase(avda_instance);
     if (thread_avda_instances_.empty())
       construction_thread_.Stop();
@@ -200,6 +210,8 @@ class AVDATimerManager {
   // the instance is already registered and the timer started. The first request
   // will start the repeating timer on an interval of DecodePollDelay().
   void StartTimer(AndroidVideoDecodeAccelerator* avda_instance) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
     timer_avda_instances_.insert(avda_instance);
 
     // If the timer is running, StopTimer() might have been called earlier, if
@@ -217,6 +229,8 @@ class AVDATimerManager {
   // is not registered. If there are no instances left, the repeating timer will
   // be stopped.
   void StopTimer(AndroidVideoDecodeAccelerator* avda_instance) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
     // If the timer is running, defer erasures to avoid iterator invalidation.
     if (timer_running_) {
       pending_erase_.insert(avda_instance);
@@ -231,6 +245,7 @@ class AVDATimerManager {
   // Eventually, we should run the timer on this thread.  For now, we just keep
   // it as a convenience for construction.
   scoped_refptr<base::SingleThreadTaskRunner> ConstructionTaskRunner() {
+    DCHECK(thread_checker_.CalledOnValidThread());
     return construction_thread_.task_runner();
   }
 
@@ -274,6 +289,8 @@ class AVDATimerManager {
   base::RepeatingTimer io_timer_;
 
   base::Thread construction_thread_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AVDATimerManager);
 };
@@ -414,7 +431,10 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 
   // Start the thread for async configuration, even if we don't need it now.
   // ResetCodecState might rebuild the codec later, for example.
-  g_avda_timer.Pointer()->StartThread(this);
+  if (!g_avda_timer.Pointer()->StartThread(this)) {
+    LOG(ERROR) << "Failed to start thread for AVDA timer";
+    return false;
+  }
 
   // If we are encrypted, then we aren't able to create the codec yet.
   if (is_encrypted_)
