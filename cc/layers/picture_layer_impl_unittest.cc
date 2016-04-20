@@ -1101,72 +1101,44 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
   ASSERT_EQ(4u, active_layer_->tilings()->num_tilings());
 
-  // Now move the ideal scale to 0.5.
+  // Now move the ideal scale to 0.5. Our target stays 1.2.
   SetContentsScaleOnBothLayers(0.5f, 1.f, page_scale, 1.f, 0.f, false);
-  ASSERT_EQ(6u, active_layer_->tilings()->num_tilings());
 
-  // And begin an animation to 1.2. There are now 3 tilings, 0.5, 1.0 and 1.2.
-  // The the 0.5 is ideal, but the 1.2 is high res. 1.0 sits between them.
-  // high-res tiling is in the middle. There are also ex-low-res tilings paired
-  // with each of the 3 tilings mentioned here, but since we're animating none
-  // are marked as LOW_RESOLUTION.
-  SetContentsScaleOnBothLayers(0.5, 1.f, page_scale, 1.2f, 0.f, true);
-  ASSERT_EQ(6u, active_layer_->tilings()->num_tilings());
-  EXPECT_EQ(HIGH_RESOLUTION,
-            active_layer_->tilings()->tiling_at(0)->resolution());
-  EXPECT_EQ(1.2f,  // High-res, though not the ideal scale.
-            active_layer_->tilings()->tiling_at(0)->contents_scale());
-  EXPECT_EQ(1.f,  // Tiling in the middle attack.
-            active_layer_->tilings()->tiling_at(1)->contents_scale());
-  EXPECT_EQ(0.5f,  // Ideal scale, but not considered high-res.
-            active_layer_->tilings()->tiling_at(2)->contents_scale());
-
-  EXPECT_EQ(NON_IDEAL_RESOLUTION,
-            active_layer_->tilings()->tiling_at(1)->resolution());
-  EXPECT_EQ(NON_IDEAL_RESOLUTION,
-            active_layer_->tilings()->tiling_at(2)->resolution());
-  EXPECT_EQ(NON_IDEAL_RESOLUTION,
-            active_layer_->tilings()->tiling_at(3)->resolution());
-  EXPECT_EQ(NON_IDEAL_RESOLUTION,
-            active_layer_->tilings()->tiling_at(4)->resolution());
-  EXPECT_EQ(NON_IDEAL_RESOLUTION,
-            active_layer_->tilings()->tiling_at(5)->resolution());
-
-  EXPECT_EQ(1.2f * low_res_factor,  // Low-res, paired with current high-res.
-            active_layer_->tilings()->tiling_at(3)->contents_scale());
-  EXPECT_EQ(1.f * low_res_factor,  // Ex-low-res, paired with the middle one.
-            active_layer_->tilings()->tiling_at(4)->contents_scale());
-  EXPECT_EQ(0.5f * low_res_factor,  // Ex-low-res, paired with current ideal.
-            active_layer_->tilings()->tiling_at(5)->contents_scale());
-
-  // The high resolution tiling is between target and ideal, so is not removed.
-  // The ex-low-res tilings are all smaller scale, so they are removed.
+  // The high resolution tiling is between target and ideal, so is not
+  // removed.  The low res tiling for the old ideal=1.0 scale is removed.
   used_tilings.clear();
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
   ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
 
-  // Now move the ideal scale to 1.0 on the active layer. The high-res tiling
-  // stays 1.2.
-  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, page_scale, 1.2f,
-                                    0.f, true);
+  // Now move the ideal scale to 1.0. Our target stays 1.2.
+  SetContentsScaleOnBothLayers(1.f, 1.f, page_scale, 1.f, 0.f, false);
 
   // All the tilings are between are target and the ideal, so they are not
-  // Because the pending layer's ideal scale is still 0.5, all tilings fall
-  // in the range [0.5,1.2] and are kept.
+  // removed.
   used_tilings.clear();
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
   ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
 
-  // Move the ideal scale on the pending layer to 1.0 as well. Our high-res
-  // stays 1.2 still.
-  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, page_scale, 1.f,
+  // Now move the ideal scale to 1.1 on the active layer. Our target stays 1.2.
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.1f, 1.f, page_scale, 1.f,
                                     0.f, false);
 
-  // Our 0.5 tiling now falls outside the range between our ideal scale and our
-  // high-res raster scale. But it is in our used tilings set, so nothing is
+  // Because the pending layer's ideal scale is still 1.0, our tilings fall
+  // in the range [1.0,1.2] and are kept.
+  used_tilings.clear();
+  active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
+  ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
+
+  // Move the ideal scale on the pending layer to 1.1 as well. Our target stays
+  // 1.2 still.
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.1f, 1.f, page_scale, 1.f,
+                                    0.f, false);
+
+  // Our 1.0 tiling now falls outside the range between our ideal scale and our
+  // target raster scale. But it is in our used tilings set, so nothing is
   // deleted.
   used_tilings.clear();
-  used_tilings.push_back(active_layer_->tilings()->tiling_at(2));
+  used_tilings.push_back(active_layer_->tilings()->tiling_at(1));
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
   ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
 
@@ -1278,6 +1250,7 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), contents_scale);
   EXPECT_BOTH_EQ(num_tilings(), 1u);
 
+  // TODO(danakj): Remove these when raster scale doesn't get fixed?
   ResetTilingsAndRasterScales();
 
   // Any content bounds that would create more than one tile will
@@ -1306,6 +1279,11 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
 
   FakePictureLayerImpl* mask_raw =
       static_cast<FakePictureLayerImpl*>(pending_layer_->mask_layer());
+  // We did an UpdateDrawProperties above, which will set a contents scale on
+  // the mask layer, so allow us to reset the contents scale.
+  mask_raw->ReleaseResources();
+  mask_raw->RecreateResources();
+
   SetupDrawPropertiesAndUpdateTiles(
       mask_raw, contents_scale, device_scale, page_scale,
       maximum_animation_scale, starting_animation_scale, animating_transform);
@@ -1979,9 +1957,8 @@ TEST_F(PictureLayerImplTest,
   gfx::Size viewport_size(400, 400);
 
   host_impl_.SetViewportSize(viewport_size);
-
-  // Start with an ideal and raster contents scale of 2.
   SetInitialDeviceScaleFactor(2.f);
+
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, Region());
 
   // One ideal tile exists, this will get used when drawing.
@@ -1991,17 +1968,18 @@ TEST_F(PictureLayerImplTest,
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(
       ideal_tiles);
 
-  // Due to the animation, the raster contents scale moves to 1, while the
-  // ideal will still be 2.
+  // Due to layer scale throttling, the raster contents scale is changed to 1,
+  // while the ideal is still 2.
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
   SetupDrawPropertiesAndUpdateTiles(active_layer_, 2.f, 1.f, 1.f, 1.f, 0.f,
-                                    true);
+                                    false);
 
   EXPECT_EQ(1.f, active_layer_->HighResTiling()->contents_scale());
   EXPECT_EQ(1.f, active_layer_->raster_contents_scale());
   EXPECT_EQ(2.f, active_layer_->ideal_contents_scale());
 
   // Both tilings still exist.
-  ASSERT_GE(active_layer_->tilings()->num_tilings(), 2u);
   EXPECT_EQ(2.f, active_layer_->tilings()->tiling_at(0)->contents_scale());
   EXPECT_EQ(1.f, active_layer_->tilings()->tiling_at(1)->contents_scale());
 
@@ -3267,22 +3245,23 @@ TEST_F(PictureLayerImplTest, RasterScaleChangeWithoutAnimation) {
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
 
-  // Changing the source scale without being in an animation should be
-  // immediately honored.
+  // Changing the source scale without being in an animation will cause
+  // the layer to reset its source scale to 1.f.
   contents_scale = 3.f;
 
   SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 3.f);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
 
-  // Further changes to the source scale will continue to be honored.
+  // Further changes to the source scale will no longer be reflected in the
+  // contents scale.
   contents_scale = 0.5f;
 
   SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 0.5f);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
 }
 
 TEST_F(PictureLayerImplTest, LowResReadyToDrawNotEnoughToActivate) {
@@ -3582,58 +3561,52 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
   ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
 
-  // Now move the ideal scale to 0.5.
+  // Now move the ideal scale to 0.5. Our target stays 1.2.
   SetContentsScaleOnBothLayers(0.5f, device_scale, page_scale, 1.f, 0.f, false);
-  ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
-
-  // And begin an animation to 1.2. There are now 3 tilings, 0.5, 1.0 and 1.2.
-  // The the 0.5 is ideal, but the 1.2 is high res. 1.0 sits between them.
-  // high-res tiling is in the middle.
-  SetContentsScaleOnBothLayers(0.5, device_scale, page_scale, 1.2f, 0.f, true);
-  EXPECT_EQ(HIGH_RESOLUTION,
-            active_layer_->tilings()->tiling_at(0)->resolution());
-  EXPECT_EQ(1.2f,  // High-res, though not the ideal scale.
-            active_layer_->tilings()->tiling_at(0)->contents_scale());
-  EXPECT_EQ(1.f,  // Tiling in the middle attack.
-            active_layer_->tilings()->tiling_at(1)->contents_scale());
-  EXPECT_EQ(0.5f,  // Ideal scale, but not considered high-res.
-            active_layer_->tilings()->tiling_at(2)->contents_scale());
 
   // The high resolution tiling is between target and ideal, so is not
+  // removed.  The low res tiling for the old ideal=1.0 scale is removed.
+  used_tilings.clear();
+  active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
+  ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
+
+  // Now move the ideal scale to 1.0. Our target stays 1.2.
+  SetContentsScaleOnBothLayers(1.f, device_scale, page_scale, 1.f, 0.f, false);
+
+  // All the tilings are between are target and the ideal, so they are not
   // removed.
   used_tilings.clear();
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
-  ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
+  ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
 
-  // Now move the ideal scale to 1.0 on the active layer. The high-res tiling
-  // stays 1.2.
-  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, device_scale,
-                                    page_scale, 1.2f, 0.f, true);
-
-  // Because the pending layer's ideal scale is still 0.5, all tilings fall
-  // in the range [0.5,1.2] and are kept.
-  used_tilings.clear();
-  active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
-  ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
-
-  // Move the ideal scale on the pending layer to 1.0 as well. Our high-res
-  // stays 1.2 still.
-  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, device_scale,
+  // Now move the ideal scale to 1.1 on the active layer. Our target stays 1.2.
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.1f, device_scale,
                                     page_scale, 1.f, 0.f, false);
 
-  // Our 0.5 tiling now falls outside the range between our ideal scale and our
-  // high-res raster scale. But it is in our used tilings set, so nothing is
+  // Because the pending layer's ideal scale is still 1.0, our tilings fall
+  // in the range [1.0,1.2] and are kept.
+  used_tilings.clear();
+  active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
+  ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
+
+  // Move the ideal scale on the pending layer to 1.1 as well. Our target stays
+  // 1.2 still.
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.1f, device_scale,
+                                    page_scale, 1.f, 0.f, false);
+
+  // Our 1.0 tiling now falls outside the range between our ideal scale and our
+  // target raster scale. But it is in our used tilings set, so nothing is
   // deleted.
   used_tilings.clear();
-  used_tilings.push_back(active_layer_->tilings()->tiling_at(2));
+  used_tilings.push_back(active_layer_->tilings()->tiling_at(1));
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
-  ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
+  ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
 
   // If we remove it from our used tilings set, it is outside the range to keep
   // so it is deleted.
   used_tilings.clear();
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
-  ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
+  ASSERT_EQ(1u, active_layer_->tilings()->num_tilings());
 }
 
 TEST_F(NoLowResPictureLayerImplTest, ReleaseResources) {
