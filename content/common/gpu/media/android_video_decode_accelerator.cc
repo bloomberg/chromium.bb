@@ -959,8 +959,12 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
     strategy_->CodecChanged(nullptr, output_picture_buffers_);
   }
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      g_avda_timer.Pointer()->ConstructionTaskRunner();
+  CHECK(task_runner);
+
   base::PostTaskAndReplyWithResult(
-      g_avda_timer.Pointer()->ConstructionTaskRunner().get(), FROM_HERE,
+      task_runner.get(), FROM_HERE,
       base::Bind(&AndroidVideoDecodeAccelerator::ConfigureMediaCodecOnAnyThread,
                  codec_config_),
       base::Bind(&AndroidVideoDecodeAccelerator::OnCodecConfigured,
