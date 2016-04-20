@@ -57,10 +57,6 @@ bear-1280x720-v_frag-cenc.mp4 - A fragmented MP4 version of the video track of b
 bear-1280x720-v_frag-cenc-key_rotation.mp4 - A fragmented MP4 version of the video track of bear-1280x720.mp4 encrypted (ISO CENC) using key ID [1] and key [2] with key rotation [3].
 bear-1280x720-v_frag-cenc_clear-all.mp4 - Same as bear-1280x720-v_frag-cenc.mp4 but no fragments are encrypted.
 bear-1280x720-a_frag-cenc_missing-saiz-saio.mp4 - An invalid file similar to bear-1280x720-a_frag-cenc.mp4 but has no saiz and saio boxes. To save space, it has only one encrypted sample.
-bear-320x240-v_frag-vp9.mp4 - Bear video with VP9 codec in MP4 container. Generated with edash-packager (https://github.com/google/edash-packager):
-                              packager in=bear-vp9.webm,stream=video,out=bear-320x240-v_frag-vp9.mp4
-bear-320x240-v_frag-vp9-cenc.mp4 - Same as above, with video encrypted using key ID [1] and key [2]. Generated with edash-packager (https://github.com/google/edash-packager):
-                                   packager in=bear-vp9.webm,stream=video,out=bear-320x240-v_frag-vp9.mp4 --enable_fixed_key_encryption --key_id 30313233343536373839303132333435 --key ebdd62f16814d27b68ef122afce4ae3c
 bear-320x240-16x9-aspect-av_enc-av.webm - bear-320x240-16x9-aspect.webm with audio & video encrypted using key ID [1] and key [2]
 bear-320x240-av_enc-av.webm - bear-320x240.webm with audio & video encrypted using key ID [1] and key [2].
 bear-320x240-av_enc-av_clear-1s.webm - Same as bear-320x240-av_enc-av.webm but with no frames in the first second encrypted.

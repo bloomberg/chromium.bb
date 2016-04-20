@@ -18,7 +18,6 @@
 #include "components/cdm/renderer/widevine_key_systems.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/base/eme_constants.h"
-#include "media/media_features.h"
 
 #if defined(OS_ANDROID)
 #include "components/cdm/renderer/android_key_systems.h"
@@ -191,10 +190,6 @@ static void AddPepperBasedWidevine(
 #if defined(USE_PROPRIETARY_CODECS)
     if (codecs[i] == kCdmSupportedCodecAvc1)
       supported_codecs |= media::EME_CODEC_MP4_AVC1;
-#if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
-    if (codecs[i] == kCdmSupportedCodecVp9)
-      supported_codecs |= media::EME_CODEC_MP4_VP9;
-#endif
 #endif  // defined(USE_PROPRIETARY_CODECS)
   }
 

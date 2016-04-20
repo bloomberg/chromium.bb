@@ -23,7 +23,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/test_data_util.h"
-#include "media/media_features.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -114,10 +113,6 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     video_mp4_codecs_.push_back("avc1.42001E");  // Baseline profile.
     video_mp4_codecs_.push_back("avc1.4D000C");  // Main profile.
     video_mp4_codecs_.push_back("avc3.64001F");  // High profile.
-
-#if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
-    video_mp4_codecs_.push_back("vp09.01.01.08.02.01.01.00");
-#endif
 
     video_mp4_hi10p_codecs_.push_back("avc1.6E001E");  // Hi10P profile
 

@@ -21,7 +21,6 @@
 #include "media/base/media.h"
 #include "media/base/media_client.h"
 #include "media/cdm/key_system_names.h"
-#include "media/media_features.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 namespace media {
@@ -58,9 +57,6 @@ static const NamedCodec kCodecStrings[] = {
     {"vp9", EME_CODEC_WEBM_VP9},        // VP9.
     {"vp9.0", EME_CODEC_WEBM_VP9},      // VP9.
 #if defined(USE_PROPRIETARY_CODECS)
-#if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
-    {"vp09", EME_CODEC_MP4_VP9},  // VP9 in MP4.
-#endif
     {"mp4a", EME_CODEC_MP4_AAC},   // AAC.
     {"avc1", EME_CODEC_MP4_AVC1},  // AVC1.
     {"avc3", EME_CODEC_MP4_AVC1}   // AVC3.

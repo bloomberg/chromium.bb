@@ -33,8 +33,6 @@ static const CodecIDMappings kUnambiguousCodecStringMap[] = {
     {"1", MimeUtil::PCM},  // We only allow this for WAV so it isn't ambiguous.
     // avc1/avc3.XXXXXX may be unambiguous; handled by ParseAVCCodecId().
     // hev1/hvc1.XXXXXX may be unambiguous; handled by ParseHEVCCodecID().
-    // vp9, vp9.0, vp09.xx.xx.xx.xx.xx.xx.xx may be unambiguous; handled by
-    // ParseVp9CodecID().
     {"mp3", MimeUtil::MP3},
     // Following is the list of RFC 6381 compliant audio codec strings:
     //   mp4a.66     - MPEG-2 AAC MAIN
@@ -76,6 +74,8 @@ static const CodecIDMappings kUnambiguousCodecStringMap[] = {
     {"opus", MimeUtil::OPUS},
     {"vp8", MimeUtil::VP8},
     {"vp8.0", MimeUtil::VP8},
+    {"vp9", MimeUtil::VP9},
+    {"vp9.0", MimeUtil::VP9},
     {"theora", MimeUtil::THEORA}};
 
 // List of codec IDs that are ambiguous and don't provide
@@ -185,97 +185,6 @@ static bool ParseHEVCCodecID(const std::string& codec_id,
 }
 #endif
 
-// Handle parsing of vp9 codec IDs.
-static bool ParseVp9CodecID(const std::string& mime_type_lower_case,
-                            const std::string& codec_id,
-                            VideoCodecProfile* profile) {
-  if (mime_type_lower_case == "video/webm") {
-    if (codec_id == "vp9" || codec_id == "vp9.0") {
-      // Profile is not included in the codec string. Assuming profile 0 to be
-      // backward compatible.
-      *profile = VP9PROFILE_PROFILE0;
-      return true;
-    }
-    // TODO(kqyang): Should we support new codec string in WebM?
-    return false;
-  } else if (mime_type_lower_case == "audio/webm") {
-    return false;
-  }
-
-#if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
-  std::vector<std::string> fields = base::SplitString(
-      codec_id, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (fields.size() < 1)
-    return false;
-
-  if (fields[0] != "vp09")
-    return false;
-
-  if (fields.size() > 8)
-    return false;
-
-  std::vector<int> values;
-  for (size_t i = 1; i < fields.size(); ++i) {
-    // Missing value is not allowed.
-    if (fields[i] == "")
-      return false;
-    int value;
-    if (!base::StringToInt(fields[i], &value))
-      return false;
-    if (value < 0)
-      return false;
-    values.push_back(value);
-  }
-
-  // The spec specifies 8 fields (7 values excluding the first codec field).
-  // We do not allow missing fields.
-  if (values.size() < 7)
-    return false;
-
-  const int profile_idc = values[0];
-  switch (profile_idc) {
-    case 0:
-      *profile = VP9PROFILE_PROFILE0;
-      break;
-    case 1:
-      *profile = VP9PROFILE_PROFILE1;
-      break;
-    case 2:
-      *profile = VP9PROFILE_PROFILE2;
-      break;
-    case 3:
-      *profile = VP9PROFILE_PROFILE3;
-      break;
-    default:
-      return false;
-  }
-
-  const int bit_depth = values[2];
-  if (bit_depth != 8 && bit_depth != 10 && bit_depth != 12)
-    return false;
-
-  const int color_space = values[3];
-  if (color_space > 7)
-    return false;
-
-  const int chroma_subsampling = values[4];
-  if (chroma_subsampling > 3)
-    return false;
-
-  const int transfer_function = values[5];
-  if (transfer_function > 1)
-    return false;
-
-  const int video_full_range_flag = values[6];
-  if (video_full_range_flag > 1)
-    return false;
-
-  return true;
-#else
-  return false;
-#endif  // #if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
-}
-
 MimeUtil::MimeUtil() : allow_proprietary_codecs_(false) {
 #if defined(OS_ANDROID)
   platform_info_.is_unified_media_pipeline_enabled =
@@ -308,10 +217,8 @@ SupportsType MimeUtil::AreSupportedCodecs(
   for (size_t i = 0; i < codecs.size(); ++i) {
     bool is_ambiguous = true;
     Codec codec = INVALID_CODEC;
-    if (!StringToCodec(mime_type_lower_case, codecs[i], &codec, &is_ambiguous,
-                       is_encrypted)) {
+    if (!StringToCodec(codecs[i], &codec, &is_ambiguous, is_encrypted))
       return IsNotSupported;
-    }
 
     if (!IsCodecSupported(codec, mime_type_lower_case, is_encrypted) ||
         supported_codecs.find(codec) == supported_codecs.end()) {
@@ -394,11 +301,6 @@ void MimeUtil::AddSupportedMediaFormats() {
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
   mp4_video_codecs.insert(HEVC_MAIN);
 #endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
-#if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
-  // Only VP9 with valid codec string vp09.xx.xx.xx.xx.xx.xx.xx is supported.
-  // See ParseVp9CodecID for details.
-  mp4_video_codecs.insert(VP9);
-#endif  // BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
   CodecSet mp4_codecs(mp4_audio_codecs);
   mp4_codecs.insert(mp4_video_codecs.begin(), mp4_video_codecs.end());
 #endif  // defined(USE_PROPRIETARY_CODECS)
@@ -651,23 +553,15 @@ bool MimeUtil::IsCodecSupportedOnPlatform(
       if (!is_encrypted && platform_info.is_unified_media_pipeline_enabled)
         return true;
 
-      if (!platform_info.has_platform_vp9_decoder)
-        return false;
-
-      // Encrypted content is demuxed so the container is irrelevant.
-      if (is_encrypted)
-        return true;
-
-      // MediaPlayer only supports VP9 in WebM.
-      return mime_type_lower_case == "video/webm";
+      // Otherwise, platform support is required.
+      return platform_info.has_platform_vp9_decoder;
     }
   }
 
   return false;
 }
 
-bool MimeUtil::StringToCodec(const std::string& mime_type_lower_case,
-                             const std::string& codec_id,
+bool MimeUtil::StringToCodec(const std::string& codec_id,
                              Codec* codec,
                              bool* is_ambiguous,
                              bool is_encrypted) const {
@@ -713,22 +607,6 @@ bool MimeUtil::StringToCodec(const std::string& mime_type_lower_case,
         *is_ambiguous = !IsValidH264Level(level_idc);
         break;
       default:
-        *is_ambiguous = true;
-    }
-    return true;
-  }
-
-  if (ParseVp9CodecID(mime_type_lower_case, codec_id, &profile)) {
-    *codec = MimeUtil::VP9;
-    switch (profile) {
-      case VP9PROFILE_PROFILE0:
-        // Profile 0 should always be supported if VP9 is supported.
-        *is_ambiguous = false;
-        break;
-      default:
-        // We don't know if the underlying platform supports these profiles.
-        // Need to add platform level querying to get supported profiles
-        // (crbug/604566).
         *is_ambiguous = true;
     }
     return true;
