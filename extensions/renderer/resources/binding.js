@@ -181,7 +181,6 @@ var platform = getPlatform();
 function Binding(apiName) {
   this.apiName_ = apiName;
   this.apiFunctions_ = new APIFunctions(apiName);
-  this.customEvent_ = null;
   this.customHooks_ = [];
 };
 
@@ -190,6 +189,17 @@ Binding.create = function(apiName) {
 };
 
 Binding.prototype = {
+  // Sneaky workaround for Object.prototype getters/setters - our prototype
+  // isn't Object.prototype. SafeBuiltins (e.g. $Object.hasOwnProperty())
+  // should still work.
+  __proto__: null,
+
+  // Forward-declare properties.
+  apiName_: undefined,
+  apiFunctions_: undefined,
+  customEvent_: undefined,
+  customHooks_: undefined,
+
   // The API through which the ${api_name}_custom_bindings.js files customize
   // their API bindings beyond what can be generated.
   //
