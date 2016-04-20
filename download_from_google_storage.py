@@ -221,13 +221,22 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
     input_sha1_sum, output_filename = q.get()
     if input_sha1_sum is None:
       return
-    if os.path.exists(output_filename) and not force:
-      if get_sha1(output_filename) == input_sha1_sum:
-        if verbose:
-          out_q.put(
-              '%d> File %s exists and SHA1 matches. Skipping.' % (
+    extract_dir = None
+    if extract:
+      if not output_filename.endswith('.tar.gz'):
+        out_q.put('%d> Error: %s is not a tar.gz archive.' % (
                   thread_num, output_filename))
+        ret_codes.put((1, '%s is not a tar.gz archive.' % (output_filename)))
         continue
+      extract_dir = output_filename[0:len(output_filename)-7]
+    if os.path.exists(output_filename) and not force:
+      if not extract or os.path.exists(extract_dir):
+        if get_sha1(output_filename) == input_sha1_sum:
+          if verbose:
+            out_q.put(
+                '%d> File %s exists and SHA1 matches. Skipping.' % (
+                    thread_num, output_filename))
+          continue
     # Check if file exists.
     file_url = '%s/%s' % (base_url, input_sha1_sum)
     (code, _, err) = gsutil.check_call('ls', file_url)
@@ -268,15 +277,13 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
       continue
 
     if extract:
-      if (not tarfile.is_tarfile(output_filename)
-          or not output_filename.endswith('.tar.gz')):
+      if not tarfile.is_tarfile(output_filename):
         out_q.put('%d> Error: %s is not a tar.gz archive.' % (
                   thread_num, output_filename))
         ret_codes.put((1, '%s is not a tar.gz archive.' % (output_filename)))
         continue
       with tarfile.open(output_filename, 'r:gz') as tar:
         dirname = os.path.dirname(os.path.abspath(output_filename))
-        extract_dir = output_filename[0:len(output_filename)-7]
         if not _validate_tar_file(tar, os.path.basename(extract_dir)):
           out_q.put('%d> Error: %s contains files outside %s.' % (
                     thread_num, output_filename, extract_dir))
