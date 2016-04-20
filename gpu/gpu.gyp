@@ -534,17 +534,17 @@
         'gles2_conform_support/egl/test_support.cc',
         'gles2_conform_support/egl/test_support.h',
       ],
-          'defines': [
+      'defines': [
         'COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY',
         'EGLAPIENTRY=',
-          ],
+      ],
       'conditions': [
         ['OS=="win"', {
           'defines': [
             'EGLAPI=__declspec(dllexport)',
           ],
         }, { # OS!="win"
-                  'defines': [
+          'defines': [
             'EGLAPI=__attribute__((visibility(\"default\")))'
           ],
         }],
@@ -567,7 +567,7 @@
         'command_buffer/tests/command_buffer_gles2_tests_main.cc',
         'command_buffer/tests/egl_test.cc',
       ],
-          'defines': [
+      'defines': [
          'COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY',
          'EGLAPIENTRY=',
       ],
@@ -577,7 +577,7 @@
             'EGLAPI=__declspec(dllimport)',
           ],
         }, { # OS!="win"
-                  'defines': [
+          'defines': [
             'EGLAPI=',
           ],
         }],
