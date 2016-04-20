@@ -14,11 +14,11 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/image_view.h"
 
 class LinkDisambiguationPopup::ZoomBubbleView
-    : public views::BubbleDelegateView {
+    : public views::BubbleDialogDelegateView {
  public:
   ZoomBubbleView(views::Widget* top_level_widget,
                  const gfx::Rect& target_rect,
@@ -27,16 +27,17 @@ class LinkDisambiguationPopup::ZoomBubbleView
                  const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
                  const base::Callback<void(ui::MouseEvent*)>& mouse_cb);
 
-  void Close();
-
  private:
   // views::View overrides
   gfx::Size GetPreferredSize() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
-  // WidgetObserver overrides
+  // views::WidgetObserver overrides
   void OnWidgetClosing(views::Widget* widget) override;
+
+  // views::BubbleDialogDelegate overrides
+  int GetDialogButtons() const override;
 
   const float scale_;
   const base::Callback<void(ui::GestureEvent*)> gesture_cb_;
@@ -54,7 +55,7 @@ LinkDisambiguationPopup::ZoomBubbleView::ZoomBubbleView(
     LinkDisambiguationPopup* popup,
     const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
     const base::Callback<void(ui::MouseEvent*)>& mouse_cb)
-    : BubbleDelegateView(
+    : BubbleDialogDelegateView(
           top_level_widget ? top_level_widget->GetContentsView() : nullptr,
           views::BubbleBorder::FLOAT),
       scale_(static_cast<float>(zoomed_skia_image->width()) /
@@ -64,18 +65,11 @@ LinkDisambiguationPopup::ZoomBubbleView::ZoomBubbleView(
       popup_(popup),
       target_rect_(target_rect) {
   views::ImageView* image_view = new views::ImageView();
-  image_view->SetBounds(
-      0, 0, zoomed_skia_image->width(), zoomed_skia_image->height());
+  image_view->SetSize(zoomed_skia_image->size());
   image_view->SetImage(zoomed_skia_image);
-
   AddChildView(image_view);
 
-  views::BubbleDelegateView::CreateBubble(this);
-}
-
-void LinkDisambiguationPopup::ZoomBubbleView::Close() {
-  if (GetWidget())
-    GetWidget()->Close();
+  views::BubbleDialogDelegateView::CreateBubble(this);
 }
 
 gfx::Size LinkDisambiguationPopup::ZoomBubbleView::GetPreferredSize() const {
@@ -99,7 +93,7 @@ void LinkDisambiguationPopup::ZoomBubbleView::OnMouseEvent(
 
   // If user completed a click we can close the window.
   if (event->type() == ui::EventType::ET_MOUSE_RELEASED)
-    Close();
+    GetWidget()->Close();
 }
 
 void LinkDisambiguationPopup::ZoomBubbleView::OnGestureEvent(
@@ -108,7 +102,7 @@ void LinkDisambiguationPopup::ZoomBubbleView::OnGestureEvent(
   // ourselves, as perhaps the user has decided on a different part of the page.
   if (event->location().x() > bounds().width() ||
       event->location().y() > bounds().height()) {
-    Close();
+    GetWidget()->Close();
     return;
   }
 
@@ -135,12 +129,16 @@ void LinkDisambiguationPopup::ZoomBubbleView::OnGestureEvent(
   // If we completed a tap we close ourselves, as the web content will navigate
   // if the user hit a link.
   if (event->type() == ui::EventType::ET_GESTURE_TAP)
-    Close();
+    GetWidget()->Close();
 }
 
 void LinkDisambiguationPopup::ZoomBubbleView::OnWidgetClosing(
     views::Widget* widget) {
   popup_->InvalidateBubbleView();
+}
+
+int LinkDisambiguationPopup::ZoomBubbleView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 LinkDisambiguationPopup::LinkDisambiguationPopup()
@@ -192,12 +190,10 @@ void LinkDisambiguationPopup::Show(
 }
 
 void LinkDisambiguationPopup::Close() {
-  if (view_) {
-    view_->Close();
-    view_ = NULL;
-  }
+  if (view_ && view_->GetWidget())
+    view_->GetWidget()->Close();
 }
 
 void LinkDisambiguationPopup::InvalidateBubbleView() {
-  view_ = NULL;
+  view_ = nullptr;
 }
