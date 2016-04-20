@@ -31,7 +31,7 @@ float FloodFillInkDropAnimationTestApi::GetCurrentOpacity() const {
 }
 
 std::vector<ui::LayerAnimator*>
-FloodFillInkDropAnimationTestApi::GetLayerAnimators() const {
+FloodFillInkDropAnimationTestApi::GetLayerAnimators() {
   std::vector<ui::LayerAnimator*> animators =
       InkDropAnimationTestApi::GetLayerAnimators();
   animators.push_back(ink_drop_animation()->GetRootLayer()->GetAnimator());

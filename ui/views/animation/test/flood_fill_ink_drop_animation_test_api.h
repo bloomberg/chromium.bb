@@ -34,7 +34,7 @@ class FloodFillInkDropAnimationTestApi : public InkDropAnimationTestApi {
 
  protected:
   // InkDropAnimationTestApi:
-  std::vector<ui::LayerAnimator*> GetLayerAnimators() const override;
+  std::vector<ui::LayerAnimator*> GetLayerAnimators() override;
 
  private:
   FloodFillInkDropAnimation* ink_drop_animation() {

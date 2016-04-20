@@ -39,7 +39,7 @@ float SquareInkDropAnimationTestApi::GetCurrentOpacity() const {
 }
 
 std::vector<ui::LayerAnimator*>
-SquareInkDropAnimationTestApi::GetLayerAnimators() const {
+SquareInkDropAnimationTestApi::GetLayerAnimators() {
   std::vector<ui::LayerAnimator*> animators =
       InkDropAnimationTestApi::GetLayerAnimators();
   animators.push_back(ink_drop_animation()->GetRootLayer()->GetAnimator());
