@@ -7,7 +7,7 @@ import re
 
 def result_contains_repaint_rects(text):
     return isinstance(text, str) and (
-        re.search('"repaintRects": \[$', text, re.MULTILINE) != None or
+        re.search('"paintInvalidations": \[$', text, re.MULTILINE) is not None or
         text.find('Minimum repaint:') != -1)
 
 
@@ -139,12 +139,12 @@ function draw_layer_rects(context, result) {
         context.transform(t[0][0], t[0][1], t[1][0], t[1][1], t[3][0], t[3][1]);
         context.translate(-origin[0], -origin[1]);
     }
-    if (result.repaintRects) {
-        draw_rects(context, result.repaintRects);
-    } else if (result.paintInvalidations) {
+    if (result.paintInvalidations) {
         var rects = [];
-        for (var i = 0; i < result.paintInvalidations.length; ++i)
-            rects.push(result.paintInvalidations[i].rect);
+        for (var i = 0; i < result.paintInvalidations.length; ++i) {
+            if (result.paintInvalidations[i].rect)
+                rects.push(result.paintInvalidations[i].rect);
+        }
         draw_rects(context, rects);
     }
     if (result.children) {
