@@ -34,7 +34,7 @@ void FakeBaseTabStripController::AddPinnedTab(int index, bool is_active) {
 
 void FakeBaseTabStripController::RemoveTab(int index) {
   num_tabs_--;
-  tab_strip_->RemoveTabAt(index);
+  tab_strip_->RemoveTabAt(nullptr, index);
   if (active_index_ == index)
     active_index_ = -1;
 }

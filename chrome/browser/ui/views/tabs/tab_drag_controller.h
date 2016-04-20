@@ -16,8 +16,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -52,8 +50,7 @@ class WindowFinder;
 // that the tabs should be moved out of the tab strip a new Browser is created
 // and RunMoveLoop() is invoked on the Widget to drag the browser around. This
 // is the default on aura.
-class TabDragController : public content::NotificationObserver,
-                          public views::WidgetObserver,
+class TabDragController : public views::WidgetObserver,
                           public TabStripModelObserver {
  public:
   // What should happen as the mouse is dragged within the tabstrip.
@@ -124,6 +121,9 @@ class TabDragController : public content::NotificationObserver,
   // Returns true if we've detached from a tabstrip and are running a nested
   // move message loop.
   bool is_dragging_window() const { return is_dragging_window_; }
+
+  // Returns true if currently dragging a tab with |contents|.
+  bool IsDraggingTab(content::WebContents* contents);
 
   // Invoked to drag to the new location, in screen coordinates.
   void Drag(const gfx::Point& point_in_screen);
@@ -219,11 +219,6 @@ class TabDragController : public content::NotificationObserver,
   // Sets |drag_data| from |tab|. This also registers for necessary
   // notifications and resets the delegate of the WebContents.
   void InitTabDragData(Tab* tab, TabDragData* drag_data);
-
-  // Overridden from content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // Overriden from views::WidgetObserver:
   void OnWidgetBoundsChanged(views::Widget* widget,
@@ -383,7 +378,7 @@ class TabDragController : public content::NotificationObserver,
   // Restores |initial_selection_model_| to the |source_tabstrip_|.
   void RestoreInitialSelection();
 
-  // Finishes a succesful drag operation.
+  // Finishes a successful drag operation.
   void CompleteDrag();
 
   // Maximizes the attached window.
@@ -462,9 +457,6 @@ class TabDragController : public content::NotificationObserver,
   Liveness GetLocalProcessWindow(const gfx::Point& screen_point,
                                  bool exclude_dragged_view,
                                  gfx::NativeWindow* window) WARN_UNUSED_RESULT;
-
-  // Handles registering for notifications.
-  content::NotificationRegistrar registrar_;
 
   EventSource event_source_;
 

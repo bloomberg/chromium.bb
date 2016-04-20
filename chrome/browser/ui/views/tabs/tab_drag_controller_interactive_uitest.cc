@@ -1142,10 +1142,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
 
-  // Only tab "1" gets closed; tab "2" which was also selected gets restored.
-  // TODO(varkha): fix this expectation once closing a tab while dragging
-  // stops the drag and causes all selected tabs to get closed.
-  EXPECT_EQ("0 3 2", IDString(browser()->tab_strip_model()));
+  // Both tabs "1" and "2" get closed.
+  EXPECT_EQ("0 3", IDString(browser()->tab_strip_model()));
 
   EXPECT_FALSE(GetIsDragged(browser()));
 }

@@ -24,10 +24,8 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/window_finder.h"
-#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function_dispatcher.h"
@@ -336,6 +334,14 @@ void TabDragController::SetMoveBehavior(MoveBehavior behavior) {
   move_behavior_ = behavior;
 }
 
+bool TabDragController::IsDraggingTab(content::WebContents* contents) {
+  for (auto drag_data : drag_data_) {
+    if (drag_data.contents == contents)
+      return true;
+  }
+  return false;
+}
+
 void TabDragController::Drag(const gfx::Point& point_in_screen) {
   TRACE_EVENT1("views", "TabDragController::Drag",
                "point_in_screen", point_in_screen.ToString());
@@ -412,32 +418,6 @@ void TabDragController::InitTabDragData(Tab* tab,
   drag_data->contents = GetModel(source_tabstrip_)->GetWebContentsAt(
       drag_data->source_model_index);
   drag_data->pinned = source_tabstrip_->IsTabPinned(tab);
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<WebContents>(drag_data->contents));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// TabDragController, content::NotificationObserver implementation:
-
-void TabDragController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DESTROYED, type);
-  WebContents* destroyed_web_contents =
-      content::Source<WebContents>(source).ptr();
-  for (size_t i = 0; i < drag_data_.size(); ++i) {
-    if (drag_data_[i].contents == destroyed_web_contents) {
-      // One of the tabs we're dragging has been destroyed. Cancel the drag.
-      drag_data_[i].contents = NULL;
-      EndDragImpl(TAB_DESTROYED);
-      return;
-    }
-  }
-  // If we get here it means we got notification for a tab we don't know about.
-  NOTREACHED();
 }
 
 void TabDragController::OnWidgetBoundsChanged(views::Widget* widget,

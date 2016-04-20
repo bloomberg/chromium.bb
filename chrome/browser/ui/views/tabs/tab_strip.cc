@@ -835,7 +835,7 @@ void TabStrip::MoveTab(int from_model_index,
                     TabStripMovedTab(this, from_model_index, to_model_index));
 }
 
-void TabStrip::RemoveTabAt(int model_index) {
+void TabStrip::RemoveTabAt(content::WebContents* contents, int model_index) {
   if (touch_layout_) {
     Tab* tab = tab_at(model_index);
     tab->set_closing(true);
@@ -855,6 +855,21 @@ void TabStrip::RemoveTabAt(int model_index) {
 
   FOR_EACH_OBSERVER(TabStripObserver, observers_,
                     TabStripRemovedTabAt(this, model_index));
+
+  // Stop dragging when a new tab is removed and dragging a window. Doing
+  // otherwise results in a confusing state if the user attempts to reattach. We
+  // could allow this and make TabDragController update itself during the
+  // remove operation, but this comes up infrequently enough that it's not worth
+  // the complexity.
+  //
+  // At the start of RemoveTabAt() the model and tabs are out sync. Any queries
+  // to find a tab given a model index can go off the end of |tabs_|. As such,
+  // it is important that we complete the drag *after* removing the tab so that
+  // the model and tabstrip are in sync.
+  if (contents && drag_controller_.get() && !drag_controller_->is_mutating() &&
+      drag_controller_->IsDraggingTab(contents)) {
+    EndDrag(END_DRAG_COMPLETE);
+  }
 }
 
 void TabStrip::SetTabData(int model_index, const TabRendererData& data) {

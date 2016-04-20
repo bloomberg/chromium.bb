@@ -101,8 +101,9 @@ class TabStrip : public views::View,
                int to_model_index,
                const TabRendererData& data);
 
-  // Removes a tab at the specified index.
-  void RemoveTabAt(int model_index);
+  // Removes a tab at the specified index. If the tab with |contents| is being
+  // dragged then the drag is completed.
+  void RemoveTabAt(content::WebContents* contents, int model_index);
 
   // Sets the tab data at the specified model index.
   void SetTabData(int model_index, const TabRendererData& data);
