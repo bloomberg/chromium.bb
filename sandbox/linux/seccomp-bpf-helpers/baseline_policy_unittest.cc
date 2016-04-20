@@ -248,6 +248,19 @@ TEST_BASELINE_SIGSYS(__NR_inotify_init);
 TEST_BASELINE_SIGSYS(__NR_vserver);
 #endif
 
+#if defined(LIBC_GLIBC) && !defined(OS_CHROMEOS)
+BPF_TEST_C(BaselinePolicy, FutexEINVAL, BaselinePolicy) {
+  int ops[] = {
+      FUTEX_CMP_REQUEUE_PI, FUTEX_CMP_REQUEUE_PI_PRIVATE,
+      FUTEX_UNLOCK_PI_PRIVATE,
+  };
+
+  for (int op : ops) {
+    BPF_ASSERT_EQ(-1, syscall(__NR_futex, NULL, op, 0, NULL, NULL, 0));
+    BPF_ASSERT_EQ(EINVAL, errno);
+  }
+}
+#else
 BPF_DEATH_TEST_C(BaselinePolicy,
                  FutexWithRequeuePriorityInheritence,
                  DEATH_SEGV_MESSAGE(GetFutexErrorMessageContentForTests()),
@@ -271,6 +284,7 @@ BPF_DEATH_TEST_C(BaselinePolicy,
   syscall(__NR_futex, NULL, FUTEX_UNLOCK_PI_PRIVATE, 0, NULL, NULL, 0);
   _exit(1);
 }
+#endif  // defined(LIBC_GLIBC) && !defined(OS_CHROMEOS)
 
 BPF_TEST_C(BaselinePolicy, PrctlDumpable, BaselinePolicy) {
   const int is_dumpable = prctl(PR_GET_DUMPABLE, 0, 0, 0, 0);

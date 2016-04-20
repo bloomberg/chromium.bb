@@ -99,6 +99,18 @@ inline bool IsArchitectureMips() {
 #endif
 }
 
+// Ubuntu's version of glibc has a race condition in sem_post that can cause
+// it to call futex(2) with bogus op arguments. To workaround this, we need
+// to allow those futex(2) calls to fail with EINVAL, instead of crashing the
+// process. See crbug.com/598471.
+inline bool IsBuggyGlibcSemPost() {
+#if defined(LIBC_GLIBC) && !defined(OS_CHROMEOS)
+  return true;
+#else
+  return false;
+#endif
+}
+
 }  // namespace.
 
 #define CASES SANDBOX_BPF_DSL_CASES
@@ -253,15 +265,10 @@ ResultExpr RestrictFutex() {
   const uint64_t kAllowedFutexFlags = FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME;
   const Arg<int> op(1);
   return Switch(op & ~kAllowedFutexFlags)
-      .CASES((FUTEX_WAIT,
-              FUTEX_WAKE,
-              FUTEX_REQUEUE,
-              FUTEX_CMP_REQUEUE,
-              FUTEX_WAKE_OP,
-              FUTEX_WAIT_BITSET,
-              FUTEX_WAKE_BITSET),
+      .CASES((FUTEX_WAIT, FUTEX_WAKE, FUTEX_REQUEUE, FUTEX_CMP_REQUEUE,
+              FUTEX_WAKE_OP, FUTEX_WAIT_BITSET, FUTEX_WAKE_BITSET),
              Allow())
-      .Default(CrashSIGSYSFutex());
+      .Default(IsBuggyGlibcSemPost() ? Error(EINVAL) : CrashSIGSYSFutex());
 }
 
 ResultExpr RestrictGetSetpriority(pid_t target_pid) {
