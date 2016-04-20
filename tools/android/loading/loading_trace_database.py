@@ -14,9 +14,10 @@ class LoadingTraceDatabase(object):
        about those traces."""
     self._traces_dict = traces_dict
 
-  def AddTrace(self, filename, trace_dict):
-    """Adds a mapping from |filename| to |trace_dict| into the database."""
-    assert filename not in self._traces_dict
+  def SetTrace(self, filename, trace_dict):
+    """Sets a mapping from |filename| to |trace_dict| into the database.
+    If there is an existing mapping for filename, it is replaced.
+    """
     self._traces_dict[filename] = trace_dict
 
   def GetTraceFilesForURL(self, url):

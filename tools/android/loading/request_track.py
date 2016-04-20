@@ -25,7 +25,8 @@ _TIMING_NAMES_MAPPING = {
     'requestTime': 'request_time', 'sendEnd': 'send_end',
     'sendStart': 'send_start', 'sslEnd': 'ssl_end', 'sslStart': 'ssl_start',
     'workerReady': 'worker_ready', 'workerStart': 'worker_start',
-    'loadingFinished': 'loading_finished'}
+    'loadingFinished': 'loading_finished', 'pushStart' : 'push_start',
+    'pushEnd' : 'push_end'}
 
 Timing = collections.namedtuple('Timing', _TIMING_NAMES_MAPPING.values())
 

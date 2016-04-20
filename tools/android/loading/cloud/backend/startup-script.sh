@@ -12,9 +12,13 @@ get_instance_metadata() {
       -H "Metadata-Flavor: Google"
 }
 
-# Talk to the metadata server to get the project id
+# Talk to the metadata server to get the project id and the instance id
 PROJECTID=$(curl -s \
     "http://metadata.google.internal/computeMetadata/v1/project/project-id" \
+    -H "Metadata-Flavor: Google")
+
+INSTANCE_ID=$(curl -s \
+    "http://metadata.google.internal/computeMetadata/v1/instance/hostname" \
     -H "Metadata-Flavor: Google")
 
 # Install dependencies from apt
@@ -73,7 +77,8 @@ cat >$DEPLOYMENT_CONFIG_PATH << EOF
   "cloud_storage_path" : "$CLOUD_STORAGE_PATH",
   "chrome_path" : "/opt/app/clovis/binaries/chrome",
   "src_path" : "/opt/app/clovis/src",
-  "taskqueue_tag" : "$TASKQUEUE_TAG"
+  "taskqueue_tag" : "$TASKQUEUE_TAG",
+  "trace_database_filename" : "trace_database_${INSTANCE_ID}.json"
 }
 EOF
 

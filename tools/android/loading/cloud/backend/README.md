@@ -95,15 +95,21 @@ gcloud beta auth application-default login --scopes \
     https://www.googleapis.com/auth/cloud-platform
 ```
 
-Create a JSON file describing the deployment configuration:
+Create a JSON dictionary file describing the deployment configuration, with the
+keys:
 
+-   `project_name` (string): Name of the Google Cloud project
+-   `cloud_storage_path` (string): Path in Google Storage where generated traces
+    will be stored.
+-   `chrome_path` (string): Path to the Chrome executable.
+-   `src_path` (string): Path to the Chromium source directory.
+-   `taskqueue_tag` (string):
+-   `trace_database_filename` (string, optional): Filename for the trace
+    database in Cloud Storage. Must be unique per worker to avoid concurrent
+    access. Defaults to `trace_database.json`.
+
+Example:
 ```shell
-# CONFIG_FILE is the output json file.
-# PROJECT_NAME is the Google Cloud project.
-# CLOUD_STORAGE_PATH is the path in Google Storage where generated traces will
-# be stored.
-# CHROME_PATH is the path to the Chrome executable on the host.
-# CHROMIUM_SRC is the Chromium src directory.
 cat >$CONFIG_FILE << EOF
 {
   "project_name" : "$PROJECT_NAME",

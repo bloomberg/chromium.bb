@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from gcloud import storage
+import gcloud.exceptions
+import gcloud.storage
 
 
 class GoogleStorageAccessor(object):
@@ -18,11 +19,25 @@ class GoogleStorageAccessor(object):
 
   def _GetStorageClient(self):
     """Returns the storage client associated with the project"""
-    return storage.Client(project = self._project_name,
-                          credentials = self._credentials)
+    return gcloud.storage.Client(project = self._project_name,
+                                 credentials = self._credentials)
 
   def _GetStorageBucket(self, storage_client):
     return storage_client.get_bucket(self._bucket_name)
+
+  def DownloadAsString(self, remote_filename):
+    """Returns the content of a remote file as a string, or None if the file
+    does not exist.
+    """
+    client = self._GetStorageClient()
+    bucket = self._GetStorageBucket(client)
+    blob = bucket.get_blob(remote_filename)
+    if not blob:
+      return None
+    try:
+      return blob.download_as_string()
+    except gcloud.exceptions.NotFound:
+      return None
 
   def UploadFile(self, filename_src, filename_dest):
     """Uploads a file to Google Cloud Storage
