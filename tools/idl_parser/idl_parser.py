@@ -554,14 +554,12 @@ class IDLParser(object):
 
   # [36]
   def p_StringifierRest(self, p):
-    """StringifierRest : AttributeRest
+    """StringifierRest : ReadOnly AttributeRest
                        | ReturnType OperationRest
                        | ';'"""
     if len(p) == 3:
       p[2].AddChildren(p[1])
       p[0] = p[2]
-    elif p[1] != ';':
-      p[0] = p[1]
 
   # [37]
   def p_StaticMember(self, p):
