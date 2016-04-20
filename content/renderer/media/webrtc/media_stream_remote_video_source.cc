@@ -19,7 +19,6 @@
 #include "media/base/video_util.h"
 #include "third_party/webrtc/media/base/videoframe.h"
 #include "third_party/webrtc/media/base/videosinkinterface.h"
-#include "third_party/webrtc/system_wrappers/include/tick_util.h"
 
 namespace content {
 
@@ -71,8 +70,7 @@ MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
       // the offset, 2) the rate (i.e., one clock runs faster than the other).
       // See http://crbug/516700
       time_diff_(base::TimeTicks::Now() - base::TimeTicks() -
-                 base::TimeDelta::FromMicroseconds(
-                     webrtc::TickTime::MicrosecondTimestamp())) {}
+                 base::TimeDelta::FromMicroseconds(rtc::TimeMicros())) {}
 
 MediaStreamRemoteVideoSource::
 RemoteVideoSourceDelegate::~RemoteVideoSourceDelegate() {

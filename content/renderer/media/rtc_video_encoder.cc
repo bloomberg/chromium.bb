@@ -25,7 +25,7 @@
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/libyuv/include/libyuv.h"
-#include "third_party/webrtc/system_wrappers/include/tick_util.h"
+#include "third_party/webrtc/base/timeutils.h"
 
 namespace content {
 
@@ -422,7 +422,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
 
   // Use webrtc timestamps to ensure correct RTP sender behavior.
   // TODO(hshi): obtain timestamp from the capturer, see crbug.com/350106.
-  const int64_t capture_time_us = webrtc::TickTime::MicrosecondTimestamp();
+  const int64_t capture_time_us = rtc::TimeMicros();
 
   // Derive the capture time (in ms) and RTP timestamp (in 90KHz ticks).
   const int64_t capture_time_ms = capture_time_us / 1000;
