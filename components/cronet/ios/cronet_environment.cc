@@ -242,7 +242,7 @@ void CronetEnvironment::Start() {
   proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
       network_io_thread_->task_runner(), nullptr);
 
-#if defined(USE_NSS_VERIFIER)
+#if defined(USE_NSS_CERTS)
   net::SetURLRequestContextForNSSHttpIO(main_context_.get());
 #endif
   base::subtle::MemoryBarrier();
@@ -253,7 +253,7 @@ void CronetEnvironment::Start() {
 
 CronetEnvironment::~CronetEnvironment() {
 // net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
-#if defined(USE_NSS_VERIFIER)
+#if defined(USE_NSS_CERTS)
   net::SetURLRequestContextForNSSHttpIO(nullptr);
 #endif
 }

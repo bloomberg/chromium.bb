@@ -68,7 +68,7 @@ TEST(TestRootCertsTest, AddFromFile) {
 // the results of the rest of net_unittests, ensuring that the trust status
 // is properly being set and cleared.
 TEST(TestRootCertsTest, OverrideTrust) {
-#if defined(USE_NSS_VERIFIER)
+#if defined(USE_NSS_CERTS)
   if (NSS_VersionCheck("3.14.2") && !NSS_VersionCheck("3.15")) {
     // See http://bugzil.la/863947 for details
     LOG(INFO) << "Skipping test for NSS 3.14.2 - NSS 3.15";
