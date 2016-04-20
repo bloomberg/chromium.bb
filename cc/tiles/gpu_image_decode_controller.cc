@@ -157,12 +157,16 @@ GpuImageDecodeController::GpuImageDecodeController(ContextProvider* context,
                                                    ResourceFormat decode_format)
     : format_(decode_format),
       context_(context),
-      context_threadsafe_proxy_(
-          skia::AdoptRef(context->GrContext()->threadSafeProxy())),
       image_data_(ImageDataMRUCache::NO_AUTO_EVICT),
       cached_items_limit_(kMaxDiscardableItems),
       cached_bytes_limit_(kMaxGpuImageBytes),
-      bytes_used_(0) {}
+      bytes_used_(0) {
+  // Acquire the context_lock so that we can safely retrieve the
+  // GrContextThreadSafeProxy. This proxy can then be used with no lock held.
+  ContextProvider::ScopedContextLock context_lock(context_);
+  context_threadsafe_proxy_ =
+      skia::AdoptRef(context->GrContext()->threadSafeProxy());
+}
 
 GpuImageDecodeController::~GpuImageDecodeController() {
   // SetShouldAggressivelyFreeResources will zero our limits and free all
