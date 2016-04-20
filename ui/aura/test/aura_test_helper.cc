@@ -67,9 +67,12 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
 
   ui::InitializeInputMethodForTesting();
 
-  gfx::Size host_size(800, 600);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
+  gfx::Size host_size(screen ? screen->GetPrimaryDisplay().GetSizeInPixel()
+                             : gfx::Size(800, 600));
   test_screen_.reset(TestScreen::Create(host_size));
-  gfx::Screen::SetScreenInstance(test_screen_.get());
+  if (!screen)
+    gfx::Screen::SetScreenInstance(test_screen_.get());
   host_.reset(test_screen_->CreateHostForPrimaryDisplay());
 
   focus_client_.reset(new TestFocusClient);

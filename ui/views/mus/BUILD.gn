@@ -152,6 +152,7 @@ test("views_mus_unittests") {
     "native_widget_mus_unittest.cc",
     "platform_test_helper_mus.cc",
     "run_all_unittests_mus.cc",
+    "screen_mus_unittest.cc",
   ]
 
   deps = [
