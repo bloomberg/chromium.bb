@@ -2713,3 +2713,6 @@ crbug.com/600248 imported/web-platform-tests/web-animations/animation/constructo
 
 crbug.com/604642 [ Mac ]  fast/text/midword-break-after-breakable-char.html [ Failure ]
 crbug.com/605024 [ Mac ]  svg/transforms/animated-path-inside-transformed-html.xhtml [ Failure ]
+
+crbug.com/605047 [ Mac10.11 ]  fast/text/emphasis.html [ Failure ]
+crbug.com/605047 [ Mac10.11 ]  fast/text/international/complex-character-based-fallback.html [ Failure ]
