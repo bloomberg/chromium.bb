@@ -10,9 +10,51 @@
 #include "components/exo/surface.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/views/widget/widget.h"
 
 namespace exo {
+
+bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
+  // Check if IME consumed the event, to avoid it to be doubly processed.
+  // First let us see whether IME is active and is in text input mode.
+  views::Widget* widget =
+      focus ? views::Widget::GetTopLevelWidgetForNativeView(focus) : nullptr;
+  ui::InputMethod* ime = widget ? widget->GetInputMethod() : nullptr;
+  if (!ime || ime->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
+    return false;
+
+  // Case 1:
+  // When IME ate a key event but did not emit character insertion event yet
+  // (e.g., when it is still showing a candidate list UI to the user,) the
+  // consumed key event is re-sent after masked |key_code| by VKEY_PROCESSKEY.
+  if (event->key_code() == ui::VKEY_PROCESSKEY)
+    return true;
+
+  // Case 2:
+  // When IME ate a key event and generated a single character input, it leaves
+  // the key event as-is, and in addition calls the active ui::TextInputClient's
+  // InsertChar() method. (In our case, arc::ArcImeService::InsertChar()).
+  //
+  // In Chrome OS (and Web) convention, the two calls wont't cause duplicates,
+  // because key-down events do not mean any character inputs there.
+  // (InsertChar issues a DOM "keypress" event, which is distinct from keydown.)
+  // Unfortunately, this is not necessary the case for our clients that may
+  // treat keydown as a trigger of text inputs. We need suppression for keydown.
+  if (event->type() == ui::ET_KEY_PRESSED) {
+    // Same condition as components/arc/ime/arc_ime_service.cc#InsertChar.
+    const base::char16 ch = event->GetCharacter();
+    const bool is_control_char =
+        (0x00 <= ch && ch <= 0x1f) || (0x7f <= ch && ch <= 0x9f);
+    // TODO(kinaba, crbug,com/604615): Filter out [Enter] key events as well.
+    if (!is_control_char && !ui::IsSystemKeyModifier(event->flags()))
+      return true;
+  }
+
+  return false;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Keyboard, public:
@@ -52,11 +94,10 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
       delegate_->OnKeyboardModifiers(modifier_flags_);
   }
 
-  // When IME ate a key event, it re-sends the event after masking |key_code|
-  // by VKEY_PROCESSKEY. Although such events can be used to track the key
-  // states, they should not be sent as unmasked key events. Otherwise they are
-  // handled in two places (IME and client) and cause undesired behavior.
-  bool consumed_by_ime = (event->key_code() == ui::VKEY_PROCESSKEY);
+  // When IME ate a key event, we use the event only for tracking key states and
+  // ignore for further processing. Otherwise it is handled in two places (IME
+  // and client) and causes undesired behavior.
+  bool consumed_by_ime = ConsumedByIme(focus_, event);
 
   switch (event->type()) {
     case ui::ET_KEY_PRESSED: {
