@@ -10,16 +10,22 @@ noop();
 
 Running: inlinedScriptFormatting
 ====== 8< ------
-<html><body><script>
-function f() {}
-</script><script>
-function g() {
-    var a;
-    window.return = 10;
-    if (a)
-        return;
-}
-</script></body></html>
+<html>
+    <body>
+        <script>
+            function f() {}
+        </script>
+        <script>
+            function g() {
+                var a;
+                window.return = 10;
+                if (a)
+                    return;
+            }
+        </script>
+    </body>
+</html>
+
 ------ >8 ======
 
 Running: generatorFormatter

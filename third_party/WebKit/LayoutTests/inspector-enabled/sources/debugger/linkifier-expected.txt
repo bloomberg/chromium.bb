@@ -5,7 +5,7 @@ The lineNumber is 21 with type number
 The columnNumber is 10 with type number
 listeners added on raw source code: 1
 original location: linkifier.html:9
-pretty printed location: linkifier.html:formatted:14
+pretty printed location: linkifier.html:formatted:12
 reverted location: linkifier.html:9
 listeners removed from raw source code: 1
 

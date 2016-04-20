@@ -8,7 +8,7 @@ Running: testConsoleMessagesForFormattedScripts
 script-formatter-console.html:12 
 Pre-format row message list:
 ["11"]
-script-formatter-console.html:formatted:16
+script-formatter-console.html:formatted:13
 Post-format row message list:
-["15"]
+["12"]
 

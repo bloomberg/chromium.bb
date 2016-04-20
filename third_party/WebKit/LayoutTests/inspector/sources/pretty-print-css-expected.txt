@@ -38,28 +38,34 @@ Correct mapping for <black>
 
 Running: testFormatInlinedStyles
 ====== 8< ------
-<html><body><style>
-@-webkit-keyframes {
-    from {
-        left: 0
-    }
+<html>
+    <body>
+        <style>
+            @-webkit-keyframes {
+                from {
+                    left: 0
+                }
 
-    to {
-        left: 100px;
-    }
-}
-</style><style>
-badbraces {
-}
-}
+                to {
+                    left: 100px;
+                }
+            }
+        </style>
+        <style>
+            badbraces {
+            }
+        }
 
-@media screen {
-    a {
-        color: red;
-        text-decoration: none
-    }
-}
-</style></body></html>
+        @media screen {
+            a {
+                color: red;
+                text-decoration: none
+            }
+        }
+    </style>
+</body>
+</html>
+
 ------ >8 ======
 
 Running: testNonZeroLineMapping
