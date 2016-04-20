@@ -952,7 +952,11 @@ LayoutRect ContainerNode::boundingBox() const
             upperLeft = lowerRight;
     }
 
-    return enclosingLayoutRect(FloatRect(upperLeft, lowerRight.expandedTo(upperLeft) - upperLeft));
+    FloatSize size = lowerRight.expandedTo(upperLeft) - upperLeft;
+    if (std::isnan(size.width()) || std::isnan(size.height()))
+        return LayoutRect();
+
+    return enclosingLayoutRect(FloatRect(upperLeft, size));
 }
 
 // This is used by FrameSelection to denote when the active-state of the page has changed
