@@ -996,7 +996,7 @@ void TextAutosizer::applyMultiplier(LayoutObject* layoutObject, float multiplier
         // TODO(kojii): layouter should not be nullptr once all callers are
         // fixed to pass SubtreeLayoutScope.
         DCHECK(!layouter || layoutObject->isDescendantOf(&layouter->root()));
-        layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing, MarkContainerChain, layouter);
+        layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing, MarkContainerChainInLayout, layouter);
         break;
 
     case LayoutNeeded:
