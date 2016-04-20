@@ -145,8 +145,13 @@ source_set("test_support") {
   sources = [
     "test/chromecast_browser_test.cc",
     "test/chromecast_browser_test.h",
+    "test/chromecast_browser_test_helper.h",
     "test/chromecast_browser_test_runner.cc",
   ]
+
+  if (chromecast_branding == "public") {
+    sources += [ "test/chromecast_browser_test_helper_default.cc" ]
+  }
 
   public_deps = [
     ":browser",
@@ -190,6 +195,7 @@ test("cast_shell_browser_test") {
   # TODO(slan): Find a better way to do this.
   if (chromecast_branding != "public") {
     deps += [ "//chromecast/internal:cast_shell_internal" ]
+    deps += [ "//chromecast/internal/shell:cast_shell_browser_test_helper_internal" ]
   }
 
   if (chromecast_branding == "public") {

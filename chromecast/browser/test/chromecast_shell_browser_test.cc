@@ -6,6 +6,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromecast/browser/test/chromecast_browser_test.h"
+#include "chromecast/browser/test/chromecast_browser_test_helper.h"
 #include "chromecast/chromecast_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/test_data_util.h"
@@ -22,13 +23,16 @@ const char kFailed[] = "FAILED";
 
 class ChromecastShellBrowserTest : public ChromecastBrowserTest {
  public:
-  ChromecastShellBrowserTest() : url_(url::kAboutBlankURL) {}
+  ChromecastShellBrowserTest() {}
 
-  void SetUpOnMainThread() override {
-    CreateBrowser();
-    NavigateToURL(web_contents(), url_);
+  void LoadAboutBlank() {
+    content::WebContents* web_contents =
+        helper_->NavigateToURL(GURL(url::kAboutBlankURL));
+    content::TitleWatcher title_watcher(
+        web_contents, base::ASCIIToUTF16(url::kAboutBlankURL));
+    base::string16 result = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(url::kAboutBlankURL, base::UTF16ToASCII(result));
   }
-
   void PlayAudio(const std::string& media_file) {
     PlayMedia("audio", media_file);
   }
@@ -37,8 +41,6 @@ class ChromecastShellBrowserTest : public ChromecastBrowserTest {
   }
 
  private:
-  const GURL url_;
-
   void PlayMedia(const std::string& tag,
                  const std::string& media_file) {
     base::StringPairs query_params;
@@ -60,13 +62,12 @@ class ChromecastShellBrowserTest : public ChromecastBrowserTest {
 
   std::string RunTest(const GURL& gurl,
                       const std::string& expected_title) {
-    content::TitleWatcher title_watcher(web_contents(),
+    content::WebContents* web_contents = helper_->NavigateToURL(gurl);
+    content::TitleWatcher title_watcher(web_contents,
                                         base::ASCIIToUTF16(expected_title));
     title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kEnded));
     title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kError));
     title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kFailed));
-
-    NavigateToURL(web_contents(), gurl);
     base::string16 result = title_watcher.WaitAndGetTitle();
     return base::UTF16ToASCII(result);
   }
@@ -76,9 +77,7 @@ class ChromecastShellBrowserTest : public ChromecastBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ChromecastShellBrowserTest, EmptyTest) {
   // Run an entire browser lifecycle to ensure nothing breaks.
-  // TODO(gunsch): Remove this test case once there are actual assertions to
-  // test in a ChromecastBrowserTest instance.
-  EXPECT_TRUE(true);
+  LoadAboutBlank();
 }
 
 IN_PROC_BROWSER_TEST_F(ChromecastShellBrowserTest, AudioPlaybackWavPcm) {
