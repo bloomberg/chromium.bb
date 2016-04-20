@@ -8,8 +8,10 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "public/platform/WebLayer.h"
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,6 +41,12 @@ protected:
         // Ensure intersection observer notifications get delivered.
         testing::runPendingTasks();
         return displayItems;
+    }
+
+    // Number of rectangles that make up the root layer's touch handler region.
+    size_t touchHandlerRegionSize()
+    {
+        return webView().mainFrameImpl()->frame()->contentLayoutItem().layer()->graphicsLayerBacking()->platformLayer()->touchEventHandlerRegion().size();
     }
 };
 
@@ -544,6 +552,73 @@ TEST_F(FrameThrottlingTest, UnthrottleByTransformingWithoutLayout)
     frameElement->setAttribute(styleAttr, "transform: translateY(0px)");
     compositeFrame();
     EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+}
+
+TEST_F(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored)
+{
+    webView().settings()->setAcceleratedCompositingEnabled(true);
+    webView().settings()->setJavaScriptEnabled(true);
+    EXPECT_EQ(0u, touchHandlerRegionSize());
+
+    // Create a frame which is throttled and has two different types of
+    // top-level touchstart handlers.
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame sandbox=allow-scripts src=iframe.html></iframe>");
+    frameResource.complete(
+        "<script>"
+        "window.addEventListener('touchstart', function(){});"
+        "document.addEventListener('touchstart', function(){});"
+        "</script>");
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    compositeFrame(); // Throttle the frame.
+    compositeFrame(); // Update touch handler regions.
+
+    // The touch handlers in the throttled frame should have been ignored.
+    EXPECT_EQ(0u, touchHandlerRegionSize());
+
+    // Unthrottling the frame makes the touch handlers active again. Note that
+    // both handlers get combined into the same rectangle in the region, so
+    // there is only one rectangle in total.
+    frameElement->setAttribute(styleAttr, "transform: translateY(0px)");
+    compositeFrame(); // Unthrottle the frame.
+    compositeFrame(); // Update touch handler regions.
+    EXPECT_EQ(1u, touchHandlerRegionSize());
+}
+
+TEST_F(FrameThrottlingTest, ThrottledEventHandlerIgnored)
+{
+    webView().settings()->setAcceleratedCompositingEnabled(true);
+    webView().settings()->setJavaScriptEnabled(true);
+    EXPECT_EQ(0u, touchHandlerRegionSize());
+
+    // Create a frame which is throttled and has a non-top-level touchstart handler.
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame sandbox=allow-scripts src=iframe.html></iframe>");
+    frameResource.complete(
+        "<div id=d>touch handler</div>"
+        "<script>"
+        "document.querySelector('#d').addEventListener('touchstart', function(){});"
+        "</script>");
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    compositeFrame(); // Throttle the frame.
+    compositeFrame(); // Update touch handler regions.
+
+    // The touch handler in the throttled frame should have been ignored.
+    EXPECT_EQ(0u, touchHandlerRegionSize());
+
+    // Unthrottling the frame makes the touch handler active again.
+    frameElement->setAttribute(styleAttr, "transform: translateY(0px)");
+    compositeFrame(); // Unthrottle the frame.
+    compositeFrame(); // Update touch handler regions.
+    EXPECT_EQ(1u, touchHandlerRegionSize());
 }
 
 } // namespace blink

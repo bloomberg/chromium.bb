@@ -38,6 +38,7 @@
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
@@ -4028,9 +4029,10 @@ void FrameView::notifyRenderThrottlingObservers()
     }
 
     bool becameUnthrottled = wasThrottled && !canThrottleRendering();
+    ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator();
     if (becameUnthrottled) {
         // ScrollingCoordinator needs to update according to the new throttling status.
-        if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+        if (scrollingCoordinator)
             scrollingCoordinator->notifyGeometryChanged();
         // Start ticking animation frames again if necessary.
         page()->animator().scheduleVisualUpdate(m_frame.get());
@@ -4040,6 +4042,10 @@ void FrameView::notifyRenderThrottlingObservers()
         if (LayoutView* layoutView = this->layoutView())
             layoutView->invalidatePaintForViewAndCompositedLayers();
     }
+
+    bool hasHandlers = m_frame->document()->frameHost()->eventHandlerRegistry().hasEventHandlers(EventHandlerRegistry::TouchStartOrMoveEventBlocking);
+    if (wasThrottled != canThrottleRendering() && scrollingCoordinator && hasHandlers)
+        scrollingCoordinator->touchEventTargetRectsDidChange();
 }
 
 bool FrameView::shouldThrottleRendering() const

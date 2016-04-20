@@ -791,7 +791,13 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
         for (const auto& eventTarget : *targets) {
             EventTarget* target = eventTarget.key;
             Node* node = target->toNode();
-            if (target->toLocalDOMWindow() || node == document || node == document->documentElement() || node == document->body()) {
+            LocalDOMWindow* window = target->toLocalDOMWindow();
+            // If the target is inside a throttled frame, skip it.
+            if (window && window->frame()->view() && window->frame()->view()->shouldThrottleRendering())
+                continue;
+            if (node && node->document().view() && node->document().view()->shouldThrottleRendering())
+                continue;
+            if (window || node == document || node == document->documentElement() || node == document->body()) {
                 if (LayoutViewItem layoutView = document->layoutViewItem()) {
                     layoutView.computeLayerHitTestRects(rects);
                 }
@@ -809,6 +815,10 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
         // If the document belongs to an invisible subframe it does not have a composited layer
         // and should be skipped.
         if (node->document().isInInvisibleSubframe())
+            continue;
+
+        // If the node belongs to a throttled frame, skip it.
+        if (node->document().view() && node->document().view()->shouldThrottleRendering())
             continue;
 
         if (node->isDocumentNode() && node != document) {
