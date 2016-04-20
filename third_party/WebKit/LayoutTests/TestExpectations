@@ -1499,7 +1499,6 @@ crbug.com/601166 [ Mac10.9 ]  fast/text/word-space.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text/zero-font-size.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  ietestcenter/css3/text/textshadow-003.htm [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  ietestcenter/css3/text/textshadow-004.htm [ Failure ]
-crbug.com/601166 [ Mac10.9 ]  svg/transforms/animated-path-inside-transformed-html.xhtml [ Failure ]
 
 crbug.com/600261 imported/web-platform-tests/mediacapture-streams/GUM-deny.html [ Failure ]
 crbug.com/600261 imported/web-platform-tests/mediacapture-streams/MediaStream-MediaElement-srcObject.html [ Failure ]
@@ -2713,3 +2712,4 @@ crbug.com/600248 imported/web-platform-tests/web-animations/animation-effect-tim
 crbug.com/600248 imported/web-platform-tests/web-animations/animation/constructor.html [ Failure Timeout ]
 
 crbug.com/604642 [ Mac ]  fast/text/midword-break-after-breakable-char.html [ Failure ]
+crbug.com/605024 [ Mac ]  svg/transforms/animated-path-inside-transformed-html.xhtml [ Failure ]
