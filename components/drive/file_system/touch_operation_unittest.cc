@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/drive/file_system/touch_operation.h"
+#include "components/drive/chromeos/file_system/touch_operation.h"
 
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system/operation_test_base.h"
-#include "components/drive/resource_metadata.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

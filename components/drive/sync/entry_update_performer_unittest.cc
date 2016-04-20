@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/drive/sync/entry_update_performer.h"
+#include "components/drive/chromeos/sync/entry_update_performer.h"
 
 #include <stdint.h>
 
@@ -10,12 +10,12 @@
 #include "base/files/file_util.h"
 #include "base/md5.h"
 #include "base/task_runner_util.h"
+#include "components/drive/chromeos/file_cache.h"
+#include "components/drive/chromeos/file_system/download_operation.h"
+#include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/drive_api_util.h"
-#include "components/drive/file_cache.h"
-#include "components/drive/file_system/download_operation.h"
 #include "components/drive/file_system/operation_test_base.h"
 #include "components/drive/job_scheduler.h"
-#include "components/drive/resource_metadata.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/drive_api_parser.h"

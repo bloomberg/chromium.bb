@@ -24,7 +24,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/drive/file_system_interface.h"
+#include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"

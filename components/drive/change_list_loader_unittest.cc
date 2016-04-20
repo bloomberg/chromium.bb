@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/drive/change_list_loader.h"
+#include "components/drive/chromeos/change_list_loader.h"
 
 #include <stdint.h>
 
@@ -14,14 +14,14 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/drive/change_list_loader_observer.h"
-#include "components/drive/drive_test_util.h"
+#include "components/drive/chromeos/change_list_loader_observer.h"
+#include "components/drive/chromeos/drive_test_util.h"
+#include "components/drive/chromeos/file_cache.h"
+#include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/event_logger.h"
-#include "components/drive/file_cache.h"
 #include "components/drive/file_change.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/drive/job_scheduler.h"
-#include "components/drive/resource_metadata.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"
 #include "components/prefs/testing_pref_service.h"

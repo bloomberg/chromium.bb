@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/drive/file_system/open_file_operation.h"
+#include "components/drive/chromeos/file_system/open_file_operation.h"
 
 #include <stdint.h>
 
@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task_runner_util.h"
+#include "components/drive/chromeos/file_cache.h"
 #include "components/drive/drive.pb.h"
-#include "components/drive/file_cache.h"
 #include "components/drive/file_change.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system/operation_test_base.h"

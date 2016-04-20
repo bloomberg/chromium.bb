@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/drive/file_system/set_property_operation.h"
+#include "components/drive/chromeos/file_system/set_property_operation.h"
 
 #include "base/files/file_path.h"
 #include "components/drive/drive.pb.h"

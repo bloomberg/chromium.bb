@@ -8,11 +8,11 @@
 #include <set>
 
 #include "base/files/scoped_temp_dir.h"
+#include "components/drive/chromeos/drive_test_util.h"
+#include "components/drive/chromeos/file_system/operation_delegate.h"
 #include "components/drive/drive.pb.h"
-#include "components/drive/drive_test_util.h"
 #include "components/drive/file_change.h"
 #include "components/drive/file_errors.h"
-#include "components/drive/file_system/operation_delegate.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
-#include "components/drive/dummy_file_system.h"
+#include "components/drive/chromeos/dummy_file_system.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"

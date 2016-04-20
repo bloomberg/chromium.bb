@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/drive/file_system/create_file_operation.h"
+#include "components/drive/chromeos/file_system/create_file_operation.h"
 
 #include "components/drive/file_change.h"
 #include "components/drive/file_system/operation_test_base.h"

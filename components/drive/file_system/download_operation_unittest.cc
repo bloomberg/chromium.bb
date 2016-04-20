@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/drive/file_system/download_operation.h"
+#include "components/drive/chromeos/file_system/download_operation.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/files/file_util.h"
 #include "base/task_runner_util.h"
-#include "components/drive/fake_free_disk_space_getter.h"
-#include "components/drive/file_cache.h"
+#include "components/drive/chromeos/fake_free_disk_space_getter.h"
+#include "components/drive/chromeos/file_cache.h"
 #include "components/drive/file_change.h"
 #include "components/drive/file_system/operation_test_base.h"
 #include "components/drive/file_system_core_util.h"

@@ -41,7 +41,7 @@
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chromeos/login/login_state.h"
-#include "components/drive/file_system_interface.h"
+#include "components/drive/chromeos/file_system_interface.h"
 #endif
 
 namespace {

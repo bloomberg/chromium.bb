@@ -21,7 +21,7 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/file_system.h"
-#include "components/drive/file_system_interface.h"
+#include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/event_router.h"
