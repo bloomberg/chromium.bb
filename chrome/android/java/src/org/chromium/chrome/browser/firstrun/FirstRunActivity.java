@@ -57,7 +57,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     // Outcoming results:
     public static final String RESULT_CLOSE_APP = "Close App";
     public static final String RESULT_SIGNIN_ACCOUNT_NAME = "ResultSignInTo";
-    public static final String RESULT_SHOW_SYNC_SETTINGS = "ResultShowSyncSettings";
+    public static final String RESULT_SHOW_SIGNIN_SETTINGS = "ResultShowSignInSettings";
 
     // UMA constants.
     private static final String UMA_SIGNIN_CHOICE = "MobileFre.SignInChoice";
@@ -79,7 +79,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     private boolean mShowWelcomePage = true;
 
     private String mResultSignInAccountName;
-    private boolean mResultShowSyncSettings;
+    private boolean mResultShowSignInSettings;
 
     private boolean mNativeSideIsInitialized;
 
@@ -254,7 +254,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
             boolean defaultAccountName =
                     sGlue.isDefaultAccountName(getApplicationContext(), mResultSignInAccountName);
             int choice;
-            if (mResultShowSyncSettings) {
+            if (mResultShowSignInSettings) {
                 if (defaultAccountName) {
                     choice = SIGNIN_SETTINGS_DEFAULT_ACCOUNT;
                 } else {
@@ -286,7 +286,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         }
 
         mFreProperties.putString(RESULT_SIGNIN_ACCOUNT_NAME, mResultSignInAccountName);
-        mFreProperties.putBoolean(RESULT_SHOW_SYNC_SETTINGS, mResultShowSyncSettings);
+        mFreProperties.putBoolean(RESULT_SHOW_SIGNIN_SETTINGS, mResultShowSignInSettings);
         FirstRunFlowSequencer.markFlowAsCompleted(this, mFreProperties);
 
         if (DataReductionPromoScreen
@@ -317,7 +317,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         RecordHistogram.recordEnumeratedHistogram(
                 UMA_SIGNIN_CHOICE, SIGNIN_NO_THANKS, SIGNIN_OPTION_COUNT);
         mResultSignInAccountName = null;
-        mResultShowSyncSettings = false;
+        mResultShowSignInSettings = false;
     }
 
     @Override
@@ -326,8 +326,8 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     }
 
     @Override
-    public void askToOpenSyncSettings() {
-        mResultShowSyncSettings = true;
+    public void askToOpenSignInSettings() {
+        mResultShowSignInSettings = true;
     }
 
     @Override

@@ -18,12 +18,9 @@ import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -109,37 +106,28 @@ public class SigninPromoScreen extends AlwaysDismissedDialog
     }
 
     @Override
-    public void onAccountSelected(String accountName, boolean settingsClicked) {
-        if (settingsClicked) {
-            if (ProfileSyncService.get() != null) {
-                Intent intent = PreferencesLauncher.createIntentForSettingsPage(getContext(),
-                        SyncCustomizationFragment.class.getName());
-                Bundle args = new Bundle();
-                args.putString(SyncCustomizationFragment.ARGUMENT_ACCOUNT, accountName);
-                intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, args);
-                getContext().startActivity(intent);
+    public void onAccountSelected(String accountName, final boolean settingsClicked) {
+        Activity activity = getOwnerActivity();
+        RecordUserAction.record("Signin_Signin_FromSigninPromo");
+        SigninManager.get(activity).signIn(accountName, activity, new SignInCallback() {
+            @Override
+            public void onSignInComplete() {
+                SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_ACCEPTED);
+                if (settingsClicked) {
+                    Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                            getContext(), AccountManagementFragment.class.getName());
+                    getContext().startActivity(intent);
+                    SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_ACCEPTED_WITH_ADVANCED);
+                }
+                dismiss();
             }
 
-            SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_ACCEPTED_WITH_ADVANCED);
-            dismiss();
-        } else {
-            Activity activity = getOwnerActivity();
-            RecordUserAction.record("Signin_Signin_FromSigninPromo");
-            SigninManager.get(activity).signIn(accountName, activity, new SignInCallback() {
-                @Override
-                public void onSignInComplete() {
-                    SigninManager.get(getOwnerActivity()).logInSignedInUser();
-                    SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_ACCEPTED);
-                    dismiss();
-                }
-
-                @Override
-                public void onSignInAborted() {
-                    SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_DECLINED);
-                    dismiss();
-                }
-            });
-        }
+            @Override
+            public void onSignInAborted() {
+                SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_DECLINED);
+                dismiss();
+            }
+        });
     }
 
     @Override

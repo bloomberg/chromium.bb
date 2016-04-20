@@ -16,10 +16,8 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 
 /**
  * An Activity displayed from the MainPreferences to allow the user to pick an account to
@@ -35,7 +33,7 @@ public class AccountSigninActivity extends AppCompatActivity
 
     private AccountSigninView mView;
     private String mAccountName;
-    private boolean mShowSyncSettings = false;
+    private boolean mShowSigninSettings = false;
 
     @Override
     @SuppressFBWarnings("DM_EXIT")
@@ -75,7 +73,7 @@ public class AccountSigninActivity extends AppCompatActivity
 
     @Override
     public void onAccountSelected(String accountName, boolean settingsClicked) {
-        mShowSyncSettings = settingsClicked;
+        mShowSigninSettings = settingsClicked;
         mAccountName = accountName;
         RecordUserAction.record("Signin_Signin_FromSettings");
         SigninManager.get(this).signIn(accountName, this, this);
@@ -89,12 +87,9 @@ public class AccountSigninActivity extends AppCompatActivity
 
     @Override
     public void onSignInComplete() {
-        if (mShowSyncSettings) {
-            Intent intent = PreferencesLauncher.createIntentForSettingsPage(this,
-                    SyncCustomizationFragment.class.getName());
-            Bundle args = new Bundle();
-            args.putString(SyncCustomizationFragment.ARGUMENT_ACCOUNT, mAccountName);
-            intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, args);
+        if (mShowSigninSettings) {
+            Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                    this, AccountManagementFragment.class.getName());
             startActivity(intent);
         }
 

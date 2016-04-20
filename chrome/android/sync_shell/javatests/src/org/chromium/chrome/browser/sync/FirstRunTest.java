@@ -75,7 +75,7 @@ public class FirstRunTest extends SyncTestBase {
         FirstRunSignInProcessor.setFirstRunFlowSignInComplete(mContext, false);
         Bundle data = new Bundle();
         data.putString(FirstRunActivity.RESULT_SIGNIN_ACCOUNT_NAME, account);
-        data.putBoolean(FirstRunActivity.RESULT_SHOW_SYNC_SETTINGS,
+        data.putBoolean(FirstRunActivity.RESULT_SHOW_SIGNIN_SETTINGS,
                 showSyncSettings == ShowSyncSettings.YES);
         FirstRunSignInProcessor.finalizeFirstRunFlowState(mContext, data);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

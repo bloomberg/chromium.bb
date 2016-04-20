@@ -53,7 +53,7 @@ public class AccountFirstRunFragment extends FirstRunPage implements AccountSign
             public void onAccountSelected(String accountName, boolean settingsClicked) {
                 getPageDelegate().acceptSignIn(accountName);
                 if (settingsClicked) {
-                    getPageDelegate().askToOpenSyncSettings();
+                    getPageDelegate().askToOpenSignInSettings();
                 }
                 advanceToNextPage();
             }

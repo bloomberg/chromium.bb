@@ -56,10 +56,10 @@ public interface FirstRunPageDelegate {
     void acceptSignIn(String accountName);
 
     /**
-     * Notifies that the user asked to show Sync Settings once the sign in
+     * Notifies that the user asked to show sign in Settings once the sign in
      * process is complete.
      */
-    void askToOpenSyncSettings();
+    void askToOpenSignInSettings();
 
     /**
      * @return Whether the user has accepted Chrome Terms of Service.

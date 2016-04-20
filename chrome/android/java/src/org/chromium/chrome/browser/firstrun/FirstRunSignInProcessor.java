@@ -16,14 +16,11 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.sync.signin.ChromeSigninController;
 
 /**
  * A helper to perform all necessary steps for the automatic FRE sign in.
@@ -46,7 +43,7 @@ public final class FirstRunSignInProcessor {
     private static final String FIRST_RUN_FLOW_SIGNIN_COMPLETE = "first_run_signin_complete";
     private static final String FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME =
             "first_run_signin_account_name";
-    private static final String FIRST_RUN_FLOW_SIGNIN_SETUP_SYNC = "first_run_signin_setup_sync";
+    private static final String FIRST_RUN_FLOW_SIGNIN_SETUP = "first_run_signin_setup";
 
     /**
      * Initiates the automatic sign-in process in background.
@@ -82,14 +79,14 @@ public final class FirstRunSignInProcessor {
             return;
         }
 
-        final boolean setUpSync = getFirstRunFlowSignInSetupSync(activity);
+        final boolean setUp = getFirstRunFlowSignInSetup(activity);
         RecordUserAction.record("Signin_Signin_FromStartPage");
         signinManager.signIn(accountName, activity, new SignInCallback() {
             @Override
             public void onSignInComplete() {
                 // Show sync settings if user pressed the "Settings" button.
-                if (setUpSync) {
-                    openSyncSettings(activity);
+                if (setUp) {
+                    openSignInSettings(activity);
                 }
                 setFirstRunFlowSignInComplete(activity, true);
             }
@@ -104,18 +101,11 @@ public final class FirstRunSignInProcessor {
     }
 
     /**
-     * Opens Sync settings as requested in the FRE sign-in dialog.
+     * Opens sign in settings as requested in the FRE sign-in dialog.
      */
-    private static void openSyncSettings(Activity activity) {
-        if (ProfileSyncService.get() == null) return;
-        assert !ProfileSyncService.get().isFirstSetupComplete();
-        String accountName = ChromeSigninController.get(activity).getSignedInAccountName();
-        if (TextUtils.isEmpty(accountName)) return;
+    private static void openSignInSettings(Activity activity) {
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                activity, SyncCustomizationFragment.class.getName());
-        Bundle args = new Bundle();
-        args.putString(SyncCustomizationFragment.ARGUMENT_ACCOUNT, accountName);
-        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, args);
+                activity, AccountManagementFragment.class.getName());
         activity.startActivity(intent);
     }
 
@@ -129,7 +119,7 @@ public final class FirstRunSignInProcessor {
         FirstRunStatus.setFirstRunFlowComplete(activity, false);
         setFirstRunFlowSignInComplete(activity, false);
         setFirstRunFlowSignInAccountName(activity, null);
-        setFirstRunFlowSignInSetupSync(activity, false);
+        setFirstRunFlowSignInSetup(activity, false);
         activity.startActivity(FirstRunFlowSequencer.createGenericFirstRunIntent(activity, true));
     }
 
@@ -178,23 +168,23 @@ public final class FirstRunSignInProcessor {
     }
 
     /**
-     * @return Whether the user selected to see the Sync settings once signed in after FRE.
+     * @return Whether the user selected to see the settings once signed in after FRE.
      * @param context A context
      */
-    private static boolean getFirstRunFlowSignInSetupSync(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(FIRST_RUN_FLOW_SIGNIN_SETUP_SYNC, false);
+    private static boolean getFirstRunFlowSignInSetup(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
+                FIRST_RUN_FLOW_SIGNIN_SETUP, false);
     }
 
     /**
-     * Sets the preference to see the Sync settings once signed in after FRE.
+     * Sets the preference to see the settings once signed in after FRE.
      * @param context A context
-     * @param isComplete Whether the user selected to see the Sync settings once signed in.
+     * @param isComplete Whether the user selected to see the settings once signed in.
      */
-    private static void setFirstRunFlowSignInSetupSync(Context context, boolean isComplete) {
+    private static void setFirstRunFlowSignInSetup(Context context, boolean isComplete) {
         PreferenceManager.getDefaultSharedPreferences(context)
                 .edit()
-                .putBoolean(FIRST_RUN_FLOW_SIGNIN_SETUP_SYNC, isComplete)
+                .putBoolean(FIRST_RUN_FLOW_SIGNIN_SETUP, isComplete)
                 .apply();
     }
 
@@ -207,8 +197,8 @@ public final class FirstRunSignInProcessor {
         FirstRunStatus.setFirstRunFlowComplete(context, true);
         setFirstRunFlowSignInAccountName(context,
                     data.getString(FirstRunActivity.RESULT_SIGNIN_ACCOUNT_NAME));
-        setFirstRunFlowSignInSetupSync(context,
-                    data.getBoolean(FirstRunActivity.RESULT_SHOW_SYNC_SETTINGS));
+        setFirstRunFlowSignInSetup(
+                context, data.getBoolean(FirstRunActivity.RESULT_SHOW_SIGNIN_SETTINGS));
     }
 
     /**
