@@ -54,6 +54,9 @@ class TaskManager {
  public:
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Returns true if the user is allowed to end processes.
+  static bool IsEndProcessEnabled();
+
   // Returns true if the process at the specified index is the browser process.
   bool IsBrowserProcess(int index) const;
 

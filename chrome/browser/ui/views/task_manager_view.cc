@@ -537,7 +537,8 @@ void TaskManagerView::OnSelectionChanged() {
     }
   }
   kill_button_->SetEnabled(!selection_contains_browser_process &&
-                           !selection.empty());
+                           !selection.empty() &&
+                           TaskManager::IsEndProcessEnabled());
 }
 
 void TaskManagerView::OnDoubleClick() {

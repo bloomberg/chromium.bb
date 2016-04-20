@@ -67160,6 +67160,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="324" label="Suppress the unsupported OS warning"/>
   <int value="325" label="Enable queries to Quirks Server"/>
   <int value="326" label="Configure the automatic timezone detection method"/>
+  <int value="327" label="Enable ending processes in Task Manager"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

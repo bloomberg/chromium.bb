@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
 #include "chrome/browser/ui/user_manager.h"
@@ -255,7 +256,8 @@ void NewTaskManagerView::OnSelectionChanged() {
   }
 
   kill_button_->SetEnabled(!selection_contains_browser_process &&
-                           !selections.empty());
+                           !selections.empty() &&
+                           TaskManager::IsEndProcessEnabled());
 }
 
 void NewTaskManagerView::OnDoubleClick() {

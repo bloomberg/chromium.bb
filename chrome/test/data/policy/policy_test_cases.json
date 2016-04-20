@@ -2707,6 +2707,17 @@
     ]
   },
 
+  "TaskManagerEndProcessEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "TaskManagerEndProcessEnabled": false },
+    "pref_mappings": [
+      {
+        "pref": "task_manager.end_process_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 325
+#   For your editing convenience: highest ID currently used: 327
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8460,6 +8460,25 @@
       If this policy is not set, it will behave as if TimezoneAutomaticDetectionUsersDecide is set.
 
       If SystemTimezone policy is set, it overrides this policy. In this case automatic timezone detection is completely disabled.''',
+    },
+    {
+      'name': 'TaskManagerEndProcessEnabled',
+      'caption': '''Enables ending processes in Task Manager''',
+      'desc': '''Enables ending processes in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s  Task Manager.
+
+      If set to false, the 'End process' button is disabled in the Task Manager.
+
+      If set to true or not configured, the user can end processes in the Task Manager.''',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:52-','chrome_os:52-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'tags': [],
+      'id': 327,
     },
   ],
   'messages': {

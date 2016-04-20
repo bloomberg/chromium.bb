@@ -561,6 +561,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kSystemTimezoneAutomaticDetectionPolicy,
     base::Value::TYPE_INTEGER },
 #endif
+
+  { key::kTaskManagerEndProcessEnabled,
+    prefs::kTaskManagerEndProcessEnabled,
+    base::Value::TYPE_BOOLEAN },
 };
 
 class ForceSafeSearchPolicyHandler : public TypeCheckingPolicyHandler {

@@ -70,6 +70,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/cld_data_harness.h"
 #include "chrome/browser/translate/cld_data_harness_factory.h"
@@ -3855,6 +3856,33 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingDisallowed) {
                   ->tab_strip_model()
                   ->GetActiveWebContents()
                   ->ShowingInterstitialPage());
+}
+
+// Test that TaskManager::IsEndProcessEnabled is controlled by
+// TaskManagerEndProcessEnabled policy
+IN_PROC_BROWSER_TEST_F(PolicyTest, TaskManagerEndProcessEnabled) {
+  // By default it's allowed to end tasks.
+  EXPECT_TRUE(TaskManager::IsEndProcessEnabled());
+
+  // Disabling ending tasks in task manager by policy
+  PolicyMap policies1;
+  policies1.Set(key::kTaskManagerEndProcessEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+               new base::FundamentalValue(false), nullptr);
+  UpdateProviderPolicy(policies1);
+
+  // Policy should not allow ending tasks anymore.
+  EXPECT_FALSE(TaskManager::IsEndProcessEnabled());
+
+  // Enabling ending tasks in task manager by policy
+  PolicyMap policies2;
+  policies2.Set(key::kTaskManagerEndProcessEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+               new base::FundamentalValue(true), nullptr);
+  UpdateProviderPolicy(policies2);
+
+  // Policy should allow ending tasks again.
+  EXPECT_TRUE(TaskManager::IsEndProcessEnabled());
 }
 
 #if !defined(OS_CHROMEOS)

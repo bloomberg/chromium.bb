@@ -1507,6 +1507,16 @@ Resource* TaskManagerModel::GetResource(int index) const {
 void TaskManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kTaskManagerWindowPlacement);
   registry->RegisterDictionaryPref(prefs::kTaskManagerColumnVisibility);
+  registry->RegisterBooleanPref(prefs::kTaskManagerEndProcessEnabled, true);
+}
+
+// static
+bool TaskManager::IsEndProcessEnabled() {
+  if (g_browser_process->local_state()) {
+    return g_browser_process->local_state()->GetBoolean(
+        prefs::kTaskManagerEndProcessEnabled);
+  }
+  return true;
 }
 
 bool TaskManager::IsBrowserProcess(int index) const {

@@ -412,7 +412,8 @@ class SortHelper {
     [tableView_ selectRowIndexes:indexSet byExtendingSelection:YES];
   }
 
-  bool enabled = [selection count] > 0 && !selectionContainsBrowserProcess;
+  bool enabled = [selection count] > 0 && !selectionContainsBrowserProcess &&
+    TaskManager::IsEndProcessEnabled();
   [endProcessButton_ setEnabled:enabled];
 }
 
