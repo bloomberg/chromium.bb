@@ -686,10 +686,6 @@ class TestRunner : public WebTestRunner {
   // setCloseRemainingWindowsWhenComplete().
   bool close_remaining_windows_;
 
-  // If true, ends the test when a URL is loaded externally via
-  // WebFrameClient::loadURLExternally().
-  bool wait_until_external_url_load_;
-
   WorkQueue work_queue_;
 
   // Bound variable to return the name of this platform (chromium).
@@ -701,36 +697,11 @@ class TestRunner : public WebTestRunner {
   // Bound variable counting the number of top URLs visited.
   int web_history_item_count_;
 
-  // Bound variable to set whether postMessages should be intercepted or not
-  bool intercept_post_message_;
-
-  // If true, the test_shell will write a descriptive line for each editing
-  // command.
-  bool dump_editting_callbacks_;
-
   // Flags controlling what content gets dumped as a layout text result.
   LayoutTestRuntimeFlags layout_test_runtime_flags_;
 
-  // If true, the test_shell will print out the icon change notifications.
-  bool dump_icon_changes_;
-
   // If true, the test_shell will output a base64 encoded WAVE file.
   bool dump_as_audio_;
-
-  // If true, the test_shell will output a descriptive line for each frame
-  // load callback.
-  bool dump_frame_load_callbacks_;
-
-  // If true, the test_shell will output a descriptive line for each
-  // PingLoader dispatched.
-  bool dump_ping_loader_callbacks_;
-
-  // If true, the test_shell will output a line of the user gesture status
-  // text for some frame load callbacks.
-  bool dump_user_gesture_in_frame_load_callbacks_;
-
-  // If true, output a message when the page title is changed.
-  bool dump_title_changes_;
 
   // If true, output a descriptive line each time WebViewClient::createView
   // is invoked.
@@ -740,14 +711,6 @@ class TestRunner : public WebTestRunner {
   // default, set to false and can be toggled to true using
   // setCanOpenWindows().
   bool can_open_windows_;
-
-  // If true, the test_shell will output a descriptive line for each resource
-  // load callback.
-  bool dump_resource_load_callbacks_;
-
-  // If true, the test_shell will output the MIME type for each resource that
-  // was loaded.
-  bool dump_resource_response_mime_types_;
 
   // If true, the test_shell will dump all changes to window.status.
   bool dump_window_status_changes_;
@@ -760,10 +723,6 @@ class TestRunner : public WebTestRunner {
   // well.
   bool dump_back_forward_list_;
 
-  // If true, content_shell will dump the default navigation policy passed to
-  // WebFrameClient::decidePolicyForNavigation.
-  bool dump_navigation_policy_;
-
   // If true, pixel dump will be produced as a series of 1px-tall, view-wide
   // individual paints over the height of the view.
   bool test_repaint_;
@@ -774,10 +733,6 @@ class TestRunner : public WebTestRunner {
 
   // If false, MockWebMIDIAccessor fails on startSession() for testing.
   bool midi_accessor_result_;
-
-  bool should_stay_on_page_after_handling_before_unload_;
-
-  bool should_dump_resource_priorities_;
 
   bool has_custom_text_output_;
   std::string custom_text_output_;

@@ -1,7 +1,5 @@
-http://localhost:8000/security/XFrameOptions/resources/x-frame-options-parent-same-origin-allow.cgi - willSendRequest <NSURLRequest URL http://localhost:8000/security/XFrameOptions/resources/x-frame-options-parent-same-origin-allow.cgi, main document URL http://127.0.0.1:8000/security/XFrameOptions/x-frame-options-parent-same-origin-deny.html, http method GET> redirectResponse (null)
 CONSOLE ERROR: Refused to display 'http://localhost:8000/security/XFrameOptions/resources/x-frame-options-parent-same-origin-allow.cgi' in a frame because it set 'X-Frame-Options' to 'sameorigin'.
-http://localhost:8000/security/XFrameOptions/resources/x-frame-options-parent-same-origin-allow.cgi - didFinishLoading
-CONSOLE MESSAGE: line 14: PASS: Access to contentWindow.location.href threw an exception.
+CONSOLE MESSAGE: line 13: PASS: Access to contentWindow.location.href threw an exception.
 There should be no content in the iframe below
 
 

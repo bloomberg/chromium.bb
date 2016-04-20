@@ -78,6 +78,10 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // If true, don't dump output until notifyDone is called.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(wait_until_done)
 
+  // If true, ends the test when a URL is loaded externally via
+  // WebFrameClient::loadURLExternally().
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(wait_until_external_url_load)
+
   // Causes navigation actions just printout the intended navigation instead
   // of taking you to the page. This is used for cases like mailto, where you
   // don't actually want to open the mail program.
@@ -110,6 +114,49 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(running_insecure_content_allowed)
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(
       dump_web_content_settings_client_callbacks)
+
+  // If true, the test_shell will write a descriptive line for each editing
+  // command.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_editting_callbacks)
+
+  // If true, the test_shell will output a descriptive line for each frame
+  // load callback.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_frame_load_callbacks)
+
+  // If true, the test_shell will output a descriptive line for each
+  // PingLoader dispatched.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_ping_loader_callbacks)
+
+  // If true, the test_shell will output a line of the user gesture status
+  // text for some frame load callbacks.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(
+      dump_user_gesture_in_frame_load_callbacks)
+
+  // If true, the test_shell will output a descriptive line for each resource
+  // load callback.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_resource_load_callbacks)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_resource_priorities)
+
+  // If true, the test_shell will output the MIME type for each resource that
+  // was loaded.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_resource_response_mime_types)
+
+  // If true, content_shell will dump the default navigation policy passed to
+  // WebFrameClient::decidePolicyForNavigation.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_navigation_policy)
+
+  // Bound variable to set whether postMessages should be intercepted or not
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(intercept_post_message)
+
+  // If true, output a message when the page title is changed.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_title_changes)
+
+  // If true, the test_shell will print out the icon change notifications.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_icon_changes)
+
+  // Desired return value of WebFrameClient::runModalBeforeUnloadDialog.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(
+      stay_on_page_after_handling_before_unload)
 
 #undef DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG
 #undef DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG
