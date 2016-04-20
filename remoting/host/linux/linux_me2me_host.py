@@ -55,7 +55,14 @@ DEFAULT_SIZE_NO_RANDR = "1600x1200"
 SCRIPT_PATH = os.path.abspath(sys.argv[0])
 SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
 
-HOST_BINARY_NAME = "chrome-remote-desktop-host"
+IS_INSTALLED = (os.path.basename(sys.argv[0]) != 'linux_me2me_host.py')
+
+if IS_INSTALLED:
+  HOST_BINARY_NAME = "chrome-remote-desktop-host"
+else:
+  # Swarming/isolate tests still use the built executable filename.
+  HOST_BINARY_NAME = "remoting_me2me_host"
+
 CHROME_REMOTING_GROUP_NAME = "chrome-remote-desktop"
 
 HOME_DIR = os.environ["HOME"]
