@@ -1955,8 +1955,10 @@ ShadowRoot* Element::attachShadow(const ScriptState* scriptState, const ShadowRo
 
     ShadowRoot* shadowRoot = createShadowRootInternal(type, exceptionState);
 
-    if (shadowRootInitDict.hasDelegatesFocus())
+    if (shadowRootInitDict.hasDelegatesFocus()) {
         shadowRoot->setDelegatesFocus(shadowRootInitDict.delegatesFocus());
+        UseCounter::count(document(), UseCounter::ShadowRootDelegatesFocus);
+    }
 
     return shadowRoot;
 }

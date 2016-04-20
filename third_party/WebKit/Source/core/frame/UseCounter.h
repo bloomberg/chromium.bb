@@ -1123,6 +1123,9 @@ public:
         V8Document_Applets_AttributeGetter = 1304,
         XMLHttpRequestCrossOriginWithCredentials = 1305,
         MediaStreamTrackRemote = 1306,
+        V8Node_IsConnected_AttributeGetter = 1307,
+        ShadowRootDelegatesFocus = 1308,
+        MixedShadowRootV0AndV1 = 1309,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

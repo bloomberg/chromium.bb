@@ -42,7 +42,7 @@
 
     readonly attribute DOMString? baseURI;
 
-    [ImplementedAs=inShadowIncludingDocument] readonly attribute boolean isConnected;
+    [ImplementedAs=inShadowIncludingDocument, Measure] readonly attribute boolean isConnected;
     [PerWorldBindings] readonly attribute Document? ownerDocument;
     [PerWorldBindings] readonly attribute Node? parentNode;
     [PerWorldBindings] readonly attribute Element? parentElement;

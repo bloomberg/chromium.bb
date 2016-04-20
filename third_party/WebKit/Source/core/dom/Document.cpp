@@ -5813,12 +5813,17 @@ void Document::setShadowCascadeOrder(ShadowCascadeOrder order)
     if (order == m_shadowCascadeOrder)
         return;
 
-    if (order == ShadowCascadeOrder::ShadowCascadeV0)
+    if (order == ShadowCascadeOrder::ShadowCascadeV0) {
         m_mayContainV0Shadow = true;
+        if (m_shadowCascadeOrder == ShadowCascadeOrder::ShadowCascadeV1)
+            UseCounter::count(*this, UseCounter::MixedShadowRootV0AndV1);
+    }
 
     // For V0 -> V1 upgrade, we need style recalculation for the whole document.
-    if (m_shadowCascadeOrder == ShadowCascadeOrder::ShadowCascadeV0 && order == ShadowCascadeOrder::ShadowCascadeV1)
+    if (m_shadowCascadeOrder == ShadowCascadeOrder::ShadowCascadeV0 && order == ShadowCascadeOrder::ShadowCascadeV1) {
         this->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Shadow));
+        UseCounter::count(*this, UseCounter::MixedShadowRootV0AndV1);
+    }
 
     if (order > m_shadowCascadeOrder)
         m_shadowCascadeOrder = order;

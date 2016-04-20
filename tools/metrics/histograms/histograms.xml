@@ -71018,6 +71018,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1304" label="V8Document_Applets_AttributeGetter"/>
   <int value="1305" label="XMLHttpRequestCrossOriginWithCredentials"/>
   <int value="1306" label="MediaStreamTrackRemote"/>
+  <int value="1307" label="V8Node_IsConnected_AttributeGetter"/>
+  <int value="1308" label="ShadowRootDelegatesFocus"/>
+  <int value="1309" label="MixedShadowRootV0AndV1"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
