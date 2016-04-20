@@ -32,13 +32,8 @@
 #define ImageQualityController_h
 
 #include "base/gtest_prod_util.h"
-#include "core/CoreExport.h"
 #include "core/layout/LayoutObject.h"
-#include "platform/geometry/IntSize.h"
 #include "platform/geometry/LayoutSize.h"
-#include "platform/graphics/Image.h"
-#include "platform/graphics/ImageOrientation.h"
-#include "platform/graphics/ImageSource.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
@@ -87,7 +82,6 @@ private:
     FRIEND_TEST_ALL_PREFIXES(LayoutPartTest, DestroyUpdatesImageQualityController);
 
     // For calling setTimer(),
-    FRIEND_TEST_ALL_PREFIXES(ImageQualityControllerTest, LowQualityFilterForLiveResize);
     FRIEND_TEST_ALL_PREFIXES(ImageQualityControllerTest, LowQualityFilterForResizingImage);
     FRIEND_TEST_ALL_PREFIXES(ImageQualityControllerTest, MediumQualityFilterForNotAnimatedWhileAnotherAnimates);
     FRIEND_TEST_ALL_PREFIXES(ImageQualityControllerTest, DontKickTheAnimationTimerWhenPaintingAtTheSameSize);
