@@ -36,6 +36,7 @@
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_http_stream.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_server_id.h"
 #include "net/ssl/ssl_config_service.h"
 
 namespace net {
@@ -52,7 +53,6 @@ class QuicChromiumClientSession;
 class QuicChromiumConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicRandom;
-class QuicServerId;
 class QuicServerInfo;
 class QuicServerInfoFactory;
 class QuicStreamFactory;
@@ -108,7 +108,6 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   QuicStreamFactory* factory_;
   HostPortPair host_port_pair_;
   std::string origin_host_;
-  std::string url_;
   PrivacyMode privacy_mode_;
   BoundNetLog net_log_;
   CompletionCallback callback_;
@@ -168,8 +167,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Returns true if there is an existing session to |server_id| which can be
   // used for request to |origin_host|.
-  bool CanUseExistingSession(QuicServerId server_id,
-                             PrivacyMode privacy_mode,
+  bool CanUseExistingSession(const QuicServerId& server_id,
                              StringPiece origin_host);
 
   // Creates a new QuicHttpStream to |host_port_pair| which will be

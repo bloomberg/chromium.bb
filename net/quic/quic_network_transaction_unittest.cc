@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -287,7 +289,7 @@ class QuicNetworkTransactionTest
       QuicPacketNumber largest_received,
       QuicPacketNumber least_unacked,
       QuicErrorCode quic_error,
-      std::string& quic_error_details) {
+      const std::string& quic_error_details) {
     return maker_.MakeAckAndConnectionClosePacket(
         num, false, delta_time_largest_observed, largest_received,
         least_unacked, quic_error, quic_error_details);
@@ -305,15 +307,15 @@ class QuicNetworkTransactionTest
   SpdyHeaderBlock GetRequestHeaders(const std::string& method,
                                     const std::string& scheme,
                                     const std::string& path) {
-    return GetRequestHeaders(method, scheme, path, maker_);
+    return GetRequestHeaders(method, scheme, path, &maker_);
   }
 
   // Uses customized QuicTestPacketMaker.
   SpdyHeaderBlock GetRequestHeaders(const std::string& method,
                                     const std::string& scheme,
                                     const std::string& path,
-                                    QuicTestPacketMaker& maker) {
-    return maker.GetRequestHeaders(method, scheme, path);
+                                    QuicTestPacketMaker* maker) {
+    return maker->GetRequestHeaders(method, scheme, path);
   }
 
   SpdyHeaderBlock GetResponseHeaders(const std::string& status) {
@@ -434,13 +436,11 @@ class QuicNetworkTransactionTest
         packet_number, stream_id, should_include_version, fin, headers, offset);
   }
 
-  void CreateSession() { CreateSessionWithFactory(&socket_factory_); }
-
-  void CreateSessionWithFactory(ClientSocketFactory* socket_factory) {
+  void CreateSession() {
     params_.enable_quic = true;
     params_.quic_clock = clock_;
     params_.quic_random = &random_generator_;
-    params_.client_socket_factory = socket_factory;
+    params_.client_socket_factory = &socket_factory_;
     params_.quic_crypto_client_stream_factory = &crypto_client_stream_factory_;
     params_.host_resolver = &host_resolver_;
     params_.cert_verifier = &cert_verifier_;
@@ -1269,7 +1269,7 @@ TEST_P(QuicNetworkTransactionTest,
   // Second QUIC request data.
   mock_quic_data.AddWrite(ConstructRequestHeadersPacket(
       3, kClientDataStreamId2, false, true,
-      GetRequestHeaders("GET", "https", "/", maker), &request_header_offset,
+      GetRequestHeaders("GET", "https", "/", &maker), &request_header_offset,
       &maker));
   mock_quic_data.AddRead(ConstructResponseHeadersPacket(
       3, kClientDataStreamId2, false, false, GetResponseHeaders("200 OK"),
@@ -1363,7 +1363,7 @@ TEST_P(QuicNetworkTransactionTest,
   // First QUIC request data.
   mock_quic_data2.AddWrite(ConstructRequestHeadersPacket(
       1, kClientDataStreamId1, true, true,
-      GetRequestHeaders("GET", "https", "/", maker), &maker));
+      GetRequestHeaders("GET", "https", "/", &maker), &maker));
   mock_quic_data2.AddRead(
       ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
                                      GetResponseHeaders("200 OK"), &maker));
@@ -1804,12 +1804,10 @@ TEST_P(QuicNetworkTransactionTest, HungAlternateProtocol) {
       MockRead(SYNCHRONOUS, 4, kQuicAlternateProtocolHeader),
       MockRead(SYNCHRONOUS, 5, "hello world"), MockRead(SYNCHRONOUS, OK, 6)};
 
-  MockClientSocketFactory socket_factory;
-
   SequencedSocketData http_data(http_reads, arraysize(http_reads), http_writes,
                                 arraysize(http_writes));
-  socket_factory.AddSocketDataProvider(&http_data);
-  socket_factory.AddSSLSocketDataProvider(&ssl_data_);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
   // The QUIC transaction will not be allowed to complete.
   MockWrite quic_writes[] = {MockWrite(SYNCHRONOUS, ERR_IO_PENDING, 1)};
@@ -1818,15 +1816,15 @@ TEST_P(QuicNetworkTransactionTest, HungAlternateProtocol) {
   };
   SequencedSocketData quic_data(quic_reads, arraysize(quic_reads), quic_writes,
                                 arraysize(quic_writes));
-  socket_factory.AddSocketDataProvider(&quic_data);
+  socket_factory_.AddSocketDataProvider(&quic_data);
 
   // The HTTP transaction will complete.
   SequencedSocketData http_data2(http_reads, arraysize(http_reads), http_writes,
                                  arraysize(http_writes));
-  socket_factory.AddSocketDataProvider(&http_data2);
-  socket_factory.AddSSLSocketDataProvider(&ssl_data_);
+  socket_factory_.AddSocketDataProvider(&http_data2);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  CreateSessionWithFactory(&socket_factory);
+  CreateSession();
 
   // Run the first request.
   SendRequestAndExpectHttpResponse("hello world");

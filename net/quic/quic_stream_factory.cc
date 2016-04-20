@@ -5,7 +5,6 @@
 #include "net/quic/quic_stream_factory.h"
 
 #include <algorithm>
-#include <set>
 #include <utility>
 
 #include "base/location.h"
@@ -65,8 +64,6 @@
 #include "base/cpu.h"
 #endif
 
-using std::min;
-using std::vector;
 using NetworkHandle = net::NetworkChangeNotifier::NetworkHandle;
 
 namespace net {
@@ -384,12 +381,12 @@ int QuicStreamFactory::Job::DoLoadServerInfo() {
     const int kMaxLoadServerInfoTimeoutMs = 50;
     // Wait for DiskCache a maximum of 50ms.
     int64_t load_server_info_timeout_ms =
-        min(static_cast<int>(
-                (factory_->load_server_info_timeout_srtt_multiplier_ *
-                 factory_->GetServerNetworkStatsSmoothedRttInMicroseconds(
-                     server_id_)) /
-                1000),
-            kMaxLoadServerInfoTimeoutMs);
+        std::min(static_cast<int>(
+                     (factory_->load_server_info_timeout_srtt_multiplier_ *
+                      factory_->GetServerNetworkStatsSmoothedRttInMicroseconds(
+                          server_id_)) /
+                     1000),
+                 kMaxLoadServerInfoTimeoutMs);
     if (load_server_info_timeout_ms > 0) {
       factory_->task_runner_->PostDelayedTask(
           FROM_HERE,
@@ -766,8 +763,7 @@ void QuicStreamFactory::set_quic_server_info_factory(
   quic_server_info_factory_.reset(quic_server_info_factory);
 }
 
-bool QuicStreamFactory::CanUseExistingSession(QuicServerId server_id,
-                                              PrivacyMode privacy_mode,
+bool QuicStreamFactory::CanUseExistingSession(const QuicServerId& server_id,
                                               StringPiece origin_host) {
   // TODO(zhongyi): delete active_sessions_.empty() checks once the
   // android crash issue(crbug.com/498823) is resolved.
@@ -777,7 +773,7 @@ bool QuicStreamFactory::CanUseExistingSession(QuicServerId server_id,
   if (it == active_sessions_.end())
     return false;
   QuicChromiumClientSession* session = it->second;
-  return session->CanPool(origin_host.as_string(), privacy_mode);
+  return session->CanPool(origin_host.as_string(), server_id.privacy_mode());
 }
 
 int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
@@ -1722,7 +1718,7 @@ void QuicStreamFactory::MaybeInitialize() {
   // touches quic_server_info_map.
   const QuicServerInfoMap& quic_server_info_map =
       http_server_properties_->quic_server_info_map();
-  vector<QuicServerId> server_list(quic_server_info_map.size());
+  std::vector<QuicServerId> server_list(quic_server_info_map.size());
   for (const auto& key_value : quic_server_info_map)
     server_list.push_back(key_value.first);
   for (auto it = server_list.rbegin(); it != server_list.rend(); ++it) {

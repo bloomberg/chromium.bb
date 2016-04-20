@@ -263,8 +263,8 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceFor(
     std::string origin_host =
         ApplyHostMappingRules(request_info.url, &destination).host();
     QuicServerId server_id(destination, request_info.privacy_mode);
-    if (session_->quic_stream_factory()->CanUseExistingSession(
-            server_id, request_info.privacy_mode, origin_host))
+    if (session_->quic_stream_factory()->CanUseExistingSession(server_id,
+                                                               origin_host))
       return alternative_service;
 
     // Cache this entry if we don't have a non-broken Alt-Svc yet.
