@@ -12,6 +12,8 @@ using InitParameters = WiFiDisplayVideoEncoder::InitParameters;
 using VideoEncoderCallback = WiFiDisplayVideoEncoder::VideoEncoderCallback;
 
 WiFiDisplayVideoEncoder::InitParameters::InitParameters() = default;
+WiFiDisplayVideoEncoder::InitParameters::InitParameters(const InitParameters&) =
+    default;
 WiFiDisplayVideoEncoder::InitParameters::~InitParameters() = default;
 
 WiFiDisplayVideoEncoder::WiFiDisplayVideoEncoder() = default;
@@ -32,6 +34,3 @@ void WiFiDisplayVideoEncoder::Create(
 }
 
 }  // namespace extensions
-
-
-

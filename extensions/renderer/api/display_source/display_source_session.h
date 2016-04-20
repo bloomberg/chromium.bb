@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_RENDERER_API_DISPLAY_SOURCE_DISPLAY_SOURCE_SESSION_H_
 #define EXTENSIONS_RENDERER_API_DISPLAY_SOURCE_DISPLAY_SOURCE_SESSION_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -93,6 +95,7 @@ class DisplaySourceSession {
 
 struct DisplaySourceSessionParams {
   DisplaySourceSessionParams();
+  DisplaySourceSessionParams(const DisplaySourceSessionParams&);
   ~DisplaySourceSessionParams();
 
   int sink_id;

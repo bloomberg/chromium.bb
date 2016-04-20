@@ -14,6 +14,9 @@ DisplaySourceSessionParams::DisplaySourceSessionParams()
     : auth_method(api::display_source::AUTHENTICATION_METHOD_NONE) {
 }
 
+DisplaySourceSessionParams::DisplaySourceSessionParams(
+    const DisplaySourceSessionParams&) = default;
+
 DisplaySourceSessionParams::~DisplaySourceSessionParams() = default;
 
 DisplaySourceSession::DisplaySourceSession()

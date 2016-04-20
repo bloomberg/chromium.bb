@@ -56,6 +56,7 @@ class WiFiDisplayVideoEncoder :
 
   struct InitParameters {
     InitParameters();
+    InitParameters(const InitParameters&);
     ~InitParameters();
     gfx::Size frame_size;
     int frame_rate;
