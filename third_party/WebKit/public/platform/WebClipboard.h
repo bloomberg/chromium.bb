@@ -31,12 +31,12 @@
 #ifndef WebClipboard_h
 #define WebClipboard_h
 
-#include "WebCommon.h"
-#include "WebData.h"
-#include "WebImage.h"
-#include "WebString.h"
-#include "WebURL.h"
-#include "WebVector.h"
+#include "public/platform/WebBlobInfo.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebImage.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 
@@ -77,7 +77,7 @@ public:
     virtual WebString readHTML(
         Buffer buffer, WebURL* pageURL, unsigned* fragmentStart,
         unsigned* fragmentEnd) { return WebString(); }
-    virtual WebData readImage(Buffer) { return WebData(); }
+    virtual WebBlobInfo readImage(Buffer) { return WebBlobInfo(); }
     virtual WebString readCustomData(
         Buffer, const WebString& type) { return WebString(); }
 

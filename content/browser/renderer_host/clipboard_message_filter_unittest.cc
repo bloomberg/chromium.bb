@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
+#include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -22,7 +23,7 @@ namespace content {
 class ClipboardMessageFilterTest : public ::testing::Test {
  protected:
   ClipboardMessageFilterTest()
-      : filter_(new ClipboardMessageFilter),
+      : filter_(new ClipboardMessageFilter(nullptr)),
         clipboard_(ui::TestClipboard::CreateForCurrentThread()) {
     filter_->set_peer_process_for_testing(base::Process::Current());
   }

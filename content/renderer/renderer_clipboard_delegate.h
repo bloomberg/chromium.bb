@@ -40,7 +40,10 @@ class RendererClipboardDelegate {
                 uint32_t* fragment_start,
                 uint32_t* fragment_end);
   void ReadRTF(ui::ClipboardType type, std::string* result);
-  void ReadImage(ui::ClipboardType type, std::string* data);
+  void ReadImage(ui::ClipboardType type,
+                 std::string* blob_uuid,
+                 std::string* mime_type,
+                 int64_t* size);
   void ReadCustomData(ui::ClipboardType clipboard_type,
                       const base::string16& type,
                       base::string16* data);

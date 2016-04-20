@@ -16,13 +16,13 @@
 
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
-#include "third_party/WebKit/public/platform/WebClipboard.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
+#include "third_party/WebKit/public/platform/WebMockClipboard.h"
 
 namespace content {
 
-class MockWebClipboardImpl : public blink::WebClipboard {
+class MockWebClipboardImpl : public blink::WebMockClipboard {
  public:
   MockWebClipboardImpl();
   virtual ~MockWebClipboardImpl();
@@ -39,7 +39,8 @@ class MockWebClipboardImpl : public blink::WebClipboard {
                             blink::WebURL* url,
                             unsigned* fragmentStart,
                             unsigned* fragmentEnd) override;
-  blink::WebData readImage(blink::WebClipboard::Buffer buffer) override;
+  blink::WebBlobInfo readImage(blink::WebClipboard::Buffer buffer) override;
+  blink::WebImage readRawImage(blink::WebClipboard::Buffer buffer) override;
   blink::WebString readCustomData(blink::WebClipboard::Buffer buffer,
                                   const blink::WebString& type) override;
 

@@ -8,13 +8,17 @@
 
 #include <algorithm>
 
+#include "base/guid.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/renderer/clipboard_utils.h"
+#include "third_party/WebKit/public/platform/Platform.h"
+#include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 #include "third_party/WebKit/public/platform/WebCommon.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
+#include "third_party/WebKit/public/platform/WebThreadSafeData.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -94,28 +98,28 @@ blink::WebString MockWebClipboardImpl::readHTML(
   return m_htmlText;
 }
 
-blink::WebData MockWebClipboardImpl::readImage(
+blink::WebBlobInfo MockWebClipboardImpl::readImage(
     blink::WebClipboard::Buffer buffer) {
-  std::string data;
-  std::vector<unsigned char> encoded_image;
-  // TODO(dcheng): Verify that we can assume the image is ARGB8888. Note that
-  // for endianess reasons, it will be BGRA8888 on Windows.
+  std::vector<unsigned char> output;
   const SkBitmap& bitmap = m_image.getSkBitmap();
-  SkAutoLockPixels lock(bitmap);
-  gfx::PNGCodec::Encode(static_cast<unsigned char*>(bitmap.getPixels()),
-#if defined(OS_ANDROID)
-                        gfx::PNGCodec::FORMAT_RGBA,
-#else
-                        gfx::PNGCodec::FORMAT_BGRA,
-#endif
-                        gfx::Size(bitmap.width(), bitmap.height()),
-                        static_cast<int>(bitmap.rowBytes()),
-                        false /* discard_transparency */,
-                        std::vector<gfx::PNGCodec::Comment>(),
-                        &encoded_image);
-  data.assign(reinterpret_cast<char*>(encoded_image.data()),
-              encoded_image.size());
-  return data;
+  if (!gfx::PNGCodec::FastEncodeBGRASkBitmap(
+          bitmap, false /* discard_transparency */, &output)) {
+    return blink::WebBlobInfo();
+  }
+  const WebString& uuid = base::ASCIIToUTF16(base::GenerateGUID());
+  std::unique_ptr<blink::WebBlobRegistry::Builder> blob_builder(
+      blink::Platform::current()->blobRegistry()->createBuilder(
+          uuid, blink::WebString()));
+  blob_builder->appendData(blink::WebThreadSafeData(
+      reinterpret_cast<char*>(output.data()), output.size()));
+  blob_builder->build();
+  return blink::WebBlobInfo(
+      uuid, base::ASCIIToUTF16(ui::Clipboard::kMimeTypePNG), output.size());
+}
+
+blink::WebImage MockWebClipboardImpl::readRawImage(
+    blink::WebClipboard::Buffer buffer) {
+  return m_image;
 }
 
 blink::WebString MockWebClipboardImpl::readCustomData(

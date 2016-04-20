@@ -13,7 +13,6 @@
 #include "content/renderer/clipboard_utils.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/renderer_clipboard_delegate.h"
-#include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -22,8 +21,8 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "url/gurl.h"
 
+using blink::WebBlobInfo;
 using blink::WebClipboard;
-using blink::WebData;
 using blink::WebDragData;
 using blink::WebImage;
 using blink::WebString;
@@ -110,14 +109,19 @@ WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url,
   return html_stdstr;
 }
 
-WebData WebClipboardImpl::readImage(Buffer buffer) {
+WebBlobInfo WebClipboardImpl::readImage(Buffer buffer) {
   ui::ClipboardType clipboard_type;
   if (!ConvertBufferType(buffer, &clipboard_type))
-    return WebData();
+    return WebBlobInfo();
 
-  std::string png_data;
-  delegate_->ReadImage(clipboard_type, &png_data);
-  return WebData(png_data);
+  std::string blob_uuid;
+  std::string type;
+  int64_t size;
+  delegate_->ReadImage(clipboard_type, &blob_uuid, &type, &size);
+  if (size < 0)
+    return WebBlobInfo();
+  return WebBlobInfo(base::ASCIIToUTF16(blob_uuid), base::UTF8ToUTF16(type),
+                     size);
 }
 
 WebString WebClipboardImpl::readCustomData(Buffer buffer,

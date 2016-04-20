@@ -142,6 +142,7 @@
       "platform/WebMessagePortChannel.h",
       "platform/WebMessagePortChannelClient.h",
       "platform/WebMimeRegistry.h",
+      "platform/WebMockClipboard.h",
       "platform/WebNativeScrollBehavior.h",
       "platform/WebNonCopyable.h",
       "platform/WebPageVisibilityState.h",

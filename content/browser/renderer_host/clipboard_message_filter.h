@@ -7,10 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "build/build_config.h"
 #include "content/common/clipboard_format.h"
@@ -26,11 +28,13 @@ class ScopedClipboardWriter;
 
 namespace content {
 
+class ChromeBlobStorageContext;
 class ClipboardMessageFilterTest;
 
 class CONTENT_EXPORT ClipboardMessageFilter : public BrowserMessageFilter {
  public:
-  ClipboardMessageFilter();
+  explicit ClipboardMessageFilter(
+      scoped_refptr<ChromeBlobStorageContext> blob_storage_context);
 
   void OverrideThreadForMessage(const IPC::Message& message,
                                 BrowserThread::ID* thread) override;
@@ -58,7 +62,10 @@ class CONTENT_EXPORT ClipboardMessageFilter : public BrowserMessageFilter {
                   uint32_t* fragment_end);
   void OnReadRTF(ui::ClipboardType type, std::string* result);
   void OnReadImage(ui::ClipboardType type, IPC::Message* reply_msg);
-  void OnReadImageReply(const SkBitmap& bitmap, IPC::Message* reply_msg);
+  void ReadAndEncodeImage(const SkBitmap& bitmap, IPC::Message* reply_msg);
+  void OnReadAndEncodeImageFinished(
+      std::unique_ptr<std::vector<uint8_t>> png_data,
+      IPC::Message* reply_msg);
   void OnReadCustomData(ui::ClipboardType clipboard_type,
                         const base::string16& type,
                         base::string16* result);
@@ -91,6 +98,7 @@ class CONTENT_EXPORT ClipboardMessageFilter : public BrowserMessageFilter {
   // thread.
   static ui::Clipboard* GetClipboard();
 
+  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   std::unique_ptr<ui::ScopedClipboardWriter> clipboard_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardMessageFilter);

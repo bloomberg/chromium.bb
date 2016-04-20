@@ -69,16 +69,11 @@ void RendererClipboardDelegate::ReadRTF(ui::ClipboardType type,
 }
 
 void RendererClipboardDelegate::ReadImage(ui::ClipboardType type,
-                                          std::string* data) {
-  base::SharedMemoryHandle image_handle;
-  uint32_t image_size = 0;
+                                          std::string* blob_uuid,
+                                          std::string* mime_type,
+                                          int64_t* size) {
   RenderThreadImpl::current()->Send(
-      new ClipboardHostMsg_ReadImage(type, &image_handle, &image_size));
-  if (base::SharedMemory::IsHandleValid(image_handle)) {
-    base::SharedMemory buffer(image_handle, true);
-    buffer.Map(image_size);
-    data->append(static_cast<char*>(buffer.memory()), image_size);
-  }
+      new ClipboardHostMsg_ReadImage(type, blob_uuid, mime_type, size));
 }
 
 void RendererClipboardDelegate::ReadCustomData(ui::ClipboardType clipboard_type,

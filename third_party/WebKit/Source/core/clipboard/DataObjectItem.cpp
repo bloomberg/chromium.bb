@@ -116,20 +116,10 @@ Blob* DataObjectItem::getAsFile() const
 
     ASSERT(m_source == PasteboardSource);
     if (type() == mimeTypeImagePng) {
-        // FIXME: This is pretty inefficient. We copy the data from the browser
-        // to the renderer. We then place it in a blob in WebKit, which
-        // registers it and copies it *back* to the browser. When a consumer
-        // wants to read the data, we then copy the data back into the renderer.
-        // https://bugs.webkit.org/show_bug.cgi?id=58107 has been filed to track
-        // improvements to this code (in particular, add a registerClipboardBlob
-        // method to the blob registry; that way the data is only copied over
-        // into the renderer when it's actually read, not when the blob is
-        // initially constructed).
-        RefPtr<SharedBuffer> data = static_cast<PassRefPtr<SharedBuffer>>(Platform::current()->clipboard()->readImage(WebClipboard::BufferStandard));
-        OwnPtr<BlobData> blobData = BlobData::create();
-        blobData->appendBytes(data->data(), data->size());
-        blobData->setContentType(mimeTypeImagePng);
-        return Blob::create(BlobDataHandle::create(blobData.release(), data->size()));
+        WebBlobInfo blobInfo = Platform::current()->clipboard()->readImage(WebClipboard::BufferStandard);
+        if (blobInfo.size() < 0)
+            return nullptr;
+        return Blob::create(BlobDataHandle::create(blobInfo.uuid(), blobInfo.type(), blobInfo.size()));
     }
 
     return nullptr;

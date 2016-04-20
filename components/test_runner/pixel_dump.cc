@@ -15,10 +15,9 @@
 // FIXME: Including platform_canvas.h here is a layering violation.
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/Platform.h"
-#include "third_party/WebKit/public/platform/WebClipboard.h"
 #include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
-#include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
+#include "third_party/WebKit/public/platform/WebMockClipboard.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
@@ -192,9 +191,9 @@ void CopyImageAtAndCapturePixels(
     return;
   }
 
-  blink::WebData data = blink::Platform::current()->clipboard()->readImage(
-      blink::WebClipboard::Buffer());
-  blink::WebImage image = blink::WebImage::fromData(data, blink::WebSize());
+  blink::WebImage image = static_cast<blink::WebMockClipboard*>(
+                              blink::Platform::current()->clipboard())
+                              ->readRawImage(blink::WebClipboard::Buffer());
   const SkBitmap& bitmap = image.getSkBitmap();
   SkAutoLockPixels autoLock(bitmap);
   callback.Run(bitmap);

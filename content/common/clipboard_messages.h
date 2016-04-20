@@ -68,10 +68,11 @@ IPC_SYNC_MESSAGE_CONTROL1_4(ClipboardHostMsg_ReadHTML,
 IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadRTF,
                             ui::ClipboardType /* type */,
                             std::string /* result */)
-IPC_SYNC_MESSAGE_CONTROL1_2(ClipboardHostMsg_ReadImage,
+IPC_SYNC_MESSAGE_CONTROL1_3(ClipboardHostMsg_ReadImage,
                             ui::ClipboardType /* type */,
-                            base::SharedMemoryHandle /* PNG-encoded image */,
-                            uint32_t /* image size */)
+                            std::string /* blob_uuid */,
+                            std::string /* mime_type */,
+                            int64_t /* size */);
 IPC_SYNC_MESSAGE_CONTROL2_1(ClipboardHostMsg_ReadCustomData,
                             ui::ClipboardType /* type */,
                             base::string16 /* type */,
