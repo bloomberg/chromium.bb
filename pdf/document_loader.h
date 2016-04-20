@@ -51,10 +51,10 @@ class DocumentLoader {
   // Data access interface. Return true is successful.
   bool GetBlock(uint32_t position, uint32_t size, void* buf) const;
 
-  // Data availability interface. Return true data avaialble.
+  // Data availability interface. Return true data available.
   bool IsDataAvailable(uint32_t position, uint32_t size) const;
 
-  // Data availability interface. Return true data avaialble.
+  // Data availability interface. Return true data available.
   void RequestData(uint32_t position, uint32_t size);
 
   bool IsDocumentComplete() const;

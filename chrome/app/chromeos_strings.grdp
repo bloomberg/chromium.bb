@@ -6530,7 +6530,7 @@ All users must sign out to continue.
     Google Play Store
   </message>
   <message name="IDS_ARC_NOTIFICATION_MESSAGE" desc="Description message of the first-run notification that enables Android apps.">
-    Over a million apps and games now avaialble on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+    Over a million apps and games now available on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
   <message name="IDS_ARC_OPEN_PLAY_STORE_NOTIFICATION_BUTTON" desc="Label for the button in the first-run notification that enables Android apps.">
     Open Play Store

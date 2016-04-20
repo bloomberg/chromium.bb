@@ -133,7 +133,7 @@ void CloudPrintProxy::UnregisterPrintersAndDisableForUser() {
     // We'll get notified in this case.
     backend_->UnregisterPrinters();
   } else {
-    // If no backend avaialble, disable connector immidiately.
+    // If no backend available, disable connector immediately.
     DisableForUser();
   }
 }
