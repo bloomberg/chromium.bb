@@ -528,6 +528,7 @@
       'browser/notifications/notification_database_unittest.cc',
       'browser/notifications/notification_id_generator_unittest.cc',
       'browser/notifications/platform_notification_context_unittest.cc',
+      'browser/notifications/type_converters_unittest.cc',
       'browser/power_monitor_message_broadcaster_unittest.cc',
       'browser/power_usage_monitor_impl_unittest.cc',
       'browser/presentation/presentation_service_impl_unittest.cc',

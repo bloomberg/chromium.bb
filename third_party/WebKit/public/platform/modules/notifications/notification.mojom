@@ -4,8 +4,17 @@
 
 module blink.mojom;
 
+// The different types of actions that can be added to a Notification.
+enum NotificationActionType {
+  BUTTON,
+  TEXT
+};
+
 // Structure representing an action button associated with a Notification.
 struct NotificationAction {
+  // Type of action this structure represents.
+  NotificationActionType type;
+
   // Action name that the author can use to distinguish them.
   string action;
 
@@ -14,6 +23,9 @@ struct NotificationAction {
 
   // URL of the icon for the button. May be empty if no url was specified.
   string icon;
+
+  // Placeholder to display for text-based actions in absence of user input.
+  string? placeholder;
 };
 
 // Directionality options that can be indicated for notifications.
@@ -49,9 +61,12 @@ struct Notification {
   // URL of the icon which is to be displayed with the notification.
   string icon;
 
+  // URL of the badge representing the website displaying the notification.
+  string badge;
+
   // Vibration pattern for the notification, following the syntax of the
   // Vibration API. https://w3c.github.io/vibration/
-  array<int32> vibration_pattern;
+  array<uint32> vibration_pattern;
 
   // The time at which the event the notification represents took place.
   double timestamp;

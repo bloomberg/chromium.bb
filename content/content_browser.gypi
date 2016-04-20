@@ -1163,6 +1163,8 @@
       'browser/notifications/page_notification_delegate.h',
       'browser/notifications/platform_notification_context_impl.cc',
       'browser/notifications/platform_notification_context_impl.h',
+      'browser/notifications/type_converters.cc',
+      'browser/notifications/type_converters.h',
       'browser/permissions/permission_service_context.cc',
       'browser/permissions/permission_service_context.h',
       'browser/permissions/permission_service_impl.cc',
