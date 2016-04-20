@@ -172,6 +172,11 @@ bool InputMethodController::confirmComposition(const String& text, ConfirmCompos
 
     clear();
 
+    // TODO(chongz): DOM update should happen before 'compositionend' and along with 'compositionupdate'.
+    // https://crbug.com/575294
+    if (dispatchBeforeInputInsertText(frame().document()->focusedElement(), text) != DispatchEventResult::NotCanceled)
+        return false;
+
     insertTextForConfirmedComposition(text);
 
     return true;
@@ -182,6 +187,10 @@ bool InputMethodController::confirmCompositionOrInsertText(const String& text, C
     if (!hasComposition()) {
         if (!text.length())
             return false;
+
+        if (dispatchBeforeInputInsertText(frame().document()->focusedElement(), text) != DispatchEventResult::NotCanceled)
+            return false;
+
         editor().insertText(text, 0);
         return true;
     }
@@ -278,8 +287,13 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
             else
                 event = CompositionEvent::create(EventTypeNames::compositionend, frame().domWindow(), text);
         }
-        if (event)
+        if (event) {
+            // TODO(chongz): Support canceling IME composition.
+            // TODO(chongz): Should fire InsertText or DeleteComposedCharacter based on action.
+            if (event->type() == EventTypeNames::compositionupdate)
+                dispatchBeforeInputFromComposition(target, InputEvent::InputType::InsertText, text);
             target->dispatchEvent(event);
+        }
     }
 
     // If text is empty, then delete the old composition here. If text is non-empty, InsertTextCommand::input
@@ -453,6 +467,8 @@ void InputMethodController::extendSelectionAndDelete(int before, int after)
             break;
         ++before;
     } while (frame().selection().start() == frame().selection().end() && before <= static_cast<int>(selectionOffsets.start()));
+    // TODO(chongz): According to spec |data| should be "forward" or "backward".
+    dispatchBeforeInputEditorCommand(frame().document()->focusedElement(), InputEvent::InputType::DeleteContent);
     TypingCommand::deleteSelection(*frame().document());
 }
 

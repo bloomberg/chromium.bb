@@ -3391,6 +3391,8 @@ interface InputDeviceCapabilities
     method constructor
 interface InputEvent : UIEvent
     attribute @@toStringTag
+    getter data
+    getter inputType
     method constructor
 interface IntersectionObserver
     attribute @@toStringTag

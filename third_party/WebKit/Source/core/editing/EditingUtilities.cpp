@@ -1732,4 +1732,34 @@ bool isTextSecurityNode(const Node* node)
     return node && node->layoutObject() && node->layoutObject()->style()->textSecurity() != TSNONE;
 }
 
+DispatchEventResult dispatchBeforeInputInsertText(EventTarget* target, const String& data)
+{
+    if (!RuntimeEnabledFeatures::inputEventEnabled())
+        return DispatchEventResult::NotCanceled;
+    if (!target)
+        return DispatchEventResult::NotCanceled;
+    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(InputEvent::InputType::InsertText, data, InputEvent::EventCancelable::IsCancelable);
+    return target->dispatchEvent(beforeInputEvent);
+}
+
+DispatchEventResult dispatchBeforeInputFromComposition(EventTarget* target, InputEvent::InputType inputType, const String& data)
+{
+    if (!RuntimeEnabledFeatures::inputEventEnabled())
+        return DispatchEventResult::NotCanceled;
+    if (!target)
+        return DispatchEventResult::NotCanceled;
+    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(inputType, data, InputEvent::EventCancelable::NotCancelable);
+    return target->dispatchEvent(beforeInputEvent);
+}
+
+DispatchEventResult dispatchBeforeInputEditorCommand(EventTarget* target, InputEvent::InputType inputType, const String& data)
+{
+    if (!RuntimeEnabledFeatures::inputEventEnabled())
+        return DispatchEventResult::NotCanceled;
+    if (!target)
+        return DispatchEventResult::NotCanceled;
+    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(inputType, data, InputEvent::EventCancelable::IsCancelable);
+    return target->dispatchEvent(beforeInputEvent);
+}
+
 } // namespace blink

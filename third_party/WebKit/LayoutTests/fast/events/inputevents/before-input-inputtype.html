@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>InputEvent: beforeinput inputType</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<input type="text" id="txt">
+<script>
+test(function() {
+    var lastInputType = '';
+    var txt = document.getElementById('txt');
+    txt.addEventListener('beforeinput', function(event) {
+        lastInputType = event.inputType;
+    });
+    if (!window.eventSender) {
+        document.write('This test requires eventSender');
+    } else {
+        var kNoBeforeInputFired = 'noBeforeInputFired';
+        function testKeyDownInputType(key, modifiers, inputType) {
+            lastInputType = kNoBeforeInputFired;
+            eventSender.keyDown(key, modifiers);
+            assert_equals(lastInputType, inputType, `${modifiers.toString()}+${key} should produce inputType: ${inputType}`);
+        }
+
+        txt.focus();
+        // Typing
+        testKeyDownInputType('a', [], 'insertText');
+        testKeyDownInputType('6', [], 'insertText');
+        testKeyDownInputType('backspace', [], 'deleteContent');
+        testKeyDownInputType('l', ['shiftKey'], 'insertText');
+        testKeyDownInputType('w', ['shiftKey'], 'insertText');
+
+        // Keyboard commands
+        var isMacOS = (navigator.userAgent.indexOf('Mac OS X') != -1);
+        if (!isMacOS) {
+            // MacOS's eventSender does not work on hot keys other than arrows.
+            testKeyDownInputType('z', ['ctrlKey'], 'undo');
+            testKeyDownInputType('z', ['ctrlKey', 'shiftKey'], 'redo');
+        }
+        // Move command should not generate input events.
+        testKeyDownInputType('leftArrow', [], kNoBeforeInputFired);
+        testKeyDownInputType('leftArrow', ['shiftKey'], kNoBeforeInputFired);
+        testKeyDownInputType('home', [], kNoBeforeInputFired);
+    }
+}, 'Testing beforeinput inputType');
+</script>
+</body>
+</html>

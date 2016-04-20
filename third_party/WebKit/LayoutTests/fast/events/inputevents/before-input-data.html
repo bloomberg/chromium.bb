@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>InputEvent: beforeinput data</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<input type="text" id="txt">
+<script>
+test(function() {
+    var lastData = '';
+    var txt = document.getElementById('txt');
+    txt.addEventListener('beforeinput', function(event) {
+        lastData = event.data;
+    });
+    if (!window.eventSender) {
+        document.write('This test requires eventSender');
+    } else {
+        function testKeyDownData(key, modifiers, data) {
+            eventSender.keyDown(key, modifiers);
+            assert_equals(lastData, data, `${modifiers.toString()}+${key} should produce data: ${data}`);
+        }
+
+        txt.focus();
+        // Typing
+        testKeyDownData('a', [], 'a');
+        testKeyDownData('4', [], '4');
+        testKeyDownData('backspace', [], '');
+        // TODO(chongz): eventSender.keyDown('a', ['shiftKey']) should produce shifted character.
+        // https://crbug.com/604488
+        // testKeyDownData('l', ['shiftKey'], 'L');
+        // testKeyDownData('6', ['shiftKey'], '^');
+        testKeyDownData(' ', [], ' ');
+    }
+}, 'Testing beforeinput data');
+</script>
+</body>
+</html>

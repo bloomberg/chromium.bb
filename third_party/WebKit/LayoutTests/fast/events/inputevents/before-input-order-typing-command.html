@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>InputEvent: beforeinput order on typing and command</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<input type="text" id="txt">
+<script>
+test(function() {
+    var eventList = ['keydown', 'keypress', 'beforeinput', 'input', 'keyup'];
+    var expectedEventOrder = [
+        // Pressing 'a'.
+        'keydown', 'keypress', 'beforeinput', 'input', 'keyup',
+        // Pressing 'z' with modifier 'ctrlKey'.
+        'keydown', 'beforeinput', 'input', 'keyup',
+    ];
+    var actualEventOrder = [];
+    var txt = document.getElementById('txt');
+    eventList.forEach(function(eventType) {
+        txt.addEventListener(eventType, function(event) {
+            actualEventOrder.push(event.type);
+        });
+    });
+    if (!window.eventSender) {
+        document.write('This test requires eventSender');
+    } else {
+        txt.focus();
+        eventSender.keyDown('a');
+        var isMacOSX = navigator.userAgent.indexOf('Mac OS X') != -1;
+        if (!isMacOSX) {
+            // MacOS's eventSender does not work on hot keys other than arrows.
+            eventSender.keyDown('z', ['ctrlKey']);
+            assert_array_equals(actualEventOrder, expectedEventOrder, actualEventOrder.toString());
+        }
+    }
+}, 'Testing beforeinput order on typing and command');
+</script>
+</body>
+</html>

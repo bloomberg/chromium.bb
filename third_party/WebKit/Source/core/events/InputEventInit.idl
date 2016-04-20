@@ -7,5 +7,7 @@
 [
     RuntimeEnabled=InputEvent,
 ] dictionary InputEventInit : UIEventInit {
-    // TODO(chongz): Add 'inputType', 'data', 'isComposing' and 'targetRanges'
+    DOMString inputType = "";
+    DOMString data = "";
+    // TODO(chongz): Add 'isComposing' and 'targetRanges'
 };

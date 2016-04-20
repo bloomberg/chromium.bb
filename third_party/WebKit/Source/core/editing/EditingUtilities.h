@@ -33,6 +33,7 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
+#include "core/events/InputEvent.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/Forward.h"
 #include "wtf/text/CharacterNames.h"
@@ -345,6 +346,15 @@ inline bool isAmbiguousBoundaryCharacter(UChar character)
 
 String stringWithRebalancedWhitespace(const String&, bool startIsStartOfParagraph, bool endIsEndOfParagraph);
 const String& nonBreakingSpaceString();
+
+// -------------------------------------------------------------------------
+// Events
+// -------------------------------------------------------------------------
+
+// Functions dispatch InputEvent
+DispatchEventResult dispatchBeforeInputInsertText(EventTarget*, const String& data);
+DispatchEventResult dispatchBeforeInputFromComposition(EventTarget*, InputEvent::InputType, const String& data);
+DispatchEventResult dispatchBeforeInputEditorCommand(EventTarget*, InputEvent::InputType, const String& data = "");
 
 } // namespace blink
 

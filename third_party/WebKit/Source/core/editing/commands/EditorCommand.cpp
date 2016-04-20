@@ -104,6 +104,33 @@ WebEditingCommandType WebEditingCommandTypeFromCommandName(const String& command
     return WebEditingCommandType::Invalid;
 }
 
+InputEvent::InputType InputTypeFromCommandType(WebEditingCommandType commandType)
+{
+    switch (commandType) {
+    case WebEditingCommandType::Delete:
+    case WebEditingCommandType::DeleteBackward:
+    case WebEditingCommandType::DeleteBackwardByDecomposingPreviousCharacter:
+    case WebEditingCommandType::DeleteForward:
+    case WebEditingCommandType::DeleteToBeginningOfLine:
+    case WebEditingCommandType::DeleteToBeginningOfParagraph:
+    case WebEditingCommandType::DeleteToEndOfLine:
+    case WebEditingCommandType::DeleteToEndOfParagraph:
+    case WebEditingCommandType::DeleteToMark:
+    case WebEditingCommandType::DeleteWordBackward:
+    case WebEditingCommandType::DeleteWordForward:
+        return InputEvent::InputType::DeleteContent;
+    case WebEditingCommandType::Redo:
+        return InputEvent::InputType::Redo;
+    case WebEditingCommandType::Undo:
+        return InputEvent::InputType::Undo;
+    case WebEditingCommandType::InsertBacktab:
+    case WebEditingCommandType::InsertText:
+        return InputEvent::InputType::InsertText;
+    default:
+        return InputEvent::InputType::None;
+    }
+}
+
 } // anonymous namespace
 
 class EditorInternalCommand {
@@ -1751,6 +1778,19 @@ bool Editor::Command::execute(const String& parameter, Event* triggeringEvent) c
         if (!isSupported() || !m_frame || !m_command->allowExecutionWhenDisabled)
             return false;
     }
+
+    if (m_source == CommandFromMenuOrKeyBinding) {
+        InputEvent::InputType inputType = InputTypeFromCommandType(m_command->commandType);
+        if (inputType != InputEvent::InputType::None) {
+            if (dispatchBeforeInputEditorCommand(eventTargetNodeForDocument(m_frame->document()), inputType) != DispatchEventResult::NotCanceled)
+                return true;
+        }
+    }
+
+    // 'beforeinput' event handler may destroy |frame()|.
+    if (!m_frame || !frame().document())
+        return false;
+
     frame().document()->updateLayoutIgnorePendingStylesheets();
     DEFINE_STATIC_LOCAL(SparseHistogram, commandHistogram, ("WebCore.Editing.Commands"));
     commandHistogram.sample(static_cast<int>(m_command->commandType));
