@@ -117,6 +117,14 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // Calls MediaRouter to clear the given issue.
   void ClearIssue(const Issue::Id& issue_id);
 
+  // Calls MediaRouter to search route providers for sinks matching
+  // |search_criteria| with the source that is currently associated with
+  // |cast_mode|. The user's domain |domain| is also used.
+  bool SearchSinksAndCreateRoute(const MediaSink::Id& sink_id,
+                                 const std::string& search_criteria,
+                                 const std::string& domain,
+                                 MediaCastMode cast_mode);
+
   // Returns the hostname of the default source's parent frame URL.
   std::string GetPresentationRequestSourceName() const;
   std::string GetTruncatedPresentationRequestSourceName() const;
@@ -208,6 +216,10 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
       const base::string16& presentation_request_source_name,
       const RouteRequestResult& result);
 
+  // Callback passed to MediaRouter to receive the sink ID of the sink found by
+  // SearchSinksAndCreateRoute().
+  void OnSearchSinkResponseReceived(const std::string& sink_id);
+
   // Creates and sends an issue if route creation timed out.
   void SendIssueForRouteTimeout(
       MediaCastMode cast_mode,
@@ -221,14 +233,16 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
       const PresentationRequest& presentation_request) override;
   void OnDefaultPresentationRemoved() override;
 
-  // Creates a brand new route or, if a |route_id| is supplied, connects to a
-  // non-local route. This is used for connecting to a non-local route.
-  // Returns true if a route request is successfully submitted.
-  // OnRouteResponseReceived() will be invoked when the route request
-  // completes.
-  bool CreateOrConnectRoute(const MediaSink::Id& sink_id,
-                            MediaCastMode cast_mode,
-                            const MediaRoute::Id& route_id);
+  // Populates common route-related parameters for CreateRoute(),
+  // ConnectRoute(), and SearchSinksAndCreateRoute().
+  bool SetRouteParameters(
+      const MediaSink::Id& sink_id,
+      MediaCastMode cast_mode,
+      MediaSource::Id* source_id,
+      GURL* origin,
+      std::vector<MediaRouteResponseCallback>* route_response_callbacks,
+      base::TimeDelta* timeout,
+      bool* off_the_record);
 
   // Updates the set of supported cast modes and sends the updated set to
   // |handler_|.

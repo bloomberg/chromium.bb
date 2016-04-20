@@ -43,6 +43,12 @@ class RouteRequestResult;
 using MediaRouteResponseCallback =
     base::Callback<void(const RouteRequestResult& result)>;
 
+// Type of callback used for |SearchSinksAndCreateRoute()| to return the sink ID
+// of the newly-found sink. The sink ID will be the empty string if no sink was
+// found.
+using MediaSinkSearchResponseCallback =
+    base::Callback<void(const std::string& sink_id)>;
+
 // Subscription object returned by calling
 // |AddPresentationConnectionStateChangedCallback|. See the method comments for
 // details.
@@ -158,6 +164,24 @@ class MediaRouter : public KeyedService {
   // Media Router. This can be used to perform any initialization that is not
   // approriate to be done at construction.
   virtual void OnUserGesture() = 0;
+
+  // Searches for a MediaSink using |search_input| and |domain| as criteria.
+  // |sink_callback| will be called either with the ID of the new sink when it
+  // is found or with an empty string if no sink was found. If a sink was found
+  // then a MediaRoute will be created between it and the MediaSource specified
+  // by |source_id|. If no sink was found or if there was an error,
+  // |route_callbacks| will each be called with an error.
+  virtual void SearchSinksAndCreateRoute(
+      const MediaSource::Id& source_id,
+      const MediaSink::Id& sink_id,
+      const std::string& search_input,
+      const std::string& domain,
+      const GURL& origin,
+      content::WebContents* web_contents,
+      const std::vector<MediaRouteResponseCallback>& route_callbacks,
+      const MediaSinkSearchResponseCallback& sink_callback,
+      base::TimeDelta timeout,
+      bool off_the_record) = 0;
 
   // Adds |callback| to listen for state changes for presentation connected to
   // |route_id|. The returned Subscription object is owned by the caller.

@@ -43,6 +43,7 @@ MediaRouterElementsBrowserTest.prototype = {
     'media_router_container_filter_tests.js',
     'media_router_container_first_run_flow_tests.js',
     'media_router_container_route_tests.js',
+    'media_router_container_search_tests.js',
     'media_router_container_sink_list_tests.js',
     'media_router_container_test_base.js',
     'media_router_header_tests.js',
@@ -97,6 +98,13 @@ TEST_F('MediaRouterElementsBrowserTest',
     'MediaRouterContainerRoute',
     function() {
   media_router_container_route.registerTests();
+  mocha.run();
+});
+
+TEST_F('MediaRouterElementsBrowserTest',
+    'MediaRouterContainerSearch',
+    function() {
+  media_router_container_search.registerTests();
   mocha.run();
 });
 

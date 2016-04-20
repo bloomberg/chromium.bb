@@ -44,6 +44,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
                        const std::string& source_host);
   void OnCreateRouteResponseReceived(const MediaSink::Id& sink_id,
                                      const MediaRoute* route);
+  void ReturnSearchResult(const std::string& sink_id);
 
   // Does not take ownership of |issue|. Note that |issue| can be nullptr, when
   // there are no more issues.
@@ -80,6 +81,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void OnReportSinkCount(const base::ListValue* args);
   void OnReportTimeToClickSink(const base::ListValue* args);
   void OnReportTimeToInitialActionClose(const base::ListValue* args);
+  void OnSearchSinksAndCreateRoute(const base::ListValue* args);
   void OnInitialDataReceived(const base::ListValue* args);
 
   // Performs an action for an Issue of |type|.
