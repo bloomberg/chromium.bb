@@ -59,3 +59,8 @@ void DownloadPermissionRequest::Cancelled() {
 void DownloadPermissionRequest::RequestFinished() {
   delete this;
 }
+
+PermissionBubbleType DownloadPermissionRequest::GetPermissionBubbleType()
+    const {
+  return PermissionBubbleType::DOWNLOAD;
+}

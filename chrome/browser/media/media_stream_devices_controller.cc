@@ -306,6 +306,11 @@ void MediaStreamDevicesController::RequestFinished() {
   delete this;
 }
 
+PermissionBubbleType MediaStreamDevicesController::GetPermissionBubbleType()
+    const {
+  return PermissionBubbleType::MEDIA_STREAM;
+}
+
 content::MediaStreamDevices MediaStreamDevicesController::GetDevices(
     ContentSetting audio_setting,
     ContentSetting video_setting) {

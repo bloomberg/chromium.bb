@@ -24,6 +24,7 @@ class RegisterProtocolHandlerPermissionRequest
       bool user_gesture);
   ~RegisterProtocolHandlerPermissionRequest() override;
 
+ private:
   // PermissionBubbleRequest:
   gfx::VectorIconId GetVectorIconId() const override;
   int GetIconId() const override;
@@ -34,8 +35,8 @@ class RegisterProtocolHandlerPermissionRequest
   void PermissionDenied() override;
   void Cancelled() override;
   void RequestFinished() override;
+  PermissionBubbleType GetPermissionBubbleType() const override;
 
- private:
   ProtocolHandlerRegistry* registry_;
   ProtocolHandler handler_;
   GURL origin_;

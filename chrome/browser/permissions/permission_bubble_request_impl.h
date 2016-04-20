@@ -30,6 +30,10 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
 
   ~PermissionBubbleRequestImpl() override;
 
+ protected:
+  void RegisterActionTaken() { action_taken_ = true; }
+
+ private:
   // PermissionBubbleRequest:
   gfx::VectorIconId GetVectorIconId() const override;
   int GetIconId() const override;
@@ -42,11 +46,8 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
   void PermissionDenied() override;
   void Cancelled() override;
   void RequestFinished() override;
+  PermissionBubbleType GetPermissionBubbleType() const override;
 
- protected:
-  void RegisterActionTaken() { action_taken_ = true; }
-
- private:
   GURL request_origin_;
   content::PermissionType permission_type_;
 

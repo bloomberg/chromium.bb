@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_UMA_UTIL_H_
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_UMA_UTIL_H_
 
+#include <vector>
+
 #include "base/logging.h"
 #include "base/macros.h"
 
@@ -14,6 +16,8 @@ class Profile;
 namespace content {
 enum class PermissionType;
 }  // namespace content
+
+class PermissionBubbleRequest;
 
 // Enum for UMA purposes, make sure you update histograms.xml if you add new
 // permission actions. Never delete or reorder an entry; only add new entries
@@ -48,6 +52,18 @@ class PermissionUmaUtil {
                                 const GURL& requesting_origin);
   static void PermissionRevoked(content::PermissionType permission,
                                 const GURL& revoked_origin);
+
+  // UMA specifically for when permission prompts are shown. This should be
+  // roughly equivalent to the metrics above, however it is
+  // useful to have separate UMA to a few reasons:
+  // - to account for, and get data on coalesced permission bubbles
+  // - there are other types of permissions prompts (e.g. download limiting)
+  //   which don't go through PermissionContext
+  // - the above metrics don't always add up (e.g. sum of
+  //   granted+denied+dismissed+ignored is not equal to requested), so it is
+  //   unclear from those metrics alone how many prompts are seen by users.
+  static void PermissionPromptShown(
+      const std::vector<PermissionBubbleRequest*>& requests);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionUmaUtil);

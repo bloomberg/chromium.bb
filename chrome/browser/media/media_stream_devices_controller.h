@@ -58,6 +58,7 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   void PermissionDenied() override;
   void Cancelled() override;
   void RequestFinished() override;
+  PermissionBubbleType GetPermissionBubbleType() const override;
 
  private:
   // Returns a list of devices available for the request for the given

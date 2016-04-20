@@ -163,3 +163,8 @@ void PermissionBubbleRequestImpl::RequestFinished() {
   is_finished_ = true;
   delete_callback_.Run();
 }
+
+PermissionBubbleType PermissionBubbleRequestImpl::GetPermissionBubbleType()
+    const {
+  return PermissionBubbleType::PERMISSION;
+}

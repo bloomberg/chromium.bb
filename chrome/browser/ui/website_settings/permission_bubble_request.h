@@ -12,6 +12,25 @@ namespace gfx {
 enum class VectorIconId;
 }
 
+// Used for UMA to record the types of permission prompts shown.
+// This corresponds to the PermissionBubbleType enum in
+// src/tools/metrics/histograms.xml. The usual rules of updating UMA values
+// applies to this enum:
+// - don't remove values
+// - only ever add values at the end
+// - keep the PermissionBubbleType enum in sync with this definition.
+enum class PermissionBubbleType {
+  UNKNOWN,
+  MULTIPLE,
+  PERMISSION,
+  QUOTA,
+  DOWNLOAD,
+  MEDIA_STREAM,
+  REGISTER_PROTOCOL_HANDLER,
+  // NUM must be the last value in the enum.
+  NUM
+};
+
 // Describes the interface a feature utilizing permission bubbles should
 // implement. A class of this type is registered with the permission bubble
 // manager to receive updates about the result of the permissions request
@@ -62,6 +81,8 @@ class PermissionBubbleRequest {
   // no further message from the permission bubble system. This method will
   // eventually be called on every request which is not unregistered.
   virtual void RequestFinished() = 0;
+
+  virtual PermissionBubbleType GetPermissionBubbleType() const;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_REQUEST_H_

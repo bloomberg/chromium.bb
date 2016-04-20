@@ -52,6 +52,7 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
 
   ~QuotaPermissionRequest() override;
 
+ private:
   // PermissionBubbleRequest:
   int GetIconId() const override;
   base::string16 GetMessageText() const override;
@@ -61,8 +62,8 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
   void PermissionDenied() override;
   void Cancelled() override;
   void RequestFinished() override;
+  PermissionBubbleType GetPermissionBubbleType() const override;
 
- private:
   scoped_refptr<ChromeQuotaPermissionContext> context_;
   GURL origin_url_;
   int64_t requested_quota_;
@@ -129,6 +130,10 @@ void QuotaPermissionRequest::RequestFinished() {
   }
 
   delete this;
+}
+
+PermissionBubbleType QuotaPermissionRequest::GetPermissionBubbleType() const {
+  return PermissionBubbleType::QUOTA;
 }
 
 #if defined(OS_ANDROID)

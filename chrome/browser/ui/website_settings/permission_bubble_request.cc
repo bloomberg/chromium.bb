@@ -9,3 +9,7 @@
 gfx::VectorIconId PermissionBubbleRequest::GetVectorIconId() const {
   return gfx::VectorIconId::VECTOR_ICON_NONE;
 }
+
+PermissionBubbleType PermissionBubbleRequest::GetPermissionBubbleType() const {
+  return PermissionBubbleType::UNKNOWN;
+}

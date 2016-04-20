@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/metrics/user_metrics_action.h"
 #include "build/build_config.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -385,6 +386,7 @@ void PermissionBubbleManager::TriggerShowBubble() {
   }
 
   view_->Show(requests_, accept_states_);
+  PermissionUmaUtil::PermissionPromptShown(requests_);
   NotifyBubbleAdded();
 
   // If in testing mode, automatically respond to the bubble that was shown.
