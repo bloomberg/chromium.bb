@@ -40,7 +40,39 @@ void SafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
     delete v4_get_hash_protocol_manager_;
     v4_get_hash_protocol_manager_ = NULL;
   }
-  // TODO(kcarattini): Call back clients with pending requests.
+
+  // Delete pending checks, calling back any clients with empty metadata.
+  for (auto check : api_checks_) {
+    if (check->client()) {
+      check->client()->
+          OnCheckApiBlacklistUrlResult(check->url(), ThreatMetadata());
+    }
+  }
+  STLDeleteElements(&api_checks_);
+}
+
+SafeBrowsingDatabaseManager::CurrentApiChecks::iterator
+SafeBrowsingDatabaseManager::FindClientApiCheck(Client* client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (CurrentApiChecks::iterator it = api_checks_.begin();
+      it != api_checks_.end(); ++it) {
+    if ((*it)->client() == client) {
+      return it;
+    }
+  }
+  return api_checks_.end();
+}
+
+bool SafeBrowsingDatabaseManager::CancelApiCheck(Client* client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  CurrentApiChecks::iterator it = FindClientApiCheck(client);
+  if (it != api_checks_.end()) {
+    delete *it;
+    api_checks_.erase(it);
+    return true;
+  }
+  NOTREACHED();
+  return false;
 }
 
 bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
@@ -52,6 +84,9 @@ bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
   if (!(url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme))) {
     return true;
   }
+
+  // There can only be one in-progress check for the same client at a time.
+  DCHECK(FindClientApiCheck(client) == api_checks_.end());
 
   // Compute a list of hashes for this url.
   std::vector<SBFullHash> full_hashes;
@@ -69,9 +104,9 @@ bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
   prefixes.erase(std::unique(prefixes.begin(), prefixes.end()), prefixes.end());
   DCHECK(!prefixes.empty());
 
-  // TODO(kcarattini): Track checks in a map.
-  std::shared_ptr<SafeBrowsingApiCheck> check(
-      new SafeBrowsingApiCheck(url, full_hashes, client));
+  SafeBrowsingApiCheck* check =
+      new SafeBrowsingApiCheck(url, full_hashes, client);
+  api_checks_.insert(check);
 
   // TODO(kcarattini): Implement cache compliance.
   v4_get_hash_protocol_manager_->GetFullHashesWithApis(prefixes,
@@ -82,11 +117,17 @@ bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
 }
 
 void SafeBrowsingDatabaseManager::HandleGetHashesWithApisResults(
-    std::shared_ptr<SafeBrowsingApiCheck> check,
+    SafeBrowsingApiCheck* check,
     const std::vector<SBFullHashResult>& full_hash_results,
     const base::TimeDelta& negative_cache_duration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(check);
+
+  // If the check is not in |api_checks_| then the request was cancelled by the
+  // client.
+  CurrentApiChecks::iterator it = api_checks_.find(check);
+  if (it == api_checks_.end())
+    return;
 
   ThreatMetadata md;
   // Merge the metadata from all matching results.
@@ -104,6 +145,8 @@ void SafeBrowsingDatabaseManager::HandleGetHashesWithApisResults(
   }
 
   check->client()->OnCheckApiBlacklistUrlResult(check->url(), md);
+  api_checks_.erase(it);
+  delete check;
 }
 
 SafeBrowsingDatabaseManager::SafeBrowsingApiCheck::SafeBrowsingApiCheck(

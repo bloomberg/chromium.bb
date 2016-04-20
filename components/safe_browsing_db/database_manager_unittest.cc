@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/test_database_manager.h"
@@ -25,6 +26,12 @@ namespace safe_browsing {
 
 namespace {
 
+void InvokeFullHashCallback(
+    V4GetHashProtocolManager::FullHashCallback callback,
+    const std::vector<SBFullHashResult>& full_hashes) {
+  callback.Run(full_hashes, base::TimeDelta::FromMinutes(0));
+}
+
 // A TestV4GetHashProtocolManager that returns fixed responses from the
 // Safe Browsing server for testing purpose.
 class TestV4GetHashProtocolManager : public V4GetHashProtocolManager {
@@ -32,14 +39,21 @@ class TestV4GetHashProtocolManager : public V4GetHashProtocolManager {
   TestV4GetHashProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
       const V4ProtocolConfig& config)
-      : V4GetHashProtocolManager(request_context_getter, config) {}
+      : V4GetHashProtocolManager(request_context_getter, config),
+        delay_seconds_(0) {}
 
   ~TestV4GetHashProtocolManager() override {}
 
   void GetFullHashesWithApis(const std::vector<SBPrefix>& prefixes,
                              FullHashCallback callback) override {
     prefixes_ = prefixes;
-    callback.Run(full_hashes_, base::TimeDelta::FromMinutes(0));
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(InvokeFullHashCallback, callback, full_hashes_),
+        base::TimeDelta::FromSeconds(delay_seconds_));
+  }
+
+  void SetDelaySeconds(int delay) {
+    delay_seconds_ = delay;
   }
 
   // Prepare the GetFullHash results for the next request.
@@ -53,6 +67,7 @@ class TestV4GetHashProtocolManager : public V4GetHashProtocolManager {
  private:
   std::vector<SBPrefix> prefixes_;
   std::vector<SBFullHashResult> full_hashes_;
+  int delay_seconds_;
 };
 
 // Factory that creates test protocol manager instances.
@@ -76,20 +91,24 @@ class TestV4GetHashProtocolManagerFactory :
 
 class TestClient : public SafeBrowsingDatabaseManager::Client {
  public:
-  TestClient() {}
+  TestClient() : callback_invoked_(false) {}
   ~TestClient() override {}
 
   void OnCheckApiBlacklistUrlResult(const GURL& url,
                                     const ThreatMetadata& metadata) override {
     blocked_permissions_ = metadata.api_permissions;
+    callback_invoked_ = true;
   }
 
   const std::vector<std::string>& GetBlockedPermissions() {
     return blocked_permissions_;
   }
 
+  bool callback_invoked() {return callback_invoked_;}
+
  private:
   std::vector<std::string> blocked_permissions_;
+  bool callback_invoked_;
   DISALLOW_COPY_AND_ASSIGN(TestClient);
 };
 
@@ -130,6 +149,7 @@ TEST_F(SafeBrowsingDatabaseManagerTest, CheckApiBlacklistUrlPrefixes) {
       {1237562338, 2871045197, 3553205461, 3766933875};
 
   EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
+  base::RunLoop().RunUntilIdle();
   std::vector<SBPrefix> prefixes = static_cast<TestV4GetHashProtocolManager*>(
       db_manager_->v4_get_hash_protocol_manager_)->GetRequestPrefixes();
   EXPECT_EQ(expected_prefixes.size(), prefixes.size());
@@ -151,6 +171,7 @@ TEST_F(SafeBrowsingDatabaseManagerTest, HandleGetHashesWithApisResults) {
   EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_TRUE(client.callback_invoked());
   const std::vector<std::string>& permissions = client.GetBlockedPermissions();
   EXPECT_EQ(1ul, permissions.size());
   EXPECT_EQ("GEOLOCATION", permissions[0]);
@@ -169,6 +190,7 @@ TEST_F(SafeBrowsingDatabaseManagerTest, HandleGetHashesWithApisResultsNoMatch) {
   EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_TRUE(client.callback_invoked());
   const std::vector<std::string>& permissions = client.GetBlockedPermissions();
   EXPECT_EQ(0ul, permissions.size());
 }
@@ -194,10 +216,31 @@ TEST_F(SafeBrowsingDatabaseManagerTest, HandleGetHashesWithApisResultsMatches) {
   EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_TRUE(client.callback_invoked());
   const std::vector<std::string>& permissions = client.GetBlockedPermissions();
   EXPECT_EQ(2ul, permissions.size());
   EXPECT_EQ("GEOLOCATION", permissions[0]);
   EXPECT_EQ("NOTIFICATIONS", permissions[1]);
+}
+
+TEST_F(SafeBrowsingDatabaseManagerTest, CancelApiCheck) {
+  TestClient client;
+  const GURL url("https://www.example.com/more");
+  TestV4GetHashProtocolManager* pm = static_cast<TestV4GetHashProtocolManager*>(
+      db_manager_->v4_get_hash_protocol_manager_);
+  SBFullHashResult full_hash_result;
+  full_hash_result.hash = SBFullHashForString("example.com/");
+  full_hash_result.metadata.api_permissions.push_back("GEOLOCATION");
+  pm->AddGetFullHashResponse(full_hash_result);
+  pm->SetDelaySeconds(100);
+
+  EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
+  EXPECT_TRUE(db_manager_->CancelApiCheck(&client));
+  base::RunLoop().RunUntilIdle();
+
+  const std::vector<std::string>& permissions = client.GetBlockedPermissions();
+  EXPECT_EQ(0ul, permissions.size());
+  EXPECT_FALSE(client.callback_invoked());
 }
 
 }  // namespace safe_browsing
