@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "net/android/network_change_notifier_android.h"
 #include "net/android/network_change_notifier_delegate_android.h"
+#include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_protocol.h"
@@ -293,10 +294,8 @@ class NetworkChangeNotifierAndroidTest
     : public BaseNetworkChangeNotifierAndroidTest {
  protected:
   void SetUp() override {
-    IPAddressNumber dns_number;
-    ASSERT_TRUE(ParseIPLiteralToNumber("8.8.8.8", &dns_number));
     dns_config_.nameservers.push_back(
-        IPEndPoint(dns_number, dns_protocol::kDefaultPort));
+        IPEndPoint(IPAddress(8, 8, 8, 8), dns_protocol::kDefaultPort));
     notifier_.reset(new NetworkChangeNotifierAndroid(&delegate_, &dns_config_));
     NetworkChangeNotifier::AddConnectionTypeObserver(
         &connection_type_observer_);

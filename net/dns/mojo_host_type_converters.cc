@@ -89,8 +89,8 @@ TypeConverter<net::AddressList, net::interfaces::AddressList>::Convert(
   net::AddressList address_list;
   for (size_t i = 0; i < obj.addresses.size(); i++) {
     const net::interfaces::IPEndPointPtr& ep = obj.addresses[i];
-    address_list.push_back(
-        net::IPEndPoint(ep->address.To<net::IPAddressNumber>(), ep->port));
+    net::IPAddress ip_address(ep->address.To<std::vector<uint8_t>>());
+    address_list.push_back(net::IPEndPoint(ip_address, ep->port));
   }
   return address_list;
 }

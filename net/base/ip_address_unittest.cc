@@ -124,7 +124,7 @@ TEST(IPAddressTest, IsZero) {
   EXPECT_FALSE(empty_address.IsZero());
 }
 
-TEST(IpAddressNumberTest, IsIPv4Mapped) {
+TEST(IPAddressTest, IsIPv4Mapped) {
   IPAddress ipv4_address(192, 168, 0, 1);
   EXPECT_FALSE(ipv4_address.IsIPv4MappedIPv6());
   IPAddress ipv6_address(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
@@ -193,7 +193,7 @@ TEST(IPAddressTest, AssignFromIPLiteral_IPv6) {
   EXPECT_EQ("1:abcd::3:4:ff", address.ToString());
 }
 
-TEST(IpAddressNumberTest, IsIPv4MappedIPv6) {
+TEST(IPAddressTest, IsIPv4MappedIPv6) {
   IPAddress ipv4_address(192, 168, 0, 1);
   EXPECT_FALSE(ipv4_address.IsIPv4MappedIPv6());
   IPAddress ipv6_address = IPAddress::IPv6Localhost();
