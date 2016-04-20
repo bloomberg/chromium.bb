@@ -57,6 +57,8 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   bool GetBoolProperty(WmWindowProperty key) override;
   const WindowState* GetWindowState() const override;
   WmWindow* GetToplevelWindow() override;
+  void SetParentUsingContext(WmWindow* context,
+                             const gfx::Rect& screen_bounds) override;
   void AddChild(WmWindow* window) override;
   WmWindow* GetParent() override;
   WmWindow* GetTransientParent() override;

@@ -18,10 +18,6 @@ class Point;
 class Rect;
 }
 
-namespace aura {
-class RootWindow;
-}
-
 namespace ash {
 class DockedWindowLayoutManager;
 

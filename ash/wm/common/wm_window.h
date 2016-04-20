@@ -89,6 +89,9 @@ class ASH_EXPORT WmWindow {
 
   virtual WmWindow* GetToplevelWindow() = 0;
 
+  // See aura::client::ParentWindowWithContext() for details of what this does.
+  virtual void SetParentUsingContext(WmWindow* context,
+                                     const gfx::Rect& screen_bounds) = 0;
   virtual void AddChild(WmWindow* window) = 0;
 
   virtual WmWindow* GetParent() = 0;

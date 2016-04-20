@@ -15,6 +15,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -188,6 +189,12 @@ const WindowState* WmWindowAura::GetWindowState() const {
 
 WmWindow* WmWindowAura::GetToplevelWindow() {
   return Get(window_->GetToplevelWindow());
+}
+
+void WmWindowAura::SetParentUsingContext(WmWindow* context,
+                                         const gfx::Rect& screen_bounds) {
+  aura::client::ParentWindowWithContext(window_, GetAuraWindow(context),
+                                        screen_bounds);
 }
 
 void WmWindowAura::AddChild(WmWindow* window) {

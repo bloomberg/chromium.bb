@@ -4,52 +4,39 @@
 
 #include "ash/wm/dock/docked_window_resizer.h"
 
-#include "ash/display/window_tree_host_manager.h"
-#include "ash/root_window_controller.h"
-#include "ash/screen_util.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_types.h"
-#include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/common/wm_event.h"
+#include "ash/wm/common/wm_root_window_controller.h"
+#include "ash/wm/common/wm_window.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_state_aura.h"
-#include "ash/wm/window_util.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
-#include "ash/wm/workspace/workspace_window_resizer.h"
-#include "base/command_line.h"
-#include "base/memory/weak_ptr.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/window_tree_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/widget/widget.h"
-#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
 
+DockedWindowLayoutManager* GetDockedLayoutManagerInRoot(wm::WmWindow* root) {
+  wm::WmWindow* dock_container =
+      root->GetChildByShellWindowId(kShellWindowId_DockedContainer);
+  return static_cast<DockedWindowLayoutManager*>(
+      wm::WmWindowAura::GetAuraWindow(dock_container)->layout_manager());
+}
+
 DockedWindowLayoutManager* GetDockedLayoutManagerAtPoint(
     const gfx::Point& point) {
-  gfx::Display display = ScreenUtil::FindDisplayContainingPoint(point);
-  if (!display.is_valid())
-    return NULL;
-  aura::Window* root = Shell::GetInstance()
-                           ->window_tree_host_manager()
-                           ->GetRootWindowForDisplayId(display.id());
-  aura::Window* dock_container = Shell::GetContainer(
-      root, kShellWindowId_DockedContainer);
-  return static_cast<DockedWindowLayoutManager*>(
-      dock_container->layout_manager());
+  gfx::Display display =
+      gfx::Screen::GetScreen()->GetDisplayNearestPoint(point);
+  if (!display.bounds().Contains(point))
+    return nullptr;
+
+  return GetDockedLayoutManagerInRoot(
+      wm::WmRootWindowController::GetWithDisplayId(display.id())->GetWindow());
 }
 
 }  // namespace
@@ -65,8 +52,7 @@ DockedWindowResizer::Create(WindowResizer* next_window_resizer,
 }
 
 void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
-  last_location_ = location;
-  ::wm::ConvertPointToScreen(GetAuraTarget()->parent(), &last_location_);
+  last_location_ = GetTarget()->GetParent()->ConvertPointToScreen(location);
   base::WeakPtr<DockedWindowResizer> resizer(weak_ptr_factory_.GetWeakPtr());
 
   if (!did_move_or_resize_) {
@@ -80,7 +66,7 @@ void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   gfx::Rect bounds(CalculateBoundsForDrag(location));
   MaybeSnapToEdge(bounds, &offset);
   gfx::Point modified_location(location);
-  modified_location.Offset(offset.x(), offset.y());
+  modified_location += offset.OffsetFromOrigin();
 
   next_window_resizer_->Drag(modified_location, event_flags);
   if (!resizer)
@@ -148,12 +134,12 @@ DockedWindowResizer::DockedWindowResizer(WindowResizer* next_window_resizer,
       was_bounds_changed_by_user_(window_state->bounds_changed_by_user()),
       weak_ptr_factory_(this) {
   DCHECK(details().is_resizable);
-  aura::Window* dock_container = Shell::GetContainer(
-      GetAuraTarget()->GetRootWindow(), kShellWindowId_DockedContainer);
-  dock_layout_ = static_cast<DockedWindowLayoutManager*>(
-      dock_container->layout_manager());
+  wm::WmWindow* dock_container =
+      GetTarget()->GetRootWindow()->GetChildByShellWindowId(
+          kShellWindowId_DockedContainer);
+  dock_layout_ = GetDockedLayoutManagerInRoot(GetTarget()->GetRootWindow());
   initial_dock_layout_ = dock_layout_;
-  was_docked_ = GetAuraTarget()->parent() == dock_container;
+  was_docked_ = GetTarget()->GetParent() == dock_container;
   is_docked_ = was_docked_;
 }
 
@@ -163,8 +149,7 @@ void DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
   if (!was_docked_)
     return;
   DockedAlignment dock_alignment = dock_layout_->CalculateAlignment();
-  gfx::Rect dock_bounds = ScreenUtil::ConvertRectFromScreen(
-      GetAuraTarget()->parent(),
+  gfx::Rect dock_bounds = GetTarget()->GetParent()->ConvertRectFromScreen(
       dock_layout_->dock_container()->GetBoundsInScreen());
 
   // Short-range magnetism when retaining docked state. Same constant as in
@@ -204,16 +189,16 @@ void DockedWindowResizer::StartedDragging(
   // Reparent workspace windows during the drag to elevate them above workspace.
   // Other windows for which the DockedWindowResizer is instantiated include
   // panels and windows that are already docked. Those do not need reparenting.
-  if (GetAuraTarget()->type() != ui::wm::WINDOW_TYPE_PANEL &&
-      GetAuraTarget()->parent()->id() == kShellWindowId_DefaultContainer) {
+  if (GetTarget()->GetType() != ui::wm::WINDOW_TYPE_PANEL &&
+      GetTarget()->GetParent()->GetShellWindowId() ==
+          kShellWindowId_DefaultContainer) {
     // Reparent the window into the docked windows container in order to get it
     // on top of other docked windows.
-    aura::Window* docked_container = Shell::GetContainer(
-        GetAuraTarget()->GetRootWindow(), kShellWindowId_DockedContainer);
-    ReparentChildWithTransientChildren(
-        ash::wm::WmWindowAura::Get(GetAuraTarget()),
-        ash::wm::WmWindowAura::Get(GetAuraTarget()->parent()),
-        ash::wm::WmWindowAura::Get(docked_container));
+    wm::WmWindow* docked_container =
+        GetTarget()->GetRootWindow()->GetChildByShellWindowId(
+            kShellWindowId_DockedContainer);
+    ReparentChildWithTransientChildren(GetTarget(), GetTarget()->GetParent(),
+                                       docked_container);
     if (!resizer)
       return;
   }
@@ -226,9 +211,10 @@ void DockedWindowResizer::FinishedDragging(
   if (!did_move_or_resize_)
     return;
   did_move_or_resize_ = false;
-  aura::Window* window = GetAuraTarget();
-  const bool is_attached_panel = window->type() == ui::wm::WINDOW_TYPE_PANEL &&
-                                 window_state_->panel_attached();
+  wm::WmWindow* window = GetTarget();
+  const bool is_attached_panel =
+      window->GetType() == ui::wm::WINDOW_TYPE_PANEL &&
+      window_state_->panel_attached();
   const bool is_resized =
       (details().bounds_change & WindowResizer::kBoundsChange_Resizes) != 0;
 
@@ -242,9 +228,9 @@ void DockedWindowResizer::FinishedDragging(
   // When drag is completed the dragged docked window is resized to the bounds
   // calculated by the layout manager that conform to other docked windows.
   if (!is_attached_panel && is_docked_ && !is_resized) {
-    gfx::Rect bounds = ScreenUtil::ConvertRectFromScreen(
-        window->parent(), dock_layout_->dragged_bounds());
-    if (!bounds.IsEmpty() && bounds.width() != window->bounds().width()) {
+    gfx::Rect bounds = window->GetParent()->ConvertRectFromScreen(
+        dock_layout_->dragged_bounds());
+    if (!bounds.IsEmpty() && bounds.width() != window->GetBounds().width()) {
       window->SetBounds(bounds);
     }
   }
@@ -277,22 +263,21 @@ void DockedWindowResizer::FinishedDragging(
 
 DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(
     bool is_resized, bool is_attached_panel) {
-  aura::Window* window = GetAuraTarget();
+  wm::WmWindow* window = GetTarget();
 
   // Check if the window needs to be docked or returned to workspace.
   DockedAction action = DOCKED_ACTION_NONE;
-  aura::Window* dock_container = Shell::GetContainer(
-      window->GetRootWindow(),
-      kShellWindowId_DockedContainer);
+  wm::WmWindow* dock_container =
+      window->GetRootWindow()->GetChildByShellWindowId(
+          kShellWindowId_DockedContainer);
   if ((is_resized || !is_attached_panel) &&
-      is_docked_ != (window->parent() == dock_container)) {
+      is_docked_ != (window->GetParent() == dock_container)) {
     if (is_docked_) {
-      wm::ReparentChildWithTransientChildren(
-          wm::WmWindowAura::Get(window),
-          wm::WmWindowAura::Get(window->parent()),
-          wm::WmWindowAura::Get(dock_container));
+      wm::ReparentChildWithTransientChildren(window, window->GetParent(),
+                                             dock_container);
       action = DOCKED_ACTION_DOCK;
-    } else if (window->parent()->id() == kShellWindowId_DockedContainer) {
+    } else if (window->GetParent()->GetShellWindowId() ==
+               kShellWindowId_DockedContainer) {
       // Reparent the window back to workspace.
       // We need to be careful to give ParentWindowWithContext a location in
       // the right root window (matching the logic in DragWindowResizer) based
@@ -301,13 +286,11 @@ DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(
       // mouse is).
       gfx::Rect near_last_location(last_location_, gfx::Size());
       // Reparenting will cause Relayout and possible dock shrinking.
-      aura::Window* previous_parent = window->parent();
-      aura::client::ParentWindowWithContext(window, window, near_last_location);
-      if (window->parent() != previous_parent) {
-        wm::ReparentTransientChildrenOfChild(
-            ash::wm::WmWindowAura::Get(window),
-            ash::wm::WmWindowAura::Get(previous_parent),
-            ash::wm::WmWindowAura::Get(window->parent()));
+      wm::WmWindow* previous_parent = window->GetParent();
+      window->SetParentUsingContext(window, near_last_location);
+      if (window->GetParent() != previous_parent) {
+        wm::ReparentTransientChildrenOfChild(window, previous_parent,
+                                             window->GetParent());
       }
       action = was_docked_ ? DOCKED_ACTION_UNDOCK : DOCKED_ACTION_NONE;
     }
@@ -329,14 +312,14 @@ DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(
   // docked it is auto-sized unless it has been resized while being docked
   // before.
   if (is_docked_) {
-    wm::GetWindowState(window)->set_bounds_changed_by_user(
+    window->GetWindowState()->set_bounds_changed_by_user(
         was_docked_ && (is_resized || was_bounds_changed_by_user_));
   }
 
   if (action == DOCKED_ACTION_DOCK) {
     const wm::WMEvent event(wm::WM_EVENT_DOCK);
     window_state_->OnWMEvent(&event);
-  } else if (wm::GetWindowState(window)->IsDocked() &&
+  } else if (window->GetWindowState()->IsDocked() &&
              action == DOCKED_ACTION_UNDOCK) {
     const wm::WMEvent event(wm::WM_EVENT_NORMAL);
     window_state_->OnWMEvent(&event);
