@@ -46,6 +46,12 @@ EGLSurface eglCreatePixmapSurfaceFn(EGLDisplay dpy,
                                     EGLConfig config,
                                     EGLNativePixmapType pixmap,
                                     const EGLint* attrib_list) override;
+EGLStreamKHR eglCreateStreamKHRFn(EGLDisplay dpy,
+                                  const EGLint* attrib_list) override;
+EGLBoolean eglCreateStreamProducerD3DTextureNV12ANGLEFn(
+    EGLDisplay dpy,
+    EGLStreamKHR stream,
+    EGLAttrib* attrib_list) override;
 EGLSyncKHR eglCreateSyncKHRFn(EGLDisplay dpy,
                               EGLenum type,
                               const EGLint* attrib_list) override;
@@ -55,6 +61,7 @@ EGLSurface eglCreateWindowSurfaceFn(EGLDisplay dpy,
                                     const EGLint* attrib_list) override;
 EGLBoolean eglDestroyContextFn(EGLDisplay dpy, EGLContext ctx) override;
 EGLBoolean eglDestroyImageKHRFn(EGLDisplay dpy, EGLImageKHR image) override;
+EGLBoolean eglDestroyStreamKHRFn(EGLDisplay dpy, EGLStreamKHR stream) override;
 EGLBoolean eglDestroySurfaceFn(EGLDisplay dpy, EGLSurface surface) override;
 EGLBoolean eglDestroySyncKHRFn(EGLDisplay dpy, EGLSyncKHR sync) override;
 EGLBoolean eglGetConfigAttribFn(EGLDisplay dpy,
@@ -102,6 +109,14 @@ EGLBoolean eglQueryContextFn(EGLDisplay dpy,
                              EGLContext ctx,
                              EGLint attribute,
                              EGLint* value) override;
+EGLBoolean eglQueryStreamKHRFn(EGLDisplay dpy,
+                               EGLStreamKHR stream,
+                               EGLenum attribute,
+                               EGLint* value) override;
+EGLBoolean eglQueryStreamu64KHRFn(EGLDisplay dpy,
+                                  EGLStreamKHR stream,
+                                  EGLenum attribute,
+                                  EGLuint64KHR* value) override;
 const char* eglQueryStringFn(EGLDisplay dpy, EGLint name) override;
 EGLBoolean eglQuerySurfaceFn(EGLDisplay dpy,
                              EGLSurface surface,
@@ -115,6 +130,26 @@ EGLBoolean eglReleaseTexImageFn(EGLDisplay dpy,
                                 EGLSurface surface,
                                 EGLint buffer) override;
 EGLBoolean eglReleaseThreadFn(void) override;
+EGLBoolean eglStreamAttribKHRFn(EGLDisplay dpy,
+                                EGLStreamKHR stream,
+                                EGLenum attribute,
+                                EGLint value) override;
+EGLBoolean eglStreamConsumerAcquireKHRFn(EGLDisplay dpy,
+                                         EGLStreamKHR stream) override;
+EGLBoolean eglStreamConsumerGLTextureExternalAttribsNVFn(
+    EGLDisplay dpy,
+    EGLStreamKHR stream,
+    EGLAttrib* attrib_list) override;
+EGLBoolean eglStreamConsumerGLTextureExternalKHRFn(
+    EGLDisplay dpy,
+    EGLStreamKHR stream) override;
+EGLBoolean eglStreamConsumerReleaseKHRFn(EGLDisplay dpy,
+                                         EGLStreamKHR stream) override;
+EGLBoolean eglStreamPostD3DTextureNV12ANGLEFn(
+    EGLDisplay dpy,
+    EGLStreamKHR stream,
+    void* texture,
+    const EGLAttrib* attrib_list) override;
 EGLBoolean eglSurfaceAttribFn(EGLDisplay dpy,
                               EGLSurface surface,
                               EGLint attribute,
