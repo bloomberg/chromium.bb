@@ -621,18 +621,23 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         intent.putExtra(CustomTabsIntent.EXTRA_SECONDARY_TOOLBAR_COLOR, barColor);
         startCustomTabActivityWithIntent(intent);
 
-        ViewGroup bottomBar = (ViewGroup) getActivity().findViewById(R.id.bottombar);
+        ViewGroup bottomBar = (ViewGroup) getActivity()
+                .findViewById(R.id.custom_tab_bottom_bar_wrapper);
         assertNotNull(bottomBar);
+        assertTrue("Bottom Bar wrapper is not visible.", bottomBar.getVisibility() == View.VISIBLE
+                && bottomBar.getHeight() > 0 && bottomBar.getWidth() > 0);
         assertEquals("Bottom Bar showing incorrect number of buttons.",
-                numItems + 1, bottomBar.getChildCount());
+                numItems, bottomBar.getChildCount());
         assertEquals("Bottom bar not showing correct color", barColor,
                 ((ColorDrawable) bottomBar.getBackground()).getColor());
-        for (int i = 1; i <= numItems; i++) {
+        for (int i = 0; i < numItems; i++) {
             ImageButton button = (ImageButton) bottomBar.getChildAt(i);
             assertTrue("Bottom Bar button does not have the correct bitmap.",
                     expectedIcon.sameAs(((BitmapDrawable) button.getDrawable()).getBitmap()));
+            assertTrue("Bottom Bar button is not visible.", button.getVisibility() == View.VISIBLE
+                    && button.getHeight() > 0 && button.getWidth() > 0);
             assertEquals("Bottom Bar button does not have correct content description",
-                    Integer.toString(i), button.getContentDescription());
+                    Integer.toString(i + 1), button.getContentDescription());
         }
     }
 

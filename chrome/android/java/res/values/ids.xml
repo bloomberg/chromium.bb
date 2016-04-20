@@ -17,6 +17,7 @@
     <item name="refine_view_id" type="id"/>
     <item name="tabswitcher_multiple_drawable" type="id"/>
     <item name="tabswitcher_single_drawable" type="id"/>
+    <item name="custom_tab_bottom_bar_wrapper" type="id"/>
 
     <!-- InfoBar constants -->
     <item type="id" name="button_primary" />

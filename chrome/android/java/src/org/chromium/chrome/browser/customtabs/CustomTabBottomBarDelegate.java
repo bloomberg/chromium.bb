@@ -18,6 +18,7 @@ import android.view.ViewStub;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RemoteViews;
 
 import org.chromium.base.Log;
@@ -70,8 +71,11 @@ class CustomTabBottomBarDelegate {
             mClickPendingIntent = mDataProvider.getRemoteViewsPendingIntent();
             showRemoteViews(remoteViews);
         } else {
-            getBottomBarView().setBackgroundColor(mDataProvider.getBottomBarColor());
             List<CustomButtonParams> items = mDataProvider.getCustomButtonsOnBottombar();
+            if (items.isEmpty()) return;
+            LinearLayout layout = new LinearLayout(mActivity);
+            layout.setId(R.id.custom_tab_bottom_bar_wrapper);
+            layout.setBackgroundColor(mDataProvider.getBottomBarColor());
             for (CustomButtonParams params : items) {
                 if (params.showOnToolbar()) continue;
                 final PendingIntent pendingIntent = params.getPendingIntent();
@@ -84,10 +88,10 @@ class CustomTabBottomBarDelegate {
                         }
                     };
                 }
-                ImageButton button = params.buildBottomBarButton(mActivity, getBottomBarView(),
-                        clickListener);
-                getBottomBarView().addView(button);
+                layout.addView(
+                        params.buildBottomBarButton(mActivity, getBottomBarView(), clickListener));
             }
+            getBottomBarView().addView(layout);
         }
     }
 
