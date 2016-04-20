@@ -24,6 +24,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1075,8 +1076,10 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
     // their card. If no CVC is present, do nothing. We could fall back to a
     // local save but we believe that sometimes offering upload and sometimes
     // offering local save is a confusing user experience.
+    int cvc;
     for (const AutofillField* field : submitted_form) {
-      if (field->Type().GetStorableType() == CREDIT_CARD_VERIFICATION_CODE) {
+      if (field->Type().GetStorableType() == CREDIT_CARD_VERIFICATION_CODE &&
+          base::StringToInt(field->value, &cvc)) {
         upload_request_.cvc = field->value;
         break;
       }
