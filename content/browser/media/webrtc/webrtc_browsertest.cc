@@ -96,9 +96,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        CanSetupVideoCallWith4To3AspectRatio) {
   const std::string javascript =
-      "callAndExpectResolution({video: {mandatory: { minWidth: 960,"
-      "maxWidth: 960, minAspectRatio: 1.333, maxAspectRatio: 1.333}}}, 960,"
-      " 720);";
+      "callAndExpectResolution({video: {mandatory: { minWidth: 320,"
+      "maxWidth: 320, minAspectRatio: 1.333, maxAspectRatio: 1.333}}}, 320,"
+      " 240);";
   MakeTypicalPeerConnectionCall(javascript);
 }
 
