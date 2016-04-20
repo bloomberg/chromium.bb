@@ -55,13 +55,7 @@ DEFAULT_SIZE_NO_RANDR = "1600x1200"
 SCRIPT_PATH = os.path.abspath(sys.argv[0])
 SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
 
-IS_INSTALLED = (os.path.basename(sys.argv[0]) != 'linux_me2me_host.py')
-
-if IS_INSTALLED:
-  HOST_BINARY_NAME = "chrome-remote-desktop-host"
-else:
-  HOST_BINARY_NAME = "remoting_me2me_host"
-
+HOST_BINARY_NAME = "chrome-remote-desktop-host"
 CHROME_REMOTING_GROUP_NAME = "chrome-remote-desktop"
 
 HOME_DIR = os.environ["HOME"]
@@ -105,13 +99,16 @@ def is_supported_platform():
 def get_randr_supporting_x_server():
   """Returns a path to an X server that supports the RANDR extension, if this
   is found on the system. Otherwise returns None."""
-  try:
-    xvfb = "/usr/bin/Xvfb-randr"
-    if not os.path.exists(xvfb):
-      xvfb = locate_executable("Xvfb-randr")
+
+  xvfb = "/usr/bin/Xvfb-randr"
+  if os.path.exists(xvfb):
     return xvfb
-  except Exception:
-    return None
+
+  xvfb = os.path.join(SCRIPT_DIR, "Xvfb-randr")
+  if os.path.exists(xvfb):
+    return xvfb
+
+  return None
 
 
 class Config:
@@ -497,7 +494,8 @@ class Desktop:
 
   def launch_host(self, host_config):
     # Start remoting host
-    args = [locate_executable(HOST_BINARY_NAME), "--host-config=-"]
+    host_path = os.path.join(SCRIPT_DIR, HOST_BINARY_NAME)
+    args = [host_path, "--host-config=-"]
     if self.pulseaudio_pipe:
       args.append("--audio-pipe-name=%s" % self.pulseaudio_pipe)
     if self.server_supports_exact_resize:
@@ -517,9 +515,9 @@ class Desktop:
     signal.signal(signal.SIGUSR1, sigusr1_handler)
     args.append("--signal-parent")
 
+    logging.info(args)
     self.host_proc = subprocess.Popen(args, env=self.child_env,
                                       stdin=subprocess.PIPE)
-    logging.info(args)
     if not self.host_proc.pid:
       raise Exception("Could not start Chrome Remote Desktop host")
 
@@ -628,25 +626,6 @@ def choose_x_session():
         # session.
         return [session_wrapper]
   return None
-
-
-def locate_executable(exe_name):
-  if IS_INSTALLED:
-    # If the script is running from its installed location, search the host
-    # binary only in the same directory.
-    paths_to_try = [ SCRIPT_DIR ]
-  else:
-    paths_to_try = map(lambda p: os.path.join(SCRIPT_DIR, p),
-                       [".",
-                        "../../../out/Debug",
-                        "../../../out/Default",
-                        "../../../out/Release"])
-  for path in paths_to_try:
-    exe_path = os.path.join(path, exe_name)
-    if os.path.exists(exe_path):
-      return exe_path
-
-  raise Exception("Could not locate executable '%s'" % exe_name)
 
 
 class ParentProcessLogger(object):

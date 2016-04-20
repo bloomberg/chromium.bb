@@ -847,6 +847,35 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         ]
       }
 
+      if (is_linux) {
+        copy("remoting_me2me_host_copy_script") {
+          sources = [
+            "linux/linux_me2me_host.py",
+          ]
+          outputs = [
+            "$root_build_dir/remoting/chrome-remote-desktop",
+          ]
+        }
+        copy("remoting_me2me_host_copy_host") {
+          sources = [
+            "linux/remoting_me2me_host_wrapper.sh",
+          ]
+          outputs = [
+            "$root_build_dir/remoting/chrome-remote-desktop-host",
+          ]
+          deps = [
+            ":remoting_me2me_host",
+          ]
+        }
+        group("remoting_dev_me2me_host") {
+          deps = [
+            ":remoting_me2me_host",
+            ":remoting_me2me_host_copy_host",
+            ":remoting_me2me_host_copy_script",
+          ]
+        }
+      }
+
       executable("native_messaging_host") {
         sources = [
           "setup/me2me_native_messaging_host_entry_point.cc",
