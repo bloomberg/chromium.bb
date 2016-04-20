@@ -8,8 +8,11 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "ppapi/c/pp_errors.h"
-#include "printing/printing_context.h"
-#include "printing/units.h"
+
+#if defined(ENABLE_PRINT_PREVIEW)
+#include "printing/printing_context.h"  // nogncheck
+#include "printing/units.h"  // nogncheck
+#endif
 
 namespace content {
 

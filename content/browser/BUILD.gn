@@ -62,6 +62,7 @@ source_set("browser") {
     "//gpu/command_buffer/client:gles2_implementation",
     "//ipc/mojo",
     "//media",
+    "//media/gpu/ipc/client",
     "//media/midi",
     "//mojo/common",
     "//mojo/common:url_type_converters",
@@ -77,6 +78,7 @@ source_set("browser") {
     "//services/shell/runner/host:lib",
     "//services/user:lib",
     "//services/user/public/cpp",
+    "//services/user/public/interfaces",
     "//skia",
     "//skia/public",
     "//sql",
@@ -90,7 +92,7 @@ source_set("browser") {
     "//third_party/WebKit/public:blink_headers",
     "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",
-    "//third_party/angle:commit_id",
+    "//third_party/angle:angle_common",
     "//third_party/icu",
     "//third_party/kasko:kasko_features",
     "//third_party/leveldatabase",
@@ -259,6 +261,7 @@ source_set("browser") {
                            "//content")
     deps += [
       "//ppapi/host",
+      "//ppapi/proxy",
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
     ]
@@ -514,6 +517,10 @@ source_set("browser") {
       "vr/android/cardboard/cardboard_vr_device_provider.cc",
       "vr/android/cardboard/cardboard_vr_device_provider.h",
     ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 }
 

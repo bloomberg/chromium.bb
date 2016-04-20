@@ -74,7 +74,7 @@
 #endif
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-#include "ui/gfx/x/x11_switches.h"
+#include "ui/gfx/x/x11_switches.h"  // nogncheck
 #endif
 
 #if defined(OS_MACOSX)

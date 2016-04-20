@@ -238,6 +238,7 @@ component("media") {
   deps = [
     ":cdm_api",
   ]
+  public_deps = []
 
   include_dirs = [ "." ]
   if (media_use_ffmpeg) {
@@ -344,7 +345,7 @@ component("media") {
   }
 
   if (is_mac) {
-    deps += [ "//media/base/mac" ]
+    public_deps += [ "//media/base/mac" ]
     libs += [
       "CoreVideo.framework",
       "OpenGL.framework",
@@ -444,7 +445,7 @@ component("media") {
     ]
   }
 
-  public_deps = [
+  public_deps += [
     ":media_features",
     ":shared_memory_support",
     "//media/audio",
