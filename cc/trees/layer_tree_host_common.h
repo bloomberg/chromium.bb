@@ -45,10 +45,6 @@ enum CallFunctionLayerType : uint32_t {
 
 class CC_EXPORT LayerTreeHostCommon {
  public:
-  static gfx::Rect CalculateVisibleRect(const gfx::Rect& target_surface_rect,
-                                        const gfx::Rect& layer_bound_rect,
-                                        const gfx::Transform& transform);
-
   struct CC_EXPORT CalcDrawPropsMainInputsForTesting {
    public:
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,

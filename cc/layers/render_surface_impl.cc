@@ -150,6 +150,79 @@ void RenderSurfaceImpl::SetContentRect(const gfx::Rect& content_rect) {
   draw_properties_.content_rect = content_rect;
 }
 
+void RenderSurfaceImpl::SetContentRectForTesting(const gfx::Rect& rect) {
+  SetContentRect(rect);
+}
+
+gfx::Rect RenderSurfaceImpl::CalculateClippedAccumulatedContentRect() {
+  if (owning_layer_->replica_layer() || owning_layer_->HasCopyRequest() ||
+      !is_clipped())
+    return accumulated_content_rect();
+
+  if (accumulated_content_rect().IsEmpty())
+    return gfx::Rect();
+
+  // Calculate projection from the target surface rect to local
+  // space. Non-invertible draw transforms means no able to bring clipped rect
+  // in target space back to local space, early out without clip.
+  gfx::Transform target_to_surface(gfx::Transform::kSkipInitialization);
+  if (!draw_transform().GetInverse(&target_to_surface))
+    return accumulated_content_rect();
+
+  // Clip rect is in target space. Bring accumulated content rect to
+  // target space in preparation for clipping.
+  gfx::Rect accumulated_rect_in_target_space =
+      MathUtil::MapEnclosingClippedRect(draw_transform(),
+                                        accumulated_content_rect());
+  // If accumulated content rect is contained within clip rect, early out
+  // without clipping.
+  if (clip_rect().Contains(accumulated_rect_in_target_space))
+    return accumulated_content_rect();
+
+  gfx::Rect clipped_accumulated_rect_in_target_space = clip_rect();
+  clipped_accumulated_rect_in_target_space.Intersect(
+      accumulated_rect_in_target_space);
+
+  if (clipped_accumulated_rect_in_target_space.IsEmpty())
+    return gfx::Rect();
+
+  gfx::Rect clipped_accumulated_rect_in_local_space =
+      MathUtil::ProjectEnclosingClippedRect(
+          target_to_surface, clipped_accumulated_rect_in_target_space);
+  // Bringing clipped accumulated rect back to local space may result
+  // in inflation due to axis-alignment.
+  clipped_accumulated_rect_in_local_space.Intersect(accumulated_content_rect());
+  return clipped_accumulated_rect_in_local_space;
+}
+
+void RenderSurfaceImpl::CalculateContentRectFromAccumulatedContentRect(
+    int max_texture_size) {
+  // Root render surface use viewport, and does not calculate content rect.
+  DCHECK_NE(render_target(), this);
+
+  // Surface's content rect is the clipped accumulated content rect. By default
+  // use accumulated content rect, and then try to clip it.
+  gfx::Rect surface_content_rect = CalculateClippedAccumulatedContentRect();
+
+  // The RenderSurfaceImpl backing texture cannot exceed the maximum
+  // supported texture size.
+  surface_content_rect.set_width(
+      std::min(surface_content_rect.width(), max_texture_size));
+  surface_content_rect.set_height(
+      std::min(surface_content_rect.height(), max_texture_size));
+
+  SetContentRect(surface_content_rect);
+}
+
+void RenderSurfaceImpl::SetContentRectToViewport() {
+  // Only root render surface use viewport as content rect.
+  DCHECK_EQ(render_target(), this);
+  gfx::Rect viewport = gfx::ToEnclosingRect(owning_layer_->layer_tree_impl()
+                                                ->property_trees()
+                                                ->clip_tree.ViewportClip());
+  SetContentRect(viewport);
+}
+
 void RenderSurfaceImpl::ClearAccumulatedContentRect() {
   accumulated_content_rect_ = gfx::Rect();
 }

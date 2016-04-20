@@ -195,56 +195,6 @@ void ScrollAndScaleSet::FromProtobuf(const proto::ScrollAndScaleSet& proto) {
   top_controls_delta = proto.top_controls_delta();
 }
 
-inline gfx::Rect CalculateVisibleRectWithCachedLayerRect(
-    const gfx::Rect& target_surface_rect,
-    const gfx::Rect& layer_bound_rect,
-    const gfx::Rect& layer_rect_in_target_space,
-    const gfx::Transform& transform) {
-  if (layer_rect_in_target_space.IsEmpty())
-    return gfx::Rect();
-
-  // Is this layer fully contained within the target surface?
-  if (target_surface_rect.Contains(layer_rect_in_target_space))
-    return layer_bound_rect;
-
-  // If the layer doesn't fill up the entire surface, then find the part of
-  // the surface rect where the layer could be visible. This avoids trying to
-  // project surface rect points that are behind the projection point.
-  gfx::Rect minimal_surface_rect = target_surface_rect;
-  minimal_surface_rect.Intersect(layer_rect_in_target_space);
-
-  if (minimal_surface_rect.IsEmpty())
-    return gfx::Rect();
-
-  // Project the corners of the target surface rect into the layer space.
-  // This bounding rectangle may be larger than it needs to be (being
-  // axis-aligned), but is a reasonable filter on the space to consider.
-  // Non-invertible transforms will create an empty rect here.
-
-  gfx::Transform surface_to_layer(gfx::Transform::kSkipInitialization);
-  if (!transform.GetInverse(&surface_to_layer)) {
-    // Because we cannot use the surface bounds to determine what portion of
-    // the layer is visible, we must conservatively assume the full layer is
-    // visible.
-    return layer_bound_rect;
-  }
-
-  gfx::Rect layer_rect = MathUtil::ProjectEnclosingClippedRect(
-      surface_to_layer, minimal_surface_rect);
-  layer_rect.Intersect(layer_bound_rect);
-  return layer_rect;
-}
-
-gfx::Rect LayerTreeHostCommon::CalculateVisibleRect(
-    const gfx::Rect& target_surface_rect,
-    const gfx::Rect& layer_bound_rect,
-    const gfx::Transform& transform) {
-  gfx::Rect layer_in_surface_space =
-      MathUtil::MapEnclosingClippedRect(transform, layer_bound_rect);
-  return CalculateVisibleRectWithCachedLayerRect(
-      target_surface_rect, layer_bound_rect, layer_in_surface_space, transform);
-}
-
 static inline bool IsRootLayer(const Layer* layer) {
   return !layer->parent();
 }
@@ -617,36 +567,13 @@ static void ComputeSurfaceContentRects(LayerTreeImpl* layer_tree_impl,
   for (LayerImpl* layer : base::Reversed(*render_surface_layer_list)) {
     if (layer_tree_impl->IsRootLayer(layer)) {
       // The root layer's surface content rect is always the entire viewport.
-      gfx::Rect viewport =
-          gfx::ToEnclosingRect(property_trees->clip_tree.ViewportClip());
-      layer->render_surface()->SetContentRect(viewport);
+      layer->render_surface()->SetContentRectToViewport();
       continue;
     }
-
     RenderSurfaceImpl* surface = layer->render_surface();
-    gfx::Rect surface_content_rect = surface->accumulated_content_rect();
-
-    if (!layer->replica_layer() && !layer->HasCopyRequest() &&
-        surface->is_clipped()) {
-      // Here, we clip the render surface's content rect with its clip rect.
-      // As the clip rect of render surface is in the surface's target
-      // space, we first map the content rect into the target space,
-      // intersect it with clip rect and project back the result to the
-      // surface space.
-      if (!surface_content_rect.IsEmpty()) {
-        gfx::Rect surface_clip_rect = LayerTreeHostCommon::CalculateVisibleRect(
-            surface->clip_rect(), surface_content_rect,
-            surface->draw_transform());
-        surface_content_rect.Intersect(surface_clip_rect);
-      }
-    }
-    // The RenderSurfaceImpl backing texture cannot exceed the maximum
-    // supported texture size.
-    surface_content_rect.set_width(
-        std::min(surface_content_rect.width(), max_texture_size));
-    surface_content_rect.set_height(
-        std::min(surface_content_rect.height(), max_texture_size));
-    surface->SetContentRect(surface_content_rect);
+    // Now all contributing drawable content rect has been accumulated to this
+    // render surface, calculate the content rect.
+    surface->CalculateContentRectFromAccumulatedContentRect(max_texture_size);
 
     // Now the render surface's content rect is calculated correctly, it could
     // contribute to its render target.

@@ -54,7 +54,8 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
   // Currently, the content_rect, clip_rect, and
   // owning_layer->layerPropertyChanged() are the only sources of change.
   EXECUTE_AND_VERIFY_SURFACE_CHANGED(render_surface->SetClipRect(test_rect));
-  EXECUTE_AND_VERIFY_SURFACE_CHANGED(render_surface->SetContentRect(test_rect));
+  EXECUTE_AND_VERIFY_SURFACE_CHANGED(
+      render_surface->SetContentRectForTesting(test_rect));
 
   owning_layer->SetOpacity(0.5f);
   EXPECT_TRUE(render_surface->SurfacePropertyChanged());
@@ -66,7 +67,7 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(
       render_surface->SetClipRect(test_rect));
   EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(
-      render_surface->SetContentRect(test_rect));
+      render_surface->SetContentRectForTesting(test_rect));
 
   std::unique_ptr<LayerImpl> dummy_mask =
       LayerImpl::Create(host_impl.active_tree(), 2);
@@ -110,7 +111,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   gfx::Transform origin;
   origin.Translate(30, 40);
 
-  render_surface->SetContentRect(content_rect);
+  render_surface->SetContentRectForTesting(content_rect);
   render_surface->SetClipRect(clip_rect);
   render_surface->SetDrawOpacity(1.f);
 
@@ -173,7 +174,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   origin.Translate(30.0, 40.0);
 
   render_surface->SetScreenSpaceTransform(origin);
-  render_surface->SetContentRect(content_rect);
+  render_surface->SetContentRectForTesting(content_rect);
 
   TestRenderPassSink pass_sink;
 

@@ -117,7 +117,9 @@ class CC_EXPORT RenderSurfaceImpl {
     contributes_to_drawn_surface_ = contributes_to_drawn_surface;
   }
 
-  void SetContentRect(const gfx::Rect& content_rect);
+  void CalculateContentRectFromAccumulatedContentRect(int max_texture_size);
+  void SetContentRectToViewport();
+  void SetContentRectForTesting(const gfx::Rect& rect);
   gfx::Rect content_rect() const { return draw_properties_.content_rect; }
 
   void ClearAccumulatedContentRect();
@@ -167,6 +169,9 @@ class CC_EXPORT RenderSurfaceImpl {
   int EffectTreeIndex() const;
 
  private:
+  void SetContentRect(const gfx::Rect& content_rect);
+  gfx::Rect CalculateClippedAccumulatedContentRect();
+
   LayerImpl* owning_layer_;
 
   // Container for properties that render surfaces need to compute before they

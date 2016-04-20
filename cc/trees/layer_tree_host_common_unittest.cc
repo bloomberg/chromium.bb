@@ -104,6 +104,41 @@ class LayerTreeHostCommonScalingTest : public LayerTreeHostCommonTest {
       : LayerTreeHostCommonTest(LayerTreeSettingsScaleContent()) {}
 };
 
+class LayerTreeHostCommonDrawRectsTest : public LayerTreeHostCommonTest {
+ public:
+  LayerTreeHostCommonDrawRectsTest() : LayerTreeHostCommonTest() {}
+
+  LayerImpl* TestVisibleRectAndDrawableContentRect(
+      const gfx::Rect& target_rect,
+      const gfx::Transform& layer_transform,
+      const gfx::Rect& layer_rect) {
+    LayerImpl* root = root_layer();
+    LayerImpl* target = AddChild<LayerImpl>(root);
+    LayerImpl* drawing_layer = AddChild<LayerImpl>(target);
+
+    root->SetDrawsContent(true);
+    target->SetDrawsContent(true);
+    target->SetMasksToBounds(true);
+    drawing_layer->SetDrawsContent(true);
+
+    gfx::Transform identity;
+
+    SetLayerPropertiesForTesting(root, identity, gfx::Point3F(), gfx::PointF(),
+                                 gfx::Size(500, 500), true, false, true);
+    SetLayerPropertiesForTesting(target, identity, gfx::Point3F(),
+                                 gfx::PointF(target_rect.origin()),
+                                 target_rect.size(), true, false, true);
+    SetLayerPropertiesForTesting(drawing_layer, layer_transform, gfx::Point3F(),
+                                 gfx::PointF(layer_rect.origin()),
+                                 layer_rect.size(), true, false, false);
+
+    host_impl()->active_tree()->property_trees()->needs_rebuild = true;
+    ExecuteCalculateDrawProperties(root);
+
+    return drawing_layer;
+  }
+};
+
 TEST_F(LayerTreeHostCommonTest, TransformsForNoOpLayer) {
   // Sanity check: For layers positioned at zero, with zero size,
   // and with identity transforms, then the draw transform,
@@ -2696,70 +2731,47 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_TRUE(great_grand_child->screen_space_transform_is_animating());
 }
 
-TEST_F(LayerTreeHostCommonTest, VisibleRectForIdentityTransform) {
-  // Test the calculateVisibleRect() function works correctly for identity
-  // transforms.
+TEST_F(LayerTreeHostCommonDrawRectsTest, DrawRectsForIdentityTransform) {
+  // Test visible layer rect and drawable content rect are calculated correctly
+  // correctly for identity transforms.
 
   gfx::Rect target_surface_rect = gfx::Rect(0, 0, 100, 100);
   gfx::Transform layer_to_surface_transform;
 
   // Case 1: Layer is contained within the surface.
   gfx::Rect layer_content_rect = gfx::Rect(10, 10, 30, 30);
-  gfx::Rect expected = gfx::Rect(10, 10, 30, 30);
-  gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected, actual);
+  gfx::Rect expected_visible_layer_rect = gfx::Rect(30, 30);
+  gfx::Rect expected_drawable_content_rect = gfx::Rect(10, 10, 30, 30);
+  LayerImpl* drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 
   // Case 2: Layer is outside the surface rect.
   layer_content_rect = gfx::Rect(120, 120, 30, 30);
-  actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_TRUE(actual.IsEmpty());
+  expected_visible_layer_rect = gfx::Rect();
+  expected_drawable_content_rect = gfx::Rect();
+  drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 
   // Case 3: Layer is partially overlapping the surface rect.
   layer_content_rect = gfx::Rect(80, 80, 30, 30);
-  expected = gfx::Rect(80, 80, 20, 20);
-  actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected, actual);
+  expected_visible_layer_rect = gfx::Rect(20, 20);
+  expected_drawable_content_rect = gfx::Rect(80, 80, 20, 20);
+  drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, VisibleRectForTranslations) {
-  // Test the calculateVisibleRect() function works correctly for scaling
-  // transforms.
-
-  gfx::Rect target_surface_rect = gfx::Rect(0, 0, 100, 100);
-  gfx::Rect layer_content_rect = gfx::Rect(0, 0, 30, 30);
-  gfx::Transform layer_to_surface_transform;
-
-  // Case 1: Layer is contained within the surface.
-  layer_to_surface_transform.MakeIdentity();
-  layer_to_surface_transform.Translate(10.0, 10.0);
-  gfx::Rect expected = gfx::Rect(0, 0, 30, 30);
-  gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected, actual);
-
-  // Case 2: Layer is outside the surface rect.
-  layer_to_surface_transform.MakeIdentity();
-  layer_to_surface_transform.Translate(120.0, 120.0);
-  actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_TRUE(actual.IsEmpty());
-
-  // Case 3: Layer is partially overlapping the surface rect.
-  layer_to_surface_transform.MakeIdentity();
-  layer_to_surface_transform.Translate(80.0, 80.0);
-  expected = gfx::Rect(0, 0, 20, 20);
-  actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected, actual);
-}
-
-TEST_F(LayerTreeHostCommonTest, VisibleRectFor2DRotations) {
-  // Test the calculateVisibleRect() function works correctly for rotations
-  // about z-axis (i.e. 2D rotations).  Remember that calculateVisibleRect()
-  // should return the g in the layer's space.
+TEST_F(LayerTreeHostCommonDrawRectsTest, DrawRectsFor2DRotations) {
+  // Test visible layer rect and drawable content rect are calculated correctly
+  // for rotations about z-axis (i.e. 2D rotations).
 
   gfx::Rect target_surface_rect = gfx::Rect(0, 0, 100, 100);
   gfx::Rect layer_content_rect = gfx::Rect(0, 0, 30, 30);
@@ -2769,18 +2781,25 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectFor2DRotations) {
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.Translate(50.0, 50.0);
   layer_to_surface_transform.Rotate(45.0);
-  gfx::Rect expected = gfx::Rect(0, 0, 30, 30);
-  gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected, actual);
+  gfx::Rect expected_visible_layer_rect = gfx::Rect(30, 30);
+  gfx::Rect expected_drawable_content_rect = gfx::Rect(28, 50, 44, 43);
+  LayerImpl* drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 
   // Case 2: Layer is outside the surface rect.
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.Translate(-50.0, 0.0);
   layer_to_surface_transform.Rotate(45.0);
-  actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_TRUE(actual.IsEmpty());
+  expected_visible_layer_rect = gfx::Rect();
+  expected_drawable_content_rect = gfx::Rect();
+  drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 
   // Case 3: The layer is rotated about its top-left corner. In surface space,
   // the layer is oriented diagonally, with the left half outside of the render
@@ -2789,10 +2808,13 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectFor2DRotations) {
   // and bottom-right corners of the layer are still visible.
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.Rotate(45.0);
-  expected = gfx::Rect(0, 0, 30, 30);
-  actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected, actual);
+  expected_visible_layer_rect = gfx::Rect(30, 30);
+  expected_drawable_content_rect = gfx::Rect(22, 43);
+  drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 
   // Case 4: The layer is rotated about its top-left corner, and translated
   // upwards. In surface space, the layer is oriented diagonally, with only the
@@ -2802,15 +2824,19 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectFor2DRotations) {
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.Translate(0.0, -sqrt(2.0) * 15.0);
   layer_to_surface_transform.Rotate(45.0);
-  expected = gfx::Rect(15, 0, 15, 30);  // Right half of layer bounds.
-  actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected, actual);
+  // Right half of layer bounds.
+  expected_visible_layer_rect = gfx::Rect(15, 0, 15, 30);
+  expected_drawable_content_rect = gfx::Rect(22, 22);
+  drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, VisibleRectFor3dOrthographicTransform) {
-  // Test that the calculateVisibleRect() function works correctly for 3d
-  // transforms.
+TEST_F(LayerTreeHostCommonDrawRectsTest, DrawRectsFor3dOrthographicTransform) {
+  // Test visible layer rect and drawable content rect are calculated correctly
+  // for 3d transforms.
 
   gfx::Rect target_surface_rect = gfx::Rect(0, 0, 100, 100);
   gfx::Rect layer_content_rect = gfx::Rect(0, 0, 100, 100);
@@ -2818,32 +2844,40 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectFor3dOrthographicTransform) {
 
   // Case 1: Orthographic projection of a layer rotated about y-axis by 45
   // degrees, should be fully contained in the render surface.
+  // 100 is the un-rotated layer width; divided by sqrt(2) is the rotated width.
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.RotateAboutYAxis(45.0);
-  gfx::Rect expected = gfx::Rect(0, 0, 100, 100);
-  gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected, actual);
+  gfx::Rect expected_visible_layer_rect = gfx::Rect(100, 100);
+  gfx::Rect expected_drawable_content_rect = gfx::Rect(71, 100);
+  LayerImpl* drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 
   // Case 2: Orthographic projection of a layer rotated about y-axis by 45
   // degrees, but shifted to the side so only the right-half the layer would be
   // visible on the surface.
-  // 100 is the un-rotated layer width; divided by sqrt(2) is the rotated width.
+  // 50 is the un-rotated layer width; divided by sqrt(2) is the rotated width.
   SkMScalar half_width_of_rotated_layer =
       SkDoubleToMScalar((100.0 / sqrt(2.0)) * 0.5);
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.Translate(-half_width_of_rotated_layer, 0.0);
   layer_to_surface_transform.RotateAboutYAxis(45.0);  // Rotates about the left
                                                       // edge of the layer.
-  expected = gfx::Rect(50, 0, 50, 100);  // Tight half of the layer.
-  actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected, actual);
+  // Tight half of the layer.
+  expected_visible_layer_rect = gfx::Rect(50, 0, 50, 100);
+  expected_drawable_content_rect = gfx::Rect(36, 100);
+  drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, VisibleRectFor3dPerspectiveTransform) {
-  // Test the calculateVisibleRect() function works correctly when the layer has
-  // a perspective projection onto the target surface.
+TEST_F(LayerTreeHostCommonDrawRectsTest, DrawRectsFor3dPerspectiveTransform) {
+  // Test visible layer rect and drawable content rect are calculated correctly
+  // when the layer has a perspective projection onto the target surface.
 
   gfx::Rect target_surface_rect = gfx::Rect(0, 0, 100, 100);
   gfx::Rect layer_content_rect = gfx::Rect(-50, -50, 200, 200);
@@ -2863,10 +2897,15 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectFor3dPerspectiveTransform) {
   // This translate places the layer in front of the surface's projection plane.
   layer_to_surface_transform.Translate3d(0.0, 0.0, -27.0);
 
-  gfx::Rect expected = gfx::Rect(-50, -50, 200, 200);
-  gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected, actual);
+  // Layer position is (-50, -50), visible rect in layer space is layer bounds
+  // offset by layer position.
+  gfx::Rect expected_visible_layer_rect = gfx::Rect(50, 50, 150, 150);
+  gfx::Rect expected_drawable_content_rect = gfx::Rect(38, 38);
+  LayerImpl* drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 
   // Case 2: same projection as before, except that the layer is also translated
   // to the side, so that only the right half of the layer should be visible.
@@ -2874,20 +2913,23 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectFor3dPerspectiveTransform) {
   // Explanation of expected result: The perspective ratio is (z distance
   // between layer and camera origin) / (z distance between projection plane and
   // camera origin) == ((-27 - 9) / 9) Then, by similar triangles, if we want to
-  // move a layer by translating -50 units in projected surface units (so that
+  // move a layer by translating -25 units in projected surface units (so that
   // only half of it is visible), then we would need to translate by (-36 / 9) *
-  // -50 == -200 in the layer's units.
-  layer_to_surface_transform.Translate3d(-200.0, 0.0, 0.0);
-  expected = gfx::Rect(gfx::Point(50, -50),
-                       gfx::Size(100, 200));  // The right half of the layer's
-                                              // bounding rect.
-  actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected, actual);
+  // -25 == -100 in the layer's units.
+  layer_to_surface_transform.Translate3d(-100.0, 0.0, 0.0);
+  // Visible layer rect is moved by 100, and drawable content rect is in target
+  // space and is moved by 25.
+  expected_visible_layer_rect = gfx::Rect(150, 50, 50, 150);
+  expected_drawable_content_rect = gfx::Rect(13, 38);
+  drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest,
-       VisibleRectFor3dOrthographicIsNotClippedBehindSurface) {
+TEST_F(LayerTreeHostCommonDrawRectsTest,
+       DrawRectsFor3dOrthographicIsNotClippedBehindSurface) {
   // There is currently no explicit concept of an orthographic projection plane
   // in our code (nor in the CSS spec to my knowledge). Therefore, layers that
   // are technically behind the surface in an orthographic world should not be
@@ -2904,22 +2946,30 @@ TEST_F(LayerTreeHostCommonTest,
   layer_to_surface_transform.RotateAboutYAxis(45.0);
   layer_to_surface_transform.Translate(-50.0, 0.0);
 
-  gfx::Rect expected = gfx::Rect(0, 0, 100, 100);
-  gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected, actual);
+  // Layer is rotated about Y Axis, and its width is 100/sqrt(2) in surface
+  // space.
+  gfx::Rect expected_visible_layer_rect = gfx::Rect(100, 100);
+  gfx::Rect expected_drawable_content_rect = gfx::Rect(14, 0, 72, 100);
+  LayerImpl* drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, VisibleRectFor3dPerspectiveWhenClippedByW) {
-  // Test the calculateVisibleRect() function works correctly when projecting a
-  // surface onto a layer, but the layer is partially behind the camera (not
-  // just behind the projection plane). In this case, the cartesian coordinates
-  // may seem to be valid, but actually they are not. The visible rect needs to
-  // be properly clipped by the w = 0 plane in homogeneous coordinates before
-  // converting to cartesian coordinates.
+TEST_F(LayerTreeHostCommonDrawRectsTest,
+       DrawRectsFor3dPerspectiveWhenClippedByW) {
+  // Test visible layer rect and drawable content rect are calculated correctly
+  // when projecting a surface onto a layer, but the layer is partially behind
+  // the camera (not just behind the projection plane). In this case, the
+  // cartesian coordinates may seem to be valid, but actually they are not. The
+  // visible rect needs to be properly clipped by the w = 0 plane in homogeneous
+  // coordinates before converting to cartesian coordinates. The drawable
+  // content rect would be entire surface rect because layer is rotated at the
+  // camera position.
 
-  gfx::Rect target_surface_rect = gfx::Rect(-50, -50, 100, 100);
-  gfx::Rect layer_content_rect = gfx::Rect(-10, -1, 20, 2);
+  gfx::Rect target_surface_rect = gfx::Rect(0, 0, 200, 200);
+  gfx::Rect layer_content_rect = gfx::Rect(0, 0, 20, 2);
   gfx::Transform layer_to_surface_transform;
 
   // The layer is positioned so that the right half of the layer should be in
@@ -2928,8 +2978,9 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectFor3dPerspectiveWhenClippedByW) {
   // perspective and rotation about the center of the layer.
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.ApplyPerspectiveDepth(1.0);
-  layer_to_surface_transform.Translate3d(-2.0, 0.0, 1.0);
-  layer_to_surface_transform.RotateAboutYAxis(45.0);
+  layer_to_surface_transform.Translate3d(10.0, 0.0, 1.0);
+  layer_to_surface_transform.RotateAboutYAxis(-45.0);
+  layer_to_surface_transform.Translate(-10, -1);
 
   // Sanity check that this transform does indeed cause w < 0 when applying the
   // transform, otherwise this code is not testing the intended scenario.
@@ -2939,15 +2990,16 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectFor3dPerspectiveWhenClippedByW) {
                     &clipped);
   ASSERT_TRUE(clipped);
 
-  int expected_x_position = 0;
-  int expected_width = 10;
-  gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected_x_position, actual.x());
-  EXPECT_EQ(expected_width, actual.width());
+  gfx::Rect expected_visible_layer_rect = gfx::Rect(0, 1, 10, 1);
+  gfx::Rect expected_drawable_content_rect = target_surface_rect;
+  LayerImpl* drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, VisibleRectForPerspectiveUnprojection) {
+TEST_F(LayerTreeHostCommonDrawRectsTest, DrawRectsForPerspectiveUnprojection) {
   // To determine visible rect in layer space, there needs to be an
   // un-projection from surface space to layer space. When the original
   // transform was a perspective projection that was clipped, it returns a rect
@@ -2956,14 +3008,16 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectForPerspectiveUnprojection) {
 
   // This sequence of transforms causes one corner of the layer to protrude
   // across the w = 0 plane, and should be clipped.
-  gfx::Rect target_surface_rect = gfx::Rect(-50, -50, 100, 100);
-  gfx::Rect layer_content_rect = gfx::Rect(-10, -10, 20, 20);
+  gfx::Rect target_surface_rect = gfx::Rect(0, 0, 150, 150);
+  gfx::Rect layer_content_rect = gfx::Rect(0, 0, 20, 20);
   gfx::Transform layer_to_surface_transform;
   layer_to_surface_transform.MakeIdentity();
+  layer_to_surface_transform.Translate(10, 10);
   layer_to_surface_transform.ApplyPerspectiveDepth(1.0);
   layer_to_surface_transform.Translate3d(0.0, 0.0, -5.0);
   layer_to_surface_transform.RotateAboutYAxis(45.0);
   layer_to_surface_transform.RotateAboutXAxis(80.0);
+  layer_to_surface_transform.Translate(-10, -10);
 
   // Sanity check that un-projection does indeed cause w < 0, otherwise this
   // code is not testing the intended scenario.
@@ -2977,10 +3031,13 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectForPerspectiveUnprojection) {
   // Only the corner of the layer is not visible on the surface because of being
   // clipped. But, the net result of rounding visible region to an axis-aligned
   // rect is that the entire layer should still be considered visible.
-  gfx::Rect expected = gfx::Rect(-10, -10, 20, 20);
-  gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
-      target_surface_rect, layer_content_rect, layer_to_surface_transform);
-  EXPECT_EQ(expected, actual);
+  gfx::Rect expected_visible_layer_rect = layer_content_rect;
+  gfx::Rect expected_drawable_content_rect = target_surface_rect;
+  LayerImpl* drawing_layer = TestVisibleRectAndDrawableContentRect(
+      target_surface_rect, layer_to_surface_transform, layer_content_rect);
+  EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
+  EXPECT_EQ(expected_drawable_content_rect,
+            drawing_layer->drawable_content_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,
