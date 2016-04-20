@@ -88330,19 +88330,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.LoadType"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="ContentSettingsTypes">
-  <suffix name="MidiSysEx" label="Midi SysEx permsision actions"/>
-  <suffix name="PushMessaging" label="Push messaging permission actions"/>
-  <suffix name="Notifications" label="Notification permission actions"/>
-  <suffix name="Geolocation" label="Geolocation permission actions"/>
-  <suffix name="ProtectedMedia" label="Protected media permission actions"/>
-  <suffix name="DurableStorage" label="Durable Storage permission actions"/>
-  <affected-histogram name="ContentSettings.PermissionActions"/>
-  <affected-histogram name="ContentSettings.PermissionActionsInsecureOrigin"/>
-  <affected-histogram name="ContentSettings.PermissionActionsSecureOrigin"/>
-  <affected-histogram name="Permissions.Requested.CrossOrigin"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="ContextMenuType" separator=".">
   <suffix name="Link"
       label="The context menu was shown for a (non-image) link"/>
@@ -91687,9 +91674,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="DurableStorage" label="Durable Storage permission actions"/>
   <suffix name="AudioCapture" label="Microphone permission actions"/>
   <suffix name="VideoCapture" label="Camera permission actions"/>
+  <affected-histogram name="ContentSettings.PermissionActions"/>
+  <affected-histogram name="ContentSettings.PermissionActionsInsecureOrigin"/>
+  <affected-histogram name="ContentSettings.PermissionActionsSecureOrigin"/>
   <affected-histogram name="Permissions.Action"/>
   <affected-histogram name="Permissions.Action.InsecureOrigin"/>
   <affected-histogram name="Permissions.Action.SecureOrigin"/>
+  <affected-histogram name="Permissions.Requested.CrossOrigin"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PhysicalWebDebugActions" separator=".">
