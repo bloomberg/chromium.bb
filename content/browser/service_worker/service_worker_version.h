@@ -669,6 +669,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::unique_ptr<Metrics> metrics_;
   const bool should_exclude_from_uma_ = false;
 
+  bool stop_when_devtools_detached_ = false;
+
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);

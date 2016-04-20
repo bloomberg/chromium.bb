@@ -614,8 +614,12 @@ void ServiceWorkerVersion::SetStartWorkerStatusCode(
 void ServiceWorkerVersion::Doom() {
   DCHECK(!HasControllee());
   SetStatus(REDUNDANT);
-  if (running_status() == STARTING || running_status() == RUNNING)
-    embedded_worker_->Stop();
+  if (running_status() == STARTING || running_status() == RUNNING) {
+    if (embedded_worker()->devtools_attached())
+      stop_when_devtools_detached_ = true;
+    else
+      embedded_worker_->Stop();
+  }
   if (!context_)
     return;
   std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
@@ -625,6 +629,12 @@ void ServiceWorkerVersion::Doom() {
 
 void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
   embedded_worker()->set_devtools_attached(attached);
+  if (stop_when_devtools_detached_ && !attached) {
+    DCHECK_EQ(REDUNDANT, status());
+    if (running_status() == STARTING || running_status() == RUNNING)
+      embedded_worker_->Stop();
+    return;
+  }
   if (attached) {
     // TODO(falken): Canceling the timeouts when debugging could cause
     // heisenbugs; we should instead run them as normal show an educational
