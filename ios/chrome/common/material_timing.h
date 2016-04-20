@@ -36,16 +36,21 @@ CAMediaTimingFunction* TransformCurve2();
 // Returns a timing funtion related to the given |curve|.
 CAMediaTimingFunction* TimingFunction(Curve curve);
 
+}  // material
+}  // ios
+
+@interface UIView (CrMaterialAnimations)
+
 // Performs a standard UIView animation using a material timing |curve|.
 // Note: any curve option specified in |options| will be ignored in favor of the
 // specified curve value.
 // See also: +[UIView animateWithDuration:delay:animations:completion].
-void Animate(NSTimeInterval duration,
-             NSTimeInterval delay,
-             Curve curve,
-             UIViewAnimationOptions options,
-             void (^animations)(void),
-             void (^completion)(BOOL));
++ (void)cr_animateWithDuration:(NSTimeInterval)duration
+                         delay:(NSTimeInterval)delay
+                         curve:(ios::material::Curve)curve
+                       options:(UIViewAnimationOptions)options
+                    animations:(void (^)(void))animations
+                    completion:(void (^)(BOOL finished))completion;
 
 // Performs a standard UIView transition animation using a material timing
 // |curve|.
@@ -53,14 +58,13 @@ void Animate(NSTimeInterval duration,
 // specified curve value.
 // See also:
 // +[UIView transitionWithView:duration:options:animations:completion].
-void Transition(UIView* view,
-                NSTimeInterval duration,
-                Curve curve,
-                UIViewAnimationOptions options,
-                void (^animations)(void),
-                void (^completion)(BOOL));
++ (void)cr_transitionWithView:(UIView*)view
+                     duration:(NSTimeInterval)duration
+                        curve:(ios::material::Curve)curve
+                      options:(UIViewAnimationOptions)options
+                   animations:(void (^)(void))animations
+                   completion:(void (^)(BOOL finished))completion;
 
-}  // material
-}  // ios
+@end
 
 #endif  // IOS_CHROME_COMMON_MATERIAL_TIMING_H_

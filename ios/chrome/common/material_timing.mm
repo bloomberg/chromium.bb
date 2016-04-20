@@ -67,12 +67,17 @@ CAMediaTimingFunction* TimingFunction(Curve curve) {
   }
 }
 
-void Animate(NSTimeInterval duration,
-             NSTimeInterval delay,
-             Curve curve,
-             UIViewAnimationOptions options,
-             void (^animations)(void),
-             void (^completion)(BOOL)) {
+}  // material
+}  // ios
+
+@implementation UIView (CrMaterialAnimations)
+
++ (void)cr_animateWithDuration:(NSTimeInterval)duration
+                         delay:(NSTimeInterval)delay
+                         curve:(ios::material::Curve)curve
+                       options:(UIViewAnimationOptions)options
+                    animations:(void (^)(void))animations
+                    completion:(void (^)(BOOL finished))completion {
   [CATransaction begin];
   [CATransaction setAnimationTimingFunction:TimingFunction(curve)];
   [UIView animateWithDuration:duration
@@ -83,12 +88,12 @@ void Animate(NSTimeInterval duration,
   [CATransaction commit];
 }
 
-void Transition(UIView* view,
-                NSTimeInterval duration,
-                Curve curve,
-                UIViewAnimationOptions options,
-                void (^animations)(void),
-                void (^completion)(BOOL)) {
++ (void)cr_transitionWithView:(UIView*)view
+                     duration:(NSTimeInterval)duration
+                        curve:(ios::material::Curve)curve
+                      options:(UIViewAnimationOptions)options
+                   animations:(void (^)(void))animations
+                   completion:(void (^)(BOOL finished))completion {
   [CATransaction begin];
   [CATransaction setAnimationTimingFunction:TimingFunction(curve)];
   [UIView transitionWithView:view
@@ -99,5 +104,4 @@ void Transition(UIView* view,
   [CATransaction commit];
 }
 
-}  // material
-}  // ios
+@end
