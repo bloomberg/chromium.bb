@@ -215,7 +215,7 @@ class RemoteChromeController(ChromeControllerBase):
     """Overridden connection creation."""
     package_info = OPTIONS.ChromePackage()
     command_line_path = '/data/local/chrome-command-line'
-    self._device.KillAll(package_info.package, quiet=True)
+    self._device.ForceStop(package_info.package)
     if OPTIONS.clear_device_data:
       logging.info('Clear Chrome data')
       self._device.adb.Shell('pm clear ' + package_info.package)
@@ -252,7 +252,7 @@ class RemoteChromeController(ChromeControllerBase):
               time.sleep(self.TIME_TO_IDLE_SECONDS)
             break
       finally:
-        self._device.KillAll(package_info.package, quiet=True)
+        self._device.ForceStop(package_info.package)
 
   def PushBrowserCache(self, cache_path):
     """Override for chrome cache pushing."""
