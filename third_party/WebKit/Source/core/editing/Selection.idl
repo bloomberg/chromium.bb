@@ -52,12 +52,9 @@
     [MeasureAs=SelectionCollapseToEnd, RaisesException] void collapseToEnd();
     [MeasureAs=SelectionExtend, RaisesException] void extend(Node node, optional long offset = 0);
     // TODO(philipj): The arguments should be anchorNode, anchorOffset,
-    // focusNode and focusOffset, and none of them are optional or nullable in
-    // the spec.
-    [MeasureAs=SelectionSetBaseAndExtent, RaisesException] void setBaseAndExtent([Default=Undefined] optional Node? baseNode,
-                                                                                 [Default=Undefined] optional long baseOffset,
-                                                                                 [Default=Undefined] optional Node? extentNode,
-                                                                                 [Default=Undefined] optional long extentOffset);
+    // focusNode and focusOffset, and none of them are nullable in the spec.
+    [MeasureAs=SelectionSetBaseAndExtent, RaisesException] void setBaseAndExtent(Node? baseNode, long baseOffset,
+                                                                                 Node? extentNode, long extentOffset);
     [MeasureAs=SelectionSelectAllChildren, RaisesException] void selectAllChildren(Node node);
     [MeasureAs=SelectionDeleteDromDocument, CustomElementCallbacks] void deleteFromDocument();
     [MeasureAs=SelectionContainsNode] boolean containsNode(Node node, optional boolean allowPartialContainment = false);

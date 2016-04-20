@@ -6,7 +6,7 @@
       }
       #el1:nth-last-child(2n) {
         display: table-header-group;
-      } 
+      }
       #el2:first-child {
         display: inline-table;
       }
@@ -15,7 +15,7 @@
       }
       #el2 {
         display: table-header-group;
-      } 
+      }
       #el4 {
         visibility: collapse;
       }
@@ -24,7 +24,7 @@
       }
       #el5 {
         display: table-header-group;
-      } 
+      }
       #el6 {
         -webkit-border-after: solid;
         float: left;
@@ -64,7 +64,7 @@
         el7.setAttribute('id','el7')
         document.body.appendChild(el7)
         document.designMode='on'
-        window.getSelection().setBaseAndExtent(el3, 1)
+        window.getSelection().setBaseAndExtent(el3, 1, null, 0)
         document.execCommand('InsertLineBreak')
         document.execCommand('selectall')
         document.execCommand('strikethrough')

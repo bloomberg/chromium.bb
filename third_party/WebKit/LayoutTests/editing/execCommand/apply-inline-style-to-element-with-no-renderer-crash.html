@@ -25,7 +25,7 @@ test(function() {
 
     input=document.createElement('input');
     textPath.parentNode.insertBefore(input, textPath);
-    window.getSelection().setBaseAndExtent(input, 4);
+    window.getSelection().setBaseAndExtent(input, 4, null, 0);
 
     document.designMode='on';
     document.execCommand('Transpose');

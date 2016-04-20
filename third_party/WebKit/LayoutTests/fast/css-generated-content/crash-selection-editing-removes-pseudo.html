@@ -31,7 +31,7 @@ var start = document.getElementById('start');
 var test = document.getElementById('test');
 
 // Select from the #start backwards to the start of the line.
-window.getSelection().setBaseAndExtent(document.getElementById('start'));
+window.getSelection().collapse(document.getElementById('start'));
 window.getSelection().modify('extend', 'backward', 'lineBoundary')
 
 // Replace the selection with a break. This replaces #before, text,

@@ -304,7 +304,7 @@ shouldBe("nonNumericPolicy('document.createRange().isPointInRange(document, x)')
 
 shouldBe("nonNumericPolicy('getSelection().collapse(document, x)')", "'any type allowed'");
 shouldBe("nonNumericPolicy('getSelection().setBaseAndExtent(document, x, document, 0)')", "'any type allowed'");
-shouldBe("nonNumericPolicy('getSelection().setBaseAndExtent(document, 0, document, x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('getSelection().setBaseAndExtent(document, 0, document, x)')", "'any type allowed (but not omitted)'");
 shouldBe("nonNumericPolicy('getSelection().collapse(document, x)')", "'any type allowed'");
 shouldBe("nonNumericPolicy('getSelection().extend(document, x)')", "'any type allowed'");
 shouldBe("nonNumericPolicy('getSelection().getRangeAt(x)')", "'any type allowed (but not omitted)'");
@@ -397,7 +397,7 @@ Here are other examples of numeric types in function parameters and settable att
 ../../../../WebCore/html/HTMLInputElement.idl:                 attribute long            tabIndex;
 ../../../../WebCore/html/HTMLInputElement.idl:                 attribute long            selectionStart;
 ../../../../WebCore/html/HTMLInputElement.idl:                 attribute long            selectionEnd;
-../../../../WebCore/html/HTMLLIElement.idl:        attribute long value;    
+../../../../WebCore/html/HTMLLIElement.idl:        attribute long value;
 ../../../../WebCore/html/HTMLMediaElement.idl:    attribute unsigned long playCount
 ../../../../WebCore/html/HTMLMediaElement.idl:    attribute unsigned long currentLoop;
 ../../../../WebCore/html/HTMLObjectElement.idl:                 attribute long            hspace;
@@ -429,13 +429,13 @@ Here are other examples of numeric types in function parameters and settable att
 ../../../../WebCore/html/CanvasRenderingContext2D.idl:        attribute float shadowOffsetY;
 ../../../../WebCore/html/CanvasRenderingContext2D.idl:        attribute float shadowBlur;
 ../../../../WebCore/html/HTMLMediaElement.idl:    attribute float currentTime
-../../../../WebCore/html/HTMLMediaElement.idl:    attribute float defaultPlaybackRate 
-../../../../WebCore/html/HTMLMediaElement.idl:    attribute float playbackRate 
+../../../../WebCore/html/HTMLMediaElement.idl:    attribute float defaultPlaybackRate
+../../../../WebCore/html/HTMLMediaElement.idl:    attribute float playbackRate
 ../../../../WebCore/html/HTMLMediaElement.idl:    attribute float start;
 ../../../../WebCore/html/HTMLMediaElement.idl:    attribute float end;
 ../../../../WebCore/html/HTMLMediaElement.idl:    attribute float loopStart;
 ../../../../WebCore/html/HTMLMediaElement.idl:    attribute float loopEnd;
-../../../../WebCore/html/HTMLMediaElement.idl:    attribute float volume 
+../../../../WebCore/html/HTMLMediaElement.idl:    attribute float volume
 
 ../../../../WebCore/svg/SVGAnimatedInteger.idl:                 attribute long baseVal
 ../../../../WebCore/svg/SVGElementInstanceList.idl:        SVGElementInstance item(in unsigned long index);
@@ -459,14 +459,14 @@ Here are other examples of numeric types in function parameters and settable att
 ../../../../WebCore/svg/SVGSVGElement.idl:        unsigned long suspendRedraw(in unsigned long maxWaitMilliseconds);
 ../../../../WebCore/svg/SVGSVGElement.idl:        void unsuspendRedraw(in unsigned long suspendHandleId)
 ../../../../WebCore/svg/SVGTextContentElement.idl:        long getNumberOfChars();
-../../../../WebCore/svg/SVGTextContentElement.idl:        float getSubStringLength(in unsigned long offset, 
+../../../../WebCore/svg/SVGTextContentElement.idl:        float getSubStringLength(in unsigned long offset,
 ../../../../WebCore/svg/SVGTextContentElement.idl:                                 in unsigned long length)
 ../../../../WebCore/svg/SVGTextContentElement.idl:        SVGPoint getStartPositionOfChar(in unsigned long offset)
 ../../../../WebCore/svg/SVGTextContentElement.idl:        SVGPoint getEndPositionOfChar(in unsigned long offset)
 ../../../../WebCore/svg/SVGTextContentElement.idl:        SVGRect getExtentOfChar(in unsigned long offset)
 ../../../../WebCore/svg/SVGTextContentElement.idl:        float getRotationOfChar(in unsigned long offset)
 ../../../../WebCore/svg/SVGTextContentElement.idl:        long getCharNumAtPosition(in SVGPoint point);
-../../../../WebCore/svg/SVGTextContentElement.idl:        void selectSubString(in unsigned long offset, 
+../../../../WebCore/svg/SVGTextContentElement.idl:        void selectSubString(in unsigned long offset,
 ../../../../WebCore/svg/SVGTextContentElement.idl:                             in unsigned long length)
 ../../../../WebCore/svg/SVGTransformList.idl:        [Custom] SVGTransform getItem(in unsigned long index)
 ../../../../WebCore/svg/SVGTransformList.idl:        [Custom] SVGTransform insertItemBefore(in SVGTransform item, in unsigned long index)
@@ -494,7 +494,7 @@ Here are other examples of numeric types in function parameters and settable att
 ../../../../WebCore/svg/SVGSVGElement.idl:        float getCurrentTime();
 ../../../../WebCore/svg/SVGSVGElement.idl:        void setCurrentTime(in float seconds);
 ../../../../WebCore/svg/SVGTextContentElement.idl:        float getComputedTextLength();
-../../../../WebCore/svg/SVGTextContentElement.idl:        float getSubStringLength(in unsigned long offset, 
+../../../../WebCore/svg/SVGTextContentElement.idl:        float getSubStringLength(in unsigned long offset,
 ../../../../WebCore/svg/SVGTextContentElement.idl:        float getRotationOfChar(in unsigned long offset)
 ../../../../WebCore/svg/SVGTransform.idl:        void setTranslate(in float tx, in float ty);
 ../../../../WebCore/svg/SVGTransform.idl:        void setScale(in float sx, in float sy);
