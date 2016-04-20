@@ -2,20 +2,32 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from benchmarks import media_router_metric
+from benchmarks import media_router_dialog_metric
+from benchmarks import media_router_cpu_memory_metric
 from telemetry.page import page_test
 
 
-class MediaRouterPageTest(page_test.PageTest):
+class MediaRouterDialogTest(page_test.PageTest):
   """Performs a measurement of Media Route dialog latency."""
 
   def __init__(self):
-    super(MediaRouterPageTest, self).__init__()
-    self._media_router_metric = media_router_metric.MediaRouterMetric()
+    super(MediaRouterDialogTest, self).__init__()
+    self._metric = media_router_dialog_metric.MediaRouterDialogMetric()
 
   def DidNavigateToPage(self, page, tab):
-    self._media_router_metric.Start(page, tab)
+    self._metric.Start(page, tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    self._media_router_metric.Stop(page, tab)
-    self._media_router_metric.AddResults(tab, results)
+    self._metric.Stop(page, tab)
+    self._metric.AddResults(tab, results)
+
+
+class MediaRouterCPUMemoryTest(page_test.PageTest):
+  """Performs a measurement of Media Route CPU/memory usage."""
+
+  def __init__(self):
+    super(MediaRouterCPUMemoryTest, self).__init__()
+    self._metric = media_router_cpu_memory_metric.MediaRouterCPUMemoryMetric()
+
+  def ValidateAndMeasurePage(self, page, tab, results):
+    self._metric.AddResults(tab, results)

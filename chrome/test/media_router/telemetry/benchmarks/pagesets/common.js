@@ -3,80 +3,99 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  *
- * @fileoverview Common APIs for presentation integration tests.
+ * @fileoverview Common APIs for media router performance tests.
  *
  */
 
-var startSessionPromise = null;
-var startedSession = null;
-var reconnectedSession = null;
-var presentationUrl = "http://www.google.com/#__testprovider__=true";
-var startSessionRequest = new PresentationRequest(presentationUrl);
-var defaultRequestSessionId = null;
+var initialized = false;
+var currentSession = null;
+var currentMedia = null;
 
-window.navigator.presentation.defaultRequest = startSessionRequest;
-window.navigator.presentation.defaultRequest.onconnectionavailable = function(e)
-{
-  defaultRequestSessionId = e.connection.id;
-};
+
+window['__onGCastApiAvailable'] = function(loaded, errorInfo) {
+  if (loaded) {
+    initializeCastApi();
+  } else {
+    console.log(errorInfo);
+  }
+}
 
 /**
- * Waits until one device is available.
+ * Initialize Cast APIs.
  */
-function waitUntilDeviceAvailable() {
-  startSessionRequest.getAvailability(presentationUrl).then(
-    function(availability) {
-      console.log('availability ' + availability.value + '\n');
-      if (availability.value) {
-        console.log('device available');
-      } else {
-        availability.onchange = function(newAvailability) {
-          if (newAvailability)
-            console.log('got new availability');
-        }
-      }
-  }).catch(function(){
-      console.log('error');
+function initializeCastApi() {
+  // Load Cast APIs
+  console.info('Initializing API');
+  var sessionRequest = new chrome.cast.SessionRequest(
+    chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID);
+  var apiConfig = new chrome.cast.ApiConfig(
+    sessionRequest,
+    null,  // session listener
+    function(availability) {  // receiver listener
+      console.info('Receiver listener: ' + JSON.stringify(availability));
+      initialized = true;
+  });
+  chrome.cast.initialize(
+    apiConfig,
+    function() {  // Successful callback
+      console.info('Initialize successfully');
+    },
+    function(error) {  // Error callback
+      console.error('Initialize failed, error: ' + JSON.stringify(error));
   });
 }
 
 /**
- * Starts session.
+ * Start a new session for flinging scenario.
  */
-function startSession() {
-  startSessionPromise = startSessionRequest.start();
-  console.log('start session');
+function startFlingingSession() {
+  console.info('Starting Session');
+  chrome.cast.requestSession(
+    function(session) {  // Request session successful callback
+      console.info('Request session successfully');
+      currentSession = session;
+    },
+    function(error) {  // Request session Error callback
+      console.error('Request session failed, error: ' + JSON.stringify(error));
+  });
 }
 
 /**
- * Checks if the session has been started successfully.
+ * Loads the specific video on Chromecast.
+ *
+ * @param {string} mediaUrl the url which points to a mp4 video.
  */
-function checkSession() {
-  if (!startSessionPromise) {
-    sendResult(false, 'Did not attempt to start session');
-  } else {
-    startSessionPromise.then(function(session) {
-      if(!session) {
-        console.log('Failed to start session');
-      } else {
-        // set the new session
-        startedSession = session;
-        console.log('Session has been started');
-      }
-    }).catch(function() {
-      // terminate old session if exists
-      terminateSession();
-      console.log('Failed to start session');
-    })
+function loadMedia(mediaUrl) {
+  if (!currentSession) {
+    console.warn('Cannot load media without a live session');
   }
+  console.info('loading ' + mediaUrl);
+  var mediaInfo = new chrome.cast.media.MediaInfo(mediaUrl, 'video/mp4');
+  var request = new chrome.cast.media.LoadRequest(mediaInfo);
+  request.autoplay = true;
+  request.currentTime = 0;
+  currentSession.loadMedia(request,
+    function(media) {
+      console.info('Load media successfully');
+      currentMedia = media;
+    },
+    function(error) {  // Error callback
+      console.error('Load media failed, error: ' + JSON.stringify(error));
+  });
 }
 
 /**
- * Terminates current session.
+ * Stops current session.
  */
-function terminateSession() {
-  if (startedSession) {
-    startedSession.terminate();
+function stopSession() {
+  if (currentSession) {
+    currentSession.stop(
+      function() {
+        console.info('Stop session successfully');
+        currentSession = null;
+      },
+      function(error) {  // Error callback
+        console.error('Stop session failed, error: ' + JSON.stringify(error));
+    });
   }
 }
-

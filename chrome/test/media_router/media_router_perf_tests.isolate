@@ -17,6 +17,7 @@
         'files': [
           'internal/',
           '<(PRODUCT_DIR)/mr_extension/release/',
+          '<(PRODUCT_DIR)/media_router/test_extension/',
           '../../../third_party/catapult/',
           '../../../tools/perf/',
           '../../../tools/variations/fieldtrial_util.py',

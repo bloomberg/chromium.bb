@@ -24,6 +24,7 @@
           'type': 'none',
           'dependencies': [
             '../../chrome.gyp:chrome_run',
+            'media_router_tests.gypi:media_router_test_extension_files',
           ],
           'includes': [
             '../../../build/isolate.gypi',

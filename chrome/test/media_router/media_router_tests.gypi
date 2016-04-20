@@ -14,6 +14,10 @@
       'resources/no_provider.json',
       'resources/route_creation_timed_out.json',
     ],
+    'media_router_test_extension_resources': [
+      'telemetry/extension/manifest.json',
+      'telemetry/extension/script.js',
+    ],
   }, # end of variables
   'targets': [
     {
@@ -34,5 +38,23 @@
         },
       ],
     },  # end of target 'media_router_integration_test_files'
+    {
+      'target_name': 'media_router_test_extension_files',
+      'type': 'none',
+      'variables': {
+        'output_dir': '<(PRODUCT_DIR)/media_router/test_extension',
+        'resource_files': [
+          '<@(media_router_test_extension_resources)',
+        ]
+      },
+      'copies': [
+        {
+          'destination': '<(output_dir)',
+          'files': [
+            '<@(resource_files)',
+          ],
+        },
+      ],
+    },  # end of target 'media_router_test_extension_files'
   ],  # end of targets
 }

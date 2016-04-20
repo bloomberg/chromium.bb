@@ -25,11 +25,11 @@ HISTOGRAMS_TO_RECORD = [
   }]
 
 
-class MediaRouterMetric(Metric):
+class MediaRouterDialogMetric(Metric):
   "A metric for media router dialog latency from histograms."
 
   def __init__(self):
-    super(MediaRouterMetric, self).__init__()
+    super(MediaRouterDialogMetric, self).__init__()
     self._histogram_start = dict()
     self._histogram_delta = dict()
     self._started = False

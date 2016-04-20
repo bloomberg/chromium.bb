@@ -14,11 +14,23 @@ media_router_integration_test_resources = [
   "resources/route_creation_timed_out.json",
 ]
 
+media_router_test_extension_resources = [
+  "telemetry/extension/manifest.json",
+  "telemetry/extension/script.js",
+]
+
+# GYP version: chrome/test/media_router/media_router_tests.gypi:
+# media_router_test_extension_files
+copy("test_extension_resource_files") {
+  sources = media_router_test_extension_resources
+  outputs = [
+    "$root_out_dir/media_router/test_extension/{{source_file_part}}",
+  ]
+}
+
 # GYP version: chrome/test/media_router/media_router_tests.gypi:
 # media_router_integration_test_files
 copy("browser_tests_resource_files") {
-  # This list corresponds to media_router_integration_test_resources in
-  # media_router_integration_test_files target in GYP.
   sources = media_router_integration_test_resources
   outputs = [
     "$root_out_dir/media_router/browser_test_resources/{{source_file_part}}",
