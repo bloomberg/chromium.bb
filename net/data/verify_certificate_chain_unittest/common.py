@@ -24,14 +24,20 @@ import openssl_conf
 TYPE_CA = 2
 TYPE_END_ENTITY = 3
 
-# January 1st, 2015 midnight UTC
+# March 1st, 2015 12:00 UTC
+MARCH_1_2015_UTC = '150301120000Z'
+
+# March 2nd, 2015 12:00 UTC
+MARCH_2_2015_UTC = '150302120000Z'
+
+# January 1st, 2015 12:00 UTC
 JANUARY_1_2015_UTC = '150101120000Z'
 
-# January 1st, 2016 midnight UTC
+# January 1st, 2016 12:00 UTC
 JANUARY_1_2016_UTC = '160101120000Z'
 
-# March 2nd, 2015 midnight UTC
-DEFAULT_TIME = '150302120000Z'
+# The default time tests should use when verifying.
+DEFAULT_TIME = MARCH_2_2015_UTC
 
 # Counter used to generate unique (but readable) path names.
 g_cur_path_id = 0
