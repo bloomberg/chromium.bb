@@ -21,6 +21,7 @@
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/layout_manager.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -51,6 +52,52 @@ DECLARE_WINDOW_PROPERTY_TYPE(const char*)
 
 namespace {
 
+enum class DeletionOrder {
+  LAYOUT_MANAGER_FIRST,
+  PROPERTY_FIRST,
+  UNKNOWN,
+};
+
+class DeletionTracker {
+ public:
+  DeletionTracker() {}
+  ~DeletionTracker() {}
+
+  DeletionOrder order() const { return order_; }
+  bool property_deleted() const { return property_deleted_; }
+  bool layout_manager_deleted() const { return layout_manager_deleted_; }
+
+  void PropertyDeleted() {
+    property_deleted_ = true;
+    if (order_ == DeletionOrder::UNKNOWN)
+      order_ = DeletionOrder::PROPERTY_FIRST;
+  }
+
+  void LayoutManagerDeleted() {
+    layout_manager_deleted_ = true;
+    if (order_ == DeletionOrder::UNKNOWN)
+      order_ = DeletionOrder::LAYOUT_MANAGER_FIRST;
+  }
+
+ private:
+  bool property_deleted_ = false;
+  bool layout_manager_deleted_ = false;
+  DeletionOrder order_ = DeletionOrder::UNKNOWN;
+
+  DISALLOW_COPY_AND_ASSIGN(DeletionTracker);
+};
+
+class DeletionTestProperty {
+ public:
+  explicit DeletionTestProperty(DeletionTracker* tracker) : tracker_(tracker) {}
+  ~DeletionTestProperty() { tracker_->PropertyDeleted(); }
+
+ private:
+  DeletionTracker* tracker_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeletionTestProperty);
+};
+
 class TestProperty {
  public:
   TestProperty() {}
@@ -67,10 +114,15 @@ class TestProperty {
 TestProperty* TestProperty::last_deleted_ = nullptr;
 
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(TestProperty, kOwnedKey, NULL);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(DeletionTestProperty,
+                                 kDeletionTestPropertyKey,
+                                 nullptr);
 
 }  // namespace
 
 DECLARE_WINDOW_PROPERTY_TYPE(TestProperty*);
+
+DECLARE_WINDOW_PROPERTY_TYPE(DeletionTestProperty*);
 
 namespace aura {
 namespace test {
@@ -1669,6 +1721,44 @@ TEST_F(WindowTest, OwnedProperty) {
   EXPECT_EQ(p2, TestProperty::last_deleted());
   w.reset();
   EXPECT_EQ(p3, TestProperty::last_deleted());
+}
+
+namespace {
+
+class DeletionTestLayoutManager : public LayoutManager {
+ public:
+  explicit DeletionTestLayoutManager(DeletionTracker* tracker)
+      : tracker_(tracker) {}
+  ~DeletionTestLayoutManager() override { tracker_->LayoutManagerDeleted(); }
+
+ private:
+  // LayoutManager:
+  void OnWindowResized() override {}
+  void OnWindowAddedToLayout(Window* child) override {}
+  void OnWillRemoveWindowFromLayout(Window* child) override {}
+  void OnWindowRemovedFromLayout(Window* child) override {}
+  void OnChildWindowVisibilityChanged(Window* child, bool visible) override {}
+  void SetChildBounds(Window* child,
+                      const gfx::Rect& requested_bounds) override {}
+
+  DeletionTracker* tracker_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeletionTestLayoutManager);
+};
+
+}  // namespace
+
+TEST_F(WindowTest, DeleteLayoutManagerBeforeOwnedProps) {
+  DeletionTracker tracker;
+  {
+    Window w(nullptr);
+    w.Init(ui::LAYER_NOT_DRAWN);
+    w.SetLayoutManager(new DeletionTestLayoutManager(&tracker));
+    w.SetProperty(kDeletionTestPropertyKey, new DeletionTestProperty(&tracker));
+  }
+  EXPECT_TRUE(tracker.property_deleted());
+  EXPECT_TRUE(tracker.layout_manager_deleted());
+  EXPECT_EQ(DeletionOrder::LAYOUT_MANAGER_FIRST, tracker.order());
 }
 
 TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {

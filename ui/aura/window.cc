@@ -150,6 +150,10 @@ Window::~Window() {
     observer->OnWindowDestroyed(this);
   }
 
+  // Delete the LayoutManager before properties. This way if the LayoutManager
+  // depends upon properties existing the properties are still valid.
+  layout_manager_.reset();
+
   // Clear properties.
   for (std::map<const void*, Value>::const_iterator iter = prop_map_.begin();
        iter != prop_map_.end();
