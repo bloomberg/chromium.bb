@@ -8,8 +8,10 @@
 #include <stddef.h>
 
 #include "cc/playback/raster_source.h"
+#include "cc/raster/raster_buffer.h"
 #include "cc/raster/task_graph_runner.h"
-#include "cc/raster/tile_task_runner.h"
+#include "cc/raster/tile_task.h"
+#include "cc/resources/resource_format.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -20,6 +22,10 @@ class SequencedTaskRunner;
 namespace cc {
 class RenderingStatsInstrumentation;
 
+// This class provides the wrapper over TaskGraphRunner for scheduling and
+// collecting tasks. The client can call CheckForCompletedTasks() at any time to
+// process all completed tasks at the moment that have finished running or
+// cancelled.
 class CC_EXPORT TileTaskWorkerPool {
  public:
   TileTaskWorkerPool();
@@ -47,8 +53,33 @@ class CC_EXPORT TileTaskWorkerPool {
       float scale,
       const RasterSource::PlaybackSettings& playback_settings);
 
-  // Type-checking downcast routine.
-  virtual TileTaskRunner* AsTileTaskRunner() = 0;
+  // Tells the worker pool to shutdown after canceling all previously scheduled
+  // tasks. Reply callbacks are still guaranteed to run when
+  // CheckForCompletedTasks() is called.
+  virtual void Shutdown() = 0;
+
+  // Schedule running of tile tasks in |graph| and all dependencies.
+  // Previously scheduled tasks that are not in |graph| will be canceled unless
+  // already running. Once scheduled, reply callbacks are guaranteed to run for
+  // all tasks even if they later get canceled by another call to
+  // ScheduleTasks().
+  virtual void ScheduleTasks(TaskGraph* graph) = 0;
+
+  // Check for completed tasks and dispatch reply callbacks.
+  virtual void CheckForCompletedTasks() = 0;
+
+  // Returns the format to use for the tiles.
+  virtual ResourceFormat GetResourceFormat(bool must_support_alpha) const = 0;
+
+  // Determine if the resource requires swizzling.
+  virtual bool GetResourceRequiresSwizzle(bool must_support_alpha) const = 0;
+
+  // Downcasting routine for RasterBufferProvider interface.
+  virtual RasterBufferProvider* AsRasterBufferProvider() = 0;
+
+ protected:
+  // Check if resource format matches output format.
+  static bool ResourceFormatRequiresSwizzle(ResourceFormat format);
 };
 
 }  // namespace cc

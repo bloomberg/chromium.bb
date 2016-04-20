@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "cc/output/context_provider.h"
-#include "cc/raster/tile_task_runner.h"
 #include "cc/raster/tile_task_worker_pool.h"
 #include "cc/resources/resource_provider.h"
 
@@ -19,7 +18,6 @@ class StagingBufferPool;
 class ResourcePool;
 
 class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
-                                            public TileTaskRunner,
                                             public RasterBufferProvider {
  public:
   ~OneCopyTileTaskWorkerPool() override;
@@ -35,9 +33,6 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
       ResourceFormat preferred_tile_format);
 
   // Overridden from TileTaskWorkerPool:
-  TileTaskRunner* AsTileTaskRunner() override;
-
-  // Overridden from TileTaskRunner:
   void Shutdown() override;
   void ScheduleTasks(TaskGraph* graph) override;
   void CheckForCompletedTasks() override;

@@ -120,10 +120,6 @@ GpuTileTaskWorkerPool::~GpuTileTaskWorkerPool() {
   DCHECK_EQ(0u, completed_tasks_.size());
 }
 
-TileTaskRunner* GpuTileTaskWorkerPool::AsTileTaskRunner() {
-  return this;
-}
-
 void GpuTileTaskWorkerPool::Shutdown() {
   TRACE_EVENT0("cc", "GpuTileTaskWorkerPool::Shutdown");
 

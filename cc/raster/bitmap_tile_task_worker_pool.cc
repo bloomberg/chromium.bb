@@ -87,10 +87,6 @@ BitmapTileTaskWorkerPool::BitmapTileTaskWorkerPool(
 BitmapTileTaskWorkerPool::~BitmapTileTaskWorkerPool() {
 }
 
-TileTaskRunner* BitmapTileTaskWorkerPool::AsTileTaskRunner() {
-  return this;
-}
-
 void BitmapTileTaskWorkerPool::Shutdown() {
   TRACE_EVENT0("cc", "BitmapTileTaskWorkerPool::Shutdown");
 

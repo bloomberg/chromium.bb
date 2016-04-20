@@ -2149,7 +2149,7 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
 
   // TODO(vmpstr): Initialize tile task limit at ctor time.
   tile_manager_->SetResources(
-      resource_pool_.get(), tile_task_worker_pool_->AsTileTaskRunner(),
+      resource_pool_.get(), tile_task_worker_pool_.get(),
       image_decode_controller_.get(),
       is_synchronous_single_threaded_ ? std::numeric_limits<size_t>::max()
                                       : settings_.scheduled_raster_task_limit,

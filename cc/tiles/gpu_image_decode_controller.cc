@@ -11,7 +11,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/output/context_provider.h"
-#include "cc/raster/tile_task_runner.h"
+#include "cc/raster/tile_task.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu_image_decode_controller.h"

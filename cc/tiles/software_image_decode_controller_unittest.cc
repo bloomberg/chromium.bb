@@ -5,6 +5,7 @@
 #include "cc/tiles/software_image_decode_controller.h"
 
 #include "cc/playback/draw_image.h"
+#include "cc/raster/tile_task.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

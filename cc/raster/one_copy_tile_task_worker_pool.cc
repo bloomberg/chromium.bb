@@ -110,10 +110,6 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
 OneCopyTileTaskWorkerPool::~OneCopyTileTaskWorkerPool() {
 }
 
-TileTaskRunner* OneCopyTileTaskWorkerPool::AsTileTaskRunner() {
-  return this;
-}
-
 void OneCopyTileTaskWorkerPool::Shutdown() {
   TRACE_EVENT0("cc", "OneCopyTileTaskWorkerPool::Shutdown");
 

@@ -22,7 +22,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/playback/decoded_draw_image.h"
 #include "cc/playback/draw_image.h"
-#include "cc/raster/tile_task_runner.h"
+#include "cc/resources/resource_format.h"
 #include "cc/tiles/image_decode_controller.h"
 #include "skia/ext/refptr.h"
 

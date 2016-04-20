@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/values.h"
-#include "cc/raster/tile_task_runner.h"
 #include "cc/raster/tile_task_worker_pool.h"
 
 namespace base {
@@ -22,7 +21,6 @@ namespace cc {
 class ResourceProvider;
 
 class CC_EXPORT BitmapTileTaskWorkerPool : public TileTaskWorkerPool,
-                                           public TileTaskRunner,
                                            public RasterBufferProvider {
  public:
   ~BitmapTileTaskWorkerPool() override;
@@ -33,9 +31,6 @@ class CC_EXPORT BitmapTileTaskWorkerPool : public TileTaskWorkerPool,
       ResourceProvider* resource_provider);
 
   // Overridden from TileTaskWorkerPool:
-  TileTaskRunner* AsTileTaskRunner() override;
-
-  // Overridden from TileTaskRunner:
   void Shutdown() override;
   void ScheduleTasks(TaskGraph* graph) override;
   void CheckForCompletedTasks() override;

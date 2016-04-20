@@ -89,10 +89,6 @@ ZeroCopyTileTaskWorkerPool::ZeroCopyTileTaskWorkerPool(
 ZeroCopyTileTaskWorkerPool::~ZeroCopyTileTaskWorkerPool() {
 }
 
-TileTaskRunner* ZeroCopyTileTaskWorkerPool::AsTileTaskRunner() {
-  return this;
-}
-
 void ZeroCopyTileTaskWorkerPool::Shutdown() {
   TRACE_EVENT0("cc", "ZeroCopyTileTaskWorkerPool::Shutdown");
 

@@ -23,7 +23,6 @@
 #include "cc/raster/gpu_tile_task_worker_pool.h"
 #include "cc/raster/one_copy_tile_task_worker_pool.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
-#include "cc/raster/tile_task_runner.h"
 #include "cc/raster/zero_copy_tile_task_worker_pool.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
@@ -175,18 +174,18 @@ class TileTaskWorkerPoolTest
   }
 
   void TearDown() override {
-    tile_task_worker_pool_->AsTileTaskRunner()->Shutdown();
-    tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
+    tile_task_worker_pool_->Shutdown();
+    tile_task_worker_pool_->CheckForCompletedTasks();
   }
 
   void AllTileTasksFinished() {
-    tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
+    tile_task_worker_pool_->CheckForCompletedTasks();
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void RunMessageLoopUntilAllTasksHaveCompleted() {
     task_graph_runner_.RunUntilIdle();
-    tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
+    tile_task_worker_pool_->CheckForCompletedTasks();
   }
 
   void ScheduleTasks() {
@@ -200,7 +199,7 @@ class TileTaskWorkerPoolTest
                                 0 /* dependencies */);
     }
 
-    tile_task_worker_pool_->AsTileTaskRunner()->ScheduleTasks(&graph_);
+    tile_task_worker_pool_->ScheduleTasks(&graph_);
   }
 
   void AppendTask(unsigned id, const gfx::Size& size) {

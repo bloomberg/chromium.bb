@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "cc/raster/tile_task_runner.h"
 #include "cc/raster/tile_task_worker_pool.h"
 
 namespace cc {
@@ -17,7 +16,6 @@ class GpuRasterizer;
 class ResourceProvider;
 
 class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
-                                        public TileTaskRunner,
                                         public RasterBufferProvider {
  public:
   ~GpuTileTaskWorkerPool() override;
@@ -31,9 +29,6 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
       int gpu_rasterization_msaa_sample_count);
 
   // Overridden from TileTaskWorkerPool:
-  TileTaskRunner* AsTileTaskRunner() override;
-
-  // Overridden from TileTaskRunner:
   void Shutdown() override;
   void ScheduleTasks(TaskGraph* graph) override;
   void CheckForCompletedTasks() override;

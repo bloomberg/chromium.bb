@@ -1827,13 +1827,14 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
   }
 }
 
-// Fake TileTaskRunner that just no-ops all calls.
-class FakeTileTaskRunner : public TileTaskRunner, public RasterBufferProvider {
+// Fake TileTaskWorkerPool that just no-ops all calls.
+class FakeTileTaskWorkerPool : public TileTaskWorkerPool,
+                               public RasterBufferProvider {
  public:
-  FakeTileTaskRunner() {}
-  ~FakeTileTaskRunner() override {}
+  FakeTileTaskWorkerPool() {}
+  ~FakeTileTaskWorkerPool() override {}
 
-  // TileTaskRunner methods.
+  // TileTaskWorkerPool methods.
   void Shutdown() override {}
   void CheckForCompletedTasks() override {}
   ResourceFormat GetResourceFormat(bool must_support_alpha) const override {
@@ -1857,11 +1858,11 @@ class FakeTileTaskRunner : public TileTaskRunner, public RasterBufferProvider {
   void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) override {}
 };
 
-// Fake TileTaskRunner that just cancels all scheduled tasks immediately.
-class CancellingTileTaskRunner : public FakeTileTaskRunner {
+// Fake TileTaskWorkerPool that just cancels all scheduled tasks immediately.
+class CancellingTileTaskWorkerPool : public FakeTileTaskWorkerPool {
  public:
-  CancellingTileTaskRunner() {}
-  ~CancellingTileTaskRunner() override {}
+  CancellingTileTaskWorkerPool() {}
+  ~CancellingTileTaskWorkerPool() override {}
 
   void ScheduleTasks(TaskGraph* graph) override {
     // Just call CompleteOnOriginThread on each item in the queue. As none of
@@ -1884,8 +1885,9 @@ class PartialRasterTileManagerTest : public TileManagerTest {
 TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   // Create a CancellingTaskRunner and set it on the tile manager so that all
   // scheduled work is immediately cancelled.
-  CancellingTileTaskRunner cancelling_runner;
-  host_impl_->tile_manager()->SetTileTaskRunnerForTesting(&cancelling_runner);
+  CancellingTileTaskWorkerPool cancelling_worker_pool;
+  host_impl_->tile_manager()->SetTileTaskWorkerPoolForTesting(
+      &cancelling_worker_pool);
 
   // Pick arbitrary IDs - they don't really matter as long as they're constant.
   const int kLayerId = 7;
@@ -1918,7 +1920,8 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   EXPECT_FALSE(queue->IsEmpty());
   queue->Top().tile()->SetInvalidated(gfx::Rect(), kInvalidatedId);
 
-  // PrepareTiles to schedule tasks. Due to the CancellingTileTaskRunner, these
+  // PrepareTiles to schedule tasks. Due to the CancellingTileTaskWorkerPool,
+  // these
   // tasks will immediately be canceled.
   host_impl_->tile_manager()->PrepareTiles(host_impl_->global_tile_state());
 
@@ -1928,17 +1931,21 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   EXPECT_FALSE(host_impl_->resource_pool()->TryAcquireResourceWithContentId(
       kInvalidatedId));
 
-  // Free our host_impl_ before the cancelling_runner we passed it, as it will
+  // Free our host_impl_ before the cancelling_worker_pool we passed it, as it
+  // will
   // use that class in clean up.
   host_impl_ = nullptr;
 }
 
-// Fake TileTaskRunner that verifies the resource content ID of raster tasks.
-class VerifyResourceContentIdTileTaskRunner : public FakeTileTaskRunner {
+// Fake TileTaskWorkerPool that verifies the resource content ID of raster
+// tasks.
+class VerifyResourceContentIdTileTaskWorkerPool
+    : public FakeTileTaskWorkerPool {
  public:
-  explicit VerifyResourceContentIdTileTaskRunner(uint64_t expected_resource_id)
+  explicit VerifyResourceContentIdTileTaskWorkerPool(
+      uint64_t expected_resource_id)
       : expected_resource_id_(expected_resource_id) {}
-  ~VerifyResourceContentIdTileTaskRunner() override {}
+  ~VerifyResourceContentIdTileTaskWorkerPool() override {}
 
   void ScheduleTasks(TaskGraph* graph) override {
     for (const auto& node : graph->nodes) {
@@ -1974,10 +1981,12 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
   const uint64_t kExpectedId = partial_raster_enabled ? kInvalidatedId : 0u;
   const gfx::Size kTileSize(128, 128);
 
-  // Create a VerifyResourceContentIdTileTaskRunner to ensure that the raster
+  // Create a VerifyResourceContentIdTileTaskWorkerPool to ensure that the
+  // raster
   // task we see is created with |kExpectedId|.
-  VerifyResourceContentIdTileTaskRunner verifying_runner(kExpectedId);
-  host_impl->tile_manager()->SetTileTaskRunnerForTesting(&verifying_runner);
+  VerifyResourceContentIdTileTaskWorkerPool verifying_worker_pool(kExpectedId);
+  host_impl->tile_manager()->SetTileTaskWorkerPoolForTesting(
+      &verifying_worker_pool);
 
   // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
   host_impl->resource_pool()->ReleaseResource(
@@ -2012,11 +2021,12 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
   queue->Top().tile()->SetInvalidated(gfx::Rect(), kInvalidatedId);
 
   // PrepareTiles to schedule tasks. Due to the
-  // VerifyPreviousContentTileTaskRunner, these tasks will verified and
+  // VerifyPreviousContentTileTaskWorkerPool, these tasks will verified and
   // cancelled.
   host_impl->tile_manager()->PrepareTiles(host_impl->global_tile_state());
 
-  // Free our host_impl before the cancelling_runner we passed it, as it will
+  // Free our host_impl before the cancelling_worker_pool we passed it, as it
+  // will
   // use that class in clean up.
   host_impl = nullptr;
 }

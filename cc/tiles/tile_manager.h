@@ -18,7 +18,7 @@
 #include "base/values.h"
 #include "cc/base/unique_notifier.h"
 #include "cc/playback/raster_source.h"
-#include "cc/raster/tile_task_runner.h"
+#include "cc/raster/tile_task_worker_pool.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/tiles/eviction_tile_priority_queue.h"
@@ -117,7 +117,7 @@ class CC_EXPORT TileManager {
   // FinishTasksAndCleanUp must be called in between consecutive calls to
   // SetResources.
   void SetResources(ResourcePool* resource_pool,
-                    TileTaskRunner* tile_task_runner,
+                    TileTaskWorkerPool* tile_task_worker_pool,
                     ImageDecodeController* image_decode_controller,
                     size_t scheduled_raster_task_limit,
                     bool use_gpu_rasterization);
@@ -147,7 +147,7 @@ class CC_EXPORT TileManager {
       TileDrawInfo& draw_info = tiles[i]->draw_info();
       draw_info.resource_ = resource_pool_->AcquireResource(
           tiles[i]->desired_texture_size(),
-          tile_task_runner_->GetResourceFormat(false));
+          tile_task_worker_pool_->GetResourceFormat(false));
     }
   }
 
@@ -163,7 +163,8 @@ class CC_EXPORT TileManager {
     global_state_ = state;
   }
 
-  void SetTileTaskRunnerForTesting(TileTaskRunner* tile_task_runner);
+  void SetTileTaskWorkerPoolForTesting(
+      TileTaskWorkerPool* tile_task_worker_pool);
 
   void FreeResourcesAndCleanUpReleasedTilesForTesting() {
     FreeResourcesForReleasedTiles();
@@ -286,7 +287,7 @@ class CC_EXPORT TileManager {
   TileManagerClient* client_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   ResourcePool* resource_pool_;
-  TileTaskRunner* tile_task_runner_;
+  TileTaskWorkerPool* tile_task_worker_pool_;
   GlobalStateThatImpactsTilePriority global_state_;
   size_t scheduled_raster_task_limit_;
   const bool use_partial_raster_;

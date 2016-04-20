@@ -16,7 +16,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/debug/devtools_instrumentation.h"
-#include "cc/raster/tile_task_runner.h"
+#include "cc/raster/tile_task.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/skia_util.h"

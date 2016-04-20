@@ -5,7 +5,7 @@
 #include "cc/tiles/gpu_image_decode_controller.h"
 
 #include "cc/playback/draw_image.h"
-#include "cc/raster/tile_task_runner.h"
+#include "cc/raster/tile_task.h"
 #include "cc/test/test_context_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

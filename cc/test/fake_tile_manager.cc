@@ -13,16 +13,16 @@
 #include "base/lazy_instance.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/raster/raster_buffer.h"
-#include "cc/raster/tile_task_runner.h"
+#include "cc/raster/tile_task_worker_pool.h"
 
 namespace cc {
 
 namespace {
 
-class FakeTileTaskRunnerImpl : public TileTaskRunner,
-                               public RasterBufferProvider {
+class FakeTileTaskWorkerPoolImpl : public TileTaskWorkerPool,
+                                   public RasterBufferProvider {
  public:
-  // Overridden from TileTaskRunner:
+  // Overridden from TileTaskWorkerPool:
   void Shutdown() override {}
   void ScheduleTasks(TaskGraph* graph) override {
     for (const auto& node : graph->nodes) {
@@ -66,7 +66,7 @@ class FakeTileTaskRunnerImpl : public TileTaskRunner,
  private:
   TileTask::Vector completed_tasks_;
 };
-base::LazyInstance<FakeTileTaskRunnerImpl> g_fake_tile_task_runner =
+base::LazyInstance<FakeTileTaskWorkerPoolImpl> g_fake_tile_task_worker_pool =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -76,7 +76,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
                   base::ThreadTaskRunnerHandle::Get(),
                   std::numeric_limits<size_t>::max(),
                   false /* use_partial_raster */) {
-  SetResources(nullptr, g_fake_tile_task_runner.Pointer(),
+  SetResources(nullptr, g_fake_tile_task_worker_pool.Pointer(),
                &image_decode_controller_, std::numeric_limits<size_t>::max(),
                false /* use_gpu_rasterization */);
 }
@@ -87,7 +87,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   base::ThreadTaskRunnerHandle::Get(),
                   std::numeric_limits<size_t>::max(),
                   false /* use_partial_raster */) {
-  SetResources(resource_pool, g_fake_tile_task_runner.Pointer(),
+  SetResources(resource_pool, g_fake_tile_task_worker_pool.Pointer(),
                &image_decode_controller_, std::numeric_limits<size_t>::max(),
                false /* use_gpu_rasterization */);
 }

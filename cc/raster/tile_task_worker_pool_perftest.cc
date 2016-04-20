@@ -16,7 +16,6 @@
 #include "cc/raster/gpu_tile_task_worker_pool.h"
 #include "cc/raster/one_copy_tile_task_worker_pool.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
-#include "cc/raster/tile_task_runner.h"
 #include "cc/raster/tile_task_worker_pool.h"
 #include "cc/raster/zero_copy_tile_task_worker_pool.h"
 #include "cc/resources/resource_pool.h"
@@ -288,8 +287,8 @@ class TileTaskWorkerPoolPerfTest
     DCHECK(tile_task_worker_pool_);
   }
   void TearDown() override {
-    tile_task_worker_pool_->AsTileTaskRunner()->Shutdown();
-    tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
+    tile_task_worker_pool_->Shutdown();
+    tile_task_worker_pool_->CheckForCompletedTasks();
   }
 
   void RunMessageLoopUntilAllTasksHaveCompleted() {
@@ -312,13 +311,13 @@ class TileTaskWorkerPoolPerfTest
     do {
       graph.Reset();
       BuildTileTaskGraph(&graph, raster_tasks);
-      tile_task_worker_pool_->AsTileTaskRunner()->ScheduleTasks(&graph);
-      tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
+      tile_task_worker_pool_->ScheduleTasks(&graph);
+      tile_task_worker_pool_->CheckForCompletedTasks();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
     TaskGraph empty;
-    tile_task_worker_pool_->AsTileTaskRunner()->ScheduleTasks(&empty);
+    tile_task_worker_pool_->ScheduleTasks(&empty);
     RunMessageLoopUntilAllTasksHaveCompleted();
 
     perf_test::PrintResult("schedule_tasks", TestModifierString(), test_name,
@@ -345,14 +344,14 @@ class TileTaskWorkerPoolPerfTest
     do {
       graph.Reset();
       BuildTileTaskGraph(&graph, raster_tasks[count % kNumVersions]);
-      tile_task_worker_pool_->AsTileTaskRunner()->ScheduleTasks(&graph);
-      tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
+      tile_task_worker_pool_->ScheduleTasks(&graph);
+      tile_task_worker_pool_->CheckForCompletedTasks();
       ++count;
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
     TaskGraph empty;
-    tile_task_worker_pool_->AsTileTaskRunner()->ScheduleTasks(&empty);
+    tile_task_worker_pool_->ScheduleTasks(&empty);
     RunMessageLoopUntilAllTasksHaveCompleted();
 
     perf_test::PrintResult("schedule_alternate_tasks", TestModifierString(),
@@ -374,13 +373,13 @@ class TileTaskWorkerPoolPerfTest
     do {
       graph.Reset();
       BuildTileTaskGraph(&graph, raster_tasks);
-      tile_task_worker_pool_->AsTileTaskRunner()->ScheduleTasks(&graph);
+      tile_task_worker_pool_->ScheduleTasks(&graph);
       RunMessageLoopUntilAllTasksHaveCompleted();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
     TaskGraph empty;
-    tile_task_worker_pool_->AsTileTaskRunner()->ScheduleTasks(&empty);
+    tile_task_worker_pool_->ScheduleTasks(&empty);
     RunMessageLoopUntilAllTasksHaveCompleted();
 
     perf_test::PrintResult("schedule_and_execute_tasks", TestModifierString(),

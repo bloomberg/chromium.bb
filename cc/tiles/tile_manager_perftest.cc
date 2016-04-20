@@ -37,10 +37,10 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
-class FakeTileTaskRunnerImpl : public TileTaskRunner,
-                               public RasterBufferProvider {
+class FakeTileTaskWorkerPoolImpl : public TileTaskWorkerPool,
+                                   public RasterBufferProvider {
  public:
-  // Overridden from TileTaskRunner:
+  // Overridden from TileTaskWorkerPool:
   void Shutdown() override {}
   void ScheduleTasks(TaskGraph* graph) override {
     for (auto& node : graph->nodes) {
@@ -84,7 +84,7 @@ class FakeTileTaskRunnerImpl : public TileTaskRunner,
  private:
   TileTask::Vector completed_tasks_;
 };
-base::LazyInstance<FakeTileTaskRunnerImpl> g_fake_tile_task_runner =
+base::LazyInstance<FakeTileTaskWorkerPoolImpl> g_fake_tile_task_worker_pool =
     LAZY_INSTANCE_INITIALIZER;
 
 class TileManagerPerfTest : public testing::Test {
@@ -127,8 +127,8 @@ class TileManagerPerfTest : public testing::Test {
   virtual void InitializeRenderer() {
     host_impl_.SetVisible(true);
     host_impl_.InitializeRenderer(output_surface_.get());
-    tile_manager()->SetTileTaskRunnerForTesting(
-        g_fake_tile_task_runner.Pointer());
+    tile_manager()->SetTileTaskWorkerPoolForTesting(
+        g_fake_tile_task_worker_pool.Pointer());
   }
 
   void SetupDefaultTrees(const gfx::Size& layer_bounds) {
