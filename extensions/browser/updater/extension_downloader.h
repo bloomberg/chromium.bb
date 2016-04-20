@@ -46,7 +46,6 @@ struct UpdateDetails {
 };
 
 class ExtensionCache;
-class ExtensionDownloaderTestDelegate;
 class ExtensionUpdaterTest;
 
 // A class that checks for updates of a given list of extensions, and downloads
@@ -114,10 +113,6 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
   void set_enable_extra_update_metrics(bool enable) {
     enable_extra_update_metrics_ = enable;
   }
-
-  // Sets a test delegate to use by any instances of this class. The |delegate|
-  // should outlive all instances.
-  static void set_test_delegate(ExtensionDownloaderTestDelegate* delegate);
 
   // These are needed for unit testing, to help identify the correct mock
   // URLFetcher objects.

@@ -518,8 +518,7 @@ bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
                  << " because it is not installed or pending";
     // Delete extension_path since we're not creating a CrxInstaller
     // that would do it for us.
-    if (file_ownership_passed &&
-        !GetFileTaskRunner()->PostTask(
+    if (!GetFileTaskRunner()->PostTask(
             FROM_HERE,
             base::Bind(&extensions::file_util::DeleteFile, file.path, false)))
       NOTREACHED();
@@ -692,12 +691,12 @@ void ExtensionService::ReloadExtensionImpl(
 }
 
 void ExtensionService::ReloadExtension(const std::string& extension_id) {
-  ReloadExtensionImpl(extension_id, true);  // be_noisy
+  ReloadExtensionImpl(extension_id, true); // be_noisy
 }
 
 void ExtensionService::ReloadExtensionWithQuietFailure(
     const std::string& extension_id) {
-  ReloadExtensionImpl(extension_id, false);  // be_noisy
+  ReloadExtensionImpl(extension_id, false); // be_noisy
 }
 
 bool ExtensionService::UninstallExtension(

@@ -761,7 +761,6 @@
       'browser/updater/extension_downloader.h',
       'browser/updater/extension_downloader_delegate.cc',
       'browser/updater/extension_downloader_delegate.h',
-      'browser/updater/extension_downloader_test_delegate.h',
       'browser/updater/manifest_fetch_data.cc',
       'browser/updater/manifest_fetch_data.h',
       'browser/updater/null_extension_cache.cc',

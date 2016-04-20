@@ -454,7 +454,6 @@
       'browser/extensions/api/permissions/permissions_api_helpers_unittest.cc',
       'browser/extensions/api/preference/preference_api_prefs_unittest.cc',
       'browser/extensions/api/proxy/proxy_api_helpers_unittest.cc',
-      'browser/extensions/api/runtime/chrome_runtime_api_delegate_unittest.cc',
       'browser/extensions/api/signed_in_devices/id_mapping_helper_unittest.cc',
       'browser/extensions/api/signed_in_devices/signed_in_devices_api_unittest.cc',
       'browser/extensions/api/signed_in_devices/signed_in_devices_manager_unittest.cc',
