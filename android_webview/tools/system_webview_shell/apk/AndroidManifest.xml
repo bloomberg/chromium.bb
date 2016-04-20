@@ -61,7 +61,8 @@
             android:name="org.chromium.webview_shell.WebViewBrowserActivity"
             android:label="@string/title_activity_browser"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
