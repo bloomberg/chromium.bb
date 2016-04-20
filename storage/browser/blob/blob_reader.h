@@ -31,6 +31,7 @@ class Time;
 namespace net {
 class DrainableIOBuffer;
 class IOBuffer;
+class IOBufferWithSize;
 }
 
 namespace storage {
@@ -65,6 +66,7 @@ class STORAGE_EXPORT BlobReader {
         const base::Time& expected_modification_time) = 0;
   };
   enum class Status { NET_ERROR, IO_PENDING, DONE };
+  typedef base::Callback<void(Status)> StatusCallback;
   virtual ~BlobReader();
 
   // This calculates the total size of the blob, and initializes the reading
@@ -76,6 +78,25 @@ class STORAGE_EXPORT BlobReader {
   //    The callback value contains the error code or net::OK. Please use the
   //    total_size() value to query the blob size, as it's uint64_t.
   Status CalculateSize(const net::CompletionCallback& done);
+
+  // Returns true when the blob has side data. CalculateSize must be called
+  // beforehand. Currently side data is supported only for single DiskCache
+  // entry blob. So it returns false when the blob has more than single data
+  // item. This side data is used to pass the V8 code cache which is stored
+  // as a side stream in the CacheStorage to the renderer. (crbug.com/581613)
+  bool has_side_data() const;
+
+  // Reads the side data of the blob. CalculateSize must be called beforehand.
+  // * If the side data is read immediately, returns Status::DONE.
+  // * If an error happens or the blob doesn't have side data, returns
+  //   Status::NET_ERROR and the net error code is set.
+  // * If this function returns Status::IO_PENDING, the done callback will be
+  //   called with Status::DONE or Status::NET_ERROR.
+  // Currently side data is supported only for single DiskCache entry blob.
+  Status ReadSideData(const StatusCallback& done);
+
+  // Returns the side data which has been already read with ReadSideData().
+  net::IOBufferWithSize* side_data() const { return side_data_.get(); }
 
   // Used to set the read position.
   // * This should be called after CalculateSize and before Read.
@@ -159,6 +180,9 @@ class STORAGE_EXPORT BlobReader {
   Status ReadDiskCacheEntryItem(const BlobDataItem& item, int bytes_to_read);
   void DidReadDiskCacheEntry(int result);
   void DidReadItem(int result);
+  void DidReadDiskCacheEntrySideData(const StatusCallback& done,
+                                     int expected_size,
+                                     int result);
   int ComputeBytesToRead() const;
   int BytesReadCompleted();
 
@@ -177,6 +201,7 @@ class STORAGE_EXPORT BlobReader {
   std::unique_ptr<BlobDataSnapshot> blob_data_;
   std::unique_ptr<FileStreamReaderProvider> file_stream_provider_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+  scoped_refptr<net::IOBufferWithSize> side_data_;
 
   int net_error_;
   bool item_list_populated_ = false;

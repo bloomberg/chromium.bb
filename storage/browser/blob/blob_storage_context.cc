@@ -439,7 +439,8 @@ bool BlobStorageContext::AppendBlob(
             target_blob_uuid,
             new BlobDataItem(std::move(element), item.data_handle_,
                              item.disk_cache_entry(),
-                             item.disk_cache_stream_index())));
+                             item.disk_cache_stream_index(),
+                             item.disk_cache_side_stream_index())));
       } break;
       case DataElement::TYPE_BYTES_DESCRIPTION:
       case DataElement::TYPE_BLOB:

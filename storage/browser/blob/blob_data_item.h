@@ -59,6 +59,9 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
 
   disk_cache::Entry* disk_cache_entry() const { return disk_cache_entry_; }
   int disk_cache_stream_index() const { return disk_cache_stream_index_; }
+  int disk_cache_side_stream_index() const {
+    return disk_cache_side_stream_index_;
+  }
 
  private:
   friend class BlobDataBuilder;
@@ -72,7 +75,8 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   BlobDataItem(std::unique_ptr<DataElement> item,
                const scoped_refptr<DataHandle>& data_handle,
                disk_cache::Entry* entry,
-               int disk_cache_stream_index_);
+               int disk_cache_stream_index,
+               int disk_cache_side_stream_index);
   virtual ~BlobDataItem();
 
   std::unique_ptr<DataElement> item_;
@@ -82,6 +86,7 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   // instance for disk cache entries during the lifetime of this BlobDataItem.
   disk_cache::Entry* disk_cache_entry_;
   int disk_cache_stream_index_;  // For TYPE_DISK_CACHE_ENTRY.
+  int disk_cache_side_stream_index_;  // For TYPE_DISK_CACHE_ENTRY.
 };
 
 STORAGE_EXPORT bool operator==(const BlobDataItem& a, const BlobDataItem& b);

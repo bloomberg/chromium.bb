@@ -95,6 +95,55 @@ BlobReader::Status BlobReader::CalculateSize(
   return CalculateSizeImpl(done);
 }
 
+bool BlobReader::has_side_data() const {
+  if (!blob_data_.get())
+    return false;
+  const auto& items = blob_data_->items();
+  if (items.size() != 1)
+    return false;
+  const BlobDataItem& item = *items.at(0);
+  if (item.type() != DataElement::TYPE_DISK_CACHE_ENTRY)
+    return false;
+  const int disk_cache_side_stream_index = item.disk_cache_side_stream_index();
+  if (disk_cache_side_stream_index < 0)
+    return false;
+  return item.disk_cache_entry()->GetDataSize(disk_cache_side_stream_index) > 0;
+}
+
+BlobReader::Status BlobReader::ReadSideData(const StatusCallback& done) {
+  if (!has_side_data())
+    return ReportError(net::ERR_FILE_NOT_FOUND);
+  const BlobDataItem* item = blob_data_->items()[0].get();
+  const int disk_cache_side_stream_index = item->disk_cache_side_stream_index();
+  const int side_data_size =
+      item->disk_cache_entry()->GetDataSize(disk_cache_side_stream_index);
+  side_data_ = new net::IOBufferWithSize(side_data_size);
+  net_error_ = net::OK;
+  const int result = item->disk_cache_entry()->ReadData(
+      disk_cache_side_stream_index, 0, side_data_.get(), side_data_size,
+      base::Bind(&BlobReader::DidReadDiskCacheEntrySideData,
+                 weak_factory_.GetWeakPtr(), done, side_data_size));
+  if (result >= 0) {
+    DCHECK_EQ(side_data_size, result);
+    return Status::DONE;
+  }
+  if (result == net::ERR_IO_PENDING)
+    return Status::IO_PENDING;
+  return ReportError(result);
+}
+
+void BlobReader::DidReadDiskCacheEntrySideData(const StatusCallback& done,
+                                               int expected_size,
+                                               int result) {
+  if (result >= 0) {
+    DCHECK_EQ(expected_size, result);
+    done.Run(Status::DONE);
+    return;
+  }
+  side_data_ = nullptr;
+  done.Run(ReportError(result));
+}
+
 BlobReader::Status BlobReader::SetReadRange(uint64_t offset, uint64_t length) {
   if (!blob_handle_.get() || blob_handle_->IsBroken()) {
     return ReportError(net::ERR_FILE_NOT_FOUND);

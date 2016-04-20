@@ -16,6 +16,7 @@
 #include "net/http/http_byte_range.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_job.h"
+#include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/storage_browser_export.h"
 
 namespace base {
@@ -30,7 +31,6 @@ class IOBuffer;
 namespace storage {
 
 class BlobDataHandle;
-class BlobReader;
 class FileStreamReader;
 class FileSystemContext;
 
@@ -62,6 +62,7 @@ class STORAGE_EXPORT BlobURLRequestJob
   // For preparing for read: get the size, apply the range and perform seek.
   void DidStart();
   void DidCalculateSize(int result);
+  void DidReadMetadata(BlobReader::Status result);
   void DidReadRawData(int result);
 
   void NotifyFailure(int);

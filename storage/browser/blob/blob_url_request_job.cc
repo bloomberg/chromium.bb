@@ -208,9 +208,28 @@ void BlobURLRequestJob::DidCalculateSize(int result) {
     blob_reader_->SetReadRange(byte_range_.first_byte_position(), length);
 
   net::HttpStatusCode status_code = net::HTTP_OK;
-  if (byte_range_set_ && byte_range_.IsValid())
+  if (byte_range_set_ && byte_range_.IsValid()) {
     status_code = net::HTTP_PARTIAL_CONTENT;
+  } else {
+    // TODO(horo): When the requester doesn't need the side data (ex:FileReader)
+    // we should skip reading the side data.
+    if (blob_reader_->has_side_data() &&
+        blob_reader_->ReadSideData(base::Bind(
+            &BlobURLRequestJob::DidReadMetadata, weak_factory_.GetWeakPtr())) ==
+            BlobReader::Status::IO_PENDING) {
+      return;
+    }
+  }
+
   HeadersCompleted(status_code);
+}
+
+void BlobURLRequestJob::DidReadMetadata(BlobReader::Status result) {
+  if (result != BlobReader::Status::DONE) {
+    NotifyFailure(blob_reader_->net_error());
+    return;
+  }
+  HeadersCompleted(net::HTTP_OK);
 }
 
 void BlobURLRequestJob::DidReadRawData(int result) {
@@ -294,6 +313,8 @@ void BlobURLRequestJob::HeadersCompleted(net::HttpStatusCode status_code) {
 
   response_info_.reset(new net::HttpResponseInfo());
   response_info_->headers = headers;
+  if (blob_reader_)
+    response_info_->metadata = blob_reader_->side_data();
 
   NotifyHeadersComplete();
 }

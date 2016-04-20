@@ -26,6 +26,7 @@ MockURLRequestDelegate::~MockURLRequestDelegate() {
 void MockURLRequestDelegate::OnResponseStarted(net::URLRequest* request) {
   if (request->status().is_success()) {
     EXPECT_TRUE(request->response_headers());
+    metadata_ = request->response_info().metadata;
     ReadSome(request);
   } else {
     RequestComplete();

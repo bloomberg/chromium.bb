@@ -62,6 +62,8 @@ class CONTENT_EXPORT CacheStorageCache
       base::Callback<void(CacheStorageError, std::unique_ptr<Requests>)>;
   using SizeCallback = base::Callback<void(int64_t)>;
 
+  enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA };
+
   static scoped_refptr<CacheStorageCache> CreateMemoryCache(
       const GURL& origin,
       const std::string& cache_name,

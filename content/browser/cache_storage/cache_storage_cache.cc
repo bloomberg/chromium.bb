@@ -57,8 +57,6 @@ class CacheStorageCacheDataHandle
 
 typedef base::Callback<void(std::unique_ptr<CacheMetadata>)> MetadataCallback;
 
-enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA };
-
 // The maximum size of each cache. Ultimately, cache size
 // is controlled per-origin by the QuotaManager.
 const int kMaxCacheBytes = std::numeric_limits<int>::max();
@@ -152,14 +150,15 @@ GURL RemoveQueryParam(const GURL& url) {
 void ReadMetadata(disk_cache::Entry* entry, const MetadataCallback& callback) {
   DCHECK(entry);
 
-  scoped_refptr<net::IOBufferWithSize> buffer(
-      new net::IOBufferWithSize(entry->GetDataSize(INDEX_HEADERS)));
+  scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(
+      entry->GetDataSize(CacheStorageCache::INDEX_HEADERS)));
 
   net::CompletionCallback read_header_callback =
       base::Bind(ReadMetadataDidReadMetadata, entry, callback, buffer);
 
-  int read_rv = entry->ReadData(INDEX_HEADERS, 0, buffer.get(), buffer->size(),
-                                read_header_callback);
+  int read_rv =
+      entry->ReadData(CacheStorageCache::INDEX_HEADERS, 0, buffer.get(),
+                      buffer->size(), read_header_callback);
 
   if (read_rv != net::ERR_IO_PENDING)
     read_header_callback.Run(read_rv);
@@ -1540,9 +1539,9 @@ CacheStorageCache::PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
   storage::BlobDataBuilder blob_data(response->blob_uuid);
 
   disk_cache::Entry* temp_entry = entry.get();
-  blob_data.AppendDiskCacheEntry(
+  blob_data.AppendDiskCacheEntryWithSideData(
       new CacheStorageCacheDataHandle(this, std::move(entry)), temp_entry,
-      INDEX_RESPONSE_BODY);
+      INDEX_RESPONSE_BODY, INDEX_SIDE_DATA);
   return blob_storage_context_->AddFinishedBlob(&blob_data);
 }
 

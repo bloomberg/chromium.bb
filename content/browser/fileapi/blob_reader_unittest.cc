@@ -48,6 +48,7 @@ namespace storage {
 namespace {
 
 const int kTestDiskCacheStreamIndex = 0;
+const int kTestDiskCacheSideStreamIndex = 1;
 
 // Our disk cache tests don't need a real data handle since the tests themselves
 // scope the disk cache and entries.
@@ -173,6 +174,21 @@ disk_cache::ScopedEntryPtr CreateDiskCacheEntry(disk_cache::Backend* cache,
   rv = entry->WriteData(kTestDiskCacheStreamIndex, 0, iobuffer.get(),
                         iobuffer->size(), callback.callback(), false);
   EXPECT_EQ(static_cast<int>(data.size()), callback.GetResult(rv));
+  return entry;
+}
+
+disk_cache::ScopedEntryPtr CreateDiskCacheEntryWithSideData(
+    disk_cache::Backend* cache,
+    const char* key,
+    const std::string& data,
+    const std::string& side_data) {
+  disk_cache::ScopedEntryPtr entry = CreateDiskCacheEntry(cache, key, data);
+  scoped_refptr<net::StringIOBuffer> iobuffer =
+      new net::StringIOBuffer(side_data);
+  net::TestCompletionCallback callback;
+  int rv = entry->WriteData(kTestDiskCacheSideStreamIndex, 0, iobuffer.get(),
+                            iobuffer->size(), callback.callback(), false);
+  EXPECT_EQ(static_cast<int>(side_data.size()), callback.GetResult(rv));
   return entry;
 }
 
@@ -504,6 +520,8 @@ TEST_F(BlobReaderTest, BasicDiskCache) {
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
   CheckSizeCalculatedSynchronously(kData.size(), size_result);
 
+  EXPECT_FALSE(reader_->has_side_data());
+
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kData.size()));
 
   int bytes_read = 0;
@@ -515,6 +533,41 @@ TEST_F(BlobReaderTest, BasicDiskCache) {
   EXPECT_EQ(kData.size(), static_cast<size_t>(bytes_read));
   EXPECT_EQ(0, async_bytes_read);
   EXPECT_EQ(0, memcmp(buffer->data(), "Test Blob Data", kData.size()));
+}
+
+TEST_F(BlobReaderTest, DiskCacheWithSideData) {
+  std::unique_ptr<disk_cache::Backend> cache =
+      CreateInMemoryDiskCache(message_loop_.task_runner());
+  ASSERT_TRUE(cache);
+
+  BlobDataBuilder b("uuid");
+  const std::string kData = "Test Blob Data";
+  const std::string kSideData = "Test side data";
+  scoped_refptr<BlobDataBuilder::DataHandle> data_handle =
+      new EmptyDataHandle();
+  disk_cache::ScopedEntryPtr entry = CreateDiskCacheEntryWithSideData(
+      cache.get(), "test entry", kData, kSideData);
+  b.AppendDiskCacheEntryWithSideData(data_handle, entry.get(),
+                                     kTestDiskCacheStreamIndex,
+                                     kTestDiskCacheSideStreamIndex);
+  this->InitializeReader(&b);
+
+  int size_result = -1;
+  EXPECT_FALSE(IsReaderTotalSizeCalculated());
+  EXPECT_EQ(BlobReader::Status::DONE,
+            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  CheckSizeCalculatedSynchronously(kData.size(), size_result);
+
+  EXPECT_TRUE(reader_->has_side_data());
+  BlobReader::Status status = BlobReader::Status::DONE;
+  EXPECT_EQ(BlobReader::Status::DONE,
+            reader_->ReadSideData(
+                base::Bind(&SetValue<BlobReader::Status>, &status)));
+  EXPECT_EQ(net::OK, reader_->net_error());
+  EXPECT_TRUE(reader_->side_data());
+  std::string result(reader_->side_data()->data(),
+                     reader_->side_data()->size());
+  EXPECT_EQ(kSideData, result);
 }
 
 TEST_F(BlobReaderTest, BufferLargerThanMemory) {

@@ -170,6 +170,31 @@ void CopyBody(const storage::BlobDataHandle& blob_handle, std::string* output) {
   }
 }
 
+void CopySideData(const storage::BlobDataHandle& blob_handle,
+                  std::string* output) {
+  *output = std::string();
+  std::unique_ptr<storage::BlobDataSnapshot> data =
+      blob_handle.CreateSnapshot();
+  const auto& items = data->items();
+  ASSERT_EQ(1u, items.size());
+  const auto& item = items[0];
+  ASSERT_EQ(storage::DataElement::TYPE_DISK_CACHE_ENTRY, item->type());
+  ASSERT_EQ(CacheStorageCache::INDEX_SIDE_DATA,
+            item->disk_cache_side_stream_index());
+
+  disk_cache::Entry* entry = item->disk_cache_entry();
+  int32_t body_size = entry->GetDataSize(item->disk_cache_side_stream_index());
+  scoped_refptr<net::IOBuffer> io_buffer = new net::IOBuffer(body_size);
+  net::TestCompletionCallback callback;
+  int rv = entry->ReadData(item->disk_cache_side_stream_index(), 0,
+                           io_buffer.get(), body_size, callback.callback());
+  if (rv == net::ERR_IO_PENDING)
+    rv = callback.WaitForResult();
+  EXPECT_EQ(body_size, rv);
+  if (rv > 0)
+    output->append(io_buffer->data(), rv);
+}
+
 bool ResponseMetadataEqual(const ServiceWorkerResponse& expected,
                            const ServiceWorkerResponse& actual) {
   EXPECT_EQ(expected.status_code, actual.status_code);
@@ -211,6 +236,13 @@ bool ResponseBodiesEqual(const std::string& expected_body,
   std::string actual_body;
   CopyBody(actual_body_handle, &actual_body);
   return expected_body == actual_body;
+}
+
+bool ResponseSideDataEqual(const std::string& expected_side_data,
+                           const storage::BlobDataHandle& actual_body_handle) {
+  std::string actual_body;
+  CopySideData(actual_body_handle, &actual_body);
+  return expected_side_data == actual_body;
 }
 
 ServiceWorkerResponse SetCacheName(const ServiceWorkerResponse& original) {
@@ -1085,26 +1117,36 @@ TEST_P(CacheStorageCacheTestP, PutResponseType) {
 
 TEST_P(CacheStorageCacheTestP, WriteSideData) {
   base::Time response_time(base::Time::Now());
-  ServiceWorkerResponse response;
+  ServiceWorkerResponse response(body_response_);
   response.response_time = response_time;
-  EXPECT_TRUE(Put(no_body_request_, response));
+  EXPECT_TRUE(Put(body_request_, response));
 
-  const size_t kSize1 = 10;
-  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
-  memset(buffer1->data(), 0, kSize1);
+  const std::string expected_side_data1 = "SideDataSample";
+  scoped_refptr<net::IOBuffer> buffer1(
+      new net::StringIOBuffer(expected_side_data1));
+  EXPECT_TRUE(WriteSideData(body_request_.url, response_time, buffer1,
+                            expected_side_data1.length()));
+
+  EXPECT_TRUE(Match(body_request_));
+  EXPECT_TRUE(callback_response_data_);
   EXPECT_TRUE(
-      WriteSideData(no_body_request_.url, response_time, buffer1, kSize1));
-
-  // TODO(horo): Check the content of the saved side data when we will implement
-  // ReadMetadata() method in BlobReader.
-
-  const size_t kSize2 = 20;
-  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kSize2));
-  memset(buffer2->data(), 0, kSize2);
+      ResponseBodiesEqual(expected_blob_data_, *callback_response_data_));
   EXPECT_TRUE(
-      WriteSideData(no_body_request_.url, response_time, buffer2, kSize2));
+      ResponseSideDataEqual(expected_side_data1, *callback_response_data_));
 
-  ASSERT_TRUE(Delete(no_body_request_));
+  const std::string expected_side_data2 = "New data";
+  scoped_refptr<net::IOBuffer> buffer2(
+      new net::StringIOBuffer(expected_side_data2));
+  EXPECT_TRUE(WriteSideData(body_request_.url, response_time, buffer2,
+                            expected_side_data2.length()));
+  EXPECT_TRUE(Match(body_request_));
+  EXPECT_TRUE(callback_response_data_);
+  EXPECT_TRUE(
+      ResponseBodiesEqual(expected_blob_data_, *callback_response_data_));
+  EXPECT_TRUE(
+      ResponseSideDataEqual(expected_side_data2, *callback_response_data_));
+
+  ASSERT_TRUE(Delete(body_request_));
 }
 
 TEST_P(CacheStorageCacheTestP, WriteSideData_QuotaExeeded) {

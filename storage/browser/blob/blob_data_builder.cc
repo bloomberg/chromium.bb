@@ -18,6 +18,12 @@
 
 namespace storage {
 
+namespace {
+
+const static int kInvalidDiskCacheSideStreamIndex = -1;
+
+}  // namespace
+
 const char BlobDataBuilder::kAppendFutureFileTemporaryFileName[] =
     "kFakeFilenameToBeChangedByPopulateFutureFile";
 
@@ -184,7 +190,21 @@ void BlobDataBuilder::AppendDiskCacheEntry(
   element->SetToDiskCacheEntryRange(
       0U, disk_cache_entry->GetDataSize(disk_cache_stream_index));
   items_.push_back(new BlobDataItem(std::move(element), data_handle,
-                                    disk_cache_entry, disk_cache_stream_index));
+                                    disk_cache_entry, disk_cache_stream_index,
+                                    kInvalidDiskCacheSideStreamIndex));
+}
+
+void BlobDataBuilder::AppendDiskCacheEntryWithSideData(
+    const scoped_refptr<DataHandle>& data_handle,
+    disk_cache::Entry* disk_cache_entry,
+    int disk_cache_stream_index,
+    int disk_cache_side_stream_index) {
+  std::unique_ptr<DataElement> element(new DataElement());
+  element->SetToDiskCacheEntryRange(
+      0U, disk_cache_entry->GetDataSize(disk_cache_stream_index));
+  items_.push_back(new BlobDataItem(std::move(element), data_handle,
+                                    disk_cache_entry, disk_cache_stream_index,
+                                    disk_cache_side_stream_index));
 }
 
 void BlobDataBuilder::Clear() {
