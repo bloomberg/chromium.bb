@@ -9744,6 +9744,54 @@ TEST_F(LayerTreeHostCommonTest, MaskLayerScreenSpaceTransform) {
                                   child->mask_layer()->ScreenSpaceTransform());
 }
 
+TEST_F(LayerTreeHostCommonTest,
+       SublayerScaleWithTransformNodeBetweenTwoTargets) {
+  LayerImpl* root = root_layer();
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(root);
+  LayerImpl* between_targets = AddChild<LayerImpl>(render_surface1);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(between_targets);
+  LayerImpl* test_layer = AddChild<LayerImpl>(render_surface2);
+  const gfx::Transform identity_matrix;
+  test_layer->SetDrawsContent(true);
+
+  gfx::Transform scale;
+  scale.Scale(2.f, 2.f);
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(render_surface1, scale, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(between_targets, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               false);
+  SetLayerPropertiesForTesting(render_surface2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(test_layer, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               false);
+  // We want layer between the two targets to create a clip node and transform
+  // node but it shouldn't create a render surface.
+  between_targets->SetMasksToBounds(true);
+  between_targets->Set3dSortingContextId(2);
+
+  ExecuteCalculateDrawProperties(root);
+
+  TransformTree& tree =
+      root->layer_tree_impl()->property_trees()->transform_tree;
+  TransformNode* node = tree.Node(render_surface1->transform_tree_index());
+  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(2.f, 2.f));
+
+  node = tree.Node(between_targets->transform_tree_index());
+  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(1.f, 1.f));
+
+  node = tree.Node(render_surface2->transform_tree_index());
+  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(2.f, 2.f));
+
+  EXPECT_EQ(gfx::Rect(15, 15), test_layer->visible_layer_rect());
+}
+
 TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
   LayerImpl* root = root_layer();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(root);

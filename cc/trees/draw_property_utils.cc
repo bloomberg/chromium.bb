@@ -473,8 +473,8 @@ void ComputeClips(ClipTree* clip_tree,
     ClipNode* parent_clip_node = clip_tree->parent(clip_node);
 
     gfx::Transform parent_to_current;
-    const TransformNode* parent_transform_node =
-        transform_tree.Node(parent_clip_node->data.transform_id);
+    const TransformNode* parent_target_transform_node =
+        transform_tree.Node(parent_clip_node->data.target_id);
     bool success = true;
 
     // Clips must be combined in target space. We cannot, for example, combine
@@ -491,16 +491,17 @@ void ComputeClips(ClipTree* clip_tree,
         parent_clip_node->data.combined_clip_in_target_space;
     gfx::RectF parent_clip_in_target_space =
         parent_clip_node->data.clip_in_target_space;
-    if (parent_clip_node->data.target_id != clip_node->data.target_id &&
+    if (parent_target_transform_node &&
+        parent_target_transform_node->id != clip_node->data.target_id &&
         non_root_surfaces_enabled) {
       success &= transform_tree.ComputeTransformWithDestinationSublayerScale(
-          parent_clip_node->data.target_id, clip_node->data.target_id,
+          parent_target_transform_node->id, clip_node->data.target_id,
           &parent_to_current);
-      if (parent_transform_node->data.sublayer_scale.x() > 0 &&
-          parent_transform_node->data.sublayer_scale.y() > 0)
+      if (parent_target_transform_node->data.sublayer_scale.x() > 0 &&
+          parent_target_transform_node->data.sublayer_scale.y() > 0)
         parent_to_current.Scale(
-            1.f / parent_transform_node->data.sublayer_scale.x(),
-            1.f / parent_transform_node->data.sublayer_scale.y());
+            1.f / parent_target_transform_node->data.sublayer_scale.x(),
+            1.f / parent_target_transform_node->data.sublayer_scale.y());
       // If we can't compute a transform, it's because we had to use the inverse
       // of a singular transform. We won't draw in this case, so there's no need
       // to compute clips.
