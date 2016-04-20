@@ -14,7 +14,7 @@
 #include "base/values.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
-#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "grit/bluetooth_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -259,15 +259,15 @@ bool BluetoothDevice::IsGattServicesDiscoveryComplete() const {
   return gatt_services_discovery_complete_;
 }
 
-std::vector<BluetoothGattService*>
-    BluetoothDevice::GetGattServices() const {
-  std::vector<BluetoothGattService*> services;
+std::vector<BluetoothRemoteGattService*> BluetoothDevice::GetGattServices()
+    const {
+  std::vector<BluetoothRemoteGattService*> services;
   for (const auto& iter : gatt_services_)
     services.push_back(iter.second);
   return services;
 }
 
-BluetoothGattService* BluetoothDevice::GetGattService(
+BluetoothRemoteGattService* BluetoothDevice::GetGattService(
     const std::string& identifier) const {
   return gatt_services_.get(identifier);
 }

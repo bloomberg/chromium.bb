@@ -19,7 +19,7 @@
 
 namespace device {
 
-class BluetoothGattService;
+class BluetoothRemoteGattService;
 class MockBluetoothAdapter;
 
 class MockBluetoothDevice : public BluetoothDevice {
@@ -91,8 +91,10 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_METHOD1(SetGattServicesDiscoveryComplete, void(bool));
   MOCK_CONST_METHOD0(IsGattServicesDiscoveryComplete, bool());
 
-  MOCK_CONST_METHOD0(GetGattServices, std::vector<BluetoothGattService*>());
-  MOCK_CONST_METHOD1(GetGattService, BluetoothGattService*(const std::string&));
+  MOCK_CONST_METHOD0(GetGattServices,
+                     std::vector<BluetoothRemoteGattService*>());
+  MOCK_CONST_METHOD1(GetGattService,
+                     BluetoothRemoteGattService*(const std::string&));
   MOCK_METHOD0(CreateGattConnectionImpl, void());
   MOCK_METHOD0(DisconnectGatt, void());
 
@@ -105,8 +107,9 @@ class MockBluetoothDevice : public BluetoothDevice {
   //   .WillByDefault(Invoke(*mock_device,
   //                         &MockBluetoothDevice::GetMockServices));
   void AddMockService(std::unique_ptr<MockBluetoothGattService> mock_device);
-  std::vector<BluetoothGattService*> GetMockServices() const;
-  BluetoothGattService* GetMockService(const std::string& identifier) const;
+  std::vector<BluetoothRemoteGattService*> GetMockServices() const;
+  BluetoothRemoteGattService* GetMockService(
+      const std::string& identifier) const;
 
  private:
   uint32_t bluetooth_class_;

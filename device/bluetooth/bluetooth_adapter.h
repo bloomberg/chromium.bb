@@ -29,9 +29,9 @@ namespace device {
 class BluetoothAdvertisement;
 class BluetoothDiscoveryFilter;
 class BluetoothDiscoverySession;
-class BluetoothGattCharacteristic;
-class BluetoothGattDescriptor;
-class BluetoothGattService;
+class BluetoothRemoteGattCharacteristic;
+class BluetoothRemoteGattDescriptor;
+class BluetoothRemoteGattService;
 class BluetoothSocket;
 class BluetoothUUID;
 struct BluetoothAdapterDeleter;
@@ -112,17 +112,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
     // Called when a new GATT service |service| is added to the device |device|,
     // as the service is received from the device. Don't cache |service|. Store
-    // its identifier instead (i.e. BluetoothGattService::GetIdentifier).
+    // its identifier instead (i.e. BluetoothRemoteGattService::GetIdentifier).
     virtual void GattServiceAdded(BluetoothAdapter* adapter,
                                   BluetoothDevice* device,
-                                  BluetoothGattService* service) {}
+                                  BluetoothRemoteGattService* service) {}
 
     // Called when the GATT service |service| is removed from the device
     // |device|. This can happen if the attribute database of the remote device
     // changes or when |device| gets removed.
     virtual void GattServiceRemoved(BluetoothAdapter* adapter,
                                     BluetoothDevice* device,
-                                    BluetoothGattService* service) {}
+                                    BluetoothRemoteGattService* service) {}
 
     // Called when all the GATT Services in |device| have been discovered
     // and GattServiceAdded has been called for each service.
@@ -135,7 +135,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     // preceded by calls to GattCharacteristicAdded and GattDescriptorAdded.
     virtual void GattDiscoveryCompleteForService(
         BluetoothAdapter* adapter,
-        BluetoothGattService* service) {}
+        BluetoothRemoteGattService* service) {}
 
     // Called when properties of the remote GATT service |service| have changed.
     // This will get called for properties such as UUID, as well as for changes
@@ -143,7 +143,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     // should read all GATT characteristic and descriptors objects and do any
     // necessary set up required for a changed service.
     virtual void GattServiceChanged(BluetoothAdapter* adapter,
-                                    BluetoothGattService* service) {}
+                                    BluetoothRemoteGattService* service) {}
 
     // Called when the remote GATT characteristic |characteristic| has been
     // discovered. Use this to issue any initial read/write requests to the
@@ -157,39 +157,41 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     // one.
     virtual void GattCharacteristicAdded(
         BluetoothAdapter* adapter,
-        BluetoothGattCharacteristic* characteristic) {}
+        BluetoothRemoteGattCharacteristic* characteristic) {}
 
     // Called when a GATT characteristic |characteristic| has been removed from
     // the system.
     virtual void GattCharacteristicRemoved(
         BluetoothAdapter* adapter,
-        BluetoothGattCharacteristic* characteristic) {}
+        BluetoothRemoteGattCharacteristic* characteristic) {}
 
     // Called when the remote GATT characteristic descriptor |descriptor| has
     // been discovered. Don't cache the arguments as the pointers may become
     // invalid. Instead, use the specially assigned identifier to obtain a
     // descriptor and cache that identifier as necessary.
-    virtual void GattDescriptorAdded(BluetoothAdapter* adapter,
-                                     BluetoothGattDescriptor* descriptor) {}
+    virtual void GattDescriptorAdded(
+        BluetoothAdapter* adapter,
+        BluetoothRemoteGattDescriptor* descriptor) {}
 
     // Called when a GATT characteristic descriptor |descriptor| has been
     // removed from the system.
-    virtual void GattDescriptorRemoved(BluetoothAdapter* adapter,
-                                       BluetoothGattDescriptor* descriptor) {}
+    virtual void GattDescriptorRemoved(
+        BluetoothAdapter* adapter,
+        BluetoothRemoteGattDescriptor* descriptor) {}
 
     // Called when the value of a characteristic has changed. This might be a
     // result of a read/write request to, or a notification/indication from, a
     // remote GATT characteristic.
     virtual void GattCharacteristicValueChanged(
         BluetoothAdapter* adapter,
-        BluetoothGattCharacteristic* characteristic,
+        BluetoothRemoteGattCharacteristic* characteristic,
         const std::vector<uint8_t>& value) {}
 
     // Called when the value of a characteristic descriptor has been updated.
-    virtual void GattDescriptorValueChanged(BluetoothAdapter* adapter,
-                                            BluetoothGattDescriptor* descriptor,
-                                            const std::vector<uint8_t>& value) {
-    }
+    virtual void GattDescriptorValueChanged(
+        BluetoothAdapter* adapter,
+        BluetoothRemoteGattDescriptor* descriptor,
+        const std::vector<uint8_t>& value) {}
   };
 
   // Used to configure a listening servie.
@@ -424,22 +426,23 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   void NotifyDevicePairedChanged(BluetoothDevice* device,
                                  bool new_paired_status);
 #endif
-  void NotifyGattServiceAdded(BluetoothGattService* service);
-  void NotifyGattServiceRemoved(BluetoothGattService* service);
-  void NotifyGattServiceChanged(BluetoothGattService* service);
+  void NotifyGattServiceAdded(BluetoothRemoteGattService* service);
+  void NotifyGattServiceRemoved(BluetoothRemoteGattService* service);
+  void NotifyGattServiceChanged(BluetoothRemoteGattService* service);
   void NotifyGattServicesDiscovered(BluetoothDevice* device);
-  void NotifyGattDiscoveryComplete(BluetoothGattService* service);
+  void NotifyGattDiscoveryComplete(BluetoothRemoteGattService* service);
   void NotifyGattCharacteristicAdded(
-      BluetoothGattCharacteristic* characteristic);
+      BluetoothRemoteGattCharacteristic* characteristic);
   void NotifyGattCharacteristicRemoved(
-      BluetoothGattCharacteristic* characteristic);
-  void NotifyGattDescriptorAdded(BluetoothGattDescriptor* descriptor);
-  void NotifyGattDescriptorRemoved(BluetoothGattDescriptor* descriptor);
+      BluetoothRemoteGattCharacteristic* characteristic);
+  void NotifyGattDescriptorAdded(BluetoothRemoteGattDescriptor* descriptor);
+  void NotifyGattDescriptorRemoved(BluetoothRemoteGattDescriptor* descriptor);
   void NotifyGattCharacteristicValueChanged(
-      BluetoothGattCharacteristic* characteristic,
+      BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value);
-  void NotifyGattDescriptorValueChanged(BluetoothGattDescriptor* descriptor,
-                                        const std::vector<uint8_t>& value);
+  void NotifyGattDescriptorValueChanged(
+      BluetoothRemoteGattDescriptor* descriptor,
+      const std::vector<uint8_t>& value);
 
  protected:
   friend class base::RefCounted<BluetoothAdapter>;

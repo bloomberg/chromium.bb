@@ -14,9 +14,9 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
-#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 
@@ -64,7 +64,7 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
                              bool present) override;
   void GattCharacteristicValueChanged(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattCharacteristic* characteristic,
+      device::BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value) override;
 
   // Notifies the WebBluetoothServiceClient that characteristic
@@ -93,27 +93,27 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
       const mojo::String& characteristic_instance_id,
       const RemoteCharacteristicStopNotificationsCallback& callback) override;
 
-  // Callbacks for BluetoothGattCharacteristic::ReadRemoteCharacteristic.
+  // Callbacks for BluetoothRemoteGattCharacteristic::ReadRemoteCharacteristic.
   void OnReadValueSuccess(const RemoteCharacteristicReadValueCallback& callback,
                           const std::vector<uint8_t>& value);
   void OnReadValueFailed(
       const RemoteCharacteristicReadValueCallback& callback,
-      device::BluetoothGattService::GattErrorCode error_code);
+      device::BluetoothRemoteGattService::GattErrorCode error_code);
 
-  // Callbacks for BluetoothGattCharacteristic::WriteRemoteCharacteristic.
+  // Callbacks for BluetoothRemoteGattCharacteristic::WriteRemoteCharacteristic.
   void OnWriteValueSuccess(
       const RemoteCharacteristicWriteValueCallback& callback);
   void OnWriteValueFailed(
       const RemoteCharacteristicWriteValueCallback& callback,
-      device::BluetoothGattService::GattErrorCode error_code);
+      device::BluetoothRemoteGattService::GattErrorCode error_code);
 
-  // Callbacks for BluetoothGattCharacteristic::StartNotifySession.
+  // Callbacks for BluetoothRemoteGattCharacteristic::StartNotifySession.
   void OnStartNotifySessionSuccess(
       const RemoteCharacteristicStartNotificationsCallback& callback,
       std::unique_ptr<device::BluetoothGattNotifySession> notify_session);
   void OnStartNotifySessionFailed(
       const RemoteCharacteristicStartNotificationsCallback& callback,
-      device::BluetoothGattService::GattErrorCode error_code);
+      device::BluetoothRemoteGattService::GattErrorCode error_code);
 
   // Callback for BluetoothGattNotifySession::Stop.
   void OnStopNotifySessionComplete(

@@ -30,7 +30,7 @@ namespace device {
 
 class BluetoothAdapter;
 class BluetoothGattConnection;
-class BluetoothGattService;
+class BluetoothRemoteGattService;
 class BluetoothSocket;
 class BluetoothUUID;
 
@@ -450,11 +450,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   virtual bool IsGattServicesDiscoveryComplete() const;
 
   // Returns the list of discovered GATT services.
-  virtual std::vector<BluetoothGattService*> GetGattServices() const;
+  virtual std::vector<BluetoothRemoteGattService*> GetGattServices() const;
 
   // Returns the GATT service with device-specific identifier |identifier|.
   // Returns NULL, if no such service exists.
-  virtual BluetoothGattService* GetGattService(
+  virtual BluetoothRemoteGattService* GetGattService(
       const std::string& identifier) const;
 
   // Returns service data of a service given its UUID.
@@ -538,9 +538,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   std::set<BluetoothGattConnection*> gatt_connections_;
 
   // Mapping from the platform-specific GATT service identifiers to
-  // BluetoothGattService objects.
+  // BluetoothRemoteGattService objects.
   typedef base::ScopedPtrHashMap<std::string,
-                                 std::unique_ptr<BluetoothGattService>>
+                                 std::unique_ptr<BluetoothRemoteGattService>>
       GattServiceMap;
   GattServiceMap gatt_services_;
   bool gatt_services_discovery_complete_;

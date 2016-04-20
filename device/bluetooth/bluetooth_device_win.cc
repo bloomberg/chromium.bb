@@ -342,7 +342,7 @@ bool BluetoothDeviceWin::IsGattServiceDiscovered(BluetoothUUID& uuid,
 bool BluetoothDeviceWin::DoesGattServiceExist(
     const ScopedVector<BluetoothTaskManagerWin::ServiceRecordState>&
         service_state,
-    BluetoothGattService* service) {
+    BluetoothRemoteGattService* service) {
   uint16_t attribute_handle =
       static_cast<BluetoothRemoteGattServiceWin*>(service)
           ->GetAttributeHandle();
@@ -392,7 +392,7 @@ void BluetoothDeviceWin::UpdateGattServices(
                                             nullptr, ui_task_runner_);
       gatt_services_.add(
           primary_service->GetIdentifier(),
-          std::unique_ptr<BluetoothGattService>(primary_service));
+          std::unique_ptr<BluetoothRemoteGattService>(primary_service));
       adapter_->NotifyGattServiceAdded(primary_service);
     }
   }

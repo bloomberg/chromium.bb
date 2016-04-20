@@ -22,8 +22,8 @@
 #include "components/proximity_auth/connection.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace base {
@@ -126,7 +126,7 @@ class BluetoothLowEnergyConnection : public Connection,
                      device::BluetoothDevice* device) override;
   void GattCharacteristicValueChanged(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattCharacteristic* characteristic,
+      device::BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value) override;
 
  private:
@@ -207,7 +207,8 @@ class BluetoothLowEnergyConnection : public Connection,
   // Processes the next request in |write_requests_queue_|.
   void ProcessNextWriteRequest();
 
-  // Called when the BluetoothGattCharacteristic::RemoteCharacteristicWrite() is
+  // Called when the
+  // BluetoothRemoteGattCharacteristic::RemoteCharacteristicWrite() is
   // successfully complete.
   void OnRemoteCharacteristicWritten(bool run_did_send_message_callback);
 
@@ -215,7 +216,7 @@ class BluetoothLowEnergyConnection : public Connection,
   // |to_peripheral_char_|.
   void OnWriteRemoteCharacteristicError(
       bool run_did_send_message_callback,
-      device::BluetoothGattService::GattErrorCode error);
+      device::BluetoothRemoteGattService::GattErrorCode error);
 
   // Builds the value to be written on |to_peripheral_char_|. The value
   // corresponds to |signal| concatenated with |payload|.
@@ -231,11 +232,11 @@ class BluetoothLowEnergyConnection : public Connection,
 
   // Returns the service corresponding to |remote_service_| in the current
   // device.
-  device::BluetoothGattService* GetRemoteService();
+  device::BluetoothRemoteGattService* GetRemoteService();
 
   // Returns the characteristic corresponding to |identifier| in the current
   // service.
-  device::BluetoothGattCharacteristic* GetGattCharacteristic(
+  device::BluetoothRemoteGattCharacteristic* GetGattCharacteristic(
       const std::string& identifier);
 
   // Convert the first 4 bytes from a byte vector to a uint32_t.
@@ -284,7 +285,8 @@ class BluetoothLowEnergyConnection : public Connection,
   // Bytes already received for the current receive operation.
   std::string incoming_bytes_buffer_;
 
-  // Indicates there is a BluetoothGattCharacteristic::WriteRemoteCharacteristic
+  // Indicates there is a
+  // BluetoothRemoteGattCharacteristic::WriteRemoteCharacteristic
   // operation pending.
   bool write_remote_characteristic_pending_;
 

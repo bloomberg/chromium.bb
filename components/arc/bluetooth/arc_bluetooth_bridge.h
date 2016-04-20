@@ -17,9 +17,9 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
-#include "device/bluetooth/bluetooth_gatt_descriptor.h"
-#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
@@ -67,46 +67,47 @@ class ArcBluetoothBridge
 
   void GattServiceAdded(device::BluetoothAdapter* adapter,
                         device::BluetoothDevice* device,
-                        device::BluetoothGattService* service) override;
+                        device::BluetoothRemoteGattService* service) override;
 
   void GattServiceRemoved(device::BluetoothAdapter* adapter,
                           device::BluetoothDevice* device,
-                          device::BluetoothGattService* service) override;
+                          device::BluetoothRemoteGattService* service) override;
 
   void GattServicesDiscovered(device::BluetoothAdapter* adapter,
                               device::BluetoothDevice* device) override;
 
   void GattDiscoveryCompleteForService(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattService* service) override;
+      device::BluetoothRemoteGattService* service) override;
 
   void GattServiceChanged(device::BluetoothAdapter* adapter,
-                          device::BluetoothGattService* service) override;
+                          device::BluetoothRemoteGattService* service) override;
 
   void GattCharacteristicAdded(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattCharacteristic* characteristic) override;
+      device::BluetoothRemoteGattCharacteristic* characteristic) override;
 
   void GattCharacteristicRemoved(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattCharacteristic* characteristic) override;
+      device::BluetoothRemoteGattCharacteristic* characteristic) override;
 
   void GattDescriptorAdded(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattDescriptor* descriptor) override;
+      device::BluetoothRemoteGattDescriptor* descriptor) override;
 
   void GattDescriptorRemoved(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattDescriptor* descriptor) override;
+      device::BluetoothRemoteGattDescriptor* descriptor) override;
 
   void GattCharacteristicValueChanged(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattCharacteristic* characteristic,
+      device::BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value) override;
 
-  void GattDescriptorValueChanged(device::BluetoothAdapter* adapter,
-                                  device::BluetoothGattDescriptor* descriptor,
-                                  const std::vector<uint8_t>& value) override;
+  void GattDescriptorValueChanged(
+      device::BluetoothAdapter* adapter,
+      device::BluetoothRemoteGattDescriptor* descriptor,
+      const std::vector<uint8_t>& value) override;
 
   // Bluetooth Mojo host interface
   void EnableAdapter(const EnableAdapterCallback& callback) override;

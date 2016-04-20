@@ -37,33 +37,33 @@ class BluetoothTestWin : public BluetoothTestBase,
   void SimulateGattServicesDiscovered(
       BluetoothDevice* device,
       const std::vector<std::string>& uuids) override;
-  void SimulateGattServiceRemoved(BluetoothGattService* service) override;
-  void SimulateGattCharacteristic(BluetoothGattService* service,
+  void SimulateGattServiceRemoved(BluetoothRemoteGattService* service) override;
+  void SimulateGattCharacteristic(BluetoothRemoteGattService* service,
                                   const std::string& uuid,
                                   int properties) override;
   void SimulateGattCharacteristicRemoved(
-      BluetoothGattService* service,
-      BluetoothGattCharacteristic* characteristic) override;
+      BluetoothRemoteGattService* service,
+      BluetoothRemoteGattCharacteristic* characteristic) override;
   void RememberCharacteristicForSubsequentAction(
-      BluetoothGattCharacteristic* characteristic) override;
+      BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattCharacteristicRead(
-      BluetoothGattCharacteristic* characteristic,
+      BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value) override;
   void SimulateGattCharacteristicReadError(
-      BluetoothGattCharacteristic* characteristic,
-      BluetoothGattService::GattErrorCode error_code) override;
+      BluetoothRemoteGattCharacteristic* characteristic,
+      BluetoothRemoteGattService::GattErrorCode error_code) override;
   void SimulateGattCharacteristicWrite(
-      BluetoothGattCharacteristic* characteristic) override;
+      BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattCharacteristicWriteError(
-      BluetoothGattCharacteristic* characteristic,
-      BluetoothGattService::GattErrorCode error_code) override;
+      BluetoothRemoteGattCharacteristic* characteristic,
+      BluetoothRemoteGattService::GattErrorCode error_code) override;
   void DeleteDevice(BluetoothDevice* device) override;
-  void SimulateGattDescriptor(BluetoothGattCharacteristic* characteristic,
+  void SimulateGattDescriptor(BluetoothRemoteGattCharacteristic* characteristic,
                               const std::string& uuid) override;
   void SimulateGattNotifySessionStarted(
-      BluetoothGattCharacteristic* characteristic) override;
+      BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattCharacteristicChanged(
-      BluetoothGattCharacteristic* characteristic,
+      BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value) override;
 
   // win::BluetoothLowEnergyWrapperFake::Observer overrides.
@@ -83,9 +83,9 @@ class BluetoothTestWin : public BluetoothTestBase,
 
   void AdapterInitCallback();
   win::GattService* GetSimulatedService(win::BLEDevice* device,
-                                        BluetoothGattService* service);
+                                        BluetoothRemoteGattService* service);
   win::GattCharacteristic* GetSimulatedCharacteristic(
-      BluetoothGattCharacteristic* characteristic);
+      BluetoothRemoteGattCharacteristic* characteristic);
 
   // Run pending Bluetooth tasks until the first callback that the test fixture
   // tracks is called.

@@ -7,13 +7,13 @@
 #include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
-using device::BluetoothGattCharacteristic;
-using device::BluetoothGattService;
+using device::BluetoothRemoteGattCharacteristic;
+using device::BluetoothRemoteGattService;
 using device::BluetoothUUID;
 
 namespace proximity_auth {
@@ -60,7 +60,7 @@ BluetoothLowEnergyCharacteristicsFinder::
 
 void BluetoothLowEnergyCharacteristicsFinder::GattCharacteristicAdded(
     BluetoothAdapter* adapter,
-    BluetoothGattCharacteristic* characteristic) {
+    BluetoothRemoteGattCharacteristic* characteristic) {
   PA_LOG(INFO) << "New char found: "
                << characteristic->GetUUID().canonical_value();
   HandleCharacteristicUpdate(characteristic);
@@ -68,7 +68,7 @@ void BluetoothLowEnergyCharacteristicsFinder::GattCharacteristicAdded(
 
 void BluetoothLowEnergyCharacteristicsFinder::GattDiscoveryCompleteForService(
     BluetoothAdapter* adapter,
-    BluetoothGattService* service) {
+    BluetoothRemoteGattService* service) {
   if (service && service->GetUUID() == remote_service_.uuid) {
     PA_LOG(INFO) << "All characteristics discovered for "
                  << remote_service_.uuid.canonical_value();
@@ -87,14 +87,15 @@ void BluetoothLowEnergyCharacteristicsFinder::ScanRemoteCharacteristics(
     const BluetoothUUID& service_uuid) {
   PA_LOG(INFO) << "Scanning remote characteristics.";
   if (device) {
-    std::vector<BluetoothGattService*> services = device->GetGattServices();
+    std::vector<BluetoothRemoteGattService*> services =
+        device->GetGattServices();
     PA_LOG(INFO) << device->GetAddress() << " has " << services.size()
                  << " services.";
     for (const auto& service : services) {
       if (service->GetUUID() == service_uuid) {
         // Right service found, now scaning its characteristics.
-        std::vector<device::BluetoothGattCharacteristic*> characteristics =
-            service->GetCharacteristics();
+        std::vector<device::BluetoothRemoteGattCharacteristic*>
+            characteristics = service->GetCharacteristics();
         PA_LOG(INFO) << "Service " << service_uuid.canonical_value() << " has "
                      << characteristics.size() << " characteristics.";
         for (const auto& characteristic : characteristics) {
@@ -107,7 +108,7 @@ void BluetoothLowEnergyCharacteristicsFinder::ScanRemoteCharacteristics(
 }
 
 void BluetoothLowEnergyCharacteristicsFinder::HandleCharacteristicUpdate(
-    BluetoothGattCharacteristic* characteristic) {
+    BluetoothRemoteGattCharacteristic* characteristic) {
   UpdateCharacteristicsStatus(characteristic);
 
   if (!to_peripheral_char_.id.empty() && !from_peripheral_char_.id.empty() &&
@@ -120,7 +121,7 @@ void BluetoothLowEnergyCharacteristicsFinder::HandleCharacteristicUpdate(
 }
 
 void BluetoothLowEnergyCharacteristicsFinder::UpdateCharacteristicsStatus(
-    BluetoothGattCharacteristic* characteristic) {
+    BluetoothRemoteGattCharacteristic* characteristic) {
   if (characteristic &&
       characteristic->GetService()->GetUUID() == remote_service_.uuid) {
     BluetoothUUID uuid = characteristic->GetUUID();
@@ -129,7 +130,7 @@ void BluetoothLowEnergyCharacteristicsFinder::UpdateCharacteristicsStatus(
     if (from_peripheral_char_.uuid == uuid)
       from_peripheral_char_.id = characteristic->GetIdentifier();
 
-    BluetoothGattService* service = characteristic->GetService();
+    BluetoothRemoteGattService* service = characteristic->GetService();
     remote_service_.id = service->GetIdentifier();
   }
 }

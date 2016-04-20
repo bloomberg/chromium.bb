@@ -21,7 +21,7 @@
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
@@ -50,12 +50,13 @@ const char kServiceID[] = "service id";
 const char kToPeripheralCharID[] = "to peripheral char id";
 const char kFromPeripheralCharID[] = "from peripheral char id";
 
-const device::BluetoothGattCharacteristic::Properties
+const device::BluetoothRemoteGattCharacteristic::Properties
     kCharacteristicProperties =
-        device::BluetoothGattCharacteristic::PROPERTY_BROADCAST |
-        device::BluetoothGattCharacteristic::PROPERTY_READ |
-        device::BluetoothGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE |
-        device::BluetoothGattCharacteristic::PROPERTY_INDICATE;
+        device::BluetoothRemoteGattCharacteristic::PROPERTY_BROADCAST |
+        device::BluetoothRemoteGattCharacteristic::PROPERTY_READ |
+        device::BluetoothRemoteGattCharacteristic::
+            PROPERTY_WRITE_WITHOUT_RESPONSE |
+        device::BluetoothRemoteGattCharacteristic::PROPERTY_INDICATE;
 
 const int kMaxNumberOfTries = 3;
 
@@ -146,13 +147,13 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
         make_scoped_ptr(new NiceMock<device::MockBluetoothGattCharacteristic>(
             service_.get(), kToPeripheralCharID, to_peripheral_char_uuid_,
             false, kCharacteristicProperties,
-            device::BluetoothGattCharacteristic::PERMISSION_NONE));
+            device::BluetoothRemoteGattCharacteristic::PERMISSION_NONE));
 
     from_peripheral_char_ =
         make_scoped_ptr(new NiceMock<device::MockBluetoothGattCharacteristic>(
             service_.get(), kFromPeripheralCharID, from_peripheral_char_uuid_,
             false, kCharacteristicProperties,
-            device::BluetoothGattCharacteristic::PERMISSION_NONE));
+            device::BluetoothRemoteGattCharacteristic::PERMISSION_NONE));
 
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
 
@@ -376,13 +377,13 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
   BluetoothLowEnergyCharacteristicsFinder::ErrorCallback
       characteristics_finder_error_callback_;
 
-  device::BluetoothGattCharacteristic::NotifySessionCallback
+  device::BluetoothRemoteGattCharacteristic::NotifySessionCallback
       notify_session_success_callback_;
-  device::BluetoothGattCharacteristic::ErrorCallback
+  device::BluetoothRemoteGattCharacteristic::ErrorCallback
       notify_session_error_callback_;
 
   base::Closure write_remote_characteristic_success_callback_;
-  device::BluetoothGattCharacteristic::ErrorCallback
+  device::BluetoothRemoteGattCharacteristic::ErrorCallback
       write_remote_characteristic_error_callback_;
 };
 
@@ -468,7 +469,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
   ASSERT_FALSE(notify_session_error_callback_.is_null());
 
   notify_session_error_callback_.Run(
-      device::BluetoothGattService::GATT_ERROR_UNKNOWN);
+      device::BluetoothRemoteGattService::GATT_ERROR_UNKNOWN);
 
   EXPECT_EQ(connection->sub_status(),
             BluetoothLowEnergyConnection::SubStatus::DISCONNECTED);
@@ -503,7 +504,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
     ASSERT_FALSE(write_remote_characteristic_error_callback_.is_null());
     EXPECT_FALSE(write_remote_characteristic_success_callback_.is_null());
     write_remote_characteristic_error_callback_.Run(
-        device::BluetoothGattService::GATT_ERROR_UNKNOWN);
+        device::BluetoothRemoteGattService::GATT_ERROR_UNKNOWN);
   }
 
   EXPECT_EQ(connection->sub_status(),

@@ -21,7 +21,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
-#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 
 namespace device {
 class BluetoothUUID;
@@ -66,8 +66,8 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
     ~CacheQueryResult();
     blink::WebBluetoothError GetWebError() const;
     device::BluetoothDevice* device = nullptr;
-    device::BluetoothGattService* service = nullptr;
-    device::BluetoothGattCharacteristic* characteristic = nullptr;
+    device::BluetoothRemoteGattService* service = nullptr;
+    device::BluetoothRemoteGattCharacteristic* characteristic = nullptr;
     CacheQueryOutcome outcome = CacheQueryOutcome::SUCCESS;
   };
 
@@ -225,7 +225,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // Adds the service to the map of services' instance ids to devices' instance
   // ids and sends the service to the renderer.
   void AddToServicesMapAndSendGetPrimaryServiceSuccess(
-      const device::BluetoothGattService& service,
+      const device::BluetoothRemoteGattService& service,
       int thread_id,
       int request_id);
 

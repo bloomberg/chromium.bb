@@ -29,7 +29,7 @@ MockBluetoothGattCharacteristic::MockBluetoothGattCharacteristic(
   ON_CALL(*this, GetPermissions()).WillByDefault(Return(permissions));
   ON_CALL(*this, IsNotifying()).WillByDefault(Return(false));
   ON_CALL(*this, GetDescriptors())
-      .WillByDefault(Return(std::vector<BluetoothGattDescriptor*>()));
+      .WillByDefault(Return(std::vector<BluetoothRemoteGattDescriptor*>()));
 }
 
 MockBluetoothGattCharacteristic::~MockBluetoothGattCharacteristic() {

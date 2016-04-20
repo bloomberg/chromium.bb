@@ -9,8 +9,9 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "device/bluetooth/bluetooth_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_low_energy_defs_win.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 
 namespace device {
 
@@ -19,7 +20,7 @@ class BluetoothRemoteGattCharacteristicWin;
 class BluetoothTaskManagerWin;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWin
-    : public BluetoothGattDescriptor {
+    : public BluetoothRemoteGattDescriptor {
  public:
   BluetoothRemoteGattDescriptorWin(
       BluetoothRemoteGattCharacteristicWin* parent_characteristic,
@@ -27,13 +28,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWin
       scoped_refptr<base::SequencedTaskRunner>& ui_task_runner);
   ~BluetoothRemoteGattDescriptorWin() override;
 
-  // Override BluetoothGattDescriptor interfaces.
+  // Override BluetoothRemoteGattDescriptor interfaces.
   std::string GetIdentifier() const override;
   BluetoothUUID GetUUID() const override;
-  bool IsLocal() const override;
   std::vector<uint8_t>& GetValue() const override;
-  BluetoothGattCharacteristic* GetCharacteristic() const override;
-  BluetoothGattCharacteristic::Permissions GetPermissions() const override;
+  BluetoothRemoteGattCharacteristic* GetCharacteristic() const override;
+  BluetoothRemoteGattCharacteristic::Permissions GetPermissions()
+      const override;
   void ReadRemoteDescriptor(const ValueCallback& callback,
                             const ErrorCallback& error_callback) override;
   void WriteRemoteDescriptor(const std::vector<uint8_t>& new_value,
@@ -52,7 +53,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWin
 
   base::FilePath service_path_;
   scoped_refptr<BluetoothTaskManagerWin> task_manager_;
-  BluetoothGattCharacteristic::Permissions descriptor_permissions_;
+  BluetoothRemoteGattCharacteristic::Permissions descriptor_permissions_;
   BluetoothUUID descriptor_uuid_;
   std::string descriptor_identifier_;
   std::vector<uint8_t> descriptor_value_;

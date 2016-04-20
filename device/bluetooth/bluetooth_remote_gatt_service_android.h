@@ -13,7 +13,7 @@
 #include "base/android/jni_android.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
@@ -24,9 +24,9 @@ class BluetoothRemoteGattCharacteristicAndroid;
 
 // BluetoothRemoteGattServiceAndroid along with its owned Java class
 // org.chromium.device.bluetooth.ChromeBluetoothRemoteGattService implement
-// BluetoothGattService.
+// BluetoothRemoteGattService.
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
-    : public device::BluetoothGattService {
+    : public device::BluetoothRemoteGattService {
  public:
   // Create a BluetoothRemoteGattServiceAndroid instance and associated Java
   // ChromeBluetoothRemoteGattService using the provided
@@ -49,35 +49,27 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
   // Returns the associated ChromeBluetoothRemoteGattService Java object.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  // Returns a BluetoothGattService::GattErrorCode from a given
+  // Returns a BluetoothRemoteGattService::GattErrorCode from a given
   // android.bluetooth.BluetoothGatt error code.
   // |bluetooth_gatt_code| must not be 0 == GATT_SUCCESS.
-  static BluetoothGattService::GattErrorCode GetGattErrorCode(
+  static BluetoothRemoteGattService::GattErrorCode GetGattErrorCode(
       int bluetooth_gatt_code);
 
   // Returns an android.bluetooth.BluetoothGatt error code for a given
-  // BluetoothGattService::GattErrorCode value.
-  static int GetAndroidErrorCode(BluetoothGattService::GattErrorCode);
+  // BluetoothRemoteGattService::GattErrorCode value.
+  static int GetAndroidErrorCode(BluetoothRemoteGattService::GattErrorCode);
 
-  // device::BluetoothGattService overrides.
+  // device::BluetoothRemoteGattService overrides.
   std::string GetIdentifier() const override;
   device::BluetoothUUID GetUUID() const override;
-  bool IsLocal() const override;
   bool IsPrimary() const override;
   device::BluetoothDevice* GetDevice() const override;
-  std::vector<device::BluetoothGattCharacteristic*> GetCharacteristics()
+  std::vector<device::BluetoothRemoteGattCharacteristic*> GetCharacteristics()
       const override;
-  std::vector<device::BluetoothGattService*> GetIncludedServices()
+  std::vector<device::BluetoothRemoteGattService*> GetIncludedServices()
       const override;
-  device::BluetoothGattCharacteristic* GetCharacteristic(
+  device::BluetoothRemoteGattCharacteristic* GetCharacteristic(
       const std::string& identifier) const override;
-  bool AddCharacteristic(
-      device::BluetoothGattCharacteristic* characteristic) override;
-  bool AddIncludedService(device::BluetoothGattService* service) override;
-  void Register(const base::Closure& callback,
-                const ErrorCallback& error_callback) override;
-  void Unregister(const base::Closure& callback,
-                  const ErrorCallback& error_callback) override;
 
   // Creates a Bluetooth GATT characteristic object and adds it to
   // |characteristics_|, DCHECKing that it has not already been created.

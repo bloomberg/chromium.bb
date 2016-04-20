@@ -21,17 +21,17 @@
 #include "components/arc/bluetooth/bluetooth_type_converters.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
-#include "device/bluetooth/bluetooth_gatt_descriptor.h"
-#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
 using device::BluetoothDevice;
 using device::BluetoothDiscoverySession;
-using device::BluetoothGattCharacteristic;
-using device::BluetoothGattDescriptor;
-using device::BluetoothGattService;
+using device::BluetoothRemoteGattCharacteristic;
+using device::BluetoothRemoteGattDescriptor;
+using device::BluetoothRemoteGattService;
 
 namespace arc {
 
@@ -151,13 +151,14 @@ void ArcBluetoothBridge::DeviceRemoved(BluetoothAdapter* adapter,
 
 void ArcBluetoothBridge::GattServiceAdded(BluetoothAdapter* adapter,
                                           BluetoothDevice* device,
-                                          BluetoothGattService* service) {
+                                          BluetoothRemoteGattService* service) {
   // Placeholder for GATT client functionality
 }
 
-void ArcBluetoothBridge::GattServiceRemoved(BluetoothAdapter* adapter,
-                                            BluetoothDevice* device,
-                                            BluetoothGattService* service) {
+void ArcBluetoothBridge::GattServiceRemoved(
+    BluetoothAdapter* adapter,
+    BluetoothDevice* device,
+    BluetoothRemoteGattService* service) {
   // Placeholder for GATT client functionality
 }
 
@@ -168,49 +169,50 @@ void ArcBluetoothBridge::GattServicesDiscovered(BluetoothAdapter* adapter,
 
 void ArcBluetoothBridge::GattDiscoveryCompleteForService(
     BluetoothAdapter* adapter,
-    BluetoothGattService* service) {
+    BluetoothRemoteGattService* service) {
   // Placeholder for GATT client functionality
 }
 
-void ArcBluetoothBridge::GattServiceChanged(BluetoothAdapter* adapter,
-                                            BluetoothGattService* service) {
+void ArcBluetoothBridge::GattServiceChanged(
+    BluetoothAdapter* adapter,
+    BluetoothRemoteGattService* service) {
   // Placeholder for GATT client functionality
 }
 
 void ArcBluetoothBridge::GattCharacteristicAdded(
     BluetoothAdapter* adapter,
-    BluetoothGattCharacteristic* characteristic) {
+    BluetoothRemoteGattCharacteristic* characteristic) {
   // Placeholder for GATT client functionality
 }
 
 void ArcBluetoothBridge::GattCharacteristicRemoved(
     BluetoothAdapter* adapter,
-    BluetoothGattCharacteristic* characteristic) {
+    BluetoothRemoteGattCharacteristic* characteristic) {
   // Placeholder for GATT client functionality
 }
 
 void ArcBluetoothBridge::GattDescriptorAdded(
     BluetoothAdapter* adapter,
-    BluetoothGattDescriptor* descriptor) {
+    BluetoothRemoteGattDescriptor* descriptor) {
   // Placeholder for GATT client functionality
 }
 
 void ArcBluetoothBridge::GattDescriptorRemoved(
     BluetoothAdapter* adapter,
-    BluetoothGattDescriptor* descriptor) {
+    BluetoothRemoteGattDescriptor* descriptor) {
   // Placeholder for GATT client functionality
 }
 
 void ArcBluetoothBridge::GattCharacteristicValueChanged(
     BluetoothAdapter* adapter,
-    BluetoothGattCharacteristic* characteristic,
+    BluetoothRemoteGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
   // Placeholder for GATT client functionality
 }
 
 void ArcBluetoothBridge::GattDescriptorValueChanged(
     BluetoothAdapter* adapter,
-    BluetoothGattDescriptor* descriptor,
+    BluetoothRemoteGattDescriptor* descriptor,
     const std::vector<uint8_t>& value) {
   // Placeholder for GATT client functionality
 }

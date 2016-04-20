@@ -14,9 +14,9 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
-#include "device/bluetooth/bluetooth_gatt_descriptor.h"
-#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 
 namespace device {
 
@@ -172,21 +172,24 @@ void BluetoothAdapter::NotifyDevicePairedChanged(BluetoothDevice* device,
 }
 #endif
 
-void BluetoothAdapter::NotifyGattServiceAdded(BluetoothGattService* service) {
+void BluetoothAdapter::NotifyGattServiceAdded(
+    BluetoothRemoteGattService* service) {
   DCHECK_EQ(service->GetDevice()->GetAdapter(), this);
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     GattServiceAdded(this, service->GetDevice(), service));
 }
 
-void BluetoothAdapter::NotifyGattServiceRemoved(BluetoothGattService* service) {
+void BluetoothAdapter::NotifyGattServiceRemoved(
+    BluetoothRemoteGattService* service) {
   DCHECK_EQ(service->GetDevice()->GetAdapter(), this);
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     GattServiceRemoved(this, service->GetDevice(), service));
 }
 
-void BluetoothAdapter::NotifyGattServiceChanged(BluetoothGattService* service) {
+void BluetoothAdapter::NotifyGattServiceChanged(
+    BluetoothRemoteGattService* service) {
   DCHECK_EQ(service->GetDevice()->GetAdapter(), this);
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
@@ -201,7 +204,7 @@ void BluetoothAdapter::NotifyGattServicesDiscovered(BluetoothDevice* device) {
 }
 
 void BluetoothAdapter::NotifyGattDiscoveryComplete(
-    BluetoothGattService* service) {
+    BluetoothRemoteGattService* service) {
   DCHECK_EQ(service->GetDevice()->GetAdapter(), this);
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
@@ -209,7 +212,7 @@ void BluetoothAdapter::NotifyGattDiscoveryComplete(
 }
 
 void BluetoothAdapter::NotifyGattCharacteristicAdded(
-    BluetoothGattCharacteristic* characteristic) {
+    BluetoothRemoteGattCharacteristic* characteristic) {
   DCHECK_EQ(characteristic->GetService()->GetDevice()->GetAdapter(), this);
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
@@ -217,7 +220,7 @@ void BluetoothAdapter::NotifyGattCharacteristicAdded(
 }
 
 void BluetoothAdapter::NotifyGattCharacteristicRemoved(
-    BluetoothGattCharacteristic* characteristic) {
+    BluetoothRemoteGattCharacteristic* characteristic) {
   DCHECK_EQ(characteristic->GetService()->GetDevice()->GetAdapter(), this);
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
@@ -225,7 +228,7 @@ void BluetoothAdapter::NotifyGattCharacteristicRemoved(
 }
 
 void BluetoothAdapter::NotifyGattDescriptorAdded(
-    BluetoothGattDescriptor* descriptor) {
+    BluetoothRemoteGattDescriptor* descriptor) {
   DCHECK_EQ(
       descriptor->GetCharacteristic()->GetService()->GetDevice()->GetAdapter(),
       this);
@@ -235,7 +238,7 @@ void BluetoothAdapter::NotifyGattDescriptorAdded(
 }
 
 void BluetoothAdapter::NotifyGattDescriptorRemoved(
-    BluetoothGattDescriptor* descriptor) {
+    BluetoothRemoteGattDescriptor* descriptor) {
   DCHECK_EQ(
       descriptor->GetCharacteristic()->GetService()->GetDevice()->GetAdapter(),
       this);
@@ -245,7 +248,7 @@ void BluetoothAdapter::NotifyGattDescriptorRemoved(
 }
 
 void BluetoothAdapter::NotifyGattCharacteristicValueChanged(
-    BluetoothGattCharacteristic* characteristic,
+    BluetoothRemoteGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
   DCHECK_EQ(characteristic->GetService()->GetDevice()->GetAdapter(), this);
 
@@ -255,7 +258,7 @@ void BluetoothAdapter::NotifyGattCharacteristicValueChanged(
 }
 
 void BluetoothAdapter::NotifyGattDescriptorValueChanged(
-    BluetoothGattDescriptor* descriptor,
+    BluetoothRemoteGattDescriptor* descriptor,
     const std::vector<uint8_t>& value) {
   DCHECK_EQ(
       descriptor->GetCharacteristic()->GetService()->GetDevice()->GetAdapter(),

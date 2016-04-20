@@ -21,16 +21,16 @@
 #include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
 using device::BluetoothGattConnection;
-using device::BluetoothGattService;
-using device::BluetoothGattCharacteristic;
+using device::BluetoothRemoteGattService;
+using device::BluetoothRemoteGattCharacteristic;
 using device::BluetoothGattNotifySession;
 using device::BluetoothUUID;
 
@@ -247,7 +247,7 @@ void BluetoothLowEnergyConnection::DeviceRemoved(BluetoothAdapter* adapter,
 
 void BluetoothLowEnergyConnection::GattCharacteristicValueChanged(
     BluetoothAdapter* adapter,
-    BluetoothGattCharacteristic* characteristic,
+    BluetoothRemoteGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
   DCHECK_EQ(adapter, adapter_.get());
   if (sub_status() != SubStatus::WAITING_RESPONSE_SIGNAL &&
@@ -402,7 +402,7 @@ void BluetoothLowEnergyConnection::OnCharacteristicsFinderError(
 
 void BluetoothLowEnergyConnection::StartNotifySession() {
   if (sub_status() == SubStatus::CHARACTERISTICS_FOUND) {
-    BluetoothGattCharacteristic* characteristic =
+    BluetoothRemoteGattCharacteristic* characteristic =
         GetGattCharacteristic(from_peripheral_char_.id);
     DCHECK(characteristic);
 
@@ -427,7 +427,7 @@ void BluetoothLowEnergyConnection::StartNotifySession() {
 }
 
 void BluetoothLowEnergyConnection::OnNotifySessionError(
-    BluetoothGattService::GattErrorCode error) {
+    BluetoothRemoteGattService::GattErrorCode error) {
   DCHECK(sub_status() == SubStatus::WAITING_NOTIFY_SESSION);
   PA_LOG(WARNING) << "Error starting notification session: " << error;
   Disconnect();
@@ -474,7 +474,7 @@ void BluetoothLowEnergyConnection::WriteRemoteCharacteristic(
 }
 
 void BluetoothLowEnergyConnection::ProcessNextWriteRequest() {
-  BluetoothGattCharacteristic* characteristic =
+  BluetoothRemoteGattCharacteristic* characteristic =
       GetGattCharacteristic(to_peripheral_char_.id);
   if (!write_requests_queue_.empty() && !write_remote_characteristic_pending_ &&
       characteristic) {
@@ -509,7 +509,7 @@ void BluetoothLowEnergyConnection::OnRemoteCharacteristicWritten(
 
 void BluetoothLowEnergyConnection::OnWriteRemoteCharacteristicError(
     bool run_did_send_message_callback,
-    BluetoothGattService::GattErrorCode error) {
+    BluetoothRemoteGattService::GattErrorCode error) {
   PA_LOG(WARNING) << "Error " << error << " writing characteristic: "
                   << to_peripheral_char_.uuid.canonical_value();
   write_remote_characteristic_pending_ = false;
@@ -567,14 +567,14 @@ BluetoothDevice* BluetoothLowEnergyConnection::GetRemoteDevice() {
   return nullptr;
 }
 
-BluetoothGattService* BluetoothLowEnergyConnection::GetRemoteService() {
+BluetoothRemoteGattService* BluetoothLowEnergyConnection::GetRemoteService() {
   BluetoothDevice* remote_device = GetRemoteDevice();
   if (!remote_device) {
     PA_LOG(WARNING) << "Remote device not found.";
     return NULL;
   }
   if (remote_service_.id.empty()) {
-    std::vector<BluetoothGattService*> services =
+    std::vector<BluetoothRemoteGattService*> services =
         remote_device->GetGattServices();
     for (const auto& service : services)
       if (service->GetUUID() == remote_service_.uuid) {
@@ -585,10 +585,10 @@ BluetoothGattService* BluetoothLowEnergyConnection::GetRemoteService() {
   return remote_device->GetGattService(remote_service_.id);
 }
 
-BluetoothGattCharacteristic*
+BluetoothRemoteGattCharacteristic*
 BluetoothLowEnergyConnection::GetGattCharacteristic(
     const std::string& gatt_characteristic) {
-  BluetoothGattService* remote_service = GetRemoteService();
+  BluetoothRemoteGattService* remote_service = GetRemoteService();
   if (!remote_service) {
     PA_LOG(WARNING) << "Remote service not found.";
     return NULL;

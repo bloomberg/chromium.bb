@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_TEST_BLUETOOTH_ADAPTER_OBSERVER_H_
-#define DEVICE_BLUETOOTH_TEST_BLUETOOTH_ADAPTER_OBSERVER_H_
+#ifndef DEVICE_BLUETOOTH_TEST_TEST_BLUETOOTH_ADAPTER_OBSERVER_H_
+#define DEVICE_BLUETOOTH_TEST_TEST_BLUETOOTH_ADAPTER_OBSERVER_H_
 
 #include <stdint.h>
 #include <string>
@@ -47,32 +47,34 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
                      BluetoothDevice* device) override;
   void GattServiceAdded(BluetoothAdapter* adapter,
                         BluetoothDevice* device,
-                        BluetoothGattService* service) override;
+                        BluetoothRemoteGattService* service) override;
   void GattServiceRemoved(BluetoothAdapter* adapter,
                           BluetoothDevice* device,
-                          BluetoothGattService* service) override;
+                          BluetoothRemoteGattService* service) override;
   void GattServicesDiscovered(BluetoothAdapter* adapter,
                               BluetoothDevice* device) override;
-  void GattDiscoveryCompleteForService(BluetoothAdapter* adapter,
-                                       BluetoothGattService* service) override;
+  void GattDiscoveryCompleteForService(
+      BluetoothAdapter* adapter,
+      BluetoothRemoteGattService* service) override;
   void GattServiceChanged(BluetoothAdapter* adapter,
-                          BluetoothGattService* service) override;
+                          BluetoothRemoteGattService* service) override;
   void GattCharacteristicAdded(
       BluetoothAdapter* adapter,
-      BluetoothGattCharacteristic* characteristic) override;
+      BluetoothRemoteGattCharacteristic* characteristic) override;
   void GattCharacteristicRemoved(
       BluetoothAdapter* adapter,
-      BluetoothGattCharacteristic* characteristic) override;
+      BluetoothRemoteGattCharacteristic* characteristic) override;
   void GattDescriptorAdded(BluetoothAdapter* adapter,
-                           BluetoothGattDescriptor* descriptor) override;
-  void GattDescriptorRemoved(BluetoothAdapter* adapter,
-                             BluetoothGattDescriptor* descriptor) override;
+                           BluetoothRemoteGattDescriptor* descriptor) override;
+  void GattDescriptorRemoved(
+      BluetoothAdapter* adapter,
+      BluetoothRemoteGattDescriptor* descriptor) override;
   void GattCharacteristicValueChanged(
       BluetoothAdapter* adapter,
-      BluetoothGattCharacteristic* characteristic,
+      BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value) override;
   void GattDescriptorValueChanged(BluetoothAdapter* adapter,
-                                  BluetoothGattDescriptor* descriptor,
+                                  BluetoothRemoteGattDescriptor* descriptor,
                                   const std::vector<uint8_t>& value) override;
 
   // Adapter related:
@@ -191,4 +193,4 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
 
 }  // namespace device
 
-#endif  // DEVICE_BLUETOOTH_TEST_BLUETOOTH_ADAPTER_OBSERVER_H_
+#endif  // DEVICE_BLUETOOTH_TEST_TEST_BLUETOOTH_ADAPTER_OBSERVER_H_

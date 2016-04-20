@@ -19,7 +19,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 
 namespace base {
@@ -244,37 +244,38 @@ class BluetoothLowEnergyEventRouter
   // device::BluetoothAdapter::Observer overrides.
   void GattServiceAdded(device::BluetoothAdapter* adapter,
                         device::BluetoothDevice* device,
-                        device::BluetoothGattService* service) override;
+                        device::BluetoothRemoteGattService* service) override;
   void GattServiceRemoved(device::BluetoothAdapter* adapter,
                           device::BluetoothDevice* device,
-                          device::BluetoothGattService* service) override;
+                          device::BluetoothRemoteGattService* service) override;
   void GattDiscoveryCompleteForService(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattService* service) override;
+      device::BluetoothRemoteGattService* service) override;
   void DeviceAddressChanged(device::BluetoothAdapter* adapter,
                             device::BluetoothDevice* device,
                             const std::string& old_address) override;
   void GattServiceChanged(device::BluetoothAdapter* adapter,
-                          device::BluetoothGattService* service) override;
+                          device::BluetoothRemoteGattService* service) override;
   void GattCharacteristicAdded(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattCharacteristic* characteristic) override;
+      device::BluetoothRemoteGattCharacteristic* characteristic) override;
   void GattCharacteristicRemoved(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattCharacteristic* characteristic) override;
+      device::BluetoothRemoteGattCharacteristic* characteristic) override;
   void GattDescriptorAdded(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattDescriptor* descriptor) override;
+      device::BluetoothRemoteGattDescriptor* descriptor) override;
   void GattDescriptorRemoved(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattDescriptor* descriptor) override;
+      device::BluetoothRemoteGattDescriptor* descriptor) override;
   void GattCharacteristicValueChanged(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattCharacteristic* characteristic,
+      device::BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value) override;
-  void GattDescriptorValueChanged(device::BluetoothAdapter* adapter,
-                                  device::BluetoothGattDescriptor* descriptor,
-                                  const std::vector<uint8_t>& value) override;
+  void GattDescriptorValueChanged(
+      device::BluetoothAdapter* adapter,
+      device::BluetoothRemoteGattDescriptor* descriptor,
+      const std::vector<uint8_t>& value) override;
 
   device::BluetoothAdapter* adapter() { return adapter_.get(); }
 
@@ -300,22 +301,25 @@ class BluetoothLowEnergyEventRouter
       const std::string& characteristic_id,
       std::unique_ptr<base::ListValue> args);
 
-  // Returns a BluetoothGattService by its instance ID |instance_id|. Returns
+  // Returns a BluetoothRemoteGattService by its instance ID |instance_id|.
+  // Returns
   // NULL, if the service cannot be found.
-  device::BluetoothGattService* FindServiceById(
+  device::BluetoothRemoteGattService* FindServiceById(
       const std::string& instance_id) const;
 
-  // Returns a BluetoothGattCharacteristic by its instance ID |instance_id|.
+  // Returns a BluetoothRemoteGattCharacteristic by its instance ID
+  // |instance_id|.
   // Returns NULL, if the characteristic cannot be found.
-  device::BluetoothGattCharacteristic* FindCharacteristicById(
+  device::BluetoothRemoteGattCharacteristic* FindCharacteristicById(
       const std::string& instance_id) const;
 
-  // Returns a BluetoothGattDescriptor by its instance ID |instance_id|.
+  // Returns a BluetoothRemoteGattDescriptor by its instance ID |instance_id|.
   // Returns NULL, if the descriptor cannot be found.
-  device::BluetoothGattDescriptor* FindDescriptorById(
+  device::BluetoothRemoteGattDescriptor* FindDescriptorById(
       const std::string& instance_id) const;
 
-  // Called by BluetoothGattCharacteristic and BluetoothGattDescriptor in
+  // Called by BluetoothRemoteGattCharacteristic and
+  // BluetoothRemoteGattDescriptor in
   // response to ReadRemoteCharacteristic and ReadRemoteDescriptor.
   void OnValueSuccess(const base::Closure& callback,
                       const std::vector<uint8_t>& value);
@@ -328,10 +332,11 @@ class BluetoothLowEnergyEventRouter
       const base::Closure& callback,
       std::unique_ptr<device::BluetoothGattConnection> connection);
 
-  // Called by BluetoothGattCharacteristic and BluetoothGattDescriptor in
+  // Called by BluetoothRemoteGattCharacteristic and
+  // BluetoothRemoteGattDescriptor in
   // case of an error during the read/write operations.
   void OnError(const ErrorCallback& error_callback,
-               device::BluetoothGattService::GattErrorCode error_code);
+               device::BluetoothRemoteGattService::GattErrorCode error_code);
 
   // Called by BluetoothDevice in response to a call to CreateGattConnection.
   void OnConnectError(const std::string& extension_id,
@@ -339,7 +344,7 @@ class BluetoothLowEnergyEventRouter
                       const ErrorCallback& error_callback,
                       device::BluetoothDevice::ConnectErrorCode error_code);
 
-  // Called by BluetoothGattCharacteristic in response to a call to
+  // Called by BluetoothRemoteGattCharacteristic in response to a call to
   // StartNotifySession.
   void OnStartNotifySession(
       bool persistent,
@@ -348,13 +353,13 @@ class BluetoothLowEnergyEventRouter
       const base::Closure& callback,
       std::unique_ptr<device::BluetoothGattNotifySession> session);
 
-  // Called by BluetoothGattCharacteristic in response to a call to
+  // Called by BluetoothRemoteGattCharacteristic in response to a call to
   // StartNotifySession.
   void OnStartNotifySessionError(
       const std::string& extension_id,
       const std::string& characteristic_id,
       const ErrorCallback& error_callback,
-      device::BluetoothGattService::GattErrorCode error_code);
+      device::BluetoothRemoteGattService::GattErrorCode error_code);
 
   // Called by BluetoothGattNotifySession in response to a call to Stop.
   void OnStopNotifySession(const std::string& extension_id,
@@ -397,9 +402,10 @@ class BluetoothLowEnergyEventRouter
   //
   // This mapping is necessary, as GATT object instances can only be obtained
   // from the object that owns it, where raw pointers should not be cached. E.g.
-  // to obtain a device::BluetoothGattCharacteristic, it is necessary to obtain
+  // to obtain a device::BluetoothRemoteGattCharacteristic, it is necessary to
+  // obtain
   // a pointer to the associated device::BluetoothDevice, and then to the
-  // device::BluetoothGattService that owns the characteristic.
+  // device::BluetoothRemoteGattService that owns the characteristic.
   typedef std::map<std::string, std::string> InstanceIdMap;
   InstanceIdMap service_id_to_device_address_;
   InstanceIdMap chrc_id_to_service_id_;

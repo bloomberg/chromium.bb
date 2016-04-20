@@ -55,11 +55,11 @@ BluetoothRemoteGattServiceAndroid::GetJavaObject() {
 }
 
 // static
-BluetoothGattService::GattErrorCode
+BluetoothRemoteGattService::GattErrorCode
 BluetoothRemoteGattServiceAndroid::GetGattErrorCode(int bluetooth_gatt_code) {
   DCHECK(bluetooth_gatt_code != 0) << "Only errors valid. 0 == GATT_SUCCESS.";
 
-  // TODO(scheib) Create new BluetoothGattService::GattErrorCode enums for
+  // TODO(scheib) Create new BluetoothRemoteGattService::GattErrorCode enums for
   // android values not yet represented. http://crbug.com/548498
   switch (bluetooth_gatt_code) {  // android.bluetooth.BluetoothGatt values:
     case 0x00000101:              // GATT_FAILURE
@@ -74,14 +74,14 @@ BluetoothRemoteGattServiceAndroid::GetGattErrorCode(int bluetooth_gatt_code) {
       return GATT_ERROR_NOT_PERMITTED;
     default:
       VLOG(1) << "Unhandled status: " << bluetooth_gatt_code;
-      return BluetoothGattService::GATT_ERROR_UNKNOWN;
+      return BluetoothRemoteGattService::GATT_ERROR_UNKNOWN;
   }
 }
 
 // static
 int BluetoothRemoteGattServiceAndroid::GetAndroidErrorCode(
-    BluetoothGattService::GattErrorCode error_code) {
-  // TODO(scheib) Create new BluetoothGattService::GattErrorCode enums for
+    BluetoothRemoteGattService::GattErrorCode error_code) {
+  // TODO(scheib) Create new BluetoothRemoteGattService::GattErrorCode enums for
   // android values not yet represented. http://crbug.com/548498
   switch (error_code) {  // Return values from android.bluetooth.BluetoothGatt:
     case GATT_ERROR_UNKNOWN:
@@ -118,10 +118,6 @@ device::BluetoothUUID BluetoothRemoteGattServiceAndroid::GetUUID() const {
           AttachCurrentThread(), j_service_.obj())));
 }
 
-bool BluetoothRemoteGattServiceAndroid::IsLocal() const {
-  return false;
-}
-
 bool BluetoothRemoteGattServiceAndroid::IsPrimary() const {
   NOTIMPLEMENTED();
   return true;
@@ -131,22 +127,22 @@ device::BluetoothDevice* BluetoothRemoteGattServiceAndroid::GetDevice() const {
   return device_;
 }
 
-std::vector<device::BluetoothGattCharacteristic*>
+std::vector<device::BluetoothRemoteGattCharacteristic*>
 BluetoothRemoteGattServiceAndroid::GetCharacteristics() const {
   EnsureCharacteristicsCreated();
-  std::vector<device::BluetoothGattCharacteristic*> characteristics;
+  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics;
   for (const auto& map_iter : characteristics_)
     characteristics.push_back(map_iter.second);
   return characteristics;
 }
 
-std::vector<device::BluetoothGattService*>
+std::vector<device::BluetoothRemoteGattService*>
 BluetoothRemoteGattServiceAndroid::GetIncludedServices() const {
   NOTIMPLEMENTED();
-  return std::vector<device::BluetoothGattService*>();
+  return std::vector<device::BluetoothRemoteGattService*>();
 }
 
-device::BluetoothGattCharacteristic*
+device::BluetoothRemoteGattCharacteristic*
 BluetoothRemoteGattServiceAndroid::GetCharacteristic(
     const std::string& identifier) const {
   EnsureCharacteristicsCreated();
@@ -154,28 +150,6 @@ BluetoothRemoteGattServiceAndroid::GetCharacteristic(
   if (iter == characteristics_.end())
     return nullptr;
   return iter->second;
-}
-
-bool BluetoothRemoteGattServiceAndroid::AddCharacteristic(
-    device::BluetoothGattCharacteristic* characteristic) {
-  return false;
-}
-
-bool BluetoothRemoteGattServiceAndroid::AddIncludedService(
-    device::BluetoothGattService* service) {
-  return false;
-}
-
-void BluetoothRemoteGattServiceAndroid::Register(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  error_callback.Run(GATT_ERROR_NOT_SUPPORTED);
-}
-
-void BluetoothRemoteGattServiceAndroid::Unregister(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  error_callback.Run(GATT_ERROR_NOT_SUPPORTED);
 }
 
 void BluetoothRemoteGattServiceAndroid::CreateGattRemoteCharacteristic(

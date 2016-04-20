@@ -4,23 +4,12 @@
 
 #include "device/bluetooth/bluetooth_gatt_service.h"
 
-#include "base/logging.h"
-
 namespace device {
 
 BluetoothGattService::BluetoothGattService() {
 }
 
 BluetoothGattService::~BluetoothGattService() {
-}
-
-// static
-BluetoothGattService* BluetoothGattService::Create(
-    const BluetoothUUID& uuid,
-    bool is_primary,
-    Delegate* delegate) {
-  LOG(ERROR) << "Creating local GATT services currently not supported.";
-  return NULL;
 }
 
 }  // namespace device

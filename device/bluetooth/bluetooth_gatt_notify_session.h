@@ -16,7 +16,7 @@ namespace device {
 // A BluetoothGattNotifySession represents an active session for listening
 // to value updates from GATT characteristics that support notifications and/or
 // indications. Instances are obtained by calling
-// BluetoothGattCharacteristic::StartNotifySession.
+// BluetoothRemoteGattCharacteristic::StartNotifySession.
 class DEVICE_BLUETOOTH_EXPORT BluetoothGattNotifySession {
  public:
   // Destructor automatically stops this session.

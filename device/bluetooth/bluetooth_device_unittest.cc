@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

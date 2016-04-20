@@ -12,8 +12,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
-#include "device/bluetooth/bluetooth_gatt_descriptor.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -21,23 +21,26 @@ namespace device {
 
 class MockBluetoothGattCharacteristic;
 
-class MockBluetoothGattDescriptor : public BluetoothGattDescriptor {
+// TODO(rkc): This class doesn't seem to be used anywhere. Figure out whether
+// it will be used (in which case, name it appropriately), otherwise delete the
+// class.
+class MockBluetoothGattDescriptor : public BluetoothRemoteGattDescriptor {
  public:
   MockBluetoothGattDescriptor(
       MockBluetoothGattCharacteristic* characteristic,
       const std::string& identifier,
       const BluetoothUUID& uuid,
       bool is_local,
-      BluetoothGattCharacteristic::Permissions permissions);
+      BluetoothRemoteGattCharacteristic::Permissions permissions);
   virtual ~MockBluetoothGattDescriptor();
 
   MOCK_CONST_METHOD0(GetIdentifier, std::string());
   MOCK_CONST_METHOD0(GetUUID, BluetoothUUID());
   MOCK_CONST_METHOD0(IsLocal, bool());
   MOCK_CONST_METHOD0(GetValue, const std::vector<uint8_t>&());
-  MOCK_CONST_METHOD0(GetCharacteristic, BluetoothGattCharacteristic*());
+  MOCK_CONST_METHOD0(GetCharacteristic, BluetoothRemoteGattCharacteristic*());
   MOCK_CONST_METHOD0(GetPermissions,
-                     BluetoothGattCharacteristic::Permissions());
+                     BluetoothRemoteGattCharacteristic::Permissions());
   MOCK_METHOD2(ReadRemoteDescriptor,
                void(const ValueCallback&, const ErrorCallback&));
   MOCK_METHOD3(WriteRemoteDescriptor,

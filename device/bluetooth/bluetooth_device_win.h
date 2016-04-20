@@ -117,7 +117,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
   bool DoesGattServiceExist(
       const ScopedVector<BluetoothTaskManagerWin::ServiceRecordState>&
           service_state,
-      BluetoothGattService* service);
+      BluetoothRemoteGattService* service);
 
   // Updates the GATT services with the services stored in |service_state|.
   void UpdateGattServices(

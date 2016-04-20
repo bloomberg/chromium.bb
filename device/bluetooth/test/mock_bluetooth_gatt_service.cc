@@ -26,11 +26,12 @@ MockBluetoothGattService::MockBluetoothGattService(
   ON_CALL(*this, IsPrimary()).WillByDefault(Return(is_primary));
   ON_CALL(*this, GetDevice()).WillByDefault(Return(device));
   ON_CALL(*this, GetCharacteristics())
-      .WillByDefault(Return(std::vector<BluetoothGattCharacteristic*>()));
+      .WillByDefault(Return(std::vector<BluetoothRemoteGattCharacteristic*>()));
   ON_CALL(*this, GetIncludedServices())
-      .WillByDefault(Return(std::vector<BluetoothGattService*>()));
+      .WillByDefault(Return(std::vector<BluetoothRemoteGattService*>()));
   ON_CALL(*this, GetCharacteristic(_))
-      .WillByDefault(Return(static_cast<BluetoothGattCharacteristic*>(NULL)));
+      .WillByDefault(
+          Return(static_cast<BluetoothRemoteGattCharacteristic*>(NULL)));
 }
 
 MockBluetoothGattService::~MockBluetoothGattService() {
@@ -41,18 +42,21 @@ void MockBluetoothGattService::AddMockCharacteristic(
   mock_characteristics_.push_back(std::move(mock_characteristic));
 }
 
-std::vector<BluetoothGattCharacteristic*>
+std::vector<BluetoothRemoteGattCharacteristic*>
 MockBluetoothGattService::GetMockCharacteristics() const {
-  std::vector<BluetoothGattCharacteristic*> characteristics;
-  for (BluetoothGattCharacteristic* characteristic : mock_characteristics_) {
+  std::vector<BluetoothRemoteGattCharacteristic*> characteristics;
+  for (BluetoothRemoteGattCharacteristic* characteristic :
+       mock_characteristics_) {
     characteristics.push_back(characteristic);
   }
   return characteristics;
 }
 
-BluetoothGattCharacteristic* MockBluetoothGattService::GetMockCharacteristic(
+BluetoothRemoteGattCharacteristic*
+MockBluetoothGattService::GetMockCharacteristic(
     const std::string& identifier) const {
-  for (BluetoothGattCharacteristic* characteristic : mock_characteristics_) {
+  for (BluetoothRemoteGattCharacteristic* characteristic :
+       mock_characteristics_) {
     if (characteristic->GetIdentifier() == identifier) {
       return characteristic;
     }

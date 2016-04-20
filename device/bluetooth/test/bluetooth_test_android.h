@@ -39,61 +39,61 @@ class BluetoothTestAndroid : public BluetoothTestBase {
       BluetoothDevice* device,
       const std::vector<std::string>& uuids) override;
   void SimulateGattServicesDiscoveryError(BluetoothDevice* device) override;
-  void SimulateGattCharacteristic(BluetoothGattService* service,
+  void SimulateGattCharacteristic(BluetoothRemoteGattService* service,
                                   const std::string& uuid,
                                   int properties) override;
   void RememberCharacteristicForSubsequentAction(
-      BluetoothGattCharacteristic* characteristic) override;
+      BluetoothRemoteGattCharacteristic* characteristic) override;
   void RememberCCCDescriptorForSubsequentAction(
-      BluetoothGattCharacteristic* characteristic) override;
+      BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattNotifySessionStarted(
-      BluetoothGattCharacteristic* characteristic) override;
+      BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattNotifySessionStartError(
-      BluetoothGattCharacteristic* characteristic,
-      BluetoothGattService::GattErrorCode error_code) override;
+      BluetoothRemoteGattCharacteristic* characteristic,
+      BluetoothRemoteGattService::GattErrorCode error_code) override;
   void SimulateGattCharacteristicSetNotifyWillFailSynchronouslyOnce(
-      BluetoothGattCharacteristic* characteristic) override;
+      BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattCharacteristicChanged(
-      BluetoothGattCharacteristic* characteristic,
+      BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value) override;
 
   void SimulateGattCharacteristicRead(
-      BluetoothGattCharacteristic* characteristic,
+      BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value) override;
   void SimulateGattCharacteristicReadError(
-      BluetoothGattCharacteristic* characteristic,
-      BluetoothGattService::GattErrorCode) override;
+      BluetoothRemoteGattCharacteristic* characteristic,
+      BluetoothRemoteGattService::GattErrorCode) override;
   void SimulateGattCharacteristicReadWillFailSynchronouslyOnce(
-      BluetoothGattCharacteristic* characteristic) override;
+      BluetoothRemoteGattCharacteristic* characteristic) override;
 
   void SimulateGattCharacteristicWrite(
-      BluetoothGattCharacteristic* characteristic) override;
+      BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattCharacteristicWriteError(
-      BluetoothGattCharacteristic* characteristic,
-      BluetoothGattService::GattErrorCode) override;
+      BluetoothRemoteGattCharacteristic* characteristic,
+      BluetoothRemoteGattService::GattErrorCode) override;
   void SimulateGattCharacteristicWriteWillFailSynchronouslyOnce(
-      BluetoothGattCharacteristic* characteristic) override;
+      BluetoothRemoteGattCharacteristic* characteristic) override;
 
-  void SimulateGattDescriptor(BluetoothGattCharacteristic* characteristic,
+  void SimulateGattDescriptor(BluetoothRemoteGattCharacteristic* characteristic,
                               const std::string& uuid) override;
   void RememberDescriptorForSubsequentAction(
-      BluetoothGattDescriptor* descriptor) override;
+      BluetoothRemoteGattDescriptor* descriptor) override;
 
-  void SimulateGattDescriptorRead(BluetoothGattDescriptor* descriptor,
+  void SimulateGattDescriptorRead(BluetoothRemoteGattDescriptor* descriptor,
                                   const std::vector<uint8_t>& value) override;
   void SimulateGattDescriptorReadError(
-      BluetoothGattDescriptor* descriptor,
-      BluetoothGattService::GattErrorCode) override;
+      BluetoothRemoteGattDescriptor* descriptor,
+      BluetoothRemoteGattService::GattErrorCode) override;
   void SimulateGattDescriptorReadWillFailSynchronouslyOnce(
-      BluetoothGattDescriptor* descriptor) override;
+      BluetoothRemoteGattDescriptor* descriptor) override;
 
   void SimulateGattDescriptorWrite(
-      BluetoothGattDescriptor* descriptor) override;
+      BluetoothRemoteGattDescriptor* descriptor) override;
   void SimulateGattDescriptorWriteError(
-      BluetoothGattDescriptor* descriptor,
-      BluetoothGattService::GattErrorCode) override;
+      BluetoothRemoteGattDescriptor* descriptor,
+      BluetoothRemoteGattService::GattErrorCode) override;
   void SimulateGattDescriptorWriteWillFailSynchronouslyOnce(
-      BluetoothGattDescriptor* descriptor) override;
+      BluetoothRemoteGattDescriptor* descriptor) override;
 
   // Instruct the fake adapter to throw an IllegalStateException for
   // startScan and stopScan.
@@ -156,7 +156,7 @@ class BluetoothTestAndroid : public BluetoothTestBase {
   base::android::ScopedJavaGlobalRef<jobject> j_fake_bluetooth_adapter_;
 
   int gatt_open_connections_ = 0;
-  BluetoothGattDescriptor* remembered_ccc_descriptor_ = nullptr;
+  BluetoothRemoteGattDescriptor* remembered_ccc_descriptor_ = nullptr;
 };
 
 // Defines common test fixture name. Use TEST_F(BluetoothTest, YourTestName).

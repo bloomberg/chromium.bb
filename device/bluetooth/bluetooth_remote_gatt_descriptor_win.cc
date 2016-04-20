@@ -53,21 +53,17 @@ BluetoothUUID BluetoothRemoteGattDescriptorWin::GetUUID() const {
   return descriptor_uuid_;
 }
 
-bool BluetoothRemoteGattDescriptorWin::IsLocal() const {
-  return false;
-}
-
 std::vector<uint8_t>& BluetoothRemoteGattDescriptorWin::GetValue() const {
   NOTIMPLEMENTED();
   return const_cast<std::vector<uint8_t>&>(descriptor_value_);
 }
 
-BluetoothGattCharacteristic*
+BluetoothRemoteGattCharacteristic*
 BluetoothRemoteGattDescriptorWin::GetCharacteristic() const {
   return parent_characteristic_;
 }
 
-BluetoothGattCharacteristic::Permissions
+BluetoothRemoteGattCharacteristic::Permissions
 BluetoothRemoteGattDescriptorWin::GetPermissions() const {
   NOTIMPLEMENTED();
   return descriptor_permissions_;
@@ -79,7 +75,7 @@ void BluetoothRemoteGattDescriptorWin::ReadRemoteDescriptor(
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   NOTIMPLEMENTED();
-  error_callback.Run(BluetoothGattService::GATT_ERROR_NOT_SUPPORTED);
+  error_callback.Run(BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED);
 }
 
 void BluetoothRemoteGattDescriptorWin::WriteRemoteDescriptor(
@@ -89,7 +85,7 @@ void BluetoothRemoteGattDescriptorWin::WriteRemoteDescriptor(
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   NOTIMPLEMENTED();
-  error_callback.Run(BluetoothGattService::GATT_ERROR_NOT_SUPPORTED);
+  error_callback.Run(BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED);
 }
 
 uint16_t BluetoothRemoteGattDescriptorWin::GetAttributeHandle() const {

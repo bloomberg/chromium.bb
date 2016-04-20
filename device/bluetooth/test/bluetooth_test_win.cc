@@ -204,7 +204,7 @@ void BluetoothTestWin::SimulateGattServicesDiscovered(
 }
 
 void BluetoothTestWin::SimulateGattServiceRemoved(
-    BluetoothGattService* service) {
+    BluetoothRemoteGattService* service) {
   std::string device_address = service->GetDevice()->GetAddress();
   win::BLEDevice* target_device =
       fake_bt_le_wrapper_->GetSimulatedBLEDevice(device_address);
@@ -220,9 +220,10 @@ void BluetoothTestWin::SimulateGattServiceRemoved(
   ForceRefreshDevice();
 }
 
-void BluetoothTestWin::SimulateGattCharacteristic(BluetoothGattService* service,
-                                                  const std::string& uuid,
-                                                  int properties) {
+void BluetoothTestWin::SimulateGattCharacteristic(
+    BluetoothRemoteGattService* service,
+    const std::string& uuid,
+    int properties) {
   std::string device_address = service->GetDevice()->GetAddress();
   win::BLEDevice* target_device =
       fake_bt_le_wrapper_->GetSimulatedBLEDevice(device_address);
@@ -242,23 +243,25 @@ void BluetoothTestWin::SimulateGattCharacteristic(BluetoothGattService* service,
   win_characteristic_info.IsIndicatable = FALSE;
   win_characteristic_info.IsSignedWritable = FALSE;
   win_characteristic_info.HasExtendedProperties = FALSE;
-  if (properties & BluetoothGattCharacteristic::PROPERTY_BROADCAST)
+  if (properties & BluetoothRemoteGattCharacteristic::PROPERTY_BROADCAST)
     win_characteristic_info.IsBroadcastable = TRUE;
-  if (properties & BluetoothGattCharacteristic::PROPERTY_READ)
+  if (properties & BluetoothRemoteGattCharacteristic::PROPERTY_READ)
     win_characteristic_info.IsReadable = TRUE;
-  if (properties & BluetoothGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE)
+  if (properties &
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE)
     win_characteristic_info.IsWritableWithoutResponse = TRUE;
-  if (properties & BluetoothGattCharacteristic::PROPERTY_WRITE)
+  if (properties & BluetoothRemoteGattCharacteristic::PROPERTY_WRITE)
     win_characteristic_info.IsWritable = TRUE;
-  if (properties & BluetoothGattCharacteristic::PROPERTY_NOTIFY)
+  if (properties & BluetoothRemoteGattCharacteristic::PROPERTY_NOTIFY)
     win_characteristic_info.IsNotifiable = TRUE;
-  if (properties & BluetoothGattCharacteristic::PROPERTY_INDICATE)
+  if (properties & BluetoothRemoteGattCharacteristic::PROPERTY_INDICATE)
     win_characteristic_info.IsIndicatable = TRUE;
   if (properties &
-      BluetoothGattCharacteristic::PROPERTY_AUTHENTICATED_SIGNED_WRITES) {
+      BluetoothRemoteGattCharacteristic::PROPERTY_AUTHENTICATED_SIGNED_WRITES) {
     win_characteristic_info.IsSignedWritable = TRUE;
   }
-  if (properties & BluetoothGattCharacteristic::PROPERTY_EXTENDED_PROPERTIES)
+  if (properties &
+      BluetoothRemoteGattCharacteristic::PROPERTY_EXTENDED_PROPERTIES)
     win_characteristic_info.HasExtendedProperties = TRUE;
 
   fake_bt_le_wrapper_->SimulateGattCharacterisc(device_address, target_service,
@@ -268,8 +271,8 @@ void BluetoothTestWin::SimulateGattCharacteristic(BluetoothGattService* service,
 }
 
 void BluetoothTestWin::SimulateGattCharacteristicRemoved(
-    BluetoothGattService* service,
-    BluetoothGattCharacteristic* characteristic) {
+    BluetoothRemoteGattService* service,
+    BluetoothRemoteGattCharacteristic* characteristic) {
   CHECK(service);
   CHECK(characteristic);
 
@@ -288,7 +291,7 @@ void BluetoothTestWin::SimulateGattCharacteristicRemoved(
 }
 
 void BluetoothTestWin::RememberCharacteristicForSubsequentAction(
-    BluetoothGattCharacteristic* characteristic) {
+    BluetoothRemoteGattCharacteristic* characteristic) {
   CHECK(characteristic);
   BluetoothRemoteGattCharacteristicWin* win_characteristic =
       static_cast<BluetoothRemoteGattCharacteristicWin*>(characteristic);
@@ -306,7 +309,7 @@ void BluetoothTestWin::RememberCharacteristicForSubsequentAction(
 }
 
 void BluetoothTestWin::SimulateGattCharacteristicRead(
-    BluetoothGattCharacteristic* characteristic,
+    BluetoothRemoteGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
   win::GattCharacteristic* target_simulated_characteristic = nullptr;
   if (characteristic) {
@@ -321,13 +324,13 @@ void BluetoothTestWin::SimulateGattCharacteristicRead(
 }
 
 void BluetoothTestWin::SimulateGattCharacteristicReadError(
-    BluetoothGattCharacteristic* characteristic,
-    BluetoothGattService::GattErrorCode error_code) {
+    BluetoothRemoteGattCharacteristic* characteristic,
+    BluetoothRemoteGattService::GattErrorCode error_code) {
   win::GattCharacteristic* target_characteristic =
       GetSimulatedCharacteristic(characteristic);
   CHECK(target_characteristic);
   HRESULT hr = HRESULT_FROM_WIN32(ERROR_SEM_TIMEOUT);
-  if (error_code == BluetoothGattService::GATT_ERROR_INVALID_LENGTH)
+  if (error_code == BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH)
     hr = E_BLUETOOTH_ATT_INVALID_ATTRIBUTE_VALUE_LENGTH;
   fake_bt_le_wrapper_->SimulateGattCharacteristicReadError(
       target_characteristic, hr);
@@ -336,18 +339,18 @@ void BluetoothTestWin::SimulateGattCharacteristicReadError(
 }
 
 void BluetoothTestWin::SimulateGattCharacteristicWrite(
-    BluetoothGattCharacteristic* characteristic) {
+    BluetoothRemoteGattCharacteristic* characteristic) {
   RunPendingTasksUntilCallback();
 }
 
 void BluetoothTestWin::SimulateGattCharacteristicWriteError(
-    BluetoothGattCharacteristic* characteristic,
-    BluetoothGattService::GattErrorCode error_code) {
+    BluetoothRemoteGattCharacteristic* characteristic,
+    BluetoothRemoteGattService::GattErrorCode error_code) {
   win::GattCharacteristic* target_characteristic =
       GetSimulatedCharacteristic(characteristic);
   CHECK(target_characteristic);
   HRESULT hr = HRESULT_FROM_WIN32(ERROR_SEM_TIMEOUT);
-  if (error_code == BluetoothGattService::GATT_ERROR_INVALID_LENGTH)
+  if (error_code == BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH)
     hr = E_BLUETOOTH_ATT_INVALID_ATTRIBUTE_VALUE_LENGTH;
   fake_bt_le_wrapper_->SimulateGattCharacteristicWriteError(
       target_characteristic, hr);
@@ -362,7 +365,7 @@ void BluetoothTestWin::DeleteDevice(BluetoothDevice* device) {
 }
 
 void BluetoothTestWin::SimulateGattDescriptor(
-    BluetoothGattCharacteristic* characteristic,
+    BluetoothRemoteGattCharacteristic* characteristic,
     const std::string& uuid) {
   win::GattCharacteristic* target_characteristic =
       GetSimulatedCharacteristic(characteristic);
@@ -374,12 +377,12 @@ void BluetoothTestWin::SimulateGattDescriptor(
 }
 
 void BluetoothTestWin::SimulateGattNotifySessionStarted(
-    BluetoothGattCharacteristic* characteristic) {
+    BluetoothRemoteGattCharacteristic* characteristic) {
   FinishPendingTasks();
 }
 
 void BluetoothTestWin::SimulateGattCharacteristicChanged(
-    BluetoothGattCharacteristic* characteristic,
+    BluetoothRemoteGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
   win::GattCharacteristic* target_simulated_characteristic = nullptr;
   if (characteristic) {
@@ -419,7 +422,7 @@ void BluetoothTestWin::OnWriteGattDescriptorValue(
 
 win::GattService* BluetoothTestWin::GetSimulatedService(
     win::BLEDevice* device,
-    BluetoothGattService* service) {
+    BluetoothRemoteGattService* service) {
   CHECK(device);
   CHECK(service);
 
@@ -437,7 +440,7 @@ win::GattService* BluetoothTestWin::GetSimulatedService(
 }
 
 win::GattCharacteristic* BluetoothTestWin::GetSimulatedCharacteristic(
-    BluetoothGattCharacteristic* characteristic) {
+    BluetoothRemoteGattCharacteristic* characteristic) {
   CHECK(characteristic);
   BluetoothRemoteGattCharacteristicWin* win_characteristic =
       static_cast<BluetoothRemoteGattCharacteristicWin*>(characteristic);

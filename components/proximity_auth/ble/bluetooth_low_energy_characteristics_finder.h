@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_LOW_ENERGY_CHARACTERISTICS_FINDER_H
-#define COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_LOW_ENERGY_CHARACTERISTICS_FINDER_H
+#ifndef COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_LOW_ENERGY_CHARACTERISTICS_FINDER_H_
+#define COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_LOW_ENERGY_CHARACTERISTICS_FINDER_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -11,7 +11,8 @@
 #include "components/proximity_auth/ble/remote_attribute.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace proximity_auth {
@@ -63,10 +64,10 @@ class BluetoothLowEnergyCharacteristicsFinder
   // device::BluetoothAdapter::Observer:
   void GattDiscoveryCompleteForService(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattService* service) override;
+      device::BluetoothRemoteGattService* service) override;
   void GattCharacteristicAdded(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattCharacteristic* characteristic) override;
+      device::BluetoothRemoteGattCharacteristic* characteristic) override;
 
   // For testing. Used to mock this class.
   BluetoothLowEnergyCharacteristicsFinder();
@@ -74,7 +75,7 @@ class BluetoothLowEnergyCharacteristicsFinder
  private:
   // Handles the discovery of a new characteristic.
   void HandleCharacteristicUpdate(
-      device::BluetoothGattCharacteristic* characteristic);
+      device::BluetoothRemoteGattCharacteristic* characteristic);
 
   // Scans the remote chracteristics of the service with |uuid| in |device|
   // calling HandleCharacteristicUpdate() for each of them.
@@ -85,7 +86,7 @@ class BluetoothLowEnergyCharacteristicsFinder
   // |from_peripheral_char_|
   // when |characteristic| was found.
   void UpdateCharacteristicsStatus(
-      device::BluetoothGattCharacteristic* characteristic);
+      device::BluetoothRemoteGattCharacteristic* characteristic);
 
   // Resets |success_callback_| and |success_callback_|. This should be called
   // whenever a callback is called to avoid multiple callbacks calls.
@@ -114,4 +115,4 @@ class BluetoothLowEnergyCharacteristicsFinder
 
 }  // namespace proximity_auth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_CHARACTERISTICS_FINDER_H
+#endif  // COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_CHARACTERISTICS_FINDER_H_

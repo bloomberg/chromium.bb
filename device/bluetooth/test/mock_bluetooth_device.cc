@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 
 namespace device {
@@ -68,18 +68,18 @@ void MockBluetoothDevice::AddMockService(
   mock_services_.push_back(std::move(mock_service));
 }
 
-std::vector<BluetoothGattService*> MockBluetoothDevice::GetMockServices()
+std::vector<BluetoothRemoteGattService*> MockBluetoothDevice::GetMockServices()
     const {
-  std::vector<BluetoothGattService*> services;
-  for (BluetoothGattService* service : mock_services_) {
+  std::vector<BluetoothRemoteGattService*> services;
+  for (BluetoothRemoteGattService* service : mock_services_) {
     services.push_back(service);
   }
   return services;
 }
 
-BluetoothGattService* MockBluetoothDevice::GetMockService(
+BluetoothRemoteGattService* MockBluetoothDevice::GetMockService(
     const std::string& identifier) const {
-  for (BluetoothGattService* service : mock_services_) {
+  for (BluetoothRemoteGattService* service : mock_services_) {
     if (service->GetIdentifier() == identifier)
       return service;
   }

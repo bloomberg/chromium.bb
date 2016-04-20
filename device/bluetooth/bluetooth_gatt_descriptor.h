@@ -5,14 +5,14 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_DESCRIPTOR_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_GATT_DESCRIPTOR_H_
 
-#include <stdint.h>
-
-#include <vector>
+#include <string>
 
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
@@ -26,10 +26,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptor {
   // The ErrorCallback is used by methods to asynchronously report errors.
   typedef base::Callback<void(BluetoothGattService::GattErrorCode)>
       ErrorCallback;
-
-  // The ValueCallback is used to return the value of a remote characteristic
-  // descriptor upon a read request.
-  typedef base::Callback<void(const std::vector<uint8_t>&)> ValueCallback;
 
   // The Bluetooth Specification declares several predefined descriptors that
   // profiles can use. The following are definitions for the list of UUIDs
@@ -110,32 +106,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptor {
   // characteristic.
   // The API will construct a BluetoothGattDescriptor object for each instance
   // of "Characteristic Presentation Format" descriptor per instance of
-  // BluetoothGattCharacteristic that represents a remote characteristic.
+  // BluetoothRemoteGattCharacteristic that represents a remote characteristic.
   // Similarly for local characteristics, implementations DO NOT need to create
   // an instance of BluetoothGattDescriptor for this descriptor as this will be
   // handled by the subsystem.
   static const BluetoothUUID& CharacteristicAggregateFormatUuid();
-
-  // Constructs a BluetoothGattDescriptor that can be associated with a local
-  // GATT characteristic when the adapter is in the peripheral role. To
-  // associate the returned descriptor with a characteristic, add it to a local
-  // characteristic by calling BluetoothGattCharacteristic::AddDescriptor.
-  //
-  // This method constructs a characteristic descriptor with UUID |uuid| and the
-  // initial cached value |value|. |value| will be cached and returned for read
-  // requests and automatically modified for write requests by default, unless
-  // an instance of BluetoothGattService::Delegate has been provided to the
-  // associated BluetoothGattService instance, in which case the delegate will
-  // handle the read and write requests.
-  //
-  // Currently, only custom UUIDs, |kCharacteristicDescriptionUuid|, and
-  // |kCharacteristicPresentationFormat| are supported for locally hosted
-  // descriptors. This method will return NULL if |uuid| is any one of the
-  // unsupported predefined descriptor UUIDs.
-  static BluetoothGattDescriptor* Create(
-      const BluetoothUUID& uuid,
-      const std::vector<uint8_t>& value,
-      BluetoothGattCharacteristic::Permissions permissions);
 
   // Identifier used to uniquely identify a GATT descriptor object. This is
   // different from the descriptor UUID: while multiple descriptors with the
@@ -147,37 +122,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptor {
   // The Bluetooth-specific UUID of the characteristic descriptor.
   virtual BluetoothUUID GetUUID() const = 0;
 
-  // Returns true, if this characteristic descriptor is hosted locally. If
-  // false, then this instance represents a remote descriptor.
-  virtual bool IsLocal() const = 0;
-
-  // Returns the value of the descriptor. For remote descriptors, this is the
-  // most recently cached value of the remote descriptor. For local descriptors
-  // this is the most recently updated value or the value retrieved from the
-  // delegate.
-  virtual const std::vector<uint8_t>& GetValue() const = 0;
-
-  // Returns a pointer to the GATT characteristic that this characteristic
-  // descriptor belongs to.
-  virtual BluetoothGattCharacteristic* GetCharacteristic() const = 0;
-
   // Returns the bitmask of characteristic descriptor attribute permissions.
   virtual BluetoothGattCharacteristic::Permissions GetPermissions() const = 0;
-
-  // Sends a read request to a remote characteristic descriptor to read its
-  // value. |callback| is called to return the read value on success and
-  // |error_callback| is called for failures.
-  virtual void ReadRemoteDescriptor(const ValueCallback& callback,
-                                    const ErrorCallback& error_callback) = 0;
-
-  // Sends a write request to a remote characteristic descriptor, to modify the
-  // value of the descriptor with the new value |new_value|. |callback| is
-  // called to signal success and |error_callback| for failures. This method
-  // only applies to remote descriptors and will fail for those that are locally
-  // hosted.
-  virtual void WriteRemoteDescriptor(const std::vector<uint8_t>& new_value,
-                                     const base::Closure& callback,
-                                     const ErrorCallback& error_callback) = 0;
 
  protected:
   BluetoothGattDescriptor();

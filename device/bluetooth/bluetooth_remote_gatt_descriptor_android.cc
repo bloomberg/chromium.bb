@@ -65,22 +65,18 @@ BluetoothUUID BluetoothRemoteGattDescriptorAndroid::GetUUID() const {
           AttachCurrentThread(), j_descriptor_.obj())));
 }
 
-bool BluetoothRemoteGattDescriptorAndroid::IsLocal() const {
-  return false;
-}
-
 const std::vector<uint8_t>& BluetoothRemoteGattDescriptorAndroid::GetValue()
     const {
   return value_;
 }
 
-BluetoothGattCharacteristic*
+BluetoothRemoteGattCharacteristic*
 BluetoothRemoteGattDescriptorAndroid::GetCharacteristic() const {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-BluetoothGattCharacteristic::Permissions
+BluetoothRemoteGattCharacteristic::Permissions
 BluetoothRemoteGattDescriptorAndroid::GetPermissions() const {
   NOTIMPLEMENTED();
   return 0;
@@ -91,8 +87,9 @@ void BluetoothRemoteGattDescriptorAndroid::ReadRemoteDescriptor(
     const ErrorCallback& error_callback) {
   if (read_pending_ || write_pending_) {
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(error_callback,
-                              BluetoothGattService::GATT_ERROR_IN_PROGRESS));
+        FROM_HERE,
+        base::Bind(error_callback,
+                   BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
 
@@ -116,8 +113,9 @@ void BluetoothRemoteGattDescriptorAndroid::WriteRemoteDescriptor(
     const ErrorCallback& error_callback) {
   if (read_pending_ || write_pending_) {
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(error_callback,
-                              BluetoothGattService::GATT_ERROR_IN_PROGRESS));
+        FROM_HERE,
+        base::Bind(error_callback,
+                   BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
 

@@ -58,7 +58,7 @@ BluetoothRemoteGattCharacteristicWin::~BluetoothRemoteGattCharacteristicWin() {
 
   // Clear pending StartNotifySession callbacks.
   for (const auto& callback : start_notify_session_callbacks_)
-    callback.second.Run(BluetoothGattService::GATT_ERROR_FAILED);
+    callback.second.Run(BluetoothRemoteGattService::GATT_ERROR_FAILED);
 }
 
 std::string BluetoothRemoteGattCharacteristicWin::GetIdentifier() const {
@@ -69,21 +69,18 @@ BluetoothUUID BluetoothRemoteGattCharacteristicWin::GetUUID() const {
   return characteristic_uuid_;
 }
 
-bool BluetoothRemoteGattCharacteristicWin::IsLocal() const {
-  return false;
-}
-
 std::vector<uint8_t>& BluetoothRemoteGattCharacteristicWin::GetValue() const {
   return const_cast<std::vector<uint8_t>&>(characteristic_value_);
 }
 
-BluetoothGattService* BluetoothRemoteGattCharacteristicWin::GetService() const {
+BluetoothRemoteGattService* BluetoothRemoteGattCharacteristicWin::GetService()
+    const {
   return parent_service_;
 }
 
-BluetoothGattCharacteristic::Properties
+BluetoothRemoteGattCharacteristic::Properties
 BluetoothRemoteGattCharacteristicWin::GetProperties() const {
-  BluetoothGattCharacteristic::Properties properties = PROPERTY_NONE;
+  BluetoothRemoteGattCharacteristic::Properties properties = PROPERTY_NONE;
 
   if (characteristic_info_->IsBroadcastable)
     properties = properties | PROPERTY_BROADCAST;
@@ -109,9 +106,9 @@ BluetoothRemoteGattCharacteristicWin::GetProperties() const {
   return properties;
 }
 
-BluetoothGattCharacteristic::Permissions
+BluetoothRemoteGattCharacteristic::Permissions
 BluetoothRemoteGattCharacteristicWin::GetPermissions() const {
-  BluetoothGattCharacteristic::Permissions permissions = PERMISSION_NONE;
+  BluetoothRemoteGattCharacteristic::Permissions permissions = PERMISSION_NONE;
 
   if (characteristic_info_->IsReadable)
     permissions = permissions | PERMISSION_READ;
@@ -125,32 +122,21 @@ bool BluetoothRemoteGattCharacteristicWin::IsNotifying() const {
   return gatt_event_handle_ != nullptr;
 }
 
-std::vector<BluetoothGattDescriptor*>
+std::vector<BluetoothRemoteGattDescriptor*>
 BluetoothRemoteGattCharacteristicWin::GetDescriptors() const {
-  std::vector<BluetoothGattDescriptor*> descriptors;
+  std::vector<BluetoothRemoteGattDescriptor*> descriptors;
   for (const auto& descriptor : included_descriptors_)
     descriptors.push_back(descriptor.second.get());
   return descriptors;
 }
 
-BluetoothGattDescriptor* BluetoothRemoteGattCharacteristicWin::GetDescriptor(
+BluetoothRemoteGattDescriptor*
+BluetoothRemoteGattCharacteristicWin::GetDescriptor(
     const std::string& identifier) const {
   GattDescriptorMap::const_iterator it = included_descriptors_.find(identifier);
   if (it != included_descriptors_.end())
     return it->second.get();
   return nullptr;
-}
-
-bool BluetoothRemoteGattCharacteristicWin::AddDescriptor(
-    BluetoothGattDescriptor* descriptor) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool BluetoothRemoteGattCharacteristicWin::UpdateValue(
-    const std::vector<uint8_t>& value) {
-  NOTIMPLEMENTED();
-  return false;
 }
 
 void BluetoothRemoteGattCharacteristicWin::StartNotifySession(
@@ -170,23 +156,26 @@ void BluetoothRemoteGattCharacteristicWin::StartNotifySession(
   if (!characteristic_info_->IsNotifiable &&
       !characteristic_info_->IsIndicatable) {
     ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(error_callback,
-                              BluetoothGattService::GATT_ERROR_NOT_SUPPORTED));
+        FROM_HERE,
+        base::Bind(error_callback,
+                   BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
     return;
   }
 
-  std::vector<BluetoothGattDescriptor*> ccc_descriptors = GetDescriptorsByUUID(
-      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid());
+  std::vector<BluetoothRemoteGattDescriptor*> ccc_descriptors =
+      GetDescriptorsByUUID(BluetoothRemoteGattDescriptor::
+                               ClientCharacteristicConfigurationUuid());
   if (ccc_descriptors.size() < 1) {
     ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(error_callback,
-                              BluetoothGattService::GATT_ERROR_NOT_SUPPORTED));
+        FROM_HERE,
+        base::Bind(error_callback,
+                   BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
     return;
   }
   if (ccc_descriptors.size() > 1) {
     ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(error_callback, BluetoothGattService::GATT_ERROR_FAILED));
+        FROM_HERE, base::Bind(error_callback,
+                              BluetoothRemoteGattService::GATT_ERROR_FAILED));
     return;
   }
 
@@ -214,12 +203,12 @@ void BluetoothRemoteGattCharacteristicWin::ReadRemoteCharacteristic(
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   if (!characteristic_info_.get()->IsReadable) {
-    error_callback.Run(BluetoothGattService::GATT_ERROR_NOT_PERMITTED);
+    error_callback.Run(BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED);
     return;
   }
 
   if (characteristic_value_read_or_write_in_progress_) {
-    error_callback.Run(BluetoothGattService::GATT_ERROR_IN_PROGRESS);
+    error_callback.Run(BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS);
     return;
   }
 
@@ -240,12 +229,12 @@ void BluetoothRemoteGattCharacteristicWin::WriteRemoteCharacteristic(
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   if (!characteristic_info_.get()->IsWritable) {
-    error_callback.Run(BluetoothGattService::GATT_ERROR_NOT_PERMITTED);
+    error_callback.Run(BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED);
     return;
   }
 
   if (characteristic_value_read_or_write_in_progress_) {
-    error_callback.Run(BluetoothGattService::GATT_ERROR_IN_PROGRESS);
+    error_callback.Run(BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS);
     return;
   }
 
@@ -388,23 +377,23 @@ void BluetoothRemoteGattCharacteristicWin::
   characteristic_value_read_or_write_in_progress_ = false;
 }
 
-BluetoothGattService::GattErrorCode
+BluetoothRemoteGattService::GattErrorCode
 BluetoothRemoteGattCharacteristicWin::HRESULTToGattErrorCode(HRESULT hr) {
   if (HRESULT_FROM_WIN32(ERROR_INVALID_USER_BUFFER) == hr)
-    return BluetoothGattService::GATT_ERROR_INVALID_LENGTH;
+    return BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH;
 
   switch (hr) {
     case E_BLUETOOTH_ATT_READ_NOT_PERMITTED:
     case E_BLUETOOTH_ATT_WRITE_NOT_PERMITTED:
-      return BluetoothGattService::GATT_ERROR_NOT_PERMITTED;
+      return BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED;
     case E_BLUETOOTH_ATT_UNKNOWN_ERROR:
-      return BluetoothGattService::GATT_ERROR_UNKNOWN;
+      return BluetoothRemoteGattService::GATT_ERROR_UNKNOWN;
     case E_BLUETOOTH_ATT_INVALID_ATTRIBUTE_VALUE_LENGTH:
-      return BluetoothGattService::GATT_ERROR_INVALID_LENGTH;
+      return BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH;
     case E_BLUETOOTH_ATT_REQUEST_NOT_SUPPORTED:
-      return BluetoothGattService::GATT_ERROR_NOT_SUPPORTED;
+      return BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED;
     default:
-      return BluetoothGattService::GATT_ERROR_FAILED;
+      return BluetoothRemoteGattService::GATT_ERROR_FAILED;
   }
 }
 

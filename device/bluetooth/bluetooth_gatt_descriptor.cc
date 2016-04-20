@@ -5,12 +5,9 @@
 #include "device/bluetooth/bluetooth_gatt_descriptor.h"
 
 #include <stddef.h>
-
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/logging.h"
-#include "base/macros.h"
 
 namespace device {
 namespace {
@@ -78,16 +75,6 @@ BluetoothGattDescriptor::BluetoothGattDescriptor() {
 }
 
 BluetoothGattDescriptor::~BluetoothGattDescriptor() {
-}
-
-// static
-BluetoothGattDescriptor* BluetoothGattDescriptor::Create(
-    const BluetoothUUID& uuid,
-    const std::vector<uint8_t>& value,
-    BluetoothGattCharacteristic::Permissions permissions) {
-  LOG(ERROR) << "Creating local GATT characteristic descriptors currently not "
-             << "supported.";
-  return NULL;
 }
 
 }  // namespace device

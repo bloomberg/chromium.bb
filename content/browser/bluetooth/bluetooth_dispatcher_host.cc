@@ -31,14 +31,14 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
-#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 
 using blink::WebBluetoothError;
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
-using device::BluetoothGattCharacteristic;
-using device::BluetoothGattService;
+using device::BluetoothRemoteGattCharacteristic;
+using device::BluetoothRemoteGattService;
 using device::BluetoothUUID;
 
 namespace content {
@@ -179,12 +179,12 @@ void StopDiscoverySession(
 
 // TODO(ortuno): This should really be a BluetoothDevice method.
 // Replace when implemented. http://crbug.com/552022
-std::vector<BluetoothGattService*> GetPrimaryServicesByUUID(
+std::vector<BluetoothRemoteGattService*> GetPrimaryServicesByUUID(
     device::BluetoothDevice* device,
     const std::string& service_uuid) {
-  std::vector<BluetoothGattService*> services;
+  std::vector<BluetoothRemoteGattService*> services;
   VLOG(1) << "Looking for service: " << service_uuid;
-  for (BluetoothGattService* service : device->GetGattServices()) {
+  for (BluetoothRemoteGattService* service : device->GetGattServices()) {
     VLOG(1) << "Service in cache: " << service->GetUUID().canonical_value();
     if (service->GetUUID().canonical_value() == service_uuid &&
         service->IsPrimary()) {
@@ -597,7 +597,7 @@ void BluetoothDispatcherHost::GattServicesDiscovered(
   pending_primary_services_requests_.erase(iter);
 
   for (const PrimaryServicesRequest& request : requests) {
-    std::vector<BluetoothGattService*> services =
+    std::vector<BluetoothRemoteGattService*> services =
         GetPrimaryServicesByUUID(device, request.service_uuid);
     switch (request.func) {
       case PrimaryServicesRequest::GET_PRIMARY_SERVICE:
@@ -749,13 +749,13 @@ void BluetoothDispatcherHost::OnGetPrimaryService(
   // 4. Services not discovered and service not present in |device|: Add request
   //    to map of pending getPrimaryService requests.
 
-  std::vector<BluetoothGattService*> services =
+  std::vector<BluetoothRemoteGattService*> services =
       GetPrimaryServicesByUUID(query_result.device, service_uuid);
 
   // 1. & 2.
   if (!services.empty()) {
     VLOG(1) << "Service found in device.";
-    const BluetoothGattService& service = *services[0];
+    const BluetoothRemoteGattService& service = *services[0];
     DCHECK(service.IsPrimary());
     AddToServicesMapAndSendGetPrimaryServiceSuccess(service, thread_id,
                                                     request_id);
@@ -813,7 +813,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
     return;
   }
 
-  for (BluetoothGattCharacteristic* characteristic :
+  for (BluetoothRemoteGattCharacteristic* characteristic :
        query_result.service->GetCharacteristics()) {
     if (characteristic->GetUUID().canonical_value() == characteristic_uuid) {
       const std::string& characteristic_instance_id =
@@ -880,7 +880,7 @@ void BluetoothDispatcherHost::OnGetCharacteristics(
   std::vector<std::string> characteristics_uuids;
   std::vector<uint32_t> characteristics_properties;
 
-  for (BluetoothGattCharacteristic* characteristic :
+  for (BluetoothRemoteGattCharacteristic* characteristic :
        query_result.service->GetCharacteristics()) {
     if (!BluetoothBlacklist::Get().IsExcluded(characteristic->GetUUID()) &&
         (characteristics_uuid.empty() ||
@@ -1286,7 +1286,7 @@ void BluetoothDispatcherHost::OnCreateGATTConnectionError(
 }
 
 void BluetoothDispatcherHost::AddToServicesMapAndSendGetPrimaryServiceSuccess(
-    const device::BluetoothGattService& service,
+    const device::BluetoothRemoteGattService& service,
     int thread_id,
     int request_id) {
   const std::string& service_identifier = service.GetIdentifier();

@@ -11,45 +11,45 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 
-using device::BluetoothGattService;
+using device::BluetoothRemoteGattService;
 
 namespace content {
 
 namespace {
 
 blink::mojom::WebBluetoothError TranslateGATTErrorAndRecord(
-    BluetoothGattService::GattErrorCode error_code,
+    BluetoothRemoteGattService::GattErrorCode error_code,
     UMAGATTOperation operation) {
   switch (error_code) {
-    case BluetoothGattService::GATT_ERROR_UNKNOWN:
+    case BluetoothRemoteGattService::GATT_ERROR_UNKNOWN:
       RecordGATTOperationOutcome(operation, UMAGATTOperationOutcome::UNKNOWN);
       return blink::mojom::WebBluetoothError::GATT_UNKNOWN_ERROR;
-    case BluetoothGattService::GATT_ERROR_FAILED:
+    case BluetoothRemoteGattService::GATT_ERROR_FAILED:
       RecordGATTOperationOutcome(operation, UMAGATTOperationOutcome::FAILED);
       return blink::mojom::WebBluetoothError::GATT_UNKNOWN_FAILURE;
-    case BluetoothGattService::GATT_ERROR_IN_PROGRESS:
+    case BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::IN_PROGRESS);
       return blink::mojom::WebBluetoothError::GATT_OPERATION_IN_PROGRESS;
-    case BluetoothGattService::GATT_ERROR_INVALID_LENGTH:
+    case BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::INVALID_LENGTH);
       return blink::mojom::WebBluetoothError::GATT_INVALID_ATTRIBUTE_LENGTH;
-    case BluetoothGattService::GATT_ERROR_NOT_PERMITTED:
+    case BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::NOT_PERMITTED);
       return blink::mojom::WebBluetoothError::GATT_NOT_PERMITTED;
-    case BluetoothGattService::GATT_ERROR_NOT_AUTHORIZED:
+    case BluetoothRemoteGattService::GATT_ERROR_NOT_AUTHORIZED:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::NOT_AUTHORIZED);
       return blink::mojom::WebBluetoothError::GATT_NOT_AUTHORIZED;
-    case BluetoothGattService::GATT_ERROR_NOT_PAIRED:
+    case BluetoothRemoteGattService::GATT_ERROR_NOT_PAIRED:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::NOT_PAIRED);
       return blink::mojom::WebBluetoothError::GATT_NOT_PAIRED;
-    case BluetoothGattService::GATT_ERROR_NOT_SUPPORTED:
+    case BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::NOT_SUPPORTED);
       return blink::mojom::WebBluetoothError::GATT_NOT_SUPPORTED;
@@ -105,7 +105,7 @@ void WebBluetoothServiceImpl::AdapterPresentChanged(
 
 void WebBluetoothServiceImpl::GattCharacteristicValueChanged(
     device::BluetoothAdapter* adapter,
-    device::BluetoothGattCharacteristic* characteristic,
+    device::BluetoothRemoteGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
   // TODO(ortuno): Only send characteristic value changed events for
   // characteristics that we've returned in the past. We can't yet do
@@ -257,10 +257,10 @@ void WebBluetoothServiceImpl::RemoteCharacteristicStartNotifications(
     return;
   }
 
-  device::BluetoothGattCharacteristic::Properties notify_or_indicate =
+  device::BluetoothRemoteGattCharacteristic::Properties notify_or_indicate =
       query_result.characteristic->GetProperties() &
-      (device::BluetoothGattCharacteristic::PROPERTY_NOTIFY |
-       device::BluetoothGattCharacteristic::PROPERTY_INDICATE);
+      (device::BluetoothRemoteGattCharacteristic::PROPERTY_NOTIFY |
+       device::BluetoothRemoteGattCharacteristic::PROPERTY_INDICATE);
   if (!notify_or_indicate) {
     callback.Run(blink::mojom::WebBluetoothError::GATT_NOT_SUPPORTED);
     return;
@@ -313,7 +313,7 @@ void WebBluetoothServiceImpl::OnReadValueSuccess(
 
 void WebBluetoothServiceImpl::OnReadValueFailed(
     const RemoteCharacteristicReadValueCallback& callback,
-    device::BluetoothGattService::GattErrorCode error_code) {
+    device::BluetoothRemoteGattService::GattErrorCode error_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback.Run(TranslateGATTErrorAndRecord(
                    error_code, UMAGATTOperation::CHARACTERISTIC_READ),
@@ -329,7 +329,7 @@ void WebBluetoothServiceImpl::OnWriteValueSuccess(
 
 void WebBluetoothServiceImpl::OnWriteValueFailed(
     const RemoteCharacteristicWriteValueCallback& callback,
-    device::BluetoothGattService::GattErrorCode error_code) {
+    device::BluetoothRemoteGattService::GattErrorCode error_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback.Run(TranslateGATTErrorAndRecord(
       error_code, UMAGATTOperation::CHARACTERISTIC_WRITE));
@@ -351,7 +351,7 @@ void WebBluetoothServiceImpl::OnStartNotifySessionSuccess(
 
 void WebBluetoothServiceImpl::OnStartNotifySessionFailed(
     const RemoteCharacteristicStartNotificationsCallback& callback,
-    device::BluetoothGattService::GattErrorCode error_code) {
+    device::BluetoothRemoteGattService::GattErrorCode error_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback.Run(TranslateGATTErrorAndRecord(
       error_code, UMAGATTOperation::START_NOTIFICATIONS));
