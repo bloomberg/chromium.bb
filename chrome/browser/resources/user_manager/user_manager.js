@@ -6,6 +6,7 @@
 <include src="../../../../ui/login/login_ui_tools.js">
 <include src="../../../../ui/login/display_manager.js">
 <include src="control_bar.js">
+<include src="../../../../ui/login/account_picker/user_pod_template.js">
 <include src="../../../../ui/login/account_picker/screen_account_picker.js">
 <include src="../../../../ui/login/account_picker/user_pod_row.js">
 <include src="../../../../ui/login/resource_loader.js">

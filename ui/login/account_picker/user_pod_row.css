@@ -433,6 +433,16 @@ html[dir=rtl] .action-box-area {
   background-image: url(chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_PRESSED);
 }
 
+.action-box-area .action-box-icon {
+  /* overriden in chrome/browser/resources/md_user_manager/user_manager.css */
+  display: none;
+}
+
+.user-image-gradient-area {
+  /* overriden in chrome/browser/resources/md_user_manager/user_manager.css */
+  display: none;
+}
+
 .user-type-icon-area {
   left: 0;
   z-index: 5;
@@ -571,7 +581,16 @@ html[dir=rtl] .action-box-area.active ~ .action-box-menu {
 }
 
 .action-box-remove-user-warning .remove-warning-button {
+  background: rgb(197, 57, 41);
+  border-radius: 2px;
+  color: white;
+  line-height: 32px;
+  padding: 0 16px;
   width: 100%;
+}
+
+.action-box-remove-user-warning .remove-warning-button.keyboard-focus {
+  font-weight: normal;
 }
 
 /* Hide dialog elements not in a correct category. Only combinations currently

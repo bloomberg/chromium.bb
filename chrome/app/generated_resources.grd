@@ -12922,7 +12922,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           Sorry, your password could not be verified because you are offline.
         </message>
         <message name="IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT" desc="Text to display in the password field for user pod when no password has been entered.">
-          Enter password
+          Password
         </message>
         <message name="IDS_LOGIN_POD_SIGNING_IN" desc="Text to display at the bottom of a user pod during signing in the user. The translation should be as short as possible because of limited UI space.">
           Signing in
@@ -12973,19 +12973,19 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           </message>
           <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC" desc="Main text shown as a warning when attempting to remove an user. This case is for synced profiles, with all statistics loaded correctly. The symbol $1 will be substituted with custom JS code, so it should not be replaced by a #.">
             {NUM_ITEMS, plural,
-            =1 {This will permanently delete $1 item from this device but will not clear synced items from other devices.}
-            other {This will permanently delete $1 items from this device but will not clear synced items from other devices.}}
+            =1 {This will permanently delete $1 item from this device. To retrieve your data later, sign in to chrome as $2.}
+            other {This will permanently delete $1 items from this device. To retrieve your data later, sign in to chrome as $2.}}
           </message>
           <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC_WITH_ERRORS" desc="Main text shown as a warning when attempting to remove an user. This case is for non-synced profiles, with some statistics failed to load. The symbol $1 will be substituted with custom JS code, so it should not be replaced by a #.">
             {NUM_ITEMS, plural,
-            =1 {This will permanently delete at least $1 item from this device but will not clear synced items from other devices.}
-            other {This will permanently delete at least $1 items from this device but will not clear synced items from other devices.}}
+            =1 {This will permanently delete at least $1 item from this device. To retrieve your data later, sign in to chrome as $2.}
+            other {This will permanently delete at least $1 items from this device. To retrieve your data later, sign in to chrome as $2.}}
           </message>
           <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC_NOSTATS" desc="Main text shown as a warning when attempting to remove an user. This case is for synced profiles with statistics unavailable. (Possible case: Chromium decided not to load the statistics of closed profiles.)">
-            This will permanently delete your browsing data from this device but will not clear synced items from other devices.
+            This will permanently delete your browsing data from this device. To retrieve your data later, sign in to chrome as $2.
           </message>
           <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC_CALCULATING" desc="Main text shown as a warning when attempting to remove an user. This case is for synced profiles when the statistics is still loading. $1 is always replaced by localized version of the ellipsis (...).">
-            This will permanently delete at least <ph name="TOTAL_COUNT">$1<ex>...</ex></ph> items from this device but will not clear synced items from other devices.
+            This will permanently delete at least <ph name="TOTAL_COUNT">$1<ex>...</ex></ph> items from this device. To retrieve your data later, sign in to chrome as $2.
           </message>
         </if>
 
@@ -14302,7 +14302,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_TOUCH_HOVER_DESCRIPTION" desc="Description of the 'Enable support for hover capable touchscreens' flag.">
         Enables hover feature by holding your finger just over the screen to experience a mouseover event.
       </message>
-
       <message name="IDS_ALLOW_INSECURE_LOCALHOST" desc="Name of the 'Allow insecure localhost' flag.">
         Allow invalid certificates for resources loaded from localhost.
       </message>

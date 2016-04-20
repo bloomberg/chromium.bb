@@ -203,6 +203,9 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     loadUsers: function(users, showGuest) {
       $('pod-row').loadPods(users);
       $('login-header-bar').showGuestButton = showGuest;
+      // On Desktop, #login-header-bar has a shadow if there are 8+ profiles.
+      if (Oobe.getInstance().displayType == DISPLAY_TYPE.DESKTOP_USER_MANAGER)
+        $('login-header-bar').classList.toggle('shadow', users.length > 8);
     },
 
     /**

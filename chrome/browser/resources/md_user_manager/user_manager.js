@@ -6,12 +6,20 @@
 <include src="../../../../ui/login/bubble.js">
 <include src="../../../../ui/login/login_ui_tools.js">
 <include src="../../../../ui/login/display_manager.js">
+<include src="../../../../ui/login/account_picker/user_pod_template.js">
 <include src="../../../../ui/login/account_picker/screen_account_picker.js">
 <include src="../../../../ui/login/account_picker/user_pod_row.js">
 
 
 cr.define('cr.ui', function() {
   var DisplayManager = cr.ui.login.DisplayManager;
+
+  /**
+   * Maximum possible height of the #login-header-bar, including the padding
+   * and the border.
+   * @const {number}
+   */
+  var MAX_LOGIN_HEADER_BAR_HEIGHT = 57;
 
   /**
    * Manages initialization of screens, transitions, and error messages.
@@ -24,6 +32,28 @@ cr.define('cr.ui', function() {
 
   UserManager.prototype = {
     __proto__: DisplayManager.prototype,
+
+    /**
+     * Indicates that this is the Material Design Desktop User Manager.
+     * @type {boolean}
+     */
+    newDesktopUserManager: true,
+
+    /**
+     * @override
+     * Overrides clientAreaSize in DisplayManager. When a new profile is created
+     * the #outer-container page may not be visible yet, so user-pods cannot be
+     * placed correctly. Therefore, we use dimensions of the #animated-pages.
+     * @type {{width: number, height: number}}
+     */
+    get clientAreaSize() {
+      var userManagerPages = document.querySelector('user-manager-pages');
+      var width = userManagerPages.offsetWidth;
+      // Deduct the maximum possible height of the #login-header-bar from the
+      // height of #animated-pages. Result is the remaining visible height.
+      var height = userManagerPages.offsetHeight - MAX_LOGIN_HEADER_BAR_HEIGHT;
+      return {width: width, height: height};
+    }
   };
 
   /**

@@ -28,7 +28,7 @@ cr.define('login', function() {
    * @type {Array<number>}
    * @const
    */
-  var DESKTOP_MARGIN_BY_COLUMNS = [undefined, 15, 15, 15, 15, 15, 15];
+  var DESKTOP_MARGIN_BY_COLUMNS = [undefined, 32, 32, 32, 32, 32, 32];
 
   /**
    * Maximal number of columns currently supported by pod-row.
@@ -48,13 +48,16 @@ cr.define('login', function() {
    * Variables used for pod placement processing. Width and height should be
    * synced with computed CSS sizes of pods.
    */
-  var POD_WIDTH = 180;
+  var CROS_POD_WIDTH = 180;
+  var DESKTOP_POD_WIDTH = 180;
+  var MD_DESKTOP_POD_WIDTH = 160;
   var PUBLIC_EXPANDED_BASIC_WIDTH = 500;
   var PUBLIC_EXPANDED_ADVANCED_WIDTH = 610;
   var CROS_POD_HEIGHT = 213;
   var DESKTOP_POD_HEIGHT = 226;
+  var MD_DESKTOP_POD_HEIGHT = 200;
   var POD_ROW_PADDING = 10;
-  var DESKTOP_ROW_PADDING = 15;
+  var DESKTOP_ROW_PADDING = 32;
   var CUSTOM_ICON_CONTAINER_SIZE = 40;
 
   /**
@@ -1548,19 +1551,26 @@ cr.define('login', function() {
       if (profilePath !== this.user.profilePath)
         return;
       // Add localized messages where $1 will be replaced with
-      // <span class="total-count"></span>.
+      // <span class="total-count"></span> and $2 will be replaced with
+      // <span class="email"></span>.
       var element = this.querySelector('.action-box-remove-user-warning-text');
       element.textContent = '';
 
-      messageParts = message.split('$1');
+      messageParts = message.split(/(\$[12])/);
       var numParts = messageParts.length;
       for (var j = 0; j < numParts; j++) {
-        element.appendChild(document.createTextNode(messageParts[j]));
-        if (j < numParts - 1) {
+        if (messageParts[j] === '$1') {
           var elementToAdd = document.createElement('span');
           elementToAdd.classList.add('total-count');
           elementToAdd.textContent = count;
           element.appendChild(elementToAdd);
+        } else if (messageParts[j] === '$2') {
+          var elementToAdd = document.createElement('span');
+          elementToAdd.classList.add('email');
+          elementToAdd.textContent = this.user.emailAddress;
+          element.appendChild(elementToAdd);
+        } else {
+          element.appendChild(document.createTextNode(messageParts[j]));
         }
       }
       this.moveActionMenuUpIfNeeded_();
@@ -2312,10 +2322,15 @@ cr.define('login', function() {
 
       var isDesktopUserManager = Oobe.getInstance().displayType ==
           DISPLAY_TYPE.DESKTOP_USER_MANAGER;
-      this.userPodHeight_ = isDesktopUserManager ? DESKTOP_POD_HEIGHT :
-                                                   CROS_POD_HEIGHT;
-      // Same for Chrome OS and desktop.
-      this.userPodWidth_ = POD_WIDTH;
+      var isNewDesktopUserManager = Oobe.getInstance().newDesktopUserManager;
+      this.userPodHeight_ = isDesktopUserManager ?
+          isNewDesktopUserManager ? MD_DESKTOP_POD_HEIGHT :
+                                    DESKTOP_POD_HEIGHT :
+          CROS_POD_HEIGHT;
+      this.userPodWidth_ = isDesktopUserManager ?
+          isNewDesktopUserManager ? MD_DESKTOP_POD_WIDTH :
+                                    DESKTOP_POD_WIDTH :
+          CROS_POD_WIDTH;
     },
 
     /**
@@ -2793,9 +2808,11 @@ cr.define('login', function() {
           $('signin-banner'), null).getPropertyValue('display') != 'none') {
         rows = Math.min(rows, MAX_NUMBER_OF_ROWS_UNDER_SIGNIN_BANNER);
       }
-      var maxHeigth = Oobe.getInstance().clientAreaSize.height;
-      while (maxHeigth < this.rowsToHeight_(rows) && rows > 1)
-        --rows;
+      if (!Oobe.getInstance().newDesktopUserManager) {
+        var maxHeigth = Oobe.getInstance().clientAreaSize.height;
+        while (maxHeigth < this.rowsToHeight_(rows) && rows > 1)
+         --rows;
+      }
       // One more iteration if it's not enough cells to place all pods.
       while (maxWidth >= this.columnsToWidth_(columns + 1) &&
              columns * rows < this.pods.length &&

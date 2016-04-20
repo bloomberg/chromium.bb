@@ -16,6 +16,8 @@
     }
 
     lazyLoadUrl('chrome://resources/polymer/v1_0/iron-icons/iron-icons.html');
+    lazyLoadUrl(
+        'chrome://resources/polymer/v1_0/paper-button/paper-button.html');
   }
 
   window.addEventListener('load', function() {
