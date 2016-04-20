@@ -28,11 +28,40 @@ void Domain::{{method_name}}(std::unique_ptr<{{method_name}}Params> params, base
   dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), std::move(callback));
     {% elif "returns" in command %}
 void Domain::{{method_name}}(base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback) {
-  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", base::Bind(&Domain::Handle{{method_name}}Response, callback));
+  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", base::Bind(&Domain::Handle{{method_name}}Response, std::move(callback)));
     {% else %}
 void Domain::{{method_name}}(base::Callback<void()> callback) {
   dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", std::move(callback));
     {% endif %}
+}
+    {# Generate convenience methods that take the required parameters directly. #}
+    {% if not "parameters" in command %}{% continue %}{% endif %}
+
+void Domain::{{method_name}}({##}
+    {% for parameter in command.parameters -%}
+        {% if parameter.get("optional", False) -%}
+          {% break %}
+        {% endif %}
+        {% if not loop.first %}, {% endif %}
+{{resolve_type(parameter).pass_type}} {{parameter.name | camelcase_to_hacker_style -}}
+    {% endfor %}
+    {% if "parameters" in command and not command.parameters[0].get("optional", False) %}, {% endif %}{# -#}
+    {% if "returns" in command -%}
+      base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback{##}
+    {% else -%}
+      base::Callback<void()> callback{##}
+    {% endif %}) {
+    {# Build the parameters object. #}
+  std::unique_ptr<{{method_name}}Params> params = {{method_name}}Params::Builder()
+    {% for parameter in command.parameters -%}
+        {% if parameter.get("optional", False) -%}
+          {% break %}
+        {% endif %}
+      .Set{{parameter.name | to_title_case}}(std::move({{parameter.name | camelcase_to_hacker_style}}))
+    {% endfor %}
+      .Build();
+    {# Send the message. #}
+  {{method_name}}(std::move(params), std::move(callback));
 }
   {% endfor %}
 

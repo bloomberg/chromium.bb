@@ -82,15 +82,28 @@ class HeadlessDevToolsClientEvalTest : public HeadlessDevToolsClientTest {
     std::unique_ptr<runtime::EvaluateParams> params =
         runtime::EvaluateParams::Builder().SetExpression("1 + 2").Build();
     devtools_client_->GetRuntime()->Evaluate(
-        std::move(params), base::Bind(&HeadlessDevToolsClientEvalTest::OnResult,
-                                      base::Unretained(this)));
+        std::move(params),
+        base::Bind(&HeadlessDevToolsClientEvalTest::OnFirstResult,
+                   base::Unretained(this)));
+    // Test the convenience overload which only takes the required command
+    // parameters.
+    devtools_client_->GetRuntime()->Evaluate(
+        "24 * 7", base::Bind(&HeadlessDevToolsClientEvalTest::OnSecondResult,
+                             base::Unretained(this)));
   }
 
-  void OnResult(std::unique_ptr<runtime::EvaluateResult> result) {
+  void OnFirstResult(std::unique_ptr<runtime::EvaluateResult> result) {
     int value;
     EXPECT_TRUE(result->GetResult()->HasValue());
     EXPECT_TRUE(result->GetResult()->GetValue()->GetAsInteger(&value));
     EXPECT_EQ(3, value);
+  }
+
+  void OnSecondResult(std::unique_ptr<runtime::EvaluateResult> result) {
+    int value;
+    EXPECT_TRUE(result->GetResult()->HasValue());
+    EXPECT_TRUE(result->GetResult()->GetValue()->GetAsInteger(&value));
+    EXPECT_EQ(168, value);
     FinishAsynchronousTest();
   }
 };

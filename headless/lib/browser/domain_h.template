@@ -49,7 +49,7 @@ class HEADLESS_EXPORT Domain {
         {% break %}
       {% endif %}
       {% if not loop.first %}, {% endif %}
-{{resolve_type(parameter).pass_type}} {{parameter.name -}}
+{{resolve_type(parameter).pass_type}} {{parameter.name | camelcase_to_hacker_style -}}
     {% endfor %}
     {% if "parameters" in command and not command.parameters[0].get("optional", False) %}, {% endif %}{# -#}
     {% if "returns" in command -%}
