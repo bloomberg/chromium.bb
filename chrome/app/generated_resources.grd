@@ -5780,6 +5780,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION" desc="Description for the flag to enable experimental Web Platform features.">
         Enables experimental Web Platform features that are in development.
       </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_NAME" desc="Name for the flag to enable the experimental pointer events.">
+        Pointer Events
+      </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_DESCRIPTION" desc="Description for the flag to enable the experimental pointer events.">
+        Enables partial experimental support for the Pointer Events API.  This is intended only for testing by web developers, it will cause some websites to be subtly broken.
+      </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_FRAMEWORK_NAME" desc="Name for the flag to enable the Experimental Framework.">
         Experimental Framework.
       </message>

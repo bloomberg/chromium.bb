@@ -198,6 +198,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::enableMediaDocumentDownloadButton(
       base::FeatureList::IsEnabled(features::kMediaDocumentDownloadButton));
 
+  if (base::FeatureList::IsEnabled(features::kPointerEvents)) {
+      WebRuntimeFeatures::enableFeatureFromString(
+        std::string("PointerEvent"), true);
+  }
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {

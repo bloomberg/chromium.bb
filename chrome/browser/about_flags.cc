@@ -1819,6 +1819,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kMediaStyleNotification)},
 #endif
+    {"enable-pointer-events",  // FLAGS:RECORD_UMA
+      IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_NAME,
+      IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_DESCRIPTION,
+      kOsAll,
+      FEATURE_VALUE_TYPE(features::kPointerEvents)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -58,6 +58,10 @@ const base::Feature kOptimizeIPCForSmallResource{
     "OptimizeForSmallResource",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Partial support for pointer event feature.
+const base::Feature kPointerEvents{"PointerEvent",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Throttle Blink's rendering pipeline based on frame visibility.
 const base::Feature kRenderingPipelineThrottling{
     "RenderingPipelineThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
