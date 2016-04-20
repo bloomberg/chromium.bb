@@ -616,7 +616,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void unregisterProtocolHandler(const blink::WebString& scheme,
                                  const blink::WebURL& url) override;
   blink::WebBluetooth* bluetooth() override;
-  blink::WebUSBClient* usbClient() override;
   void checkIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       const blink::WebSecurityOrigin& security_origin,
@@ -1192,8 +1191,6 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<blink::WebAppBannerClient> app_banner_client_;
 
   std::unique_ptr<blink::WebBluetooth> bluetooth_;
-
-  std::unique_ptr<blink::WebUSBClient> usb_client_;
 
   // Manages play, pause notifications for WebMediaPlayer implementations; its
   // lifetime is tied to the RenderFrame via the RenderFrameObserver interface.

@@ -6,8 +6,8 @@
 #define USBConfiguration_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "device/usb/public/interfaces/device.mojom-wtf.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/webusb/WebUSBDeviceInfo.h"
 
 namespace blink {
 
@@ -22,16 +22,15 @@ class USBConfiguration
 public:
     static USBConfiguration* create(const USBDevice*, size_t configurationIndex);
     static USBConfiguration* create(const USBDevice*, size_t configurationValue, ExceptionState&);
-    static USBConfiguration* createFromValue(const USBDevice*, uint8_t configurationValue);
 
     USBConfiguration(const USBDevice*, size_t configurationIndex);
 
     const USBDevice* device() const;
     size_t index() const;
-    const WebUSBDeviceInfo::Configuration& info() const;
+    const device::usb::wtf::ConfigurationInfo& info() const;
 
-    uint8_t configurationValue() const;
-    String configurationName() const;
+    uint8_t configurationValue() const { return info().configuration_value; }
+    String configurationName() const { return info().configuration_name; }
     HeapVector<Member<USBInterface>> interfaces() const;
 
     DECLARE_TRACE();

@@ -6,8 +6,8 @@
 #define USBInterface_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "device/usb/public/interfaces/device.mojom-wtf.h"
 #include "platform/heap/Heap.h"
-#include "public/platform/modules/webusb/WebUSBDeviceInfo.h"
 
 namespace blink {
 
@@ -26,9 +26,9 @@ public:
 
     USBInterface(const USBDevice*, size_t configurationIndex, size_t interfaceIndex);
 
-    const WebUSBDeviceInfo::Interface& info() const;
+    const device::usb::wtf::InterfaceInfo& info() const;
 
-    uint8_t interfaceNumber() const;
+    uint8_t interfaceNumber() const { return info().interface_number; }
     USBAlternateInterface* alternate() const;
     HeapVector<Member<USBAlternateInterface>> alternates() const;
     bool claimed() const;

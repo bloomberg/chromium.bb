@@ -17,8 +17,9 @@ USBAlternateInterface* USBAlternateInterface::create(const USBInterface* interfa
 
 USBAlternateInterface* USBAlternateInterface::create(const USBInterface* interface, size_t alternateSetting, ExceptionState& exceptionState)
 {
-    for (size_t i = 0; i < interface->info().alternates.size(); ++i) {
-        if (interface->info().alternates[i].alternateSetting == alternateSetting)
+    const auto& alternates = interface->info().alternates;
+    for (size_t i = 0; i < alternates.size(); ++i) {
+        if (alternates[i]->alternate_setting == alternateSetting)
             return USBAlternateInterface::create(interface, i);
     }
     exceptionState.throwRangeError("Invalid alternate setting.");
@@ -33,36 +34,11 @@ USBAlternateInterface::USBAlternateInterface(const USBInterface* interface, size
     ASSERT(m_alternateIndex < m_interface->info().alternates.size());
 }
 
-const WebUSBDeviceInfo::AlternateInterface& USBAlternateInterface::info() const
+const device::usb::wtf::AlternateInterfaceInfo& USBAlternateInterface::info() const
 {
-    const WebUSBDeviceInfo::Interface& interfaceInfo = m_interface->info();
+    const device::usb::wtf::InterfaceInfo& interfaceInfo = m_interface->info();
     ASSERT(m_alternateIndex < interfaceInfo.alternates.size());
-    return interfaceInfo.alternates[m_alternateIndex];
-}
-
-uint8_t USBAlternateInterface::alternateSetting() const
-{
-    return info().alternateSetting;
-}
-
-uint8_t USBAlternateInterface::interfaceClass() const
-{
-    return info().classCode;
-}
-
-uint8_t USBAlternateInterface::interfaceSubclass() const
-{
-    return info().subclassCode;
-}
-
-uint8_t USBAlternateInterface::interfaceProtocol() const
-{
-    return info().protocolCode;
-}
-
-String USBAlternateInterface::interfaceName() const
-{
-    return info().interfaceName;
+    return *interfaceInfo.alternates[m_alternateIndex];
 }
 
 HeapVector<Member<USBEndpoint>> USBAlternateInterface::endpoints() const

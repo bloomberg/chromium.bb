@@ -7,30 +7,22 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "device/usb/public/interfaces/device.mojom-wtf.h"
 #include "modules/webusb/USBAlternateInterface.h"
-#include "public/platform/modules/webusb/WebUSBDevice.h"
+
+using device::usb::wtf::EndpointType;
+using device::usb::wtf::TransferDirection;
 
 namespace blink {
 
 namespace {
 
-bool convertDirectionFromEnum(const String& direction, WebUSBDevice::TransferDirection* webDirection)
-{
-    if (direction == "in")
-        *webDirection = WebUSBDevice::TransferDirection::In;
-    else if (direction == "out")
-        *webDirection = WebUSBDevice::TransferDirection::Out;
-    else
-        return false;
-    return true;
-}
-
-String convertDirectionToEnum(const WebUSBDevice::TransferDirection& direction)
+String convertDirectionToEnum(const TransferDirection& direction)
 {
     switch (direction) {
-    case WebUSBDevice::TransferDirection::In:
+    case TransferDirection::INBOUND:
         return "in";
-    case WebUSBDevice::TransferDirection::Out:
+    case TransferDirection::OUTBOUND:
         return "out";
     default:
         ASSERT_NOT_REACHED();
@@ -38,14 +30,14 @@ String convertDirectionToEnum(const WebUSBDevice::TransferDirection& direction)
     }
 }
 
-String convertTypeToEnum(const WebUSBDeviceInfo::Endpoint::Type& type)
+String convertTypeToEnum(const EndpointType& type)
 {
     switch (type) {
-    case WebUSBDeviceInfo::Endpoint::Type::Bulk:
+    case EndpointType::BULK:
         return "bulk";
-    case WebUSBDeviceInfo::Endpoint::Type::Interrupt:
+    case EndpointType::INTERRUPT:
         return "interrupt";
-    case WebUSBDeviceInfo::Endpoint::Type::Isochronous:
+    case EndpointType::ISOCHRONOUS:
         return "isochronous";
     default:
         ASSERT_NOT_REACHED();
@@ -62,17 +54,14 @@ USBEndpoint* USBEndpoint::create(const USBAlternateInterface* alternate, size_t 
 
 USBEndpoint* USBEndpoint::create(const USBAlternateInterface* alternate, size_t endpointNumber, const String& direction, ExceptionState& exceptionState)
 {
-    WebUSBDevice::TransferDirection webDirection;
-    if (!convertDirectionFromEnum(direction, &webDirection)) {
-        exceptionState.throwRangeError("Invalid endpoint direction.");
-        return nullptr;
-    }
-    for (size_t i = 0; i < alternate->info().endpoints.size(); ++i) {
-        const WebUSBDeviceInfo::Endpoint& endpoint = alternate->info().endpoints[i];
-        if (endpoint.endpointNumber == endpointNumber && endpoint.direction == webDirection)
+    TransferDirection mojoDirection = direction == "in" ? TransferDirection::INBOUND : TransferDirection::OUTBOUND;
+    const auto& endpoints = alternate->info().endpoints;
+    for (size_t i = 0; i < endpoints.size(); ++i) {
+        const auto& endpoint = endpoints[i];
+        if (endpoint->endpoint_number == endpointNumber && endpoint->direction == mojoDirection)
             return USBEndpoint::create(alternate, i);
     }
-    exceptionState.throwRangeError("Invalid endpoint number.");
+    exceptionState.throwRangeError("No such endpoint exists in the given alternate interface.");
     return nullptr;
 }
 
@@ -84,16 +73,11 @@ USBEndpoint::USBEndpoint(const USBAlternateInterface* alternate, size_t endpoint
     ASSERT(m_endpointIndex < m_alternate->info().endpoints.size());
 }
 
-const WebUSBDeviceInfo::Endpoint& USBEndpoint::info() const
+const device::usb::wtf::EndpointInfo& USBEndpoint::info() const
 {
-    const WebUSBDeviceInfo::AlternateInterface& alternateInfo = m_alternate->info();
+    const device::usb::wtf::AlternateInterfaceInfo& alternateInfo = m_alternate->info();
     ASSERT(m_endpointIndex < alternateInfo.endpoints.size());
-    return alternateInfo.endpoints[m_endpointIndex];
-}
-
-uint8_t USBEndpoint::endpointNumber() const
-{
-    return info().endpointNumber;
+    return *alternateInfo.endpoints[m_endpointIndex];
 }
 
 String USBEndpoint::direction() const
@@ -104,11 +88,6 @@ String USBEndpoint::direction() const
 String USBEndpoint::type() const
 {
     return convertTypeToEnum(info().type);
-}
-
-unsigned USBEndpoint::packetSize() const
-{
-    return info().packetSize;
 }
 
 DEFINE_TRACE(USBEndpoint)

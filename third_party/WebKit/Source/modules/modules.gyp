@@ -40,6 +40,7 @@
     'target_name': 'modules',
     'dependencies': [
       '<(DEPTH)/device/battery/battery.gyp:device_battery_mojo_bindings',
+      '<(DEPTH)/device/usb/usb.gyp:device_usb_mojo_bindings_for_blink',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
       '<(DEPTH)/third_party/icu/icu.gyp:icui18n',

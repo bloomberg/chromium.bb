@@ -166,7 +166,6 @@
 #include "modules/screen_orientation/ScreenOrientationController.h"
 #include "modules/vr/VRController.h"
 #include "modules/wake_lock/ScreenWakeLock.h"
-#include "modules/webusb/USBController.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
@@ -1477,10 +1476,6 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
     provideIndexedDBClientTo(*m_frame, IndexedDBClientImpl::create());
     provideLocalFileSystemTo(*m_frame, LocalFileSystemClient::create());
     provideNavigatorContentUtilsTo(*m_frame, NavigatorContentUtilsClientImpl::create(this));
-
-    // Always provided so that availability of the API can be controlled by
-    // OriginTrials::webUSBEnabled().
-    USBController::provideTo(*m_frame, m_client ? m_client->usbClient() : nullptr);
 
     bool enableWebBluetooth = RuntimeEnabledFeatures::webBluetoothEnabled();
 #if OS(CHROMEOS) || OS(ANDROID)

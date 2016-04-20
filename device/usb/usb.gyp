@@ -5,6 +5,11 @@
 {
   'variables': {
     'chromium_code': 1,
+    'mojom_files': [
+      'public/interfaces/chooser_service.mojom',
+      'public/interfaces/device.mojom',
+      'public/interfaces/device_manager.mojom',
+    ],
   },
   'targets': [
     {
@@ -141,11 +146,19 @@
     {
       'target_name': 'device_usb_mojo_bindings',
       'type': 'static_library',
-      'sources': [
-        'public/interfaces/chooser_service.mojom',
-        'public/interfaces/device.mojom',
-        'public/interfaces/device_manager.mojom',
+      'sources': [ '<@(mojom_files)' ],
+      'includes': [
+        '../../mojo/mojom_bindings_generator.gypi',
       ],
+    },
+    {
+      'target_name': 'device_usb_mojo_bindings_for_blink',
+      'type': 'static_library',
+      'sources': [ '<@(mojom_files)' ],
+      'variables': {
+        'mojom_variant': 'wtf',
+        'for_blink': 'true',
+      },
       'includes': [
         '../../mojo/mojom_bindings_generator.gypi',
       ],

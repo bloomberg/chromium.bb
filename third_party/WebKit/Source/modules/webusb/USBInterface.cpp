@@ -5,6 +5,7 @@
 #include "modules/webusb/USBInterface.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "device/usb/public/interfaces/device.mojom-wtf.h"
 #include "modules/webusb/USBAlternateInterface.h"
 #include "modules/webusb/USBConfiguration.h"
 #include "modules/webusb/USBDevice.h"
@@ -20,7 +21,7 @@ USBInterface* USBInterface::create(const USBConfiguration* configuration, size_t
 {
     const auto& interfaces = configuration->info().interfaces;
     for (size_t i = 0; i < interfaces.size(); ++i) {
-        if (interfaces[i].interfaceNumber == interfaceNumber)
+        if (interfaces[i]->interface_number == interfaceNumber)
             return new USBInterface(configuration->device(), configuration->index(), i);
     }
     exceptionState.throwRangeError("Invalid interface index.");
@@ -33,12 +34,12 @@ USBInterface::USBInterface(const USBDevice* device, size_t configurationIndex, s
     , m_interfaceIndex(interfaceIndex)
 {
     ASSERT(m_configurationIndex < m_device->info().configurations.size());
-    ASSERT(m_interfaceIndex < m_device->info().configurations[m_configurationIndex].interfaces.size());
+    ASSERT(m_interfaceIndex < m_device->info().configurations[m_configurationIndex]->interfaces.size());
 }
 
-const WebUSBDeviceInfo::Interface& USBInterface::info() const
+const device::usb::wtf::InterfaceInfo& USBInterface::info() const
 {
-    return m_device->info().configurations[m_configurationIndex].interfaces[m_interfaceIndex];
+    return *m_device->info().configurations[m_configurationIndex]->interfaces[m_interfaceIndex];
 }
 
 USBAlternateInterface* USBInterface::alternate() const
@@ -54,11 +55,6 @@ HeapVector<Member<USBAlternateInterface>> USBInterface::alternates() const
     for (size_t i = 0; i < info().alternates.size(); ++i)
         alternates.append(USBAlternateInterface::create(this, i));
     return alternates;
-}
-
-uint8_t USBInterface::interfaceNumber() const
-{
-    return info().interfaceNumber;
 }
 
 bool USBInterface::claimed() const

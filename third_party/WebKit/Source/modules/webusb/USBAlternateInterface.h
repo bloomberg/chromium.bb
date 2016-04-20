@@ -6,8 +6,8 @@
 #define USBAlternateInterface_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "device/usb/public/interfaces/device.mojom-wtf.h"
 #include "platform/heap/Heap.h"
-#include "public/platform/modules/webusb/WebUSBDeviceInfo.h"
 
 namespace blink {
 
@@ -25,13 +25,13 @@ public:
 
     USBAlternateInterface(const USBInterface*, size_t alternateIndex);
 
-    const WebUSBDeviceInfo::AlternateInterface& info() const;
+    const device::usb::wtf::AlternateInterfaceInfo& info() const;
 
-    uint8_t alternateSetting() const;
-    uint8_t interfaceClass() const;
-    uint8_t interfaceSubclass() const;
-    uint8_t interfaceProtocol() const;
-    String interfaceName() const;
+    uint8_t alternateSetting() const { return info().alternate_setting; }
+    uint8_t interfaceClass() const { return info().class_code; }
+    uint8_t interfaceSubclass() const { return info().subclass_code; }
+    uint8_t interfaceProtocol() const { return info().protocol_code; }
+    String interfaceName() const { return info().interface_name; }
     HeapVector<Member<USBEndpoint>> endpoints() const;
 
     DECLARE_TRACE();

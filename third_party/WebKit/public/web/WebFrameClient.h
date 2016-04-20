@@ -97,7 +97,6 @@ class WebScreenOrientationClient;
 class WebString;
 class WebURL;
 class WebURLResponse;
-class WebUSBClient;
 class WebUserMediaClient;
 class WebVRClient;
 class WebWorkerContentSettingsClientProxy;
@@ -709,9 +708,6 @@ public:
 
     // Bluetooth -----------------------------------------------------------
     virtual WebBluetooth* bluetooth() { return 0; }
-
-    // WebUSB --------------------------------------------------------------
-    virtual WebUSBClient* usbClient() { return nullptr; }
 
 
     // Audio Output Devices API --------------------------------------------

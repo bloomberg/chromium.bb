@@ -6,9 +6,7 @@
 #define USBOutTransferResult_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/DOMArrayBuffer.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/webusb/WebUSBTransferInfo.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

@@ -4,10 +4,12 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
+mojom_files = [
+  "chooser_service.mojom",
+  "device.mojom",
+  "device_manager.mojom",
+]
+
 mojom("interfaces") {
-  sources = [
-    "chooser_service.mojom",
-    "device.mojom",
-    "device_manager.mojom",
-  ]
+  sources = mojom_files
 }
