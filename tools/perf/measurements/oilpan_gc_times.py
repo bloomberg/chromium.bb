@@ -4,7 +4,6 @@
 
 import os
 
-from telemetry.page import action_runner
 from telemetry.page import page_test
 from telemetry.timeline.model import TimelineModel
 from telemetry.timeline import tracing_config
@@ -164,8 +163,7 @@ class OilpanGCTimesForSmoothness(_OilpanGCTimesBase):
     self._interaction = None
 
   def DidNavigateToPage(self, page, tab):
-    runner = action_runner.ActionRunner(tab)
-    self._interaction = runner.CreateInteraction(_RUN_SMOOTH_ACTIONS)
+    self._interaction = tab.action_runner.CreateInteraction(_RUN_SMOOTH_ACTIONS)
     self._interaction.Begin()
 
   def ValidateAndMeasurePage(self, page, tab, results):

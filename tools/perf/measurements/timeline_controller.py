@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import action_runner
 from telemetry.page import page_test
 from telemetry.timeline.model import TimelineModel
 from telemetry.timeline import tracing_config
@@ -43,9 +42,8 @@ class TimelineController(object):
 
   def Start(self, tab):
     # Start the smooth marker for all actions.
-    runner = action_runner.ActionRunner(tab)
     if self._enable_auto_issuing_record:
-      self._interaction = runner.CreateInteraction(
+      self._interaction = tab.action_runner.CreateInteraction(
           RUN_SMOOTH_ACTIONS)
       self._interaction.Begin()
 

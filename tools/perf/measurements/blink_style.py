@@ -6,7 +6,6 @@ from collections import defaultdict
 from itertools import starmap
 from telemetry.core import exceptions
 from telemetry.core import util
-from telemetry.page import action_runner
 from telemetry.page import page_test
 from telemetry.value import scalar
 
@@ -30,8 +29,7 @@ class BlinkStyle(page_test.PageTest):
       self._controller.CleanUp(platform)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    runner = action_runner.ActionRunner(tab)
-    with runner.CreateInteraction('wait-for-quiescence'):
+    with tab.action_runner.CreateInteraction('wait-for-quiescence'):
       tab.ExecuteJavaScript('console.time("");')
       try:
         util.WaitFor(tab.HasReachedQuiescence, 15)
