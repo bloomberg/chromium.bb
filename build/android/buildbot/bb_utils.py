@@ -96,6 +96,9 @@ def RunSteps(steps, step_cmds, options):
     print >> sys.stderr, 'FATAL: Unknown steps %s' % list(unknown_steps)
     sys.exit(1)
 
+  exit_code = 0
   for step, cmd in step_cmds:
     if step in steps:
-      cmd(options)
+      exit_code = cmd(options) or exit_code
+
+  return exit_code

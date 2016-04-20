@@ -498,51 +498,54 @@ def RunWebkitTests(options):
 
 
 def RunGPUTests(options):
+  exit_code = 0
   revision = _GetRevision(options)
   builder_name = options.build_properties.get('buildername', 'noname')
 
   bb_annotations.PrintNamedStep('pixel_tests')
-  RunCmd(['content/test/gpu/run_gpu_test.py',
-          'pixel', '-v',
-          '--browser',
-          'android-content-shell',
-          '--build-revision',
-          str(revision),
-          '--upload-refimg-to-cloud-storage',
-          '--refimg-cloud-storage-bucket',
-          'chromium-gpu-archive/reference-images',
-          '--os-type',
-          'android',
-          '--test-machine-name',
-          EscapeBuilderName(builder_name),
-          '--android-blacklist-file',
-          'out/bad_devices.json'])
+  exit_code = RunCmd(['content/test/gpu/run_gpu_test.py',
+                      'pixel', '-v',
+                      '--browser',
+                      'android-content-shell',
+                      '--build-revision',
+                      str(revision),
+                      '--upload-refimg-to-cloud-storage',
+                      '--refimg-cloud-storage-bucket',
+                      'chromium-gpu-archive/reference-images',
+                      '--os-type',
+                      'android',
+                      '--test-machine-name',
+                      EscapeBuilderName(builder_name),
+                      '--android-blacklist-file',
+                      'out/bad_devices.json']) or exit_code
 
   bb_annotations.PrintNamedStep('webgl_conformance_tests')
-  RunCmd(['content/test/gpu/run_gpu_test.py', '-v',
-          '--browser=android-content-shell', 'webgl_conformance',
-          '--webgl-conformance-version=1.0.1',
-          '--android-blacklist-file',
-          'out/bad_devices.json'])
+  exit_code = RunCmd(['content/test/gpu/run_gpu_test.py', '-v',
+                      '--browser=android-content-shell', 'webgl_conformance',
+                      '--webgl-conformance-version=1.0.1',
+                      '--android-blacklist-file',
+                      'out/bad_devices.json']) or exit_code
 
   bb_annotations.PrintNamedStep('android_webview_webgl_conformance_tests')
-  RunCmd(['content/test/gpu/run_gpu_test.py', '-v',
-          '--browser=android-webview-shell', 'webgl_conformance',
-          '--webgl-conformance-version=1.0.1',
-          '--android-blacklist-file',
-          'out/bad_devices.json'])
+  exit_code = RunCmd(['content/test/gpu/run_gpu_test.py', '-v',
+                      '--browser=android-webview-shell', 'webgl_conformance',
+                      '--webgl-conformance-version=1.0.1',
+                      '--android-blacklist-file',
+                      'out/bad_devices.json']) or exit_code
 
   bb_annotations.PrintNamedStep('gpu_rasterization_tests')
-  RunCmd(['content/test/gpu/run_gpu_test.py',
-          'gpu_rasterization', '-v',
-          '--browser',
-          'android-content-shell',
-          '--build-revision',
-          str(revision),
-          '--test-machine-name',
-          EscapeBuilderName(builder_name),
-          '--android-blacklist-file',
-          'out/bad_devices.json'])
+  exit_code = RunCmd(['content/test/gpu/run_gpu_test.py',
+                      'gpu_rasterization', '-v',
+                      '--browser',
+                      'android-content-shell',
+                      '--build-revision',
+                      str(revision),
+                      '--test-machine-name',
+                      EscapeBuilderName(builder_name),
+                      '--android-blacklist-file',
+                      'out/bad_devices.json']) or exit_code
+
+  return exit_code
 
 
 def RunPythonUnitTests(_options):
@@ -653,6 +656,7 @@ def GenerateTestReport(options):
 
 
 def MainTestWrapper(options):
+  exit_code = 0
   try:
     # Spawn logcat monitor
     SpawnLogcatMonitor()
@@ -667,7 +671,8 @@ def MainTestWrapper(options):
         InstallApk(options, install_obj, print_step=True)
 
     if options.test_filter:
-      bb_utils.RunSteps(options.test_filter, GetTestStepCmds(), options)
+      exit_code = bb_utils.RunSteps(
+          options.test_filter, GetTestStepCmds(), options) or exit_code
 
     if options.coverage_bucket:
       coverage_html = GenerateJavaCoverageReport(options)
@@ -676,7 +681,10 @@ def MainTestWrapper(options):
       shutil.rmtree(coverage_html, ignore_errors=True)
 
     if options.experimental:
-      RunTestSuites(options, gtest_config.EXPERIMENTAL_TEST_SUITES)
+      exit_code = RunTestSuites(
+          options, gtest_config.EXPERIMENTAL_TEST_SUITES) or exit_code
+
+    return exit_code
 
   finally:
     # Run all post test steps
@@ -768,7 +776,7 @@ def main(argv):
     setattr(options, 'coverage_dir',
             os.path.join(CHROME_OUT_DIR, options.target, 'coverage'))
 
-  MainTestWrapper(options)
+  return MainTestWrapper(options)
 
 
 if __name__ == '__main__':
