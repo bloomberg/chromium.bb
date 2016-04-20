@@ -161,10 +161,11 @@ void ChromeAutofillClient::ShowAutofillSettings() {
 
 void ChromeAutofillClient::ShowUnmaskPrompt(
     const CreditCard& card,
+    UnmaskCardReason reason,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
   unmask_controller_.ShowPrompt(
       CreateCardUnmaskPromptView(&unmask_controller_, web_contents()),
-      card, delegate);
+      card, reason, delegate);
 }
 
 void ChromeAutofillClient::OnUnmaskVerificationResult(

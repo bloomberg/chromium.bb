@@ -87,6 +87,14 @@ class AutofillClient {
     NETWORK_ERROR,
   };
 
+  enum UnmaskCardReason {
+    // The card is being unmasked for PaymentRequest.
+    UNMASK_FOR_PAYMENT_REQUEST,
+
+    // The card is being unmasked for Autofill.
+    UNMASK_FOR_AUTOFILL,
+  };
+
   typedef base::Callback<void(RequestAutocompleteResult,
                               const base::string16&,
                               const FormStructure*)> ResultCallback;
@@ -124,6 +132,7 @@ class AutofillClient {
   // A user has attempted to use a masked card. Prompt them for further
   // information to proceed.
   virtual void ShowUnmaskPrompt(const CreditCard& card,
+                                UnmaskCardReason reason,
                                 base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
   virtual void OnUnmaskVerificationResult(PaymentsRpcResult result) = 0;
 

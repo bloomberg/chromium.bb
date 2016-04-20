@@ -98,8 +98,9 @@ public class CardUnmaskPrompt
     }
 
     public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
-            String instructions, int drawableId, boolean shouldRequestExpirationDate,
-            boolean canStoreLocally, boolean defaultToStoringLocally) {
+            String instructions, String confirmButtonLabel, int drawableId,
+            boolean shouldRequestExpirationDate, boolean canStoreLocally,
+            boolean defaultToStoringLocally) {
         mDelegate = delegate;
 
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -131,7 +132,7 @@ public class CardUnmaskPrompt
                 .setTitle(title)
                 .setView(v)
                 .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.autofill_card_unmask_confirm_button, null)
+                .setPositiveButton(confirmButtonLabel, null)
                 .create();
         mDialog.setOnDismissListener(this);
 

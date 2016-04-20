@@ -728,8 +728,8 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   // Add verify button.
   verifyButton_.reset(
       [[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
-  [verifyButton_ setTitle:l10n_util::GetNSStringWithFixup(
-                              IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON)];
+  [verifyButton_ setTitle:l10n_util::FixUpWindowsStyleLabel(
+      controller->GetOkButtonLabel())];
   [verifyButton_ setKeyEquivalent:kKeyEquivalentReturn];
   [verifyButton_ setTarget:self];
   [verifyButton_ setAction:@selector(onVerify:)];

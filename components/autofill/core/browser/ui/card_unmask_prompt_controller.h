@@ -26,6 +26,7 @@ class CardUnmaskPromptController {
   // State.
   virtual base::string16 GetWindowTitle() const = 0;
   virtual base::string16 GetInstructionsMessage() const = 0;
+  virtual base::string16 GetOkButtonLabel() const = 0;
   virtual int GetCvcImageRid() const = 0;
   virtual bool ShouldRequestExpirationDate() const = 0;
   virtual bool CanStoreLocally() const = 0;

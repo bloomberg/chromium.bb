@@ -50,6 +50,7 @@ void TestAutofillClient::ShowAutofillSettings() {
 
 void TestAutofillClient::ShowUnmaskPrompt(
     const CreditCard& card,
+    UnmaskCardReason reason,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
 }
 

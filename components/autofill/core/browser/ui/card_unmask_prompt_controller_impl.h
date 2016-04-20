@@ -30,6 +30,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   // Functions called by ChromeAutofillClient.
   void ShowPrompt(CardUnmaskPromptView* view,
                   const CreditCard& card,
+                  AutofillClient::UnmaskCardReason reason,
                   base::WeakPtr<CardUnmaskDelegate> delegate);
   // The CVC the user entered went through validation.
   void OnVerificationResult(AutofillClient::PaymentsRpcResult result);
@@ -43,6 +44,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   void NewCardLinkClicked() override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetInstructionsMessage() const override;
+  base::string16 GetOkButtonLabel() const override;
   int GetCvcImageRid() const override;
   bool ShouldRequestExpirationDate() const override;
   bool CanStoreLocally() const override;
@@ -65,6 +67,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   bool new_card_link_clicked_;
   bool is_off_the_record_;
   CreditCard card_;
+  AutofillClient::UnmaskCardReason reason_;
   base::WeakPtr<CardUnmaskDelegate> delegate_;
   CardUnmaskPromptView* card_unmask_view_;
 

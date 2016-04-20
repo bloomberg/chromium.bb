@@ -76,10 +76,11 @@ void AutofillClientIOS::ShowAutofillSettings() {
 
 void AutofillClientIOS::ShowUnmaskPrompt(
     const CreditCard& card,
+    UnmaskCardReason reason,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
   ios::ChromeBrowserProvider* provider = ios::GetChromeBrowserProvider();
   unmask_controller_.ShowPrompt(
-      provider->CreateCardUnmaskPromptView(&unmask_controller_), card,
+      provider->CreateCardUnmaskPromptView(&unmask_controller_), card, reason,
       delegate);
 }
 

@@ -42,6 +42,7 @@ CardUnmaskPromptControllerImpl::~CardUnmaskPromptControllerImpl() {
 void CardUnmaskPromptControllerImpl::ShowPrompt(
     CardUnmaskPromptView* card_unmask_view,
     const CreditCard& card,
+    AutofillClient::UnmaskCardReason reason,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
   if (card_unmask_view_)
     card_unmask_view_->ControllerGone();
@@ -51,6 +52,7 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
   pending_response_ = CardUnmaskDelegate::UnmaskResponse();
   card_unmask_view_ = card_unmask_view;
   card_ = card;
+  reason_ = reason;
   delegate_ = delegate;
   card_unmask_view_->Show();
   unmasking_result_ = AutofillClient::NONE;
@@ -218,14 +220,25 @@ base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
   // unnecessary.
   return card_.TypeAndLastFourDigits();
 #else
-  int ids = ShouldRequestExpirationDate()
-      ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_UPDATE_TITLE
-      : IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE;
+  int ids;
+  if (reason_ == AutofillClient::UNMASK_FOR_PAYMENT_REQUEST)
+    ids = IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_TITLE;
+  else if (ShouldRequestExpirationDate())
+    ids = IDS_AUTOFILL_CARD_UNMASK_PROMPT_UPDATE_TITLE;
+  else
+    ids = IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE;
   return l10n_util::GetStringFUTF16(ids, card_.TypeAndLastFourDigits());
 #endif
 }
 
 base::string16 CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
+  if (reason_ == AutofillClient::UNMASK_FOR_PAYMENT_REQUEST) {
+    return l10n_util::GetStringUTF16(
+        card_.type() == kAmericanExpressCard
+            ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS_AMEX
+            : IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS);
+  }
+
   if (ShouldRequestExpirationDate()) {
     return l10n_util::GetStringUTF16(
         card_.type() == kAmericanExpressCard
@@ -237,6 +250,13 @@ base::string16 CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
       card_.type() == kAmericanExpressCard
           ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_AMEX
           : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS);
+}
+
+base::string16 CardUnmaskPromptControllerImpl::GetOkButtonLabel() const {
+  return l10n_util::GetStringUTF16(
+      reason_ == AutofillClient::UNMASK_FOR_PAYMENT_REQUEST
+          ? IDS_AUTOFILL_CARD_UNMASK_CONTINUE_BUTTON
+          : IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON);
 }
 
 int CardUnmaskPromptControllerImpl::GetCvcImageRid() const {
@@ -252,6 +272,8 @@ bool CardUnmaskPromptControllerImpl::ShouldRequestExpirationDate() const {
 bool CardUnmaskPromptControllerImpl::CanStoreLocally() const {
   // Never offer to save for incognito.
   if (is_off_the_record_)
+    return false;
+  if (reason_ == AutofillClient::UNMASK_FOR_PAYMENT_REQUEST)
     return false;
   return OfferStoreUnmaskedCards();
 }

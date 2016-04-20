@@ -41,9 +41,13 @@ void CardUnmaskPromptViewAndroid::Show() {
   ScopedJavaLocalRef<jstring> instructions =
       base::android::ConvertUTF16ToJavaString(
           env, controller_->GetInstructionsMessage());
+
+  ScopedJavaLocalRef<jstring> confirm = base::android::ConvertUTF16ToJavaString(
+      env, controller_->GetOkButtonLabel());
+
   java_object_.Reset(Java_CardUnmaskBridge_create(
       env, reinterpret_cast<intptr_t>(this), dialog_title.obj(),
-      instructions.obj(),
+      instructions.obj(), confirm.obj(),
       ResourceMapper::MapFromChromiumId(controller_->GetCvcImageRid()),
       controller_->ShouldRequestExpirationDate(),
       controller_->CanStoreLocally(),

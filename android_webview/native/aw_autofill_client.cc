@@ -217,6 +217,7 @@ void AwAutofillClient::ShowAutofillSettings() {
 
 void AwAutofillClient::ShowUnmaskPrompt(
     const autofill::CreditCard& card,
+    UnmaskCardReason reason,
     base::WeakPtr<autofill::CardUnmaskDelegate> delegate) {
   NOTIMPLEMENTED();
 }

@@ -99,12 +99,14 @@ class CardUnmaskPromptControllerImplTest : public testing::Test {
   void ShowPrompt() {
     controller_->ShowPrompt(test_unmask_prompt_view_.get(),
                             test::GetMaskedServerCard(),
+                            AutofillClient::UNMASK_FOR_AUTOFILL,
                             delegate_->GetWeakPtr());
   }
 
   void ShowPromptAmex() {
     controller_->ShowPrompt(test_unmask_prompt_view_.get(),
                             test::GetMaskedServerCardAmex(),
+                            AutofillClient::UNMASK_FOR_AUTOFILL,
                             delegate_->GetWeakPtr());
   }
 

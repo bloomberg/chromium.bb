@@ -613,6 +613,7 @@ void AutofillManager::FillOrPreviewCreditCardForm(
       unmasking_field_ = field;
       payments_client_->Prepare();
       client_->ShowUnmaskPrompt(unmask_request_.card,
+                                AutofillClient::UNMASK_FOR_AUTOFILL,
                                 weak_ptr_factory_.GetWeakPtr());
       client_->LoadRiskData(base::Bind(&AutofillManager::OnDidGetUnmaskRiskData,
                                        weak_ptr_factory_.GetWeakPtr()));

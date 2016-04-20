@@ -225,11 +225,20 @@
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_UPDATE_TITLE" desc="Title for the credit card unmasking dialog when the credit card is expired.">
     Update and verify your <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
   </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_TITLE" desc="Title for the dialog for unmasking a credit card and using this card to pay.">
+    Pay with <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
+  </message>
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS" desc="Text explaining what the user should do in the card unmasking dialog.">
     Enter the 3-digit CVC from the back of your card
   </message>
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_AMEX" desc="Text explaining what the user should do in the card unmasking dialog for amex cards.">
     Enter the 4-digit CVC from the front of your card
+  </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS" desc="Text explaining what the user should do in the dialog for unmasking a credit card and paying with this card.">
+    Enter the 3-digit CVC from the back of your card for verification
+  </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS_AMEX" desc="Text explaining what the user should do in the dialog for unmasking an amex card and paying with this card.">
+    Enter the 4-digit CVC from the front of your card for verification
   </message>
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED" desc="Text explaining what the user should do in the card unmasking dialog to update an expired card.">
     Enter the expiration date and 3-digit CVC from the back of your card
@@ -264,8 +273,11 @@
       </message>
     </if>
   </if>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON" desc="Text for button that confirms the credit card CVC entry dialog." formatter_data="android_java">
+  <message name="IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON" desc="Text for button that confirms the credit card CVC entry dialog.">
     Verify
+  </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_CONTINUE_BUTTON" desc="Text for button that confirms the credit card CVC entry dialog and initiates payment.">
+    Continue
   </message>
   <message name="IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS" desc="Message displayed while credit card is being verified." formatter_data="android_java">
     Verifying card
