@@ -1,0 +1,83 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+function testFunction()
+{
+    function foo()
+    {
+        try {
+            throw new Error();
+        } catch (e) {
+        }
+    }
+    debugger;
+    foo();
+    console.log("completed");
+}
+</script>
+<script>
+function test()
+{
+    InspectorTest.sendCommandOrDie("Debugger.enable", {} );
+    InspectorTest.sendCommandOrDie("Console.enable", {} );
+    step1();
+
+    function step1()
+    {
+        InspectorTest.sendCommandOrDie("Runtime.evaluate", { "expression": "setTimeout(testFunction, 0);"} );
+        var commands = [ "Print", "stepOver", "stepOver", "Print", "resume" ];
+        InspectorTest.eventHandler["Debugger.paused"] = function(messageObject)
+        {
+            var command = commands.shift();
+            if (command === "Print") {
+                var callFrames = messageObject.params.callFrames;
+                for (var callFrame of callFrames)
+                    InspectorTest.log(callFrame.functionName + ":" + callFrame.location.lineNumber);
+                command = commands.shift();
+            }
+            if (command)
+                InspectorTest.sendCommandOrDie("Debugger." + command, {});
+        }
+
+        InspectorTest.eventHandler["Console.messageAdded"] = function(messageObject)
+        {
+            if (messageObject.params.message.text === "completed") {
+                if (commands.length)
+                    InspectorTest.log("[FAIL]: execution was resumed too earlier.")
+                step2();
+            }
+        }
+    }
+
+    function step2()
+    {
+        InspectorTest.sendCommandOrDie("Runtime.evaluate", { "expression": "setTimeout(testFunction, 0);"} );
+        var commands = [ "Print", "stepOver", "stepInto", "stepOver", "stepOver", "Print", "resume" ];
+        InspectorTest.eventHandler["Debugger.paused"] = function(messageObject)
+        {
+            var command = commands.shift();
+            if (command === "Print") {
+                var callFrames = messageObject.params.callFrames;
+                for (var callFrame of callFrames)
+                    InspectorTest.log(callFrame.functionName + ":" + callFrame.location.lineNumber);
+                command = commands.shift();
+            }
+            if (command)
+                InspectorTest.sendCommandOrDie("Debugger." + command, {});
+        }
+
+        InspectorTest.eventHandler["Console.messageAdded"] = function(messageObject)
+        {
+            if (messageObject.params.message.text === "completed") {
+                if (commands.length)
+                    InspectorTest.log("[FAIL]: execution was resumed too earlier.")
+                InspectorTest.completeTest();
+            }
+        }
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();"></body>
+</html>
