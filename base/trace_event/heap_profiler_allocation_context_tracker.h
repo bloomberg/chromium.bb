@@ -53,10 +53,10 @@ class BASE_EXPORT AllocationContextTracker {
   static void SetCurrentThreadName(const char* name);
 
   // Pushes a frame onto the thread-local pseudo stack.
-  void PushPseudoStackFrame(const char* trace_event_name);
+  void PushPseudoStackFrame(StackFrame frame);
 
   // Pops a frame from the thread-local pseudo stack.
-  void PopPseudoStackFrame(const char* trace_event_name);
+  void PopPseudoStackFrame(StackFrame frame);
 
   // Push and pop current task's context. A stack is used to support nested
   // tasks and the top of the stack will be used in allocation context.
@@ -74,7 +74,7 @@ class BASE_EXPORT AllocationContextTracker {
   static subtle::Atomic32 capture_enabled_;
 
   // The pseudo stack where frames are |TRACE_EVENT| names.
-  std::vector<const char*> pseudo_stack_;
+  std::vector<StackFrame> pseudo_stack_;
 
   // The thread name is used as the first entry in the pseudo stack.
   const char* thread_name_;

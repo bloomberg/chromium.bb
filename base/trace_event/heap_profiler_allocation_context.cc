@@ -12,26 +12,26 @@
 namespace base {
 namespace trace_event {
 
-bool operator < (const StackFrame& lhs, const StackFrame& rhs) {
-  return lhs.value < rhs.value;
-}
+// Constructor that does not initialize members.
+AllocationContext::AllocationContext() {}
 
-bool operator == (const StackFrame& lhs, const StackFrame& rhs) {
-  return lhs.value == rhs.value;
-}
+// static
+AllocationContext AllocationContext::Empty() {
+  AllocationContext ctx;
 
-bool operator != (const StackFrame& lhs, const StackFrame& rhs) {
-  return !(lhs.value == rhs.value);
-}
+  for (size_t i = 0; i < arraysize(ctx.backtrace.frames); i++)
+    ctx.backtrace.frames[i] = nullptr;
 
-Backtrace::Backtrace(): frame_count(0) {}
+  ctx.type_name = nullptr;
+
+  return ctx;
+}
 
 bool operator==(const Backtrace& lhs, const Backtrace& rhs) {
-  if (lhs.frame_count != rhs.frame_count) return false;
-  return std::equal(lhs.frames, lhs.frames + lhs.frame_count, rhs.frames);
+  // Pointer equality of the stack frames is assumed, so instead of doing a deep
+  // string comparison on all of the frames, a |memcmp| suffices.
+  return std::memcmp(lhs.frames, rhs.frames, sizeof(lhs.frames)) == 0;
 }
-
-AllocationContext::AllocationContext(): type_name(nullptr) {}
 
 bool operator==(const AllocationContext& lhs, const AllocationContext& rhs) {
   return (lhs.backtrace == rhs.backtrace) && (lhs.type_name == rhs.type_name);
@@ -43,19 +43,10 @@ bool operator==(const AllocationContext& lhs, const AllocationContext& rhs) {
 namespace BASE_HASH_NAMESPACE {
 using base::trace_event::AllocationContext;
 using base::trace_event::Backtrace;
-using base::trace_event::StackFrame;
-
-size_t hash<StackFrame>::operator()(const StackFrame& frame) const {
-  return hash<const void*>()(frame.value);
-}
 
 size_t hash<Backtrace>::operator()(const Backtrace& backtrace) const {
-  const void* values[Backtrace::kMaxFrameCount];
-  for (size_t i = 0; i != backtrace.frame_count; ++i) {
-    values[i] = backtrace.frames[i].value;
-  }
-  return base::SuperFastHash(reinterpret_cast<const char*>(values),
-                             backtrace.frame_count * sizeof(*values));
+  return base::SuperFastHash(reinterpret_cast<const char*>(backtrace.frames),
+                             sizeof(backtrace.frames));
 }
 
 size_t hash<AllocationContext>::operator()(const AllocationContext& ctx) const {

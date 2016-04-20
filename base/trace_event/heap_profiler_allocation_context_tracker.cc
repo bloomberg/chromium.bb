@@ -75,18 +75,17 @@ void AllocationContextTracker::SetCaptureEnabled(bool enabled) {
   subtle::Release_Store(&capture_enabled_, enabled);
 }
 
-void AllocationContextTracker::PushPseudoStackFrame(
-    const char* trace_event_name) {
+void AllocationContextTracker::PushPseudoStackFrame(StackFrame frame) {
   // Impose a limit on the height to verify that every push is popped, because
   // in practice the pseudo stack never grows higher than ~20 frames.
   if (pseudo_stack_.size() < kMaxStackDepth)
-    pseudo_stack_.push_back(trace_event_name);
+    pseudo_stack_.push_back(frame);
   else
     NOTREACHED();
 }
 
-void AllocationContextTracker::PopPseudoStackFrame(
-    const char* trace_event_name) {
+// static
+void AllocationContextTracker::PopPseudoStackFrame(StackFrame frame) {
   // Guard for stack underflow. If tracing was started with a TRACE_EVENT in
   // scope, the frame was never pushed, so it is possible that pop is called
   // on an empty stack.
@@ -96,7 +95,7 @@ void AllocationContextTracker::PopPseudoStackFrame(
   // Assert that pushes and pops are nested correctly. This DCHECK can be
   // hit if some TRACE_EVENT macro is unbalanced (a TRACE_EVENT_END* call
   // without a corresponding TRACE_EVENT_BEGIN).
-  DCHECK_EQ(trace_event_name, pseudo_stack_.back())
+  DCHECK_EQ(frame, pseudo_stack_.back())
       << "Encountered an unmatched TRACE_EVENT_END";
 
   pseudo_stack_.pop_back();
@@ -122,22 +121,25 @@ AllocationContext AllocationContextTracker::GetContextSnapshot() {
 
   // Fill the backtrace.
   {
-    auto backtrace = std::begin(ctx.backtrace.frames);
-    auto backtrace_end = std::end(ctx.backtrace.frames);
+    auto src = pseudo_stack_.begin();
+    auto dst = std::begin(ctx.backtrace.frames);
+    auto src_end = pseudo_stack_.end();
+    auto dst_end = std::end(ctx.backtrace.frames);
 
-    // Add the thread name as the first entry
+    // Add the thread name as the first enrty in the backtrace.
     if (thread_name_) {
-      *backtrace++ = StackFrame::FromThreadName(thread_name_);
+      DCHECK(dst < dst_end);
+      *dst = thread_name_;
+      ++dst;
     }
 
-    for (const char* event_name: pseudo_stack_) {
-      if (backtrace == backtrace_end) {
-        break;
-      }
-      *backtrace++ = StackFrame::FromTraceEventName(event_name);
-    }
+    // Copy as much of the bottom of the pseudo stack into the backtrace as
+    // possible.
+    for (; src != src_end && dst != dst_end; src++, dst++)
+      *dst = *src;
 
-    ctx.backtrace.frame_count = backtrace - std::begin(ctx.backtrace.frames);
+    // If there is room for more, fill the remaining slots with empty frames.
+    std::fill(dst, dst_end, nullptr);
   }
 
   // TODO(ssid): Fix crbug.com/594803 to add file name as 3rd dimension

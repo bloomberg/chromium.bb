@@ -57,7 +57,7 @@ size_t SumAllSizes(const AllocationRegister& reg) {
 
 TEST_F(AllocationRegisterTest, InsertRemove) {
   AllocationRegister reg;
-  AllocationContext ctx;
+  AllocationContext ctx = AllocationContext::Empty();
 
   // Zero-sized allocations should be discarded.
   reg.Insert(reinterpret_cast<void*>(1), 0, ctx);
@@ -91,7 +91,7 @@ TEST_F(AllocationRegisterTest, InsertRemove) {
 
 TEST_F(AllocationRegisterTest, DoubleFreeIsAllowed) {
   AllocationRegister reg;
-  AllocationContext ctx;
+  AllocationContext ctx = AllocationContext::Empty();
 
   reg.Insert(reinterpret_cast<void*>(1), 1, ctx);
   reg.Insert(reinterpret_cast<void*>(2), 1, ctx);
@@ -106,11 +106,9 @@ TEST_F(AllocationRegisterTest, DoubleInsertOverwrites) {
   // TODO(ruuda): Although double insert happens in practice, it should not.
   // Find out the cause and ban double insert if possible.
   AllocationRegister reg;
-  AllocationContext ctx;
-  StackFrame frame1 = StackFrame::FromTraceEventName("Foo");
-  StackFrame frame2 = StackFrame::FromTraceEventName("Bar");
-
-  ctx.backtrace.frame_count = 1;
+  AllocationContext ctx = AllocationContext::Empty();
+  StackFrame frame1 = "Foo";
+  StackFrame frame2 = "Bar";
 
   ctx.backtrace.frames[0] = frame1;
   reg.Insert(reinterpret_cast<void*>(1), 11, ctx);
@@ -140,7 +138,7 @@ TEST_F(AllocationRegisterTest, DoubleInsertOverwrites) {
 TEST_F(AllocationRegisterTest, InsertRemoveCollisions) {
   size_t expected_sum = 0;
   AllocationRegister reg;
-  AllocationContext ctx;
+  AllocationContext ctx = AllocationContext::Empty();
 
   // By inserting 100 more entries than the number of buckets, there will be at
   // least 100 collisions.
@@ -177,7 +175,7 @@ TEST_F(AllocationRegisterTest, InsertRemoveCollisions) {
 TEST_F(AllocationRegisterTest, InsertRemoveRandomOrder) {
   size_t expected_sum = 0;
   AllocationRegister reg;
-  AllocationContext ctx;
+  AllocationContext ctx = AllocationContext::Empty();
 
   uintptr_t generator = 3;
   uintptr_t prime = 1013;
@@ -218,7 +216,7 @@ TEST_F(AllocationRegisterTest, ChangeContextAfterInsertion) {
   using Allocation = AllocationRegister::Allocation;
   const char kStdString[] = "std::string";
   AllocationRegister reg;
-  AllocationContext ctx;
+  AllocationContext ctx = AllocationContext::Empty();
 
   reg.Insert(reinterpret_cast<void*>(17), 1, ctx);
   reg.Insert(reinterpret_cast<void*>(19), 2, ctx);
@@ -266,7 +264,7 @@ TEST_F(AllocationRegisterTest, ChangeContextAfterInsertion) {
 TEST_F(AllocationRegisterTest, OverflowDeathTest) {
   // Use a smaller register to prevent OOM errors on low-end devices.
   AllocationRegister reg(static_cast<uint32_t>(GetNumCellsPerPage()));
-  AllocationContext ctx;
+  AllocationContext ctx = AllocationContext::Empty();
   uintptr_t i;
 
   // Fill up all of the memory allocated for the register. |GetNumCells(reg)|
