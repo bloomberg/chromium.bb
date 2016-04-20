@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build_overrides/gtest.gni")
+
 config("gtest_config") {
   visibility = [
     ":*",
@@ -91,9 +93,6 @@ static_library("gtest") {
     "include/gtest/internal/gtest-type-util.h",
 
     #"gtest/src/gtest-all.cc",  # Not needed by our build.
-    "../multiprocess_func_list.cc",
-    "../multiprocess_func_list.h",
-    "../platform_test.h",
     "src/gtest-death-test.cc",
     "src/gtest-filepath.cc",
     "src/gtest-internal-inl.h",
@@ -104,6 +103,17 @@ static_library("gtest") {
     "src/gtest.cc",
   ]
 
+  if (gtest_include_multiprocess) {
+    sources += [
+      "../multiprocess_func_list.cc",
+      "../multiprocess_func_list.h",
+    ]
+  }
+
+  if (gtest_include_platform_test) {
+    sources += [ "../platform_test.h" ]
+  }
+
   if (is_mac || is_ios) {
     if (is_ios) {
       set_sources_assignment_filter([])
@@ -111,8 +121,10 @@ static_library("gtest") {
     sources += [
       "../gtest_mac.h",
       "../gtest_mac.mm",
-      "../platform_test_mac.mm",
     ]
+    if (gtest_include_platform_test) {
+      sources += [ "../platform_test_mac.mm" ]
+    }
     set_sources_assignment_filter(sources_assignment_filter)
   }
 
