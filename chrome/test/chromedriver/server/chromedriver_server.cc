@@ -77,11 +77,14 @@ class HttpServer : public net::HttpServer::Delegate {
     std::unique_ptr<net::ServerSocket> server_socket(
         new net::TCPServerSocket(NULL, net::NetLog::Source()));
     if (ListenOnIPv4(server_socket.get(), port, allow_remote) != net::OK) {
-      // If we fail to listen on IPv4, try using an IPv6 address. This will work
-      // on an IPv6-only host, but we will be IPv4-only on dual-stack hosts.
+      // This will work on an IPv6-only host, but we will be IPv4-only on
+      // dual-stack hosts.
       // TODO(samuong): change this to listen on both IPv4 and IPv6.
-      if (ListenOnIPv6(server_socket.get(), port, allow_remote) != net::OK)
+      VLOG(0) << "listen on IPv4 failed, trying IPv6";
+      if (ListenOnIPv6(server_socket.get(), port, allow_remote) != net::OK) {
+        VLOG(1) << "listen on both IPv4 and IPv6 failed, giving up";
         return false;
+      }
     }
     server_.reset(new net::HttpServer(std::move(server_socket), this));
     net::IPEndPoint address;

@@ -14,10 +14,12 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/json/json_writer.h"
 #include "base/rand_util.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
@@ -75,9 +77,17 @@ void WebSocket::Connect(const net::CompletionCallback& callback) {
   uint16_t port = static_cast<uint16_t>(url_.EffectiveIntPort());
   if (ParseURLHostnameToAddress(url_.host(), &address)) {
     addresses = net::AddressList::CreateFromIPAddress(address, port);
-  } else if (!ResolveHost(url_.HostNoBrackets(), port, &addresses)) {
-    callback.Run(net::ERR_ADDRESS_UNREACHABLE);
-    return;
+  } else {
+    if (!ResolveHost(url_.HostNoBrackets(), port, &addresses)) {
+      callback.Run(net::ERR_ADDRESS_UNREACHABLE);
+      return;
+    }
+    base::ListValue endpoints;
+    for (auto endpoint : addresses)
+      endpoints.AppendString(endpoint.ToStringWithoutPort());
+    std::string json;
+    CHECK(base::JSONWriter::Write(endpoints, &json));
+    VLOG(0) << "resolved " << url_.HostNoBrackets() << " to " << json;
   }
 
   net::NetLog::Source source;
@@ -116,6 +126,8 @@ bool WebSocket::Send(const std::string& message) {
 
 void WebSocket::OnSocketConnect(int code) {
   if (code != net::OK) {
+    VLOG(1) << "failed to connect to " << url_.HostNoBrackets() << " (error "
+            << code << ")";
     Close(code);
     return;
   }
