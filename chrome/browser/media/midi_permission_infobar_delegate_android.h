@@ -33,7 +33,7 @@ class MidiPermissionInfoBarDelegateAndroid : public PermissionInfobarDelegate {
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
-  base::string16 GetMessageText() const override;
+  int GetMessageResourceId() const override;
 
   GURL requesting_frame_;
 

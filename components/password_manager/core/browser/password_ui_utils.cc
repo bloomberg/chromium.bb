@@ -52,8 +52,9 @@ std::string GetShownOriginAndLinkUrl(
 }
 
 std::string GetShownOrigin(const GURL& origin) {
-  std::string original = base::UTF16ToUTF8(
-      url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin));
+  std::string original =
+      base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
+          origin, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
   base::StringPiece result = original;
   for (base::StringPiece prefix : kRemovedPrefixes) {
     if (base::StartsWith(result, prefix,

@@ -7,9 +7,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
-#include "components/url_formatter/elide_url.h"
 #include "grit/theme_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 // static
 infobars::InfoBar* MidiPermissionInfoBarDelegateAndroid::Create(
@@ -42,9 +40,6 @@ int MidiPermissionInfoBarDelegateAndroid::GetIconId() const {
   return IDR_INFOBAR_MIDI;
 }
 
-base::string16 MidiPermissionInfoBarDelegateAndroid::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(
-      IDS_MIDI_SYSEX_INFOBAR_QUESTION,
-      url_formatter::FormatUrlForSecurityDisplay(
-          requesting_frame_.GetOrigin()));
+int MidiPermissionInfoBarDelegateAndroid::GetMessageResourceId() const {
+  return IDS_MIDI_SYSEX_INFOBAR_QUESTION;
 }

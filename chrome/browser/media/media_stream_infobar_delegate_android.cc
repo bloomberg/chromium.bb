@@ -108,13 +108,7 @@ MediaStreamInfoBarDelegateAndroid::AsMediaStreamInfoBarDelegateAndroid() {
 }
 
 base::string16 MediaStreamInfoBarDelegateAndroid::GetMessageText() const {
-  int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
-  if (!controller_->IsAskingForAudio())
-    message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
-  else if (!controller_->IsAskingForVideo())
-    message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
-  return l10n_util::GetStringFUTF16(
-      message_id, base::UTF8ToUTF16(controller_->GetSecurityOriginSpec()));
+  return controller_->GetMessageText();
 }
 
 base::string16 MediaStreamInfoBarDelegateAndroid::GetButtonLabel(
@@ -125,8 +119,7 @@ base::string16 MediaStreamInfoBarDelegateAndroid::GetButtonLabel(
 }
 
 bool MediaStreamInfoBarDelegateAndroid::Accept() {
-  GURL origin(controller_->GetSecurityOriginSpec());
-  if (content::IsOriginSecure(origin)) {
+  if (content::IsOriginSecure(controller_->GetOrigin())) {
     UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions", kAllowHttps,
                               kPermissionActionsMax);
   } else {

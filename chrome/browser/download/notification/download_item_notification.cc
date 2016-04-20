@@ -844,8 +844,8 @@ base::string16 DownloadItemNotification::GetStatusString() const {
     return GetWarningStatusString();
 
   // The hostname. (E.g.:"example.com" or "127.0.0.1")
-  base::string16 host_name =
-      url_formatter::FormatUrlForSecurityDisplayOmitScheme(item_->GetURL());
+  base::string16 host_name = url_formatter::FormatUrlForSecurityDisplay(
+      item_->GetURL(), url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
 
   DownloadItemModel model(item_);
   base::string16 sub_status_text;

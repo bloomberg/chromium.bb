@@ -48,6 +48,13 @@ base::string16 ElideHost(const GURL& host_url,
                          float available_pixel_width);
 #endif  // !defined(OS_ANDROID)
 
+enum class SchemeDisplay {
+  SHOW,
+  OMIT_HTTP_AND_HTTPS,
+  // Omit cryptographic (i.e. https and wss).
+  OMIT_CRYPTOGRAPHIC,
+};
+
 // This is a convenience function for formatting a URL in a concise and
 // human-friendly way, to help users make security-related decisions (or in
 // other circumstances when people need to distinguish sites, origins, or
@@ -62,18 +69,14 @@ base::string16 ElideHost(const GURL& host_url,
 //
 // Do not use this for URLs which will be parsed or sent to other applications.
 //
-// Generally, set prefer this function to
-// |FormatUrlForSecurityDisplayOmitScheme| unless there is plenty of indication
-// as to whether the origin is secure elsewhere in the UX. For example, in
-// Chrome's Origin Info Bubble, there are icons and strings indicating origin
-// (non-)security. But in the HTTP Basic Auth prompt (for example), the scheme
-// may be the only indicator.
-base::string16 FormatUrlForSecurityDisplay(const GURL& origin);
-
-// Just like |FormatUrlForSecurityDisplay|, but also:
-//
-// - Omits the scheme if SchemeIsHTTPOrHTTPS().
-base::string16 FormatUrlForSecurityDisplayOmitScheme(const GURL& origin);
+// Generally, prefer SchemeDisplay::SHOW to omitting the scheme unless there is
+// plenty of indication as to whether the origin is secure elsewhere in the UX.
+// For example, in Chrome's Origin Info Bubble, there are icons and strings
+// indicating origin (non-)security. But in the HTTP Basic Auth prompt (for
+// example), the scheme may be the only indicator.
+base::string16 FormatUrlForSecurityDisplay(
+    const GURL& origin,
+    const SchemeDisplay scheme_display = SchemeDisplay::SHOW);
 
 }  // namespace url_formatter
 

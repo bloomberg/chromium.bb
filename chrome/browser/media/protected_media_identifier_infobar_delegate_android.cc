@@ -9,7 +9,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
-#include "components/url_formatter/elide_url.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -47,11 +46,9 @@ int ProtectedMediaIdentifierInfoBarDelegateAndroid::GetIconId() const {
   return IDR_ANDROID_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
 }
 
-base::string16 ProtectedMediaIdentifierInfoBarDelegateAndroid::GetMessageText()
+int ProtectedMediaIdentifierInfoBarDelegateAndroid::GetMessageResourceId()
     const {
-  return l10n_util::GetStringFUTF16(
-      IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION,
-      url_formatter::FormatUrlForSecurityDisplay(requesting_frame_));
+  return IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION;
 }
 
 base::string16 ProtectedMediaIdentifierInfoBarDelegateAndroid::GetLinkText()

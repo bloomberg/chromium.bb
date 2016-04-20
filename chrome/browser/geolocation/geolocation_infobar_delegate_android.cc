@@ -8,9 +8,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
-#include "components/url_formatter/elide_url.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 // static
 infobars::InfoBar* GeolocationInfoBarDelegateAndroid::Create(
@@ -42,8 +40,6 @@ int GeolocationInfoBarDelegateAndroid::GetIconId() const {
   return IDR_ANDROID_INFOBAR_GEOLOCATION;
 }
 
-base::string16 GeolocationInfoBarDelegateAndroid::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(IDS_GEOLOCATION_INFOBAR_QUESTION,
-                                    url_formatter::FormatUrlForSecurityDisplay(
-                                        requesting_frame_));
+int GeolocationInfoBarDelegateAndroid::GetMessageResourceId() const {
+  return IDS_GEOLOCATION_INFOBAR_QUESTION;
 }

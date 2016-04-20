@@ -532,9 +532,9 @@ base::string16 NotificationView::FormatContextMessage(
     const GURL url = notification.origin_url();
     DCHECK(url.is_valid());
     return gfx::ElideText(
-        url_formatter::FormatUrlForSecurityDisplayOmitScheme(url),
-        views::Label().font_list(), kContextMessageViewWidth,
-        gfx::ELIDE_HEAD);
+        url_formatter::FormatUrlForSecurityDisplay(
+            url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS),
+        views::Label().font_list(), kContextMessageViewWidth, gfx::ELIDE_HEAD);
   }
 
   return gfx::TruncateString(notification.context_message(),

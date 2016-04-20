@@ -31,12 +31,15 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
                             const PermissionSetCallback& callback);
   ~PermissionInfobarDelegate() override;
 
+  virtual int GetMessageResourceId() const = 0;
+
  private:
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
   void InfoBarDismissed() override;
   PermissionInfobarDelegate* AsPermissionInfobarDelegate() override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
+  base::string16 GetMessageText() const override;
   bool Accept() override;
   bool Cancel() override;
 

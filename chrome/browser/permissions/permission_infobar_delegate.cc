@@ -7,6 +7,7 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
+#include "components/url_formatter/elide_url.h"
 #include "ui/base/l10n/l10n_util.h"
 
 PermissionInfobarDelegate::~PermissionInfobarDelegate() {
@@ -25,8 +26,16 @@ PermissionInfobarDelegate::PermissionInfobarDelegate(
       content_settings_type_(content_settings_type),
       callback_(callback) {}
 
-infobars::InfoBarDelegate::Type
-PermissionInfobarDelegate::GetInfoBarType() const {
+base::string16 PermissionInfobarDelegate::GetMessageText() const {
+  return l10n_util::GetStringFUTF16(
+      GetMessageResourceId(),
+      url_formatter::FormatUrlForSecurityDisplay(
+          requesting_origin_,
+          url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+}
+
+infobars::InfoBarDelegate::Type PermissionInfobarDelegate::GetInfoBarType()
+    const {
   return PAGE_ACTION_TYPE;
 }
 

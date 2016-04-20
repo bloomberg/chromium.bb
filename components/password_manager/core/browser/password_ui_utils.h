@@ -18,10 +18,10 @@ struct PasswordForm;
 namespace password_manager {
 
 // Returns a string suitable for security display to the user (just like
-// |FormatUrlForSecurityDisplayOmitScheme| based on origin of |password_form|
-// and without prefixes "m.", "mobile." or "www.". Also returns the full URL of
-// the origin as |link_url|. |link_url| will be also shown as tooltip on the
-// password page.
+// |FormatUrlForSecurityDisplay| with OMIT_HTTP_AND_HTTPS) based on origin of
+// |password_form| and without prefixes "m.", "mobile." or "www.". Also
+// returns the full URL of the origin as |link_url|. |link_url| will be also
+// shown as tooltip on the password page.
 // For Android forms with empty |password_form.affiliated_web_realm|,
 // returns the result of GetHumanReadableOriginForAndroidUri. For other Android
 // forms, returns |password_form.affiliated_web_realm|.
@@ -35,8 +35,8 @@ std::string GetShownOriginAndLinkUrl(
     bool* origin_is_clickable);
 
 // Returns a string suitable for security display to the user (just like
-// |FormatUrlForSecurityDisplayOmitScheme| based on origin of |password_form|)
-// and without prefixes "m.", "mobile." or "www.".
+// |FormatUrlForSecurityDisplay| with OMIT_HTTP_AND_HTTPS) based on origin of
+// |password_form|) and without prefixes "m.", "mobile." or "www.".
 std::string GetShownOrigin(const GURL& origin);
 
 }  // namespace password_manager

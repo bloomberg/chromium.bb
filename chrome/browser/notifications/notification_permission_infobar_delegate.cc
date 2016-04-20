@@ -8,9 +8,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
-#include "components/url_formatter/elide_url.h"
-#include "net/base/escape.h"
-#include "ui/base/l10n/l10n_util.h"
 
 // static
 infobars::InfoBar* NotificationPermissionInfobarDelegate::Create(
@@ -44,9 +41,6 @@ int NotificationPermissionInfobarDelegate::GetIconId() const {
   return IDR_ANDROID_INFOBAR_NOTIFICATIONS;
 }
 
-base::string16 NotificationPermissionInfobarDelegate::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(
-      IDS_NOTIFICATION_PERMISSIONS,
-      url_formatter::FormatUrlForSecurityDisplay(
-          requesting_frame_.GetOrigin()));
+int NotificationPermissionInfobarDelegate::GetMessageResourceId() const {
+  return IDS_NOTIFICATION_PERMISSIONS;
 }

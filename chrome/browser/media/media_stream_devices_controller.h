@@ -39,7 +39,6 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   bool IsAllowedForVideo() const;
   bool IsAskingForAudio() const;
   bool IsAskingForVideo() const;
-  const std::string& GetSecurityOriginSpec() const;
 
   // Forces the permissions to be denied (without being persisted) regardless
   // of what the previous state was.  If the user had previously allowed the
