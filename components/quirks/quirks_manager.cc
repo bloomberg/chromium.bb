@@ -126,9 +126,9 @@ void QuirksManager::OnLoginCompleted() {
     return;
 
   waiting_for_login_ = false;
-  if (!QuirksEnabled()) {
-    VLOG(1) << "Quirks Client disabled by device policy.";
-    return;
+  if (!clients_.empty() && !QuirksEnabled()) {
+    VLOG(2) << clients_.size() << " client(s) deleted.";
+    clients_.clear();
   }
 
   for (const scoped_ptr<QuirksClient>& client : clients_)
@@ -252,9 +252,16 @@ void QuirksManager::CreateClient(
 }
 
 bool QuirksManager::QuirksEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableQuirksClient) &&
-         delegate_->DevicePolicyEnabled();
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableQuirksClient)) {
+    VLOG(2) << "Quirks Client disabled by command line flag.";
+    return false;
+  }
+  if (!delegate_->DevicePolicyEnabled()) {
+    VLOG(2) << "Quirks Client disabled by device policy.";
+    return false;
+  }
+  return true;
 }
 
 void QuirksManager::SetLastServerCheck(int64_t product_id,

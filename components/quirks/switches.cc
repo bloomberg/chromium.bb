@@ -7,8 +7,8 @@
 namespace quirks {
 namespace switches {
 
-// Enable Quirks Client for handling display calibration information.
-const char kEnableQuirksClient[] = "enable-quirks-client";
+// Disable Quirks Client for handling display calibration information.
+const char kDisableQuirksClient[] = "disable-quirks-client";
 
 }  // namespace switches
 }  // namespace quirks

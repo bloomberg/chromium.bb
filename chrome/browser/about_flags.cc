@@ -827,9 +827,9 @@ const FeatureEntry kFeatureEntries[] = {
             ui::switches::kDisableDisplayColorCalibration),
     },
     {
-        "enable-quirks-client", IDS_FLAGS_ENABLE_QUIRKS_CLIENT_NAME,
-        IDS_FLAGS_ENABLE_QUIRKS_CLIENT_DESCRIPTION, kOsCrOS,
-        SINGLE_VALUE_TYPE(quirks::switches::kEnableQuirksClient),
+        "disable-quirks-client", IDS_FLAGS_DISABLE_QUIRKS_CLIENT_NAME,
+        IDS_FLAGS_DISABLE_QUIRKS_CLIENT_DESCRIPTION, kOsCrOS,
+        SINGLE_VALUE_TYPE(quirks::switches::kDisableQuirksClient),
     },
     {
         "ash-disable-screen-orientation-lock",

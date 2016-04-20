@@ -1254,11 +1254,11 @@ Press any key to continue exploring.
   <message name="IDS_FLAGS_DISPLAY_COLOR_CALIBRATION_DESCRIPTION" desc="Description for the flag for the color calibration of the display.">
     Allow color calibration of the display if the display supports the feature.
   </message>
-  <message name="IDS_FLAGS_ENABLE_QUIRKS_CLIENT_NAME" desc="Name for the flag to enable the Quirks Client for calibration of the display and other hardware.">
-    Enable Quirks Client for display calibration.
+  <message name="IDS_FLAGS_DISABLE_QUIRKS_CLIENT_NAME" desc="Name for the flag to disable the Quirks Client for calibration of the display and other hardware.">
+    Disable Quirks Client for display calibration.
   </message>
-  <message name="IDS_FLAGS_ENABLE_QUIRKS_CLIENT_DESCRIPTION" desc="Description for the flag to enable the Quirks Client for calibration of the display and other hardware.">
-    Enable retrieval of icc display files from Quirks Server for display color calibration.
+  <message name="IDS_FLAGS_DISABLE_QUIRKS_CLIENT_DESCRIPTION" desc="Description for the flag to disable the Quirks Client for calibration of the display and other hardware.">
+    Disable retrieval of icc display files from Quirks Server for display color calibration.
   </message>
   <message name="IDS_FLAGS_MEMORY_PRESSURE_THRESHOLD_NAME" desc="Name for the flag which specifies which memory pressure strategy should be used on ChromeOS.">
     Memory discard strategy for advanced pressure handling

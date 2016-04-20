@@ -12,7 +12,7 @@ namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
-QUIRKS_EXPORT extern const char kEnableQuirksClient[];
+QUIRKS_EXPORT extern const char kDisableQuirksClient[];
 
 }  // namespace switches
 }  // namespace quirks

@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/quirks/quirks_manager.h"
-#include "components/quirks/switches.h"
 #include "content/public/test/test_utils.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 
@@ -81,11 +79,6 @@ class QuirksBrowserTest : public InProcessBrowserTest {
     file_existed_ = !downloaded;
     ASSERT_TRUE(!end_message_loop_.is_null());
     end_message_loop_.Run();
-  }
-
-  // InProcessBrowserTest overrides.
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableQuirksClient);
   }
 
   void SetUpOnMainThread() override {
