@@ -248,8 +248,11 @@ size_t CalculatePositionsInFrame(
   // Material Design spec. It turns out this adjustment is equal to the single
   // pixel line width (so 1 on non-Retina, 0.5 on Retina). Make this adjustment
   // after computing decoration positions because the decorations are already
-  // correctly positioned.
+  // correctly positioned. The spec also calls for positioning the text 1pt to
+  // the right of its default position.
   if (ui::MaterialDesignController::IsModeMaterial()) {
+    textFrame.origin.x += 1;
+    textFrame.size.width -= 1;
     textFrame.origin.y -= singlePixelLineWidth_;
   }
 
