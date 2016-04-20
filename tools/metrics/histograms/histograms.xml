@@ -91438,6 +91438,13 @@ To add a new entry, add it with any value and run test to compute valid value.
     ordering="prefix">
   <suffix name="Clients.FromGWS"
       label="PageLoadMetrics that are a result of a navigation from a Google
+             web search">
+    <obsolete>
+      Deprecated in favor of Clients.FromGWS2.
+    </obsolete>
+  </suffix>
+  <suffix name="Clients.FromGWS2"
+      label="PageLoadMetrics that are a result of a navigation from a Google
              web search"/>
   <suffix name="Clients.DocWrite.Evaluator"
       label="PageLoadMetrics from a page that could have been evaluated by
