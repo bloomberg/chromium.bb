@@ -73,4 +73,8 @@ void AwContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
                   [](char c) { return !::isprint(c); }, '_');
 }
 
+bool AwContentClient::UsingSynchronousCompositing() {
+  return true;
+}
+
 }  // namespace android_webview

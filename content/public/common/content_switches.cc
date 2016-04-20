@@ -919,9 +919,6 @@ const char kEnableAdaptiveSelectionHandleOrientation[] =
 // Enable drag manipulation of longpress-triggered text selections.
 const char kEnableLongpressDragSelection[]  = "enable-longpress-drag-selection";
 
-// Enable IPC-based synchronous compositing. Used by Android WebView.
-const char kIPCSyncCompositing[]            = "ipc-sync-compositing";
-
 // The telephony region (ISO country code) to use in phone number detection.
 const char kNetworkCountryIso[] = "network-country-iso";
 

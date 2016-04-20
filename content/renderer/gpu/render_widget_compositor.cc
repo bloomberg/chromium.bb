@@ -44,6 +44,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/input/input_event_utils.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/render_widget_compositor_delegate.h"
 #include "content/renderer/input/input_handler_manager.h"
@@ -60,7 +61,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
-#include "content/renderer/android/synchronous_compositor_factory.h"
 #include "ui/gfx/android/device_display_info.h"
 #endif
 
@@ -368,11 +368,8 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   }
 
 #if defined(OS_ANDROID)
-  DCHECK(!SynchronousCompositorFactory::GetInstance() ||
-         !cmd->HasSwitch(switches::kIPCSyncCompositing));
   bool using_synchronous_compositor =
-      SynchronousCompositorFactory::GetInstance() ||
-      cmd->HasSwitch(switches::kIPCSyncCompositing);
+      GetContentClient()->UsingSynchronousCompositing();
 
   // We can't use GPU rasterization on low-end devices, because the Ganesh
   // cache would consume too much memory.

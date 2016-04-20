@@ -35,7 +35,6 @@ import org.chromium.content.browser.BindingManager;
 import org.chromium.content.browser.ChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.test.util.CallbackHelper;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.net.test.util.TestWebServer;
@@ -594,9 +593,7 @@ public class AwContentsTest extends AwTestBase {
      */
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags.Add({
-            AwSwitches.WEBVIEW_SANDBOXED_RENDERER,
-            ContentSwitches.IPC_SYNC_COMPOSITING})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
     @ParameterizedTest.Set
     public void testSandboxedRendererWorks() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();

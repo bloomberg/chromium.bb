@@ -31,7 +31,6 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -63,8 +62,7 @@ import java.util.concurrent.TimeUnit;
                                 arguments = {
                                     @Parameter.Argument(
                                         name = CommandLineFlags.Parameter.ADD_ARG,
-                                        stringArray = {AwSwitches.WEBVIEW_SANDBOXED_RENDERER,
-                                                ContentSwitches.IPC_SYNC_COMPOSITING})
+                                        stringArray = {AwSwitches.WEBVIEW_SANDBOXED_RENDERER})
             })})})
 public class AwTestBase
         extends BaseActivityInstrumentationTestCase<AwTestRunnerActivity> {

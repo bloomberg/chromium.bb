@@ -92,7 +92,6 @@
 
 #if defined(OS_ANDROID)
 #include <android/keycodes.h>
-#include "content/renderer/android/synchronous_compositor_factory.h"
 #include "content/renderer/android/synchronous_compositor_filter.h"
 #include "content/renderer/android/synchronous_compositor_output_surface.h"
 #endif
@@ -802,18 +801,13 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
     }
 
 #if defined(OS_ANDROID)
-    if (SynchronousCompositorFactory* factory =
-            SynchronousCompositorFactory::GetInstance()) {
-      uint32_t output_surface_id = next_output_surface_id_++;
-      return factory->CreateOutputSurface(
-          routing_id(), output_surface_id, frame_swap_message_queue_,
-          context_provider, worker_context_provider);
-    } else if (RenderThreadImpl::current()->sync_compositor_message_filter()) {
+    if (RenderThreadImpl::current() &&
+        RenderThreadImpl::current()->sync_compositor_message_filter()) {
       uint32_t output_surface_id = next_output_surface_id_++;
       return base::WrapUnique(new SynchronousCompositorOutputSurface(
           context_provider, worker_context_provider, routing_id(),
-          output_surface_id, content::RenderThreadImpl::current()
-                                 ->sync_compositor_message_filter(),
+          output_surface_id,
+          RenderThreadImpl::current()->sync_compositor_message_filter(),
           frame_swap_message_queue_));
     }
 #endif

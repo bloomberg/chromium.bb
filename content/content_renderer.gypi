@@ -115,8 +115,6 @@
       'renderer/android/renderer_date_time_picker.h',
       'renderer/android/synchronous_compositor_external_begin_frame_source.cc',
       'renderer/android/synchronous_compositor_external_begin_frame_source.h',
-      'renderer/android/synchronous_compositor_factory.cc',
-      'renderer/android/synchronous_compositor_factory.h',
       'renderer/android/synchronous_compositor_filter.cc',
       'renderer/android/synchronous_compositor_filter.h',
       'renderer/android/synchronous_compositor_output_surface.cc',

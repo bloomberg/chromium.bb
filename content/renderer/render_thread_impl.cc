@@ -166,7 +166,6 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 #include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
-#include "content/renderer/android/synchronous_compositor_factory.h"
 #include "content/renderer/android/synchronous_compositor_filter.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
@@ -1149,53 +1148,31 @@ void RenderThreadImpl::SetResourceDispatcherDelegate(
 }
 
 void RenderThreadImpl::InitializeCompositorThread() {
+  base::Thread::Options options;
 #if defined(OS_ANDROID)
-  SynchronousCompositorFactory* sync_compositor_factory =
-      SynchronousCompositorFactory::GetInstance();
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  bool using_ipc_sync_compositing =
-      cmd_line->HasSwitch(switches::kIPCSyncCompositing);
-  bool sync_input_for_sync_compositing =
-      cmd_line->HasSwitch(switches::kSyncInputForSyncCompositor);
-  DCHECK(!sync_compositor_factory || !using_ipc_sync_compositing);
-  DCHECK(!sync_input_for_sync_compositing || using_ipc_sync_compositing);
-
-  if (sync_compositor_factory) {
-    compositor_task_runner_ =
-        sync_compositor_factory->GetCompositorTaskRunner();
-  }
+  options.priority = base::ThreadPriority::DISPLAY;
 #endif
-  if (!compositor_task_runner_.get()) {
-    base::Thread::Options options;
-#if defined(OS_ANDROID)
-    options.priority = base::ThreadPriority::DISPLAY;
-#endif
-    compositor_thread_.reset(new WebThreadForCompositor(options));
-    blink_platform_impl_->SetCompositorThread(compositor_thread_.get());
-    compositor_task_runner_ = compositor_thread_->GetTaskRunner();
-    compositor_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed),
-                   false));
-  }
+  compositor_thread_.reset(new WebThreadForCompositor(options));
+  blink_platform_impl_->SetCompositorThread(compositor_thread_.get());
+  compositor_task_runner_ = compositor_thread_->GetTaskRunner();
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed), false));
 
   InputHandlerManagerClient* input_handler_manager_client = nullptr;
   SynchronousInputHandlerProxyClient* synchronous_input_handler_proxy_client =
       nullptr;
 #if defined(OS_ANDROID)
-  if (using_ipc_sync_compositing) {
+  if (GetContentClient()->UsingSynchronousCompositing()) {
     sync_compositor_message_filter_ =
         new SynchronousCompositorFilter(compositor_task_runner_);
     AddFilter(sync_compositor_message_filter_.get());
-    if (sync_input_for_sync_compositing)
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSyncInputForSyncCompositor)) {
       input_handler_manager_client = sync_compositor_message_filter_.get();
+    }
     synchronous_input_handler_proxy_client =
         sync_compositor_message_filter_.get();
-  } else if (sync_compositor_factory) {
-    input_handler_manager_client =
-        sync_compositor_factory->GetInputHandlerManagerClient();
-    synchronous_input_handler_proxy_client =
-        sync_compositor_factory->GetSynchronousInputHandlerProxyClient();
   }
 #endif
   if (!input_handler_manager_client) {
@@ -1671,11 +1648,7 @@ cc::ContextProvider* RenderThreadImpl::GetSharedMainThreadContextProvider() {
 std::unique_ptr<cc::BeginFrameSource>
 RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
 #if defined(OS_ANDROID)
-  if (SynchronousCompositorFactory* factory =
-          SynchronousCompositorFactory::GetInstance()) {
-    DCHECK(!sync_compositor_message_filter_);
-    return factory->CreateExternalBeginFrameSource(routing_id);
-  } else if (sync_compositor_message_filter_) {
+  if (sync_compositor_message_filter_) {
     return base::WrapUnique(new SynchronousCompositorExternalBeginFrameSource(
         routing_id, sync_compositor_message_filter_.get()));
   }

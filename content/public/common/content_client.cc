@@ -123,4 +123,10 @@ base::StringPiece ContentClient::GetOriginTrialPublicKey() {
   return base::StringPiece();
 }
 
+#if defined(OS_ANDROID)
+bool ContentClient::UsingSynchronousCompositing() {
+  return false;
+}
+#endif  // OS_ANDROID
+
 }  // namespace content

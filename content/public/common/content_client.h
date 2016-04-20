@@ -158,6 +158,13 @@ class CONTENT_EXPORT ContentClient {
   // origin trials are not enabled in this context.
   virtual base::StringPiece GetOriginTrialPublicKey();
 
+#if defined(OS_ANDROID)
+  // Returns true for clients like Android WebView that uses synchronous
+  // compositor. Note setting this to true will permit synchronous IPCs from
+  // the browser UI thread.
+  virtual bool UsingSynchronousCompositing();
+#endif  // OS_ANDROID
+
  private:
   friend class ContentClientInitializer;  // To set these pointers.
   friend class InternalTestInitializer;

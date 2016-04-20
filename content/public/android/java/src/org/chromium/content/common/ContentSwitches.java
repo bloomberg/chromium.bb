@@ -73,9 +73,6 @@ public abstract class ContentSwitches {
     // Native switch kInProcessGPU
     public static final String IN_PROCESS_GPU = "in-process-gpu";
 
-    // Native switch kIPCSyncCompositing
-    public static final String IPC_SYNC_COMPOSITING = "ipc-sync-compositing";
-
     // Native switch kProcessType
     public static final String SWITCH_PROCESS_TYPE = "type";
 

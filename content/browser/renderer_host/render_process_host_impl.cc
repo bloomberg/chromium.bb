@@ -821,8 +821,7 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
     // for Android WebView to maintain backward compatibility.
     // See crbug.com/526842 for details.
 #if defined(OS_ANDROID)
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kIPCSyncCompositing)) {
+    if (GetContentClient()->UsingSynchronousCompositing()) {
       return IPC::SyncChannel::Create(
           IPC::ChannelMojo::CreateServerFactory(std::move(handle)), this,
           runner.get(), true, &never_signaled_);
@@ -836,8 +835,7 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
 
     // Do NOT expand ifdef or run time condition checks here! See comment above.
 #if defined(OS_ANDROID)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIPCSyncCompositing)) {
+  if (GetContentClient()->UsingSynchronousCompositing()) {
     return IPC::SyncChannel::Create(channel_id, IPC::Channel::MODE_SERVER, this,
                                     runner.get(), true, &never_signaled_);
   }
@@ -1567,7 +1565,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableLowEndDeviceMode,
 #if defined(OS_ANDROID)
     switches::kDisableUnifiedMediaPipeline,
-    switches::kIPCSyncCompositing,
     switches::kRendererWaitForJavaDebugger,
 #endif
 #if defined(OS_MACOSX)
