@@ -29,11 +29,15 @@ import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -71,10 +75,10 @@ class UrlManager {
     public interface Listener {
         /**
          * Callback called when one or more URLs are added to the URL list.
-         * @param urls A set of strings containing nearby URLs resolvable with our resolution
+         * @param urls A set of UrlInfos containing nearby URLs resolvable with our resolution
          * service.
          */
-        void onDisplayableUrlsAdded(Collection<String> urls);
+        void onDisplayableUrlsAdded(Collection<UrlInfo> urls);
     }
 
     /**
@@ -121,13 +125,13 @@ class UrlManager {
     /**
      * Add a URL to the store of URLs.
      * This method additionally updates the Physical Web notification.
-     * @param url The URL to add.
+     * @param urlInfo The URL to add.
      */
     @VisibleForTesting
-    public void addUrl(String url) {
-        Log.d(TAG, "URL found: %s", url);
+    public void addUrl(UrlInfo urlInfo) {
+        Log.d(TAG, "URL found: %s", urlInfo);
         boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
-        Set<String> nearbyUrls = getCachedNearbyUrls();
+        List<UrlInfo> nearbyUrls = getCachedNearbyUrls();
 
         // A URL is displayable if it is both nearby and resolved through our resolution service.
         // When new displayable URLs are found we tell our observers. In onboarding mode we do not
@@ -145,11 +149,11 @@ class UrlManager {
             displayableUrlsBefore = notificationUrlsBefore = getUrls().size();
         }
 
-        nearbyUrls.add(url);
+        nearbyUrls.add(urlInfo);
         putCachedNearbyUrls(nearbyUrls);
 
         if (!isOnboarding) {
-            resolveUrl(url);
+            resolveUrl(urlInfo);
         }
 
         int displayableUrlsAfter;
@@ -162,20 +166,29 @@ class UrlManager {
         }
 
         updateNotification(notificationUrlsBefore == 0, notificationUrlsAfter == 0);
-        notifyDisplayableUrlsChanged(displayableUrlsBefore, displayableUrlsAfter, url);
+        notifyDisplayableUrlsChanged(displayableUrlsBefore, displayableUrlsAfter, urlInfo);
+    }
+
+    /**
+     * Add a URL to the store of URLs.
+     */
+    // TODO(conleyo) we should remove this method after calling code only passes us a UrlInfo.
+    @VisibleForTesting
+    public void addUrl(String url) {
+        addUrl(new UrlInfo(url));
     }
 
     /**
      * Remove a URL to the store of URLs.
      * This method additionally updates the Physical Web notification.
-     * @param url The URL to remove.
+     * @param urlInfo The URL to remove.
      */
     @VisibleForTesting
-    public void removeUrl(String url) {
-        Log.d(TAG, "URL lost: %s", url);
+    public void removeUrl(UrlInfo urlInfo) {
+        Log.d(TAG, "URL lost: %s", urlInfo);
         boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
-        Set<String> nearbyUrls = getCachedNearbyUrls();
-        nearbyUrls.remove(url);
+        List<UrlInfo> nearbyUrls = getCachedNearbyUrls();
+        nearbyUrls.remove(urlInfo);
         putCachedNearbyUrls(nearbyUrls);
 
         int notificationUrlsAfter = isOnboarding ? nearbyUrls.size() : getUrls().size();
@@ -183,10 +196,20 @@ class UrlManager {
     }
 
     /**
-     * Get the list of URLs which are both nearby and resolved through PWS.
-     * @return A set of nearby and resolved URLs.
+     * Remove a URL to the store of URLs.
      */
-    public Set<String> getUrls() {
+    // TODO(conleyo) we should remove this method after calling code only passes us a UrlInfo.
+    @VisibleForTesting
+    public void removeUrl(String url) {
+        removeUrl(new UrlInfo(url));
+    }
+
+    /**
+     * Get the list of URLs which are both nearby and resolved through PWS.
+     * @return A set of nearby and resolved URLs, sorted by distance.
+     */
+    // TODO(conleyo) We will need to provide sorted URLs after distance is in place.
+    public List<UrlInfo> getUrls() {
         return getUrls(false);
     }
 
@@ -196,16 +219,23 @@ class UrlManager {
      * resolved URL list is empty.
      * @return A set of nearby URLs.
      */
-    public Set<String> getUrls(boolean allowUnresolved) {
-        Set<String> nearbyUrls = getCachedNearbyUrls();
-        Set<String> resolvedUrls = getCachedResolvedUrls();
-        Set<String> intersection = new HashSet<String>(nearbyUrls);
-        intersection.retainAll(resolvedUrls);
+    public List<UrlInfo> getUrls(boolean allowUnresolved) {
+        List<UrlInfo> nearbyUrls = getCachedNearbyUrls();
+        Set<String> resolvedUrls = new HashSet<>();
+        for (UrlInfo urlInfo : getCachedResolvedUrls()) {
+            resolvedUrls.add(urlInfo.getUrl());
+        }
+        List<UrlInfo> intersection = new ArrayList<>();
+        for (UrlInfo urlInfo : nearbyUrls) {
+            if (resolvedUrls.contains(urlInfo.getUrl())) {
+                intersection.add(urlInfo);
+            }
+        }
         Log.d(TAG, "Get URLs With: %d nearby, %d resolved, and %d in intersection.",
                 nearbyUrls.size(), resolvedUrls.size(), intersection.size());
 
         if (allowUnresolved && resolvedUrls.isEmpty()) {
-            intersection = nearbyUrls;
+            return nearbyUrls;
         }
 
         return intersection;
@@ -215,9 +245,9 @@ class UrlManager {
      * Forget all stored URLs and clear the notification.
      */
     public void clearUrls() {
-        Set<String> emptySet = Collections.emptySet();
-        putCachedNearbyUrls(emptySet);
-        putCachedResolvedUrls(emptySet);
+        List<UrlInfo> emptyList = Collections.emptyList();
+        putCachedNearbyUrls(emptyList);
+        putCachedResolvedUrls(emptyList);
         clearNotification();
         cancelClearNotificationAlarm();
     }
@@ -231,9 +261,9 @@ class UrlManager {
         mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB);
     }
 
-    private void addResolvedUrl(String url) {
+    private void addResolvedUrl(UrlInfo url) {
         Log.d(TAG, "PWS resolved: %s", url);
-        Set<String> resolvedUrls = getCachedResolvedUrls();
+        List<UrlInfo> resolvedUrls = getCachedResolvedUrls();
         int displayableUrlsBefore = getUrls().size();
 
         resolvedUrls.add(url);
@@ -244,9 +274,9 @@ class UrlManager {
         notifyDisplayableUrlsChanged(displayableUrlsBefore, displayableUrlsAfter, url);
     }
 
-    private void removeResolvedUrl(String url) {
+    private void removeResolvedUrl(UrlInfo url) {
         Log.d(TAG, "PWS unresolved: %s", url);
-        Set<String> resolvedUrls = getCachedResolvedUrls();
+        List<UrlInfo> resolvedUrls = getCachedResolvedUrls();
         resolvedUrls.remove(url);
         putCachedResolvedUrls(resolvedUrls);
         updateNotification(false, getUrls().isEmpty());
@@ -275,36 +305,51 @@ class UrlManager {
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    private Set<String> getStringSetFromSharedPreferences(String preferenceName) {
+    private List<UrlInfo> getUrlInfoListFromSharedPreferences(String preferenceName) {
         // Check the version.
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        // Make sure to construct a new set so it can be modified safely. See crbug.com/568369.
-        return new HashSet<String>(prefs.getStringSet(preferenceName, new HashSet<String>()));
+        List<UrlInfo> urls = new ArrayList<>();
+        for (String serializedUrl : prefs.getStringSet(preferenceName, new HashSet<String>())) {
+            try {
+                JSONObject jsonObject = new JSONObject(serializedUrl);
+                urls.add(UrlInfo.jsonDeserialize(jsonObject));
+            } catch (JSONException e) {
+                Log.e(TAG, "Could not deserialize UrlInfo", e);
+            }
+        }
+        return urls;
     }
 
-    private void setStringSetInSharedPreferences(String preferenceName,
-                                                 Set<String> preferenceValue) {
-        // Write the version.
+    private void setUrlInfoListInSharedPreferences(String preferenceName, List<UrlInfo> urls) {
+        Set<String> serializedUrls = new HashSet<>();
+        for (UrlInfo url : urls) {
+            try {
+                serializedUrls.add(url.jsonSerialize().toString());
+            } catch (JSONException e) {
+                Log.e(TAG, "Could not serialize UrlInfo", e);
+            }
+        }
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putStringSet(preferenceName, preferenceValue);
+        editor.putStringSet(preferenceName, serializedUrls);
         editor.apply();
     }
 
-    Set<String> getCachedNearbyUrls() {
-        return getStringSetFromSharedPreferences(PREFS_NEARBY_URLS_KEY);
+    List<UrlInfo> getCachedNearbyUrls() {
+        return getUrlInfoListFromSharedPreferences(PREFS_NEARBY_URLS_KEY);
     }
 
-    private void putCachedNearbyUrls(Set<String> urls) {
-        setStringSetInSharedPreferences(PREFS_NEARBY_URLS_KEY, urls);
+    private void putCachedNearbyUrls(List<UrlInfo> urls) {
+        setUrlInfoListInSharedPreferences(PREFS_NEARBY_URLS_KEY, urls);
     }
 
-    Set<String> getCachedResolvedUrls() {
-        return getStringSetFromSharedPreferences(PREFS_RESOLVED_URLS_KEY);
+    List<UrlInfo> getCachedResolvedUrls() {
+        return getUrlInfoListFromSharedPreferences(PREFS_RESOLVED_URLS_KEY);
     }
 
-    private void putCachedResolvedUrls(Set<String> urls) {
-        setStringSetInSharedPreferences(PREFS_RESOLVED_URLS_KEY, urls);
+    private void putCachedResolvedUrls(List<UrlInfo> urls) {
+        setUrlInfoListInSharedPreferences(PREFS_RESOLVED_URLS_KEY, urls);
     }
 
     private PendingIntent createListUrlsIntent() {
@@ -320,8 +365,8 @@ class UrlManager {
         return pendingIntent;
     }
 
-    private void resolveUrl(final String url) {
-        Set<String> urls = new HashSet<String>(Arrays.asList(url));
+    private void resolveUrl(final UrlInfo url) {
+        Set<UrlInfo> urls = new HashSet<UrlInfo>(Arrays.asList(url));
         final long timestamp = SystemClock.elapsedRealtime();
         mPwsClient.resolve(urls, new PwsClient.ResolveScanCallback() {
             @Override
@@ -333,7 +378,7 @@ class UrlManager {
                     public void run() {
                         for (PwsResult pwsResult : pwsResults) {
                             String requestUrl = pwsResult.requestUrl;
-                            if (url.equalsIgnoreCase(requestUrl)) {
+                            if (url.getUrl().equalsIgnoreCase(requestUrl)) {
                                 addResolvedUrl(url);
                                 return;
                             }
@@ -463,11 +508,11 @@ class UrlManager {
     }
 
     private void notifyDisplayableUrlsChanged(int displayCountBefore, int displayCountAfter,
-            String url) {
+            UrlInfo url) {
         if (displayCountAfter > displayCountBefore) {
-            Collection<String> urls = new ArrayList<String>();
+            Collection<UrlInfo> urls = new ArrayList<>();
             urls.add(url);
-            Collection<String> wrappedUrls = Collections.unmodifiableCollection(urls);
+            Collection<UrlInfo> wrappedUrls = Collections.unmodifiableCollection(urls);
             for (Listener observer : mObservers) {
                 observer.onDisplayableUrlsAdded(wrappedUrls);
             }

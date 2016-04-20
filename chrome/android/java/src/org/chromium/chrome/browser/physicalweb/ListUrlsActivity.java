@@ -200,7 +200,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         super.onStop();
     }
 
-    private void resolve(Collection<String> urls) {
+    private void resolve(Collection<UrlInfo> urls) {
         final long timestamp = SystemClock.elapsedRealtime();
         mPwsClient.resolve(urls, new PwsClient.ResolveScanCallback() {
             @Override
@@ -246,7 +246,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
      * @param urls The set of newly-found nearby URLs.
      */
     @Override
-    public void onDisplayableUrlsAdded(Collection<String> urls) {
+    public void onDisplayableUrlsAdded(Collection<UrlInfo> urls) {
         resolve(urls);
     }
 
@@ -261,7 +261,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         // Clear the list adapter to trigger the empty list display.
         mAdapter.clear();
 
-        Collection<String> urls = UrlManager.getInstance(this).getUrls(true);
+        Collection<UrlInfo> urls = UrlManager.getInstance(this).getUrls(true);
 
         // Check the Physical Web preference to ensure we do not resolve URLs when Physical Web is
         // off or onboarding. Normally the user will not reach this activity unless the preference

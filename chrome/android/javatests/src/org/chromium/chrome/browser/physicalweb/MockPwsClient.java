@@ -17,7 +17,7 @@ import java.util.List;
  * This class sends requests to the Physical Web Service.
  */
 class MockPwsClient implements PwsClient {
-    private List<Collection<String>> mResolveCalls;
+    private List<Collection<UrlInfo>> mResolveCalls;
     private List<String> mFetchIconCalls;
     private List<List<PwsResult>> mPwsResults;
     private List<Bitmap> mIconBitmaps;
@@ -29,7 +29,7 @@ class MockPwsClient implements PwsClient {
         mIconBitmaps = new ArrayList<>();
     }
 
-    public List<Collection<String>> getResolveCalls() {
+    public List<Collection<UrlInfo>> getResolveCalls() {
         return mResolveCalls;
     }
 
@@ -51,7 +51,7 @@ class MockPwsClient implements PwsClient {
      * @param resolveScanCallback The callback to be run when the response is received.
      */
     @Override
-    public void resolve(final Collection<String> broadcastUrls,
+    public void resolve(final Collection<UrlInfo> broadcastUrls,
             final ResolveScanCallback resolveScanCallback) {
         mResolveCalls.add(broadcastUrls);
         resolveScanCallback.onPwsResults(mPwsResults.remove(0));

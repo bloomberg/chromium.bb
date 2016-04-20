@@ -40,7 +40,7 @@ interface PwsClient {
      * @param broadcastUrls The URLs to resolve.
      * @param resolveScanCallback The callback to be run when the response is received.
      */
-    void resolve(Collection<String> broadcastUrls, ResolveScanCallback resolveScanCallback);
+    void resolve(Collection<UrlInfo> broadcastUrls, ResolveScanCallback resolveScanCallback);
 
     /**
      * Send an HTTP request to fetch a favicon.

@@ -38,13 +38,13 @@ class PwsClientImpl implements PwsClient {
         }
     }
 
-    private static JSONObject createResolveScanPayload(Collection<String> urls)
+    private static JSONObject createResolveScanPayload(Collection<UrlInfo> urls)
             throws JSONException {
         // Encode the urls.
         JSONArray objects = new JSONArray();
-        for (String url : urls) {
+        for (UrlInfo urlInfo : urls) {
             JSONObject obj = new JSONObject();
-            obj.put("url", url);
+            obj.put("url", urlInfo.getUrl());
             objects.put(obj);
         }
 
@@ -88,7 +88,7 @@ class PwsClientImpl implements PwsClient {
      * @param resolveScanCallback The callback to be run when the response is received.
      */
     @Override
-    public void resolve(final Collection<String> broadcastUrls,
+    public void resolve(final Collection<UrlInfo> broadcastUrls,
             final ResolveScanCallback resolveScanCallback) {
         // Create the response callback.
         JsonObjectHttpRequest.RequestCallback requestCallback =

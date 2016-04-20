@@ -16,7 +16,6 @@ import org.chromium.chrome.test.util.browser.notifications.MockNotificationManag
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Tests for the UrlManager class.
@@ -62,11 +61,11 @@ public class UrlManagerTest extends InstrumentationTestCase {
         getInstrumentation().waitForIdleSync();
 
         // Make sure that a resolution was *not* attempted.
-        List<Collection<String>> resolveCalls = mMockPwsClient.getResolveCalls();
+        List<Collection<UrlInfo>> resolveCalls = mMockPwsClient.getResolveCalls();
         assertEquals(0, resolveCalls.size());
 
         // Make sure that we have no resolved URLs.
-        Set<String> urls = mUrlManager.getUrls();
+        List<UrlInfo> urls = mUrlManager.getUrls();
         assertEquals(0, urls.size());
 
         // Make sure that a notification was shown.
@@ -81,11 +80,11 @@ public class UrlManagerTest extends InstrumentationTestCase {
         getInstrumentation().waitForIdleSync();
 
         // Make sure that a resolution was attempted.
-        List<Collection<String>> resolveCalls = mMockPwsClient.getResolveCalls();
+        List<Collection<UrlInfo>> resolveCalls = mMockPwsClient.getResolveCalls();
         assertEquals(1, resolveCalls.size());
 
         // Make sure that we have no resolved URLs.
-        Set<String> urls = mUrlManager.getUrls();
+        List<UrlInfo> urls = mUrlManager.getUrls();
         assertEquals(0, urls.size());
         // Make sure that we do have unresolved URLs.
         urls = mUrlManager.getUrls(true);
@@ -105,11 +104,11 @@ public class UrlManagerTest extends InstrumentationTestCase {
         getInstrumentation().waitForIdleSync();
 
         // Make sure that a resolution was attempted.
-        List<Collection<String>> resolveCalls = mMockPwsClient.getResolveCalls();
+        List<Collection<UrlInfo>> resolveCalls = mMockPwsClient.getResolveCalls();
         assertEquals(1, resolveCalls.size());
 
         // Make sure that we have our resolved URLs.
-        Set<String> urls = mUrlManager.getUrls();
+        List<UrlInfo> urls = mUrlManager.getUrls();
         assertEquals(1, urls.size());
 
         // Make sure that a notification was shown.
@@ -132,7 +131,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
         mUrlManager.removeUrl(URL1);
 
         // Make sure the URL was removed.
-        Set<String> urls = mUrlManager.getUrls(true);
+        List<UrlInfo> urls = mUrlManager.getUrls(true);
         assertEquals(0, urls.size());
 
         // Make sure no notification is shown.
@@ -155,7 +154,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
         mUrlManager.clearUrls();
 
         // Make sure all URLs were removed.
-        Set<String> urls = mUrlManager.getUrls(true);
+        List<UrlInfo> urls = mUrlManager.getUrls(true);
         assertEquals(0, urls.size());
 
         // Make sure no notification is shown.

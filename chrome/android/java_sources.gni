@@ -584,6 +584,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/physicalweb/PwsClientImpl.java",
   "java/src/org/chromium/chrome/browser/physicalweb/PwsResult.java",
   "java/src/org/chromium/chrome/browser/physicalweb/SwipeRefreshWidget.java",
+  "java/src/org/chromium/chrome/browser/physicalweb/UrlInfo.java",
   "java/src/org/chromium/chrome/browser/physicalweb/UrlManager.java",
   "java/src/org/chromium/chrome/browser/physicalweb/Utils.java",
   "java/src/org/chromium/chrome/browser/policy/PolicyAuditor.java",
