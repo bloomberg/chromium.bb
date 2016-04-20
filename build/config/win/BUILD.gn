@@ -103,6 +103,18 @@ config("compiler") {
     assert(!is_win_fastlink, "/PROFILE and /DEBUG:FASTLINK are incompatible")
     ldflags = [ "/PROFILE" ]
   }
+
+  # arflags apply only to static_libraries. The normal linker configs are only
+  # set for executable and shared library targets so arflags must be set
+  # elsewhere. Since this is relatively contained, we just apply them in this
+  # more general config and they will only have an effect on static libraries.
+  arflags = [
+    # "No public symbols found; archive member will be inaccessible." This
+    # means that one or more object files in the library can never be
+    # pulled in to targets that link to this library. It's just a warning that
+    # the source file is a no-op.
+    "/ignore:4221",
+  ]
 }
 
 config("vs_code_analysis") {

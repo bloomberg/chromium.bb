@@ -431,6 +431,12 @@ config("compiler") {
       ldflags += [ "-Wl,-plugin-opt,-function-sections" ]
     }
 
+    arflags = [
+      "--plugin",
+      rebase_path("//third_party/llvm-build/Release+Asserts/lib/LLVMgold.so",
+                  root_build_dir),
+    ]
+
     # TODO(pcc): Make these flags work correctly with CFI.
     if (!is_cfi) {
       cflags += [
