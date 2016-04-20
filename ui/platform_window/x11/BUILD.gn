@@ -15,6 +15,7 @@ component("x11") {
     "//skia",
     "//ui/events",
     "//ui/events/devices",
+    "//ui/events/devices/x11",
     "//ui/events/platform",
     "//ui/events/platform/x11",
     "//ui/gfx/x",

@@ -118,6 +118,7 @@
             '../../build/linux/system.gyp:xrandr',
             '../../build/linux/system.gyp:xi',
             '../events/devices/events_devices.gyp:events_devices',
+            '../events/devices/x11/events_devices_x11.gyp:events_devices_x11',
             '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
             '../gfx/x/gfx_x11.gyp:gfx_x11',
           ],

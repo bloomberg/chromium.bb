@@ -85,6 +85,7 @@ component("wm") {
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
+    deps += [ "//ui/events/devices/x11" ]
   }
 }
 

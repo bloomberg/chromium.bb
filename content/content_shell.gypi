@@ -269,6 +269,7 @@
         ['use_x11 == 1', {
           'dependencies': [
             '../ui/events/devices/events_devices.gyp:events_devices',
+            '../ui/events/devices/x11/events_devices_x11.gyp:events_devices_x11',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],

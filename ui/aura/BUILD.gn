@@ -116,6 +116,7 @@ component("aura") {
     deps += [
       "//ui/events:events_base",
       "//ui/events/devices",
+      "//ui/events/devices/x11",
       "//ui/events/platform/x11",
       "//ui/gfx/x",
     ]

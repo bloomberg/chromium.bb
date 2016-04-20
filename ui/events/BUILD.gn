@@ -165,6 +165,7 @@ component("events") {
     ]
     deps += [
       "//ui/events/devices",
+      "//ui/events/devices/x11",
       "//ui/gfx/x",
     ]
   }
@@ -338,7 +339,7 @@ source_set("test_support") {
       "test/events_test_utils_x11.h",
     ]
     deps += [
-      "//ui/events/devices",
+      "//ui/events/devices/x11",
       "//ui/gfx/x",
     ]
   }
@@ -425,6 +426,7 @@ test("events_unittests") {
     ]
     configs += [ "//build/config/linux:x11" ]
     deps += [
+      "//ui/events/devices/x11",
       "//ui/events/x",
       "//ui/gfx/x",
     ]

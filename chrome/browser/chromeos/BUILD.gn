@@ -141,7 +141,10 @@ source_set("chromeos") {
   ]
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
-    deps += [ "//ui/events/devices" ]
+    deps += [
+      "//ui/events/devices",
+      "//ui/events/devices/x11",
+    ]
     sources -= [
       "system/input_device_settings_impl_ozone.cc",
       "system_logs/touch_log_source_ozone.cc",

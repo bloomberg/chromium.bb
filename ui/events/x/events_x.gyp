@@ -15,6 +15,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/skia/skia.gyp:skia',
         '../../events/devices/events_devices.gyp:events_devices',
+        '../../events/devices/x11/events_devices_x11.gyp:events_devices_x11',
         '../../events/events.gyp:events_base',
         '../../gfx/x/gfx_x11.gyp:gfx_x11',
       ],

@@ -72,7 +72,8 @@
           'dependencies': [
             '../../build/linux/system.gyp:x11',
             '../gfx/x/gfx_x11.gyp:gfx_x11',
-	    'x/events_x.gyp:events_x',
+            'devices/x11/events_devices_x11.gyp:events_devices_x11',
+            'x/events_x.gyp:events_x',
           ],
         }],
         ['use_ozone==1', {

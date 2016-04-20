@@ -81,6 +81,7 @@ component("ash") {
       "//build/config/linux:xfixes",
     ]
     deps += [
+      "//ui/events/devices/x11",
       "//ui/events/platform",
       "//ui/gfx/x",
     ]

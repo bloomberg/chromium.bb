@@ -162,6 +162,7 @@
             '../../build/linux/system.gyp:x11',
             '../gfx/x/gfx_x11.gyp:gfx_x11',
             'devices/events_devices.gyp:events_devices',
+            'devices/x11/events_devices_x11.gyp:events_devices_x11',
             'x/events_x.gyp:events_x',
           ],
         }],
@@ -361,6 +362,11 @@
         ['OS=="ios"', {
           # The cocoa files don't apply to iOS.
           'sources/': [['exclude', 'cocoa']],
+        }],
+        ['use_x11==1', {
+          'dependencies': [
+            'devices/x11/events_devices_x11.gyp:events_devices_x11',
+          ],
         }],
         ['use_x11==1 or use_ozone==1', {
           'sources' : [
