@@ -24,6 +24,10 @@
       // invalid. Only finite values are allowed for any duration parameter.
       var durationValues = [-1, Infinity, -Infinity, NaN, 0];
 
+      // For these timeConstant values for setTargetAtTime an error must be thrown because they are
+      // invalid.
+      var timeConstantValues = [-1, 0, Infinity, -Infinity, NaN];
+
       // Just an array for use by setValueCurveAtTime. The length and contents of the array are not
       // important.
       var curve = new Float32Array(10);
@@ -55,7 +59,7 @@
         }
 
         // Test time constant
-        for (value of targetValues) {
+        for (value of timeConstantValues) {
           shouldThrow("gain.gain.setTargetAtTime(1, 1, " + value + ")");
         }
 

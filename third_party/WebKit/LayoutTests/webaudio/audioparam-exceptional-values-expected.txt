@@ -31,6 +31,8 @@ PASS gain.gain.setValueAtTime(1, NaN) threw exception TypeError: Failed to execu
 PASS gain.gain.linearRampToValueAtTime(1, NaN) threw exception TypeError: Failed to execute 'linearRampToValueAtTime' on 'AudioParam': The provided double value is non-finite..
 PASS gain.gain.exponentialRampToValueAtTime(1, NaN) threw exception TypeError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': The provided double value is non-finite..
 PASS gain.gain.setTargetAtTime(1, NaN, 1) threw exception TypeError: Failed to execute 'setTargetAtTime' on 'AudioParam': The provided double value is non-finite..
+PASS gain.gain.setTargetAtTime(1, 1, -1) threw exception InvalidAccessError: Failed to execute 'setTargetAtTime' on 'AudioParam': Time constant must be a finite positive number: -1.
+PASS gain.gain.setTargetAtTime(1, 1, 0) threw exception InvalidAccessError: Failed to execute 'setTargetAtTime' on 'AudioParam': Time constant must be a finite positive number: 0.
 PASS gain.gain.setTargetAtTime(1, 1, Infinity) threw exception TypeError: Failed to execute 'setTargetAtTime' on 'AudioParam': The provided double value is non-finite..
 PASS gain.gain.setTargetAtTime(1, 1, -Infinity) threw exception TypeError: Failed to execute 'setTargetAtTime' on 'AudioParam': The provided double value is non-finite..
 PASS gain.gain.setTargetAtTime(1, 1, NaN) threw exception TypeError: Failed to execute 'setTargetAtTime' on 'AudioParam': The provided double value is non-finite..

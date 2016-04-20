@@ -179,7 +179,7 @@ void AudioParamTimeline::setTargetAtTime(float target, double time, double timeC
     ASSERT(isMainThread());
 
     if (!isNonNegativeAudioParamTime(time, exceptionState)
-        || !isNonNegativeAudioParamTime(timeConstant, exceptionState, "Time constant"))
+        || !isPositiveAudioParamTime(timeConstant, exceptionState, "Time constant"))
         return;
 
     insertEvent(ParamEvent::createSetTargetEvent(target, time, timeConstant), exceptionState);
