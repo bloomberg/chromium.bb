@@ -1126,7 +1126,7 @@ void RenderFrameImpl::Initialize() {
 
 void RenderFrameImpl::InitializeBlameContext(RenderFrameImpl* parent_frame) {
   DCHECK(!blame_context_);
-  blame_context_ = new FrameBlameContext(this, parent_frame);
+  blame_context_ = base::WrapUnique(new FrameBlameContext(this, parent_frame));
   blame_context_->Initialize();
 }
 
@@ -2557,7 +2557,7 @@ blink::WebCookieJar* RenderFrameImpl::cookieJar() {
 
 blink::BlameContext* RenderFrameImpl::frameBlameContext() {
   DCHECK(blame_context_);
-  return blame_context_;
+  return blame_context_.get();
 }
 
 blink::WebServiceWorkerProvider*

@@ -1220,7 +1220,7 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<ExternalPopupMenu> external_popup_menu_;
 #endif
 
-  FrameBlameContext* blame_context_;  // Not owned.
+  std::unique_ptr<FrameBlameContext> blame_context_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 
