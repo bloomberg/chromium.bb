@@ -7,6 +7,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
+#include "ash/wm/common/window_animation_types.h"
 #include "ash/wm/window_animations.h"
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
@@ -25,9 +26,9 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
   ~UserWallpaperDelegate() override {}
 
   int GetAnimationType() override {
-    return ShouldShowInitialAnimation() ?
-        ash::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE :
-        static_cast<int>(wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+    return ShouldShowInitialAnimation()
+               ? ash::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE
+               : static_cast<int>(wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   }
 
   bool ShouldShowInitialAnimation() override { return true; }

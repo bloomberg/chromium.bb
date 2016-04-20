@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/workspace/workspace_types.h"
+#include "ash/wm/common/workspace/workspace_types.h"
 #include "base/macros.h"
 
 namespace aura {
@@ -36,7 +36,7 @@ class ASH_EXPORT WorkspaceController {
   virtual ~WorkspaceController();
 
   // Returns the current window state.
-  WorkspaceWindowState GetWindowState() const;
+  wm::WorkspaceWindowState GetWindowState() const;
 
   void SetShelf(ShelfLayoutManager* shelf);
 

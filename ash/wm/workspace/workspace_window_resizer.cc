@@ -15,6 +15,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/common/window_positioning_utils.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
@@ -966,9 +967,11 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
     phantom_bounds = ScreenUtil::ConvertRectFromScreen(
         GetTarget()->parent(), dock_layout_->dragged_bounds());
   } else {
-    phantom_bounds = (snap_type_ == SNAP_LEFT) ?
-        wm::GetDefaultLeftSnappedWindowBoundsInParent(GetTarget()) :
-        wm::GetDefaultRightSnappedWindowBoundsInParent(GetTarget());
+    phantom_bounds = (snap_type_ == SNAP_LEFT)
+                         ? wm::GetDefaultLeftSnappedWindowBoundsInParent(
+                               wm::WmWindowAura::Get(GetTarget()))
+                         : wm::GetDefaultRightSnappedWindowBoundsInParent(
+                               wm::WmWindowAura::Get(GetTarget()));
   }
 
   if (!snap_phantom_window_controller_) {

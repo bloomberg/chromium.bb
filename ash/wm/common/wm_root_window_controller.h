@@ -6,6 +6,7 @@
 #define ASH_WM_COMMON_WM_ROOT_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/common/workspace/workspace_types.h"
 
 namespace ash {
 namespace wm {
@@ -20,6 +21,8 @@ class ASH_EXPORT WmRootWindowController {
   virtual bool HasShelf() = 0;
 
   virtual WmGlobals* GetGlobals() = 0;
+
+  virtual WorkspaceWindowState GetWorkspaceWindowState() = 0;
 };
 
 }  // namespace wm

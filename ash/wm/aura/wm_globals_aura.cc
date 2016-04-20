@@ -4,6 +4,7 @@
 
 #include "ash/wm/aura/wm_globals_aura.h"
 
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -43,6 +44,12 @@ WmGlobalsAura* WmGlobalsAura::Get() {
 
 WmWindow* WmGlobalsAura::GetActiveWindow() {
   return WmWindowAura::Get(wm::GetActiveWindow());
+}
+
+WmWindow* WmGlobalsAura::GetRootWindowForDisplayId(int64_t display_id) {
+  return WmWindowAura::Get(Shell::GetInstance()
+                               ->window_tree_host_manager()
+                               ->GetRootWindowForDisplayId(display_id));
 }
 
 WmWindow* WmGlobalsAura::GetRootWindowForNewWindows() {

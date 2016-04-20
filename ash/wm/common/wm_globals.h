@@ -5,6 +5,8 @@
 #ifndef ASH_WM_COMMON_WM_GLOBALS_H_
 #define ASH_WM_COMMON_WM_GLOBALS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -28,6 +30,9 @@ class ASH_EXPORT WmGlobals {
   static WmGlobals* Get();
 
   virtual WmWindow* GetActiveWindow() = 0;
+
+  // Returns the root window for the specified display.
+  virtual WmWindow* GetRootWindowForDisplayId(int64_t display_id) = 0;
 
   // Returns the root window that newly created windows should be added to.
   // NOTE: this returns the root, newly created window should be added to the

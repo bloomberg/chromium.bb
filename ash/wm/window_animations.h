@@ -26,16 +26,6 @@ namespace views {
 // with desktop Chrome, see ui/views/corewm/window_animations.h.
 namespace ash {
 
-// An extension of the window animations provided by CoreWm. These should be
-// Ash-specific only.
-enum WindowVisibilityAnimationType {
-  // Window scale/rotates down to its launcher icon.
-  WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE =
-      ::wm::WINDOW_VISIBILITY_ANIMATION_MAX,
-  // Fade in/out using brightness and grayscale web filters.
-  WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE
-};
-
 // Direction for ash-specific window animations used in workspaces and
 // lock/unlock animations.
 enum LayerScaleAnimationDirection {

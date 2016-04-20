@@ -279,9 +279,10 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   } else {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
     // when we are in SHELF_AUTO_HIDE_ALWAYS_HIDDEN.
-    WorkspaceWindowState window_state(workspace_controller_->GetWindowState());
+    wm::WorkspaceWindowState window_state(
+        workspace_controller_->GetWindowState());
     switch (window_state) {
-      case WORKSPACE_WINDOW_STATE_FULL_SCREEN: {
+      case wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN: {
         const aura::Window* fullscreen_window = GetRootWindowController(
             root_window_)->GetWindowForFullscreenMode();
         if (fullscreen_window && wm::GetWindowState(fullscreen_window)->
@@ -295,15 +296,15 @@ void ShelfLayoutManager::UpdateVisibilityState() {
         break;
       }
 
-      case WORKSPACE_WINDOW_STATE_MAXIMIZED:
+      case wm::WORKSPACE_WINDOW_STATE_MAXIMIZED:
         SetState(CalculateShelfVisibility());
         break;
 
-      case WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
-      case WORKSPACE_WINDOW_STATE_DEFAULT:
+      case wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
+      case wm::WORKSPACE_WINDOW_STATE_DEFAULT:
         SetState(CalculateShelfVisibility());
-        SetWindowOverlapsShelf(window_state ==
-                               WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF);
+        SetWindowOverlapsShelf(
+            window_state == wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF);
         break;
     }
   }
@@ -516,8 +517,9 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   State state;
   state.visibility_state = visibility_state;
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
-  state.window_state = workspace_controller_ ?
-      workspace_controller_->GetWindowState() : WORKSPACE_WINDOW_STATE_DEFAULT;
+  state.window_state = workspace_controller_
+                           ? workspace_controller_->GetWindowState()
+                           : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
   // Preserve the log in screen states.
   state.is_adding_user_screen = state_.is_adding_user_screen;
   state.is_screen_locked = state_.is_screen_locked;
@@ -557,7 +559,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   // - Going from an auto hidden shelf in maximized mode to a visible shelf in
   //   maximized mode.
   if (state.visibility_state == SHELF_VISIBLE &&
-      state.window_state == WORKSPACE_WINDOW_STATE_MAXIMIZED &&
+      state.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED &&
       old_state.visibility_state != SHELF_VISIBLE) {
     change_type = BACKGROUND_CHANGE_IMMEDIATE;
   } else {
@@ -579,9 +581,9 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
     UpdateShelfBackground(change_type);
   }
 
-  shelf_->SetDimsShelf(
-      state.visibility_state == SHELF_VISIBLE &&
-      state.window_state == WORKSPACE_WINDOW_STATE_MAXIMIZED);
+  shelf_->SetDimsShelf(state.visibility_state == SHELF_VISIBLE &&
+                       state.window_state ==
+                           wm::WORKSPACE_WINDOW_STATE_MAXIMIZED);
 
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
@@ -875,7 +877,7 @@ void ShelfLayoutManager::UpdateShelfBackground(
 
 ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (state_.visibility_state != SHELF_AUTO_HIDE &&
-      state_.window_state == WORKSPACE_WINDOW_STATE_MAXIMIZED) {
+      state_.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED) {
     return SHELF_BACKGROUND_MAXIMIZED;
   }
 

@@ -190,6 +190,10 @@ WmWindow* WmWindowAura::GetToplevelWindow() {
   return Get(window_->GetToplevelWindow());
 }
 
+void WmWindowAura::AddChild(WmWindow* window) {
+  window_->AddChild(GetAuraWindow(window));
+}
+
 WmWindow* WmWindowAura::GetParent() {
   return Get(window_->parent());
 }
@@ -205,6 +209,14 @@ std::vector<WmWindow*> WmWindowAura::GetTransientChildren() {
   for (size_t i = 0; i < aura_windows.size(); ++i)
     wm_windows[i] = Get(aura_windows[i]);
   return wm_windows;
+}
+
+void WmWindowAura::SetVisibilityAnimationType(int type) {
+  ::wm::SetWindowVisibilityAnimationType(window_, type);
+}
+
+void WmWindowAura::Animate(::wm::WindowAnimationType type) {
+  ::wm::AnimateWindow(window_, type);
 }
 
 void WmWindowAura::SetBounds(const gfx::Rect& bounds) {
@@ -313,6 +325,10 @@ void WmWindowAura::SetShowState(ui::WindowShowState show_state) {
 
 ui::WindowShowState WmWindowAura::GetShowState() const {
   return window_->GetProperty(aura::client::kShowStateKey);
+}
+
+void WmWindowAura::SetRestoreShowState(ui::WindowShowState show_state) {
+  window_->SetProperty(aura::client::kRestoreShowStateKey, show_state);
 }
 
 void WmWindowAura::SetCapture() {

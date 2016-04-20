@@ -57,9 +57,12 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   bool GetBoolProperty(WmWindowProperty key) override;
   const WindowState* GetWindowState() const override;
   WmWindow* GetToplevelWindow() override;
+  void AddChild(WmWindow* window) override;
   WmWindow* GetParent() override;
   WmWindow* GetTransientParent() override;
   std::vector<WmWindow*> GetTransientChildren() override;
+  void SetVisibilityAnimationType(int type) override;
+  void Animate(::wm::WindowAnimationType type) override;
   void SetBounds(const gfx::Rect& bounds) override;
   void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
                                     base::TimeDelta delta) override;
@@ -78,6 +81,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   bool Contains(const WmWindow* other) const override;
   void SetShowState(ui::WindowShowState show_state) override;
   ui::WindowShowState GetShowState() const override;
+  void SetRestoreShowState(ui::WindowShowState show_state) override;
   void SetCapture() override;
   bool HasCapture() override;
   void ReleaseCapture() override;

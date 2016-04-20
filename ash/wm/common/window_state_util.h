@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WINDOW_STATE_UTIL_H_
-#define ASH_WM_WINDOW_STATE_UTIL_H_
+#ifndef ASH_WM_COMMON_WINDOW_STATE_UTIL_H_
+#define ASH_WM_COMMON_WINDOW_STATE_UTIL_H_
 
 namespace ash {
 namespace wm {
@@ -16,4 +16,4 @@ void ToggleFullScreen(WindowState* window_state, WindowStateDelegate* delegate);
 }  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_WINDOW_STATE_UTIL_H_
+#endif  // ASH_WM_COMMON_WINDOW_STATE_UTIL_H_

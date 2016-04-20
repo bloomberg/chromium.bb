@@ -9,6 +9,8 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/common/window_animation_types.h"
+#include "ash/wm/common/window_state_util.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
@@ -16,7 +18,6 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_state_delegate.h"
-#include "ash/wm/window_state_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ui/aura/client/aura_constants.h"
@@ -256,7 +257,8 @@ void MaximizeModeWindowState::UpdateWindow(wm::WindowState* window_state,
 
     current_state_type_ = target_state;
     ::wm::SetWindowVisibilityAnimationType(
-        window_state->aura_window(), WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+        window_state->aura_window(),
+        wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
     window_state->window()->Hide();
     if (window_state->IsActive())
       window_state->Deactivate();

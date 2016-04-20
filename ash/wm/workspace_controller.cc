@@ -62,14 +62,14 @@ WorkspaceController::~WorkspaceController() {
   viewport_->RemovePreTargetHandler(event_handler_.get());
 }
 
-WorkspaceWindowState WorkspaceController::GetWindowState() const {
+wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
   if (!shelf_)
-    return WORKSPACE_WINDOW_STATE_DEFAULT;
+    return wm::WORKSPACE_WINDOW_STATE_DEFAULT;
   const aura::Window* topmost_fullscreen_window = GetRootWindowController(
       viewport_->GetRootWindow())->GetWindowForFullscreenMode();
   if (topmost_fullscreen_window &&
       !wm::GetWindowState(topmost_fullscreen_window)->ignored_by_shelf()) {
-    return WORKSPACE_WINDOW_STATE_FULL_SCREEN;
+    return wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
   }
 
   // These are the container ids of containers which may contain windows that
@@ -91,7 +91,7 @@ WorkspaceWindowState WorkspaceController::GetWindowState() const {
       if (!layer->GetTargetVisibility())
         continue;
       if (window_state->IsMaximized())
-        return WORKSPACE_WINDOW_STATE_MAXIMIZED;
+        return wm::WORKSPACE_WINDOW_STATE_MAXIMIZED;
       if (!window_overlaps_launcher &&
           ((*i)->bounds().Intersects(shelf_bounds))) {
         window_overlaps_launcher = true;
@@ -99,9 +99,9 @@ WorkspaceWindowState WorkspaceController::GetWindowState() const {
     }
   }
 
-  return (window_overlaps_launcher || IsDockedAreaVisible(shelf_)) ?
-      WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF :
-      WORKSPACE_WINDOW_STATE_DEFAULT;
+  return (window_overlaps_launcher || IsDockedAreaVisible(shelf_))
+             ? wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF
+             : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
 }
 
 void WorkspaceController::SetShelf(ShelfLayoutManager* shelf) {

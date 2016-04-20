@@ -33,6 +33,7 @@
 #include "ash/touch/touch_hud_projection.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/lock_layout_manager.h"
@@ -134,7 +135,7 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
                        new_parent->id() != kShellWindowId_DockedContainer;
   gfx::Rect local_bounds;
   if (update_bounds) {
-    local_bounds = state->aura_window()->bounds();
+    local_bounds = wm::WmWindowAura::GetAuraWindow(state->window())->bounds();
     MoveOriginRelativeToSize(src_size, dst_size, &local_bounds);
   }
 

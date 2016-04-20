@@ -6,6 +6,7 @@
 
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/common/window_animation_types.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/workspace_controller.h"
@@ -71,8 +72,7 @@ TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
 
   // Hiding.
   ::wm::SetWindowVisibilityAnimationType(
-      window.get(),
-      WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE);
+      window.get(), wm::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE);
   AnimateOnChildWindowVisibilityChanged(window.get(), false);
   EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
   EXPECT_FALSE(window->layer()->GetTargetVisibility());
@@ -80,8 +80,7 @@ TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
 
   // Showing.
   ::wm::SetWindowVisibilityAnimationType(
-      window.get(),
-      WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE);
+      window.get(), wm::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE);
   AnimateOnChildWindowVisibilityChanged(window.get(), true);
   EXPECT_EQ(0.0f, window->layer()->GetTargetBrightness());
   EXPECT_EQ(0.0f, window->layer()->GetTargetGrayscale());

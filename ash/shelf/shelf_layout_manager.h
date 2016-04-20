@@ -16,9 +16,9 @@
 #include "ash/shell_observer.h"
 #include "ash/snap_to_pixel_layout_manager.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wm/common/workspace/workspace_types.h"
 #include "ash/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/wm/lock_state_observer.h"
-#include "ash/wm/workspace/workspace_types.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
@@ -238,11 +238,12 @@ class ASH_EXPORT ShelfLayoutManager
   };
 
   struct State {
-    State() : visibility_state(SHELF_VISIBLE),
-              auto_hide_state(SHELF_AUTO_HIDE_HIDDEN),
-              window_state(WORKSPACE_WINDOW_STATE_DEFAULT),
-              is_screen_locked(false),
-              is_adding_user_screen(false) {}
+    State()
+        : visibility_state(SHELF_VISIBLE),
+          auto_hide_state(SHELF_AUTO_HIDE_HIDDEN),
+          window_state(wm::WORKSPACE_WINDOW_STATE_DEFAULT),
+          is_screen_locked(false),
+          is_adding_user_screen(false) {}
 
     // Returns true if the two states are considered equal. As
     // |auto_hide_state| only matters if |visibility_state| is
@@ -259,7 +260,7 @@ class ASH_EXPORT ShelfLayoutManager
 
     ShelfVisibilityState visibility_state;
     ShelfAutoHideState auto_hide_state;
-    WorkspaceWindowState window_state;
+    wm::WorkspaceWindowState window_state;
     bool is_screen_locked;
     bool is_adding_user_screen;
   };

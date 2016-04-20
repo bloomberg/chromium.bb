@@ -13,6 +13,8 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/common/window_animation_types.h"
+#include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
@@ -244,8 +246,11 @@ void UndockWindow(aura::Window* window) {
   gfx::Rect previous_bounds = window->bounds();
   aura::Window* old_parent = window->parent();
   aura::client::ParentWindowWithContext(window, window, gfx::Rect());
-  if (window->parent() != old_parent)
-    wm::ReparentTransientChildrenOfChild(window, old_parent, window->parent());
+  if (window->parent() != old_parent) {
+    wm::ReparentTransientChildrenOfChild(
+        wm::WmWindowAura::Get(window), wm::WmWindowAura::Get(old_parent),
+        wm::WmWindowAura::Get(window->parent()));
+  }
   // Start maximize or fullscreen (affecting packaged apps) animation from
   // previous window bounds.
   window->layer()->SetBounds(previous_bounds);
@@ -432,7 +437,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
       shelf_(nullptr),
       workspace_controller_(workspace_controller),
       in_fullscreen_(workspace_controller_->GetWindowState() ==
-                     WORKSPACE_WINDOW_STATE_FULL_SCREEN),
+                     wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN),
       docked_width_(0),
       alignment_(DOCKED_ALIGNMENT_NONE),
       preferred_alignment_(DOCKED_ALIGNMENT_NONE),
@@ -792,7 +797,7 @@ void DockedWindowLayoutManager::OnFullscreenStateChanged(
     return;
   // Entering fullscreen mode (including immersive) hides docked windows.
   in_fullscreen_ = workspace_controller_->GetWindowState() ==
-      WORKSPACE_WINDOW_STATE_FULL_SCREEN;
+                   wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
   {
     // prevent Relayout from getting called multiple times during this
     base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
@@ -892,7 +897,7 @@ void DockedWindowLayoutManager::OnWindowVisibilityChanging(
     ::wm::SetWindowVisibilityAnimationDuration(
         window, base::TimeDelta::FromMilliseconds(kFadeDurationMs));
   } else if (wm::GetWindowState(window)->IsMinimized()) {
-    animation_type = WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE;
+    animation_type = wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE;
   }
   ::wm::SetWindowVisibilityAnimationType(window, animation_type);
 }

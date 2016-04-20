@@ -23,6 +23,7 @@ class ASH_EXPORT WmGlobalsAura : public WmGlobals {
 
   // WmGlobals:
   WmWindow* GetActiveWindow() override;
+  WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
   WmWindow* GetRootWindowForNewWindows() override;
   std::vector<WmWindow*> GetMruWindowListIgnoreModals() override;
   bool IsForceMaximizeOnFirstRun() override;

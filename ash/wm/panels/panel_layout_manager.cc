@@ -16,6 +16,9 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/aura/wm_window_aura.h"
+#include "ash/wm/common/window_animation_types.h"
+#include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
@@ -349,7 +352,9 @@ void PanelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
     aura::Window* old_parent = child->parent();
     aura::client::ParentWindowWithContext(
         child, child, child->GetRootWindow()->GetBoundsInScreen());
-    wm::ReparentTransientChildrenOfChild(child, old_parent, child->parent());
+    wm::ReparentTransientChildrenOfChild(
+        wm::WmWindowAura::Get(child), wm::WmWindowAura::Get(old_parent),
+        wm::WmWindowAura::Get(child->parent()));
     DCHECK(child->parent()->id() != kShellWindowId_PanelContainer);
     return;
   }
@@ -561,7 +566,7 @@ void PanelLayoutManager::WillChangeVisibilityState(
 
 void PanelLayoutManager::MinimizePanel(aura::Window* panel) {
   ::wm::SetWindowVisibilityAnimationType(
-      panel, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+      panel, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
   ui::Layer* layer = panel->layer();
   ui::ScopedLayerAnimationSettings panel_slide_settings(layer->GetAnimator());
   panel_slide_settings.SetPreemptionStrategy(

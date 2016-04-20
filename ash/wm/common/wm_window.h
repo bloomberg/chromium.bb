@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "base/time/time.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/window_types.h"
 
 namespace gfx {
@@ -88,10 +89,16 @@ class ASH_EXPORT WmWindow {
 
   virtual WmWindow* GetToplevelWindow() = 0;
 
+  virtual void AddChild(WmWindow* window) = 0;
+
   virtual WmWindow* GetParent() = 0;
 
   virtual WmWindow* GetTransientParent() = 0;
   virtual std::vector<WmWindow*> GetTransientChildren() = 0;
+
+  // |type| is WindowVisibilityAnimationType. Has to be an int to match aura.
+  virtual void SetVisibilityAnimationType(int type) = 0;
+  virtual void Animate(::wm::WindowAnimationType type) = 0;
 
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
   virtual void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
@@ -116,6 +123,8 @@ class ASH_EXPORT WmWindow {
 
   virtual void SetShowState(ui::WindowShowState show_state) = 0;
   virtual ui::WindowShowState GetShowState() const = 0;
+
+  virtual void SetRestoreShowState(ui::WindowShowState show_state) = 0;
 
   virtual void SetCapture() = 0;
   virtual bool HasCapture() = 0;

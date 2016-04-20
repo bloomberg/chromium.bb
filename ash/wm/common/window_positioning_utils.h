@@ -15,6 +15,8 @@ class Size;
 namespace ash {
 namespace wm {
 
+class WmWindow;
+
 // We force at least this many DIPs for any window on the screen.
 const int kMinimumOnScreenArea = 25;
 
@@ -37,6 +39,16 @@ ASH_EXPORT void AdjustBoundsToEnsureWindowVisibility(
 ASH_EXPORT void AdjustBoundsToEnsureMinimumWindowVisibility(
     const gfx::Rect& visible_area,
     gfx::Rect* bounds);
+
+// Returns the bounds of a left snapped window with default width in parent
+// coordinates.
+ASH_EXPORT gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(
+    WmWindow* window);
+
+// Returns the bounds of a right snapped window with default width in parent
+// coordinates.
+ASH_EXPORT gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(
+    WmWindow* window);
 
 }  // namespace wm
 }  // namespace ash

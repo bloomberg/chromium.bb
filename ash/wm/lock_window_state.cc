@@ -9,13 +9,14 @@
 #include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/common/window_animation_types.h"
+#include "ash/wm/common/window_state_util.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_state_delegate.h"
-#include "ash/wm/window_state_util.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -134,7 +135,8 @@ void LockWindowState::UpdateWindow(wm::WindowState* window_state,
 
     current_state_type_ = target_state;
     ::wm::SetWindowVisibilityAnimationType(
-        window_state->aura_window(), WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+        window_state->aura_window(),
+        wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
     window_state->window()->Hide();
     if (window_state->IsActive())
       window_state->Deactivate();

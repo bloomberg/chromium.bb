@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_state_util.h"
+#include "ash/wm/common/window_state_util.h"
 
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
