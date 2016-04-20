@@ -8,6 +8,7 @@
 
 #include <algorithm>  // std::find
 #include <memory>
+#include <set>
 #include <sstream>
 #include <utility>
 
@@ -28,6 +29,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -855,7 +857,9 @@ InputMethodManagerImpl::InputMethodManagerImpl(
       component_extension_ime_manager_(new ComponentExtensionIMEManager()),
       enable_extension_loading_(enable_extension_loading),
       is_ime_menu_activated_(false) {
-  if (base::SysInfo::IsRunningOnChromeOS())
+  // TODO(mohsen): Revisit using FakeImeKeyboard with mash when InputController
+  // work is ready. http://crbug.com/601981
+  if (base::SysInfo::IsRunningOnChromeOS() && !chrome::IsRunningInMash())
     keyboard_.reset(ImeKeyboard::Create());
   else
     keyboard_.reset(new FakeImeKeyboard());
