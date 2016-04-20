@@ -28,6 +28,9 @@ Polymer({
       type: Object,
     },
 
+    /** @private {!settings.AppearanceBrowserProxy} */
+    browserProxy_: Object,
+
     /**
      * Preferences state.
      */
@@ -111,6 +114,10 @@ Polymer({
     'zoomLevelChanged_(defaultZoomLevel_.value)',
   ],
 
+  created: function() {
+    this.browserProxy_ = settings.AppearanceBrowserProxyImpl.getInstance();
+  },
+
   ready: function() {
     this.$.defaultFontSize.menuOptions = this.fontSizeOptions_;
     this.$.pageZoom.menuOptions = this.pageZoomOptions_;
@@ -123,7 +130,7 @@ Polymer({
   /** @override */
   attached: function() {
     // Query the initial state.
-    cr.sendWithPromise('getResetThemeEnabled').then(
+    this.browserProxy_.getResetThemeEnabled().then(
         this.setResetThemeEnabled.bind(this));
 
     // Set up the change event listener.
@@ -160,9 +167,19 @@ Polymer({
     window.open(loadTimeData.getString('themesGalleryUrl'));
   },
 
+<if expr="chromeos">
+  /**
+   * ChromeOS only.
+   * @private
+   */
+  openWallpaperManager_: function() {
+    this.browserProxy_.openWallpaperManager();
+  },
+</if>
+
   /** @private */
   resetTheme_: function() {
-    chrome.send('resetTheme');
+    this.browserProxy_.resetTheme();
   },
 
   /** @private */

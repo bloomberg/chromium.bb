@@ -16,6 +16,15 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'appearance_browser_proxy',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(EXTERNS_GYP):chrome_send',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'appearance_page',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
@@ -25,7 +34,8 @@
         '<(EXTERNS_GYP):settings_private',
         '<(EXTERNS_GYP):chrome_send',
         '../controls/compiled_resources2.gyp:settings_dropdown_menu',
-        '../settings_page/compiled_resources2.gyp:settings_animated_pages'
+        '../settings_page/compiled_resources2.gyp:settings_animated_pages',
+        'appearance_browser_proxy',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

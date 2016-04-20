@@ -42,10 +42,15 @@ class AppearanceHandler : public SettingsPageUIHandler,
   bool ResetThemeEnabled() const;
 
   // Resets the UI theme of the browser to the default theme.
-  void ResetTheme(const base::ListValue*);
+  void HandleResetTheme(const base::ListValue* args);
 
   // Sends the enabled state of the reset-theme control to the JS.
-  void GetResetThemeEnabled(const base::ListValue* args);
+  void HandleGetResetThemeEnabled(const base::ListValue* args);
+
+#if defined(OS_CHROMEOS)
+  // Open the wallpaper manager app.
+  void HandleOpenWallpaperManager(const base::ListValue* args);
+#endif
 
   Profile* profile_;  // Weak pointer.
 

@@ -14,6 +14,11 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_ui.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/desktop_background/user_wallpaper_delegate.h"
+#include "ash/shell.h"
+#endif
+
 namespace settings {
 
 AppearanceHandler::AppearanceHandler(content::WebUI* webui)
@@ -30,11 +35,17 @@ AppearanceHandler::~AppearanceHandler() {
 void AppearanceHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "resetTheme",
-      base::Bind(&AppearanceHandler::ResetTheme, base::Unretained(this)));
+      base::Bind(&AppearanceHandler::HandleResetTheme, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getResetThemeEnabled",
-      base::Bind(&AppearanceHandler::GetResetThemeEnabled,
+      base::Bind(&AppearanceHandler::HandleGetResetThemeEnabled,
                  base::Unretained(this)));
+#if defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
+      "openWallpaperManager",
+      base::Bind(&AppearanceHandler::HandleOpenWallpaperManager,
+                 base::Unretained(this)));
+#endif
 }
 
 void AppearanceHandler::Observe(
@@ -54,7 +65,7 @@ void AppearanceHandler::Observe(
   }
 }
 
-void AppearanceHandler::ResetTheme(const base::ListValue* /* args */) {
+void AppearanceHandler::HandleResetTheme(const base::ListValue* /*args*/) {
   ThemeServiceFactory::GetForProfile(profile_)->UseDefaultTheme();
 }
 
@@ -63,13 +74,20 @@ bool AppearanceHandler::ResetThemeEnabled() const {
   return !ThemeServiceFactory::GetForProfile(profile_)->UsingDefaultTheme();
 }
 
-void AppearanceHandler::GetResetThemeEnabled(const base::ListValue* args) {
+void AppearanceHandler::HandleGetResetThemeEnabled(
+    const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
-
   ResolveJavascriptCallback(*callback_id,
                             base::FundamentalValue(ResetThemeEnabled()));
 }
+
+#if defined(OS_CHROMEOS)
+void AppearanceHandler::HandleOpenWallpaperManager(
+    const base::ListValue* /*args*/) {
+  ash::Shell::GetInstance()->user_wallpaper_delegate()->OpenSetWallpaperPage();
+}
+#endif
 
 }  // namespace settings
