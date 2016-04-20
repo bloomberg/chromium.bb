@@ -18,7 +18,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/containers/linked_list.h"
 #include "base/logging.h"
 #include "base/macros.h"

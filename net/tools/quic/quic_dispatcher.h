@@ -12,7 +12,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/linked_hash_map.h"

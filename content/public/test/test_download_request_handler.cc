@@ -498,7 +498,8 @@ TestDownloadRequestHandler::Interceptor::Register(
 
 void TestDownloadRequestHandler::Interceptor::Unregister() {
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  filter->RemoveUrlHandler(url_);
+  GURL url = url_;  // Make a copy as |this| will be deleted.
+  filter->RemoveUrlHandler(url);
   // We are deleted now since the filter owned |this|.
 }
 

@@ -18,8 +18,8 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -261,10 +261,10 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
     bool               doomed;
   };
 
-  typedef base::hash_map<std::string, ActiveEntry*> ActiveEntriesMap;
-  typedef base::hash_map<std::string, PendingOp*> PendingOpsMap;
-  typedef std::set<ActiveEntry*> ActiveEntriesSet;
-  typedef base::hash_map<std::string, int> PlaybackCacheMap;
+  using ActiveEntriesMap = std::unordered_map<std::string, ActiveEntry*>;
+  using PendingOpsMap = std::unordered_map<std::string, PendingOp*>;
+  using ActiveEntriesSet = std::set<ActiveEntry*>;
+  using PlaybackCacheMap = std::unordered_map<std::string, int>;
 
   // Methods ------------------------------------------------------------------
 

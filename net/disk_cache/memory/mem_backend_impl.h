@@ -10,9 +10,9 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_map>
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/containers/linked_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -98,7 +98,7 @@ class NET_EXPORT_PRIVATE MemBackendImpl final : public Backend {
   class MemIterator;
   friend class MemIterator;
 
-  typedef base::hash_map<std::string, MemEntryImpl*> EntryMap;
+  using EntryMap = std::unordered_map<std::string, MemEntryImpl*>;
 
   // Deletes entries from the cache until the current size is below the limit.
   void EvictIfNeeded();

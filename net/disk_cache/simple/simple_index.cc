@@ -402,7 +402,8 @@ void SimpleIndex::MergeInitializingSet(
 
   EntrySet* index_file_entries = &load_result->entries;
 
-  for (base::hash_set<uint64_t>::const_iterator it = removed_entries_.begin();
+  for (std::unordered_set<uint64_t>::const_iterator it =
+           removed_entries_.begin();
        it != removed_entries_.end(); ++it) {
     index_file_entries->erase(*it);
   }

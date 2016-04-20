@@ -9,12 +9,12 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -116,10 +116,10 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   class SimpleIterator;
   friend class SimpleIterator;
 
-  typedef base::hash_map<uint64_t, SimpleEntryImpl*> EntryMap;
+  using EntryMap = std::unordered_map<uint64_t, SimpleEntryImpl*>;
 
-  typedef base::Callback<void(base::Time mtime, uint64_t max_size, int result)>
-      InitializeIndexCallback;
+  using InitializeIndexCallback =
+      base::Callback<void(base::Time mtime, uint64_t max_size, int result)>;
 
   class ActiveEntryProxy;
   friend class ActiveEntryProxy;
@@ -210,7 +210,8 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // these entries cannot have Doom/Create/Open operations run until the doom
   // is complete. The base::Closure map target is used to store deferred
   // operations to be run at the completion of the Doom.
-  base::hash_map<uint64_t, std::vector<base::Closure>> entries_pending_doom_;
+  std::unordered_map<uint64_t, std::vector<base::Closure>>
+      entries_pending_doom_;
 
   net::NetLog* const net_log_;
 };

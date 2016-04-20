@@ -9,8 +9,8 @@
 
 #include <algorithm>
 #include <deque>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "net/spdy/spdy_bug_tracker.h"
 #include "net/spdy/spdy_protocol.h"
@@ -152,7 +152,7 @@ class WriteBlockedList {
  private:
   friend class net::test::WriteBlockedListPeer;
 
-  typedef base::hash_map<IdType, SpdyPriority> StreamToPriorityMap;
+  using StreamToPriorityMap = std::unordered_map<IdType, SpdyPriority>;
 
   void AddStream(IdType stream_id, SpdyPriority priority, bool push_back) {
     priority = ClampPriority(priority);

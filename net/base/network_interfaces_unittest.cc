@@ -4,9 +4,9 @@
 
 #include "net/base/network_interfaces.h"
 
-#include <string>
-
 #include <ostream>
+#include <string>
+#include <unordered_set>
 
 // TODO(eroman): Remove unneeeded headers.
 #include "base/files/file_path.h"
@@ -229,7 +229,7 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   IPAddress ipv6_address(kIPv6Addr);
 
   NetworkInterfaceList results;
-  ::base::hash_set<int> online_links;
+  std::unordered_set<int> online_links;
   internal::AddressTrackerLinux::AddressMap address_map;
 
   // Interface 1 is offline.

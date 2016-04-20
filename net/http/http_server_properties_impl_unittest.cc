@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"

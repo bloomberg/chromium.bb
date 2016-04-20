@@ -13,6 +13,8 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 // #define EPOLL_SERVER_EVENT_TRACING 1
@@ -35,7 +37,6 @@
 #endif
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include <sys/epoll.h>
 
@@ -553,7 +554,7 @@ class EpollServer {
     }
   };
 
-  typedef base::hash_set<CBAndEventMask, CBAndEventMaskHash> FDToCBMap;
+  using FDToCBMap = std::unordered_set<CBAndEventMask, CBAndEventMaskHash>;
 
   // the following four functions are OS-specific, and are likely
   // to be changed in a subclass if the poll/select method is changed
@@ -664,7 +665,7 @@ class EpollServer {
   // only so that we can enforce stringent checks that a caller can not register
   // the same alarm twice. One option is to have an implementation in which
   // this hash_set is used only in the debug mode.
-  typedef base::hash_set<AlarmCB*, AlarmCBHash> AlarmCBMap;
+  using AlarmCBMap = std::unordered_set<AlarmCB*, AlarmCBHash>;
   AlarmCBMap all_alarms_;
 
   TimeToAlarmCBMap alarm_map_;
@@ -915,7 +916,7 @@ class EpollServer {
 
     std::vector<DebugOutput*> debug_events_;
     std::vector<Events> unregistered_fds_;
-    typedef base::hash_map<int, Events> EventCountsMap;
+    using EventCountsMap = std::unordered_map<int, Events>;
     EventCountsMap event_counts_;
     int64_t num_records_;
     int64_t record_threshold_;

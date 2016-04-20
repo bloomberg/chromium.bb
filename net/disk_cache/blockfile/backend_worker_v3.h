@@ -7,7 +7,6 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_BACKEND_WORKER_V3_H_
 #define NET_DISK_CACHE_BLOCKFILE_BACKEND_WORKER_V3_H_
 
-#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

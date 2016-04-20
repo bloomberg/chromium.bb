@@ -7,9 +7,8 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -77,8 +76,7 @@ class NET_EXPORT URLRequestFilter : public URLRequestInterceptor {
                std::unique_ptr<URLRequestInterceptor>>;
   // URL -> URLRequestInterceptor
   using URLInterceptorMap =
-      base::ScopedPtrHashMap<std::string,
-                             std::unique_ptr<URLRequestInterceptor>>;
+      std::unordered_map<std::string, std::unique_ptr<URLRequestInterceptor>>;
 
   URLRequestFilter();
   ~URLRequestFilter() override;
