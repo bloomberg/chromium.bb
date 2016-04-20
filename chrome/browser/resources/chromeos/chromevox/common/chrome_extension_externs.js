@@ -230,6 +230,31 @@ chrome.automation.StateType = {
 };
 
 /**
+ * @enum {number}
+ */
+chrome.automation.NameFromType = {
+  0: '',
+  1: 'nameFromUninitialized',
+  2: 'nameFromAttribute',
+  3: 'nameFromContents',
+  4: 'nameFromPlaceholder',
+  5: 'nameFromRelatedElement',
+  6: 'nameFromValue'
+};
+
+/**
+ * @enum {number}
+ */
+chrome.automation.DescriptionFromType = {
+  0: '',
+  1: 'descriptionFromUninitialized',
+  2: 'descriptionFromAttribute',
+  3: 'descriptionFromContents',
+  4: 'descriptionFromPlaceholder',
+  5: 'descriptionFromRelatedElement'
+};
+
+/**
  * @enum {string}
  */
 chrome.automation.TreeChangeType = {
@@ -329,6 +354,18 @@ chrome.automation.AutomationNode.prototype.role;
  * @type {!Object<chrome.automation.StateType, boolean>}
  */
 chrome.automation.AutomationNode.prototype.state;
+
+
+/**
+ * @type {chrome.automation.NameFromType}
+ */
+chrome.automation.AutomationNode.prototype.nameFrom;
+
+
+/**
+ * @type {chrome.automation.DescriptionFromType}
+ */
+chrome.automation.AutomationNode.prototype.descriptionFrom;
 
 
 /**

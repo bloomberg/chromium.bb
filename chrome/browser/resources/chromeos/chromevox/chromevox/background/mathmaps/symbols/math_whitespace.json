@@ -13,7 +13,7 @@
   "default": {
    "default": "no break space",
    "alternative": "non breaking space",
-   "short": ""
+   "short": "space"
   }
  },
  "key": "00A0"
