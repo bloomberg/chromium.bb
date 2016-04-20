@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <string>
 #include <vector>
@@ -37,8 +40,17 @@ const base::FilePath::CharType kCacheFileDirectory[] =
     FILE_PATH_LITERAL("files");
 const base::FilePath::CharType kNewCacheFileDirectory[] =
     FILE_PATH_LITERAL("blobs");
+const base::FilePath::CharType kLinkDirectory[] = FILE_PATH_LITERAL("links");
 
 const int kTemporaryFileSizeInBytes = 10;
+
+int GetNumberOfLinks(const base::FilePath& file_path) {
+  struct stat result;
+  if (stat(file_path.AsUTF8Unsafe().c_str(), &result) != 0) {
+    return -1;
+  }
+  return result.st_nlink;
+}
 
 }  // namespace
 
@@ -709,8 +721,10 @@ TEST_F(FileCacheTest, MigrateCacheFiles) {
       temp_dir_.path().Append(kCacheFileDirectory);
   const base::FilePath new_cache_dir =
       temp_dir_.path().Append(kNewCacheFileDirectory);
+  const base::FilePath link_dir = temp_dir_.path().Append(kLinkDirectory);
   ASSERT_TRUE(base::CreateDirectory(old_cache_dir));
   ASSERT_TRUE(base::CreateDirectory(new_cache_dir));
+  ASSERT_TRUE(base::CreateDirectory(link_dir));
 
   // Entry A: cache file in old cache directory with metadata.
   const std::string id_a = "id_a";
@@ -746,16 +760,107 @@ TEST_F(FileCacheTest, MigrateCacheFiles) {
       true);
   ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_d));
 
+  // Entry E: pinned cache file.
+  const std::string id_e = "id_e";
+  ResourceEntry entry_e;
+  entry_e.set_local_id(id_e);
+  FileCacheEntry* file_cache_entry_e =
+      entry_e.mutable_file_specific_info()->mutable_cache_state();
+  file_cache_entry_e->set_is_present(true);
+  file_cache_entry_e->set_is_pinned(true);
+  file_cache_entry_e->set_is_dirty(false);
+  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_e));
+  const base::FilePath old_file_path_e = old_cache_dir.AppendASCII(id_e);
+  const base::FilePath new_file_path_e = new_cache_dir.AppendASCII(id_e);
+  const base::FilePath link_path_e = link_dir.AppendASCII(id_e);
+  ASSERT_TRUE(base::CopyFile(temp_file, old_file_path_e));
+
+  // Entry F: dirty cache file.
+  const std::string id_f = "id_f";
+  ResourceEntry entry_f;
+  entry_f.set_local_id(id_f);
+  FileCacheEntry* file_cache_entry_f =
+      entry_f.mutable_file_specific_info()->mutable_cache_state();
+  file_cache_entry_f->set_is_present(true);
+  file_cache_entry_f->set_is_pinned(false);
+  file_cache_entry_f->set_is_dirty(true);
+  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_f));
+  const base::FilePath old_file_path_f = old_cache_dir.AppendASCII(id_f);
+  const base::FilePath new_file_path_f = new_cache_dir.AppendASCII(id_f);
+  const base::FilePath link_path_f = link_dir.AppendASCII(id_f);
+  ASSERT_TRUE(base::CopyFile(temp_file, old_file_path_f));
+
+  // Entry G: partially migrated pinned cache file.
+  const std::string id_g = "id_g";
+  ResourceEntry entry_g;
+  entry_g.set_local_id(id_g);
+  FileCacheEntry* file_cache_entry_g =
+      entry_g.mutable_file_specific_info()->mutable_cache_state();
+  file_cache_entry_g->set_is_present(true);
+  file_cache_entry_g->set_is_pinned(true);
+  file_cache_entry_g->set_is_dirty(false);
+  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_g));
+  const base::FilePath old_file_path_g = old_cache_dir.AppendASCII(id_g);
+  const base::FilePath new_file_path_g = new_cache_dir.AppendASCII(id_g);
+  const base::FilePath link_path_g = link_dir.AppendASCII(id_g);
+  ASSERT_TRUE(base::CopyFile(temp_file, old_file_path_g));
+  ASSERT_EQ(0, link(old_file_path_g.AsUTF8Unsafe().c_str(),
+                    link_path_g.AsUTF8Unsafe().c_str()));
+
+  // Entry H: pinned entry without cache file.
+  const std::string id_h = "id_h";
+  ResourceEntry entry_h;
+  entry_h.set_local_id(id_h);
+  FileCacheEntry* file_cache_entry_h =
+      entry_h.mutable_file_specific_info()->mutable_cache_state();
+  file_cache_entry_h->set_is_present(true);
+  file_cache_entry_h->set_is_pinned(true);
+  file_cache_entry_h->set_is_dirty(false);
+  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_h));
+
+  // Entry I: already migrated pinned cache file.
+  const std::string id_i = "id_i";
+  ResourceEntry entry_i;
+  entry_i.set_local_id(id_i);
+  FileCacheEntry* file_cache_entry_i =
+      entry_i.mutable_file_specific_info()->mutable_cache_state();
+  file_cache_entry_i->set_is_present(true);
+  file_cache_entry_i->set_is_pinned(true);
+  file_cache_entry_i->set_is_dirty(false);
+  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_i));
+  const base::FilePath new_file_path_i = new_cache_dir.AppendASCII(id_i);
+  const base::FilePath link_path_i = link_dir.AppendASCII(id_i);
+  ASSERT_TRUE(base::CopyFile(temp_file, new_file_path_i));
+  ASSERT_EQ(0, link(new_file_path_i.AsUTF8Unsafe().c_str(),
+                    link_path_i.AsUTF8Unsafe().c_str()));
+
   // Run migration.
   ASSERT_TRUE(FileCache::MigrateCacheFiles(old_cache_dir, new_cache_dir,
-                                           metadata_storage_.get()));
+                                           link_dir, metadata_storage_.get()));
 
   // Check result.
   EXPECT_FALSE(base::PathExists(old_file_path_a));
   EXPECT_TRUE(base::PathExists(new_file_path_a));
+  EXPECT_EQ(1, GetNumberOfLinks(new_file_path_a));
   // MigrateCacheFiles doesn't delete invalid cache file.
   EXPECT_TRUE(base::PathExists(old_file_path_b));
   EXPECT_TRUE(base::PathExists(new_file_path_c));
+  EXPECT_EQ(1, GetNumberOfLinks(new_file_path_c));
+  EXPECT_FALSE(base::PathExists(old_file_path_e));
+  EXPECT_TRUE(base::PathExists(new_file_path_e));
+  EXPECT_TRUE(base::PathExists(link_path_e));
+  EXPECT_EQ(2, GetNumberOfLinks(new_file_path_e));
+  EXPECT_FALSE(base::PathExists(old_file_path_f));
+  EXPECT_TRUE(base::PathExists(new_file_path_f));
+  EXPECT_TRUE(base::PathExists(link_path_f));
+  EXPECT_EQ(2, GetNumberOfLinks(new_file_path_f));
+  EXPECT_FALSE(base::PathExists(old_file_path_g));
+  EXPECT_TRUE(base::PathExists(new_file_path_g));
+  EXPECT_TRUE(base::PathExists(link_path_g));
+  EXPECT_EQ(2, GetNumberOfLinks(new_file_path_g));
+  EXPECT_TRUE(base::PathExists(new_file_path_i));
+  EXPECT_TRUE(base::PathExists(link_path_i));
+  EXPECT_EQ(2, GetNumberOfLinks(new_file_path_i));
 }
 
 TEST_F(FileCacheTest, ClearAll) {

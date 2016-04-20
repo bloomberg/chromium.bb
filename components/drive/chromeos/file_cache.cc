@@ -4,6 +4,8 @@
 
 #include "components/drive/chromeos/file_cache.h"
 
+#include <unistd.h>
+
 #include <queue>
 #include <vector>
 
@@ -684,7 +686,8 @@ bool FileCache::RenameCacheFilesToNewFormat() {
 
 // static
 bool FileCache::MigrateCacheFiles(const base::FilePath& from,
-                                  const base::FilePath& to,
+                                  const base::FilePath& to_files,
+                                  const base::FilePath& to_links,
                                   ResourceMetadataStorage* metadata_storage) {
   std::unique_ptr<ResourceMetadataStorage::Iterator> it =
       metadata_storage->GetIterator();
@@ -694,17 +697,31 @@ bool FileCache::MigrateCacheFiles(const base::FilePath& from,
       continue;
     }
 
+    // Ignore missing cache file case since it never succeeds.
+    // TODO(yawano): handle this case at metadata validation in FileCache.
     const base::FilePath move_from = GetPathForId(from, entry.local_id());
     if (!base::PathExists(move_from)) {
       continue;
     }
 
-    const base::FilePath move_to = GetPathForId(to, entry.local_id());
+    // Create hard link to cache file if it's pinned or dirty. cryptohome will
+    // not delete a cache file if there is a hard link to it.
+    const FileCacheEntry& file_cache_entry =
+        entry.file_specific_info().cache_state();
+    if (file_cache_entry.is_pinned() || file_cache_entry.is_dirty()) {
+      const base::FilePath link_path = GetPathForId(to_links, entry.local_id());
+      int link_result = link(move_from.AsUTF8Unsafe().c_str(),
+                             link_path.AsUTF8Unsafe().c_str());
+      if (link_result != 0 && errno != EEXIST) {
+        return false;
+      }
+    }
+
+    // Move cache file.
+    const base::FilePath move_to = GetPathForId(to_files, entry.local_id());
     if (!base::Move(move_from, move_to)) {
       return false;
     }
-
-    // TODO(yawano): create hard link if entry is marked as pinned or dirty.
   }
 
   return true;

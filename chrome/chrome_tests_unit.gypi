@@ -914,9 +914,9 @@
       # TODO(lukasza): Move Drive tests outside of CrOS (crbug.com/498951).
       '../components/drive/change_list_loader_unittest.cc',
       '../components/drive/change_list_processor_unittest.cc',
+      '../components/drive/chromeos/file_cache_unittest.cc',
       '../components/drive/directory_loader_unittest.cc',
       '../components/drive/fake_file_system_unittest.cc',
-      '../components/drive/file_cache_unittest.cc',
       '../components/drive/file_change_unittest.cc',
       '../components/drive/file_system/copy_operation_unittest.cc',
       '../components/drive/file_system/create_directory_operation_unittest.cc',
