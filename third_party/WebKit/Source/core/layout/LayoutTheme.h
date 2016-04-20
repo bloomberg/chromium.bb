@@ -96,10 +96,9 @@ public:
     // A method asking if the theme's controls actually care about redrawing when hovered.
     virtual bool supportsHover(const ComputedStyle&) const { return false; }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-    // A method asking if the platform is able to show a calendar picker for a given input type.
+    // A method asking if the platform is able to show a calendar picker for a
+    // given input type.
     virtual bool supportsCalendarPicker(const AtomicString&) const;
-#endif
 
     // Text selection colors.
     Color activeSelectionBackgroundColor() const;

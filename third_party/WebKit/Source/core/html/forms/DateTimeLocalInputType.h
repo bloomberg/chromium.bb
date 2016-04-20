@@ -32,24 +32,17 @@
 #define DateTimeLocalInputType_h
 
 #include "core/html/forms/BaseDateAndTimeInputType.h"
-#include "core/html/forms/BaseMultipleFieldsDateAndTimeInputType.h"
 
 namespace blink {
 
 class ExceptionState;
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-using BaseDateTimeLocalInputType = BaseMultipleFieldsDateAndTimeInputType;
-#else
-using BaseDateTimeLocalInputType = BaseDateAndTimeInputType;
-#endif
-
-class DateTimeLocalInputType final : public BaseDateTimeLocalInputType {
+class DateTimeLocalInputType final : public BaseDateAndTimeInputType {
 public:
     static InputType* create(HTMLInputElement&);
 
 private:
-    explicit DateTimeLocalInputType(HTMLInputElement& element) : BaseDateTimeLocalInputType(element) { }
+    explicit DateTimeLocalInputType(HTMLInputElement& element) : BaseDateAndTimeInputType(element) {}
 
     void countUsage() override;
     const AtomicString& formControlType() const override;

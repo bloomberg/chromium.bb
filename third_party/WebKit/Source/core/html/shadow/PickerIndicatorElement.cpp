@@ -30,7 +30,6 @@
 
 #include "core/html/shadow/PickerIndicatorElement.h"
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/events/Event.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/Settings.h"
@@ -190,5 +189,3 @@ DEFINE_TRACE(PickerIndicatorElement)
 }
 
 } // namespace blink
-
-#endif // ENABLE(INPUT_MULTIPLE_FIELDS_UI)

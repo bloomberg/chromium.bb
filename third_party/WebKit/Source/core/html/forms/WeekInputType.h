@@ -32,22 +32,15 @@
 #define WeekInputType_h
 
 #include "core/html/forms/BaseDateAndTimeInputType.h"
-#include "core/html/forms/BaseMultipleFieldsDateAndTimeInputType.h"
 
 namespace blink {
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-using BaseWeekInputType = BaseMultipleFieldsDateAndTimeInputType;
-#else
-using BaseWeekInputType = BaseDateAndTimeInputType;
-#endif
-
-class WeekInputType final : public BaseWeekInputType {
+class WeekInputType final : public BaseDateAndTimeInputType {
 public:
     static InputType* create(HTMLInputElement&);
 
 private:
-    explicit WeekInputType(HTMLInputElement& element) : BaseWeekInputType(element) { }
+    explicit WeekInputType(HTMLInputElement& element) : BaseDateAndTimeInputType(element) {}
 
     void countUsage() override;
     const AtomicString& formControlType() const override;

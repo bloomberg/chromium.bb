@@ -32,17 +32,10 @@
 #define TimeInputType_h
 
 #include "core/html/forms/BaseDateAndTimeInputType.h"
-#include "core/html/forms/BaseMultipleFieldsDateAndTimeInputType.h"
 
 namespace blink {
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-using BaseTimeInputType = BaseMultipleFieldsDateAndTimeInputType;
-#else
-using BaseTimeInputType = BaseDateAndTimeInputType;
-#endif
-
-class TimeInputType final : public BaseTimeInputType {
+class TimeInputType final : public BaseDateAndTimeInputType {
 public:
     static InputType* create(HTMLInputElement&);
 

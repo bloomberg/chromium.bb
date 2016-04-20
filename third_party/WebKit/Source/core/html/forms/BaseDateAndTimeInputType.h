@@ -40,9 +40,21 @@ namespace blink {
 class ExceptionState;
 
 // A super class of date, datetime, datetime-local, month, time, and week types.
+// TODO(tkent): A single temporal input type creates two InputTypeView instances
+// unnecessarily.  One is BaseChooserOnlyDateAndTimeInputType or
+// BaseMultipleFieldsDateAndTimeInputType, and another is
+// BaseDateAndTimeInputType, which inherits from InputTypeView through
+// InputType.  The latter is not used.
 class BaseDateAndTimeInputType : public InputType {
 public:
     String visibleValue() const override;
+    String sanitizeValue(const String&) const override;
+    // Parses the specified string for this InputType, and returns true if it
+    // is successfully parsed. An instance pointed by the DateComponents*
+    // parameter will have parsed values and be modified even if the parsing
+    // fails. The DateComponents* parameter may be 0.
+    bool parseToDateComponents(const String&, DateComponents*) const;
+    virtual bool setMillisecondToDateComponents(double, DateComponents*) const = 0;
 
     // Provide some helpers for BaseMultipleFieldsDateAndTimeInputType.
     virtual String formatDateTimeFieldsState(const DateTimeFieldsState&) const = 0;
@@ -52,20 +64,14 @@ public:
 protected:
     BaseDateAndTimeInputType(HTMLInputElement& element) : InputType(element) { }
     Decimal parseToNumber(const String&, const Decimal&) const override;
-    // Parses the specified string for this InputType, and returns true if it
-    // is successfully parsed. An instance pointed by the DateComponents*
-    // parameter will have parsed values and be modified even if the parsing
-    // fails. The DateComponents* parameter may be 0.
-    bool parseToDateComponents(const String&, DateComponents*) const;
-    String sanitizeValue(const String&) const override;
     String serialize(const Decimal&) const override;
     String serializeWithComponents(const DateComponents&) const;
-    virtual bool setMillisecondToDateComponents(double, DateComponents*) const = 0;
     bool shouldHaveSecondField(const DateComponents&) const;
 
 private:
     virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const = 0;
 
+    String badInputText() const override;
     InputTypeView* createView() override;
     double valueAsDate() const override;
     void setValueAsDate(double, ExceptionState&) const override;

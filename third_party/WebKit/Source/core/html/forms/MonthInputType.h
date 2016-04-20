@@ -32,22 +32,15 @@
 #define MonthInputType_h
 
 #include "core/html/forms/BaseDateAndTimeInputType.h"
-#include "core/html/forms/BaseMultipleFieldsDateAndTimeInputType.h"
 
 namespace blink {
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-using BaseMonthInputType = BaseMultipleFieldsDateAndTimeInputType;
-#else
-using BaseMonthInputType = BaseDateAndTimeInputType;
-#endif
-
-class MonthInputType final : public BaseMonthInputType {
+class MonthInputType final : public BaseDateAndTimeInputType {
 public:
     static InputType* create(HTMLInputElement&);
 
 private:
-    explicit MonthInputType(HTMLInputElement& element) : BaseMonthInputType(element) { }
+    explicit MonthInputType(HTMLInputElement& element) : BaseDateAndTimeInputType(element) {}
 
     void countUsage() override;
     const AtomicString& formControlType() const override;
