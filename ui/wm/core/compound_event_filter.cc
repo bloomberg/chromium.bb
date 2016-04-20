@@ -18,7 +18,7 @@
 #include "ui/wm/public/drag_drop_client.h"
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-#include "ui/events/devices/x11/touch_factory_x11.h"
+#include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
 #endif
 
 namespace wm {

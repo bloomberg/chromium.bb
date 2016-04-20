@@ -607,6 +607,7 @@
             '../../build/linux/system.gyp:xfixes',
             '../../build/linux/system.gyp:xrender',  # For XRender* function calls in x11_util.cc.
             '../events/devices/events_devices.gyp:events_devices',
+            '../events/devices/x11/events_devices_x11.gyp:events_devices_x11',
             '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
             '../gfx/x/gfx_x11.gyp:gfx_x11',
           ],

@@ -288,7 +288,7 @@ static_library("content_shell_lib") {
       "//tools/xdisplaycheck",
     ]
 
-    deps += [ "//ui/events/devices" ]
+    deps += [ "//ui/events/devices/x11" ]
   }
 
   if (is_android) {

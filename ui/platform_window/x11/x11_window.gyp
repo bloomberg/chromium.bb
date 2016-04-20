@@ -17,6 +17,7 @@
       '../../../skia/skia.gyp:skia',
       '../../events/devices/events_devices.gyp:events_devices',
       '../../events/events.gyp:events',
+      '../../events/devices/x11/events_devices_x11.gyp:events_devices_x11',
       '../../events/platform/events_platform.gyp:events_platform',
       '../../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
       '../../gfx/x/gfx_x11.gyp:gfx_x11',
