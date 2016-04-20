@@ -76,6 +76,8 @@
 #include "sync/util/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
+#include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "url/gurl.h"
 
 using base::ExpectDictStringValue;
@@ -631,13 +633,25 @@ TEST_F(SyncApiTest, BaseNodeSetSpecificsPreservesUnknownFields) {
 
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_bookmark()->set_url("http://www.google.com");
-  entity_specifics.mutable_unknown_fields()->AddFixed32(5, 100);
+  std::string unknown_fields;
+  {
+    ::google::protobuf::io::StringOutputStream unknown_fields_stream(
+         &unknown_fields);
+    ::google::protobuf::io::CodedOutputStream output(&unknown_fields_stream);
+    const int tag = 5;
+    const int value = 100;
+    output.WriteTag(tag);
+    output.WriteLittleEndian32(value);
+  }
+  *entity_specifics.mutable_unknown_fields() = unknown_fields;
   node.SetEntitySpecifics(entity_specifics);
   EXPECT_FALSE(node.GetEntitySpecifics().unknown_fields().empty());
+  EXPECT_EQ(unknown_fields, node.GetEntitySpecifics().unknown_fields());
 
-  entity_specifics.mutable_unknown_fields()->Clear();
+  entity_specifics.mutable_unknown_fields()->clear();
   node.SetEntitySpecifics(entity_specifics);
   EXPECT_FALSE(node.GetEntitySpecifics().unknown_fields().empty());
+  EXPECT_EQ(unknown_fields, node.GetEntitySpecifics().unknown_fields());
 }
 
 TEST_F(SyncApiTest, EmptyTags) {

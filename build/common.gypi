@@ -2843,13 +2843,6 @@
       ['OS=="win"', {
         'defines': ['NO_TCMALLOC'],
       }],
-      ['asan==1', {
-        'defines': [
-          'ADDRESS_SANITIZER',
-          'MEMORY_TOOL_REPLACES_ALLOCATOR',
-          'MEMORY_SANITIZER_INITIAL_SIZE',
-        ],
-      }],
       ['syzyasan==1', {
         # SyzyAsan needs /PROFILE turned on to produce appropriate pdbs.
         'msvs_settings': {
@@ -3069,6 +3062,13 @@
       }],
       ['<(chromeos)==1 and >(nacl_untrusted_build)==0', {
         'defines': ['OS_CHROMEOS=1'],
+      }],
+      ['<(asan)==1 and >(nacl_untrusted_build)==0', {
+        'defines': [
+          'ADDRESS_SANITIZER',
+          'MEMORY_TOOL_REPLACES_ALLOCATOR',
+          'MEMORY_SANITIZER_INITIAL_SIZE',
+        ],
       }],
       ['enable_wexit_time_destructors==1 and OS!="win"', {
         # TODO: Enable on Windows too, http://crbug.com/404525

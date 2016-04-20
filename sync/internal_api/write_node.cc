@@ -163,8 +163,8 @@ void WriteNode::SetEntitySpecifics(
   const sync_pb::EntitySpecifics& old_specifics = entry_->GetSpecifics();
   sync_pb::EntitySpecifics new_specifics;
   new_specifics.CopyFrom(new_value);
-  new_specifics.mutable_unknown_fields()->MergeFrom(
-      old_specifics.unknown_fields());
+  new_specifics.mutable_unknown_fields()
+      ->append(old_specifics.unknown_fields());
 
   // Will update the entry if encryption was necessary.
   if (!UpdateEntryWithEncryption(GetTransaction()->GetWrappedTrans(),
