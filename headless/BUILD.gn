@@ -241,7 +241,6 @@ static_library("headless_lib") {
     "public/internal/value_conversions.h",
     "public/util/error_reporter.cc",
     "public/util/error_reporter.h",
-    "public/util/maybe.h",
   ]
 
   deps = [
@@ -278,7 +277,6 @@ test("headless_unittests") {
   sources = [
     "public/domains/types_unittest.cc",
     "public/util/error_reporter_unittest.cc",
-    "public/util/maybe_unittest.cc",
   ]
 
   deps = [

@@ -7,10 +7,10 @@
 #ifndef HEADLESS_PUBLIC_DOMAINS_TYPES_H_
 #define HEADLESS_PUBLIC_DOMAINS_TYPES_H_
 
+#include "base/optional.h"
 #include "base/values.h"
 #include "headless/public/headless_export.h"
 #include "headless/public/util/error_reporter.h"
-#include "headless/public/util/maybe.h"
 
 #include "base/memory/ptr_util.h"
 
@@ -69,9 +69,9 @@ class HEADLESS_EXPORT {{type.id}} {
   // {{property.description}}
     {% endif %}
       {% if property.optional %}
-  bool Has{{property.name | to_title_case}}() { return {{property.name | camelcase_to_hacker_style}}_.IsJust(); }
-  {{resolve_type(property).raw_return_type}} Get{{property.name | to_title_case}}() { return {{resolve_type(property).to_raw_return_type % ("%s_.FromJust()" % property.name | camelcase_to_hacker_style)}}; }
-  void Set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value) { {{property.name | camelcase_to_hacker_style}}_ = Just({{resolve_type(property).to_pass_type % 'value'}}); }
+  bool Has{{property.name | to_title_case}}() { return !!{{property.name | camelcase_to_hacker_style}}_; }
+  {{resolve_type(property).raw_return_type}} Get{{property.name | to_title_case}}() { return {{resolve_type(property).to_raw_return_type % ("%s_.value()" % property.name | camelcase_to_hacker_style)}}; }
+  void Set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value) { {{property.name | camelcase_to_hacker_style}}_ = {{resolve_type(property).to_pass_type % 'value'}}; }
       {% else %}
   {{resolve_type(property).raw_return_type}} Get{{property.name | to_title_case}}() { return {{resolve_type(property).to_raw_return_type % ("%s_" % property.name | camelcase_to_hacker_style)}}; }
   void Set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value) { {{property.name | camelcase_to_hacker_style}}_ = {{resolve_type(property).to_pass_type % 'value'}}; }
@@ -139,7 +139,7 @@ class HEADLESS_EXPORT {{type.id}} {
 
     {% for property in type.properties %}
       {% if property.optional %}
-  Maybe<{{resolve_type(property).type}}> {{property.name | camelcase_to_hacker_style}}_;
+  base::Optional<{{resolve_type(property).type}}> {{property.name | camelcase_to_hacker_style}}_;
       {% else %}
   {{resolve_type(property).type}} {{property.name | camelcase_to_hacker_style}}_;
       {% endif %}
