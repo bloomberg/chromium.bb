@@ -14,3 +14,6 @@ Local Modifications:
 - BUILD.gn: Added.
 - woff2.gyp: Added.
 - src/port.h: Include <assert.h>.
+- src/woff2_dec.cc: Msan error fix.
+
+Changes under src/ will be fixed in the upstream repository soon.
