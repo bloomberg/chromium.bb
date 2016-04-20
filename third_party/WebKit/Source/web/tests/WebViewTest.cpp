@@ -2067,7 +2067,13 @@ static void openDateTimeChooser(WebView* webView, HTMLInputElement* inputElement
     webView->handleInputEvent(keyEvent);
 }
 
-TEST_F(WebViewTest, ChooseValueFromDateTimeChooser)
+// TODO(crbug.com/605112) This test is crashing on Android (Nexus 4) bot.
+#if OS(ANDROID)
+#define MAYBE_ChooseValueFromDateTimeChooser DISABLED_ChooseValueFromDateTimeChooser
+#else
+#define MAYBE_ChooseValueFromDateTimeChooser ChooseValueFromDateTimeChooser
+#endif
+TEST_F(WebViewTest, MAYBE_ChooseValueFromDateTimeChooser)
 {
     DateTimeChooserWebViewClient client;
     std::string url = m_baseURL + "date_time_chooser.html";
