@@ -2314,6 +2314,44 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_USB_CHOOSER_DIALOG_FOOTNOTE_TEXT" desc="This text is shown at the bottom of the USB chooser dialog with a link to part of its text.">
         Not seeing your device? <ph name="BEGIN_LINK">&lt;link&gt;</ph>Get help<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
+
+      <!-- Payments -->
+      <message name="IDS_PAYMENTS_METHOD_OF_PAYMENT_LABEL" desc="The title for the section that lets the user select the method of payment.">
+        Payment
+      </message>
+      <message name="IDS_PAYMENTS_SHIPPING_SUMMARY_LABEL" desc="The title for the section of shipping information.">
+        Shipping
+      </message>
+      <message name="IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL" desc="The title for the section that lets the user select the address where the product should be shipped.">
+        Shipping address
+      </message>
+      <message name="IDS_PAYMENTS_SHIPPING_OPTION_LABEL" desc="The title for the section that lets the user select how the product should be shipped.">
+        Shipping option
+      </message>
+      <message name="IDS_PAYMENTS_SELECT_SHIPPING_OPTION_PROMPT" desc="The label for the button that presents the user with the list of possible shipping options.">
+        Select shipping option
+      </message>
+      <message name="IDS_PAYMENTS_ORDER_SUMMARY_LABEL" desc="The title of the section that shows the summary of the order, including names and prices of individual line items, i.e. the bill.">
+        Order summary
+      </message>
+      <message name="IDS_PAYMENTS_EDIT_BUTTON" desc="The label for the button that lets the user edit their payment options.">
+        Edit
+      </message>
+      <message name="IDS_PAYMENTS_CANCEL_BUTTON" desc="The label for the button that cancels the pending payment operation.">
+        Cancel
+      </message>
+      <message name="IDS_PAYMENTS_PAY_BUTTON" desc="The label for the button that finishes the payment process.">
+        Pay
+      </message>
+      <message name="IDS_PAYMENTS_PROCESSING_MESSAGE" desc="The text that informs the user that the payment is being verified and charged.">
+        Processing
+      </message>
+      <message name="IDS_PAYMENTS_SUCCESS_MESSAGE" desc="The text that informs the user that the payment has been verified and charged.">
+        Payment processed
+      </message>
+      <message name="IDS_PAYMENTS_ERROR_MESSAGE" desc="The text that informs the user that there is error in verifying and charging the payment.">
+        Error processing payment
+      </message>
     </messages>
   </release>
 </grit>

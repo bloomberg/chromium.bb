@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright 2016 The Chromium Authors. All rights reserved.
+
+   Use of this source code is governed by a BSD-style license that can be
+   found in the LICENSE file.
+-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent">
+
+    <RadioButton
+        android:id="@+id/optionRadioButton"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:clickable="false"
+        android:importantForAccessibility="no"
+        android:paddingEnd="8dp"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/optionIcon"
+        android:layout_alignParentEnd="true"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:importantForAccessibility="no" />
+
+    <TextView
+        android:id="@+id/optionLabel"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/optionRadioButton"
+        android:layout_toStartOf="@id/optionIcon"
+        android:layout_width="match_parent"
+        android:singleLine="false"
+        android:textColor="#000000" />
+
+    <TextView
+        android:id="@+id/optionSubLabel"
+        android:layout_below="@id/optionLabel"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/optionRadioButton"
+        android:layout_toStartOf="@id/optionIcon"
+        android:layout_width="match_parent"
+        android:singleLine="false" />
+
+</RelativeLayout>

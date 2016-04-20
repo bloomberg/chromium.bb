@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright 2016 The Chromium Authors. All rights reserved.
+
+   Use of this source code is governed by a BSD-style license that can be
+   found in the LICENSE file.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/pageFavIcon"
+            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:importantForAccessibility="no"
+            android:paddingEnd="8dp" />
+
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/pageTitle"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/hostname"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/paymentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/orderSummaryLabel"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:textColor="#0000ff"
+            android:text="@string/payments_order_summary_label"
+            android:padding="16dp" />
+
+        <LinearLayout
+            android:id="@+id/lineItems"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+        </LinearLayout>
+
+        <View
+            android:layout_height="1dp"
+            android:layout_width="match_parent"
+            android:background="#cccccc"
+            android:padding="16dp">
+        </View>
+
+        <TextView
+            android:id="@+id/shippingSummaryLabel"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:textColor="#0000ff"
+            android:text="@string/payments_shipping_summary_label"
+            android:padding="16dp" />
+
+        <RelativeLayout
+            android:id="@+id/shippingSummary"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/shippingSummaryOption"
+                android:layout_alignParentEnd="true"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:singleLine="false"
+                android:textColor="#000000" />
+
+            <TextView
+                android:id="@+id/shippingSummaryAddress"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/shippingSummaryOption"
+                android:layout_width="match_parent"
+                android:singleLine="false"
+                android:textColor="#000000" />
+
+        </RelativeLayout>
+
+        <View
+            android:id="@+id/shippingSummarySeparator"
+            android:layout_height="1dp"
+            android:layout_width="match_parent"
+            android:background="#cccccc"
+            android:padding="16dp">
+        </View>
+
+        <TextView
+            android:id="@+id/shippingAddressesLabel"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:textColor="#0000ff"
+            android:text="@string/payments_shipping_address_label"
+            android:padding="16dp"
+            android:visibility="gone" />
+
+        <RadioGroup
+            android:id="@+id/shippingAddresses"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+        </RadioGroup>
+
+        <View
+            android:id="@+id/shippingAddressesSeparator"
+            android:layout_height="1dp"
+            android:layout_width="match_parent"
+            android:background="#cccccc"
+            android:padding="16dp"
+            android:visibility="gone">
+        </View>
+
+        <TextView
+            android:id="@+id/shippingOptionsLabel"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:textColor="#0000ff"
+            android:text="@string/payments_shipping_option_label"
+            android:padding="16dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/selectShippingOptionPrompt"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="@string/payments_select_shipping_option_prompt"
+            android:padding="16dp"
+            android:visibility="gone" />
+
+        <RadioGroup
+            android:id="@+id/shippingOptions"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+        </RadioGroup>
+
+        <View
+            android:id="@+id/shippingOptionsSeparator"
+            android:layout_height="1dp"
+            android:layout_width="match_parent"
+            android:background="#cccccc"
+            android:padding="16dp"
+            android:visibility="gone">
+        </View>
+
+        <TextView
+            android:id="@+id/paymentsListLabel"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:textColor="#0000ff"
+            android:text="@string/payments_method_of_payment_label"
+            android:padding="16dp" />
+
+        <RadioGroup
+            android:id="@+id/paymentsList"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+        </RadioGroup>
+
+        <LinearLayout
+            android:layout_gravity="end"
+            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:orientation="horizontal"
+            style="?android:attr/buttonBarStyle"
+            android:padding="16dp">
+
+            <Button
+                android:id="@+id/editButton"
+                android:layout_gravity="bottom"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:text="@string/payments_edit_button"
+                android:layout_marginEnd="8dp"
+                android:textColor="#0000ff"
+                android:background="#ffffff"
+                style="?android:attr/buttonBarButtonStyle" />
+
+            <Button
+                android:id="@+id/payButton"
+                android:layout_gravity="bottom"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:text="@string/payments_pay_button"
+                android:textColor="#ffffff"
+                android:background="#0000ff"
+                style="?android:attr/buttonBarButtonStyle" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/waitingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="36dp"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:id="@+id/waitingProgressBar"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginBottom="8dp" />
+
+        <ImageView
+            android:id="@+id/waitingSuccess"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/verify_checkmark"
+            android:visibility="gone"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/waitingMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/payments_processing_message"
+            android:textColor="@color/light_active_color"
+            android:textSize="20sp" />
+    </LinearLayout>
+</LinearLayout>
