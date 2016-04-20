@@ -25,10 +25,10 @@ const char kSRTReporterOffGroup[] = "Off";
 
 // The download links of the Software Removal Tool.
 const char kMainSRTDownloadURL[] =
-    "http://dl.google.com/dl"
+    "https://dl.google.com/dl"
     "/softwareremovaltool/win/chrome_cleanup_tool.exe?chrome-prompt=1";
 const char kCanarySRTDownloadURL[] =
-    "http://dl.google.com/dl"
+    "https://dl.google.com/dl"
     "/softwareremovaltool/win/c/chrome_cleanup_tool.exe?chrome-prompt=1";
 
 }  // namespace
