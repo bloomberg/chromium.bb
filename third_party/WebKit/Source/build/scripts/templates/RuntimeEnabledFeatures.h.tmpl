@@ -7,14 +7,16 @@
 #include <string>
 
 #include "platform/PlatformExport.h"
-#include "wtf/build_config.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
+#include "wtf/build_config.h"
 
 namespace blink {
 
 // A class that stores static enablers for all experimental features.
 
 class PLATFORM_EXPORT RuntimeEnabledFeatures {
+    STATIC_ONLY(RuntimeEnabledFeatures);
 public:
     class PLATFORM_EXPORT Backup {
     public:
@@ -53,8 +55,6 @@ public:
     {% endfor %}
 
 private:
-    RuntimeEnabledFeatures() { }
-
     {% for feature in standard_features %}
     static bool is{{feature.name}}Enabled;
     {% endfor %}
