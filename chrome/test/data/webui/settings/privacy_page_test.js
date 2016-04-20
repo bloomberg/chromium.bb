@@ -28,15 +28,29 @@ cr.define('settings_privacy_page', function() {
    */
   function TestClearBrowsingDataBrowserProxy() {
     settings.TestBrowserProxy.call(this, ['clearBrowsingData']);
+
+    /**
+     * The promise to return from |clearBrowsingData|.
+     * Allows testing code to test what happens after the call is made, and
+     * before the browser responds.
+     * @private {?Promise}
+     */
+    this.clearBrowsingDataPromise_ = null;
   }
 
   TestClearBrowsingDataBrowserProxy.prototype = {
     __proto__: settings.TestBrowserProxy.prototype,
 
+    /** @param {!Promise} promise */
+    setClearBrowsingDataPromise: function(promise) {
+      this.clearBrowsingDataPromise_ = promise;
+    },
+
     /** @override */
     clearBrowsingData: function() {
       this.methodCalled('clearBrowsingData');
-      return Promise.resolve();
+      return this.clearBrowsingDataPromise_ !== null ?
+          this.clearBrowsingDataPromise_ : Promise.resolve();
     },
   };
 
@@ -86,13 +100,40 @@ cr.define('settings_privacy_page', function() {
       test('ClearBrowsingDataTap', function() {
         element.open();
         assertTrue(element.$.dialog.opened);
-        var clearBrowsingDataButton = element.$.clearBrowsingData;
-        assertTrue(!!clearBrowsingDataButton);
 
-        MockInteractions.tap(clearBrowsingDataButton);
+        var cancelButton = element.$$('.cancel-button');
+        assertTrue(!!cancelButton);
+        var actionButton = element.$$('.action-button');
+        assertTrue(!!actionButton);
+        var spinner = element.$$('paper-spinner');
+        assertTrue(!!spinner);
+
+        assertFalse(cancelButton.disabled);
+        assertFalse(actionButton.disabled);
+        assertFalse(spinner.active);
+
+        var promiseResolver = new PromiseResolver();
+        testBrowserProxy.setClearBrowsingDataPromise(promiseResolver.promise);
+        MockInteractions.tap(actionButton);
+
         return testBrowserProxy.whenCalled('clearBrowsingData').then(
             function() {
+              assertTrue(element.$.dialog.opened);
+              assertTrue(cancelButton.disabled);
+              assertTrue(actionButton.disabled);
+              assertTrue(spinner.active);
+
+              // Simulate signal from browser indicating that clearing has
+              // completed.
+              promiseResolver.resolve();
+              // Yields to the message loop to allow the callback chain of the
+              // Promise that was just resolved to execute before the
+              // assertions.
+            }).then(function() {
               assertFalse(element.$.dialog.opened);
+              assertFalse(cancelButton.disabled);
+              assertFalse(actionButton.disabled);
+              assertFalse(spinner.active);
             });
       });
     });

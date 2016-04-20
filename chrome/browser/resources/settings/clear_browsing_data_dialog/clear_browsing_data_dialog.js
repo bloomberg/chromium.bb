@@ -35,6 +35,9 @@ Polymer({
         {value: 4, name: loadTimeData.getString('clearDataEverything')},
       ],
     },
+
+    /** @private */
+    clearingInProgress_: Boolean,
   },
 
   /** @private {!settings.ClearBrowsingDataBrowserProxy} */
@@ -69,9 +72,9 @@ Polymer({
 
   /** @private */
   onClearBrowsingDataTap_: function() {
-    // TODO(dpapad): Show spinner, disable buttons here.
+    this.clearingInProgress_ = true;
     this.browserProxy_.clearBrowsingData().then(function() {
-      // TODO(dpapad): Hide spinner, re-enable buttons here.
+      this.clearingInProgress_ = false;
       this.$.dialog.close();
     }.bind(this));
   },

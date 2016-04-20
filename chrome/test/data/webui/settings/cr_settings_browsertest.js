@@ -320,6 +320,7 @@ CrSettingsPrivacyPageTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     'test_browser_proxy.js',
     'privacy_page_test.js',
   ]),
