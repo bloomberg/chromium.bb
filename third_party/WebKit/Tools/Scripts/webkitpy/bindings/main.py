@@ -69,7 +69,8 @@ DEPENDENCY_IDL_FILES = frozenset([
     'TestPartialInterface.idl',
     'TestPartialInterface2.idl',
     'TestPartialInterface3.idl',
-    'TestPartialInterface4.idl',
+    'TestInterface2Partial.idl',
+    'TestInterface2Partial2.idl',
 ])
 
 # core/inspector/InspectorInstrumentation.idl is not a valid Blink IDL.
