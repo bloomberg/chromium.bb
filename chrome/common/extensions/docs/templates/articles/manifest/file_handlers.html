@@ -5,13 +5,13 @@ Used by <a href="../app_lifecycle#eventpage">packaged apps</a>
 to specify what types of files the app can handle. An app can have multiple
 <code>file_handlers</code>, with each one having an identifier, a list of MIME
 types and/or a list of file extensions that can be handled.
-The app can handle a file if it either has a matching file extension or
-has a matching MIME type.
-You can use a wildcard <code>"*"</code> in <code>types</code> or
-<code>extensions</code> to indicate that the app can handle any file type or
-<code>"<em>type</em>/*"</code> in <code>types</code> to indicate that the app
-can handle any file with a MIME type of <code><em>type</em></code>.
-Here's an example of specifying file handlers:
+The app can handle a file if it either has a matching file extension or has a
+matching MIME type. The app can also handle directories if
+<code>include_directories</code> is set. You can use a wildcard <code>"*"</code>
+in <code>types</code> or <code>extensions</code> to indicate that the app can
+handle any file type or <code>"<em>type</em>/*"</code> in <code>types</code>
+to indicate that the app can handle any file with a MIME type of
+<code><em>type</em></code>. Here's an example of specifying file handlers:
 </p>
 
 <pre data-filename="manifest.json">
@@ -32,16 +32,17 @@ Here's an example of specifying file handlers:
   },
   "any": {
     "extensions": [
-      "*"
+      "*",
+      "include_directories": true
     ],
   }
 }
 </pre>
 
 <p>
-To handle files, apps also need to declare the $(ref:fileSystem)
-permission. Apps can then be passed files in the $(ref:app.runtime.onLaunched)
-event - either from the system
-file manager (currently supported on Chrome OS only) or by providing
-a path on the <a href="../first_app#open">command line</a>.
+To handle files or directories, apps also need to declare the $(ref:fileSystem)
+permission. Apps can then be passed files or directories in the
+$(ref:app.runtime.onLaunched) event - either from the system file manager
+(currently supported on Chrome OS only) or by providing a path on the
+<a href="../first_app#open">command line</a>.
 </p>
