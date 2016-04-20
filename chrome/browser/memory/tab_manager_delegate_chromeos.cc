@@ -264,10 +264,11 @@ void TabManagerDelegate::OnProcessInstanceReady() {
   arc_process_instance_ = arc_bridge_service->process_instance();
   arc_process_instance_version_ = arc_bridge_service->process_version();
 
+  DCHECK(arc_process_instance_);
+
   if (!IsArcMemoryManagementEnabled())
     return;
 
-  DCHECK(arc_process_instance_);
   if (arc_process_instance_version_ < 2) {
     VLOG(1) << "ProcessInstance version < 2 does not "
                "support DisableBuiltinOomAdjustment() yet.";
@@ -276,6 +277,13 @@ void TabManagerDelegate::OnProcessInstanceReady() {
   // If --enable-arc-memory-management is on, stop Android system-wide
   // oom_adj adjustment since this class will take over oom_score_adj settings.
   arc_process_instance_->DisableBuiltinOomAdjustment();
+
+  if (arc_process_instance_version_ < 3) {
+    VLOG(1) << "arc::ProcessInstance version < 3 does not "
+               "support DisableLowMemoryKiller() yet.";
+    return;
+  }
+  arc_process_instance_->DisableLowMemoryKiller();
 }
 
 void TabManagerDelegate::OnProcessInstanceClosed() {

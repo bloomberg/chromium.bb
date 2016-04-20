@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 3
+// Next MinVersion: 4
 
 module arc.mojom;
 
@@ -94,13 +94,15 @@ interface ProcessInstance {
   [MinVersion=1]
   KillProcess(uint32 pid, string reason);
 
-  // Set oom_score_adj of a process.
+  // Sets oom_score_adj of a process.
   [MinVersion=2]
   SetOomScoreAdj(uint32 pid, int32 score);
 
-  // Disable android built-in oom_adj adjustment.
-  // After calling this method, Chrome will take over OOM scores management,
-  // namely oom_score_adj settings.
+  // Disables Android built-in oom_adj adjustment.
   [MinVersion=2]
   DisableBuiltinOomAdjustment();
+
+  // Disables Android lowmemorykiller.
+  [MinVersion=3]
+  DisableLowMemoryKiller();
 };
