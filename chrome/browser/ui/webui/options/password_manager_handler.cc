@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/leak_annotations.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -326,10 +325,8 @@ void PasswordManagerHandler::HandlePasswordImport(const base::ListValue* args) {
   DCHECK(!file_type_info.extensions.empty() &&
          !file_type_info.extensions[0].empty());
   file_type_info.include_all_files = true;
-  ChromeSelectFilePolicy* select_file_policy =
-      new ChromeSelectFilePolicy(web_ui()->GetWebContents());
-  ANNOTATE_LEAKING_OBJECT_PTR(select_file_policy);
-  select_file_dialog_ = ui::SelectFileDialog::Create(this, select_file_policy);
+  select_file_dialog_ = ui::SelectFileDialog::Create(
+      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_OPEN_FILE,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_IMPORT_DIALOG_TITLE),
@@ -391,10 +388,8 @@ void PasswordManagerHandler::HandlePasswordExport(const base::ListValue* args) {
   DCHECK(!file_type_info.extensions.empty() &&
          !file_type_info.extensions[0].empty());
   file_type_info.include_all_files = true;
-  ChromeSelectFilePolicy* select_file_policy =
-      new ChromeSelectFilePolicy(web_ui()->GetWebContents());
-  ANNOTATE_LEAKING_OBJECT_PTR(select_file_policy);
-  select_file_dialog_ = ui::SelectFileDialog::Create(this, select_file_policy);
+  select_file_dialog_ = ui::SelectFileDialog::Create(
+      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EXPORT_DIALOG_TITLE),

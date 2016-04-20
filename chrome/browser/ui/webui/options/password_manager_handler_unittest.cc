@@ -25,12 +25,14 @@
 using password_manager::MockPasswordStore;
 
 namespace {
+
 class TestSelectFileDialogFactory final : public ui::SelectFileDialogFactory {
  public:
   TestSelectFileDialogFactory() {}
   ~TestSelectFileDialogFactory() override {}
   ui::SelectFileDialog* Create(ui::SelectFileDialog::Listener* listener,
                                ui::SelectFilePolicy* policy) override {
+    delete policy;  // Ignore the policy, replace it with a test one.
     return new TestSelectFileDialog(listener, new TestSelectFilePolicy);
   }
 

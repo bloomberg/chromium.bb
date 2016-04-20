@@ -576,12 +576,6 @@
    fun:_ZN4base12_GLOBAL__N_114WorkerPoolImpl8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIF*
    fun:_ZN4base10WorkerPool8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIF*
 }
-{
-   bug_341477
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7options22PasswordManagerHandler20HandlePassword*
-}
 
 
 #-----------------------------------------------------------------------
