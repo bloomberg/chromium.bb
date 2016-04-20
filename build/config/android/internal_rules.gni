@@ -679,9 +679,14 @@ template("emma_instr") {
         rebase_path("//", root_build_dir),
         "--emma-jar",
         rebase_path(_emma_jar, root_build_dir),
-        "--filter-string",
-        emma_filter,
       ]
+
+      if (emma_filter != "") {
+        args += [
+          "--filter-string",
+          emma_filter,
+        ]
+      }
     }
   } else {
     _output_jar_target = "${target_name}__copy_jar"
