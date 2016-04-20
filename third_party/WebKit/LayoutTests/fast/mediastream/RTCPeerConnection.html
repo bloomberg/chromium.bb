@@ -66,6 +66,7 @@ shouldThrow("new webkitRTCPeerConnection({iceServers:[], certificates:[1337]});"
 // Global certificate variables so that the "should..." methods can evaluate them.
 var certRSA = null;
 var certECDSA = null;
+var certExpired = null;
 
 function testCertificates1RSA()
 {
@@ -86,6 +87,20 @@ function testCertificates2ECDSA()
         .then(function(certificate) {
                   certECDSA = certificate;
                   shouldNotThrow('new webkitRTCPeerConnection({iceServers:[], certificates:[certECDSA]}, null);');
+                  testCertificates3Expired();
+              },
+              function() {
+                  testFailed('Generating ECDSA P-256');
+                  testCertificates3Expired();
+              });
+}
+function testCertificates3Expired()
+{
+    webkitRTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256", expires:0 })
+        .then(function(certificate) {
+                  certExpired = certificate;
+                  shouldBeTrue('certExpired.expires <= new Date().getTime()');
+                  shouldThrow('new webkitRTCPeerConnection({iceServers:[], certificates:[certExpired]}, null);');
                   finishJSTest();
               },
               function() {
@@ -94,7 +109,7 @@ function testCertificates2ECDSA()
               });
 }
 // Sequentially test construction with RSA and ECDSA certificates.
-// testCertificates2ECDSA's callback methods mark the end of the async tests.
+// testCertificates3Expired's callback methods mark the end of the async tests.
 testCertificates1RSA();
 
 window.jsTestIsAsync = true;

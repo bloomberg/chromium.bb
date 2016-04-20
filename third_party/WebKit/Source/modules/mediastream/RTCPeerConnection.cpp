@@ -42,6 +42,7 @@
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "bindings/modules/v8/V8RTCCertificate.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/DOMTimeStamp.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -88,6 +89,7 @@
 #include "public/platform/WebRTCSessionDescriptionRequest.h"
 #include "public/platform/WebRTCStatsRequest.h"
 #include "public/platform/WebRTCVoidRequest.h"
+#include "wtf/CurrentTime.h"
 
 #include <memory>
 
@@ -321,7 +323,6 @@ RTCConfiguration* parseConfiguration(const Dictionary& configuration, ExceptionS
             rtcConfiguration->appendCertificate(certificate->certificateShallowCopy());
         }
     }
-
     return rtcConfiguration;
 }
 
@@ -387,6 +388,18 @@ RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context, const Di
     RTCConfiguration* configuration = parseConfiguration(rtcConfiguration, exceptionState);
     if (exceptionState.hadException())
         return 0;
+
+    // Make sure no certificates have expired.
+    if (configuration && configuration->numberOfCertificates() > 0) {
+        DOMTimeStamp now = convertSecondsToDOMTimeStamp(currentTime());
+        for (size_t i = 0; i < configuration->numberOfCertificates(); ++i) {
+            DOMTimeStamp expires = configuration->certificate(i)->expires();
+            if (expires <= now) {
+                exceptionState.throwDOMException(InvalidStateError, "Expired certificate(s).");
+                return 0;
+            }
+        }
+    }
 
     MediaErrorState mediaErrorState;
     WebMediaConstraints constraints = MediaConstraintsImpl::create(context, mediaConstraints, mediaErrorState);

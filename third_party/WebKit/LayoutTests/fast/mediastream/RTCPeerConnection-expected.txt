@@ -54,6 +54,8 @@ PASS new webkitRTCPeerConnection({iceServers:[], certificates:[null]}); threw ex
 PASS new webkitRTCPeerConnection({iceServers:[], certificates:[1337]}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed sequence<RTCCertificate>.
 PASS new webkitRTCPeerConnection({iceServers:[], certificates:[certRSA]}, null); did not throw exception.
 PASS new webkitRTCPeerConnection({iceServers:[], certificates:[certECDSA]}, null); did not throw exception.
+PASS certExpired.expires <= new Date().getTime() is true
+PASS new webkitRTCPeerConnection({iceServers:[], certificates:[certExpired]}, null); threw exception InvalidStateError: Failed to construct 'RTCPeerConnection': Expired certificate(s)..
 PASS successfullyParsed is true
 
 TEST COMPLETE
