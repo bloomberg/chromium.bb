@@ -88,7 +88,6 @@ void WeekInputType::warnIfValueIsInvalid(const String& value) const
         addWarningToConsole("The specified value %s does not conform to the required format.  The format is \"yyyy-Www\" where yyyy is year in four or more digits, and ww is 01-53.", value);
 }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 String WeekInputType::formatDateTimeFieldsState(const DateTimeFieldsState& dateTimeFieldsState) const
 {
     if (!dateTimeFieldsState.hasYear() || !dateTimeFieldsState.hasWeekOfYear())
@@ -111,6 +110,5 @@ bool WeekInputType::isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, boo
 {
     return hasYear && hasWeek;
 }
-#endif
 
 } // namespace blink

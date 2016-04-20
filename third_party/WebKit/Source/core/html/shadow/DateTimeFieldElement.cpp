@@ -25,7 +25,6 @@
 
 #include "core/html/shadow/DateTimeFieldElement.h"
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/StyleChangeReason.h"
@@ -246,4 +245,3 @@ int DateTimeFieldElement::valueForARIAValueNow() const
 
 } // namespace blink
 
-#endif

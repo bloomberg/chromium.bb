@@ -26,9 +26,6 @@
 #ifndef DateTimeEditElement_h
 #define DateTimeEditElement_h
 
-#include "wtf/build_config.h"
-
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/forms/StepRange.h"
 #include "core/html/shadow/DateTimeFieldElement.h"
 #include "platform/DateComponents.h"
@@ -160,5 +157,4 @@ DEFINE_TYPE_CASTS(DateTimeEditElement, Element, element, element->isDateTimeEdit
 
 } // namespace blink
 
-#endif
 #endif

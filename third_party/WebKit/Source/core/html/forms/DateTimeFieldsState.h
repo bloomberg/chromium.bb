@@ -26,9 +26,6 @@
 #ifndef DateTimeFieldsState_h
 #define DateTimeFieldsState_h
 
-#include "wtf/build_config.h"
-
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -102,5 +99,4 @@ private:
 
 } // namespace blink
 
-#endif
 #endif

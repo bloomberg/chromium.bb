@@ -94,7 +94,6 @@ void DateInputType::warnIfValueIsInvalid(const String& value) const
         addWarningToConsole("The specified value %s does not conform to the required format, \"yyyy-MM-dd\".", value);
 }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 String DateInputType::formatDateTimeFieldsState(const DateTimeFieldsState& dateTimeFieldsState) const
 {
     if (!dateTimeFieldsState.hasDayOfMonth() || !dateTimeFieldsState.hasMonth() || !dateTimeFieldsState.hasYear())
@@ -120,6 +119,5 @@ bool DateInputType::isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, boo
 {
     return hasYear && hasMonth && hasDay;
 }
-#endif
 
 } // namespace blink

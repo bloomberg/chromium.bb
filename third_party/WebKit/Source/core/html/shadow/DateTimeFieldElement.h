@@ -26,9 +26,6 @@
 #ifndef DateTimeFieldElement_h
 #define DateTimeFieldElement_h
 
-#include "wtf/build_config.h"
-
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLSpanElement.h"
 
@@ -108,5 +105,4 @@ private:
 
 } // namespace blink
 
-#endif
 #endif
