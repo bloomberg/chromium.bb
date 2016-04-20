@@ -131,6 +131,7 @@ struct VulkanInstance {
       return false;
     }
 
+#if DCHECK_IS_ON()
     // Register our error logging function.
     if (debug_report_enabled) {
       PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT =
@@ -163,6 +164,7 @@ struct VulkanInstance {
         return false;
       }
     }
+#endif
 
     return true;
   }
