@@ -38,7 +38,7 @@ class TestContextProvider : public ContextProvider {
 
   bool BindToCurrentThread() override;
   void DetachFromThread() override;
-  Capabilities ContextCapabilities() override;
+  gpu::Capabilities ContextCapabilities() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
@@ -57,8 +57,6 @@ class TestContextProvider : public ContextProvider {
   TestWebGraphicsContext3D* UnboundTestContext3d();
 
   TestContextSupport* support() { return &support_; }
-
-  void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);
 
  protected:
   explicit TestContextProvider(

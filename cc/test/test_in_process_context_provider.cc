@@ -68,7 +68,9 @@ TestInProcessContextProvider::TestInProcessContextProvider(
 TestInProcessContextProvider::~TestInProcessContextProvider() {
 }
 
-bool TestInProcessContextProvider::BindToCurrentThread() { return true; }
+bool TestInProcessContextProvider::BindToCurrentThread() {
+  return true;
+}
 
 gpu::gles2::GLES2Interface* TestInProcessContextProvider::ContextGL() {
   return context_->GetImplementation();
@@ -98,22 +100,19 @@ base::Lock* TestInProcessContextProvider::GetLock() {
   return &context_lock_;
 }
 
-ContextProvider::Capabilities
-TestInProcessContextProvider::ContextCapabilities() {
-  ContextProvider::Capabilities capabilities;
-  capabilities.gpu.image = true;
-  capabilities.gpu.texture_rectangle = true;
-  capabilities.gpu.sync_query = true;
-
+gpu::Capabilities TestInProcessContextProvider::ContextCapabilities() {
+  gpu::Capabilities capabilities;
+  capabilities.image = true;
+  capabilities.texture_rectangle = true;
+  capabilities.sync_query = true;
   switch (PlatformColor::Format()) {
     case PlatformColor::SOURCE_FORMAT_RGBA8:
-      capabilities.gpu.texture_format_bgra8888 = false;
+      capabilities.texture_format_bgra8888 = false;
       break;
     case PlatformColor::SOURCE_FORMAT_BGRA8:
-      capabilities.gpu.texture_format_bgra8888 = true;
+      capabilities.texture_format_bgra8888 = true;
       break;
   }
-
   return capabilities;
 }
 

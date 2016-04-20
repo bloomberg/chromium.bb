@@ -62,6 +62,7 @@
 #include "content/renderer/render_widget_owner_delegate.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/resizing_mode_selector.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "ipc/ipc_sync_message.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
@@ -222,21 +223,12 @@ CreateOffscreenContext(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
 
-  content::WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
-  // The renderer compositor context doesn't do a lot of stuff, so we don't
-  // expect it to need a lot of space for commands or transfer. Raster and
-  // uploads happen on the worker context instead.
-  limits.command_buffer_size = 64 * 1024;
-  limits.start_transfer_buffer_size = 64 * 1024;
-  limits.min_transfer_buffer_size = 64 * 1024;
-
   bool share_resources = true;
   bool automatic_flushes = false;
 
   return base::WrapUnique(new content::WebGraphicsContext3DCommandBufferImpl(
       gpu::kNullSurfaceHandle, url, gpu_channel_host.get(), attributes,
-      gfx::PreferIntegratedGpu, share_resources, automatic_flushes, limits,
-      nullptr));
+      gfx::PreferIntegratedGpu, share_resources, automatic_flushes, nullptr));
 }
 
 }  // namespace
@@ -790,10 +782,18 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
     }
 #endif
 
+    gpu::SharedMemoryLimits limits;
+    // The renderer compositor context doesn't do a lot of stuff, so we don't
+    // expect it to need a lot of space for commands or transfer. Raster and
+    // uploads happen on the worker context instead.
+    limits.command_buffer_size = 64 * 1024;
+    limits.start_transfer_buffer_size = 64 * 1024;
+    limits.min_transfer_buffer_size = 64 * 1024;
+
     context_provider = new ContextProviderCommandBuffer(
         CreateOffscreenContext(std::move(gpu_channel_host),
                                GetURLForGraphicsContext3D()),
-        RENDER_COMPOSITOR_CONTEXT);
+        limits, RENDER_COMPOSITOR_CONTEXT);
     worker_context_provider =
         RenderThreadImpl::current()->SharedWorkerContextProvider();
     if (!worker_context_provider) {

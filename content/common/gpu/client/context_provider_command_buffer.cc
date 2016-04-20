@@ -40,8 +40,10 @@ class ContextProviderCommandBuffer::LostContextCallbackProxy
 
 ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
+    const gpu::SharedMemoryLimits& memory_limits,
     CommandBufferContextType type)
     : context3d_(std::move(context3d)),
+      memory_limits_(memory_limits),
       context_type_(type),
       debug_name_(CommandBufferContextTypeToString(type)) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -81,10 +83,8 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
     return true;
 
   context3d_->SetContextType(context_type_);
-  if (!context3d_->InitializeOnCurrentThread())
+  if (!context3d_->InitializeOnCurrentThread(memory_limits_))
     return false;
-
-  InitializeCapabilities();
 
   std::string unique_context_name =
       base::StringPrintf("%s-%p", debug_name_.c_str(), context3d_.get());
@@ -146,12 +146,10 @@ base::Lock* ContextProviderCommandBuffer::GetLock() {
   return &context_lock_;
 }
 
-cc::ContextProvider::Capabilities
-ContextProviderCommandBuffer::ContextCapabilities() {
+gpu::Capabilities ContextProviderCommandBuffer::ContextCapabilities() {
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  return capabilities_;
+  return context3d_->GetImplementation()->capabilities();
 }
 
 void ContextProviderCommandBuffer::DeleteCachedResources() {
@@ -168,18 +166,6 @@ void ContextProviderCommandBuffer::OnLostContext() {
     lost_context_callback_.Run();
   if (gr_context_)
     gr_context_->OnLostContext();
-}
-
-void ContextProviderCommandBuffer::InitializeCapabilities() {
-  Capabilities caps;
-  caps.gpu = context3d_->GetImplementation()->capabilities();
-
-  size_t mapped_memory_limit = context3d_->GetMappedMemoryLimit();
-  caps.max_transfer_buffer_usage_bytes =
-      mapped_memory_limit == WebGraphicsContext3DCommandBufferImpl::kNoLimit
-      ? std::numeric_limits<size_t>::max() : mapped_memory_limit;
-
-  capabilities_ = caps;
 }
 
 void ContextProviderCommandBuffer::SetLostContextCallback(

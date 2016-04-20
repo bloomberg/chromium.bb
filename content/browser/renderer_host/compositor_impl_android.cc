@@ -147,7 +147,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
         swap_buffers_completion_callback_.callback());
 
     populate_gpu_capabilities_callback_.Run(
-        context_provider_->ContextCapabilities().gpu);
+        context_provider_->ContextCapabilities());
     compositor_->AddObserver(this);
 
     client->SetBeginFrameSource(begin_frame_source_.get());
@@ -418,35 +418,6 @@ void CompositorImpl::SetNeedsComposite() {
   host_->SetNeedsAnimate();
 }
 
-static std::unique_ptr<WebGraphicsContext3DCommandBufferImpl>
-CreateGpuProcessViewContext(
-    const scoped_refptr<gpu::GpuChannelHost>& gpu_channel_host,
-    const gpu::gles2::ContextCreationAttribHelper& attributes,
-    int surface_id) {
-  GURL url("chrome://gpu/Compositor::createContext3D");
-  static const size_t kBytesPerPixel = 4;
-  gfx::DeviceDisplayInfo display_info;
-  size_t full_screen_texture_size_in_bytes =
-      display_info.GetDisplayHeight() *
-      display_info.GetDisplayWidth() *
-      kBytesPerPixel;
-  WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
-  limits.command_buffer_size = 64 * 1024;
-  limits.start_transfer_buffer_size = 64 * 1024;
-  limits.min_transfer_buffer_size = 64 * 1024;
-  limits.max_transfer_buffer_size = std::min(
-      3 * full_screen_texture_size_in_bytes, kDefaultMaxTransferBufferSize);
-  limits.mapped_memory_reclaim_limit = 2 * 1024 * 1024;
-  GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
-  gpu::SurfaceHandle surface_handle = tracker->GetSurfaceHandle(surface_id);
-  bool share_resources = true;
-  bool automatic_flushes = false;
-  return base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
-      surface_handle, url, gpu_channel_host.get(), attributes,
-      gfx::PreferIntegratedGpu, share_resources, automatic_flushes, limits,
-      nullptr));
-}
-
 void CompositorImpl::UpdateLayerTreeHost() {
   client_->UpdateLayerTreeHost();
   if (needs_animate_) {
@@ -549,11 +520,40 @@ void CompositorImpl::CreateOutputSurface() {
   // But from here on just try and always lead to either
   // DidInitializeOutputSurface() or DidFailToInitializeOutputSurface().
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
+
+  GURL url("chrome://gpu/CompositorImpl::CreateOutputSurface");
+  gpu::SurfaceHandle surface_handle =
+      GpuSurfaceTracker::Get()->GetSurfaceHandle(surface_id_);
+  constexpr bool share_resources = true;
+  constexpr bool automatic_flushes = false;
+
+  gpu::SharedMemoryLimits limits;
+  // This limit is meant to hold the contents of the display compositor
+  // drawing the scene. See discussion here:
+  // https://codereview.chromium.org/1900993002/diff/90001/content/browser/renderer_host/compositor_impl_android.cc?context=3&column_width=80&tab_spaces=8
+  limits.command_buffer_size = 64 * 1024;
+  // These limits are meant to hold the uploads for the browser UI without
+  // any excess space.
+  limits.start_transfer_buffer_size = 64 * 1024;
+  limits.min_transfer_buffer_size = 64 * 1024;
+  constexpr size_t kBytesPerPixel = 4;
+  const size_t full_screen_texture_size_in_bytes =
+      gfx::DeviceDisplayInfo().GetDisplayHeight() *
+      gfx::DeviceDisplayInfo().GetDisplayWidth() * kBytesPerPixel;
+  limits.max_transfer_buffer_size = std::min(
+      3 * full_screen_texture_size_in_bytes, kDefaultMaxTransferBufferSize);
+  // TODO(danakj): This limit should be on the GLHelper context instead in
+  // RWHVAndroid since that is where we do the async readback and map gpu
+  // memory to do so.
+  limits.mapped_memory_reclaim_limit = 2 * 1024 * 1024;
+
   scoped_refptr<ContextProviderCommandBuffer> context_provider(
       new ContextProviderCommandBuffer(
-          CreateGpuProcessViewContext(gpu_channel_host, attributes,
-                                      surface_id_),
-          DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT));
+          base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
+              surface_handle, url, gpu_channel_host.get(), attributes,
+              gfx::PreferIntegratedGpu, share_resources, automatic_flushes,
+              nullptr)),
+          limits, DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT));
   DCHECK(context_provider.get());
 
   std::unique_ptr<cc::OutputSurface> real_output_surface(

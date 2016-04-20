@@ -40,7 +40,7 @@ class AwRenderThreadContextProvider : public cc::ContextProvider {
 
   // cc::ContextProvider:
   bool BindToCurrentThread() override;
-  Capabilities ContextCapabilities() override;
+  gpu::Capabilities ContextCapabilities() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
@@ -57,8 +57,6 @@ class AwRenderThreadContextProvider : public cc::ContextProvider {
 
   std::unique_ptr<gpu::GLInProcessContext> context_;
   sk_sp<class GrContext> gr_context_;
-
-  cc::ContextProvider::Capabilities capabilities_;
 
   LostContextCallback lost_context_callback_;
 

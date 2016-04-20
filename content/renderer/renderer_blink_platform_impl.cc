@@ -1058,15 +1058,14 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   bool automatic_flushes = true;
   // Prefer discrete GPU for WebGL.
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
-  WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
 
   scoped_refptr<ContextProviderCommandBuffer> provider(
       new ContextProviderCommandBuffer(
           base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
               gpu::kNullSurfaceHandle, GURL(top_document_web_url),
               gpu_channel_host.get(), attributes, gpu_preference,
-              share_resources, automatic_flushes, limits, share_context)),
-          RENDERER_MAINTHREAD_CONTEXT));
+              share_resources, automatic_flushes, share_context)),
+          gpu::SharedMemoryLimits(), RENDERER_MAINTHREAD_CONTEXT));
   if (!provider->BindToCurrentThread()) {
     // Collect Graphicsinfo if there is a context failure or it is failed
     // purposefully in case of layout tests.

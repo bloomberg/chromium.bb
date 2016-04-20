@@ -18,6 +18,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/buffer.h"
 
 namespace gpu {
@@ -44,7 +45,7 @@ MappedMemoryManager::MappedMemoryManager(CommandBufferHelper* helper,
       helper_(helper),
       allocated_memory_(0),
       max_free_bytes_(unused_memory_reclaim_limit),
-      max_allocated_bytes_(kNoLimit),
+      max_allocated_bytes_(SharedMemoryLimits::kNoLimit),
       tracing_id_(g_next_mapped_memory_manager_tracing_id.GetNext()) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
@@ -88,7 +89,7 @@ void* MappedMemoryManager::Alloc(unsigned int size,
     // If there is a memory limit being enforced and total free
     // memory (allocated_memory_ - total_bytes_in_use) is larger than
     // the limit try waiting.
-    if (max_free_bytes_ != kNoLimit &&
+    if (max_free_bytes_ != SharedMemoryLimits::kNoLimit &&
         (allocated_memory_ - total_bytes_in_use) >= max_free_bytes_) {
       TRACE_EVENT0("gpu", "MappedMemoryManager::Alloc::wait");
       for (auto& chunk : chunks_) {
@@ -103,7 +104,7 @@ void* MappedMemoryManager::Alloc(unsigned int size,
     }
   }
 
-  if (max_allocated_bytes_ != kNoLimit &&
+  if (max_allocated_bytes_ != SharedMemoryLimits::kNoLimit &&
       (allocated_memory_ + size) > max_allocated_bytes_) {
     return nullptr;
   }

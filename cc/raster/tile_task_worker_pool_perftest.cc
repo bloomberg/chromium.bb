@@ -75,10 +75,10 @@ class PerfContextProvider : public ContextProvider {
   PerfContextProvider() : context_gl_(new PerfGLES2Interface) {}
 
   bool BindToCurrentThread() override { return true; }
-  Capabilities ContextCapabilities() override {
-    Capabilities capabilities;
-    capabilities.gpu.image = true;
-    capabilities.gpu.sync_query = true;
+  gpu::Capabilities ContextCapabilities() override {
+    gpu::Capabilities capabilities;
+    capabilities.image = true;
+    capabilities.sync_query = true;
     return capabilities;
   }
   gpu::gles2::GLES2Interface* ContextGL() override { return context_gl_.get(); }

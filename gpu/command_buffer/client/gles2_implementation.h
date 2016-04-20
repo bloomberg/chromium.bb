@@ -124,10 +124,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       NON_EXPORTED_BASE(public GpuControlClient),
       NON_EXPORTED_BASE(public base::trace_event::MemoryDumpProvider) {
  public:
-  enum MappedMemoryLimit {
-    kNoLimit = MappedMemoryManager::kNoLimit,
-  };
-
   // Stores GL state that never changes.
   struct GLES2_IMPL_EXPORT GLStaticState {
     GLStaticState();

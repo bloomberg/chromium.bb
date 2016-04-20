@@ -43,8 +43,7 @@ std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext(
   bool automatic_flushes = false;
   return base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
       gpu::kNullSurfaceHandle, GURL(), gpu_channel_host, attributes,
-      gfx::PreferIntegratedGpu, share_resources, automatic_flushes,
-      WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(), nullptr));
+      gfx::PreferIntegratedGpu, share_resources, automatic_flushes, nullptr));
 }
 
 class ContextTestBase : public content::ContentBrowserTest {
@@ -69,7 +68,7 @@ class ContextTestBase : public content::ContentBrowserTest {
     CHECK(gpu_channel_host);
 
     provider_ = new content::ContextProviderCommandBuffer(
-        CreateContext(gpu_channel_host.get()),
+        CreateContext(gpu_channel_host.get()), gpu::SharedMemoryLimits(),
         content::OFFSCREEN_CONTEXT_FOR_TESTING);
     bool bound = provider_->BindToCurrentThread();
     CHECK(bound);
@@ -228,6 +227,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   // retain the host after provider is destroyed.
   scoped_refptr<ContextProviderCommandBuffer> provider =
       new ContextProviderCommandBuffer(CreateContext(GetGpuChannel()),
+                                       gpu::SharedMemoryLimits(),
                                        OFFSCREEN_CONTEXT_FOR_TESTING);
   EXPECT_TRUE(provider->BindToCurrentThread());
 
@@ -276,6 +276,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
 
   scoped_refptr<ContextProviderCommandBuffer> provider =
       new ContextProviderCommandBuffer(CreateContext(GetGpuChannel()),
+                                       gpu::SharedMemoryLimits(),
                                        OFFSCREEN_CONTEXT_FOR_TESTING);
   base::RunLoop run_loop;
   int counter = 0;

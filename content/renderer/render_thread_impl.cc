@@ -127,6 +127,7 @@
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "gin/public/debug.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
@@ -468,8 +469,7 @@ std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> CreateOffscreenContext(
       gpu::kNullSurfaceHandle,
       GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext3d"),
       gpu_channel_host.get(), attributes, gfx::PreferIntegratedGpu,
-      share_resources, automatic_flushes,
-      WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(), nullptr));
+      share_resources, automatic_flushes, nullptr));
 }
 
 }  // namespace
@@ -1531,7 +1531,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
 
   shared_main_thread_contexts_ = new ContextProviderCommandBuffer(
       CreateOffscreenContext(std::move(gpu_channel_host)),
-      RENDERER_MAINTHREAD_CONTEXT);
+      gpu::SharedMemoryLimits(), RENDERER_MAINTHREAD_CONTEXT);
   if (!shared_main_thread_contexts_->BindToCurrentThread())
     shared_main_thread_contexts_ = nullptr;
   return shared_main_thread_contexts_;
@@ -2050,7 +2050,7 @@ RenderThreadImpl::SharedWorkerContextProvider() {
 
   shared_worker_context_provider_ = new ContextProviderCommandBuffer(
       CreateOffscreenContext(std::move(gpu_channel_host)),
-      RENDER_WORKER_CONTEXT);
+      gpu::SharedMemoryLimits(), RENDER_WORKER_CONTEXT);
   if (!shared_worker_context_provider_->BindToCurrentThread())
     shared_worker_context_provider_ = nullptr;
   if (shared_worker_context_provider_)

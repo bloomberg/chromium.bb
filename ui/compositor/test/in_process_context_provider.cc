@@ -96,8 +96,6 @@ bool InProcessContextProvider::BindToCurrentThread() {
       return false;
   }
 
-  capabilities_.gpu = context_->GetImplementation()->capabilities();
-
   std::string unique_context_name =
       base::StringPrintf("%s-%p", debug_name_.c_str(), context_.get());
   context_->GetImplementation()->TraceBeginCHROMIUM(
@@ -110,10 +108,9 @@ void InProcessContextProvider::DetachFromThread() {
   context_thread_checker_.DetachFromThread();
 }
 
-cc::ContextProvider::Capabilities
-InProcessContextProvider::ContextCapabilities() {
+gpu::Capabilities InProcessContextProvider::ContextCapabilities() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
-  return capabilities_;
+  return context_->GetImplementation()->capabilities();
 }
 
 gpu::gles2::GLES2Interface* InProcessContextProvider::ContextGL() {

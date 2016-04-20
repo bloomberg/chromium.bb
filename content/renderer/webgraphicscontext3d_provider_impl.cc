@@ -30,7 +30,7 @@ GrContext* WebGraphicsContext3DProviderImpl::grContext() {
 }
 
 gpu::Capabilities WebGraphicsContext3DProviderImpl::getCapabilities() {
-  return provider_->ContextCapabilities().gpu;
+  return provider_->ContextCapabilities();
 }
 
 void WebGraphicsContext3DProviderImpl::setLostContextCallback(

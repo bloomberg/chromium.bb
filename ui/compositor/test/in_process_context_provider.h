@@ -49,7 +49,7 @@ class InProcessContextProvider : public cc::ContextProvider {
   // cc::ContextProvider:
   bool BindToCurrentThread() override;
   void DetachFromThread() override;
-  Capabilities ContextCapabilities() override;
+  gpu::Capabilities ContextCapabilities() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
@@ -82,7 +82,6 @@ class InProcessContextProvider : public cc::ContextProvider {
   gpu::ImageFactory* image_factory_;
   gfx::AcceleratedWidget window_;
   std::string debug_name_;
-  cc::ContextProvider::Capabilities capabilities_;
 
   base::Lock context_lock_;
 

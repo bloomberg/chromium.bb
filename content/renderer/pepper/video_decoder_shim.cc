@@ -316,7 +316,7 @@ GLuint VideoDecoderShim::YUVConverter::CreateShader() {
 
 bool VideoDecoderShim::YUVConverter::Initialize() {
   // If texture_rg extension is not available, use slower GL_LUMINANCE.
-  if (context_provider_->ContextCapabilities().gpu.texture_rg) {
+  if (context_provider_->ContextCapabilities().texture_rg) {
     internal_format_ = GL_RED_EXT;
     format_ = GL_RED_EXT;
   } else {
@@ -324,8 +324,7 @@ bool VideoDecoderShim::YUVConverter::Initialize() {
     format_ = GL_LUMINANCE;
   }
 
-  if (context_provider_->ContextCapabilities().gpu.max_texture_image_units <
-      4) {
+  if (context_provider_->ContextCapabilities().max_texture_image_units < 4) {
     // We support YUVA textures and require 4 texture units in the fragment
     // stage.
     return false;

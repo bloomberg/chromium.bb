@@ -15,6 +15,7 @@
 #include "base/lazy_instance.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -294,11 +295,9 @@ EGLContext Display::CreateContext(EGLConfig config,
                                           support_client_side_arrays,
                                           this));
 
-  if (!context_->Initialize(
-      kTransferBufferSize,
-      kTransferBufferSize / 2,
-      kTransferBufferSize * 2,
-      gpu::gles2::GLES2Implementation::kNoLimit)) {
+  if (!context_->Initialize(kTransferBufferSize, kTransferBufferSize / 2,
+                            kTransferBufferSize * 2,
+                            gpu::SharedMemoryLimits::kNoLimit)) {
     return EGL_NO_CONTEXT;
   }
 

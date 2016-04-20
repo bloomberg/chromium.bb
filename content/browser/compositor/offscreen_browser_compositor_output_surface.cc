@@ -62,8 +62,8 @@ void OffscreenBrowserCompositorOutputSurface::EnsureBackbuffer() {
 
     GLES2Interface* gl = context_provider_->ContextGL();
 
-    int max_texture_size =
-        context_provider_->ContextCapabilities().gpu.max_texture_size;
+    const int max_texture_size =
+        context_provider_->ContextCapabilities().max_texture_size;
     int texture_width = std::min(max_texture_size, surface_size_.width());
     int texture_height = std::min(max_texture_size, surface_size_.height());
 

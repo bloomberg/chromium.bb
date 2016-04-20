@@ -86,10 +86,9 @@ void TestContextProvider::DetachFromThread() {
   context_thread_checker_.DetachFromThread();
 }
 
-ContextProvider::Capabilities TestContextProvider::ContextCapabilities() {
+gpu::Capabilities TestContextProvider::ContextCapabilities() {
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
-
   return context3d_->test_capabilities();
 }
 
@@ -167,11 +166,6 @@ void TestContextProvider::SetLostContextCallback(
   DCHECK(context_thread_checker_.CalledOnValidThread());
   DCHECK(lost_context_callback_.is_null() || cb.is_null());
   lost_context_callback_ = cb;
-}
-
-void TestContextProvider::SetMaxTransferBufferUsageBytes(
-    size_t max_transfer_buffer_usage_bytes) {
-  context3d_->SetMaxTransferBufferUsageBytes(max_transfer_buffer_usage_bytes);
 }
 
 }  // namespace cc

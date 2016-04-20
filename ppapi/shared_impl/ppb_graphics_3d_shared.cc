@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "ppapi/c/pp_errors.h"
@@ -143,10 +144,9 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(
       GetGpuControl()));
 
   if (!gles2_impl_->Initialize(
-           transfer_buffer_size,
-           kMinTransferBufferSize,
-           std::max(kMaxTransferBufferSize, transfer_buffer_size),
-           gpu::gles2::GLES2Implementation::kNoLimit)) {
+          transfer_buffer_size, kMinTransferBufferSize,
+          std::max(kMaxTransferBufferSize, transfer_buffer_size),
+          gpu::SharedMemoryLimits::kNoLimit)) {
     return false;
   }
 

@@ -64,13 +64,6 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   virtual gpu::ContextSupport* ContextSupport() = 0;
   virtual class GrContext* GrContext() = 0;
 
-  struct Capabilities {
-    gpu::Capabilities gpu;
-    size_t max_transfer_buffer_usage_bytes;
-
-    CC_EXPORT Capabilities();
-  };
-
   // Invalidates the cached OpenGL state in GrContext.
   // See skia GrContext::resetContext for details.
   virtual void InvalidateGrContext(uint32_t state) = 0;
@@ -85,7 +78,7 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   virtual base::Lock* GetLock() = 0;
 
   // Returns the capabilities of the currently bound 3d context.
-  virtual Capabilities ContextCapabilities() = 0;
+  virtual gpu::Capabilities ContextCapabilities() = 0;
 
   // Delete all cached gpu resources.
   virtual void DeleteCachedResources() = 0;

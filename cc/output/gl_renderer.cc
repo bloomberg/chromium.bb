@@ -337,17 +337,17 @@ GLRenderer::GLRenderer(RendererClient* client,
   DCHECK(gl_);
   DCHECK(context_support_);
 
-  ContextProvider::Capabilities context_caps =
+  const auto& context_caps =
       output_surface_->context_provider()->ContextCapabilities();
 
   capabilities_.using_partial_swap =
-      settings_->partial_swap_enabled && context_caps.gpu.post_sub_buffer;
-  capabilities_.allow_empty_swap = capabilities_.using_partial_swap ||
-                                   context_caps.gpu.commit_overlay_planes;
+      settings_->partial_swap_enabled && context_caps.post_sub_buffer;
+  capabilities_.allow_empty_swap =
+      capabilities_.using_partial_swap || context_caps.commit_overlay_planes;
 
-  DCHECK(!context_caps.gpu.iosurface || context_caps.gpu.texture_rectangle);
+  DCHECK(!context_caps.iosurface || context_caps.texture_rectangle);
 
-  capabilities_.using_egl_image = context_caps.gpu.egl_image_external;
+  capabilities_.using_egl_image = context_caps.egl_image_external;
 
   capabilities_.max_texture_size = resource_provider_->max_texture_size();
   capabilities_.best_texture_format = resource_provider_->best_texture_format();
@@ -355,24 +355,23 @@ GLRenderer::GLRenderer(RendererClient* client,
   // The updater can access textures while the GLRenderer is using them.
   capabilities_.allow_partial_texture_updates = true;
 
-  capabilities_.using_image = context_caps.gpu.image;
+  capabilities_.using_image = context_caps.image;
 
-  capabilities_.using_discard_framebuffer =
-      context_caps.gpu.discard_framebuffer;
+  capabilities_.using_discard_framebuffer = context_caps.discard_framebuffer;
 
   capabilities_.allow_rasterize_on_demand = true;
 
   // If MSAA is slow, we want this renderer to behave as though MSAA is not
   // available. Set samples to 0 to achieve this.
-  if (context_caps.gpu.msaa_is_slow)
+  if (context_caps.msaa_is_slow)
     capabilities_.max_msaa_samples = 0;
   else
-    capabilities_.max_msaa_samples = context_caps.gpu.max_samples;
+    capabilities_.max_msaa_samples = context_caps.max_samples;
 
-  use_sync_query_ = context_caps.gpu.sync_query;
-  use_blend_equation_advanced_ = context_caps.gpu.blend_equation_advanced;
+  use_sync_query_ = context_caps.sync_query;
+  use_blend_equation_advanced_ = context_caps.blend_equation_advanced;
   use_blend_equation_advanced_coherent_ =
-      context_caps.gpu.blend_equation_advanced_coherent;
+      context_caps.blend_equation_advanced_coherent;
 
   InitializeSharedObjects();
 }

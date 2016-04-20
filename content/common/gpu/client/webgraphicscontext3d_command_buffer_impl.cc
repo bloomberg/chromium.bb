@@ -29,6 +29,7 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
@@ -68,13 +69,6 @@ GetDefaultShareGroupForHost(gpu::GpuChannelHost* host) {
 
 } // namespace anonymous
 
-WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits::SharedMemoryLimits()
-    : command_buffer_size(kDefaultCommandBufferSize),
-      start_transfer_buffer_size(kDefaultStartTransferBufferSize),
-      min_transfer_buffer_size(kDefaultMinTransferBufferSize),
-      max_transfer_buffer_size(kDefaultMaxTransferBufferSize),
-      mapped_memory_reclaim_limit(gpu::gles2::GLES2Implementation::kNoLimit) {}
-
 WebGraphicsContext3DCommandBufferImpl::ShareGroup::ShareGroup() {
 }
 
@@ -90,7 +84,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     gfx::GpuPreference gpu_preference,
     bool share_resources,
     bool automatic_flushes,
-    const SharedMemoryLimits& limits,
     WebGraphicsContext3DCommandBufferImpl* share_context)
     : automatic_flushes_(automatic_flushes),
       attributes_(attributes),
@@ -98,7 +91,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       surface_handle_(surface_handle),
       active_url_(active_url),
       gpu_preference_(gpu_preference),
-      mem_limits_(limits),
       weak_ptr_factory_(this) {
   DCHECK(host);
   switch (attributes.context_type) {
@@ -127,7 +119,8 @@ WebGraphicsContext3DCommandBufferImpl::
   Destroy();
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
+bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
+    const gpu::SharedMemoryLimits& memory_limits) {
   if (initialized_)
     return true;
 
@@ -141,7 +134,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "125248 WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL"));
 
-  if (!CreateContext()) {
+  if (!CreateContext(memory_limits)) {
     Destroy();
 
     initialize_failed_ = true;
@@ -199,7 +192,8 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   return result;
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::CreateContext() {
+bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
+    const gpu::SharedMemoryLimits& memory_limits) {
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::CreateContext");
   scoped_refptr<gpu::gles2::ShareGroup> gles2_share_group;
 
@@ -224,7 +218,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext() {
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
-  if (!gles2_helper_->Initialize(mem_limits_.command_buffer_size)) {
+  if (!gles2_helper_->Initialize(memory_limits.command_buffer_size)) {
     LOG(ERROR) << "Failed to initialize GLES2CmdHelper.";
     return false;
   }
@@ -249,11 +243,10 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext() {
       support_client_side_arrays, command_buffer_.get()));
   SetGLInterface(real_gl_.get());
 
-  if (!real_gl_->Initialize(
-      mem_limits_.start_transfer_buffer_size,
-      mem_limits_.min_transfer_buffer_size,
-      mem_limits_.max_transfer_buffer_size,
-      mem_limits_.mapped_memory_reclaim_limit)) {
+  if (!real_gl_->Initialize(memory_limits.start_transfer_buffer_size,
+                            memory_limits.min_transfer_buffer_size,
+                            memory_limits.max_transfer_buffer_size,
+                            memory_limits.mapped_memory_reclaim_limit)) {
     LOG(ERROR) << "Failed to initialize GLES2Implementation.";
     return false;
   }
@@ -269,8 +262,9 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext() {
   return true;
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::InitializeOnCurrentThread() {
-  if (!MaybeInitializeGL()) {
+bool WebGraphicsContext3DCommandBufferImpl::InitializeOnCurrentThread(
+    const gpu::SharedMemoryLimits& memory_limits) {
+  if (!MaybeInitializeGL(memory_limits)) {
     DLOG(ERROR) << "Failed to initialize context.";
     return false;
   }

@@ -21,6 +21,7 @@
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -384,11 +385,9 @@ void GLManager::InitializeWithCommandLine(
                                      this));
 
   ASSERT_TRUE(gles2_implementation_->Initialize(
-      kStartTransferBufferSize,
-      kMinTransferBufferSize,
-      kMaxTransferBufferSize,
-      gpu::gles2::GLES2Implementation::kNoLimit))
-          << "Could not init GLES2Implementation";
+      kStartTransferBufferSize, kMinTransferBufferSize, kMaxTransferBufferSize,
+      SharedMemoryLimits::kNoLimit))
+      << "Could not init GLES2Implementation";
 
   MakeCurrent();
 }

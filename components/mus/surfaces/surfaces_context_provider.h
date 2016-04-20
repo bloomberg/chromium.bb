@@ -51,7 +51,7 @@ class SurfacesContextProvider : public cc::ContextProvider,
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   void InvalidateGrContext(uint32_t state) override;
-  Capabilities ContextCapabilities() override;
+  gpu::Capabilities ContextCapabilities() override;
   void DeleteCachedResources() override {}
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
@@ -77,7 +77,7 @@ class SurfacesContextProvider : public cc::ContextProvider,
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
   std::unique_ptr<gpu::gles2::GLES2Implementation> implementation_;
 
-  cc::ContextProvider::Capabilities capabilities_;
+  gpu::Capabilities capabilities_;
   LostContextCallback lost_context_callback_;
 
   SurfacesContextProviderDelegate* delegate_;

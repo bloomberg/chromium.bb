@@ -170,14 +170,12 @@ void GLHelperHolder::Initialize() {
   size_t full_screen_texture_size_in_bytes = display_info.GetDisplayHeight() *
                                              display_info.GetDisplayWidth() *
                                              kBytesPerPixel;
-  WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
+  gpu::SharedMemoryLimits limits;
   limits.command_buffer_size = 64 * 1024;
   limits.start_transfer_buffer_size = 64 * 1024;
   limits.min_transfer_buffer_size = 64 * 1024;
   limits.max_transfer_buffer_size = std::min(
       3 * full_screen_texture_size_in_bytes, kDefaultMaxTransferBufferSize);
-  limits.mapped_memory_reclaim_limit =
-      WebGraphicsContext3DCommandBufferImpl::kNoLimit;
 
   bool share_resources = true;
   // TODO(danakj): This should be false probably, it is for the main thread
@@ -189,9 +187,9 @@ void GLHelperHolder::Initialize() {
       new WebGraphicsContext3DCommandBufferImpl(
           gpu::kNullSurfaceHandle,  // offscreen
           url, gpu_channel_host.get(), attributes, gfx::PreferIntegratedGpu,
-          share_resources, automatic_flushes, limits, nullptr));
+          share_resources, automatic_flushes, nullptr));
   provider_ = new ContextProviderCommandBuffer(
-      std::move(context), BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
+      std::move(context), limits, BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   if (!provider_->BindToCurrentThread())
     return;
   provider_->ContextGL()->TraceBeginCHROMIUM(

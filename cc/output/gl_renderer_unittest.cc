@@ -725,7 +725,7 @@ TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
 
 class ClearCountingContext : public TestWebGraphicsContext3D {
  public:
-  ClearCountingContext() { test_capabilities_.gpu.discard_framebuffer = true; }
+  ClearCountingContext() { test_capabilities_.discard_framebuffer = true; }
 
   MOCK_METHOD3(discardFramebufferEXT,
                void(GLenum target,
@@ -862,7 +862,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
 class TextureStateTrackingContext : public TestWebGraphicsContext3D {
  public:
   TextureStateTrackingContext() : active_texture_(GL_INVALID_ENUM) {
-    test_capabilities_.gpu.egl_image_external = true;
+    test_capabilities_.egl_image_external = true;
   }
 
   MOCK_METHOD1(waitSyncToken, void(const GLbyte* sync_token));
@@ -1749,7 +1749,7 @@ TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
 
 class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
  public:
-  OutputSurfaceMockContext() { test_capabilities_.gpu.post_sub_buffer = true; }
+  OutputSurfaceMockContext() { test_capabilities_.post_sub_buffer = true; }
 
   // Specifically override methods even if they are unused (used in conjunction
   // with StrictMock). We need to make sure that GLRenderer does not issue

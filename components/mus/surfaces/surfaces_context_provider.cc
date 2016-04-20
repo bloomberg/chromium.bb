@@ -16,16 +16,10 @@
 #include "components/mus/surfaces/surfaces_context_provider_delegate.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 
 namespace mus {
-
-namespace {
-const size_t kDefaultCommandBufferSize = 1024 * 1024;
-const size_t kDefaultStartTransferBufferSize = 1 * 1024 * 1024;
-const size_t kDefaultMinTransferBufferSize = 1 * 256 * 1024;
-const size_t kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
-}
 
 SurfacesContextProvider::SurfacesContextProvider(
     gfx::AcceleratedWidget widget,
@@ -51,15 +45,17 @@ bool SurfacesContextProvider::BindToCurrentThread() {
   DCHECK(CalledOnValidThread());
   if (!command_buffer_local_->Initialize())
     return false;
+
+  constexpr gpu::SharedMemoryLimits default_limits;
   gles2_helper_.reset(
       new gpu::gles2::GLES2CmdHelper(command_buffer_local_));
-  if (!gles2_helper_->Initialize(kDefaultCommandBufferSize))
+  if (!gles2_helper_->Initialize(default_limits.command_buffer_size))
     return false;
   gles2_helper_->SetAutomaticFlushes(false);
   transfer_buffer_.reset(new gpu::TransferBuffer(gles2_helper_.get()));
-  capabilities_.gpu = command_buffer_local_->GetCapabilities();
+  capabilities_ = command_buffer_local_->GetCapabilities();
   bool bind_generates_resource =
-      !!capabilities_.gpu.bind_generates_resource_chromium;
+      !!capabilities_.bind_generates_resource_chromium;
   // TODO(piman): Some contexts (such as compositor) want this to be true, so
   // this needs to be a public parameter.
   bool lose_context_when_out_of_memory = false;
@@ -69,8 +65,10 @@ bool SurfacesContextProvider::BindToCurrentThread() {
       bind_generates_resource, lose_context_when_out_of_memory,
       support_client_side_arrays, command_buffer_local_));
   return implementation_->Initialize(
-      kDefaultStartTransferBufferSize, kDefaultMinTransferBufferSize,
-      kDefaultMaxTransferBufferSize, gpu::gles2::GLES2Implementation::kNoLimit);
+      default_limits.start_transfer_buffer_size,
+      default_limits.min_transfer_buffer_size,
+      default_limits.max_transfer_buffer_size,
+      default_limits.mapped_memory_reclaim_limit);
 }
 
 gpu::gles2::GLES2Interface* SurfacesContextProvider::ContextGL() {
@@ -88,8 +86,7 @@ class GrContext* SurfacesContextProvider::GrContext() {
 
 void SurfacesContextProvider::InvalidateGrContext(uint32_t state) {}
 
-cc::ContextProvider::Capabilities
-SurfacesContextProvider::ContextCapabilities() {
+gpu::Capabilities SurfacesContextProvider::ContextCapabilities() {
   return capabilities_;
 }
 

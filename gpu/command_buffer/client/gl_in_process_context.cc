@@ -28,6 +28,7 @@
 #include "base/message_loop/message_loop.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -208,8 +209,7 @@ GLInProcessContextSharedMemoryLimits::GLInProcessContextSharedMemoryLimits()
       start_transfer_buffer_size(kDefaultStartTransferBufferSize),
       min_transfer_buffer_size(kDefaultMinTransferBufferSize),
       max_transfer_buffer_size(kDefaultMaxTransferBufferSize),
-      mapped_memory_reclaim_limit(gles2::GLES2Implementation::kNoLimit) {
-}
+      mapped_memory_reclaim_limit(SharedMemoryLimits::kNoLimit) {}
 
 // static
 GLInProcessContext* GLInProcessContext::Create(

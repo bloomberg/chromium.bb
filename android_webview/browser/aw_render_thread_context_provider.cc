@@ -58,8 +58,6 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
 
   context_->GetImplementation()->SetLostContextCallback(base::Bind(
       &AwRenderThreadContextProvider::OnLostContext, base::Unretained(this)));
-
-  capabilities_.gpu = context_->GetImplementation()->capabilities();
 }
 
 AwRenderThreadContextProvider::~AwRenderThreadContextProvider() {
@@ -75,11 +73,9 @@ bool AwRenderThreadContextProvider::BindToCurrentThread() {
   return true;
 }
 
-cc::ContextProvider::Capabilities
-AwRenderThreadContextProvider::ContextCapabilities() {
+gpu::Capabilities AwRenderThreadContextProvider::ContextCapabilities() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  return capabilities_;
+  return context_->GetImplementation()->capabilities();
 }
 
 gpu::gles2::GLES2Interface* AwRenderThreadContextProvider::ContextGL() {

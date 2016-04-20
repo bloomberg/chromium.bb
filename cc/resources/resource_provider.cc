@@ -429,7 +429,7 @@ ResourceProvider::~ResourceProvider() {
 }
 
 bool ResourceProvider::IsResourceFormatSupported(ResourceFormat format) const {
-  ContextProvider::Capabilities caps;
+  gpu::Capabilities caps;
   if (output_surface_->context_provider())
     caps = output_surface_->context_provider()->ContextCapabilities();
 
@@ -441,13 +441,13 @@ bool ResourceProvider::IsResourceFormatSupported(ResourceFormat format) const {
     case LUMINANCE_8:
       return true;
     case BGRA_8888:
-      return caps.gpu.texture_format_bgra8888;
+      return caps.texture_format_bgra8888;
     case ETC1:
-      return caps.gpu.texture_format_etc1;
+      return caps.texture_format_etc1;
     case RED_8:
-      return caps.gpu.texture_rg;
+      return caps.texture_rg;
     case LUMINANCE_F16:
-      return caps.gpu.texture_half_float_linear;
+      return caps.texture_half_float_linear;
   }
 
   NOTREACHED();
@@ -1233,19 +1233,19 @@ void ResourceProvider::Initialize() {
   DCHECK(!texture_id_allocator_);
   DCHECK(!buffer_id_allocator_);
 
-  const ContextProvider::Capabilities& caps =
+  const gpu::Capabilities& caps =
       output_surface_->context_provider()->ContextCapabilities();
 
   DCHECK(IsGpuResourceType(default_resource_type_));
-  use_texture_storage_ext_ = caps.gpu.texture_storage;
-  use_texture_format_bgra_ = caps.gpu.texture_format_bgra8888;
-  use_texture_usage_hint_ = caps.gpu.texture_usage;
-  use_compressed_texture_etc1_ = caps.gpu.texture_format_etc1;
-  yuv_resource_format_ = caps.gpu.texture_rg ? RED_8 : LUMINANCE_8;
+  use_texture_storage_ext_ = caps.texture_storage;
+  use_texture_format_bgra_ = caps.texture_format_bgra8888;
+  use_texture_usage_hint_ = caps.texture_usage;
+  use_compressed_texture_etc1_ = caps.texture_format_etc1;
+  yuv_resource_format_ = caps.texture_rg ? RED_8 : LUMINANCE_8;
   yuv_highbit_resource_format_ = yuv_resource_format_;
-  if (caps.gpu.texture_half_float_linear)
+  if (caps.texture_half_float_linear)
     yuv_highbit_resource_format_ = LUMINANCE_F16;
-  use_sync_query_ = caps.gpu.sync_query;
+  use_sync_query_ = caps.sync_query;
 
   max_texture_size_ = 0;  // Context expects cleared value.
   gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
@@ -1253,7 +1253,7 @@ void ResourceProvider::Initialize() {
       PlatformColor::BestSupportedTextureFormat(use_texture_format_bgra_);
 
   best_render_buffer_format_ = PlatformColor::BestSupportedTextureFormat(
-      caps.gpu.render_buffer_format_bgra8888);
+      caps.render_buffer_format_bgra8888);
 
   texture_id_allocator_.reset(
       new TextureIdAllocator(gl, id_allocation_chunk_size_));

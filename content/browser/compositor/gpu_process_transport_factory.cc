@@ -45,6 +45,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -120,7 +121,6 @@ CreateContextCommon(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
   return base::WrapUnique(new content::WebGraphicsContext3DCommandBufferImpl(
       surface_handle, url, gpu_channel_host.get(), attributes,
       gfx::PreferIntegratedGpu, share_resources, automatic_flushes,
-      content::WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
       nullptr));
 }
 
@@ -335,7 +335,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       // compositor.
       context_provider = new ContextProviderCommandBuffer(
           CreateContextCommon(gpu_channel_host, surface_handle),
-          DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
+          gpu::SharedMemoryLimits(), DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
       if (!context_provider->BindToCurrentThread())
         context_provider = nullptr;
 
@@ -343,7 +343,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         shared_worker_context_provider_ = new ContextProviderCommandBuffer(
             CreateContextCommon(std::move(gpu_channel_host),
                                 gpu::kNullSurfaceHandle),
-            BROWSER_WORKER_CONTEXT);
+            gpu::SharedMemoryLimits(), BROWSER_WORKER_CONTEXT);
         if (shared_worker_context_provider_->BindToCurrentThread())
           shared_worker_context_provider_->SetupLock();
         else
@@ -376,14 +376,13 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         compositor->vsync_manager(), compositor->task_runner().get()));
   } else {
     DCHECK(context_provider);
-    ContextProvider::Capabilities capabilities =
-        context_provider->ContextCapabilities();
+    const auto& capabilities = context_provider->ContextCapabilities();
     if (!data->surface_id) {
       surface = base::WrapUnique(new OffscreenBrowserCompositorOutputSurface(
           context_provider, shared_worker_context_provider_,
           compositor->vsync_manager(), compositor->task_runner().get(),
           std::unique_ptr<BrowserCompositorOverlayCandidateValidator>()));
-    } else if (capabilities.gpu.surfaceless) {
+    } else if (capabilities.surfaceless) {
       GLenum target = GL_TEXTURE_2D;
       GLenum format = GL_RGB;
 #if defined(OS_MACOSX)
@@ -628,7 +627,7 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   // don't step on each other.
   shared_main_thread_contexts_ = new ContextProviderCommandBuffer(
       CreateContextCommon(std::move(gpu_channel_host), gpu::kNullSurfaceHandle),
-      BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
+      gpu::SharedMemoryLimits(), BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   shared_main_thread_contexts_->SetLostContextCallback(base::Bind(
       &GpuProcessTransportFactory::OnLostMainThreadSharedContextInsideCallback,
       callback_factory_.GetWeakPtr()));

@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/client/program_info_manager.h"
 #include "gpu/command_buffer/client/query_tracker.h"
 #include "gpu/command_buffer/client/ring_buffer.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -501,7 +502,7 @@ class GLES2ImplementationTest : public testing::Test {
       EXPECT_CALL(*gpu_control_, SetGpuControlClient(gl_.get())).Times(1);
 
       if (!gl_->Initialize(kTransferBufferSize, kTransferBufferSize,
-                           kTransferBufferSize, GLES2Implementation::kNoLimit))
+                           kTransferBufferSize, SharedMemoryLimits::kNoLimit))
         return false;
 
       helper_->CommandBufferHelper::Finish();

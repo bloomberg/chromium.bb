@@ -31,6 +31,7 @@ namespace gpu {
 
 class ContextSupport;
 class GpuChannelHost;
+struct SharedMemoryLimits;
 class TransferBuffer;
 
 namespace gles2 {
@@ -52,16 +53,6 @@ class WebGraphicsContext3DCommandBufferImpl
  public:
   enum MappedMemoryReclaimLimit {
     kNoLimit = 0,
-  };
-
-  struct CONTENT_EXPORT SharedMemoryLimits {
-    SharedMemoryLimits();
-
-    size_t command_buffer_size;
-    size_t start_transfer_buffer_size;
-    size_t min_transfer_buffer_size;
-    size_t max_transfer_buffer_size;
-    size_t mapped_memory_reclaim_limit;
   };
 
   class ShareGroup : public base::RefCountedThreadSafe<ShareGroup> {
@@ -116,7 +107,6 @@ class WebGraphicsContext3DCommandBufferImpl
       gfx::GpuPreference gpu_preference,
       bool share_resources,
       bool automatic_flushes,
-      const SharedMemoryLimits& limits,
       WebGraphicsContext3DCommandBufferImpl* share_context);
 
   ~WebGraphicsContext3DCommandBufferImpl() override;
@@ -131,11 +121,8 @@ class WebGraphicsContext3DCommandBufferImpl
     return real_gl_.get();
   }
 
-  size_t GetMappedMemoryLimit() {
-    return mem_limits_.mapped_memory_reclaim_limit;
-  }
-
-  CONTENT_EXPORT bool InitializeOnCurrentThread();
+  CONTENT_EXPORT bool InitializeOnCurrentThread(
+      const gpu::SharedMemoryLimits& memory_limits);
 
   void SetContextType(CommandBufferContextType type) {
     context_type_ = type;
@@ -152,7 +139,7 @@ class WebGraphicsContext3DCommandBufferImpl
   // and subsequent calls are ignored. Must be called from the thread that is
   // going to use this object to issue GL commands (which might not be the main
   // thread).
-  bool MaybeInitializeGL();
+  bool MaybeInitializeGL(const gpu::SharedMemoryLimits& memory_limits);
 
   bool InitializeCommandBuffer(
       WebGraphicsContext3DCommandBufferImpl* share_context);
@@ -172,7 +159,7 @@ class WebGraphicsContext3DCommandBufferImpl
   // allocate both fake PluginWindowHandles and NativeViewIds and map
   // from fake NativeViewIds to PluginWindowHandles, but this seems like
   // unnecessary complexity at the moment.
-  bool CreateContext();
+  bool CreateContext(const gpu::SharedMemoryLimits& memory_limits);
 
   void OnContextLost();
 
@@ -192,7 +179,6 @@ class WebGraphicsContext3DCommandBufferImpl
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
   std::unique_ptr<gpu::gles2::GLES2Implementation> real_gl_;
   std::unique_ptr<gpu::gles2::GLES2Interface> trace_gl_;
-  SharedMemoryLimits mem_limits_;
   scoped_refptr<ShareGroup> share_group_;
 
   // Member variables should appear before the WeakPtrFactory, to ensure

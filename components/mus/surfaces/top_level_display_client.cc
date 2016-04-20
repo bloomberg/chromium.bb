@@ -54,7 +54,7 @@ TopLevelDisplayClient::TopLevelDisplayClient(
   CHECK(surfaces_context_provider->BindToCurrentThread());
 
   std::unique_ptr<cc::OutputSurface> output_surface;
-  if (surfaces_context_provider->ContextCapabilities().gpu.surfaceless) {
+  if (surfaces_context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
     output_surface = base::WrapUnique(new DirectOutputSurfaceOzone(
         surfaces_context_provider, widget, task_runner_.get(), GL_TEXTURE_2D,

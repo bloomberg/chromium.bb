@@ -36,7 +36,7 @@ bool DirectOutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
 
   if (capabilities_.uses_default_gl_framebuffer) {
     capabilities_.flipped_output_surface =
-        context_provider()->ContextCapabilities().gpu.flips_vertically;
+        context_provider()->ContextCapabilities().flips_vertically;
   }
   return true;
 }

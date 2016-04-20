@@ -56,8 +56,6 @@ BlimpContextProvider::~BlimpContextProvider() {
 
 bool BlimpContextProvider::BindToCurrentThread() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
-  capabilities_.gpu = context_->GetImplementation()->capabilities();
-  capabilities_.gpu.image = true;
   return true;
 }
 
@@ -65,9 +63,14 @@ void BlimpContextProvider::DetachFromThread() {
   context_thread_checker_.DetachFromThread();
 }
 
-cc::ContextProvider::Capabilities BlimpContextProvider::ContextCapabilities() {
+gpu::Capabilities BlimpContextProvider::ContextCapabilities() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
-  return capabilities_;
+  gpu::Capabilities capabilities =
+      context_->GetImplementation()->capabilities();
+  // TODO(danakj): Why? Is this even valid? This is the CHROMIUM_image extension
+  // to use GpuMemoryBuffers. Does the context not provide this?
+  capabilities.image = true;
+  return capabilities;
 }
 
 gpu::gles2::GLES2Interface* BlimpContextProvider::ContextGL() {
