@@ -89,22 +89,17 @@ InspectorHeapProfilerAgent::~InspectorHeapProfilerAgent()
 }
 
 // InspectorBaseAgent overrides.
-void InspectorHeapProfilerAgent::setState(protocol::DictionaryValue* state)
+void InspectorHeapProfilerAgent::init(InstrumentingAgents* instrumentingAgents, protocol::Frontend* baseFrontend, protocol::Dispatcher* dispatcher, protocol::DictionaryValue* state)
 {
-    InspectorBaseAgent::setState(state);
+    InspectorBaseAgent::init(instrumentingAgents, baseFrontend, dispatcher, state);
     m_v8HeapProfilerAgent->setInspectorState(m_state);
+    m_v8HeapProfilerAgent->setFrontend(frontend());
 }
 
-void InspectorHeapProfilerAgent::setFrontend(protocol::Frontend* frontend)
-{
-    InspectorBaseAgent::setFrontend(frontend);
-    m_v8HeapProfilerAgent->setFrontend(protocol::Frontend::HeapProfiler::from(frontend));
-}
-
-void InspectorHeapProfilerAgent::clearFrontend()
+void InspectorHeapProfilerAgent::dispose()
 {
     m_v8HeapProfilerAgent->clearFrontend();
-    InspectorBaseAgent::clearFrontend();
+    InspectorBaseAgent::dispose();
 }
 
 void InspectorHeapProfilerAgent::restore()

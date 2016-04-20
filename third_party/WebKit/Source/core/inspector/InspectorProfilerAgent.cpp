@@ -58,22 +58,17 @@ InspectorProfilerAgent::~InspectorProfilerAgent()
 }
 
 // InspectorBaseAgent overrides.
-void InspectorProfilerAgent::setState(protocol::DictionaryValue* state)
+void InspectorProfilerAgent::init(InstrumentingAgents* instrumentingAgents, protocol::Frontend* baseFrontend, protocol::Dispatcher* dispatcher, protocol::DictionaryValue* state)
 {
-    InspectorBaseAgent::setState(state);
+    InspectorBaseAgent::init(instrumentingAgents, baseFrontend, dispatcher, state);
     m_v8ProfilerAgent->setInspectorState(m_state);
+    m_v8ProfilerAgent->setFrontend(frontend());
 }
 
-void InspectorProfilerAgent::setFrontend(protocol::Frontend* frontend)
-{
-    InspectorBaseAgent::setFrontend(frontend);
-    m_v8ProfilerAgent->setFrontend(protocol::Frontend::Profiler::from(frontend));
-}
-
-void InspectorProfilerAgent::clearFrontend()
+void InspectorProfilerAgent::dispose()
 {
     m_v8ProfilerAgent->clearFrontend();
-    InspectorBaseAgent::clearFrontend();
+    InspectorBaseAgent::dispose();
 }
 
 void InspectorProfilerAgent::restore()

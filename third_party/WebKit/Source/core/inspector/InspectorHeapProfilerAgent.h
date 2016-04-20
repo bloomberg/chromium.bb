@@ -53,9 +53,8 @@ public:
     ~InspectorHeapProfilerAgent() override;
 
     // InspectorBaseAgent overrides.
-    void setState(protocol::DictionaryValue*) override;
-    void setFrontend(protocol::Frontend*) override;
-    void clearFrontend() override;
+    void init(InstrumentingAgents*, protocol::Frontend*, protocol::Dispatcher*, protocol::DictionaryValue*) override;
+    void dispose() override;
     void restore() override;
 
     void enable(ErrorString*) override;

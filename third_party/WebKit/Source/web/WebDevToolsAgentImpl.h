@@ -33,9 +33,9 @@
 
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorRuntimeAgent.h"
+#include "core/inspector/InspectorSession.h"
 #include "core/inspector/InspectorTracingAgent.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/FrontendChannel.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
 #include "public/web/WebDevToolsAgent.h"
@@ -77,7 +77,7 @@ class WebDevToolsAgentImpl final
     , public InspectorTracingAgent::Client
     , public InspectorPageAgent::Client
     , public InspectorRuntimeAgent::Client
-    , public protocol::FrontendChannel
+    , public InspectorSession::Client
     , private WebThread::TaskObserver {
 public:
     static WebDevToolsAgentImpl* create(WebLocalFrameImpl*, WebDevToolsAgentClient*);
@@ -128,24 +128,23 @@ private:
     void setPausedInDebuggerMessage(const String&) override;
     void waitForCreateWindow(LocalFrame*) override;
 
-    // protocol::FrontendChannel implementation.
-    void sendProtocolResponse(int sessionId, int callId, PassOwnPtr<protocol::DictionaryValue> message) override;
-    void sendProtocolNotification(PassOwnPtr<protocol::DictionaryValue> message) override;
-    void flush() override;
+    // InspectorSession::Client implementation.
+    void sendProtocolMessage(int sessionId, int callId, const String& response, const String& state) override;
 
     // WebThread::TaskObserver implementation.
     void willProcessTask() override;
     void didProcessTask() override;
 
-    void initializeAgents();
-    void destroyAgents();
+    void initializeSession(int sessionId, const String& hostId);
+    void destroySession();
 
     friend class WebDevToolsAgent;
     static void runDebuggerTask(int sessionId, PassOwnPtr<WebDevToolsAgent::MessageDescriptor>);
 
+    bool attached() const { return m_session.get(); }
+
     WebDevToolsAgentClient* m_client;
     Member<WebLocalFrameImpl> m_webLocalFrameImpl;
-    bool m_attached;
 #if DCHECK_IS_ON()
     bool m_hasBeenDisposed;
 #endif
@@ -163,16 +162,8 @@ private:
     Member<InspectorLayerTreeAgent> m_layerTreeAgent;
     Member<InspectorTracingAgent> m_tracingAgent;
 
-    OwnPtr<protocol::Dispatcher> m_inspectorBackendDispatcher;
-    OwnPtr<protocol::Frontend> m_inspectorFrontend;
-    InspectorAgentRegistry m_agents;
+    Member<InspectorSession> m_session;
     bool m_includeViewAgents;
-
-    typedef Vector<std::pair<int, OwnPtr<protocol::Value>>> NotificationQueue;
-    NotificationQueue m_notificationQueue;
-    int m_sessionId;
-    String m_stateCookie;
-    bool m_stateMuted;
     int m_layerTreeId;
 };
 

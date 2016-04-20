@@ -90,9 +90,8 @@ public:
     void asyncTaskFinished(void* task);
 
     // InspectorBaseAgent overrides.
-    void setState(protocol::DictionaryValue*) override;
-    void setFrontend(protocol::Frontend*) override;
-    void clearFrontend() override;
+    void init(InstrumentingAgents*, protocol::Frontend*, protocol::Dispatcher*, protocol::DictionaryValue*) override;
+    void dispose() override;
     void restore() override;
 
     V8DebuggerAgent* v8Agent() const { return m_v8DebuggerAgent; }

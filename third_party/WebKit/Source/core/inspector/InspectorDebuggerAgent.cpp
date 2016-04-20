@@ -304,22 +304,17 @@ void InspectorDebuggerAgent::asyncTaskFinished(void* task)
 }
 
 // InspectorBaseAgent overrides.
-void InspectorDebuggerAgent::setState(protocol::DictionaryValue* state)
+void InspectorDebuggerAgent::init(InstrumentingAgents* instrumentingAgents, protocol::Frontend* baseFrontend, protocol::Dispatcher* dispatcher, protocol::DictionaryValue* state)
 {
-    InspectorBaseAgent::setState(state);
+    InspectorBaseAgent::init(instrumentingAgents, baseFrontend, dispatcher, state);
     m_v8DebuggerAgent->setInspectorState(m_state);
+    m_v8DebuggerAgent->setFrontend(frontend());
 }
 
-void InspectorDebuggerAgent::setFrontend(protocol::Frontend* frontend)
-{
-    InspectorBaseAgent::setFrontend(frontend);
-    m_v8DebuggerAgent->setFrontend(protocol::Frontend::Debugger::from(frontend));
-}
-
-void InspectorDebuggerAgent::clearFrontend()
+void InspectorDebuggerAgent::dispose()
 {
     m_v8DebuggerAgent->clearFrontend();
-    InspectorBaseAgent::clearFrontend();
+    InspectorBaseAgent::dispose();
 }
 
 void InspectorDebuggerAgent::restore()

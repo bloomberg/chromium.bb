@@ -58,9 +58,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // InspectorBaseAgent overrides.
-    void setState(protocol::DictionaryValue*) override;
-    void setFrontend(protocol::Frontend*) override;
-    void clearFrontend() override;
+    void init(InstrumentingAgents*, protocol::Frontend*, protocol::Dispatcher*, protocol::DictionaryValue*) override;
+    void dispose() override;
     void restore() override;
 
     void consoleProfile(ExecutionContext*, const String16& title);

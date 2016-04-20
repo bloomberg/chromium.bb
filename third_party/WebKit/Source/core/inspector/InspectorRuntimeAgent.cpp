@@ -57,22 +57,17 @@ InspectorRuntimeAgent::~InspectorRuntimeAgent()
 }
 
 // InspectorBaseAgent overrides.
-void InspectorRuntimeAgent::setState(protocol::DictionaryValue* state)
+void InspectorRuntimeAgent::init(InstrumentingAgents* instrumentingAgents, protocol::Frontend* baseFrontend, protocol::Dispatcher* dispatcher, protocol::DictionaryValue* state)
 {
-    InspectorBaseAgent::setState(state);
+    InspectorBaseAgent::init(instrumentingAgents, baseFrontend, dispatcher, state);
     m_v8RuntimeAgent->setInspectorState(m_state);
+    m_v8RuntimeAgent->setFrontend(frontend());
 }
 
-void InspectorRuntimeAgent::setFrontend(protocol::Frontend* frontend)
-{
-    InspectorBaseAgent::setFrontend(frontend);
-    m_v8RuntimeAgent->setFrontend(protocol::Frontend::Runtime::from(frontend));
-}
-
-void InspectorRuntimeAgent::clearFrontend()
+void InspectorRuntimeAgent::dispose()
 {
     m_v8RuntimeAgent->clearFrontend();
-    InspectorBaseAgent::clearFrontend();
+    InspectorBaseAgent::dispose();
 }
 
 void InspectorRuntimeAgent::restore()

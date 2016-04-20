@@ -40,67 +40,28 @@
 #include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/inspector_protocol/Values.h"
 #include "wtf/Forward.h"
-#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class Frontend;
-class InstrumentingAgents;
 class LocalFrame;
 
 using protocol::Maybe;
 
 class CORE_EXPORT InspectorAgent : public GarbageCollectedFinalized<InspectorAgent> {
 public:
-    explicit InspectorAgent(const String&);
-    virtual ~InspectorAgent();
-    DECLARE_VIRTUAL_TRACE();
+    InspectorAgent() { }
+    virtual ~InspectorAgent() { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
-    virtual void init() { }
-    virtual void setFrontend(protocol::Frontend*) = 0;
-    virtual void clearFrontend() = 0;
     virtual void disable(ErrorString*) { }
     virtual void restore() { }
-    virtual void registerInDispatcher(protocol::Dispatcher*) = 0;
     virtual void discardAgent() { }
     virtual void didCommitLoadForLocalFrame(LocalFrame*) { }
     virtual void flushPendingProtocolNotifications() { }
-    virtual void setState(protocol::DictionaryValue*);
 
-    String name() const { return m_name; }
-    void appended(InstrumentingAgents*);
-
-protected:
-    Member<InstrumentingAgents> m_instrumentingAgents;
-    protocol::DictionaryValue* m_state;
-
-private:
-    String m_name;
-};
-
-class CORE_EXPORT InspectorAgentRegistry final {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(InspectorAgentRegistry);
-public:
-    explicit InspectorAgentRegistry(InstrumentingAgents*);
-    void append(InspectorAgent*);
-
-    void setFrontend(protocol::Frontend*);
-    void clearFrontend();
-    void restore(const String& savedState);
-    void registerInDispatcher(protocol::Dispatcher*);
-    void discardAgents();
-    void flushPendingProtocolNotifications();
-    void didCommitLoadForLocalFrame(LocalFrame*);
-    String state();
-
-    DECLARE_TRACE();
-
-private:
-    Member<InstrumentingAgents> m_instrumentingAgents;
-    OwnPtr<protocol::DictionaryValue> m_state;
-    HeapVector<Member<InspectorAgent>> m_agents;
+    virtual void init(InstrumentingAgents*, protocol::Frontend*, protocol::Dispatcher*, protocol::DictionaryValue*) = 0;
+    virtual void dispose() = 0;
 };
 
 template<typename AgentClass, typename FrontendClass>
@@ -108,42 +69,52 @@ class InspectorBaseAgent : public InspectorAgent {
 public:
     ~InspectorBaseAgent() override { }
 
-    void setFrontend(protocol::Frontend* frontend) override
+    void init(InstrumentingAgents* instrumentingAgents, protocol::Frontend* frontend, protocol::Dispatcher* dispatcher, protocol::DictionaryValue* state) override
     {
-        ASSERT(!m_frontend);
+        m_instrumentingAgents = instrumentingAgents;
         m_frontend = FrontendClass::from(frontend);
+        dispatcher->registerAgent(static_cast<AgentClass*>(this));
+
+        m_state = state->getObject(m_name);
+        if (!m_state) {
+            OwnPtr<protocol::DictionaryValue> newState = protocol::DictionaryValue::create();
+            m_state = newState.get();
+            state->setObject(m_name, newState.release());
+        }
     }
 
-    void clearFrontend() override
+    void dispose() override
     {
         ErrorString error;
         disable(&error);
-        ASSERT(m_frontend);
         m_frontend = nullptr;
+        m_state = nullptr;
+        m_instrumentingAgents = nullptr;
+        discardAgent();
     }
 
-    void registerInDispatcher(protocol::Dispatcher* dispatcher) final
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        dispatcher->registerAgent(static_cast<AgentClass*>(this));
+        visitor->trace(m_instrumentingAgents);
+        InspectorAgent::trace(visitor);
     }
 
 protected:
     explicit InspectorBaseAgent(const String& name)
-        : InspectorAgent(name)
+        : InspectorAgent()
+        , m_name(name)
         , m_frontend(nullptr)
     {
     }
 
     FrontendClass* frontend() const { return m_frontend; }
+    Member<InstrumentingAgents> m_instrumentingAgents;
+    protocol::DictionaryValue* m_state;
 
 private:
+    String m_name;
     FrontendClass* m_frontend;
 };
-
-inline bool asBool(const bool* const b)
-{
-    return b ? *b : false;
-}
 
 } // namespace blink
 
