@@ -252,7 +252,7 @@ void EventHandlerRegistry::clearWeakMembers(Visitor* visitor)
         const EventTargetSet* targets = &m_targets[handlerClass];
         for (const auto& eventTarget : *targets) {
             Node* node = eventTarget.key->toNode();
-            LocalDOMWindow* window = eventTarget.key->toDOMWindow();
+            LocalDOMWindow* window = eventTarget.key->toLocalDOMWindow();
             if (node && !ThreadHeap::isHeapObjectAlive(node)) {
                 deadTargets.append(node);
             } else if (window && !ThreadHeap::isHeapObjectAlive(window)) {
@@ -279,7 +279,7 @@ void EventHandlerRegistry::documentDetached(Document& document)
                         break;
                     }
                 }
-            } else if (eventTarget.key->toDOMWindow()) {
+            } else if (eventTarget.key->toLocalDOMWindow()) {
                 // DOMWindows may outlive their documents, so we shouldn't remove their handlers
                 // here.
             } else {
@@ -302,7 +302,7 @@ void EventHandlerRegistry::checkConsistency() const
                 // See the comment for |documentDetached| if either of these assertions fails.
                 ASSERT(node->document().frameHost());
                 ASSERT(node->document().frameHost() == m_frameHost);
-            } else if (LocalDOMWindow* window = eventTarget.key->toDOMWindow()) {
+            } else if (LocalDOMWindow* window = eventTarget.key->toLocalDOMWindow()) {
                 // If any of these assertions fail, LocalDOMWindow failed to unregister its handlers
                 // properly.
                 ASSERT(window->frame());

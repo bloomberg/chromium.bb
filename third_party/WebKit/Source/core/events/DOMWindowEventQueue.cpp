@@ -148,8 +148,8 @@ void DOMWindowEventQueue::dispatchEvent(Event* event)
 {
     EventTarget* eventTarget = event->target();
     InspectorInstrumentation::AsyncTask asyncTask(eventTarget->getExecutionContext(), event);
-    if (eventTarget->toDOMWindow())
-        eventTarget->toDOMWindow()->dispatchEvent(event, nullptr);
+    if (LocalDOMWindow* window = eventTarget->toLocalDOMWindow())
+        window->dispatchEvent(event, nullptr);
     else
         eventTarget->dispatchEvent(event);
 }

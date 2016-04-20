@@ -133,7 +133,7 @@ const char* ImageBitmapFactories::supplementName()
 
 ImageBitmapFactories& ImageBitmapFactories::from(EventTarget& eventTarget)
 {
-    if (LocalDOMWindow* window = eventTarget.toDOMWindow())
+    if (LocalDOMWindow* window = eventTarget.toLocalDOMWindow())
         return fromInternal(*window);
 
     ASSERT(eventTarget.getExecutionContext()->isWorkerGlobalScope());

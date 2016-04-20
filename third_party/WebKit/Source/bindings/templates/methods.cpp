@@ -31,7 +31,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     // prior to the call to BindingSecurity::shouldAllowAccessTo increases 30%
     // of speed performance on Android Nexus 7 as of Dec 2016.  ALWAYS_INLINE
     // didn't work in this case.
-    if (LocalDOMWindow* window = impl->toDOMWindow()) {
+    if (LocalDOMWindow* window = impl->toLocalDOMWindow()) {
         if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), window, exceptionState)) {
             {% if not method.returns_promise %}
             exceptionState.throwIfNeeded();

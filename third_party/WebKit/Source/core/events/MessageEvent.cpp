@@ -35,7 +35,7 @@ namespace blink {
 
 static inline bool isValidSource(EventTarget* source)
 {
-    return !source || source->toDOMWindow() || source->toMessagePort();
+    return !source || source->toLocalDOMWindow() || source->toMessagePort();
 }
 
 MessageEvent::MessageEvent()

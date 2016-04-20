@@ -226,7 +226,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
     if (InspectorInstrumentation::consoleAgentEnabled(sourceDocument))
         stackTrace = ScriptCallStack::capture();
 
-    toLocalDOMWindow(this)->schedulePostMessage(event, target.get(), stackTrace.release());
+    blink::toLocalDOMWindow(this)->schedulePostMessage(event, target.get(), stackTrace.release());
 }
 
 // FIXME: Once we're throwing exceptions for cross-origin access violations, we will always sanitize the target

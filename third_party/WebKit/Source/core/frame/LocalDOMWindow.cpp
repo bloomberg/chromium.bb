@@ -467,12 +467,12 @@ ExecutionContext* LocalDOMWindow::getExecutionContext() const
     return m_document.get();
 }
 
-const LocalDOMWindow* LocalDOMWindow::toDOMWindow() const
+const LocalDOMWindow* LocalDOMWindow::toLocalDOMWindow() const
 {
     return this;
 }
 
-LocalDOMWindow* LocalDOMWindow::toDOMWindow()
+LocalDOMWindow* LocalDOMWindow::toLocalDOMWindow()
 {
     return this;
 }

@@ -791,7 +791,7 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
         for (const auto& eventTarget : *targets) {
             EventTarget* target = eventTarget.key;
             Node* node = target->toNode();
-            if (target->toDOMWindow() || node == document || node == document->documentElement() || node == document->body()) {
+            if (target->toLocalDOMWindow() || node == document || node == document->documentElement() || node == document->body()) {
                 if (LayoutViewItem layoutView = document->layoutViewItem()) {
                     layoutView.computeLayerHitTestRects(rects);
                 }

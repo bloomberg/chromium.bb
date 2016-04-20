@@ -82,8 +82,8 @@ public:
 
     // EventTarget overrides:
     ExecutionContext* getExecutionContext() const override;
-    const LocalDOMWindow* toDOMWindow() const override;
-    LocalDOMWindow* toDOMWindow() override;
+    const LocalDOMWindow* toLocalDOMWindow() const override;
+    LocalDOMWindow* toLocalDOMWindow() override;
 
     // DOMWindow overrides:
     bool isLocalDOMWindow() const override { return true; }
