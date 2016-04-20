@@ -4,10 +4,6 @@
 
 #include "ash/touch/touch_hud_debug.h"
 
-#include <algorithm>
-#include <string>
-#include <vector>
-
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -32,7 +28,7 @@
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
 
-#include "ui/events/devices/x11/device_data_manager_x11.h"  // nogncheck
+#include "ui/events/devices/x11/device_data_manager_x11.h"
 #endif
 
 namespace ash {

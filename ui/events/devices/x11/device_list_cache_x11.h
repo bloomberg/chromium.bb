@@ -12,7 +12,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/events/devices/x11/events_devices_x11_export.h"
+#include "ui/events/devices/events_devices_export.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace base {
@@ -38,7 +38,7 @@ namespace ui {
 // A class to cache the current XInput device list. This minimized the
 // round-trip time to the X server whenever such a device list is needed. The
 // update function will be called on each incoming XI_HierarchyChanged event.
-class EVENTS_DEVICES_X11_EXPORT DeviceListCacheX11 {
+class EVENTS_DEVICES_EXPORT DeviceListCacheX11 {
  public:
   static DeviceListCacheX11* GetInstance();
 

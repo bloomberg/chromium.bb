@@ -34,9 +34,24 @@
         'keyboard_device.h',
         'touchscreen_device.cc',
         'touchscreen_device.h',
+        'x11/device_data_manager_x11.cc',
+        'x11/device_data_manager_x11.h',
+        'x11/device_list_cache_x11.cc',
+        'x11/device_list_cache_x11.h',
+        'x11/touch_factory_x11.cc',
+        'x11/touch_factory_x11.h',
       ],
       'export_dependent_settings': [
         '../../../ui/gfx/gfx.gyp:gfx',
+      ],
+      'conditions': [
+        ['use_x11==1', {
+          'dependencies': [
+            '../../../build/linux/system.gyp:x11',
+            '../../../ui/events/events.gyp:events_base',
+            '../../../ui/gfx/x/gfx_x11.gyp:gfx_x11',
+          ],
+        }],
       ],
     },
   ],

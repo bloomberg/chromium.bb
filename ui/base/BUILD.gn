@@ -412,8 +412,6 @@ component("base") {
       "dragdrop/drag_utils_aura.cc",
     ]
   }
-
-  # TODO(kylechar): remove ozone_platform_x11 from here.
   if (use_x11 || ozone_platform_x11) {
     sources += [
       "x/x11_foreign_window_manager.cc",
@@ -433,10 +431,7 @@ component("base") {
       ]
       configs += [ "//build/config/linux:xscrnsaver" ]
     }
-    deps += [
-      "//ui/events/devices/x11",
-      "//ui/gfx/x",
-    ]
+    deps += [ "//ui/gfx/x" ]
   }
 
   if (!use_aura || !is_linux) {

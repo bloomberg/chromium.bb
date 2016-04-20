@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ui/events/devices/x11/events_devices_x11_export.h"
+#include "ui/events/devices/events_devices_export.h"
 #include "ui/gfx/sequential_id_generator.h"
 
 namespace base {
@@ -30,7 +30,7 @@ typedef union _XEvent XEvent;
 namespace ui {
 
 // Functions related to determining touch devices.
-class EVENTS_DEVICES_X11_EXPORT TouchFactory {
+class EVENTS_DEVICES_EXPORT TouchFactory {
  private:
   TouchFactory();
   ~TouchFactory();
