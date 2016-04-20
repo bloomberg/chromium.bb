@@ -32,12 +32,8 @@ namespace content {
 // trampolined to a private RTCVideoEncoder::Impl instance.  The Impl class runs
 // on the worker thread queried from the |gpu_factories_|, which is presently
 // the media thread.  RTCVideoEncoder is sychronized by webrtc::VideoSender.
-// webrtc::VideoEncoder methods do not run concurrently. RTCVideoEncoder is run
-// and destroyed on the thread it is constructed on, which is presently the
-// libjingle worker thread. Encode is run on ViECaptureThread. SetRates and
-// SetChannelParameters are run on ProcessThread or the libjingle worker thread.
-// Callbacks from the Impl due to its VEA::Client notifications are posted back
-// to RTCVideoEncoder on the libjingle worker thread.
+// webrtc::VideoEncoder methods do not run concurrently. RtcVideoEncoder needs
+// to synchronize RegisterEncodeCompleteCallback and encode complete callback.
 class CONTENT_EXPORT RTCVideoEncoder
     : NON_EXPORTED_BASE(public webrtc::VideoEncoder) {
  public:
@@ -64,20 +60,8 @@ class CONTENT_EXPORT RTCVideoEncoder
   class Impl;
   friend class RTCVideoEncoder::Impl;
 
-  // Return an encoded output buffer to WebRTC.
-  void ReturnEncodedImage(std::unique_ptr<webrtc::EncodedImage> image,
-                          int32_t bitstream_buffer_id,
-                          uint16_t picture_id);
-
-  void NotifyError(int32_t error);
-
   void RecordInitEncodeUMA(int32_t init_retval,
                            media::VideoCodecProfile profile);
-
-  base::ThreadChecker thread_checker_;
-
-  // The video codec type, as reported to WebRTC.
-  const webrtc::VideoCodecType video_codec_type_;
 
   // Factory for creating VEAs, shared memory buffers, etc.
   media::GpuVideoAcceleratorFactories* gpu_factories_;
@@ -85,22 +69,8 @@ class CONTENT_EXPORT RTCVideoEncoder
   // Task runner that the video accelerator runs on.
   const scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
 
-  // webrtc::VideoEncoder encode complete callback.
-  webrtc::EncodedImageCallback* encoded_image_callback_;
-
   // The RTCVideoEncoder::Impl that does all the work.
   scoped_refptr<Impl> impl_;
-
-  // We cannot immediately return error conditions to the WebRTC user of this
-  // class, as there is no error callback in the webrtc::VideoEncoder interface.
-  // Instead, we cache an error status here and return it the next time an
-  // interface entry point is called.
-  int32_t impl_status_;
-
-  // Weak pointer factory for posting back VEA::Client notifications to
-  // RTCVideoEncoder.
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<RTCVideoEncoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoEncoder);
 };

@@ -15,6 +15,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
@@ -91,20 +92,17 @@ bool GetRTPFragmentationHeaderH264(webrtc::RTPFragmentationHeader* header,
 // This private class of RTCVideoEncoder does the actual work of communicating
 // with a media::VideoEncodeAccelerator for handling video encoding.  It can
 // be created on any thread, but should subsequently be posted to (and Destroy()
-// called on) a single thread.  Callbacks to RTCVideoEncoder are posted to the
-// thread on which the instance was constructed.
+// called on) a single thread.
 //
 // This class separates state related to the thread that RTCVideoEncoder
-// operates on (presently the libjingle worker thread) from the thread that
-// |gpu_factories_| provides for accelerator operations (presently the media
-// thread).  The RTCVideoEncoder class can be deleted directly by WebRTC, while
-// RTCVideoEncoder::Impl stays around long enough to properly shut down the VEA.
+// operates on from the thread that |gpu_factories_| provides for accelerator
+// operations (presently the media thread).
 class RTCVideoEncoder::Impl
     : public media::VideoEncodeAccelerator::Client,
       public base::RefCountedThreadSafe<RTCVideoEncoder::Impl> {
  public:
-  Impl(const base::WeakPtr<RTCVideoEncoder>& weak_encoder,
-       media::GpuVideoAcceleratorFactories* gpu_factories);
+  Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
+       webrtc::VideoCodecType video_codec_type);
 
   // Create the VEA and call Initialize() on it.  Called once per instantiation,
   // and then the instance is bound forevermore to whichever thread made the
@@ -132,9 +130,18 @@ class RTCVideoEncoder::Impl
   // Request encoding parameter change for the underlying encoder.
   void RequestEncodingParametersChange(uint32_t bitrate, uint32_t framerate);
 
+  void RegisterEncodeCompleteCallback(base::WaitableEvent* async_waiter,
+                                      int32_t* async_retval,
+                                      webrtc::EncodedImageCallback* callback);
+
   // Destroy this Impl's encoder.  The destructor is not explicitly called, as
   // Impl is a base::RefCountedThreadSafe.
-  void Destroy();
+  void Destroy(base::WaitableEvent* async_waiter);
+
+  // Return the status of Impl. One of WEBRTC_VIDEO_CODEC_XXX value.
+  int32_t GetStatus() const;
+
+  webrtc::VideoCodecType video_codec_type() { return video_codec_type_; }
 
   // media::VideoEncodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
@@ -180,14 +187,16 @@ class RTCVideoEncoder::Impl
   // requirements.
   bool RequiresSizeChange(const scoped_refptr<media::VideoFrame>& frame) const;
 
+  // Return an encoded output buffer to WebRTC.
+  void ReturnEncodedImage(const webrtc::EncodedImage& image,
+                          int32_t bitstream_buffer_id,
+                          uint16_t picture_id);
+
+  void SetStatus(int32_t status);
+
+  // This is attached to |gpu_task_runner_|, not the thread class is constructed
+  // on.
   base::ThreadChecker thread_checker_;
-
-  // Weak pointer to the parent RTCVideoEncoder, for posting back VEA::Client
-  // notifications.
-  const base::WeakPtr<RTCVideoEncoder> weak_encoder_;
-
-  // The message loop on which to post callbacks to |weak_encoder_|.
-  const scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner_;
 
   // Factory for creating VEAs, shared memory buffers, etc.
   media::GpuVideoAcceleratorFactories* gpu_factories_;
@@ -228,19 +237,36 @@ class RTCVideoEncoder::Impl
   // 15 bits running index of the VP8 frames. See VP8 RTP spec for details.
   uint16_t picture_id_;
 
+  // webrtc::VideoEncoder encode complete callback.
+  webrtc::EncodedImageCallback* encoded_image_callback_;
+
+  // The video codec type, as reported to WebRTC.
+  const webrtc::VideoCodecType video_codec_type_;
+
+  // Protect |status_|. |status_| is read or written on |gpu_task_runner_| in
+  // Impl. It can be read in RTCVideoEncoder on other threads.
+  mutable base::Lock status_lock_;
+
+  // We cannot immediately return error conditions to the WebRTC user of this
+  // class, as there is no error callback in the webrtc::VideoEncoder interface.
+  // Instead, we cache an error status here and return it the next time an
+  // interface entry point is called. This is protected by |status_lock_|.
+  int32_t status_;
+
   DISALLOW_COPY_AND_ASSIGN(Impl);
 };
 
-RTCVideoEncoder::Impl::Impl(const base::WeakPtr<RTCVideoEncoder>& weak_encoder,
-                            media::GpuVideoAcceleratorFactories* gpu_factories)
-    : weak_encoder_(weak_encoder),
-      encoder_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      gpu_factories_(gpu_factories),
+RTCVideoEncoder::Impl::Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
+                            webrtc::VideoCodecType video_codec_type)
+    : gpu_factories_(gpu_factories),
       async_waiter_(NULL),
       async_retval_(NULL),
       input_next_frame_(NULL),
       input_next_frame_keyframe_(false),
-      output_buffers_free_count_(0) {
+      output_buffers_free_count_(0),
+      encoded_image_callback_(nullptr),
+      video_codec_type_(video_codec_type),
+      status_(WEBRTC_VIDEO_CODEC_UNINITIALIZED) {
   thread_checker_.DetachFromThread();
   // Picture ID should start on a random number.
   picture_id_ = static_cast<uint16_t>(base::RandInt(0, 0x7FFF));
@@ -255,6 +281,7 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
   DVLOG(3) << "Impl::CreateAndInitializeVEA()";
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  SetStatus(WEBRTC_VIDEO_CODEC_UNINITIALIZED);
   RegisterAsyncWaiter(async_waiter, async_retval);
 
   // Check for overflow converting bitrate (kilobits/sec) to bits/sec.
@@ -274,6 +301,8 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
                       media::VideoEncodeAccelerator::kInvalidArgumentError);
     return;
   }
+  // RequireBitstreamBuffers or NotifyError will be called and the waiter will
+  // be signaled.
 }
 
 void RTCVideoEncoder::Impl::Enqueue(const webrtc::VideoFrame* input_frame,
@@ -285,6 +314,12 @@ void RTCVideoEncoder::Impl::Enqueue(const webrtc::VideoFrame* input_frame,
   DCHECK(!input_next_frame_);
 
   RegisterAsyncWaiter(async_waiter, async_retval);
+  int32_t retval = GetStatus();
+  if (retval != WEBRTC_VIDEO_CODEC_OK) {
+    SignalAsyncWaiter(retval);
+    return;
+  }
+
   // If there are no free input and output buffers, drop the frame to avoid a
   // deadlock. If there is a free input buffer, EncodeOneFrame will run and
   // unblock Encode(). If there are no free input buffers but there is a free
@@ -344,10 +379,24 @@ void RTCVideoEncoder::Impl::RequestEncodingParametersChange(
     video_encoder_->RequestEncodingParametersChange(bitrate * 1000, framerate);
 }
 
-void RTCVideoEncoder::Impl::Destroy() {
+void RTCVideoEncoder::Impl::Destroy(base::WaitableEvent* async_waiter) {
   DVLOG(3) << "Impl::Destroy()";
   DCHECK(thread_checker_.CalledOnValidThread());
-  video_encoder_.reset();
+  if (video_encoder_) {
+    video_encoder_.reset();
+    SetStatus(WEBRTC_VIDEO_CODEC_UNINITIALIZED);
+  }
+  async_waiter->Signal();
+}
+
+int32_t RTCVideoEncoder::Impl::GetStatus() const {
+  base::AutoLock lock(status_lock_);
+  return status_;
+}
+
+void RTCVideoEncoder::Impl::SetStatus(int32_t status) {
+  base::AutoLock lock(status_lock_);
+  status_ = status;
 }
 
 void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
@@ -394,6 +443,8 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
         i, output_buffers_[i]->handle(), output_buffers_[i]->mapped_size()));
     output_buffers_free_count_++;
   }
+  DCHECK_EQ(GetStatus(), WEBRTC_VIDEO_CODEC_UNINITIALIZED);
+  SetStatus(WEBRTC_VIDEO_CODEC_OK);
   SignalAsyncWaiter(WEBRTC_VIDEO_CODEC_OK);
 }
 
@@ -429,21 +480,18 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
   const uint32_t rtp_timestamp =
       static_cast<uint32_t>(capture_time_us * 90 / 1000);
 
-  std::unique_ptr<webrtc::EncodedImage> image(new webrtc::EncodedImage(
+  webrtc::EncodedImage image(
       reinterpret_cast<uint8_t*>(output_buffer->memory()), payload_size,
-      output_buffer->mapped_size()));
-  image->_encodedWidth = input_visible_size_.width();
-  image->_encodedHeight = input_visible_size_.height();
-  image->_timeStamp = rtp_timestamp;
-  image->capture_time_ms_ = capture_time_ms;
-  image->_frameType =
+      output_buffer->mapped_size());
+  image._encodedWidth = input_visible_size_.width();
+  image._encodedHeight = input_visible_size_.height();
+  image._timeStamp = rtp_timestamp;
+  image.capture_time_ms_ = capture_time_ms;
+  image._frameType =
       (key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta);
-  image->_completeFrame = true;
+  image._completeFrame = true;
 
-  encoder_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&RTCVideoEncoder::ReturnEncodedImage, weak_encoder_,
-                 base::Passed(&image), bitstream_buffer_id, picture_id_));
+  ReturnEncodedImage(image, bitstream_buffer_id, picture_id_);
   // Picture ID must wrap after reaching the maximum.
   picture_id_ = (picture_id_ + 1) & 0x7FFF;
 }
@@ -462,13 +510,9 @@ void RTCVideoEncoder::Impl::NotifyError(
 
   video_encoder_.reset();
 
-  if (async_waiter_) {
+  SetStatus(retval);
+  if (async_waiter_)
     SignalAsyncWaiter(retval);
-  } else {
-    encoder_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&RTCVideoEncoder::NotifyError, weak_encoder_, retval));
-  }
 }
 
 RTCVideoEncoder::Impl::~Impl() { DCHECK(!video_encoder_); }
@@ -599,23 +643,87 @@ bool RTCVideoEncoder::Impl::RequiresSizeChange(
           frame->visible_rect() != gfx::Rect(input_visible_size_));
 }
 
+void RTCVideoEncoder::Impl::RegisterEncodeCompleteCallback(
+    base::WaitableEvent* async_waiter,
+    int32_t* async_retval,
+    webrtc::EncodedImageCallback* callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(3) << "RegisterEncodeCompleteCallback()";
+  RegisterAsyncWaiter(async_waiter, async_retval);
+  int32_t retval = GetStatus();
+  if (retval == WEBRTC_VIDEO_CODEC_OK)
+    encoded_image_callback_ = callback;
+  SignalAsyncWaiter(retval);
+}
+
+void RTCVideoEncoder::Impl::ReturnEncodedImage(
+    const webrtc::EncodedImage& image,
+    int32_t bitstream_buffer_id,
+    uint16_t picture_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(3) << "ReturnEncodedImage(): "
+           << "bitstream_buffer_id=" << bitstream_buffer_id
+           << ", picture_id=" << picture_id;
+
+  if (!encoded_image_callback_)
+    return;
+
+  webrtc::RTPFragmentationHeader header;
+  memset(&header, 0, sizeof(header));
+  switch (video_codec_type_) {
+    case webrtc::kVideoCodecVP8:
+      // Generate a header describing a single fragment.
+      header.VerifyAndAllocateFragmentationHeader(1);
+      header.fragmentationOffset[0] = 0;
+      header.fragmentationLength[0] = image._length;
+      header.fragmentationPlType[0] = 0;
+      header.fragmentationTimeDiff[0] = 0;
+      break;
+    case webrtc::kVideoCodecH264:
+      if (!GetRTPFragmentationHeaderH264(&header, image._buffer,
+                                         image._length)) {
+        DLOG(ERROR) << "Failed to get RTP fragmentation header for H264";
+        NotifyError(
+            (media::VideoEncodeAccelerator::Error)WEBRTC_VIDEO_CODEC_ERROR);
+        return;
+      }
+      break;
+    default:
+      NOTREACHED() << "Invalid video codec type";
+      return;
+  }
+
+  webrtc::CodecSpecificInfo info;
+  memset(&info, 0, sizeof(info));
+  info.codecType = video_codec_type_;
+  if (video_codec_type_ == webrtc::kVideoCodecVP8) {
+    info.codecSpecific.VP8.pictureId = picture_id;
+    info.codecSpecific.VP8.tl0PicIdx = -1;
+    info.codecSpecific.VP8.keyIdx = -1;
+  }
+
+  const int32_t retval =
+      encoded_image_callback_->Encoded(image, &info, &header);
+  if (retval < 0) {
+    DVLOG(2) << "ReturnEncodedImage(): encoded_image_callback_ returned "
+             << retval;
+  }
+
+  UseOutputBitstreamBufferId(bitstream_buffer_id);
+}
+
 RTCVideoEncoder::RTCVideoEncoder(
     webrtc::VideoCodecType type,
     media::GpuVideoAcceleratorFactories* gpu_factories)
-    : video_codec_type_(type),
-      gpu_factories_(gpu_factories),
+    : gpu_factories_(gpu_factories),
       gpu_task_runner_(gpu_factories->GetTaskRunner()),
-      encoded_image_callback_(NULL),
-      impl_status_(WEBRTC_VIDEO_CODEC_UNINITIALIZED),
-      weak_factory_(this) {
+      impl_(new Impl(gpu_factories_, type)) {
   DVLOG(1) << "RTCVideoEncoder(): codec type=" << type;
 }
 
 RTCVideoEncoder::~RTCVideoEncoder() {
   DVLOG(3) << "~RTCVideoEncoder";
-  DCHECK(thread_checker_.CalledOnValidThread());
   Release();
-  DCHECK(!impl_.get());
 }
 
 int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
@@ -625,14 +733,10 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
            << ", width=" << codec_settings->width
            << ", height=" << codec_settings->height
            << ", startBitrate=" << codec_settings->startBitrate;
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!impl_.get());
 
-  const media::VideoCodecProfile profile =
-      WebRTCVideoCodecToVideoCodecProfile(video_codec_type_, codec_settings);
+  const media::VideoCodecProfile profile = WebRTCVideoCodecToVideoCodecProfile(
+      impl_->video_codec_type(), codec_settings);
 
-  weak_factory_.InvalidateWeakPtrs();
-  impl_ = new Impl(weak_factory_.GetWeakPtr(), gpu_factories_);
   base::WaitableEvent initialization_waiter(true, false);
   int32_t initialization_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   gpu_task_runner_->PostTask(
@@ -656,10 +760,6 @@ int32_t RTCVideoEncoder::Encode(
     const webrtc::CodecSpecificInfo* codec_specific_info,
     const std::vector<webrtc::FrameType>* frame_types) {
   DVLOG(3) << "Encode()";
-  if (!impl_.get()) {
-    DVLOG(3) << "Encode(): returning impl_status_=" << impl_status_;
-    return impl_status_;
-  }
 
   const bool want_key_frame = frame_types && frame_types->size() &&
                               frame_types->front() == webrtc::kVideoFrameKey;
@@ -683,27 +783,24 @@ int32_t RTCVideoEncoder::Encode(
 int32_t RTCVideoEncoder::RegisterEncodeCompleteCallback(
     webrtc::EncodedImageCallback* callback) {
   DVLOG(3) << "RegisterEncodeCompleteCallback()";
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!impl_.get()) {
-    DVLOG(3) << "RegisterEncodeCompleteCallback(): returning " << impl_status_;
-    return impl_status_;
-  }
-
-  encoded_image_callback_ = callback;
-  return WEBRTC_VIDEO_CODEC_OK;
+  base::WaitableEvent register_waiter(true, false);
+  int32_t register_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
+  gpu_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RTCVideoEncoder::Impl::RegisterEncodeCompleteCallback, impl_,
+                 &register_waiter, &register_retval, callback));
+  register_waiter.Wait();
+  return register_retval;
 }
 
 int32_t RTCVideoEncoder::Release() {
   DVLOG(3) << "Release()";
-  DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (impl_.get()) {
-    gpu_task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&RTCVideoEncoder::Impl::Destroy, impl_));
-    impl_ = NULL;
-    weak_factory_.InvalidateWeakPtrs();
-    impl_status_ = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
-  }
+  base::WaitableEvent release_waiter(true, false);
+  gpu_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RTCVideoEncoder::Impl::Destroy, impl_, &release_waiter));
+  release_waiter.Wait();
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -718,9 +815,10 @@ int32_t RTCVideoEncoder::SetChannelParameters(uint32_t packet_loss,
 int32_t RTCVideoEncoder::SetRates(uint32_t new_bit_rate, uint32_t frame_rate) {
   DVLOG(3) << "SetRates(): new_bit_rate=" << new_bit_rate
            << ", frame_rate=" << frame_rate;
-  if (!impl_.get()) {
-    DVLOG(3) << "SetRates(): returning " << impl_status_;
-    return impl_status_;
+  const int32_t retval = impl_->GetStatus();
+  if (retval != WEBRTC_VIDEO_CODEC_OK) {
+    DVLOG(3) << "SetRates(): returning " << retval;
+    return retval;
   }
 
   gpu_task_runner_->PostTask(
@@ -730,76 +828,6 @@ int32_t RTCVideoEncoder::SetRates(uint32_t new_bit_rate, uint32_t frame_rate) {
                  new_bit_rate,
                  frame_rate));
   return WEBRTC_VIDEO_CODEC_OK;
-}
-
-void RTCVideoEncoder::ReturnEncodedImage(
-    std::unique_ptr<webrtc::EncodedImage> image,
-    int32_t bitstream_buffer_id,
-    uint16_t picture_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(3) << "ReturnEncodedImage(): "
-           << "bitstream_buffer_id=" << bitstream_buffer_id
-           << ", picture_id=" << picture_id;
-
-  if (!encoded_image_callback_)
-    return;
-
-  webrtc::RTPFragmentationHeader header;
-  memset(&header, 0, sizeof(header));
-  switch (video_codec_type_) {
-    case webrtc::kVideoCodecVP8:
-      // Generate a header describing a single fragment.
-      header.VerifyAndAllocateFragmentationHeader(1);
-      header.fragmentationOffset[0] = 0;
-      header.fragmentationLength[0] = image->_length;
-      header.fragmentationPlType[0] = 0;
-      header.fragmentationTimeDiff[0] = 0;
-      break;
-    case webrtc::kVideoCodecH264:
-      if (!GetRTPFragmentationHeaderH264(
-          &header, image->_buffer, image->_length)) {
-        DLOG(ERROR) << "Failed to get RTP fragmentation header for H264";
-        NotifyError(WEBRTC_VIDEO_CODEC_ERROR);
-        return;
-      }
-      break;
-    default:
-      NOTREACHED() << "Invalid video codec type";
-      return;
-  }
-
-  webrtc::CodecSpecificInfo info;
-  memset(&info, 0, sizeof(info));
-  info.codecType = video_codec_type_;
-  if (video_codec_type_ == webrtc::kVideoCodecVP8) {
-    info.codecSpecific.VP8.pictureId = picture_id;
-    info.codecSpecific.VP8.tl0PicIdx = -1;
-    info.codecSpecific.VP8.keyIdx = -1;
-  }
-
-  int32_t retval = encoded_image_callback_->Encoded(*image, &info, &header);
-  if (retval < 0) {
-    DVLOG(2) << "ReturnEncodedImage(): encoded_image_callback_ returned "
-             << retval;
-  }
-
-  // The call through webrtc::EncodedImageCallback is synchronous, so we can
-  // immediately recycle the output buffer back to the Impl.
-  gpu_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&RTCVideoEncoder::Impl::UseOutputBitstreamBufferId,
-                 impl_,
-                 bitstream_buffer_id));
-}
-
-void RTCVideoEncoder::NotifyError(int32_t error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "NotifyError(): error=" << error;
-
-  impl_status_ = error;
-  gpu_task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&RTCVideoEncoder::Impl::Destroy, impl_));
-  impl_ = NULL;
 }
 
 void RTCVideoEncoder::RecordInitEncodeUMA(
