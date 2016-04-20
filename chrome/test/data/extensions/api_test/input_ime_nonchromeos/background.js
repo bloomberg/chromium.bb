@@ -12,7 +12,6 @@ chrome.test.runTests([
         return;
       }
       focused = true;
-      chrome.test.sendMessage('get_focus_event');
       if (activated)
         chrome.test.succeed();
     });
@@ -54,17 +53,7 @@ chrome.test.runTests([
       chrome.test.succeed();
     });
   },
-  function testBlur() {
-     chrome.input.ime.onBlur.addListener(function(context) {
-      if (context.type == 'none') {
-        chrome.test.fail();
-        return;
-      }
-      chrome.test.sendMessage('get_blur_event');
-      chrome.test.succeed();
-     });
-     chrome.test.succeed();
-  },
+
   function testSendKeyEvents() {
     chrome.input.ime.sendKeyEvents({
       'contextID': 1,
@@ -81,30 +70,5 @@ chrome.test.runTests([
      }]
     });
     chrome.test.succeed();
-  },
-  function testCommitText() {
-    chrome.input.ime.commitText({
-      contextID: 1,
-      text: 'test_commit_text'
-    }, function () {
-      if (chrome.runtime.lastError) {
-        chrome.test.fail();
-        return;
-      }
-      chrome.test.succeed();
-    });
-  },
-  function testSetComposition() {
-    chrome.input.ime.setComposition({
-      contextID: 1,
-      text: 'test_set_composition',
-      cursor: 2
-    }, function() {
-      if(chrome.runtime.lastError) {
-        chrome.test.fail();
-        return;
-      }
-      chrome.test.succeed();
-    });
-   }
+  }
 ]);
