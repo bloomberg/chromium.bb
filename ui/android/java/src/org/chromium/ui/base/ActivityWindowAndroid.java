@@ -24,6 +24,7 @@ import android.view.View;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Callback;
 import org.chromium.ui.UiUtils;
 
 import java.lang.ref.WeakReference;
@@ -124,6 +125,20 @@ public class ActivityWindowAndroid
         } catch (ActivityNotFoundException e) {
             return START_INTENT_FAILURE;
         }
+
+        storeCallbackData(requestCode, callback, errorId);
+        return requestCode;
+    }
+
+    @Override
+    public int showCancelableIntent(Callback<Integer> intentTrigger, IntentCallback callback,
+            Integer errorId) {
+        Activity activity = getActivity().get();
+        if (activity == null) return START_INTENT_FAILURE;
+
+        int requestCode = generateNextRequestCode();
+
+        intentTrigger.onResult(requestCode);
 
         storeCallbackData(requestCode, callback, errorId);
         return requestCode;

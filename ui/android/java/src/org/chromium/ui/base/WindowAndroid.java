@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
 
+import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -185,7 +186,7 @@ public class WindowAndroid {
      * Shows an intent and returns the results to the callback object.
      * @param intent   The PendingIntent that needs to be shown.
      * @param callback The object that will receive the results for the intent.
-     * @param errorId  The ID of error string to be show if activity is paused before intent
+     * @param errorId  The ID of error string to be shown if activity is paused before intent
      *                 results, or null if no message is required.
      * @return Whether the intent was shown.
      */
@@ -197,7 +198,7 @@ public class WindowAndroid {
      * Shows an intent and returns the results to the callback object.
      * @param intent   The intent that needs to be shown.
      * @param callback The object that will receive the results for the intent.
-     * @param errorId  The ID of error string to be show if activity is paused before intent
+     * @param errorId  The ID of error string to be shown if activity is paused before intent
      *                 results, or null if no message is required.
      * @return Whether the intent was shown.
      */
@@ -209,7 +210,7 @@ public class WindowAndroid {
      * Shows an intent that could be canceled and returns the results to the callback object.
      * @param  intent   The PendingIntent that needs to be shown.
      * @param  callback The object that will receive the results for the intent.
-     * @param  errorId  The ID of error string to be show if activity is paused before intent
+     * @param  errorId  The ID of error string to be shown if activity is paused before intent
      *                  results, or null if no message is required.
      * @return A non-negative request code that could be used for finishActivity, or
      *         START_INTENT_FAILURE if failed.
@@ -222,15 +223,31 @@ public class WindowAndroid {
 
     /**
      * Shows an intent that could be canceled and returns the results to the callback object.
-     * @param  intent   The intent that needs to be showed.
+     * @param  intent   The intent that needs to be shown.
      * @param  callback The object that will receive the results for the intent.
-     * @param  errorId  The ID of error string to be show if activity is paused before intent
+     * @param  errorId  The ID of error string to be shown if activity is paused before intent
      *                  results, or null if no message is required.
      * @return A non-negative request code that could be used for finishActivity, or
      *         START_INTENT_FAILURE if failed.
      */
     public int showCancelableIntent(Intent intent, IntentCallback callback, Integer errorId) {
         Log.d(TAG, "Can't show intent as context is not an Activity: " + intent);
+        return START_INTENT_FAILURE;
+    }
+
+    /**
+     * Shows an intent that could be canceled and returns the results to the callback object.
+     * @param  intentTrigger The callback that triggers the intent that needs to be shown. The value
+     *                       passed to the trigger is the request code used for issuing the intent.
+     * @param  callback      The object that will receive the results for the intent.
+     * @param  errorId       The ID of error string to be shown if activity is paused before intent
+     *                       results, or null if no message is required.
+     * @return A non-negative request code that could be used for finishActivity, or
+     *         START_INTENT_FAILURE if failed.
+     */
+    public int showCancelableIntent(Callback<Integer> intentTrigger, IntentCallback callback,
+            Integer errorId) {
+        Log.d(TAG, "Can't show intent as context is not an Activity");
         return START_INTENT_FAILURE;
     }
 
