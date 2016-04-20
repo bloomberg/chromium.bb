@@ -67487,6 +67487,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Suppressed"/>
   <int value="3" label="Cancelable and not canceled"/>
   <int value="4" label="Cancelable and canceled"/>
+  <int value="5" label="Forced Non-Blocking"/>
 </enum>
 
 <enum name="EVWhitelistStatus" type="int">

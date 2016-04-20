@@ -124,6 +124,34 @@ TEST_F(WebInputEventTraitsTest, TouchEventCoalescing) {
   ASSERT_EQ(0, touch1.touches[1].id);
   EXPECT_EQ(WebTouchPoint::StateMoved, touch1.touches[0].state);
   EXPECT_EQ(WebTouchPoint::StateMoved, touch1.touches[1].state);
+
+  // Touch moves with different dispatchTypes coalesce.
+  touch0 = CreateTouch(WebInputEvent::TouchMove, 2);
+  touch0.dispatchType = WebInputEvent::DispatchType::Blocking;
+  touch1 = CreateTouch(WebInputEvent::TouchMove, 2);
+  touch1.dispatchType = WebInputEvent::DispatchType::EventNonBlocking;
+  touch0.touches[0] = touch1.touches[1] =
+      CreateTouchPoint(WebTouchPoint::StateMoved, 1);
+  touch0.touches[1] = touch1.touches[0] =
+      CreateTouchPoint(WebTouchPoint::StateMoved, 0);
+  EXPECT_TRUE(WebInputEventTraits::CanCoalesce(touch0, touch1));
+  WebInputEventTraits::Coalesce(touch0, &touch1);
+  ASSERT_EQ(WebInputEvent::DispatchType::Blocking, touch1.dispatchType);
+
+  touch0 = CreateTouch(WebInputEvent::TouchMove, 2);
+  touch0.dispatchType =
+      WebInputEvent::DispatchType::ListenersForcedNonBlockingPassive;
+  touch1 = CreateTouch(WebInputEvent::TouchMove, 2);
+  touch1.dispatchType =
+      WebInputEvent::DispatchType::ListenersNonBlockingPassive;
+  touch0.touches[0] = touch1.touches[1] =
+      CreateTouchPoint(WebTouchPoint::StateMoved, 1);
+  touch0.touches[1] = touch1.touches[0] =
+      CreateTouchPoint(WebTouchPoint::StateMoved, 0);
+  EXPECT_TRUE(WebInputEventTraits::CanCoalesce(touch0, touch1));
+  WebInputEventTraits::Coalesce(touch0, &touch1);
+  ASSERT_EQ(WebInputEvent::DispatchType::ListenersNonBlockingPassive,
+            touch1.dispatchType);
 }
 
 TEST_F(WebInputEventTraitsTest, PinchEventCoalescing) {

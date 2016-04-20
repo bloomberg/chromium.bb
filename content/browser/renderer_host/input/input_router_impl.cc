@@ -372,17 +372,7 @@ void InputRouterImpl::OfferToHandlers(const WebInputEvent& input_event,
   if (OfferToClient(input_event, latency_info))
     return;
 
-  // Touch events should always indicate in the event whether they are
-  // cancelable (respect ACK disposition) or not, except touchmove and
-  // touchscollstarted.
   bool should_block = WebInputEventTraits::ShouldBlockEventStream(input_event);
-  if (WebInputEvent::isTouchEventType(input_event.type) &&
-      input_event.type != WebInputEvent::TouchMove &&
-      input_event.type != WebInputEvent::TouchScrollStarted) {
-    const WebTouchEvent& touch = static_cast<const WebTouchEvent&>(input_event);
-    DCHECK_EQ(should_block, touch.cancelable);
-  }
-
   OfferToRenderer(input_event, latency_info,
                   should_block
                       ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING

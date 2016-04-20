@@ -122,6 +122,19 @@ public:
         RailsModeVertical   = 2,
     };
 
+    // These values are direct mappings of the values in WebInputEvent
+    // so the values can be cast between the enumerations. static_asserts
+    // checking this are in web/WebInputEventConversion.cpp.
+    enum DispatchType {
+        Blocking,
+        EventNonBlocking,
+        // All listeners are passive.
+        ListenersNonBlockingPassive,
+        // This value represents a state which would have normally blocking
+        // but was forced to be non-blocking.
+        ListenersForcedNonBlockingPassive,
+    };
+
     EventType type() const { return static_cast<EventType>(m_type); }
 
     bool shiftKey() const { return m_modifiers & ShiftKey; }

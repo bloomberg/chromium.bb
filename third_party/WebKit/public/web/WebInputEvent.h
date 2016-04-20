@@ -190,6 +190,23 @@ public:
         ScrollLockOn     = 1 << 19,
     };
 
+    // Indicates whether the browser needs to block on the ACK result for
+    // this event, and if not why note (for metrics/diagnostics purposes).
+    // These values are direct mappings of the values in PlatformEvent
+    // so the values can be cast between the enumerations. static_asserts
+    // checking this are in web/WebInputEventConversion.cpp.
+    enum DispatchType {
+        // Event can be canceled.
+        Blocking,
+        // Event can not be canceled.
+        EventNonBlocking,
+        // All listeners are passive; not cancelable.
+        ListenersNonBlockingPassive,
+        // This value represents a state which would have normally blocking
+        // but was forced to be non-blocking; not cancelable.
+        ListenersForcedNonBlockingPassive,
+    };
+
     // The rail mode for a wheel event specifies the axis on which scrolling is
     // expected to stick. If this axis is set to Free, then scrolling is not
     // stuck to any axis.
@@ -603,9 +620,9 @@ public:
     // List of all touches, regardless of state.
     WebTouchPoint touches[touchesLengthCap];
 
-    // Whether the event can be canceled (with preventDefault). If true then the browser
-    // must wait for an ACK for this event. If false then no ACK IPC is expected.
-    bool cancelable;
+    // Whether the event is blocking, non-blocking, all event
+    // listeners were passive or was forced to be non-blocking.
+    DispatchType dispatchType;
 
     // For a single touch, this is true after the touch-point has moved beyond
     // the platform slop region. For a multitouch, this is true after any
@@ -618,7 +635,7 @@ public:
     WebTouchEvent()
         : WebInputEvent(sizeof(WebTouchEvent))
         , touchesLength(0)
-        , cancelable(true)
+        , dispatchType(Blocking)
         , movedBeyondSlopRegion(false)
         , uniqueTouchEventId(0)
     {

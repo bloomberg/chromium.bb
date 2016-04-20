@@ -123,8 +123,7 @@ void LogPassiveLatency(int64_t latency) {
 }
 
 void LogPassiveEventListenersUma(WebInputEventResult result,
-                                 bool non_blocking,
-                                 bool cancelable,
+                                 WebInputEvent::DispatchType dispatch_type,
                                  double event_timestamp,
                                  const ui::LatencyInfo& latency_info) {
   enum {
@@ -133,20 +132,33 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
     PASSIVE_LISTENER_UMA_ENUM_SUPPRESSED,
     PASSIVE_LISTENER_UMA_ENUM_CANCELABLE,
     PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED,
+    PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING,
     PASSIVE_LISTENER_UMA_ENUM_COUNT
   };
 
   int enum_value;
-  if (non_blocking)
-    enum_value = PASSIVE_LISTENER_UMA_ENUM_PASSIVE;
-  else if (!cancelable)
-    enum_value = PASSIVE_LISTENER_UMA_ENUM_UNCANCELABLE;
-  else if (result == WebInputEventResult::HandledApplication)
-    enum_value = PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED;
-  else if (result == WebInputEventResult::HandledSuppressed)
-    enum_value = PASSIVE_LISTENER_UMA_ENUM_SUPPRESSED;
-  else
-    enum_value = PASSIVE_LISTENER_UMA_ENUM_CANCELABLE;
+  switch (dispatch_type) {
+    case WebInputEvent::ListenersForcedNonBlockingPassive:
+      enum_value = PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING;
+      break;
+    case WebInputEvent::ListenersNonBlockingPassive:
+      enum_value = PASSIVE_LISTENER_UMA_ENUM_PASSIVE;
+      break;
+    case WebInputEvent::EventNonBlocking:
+      enum_value = PASSIVE_LISTENER_UMA_ENUM_UNCANCELABLE;
+      break;
+    case WebInputEvent::Blocking:
+      if (result == WebInputEventResult::HandledApplication)
+        enum_value = PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED;
+      else if (result == WebInputEventResult::HandledSuppressed)
+        enum_value = PASSIVE_LISTENER_UMA_ENUM_SUPPRESSED;
+      else
+        enum_value = PASSIVE_LISTENER_UMA_ENUM_CANCELABLE;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
 
   UMA_HISTOGRAM_ENUMERATION("Event.PassiveListeners", enum_value,
                             PASSIVE_LISTENER_UMA_ENUM_COUNT);
@@ -306,10 +318,6 @@ void RenderWidgetInputHandler::HandleInputEvent(
       processed = widget_->webwidget()->handleInputEvent(input_event);
   }
 
-  bool non_blocking =
-      dispatch_type ==
-          InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN ||
-      dispatch_type == InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING;
   // TODO(dtapuska): Use the input_event.timeStampSeconds as the start
   // ideally this should be when the event was sent by the compositor to the
   // renderer. crbug.com/565348
@@ -317,11 +325,16 @@ void RenderWidgetInputHandler::HandleInputEvent(
       input_event.type == WebInputEvent::TouchMove ||
       input_event.type == WebInputEvent::TouchEnd) {
     LogPassiveEventListenersUma(
-        processed, non_blocking,
-        static_cast<const WebTouchEvent&>(input_event).cancelable,
+        processed, static_cast<const WebTouchEvent&>(input_event).dispatchType,
         input_event.timeStampSeconds, latency_info);
   } else if (input_event.type == WebInputEvent::MouseWheel) {
-    LogPassiveEventListenersUma(processed, non_blocking, !non_blocking,
+    bool non_blocking =
+        dispatch_type ==
+            InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN ||
+        dispatch_type == InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING;
+    LogPassiveEventListenersUma(processed,
+                                non_blocking ? WebInputEvent::EventNonBlocking
+                                             : WebInputEvent::Blocking,
                                 input_event.timeStampSeconds, latency_info);
   }
 

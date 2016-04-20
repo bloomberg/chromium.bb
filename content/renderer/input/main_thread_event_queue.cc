@@ -48,21 +48,32 @@ bool MainThreadEventQueue::HandleEvent(
       }
     }
   } else if (blink::WebInputEvent::isTouchEventType(event->type)) {
+    PendingTouchEvent modified_dispatch_type_event =
+        PendingTouchEvent(*static_cast<const blink::WebTouchEvent*>(event),
+                          latency, dispatch_type);
+
+    // Adjust the |dispatchType| on the event since the compositor
+    // determined all event listeners are passive.
+    if (non_blocking) {
+      modified_dispatch_type_event.event.dispatchType =
+          blink::WebInputEvent::ListenersNonBlockingPassive;
+    }
+
     if (touch_events_.state() == WebInputEventQueueState::ITEM_PENDING) {
-      touch_events_.Queue(
-          PendingTouchEvent(*static_cast<const blink::WebTouchEvent*>(event),
-                            latency, dispatch_type));
+      touch_events_.Queue(modified_dispatch_type_event);
     } else {
       if (non_blocking) {
         touch_events_.set_state(WebInputEventQueueState::ITEM_PENDING);
-        client_->SendEventToMainThread(routing_id_, event, latency,
-                                       dispatch_type);
+        client_->SendEventToMainThread(routing_id_,
+                                       &modified_dispatch_type_event.event,
+                                       latency, dispatch_type);
       } else {
         // If there is nothing in the event queue and the event is
         // blocking pass the |original_dispatch_type| to avoid
         // having the main thread call us back as an optimization.
-        client_->SendEventToMainThread(routing_id_, event, latency,
-                                       original_dispatch_type);
+        client_->SendEventToMainThread(routing_id_,
+                                       &modified_dispatch_type_event.event,
+                                       latency, original_dispatch_type);
       }
     }
   } else {

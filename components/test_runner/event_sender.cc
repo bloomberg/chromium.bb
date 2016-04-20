@@ -2163,7 +2163,9 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
   WebTouchEvent touch_event;
   touch_event.type = type;
   touch_event.modifiers = touch_modifiers_;
-  touch_event.cancelable = touch_cancelable_;
+  touch_event.dispatchType = touch_cancelable_
+                                 ? WebInputEvent::Blocking
+                                 : WebInputEvent::EventNonBlocking;
   touch_event.timeStampSeconds = GetCurrentEventTimeSec();
   touch_event.movedBeyondSlopRegion = movedBeyondSlopRegion;
   touch_event.touchesLength = touch_points_.size();

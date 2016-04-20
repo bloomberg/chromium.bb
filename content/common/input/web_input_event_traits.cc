@@ -111,9 +111,9 @@ void ApppendTouchPointDetails(const WebTouchPoint& point, std::string* result) {
 
 void ApppendEventDetails(const WebTouchEvent& event, std::string* result) {
   StringAppendF(result,
-                "{\n Touches: %u, Cancelable: %d, CausesScrolling: %d,"
+                "{\n Touches: %u, DispatchType: %d, CausesScrolling: %d,"
                 " uniqueTouchEventId: %u\n[\n",
-                event.touchesLength, event.cancelable,
+                event.touchesLength, event.dispatchType,
                 event.movedBeyondSlopRegion, event.uniqueTouchEventId);
   for (unsigned i = 0; i < event.touchesLength; ++i)
     ApppendTouchPointDetails(event.touches[i], result);
@@ -199,6 +199,23 @@ int GetIndexOfTouchID(const WebTouchEvent& event, int id) {
   return kInvalidTouchIndex;
 }
 
+WebInputEvent::DispatchType MergeDispatchTypes(
+    WebInputEvent::DispatchType type_1,
+    WebInputEvent::DispatchType type_2) {
+  static_assert(WebInputEvent::DispatchType::Blocking <
+                    WebInputEvent::DispatchType::EventNonBlocking,
+                "Enum not ordered correctly");
+  static_assert(WebInputEvent::DispatchType::EventNonBlocking <
+                    WebInputEvent::DispatchType::ListenersNonBlockingPassive,
+                "Enum not ordered correctly");
+  static_assert(
+      WebInputEvent::DispatchType::ListenersNonBlockingPassive <
+          WebInputEvent::DispatchType::ListenersForcedNonBlockingPassive,
+      "Enum not ordered correctly");
+  return static_cast<WebInputEvent::DispatchType>(
+      std::min(static_cast<int>(type_1), static_cast<int>(type_2)));
+}
+
 bool CanCoalesce(const WebTouchEvent& event_to_coalesce,
                  const WebTouchEvent& event) {
   if (event.type != event_to_coalesce.type ||
@@ -241,6 +258,8 @@ void Coalesce(const WebTouchEvent& event_to_coalesce, WebTouchEvent* event) {
       event->touches[i].state = blink::WebTouchPoint::StateMoved;
   }
   event->movedBeyondSlopRegion |= old_event.movedBeyondSlopRegion;
+  event->dispatchType = MergeDispatchTypes(old_event.dispatchType,
+                                           event_to_coalesce.dispatchType);
 }
 
 bool CanCoalesce(const WebGestureEvent& event_to_coalesce,
@@ -482,12 +501,25 @@ bool WebInputEventTraits::ShouldBlockEventStream(const WebInputEvent& event) {
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:
+      return false;
+
+    // TouchCancel and TouchScrollStarted should always be non-blocking.
     case WebInputEvent::TouchCancel:
     case WebInputEvent::TouchScrollStarted:
+      DCHECK_NE(WebInputEvent::Blocking,
+                static_cast<const WebTouchEvent&>(event).dispatchType);
       return false;
+
+    // Touch start and touch end indicate whether they are non-blocking
+    // (aka uncancelable) on the event.
     case WebInputEvent::TouchStart:
     case WebInputEvent::TouchEnd:
-      return static_cast<const WebTouchEvent&>(event).cancelable;
+      return static_cast<const WebTouchEvent&>(event).dispatchType ==
+             WebInputEvent::Blocking;
+
+    // Touch move events may be non-blocking but are always explicitly
+    // acknowledge by the renderer so they block the event stream.
+    case WebInputEvent::TouchMove:
     default:
       return true;
   }

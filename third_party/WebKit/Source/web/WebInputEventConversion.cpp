@@ -91,6 +91,20 @@ FloatPoint convertHitPointToRootFrame(const Widget* widget, FloatPoint pointInRe
         (pointInRendererViewport.y() - offset.height()) / scale + visualViewport.y() + overscrollOffset.height());
 }
 
+PlatformEvent::DispatchType toPlatformDispatchType(WebInputEvent::DispatchType type)
+{
+    static_assert(PlatformEvent::DispatchType::Blocking == static_cast<PlatformEvent::DispatchType>(WebInputEvent::DispatchType::Blocking),
+        "Dispatch Types not equal");
+    static_assert(PlatformEvent::DispatchType::EventNonBlocking == static_cast<PlatformEvent::DispatchType>(WebInputEvent::DispatchType::EventNonBlocking),
+        "Dispatch Types not equal");
+    static_assert(PlatformEvent::DispatchType::ListenersNonBlockingPassive == static_cast<PlatformEvent::DispatchType>(WebInputEvent::DispatchType::ListenersNonBlockingPassive),
+        "Dispatch Types not equal");
+    static_assert(PlatformEvent::DispatchType::ListenersForcedNonBlockingPassive == static_cast<PlatformEvent::DispatchType>(WebInputEvent::DispatchType::ListenersForcedNonBlockingPassive),
+        "Dispatch Types not equal");
+
+    return static_cast<PlatformEvent::DispatchType>(type);
+}
+
 unsigned toPlatformModifierFrom(WebMouseEvent::Button button)
 {
     if (button == WebMouseEvent::ButtonNone)
@@ -459,7 +473,7 @@ PlatformTouchEventBuilder::PlatformTouchEventBuilder(Widget* widget, const WebTo
     for (unsigned i = 0; i < event.touchesLength; ++i)
         m_touchPoints.append(PlatformTouchPointBuilder(widget, event.touches[i]));
 
-    m_cancelable = event.cancelable;
+    m_dispatchType = toPlatformDispatchType(event.dispatchType);
 }
 
 static FloatPoint convertAbsoluteLocationForLayoutObjectFloat(const LayoutPoint& location, const LayoutObject& layoutObject)
@@ -719,7 +733,7 @@ WebTouchEventBuilder::WebTouchEventBuilder(const LayoutObject* layoutObject, con
 
     timeStampSeconds = event.platformTimeStamp();
     modifiers = event.modifiers();
-    cancelable = event.cancelable();
+    dispatchType = event.cancelable() ? WebInputEvent::Blocking : WebInputEvent::EventNonBlocking;
     movedBeyondSlopRegion = event.causesScrollingIfUncanceled();
 
     // Currently touches[] is empty, add stationary points as-is.

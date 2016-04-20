@@ -169,7 +169,9 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
   blink::WebTouchEvent result;
 
   result.type = ToWebInputEventType(event.GetAction());
-  result.cancelable = (result.type != WebInputEvent::TouchCancel);
+  result.dispatchType = result.type == WebInputEvent::TouchCancel
+                            ? WebInputEvent::EventNonBlocking
+                            : WebInputEvent::Blocking;
   result.timeStampSeconds =
       (event.GetEventTime() - base::TimeTicks()).InSecondsF();
   result.movedBeyondSlopRegion = moved_beyond_slop_region;

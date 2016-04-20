@@ -139,6 +139,17 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         EXPECT_FLOAT_EQ(p0.radiusY, webTouchBuilder.touches[0].radiusY);
         EXPECT_FLOAT_EQ(p0.rotationAngle, webTouchBuilder.touches[0].rotationAngle);
         EXPECT_FLOAT_EQ(p0.force, webTouchBuilder.touches[0].force);
+        EXPECT_EQ(WebInputEvent::EventNonBlocking, webTouchBuilder.dispatchType);
+    }
+
+    // Test cancelable touchstart.
+    {
+        TouchList* touchList = TouchList::create();
+        touchList->append(touch0);
+        TouchEvent* touchEvent = TouchEvent::create(touchList, touchList, touchList, EventTypeNames::touchstart, domWindow, PlatformEvent::NoModifiers, true, false, 0);
+
+        WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
+        EXPECT_EQ(WebInputEvent::Blocking, webTouchBuilder.dispatchType);
     }
 
     // Test touchmove.
@@ -157,6 +168,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         EXPECT_EQ(WebTouchPoint::StateStationary, webTouchBuilder.touches[1].state);
         EXPECT_EQ(p0.id, webTouchBuilder.touches[0].id);
         EXPECT_EQ(p1.id, webTouchBuilder.touches[1].id);
+        EXPECT_EQ(WebInputEvent::EventNonBlocking, webTouchBuilder.dispatchType);
     }
 
     // Test touchmove, different point yields same ordering.
@@ -175,6 +187,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         EXPECT_EQ(WebTouchPoint::StateMoved, webTouchBuilder.touches[1].state);
         EXPECT_EQ(p0.id, webTouchBuilder.touches[0].id);
         EXPECT_EQ(p1.id, webTouchBuilder.touches[1].id);
+        EXPECT_EQ(WebInputEvent::EventNonBlocking, webTouchBuilder.dispatchType);
     }
 
     // Test touchend.
@@ -192,6 +205,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         EXPECT_EQ(WebTouchPoint::StateReleased, webTouchBuilder.touches[1].state);
         EXPECT_EQ(p0.id, webTouchBuilder.touches[0].id);
         EXPECT_EQ(p1.id, webTouchBuilder.touches[1].id);
+        EXPECT_EQ(WebInputEvent::EventNonBlocking, webTouchBuilder.dispatchType);
     }
 
     // Test touchcancel.
@@ -209,6 +223,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         EXPECT_EQ(WebTouchPoint::StateCancelled, webTouchBuilder.touches[1].state);
         EXPECT_EQ(p0.id, webTouchBuilder.touches[0].id);
         EXPECT_EQ(p1.id, webTouchBuilder.touches[1].id);
+        EXPECT_EQ(WebInputEvent::EventNonBlocking, webTouchBuilder.dispatchType);
     }
 
     // Test max point limit.
@@ -477,7 +492,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         EXPECT_FLOAT_EQ(2, webTouchBuilder.touches[0].position.y);
         EXPECT_FLOAT_EQ(4, webTouchBuilder.touches[0].radiusX);
         EXPECT_FLOAT_EQ(4.5, webTouchBuilder.touches[0].radiusY);
-        EXPECT_FALSE(webTouchBuilder.cancelable);
+        EXPECT_EQ(WebInputEvent::EventNonBlocking, webTouchBuilder.dispatchType);
     }
 }
 

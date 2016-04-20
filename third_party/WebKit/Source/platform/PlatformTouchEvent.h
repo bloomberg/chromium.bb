@@ -30,19 +30,20 @@ class PlatformTouchEvent : public PlatformEvent {
 public:
     PlatformTouchEvent()
         : PlatformEvent(PlatformEvent::TouchStart)
-        , m_cancelable(true)
+        , m_dispatchType(PlatformEvent::Blocking)
         , m_causesScrollingIfUncanceled(false)
     {
     }
 
     const Vector<PlatformTouchPoint>& touchPoints() const { return m_touchPoints; }
 
-    bool cancelable() const { return m_cancelable; }
+    DispatchType dispatchType() const { return m_dispatchType; }
+    bool cancelable() const { return m_dispatchType == PlatformEvent::Blocking; }
     bool causesScrollingIfUncanceled() const { return m_causesScrollingIfUncanceled; }
 
 protected:
     Vector<PlatformTouchPoint> m_touchPoints;
-    bool m_cancelable;
+    DispatchType m_dispatchType;
     bool m_causesScrollingIfUncanceled;
 };
 

@@ -429,6 +429,8 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
     InputEventDispatchType dispatch_type = base::get<2>(params);
 
     EXPECT_EQ(kEvents[i].size, event->size);
+    kEvents[i].dispatchType =
+        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN,
               dispatch_type);
@@ -486,6 +488,8 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
     InputEventDispatchType dispatch_type = base::get<2>(params);
 
     EXPECT_EQ(kEvents[0].size, event->size);
+    kEvents[0].dispatchType =
+        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[0], event, event->size) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN,
               dispatch_type);
@@ -505,6 +509,8 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
     InputEventDispatchType dispatch_type = base::get<2>(params);
 
     EXPECT_EQ(kEvents[1].size, event->size);
+    kEvents[1].dispatchType =
+        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[1], event, event->size) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN,
               dispatch_type);

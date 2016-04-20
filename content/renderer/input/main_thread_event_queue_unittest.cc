@@ -108,9 +108,13 @@ TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
   queue_.HandleEvent(&kEvents[1], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   ASSERT_EQ(kEvents[0].size, last_event_.size());
+  kEvents[0].dispatchType =
+      WebInputEvent::DispatchType::ListenersNonBlockingPassive;
   ASSERT_TRUE(memcmp(&last_event_[0], &kEvents[0], kEvents[0].size) == 0);
   queue_.EventHandled(blink::WebInputEvent::TouchStart);
   ASSERT_EQ(kEvents[1].size, last_event_.size());
+  kEvents[1].dispatchType =
+      WebInputEvent::DispatchType::ListenersNonBlockingPassive;
   ASSERT_TRUE(memcmp(&last_event_[0], &kEvents[1], kEvents[1].size) == 0);
   ASSERT_EQ(WebInputEventQueueState::ITEM_PENDING, touch_event_queue().state());
   queue_.EventHandled(blink::WebInputEvent::TouchMove);
