@@ -444,10 +444,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
                                     const ConnectErrorCallback& error_callback);
 
   // Set the gatt services discovery complete flag for this device.
-  void SetGattServicesDiscoveryComplete(bool complete);
+  virtual void SetGattServicesDiscoveryComplete(bool complete);
 
   // Indicates whether service discovery is complete for this device.
-  bool IsGattServicesDiscoveryComplete() const;
+  virtual bool IsGattServicesDiscoveryComplete() const;
 
   // Returns the list of discovered GATT services.
   virtual std::vector<BluetoothGattService*> GetGattServices() const;

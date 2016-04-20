@@ -126,7 +126,6 @@ std::set<BluetoothUUID> GetUUIDs(
 // Notifies the adapter's observers that the services have been discovered.
 void NotifyServicesDiscovered(MockBluetoothAdapter* adapter,
                               MockBluetoothDevice* device) {
-  device->SetGattServicesDiscoveryComplete(true);
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, adapter->GetObservers(),
                     GattServicesDiscovered(adapter, device));
 }
@@ -447,35 +446,31 @@ LayoutTestBluetoothAdapterProvider::GetDelayedServicesDiscoveryAdapter() {
   MockBluetoothAdapter* adapter_ptr = adapter.get();
   MockBluetoothDevice* device_ptr = device.get();
 
-  // Override the previous mock implementation of CreateGattConnection that
-  // this a NotifyServicesDiscovered task. Instead thsi adapter will not post
-  // that task until GetGattServices is called.
-  ON_CALL(*device, CreateGattConnection(_, _))
-      .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
-          [adapter_ptr, device_ptr]() {
-            return base::WrapUnique(new NiceMockBluetoothGattConnection(
-                adapter_ptr, device_ptr->GetAddress()));
-          }));
-
-  ON_CALL(*device, GetGattServices())
+  // Override the previous mock implementation of
+  // IsGattServicesDiscoveryComplete so that the first time the function is
+  // called it returns false, adds a service and posts a task to notify
+  // the services have been discovered. Subsequent calls to the function
+  // will return true.
+  ON_CALL(*device, IsGattServicesDiscoveryComplete())
       .WillByDefault(Invoke([adapter_ptr, device_ptr] {
         std::vector<BluetoothGattService*> services =
             device_ptr->GetMockServices();
 
-        if (services.size() > 0) {
-          return services;
+        if (services.size() == 0) {
+          std::unique_ptr<NiceMockBluetoothGattService> heart_rate(
+              GetBaseGATTService(device_ptr, kHeartRateServiceUUID));
+
+          device_ptr->AddMockService(std::move(heart_rate));
+          base::ThreadTaskRunnerHandle::Get()->PostTask(
+              FROM_HERE,
+              base::Bind(&NotifyServicesDiscovered,
+                         base::RetainedRef(adapter_ptr), device_ptr));
+
+          DCHECK(services.size() == 0);
+          return false;
         }
 
-        std::unique_ptr<NiceMockBluetoothGattService> heart_rate(
-            GetBaseGATTService(device_ptr, kHeartRateServiceUUID));
-
-        device_ptr->AddMockService(std::move(heart_rate));
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::Bind(&NotifyServicesDiscovered,
-                                  base::RetainedRef(adapter_ptr), device_ptr));
-
-        DCHECK(services.size() == 0);
-        return services;
+        return true;
       }));
 
   adapter->AddMockDevice(std::move(device));
@@ -658,12 +653,12 @@ LayoutTestBluetoothAdapterProvider::GetConnectableDevice(
   ON_CALL(*device, CreateGattConnection(_, _))
       .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
           [adapter, device_ptr]() {
-            base::ThreadTaskRunnerHandle::Get()->PostTask(
-                FROM_HERE, base::Bind(&NotifyServicesDiscovered,
-                                      base::RetainedRef(adapter), device_ptr));
             return base::WrapUnique(new NiceMockBluetoothGattConnection(
                 adapter, device_ptr->GetAddress()));
           }));
+
+  ON_CALL(*device, IsGattServicesDiscoveryComplete())
+      .WillByDefault(Return(true));
 
   return device;
 }
