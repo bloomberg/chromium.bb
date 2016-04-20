@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/gpu/arc_gpu_video_decode_accelerator.h"
 #include "chrome/gpu/arc_video_accelerator.h"
 #include "components/arc/common/video_accelerator.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -112,8 +113,7 @@ class GpuArcVideoService::AcceleratorStub
         base::Bind(&GpuArcVideoService::AcceleratorStub::OnConnectionError,
                    base::Unretained(this)));
 
-    // TODO(kcwu): create ArcGpuVideoDecodeAccelerator here.
-    // accelerator_.reset(new ArcGpuVideoDecodeAccelerator());
+    accelerator_.reset(new ArcGpuVideoDecodeAccelerator());
 
     ::arc::mojom::VideoAcceleratorServicePtr service;
     binding_.Bind(GetProxy(&service));

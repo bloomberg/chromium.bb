@@ -26,6 +26,8 @@
             '../components/components.gyp:arc_mojo_bindings',
           ],
           'sources': [
+            'gpu/arc_gpu_video_decode_accelerator.cc',
+            'gpu/arc_gpu_video_decode_accelerator.h',
             'gpu/arc_video_accelerator.h',
             'gpu/gpu_arc_video_service.cc',
             'gpu/gpu_arc_video_service.h',
