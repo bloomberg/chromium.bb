@@ -83,6 +83,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
   // If event wasn't consumed then generate a gesture scroll for it.
   if (send_gestures_ && ack_result != INPUT_EVENT_ACK_STATE_CONSUMED &&
       event_sent_for_gesture_ack_->event.canScroll &&
+      event_sent_for_gesture_ack_->event.resendingPluginId == -1 &&
       (scrolling_device_ == blink::WebGestureDeviceUninitialized ||
        scrolling_device_ == blink::WebGestureDeviceTouchpad)) {
     WebGestureEvent scroll_update;
