@@ -3534,6 +3534,76 @@ TEST_F(SourceBufferStreamTest, OverlapSplitAndMergeWhileWaitingForMoreData) {
   CheckExpectedBuffers("180K 210");
 }
 
+// Verify that a single coded frame at the current read position unblocks the
+// read even if the frame is buffered after the previously read position is
+// removed.
+TEST_F(SourceBufferStreamTest, AfterRemove_SingleFrameRange_Unblocks_Read) {
+  Seek(0);
+  NewCodedFrameGroupAppend("0K 30 60 90D30");
+  CheckExpectedRangesByTimestamp("{ [0,120) }");
+  CheckExpectedBuffers("0K 30 60 90");
+  CheckNoNextBuffer();
+
+  RemoveInMs(0, 120, 120);
+  CheckExpectedRangesByTimestamp("{ }");
+  NewCodedFrameGroupAppend("120D30K");
+  CheckExpectedRangesByTimestamp("{ [120,150) }");
+  CheckExpectedBuffers("120K");
+  CheckNoNextBuffer();
+}
+
+// Verify that multiple short (relative to max-inter-buffer-distance * 2) coded
+// frames at the current read position unblock the read even if the frames are
+// buffered after the previously read position is removed.
+TEST_F(SourceBufferStreamTest, AfterRemove_TinyFrames_Unblock_Read_1) {
+  Seek(0);
+  NewCodedFrameGroupAppend("0K 30 60 90D30");
+  CheckExpectedRangesByTimestamp("{ [0,120) }");
+  CheckExpectedBuffers("0K 30 60 90");
+  CheckNoNextBuffer();
+
+  RemoveInMs(0, 120, 120);
+  CheckExpectedRangesByTimestamp("{ }");
+  NewCodedFrameGroupAppend("120D1K 121D1");
+  CheckExpectedRangesByTimestamp("{ [120,122) }");
+  CheckExpectedBuffers("120K 121");
+  CheckNoNextBuffer();
+}
+
+// Verify that multiple short (relative to max-inter-buffer-distance * 2) coded
+// frames starting at the fudge room boundary unblock the read even if the
+// frames are buffered after the previously read position is removed.
+TEST_F(SourceBufferStreamTest, AfterRemove_TinyFrames_Unblock_Read_2) {
+  Seek(0);
+  NewCodedFrameGroupAppend("0K 30 60 90D30");
+  CheckExpectedRangesByTimestamp("{ [0,120) }");
+  CheckExpectedBuffers("0K 30 60 90");
+  CheckNoNextBuffer();
+
+  RemoveInMs(0, 120, 120);
+  CheckExpectedRangesByTimestamp("{ }");
+  NewCodedFrameGroupAppend("150D1K 151D1");
+  CheckExpectedRangesByTimestamp("{ [150,152) }");
+  CheckExpectedBuffers("150K 151");
+  CheckNoNextBuffer();
+}
+
+// Verify that coded frames starting after the fudge room boundary do not
+// unblock the read when buffered after the previously read position is removed.
+TEST_F(SourceBufferStreamTest, AfterRemove_BeyondFudge_Stalled) {
+  Seek(0);
+  NewCodedFrameGroupAppend("0K 30 60 90D30");
+  CheckExpectedRangesByTimestamp("{ [0,120) }");
+  CheckExpectedBuffers("0K 30 60 90");
+  CheckNoNextBuffer();
+
+  RemoveInMs(0, 120, 120);
+  CheckExpectedRangesByTimestamp("{ }");
+  NewCodedFrameGroupAppend("151D1K 152D1");
+  CheckExpectedRangesByTimestamp("{ [151,153) }");
+  CheckNoNextBuffer();
+}
+
 // Verify that non-keyframes with the same timestamp in the same
 // append are handled correctly.
 TEST_F(SourceBufferStreamTest, SameTimestamp_Video_SingleAppend) {

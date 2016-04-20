@@ -1600,68 +1600,33 @@ DecodeTimestamp SourceBufferStream::FindNewSelectedRangeSeekTimestamp(
 
   RangeList::iterator itr = ranges_.begin();
 
-  for (; itr != ranges_.end(); ++itr) {
-    if ((*itr)->GetEndTimestamp() >= start_timestamp) {
-      break;
-    }
-  }
-
-  if (itr == ranges_.end()) {
-    DVLOG(2) << __FUNCTION__ << " " << GetStreamTypeName()
-             << " no buffered data for dts=" << start_timestamp.InSecondsF();
-    return kNoDecodeTimestamp();
-  }
-
-  // First check for a keyframe timestamp >= |start_timestamp|
-  // in the current range.
-  DecodeTimestamp keyframe_timestamp =
-      (*itr)->NextKeyframeTimestamp(start_timestamp);
-
-  if (keyframe_timestamp != kNoDecodeTimestamp())
-    return keyframe_timestamp;
-
-  // If a keyframe was not found then look for a keyframe that is
-  // "close enough" in the current or next range.
-  DecodeTimestamp end_timestamp =
+  // When checking a range to see if it has or begins soon enough after
+  // |start_timestamp|, use the fudge room to determine "soon enough".
+  DecodeTimestamp start_timestamp_plus_fudge =
       start_timestamp + ComputeFudgeRoom(GetMaxInterbufferDistance());
-  DCHECK(start_timestamp < end_timestamp);
 
-  // Make sure the current range doesn't start beyond |end_timestamp|.
-  if ((*itr)->GetStartTimestamp() >= end_timestamp)
-    return kNoDecodeTimestamp();
-
-  keyframe_timestamp = (*itr)->KeyframeBeforeTimestamp(end_timestamp);
-
-  // Check to see if the keyframe is within the acceptable range
-  // (|start_timestamp|, |end_timestamp|].
-  if (keyframe_timestamp != kNoDecodeTimestamp() &&
-      start_timestamp < keyframe_timestamp  &&
-      keyframe_timestamp <= end_timestamp) {
-    return keyframe_timestamp;
+  // Multiple ranges could be within the fudge room, because the fudge room is
+  // dynamic based on max inter-buffer distance seen so far. Optimistically
+  // check the earliest ones first.
+  for (; itr != ranges_.end(); ++itr) {
+    DecodeTimestamp range_start = (*itr)->GetStartTimestamp();
+    if (range_start >= start_timestamp_plus_fudge)
+      break;
+    if ((*itr)->GetEndTimestamp() < start_timestamp)
+      continue;
+    DecodeTimestamp search_timestamp = start_timestamp;
+    if (start_timestamp < range_start &&
+        start_timestamp_plus_fudge >= range_start) {
+      search_timestamp = range_start;
+    }
+    DecodeTimestamp keyframe_timestamp =
+        (*itr)->NextKeyframeTimestamp(search_timestamp);
+    if (keyframe_timestamp != kNoDecodeTimestamp())
+      return keyframe_timestamp;
   }
 
-  // If |end_timestamp| is within this range, then no other checks are
-  // necessary.
-  if (end_timestamp <= (*itr)->GetEndTimestamp())
-    return kNoDecodeTimestamp();
-
-  // Move on to the next range.
-  ++itr;
-
-  // Return early if the next range does not contain |end_timestamp|.
-  if (itr == ranges_.end() || (*itr)->GetStartTimestamp() >= end_timestamp)
-    return kNoDecodeTimestamp();
-
-  keyframe_timestamp = (*itr)->KeyframeBeforeTimestamp(end_timestamp);
-
-  // Check to see if the keyframe is within the acceptable range
-  // (|start_timestamp|, |end_timestamp|].
-  if (keyframe_timestamp != kNoDecodeTimestamp() &&
-      start_timestamp < keyframe_timestamp  &&
-      keyframe_timestamp <= end_timestamp) {
-    return keyframe_timestamp;
-  }
-
+  DVLOG(2) << __FUNCTION__ << " " << GetStreamTypeName()
+           << " no buffered data for dts=" << start_timestamp.InSecondsF();
   return kNoDecodeTimestamp();
 }
 
