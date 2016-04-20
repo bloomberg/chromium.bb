@@ -1054,10 +1054,6 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   if (input_handler_client_)
     input_handler_client_->ReconcileElasticOverscrollAndRootScroll();
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Compositing.NumActiveLayers",
-      base::saturated_cast<int>(active_tree_->NumLayers()), 1, 400, 20);
-
   if (const char* client_name = GetClientNameForMetrics()) {
     size_t total_picture_memory = 0;
     for (const PictureLayerImpl* layer : active_tree()->picture_layers())
@@ -1070,6 +1066,11 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
                              client_name),
           base::saturated_cast<int>(total_picture_memory / 1024));
     }
+    // GetClientNameForMetrics only returns one non-null value over the lifetime
+    // of the process, so this histogram name is runtime constant.
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        base::StringPrintf("Compositing.%s.NumActiveLayers", client_name),
+        base::saturated_cast<int>(active_tree_->NumLayers()), 1, 400, 20);
   }
 
   bool update_lcd_text = false;

@@ -5428,6 +5428,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Compositing.Browser.NumActiveLayers" units="layers">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    The number of layers in the active tree for each compositor frame. This is
+    logged once per frame, before the frame is drawn (in a browser process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Browser.NumRenderSurfaces" units="surfaces">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    The number of render surfaces in the render surface layer list. Recorded
+    each time the render surface layer list is constructed (in a browser
+    process).
+  </summary>
+</histogram>
+
 <histogram name="Compositing.Browser.PictureMemoryUsageKb" units="KB">
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -5540,6 +5557,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Compositing.NumActiveLayers">
+  <obsolete>
+    Deprecated 04/2016, replaced by similar metrics under Compositing.Renderer
+    and Compositing.Browser, depending on which process it occurs in.
+  </obsolete>
   <owner>dneto@chromium.org</owner>
   <summary>
     The number of layers in the active tree for each compositor frame. This is
@@ -5643,6 +5664,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Time spent updating layer draw properties, in microseconds. Recorded when a
     LayerTreeImpl's draw properties are updated (in a renderer process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.NumActiveLayers" units="layers">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    The number of layers in the active tree for each compositor frame. This is
+    logged once per frame, before the frame is drawn (in a renderer process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.NumRenderSurfaces" units="surfaces">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    The number of render surfaces in the render surface layer list. Recorded
+    each time the render surface layer list is constructed (in a renderer
+    process).
   </summary>
 </histogram>
 

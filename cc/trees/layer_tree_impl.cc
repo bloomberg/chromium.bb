@@ -834,6 +834,9 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
               "Compositing.%s.LayerTreeImpl.CalculateDrawPropertiesUs",
               client_name),
           timer.Elapsed().InMicroseconds());
+      UMA_HISTOGRAM_COUNTS_100(
+          base::StringPrintf("Compositing.%s.NumRenderSurfaces", client_name),
+          base::saturated_cast<int>(render_surface_layer_list_.size()));
     }
   }
 
