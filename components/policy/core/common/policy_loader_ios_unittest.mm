@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/policy/core/common/policy_loader_ios.h"
+
 #include <UIKit/UIKit.h>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/configuration_policy_provider_test.h"
 #include "components/policy/core/common/policy_bundle.h"
-#include "components/policy/core/common/policy_loader_ios.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_test_utils.h"
 #include "components/policy/core/common/policy_types.h"
@@ -86,9 +88,9 @@ void TestHarness::SetUp() {
 ConfigurationPolicyProvider* TestHarness::CreateProvider(
     SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  scoped_ptr<AsyncPolicyLoader> loader();
+  std::unique_ptr<AsyncPolicyLoader> loader();
   return new AsyncPolicyProvider(
-      registry, make_scoped_ptr(new PolicyLoaderIOS(task_runner)));
+      registry, base::WrapUnique(new PolicyLoaderIOS(task_runner)));
 }
 
 void TestHarness::InstallEmptyPolicy() {
@@ -263,7 +265,7 @@ TEST(PolicyProviderIOSTest, ChromePolicyOverEncodedChromePolicy) {
   scoped_refptr<base::TestSimpleTaskRunner> taskRunner =
       new base::TestSimpleTaskRunner();
   PolicyLoaderIOS loader(taskRunner);
-  scoped_ptr<PolicyBundle> bundle = loader.Load();
+  std::unique_ptr<PolicyBundle> bundle = loader.Load();
   ASSERT_TRUE(bundle);
   EXPECT_TRUE(bundle->Equals(expected));
 }

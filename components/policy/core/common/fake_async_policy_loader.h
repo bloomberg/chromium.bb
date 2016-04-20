@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_FAKE_ASYNC_POLICY_LOADER_H_
 #define COMPONENTS_POLICY_CORE_COMMON_FAKE_ASYNC_POLICY_LOADER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/async_policy_loader.h"
 #include "components/policy/core/common/policy_bundle.h"
 
@@ -28,7 +29,7 @@ class FakeAsyncPolicyLoader : public AsyncPolicyLoader {
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   // Implementation of virtual methods from AsyncPolicyLoader base class.
-  scoped_ptr<PolicyBundle> Load() override;
+  std::unique_ptr<PolicyBundle> Load() override;
   void InitOnBackgroundThread() override;
 
   // Provides content for the simulated / faked policies.

@@ -37,7 +37,7 @@ const int64_t kMaxParallelPolicyDataFetches = 2;
 
 ComponentCloudPolicyUpdater::ComponentCloudPolicyUpdater(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher,
+    std::unique_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher,
     ComponentCloudPolicyStore* store)
     : store_(store),
       external_policy_data_updater_(task_runner,
@@ -48,7 +48,7 @@ ComponentCloudPolicyUpdater::~ComponentCloudPolicyUpdater() {
 }
 
 void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
-    scoped_ptr<em::PolicyFetchResponse> response) {
+    std::unique_ptr<em::PolicyFetchResponse> response) {
   // Keep a serialized copy of |response|, to cache it later.
   // The policy is also rejected if it exceeds the maximum size.
   std::string serialized_response;

@@ -69,12 +69,12 @@ class POLICY_EXPORT BrowserPolicyConnector : public BrowserPolicyConnectorBase {
   // Helper for the public Init() that must be called by subclasses.
   void InitInternal(
       PrefService* local_state,
-      scoped_ptr<DeviceManagementService> device_management_service);
+      std::unique_ptr<DeviceManagementService> device_management_service);
 
  private:
-  scoped_ptr<PolicyStatisticsCollector> policy_statistics_collector_;
+  std::unique_ptr<PolicyStatisticsCollector> policy_statistics_collector_;
 
-  scoped_ptr<DeviceManagementService> device_management_service_;
+  std::unique_ptr<DeviceManagementService> device_management_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPolicyConnector);
 };

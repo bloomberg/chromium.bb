@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_INFO_FETCHER_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_INFO_FETCHER_H_
 
+#include <memory>
 #include <string>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/policy_export.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -55,7 +56,7 @@ class POLICY_EXPORT UserInfoFetcher : public net::URLFetcherDelegate {
  private:
   Delegate* delegate_;
   net::URLRequestContextGetter* context_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(UserInfoFetcher);
 };

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include <cstring>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/policy_details.h"

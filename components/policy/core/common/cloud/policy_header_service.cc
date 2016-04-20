@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
@@ -38,11 +39,11 @@ PolicyHeaderService::~PolicyHeaderService() {
     device_policy_store_->RemoveObserver(this);
 }
 
-scoped_ptr<PolicyHeaderIOHelper>
+std::unique_ptr<PolicyHeaderIOHelper>
 PolicyHeaderService::CreatePolicyHeaderIOHelper(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   std::string initial_header_value = CreateHeaderValue();
-  scoped_ptr<PolicyHeaderIOHelper> helper = make_scoped_ptr(
+  std::unique_ptr<PolicyHeaderIOHelper> helper = base::WrapUnique(
       new PolicyHeaderIOHelper(server_url_, initial_header_value, task_runner));
   helpers_.push_back(helper.get());
   return helper;

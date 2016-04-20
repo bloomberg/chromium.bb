@@ -8,14 +8,15 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -320,7 +321,7 @@ class CloudPolicyClientTest : public testing::Test {
   MockDeviceManagementService service_;
   StrictMock<MockCloudPolicyClientObserver> observer_;
   StrictMock<MockStatusCallbackObserver> callback_observer_;
-  scoped_ptr<CloudPolicyClient> client_;
+  std::unique_ptr<CloudPolicyClient> client_;
   // Pointer to the client's request context.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 };
@@ -849,7 +850,7 @@ TEST_F(CloudPolicyClientTest, FetchRemoteCommands) {
   const std::vector<em::RemoteCommandResult> command_results(
       1, remote_command_request_.remote_command_request().command_results(0));
   client_->FetchRemoteCommands(
-      make_scoped_ptr(new RemoteCommandJob::UniqueIDType(kLastCommandId)),
+      base::WrapUnique(new RemoteCommandJob::UniqueIDType(kLastCommandId)),
       command_results, callback);
 
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());

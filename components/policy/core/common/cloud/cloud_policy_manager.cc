@@ -96,7 +96,7 @@ void CloudPolicyManager::OnComponentCloudPolicyUpdated() {
 void CloudPolicyManager::CheckAndPublishPolicy() {
   if (IsInitializationComplete(POLICY_DOMAIN_CHROME) &&
       !waiting_for_policy_refresh_) {
-    scoped_ptr<PolicyBundle> bundle(new PolicyBundle);
+    std::unique_ptr<PolicyBundle> bundle(new PolicyBundle);
     GetChromePolicy(
         &bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())));
     if (component_policy_service_)
@@ -131,7 +131,7 @@ void CloudPolicyManager::CreateComponentCloudPolicyService(
   // TODO(joaodasilva): Move the |file_task_runner_| to the blocking pool.
   // Currently it's not possible because the ComponentCloudPolicyStore is
   // NonThreadSafe and doesn't support getting calls from different threads.
-  scoped_ptr<ResourceCache> resource_cache(
+  std::unique_ptr<ResourceCache> resource_cache(
       new ResourceCache(policy_cache_path, file_task_runner_));
   component_policy_service_.reset(new ComponentCloudPolicyService(
       this, schema_registry(), core(), client, std::move(resource_cache),

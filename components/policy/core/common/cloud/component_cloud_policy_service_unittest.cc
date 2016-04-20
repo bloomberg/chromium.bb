@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -159,7 +160,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
 
     client_->SetDMToken(ComponentPolicyBuilder::kFakeToken);
     EXPECT_EQ(1u, client_->types_to_fetch_.size());
-    core_.Connect(scoped_ptr<CloudPolicyClient>(client_));
+    core_.Connect(std::unique_ptr<CloudPolicyClient>(client_));
     EXPECT_EQ(2u, client_->types_to_fetch_.size());
 
     // Also initialize the refresh scheduler, so that calls to
@@ -205,9 +206,9 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
         cache_->Store("extension-policy-data", kTestExtension2, kTestPolicy));
   }
 
-  scoped_ptr<em::PolicyFetchResponse> CreateResponse() {
+  std::unique_ptr<em::PolicyFetchResponse> CreateResponse() {
     builder_.Build();
-    return make_scoped_ptr(new em::PolicyFetchResponse(builder_.policy()));
+    return base::WrapUnique(new em::PolicyFetchResponse(builder_.policy()));
   }
 
   std::string CreateSerializedResponse() {
@@ -229,13 +230,13 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   MockComponentCloudPolicyDelegate delegate_;
   // |cache_| is owned by the |service_| and is invalid once the |service_|
   // is destroyed.
-  scoped_ptr<ResourceCache> owned_cache_;
+  std::unique_ptr<ResourceCache> owned_cache_;
   ResourceCache* cache_;
   MockCloudPolicyClient* client_;
   MockCloudPolicyStore store_;
   CloudPolicyCore core_;
   SchemaRegistry registry_;
-  scoped_ptr<ComponentCloudPolicyService> service_;
+  std::unique_ptr<ComponentCloudPolicyService> service_;
   ComponentPolicyBuilder builder_;
   PolicyMap expected_policy_;
 };

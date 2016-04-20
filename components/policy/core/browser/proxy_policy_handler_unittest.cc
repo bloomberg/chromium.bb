@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/policy/core/browser/proxy_policy_handler.h"
+
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
-#include "components/policy/core/browser/proxy_policy_handler.h"
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
@@ -25,7 +27,7 @@ class ProxyPolicyHandlerTest
   void SetUp() override {
     ConfigurationPolicyPrefStoreTest::SetUp();
     handler_list_.AddHandler(
-        make_scoped_ptr<ConfigurationPolicyHandler>(new ProxyPolicyHandler));
+        base::WrapUnique<ConfigurationPolicyHandler>(new ProxyPolicyHandler));
     // Reset the PolicyServiceImpl to one that has the policy fixup
     // preprocessor. The previous store must be nulled out first so that it
     // removes itself from the service's observer list.

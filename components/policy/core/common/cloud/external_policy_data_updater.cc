@@ -125,7 +125,7 @@ class ExternalPolicyDataUpdater::FetchJob
   void Start();
 
   void OnFetchFinished(ExternalPolicyDataFetcher::Result result,
-                       scoped_ptr<std::string> data);
+                       std::unique_ptr<std::string> data);
 
  private:
   void OnFailed(net::BackoffEntry* backoff_entry);
@@ -217,7 +217,7 @@ void ExternalPolicyDataUpdater::FetchJob::Start() {
 
 void ExternalPolicyDataUpdater::FetchJob::OnFetchFinished(
     ExternalPolicyDataFetcher::Result result,
-    scoped_ptr<std::string> data) {
+    std::unique_ptr<std::string> data) {
   // The fetch job in the |external_policy_data_fetcher_| is finished.
   fetch_job_ = NULL;
 
@@ -293,7 +293,7 @@ void ExternalPolicyDataUpdater::FetchJob::Reschedule() {
 
 ExternalPolicyDataUpdater::ExternalPolicyDataUpdater(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher,
+    std::unique_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher,
     size_t max_parallel_fetches)
     : task_runner_(task_runner),
       external_policy_data_fetcher_(external_policy_data_fetcher.release()),

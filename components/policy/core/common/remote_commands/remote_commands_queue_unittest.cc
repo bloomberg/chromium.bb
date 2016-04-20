@@ -82,7 +82,7 @@ class RemoteCommandsQueueTest : public testing::Test {
                          base::TimeTicks issued_time,
                          const std::string& payload);
 
-  void AddJobAndVerifyRunningAfter(scoped_ptr<RemoteCommandJob> job,
+  void AddJobAndVerifyRunningAfter(std::unique_ptr<RemoteCommandJob> job,
                                    base::TimeDelta delta);
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
@@ -107,7 +107,7 @@ RemoteCommandsQueueTest::RemoteCommandsQueueTest()
 }
 
 void RemoteCommandsQueueTest::SetUp() {
-  scoped_ptr<base::TickClock> clock(task_runner_->GetMockTickClock());
+  std::unique_ptr<base::TickClock> clock(task_runner_->GetMockTickClock());
   test_start_time_ = clock->NowTicks();
 
   clock_ = clock.get();
@@ -146,7 +146,7 @@ void RemoteCommandsQueueTest::FailInitializeJob(
 }
 
 void RemoteCommandsQueueTest::AddJobAndVerifyRunningAfter(
-    scoped_ptr<RemoteCommandJob> job,
+    std::unique_ptr<RemoteCommandJob> job,
     base::TimeDelta delta) {
   Mock::VerifyAndClearExpectations(&observer_);
 
@@ -178,7 +178,7 @@ void RemoteCommandsQueueTest::VerifyCommandIssuedTime(
 TEST_F(RemoteCommandsQueueTest, SingleSucceedCommand) {
   // Initialize a job expected to succeed after 5 seconds, from a protobuf with
   // |kUniqueID|, |kPayload| and |test_start_time_| as command issued time.
-  scoped_ptr<RemoteCommandJob> job(
+  std::unique_ptr<RemoteCommandJob> job(
       new TestRemoteCommandJob(true, base::TimeDelta::FromSeconds(5)));
   InitializeJob(job.get(), kUniqueID, test_start_time_, kPayload);
 
@@ -199,7 +199,7 @@ TEST_F(RemoteCommandsQueueTest, SingleSucceedCommand) {
 TEST_F(RemoteCommandsQueueTest, SingleFailedCommand) {
   // Initialize a job expected to fail after 10 seconds, from a protobuf with
   // |kUniqueID|, |kPayload| and |test_start_time_| as command issued time.
-  scoped_ptr<RemoteCommandJob> job(
+  std::unique_ptr<RemoteCommandJob> job(
       new TestRemoteCommandJob(false, base::TimeDelta::FromSeconds(10)));
   InitializeJob(job.get(), kUniqueID, test_start_time_, kPayload);
 
@@ -220,7 +220,7 @@ TEST_F(RemoteCommandsQueueTest, SingleFailedCommand) {
 TEST_F(RemoteCommandsQueueTest, SingleTerminatedCommand) {
   // Initialize a job expected to fail after 200 seconds, from a protobuf with
   // |kUniqueID|, |kPayload| and |test_start_time_| as command issued time.
-  scoped_ptr<RemoteCommandJob> job(
+  std::unique_ptr<RemoteCommandJob> job(
       new TestRemoteCommandJob(false, base::TimeDelta::FromSeconds(200)));
   InitializeJob(job.get(), kUniqueID, test_start_time_, kPayload);
 
@@ -240,7 +240,7 @@ TEST_F(RemoteCommandsQueueTest, SingleTerminatedCommand) {
 TEST_F(RemoteCommandsQueueTest, SingleMalformedCommand) {
   // Initialize a job expected to succeed after 10 seconds, from a protobuf with
   // |kUniqueID|, |kMalformedCommandPayload| and |test_start_time_|.
-  scoped_ptr<RemoteCommandJob> job(
+  std::unique_ptr<RemoteCommandJob> job(
       new TestRemoteCommandJob(true, base::TimeDelta::FromSeconds(10)));
   // Should failed immediately.
   FailInitializeJob(job.get(), kUniqueID, test_start_time_,
@@ -250,7 +250,7 @@ TEST_F(RemoteCommandsQueueTest, SingleMalformedCommand) {
 TEST_F(RemoteCommandsQueueTest, SingleExpiredCommand) {
   // Initialize a job expected to succeed after 10 seconds, from a protobuf with
   // |kUniqueID| and |test_start_time_ - 4 hours|.
-  scoped_ptr<RemoteCommandJob> job(
+  std::unique_ptr<RemoteCommandJob> job(
       new TestRemoteCommandJob(true, base::TimeDelta::FromSeconds(10)));
   InitializeJob(job.get(), kUniqueID,
                 test_start_time_ - base::TimeDelta::FromHours(4),
@@ -270,7 +270,7 @@ TEST_F(RemoteCommandsQueueTest, TwoCommands) {
 
   // Initialize a job expected to succeed after 5 seconds, from a protobuf with
   // |kUniqueID|, |kPayload| and |test_start_time_| as command issued time.
-  scoped_ptr<RemoteCommandJob> job(
+  std::unique_ptr<RemoteCommandJob> job(
       new TestRemoteCommandJob(true, base::TimeDelta::FromSeconds(5)));
   InitializeJob(job.get(), kUniqueID, test_start_time_, kPayload);
 

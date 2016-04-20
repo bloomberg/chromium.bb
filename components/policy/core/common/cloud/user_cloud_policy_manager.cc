@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -22,9 +23,9 @@ namespace em = enterprise_management;
 namespace policy {
 
 UserCloudPolicyManager::UserCloudPolicyManager(
-    scoped_ptr<UserCloudPolicyStore> store,
+    std::unique_ptr<UserCloudPolicyStore> store,
     const base::FilePath& component_policy_cache_path,
-    scoped_ptr<CloudExternalDataManager> external_data_manager,
+    std::unique_ptr<CloudExternalDataManager> external_data_manager,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
@@ -53,7 +54,7 @@ void UserCloudPolicyManager::SetSigninUsername(const std::string& username) {
 void UserCloudPolicyManager::Connect(
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> request_context,
-    scoped_ptr<CloudPolicyClient> client) {
+    std::unique_ptr<CloudPolicyClient> client) {
   CreateComponentCloudPolicyService(component_policy_cache_path_,
                                     request_context, client.get());
   core()->Connect(std::move(client));
@@ -65,11 +66,11 @@ void UserCloudPolicyManager::Connect(
 }
 
 // static
-scoped_ptr<CloudPolicyClient>
+std::unique_ptr<CloudPolicyClient>
 UserCloudPolicyManager::CreateCloudPolicyClient(
     DeviceManagementService* device_management_service,
     scoped_refptr<net::URLRequestContextGetter> request_context) {
-  return make_scoped_ptr(new CloudPolicyClient(
+  return base::WrapUnique(new CloudPolicyClient(
       std::string(), std::string(), kPolicyVerificationKeyHash,
       device_management_service, request_context));
 }

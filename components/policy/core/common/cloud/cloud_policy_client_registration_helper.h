@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_CLIENT_REGISTRATION_HELPER_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_CLIENT_REGISTRATION_HELPER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/user_info_fetcher.h"
@@ -90,18 +90,18 @@ class POLICY_EXPORT CloudPolicyClientRegistrationHelper
   // access token. On desktop, this is only used after the user has signed in -
   // desktop platforms use LoginTokenHelper for policy fetches performed before
   // signin is complete.
-  scoped_ptr<TokenServiceHelper> token_service_helper_;
+  std::unique_ptr<TokenServiceHelper> token_service_helper_;
 
 #if !defined(OS_ANDROID)
   // Special desktop-only helper to fetch an OAuth access token prior to
   // the completion of signin. Not used on Android since all token fetching
   // is done via OAuth2TokenService.
-  scoped_ptr<LoginTokenHelper> login_token_helper_;
+  std::unique_ptr<LoginTokenHelper> login_token_helper_;
 #endif
 
   // Helper class for fetching information from GAIA about the currently
   // signed-in user.
-  scoped_ptr<UserInfoFetcher> user_info_fetcher_;
+  std::unique_ptr<UserInfoFetcher> user_info_fetcher_;
 
   // Access token used to register the CloudPolicyClient and also access
   // GAIA to get information about the signed in user.

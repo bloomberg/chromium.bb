@@ -6,10 +6,10 @@
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_COMPONENT_CLOUD_POLICY_STORE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -104,7 +104,7 @@ class POLICY_EXPORT ComponentCloudPolicyStore : public base::NonThreadSafe {
   // the data referenced there can be downloaded. A |proto| must be validated
   // before attempting to download the data, and before storing both.
   bool ValidatePolicy(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> proto,
+      std::unique_ptr<enterprise_management::PolicyFetchResponse> proto,
       PolicyNamespace* ns,
       enterprise_management::ExternalPolicyData* payload);
 
@@ -112,7 +112,7 @@ class POLICY_EXPORT ComponentCloudPolicyStore : public base::NonThreadSafe {
   // Helper for ValidatePolicy(), that's also used to validate protobufs
   // loaded from the disk cache.
   bool ValidateProto(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> proto,
+      std::unique_ptr<enterprise_management::PolicyFetchResponse> proto,
       const std::string& policy_type,
       const std::string& settings_entity_id,
       enterprise_management::ExternalPolicyData* payload,

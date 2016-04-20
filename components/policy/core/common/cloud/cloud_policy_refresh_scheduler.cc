@@ -5,10 +5,10 @@
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"

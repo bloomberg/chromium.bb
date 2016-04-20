@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/policy/core/browser/configuration_policy_pref_store.h"
+
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
-#include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_details.h"
@@ -42,7 +44,7 @@ class ConfigurationPolicyPrefStoreListTest
     : public ConfigurationPolicyPrefStoreTest {
   void SetUp() override {
     handler_list_.AddHandler(
-        make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
+        base::WrapUnique<ConfigurationPolicyHandler>(new SimplePolicyHandler(
             kTestPolicy, kTestPref, base::Value::TYPE_LIST)));
   }
 };
@@ -70,7 +72,7 @@ class ConfigurationPolicyPrefStoreStringTest
     : public ConfigurationPolicyPrefStoreTest {
   void SetUp() override {
     handler_list_.AddHandler(
-        make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
+        base::WrapUnique<ConfigurationPolicyHandler>(new SimplePolicyHandler(
             kTestPolicy, kTestPref, base::Value::TYPE_STRING)));
   }
 };
@@ -99,7 +101,7 @@ class ConfigurationPolicyPrefStoreBooleanTest
     : public ConfigurationPolicyPrefStoreTest {
   void SetUp() override {
     handler_list_.AddHandler(
-        make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
+        base::WrapUnique<ConfigurationPolicyHandler>(new SimplePolicyHandler(
             kTestPolicy, kTestPref, base::Value::TYPE_BOOLEAN)));
   }
 };
@@ -145,7 +147,7 @@ class ConfigurationPolicyPrefStoreIntegerTest
     : public ConfigurationPolicyPrefStoreTest {
   void SetUp() override {
     handler_list_.AddHandler(
-        make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
+        base::WrapUnique<ConfigurationPolicyHandler>(new SimplePolicyHandler(
             kTestPolicy, kTestPref, base::Value::TYPE_INTEGER)));
   }
 };
@@ -176,7 +178,7 @@ class ConfigurationPolicyPrefStoreRefreshTest
     ConfigurationPolicyPrefStoreTest::SetUp();
     store_->AddObserver(&observer_);
     handler_list_.AddHandler(
-        make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
+        base::WrapUnique<ConfigurationPolicyHandler>(new SimplePolicyHandler(
             kTestPolicy, kTestPref, base::Value::TYPE_STRING)));
   }
 

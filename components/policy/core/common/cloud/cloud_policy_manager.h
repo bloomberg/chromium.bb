@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_MANAGER_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_service.h"
@@ -105,7 +105,7 @@ class POLICY_EXPORT CloudPolicyManager
   void OnRefreshComplete(bool success);
 
   CloudPolicyCore core_;
-  scoped_ptr<ComponentCloudPolicyService> component_policy_service_;
+  std::unique_ptr<ComponentCloudPolicyService> component_policy_service_;
 
   // Whether there's a policy refresh operation pending, in which case all
   // policy update notifications are deferred until after it completes.

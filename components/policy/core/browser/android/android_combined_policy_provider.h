@@ -7,9 +7,10 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/policy_export.h"
@@ -54,7 +55,7 @@ class POLICY_EXPORT AndroidCombinedPolicyProvider
 
  private:
   bool initialized_;
-  scoped_ptr<policy::android::PolicyConverter> policy_converter_;
+  std::unique_ptr<policy::android::PolicyConverter> policy_converter_;
   base::android::ScopedJavaGlobalRef<jobject> java_combined_policy_provider_;
 
 

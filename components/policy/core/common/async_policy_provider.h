@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_ASYNC_POLICY_PROVIDER_H_
 #define COMPONENTS_POLICY_CORE_COMMON_ASYNC_POLICY_PROVIDER_H_
 
+#include <memory>
+
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
@@ -34,7 +35,7 @@ class POLICY_EXPORT AsyncPolicyProvider : public ConfigurationPolicyProvider,
   // therefore it needs the |registry| at construction time. The same |registry|
   // should be passed later to Init().
   AsyncPolicyProvider(SchemaRegistry* registry,
-                      scoped_ptr<AsyncPolicyLoader> loader);
+                      std::unique_ptr<AsyncPolicyLoader> loader);
   ~AsyncPolicyProvider() override;
 
   // ConfigurationPolicyProvider implementation.
@@ -47,20 +48,20 @@ class POLICY_EXPORT AsyncPolicyProvider : public ConfigurationPolicyProvider,
   void ReloadAfterRefreshSync();
 
   // Invoked with the latest bundle loaded by the |loader_|.
-  void OnLoaderReloaded(scoped_ptr<PolicyBundle> bundle);
+  void OnLoaderReloaded(std::unique_ptr<PolicyBundle> bundle);
 
   // Callback passed to the loader that it uses to pass back the current policy
   // bundle to the provider. This is invoked on the background thread and
   // forwards to OnLoaderReloaded() on the runner that owns the provider,
   // if |weak_this| is still valid.
   static void LoaderUpdateCallback(
-                  scoped_refptr<base::SingleThreadTaskRunner> runner,
-                  base::WeakPtr<AsyncPolicyProvider> weak_this,
-                  scoped_ptr<PolicyBundle> bundle);
+      scoped_refptr<base::SingleThreadTaskRunner> runner,
+      base::WeakPtr<AsyncPolicyProvider> weak_this,
+      std::unique_ptr<PolicyBundle> bundle);
 
   // The |loader_| that does the platform-specific policy loading. It lives
   // on the background thread but is owned by |this|.
-  scoped_ptr<AsyncPolicyLoader> loader_;
+  std::unique_ptr<AsyncPolicyLoader> loader_;
 
   // Callback used to synchronize RefreshPolicies() calls with the background
   // thread. See the implementation for the details.

@@ -4,10 +4,10 @@
 
 #include "components/policy/core/common/schema_registry_tracking_policy_provider.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -92,7 +92,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, PassOnChromePolicy) {
                             NULL);
 
   EXPECT_CALL(observer_, OnUpdatePolicy(&schema_registry_tracking_provider_));
-  scoped_ptr<PolicyBundle> delegate_bundle(new PolicyBundle);
+  std::unique_ptr<PolicyBundle> delegate_bundle(new PolicyBundle);
   delegate_bundle->CopyFrom(bundle);
   delegate_bundle->Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "xyz"))
       .Set("foo",
@@ -133,7 +133,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, SchemaReadyWithComponents) {
                  POLICY_SOURCE_CLOUD,
                  new base::StringValue("omg"),
                  NULL);
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle);
+  std::unique_ptr<PolicyBundle> bundle(new PolicyBundle);
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, "")).CopyFrom(policy_map);
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "xyz"))
       .CopyFrom(policy_map);
@@ -229,7 +229,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, RemoveAndAddComponent) {
                               POLICY_SOURCE_CLOUD,
                               new base::StringValue("omg"),
                               NULL);
-  scoped_ptr<PolicyBundle> copy(new PolicyBundle);
+  std::unique_ptr<PolicyBundle> copy(new PolicyBundle);
   copy->CopyFrom(platform_policy);
   EXPECT_CALL(observer_, OnUpdatePolicy(_));
   mock_provider_.UpdatePolicy(std::move(copy));

@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_MANAGER_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/policy_export.h"
 
@@ -40,9 +40,9 @@ class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
   // |io_task_runner| is used for network IO. Currently this must be the IO
   // BrowserThread.
   UserCloudPolicyManager(
-      scoped_ptr<UserCloudPolicyStore> store,
+      std::unique_ptr<UserCloudPolicyStore> store,
       const base::FilePath& component_policy_cache_path,
-      scoped_ptr<CloudExternalDataManager> external_data_manager,
+      std::unique_ptr<CloudExternalDataManager> external_data_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
@@ -59,7 +59,7 @@ class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
   virtual void Connect(
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> request_context,
-      scoped_ptr<CloudPolicyClient> client);
+      std::unique_ptr<CloudPolicyClient> client);
 
   // Shuts down the UserCloudPolicyManager (removes and stops refreshing the
   // cached cloud policy). This is typically called when a profile is being
@@ -75,20 +75,20 @@ class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
   // callers want to create a DMToken without actually initializing the
   // profile's policy infrastructure (for example, during signin when we
   // want to check if the user's domain requires policy).
-  static scoped_ptr<CloudPolicyClient> CreateCloudPolicyClient(
+  static std::unique_ptr<CloudPolicyClient> CreateCloudPolicyClient(
       DeviceManagementService* device_management_service,
       scoped_refptr<net::URLRequestContextGetter> request_context);
 
  private:
   // Typed pointer to the store owned by UserCloudPolicyManager. Note that
   // CloudPolicyManager only keeps a plain CloudPolicyStore pointer.
-  scoped_ptr<UserCloudPolicyStore> store_;
+  std::unique_ptr<UserCloudPolicyStore> store_;
 
   // Path where policy for components will be cached.
   base::FilePath component_policy_cache_path_;
 
   // Manages external data referenced by policies.
-  scoped_ptr<CloudExternalDataManager> external_data_manager_;
+  std::unique_ptr<CloudExternalDataManager> external_data_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManager);
 };

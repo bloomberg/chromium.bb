@@ -82,7 +82,8 @@ TEST_F(CloudPolicyCoreTest, ConnectAndDisconnect) {
   EXPECT_FALSE(core_.refresh_scheduler());
 
   // Connect() brings up client and service.
-  core_.Connect(scoped_ptr<CloudPolicyClient>(new MockCloudPolicyClient()));
+  core_.Connect(
+      std::unique_ptr<CloudPolicyClient>(new MockCloudPolicyClient()));
   EXPECT_TRUE(core_.client());
   EXPECT_TRUE(core_.service());
   EXPECT_FALSE(core_.refresh_scheduler());
@@ -112,7 +113,8 @@ TEST_F(CloudPolicyCoreTest, ConnectAndDisconnect) {
 
 TEST_F(CloudPolicyCoreTest, RefreshScheduler) {
   EXPECT_FALSE(core_.refresh_scheduler());
-  core_.Connect(scoped_ptr<CloudPolicyClient>(new MockCloudPolicyClient()));
+  core_.Connect(
+      std::unique_ptr<CloudPolicyClient>(new MockCloudPolicyClient()));
   core_.StartRefreshScheduler();
   ASSERT_TRUE(core_.refresh_scheduler());
 

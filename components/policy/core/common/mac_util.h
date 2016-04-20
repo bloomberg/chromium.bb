@@ -7,7 +7,8 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/policy/policy_export.h"
 
 // This file contains utilities shared by both Mac OS X and iOS.
@@ -24,7 +25,7 @@ namespace policy {
 // NSDictionary is toll-free bridged to CFDictionaryRef, which is a
 // CFPropertyListRef, so it can also be passed directly here. Same for the
 // other NS* classes that map to CF* properties.
-POLICY_EXPORT scoped_ptr<base::Value> PropertyToValue(
+POLICY_EXPORT std::unique_ptr<base::Value> PropertyToValue(
     CFPropertyListRef property);
 
 }  // namespace policy

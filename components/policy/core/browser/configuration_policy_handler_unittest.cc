@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/policy/core/browser/configuration_policy_handler.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
@@ -22,9 +24,9 @@ namespace {
 void GetIntegerTypeMap(
     ScopedVector<StringMappingListPolicyHandler::MappingEntry>* result) {
   result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "one", scoped_ptr<base::Value>(new base::FundamentalValue(1))));
+      "one", std::unique_ptr<base::Value>(new base::FundamentalValue(1))));
   result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "two", scoped_ptr<base::Value>(new base::FundamentalValue(2))));
+      "two", std::unique_ptr<base::Value>(new base::FundamentalValue(2))));
 }
 
 const char kTestPolicy[] = "unit_test.test_policy";
@@ -40,7 +42,7 @@ class TestSchemaValidatingPolicyHandler : public SchemaValidatingPolicyHandler {
   void ApplyPolicySettings(const policy::PolicyMap&, PrefValueMap*) override {}
 
   bool CheckAndGetValueForTest(const PolicyMap& policies,
-                               scoped_ptr<base::Value>* value) {
+                               std::unique_ptr<base::Value>* value) {
     return SchemaValidatingPolicyHandler::CheckAndGetValue(
         policies, NULL, value);
   }
@@ -274,7 +276,7 @@ TEST(IntRangePolicyHandler, CheckPolicySettingsDontClamp) {
 TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   PolicyMap policy_map;
   PrefValueMap prefs;
-  scoped_ptr<base::Value> expected;
+  std::unique_ptr<base::Value> expected;
   const base::Value* value;
 
   // This tests needs to modify an int policy. The exact policy used and its
@@ -348,7 +350,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
 TEST(IntRangePolicyHandler, ApplyPolicySettingsDontClamp) {
   PolicyMap policy_map;
   PrefValueMap prefs;
-  scoped_ptr<base::Value> expected;
+  std::unique_ptr<base::Value> expected;
   const base::Value* value;
 
   // This tests needs to modify an int policy. The exact policy used and its
@@ -546,7 +548,7 @@ TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsDontClamp) {
 TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   PolicyMap policy_map;
   PrefValueMap prefs;
-  scoped_ptr<base::Value> expected;
+  std::unique_ptr<base::Value> expected;
   const base::Value* value;
 
   // This tests needs to modify an int policy. The exact policy used and its
@@ -621,7 +623,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
 TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
   PolicyMap policy_map;
   PrefValueMap prefs;
-  scoped_ptr<base::Value> expected;
+  std::unique_ptr<base::Value> expected;
   const base::Value* value;
 
   // This tests needs to modify an int policy. The exact policy used and its
@@ -694,7 +696,7 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
       "    \"Colors\": \"White\""
       "  }"
       "}";
-  scoped_ptr<base::Value> policy_map_value =
+  std::unique_ptr<base::Value> policy_map_value =
       base::JSONReader::ReadAndReturnError(kPolicyMapJson, base::JSON_PARSE_RFC,
                                            NULL, &error);
   ASSERT_TRUE(policy_map_value) << error;
@@ -707,7 +709,7 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
                       POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
 
   TestSchemaValidatingPolicyHandler handler(schema, SCHEMA_ALLOW_INVALID);
-  scoped_ptr<base::Value> output_value;
+  std::unique_ptr<base::Value> output_value;
   ASSERT_TRUE(handler.CheckAndGetValueForTest(policy_map, &output_value));
   ASSERT_TRUE(output_value);
 
@@ -754,7 +756,7 @@ TEST(SimpleSchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
       "    \"Colors\": \"Green\""
       "  }"
       "}";
-  scoped_ptr<base::Value> policy_map_value =
+  std::unique_ptr<base::Value> policy_map_value =
       base::JSONReader::ReadAndReturnError(kPolicyMapJson, base::JSON_PARSE_RFC,
                                            NULL, &error);
   ASSERT_TRUE(policy_map_value) << error;

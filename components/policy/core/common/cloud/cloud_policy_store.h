@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
@@ -138,7 +139,7 @@ class POLICY_EXPORT CloudPolicyStore {
   PolicyMap policy_map_;
 
   // Currently effective policy.
-  scoped_ptr<enterprise_management::PolicyData> policy_;
+  std::unique_ptr<enterprise_management::PolicyData> policy_;
 
   // Latest status code.
   Status status_;

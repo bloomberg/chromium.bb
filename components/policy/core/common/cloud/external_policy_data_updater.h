@@ -9,13 +9,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/policy_export.h"
 
@@ -67,7 +67,7 @@ class POLICY_EXPORT ExternalPolicyDataUpdater {
   // thread by the |external_policy_data_fetcher|.
   ExternalPolicyDataUpdater(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher,
+      std::unique_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher,
       size_t max_parallel_fetches);
   ~ExternalPolicyDataUpdater();
 
@@ -102,7 +102,7 @@ class POLICY_EXPORT ExternalPolicyDataUpdater {
   void OnJobFailed(FetchJob* job);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher_;
+  std::unique_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher_;
 
   // The maximum number of jobs to run in parallel.
   size_t max_parallel_jobs_;

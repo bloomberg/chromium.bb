@@ -4,7 +4,8 @@
 
 #include "components/policy/core/common/schema_registry.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -140,8 +141,8 @@ TEST(SchemaRegistryTest, Combined) {
   ASSERT_TRUE(schema.valid()) << error;
 
   MockSchemaRegistryObserver observer;
-  scoped_ptr<SchemaRegistry> registry1(new SchemaRegistry);
-  scoped_ptr<SchemaRegistry> registry2(new SchemaRegistry);
+  std::unique_ptr<SchemaRegistry> registry1(new SchemaRegistry);
+  std::unique_ptr<SchemaRegistry> registry2(new SchemaRegistry);
   CombinedSchemaRegistry combined;
   combined.AddObserver(&observer);
 
@@ -246,7 +247,7 @@ TEST(SchemaRegistryTest, Combined) {
 }
 
 TEST(SchemaRegistryTest, ForwardingSchemaRegistry) {
-  scoped_ptr<SchemaRegistry> registry(new SchemaRegistry);
+  std::unique_ptr<SchemaRegistry> registry(new SchemaRegistry);
   ForwardingSchemaRegistry forwarding(registry.get());
   MockSchemaRegistryObserver observer;
   forwarding.AddObserver(&observer);

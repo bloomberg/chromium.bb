@@ -19,6 +19,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -119,7 +120,7 @@ std::string DecodePRegStringValue(const std::vector<uint8_t>& data) {
 // Decodes a value from a PReg file given as a uint8_t vector.
 bool DecodePRegValue(uint32_t type,
                      const std::vector<uint8_t>& data,
-                     scoped_ptr<base::Value>* value) {
+                     std::unique_ptr<base::Value>* value) {
   switch (type) {
     case REG_SZ:
     case REG_EXPAND_SZ:
@@ -172,7 +173,7 @@ void HandleRecord(const base::string16& key_name,
     RegistryDict* subdict = dict->GetKey(name);
     if (!subdict) {
       subdict = new RegistryDict();
-      dict->SetKey(name, make_scoped_ptr(subdict));
+      dict->SetKey(name, base::WrapUnique(subdict));
     }
     dict = subdict;
   }
@@ -183,7 +184,7 @@ void HandleRecord(const base::string16& key_name,
   std::string value_name(base::UTF16ToUTF8(value));
   if (!base::StartsWith(value_name, kActionTriggerPrefix,
                         base::CompareCase::SENSITIVE)) {
-    scoped_ptr<base::Value> value;
+    std::unique_ptr<base::Value> value;
     if (DecodePRegValue(type, data, &value))
       dict->SetValue(value_name, std::move(value));
     return;

@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_COMPONENT_CLOUD_POLICY_SERVICE_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_COMPONENT_CLOUD_POLICY_SERVICE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
@@ -85,7 +86,7 @@ class POLICY_EXPORT ComponentCloudPolicyService
       CloudPolicyCore* core,
       CloudPolicyClient* client,
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-      scoped_ptr<ResourceCache> cache,
+      std::unique_ptr<ResourceCache> cache,
 #endif
       scoped_refptr<net::URLRequestContextGetter> request_context,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
@@ -128,9 +129,9 @@ class POLICY_EXPORT ComponentCloudPolicyService
   class Backend;
 
   void InitializeIfReady();
-  void OnBackendInitialized(scoped_ptr<PolicyBundle> initial_policy);
+  void OnBackendInitialized(std::unique_ptr<PolicyBundle> initial_policy);
   void ReloadSchema();
-  void OnPolicyUpdated(scoped_ptr<PolicyBundle> policy);
+  void OnPolicyUpdated(std::unique_ptr<PolicyBundle> policy);
 
   Delegate* delegate_;
   SchemaRegistry* schema_registry_;
@@ -144,14 +145,14 @@ class POLICY_EXPORT ComponentCloudPolicyService
   // referenced from background threads. It is instantiated on the thread |this|
   // runs on but after that, must only be accessed and eventually destroyed via
   // the |io_task_runner_|.
-  scoped_ptr<ExternalPolicyDataFetcherBackend>
+  std::unique_ptr<ExternalPolicyDataFetcherBackend>
       external_policy_data_fetcher_backend_;
 
   // The |backend_| handles all download scheduling, validation and caching of
   // policies. It is instantiated on the thread |this| runs on but after that,
   // must only be accessed and eventually destroyed via the
   // |backend_task_runner_|.
-  scoped_ptr<Backend> backend_;
+  std::unique_ptr<Backend> backend_;
 
   // The currently registered components for each policy domain. Used to
   // determine which components changed when a new SchemaMap becomes
@@ -161,7 +162,7 @@ class POLICY_EXPORT ComponentCloudPolicyService
 
   // Contains all the policies loaded from the store, before having been
   // filtered by the |current_schema_map_|.
-  scoped_ptr<PolicyBundle> unfiltered_policy_;
+  std::unique_ptr<PolicyBundle> unfiltered_policy_;
 
   // Contains all the current policies for components, filtered by the
   // |current_schema_map_|.

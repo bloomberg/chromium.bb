@@ -67,9 +67,9 @@ BrowserPolicyConnectorIOS::BrowserPolicyConnectorIOS(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : BrowserPolicyConnector(handler_list_factory),
       user_agent_(user_agent) {
-  scoped_ptr<AsyncPolicyLoader> loader(
+  std::unique_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderIOS(background_task_runner));
-  scoped_ptr<ConfigurationPolicyProvider> provider(
+  std::unique_ptr<ConfigurationPolicyProvider> provider(
       new AsyncPolicyProvider(GetSchemaRegistry(), std::move(loader)));
   SetPlatformPolicyProvider(std::move(provider));
 }
@@ -79,9 +79,9 @@ BrowserPolicyConnectorIOS::~BrowserPolicyConnectorIOS() {}
 void BrowserPolicyConnectorIOS::Init(
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> request_context) {
-  scoped_ptr<DeviceManagementService::Configuration> configuration(
+  std::unique_ptr<DeviceManagementService::Configuration> configuration(
       new DeviceManagementServiceConfiguration(user_agent_));
-  scoped_ptr<DeviceManagementService> device_management_service(
+  std::unique_ptr<DeviceManagementService> device_management_service(
       new DeviceManagementService(std::move(configuration)));
 
   // Delay initialization of the cloud policy requests by 5 seconds.

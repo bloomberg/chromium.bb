@@ -4,9 +4,9 @@
 
 #include "components/policy/core/browser/url_blacklist_policy_handler.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
@@ -55,7 +55,7 @@ void URLBlacklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   if (disabled_schemes_policy)
     disabled_schemes_policy->GetAsList(&disabled_schemes);
 
-  scoped_ptr<base::ListValue> merged_url_blacklist(new base::ListValue());
+  std::unique_ptr<base::ListValue> merged_url_blacklist(new base::ListValue());
 
   // We start with the DisabledSchemes because we have size limit when
   // handling URLBlacklists.

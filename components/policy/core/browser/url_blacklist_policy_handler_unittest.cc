@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include "components/policy/core/browser/url_blacklist_policy_handler.h"
+
+#include <memory>
+
 #include "base/values.h"
 #include "components/policy/core/browser/policy_error_map.h"
-#include "components/policy/core/browser/url_blacklist_policy_handler.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_types.h"
@@ -127,7 +129,7 @@ TEST_F(URLBlacklistPolicyHandlerTest,
 TEST_F(URLBlacklistPolicyHandlerTest,
        ApplyPolicySettings_DisabledSchemesWrongElementType) {
   // The policy expects string-valued elements. Give it booleans.
-  scoped_ptr<base::ListValue> in(new base::ListValue);
+  std::unique_ptr<base::ListValue> in(new base::ListValue);
   in->AppendBoolean(false);
   SetPolicy(key::kDisabledSchemes, in.release());
   ApplyPolicies();
@@ -143,7 +145,7 @@ TEST_F(URLBlacklistPolicyHandlerTest,
 TEST_F(URLBlacklistPolicyHandlerTest,
        ApplyPolicySettings_URLBlacklistWrongElementType) {
   // The policy expects string-valued elements. Give it booleans.
-  scoped_ptr<base::ListValue> in(new base::ListValue);
+  std::unique_ptr<base::ListValue> in(new base::ListValue);
   in->AppendBoolean(false);
   SetPolicy(key::kURLBlacklist, in.release());
   ApplyPolicies();
@@ -158,7 +160,7 @@ TEST_F(URLBlacklistPolicyHandlerTest,
 
 TEST_F(URLBlacklistPolicyHandlerTest,
        ApplyPolicySettings_DisabledSchemesSuccessful) {
-  scoped_ptr<base::ListValue> in_disabled_schemes(new base::ListValue);
+  std::unique_ptr<base::ListValue> in_disabled_schemes(new base::ListValue);
   in_disabled_schemes->AppendString(kTestDisabledScheme);
   SetPolicy(key::kDisabledSchemes, in_disabled_schemes.release());
   ApplyPolicies();
@@ -176,7 +178,7 @@ TEST_F(URLBlacklistPolicyHandlerTest,
 
 TEST_F(URLBlacklistPolicyHandlerTest,
        ApplyPolicySettings_URLBlacklistSuccessful) {
-  scoped_ptr<base::ListValue> in_url_blacklist(new base::ListValue);
+  std::unique_ptr<base::ListValue> in_url_blacklist(new base::ListValue);
   in_url_blacklist->AppendString(kTestBlacklistValue);
   SetPolicy(key::kURLBlacklist, in_url_blacklist.release());
   ApplyPolicies();
@@ -193,11 +195,11 @@ TEST_F(URLBlacklistPolicyHandlerTest,
 }
 
 TEST_F(URLBlacklistPolicyHandlerTest, ApplyPolicySettings_MergeSuccessful) {
-  scoped_ptr<base::ListValue> in_disabled_schemes(new base::ListValue);
+  std::unique_ptr<base::ListValue> in_disabled_schemes(new base::ListValue);
   in_disabled_schemes->AppendString(kTestDisabledScheme);
   SetPolicy(key::kDisabledSchemes, in_disabled_schemes.release());
 
-  scoped_ptr<base::ListValue> in_url_blacklist(new base::ListValue);
+  std::unique_ptr<base::ListValue> in_url_blacklist(new base::ListValue);
   in_url_blacklist->AppendString(kTestBlacklistValue);
   SetPolicy(key::kURLBlacklist, in_url_blacklist.release());
 

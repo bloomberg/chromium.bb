@@ -8,10 +8,10 @@
 #include <windows.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/policy/policy_export.h"
 
@@ -45,9 +45,9 @@ class POLICY_EXPORT RegistryDict {
   RegistryDict* GetKey(const std::string& name);
   const RegistryDict* GetKey(const std::string& name) const;
   // Sets a key. If |dict| is NULL, clears that key.
-  void SetKey(const std::string& name, scoped_ptr<RegistryDict> dict);
+  void SetKey(const std::string& name, std::unique_ptr<RegistryDict> dict);
   // Removes a key. If the key doesn't exist, NULL is returned.
-  scoped_ptr<RegistryDict> RemoveKey(const std::string& name);
+  std::unique_ptr<RegistryDict> RemoveKey(const std::string& name);
   // Clears all keys.
   void ClearKeys();
 
@@ -55,9 +55,9 @@ class POLICY_EXPORT RegistryDict {
   base::Value* GetValue(const std::string& name);
   const base::Value* GetValue(const std::string& name) const;
   // Sets a value. If |value| is NULL, removes the value.
-  void SetValue(const std::string& name, scoped_ptr<base::Value> value);
+  void SetValue(const std::string& name, std::unique_ptr<base::Value> value);
   // Removes a value. If the value doesn't exist, NULL is returned.
-  scoped_ptr<base::Value> RemoveValue(const std::string& name);
+  std::unique_ptr<base::Value> RemoveValue(const std::string& name);
   // Clears all values.
   void ClearValues();
 
@@ -74,7 +74,7 @@ class POLICY_EXPORT RegistryDict {
   // collisions, the key wins. |schema| is used to determine the expected type
   // for each policy.
   // The returned object is either a base::DictionaryValue or a base::ListValue.
-  scoped_ptr<base::Value> ConvertToJSON(const Schema& schema) const;
+  std::unique_ptr<base::Value> ConvertToJSON(const Schema& schema) const;
 
   const KeyMap& keys() const { return keys_; }
   const ValueMap& values() const { return values_; }

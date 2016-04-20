@@ -97,7 +97,7 @@ ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
 }
 
 void ConfigurationPolicyPrefStore::Refresh() {
-  scoped_ptr<PrefValueMap> new_prefs(CreatePreferencesFromPolicies());
+  std::unique_ptr<PrefValueMap> new_prefs(CreatePreferencesFromPolicies());
   std::vector<std::string> changed_prefs;
   new_prefs->GetDifferingKeys(prefs_.get(), &changed_prefs);
   prefs_.swap(new_prefs);
@@ -112,13 +112,13 @@ void ConfigurationPolicyPrefStore::Refresh() {
 }
 
 PrefValueMap* ConfigurationPolicyPrefStore::CreatePreferencesFromPolicies() {
-  scoped_ptr<PrefValueMap> prefs(new PrefValueMap);
+  std::unique_ptr<PrefValueMap> prefs(new PrefValueMap);
   PolicyMap filtered_policies;
   filtered_policies.CopyFrom(policy_service_->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())));
   filtered_policies.FilterLevel(level_);
 
-  scoped_ptr<PolicyErrorMap> errors(new PolicyErrorMap);
+  std::unique_ptr<PolicyErrorMap> errors(new PolicyErrorMap);
 
   handler_list_->ApplyPolicySettings(filtered_policies,
                                      prefs.get(),

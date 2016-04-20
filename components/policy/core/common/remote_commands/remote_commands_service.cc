@@ -20,7 +20,7 @@ namespace policy {
 namespace em = enterprise_management;
 
 RemoteCommandsService::RemoteCommandsService(
-    scoped_ptr<RemoteCommandsFactory> factory,
+    std::unique_ptr<RemoteCommandsFactory> factory,
     CloudPolicyClient* client)
     : factory_(std::move(factory)), client_(client), weak_factory_(this) {
   DCHECK(client_);
@@ -46,7 +46,7 @@ bool RemoteCommandsService::FetchRemoteCommands() {
   std::vector<em::RemoteCommandResult> previous_results;
   unsent_results_.swap(previous_results);
 
-  scoped_ptr<RemoteCommandJob::UniqueIDType> id_to_acknowledge;
+  std::unique_ptr<RemoteCommandJob::UniqueIDType> id_to_acknowledge;
 
   if (has_finished_command_) {
     // Acknowledges |lastest_finished_command_id_|, and removes it and every
@@ -71,7 +71,7 @@ bool RemoteCommandsService::FetchRemoteCommands() {
 }
 
 void RemoteCommandsService::SetClockForTesting(
-    scoped_ptr<base::TickClock> clock) {
+    std::unique_ptr<base::TickClock> clock) {
   queue_.SetClockForTesting(std::move(clock));
 }
 
@@ -90,7 +90,8 @@ void RemoteCommandsService::EnqueueCommand(
 
   fetched_command_ids_.push_back(command.unique_id());
 
-  scoped_ptr<RemoteCommandJob> job = factory_->BuildJobForType(command.type());
+  std::unique_ptr<RemoteCommandJob> job =
+      factory_->BuildJobForType(command.type());
 
   if (!job || !job->Init(queue_.GetNowTicks(), command)) {
     em::RemoteCommandResult ignored_result;
@@ -126,7 +127,8 @@ void RemoteCommandsService::OnJobFinished(RemoteCommandJob* command) {
       result.set_result(em::RemoteCommandResult_ResultType_RESULT_SUCCESS);
     else
       result.set_result(em::RemoteCommandResult_ResultType_RESULT_FAILURE);
-    const scoped_ptr<std::string> result_payload = command->GetResultPayload();
+    const std::unique_ptr<std::string> result_payload =
+        command->GetResultPayload();
     if (result_payload)
       result.set_payload(*result_payload);
   } else if (command->status() == RemoteCommandJob::EXPIRED ||

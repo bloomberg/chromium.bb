@@ -144,7 +144,7 @@ std::string MockDeviceManagementServiceConfiguration::GetPlatformParameter() {
 }
 
 MockDeviceManagementService::MockDeviceManagementService()
-    : DeviceManagementService(scoped_ptr<Configuration>(
+    : DeviceManagementService(std::unique_ptr<Configuration>(
           new MockDeviceManagementServiceConfiguration)) {}
 
 MockDeviceManagementService::~MockDeviceManagementService() {}

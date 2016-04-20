@@ -54,14 +54,14 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
 
   // Makes a direct call to UpdateOnIO during tests.
   void UpdateOnIOForTesting() {
-    scoped_ptr<base::ListValue> block(new base::ListValue);
+    std::unique_ptr<base::ListValue> block(new base::ListValue);
     block->Append(new base::StringValue("example.com"));
-    scoped_ptr<base::ListValue> allow(new base::ListValue);
+    std::unique_ptr<base::ListValue> allow(new base::ListValue);
     URLBlacklistManager::UpdateOnIO(std::move(block), std::move(allow));
   }
 
   // URLBlacklistManager overrides:
-  void SetBlacklist(scoped_ptr<URLBlacklist> blacklist) override {
+  void SetBlacklist(std::unique_ptr<URLBlacklist> blacklist) override {
     set_blacklist_called_ = true;
     URLBlacklistManager::SetBlacklist(std::move(blacklist));
   }
@@ -103,7 +103,7 @@ class URLBlacklistManagerTest : public testing::Test {
 
   base::MessageLoopForIO loop_;
   TestingPrefServiceSimple pref_service_;
-  scoped_ptr<TestingURLBlacklistManager> blacklist_manager_;
+  std::unique_ptr<TestingURLBlacklistManager> blacklist_manager_;
 };
 
 // Parameters for the FilterToComponents test.
@@ -326,7 +326,7 @@ TEST_F(URLBlacklistManagerTest, Filtering) {
   URLBlacklist blacklist(GetSegmentURLCallback());
 
   // Block domain and all subdomains, for any filtered scheme.
-  scoped_ptr<base::ListValue> blocked(new base::ListValue);
+  std::unique_ptr<base::ListValue> blocked(new base::ListValue);
   blocked->Append(new base::StringValue("google.com"));
   blacklist.Block(blocked.get());
   EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://google.com")));
@@ -393,7 +393,7 @@ TEST_F(URLBlacklistManagerTest, Filtering) {
 
   // Test exceptions to path prefixes, and most specific matches.
   blocked.reset(new base::ListValue);
-  scoped_ptr<base::ListValue> allowed(new base::ListValue);
+  std::unique_ptr<base::ListValue> allowed(new base::ListValue);
   blocked->Append(new base::StringValue("s.xxx.com/a"));
   allowed->Append(new base::StringValue("s.xxx.com/a/b"));
   blocked->Append(new base::StringValue("https://s.xxx.com/a/b/c"));
@@ -477,8 +477,8 @@ TEST_F(URLBlacklistManagerTest, Filtering) {
 
 TEST_F(URLBlacklistManagerTest, QueryParameters) {
   URLBlacklist blacklist(GetSegmentURLCallback());
-  scoped_ptr<base::ListValue> blocked(new base::ListValue);
-  scoped_ptr<base::ListValue> allowed(new base::ListValue);
+  std::unique_ptr<base::ListValue> blocked(new base::ListValue);
+  std::unique_ptr<base::ListValue> allowed(new base::ListValue);
 
   // Block domain and all subdomains, for any filtered scheme.
   blocked->AppendString("youtube.com");
@@ -614,8 +614,8 @@ TEST_F(URLBlacklistManagerTest, QueryParameters) {
 TEST_F(URLBlacklistManagerTest, BlockAllWithExceptions) {
   URLBlacklist blacklist(GetSegmentURLCallback());
 
-  scoped_ptr<base::ListValue> blocked(new base::ListValue);
-  scoped_ptr<base::ListValue> allowed(new base::ListValue);
+  std::unique_ptr<base::ListValue> blocked(new base::ListValue);
+  std::unique_ptr<base::ListValue> allowed(new base::ListValue);
   blocked->Append(new base::StringValue("*"));
   allowed->Append(new base::StringValue(".www.google.com"));
   allowed->Append(new base::StringValue("plus.google.com"));
@@ -638,8 +638,9 @@ TEST_F(URLBlacklistManagerTest, BlockAllWithExceptions) {
 }
 
 TEST_F(URLBlacklistManagerTest, DontBlockResources) {
-  scoped_ptr<URLBlacklist> blacklist(new URLBlacklist(GetSegmentURLCallback()));
-  scoped_ptr<base::ListValue> blocked(new base::ListValue);
+  std::unique_ptr<URLBlacklist> blacklist(
+      new URLBlacklist(GetSegmentURLCallback()));
+  std::unique_ptr<base::ListValue> blocked(new base::ListValue);
   blocked->Append(new base::StringValue("google.com"));
   blacklist->Block(blocked.get());
   blacklist_manager_->SetBlacklist(std::move(blacklist));
@@ -653,7 +654,7 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
 
 TEST_F(URLBlacklistManagerTest, DefaultBlacklistExceptions) {
   URLBlacklist blacklist(GetSegmentURLCallback());
-  scoped_ptr<base::ListValue> blocked(new base::ListValue);
+  std::unique_ptr<base::ListValue> blocked(new base::ListValue);
 
   // Blacklist everything:
   blocked->Append(new base::StringValue("*"));
@@ -667,7 +668,7 @@ TEST_F(URLBlacklistManagerTest, DefaultBlacklistExceptions) {
 
   // Unless they are explicitly blacklisted:
   blocked->Append(new base::StringValue("chrome-extension://*"));
-  scoped_ptr<base::ListValue> allowed(new base::ListValue);
+  std::unique_ptr<base::ListValue> allowed(new base::ListValue);
   allowed->Append(new base::StringValue("chrome-extension://abc"));
   blacklist.Block(blocked.get());
   blacklist.Allow(allowed.get());

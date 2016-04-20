@@ -7,11 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_pending_task.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -74,8 +75,8 @@ class ExternalPolicyDataUpdaterTest : public testing::Test {
   MockFetchSuccessCallbackListener callback_listener_;
   scoped_refptr<base::TestSimpleTaskRunner> backend_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> io_task_runner_;
-  scoped_ptr<ExternalPolicyDataFetcherBackend> fetcher_backend_;
-  scoped_ptr<ExternalPolicyDataUpdater> updater_;
+  std::unique_ptr<ExternalPolicyDataFetcherBackend> fetcher_backend_;
+  std::unique_ptr<ExternalPolicyDataUpdater> updater_;
 };
 
 void ExternalPolicyDataUpdaterTest::SetUp() {

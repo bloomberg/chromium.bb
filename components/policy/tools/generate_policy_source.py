@@ -1002,12 +1002,12 @@ def _WriteCloudPolicyProtobuf(policies, os, f, riskTags):
 
 CPP_HEAD = '''
 #include <limits>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -1045,7 +1045,7 @@ base::ListValue* DecodeStringList(const em::StringList& string_list) {
 }
 
 base::Value* DecodeJson(const std::string& json) {
-  scoped_ptr<base::Value> root =
+  std::unique_ptr<base::Value> root =
       base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
 
   if (!root)

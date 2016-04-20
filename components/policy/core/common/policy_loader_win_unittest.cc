@@ -351,7 +351,7 @@ ConfigurationPolicyProvider* RegistryTestHarness::CreateProvider(
     SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   base::win::SetDomainStateForTesting(true);
-  scoped_ptr<AsyncPolicyLoader> loader(
+  std::unique_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderWin(task_runner, kTestPolicyKey, this));
   return new AsyncPolicyProvider(registry, std::move(loader));
 }
@@ -484,7 +484,7 @@ void PRegTestHarness::SetUp() {
 ConfigurationPolicyProvider* PRegTestHarness::CreateProvider(
     SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  scoped_ptr<AsyncPolicyLoader> loader(
+  std::unique_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderWin(task_runner, kTestPolicyKey, this));
   return new AsyncPolicyProvider(registry, std::move(loader));
 }
@@ -749,7 +749,7 @@ class PolicyLoaderWinTest : public PolicyTestBase,
   bool Matches(const PolicyBundle& expected) {
     PolicyLoaderWin loader(loop_.task_runner(), kTestPolicyKey,
                            gpo_list_provider_);
-    scoped_ptr<PolicyBundle> loaded(
+    std::unique_ptr<PolicyBundle> loaded(
         loader.InitialLoad(schema_registry_.schema_map()));
     return loaded->Equals(expected);
   }
@@ -777,7 +777,7 @@ class PolicyLoaderWinTest : public PolicyTestBase,
     expected_policy.SetBoolean(test_keys::kKeyBoolean, true);
     expected_policy.SetString(test_keys::kKeyString, "GPO");
     expected_policy.SetInteger(test_keys::kKeyInteger, 42);
-    scoped_ptr<base::ListValue> list(new base::ListValue());
+    std::unique_ptr<base::ListValue> list(new base::ListValue());
     list->AppendString("GPO 1");
     list->AppendString("GPO 2");
     expected_policy.Set(test_keys::kKeyStringList, list.release());

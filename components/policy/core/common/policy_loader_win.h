@@ -8,10 +8,11 @@
 #include <windows.h>
 #include <userenv.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/win/object_watcher.h"
@@ -60,13 +61,13 @@ class POLICY_EXPORT PolicyLoaderWin
   ~PolicyLoaderWin() override;
 
   // Creates a policy loader that uses the Win API to access GPO.
-  static scoped_ptr<PolicyLoaderWin> Create(
+  static std::unique_ptr<PolicyLoaderWin> Create(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       const base::string16& chrome_policy_key);
 
   // AsyncPolicyLoader implementation.
   void InitOnBackgroundThread() override;
-  scoped_ptr<PolicyBundle> Load() override;
+  std::unique_ptr<PolicyBundle> Load() override;
 
  private:
   // Reads Chrome Policy from a PReg file at the given path and stores the

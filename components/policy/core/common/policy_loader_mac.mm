@@ -60,9 +60,9 @@ void PolicyLoaderMac::InitOnBackgroundThread() {
   }
 }
 
-scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
+std::unique_ptr<PolicyBundle> PolicyLoaderMac::Load() {
   preferences_->AppSynchronize(application_id_);
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+  std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
 
   // Load Chrome's policy.
   PolicyMap& chrome_policy =
@@ -85,7 +85,7 @@ scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
     PolicyLevel level =
         forced ? POLICY_LEVEL_MANDATORY : POLICY_LEVEL_RECOMMENDED;
     // TODO(joaodasilva): figure the policy scope.
-    scoped_ptr<base::Value> policy = PropertyToValue(value);
+    std::unique_ptr<base::Value> policy = PropertyToValue(value);
     if (policy) {
       chrome_policy.Set(it.key(), level, POLICY_SCOPE_USER,
                         POLICY_SOURCE_PLATFORM, policy.release(), nullptr);
@@ -179,7 +179,7 @@ void PolicyLoaderMac::LoadPolicyForComponent(
     bool forced = preferences_->AppValueIsForced(pref_name, bundle_id);
     PolicyLevel level =
         forced ? POLICY_LEVEL_MANDATORY : POLICY_LEVEL_RECOMMENDED;
-    scoped_ptr<base::Value> policy_value = PropertyToValue(value);
+    std::unique_ptr<base::Value> policy_value = PropertyToValue(value);
     if (policy_value) {
       policy->Set(it.key(), level, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
                   policy_value.release(), nullptr);

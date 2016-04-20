@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/policy/core/common/remote_commands/remote_commands_service.h"
+
 #include <stddef.h>
 
 #include <queue>
@@ -11,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
@@ -19,7 +22,6 @@
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
 #include "components/policy/core/common/remote_commands/remote_commands_queue.h"
-#include "components/policy/core/common/remote_commands/remote_commands_service.h"
 #include "components/policy/core/common/remote_commands/test_remote_command_job.h"
 #include "components/policy/core/common/remote_commands/testing_remote_commands_server.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -63,13 +65,13 @@ class MockTestRemoteCommandFactory : public RemoteCommandsFactory {
 
  private:
   // RemoteCommandJobsFactory:
-  scoped_ptr<RemoteCommandJob> BuildJobForType(
+  std::unique_ptr<RemoteCommandJob> BuildJobForType(
       em::RemoteCommand_Type type) override {
     if (type != em::RemoteCommand_Type_COMMAND_ECHO_TEST) {
       ADD_FAILURE();
       return nullptr;
     }
-    return make_scoped_ptr<RemoteCommandJob>(BuildTestCommand());
+    return base::WrapUnique<RemoteCommandJob>(BuildTestCommand());
   }
 
   DISALLOW_COPY_AND_ASSIGN(MockTestRemoteCommandFactory);
@@ -121,7 +123,7 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
   };
 
   void FetchRemoteCommands(
-      scoped_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
+      std::unique_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
       const std::vector<em::RemoteCommandResult>& command_results,
       const RemoteCommandCallback& callback) override {
     ASSERT_FALSE(expected_fetch_commands_calls_.empty());
@@ -142,7 +144,7 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
   }
 
   void DoFetchRemoteCommands(
-      scoped_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
+      std::unique_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
       const std::vector<em::RemoteCommandResult>& command_results,
       const RemoteCommandCallback& callback,
       const FetchCallExpectation& fetch_call_expectation) {
@@ -258,7 +260,7 @@ class RemoteCommandsServiceTest : public testing::Test {
     server_.reset();
   }
 
-  void StartService(scoped_ptr<RemoteCommandsFactory> factory) {
+  void StartService(std::unique_ptr<RemoteCommandsFactory> factory) {
     remote_commands_service_.reset(new RemoteCommandsService(
         std::move(factory), cloud_policy_client_.get()));
     remote_commands_service_->SetClockForTesting(
@@ -269,9 +271,10 @@ class RemoteCommandsServiceTest : public testing::Test {
     task_runner_->FastForwardUntilNoTasksRemain();
   }
 
-  scoped_ptr<TestingRemoteCommandsServer> server_;
-  scoped_ptr<TestingCloudPolicyClientForRemoteCommands> cloud_policy_client_;
-  scoped_ptr<RemoteCommandsService> remote_commands_service_;
+  std::unique_ptr<TestingRemoteCommandsServer> server_;
+  std::unique_ptr<TestingCloudPolicyClientForRemoteCommands>
+      cloud_policy_client_;
+  std::unique_ptr<RemoteCommandsService> remote_commands_service_;
 
   scoped_refptr<ScopedMockTimeTaskRunner> task_runner_;
 
@@ -283,7 +286,7 @@ class RemoteCommandsServiceTest : public testing::Test {
 
 // Tests that no command will be fetched if no commands is issued.
 TEST_F(RemoteCommandsServiceTest, NoCommands) {
-  scoped_ptr<MockTestRemoteCommandFactory> factory(
+  std::unique_ptr<MockTestRemoteCommandFactory> factory(
       new MockTestRemoteCommandFactory());
   EXPECT_CALL(*factory, BuildTestCommand()).Times(0);
 
@@ -298,7 +301,7 @@ TEST_F(RemoteCommandsServiceTest, NoCommands) {
 
 // Tests that existing commands issued before service started will be fetched.
 TEST_F(RemoteCommandsServiceTest, ExistingCommand) {
-  scoped_ptr<MockTestRemoteCommandFactory> factory(
+  std::unique_ptr<MockTestRemoteCommandFactory> factory(
       new MockTestRemoteCommandFactory());
   EXPECT_CALL(*factory, BuildTestCommand()).Times(1);
 
@@ -329,7 +332,7 @@ TEST_F(RemoteCommandsServiceTest, ExistingCommand) {
 
 // Tests that commands issued after service started will be fetched.
 TEST_F(RemoteCommandsServiceTest, NewCommand) {
-  scoped_ptr<MockTestRemoteCommandFactory> factory(
+  std::unique_ptr<MockTestRemoteCommandFactory> factory(
       new MockTestRemoteCommandFactory());
   EXPECT_CALL(*factory, BuildTestCommand()).Times(1);
 
@@ -354,7 +357,7 @@ TEST_F(RemoteCommandsServiceTest, NewCommand) {
 // Tests that commands issued after service started will be fetched, even if
 // the command is issued when a fetch request is ongoing.
 TEST_F(RemoteCommandsServiceTest, NewCommandFollwingFetch) {
-  scoped_ptr<MockTestRemoteCommandFactory> factory(
+  std::unique_ptr<MockTestRemoteCommandFactory> factory(
       new MockTestRemoteCommandFactory());
   EXPECT_CALL(*factory, BuildTestCommand()).Times(1);
 

@@ -78,7 +78,8 @@ void UserInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string unparsed_data;
   source->GetResponseAsString(&unparsed_data);
   DVLOG(1) << "Received UserInfo response: " << unparsed_data;
-  scoped_ptr<base::Value> parsed_value = base::JSONReader::Read(unparsed_data);
+  std::unique_ptr<base::Value> parsed_value =
+      base::JSONReader::Read(unparsed_data);
   base::DictionaryValue* dict;
   if (parsed_value.get() && parsed_value->GetAsDictionary(&dict)) {
     delegate_->OnGetUserInfoSuccess(dict);

@@ -74,7 +74,7 @@ ConfigurationPolicyProvider* TestHarness::CreateProvider(
     SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   prefs_ = new MockPreferences();
-  scoped_ptr<AsyncPolicyLoader> loader(
+  std::unique_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderMac(task_runner, base::FilePath(), prefs_));
   return new AsyncPolicyProvider(registry, std::move(loader));
 }
@@ -145,7 +145,7 @@ class PolicyLoaderMacTest : public PolicyTestBase {
 
   void SetUp() override {
     PolicyTestBase::SetUp();
-    scoped_ptr<AsyncPolicyLoader> loader(
+    std::unique_ptr<AsyncPolicyLoader> loader(
         new PolicyLoaderMac(loop_.task_runner(), base::FilePath(), prefs_));
     provider_.reset(
         new AsyncPolicyProvider(&schema_registry_, std::move(loader)));
@@ -158,7 +158,7 @@ class PolicyLoaderMacTest : public PolicyTestBase {
   }
 
   MockPreferences* prefs_;
-  scoped_ptr<AsyncPolicyProvider> provider_;
+  std::unique_ptr<AsyncPolicyProvider> provider_;
 };
 
 TEST_F(PolicyLoaderMacTest, Invalid) {

@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_types.h"
@@ -40,7 +40,7 @@ class POLICY_EXPORT PolicyMap {
     void DeleteOwnedMembers();
 
     // Returns a copy of |this|.
-    scoped_ptr<Entry> DeepCopy() const;
+    std::unique_ptr<Entry> DeepCopy() const;
 
     // Returns true if |this| has higher priority than |other|.
     bool has_higher_priority_than(const Entry& other) const;
@@ -83,7 +83,7 @@ class POLICY_EXPORT PolicyMap {
   void CopyFrom(const PolicyMap& other);
 
   // Returns a copy of |this|.
-  scoped_ptr<PolicyMap> DeepCopy() const;
+  std::unique_ptr<PolicyMap> DeepCopy() const;
 
   // Merges policies from |other| into |this|. Existing policies are only
   // overridden by those in |other| if they have a higher priority, as defined

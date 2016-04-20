@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -15,7 +16,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -153,7 +153,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // previous commands. A nullptr indicates that no commands have finished
   // execution.
   virtual void FetchRemoteCommands(
-      scoped_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
+      std::unique_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
       const std::vector<enterprise_management::RemoteCommandResult>&
           command_results,
       const RemoteCommandCallback& callback);
@@ -378,7 +378,7 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Only one outstanding policy fetch is allowed, so this is tracked in
   // its own member variable.
-  scoped_ptr<DeviceManagementRequestJob> policy_fetch_request_job_;
+  std::unique_ptr<DeviceManagementRequestJob> policy_fetch_request_job_;
 
   // All of the outstanding non-policy-fetch request jobs. These jobs are
   // silently cancelled if Unregister() is called.

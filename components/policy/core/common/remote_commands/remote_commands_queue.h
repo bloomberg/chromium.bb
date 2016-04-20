@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_REMOTE_COMMANDS_REMOTE_COMMANDS_QUEUE_H_
 #define COMPONENTS_POLICY_CORE_COMMON_REMOTE_COMMANDS_REMOTE_COMMANDS_QUEUE_H_
 
+#include <memory>
 #include <queue>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/policy/policy_export.h"
@@ -52,10 +52,10 @@ class POLICY_EXPORT RemoteCommandsQueue {
   void RemoveObserver(Observer* observer);
 
   // Add a |job| to the queue.
-  void AddJob(scoped_ptr<RemoteCommandJob> job);
+  void AddJob(std::unique_ptr<RemoteCommandJob> job);
 
   // Set an alternative clock for testing.
-  void SetClockForTesting(scoped_ptr<base::TickClock> clock);
+  void SetClockForTesting(std::unique_ptr<base::TickClock> clock);
 
   // Helper function to get the current time.
   base::TimeTicks GetNowTicks();
@@ -74,9 +74,9 @@ class POLICY_EXPORT RemoteCommandsQueue {
 
   std::queue<linked_ptr<RemoteCommandJob>> incoming_commands_;
 
-  scoped_ptr<RemoteCommandJob> running_command_;
+  std::unique_ptr<RemoteCommandJob> running_command_;
 
-  scoped_ptr<base::TickClock> clock_;
+  std::unique_ptr<base::TickClock> clock_;
   base::OneShotTimer execution_timeout_timer_;
 
   base::ObserverList<Observer, true> observer_list_;

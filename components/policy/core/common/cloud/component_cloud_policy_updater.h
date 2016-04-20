@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_COMPONENT_CLOUD_POLICY_UPDATER_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_COMPONENT_CLOUD_POLICY_UPDATER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/cloud/external_policy_data_updater.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/policy_export.h"
@@ -39,7 +39,7 @@ class POLICY_EXPORT ComponentCloudPolicyUpdater {
   // |external_policy_data_fetcher|.
   ComponentCloudPolicyUpdater(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher,
+      std::unique_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher,
       ComponentCloudPolicyStore* store);
   ~ComponentCloudPolicyUpdater();
 
@@ -48,7 +48,7 @@ class POLICY_EXPORT ComponentCloudPolicyUpdater {
   // validated. If the downloaded data also passes validation then that data
   // will be passed to the |store_|.
   void UpdateExternalPolicy(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> response);
+      std::unique_ptr<enterprise_management::PolicyFetchResponse> response);
 
   // Cancels any pending operations for the given namespace.
   void CancelUpdate(const PolicyNamespace& ns);

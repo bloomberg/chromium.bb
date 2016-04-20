@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/policy/core/common/policy_statistics_collector.h"
+
 #include <cstring>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_policy_service.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
-#include "components/policy/core/common/policy_statistics_collector.h"
 #include "components/policy/core/common/policy_test_utils.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -133,7 +134,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
   PolicyMap policy_map_;
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  scoped_ptr<TestPolicyStatisticsCollector> policy_statistics_collector_;
+  std::unique_ptr<TestPolicyStatisticsCollector> policy_statistics_collector_;
 };
 
 TEST_F(PolicyStatisticsCollectorTest, CollectPending) {

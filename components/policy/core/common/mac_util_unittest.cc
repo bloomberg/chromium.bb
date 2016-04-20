@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/policy/core/common/mac_util.h"
+
 #include <CoreFoundation/CoreFoundation.h>
 
+#include <memory>
+
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "components/policy/core/common/mac_util.h"
 #include "components/policy/core/common/policy_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,7 +54,7 @@ TEST(PolicyMacUtilTest, PropertyToValue) {
 
   base::ScopedCFTypeRef<CFPropertyListRef> property(ValueToProperty(&root));
   ASSERT_TRUE(property);
-  scoped_ptr<base::Value> value = PropertyToValue(property);
+  std::unique_ptr<base::Value> value = PropertyToValue(property);
   ASSERT_TRUE(value);
   EXPECT_TRUE(root.Equals(value.get()));
 }

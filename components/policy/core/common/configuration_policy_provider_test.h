@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CONFIGURATION_POLICY_PROVIDER_TEST_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CONFIGURATION_POLICY_PROVIDER_TEST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
@@ -133,8 +133,8 @@ class ConfigurationPolicyProviderTest
                   const base::Value& expected_value,
                   base::Closure install_value);
 
-  scoped_ptr<PolicyProviderTestHarness> test_harness_;
-  scoped_ptr<ConfigurationPolicyProvider> provider_;
+  std::unique_ptr<PolicyProviderTestHarness> test_harness_;
+  std::unique_ptr<ConfigurationPolicyProvider> provider_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderTest);

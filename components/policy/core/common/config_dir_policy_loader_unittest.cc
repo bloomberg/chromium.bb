@@ -87,8 +87,8 @@ void TestHarness::SetUp() {
 ConfigurationPolicyProvider* TestHarness::CreateProvider(
     SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  scoped_ptr<AsyncPolicyLoader> loader(new ConfigDirPolicyLoader(
-      task_runner, test_dir(), POLICY_SCOPE_MACHINE));
+  std::unique_ptr<AsyncPolicyLoader> loader(
+      new ConfigDirPolicyLoader(task_runner, test_dir(), POLICY_SCOPE_MACHINE));
   return new AsyncPolicyProvider(registry, std::move(loader));
 }
 
@@ -191,7 +191,7 @@ class ConfigDirPolicyLoaderTest : public PolicyTestBase {
 TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsEmpty) {
   ConfigDirPolicyLoader loader(loop_.task_runner(), harness_.test_dir(),
                                POLICY_SCOPE_MACHINE);
-  scoped_ptr<PolicyBundle> bundle(loader.Load());
+  std::unique_ptr<PolicyBundle> bundle(loader.Load());
   ASSERT_TRUE(bundle.get());
   const PolicyBundle kEmptyBundle;
   EXPECT_TRUE(bundle->Equals(kEmptyBundle));
@@ -204,7 +204,7 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsNonExistentDirectory) {
       harness_.test_dir().Append(FILE_PATH_LITERAL("not_there")));
   ConfigDirPolicyLoader loader(loop_.task_runner(), non_existent_dir,
                                POLICY_SCOPE_MACHINE);
-  scoped_ptr<PolicyBundle> bundle(loader.Load());
+  std::unique_ptr<PolicyBundle> bundle(loader.Load());
   ASSERT_TRUE(bundle.get());
   const PolicyBundle kEmptyBundle;
   EXPECT_TRUE(bundle->Equals(kEmptyBundle));
@@ -228,7 +228,7 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
 
   ConfigDirPolicyLoader loader(loop_.task_runner(), harness_.test_dir(),
                                POLICY_SCOPE_USER);
-  scoped_ptr<PolicyBundle> bundle(loader.Load());
+  std::unique_ptr<PolicyBundle> bundle(loader.Load());
   ASSERT_TRUE(bundle.get());
   PolicyBundle expected_bundle;
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))

@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -16,7 +17,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/policy_export.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -110,7 +110,7 @@ class POLICY_EXPORT URLBlacklist {
   SegmentURLCallback segment_url_;
   url_matcher::URLMatcherConditionSet::ID id_;
   std::map<url_matcher::URLMatcherConditionSet::ID, FilterComponents> filters_;
-  scoped_ptr<url_matcher::URLMatcher> url_matcher_;
+  std::unique_ptr<url_matcher::URLMatcher> url_matcher_;
 
   DISALLOW_COPY_AND_ASSIGN(URLBlacklist);
 };
@@ -174,7 +174,7 @@ class POLICY_EXPORT URLBlacklistManager {
 
   // Replaces the current blacklist. Must be called on the IO thread.
   // Virtual for testing.
-  virtual void SetBlacklist(scoped_ptr<URLBlacklist> blacklist);
+  virtual void SetBlacklist(std::unique_ptr<URLBlacklist> blacklist);
 
   // Registers the preferences related to blacklisting in the given PrefService.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -190,8 +190,8 @@ class POLICY_EXPORT URLBlacklistManager {
 
   // Starts the blacklist update on the IO thread, using the filters in
   // |block| and |allow|. Protected for testing.
-  void UpdateOnIO(scoped_ptr<base::ListValue> block,
-                  scoped_ptr<base::ListValue> allow);
+  void UpdateOnIO(std::unique_ptr<base::ListValue> block,
+                  std::unique_ptr<base::ListValue> allow);
 
  private:
   // ---------
@@ -222,7 +222,7 @@ class POLICY_EXPORT URLBlacklistManager {
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   // The current blacklist.
-  scoped_ptr<URLBlacklist> blacklist_;
+  std::unique_ptr<URLBlacklist> blacklist_;
 
   // Used to post update tasks to the UI thread.
   base::WeakPtrFactory<URLBlacklistManager> ui_weak_ptr_factory_;

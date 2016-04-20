@@ -454,7 +454,7 @@ void DeviceManagementService::Shutdown() {
 }
 
 DeviceManagementService::DeviceManagementService(
-    scoped_ptr<Configuration> configuration)
+    std::unique_ptr<Configuration> configuration)
     : configuration_(std::move(configuration)),
       initialized_(false),
       weak_ptr_factory_(this) {

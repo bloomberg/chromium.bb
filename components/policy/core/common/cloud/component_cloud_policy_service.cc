@@ -5,6 +5,7 @@
 #include "components/policy/core/common/cloud/component_cloud_policy_service.h"
 
 #include <stddef.h>
+
 #include <string>
 #include <utility>
 
@@ -14,6 +15,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -31,7 +33,7 @@
 namespace em = enterprise_management;
 
 typedef base::ScopedPtrHashMap<policy::PolicyNamespace,
-                               scoped_ptr<em::PolicyFetchResponse>>
+                               std::unique_ptr<em::PolicyFetchResponse>>
     ScopedResponseMap;
 
 namespace policy {
@@ -74,11 +76,12 @@ class ComponentCloudPolicyService::Backend
   // accessed via the |task_runner_| only. Policy changes are posted to the
   // |service| via the |service_task_runner|. The |cache| is used to load and
   // store local copies of the downloaded policies.
-  Backend(base::WeakPtr<ComponentCloudPolicyService> service,
-          scoped_refptr<base::SequencedTaskRunner> task_runner,
-          scoped_refptr<base::SequencedTaskRunner> service_task_runner,
-          scoped_ptr<ResourceCache> cache,
-          scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher);
+  Backend(
+      base::WeakPtr<ComponentCloudPolicyService> service,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> service_task_runner,
+      std::unique_ptr<ResourceCache> cache,
+      std::unique_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher);
 
   ~Backend() override;
 
@@ -93,7 +96,7 @@ class ComponentCloudPolicyService::Backend
   // will have their cache purged after this call.
   // Otherwise the backend will start the validation and eventual download of
   // the policy data for each PolicyFetchResponse in |responses|.
-  void SetCurrentPolicies(scoped_ptr<ScopedResponseMap> responses);
+  void SetCurrentPolicies(std::unique_ptr<ScopedResponseMap> responses);
 
   // ComponentCloudPolicyStore::Delegate implementation:
   void OnComponentCloudPolicyStoreUpdated() override;
@@ -103,7 +106,7 @@ class ComponentCloudPolicyService::Backend
   // |removed| is a list of namespaces that were present in the previous
   // schema and have been removed in the updated version.
   void OnSchemasUpdated(scoped_refptr<SchemaMap> schema_map,
-                        scoped_ptr<PolicyNamespaceList> removed);
+                        std::unique_ptr<PolicyNamespaceList> removed);
 
  private:
   // The ComponentCloudPolicyService that owns |this|. Used to inform the
@@ -117,10 +120,10 @@ class ComponentCloudPolicyService::Backend
   // right thread.
   scoped_refptr<base::SequencedTaskRunner> service_task_runner_;
 
-  scoped_ptr<ResourceCache> cache_;
-  scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher_;
+  std::unique_ptr<ResourceCache> cache_;
+  std::unique_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher_;
   ComponentCloudPolicyStore store_;
-  scoped_ptr<ComponentCloudPolicyUpdater> updater_;
+  std::unique_ptr<ComponentCloudPolicyUpdater> updater_;
   bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
@@ -130,8 +133,8 @@ ComponentCloudPolicyService::Backend::Backend(
     base::WeakPtr<ComponentCloudPolicyService> service,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     scoped_refptr<base::SequencedTaskRunner> service_task_runner,
-    scoped_ptr<ResourceCache> cache,
-    scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher)
+    std::unique_ptr<ResourceCache> cache,
+    std::unique_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher)
     : service_(service),
       task_runner_(task_runner),
       service_task_runner_(service_task_runner),
@@ -157,7 +160,7 @@ void ComponentCloudPolicyService::Backend::Init(
     scoped_refptr<SchemaMap> schema_map) {
   DCHECK(!initialized_);
 
-  OnSchemasUpdated(schema_map, scoped_ptr<PolicyNamespaceList>());
+  OnSchemasUpdated(schema_map, std::unique_ptr<PolicyNamespaceList>());
 
   // Read the initial policy. Note that this does not trigger notifications
   // through OnComponentCloudPolicyStoreUpdated. Note also that the cached
@@ -166,7 +169,7 @@ void ComponentCloudPolicyService::Backend::Init(
   // integrity can be verified using the hash, but it must also be filtered
   // right after a Load().
   store_.Load();
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle);
+  std::unique_ptr<PolicyBundle> bundle(new PolicyBundle);
   bundle->CopyFrom(store_.policy());
 
   // Start downloading any pending data.
@@ -183,7 +186,7 @@ void ComponentCloudPolicyService::Backend::Init(
 }
 
 void ComponentCloudPolicyService::Backend::SetCurrentPolicies(
-    scoped_ptr<ScopedResponseMap> responses) {
+    std::unique_ptr<ScopedResponseMap> responses) {
   // Purge any components that don't have a policy configured at the server.
   store_.Purge(POLICY_DOMAIN_EXTENSIONS,
                base::Bind(&NotInResponseMap, base::ConstRef(*responses)));
@@ -201,7 +204,7 @@ void ComponentCloudPolicyService::Backend::
     return;
   }
 
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle);
+  std::unique_ptr<PolicyBundle> bundle(new PolicyBundle);
   bundle->CopyFrom(store_.policy());
   service_task_runner_->PostTask(
       FROM_HERE,
@@ -212,7 +215,7 @@ void ComponentCloudPolicyService::Backend::
 
 void ComponentCloudPolicyService::Backend::OnSchemasUpdated(
     scoped_refptr<SchemaMap> schema_map,
-    scoped_ptr<PolicyNamespaceList> removed) {
+    std::unique_ptr<PolicyNamespaceList> removed) {
   // Purge any components that have been removed.
   const DomainMap& domains = schema_map->GetDomains();
   for (DomainMap::const_iterator domain = domains.begin();
@@ -232,7 +235,7 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
     SchemaRegistry* schema_registry,
     CloudPolicyCore* core,
     CloudPolicyClient* client,
-    scoped_ptr<ResourceCache> cache,
+    std::unique_ptr<ResourceCache> cache,
     scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
@@ -426,7 +429,7 @@ void ComponentCloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
   // Pass a complete list of all the currently managed extensions to the
   // backend. The cache will purge the storage for any extensions that are not
   // in this list.
-  scoped_ptr<ScopedResponseMap> valid_responses(new ScopedResponseMap());
+  std::unique_ptr<ScopedResponseMap> valid_responses(new ScopedResponseMap());
 
   const CloudPolicyClient::ResponseMap& responses =
       core_->client()->responses();
@@ -437,7 +440,7 @@ void ComponentCloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
       continue;
     }
     valid_responses->set(
-        ns, make_scoped_ptr(new em::PolicyFetchResponse(*it->second)));
+        ns, base::WrapUnique(new em::PolicyFetchResponse(*it->second)));
   }
 
   backend_task_runner_->PostTask(
@@ -476,7 +479,7 @@ void ComponentCloudPolicyService::InitializeIfReady() {
 }
 
 void ComponentCloudPolicyService::OnBackendInitialized(
-    scoped_ptr<PolicyBundle> initial_policy) {
+    std::unique_ptr<PolicyBundle> initial_policy) {
   DCHECK(CalledOnValidThread());
   DCHECK(!loaded_initial_policy_);
 
@@ -493,7 +496,7 @@ void ComponentCloudPolicyService::OnBackendInitialized(
 void ComponentCloudPolicyService::ReloadSchema() {
   DCHECK(CalledOnValidThread());
 
-  scoped_ptr<PolicyNamespaceList> removed(new PolicyNamespaceList);
+  std::unique_ptr<PolicyNamespaceList> removed(new PolicyNamespaceList);
   PolicyNamespaceList added;
   const scoped_refptr<SchemaMap>& new_schema_map =
       schema_registry_->schema_map();
@@ -519,7 +522,7 @@ void ComponentCloudPolicyService::ReloadSchema() {
 }
 
 void ComponentCloudPolicyService::OnPolicyUpdated(
-    scoped_ptr<PolicyBundle> policy) {
+    std::unique_ptr<PolicyBundle> policy) {
   DCHECK(CalledOnValidThread());
 
   // Store the current unfiltered policies.

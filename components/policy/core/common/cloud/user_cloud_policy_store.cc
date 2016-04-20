@@ -5,11 +5,13 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_store.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -180,7 +182,7 @@ UserCloudPolicyStore::UserCloudPolicyStore(
 UserCloudPolicyStore::~UserCloudPolicyStore() {}
 
 // static
-scoped_ptr<UserCloudPolicyStore> UserCloudPolicyStore::Create(
+std::unique_ptr<UserCloudPolicyStore> UserCloudPolicyStore::Create(
     const base::FilePath& profile_path,
     const std::string& verification_key,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
@@ -188,7 +190,7 @@ scoped_ptr<UserCloudPolicyStore> UserCloudPolicyStore::Create(
       profile_path.Append(kPolicyDir).Append(kPolicyCacheFile);
   base::FilePath key_path =
       profile_path.Append(kPolicyDir).Append(kKeyCacheFile);
-  return make_scoped_ptr(new UserCloudPolicyStore(
+  return base::WrapUnique(new UserCloudPolicyStore(
       policy_path, key_path, verification_key, background_task_runner));
 }
 
@@ -253,9 +255,9 @@ void UserCloudPolicyStore::PolicyLoaded(bool validate_in_background,
 
     case LOAD_RESULT_SUCCESS: {
       // Found policy on disk - need to validate it before it can be used.
-      scoped_ptr<em::PolicyFetchResponse> cloud_policy(
+      std::unique_ptr<em::PolicyFetchResponse> cloud_policy(
           new em::PolicyFetchResponse(result.policy));
-      scoped_ptr<em::PolicySigningKey> key(
+      std::unique_ptr<em::PolicySigningKey> key(
           new em::PolicySigningKey(result.key));
 
       bool doing_key_rotation = false;
@@ -326,22 +328,22 @@ void UserCloudPolicyStore::Store(const em::PolicyFetchResponse& policy) {
   // Stop any pending requests to store policy, then validate the new policy
   // before storing it.
   weak_factory_.InvalidateWeakPtrs();
-  scoped_ptr<em::PolicyFetchResponse> policy_copy(
+  std::unique_ptr<em::PolicyFetchResponse> policy_copy(
       new em::PolicyFetchResponse(policy));
-  Validate(std::move(policy_copy), scoped_ptr<em::PolicySigningKey>(),
+  Validate(std::move(policy_copy), std::unique_ptr<em::PolicySigningKey>(),
            verification_key_, true,
            base::Bind(&UserCloudPolicyStore::StorePolicyAfterValidation,
                       weak_factory_.GetWeakPtr()));
 }
 
 void UserCloudPolicyStore::Validate(
-    scoped_ptr<em::PolicyFetchResponse> policy,
-    scoped_ptr<em::PolicySigningKey> cached_key,
+    std::unique_ptr<em::PolicyFetchResponse> policy,
+    std::unique_ptr<em::PolicySigningKey> cached_key,
     const std::string& verification_key,
     bool validate_in_background,
     const UserCloudPolicyValidator::CompletionCallback& callback) {
   // Configure the validator.
-  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
+  std::unique_ptr<UserCloudPolicyValidator> validator = CreateValidator(
       std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
 
   // Extract the owning domain from the signed-in user (if any is set yet).

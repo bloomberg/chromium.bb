@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/policy/core/common/schema.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,7 +31,7 @@ TEST(RegistryDictTest, SetAndGetValue) {
   EXPECT_TRUE(base::Value::Equals(&int_value, test_dict.GetValue("one")));
   EXPECT_TRUE(base::Value::Equals(&string_value, test_dict.GetValue("two")));
 
-  scoped_ptr<base::Value> one(test_dict.RemoveValue("one"));
+  std::unique_ptr<base::Value> one(test_dict.RemoveValue("one"));
   EXPECT_EQ(1u, test_dict.values().size());
   EXPECT_TRUE(base::Value::Equals(&int_value, one.get()));
   EXPECT_FALSE(test_dict.GetValue("one"));
@@ -60,7 +61,7 @@ TEST(RegistryDictTest, CaseInsensitiveButPreservingValueNames) {
   EXPECT_EQ(1u, test_dict.values().size());
   EXPECT_TRUE(base::Value::Equals(&string_value, test_dict.GetValue("one")));
 
-  scoped_ptr<base::Value> removed_value(test_dict.RemoveValue("onE"));
+  std::unique_ptr<base::Value> removed_value(test_dict.RemoveValue("onE"));
   EXPECT_TRUE(base::Value::Equals(&string_value, removed_value.get()));
   EXPECT_TRUE(test_dict.values().empty());
 }
@@ -71,7 +72,7 @@ TEST(RegistryDictTest, SetAndGetKeys) {
   base::FundamentalValue int_value(42);
   base::StringValue string_value("fortytwo");
 
-  scoped_ptr<RegistryDict> subdict(new RegistryDict());
+  std::unique_ptr<RegistryDict> subdict(new RegistryDict());
   subdict->SetValue("one", int_value.CreateDeepCopy());
   test_dict.SetKey("two", std::move(subdict));
   EXPECT_EQ(1u, test_dict.keys().size());
@@ -102,7 +103,7 @@ TEST(RegistryDictTest, CaseInsensitiveButPreservingKeyNames) {
 
   base::FundamentalValue int_value(42);
 
-  test_dict.SetKey("One", make_scoped_ptr(new RegistryDict()));
+  test_dict.SetKey("One", base::WrapUnique(new RegistryDict()));
   EXPECT_EQ(1u, test_dict.keys().size());
   RegistryDict* actual_subdict = test_dict.GetKey("One");
   ASSERT_TRUE(actual_subdict);
@@ -112,7 +113,7 @@ TEST(RegistryDictTest, CaseInsensitiveButPreservingKeyNames) {
   ASSERT_NE(entry, test_dict.keys().end());
   EXPECT_EQ("One", entry->first);
 
-  scoped_ptr<RegistryDict> subdict(new RegistryDict());
+  std::unique_ptr<RegistryDict> subdict(new RegistryDict());
   subdict->SetValue("two", int_value.CreateDeepCopy());
   test_dict.SetKey("ONE", std::move(subdict));
   EXPECT_EQ(1u, test_dict.keys().size());
@@ -121,7 +122,7 @@ TEST(RegistryDictTest, CaseInsensitiveButPreservingKeyNames) {
   EXPECT_TRUE(base::Value::Equals(&int_value,
                                   actual_subdict->GetValue("two")));
 
-  scoped_ptr<RegistryDict> removed_key(test_dict.RemoveKey("one"));
+  std::unique_ptr<RegistryDict> removed_key(test_dict.RemoveKey("one"));
   ASSERT_TRUE(removed_key);
   EXPECT_TRUE(base::Value::Equals(&int_value,
                                   removed_key->GetValue("two")));
@@ -136,7 +137,7 @@ TEST(RegistryDictTest, Merge) {
   base::StringValue string_value("fortytwo");
 
   dict_a.SetValue("one", int_value.CreateDeepCopy());
-  scoped_ptr<RegistryDict> subdict(new RegistryDict());
+  std::unique_ptr<RegistryDict> subdict(new RegistryDict());
   subdict->SetValue("two", string_value.CreateDeepCopy());
   dict_a.SetKey("three", std::move(subdict));
 
@@ -169,7 +170,7 @@ TEST(RegistryDictTest, Swap) {
   base::StringValue string_value("fortytwo");
 
   dict_a.SetValue("one", int_value.CreateDeepCopy());
-  dict_a.SetKey("two", make_scoped_ptr(new RegistryDict()));
+  dict_a.SetKey("two", base::WrapUnique(new RegistryDict()));
   dict_b.SetValue("three", string_value.CreateDeepCopy());
 
   dict_a.Swap(&dict_b);
@@ -192,10 +193,10 @@ TEST(RegistryDictTest, ConvertToJSON) {
   base::StringValue string_dict("{ \"key\": [ \"value\" ] }");
 
   test_dict.SetValue("one", int_value.CreateDeepCopy());
-  scoped_ptr<RegistryDict> subdict(new RegistryDict());
+  std::unique_ptr<RegistryDict> subdict(new RegistryDict());
   subdict->SetValue("two", string_value.CreateDeepCopy());
   test_dict.SetKey("three", std::move(subdict));
-  scoped_ptr<RegistryDict> list(new RegistryDict());
+  std::unique_ptr<RegistryDict> list(new RegistryDict());
   list->SetValue("1", string_value.CreateDeepCopy());
   test_dict.SetKey("dict-to-list", std::move(list));
   test_dict.SetValue("int-to-bool", int_value.CreateDeepCopy());
@@ -224,15 +225,15 @@ TEST(RegistryDictTest, ConvertToJSON) {
       "}", &error);
   ASSERT_TRUE(schema.valid()) << error;
 
-  scoped_ptr<base::Value> actual(test_dict.ConvertToJSON(schema));
+  std::unique_ptr<base::Value> actual(test_dict.ConvertToJSON(schema));
 
   base::DictionaryValue expected;
   expected.Set("one", int_value.CreateDeepCopy());
-  scoped_ptr<base::DictionaryValue> expected_subdict(
+  std::unique_ptr<base::DictionaryValue> expected_subdict(
       new base::DictionaryValue());
   expected_subdict->Set("two", string_value.CreateDeepCopy());
   expected.Set("three", std::move(expected_subdict));
-  scoped_ptr<base::ListValue> expected_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> expected_list(new base::ListValue());
   expected_list->Append(string_value.CreateDeepCopy());
   expected.Set("dict-to-list", std::move(expected_list));
   expected.Set("int-to-bool", new base::FundamentalValue(true));
@@ -257,7 +258,7 @@ TEST(RegistryDictTest, KeyValueNameClashes) {
   base::StringValue string_value("fortytwo");
 
   test_dict.SetValue("one", int_value.CreateDeepCopy());
-  scoped_ptr<RegistryDict> subdict(new RegistryDict());
+  std::unique_ptr<RegistryDict> subdict(new RegistryDict());
   subdict->SetValue("two", string_value.CreateDeepCopy());
   test_dict.SetKey("one", std::move(subdict));
 

@@ -5,12 +5,14 @@
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -59,9 +61,9 @@ class CloudPolicyValidatorTest : public testing::Test {
 
   void ValidatePolicy(
       testing::Action<void(UserCloudPolicyValidator*)> check_action,
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response) {
+      std::unique_ptr<em::PolicyFetchResponse> policy_response) {
     // Create a validator.
-    scoped_ptr<UserCloudPolicyValidator> validator =
+    std::unique_ptr<UserCloudPolicyValidator> validator =
         CreateValidator(std::move(policy_response));
 
     // Run validation and check the result.
@@ -74,8 +76,8 @@ class CloudPolicyValidatorTest : public testing::Test {
     Mock::VerifyAndClearExpectations(this);
   }
 
-  scoped_ptr<UserCloudPolicyValidator> CreateValidator(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response) {
+  std::unique_ptr<UserCloudPolicyValidator> CreateValidator(
+      std::unique_ptr<em::PolicyFetchResponse> policy_response) {
     std::vector<uint8_t> public_key_bytes;
     EXPECT_TRUE(
         PolicyBuilder::CreateTestSigningKey()->ExportPublicKey(
@@ -107,7 +109,7 @@ class CloudPolicyValidatorTest : public testing::Test {
                                  allow_key_rotation_);
     if (allow_key_rotation_)
       validator->ValidateInitialKey(GetPolicyVerificationKey(), owning_domain_);
-    return make_scoped_ptr(validator);
+    return base::WrapUnique(validator);
   }
 
 
@@ -145,8 +147,8 @@ TEST_F(CloudPolicyValidatorTest, SuccessfulValidation) {
 
 TEST_F(CloudPolicyValidatorTest, SuccessfulRunValidation) {
   policy_.Build();
-  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
-      policy_.GetCopy());
+  std::unique_ptr<UserCloudPolicyValidator> validator =
+      CreateValidator(policy_.GetCopy());
   // Run validation immediately (no background tasks).
   validator->RunValidation();
   CheckSuccessfulValidation(validator.get());

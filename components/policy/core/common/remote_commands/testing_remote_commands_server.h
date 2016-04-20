@@ -6,13 +6,14 @@
 #define COMPONENTS_POLICY_CORE_COMMON_REMOTE_COMMANDS_TESTING_REMOTE_COMMANDS_SERVER_H_
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -74,12 +75,12 @@ class TestingRemoteCommandsServer {
   // Unlike every other methods in the class, this method can be called from
   // any thread.
   RemoteCommands FetchCommands(
-      scoped_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
+      std::unique_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
       const RemoteCommandResults& previous_job_results);
 
   // Set alternative clock for obtaining the command issue time. The default
   // clock uses the system clock.
-  void SetClock(scoped_ptr<base::TickClock> clock);
+  void SetClock(std::unique_ptr<base::TickClock> clock);
 
   // Get the number of commands for which no results have been reported yet.
   // This number also includes commands which have not been fetched yet.
@@ -103,7 +104,7 @@ class TestingRemoteCommandsServer {
   RemoteCommandJob::UniqueIDType last_generated_unique_id_ = 0;
 
   // Clock used to generate command issue time when IssueCommand() is called.
-  scoped_ptr<base::TickClock> clock_;
+  std::unique_ptr<base::TickClock> clock_;
 
   // A lock protecting the command queues, as well as generated and acknowledged
   // IDs.

@@ -76,7 +76,7 @@ void TestingRemoteCommandsServer::IssueCommand(
 
 TestingRemoteCommandsServer::RemoteCommands
 TestingRemoteCommandsServer::FetchCommands(
-    scoped_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
+    std::unique_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
     const RemoteCommandResults& previous_job_results) {
   base::AutoLock auto_lock(lock_);
 
@@ -135,7 +135,8 @@ TestingRemoteCommandsServer::FetchCommands(
   return fetched_commands;
 }
 
-void TestingRemoteCommandsServer::SetClock(scoped_ptr<base::TickClock> clock) {
+void TestingRemoteCommandsServer::SetClock(
+    std::unique_ptr<base::TickClock> clock) {
   DCHECK(thread_checker_.CalledOnValidThread());
   clock_ = std::move(clock);
 }

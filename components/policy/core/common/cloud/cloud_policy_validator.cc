@@ -150,7 +150,7 @@ void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
 }
 
 CloudPolicyValidatorBase::CloudPolicyValidatorBase(
-    scoped_ptr<em::PolicyFetchResponse> policy_response,
+    std::unique_ptr<em::PolicyFetchResponse> policy_response,
     google::protobuf::MessageLite* payload,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : status_(VALIDATION_OK),
@@ -170,13 +170,13 @@ void CloudPolicyValidatorBase::PostValidationTask(
   background_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CloudPolicyValidatorBase::PerformValidation,
-                 base::Passed(scoped_ptr<CloudPolicyValidatorBase>(this)),
+                 base::Passed(std::unique_ptr<CloudPolicyValidatorBase>(this)),
                  base::ThreadTaskRunnerHandle::Get(), completion_callback));
 }
 
 // static
 void CloudPolicyValidatorBase::PerformValidation(
-    scoped_ptr<CloudPolicyValidatorBase> self,
+    std::unique_ptr<CloudPolicyValidatorBase> self,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::Closure& completion_callback) {
   // Run the validation activities on this thread.
@@ -192,7 +192,7 @@ void CloudPolicyValidatorBase::PerformValidation(
 
 // static
 void CloudPolicyValidatorBase::ReportCompletion(
-    scoped_ptr<CloudPolicyValidatorBase> self,
+    std::unique_ptr<CloudPolicyValidatorBase> self,
     const base::Closure& completion_callback) {
   completion_callback.Run();
 }

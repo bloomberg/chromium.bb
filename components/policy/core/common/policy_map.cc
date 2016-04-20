@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 
 namespace policy {
@@ -24,8 +25,8 @@ void PolicyMap::Entry::DeleteOwnedMembers() {
   external_data_fetcher = NULL;
 }
 
-scoped_ptr<PolicyMap::Entry> PolicyMap::Entry::DeepCopy() const {
-  scoped_ptr<Entry> copy(new Entry);
+std::unique_ptr<PolicyMap::Entry> PolicyMap::Entry::DeepCopy() const {
+  std::unique_ptr<Entry> copy(new Entry);
   copy->level = level;
   copy->scope = scope;
   copy->source = source;
@@ -112,10 +113,10 @@ void PolicyMap::CopyFrom(const PolicyMap& other) {
   }
 }
 
-scoped_ptr<PolicyMap> PolicyMap::DeepCopy() const {
+std::unique_ptr<PolicyMap> PolicyMap::DeepCopy() const {
   PolicyMap* copy = new PolicyMap();
   copy->CopyFrom(*this);
-  return make_scoped_ptr(copy);
+  return base::WrapUnique(copy);
 }
 
 void PolicyMap::MergeFrom(const PolicyMap& other) {

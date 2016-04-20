@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_STORE_BASE_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_STORE_BASE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
@@ -32,14 +32,14 @@ class POLICY_EXPORT UserCloudPolicyStoreBase : public CloudPolicyStore {
  protected:
   // Creates a validator configured to validate a user policy. The caller owns
   // the resulting object until StartValidation() is invoked.
-  scoped_ptr<UserCloudPolicyValidator> CreateValidator(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
+  std::unique_ptr<UserCloudPolicyValidator> CreateValidator(
+      std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
       CloudPolicyValidatorBase::ValidateTimestampOption option);
 
   // Sets |policy_data| and |payload| as the active policy.
   void InstallPolicy(
-      scoped_ptr<enterprise_management::PolicyData> policy_data,
-      scoped_ptr<enterprise_management::CloudPolicySettings> payload);
+      std::unique_ptr<enterprise_management::PolicyData> policy_data,
+      std::unique_ptr<enterprise_management::CloudPolicySettings> payload);
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner() const {
     return background_task_runner_;

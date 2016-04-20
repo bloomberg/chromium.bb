@@ -5,6 +5,7 @@
 #include "components/policy/core/common/policy_map.h"
 
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/external_data_manager.h"
 #include "components/policy/core/common/policy_types.h"
@@ -41,13 +42,13 @@ void SetPolicy(PolicyMap* map,
 
 class PolicyMapTest : public testing::Test {
  protected:
-  scoped_ptr<ExternalDataFetcher> CreateExternalDataFetcher(
+  std::unique_ptr<ExternalDataFetcher> CreateExternalDataFetcher(
       const std::string& policy) const;
 };
 
-scoped_ptr<ExternalDataFetcher> PolicyMapTest::CreateExternalDataFetcher(
+std::unique_ptr<ExternalDataFetcher> PolicyMapTest::CreateExternalDataFetcher(
     const std::string& policy) const {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new ExternalDataFetcher(base::WeakPtr<ExternalDataManager>(), policy));
 }
 

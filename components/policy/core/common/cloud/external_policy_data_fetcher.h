@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -15,7 +16,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/policy_export.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -68,7 +68,8 @@ class POLICY_EXPORT ExternalPolicyDataFetcher {
   // the Result is SUCCESS and the scoped_ptr contains the retrieved data.
   // Otherwise, Result indicates the type of error that occurred and the
   // scoped_ptr is NULL.
-  typedef base::Callback<void(Result, scoped_ptr<std::string>)> FetchCallback;
+  typedef base::Callback<void(Result, std::unique_ptr<std::string>)>
+      FetchCallback;
 
   // |task_runner| represents the background thread that |this| runs on.
   // |backend| is used to perform network I/O. It will be dereferenced and
@@ -97,7 +98,7 @@ class POLICY_EXPORT ExternalPolicyDataFetcher {
   void OnJobFinished(const FetchCallback& callback,
                      Job* job,
                      Result result,
-                     scoped_ptr<std::string> data);
+                     std::unique_ptr<std::string> data);
 
   // Task runner representing the thread that |this| runs on.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -134,7 +135,8 @@ class POLICY_EXPORT ExternalPolicyDataFetcherBackend
   // scoped_ptr is NULL.
   typedef base::Callback<void(ExternalPolicyDataFetcher::Job*,
                               ExternalPolicyDataFetcher::Result,
-                              scoped_ptr<std::string>)> FetchCallback;
+                              std::unique_ptr<std::string>)>
+      FetchCallback;
 
   // |io_task_runner_| represents the thread that handles network I/O and that
   // |this| runs on. |request_context| is used to construct URLFetchers.
@@ -145,7 +147,7 @@ class POLICY_EXPORT ExternalPolicyDataFetcherBackend
 
   // Create an ExternalPolicyDataFetcher that allows fetch jobs to be started
   // from the thread represented by |task_runner|.
-  scoped_ptr<ExternalPolicyDataFetcher> CreateFrontend(
+  std::unique_ptr<ExternalPolicyDataFetcher> CreateFrontend(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Start a fetch job defined by |job|. The caller retains ownership of |job|

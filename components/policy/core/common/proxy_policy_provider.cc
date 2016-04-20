@@ -4,10 +4,10 @@
 
 #include "components/policy/core/common/proxy_policy_provider.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/policy_bundle.h"
 
 namespace policy {
@@ -26,7 +26,7 @@ void ProxyPolicyProvider::SetDelegate(ConfigurationPolicyProvider* delegate) {
     delegate_->AddObserver(this);
     OnUpdatePolicy(delegate_);
   } else {
-    UpdatePolicy(scoped_ptr<PolicyBundle>(new PolicyBundle()));
+    UpdatePolicy(std::unique_ptr<PolicyBundle>(new PolicyBundle()));
   }
 }
 
@@ -48,7 +48,7 @@ void ProxyPolicyProvider::RefreshPolicies() {
     // Subtle: if a RefreshPolicies() call comes after Shutdown() then the
     // current bundle should be served instead. This also does the right thing
     // if SetDelegate() was never called before.
-    scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+    std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
     bundle->CopyFrom(policies());
     UpdatePolicy(std::move(bundle));
   }
@@ -57,7 +57,7 @@ void ProxyPolicyProvider::RefreshPolicies() {
 void ProxyPolicyProvider::OnUpdatePolicy(
     ConfigurationPolicyProvider* provider) {
   DCHECK_EQ(delegate_, provider);
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+  std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   bundle->CopyFrom(delegate_->policies());
   UpdatePolicy(std::move(bundle));
 }

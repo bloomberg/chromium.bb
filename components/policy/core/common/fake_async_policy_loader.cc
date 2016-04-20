@@ -15,8 +15,8 @@ FakeAsyncPolicyLoader::FakeAsyncPolicyLoader(
     : AsyncPolicyLoader(task_runner) {
 }
 
-scoped_ptr<PolicyBundle> FakeAsyncPolicyLoader::Load() {
-  scoped_ptr<PolicyBundle> result(new PolicyBundle());
+std::unique_ptr<PolicyBundle> FakeAsyncPolicyLoader::Load() {
+  std::unique_ptr<PolicyBundle> result(new PolicyBundle());
   result->CopyFrom(policy_bundle_);
   return result;
 }

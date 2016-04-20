@@ -10,9 +10,9 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_PREG_PARSER_WIN_H_
 #define COMPONENTS_POLICY_CORE_COMMON_PREG_PARSER_WIN_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/policy/policy_export.h"
 

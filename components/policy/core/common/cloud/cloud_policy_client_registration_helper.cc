@@ -52,7 +52,7 @@ class CloudPolicyClientRegistrationHelper::TokenServiceHelper
                          const GoogleServiceAuthError& error) override;
 
   StringCallback callback_;
-  scoped_ptr<OAuth2TokenService::Request> token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> token_request_;
 };
 
 CloudPolicyClientRegistrationHelper::TokenServiceHelper::TokenServiceHelper()
@@ -113,7 +113,7 @@ class CloudPolicyClientRegistrationHelper::LoginTokenHelper
   void OnGetTokenFailure(const GoogleServiceAuthError& error) override;
 
   StringCallback callback_;
-  scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
+  std::unique_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
 };
 
 CloudPolicyClientRegistrationHelper::LoginTokenHelper::LoginTokenHelper() {}

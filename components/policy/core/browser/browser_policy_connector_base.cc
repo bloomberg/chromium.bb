@@ -121,12 +121,12 @@ void BrowserPolicyConnectorBase::SetPolicyProviderForTesting(
 }
 
 void BrowserPolicyConnectorBase::AddPolicyProvider(
-    scoped_ptr<ConfigurationPolicyProvider> provider) {
+    std::unique_ptr<ConfigurationPolicyProvider> provider) {
   policy_providers_.push_back(provider.release());
 }
 
 void BrowserPolicyConnectorBase::SetPlatformPolicyProvider(
-    scoped_ptr<ConfigurationPolicyProvider> provider) {
+    std::unique_ptr<ConfigurationPolicyProvider> provider) {
   CHECK(!platform_policy_provider_);
   platform_policy_provider_ = provider.get();
   AddPolicyProvider(std::move(provider));

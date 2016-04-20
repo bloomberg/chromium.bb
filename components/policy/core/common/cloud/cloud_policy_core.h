@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_CORE_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_CORE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/policy/policy_export.h"
 #include "components/prefs/pref_member.h"
@@ -87,7 +87,7 @@ class POLICY_EXPORT CloudPolicyCore {
   }
 
   // Initializes the cloud connection.
-  void Connect(scoped_ptr<CloudPolicyClient> client);
+  void Connect(std::unique_ptr<CloudPolicyClient> client);
 
   // Shuts down the cloud connection.
   void Disconnect();
@@ -95,7 +95,8 @@ class POLICY_EXPORT CloudPolicyCore {
   // Starts a remote commands service, with the provided factory. Will attempt
   // to fetch commands immediately, thus requiring the cloud policy client to
   // be registered.
-  void StartRemoteCommandsService(scoped_ptr<RemoteCommandsFactory> factory);
+  void StartRemoteCommandsService(
+      std::unique_ptr<RemoteCommandsFactory> factory);
 
   // Requests a policy refresh to be performed soon. This may apply throttling,
   // and the request may not be immediately sent.
@@ -123,11 +124,11 @@ class POLICY_EXPORT CloudPolicyCore {
   std::string settings_entity_id_;
   CloudPolicyStore* store_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_ptr<CloudPolicyClient> client_;
-  scoped_ptr<CloudPolicyService> service_;
-  scoped_ptr<CloudPolicyRefreshScheduler> refresh_scheduler_;
-  scoped_ptr<RemoteCommandsService> remote_commands_service_;
-  scoped_ptr<IntegerPrefMember> refresh_delay_;
+  std::unique_ptr<CloudPolicyClient> client_;
+  std::unique_ptr<CloudPolicyService> service_;
+  std::unique_ptr<CloudPolicyRefreshScheduler> refresh_scheduler_;
+  std::unique_ptr<RemoteCommandsService> remote_commands_service_;
+  std::unique_ptr<IntegerPrefMember> refresh_delay_;
   base::ObserverList<Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyCore);

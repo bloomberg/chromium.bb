@@ -35,7 +35,7 @@ void RemoteCommandsQueue::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void RemoteCommandsQueue::AddJob(scoped_ptr<RemoteCommandJob> job) {
+void RemoteCommandsQueue::AddJob(std::unique_ptr<RemoteCommandJob> job) {
   incoming_commands_.push(linked_ptr<RemoteCommandJob>(job.release()));
 
   if (!running_command_)
@@ -43,7 +43,7 @@ void RemoteCommandsQueue::AddJob(scoped_ptr<RemoteCommandJob> job) {
 }
 
 void RemoteCommandsQueue::SetClockForTesting(
-    scoped_ptr<base::TickClock> clock) {
+    std::unique_ptr<base::TickClock> clock) {
   clock_ = std::move(clock);
 }
 

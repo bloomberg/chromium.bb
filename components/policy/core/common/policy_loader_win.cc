@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <userenv.h>  // For GPO functions
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -22,7 +23,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/scoped_native_library.h"
@@ -104,7 +105,7 @@ enum DomainCheckErrors {
 // add an "items" attribute to lists that don't declare it.
 std::string PatchSchema(const std::string& schema) {
   base::JSONParserOptions options = base::JSON_PARSE_RFC;
-  scoped_ptr<base::Value> json = base::JSONReader::Read(schema, options);
+  std::unique_ptr<base::Value> json = base::JSONReader::Read(schema, options);
   base::DictionaryValue* dict = NULL;
   base::DictionaryValue* properties = NULL;
   if (!json ||
@@ -121,7 +122,7 @@ std::string PatchSchema(const std::string& schema) {
         policy_schema->GetString(schema::kType, &type) &&
         type == schema::kArray &&
         !policy_schema->HasKey(schema::kItems)) {
-      scoped_ptr<base::DictionaryValue> items(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> items(new base::DictionaryValue());
       items->SetString(schema::kType, schema::kString);
       policy_schema->Set(schema::kItems, items.release());
     }
@@ -146,7 +147,7 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
     if (!map_entry->value->GetAsList(&policy_list_value))
       return;
 
-    scoped_ptr<base::ListValue> filtered_values(new base::ListValue);
+    std::unique_ptr<base::ListValue> filtered_values(new base::ListValue);
     for (base::ListValue::const_iterator list_entry(policy_list_value->begin());
          list_entry != policy_list_value->end(); ++list_entry) {
       std::string entry;
@@ -317,7 +318,7 @@ void ParsePolicy(const RegistryDict* gpo_dict,
   if (!gpo_dict)
     return;
 
-  scoped_ptr<base::Value> policy_value(gpo_dict->ConvertToJSON(schema));
+  std::unique_ptr<base::Value> policy_value(gpo_dict->ConvertToJSON(schema));
   const base::DictionaryValue* policy_dict = NULL;
   if (!policy_value->GetAsDictionary(&policy_dict) || !policy_dict) {
     LOG(WARNING) << "Root policy object is not a dictionary!";
@@ -402,13 +403,11 @@ PolicyLoaderWin::~PolicyLoaderWin() {
 }
 
 // static
-scoped_ptr<PolicyLoaderWin> PolicyLoaderWin::Create(
+std::unique_ptr<PolicyLoaderWin> PolicyLoaderWin::Create(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const base::string16& chrome_policy_key) {
-  return make_scoped_ptr(
-      new PolicyLoaderWin(task_runner,
-                          chrome_policy_key,
-                          g_win_gpo_list_provider.Pointer()));
+  return base::WrapUnique(new PolicyLoaderWin(
+      task_runner, chrome_policy_key, g_win_gpo_list_provider.Pointer()));
 }
 
 void PolicyLoaderWin::InitOnBackgroundThread() {
@@ -417,7 +416,7 @@ void PolicyLoaderWin::InitOnBackgroundThread() {
   CollectEnterpriseUMAs();
 }
 
-scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
+std::unique_ptr<PolicyBundle> PolicyLoaderWin::Load() {
   // Reset the watches BEFORE reading the individual policies to avoid
   // missing a change notification.
   if (is_initialized_)
@@ -437,7 +436,7 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
           << (is_enterprise ? "enabled." : "disabled.");
 
   // Load policy data for the different scopes/levels and merge them.
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+  std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   PolicyMap* chrome_policy =
       &bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   for (size_t i = 0; i < arraysize(kScopes); ++i) {
@@ -470,9 +469,9 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
     }
 
     // Remove special-cased entries from the GPO dictionary.
-    scoped_ptr<RegistryDict> recommended_dict(
+    std::unique_ptr<RegistryDict> recommended_dict(
         gpo_dict.RemoveKey(kKeyRecommended));
-    scoped_ptr<RegistryDict> third_party_dict(
+    std::unique_ptr<RegistryDict> third_party_dict(
         gpo_dict.RemoveKey(kKeyThirdParty));
 
     // Load Chrome policy.

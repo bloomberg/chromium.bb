@@ -6,11 +6,12 @@
 #define COMPONENTS_POLICY_CORE_BROWSER_ANDROID_POLICY_CONVERTER_H
 
 #include <jni.h>
+
+#include <memory>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/policy_export.h"
 
 namespace base {
@@ -36,7 +37,7 @@ class POLICY_EXPORT PolicyConverter {
 
   // Returns a policy bundle containing all policies collected since the last
   // call to this method.
-  scoped_ptr<PolicyBundle> GetPolicyBundle();
+  std::unique_ptr<PolicyBundle> GetPolicyBundle();
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
@@ -65,12 +66,12 @@ class POLICY_EXPORT PolicyConverter {
   // additional restrictions, or the schema for value's items or properties in
   // the case of a list or dictionary value.
   // Public for testing.
-  static scoped_ptr<base::Value> ConvertValueToSchema(
-      scoped_ptr<base::Value> value,
+  static std::unique_ptr<base::Value> ConvertValueToSchema(
+      std::unique_ptr<base::Value> value,
       const Schema& schema);
 
   // Public for testing.
-  static scoped_ptr<base::ListValue> ConvertJavaStringArrayToListValue(
+  static std::unique_ptr<base::ListValue> ConvertJavaStringArrayToListValue(
       JNIEnv* env,
       const base::android::JavaRef<jobjectArray>& array);
 
@@ -80,12 +81,12 @@ class POLICY_EXPORT PolicyConverter {
  private:
   const Schema* const policy_schema_;
 
-  scoped_ptr<PolicyBundle> policy_bundle_;
+  std::unique_ptr<PolicyBundle> policy_bundle_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
 
   void SetPolicyValue(const std::string& key,
-                      scoped_ptr<base::Value> raw_value);
+                      std::unique_ptr<base::Value> raw_value);
 
   DISALLOW_COPY_AND_ASSIGN(PolicyConverter);
 };

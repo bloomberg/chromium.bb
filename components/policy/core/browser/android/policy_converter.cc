@@ -12,6 +12,7 @@
 #include "base/android/jni_string.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -41,8 +42,8 @@ PolicyConverter::~PolicyConverter() {
                                          java_obj_.obj());
 }
 
-scoped_ptr<PolicyBundle> PolicyConverter::GetPolicyBundle() {
-  scoped_ptr<PolicyBundle> filled_bundle(std::move(policy_bundle_));
+std::unique_ptr<PolicyBundle> PolicyConverter::GetPolicyBundle() {
+  std::unique_ptr<PolicyBundle> filled_bundle(std::move(policy_bundle_));
   policy_bundle_.reset(new PolicyBundle);
   return filled_bundle;
 }
@@ -57,7 +58,7 @@ void PolicyConverter::SetPolicyBoolean(JNIEnv* env,
                                        jboolean value) {
   SetPolicyValue(
       ConvertJavaStringToUTF8(env, policyKey),
-      make_scoped_ptr(new base::FundamentalValue(static_cast<bool>(value))));
+      base::WrapUnique(new base::FundamentalValue(static_cast<bool>(value))));
 }
 
 void PolicyConverter::SetPolicyInteger(JNIEnv* env,
@@ -66,7 +67,7 @@ void PolicyConverter::SetPolicyInteger(JNIEnv* env,
                                        jint value) {
   SetPolicyValue(
       ConvertJavaStringToUTF8(env, policyKey),
-      make_scoped_ptr(new base::FundamentalValue(static_cast<int>(value))));
+      base::WrapUnique(new base::FundamentalValue(static_cast<int>(value))));
 }
 
 void PolicyConverter::SetPolicyString(JNIEnv* env,
@@ -74,7 +75,7 @@ void PolicyConverter::SetPolicyString(JNIEnv* env,
                                       const JavaRef<jstring>& policyKey,
                                       const JavaRef<jstring>& value) {
   SetPolicyValue(ConvertJavaStringToUTF8(env, policyKey),
-                 make_scoped_ptr(new base::StringValue(
+                 base::WrapUnique(new base::StringValue(
                      ConvertJavaStringToUTF8(env, value))));
 }
 
@@ -87,14 +88,15 @@ void PolicyConverter::SetPolicyStringArray(JNIEnv* env,
 }
 
 // static
-scoped_ptr<base::ListValue> PolicyConverter::ConvertJavaStringArrayToListValue(
+std::unique_ptr<base::ListValue>
+PolicyConverter::ConvertJavaStringArrayToListValue(
     JNIEnv* env,
     const JavaRef<jobjectArray>& array) {
   DCHECK(!array.is_null());
   int length = static_cast<int>(env->GetArrayLength(array.obj()));
   DCHECK_GE(length, 0) << "Invalid array length: " << length;
 
-  scoped_ptr<base::ListValue> list_value(new base::ListValue());
+  std::unique_ptr<base::ListValue> list_value(new base::ListValue());
   for (int i = 0; i < length; ++i) {
     jstring str =
         static_cast<jstring>(env->GetObjectArrayElement(array.obj(), i));
@@ -105,8 +107,8 @@ scoped_ptr<base::ListValue> PolicyConverter::ConvertJavaStringArrayToListValue(
 }
 
 // static
-scoped_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
-    scoped_ptr<base::Value> value,
+std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
+    std::unique_ptr<base::Value> value,
     const Schema& schema) {
   if (!schema.valid())
     return value;
@@ -119,16 +121,16 @@ scoped_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
       std::string string_value;
       if (value->GetAsString(&string_value)) {
         if (string_value.compare("true") == 0)
-          return make_scoped_ptr(new base::FundamentalValue(true));
+          return base::WrapUnique(new base::FundamentalValue(true));
 
         if (string_value.compare("false") == 0)
-          return make_scoped_ptr(new base::FundamentalValue(false));
+          return base::WrapUnique(new base::FundamentalValue(false));
 
         return value;
       }
       int int_value = 0;
       if (value->GetAsInteger(&int_value))
-        return make_scoped_ptr(new base::FundamentalValue(int_value != 0));
+        return base::WrapUnique(new base::FundamentalValue(int_value != 0));
 
       return value;
     }
@@ -138,7 +140,7 @@ scoped_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
       if (value->GetAsString(&string_value)) {
         int int_value = 0;
         if (base::StringToInt(string_value, &int_value))
-          return make_scoped_ptr(new base::FundamentalValue(int_value));
+          return base::WrapUnique(new base::FundamentalValue(int_value));
       }
       return value;
     }
@@ -148,7 +150,7 @@ scoped_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
       if (value->GetAsString(&string_value)) {
         double double_value = 0;
         if (base::StringToDouble(string_value, &double_value))
-          return make_scoped_ptr(new base::FundamentalValue(double_value));
+          return base::WrapUnique(new base::FundamentalValue(double_value));
       }
       return value;
     }
@@ -161,7 +163,7 @@ scoped_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
     // Binary is not a valid schema type.
     case base::Value::TYPE_BINARY: {
       NOTREACHED();
-      return scoped_ptr<base::Value>();
+      return std::unique_ptr<base::Value>();
     }
 
     // Complex types have to be deserialized from JSON.
@@ -169,7 +171,7 @@ scoped_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
     case base::Value::TYPE_LIST: {
       std::string string_value;
       if (value->GetAsString(&string_value)) {
-        scoped_ptr<base::Value> decoded_value =
+        std::unique_ptr<base::Value> decoded_value =
             base::JSONReader::Read(string_value);
         if (decoded_value)
           return decoded_value;
@@ -179,7 +181,7 @@ scoped_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
   }
 
   NOTREACHED();
-  return scoped_ptr<base::Value>();
+  return std::unique_ptr<base::Value>();
 }
 
 // static
@@ -188,7 +190,7 @@ bool PolicyConverter::Register(JNIEnv* env) {
 }
 
 void PolicyConverter::SetPolicyValue(const std::string& key,
-                                     scoped_ptr<base::Value> value) {
+                                     std::unique_ptr<base::Value> value) {
   const Schema schema = policy_schema_->GetKnownProperty(key);
   const PolicyNamespace ns(POLICY_DOMAIN_CHROME, std::string());
   policy_bundle_->Get(ns).Set(

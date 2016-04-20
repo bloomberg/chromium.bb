@@ -55,8 +55,8 @@ class UserCloudPolicyManagerTest : public testing::Test {
     store_ = new MockUserCloudPolicyStore();
     EXPECT_CALL(*store_, Load());
     manager_.reset(new UserCloudPolicyManager(
-        scoped_ptr<UserCloudPolicyStore>(store_), base::FilePath(),
-        scoped_ptr<CloudExternalDataManager>(), loop_.task_runner(),
+        std::unique_ptr<UserCloudPolicyStore>(store_), base::FilePath(),
+        std::unique_ptr<CloudExternalDataManager>(), loop_.task_runner(),
         loop_.task_runner(), loop_.task_runner()));
     manager_->Init(&schema_registry_);
     manager_->AddObserver(&observer_);
@@ -74,7 +74,7 @@ class UserCloudPolicyManagerTest : public testing::Test {
   SchemaRegistry schema_registry_;
   MockConfigurationPolicyObserver observer_;
   MockUserCloudPolicyStore* store_;  // Not owned.
-  scoped_ptr<UserCloudPolicyManager> manager_;
+  std::unique_ptr<UserCloudPolicyManager> manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerTest);

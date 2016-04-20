@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
@@ -175,18 +176,18 @@ void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   switch (proxy_mode) {
     case ProxyPrefs::MODE_DIRECT:
       prefs->SetValue(proxy_config::prefs::kProxy,
-                      make_scoped_ptr(ProxyConfigDictionary::CreateDirect()));
+                      base::WrapUnique(ProxyConfigDictionary::CreateDirect()));
       break;
     case ProxyPrefs::MODE_AUTO_DETECT:
       prefs->SetValue(
           proxy_config::prefs::kProxy,
-          make_scoped_ptr(ProxyConfigDictionary::CreateAutoDetect()));
+          base::WrapUnique(ProxyConfigDictionary::CreateAutoDetect()));
       break;
     case ProxyPrefs::MODE_PAC_SCRIPT: {
       std::string pac_url_string;
       if (pac_url && pac_url->GetAsString(&pac_url_string)) {
         prefs->SetValue(proxy_config::prefs::kProxy,
-                        make_scoped_ptr(ProxyConfigDictionary::CreatePacScript(
+                        base::WrapUnique(ProxyConfigDictionary::CreatePacScript(
                             pac_url_string, false)));
       } else {
         NOTREACHED();
@@ -201,14 +202,14 @@ void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
           bypass_list->GetAsString(&bypass_list_string);
         prefs->SetValue(
             proxy_config::prefs::kProxy,
-            make_scoped_ptr(ProxyConfigDictionary::CreateFixedServers(
+            base::WrapUnique(ProxyConfigDictionary::CreateFixedServers(
                 proxy_server, bypass_list_string)));
       }
       break;
     }
     case ProxyPrefs::MODE_SYSTEM:
       prefs->SetValue(proxy_config::prefs::kProxy,
-                      make_scoped_ptr(ProxyConfigDictionary::CreateSystem()));
+                      base::WrapUnique(ProxyConfigDictionary::CreateSystem()));
       break;
     case ProxyPrefs::kModeCount:
       NOTREACHED();

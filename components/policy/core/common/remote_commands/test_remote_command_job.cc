@@ -4,12 +4,14 @@
 
 #include "components/policy/core/common/remote_commands/test_remote_command_job.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 
@@ -28,7 +30,7 @@ class TestRemoteCommandJob::EchoPayload
   explicit EchoPayload(const std::string& payload) : payload_(payload) {}
 
   // RemoteCommandJob::ResultPayload:
-  scoped_ptr<std::string> Serialize() override;
+  std::unique_ptr<std::string> Serialize() override;
 
  private:
   const std::string payload_;
@@ -36,8 +38,8 @@ class TestRemoteCommandJob::EchoPayload
   DISALLOW_COPY_AND_ASSIGN(EchoPayload);
 };
 
-scoped_ptr<std::string> TestRemoteCommandJob::EchoPayload::Serialize() {
-  return make_scoped_ptr(new std::string(payload_));
+std::unique_ptr<std::string> TestRemoteCommandJob::EchoPayload::Serialize() {
+  return base::WrapUnique(new std::string(payload_));
 }
 
 TestRemoteCommandJob::TestRemoteCommandJob(bool succeed,
@@ -66,7 +68,8 @@ bool TestRemoteCommandJob::IsExpired(base::TimeTicks now) {
 
 void TestRemoteCommandJob::RunImpl(const CallbackWithResult& succeed_callback,
                                    const CallbackWithResult& failed_callback) {
-  scoped_ptr<ResultPayload> echo_payload(new EchoPayload(command_payload_));
+  std::unique_ptr<ResultPayload> echo_payload(
+      new EchoPayload(command_payload_));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(succeed_ ? succeed_callback : failed_callback,
                             base::Passed(&echo_payload)),

@@ -82,7 +82,7 @@ void SchemaRegistryTrackingPolicyProvider::OnUpdatePolicy(
   if (state_ == WAITING_FOR_REFRESH)
     state_ = READY;
 
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+  std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   if (state_ == READY) {
     bundle->CopyFrom(delegate_->policies());
     schema_map()->FilterBundle(bundle.get());

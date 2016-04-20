@@ -26,8 +26,9 @@ UserCloudPolicyStoreBase::UserCloudPolicyStoreBase(
 UserCloudPolicyStoreBase::~UserCloudPolicyStoreBase() {
 }
 
-scoped_ptr<UserCloudPolicyValidator> UserCloudPolicyStoreBase::CreateValidator(
-    scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
+std::unique_ptr<UserCloudPolicyValidator>
+UserCloudPolicyStoreBase::CreateValidator(
+    std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
     CloudPolicyValidatorBase::ValidateTimestampOption timestamp_option) {
   // Configure the validator.
   UserCloudPolicyValidator* validator = UserCloudPolicyValidator::Create(
@@ -38,12 +39,12 @@ scoped_ptr<UserCloudPolicyValidator> UserCloudPolicyStoreBase::CreateValidator(
       timestamp_option,
       CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
   validator->ValidatePayload();
-  return scoped_ptr<UserCloudPolicyValidator>(validator);
+  return std::unique_ptr<UserCloudPolicyValidator>(validator);
 }
 
 void UserCloudPolicyStoreBase::InstallPolicy(
-    scoped_ptr<enterprise_management::PolicyData> policy_data,
-    scoped_ptr<enterprise_management::CloudPolicySettings> payload) {
+    std::unique_ptr<enterprise_management::PolicyData> policy_data,
+    std::unique_ptr<enterprise_management::CloudPolicySettings> payload) {
   // Decode the payload.
   policy_map_.Clear();
   DecodePolicy(*payload, external_data_manager(), &policy_map_);

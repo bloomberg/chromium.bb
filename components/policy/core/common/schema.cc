@@ -10,12 +10,12 @@
 #include <algorithm>
 #include <climits>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/json_schema/json_schema_constants.h"
@@ -250,7 +250,7 @@ class Schema::InternalStorage
 
   // Cache for CompileRegex(), will memorize return value of every call to
   // CompileRegex() and return results directly next time.
-  mutable std::map<std::string, scoped_ptr<re2::RE2>> regex_cache_;
+  mutable std::map<std::string, std::unique_ptr<re2::RE2>> regex_cache_;
 
   SchemaData schema_data_;
   std::vector<std::string> strings_;
@@ -347,7 +347,7 @@ re2::RE2* Schema::InternalStorage::CompileRegex(
     const std::string& pattern) const {
   auto it = regex_cache_.find(pattern);
   if (it == regex_cache_.end()) {
-    scoped_ptr<re2::RE2> compiled(new re2::RE2(pattern));
+    std::unique_ptr<re2::RE2> compiled(new re2::RE2(pattern));
     re2::RE2* compiled_ptr = compiled.get();
     regex_cache_.insert(std::make_pair(pattern, std::move(compiled)));
     return compiled_ptr;
@@ -955,8 +955,10 @@ bool Schema::Normalize(base::Value* value,
 Schema Schema::Parse(const std::string& content, std::string* error) {
   // Validate as a generic JSON schema, and ignore unknown attributes; they
   // may become used in a future version of the schema format.
-  scoped_ptr<base::DictionaryValue> dict = JSONSchemaValidator::IsValidSchema(
-      content, JSONSchemaValidator::OPTIONS_IGNORE_UNKNOWN_ATTRIBUTES, error);
+  std::unique_ptr<base::DictionaryValue> dict =
+      JSONSchemaValidator::IsValidSchema(
+          content, JSONSchemaValidator::OPTIONS_IGNORE_UNKNOWN_ATTRIBUTES,
+          error);
   if (!dict)
     return Schema();
 

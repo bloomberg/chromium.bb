@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CONFIGURATION_POLICY_PROVIDER_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CONFIGURATION_POLICY_PROVIDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -78,7 +79,7 @@ class POLICY_EXPORT ConfigurationPolicyProvider
   // Subclasses must invoke this to update the policies currently served by
   // this provider. UpdatePolicy() takes ownership of |policies|.
   // The observers are notified after the policies are updated.
-  void UpdatePolicy(scoped_ptr<PolicyBundle> bundle);
+  void UpdatePolicy(std::unique_ptr<PolicyBundle> bundle);
 
   SchemaRegistry* schema_registry() const;
 

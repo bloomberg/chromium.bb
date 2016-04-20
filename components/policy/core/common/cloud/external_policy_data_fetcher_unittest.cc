@@ -48,21 +48,21 @@ class ExternalPolicyDataFetcherTest : public testing::Test {
 
   void OnJobFinished(int job_index,
                      ExternalPolicyDataFetcher::Result result,
-                     scoped_ptr<std::string> data);
+                     std::unique_ptr<std::string> data);
   int GetAndResetCallbackCount();
 
   net::TestURLFetcherFactory fetcher_factory_;
   scoped_refptr<base::TestSimpleTaskRunner> owner_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> io_task_runner_;
-  scoped_ptr<ExternalPolicyDataFetcherBackend> fetcher_backend_;
-  scoped_ptr<ExternalPolicyDataFetcher> fetcher_;
+  std::unique_ptr<ExternalPolicyDataFetcherBackend> fetcher_backend_;
+  std::unique_ptr<ExternalPolicyDataFetcher> fetcher_;
 
   std::map<int, ExternalPolicyDataFetcher::Job*> jobs_;  // Not owned.
 
   int callback_count_;
   int callback_job_index_;
   ExternalPolicyDataFetcher::Result callback_result_;
-  scoped_ptr<std::string> callback_data_;
+  std::unique_ptr<std::string> callback_data_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExternalPolicyDataFetcherTest);
@@ -107,7 +107,7 @@ void ExternalPolicyDataFetcherTest::CancelJob(int index) {
 void ExternalPolicyDataFetcherTest::OnJobFinished(
     int job_index,
     ExternalPolicyDataFetcher::Result result,
-    scoped_ptr<std::string> data) {
+    std::unique_ptr<std::string> data) {
   ++callback_count_;
   callback_job_index_ = job_index;
   callback_result_ = result;

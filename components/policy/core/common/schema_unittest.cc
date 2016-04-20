@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "components/policy/core/common/schema_internal.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -156,7 +157,7 @@ void TestSchemaValidationHelper(const std::string& source,
   // Test that Schema::Normalize() will return the same value as
   // Schema::Validate().
   error = kNoErrorReturned;
-  scoped_ptr<base::Value> cloned_value(value.DeepCopy());
+  std::unique_ptr<base::Value> cloned_value(value.DeepCopy());
   bool touched = false;
   returned =
       schema.Normalize(cloned_value.get(), strategy, NULL, &error, &touched);

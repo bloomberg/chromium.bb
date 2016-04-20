@@ -250,7 +250,7 @@ void CloudPolicyClient::UploadCertificate(
     const std::string& certificate_data,
     const CloudPolicyClient::StatusCallback& callback) {
   CHECK(is_registered());
-  scoped_ptr<DeviceManagementRequestJob> request_job(
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_CERTIFICATE,
                           GetRequestContext()));
   request_job->SetDMToken(dm_token_);
@@ -275,9 +275,8 @@ void CloudPolicyClient::UploadDeviceStatus(
   CHECK(is_registered());
   // Should pass in at least one type of status.
   DCHECK(device_status || session_status);
-  scoped_ptr<DeviceManagementRequestJob> request_job(
-      service_->CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_STATUS,
-                          GetRequestContext()));
+  std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_UPLOAD_STATUS, GetRequestContext()));
   request_job->SetDMToken(dm_token_);
   request_job->SetClientID(client_id_);
 
@@ -296,11 +295,11 @@ void CloudPolicyClient::UploadDeviceStatus(
 }
 
 void CloudPolicyClient::FetchRemoteCommands(
-    scoped_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
+    std::unique_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
     const std::vector<em::RemoteCommandResult>& command_results,
     const RemoteCommandCallback& callback) {
   CHECK(is_registered());
-  scoped_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
+  std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_REMOTE_COMMANDS, GetRequestContext()));
 
   request_job->SetDMToken(dm_token_);
@@ -329,10 +328,9 @@ void CloudPolicyClient::GetDeviceAttributeUpdatePermission(
   CHECK(is_registered());
   DCHECK(!auth_token.empty());
 
-  scoped_ptr<DeviceManagementRequestJob> request_job(
-      service_->CreateJob(
-          DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE_PERMISSION,
-                          GetRequestContext()));
+  std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE_PERMISSION,
+      GetRequestContext()));
 
   request_job->SetOAuthToken(auth_token);
   request_job->SetClientID(client_id_);
@@ -356,10 +354,8 @@ void CloudPolicyClient::UpdateDeviceAttributes(
   CHECK(is_registered());
   DCHECK(!auth_token.empty());
 
-  scoped_ptr<DeviceManagementRequestJob> request_job(
-      service_->CreateJob(
-          DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE,
-          GetRequestContext()));
+  std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE, GetRequestContext()));
 
   request_job->SetOAuthToken(auth_token);
   request_job->SetClientID(client_id_);
@@ -383,7 +379,7 @@ void CloudPolicyClient::UpdateGcmId(
     const CloudPolicyClient::StatusCallback& callback) {
   CHECK(is_registered());
 
-  scoped_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
+  std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_GCM_ID_UPDATE, GetRequestContext()));
 
   request_job->SetDMToken(dm_token_);

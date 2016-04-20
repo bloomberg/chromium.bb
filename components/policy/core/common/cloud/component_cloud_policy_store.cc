@@ -135,7 +135,8 @@ void ComponentCloudPolicyStore::Load() {
       PolicyNamespace ns(constants.domain, id);
 
       // Validate each protobuf.
-      scoped_ptr<em::PolicyFetchResponse> proto(new em::PolicyFetchResponse);
+      std::unique_ptr<em::PolicyFetchResponse> proto(
+          new em::PolicyFetchResponse);
       em::ExternalPolicyData payload;
       if (!proto->ParseFromString(it->second) ||
           !ValidateProto(std::move(proto), constants.policy_type, id, &payload,
@@ -250,7 +251,7 @@ void ComponentCloudPolicyStore::Clear() {
 }
 
 bool ComponentCloudPolicyStore::ValidatePolicy(
-    scoped_ptr<em::PolicyFetchResponse> proto,
+    std::unique_ptr<em::PolicyFetchResponse> proto,
     PolicyNamespace* ns,
     em::ExternalPolicyData* payload) {
   em::PolicyData policy_data;
@@ -273,7 +274,7 @@ bool ComponentCloudPolicyStore::ValidatePolicy(
 }
 
 bool ComponentCloudPolicyStore::ValidateProto(
-    scoped_ptr<em::PolicyFetchResponse> proto,
+    std::unique_ptr<em::PolicyFetchResponse> proto,
     const std::string& policy_type,
     const std::string& settings_entity_id,
     em::ExternalPolicyData* payload,
@@ -281,7 +282,7 @@ bool ComponentCloudPolicyStore::ValidateProto(
   if (username_.empty() || dm_token_.empty())
     return false;
 
-  scoped_ptr<ComponentCloudPolicyValidator> validator(
+  std::unique_ptr<ComponentCloudPolicyValidator> validator(
       ComponentCloudPolicyValidator::Create(
           std::move(proto), scoped_refptr<base::SequencedTaskRunner>()));
   validator->ValidateUsername(username_, true);
@@ -328,7 +329,7 @@ bool ComponentCloudPolicyStore::ValidateData(
 
 bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
                                             PolicyMap* policy) {
-  scoped_ptr<base::Value> json = base::JSONReader::Read(
+  std::unique_ptr<base::Value> json = base::JSONReader::Read(
       data, base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN);
   base::DictionaryValue* dict = NULL;
   if (!json || !json->GetAsDictionary(&dict))
@@ -344,7 +345,7 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
     if (!dict->GetDictionaryWithoutPathExpansion(it.key(), &description))
       return false;
 
-    scoped_ptr<base::Value> value;
+    std::unique_ptr<base::Value> value;
     if (!description->RemoveWithoutPathExpansion(kValue, &value))
       return false;
 

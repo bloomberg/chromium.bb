@@ -164,10 +164,10 @@ PolicyBuilder::PolicyBuilder()
 
 PolicyBuilder::~PolicyBuilder() {}
 
-scoped_ptr<crypto::RSAPrivateKey> PolicyBuilder::GetSigningKey() {
+std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::GetSigningKey() {
   if (raw_signing_key_.empty())
-    return scoped_ptr<crypto::RSAPrivateKey>();
-  return scoped_ptr<crypto::RSAPrivateKey>(
+    return std::unique_ptr<crypto::RSAPrivateKey>();
+  return std::unique_ptr<crypto::RSAPrivateKey>(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_signing_key_));
 }
 
@@ -184,10 +184,10 @@ void PolicyBuilder::UnsetSigningKey() {
   raw_signing_key_.clear();
 }
 
-scoped_ptr<crypto::RSAPrivateKey> PolicyBuilder::GetNewSigningKey() {
+std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::GetNewSigningKey() {
   if (raw_new_signing_key_.empty())
-    return scoped_ptr<crypto::RSAPrivateKey>();
-  return scoped_ptr<crypto::RSAPrivateKey>(
+    return std::unique_ptr<crypto::RSAPrivateKey>();
+  return std::unique_ptr<crypto::RSAPrivateKey>(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_new_signing_key_));
 }
 
@@ -212,7 +212,8 @@ void PolicyBuilder::UnsetNewSigningKey() {
 
 void PolicyBuilder::Build() {
   // Generate signatures if applicable.
-  scoped_ptr<crypto::RSAPrivateKey> policy_signing_key = GetNewSigningKey();
+  std::unique_ptr<crypto::RSAPrivateKey> policy_signing_key =
+      GetNewSigningKey();
   if (policy_signing_key) {
     // Add the new public key.
     std::vector<uint8_t> raw_new_public_signing_key;
@@ -224,7 +225,7 @@ void PolicyBuilder::Build() {
         raw_new_signing_key_signature_);
 
     // The new public key must be signed by the old key.
-    scoped_ptr<crypto::RSAPrivateKey> old_signing_key = GetSigningKey();
+    std::unique_ptr<crypto::RSAPrivateKey> old_signing_key = GetSigningKey();
     if (old_signing_key) {
       SignData(policy_.new_public_key(),
                old_signing_key.get(),
@@ -257,25 +258,27 @@ std::string PolicyBuilder::GetBlob() {
   return policy_.SerializeAsString();
 }
 
-scoped_ptr<em::PolicyFetchResponse> PolicyBuilder::GetCopy() {
-  scoped_ptr<em::PolicyFetchResponse> result(new em::PolicyFetchResponse());
+std::unique_ptr<em::PolicyFetchResponse> PolicyBuilder::GetCopy() {
+  std::unique_ptr<em::PolicyFetchResponse> result(
+      new em::PolicyFetchResponse());
   result->CopyFrom(policy_);
   return result;
 }
 
 // static
-scoped_ptr<crypto::RSAPrivateKey> PolicyBuilder::CreateTestSigningKey() {
+std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::CreateTestSigningKey() {
   std::vector<uint8_t> raw_signing_key(kSigningKey,
                                        kSigningKey + arraysize(kSigningKey));
-  return scoped_ptr<crypto::RSAPrivateKey>(
+  return std::unique_ptr<crypto::RSAPrivateKey>(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_signing_key));
 }
 
 // static
-scoped_ptr<crypto::RSAPrivateKey> PolicyBuilder::CreateTestOtherSigningKey() {
+std::unique_ptr<crypto::RSAPrivateKey>
+PolicyBuilder::CreateTestOtherSigningKey() {
   std::vector<uint8_t> raw_new_signing_key(
       kNewSigningKey, kNewSigningKey + arraysize(kNewSigningKey));
-  return scoped_ptr<crypto::RSAPrivateKey>(
+  return std::unique_ptr<crypto::RSAPrivateKey>(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_new_signing_key));
 }
 
@@ -294,9 +297,8 @@ std::string PolicyBuilder::GetTestOtherSigningKeySignature() {
 void PolicyBuilder::SignData(const std::string& data,
                              crypto::RSAPrivateKey* key,
                              std::string* signature) {
-  scoped_ptr<crypto::SignatureCreator> signature_creator(
-      crypto::SignatureCreator::Create(key,
-                                       crypto::SignatureCreator::SHA1));
+  std::unique_ptr<crypto::SignatureCreator> signature_creator(
+      crypto::SignatureCreator::Create(key, crypto::SignatureCreator::SHA1));
   signature_creator->Update(reinterpret_cast<const uint8_t*>(data.c_str()),
                             data.size());
   std::vector<uint8_t> signature_bytes;

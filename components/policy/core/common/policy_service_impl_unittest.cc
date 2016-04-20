@@ -4,13 +4,13 @@
 
 #include "components/policy/core/common/policy_service_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -166,7 +166,7 @@ class PolicyServiceTest : public testing::Test {
   PolicyMap policy0_;
   PolicyMap policy1_;
   PolicyMap policy2_;
-  scoped_ptr<PolicyServiceImpl> policy_service_;
+  std::unique_ptr<PolicyServiceImpl> policy_service_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PolicyServiceTest);
@@ -313,7 +313,7 @@ TEST_F(PolicyServiceTest, NotifyObserversInMultipleNamespaces) {
                  new base::StringValue("value"),
                  NULL);
 
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+  std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   // The initial setup includes a policy for chrome that is now changing.
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .CopyFrom(policy_map);
@@ -474,7 +474,7 @@ TEST_F(PolicyServiceTest, Priorities) {
 }
 
 TEST_F(PolicyServiceTest, PolicyChangeRegistrar) {
-  scoped_ptr<PolicyChangeRegistrar> registrar(new PolicyChangeRegistrar(
+  std::unique_ptr<PolicyChangeRegistrar> registrar(new PolicyChangeRegistrar(
       policy_service_.get(),
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())));
 
@@ -597,9 +597,9 @@ TEST_F(PolicyServiceTest, RefreshPolicies) {
 }
 
 TEST_F(PolicyServiceTest, NamespaceMerge) {
-  scoped_ptr<PolicyBundle> bundle0(new PolicyBundle());
-  scoped_ptr<PolicyBundle> bundle1(new PolicyBundle());
-  scoped_ptr<PolicyBundle> bundle2(new PolicyBundle());
+  std::unique_ptr<PolicyBundle> bundle0(new PolicyBundle());
+  std::unique_ptr<PolicyBundle> bundle1(new PolicyBundle());
+  std::unique_ptr<PolicyBundle> bundle2(new PolicyBundle());
 
   AddTestPolicies(bundle0.get(), "bundle0",
                   POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER);
@@ -720,7 +720,7 @@ TEST_F(PolicyServiceTest, FixDeprecatedPolicies) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
   const PolicyNamespace extension_namespace(POLICY_DOMAIN_EXTENSIONS, "xyz");
 
-  scoped_ptr<PolicyBundle> policy_bundle(new PolicyBundle());
+  std::unique_ptr<PolicyBundle> policy_bundle(new PolicyBundle());
   PolicyMap& policy_map = policy_bundle->Get(chrome_namespace);
   // Individual proxy policy values in the Chrome namespace should be collected
   // into a dictionary.
@@ -756,7 +756,8 @@ TEST_F(PolicyServiceTest, FixDeprecatedPolicies) {
 
   // The resulting Chrome namespace map should have the collected policy.
   PolicyMap expected_chrome;
-  scoped_ptr<base::DictionaryValue> expected_value(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> expected_value(
+      new base::DictionaryValue);
   expected_value->SetInteger(key::kProxyServerMode, 3);
   expected_chrome.Set(key::kProxySettings, POLICY_LEVEL_MANDATORY,
                       POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,

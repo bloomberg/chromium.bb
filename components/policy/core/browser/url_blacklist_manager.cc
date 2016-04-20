@@ -60,11 +60,11 @@ const char* kBypassBlacklistWildcardForSchemes[] = {
 const size_t kMaxFiltersPerPolicy = 1000;
 
 // A task that builds the blacklist on a background thread.
-scoped_ptr<URLBlacklist> BuildBlacklist(
-    scoped_ptr<base::ListValue> block,
-    scoped_ptr<base::ListValue> allow,
+std::unique_ptr<URLBlacklist> BuildBlacklist(
+    std::unique_ptr<base::ListValue> block,
+    std::unique_ptr<base::ListValue> allow,
     URLBlacklist::SegmentURLCallback segment_url) {
-  scoped_ptr<URLBlacklist> blacklist(new URLBlacklist(segment_url));
+  std::unique_ptr<URLBlacklist> blacklist(new URLBlacklist(segment_url));
   blacklist->Block(block.get());
   blacklist->Allow(allow.get());
   return blacklist;
@@ -350,11 +350,11 @@ scoped_refptr<URLMatcherConditionSet> URLBlacklist::CreateConditionSet(
         condition_factory, query, allow, &query_conditions);
   }
 
-  scoped_ptr<URLMatcherSchemeFilter> scheme_filter;
+  std::unique_ptr<URLMatcherSchemeFilter> scheme_filter;
   if (!scheme.empty())
     scheme_filter.reset(new URLMatcherSchemeFilter(scheme));
 
-  scoped_ptr<URLMatcherPortFilter> port_filter;
+  std::unique_ptr<URLMatcherPortFilter> port_filter;
   if (port != 0) {
     std::vector<URLMatcherPortFilter::Range> ranges;
     ranges.push_back(URLMatcherPortFilter::CreateRange(port));
@@ -450,9 +450,9 @@ void URLBlacklistManager::Update() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   // The preferences can only be read on the UI thread.
-  scoped_ptr<base::ListValue> block(
+  std::unique_ptr<base::ListValue> block(
       pref_service_->GetList(policy_prefs::kUrlBlacklist)->DeepCopy());
-  scoped_ptr<base::ListValue> allow(
+  std::unique_ptr<base::ListValue> allow(
       pref_service_->GetList(policy_prefs::kUrlWhitelist)->DeepCopy());
 
   // Go through the IO thread to grab a WeakPtr to |this|. This is safe from
@@ -465,8 +465,8 @@ void URLBlacklistManager::Update() {
                                        base::Passed(&allow)));
 }
 
-void URLBlacklistManager::UpdateOnIO(scoped_ptr<base::ListValue> block,
-                                     scoped_ptr<base::ListValue> allow) {
+void URLBlacklistManager::UpdateOnIO(std::unique_ptr<base::ListValue> block,
+                                     std::unique_ptr<base::ListValue> allow) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   // The URLBlacklist is built on a worker thread. Once it's ready, it is passed
   // to the URLBlacklistManager on IO.
@@ -481,7 +481,8 @@ void URLBlacklistManager::UpdateOnIO(scoped_ptr<base::ListValue> block,
                  io_weak_ptr_factory_.GetWeakPtr()));
 }
 
-void URLBlacklistManager::SetBlacklist(scoped_ptr<URLBlacklist> blacklist) {
+void URLBlacklistManager::SetBlacklist(
+    std::unique_ptr<URLBlacklist> blacklist) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   blacklist_ = std::move(blacklist);
 }

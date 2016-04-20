@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_MOCK_CLOUD_EXTERNAL_DATA_MANAGER_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_MOCK_CLOUD_EXTERNAL_DATA_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,7 +33,7 @@ class MockCloudExternalDataManager : public CloudExternalDataManager {
   MOCK_METHOD2(Fetch, void(const std::string&,
                            const ExternalDataFetcher::FetchCallback&));
 
-  scoped_ptr<ExternalDataFetcher> CreateExternalDataFetcher(
+  std::unique_ptr<ExternalDataFetcher> CreateExternalDataFetcher(
       const std::string& policy);
 
  private:

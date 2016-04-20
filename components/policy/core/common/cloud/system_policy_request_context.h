@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/policy_export.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -37,14 +38,14 @@ class POLICY_EXPORT SystemPolicyRequestContext
   scoped_refptr<net::URLRequestContextGetter> system_context_getter_;
 
   // HttpNetworkLayer associated with |context_|.
-  scoped_ptr<net::HttpNetworkLayer> http_transaction_factory_;
+  std::unique_ptr<net::HttpNetworkLayer> http_transaction_factory_;
 
-  scoped_ptr<net::CookieStore> cookie_store_;
+  std::unique_ptr<net::CookieStore> cookie_store_;
 
   net::StaticHttpUserAgentSettings http_user_agent_settings_;
 
   // The lazy-initialized URLRequestContext associated with this getter.
-  scoped_ptr<net::URLRequestContext> context_;
+  std::unique_ptr<net::URLRequestContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemPolicyRequestContext);
 };

@@ -9,6 +9,7 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_split.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -130,7 +130,8 @@ class POLICY_EXPORT DeviceManagementService : public net::URLFetcherDelegate {
     virtual std::string GetPlatformParameter() = 0;
   };
 
-  explicit DeviceManagementService(scoped_ptr<Configuration> configuration);
+  explicit DeviceManagementService(
+      std::unique_ptr<Configuration> configuration);
   ~DeviceManagementService() override;
 
   // The ID of URLFetchers created by the DeviceManagementService. This can be
@@ -179,7 +180,7 @@ class POLICY_EXPORT DeviceManagementService : public net::URLFetcherDelegate {
 
   // A Configuration implementation that is used to obtain various parameters
   // used to talk to the device management server.
-  scoped_ptr<Configuration> configuration_;
+  std::unique_ptr<Configuration> configuration_;
 
   // The jobs we currently have in flight.
   JobFetcherMap pending_jobs_;

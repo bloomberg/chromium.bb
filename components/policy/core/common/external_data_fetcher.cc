@@ -39,7 +39,7 @@ void ExternalDataFetcher::Fetch(const FetchCallback& callback) const {
   if (manager_)
     manager_->Fetch(policy_, callback);
   else
-    callback.Run(scoped_ptr<std::string>());
+    callback.Run(std::unique_ptr<std::string>());
 }
 
 }  // namespace policy

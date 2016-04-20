@@ -4,10 +4,10 @@
 
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -22,7 +22,7 @@ MockConfigurationPolicyProvider::~MockConfigurationPolicyProvider() {}
 
 void MockConfigurationPolicyProvider::UpdateChromePolicy(
     const PolicyMap& policy) {
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+  std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .CopyFrom(policy);
   UpdatePolicy(std::move(bundle));
@@ -36,7 +36,7 @@ void MockConfigurationPolicyProvider::SetAutoRefresh() {
 }
 
 void MockConfigurationPolicyProvider::RefreshWithSamePolicies() {
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle);
+  std::unique_ptr<PolicyBundle> bundle(new PolicyBundle);
   bundle->CopyFrom(policies());
   UpdatePolicy(std::move(bundle));
 }

@@ -53,8 +53,9 @@ class PolicyConverterTest : public testing::Test {
   // Converts the passed in value to the passed in schema, and serializes the
   // result to JSON, to make it easier to compare with EXPECT_EQ.
   std::string Convert(Value* value, const Schema& value_schema) {
-    scoped_ptr<Value> converted_value(PolicyConverter::ConvertValueToSchema(
-        scoped_ptr<Value>(value), value_schema));
+    std::unique_ptr<Value> converted_value(
+        PolicyConverter::ConvertValueToSchema(std::unique_ptr<Value>(value),
+                                              value_schema));
 
     std::string json_string;
     EXPECT_TRUE(
@@ -68,7 +69,7 @@ class PolicyConverterTest : public testing::Test {
   std::string ConvertJavaStringArrayToListValue(
       JNIEnv* env,
       const JavaRef<jobjectArray>& java_array) {
-    scoped_ptr<ListValue> list =
+    std::unique_ptr<ListValue> list =
         PolicyConverter::ConvertJavaStringArrayToListValue(env, java_array);
 
     std::string json_string;

@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -32,7 +33,7 @@ void ForwardJobFinished(
     const ExternalPolicyDataFetcherBackend::FetchCallback& callback,
     ExternalPolicyDataFetcher::Job* job,
     ExternalPolicyDataFetcher::Result result,
-    scoped_ptr<std::string> data) {
+    std::unique_ptr<std::string> data) {
   task_runner->PostTask(FROM_HERE,
                         base::Bind(callback, job, result, base::Passed(&data)));
 }
@@ -130,10 +131,11 @@ void ExternalPolicyDataFetcher::CancelJob(Job* job) {
                             base::Bind(&DoNothing, base::Owned(job)))));
 }
 
-void ExternalPolicyDataFetcher::OnJobFinished(const FetchCallback& callback,
-                                              Job* job,
-                                              Result result,
-                                              scoped_ptr<std::string> data) {
+void ExternalPolicyDataFetcher::OnJobFinished(
+    const FetchCallback& callback,
+    Job* job,
+    Result result,
+    std::unique_ptr<std::string> data) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   JobSet::iterator it = jobs_.find(job);
   if (it == jobs_.end()) {
@@ -161,10 +163,10 @@ ExternalPolicyDataFetcherBackend::~ExternalPolicyDataFetcherBackend() {
   STLDeleteContainerPairFirstPointers(job_map_.begin(), job_map_.end());
 }
 
-scoped_ptr<ExternalPolicyDataFetcher>
-    ExternalPolicyDataFetcherBackend::CreateFrontend(
-        scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  return make_scoped_ptr(new ExternalPolicyDataFetcher(
+std::unique_ptr<ExternalPolicyDataFetcher>
+ExternalPolicyDataFetcherBackend::CreateFrontend(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  return base::WrapUnique(new ExternalPolicyDataFetcher(
       task_runner, io_task_runner_, weak_factory_.GetWeakPtr()));
 }
 
@@ -211,7 +213,7 @@ void ExternalPolicyDataFetcherBackend::OnURLFetchComplete(
   }
 
   ExternalPolicyDataFetcher::Result result = ExternalPolicyDataFetcher::SUCCESS;
-  scoped_ptr<std::string> data;
+  std::unique_ptr<std::string> data;
 
   const net::URLRequestStatus status = it->first->GetStatus();
   if (status.error() == net::ERR_CONNECTION_RESET ||
@@ -262,9 +264,8 @@ void ExternalPolicyDataFetcherBackend::OnURLFetchDownloadProgress(
     ExternalPolicyDataFetcher::Job* job = it->second;
     delete it->first;
     job_map_.erase(it);
-    job->callback.Run(job,
-                      ExternalPolicyDataFetcher::MAX_SIZE_EXCEEDED,
-                      scoped_ptr<std::string>());
+    job->callback.Run(job, ExternalPolicyDataFetcher::MAX_SIZE_EXCEEDED,
+                      std::unique_ptr<std::string>());
   }
 }
 

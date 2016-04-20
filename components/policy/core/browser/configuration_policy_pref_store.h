@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_POLICY_CORE_BROWSER_CONFIGURATION_POLICY_PREF_STORE_H_
 #define COMPONENTS_POLICY_CORE_BROWSER_CONFIGURATION_POLICY_PREF_STORE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_map.h"
@@ -73,7 +73,7 @@ class POLICY_EXPORT ConfigurationPolicyPrefStore
   PolicyLevel level_;
 
   // Current policy preferences.
-  scoped_ptr<PrefValueMap> prefs_;
+  std::unique_ptr<PrefValueMap> prefs_;
 
   base::ObserverList<PrefStore::Observer, true> observers_;
 

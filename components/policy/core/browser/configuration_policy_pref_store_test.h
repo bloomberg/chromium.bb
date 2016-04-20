@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_POLICY_CORE_BROWSER_CONFIGURATION_POLICY_PREF_STORE_TEST_H_
 #define COMPONENTS_POLICY_CORE_BROWSER_CONFIGURATION_POLICY_PREF_STORE_TEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -36,7 +37,7 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
   PolicyServiceImpl::Providers providers_;
   ConfigurationPolicyHandlerList handler_list_;
   MockConfigurationPolicyProvider provider_;
-  scoped_ptr<PolicyService> policy_service_;
+  std::unique_ptr<PolicyService> policy_service_;
   scoped_refptr<ConfigurationPolicyPrefStore> store_;
   base::MessageLoop loop_;
 

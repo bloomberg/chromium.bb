@@ -63,7 +63,7 @@ TEST_F(UserInfoFetcherTest, SuccessfulFetch) {
 
   // Generate what we expect our result will look like (should match
   // parsed kUserInfoResponse).
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("email", "test_user@test.com");
   dict->SetBoolean("verified_email", true);
   dict->SetString("hd", "test.com");

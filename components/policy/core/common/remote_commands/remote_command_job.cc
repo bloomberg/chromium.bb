@@ -115,7 +115,7 @@ bool RemoteCommandJob::IsExecutionFinished() const {
   return status_ == SUCCEEDED || status_ == FAILED || status_ == TERMINATED;
 }
 
-scoped_ptr<std::string> RemoteCommandJob::GetResultPayload() const {
+std::unique_ptr<std::string> RemoteCommandJob::GetResultPayload() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(status_ == SUCCEEDED || status_ == FAILED);
 
@@ -142,7 +142,7 @@ void RemoteCommandJob::TerminateImpl() {
 
 void RemoteCommandJob::OnCommandExecutionFinishedWithResult(
     bool succeeded,
-    scoped_ptr<RemoteCommandJob::ResultPayload> result_payload) {
+    std::unique_ptr<RemoteCommandJob::ResultPayload> result_payload) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(RUNNING, status_);
   status_ = succeeded ? SUCCEEDED : FAILED;

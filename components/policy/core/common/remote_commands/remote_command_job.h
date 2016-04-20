@@ -6,11 +6,12 @@
 #define COMPONENTS_POLICY_CORE_COMMON_REMOTE_COMMANDS_REMOTE_COMMAND_JOB_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -90,17 +91,18 @@ class POLICY_EXPORT RemoteCommandJob {
 
   // Generate the result payload which will be sent back to the server.
   // This method will only be called for successfully executed commands.
-  scoped_ptr<std::string> GetResultPayload() const;
+  std::unique_ptr<std::string> GetResultPayload() const;
 
  protected:
   class ResultPayload {
    public:
     virtual ~ResultPayload() {}
 
-    virtual scoped_ptr<std::string> Serialize() = 0;
+    virtual std::unique_ptr<std::string> Serialize() = 0;
   };
 
-  using CallbackWithResult = base::Callback<void(scoped_ptr<ResultPayload>)>;
+  using CallbackWithResult =
+      base::Callback<void(std::unique_ptr<ResultPayload>)>;
 
   RemoteCommandJob();
 
@@ -138,8 +140,9 @@ class POLICY_EXPORT RemoteCommandJob {
 
  private:
   // Posted tasks are expected to call this method.
-  void OnCommandExecutionFinishedWithResult(bool succeeded,
-                                            scoped_ptr<ResultPayload> result);
+  void OnCommandExecutionFinishedWithResult(
+      bool succeeded,
+      std::unique_ptr<ResultPayload> result);
 
   Status status_;
 
@@ -149,7 +152,7 @@ class POLICY_EXPORT RemoteCommandJob {
   // The time when the command started running.
   base::TimeTicks execution_started_time_;
 
-  scoped_ptr<ResultPayload> result_payload_;
+  std::unique_ptr<ResultPayload> result_payload_;
 
   FinishedCallback finished_callback_;
 

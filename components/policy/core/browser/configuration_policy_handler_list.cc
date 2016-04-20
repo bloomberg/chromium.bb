@@ -24,7 +24,7 @@ ConfigurationPolicyHandlerList::~ConfigurationPolicyHandlerList() {
 }
 
 void ConfigurationPolicyHandlerList::AddHandler(
-    scoped_ptr<ConfigurationPolicyHandler> handler) {
+    std::unique_ptr<ConfigurationPolicyHandler> handler) {
   handlers_.push_back(handler.release());
 }
 

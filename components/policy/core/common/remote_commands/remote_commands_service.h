@@ -6,10 +6,10 @@
 #define COMPONENTS_POLICY_CORE_COMMON_REMOTE_COMMANDS_REMOTE_COMMANDS_SERVICE_H_
 
 #include <deque>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
@@ -32,7 +32,7 @@ class RemoteCommandsFactory;
 class POLICY_EXPORT RemoteCommandsService
     : public RemoteCommandsQueue::Observer {
  public:
-  RemoteCommandsService(scoped_ptr<RemoteCommandsFactory> factory,
+  RemoteCommandsService(std::unique_ptr<RemoteCommandsFactory> factory,
                         CloudPolicyClient* client);
   ~RemoteCommandsService() override;
 
@@ -51,7 +51,7 @@ class POLICY_EXPORT RemoteCommandsService
   }
 
   // Set an alternative clock for testing.
-  void SetClockForTesting(scoped_ptr<base::TickClock> clock);
+  void SetClockForTesting(std::unique_ptr<base::TickClock> clock);
 
  private:
   // Helper function to enqueue a command which we get from server.
@@ -93,7 +93,7 @@ class POLICY_EXPORT RemoteCommandsService
   std::deque<RemoteCommandJob::UniqueIDType> fetched_command_ids_;
 
   RemoteCommandsQueue queue_;
-  scoped_ptr<RemoteCommandsFactory> factory_;
+  std::unique_ptr<RemoteCommandsFactory> factory_;
   CloudPolicyClient* const client_;
 
   base::WeakPtrFactory<RemoteCommandsService> weak_factory_;

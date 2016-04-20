@@ -5,6 +5,7 @@
 #include "components/policy/core/browser/configuration_policy_handler.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 
@@ -12,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -152,7 +154,7 @@ bool IntRangePolicyHandlerBase::EnsureInRange(const base::Value* input,
 
 StringMappingListPolicyHandler::MappingEntry::MappingEntry(
     const char* policy_value,
-    scoped_ptr<base::Value> map)
+    std::unique_ptr<base::Value> map)
     : enum_value(policy_value), mapped_value(std::move(map)) {}
 
 StringMappingListPolicyHandler::MappingEntry::~MappingEntry() {}
@@ -181,7 +183,7 @@ void StringMappingListPolicyHandler::ApplyPolicySettings(
   if (!pref_path_)
     return;
   const base::Value* value = policies.GetValue(policy_name());
-  scoped_ptr<base::ListValue> list(new base::ListValue());
+  std::unique_ptr<base::ListValue> list(new base::ListValue());
   if (value && Convert(value, list.get(), NULL))
     prefs->SetValue(pref_path_, std::move(list));
 }
@@ -211,7 +213,7 @@ bool StringMappingListPolicyHandler::Convert(const base::Value* input,
       continue;
     }
 
-    scoped_ptr<base::Value> mapped_value = Map(entry_value);
+    std::unique_ptr<base::Value> mapped_value = Map(entry_value);
     if (mapped_value) {
       if (output)
         output->Append(mapped_value.release());
@@ -227,18 +229,18 @@ bool StringMappingListPolicyHandler::Convert(const base::Value* input,
   return true;
 }
 
-scoped_ptr<base::Value> StringMappingListPolicyHandler::Map(
+std::unique_ptr<base::Value> StringMappingListPolicyHandler::Map(
     const std::string& entry_value) {
   // Lazily generate the map of policy strings to mapped values.
   if (map_.empty())
     map_getter_.Run(&map_);
 
-  scoped_ptr<base::Value> return_value;
+  std::unique_ptr<base::Value> return_value;
   for (ScopedVector<MappingEntry>::const_iterator it = map_.begin();
        it != map_.end(); ++it) {
     const MappingEntry* mapping_entry = *it;
     if (mapping_entry->enum_value == entry_value) {
-      return_value = make_scoped_ptr(mapping_entry->mapped_value->DeepCopy());
+      return_value = base::WrapUnique(mapping_entry->mapped_value->DeepCopy());
       break;
     }
   }
@@ -360,7 +362,7 @@ bool SchemaValidatingPolicyHandler::CheckPolicySettings(
 bool SchemaValidatingPolicyHandler::CheckAndGetValue(
     const PolicyMap& policies,
     PolicyErrorMap* errors,
-    scoped_ptr<base::Value>* output) {
+    std::unique_ptr<base::Value>* output) {
   const base::Value* value = policies.GetValue(policy_name());
   if (!value)
     return true;
@@ -436,7 +438,7 @@ void SimpleSchemaValidatingPolicyHandler::ApplyPolicySettings(
 // http://crbug.com/345299
 LegacyPoliciesDeprecatingPolicyHandler::LegacyPoliciesDeprecatingPolicyHandler(
     ScopedVector<ConfigurationPolicyHandler> legacy_policy_handlers,
-    scoped_ptr<SchemaValidatingPolicyHandler> new_policy_handler)
+    std::unique_ptr<SchemaValidatingPolicyHandler> new_policy_handler)
     : legacy_policy_handlers_(std::move(legacy_policy_handlers)),
       new_policy_handler_(std::move(new_policy_handler)) {}
 

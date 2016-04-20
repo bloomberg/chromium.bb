@@ -46,7 +46,8 @@ void FixDeprecatedPolicies(PolicyMap* policies) {
   // first, and then only policies with those exact attributes are merged.
   PolicyMap::Entry current_priority;  // Defaults to the lowest priority.
   PolicySource inherited_source = POLICY_SOURCE_ENTERPRISE_DEFAULT;
-  scoped_ptr<base::DictionaryValue> proxy_settings(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> proxy_settings(
+      new base::DictionaryValue);
   for (size_t i = 0; i < arraysize(kProxyPolicies); ++i) {
     const PolicyMap::Entry* entry = policies->Get(kProxyPolicies[i]);
     if (entry) {

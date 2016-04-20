@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_POLICY_CORE_BROWSER_CONFIGURATION_POLICY_HANDLER_H_
 #define COMPONENTS_POLICY_CORE_BROWSER_CONFIGURATION_POLICY_HANDLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "components/policy/core/common/schema.h"
@@ -172,11 +172,11 @@ class POLICY_EXPORT StringMappingListPolicyHandler
   // matching pref values.
   class POLICY_EXPORT MappingEntry {
    public:
-    MappingEntry(const char* policy_value, scoped_ptr<base::Value> map);
+    MappingEntry(const char* policy_value, std::unique_ptr<base::Value> map);
     ~MappingEntry();
 
     const char* enum_value;
-    scoped_ptr<base::Value> mapped_value;
+    std::unique_ptr<base::Value> mapped_value;
   };
 
   // Callback that generates the map for this instance.
@@ -202,7 +202,7 @@ class POLICY_EXPORT StringMappingListPolicyHandler
 
   // Helper method that converts from a policy value string to the associated
   // pref value.
-  scoped_ptr<base::Value> Map(const std::string& entry_value);
+  std::unique_ptr<base::Value> Map(const std::string& entry_value);
 
   // Name of the pref to write.
   const char* pref_path_;
@@ -283,7 +283,7 @@ class POLICY_EXPORT SchemaValidatingPolicyHandler
   // Runs policy checks and returns the policy value if successful.
   bool CheckAndGetValue(const PolicyMap& policies,
                         PolicyErrorMap* errors,
-                        scoped_ptr<base::Value>* output);
+                        std::unique_ptr<base::Value>* output);
 
  private:
   const char* policy_name_;
@@ -336,7 +336,7 @@ class POLICY_EXPORT LegacyPoliciesDeprecatingPolicyHandler
  public:
   LegacyPoliciesDeprecatingPolicyHandler(
       ScopedVector<ConfigurationPolicyHandler> legacy_policy_handlers,
-      scoped_ptr<SchemaValidatingPolicyHandler> new_policy_handler);
+      std::unique_ptr<SchemaValidatingPolicyHandler> new_policy_handler);
   ~LegacyPoliciesDeprecatingPolicyHandler() override;
 
   // ConfigurationPolicyHandler:
@@ -353,7 +353,7 @@ class POLICY_EXPORT LegacyPoliciesDeprecatingPolicyHandler
 
  private:
   ScopedVector<ConfigurationPolicyHandler> legacy_policy_handlers_;
-  scoped_ptr<SchemaValidatingPolicyHandler> new_policy_handler_;
+  std::unique_ptr<SchemaValidatingPolicyHandler> new_policy_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(LegacyPoliciesDeprecatingPolicyHandler);
 };

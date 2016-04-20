@@ -47,7 +47,7 @@ class POLICY_EXPORT PolicyLoaderMac : public AsyncPolicyLoader {
 
   // AsyncPolicyLoader implementation.
   void InitOnBackgroundThread() override;
-  scoped_ptr<PolicyBundle> Load() override;
+  std::unique_ptr<PolicyBundle> Load() override;
   base::Time LastModificationTime() override;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -74,7 +74,7 @@ class POLICY_EXPORT PolicyLoaderMac : public AsyncPolicyLoader {
                               const Schema& schema,
                               PolicyMap* policy);
 
-  scoped_ptr<MacPreferences> preferences_;
+  std::unique_ptr<MacPreferences> preferences_;
 
   // Path to the managed preferences file for the current user, if it could
   // be found. Updates of this file trigger a policy reload.
