@@ -19,27 +19,21 @@ component("crypto") {
     "crypto_export.h",
     "cssm_init.cc",
     "cssm_init.h",
-    "curve25519-donna.c",
     "curve25519.h",
-    "curve25519_nss.cc",
     "curve25519_openssl.cc",
     "ec_private_key.h",
-    "ec_private_key_nss.cc",
     "ec_private_key_openssl.cc",
     "ec_signature_creator.cc",
     "ec_signature_creator.h",
     "ec_signature_creator_impl.h",
-    "ec_signature_creator_nss.cc",
     "ec_signature_creator_openssl.cc",
     "encryptor.cc",
     "encryptor.h",
-    "encryptor_nss.cc",
     "encryptor_openssl.cc",
     "hkdf.cc",
     "hkdf.h",
     "hmac.cc",
     "hmac.h",
-    "hmac_nss.cc",
     "hmac_openssl.cc",
     "mac_security_services_lock.cc",
     "mac_security_services_lock.h",
@@ -66,33 +60,22 @@ component("crypto") {
     "random.cc",
     "random.h",
     "rsa_private_key.h",
-    "rsa_private_key_nss.cc",
     "rsa_private_key_openssl.cc",
     "scoped_capi_types.h",
     "scoped_nss_types.h",
     "secure_hash.h",
-    "secure_hash_default.cc",
     "secure_hash_openssl.cc",
     "secure_util.cc",
     "secure_util.h",
     "sha2.cc",
     "sha2.h",
     "signature_creator.h",
-    "signature_creator_nss.cc",
     "signature_creator_openssl.cc",
     "signature_verifier.h",
-    "signature_verifier_nss.cc",
     "signature_verifier_openssl.cc",
     "symmetric_key.h",
-    "symmetric_key_nss.cc",
     "symmetric_key_openssl.cc",
-    "third_party/nss/chromium-blapi.h",
-    "third_party/nss/chromium-blapit.h",
-    "third_party/nss/chromium-nss.h",
     "third_party/nss/chromium-sha256.h",
-    "third_party/nss/pk11akey.cc",
-    "third_party/nss/rsawrapr.c",
-    "third_party/nss/secsign.cc",
     "third_party/nss/sha512.cc",
   ]
 
@@ -130,53 +113,8 @@ component("crypto") {
     ]
   }
 
-  if (use_openssl) {
-    # Remove NSS files when using OpenSSL
-    sources -= [
-      "curve25519-donna.c",
-      "curve25519_nss.cc",
-      "ec_private_key_nss.cc",
-      "ec_signature_creator_nss.cc",
-      "encryptor_nss.cc",
-      "hmac_nss.cc",
-      "rsa_private_key_nss.cc",
-      "secure_hash_default.cc",
-      "signature_creator_nss.cc",
-      "signature_verifier_nss.cc",
-      "symmetric_key_nss.cc",
-      "third_party/nss/chromium-blapi.h",
-      "third_party/nss/chromium-blapit.h",
-      "third_party/nss/chromium-nss.h",
-      "third_party/nss/pk11akey.cc",
-      "third_party/nss/rsawrapr.c",
-      "third_party/nss/secsign.cc",
-    ]
-  } else {
-    # Remove OpenSSL when using NSS.
-    sources -= [
-      "aead_openssl.cc",
-      "aead_openssl.h",
-      "auto_cbb.h",
-      "curve25519_openssl.cc",
-      "ec_private_key_openssl.cc",
-      "ec_signature_creator_openssl.cc",
-      "encryptor_openssl.cc",
-      "hmac_openssl.cc",
-      "openssl_bio_string.cc",
-      "openssl_bio_string.h",
-      "openssl_util.cc",
-      "openssl_util.h",
-      "rsa_private_key_openssl.cc",
-      "secure_hash_openssl.cc",
-      "signature_creator_openssl.cc",
-      "signature_verifier_openssl.cc",
-      "symmetric_key_openssl.cc",
-    ]
-  }
-
-  # Some files are built when NSS is used at all, either for the internal crypto
-  # library or the platform certificate library.
-  if (use_openssl && !use_nss_certs) {
+  # Some files are built when NSS is used for the platform certificate library.
+  if (!use_nss_certs) {
     sources -= [
       "nss_key_util.cc",
       "nss_key_util.h",
@@ -248,17 +186,12 @@ test("crypto_unittests") {
     "symmetric_key_unittest.cc",
   ]
 
-  # Some files are built when NSS is used at all, either for the internal crypto
-  # library or the platform certificate library.
-  if (use_openssl && !use_nss_certs) {
+  # Some files are built when NSS is used for the platform certificate library.
+  if (!use_nss_certs) {
     sources -= [
       "nss_key_util_unittest.cc",
       "nss_util_unittest.cc",
     ]
-  }
-
-  if (!use_openssl) {
-    sources -= [ "openssl_bio_string_unittest.cc" ]
   }
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -308,7 +241,7 @@ source_set("test_support") {
 }
 
 config("platform_config") {
-  if ((!use_openssl || use_nss_certs) && is_clang) {
+  if (use_nss_certs && is_clang) {
     # There is a broken header guard in /usr/include/nss/secmod.h:
     # https://bugzilla.mozilla.org/show_bug.cgi?id=884072
     cflags = [ "-Wno-header-guard" ]
@@ -319,40 +252,14 @@ config("platform_config") {
 # according to the state of the crypto flags. A target just wanting to depend
 # on the current SSL library should just depend on this.
 group("platform") {
-  if (use_openssl) {
-    public_deps = [
-      "//third_party/boringssl",
-    ]
-  } else {
-    public_deps = [
-      "//net/third_party/nss/ssl:libssl",
-    ]
-  }
+  public_deps = [
+    "//third_party/boringssl",
+  ]
 
-  # Link in NSS if it is used for either the internal crypto library
-  # (!use_openssl) or platform certificate library (use_nss_certs).
-  if (!use_openssl || use_nss_certs) {
-    if (is_linux) {
-      # On Linux, we use the system NSS (excepting SSL where we always use our
-      # own).
-      public_configs = [ ":platform_config" ]
-      if (!use_openssl) {
-        # If using a bundled copy of NSS's SSL library, ensure the bundled SSL
-        # header search path comes before the system one so our versions are
-        # used. The libssl target will add the search path we want, but
-        # according to GN's ordering rules, public_configs' search path will get
-        # applied before ones inherited from our dependencies.  Therefore, we
-        # need to explicitly list our custom libssl's config here before the
-        # system one.
-        public_configs += [ "//net/third_party/nss/ssl:ssl_config" ]
-      }
-      public_configs += [ "//third_party/nss:system_nss_no_ssl_config" ]
-    } else {
-      # Non-Linux platforms use the hermetic NSS from the tree.
-      public_deps += [
-        "//third_party/nss:nspr",
-        "//third_party/nss:nss",
-      ]
-    }
+  # Link in NSS if it is used for the platform certificate library
+  # (use_nss_certs).
+  if (use_nss_certs) {
+    public_configs = [ ":platform_config" ]
+    public_configs += [ "//third_party/nss:system_nss_no_ssl_config" ]
   }
 }

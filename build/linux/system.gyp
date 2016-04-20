@@ -1246,27 +1246,13 @@
       'type': 'none',
       'conditions': [
         ['_toolset=="target"', {
+          'dependencies': [
+            '../../third_party/boringssl/boringssl.gyp:boringssl',
+          ],
           'conditions': [
-            ['use_openssl==1', {
-              'dependencies': [
-                '../../third_party/boringssl/boringssl.gyp:boringssl',
-              ],
-            }, {
-              'dependencies': [
-                '../../net/third_party/nss/ssl.gyp:libssl',
-              ],
-              'direct_dependent_settings': {
-                'include_dirs+': [
-                  # We need for our local copies of the libssl3 headers to come
-                  # before other includes, as we are shadowing system headers.
-                  '<(DEPTH)/net/third_party/nss/ssl',
-                ],
-              },
-            }],
-            # Link in the system NSS if it is used for either the internal
-            # crypto library (use_openssl==0) or platform certificate
+            # Link in the system NSS if it is used for the platform certificate
             # library (use_nss_certs==1).
-            ['use_openssl==0 or use_nss_certs==1', {
+            ['use_nss_certs==1', {
               'direct_dependent_settings': {
                 'cflags': [
                   '<!@(<(pkg-config) --cflags nss)',

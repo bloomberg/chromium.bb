@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(eroman): Because VerifySignedData() is only implemented for BoringSSL
-// these tests also depend on BoringSSL.
-#if defined(USE_OPENSSL)
-
 #include "net/cert/internal/verify_certificate_chain.h"
 
 #include "net/cert/internal/parse_certificate.h"
@@ -219,5 +215,3 @@ INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
 // PkitsTest11InhibitPolicyMapping, PkitsTest12InhibitAnyPolicy
 
 }  // namespace net
-
-#endif  // USE_OPENSSL

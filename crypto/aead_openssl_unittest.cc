@@ -10,8 +10,6 @@
 
 namespace {
 
-#if defined(USE_OPENSSL)
-
 TEST(AeadTest, SealOpen) {
   crypto::Aead aead(crypto::Aead::AES_128_CTR_HMAC_SHA256);
   std::string key(aead.KeyLength(), 0);
@@ -48,7 +46,5 @@ TEST(AeadTest, SealOpenWrongKey) {
   EXPECT_FALSE(aead_wrong_key.Open(ciphertext, nonce, ad, &decrypted));
   EXPECT_EQ(0U, decrypted.size());
 }
-
-#endif
 
 }  // namespace

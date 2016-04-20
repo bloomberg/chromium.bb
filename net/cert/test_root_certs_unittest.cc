@@ -14,7 +14,7 @@
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS_VERIFIER)
+#if defined(USE_NSS_CERTS)
 #include <nss.h>
 #endif
 
@@ -75,7 +75,6 @@ TEST(TestRootCertsTest, OverrideTrust) {
     return;
   }
 #endif
-
   TestRootCerts* test_roots = TestRootCerts::GetInstance();
   ASSERT_NE(static_cast<TestRootCerts*>(NULL), test_roots);
   EXPECT_TRUE(test_roots->IsEmpty());

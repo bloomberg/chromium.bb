@@ -31,10 +31,6 @@
 #include "net/cert/x509_util.h"
 #include "url/gurl.h"
 
-#if !defined(USE_OPENSSL)
-#include <private/pprthred.h>  // PR_DetachThread
-#endif
-
 namespace net {
 
 namespace {
@@ -146,16 +142,6 @@ class ChannelIDServiceWorker {
     int error = ERR_FAILED;
     std::unique_ptr<ChannelIDStore::ChannelID> channel_id =
         GenerateChannelID(server_identifier_, &error);
-#if !defined(USE_OPENSSL)
-    // Detach the thread from NSPR.
-    // Calling NSS functions attaches the thread to NSPR, which stores
-    // the NSPR thread ID in thread-specific data.
-    // The threads in our thread pool terminate after we have called
-    // PR_Cleanup. Unless we detach them from NSPR, net_unittests gets
-    // segfaults on shutdown when the threads' thread-specific data
-    // destructors run.
-    PR_DetachThread();
-#endif
     origin_task_runner_->PostTask(
         FROM_HERE, base::Bind(callback_, server_identifier_, error,
                               base::Passed(&channel_id)));

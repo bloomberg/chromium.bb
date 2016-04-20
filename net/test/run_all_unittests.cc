@@ -59,11 +59,6 @@ int main(int argc, char** argv) {
   NetTestSuite test_suite(argc, argv);
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
 
-#if defined(OS_WIN) && !defined(USE_OPENSSL)
-  // We want to be sure to init NSPR on the main thread.
-  crypto::EnsureNSPRInit();
-#endif
-
   // Enable support for SSL server sockets, which must be done while
   // single-threaded.
   net::EnableSSLServerSockets();

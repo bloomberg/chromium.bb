@@ -22,12 +22,6 @@ declare_args() {
 # is unsupported.
 use_openssl_certs = is_android || is_nacl
 
-# True if NSS is used for certificate handling. Note that this is independent
-# from use_openssl. It is possible to use OpenSSL for the crypto library, but
-# NSS for the platform certificate library.
+# True if NSS is used for certificate handling. It is possible to use OpenSSL
+# for the crypto library, but NSS for the platform certificate library.
 use_nss_certs = is_linux
-
-# True if NSS is used for certificate verification. On non-OpenSSL iOS
-# configurations, certificates use the operating system library, but the
-# verifier uses the bundled copy of NSS.
-use_nss_verifier = use_nss_certs || (is_ios && !use_openssl)

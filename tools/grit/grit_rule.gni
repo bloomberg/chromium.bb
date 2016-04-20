@@ -159,13 +159,6 @@ if (use_nss_certs) {
   ]
 }
 
-if (use_nss_verifier) {
-  grit_defines += [
-    "-D",
-    "use_nss_verifier",
-  ]
-}
-
 if (use_ozone) {
   grit_defines += [
     "-D",

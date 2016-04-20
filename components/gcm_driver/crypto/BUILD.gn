@@ -15,11 +15,9 @@ source_set("crypto") {
     "gcm_key_store.h",
     "gcm_message_cryptographer.cc",
     "gcm_message_cryptographer.h",
-    "gcm_message_cryptographer_nss.cc",
     "gcm_message_cryptographer_openssl.cc",
     "p256_key_util.cc",
     "p256_key_util.h",
-    "p256_key_util_nss.cc",
     "p256_key_util_openssl.cc",
   ]
 
@@ -33,18 +31,6 @@ source_set("crypto") {
     "//net",
     "//third_party/protobuf:protobuf_lite",
   ]
-
-  if (use_openssl) {
-    sources -= [
-      "gcm_message_cryptographer_nss.cc",
-      "p256_key_util_nss.cc",
-    ]
-  } else {
-    sources -= [
-      "gcm_message_cryptographer_openssl.cc",
-      "p256_key_util_openssl.cc",
-    ]
-  }
 }
 
 # GYP version: components/gcm_driver.gypi:gcm_driver_crypto_test_support

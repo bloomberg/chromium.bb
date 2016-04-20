@@ -151,11 +151,9 @@ void TokenValidatorBase::OnCertificateRequested(
   client_cert_store = new net::ClientCertStoreWin(cert_store);
 #elif defined(OS_MACOSX)
   client_cert_store = new net::ClientCertStoreMac();
-#elif defined(USE_OPENSSL)
-    // OpenSSL does not use the ClientCertStore infrastructure.
-  client_cert_store = nullptr;
 #else
-#error Unknown platform.
+  // OpenSSL does not use the ClientCertStore infrastructure.
+  client_cert_store = nullptr;
 #endif
   // The callback is uncancellable, and GetClientCert requires selected_certs
   // and client_cert_store to stay alive until the callback is called. So we

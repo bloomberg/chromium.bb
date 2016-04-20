@@ -4,8 +4,6 @@
 
 #include "crypto/aead_openssl.h"
 
-#if defined(USE_OPENSSL)
-
 #include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <stddef.h>
@@ -123,5 +121,3 @@ size_t Aead::NonceLength() const {
 }
 
 }  // namespace
-
-#endif

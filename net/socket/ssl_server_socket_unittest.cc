@@ -20,6 +20,10 @@
 #include <queue>
 #include <utility>
 
+#include <openssl/evp.h>
+#include <openssl/ssl.h>
+#include <openssl/x509.h>
+
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -64,12 +68,6 @@
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-
-#if defined(USE_OPENSSL)
-#include <openssl/evp.h>
-#include <openssl/ssl.h>
-#include <openssl/x509.h>
-#endif
 
 namespace net {
 
@@ -397,7 +395,6 @@ class SSLServerSocketTest : public PlatformTest {
     ASSERT_TRUE(server_socket_);
   }
 
-#if defined(USE_OPENSSL)
   void ConfigureClientCertsForClient(const char* cert_file_name,
                                      const char* private_key_file_name) {
     client_ssl_config_.send_client_cert = true;
@@ -458,7 +455,6 @@ class SSLServerSocketTest : public PlatformTest {
         crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
     return key;
   }
-#endif
 
   std::unique_ptr<FakeDataChannel> channel_1_;
   std::unique_ptr<FakeDataChannel> channel_2_;
@@ -519,9 +515,6 @@ TEST_F(SSLServerSocketTest, Handshake) {
   EXPECT_STREQ("ECDHE_RSA", key_exchange);
   EXPECT_TRUE(is_aead);
 }
-
-// NSS ports don't support client certificates and have a global session cache.
-#if defined(USE_OPENSSL)
 
 // This test makes sure the session cache is working.
 TEST_F(SSLServerSocketTest, HandshakeCached) {
@@ -865,7 +858,6 @@ TEST_F(SSLServerSocketTest, HandshakeWithWrongClientCertSuppliedCached) {
   EXPECT_EQ(ERR_BAD_SSL_CLIENT_AUTH_CERT,
             handshake_callback2.GetResult(server_ret2));
 }
-#endif  // defined(USE_OPENSSL)
 
 TEST_F(SSLServerSocketTest, DataTransfer) {
   ASSERT_NO_FATAL_FAILURE(CreateContext());

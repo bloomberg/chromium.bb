@@ -31,7 +31,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS_VERIFIER)
+#if defined(USE_NSS_CERTS)
 #include "net/cert_net/nss_ocsp.h"
 #endif
 
@@ -123,7 +123,7 @@ class EmbeddedTestServerTest
   }
 
   void SetUp() override {
-#if defined(USE_NSS_VERIFIER)
+#if defined(USE_NSS_CERTS)
     // This is needed so NSS's HTTP client functions are initialized on the
     // right thread. These tests create SSLClientSockets on a different thread.
     // TODO(davidben): Initialization can't be deferred to SSLClientSocket. See
@@ -146,7 +146,7 @@ class EmbeddedTestServerTest
   void TearDown() override {
     if (server_->Started())
       ASSERT_TRUE(server_->ShutdownAndWaitUntilComplete());
-#if defined(USE_NSS_VERIFIER)
+#if defined(USE_NSS_CERTS)
     ShutdownNSSHttpIO();
 #endif
   }
@@ -498,7 +498,7 @@ typedef std::tr1::tuple<bool, bool, EmbeddedTestServer::Type>
 class EmbeddedTestServerThreadingTest
     : public testing::TestWithParam<ThreadingTestParams> {
   void SetUp() override {
-#if defined(USE_NSS_VERIFIER)
+#if defined(USE_NSS_CERTS)
     // This is needed so NSS's HTTP client functions are initialized on the
     // right thread. These tests create SSLClientSockets on a different thread.
     // TODO(davidben): Initialization can't be deferred to SSLClientSocket. See
@@ -509,7 +509,7 @@ class EmbeddedTestServerThreadingTest
   }
 
   void TearDown() override {
-#if defined(USE_NSS_VERIFIER)
+#if defined(USE_NSS_CERTS)
     ShutdownNSSHttpIO();
 #endif
   }

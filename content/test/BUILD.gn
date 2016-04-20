@@ -868,7 +868,7 @@ test("content_unittests") {
         [ "../browser/compositor/software_output_device_ozone_unittest.cc" ]
   }
 
-  if (is_mac && use_openssl) {
+  if (is_mac) {
     deps += [ "//third_party/boringssl" ]
   }
 

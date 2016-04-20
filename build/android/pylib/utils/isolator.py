@@ -47,7 +47,6 @@ def DefaultConfigVariables():
     'use_custom_libcxx': '0',
     'use_instrumented_libraries': '0',
     'use_prebuilt_instrumented_libraries': '0',
-    'use_openssl': '0',
     'use_ozone': '0',
     'use_x11': '0',
     'v8_use_external_startup_data': '1',
@@ -174,4 +173,3 @@ class Isolator(object):
         shutil.move(os.path.join(deps_product_dir, p), self._isolate_deps_dir)
       os.rmdir(deps_product_dir)
       os.rmdir(deps_out_dir)
-

@@ -54,7 +54,6 @@
 #include "net/cert/ct_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
-#include "net/cert_net/nss_ocsp.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_cache.h"
@@ -146,17 +145,11 @@ const char kSpdyDepencenciesFieldTrialDisable[] = "Disable";
 class SystemURLRequestContext : public net::URLRequestContext {
  public:
   SystemURLRequestContext() {
-#if defined(USE_NSS_VERIFIER)
-    net::SetURLRequestContextForNSSHttpIO(this);
-#endif
   }
 
  private:
   ~SystemURLRequestContext() override {
     AssertNoURLRequests();
-#if defined(USE_NSS_VERIFIER)
-    net::SetURLRequestContextForNSSHttpIO(nullptr);
-#endif
   }
 };
 
@@ -389,10 +382,6 @@ void IOSChromeIOThread::Init() {
   TRACE_EVENT0("startup", "IOSChromeIOThread::Init");
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
-#if defined(USE_NSS_VERIFIER)
-  net::SetMessageLoopForNSSHttpIO();
-#endif
-
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
@@ -491,10 +480,6 @@ void IOSChromeIOThread::Init() {
 }
 
 void IOSChromeIOThread::CleanUp() {
-#if defined(USE_NSS_VERIFIER)
-  net::ShutdownNSSHttpIO();
-#endif
-
   system_url_request_context_getter_ = nullptr;
 
   // Release objects that the net::URLRequestContext could have been pointing

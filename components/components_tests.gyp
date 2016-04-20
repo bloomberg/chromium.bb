@@ -1286,6 +1286,7 @@
             'test_runner/test_runner.gyp:test_runner',
             'tracing.gyp:tracing',
             'webcrypto/webcrypto.gyp:webcrypto',
+            '../third_party/boringssl/boringssl.gyp:boringssl',
             '../third_party/re2/re2.gyp:re2',
           ],
           'conditions': [
@@ -1302,24 +1303,6 @@
             ['OS=="android" and configuration_policy == 1', {
               'dependencies': [
                 'components.gyp:policy_java',
-              ],
-            }],
-            ['use_openssl==1', {
-              'dependencies': [
-                '../third_party/boringssl/boringssl.gyp:boringssl',
-              ],
-            }, {
-              'conditions': [
-                ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
-                  'dependencies': [
-                    '../build/linux/system.gyp:ssl',
-                  ],
-                }, {
-                  'dependencies': [
-                    '../third_party/nss/nss.gyp:nspr',
-                    '../third_party/nss/nss.gyp:nss',
-                  ],
-                }],
               ],
             }],
             ['safe_browsing == 2 and OS != "ios"', {

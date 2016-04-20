@@ -170,6 +170,7 @@
         '../crypto/crypto.gyp:crypto_test_support',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/boringssl/boringssl.gyp:boringssl',
         '../third_party/zlib/zlib.gyp:zlib',
         '../url/url.gyp:url_url_features',
         '../url/url.gyp:url_lib',
@@ -223,13 +224,7 @@
             'ssl/client_cert_store_nss_unittest.cc',
           ],
         }],
-        [ 'use_openssl == 1', {
-          # Avoid compiling/linking with the system library.
-          'dependencies': [
-            '../third_party/boringssl/boringssl.gyp:boringssl',
-          ],
-        }],
-        [ 'use_nss_verifier == 1', {
+        [ 'use_nss_certs == 1', {
           'conditions': [
             [ 'desktop_linux == 1 or chromeos == 1', {
               'dependencies': [
@@ -263,13 +258,13 @@
             'http/http_auth_handler_negotiate_unittest.cc',
           ],
         }],
-        [ 'use_nss_verifier == 0', {
+        [ 'use_nss_certs == 0', {
           # Only include this test when using NSS for cert verification.
           'sources!': [
             'cert_net/nss_ocsp_unittest.cc',
           ],
         }],
-        [ 'use_nss_verifier == 0 and OS == "ios"', {
+        [ 'OS == "ios"', {
           # Only include these files on iOS when using NSS for cert 
           # verification.
           'sources!': [
@@ -277,24 +272,6 @@
            'cert/x509_util_ios.h',
           ],
         }],
-        [ 'use_nss_verifier == 1 and OS == "ios"', {
-          'sources!': [
-            'cert/cert_verify_proc_ios.cc',
-            'cert/cert_verify_proc_ios.h',
-            'cert/x509_certificate_openssl_ios.cc',
-          ],
-        }],
-        [ 'use_openssl==1', {
-            'sources!': [
-              'quic/test_tools/crypto_test_utils_nss.cc',
-            ],
-          }, {  # else !use_openssl: remove the unneeded files and pull in NSS.
-            'sources!': [
-              'quic/test_tools/crypto_test_utils_openssl.cc',
-              'ssl/ssl_client_session_cache_openssl_unittest.cc',
-            ],
-          },
-        ],
         [ 'use_openssl_certs == 0', {
             'sources!': [
               'ssl/openssl_client_key_store_unittest.cc',
@@ -692,7 +669,7 @@
             'test/spawned_test_server/spawned_test_server.h',
           ],
         }],
-        ['use_nss_verifier == 1', {
+        ['use_nss_certs == 1', {
           'conditions': [
             [ 'desktop_linux == 1 or chromeos == 1', {
               'dependencies': [

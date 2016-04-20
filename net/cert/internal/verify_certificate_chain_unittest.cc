@@ -17,10 +17,6 @@
 #include "net/der/input.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// TODO(eroman): Because VerifySignedData() is only implemented for BoringSSL
-// these tests also depend on BoringSSL.
-#if defined(USE_OPENSSL)
-
 namespace net {
 
 namespace {
@@ -242,5 +238,3 @@ TEST(VerifyCertificateChainTest, EmptyChainIsInvalid) {
 }  // namespace
 
 }  // namespace net
-
-#endif

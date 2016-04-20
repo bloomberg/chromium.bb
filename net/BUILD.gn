@@ -160,77 +160,6 @@ component("net") {
       ]
     }
 
-    if (use_openssl) {
-      sources -= [
-        "base/nss_memio.c",
-        "base/nss_memio.h",
-        "cert/ct_log_verifier_nss.cc",
-        "cert/ct_objects_extractor_nss.cc",
-        "cert/jwk_serializer_nss.cc",
-        "cert/scoped_nss_types.h",
-        "cert/x509_util_nss.cc",
-        "quic/crypto/aead_base_decrypter_nss.cc",
-        "quic/crypto/aead_base_encrypter_nss.cc",
-        "quic/crypto/aes_128_gcm_12_decrypter_nss.cc",
-        "quic/crypto/aes_128_gcm_12_encrypter_nss.cc",
-        "quic/crypto/chacha20_poly1305_rfc7539_decrypter_nss.cc",
-        "quic/crypto/chacha20_poly1305_rfc7539_encrypter_nss.cc",
-        "quic/crypto/channel_id_nss.cc",
-        "quic/crypto/p256_key_exchange_nss.cc",
-        "quic/crypto/proof_source_chromium_nss.cc",
-        "socket/nss_ssl_util.cc",
-        "socket/nss_ssl_util.h",
-        "socket/ssl_client_socket_nss.cc",
-        "socket/ssl_client_socket_nss.h",
-        "socket/ssl_server_socket_nss.cc",
-        "socket/ssl_server_socket_nss.h",
-        "ssl/token_binding_nss.cc",
-      ]
-      if (is_ios) {
-        sources -= [
-          "cert/x509_util_ios.cc",
-          "cert/x509_util_ios.h",
-        ]
-      }
-    } else {
-      sources -= [
-        "cert/ct_log_verifier_openssl.cc",
-        "cert/ct_objects_extractor_openssl.cc",
-        "cert/jwk_serializer_openssl.cc",
-        "cert/x509_util_openssl.cc",
-        "cert/x509_util_openssl.h",
-        "quic/crypto/aead_base_decrypter_openssl.cc",
-        "quic/crypto/aead_base_encrypter_openssl.cc",
-        "quic/crypto/aes_128_gcm_12_decrypter_openssl.cc",
-        "quic/crypto/aes_128_gcm_12_encrypter_openssl.cc",
-        "quic/crypto/chacha20_poly1305_rfc7539_decrypter_openssl.cc",
-        "quic/crypto/chacha20_poly1305_rfc7539_encrypter_openssl.cc",
-        "quic/crypto/channel_id_openssl.cc",
-        "quic/crypto/p256_key_exchange_openssl.cc",
-        "quic/crypto/proof_source_chromium_openssl.cc",
-        "quic/crypto/scoped_evp_aead_ctx.cc",
-        "quic/crypto/scoped_evp_aead_ctx.h",
-        "socket/ssl_client_socket_openssl.cc",
-        "socket/ssl_client_socket_openssl.h",
-        "socket/ssl_server_socket_openssl.cc",
-        "socket/ssl_server_socket_openssl.h",
-        "ssl/openssl_ssl_util.cc",
-        "ssl/openssl_ssl_util.h",
-        "ssl/ssl_client_session_cache_openssl.cc",
-        "ssl/ssl_client_session_cache_openssl.h",
-        "ssl/ssl_key_logger.cc",
-        "ssl/ssl_key_logger.h",
-        "ssl/ssl_platform_key.h",
-        "ssl/ssl_platform_key_task_runner.cc",
-        "ssl/ssl_platform_key_task_runner.h",
-        "ssl/test_ssl_private_key.cc",
-        "ssl/test_ssl_private_key.h",
-        "ssl/threaded_ssl_private_key.cc",
-        "ssl/threaded_ssl_private_key.h",
-        "ssl/token_binding_openssl.cc",
-      ]
-    }
-
     if (!use_openssl_certs) {
       sources -= [
         "base/crypto_module_openssl.cc",
@@ -302,37 +231,23 @@ component("net") {
         "ssl/client_key_store.h",
         "ssl/ssl_platform_key_nss.cc",
       ]
-    } else if (use_openssl) {
+    } else {
       # client_cert_store_nss.c requires NSS_CmpCertChainWCANames from NSS's
       # libssl, but our bundled copy is not built in OpenSSL ports. Pull that
       # file in directly.
       sources += [ "third_party/nss/ssl/cmpcert.c" ]
     }
 
-    if (!use_nss_verifier) {
+    if (!use_nss_certs) {
       # These files are part of the partial implementation of NSS for
       # cert verification, so keep them in that case.
       sources -= [
         "cert/cert_verify_proc_nss.cc",
         "cert/cert_verify_proc_nss.h",
         "cert/test_root_certs_nss.cc",
-        "cert/x509_util_nss_certs.cc",
+        "cert/x509_util_nss.cc",
         "cert_net/nss_ocsp.cc",
         "cert_net/nss_ocsp.h",
-      ]
-    }
-
-    if (is_ios && use_nss_verifier) {
-      sources -= [
-        "cert/cert_verify_proc_ios.cc",
-        "cert/cert_verify_proc_ios.h",
-        "cert/x509_certificate_openssl_ios.cc",
-      ]
-
-      deps += [
-        "//net/third_party/nss/ssl:libssl",
-        "//third_party/nss",
-        "//third_party/nss:nspr",
       ]
     }
 
@@ -380,16 +295,12 @@ component("net") {
         "base/network_interfaces_mac.cc",
         "base/network_interfaces_mac.h",
         "base/platform_mime_util_mac.mm",
+        "cert/test_root_certs_mac.cc",
         "proxy/proxy_resolver_mac.cc",
         "proxy/proxy_server_mac.cc",
       ]
 
       sources -= [ "disk_cache/blockfile/file_posix.cc" ]
-    }
-
-    if (is_ios && !use_nss_verifier) {
-      net_unfiltered_sources += [ "cert/test_root_certs_mac.cc" ]
-      sources -= [ "cert/x509_certificate_ios.cc" ]
     }
 
     if (is_ios || is_mac) {
@@ -721,7 +632,7 @@ source_set("test_support") {
     public_deps += [ "//third_party/protobuf:py_proto" ]
   }
 
-  if (use_nss_verifier) {
+  if (use_nss_certs) {
     public_deps += [ "//crypto:platform" ]
   }
 
@@ -1462,11 +1373,9 @@ test("net_unittests") {
   data = [
     "data/",
   ]
-  data_deps = []
-
-  if (use_openssl) {
-    data_deps += [ "third_party/nist-pkits/" ]
-  }
+  data_deps = [
+    "third_party/nist-pkits/",
+  ]
 
   if (is_linux || is_mac || is_win) {
     deps += [
@@ -1525,15 +1434,6 @@ test("net_unittests") {
     }
   }
 
-  if (use_openssl) {
-    sources -= [ "quic/test_tools/crypto_test_utils_nss.cc" ]
-  } else {
-    sources -= [
-      "quic/test_tools/crypto_test_utils_openssl.cc",
-      "ssl/ssl_client_session_cache_openssl_unittest.cc",
-    ]
-  }
-
   if (use_kerberos) {
     defines += [ "USE_KERBEROS" ]
   }
@@ -1551,7 +1451,7 @@ test("net_unittests") {
     sources -= [ "http/http_auth_handler_negotiate_unittest.cc" ]
   }
 
-  if (!use_nss_verifier) {
+  if (!use_nss_certs) {
     # Only include this test when using NSS for cert verification.
     sources -= [ "cert_net/nss_ocsp_unittest.cc" ]
   }

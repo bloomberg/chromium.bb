@@ -103,7 +103,7 @@ bool SupportsDetectingKnownRoots() {
   // the verified certificate chain and detect known roots.
   if (base::android::BuildInfo::GetInstance()->sdk_int() < 17)
     return false;
-#elif defined(OS_IOS) && defined(USE_OPENSSL)
+#elif defined(OS_IOS)
   // iOS does not expose the APIs necessary to get the known system roots.
   return false;
 #endif
@@ -224,7 +224,7 @@ TEST_F(CertVerifyProcTest, PaypalNullCertParsing) {
                      NULL,
                      empty_cert_list_,
                      &verify_result);
-#if defined(USE_NSS_VERIFIER) || defined(OS_ANDROID)
+#if defined(USE_NSS_CERTS) || defined(OS_ANDROID)
   EXPECT_EQ(ERR_CERT_COMMON_NAME_INVALID, error);
 #elif defined(OS_IOS) && TARGET_IPHONE_SIMULATOR
   // iOS returns a ERR_CERT_INVALID error on the simulator, while returning
@@ -238,7 +238,7 @@ TEST_F(CertVerifyProcTest, PaypalNullCertParsing) {
   // Either the system crypto library should correctly report a certificate
   // name mismatch, or our certificate blacklist should cause us to report an
   // invalid certificate.
-#if defined(USE_NSS_VERIFIER) || defined(OS_WIN)
+#if defined(USE_NSS_CERTS) || defined(OS_WIN)
   EXPECT_TRUE(verify_result.cert_status &
               (CERT_STATUS_COMMON_NAME_INVALID | CERT_STATUS_INVALID));
 #endif
@@ -1133,7 +1133,7 @@ TEST_F(CertVerifyProcTest, IsIssuedByKnownRootIgnoresTestRoots) {
   EXPECT_FALSE(verify_result.is_issued_by_known_root);
 }
 
-#if defined(USE_NSS_VERIFIER) || defined(OS_WIN) || \
+#if defined(USE_NSS_CERTS) || defined(OS_WIN) || \
     (defined(OS_MACOSX) && !defined(OS_IOS))
 // Test that CRLSets are effective in making a certificate appear to be
 // revoked.

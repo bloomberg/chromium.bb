@@ -124,17 +124,11 @@ config("feature_flags") {
   if (use_glib) {
     defines += [ "USE_GLIB=1" ]
   }
-  if (use_openssl) {
-    defines += [ "USE_OPENSSL=1" ]
-  }
   if (use_openssl_certs) {
     defines += [ "USE_OPENSSL_CERTS=1" ]
   }
   if (use_nss_certs) {
     defines += [ "USE_NSS_CERTS=1" ]
-  }
-  if (use_nss_verifier) {
-    defines += [ "USE_NSS_VERIFIER=1" ]
   }
   if (use_ozone) {
     defines += [ "USE_OZONE=1" ]

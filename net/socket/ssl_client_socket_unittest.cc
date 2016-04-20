@@ -4,7 +4,14 @@
 
 #include "net/socket/ssl_client_socket.h"
 
+#include <errno.h>
+#include <string.h>
+
 #include <utility>
+
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
 
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
@@ -15,6 +22,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "crypto/scoped_openssl_types.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -45,22 +53,12 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
+#include "net/ssl/test_ssl_private_key.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-
-#if defined(USE_OPENSSL)
-#include <errno.h>
-#include <openssl/bio.h>
-#include <openssl/evp.h>
-#include <openssl/pem.h>
-#include <string.h>
-
-#include "crypto/scoped_openssl_types.h"
-#include "net/ssl/test_ssl_private_key.h"
-#endif
 
 using testing::_;
 using testing::Return;
@@ -1503,35 +1501,6 @@ TEST_F(SSLClientSocketTest, Read_DeleteWhilePendingFullDuplex) {
   ASSERT_EQ(ERR_IO_PENDING, rv);
   ASSERT_FALSE(read_callback.have_result());
 
-#if !defined(USE_OPENSSL)
-  // NSS follows a pattern where a call to PR_Write will only consume as
-  // much data as it can encode into application data records before the
-  // internal memio buffer is full, which should only fill if writing a large
-  // amount of data and the underlying transport is blocked. Once this happens,
-  // NSS will return (total size of all application data records it wrote) - 1,
-  // with the caller expected to resume with the remaining unsent data.
-  //
-  // This causes SSLClientSocketNSS::Write to return that it wrote some data
-  // before it will return ERR_IO_PENDING, so make an extra call to Write() to
-  // get the socket in the state needed for the test below.
-  //
-  // This is not needed for OpenSSL, because for OpenSSL,
-  // SSL_MODE_ENABLE_PARTIAL_WRITE is not specified - thus
-  // SSLClientSocketOpenSSL::Write() will not return until all of
-  // |request_buffer| has been written to the underlying BIO (although not
-  // necessarily the underlying transport).
-  rv = callback.GetResult(raw_sock->Write(request_buffer.get(),
-                                          request_buffer->BytesRemaining(),
-                                          callback.callback()));
-  ASSERT_LT(0, rv);
-  request_buffer->DidConsume(rv);
-
-  // Guard to ensure that |request_buffer| was larger than all of the internal
-  // buffers (transport, memio, NSS) along the way - otherwise the next call
-  // to Write() will crash with an invalid buffer.
-  ASSERT_LT(0, request_buffer->BytesRemaining());
-#endif
-
   // Attempt to write the remaining data. NSS will not be able to consume the
   // application data because the internal buffers are full, while OpenSSL will
   // return that its blocked because the underlying transport is blocked.
@@ -1641,15 +1610,8 @@ TEST_F(SSLClientSocketTest, Read_WithWriteError) {
   raw_transport->UnblockReadResult();
   rv = read_callback.WaitForResult();
 
-#if defined(USE_OPENSSL)
   // Should still read bytes despite the write error.
   EXPECT_LT(0, rv);
-#else
-  // NSS attempts to flush the write buffer in PR_Read on an SSL socket before
-  // pumping the read state machine, unless configured with SSL_ENABLE_FDX, so
-  // the write error stops future reads.
-  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
-#endif
 }
 
 // Tests that SSLClientSocket fails the handshake if the underlying
@@ -2273,8 +2235,6 @@ TEST_F(SSLClientSocketCertRequestInfoTest, TwoAuthorities) {
       request_info->cert_authorities[1]);
 }
 
-// cert_key_types is currently only populated on OpenSSL.
-#if defined(USE_OPENSSL)
 TEST_F(SSLClientSocketCertRequestInfoTest, CertKeyTypes) {
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -2286,7 +2246,6 @@ TEST_F(SSLClientSocketCertRequestInfoTest, CertKeyTypes) {
   EXPECT_EQ(CLIENT_CERT_RSA_SIGN, request_info->cert_key_types[0]);
   EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, request_info->cert_key_types[1]);
 }
-#endif  // defined(USE_OPENSSL)
 
 TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledTLSExtension) {
   SpawnedTestServer::SSLOptions ssl_options;
@@ -2839,9 +2798,6 @@ TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
-#if !defined(USE_OPENSSL)
-  client_config.alpn_protos.push_back(kProtoHTTP11);
-#endif
   client_config.npn_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(
       TestFalseStart(server_options, client_config, true));
@@ -2870,9 +2826,6 @@ TEST_F(SSLClientSocketFalseStartTest, RSA) {
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
-#if !defined(USE_OPENSSL)
-  client_config.alpn_protos.push_back(kProtoHTTP11);
-#endif
   client_config.npn_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(
       TestFalseStart(server_options, client_config, false));
@@ -2887,9 +2840,6 @@ TEST_F(SSLClientSocketFalseStartTest, DHE_RSA) {
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
-#if !defined(USE_OPENSSL)
-  client_config.alpn_protos.push_back(kProtoHTTP11);
-#endif
   client_config.npn_protos.push_back(kProtoHTTP11);
   // DHE is only advertised when deprecated ciphers are enabled.
   client_config.deprecated_cipher_suites_enabled = true;
@@ -2905,9 +2855,6 @@ TEST_F(SSLClientSocketFalseStartTest, NoAEAD) {
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
-#if !defined(USE_OPENSSL)
-  client_config.alpn_protos.push_back(kProtoHTTP11);
-#endif
   client_config.npn_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, false));
 }
@@ -2922,9 +2869,6 @@ TEST_F(SSLClientSocketFalseStartTest, SessionResumption) {
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
-#if !defined(USE_OPENSSL)
-  client_config.alpn_protos.push_back(kProtoHTTP11);
-#endif
   client_config.npn_protos.push_back(kProtoHTTP11);
 
   // Let a full handshake complete with False Start.
@@ -2955,9 +2899,6 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBeforeFinished) {
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-#if !defined(USE_OPENSSL)
-  client_config.alpn_protos.push_back(kProtoHTTP11);
-#endif
   client_config.npn_protos.push_back(kProtoHTTP11);
 
   // Start a handshake up to the server Finished message.
@@ -3012,9 +2953,6 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBadFinished) {
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-#if !defined(USE_OPENSSL)
-  client_config.alpn_protos.push_back(kProtoHTTP11);
-#endif
   client_config.npn_protos.push_back(kProtoHTTP11);
 
   // Start a handshake up to the server Finished message.
@@ -3161,10 +3099,6 @@ TEST_F(SSLClientSocketTest, NPN) {
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-#if !defined(USE_OPENSSL)
-  client_config.alpn_protos.push_back(kProtoHTTP2);
-  client_config.alpn_protos.push_back(kProtoHTTP11);
-#endif
   client_config.npn_protos.push_back(kProtoHTTP2);
   client_config.npn_protos.push_back(kProtoHTTP11);
 
@@ -3185,10 +3119,6 @@ TEST_F(SSLClientSocketTest, NPNNoOverlap) {
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-#if !defined(USE_OPENSSL)
-  client_config.alpn_protos.push_back(kProtoSPDY31);
-  client_config.alpn_protos.push_back(kProtoHTTP2);
-#endif
   client_config.npn_protos.push_back(kProtoSPDY31);
   client_config.npn_protos.push_back(kProtoHTTP2);
 
@@ -3210,10 +3140,6 @@ TEST_F(SSLClientSocketTest, NPNServerPreference) {
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-#if !defined(USE_OPENSSL)
-  client_config.alpn_protos.push_back(kProtoHTTP2);
-  client_config.alpn_protos.push_back(kProtoSPDY31);
-#endif
   client_config.npn_protos.push_back(kProtoHTTP2);
   client_config.npn_protos.push_back(kProtoSPDY31);
 
@@ -3251,9 +3177,6 @@ TEST_F(SSLClientSocketTest, NPNServerDisabled) {
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-#if !defined(USE_OPENSSL)
-  client_config.alpn_protos.push_back(kProtoHTTP11);
-#endif
   client_config.npn_protos.push_back(kProtoHTTP11);
 
   int rv;
@@ -3264,9 +3187,6 @@ TEST_F(SSLClientSocketTest, NPNServerDisabled) {
   EXPECT_EQ(SSLClientSocket::kNextProtoUnsupported,
             sock_->GetNextProto(&proto));
 }
-
-// Client auth is not supported in NSS ports.
-#if defined(USE_OPENSSL)
 
 namespace {
 
@@ -3370,6 +3290,5 @@ TEST_F(SSLClientSocketTest, SendGoodCert) {
   sock_->Disconnect();
   EXPECT_FALSE(sock_->IsConnected());
 }
-#endif  // defined(USE_OPENSSL)
 
 }  // namespace net

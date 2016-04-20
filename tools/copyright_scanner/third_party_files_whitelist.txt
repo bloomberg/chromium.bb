@@ -174,9 +174,6 @@ net/http/md4.h
 # third-party code is taken from Mozilla, the license for which we already pick
 # up from third_party/npapi/.
 net/proxy/proxy_resolver_script.h
-# Copyright The Chromium Authors and Netscape Communications Corporation; BSD
-# and (MPL, GPL v2 or LGPL v2) licenses. Not used on Android.
-net/socket/ssl_client_socket_nss.cc
 # Contains the word 'Copyright' in comments
 ppapi/generators/idl_c_proto.py
 ppapi/generators/idl_outfile.py

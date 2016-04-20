@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <utility>
 
+#include <openssl/aead.h>
+
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -21,6 +23,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "crypto/openssl_util.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/socket_performance_watcher.h"
@@ -57,13 +60,8 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if defined(USE_OPENSSL)
-#include <openssl/aead.h>
-#include "crypto/openssl_util.h"
-#else
-#include "base/cpu.h"
-#endif
-
+using std::min;
+using std::vector;
 using NetworkHandle = net::NetworkChangeNotifier::NetworkHandle;
 
 namespace net {
@@ -678,13 +676,8 @@ QuicStreamFactory::QuicStreamFactory(
   }
   if (enable_token_binding && channel_id_service && IsTokenBindingSupported())
     crypto_config_.tb_key_params.push_back(kP256);
-#if defined(USE_OPENSSL)
   crypto::EnsureOpenSSLInit();
   bool has_aes_hardware_support = !!EVP_has_aes_hardware();
-#else
-  base::CPU cpu;
-  bool has_aes_hardware_support = cpu.has_aesni() && cpu.has_avx();
-#endif
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm",
                         has_aes_hardware_support);
   if (has_aes_hardware_support || prefer_aes_)

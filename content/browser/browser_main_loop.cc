@@ -176,7 +176,7 @@
 #include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif
 
-#if defined(USE_NSS_CERTS) || !defined(USE_OPENSSL)
+#if defined(USE_NSS_CERTS)
 #include "crypto/nss_util.h"
 #endif
 
@@ -495,7 +495,7 @@ void BrowserMainLoop::EarlyInitialization() {
   net::EnsureWinsockInit();
 #endif
 
-#if defined(USE_NSS_CERTS) || !defined(USE_OPENSSL)
+#if defined(USE_NSS_CERTS)
   // We want to be sure to init NSPR on the main thread.
   crypto::EnsureNSPRInit();
 #endif

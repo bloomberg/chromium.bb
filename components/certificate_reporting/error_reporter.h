@@ -68,13 +68,11 @@ class ErrorReporter {
   // Whether sending reports over HTTP is supported.
   static bool IsHttpUploadUrlSupported();
 
-#if defined(USE_OPENSSL)
   // Used by tests.
   static bool DecryptErrorReport(
       const uint8_t server_private_key[32],
       const EncryptedCertLoggerRequest& encrypted_report,
       std::string* decrypted_serialized_report);
-#endif
 
  private:
   scoped_ptr<net::CertificateReportSender> certificate_report_sender_;

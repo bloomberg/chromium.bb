@@ -19,7 +19,7 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           [ "chromeos.gyp" ])
 
 component("chromeos") {
-  configs += [ "//net/third_party/nss/ssl:ssl_config" ]
+  configs += [ "//third_party/nss:system_nss_no_ssl_config" ]
   public_deps = [
     "//dbus",
   ]
@@ -138,7 +138,7 @@ static_library("test_support_without_gmock") {
 test("chromeos_unittests") {
   configs += [
     "//build/config/linux:dbus",
-    "//net/third_party/nss/ssl:ssl_config",
+    "//third_party/nss:system_nss_no_ssl_config",
   ]
   deps = [
     ":cryptohome_proto",

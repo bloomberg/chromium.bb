@@ -92,7 +92,6 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
     EXPECT_EQ(http_mock_report_sender->latest_report_uri(), http_url);
 
     std::string uploaded_report;
-#if defined(USE_OPENSSL)
     EncryptedCertLoggerRequest encrypted_request;
     ASSERT_TRUE(encrypted_request.ParseFromString(
         http_mock_report_sender->latest_report()));
@@ -102,15 +101,11 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
               encrypted_request.algorithm());
     ASSERT_TRUE(ErrorReporter::DecryptErrorReport(
         server_private_key_, encrypted_request, &uploaded_report));
-#else
-    ADD_FAILURE() << "Only supported in OpenSSL ports";
-#endif
 
     EXPECT_EQ(kDummyReport, uploaded_report);
   }
 }
 
-#if defined(USE_OPENSSL)
 // This test decrypts a "known gold" report. It's intentionally brittle
 // in order to catch changes in report encryption that could cause the
 // server to no longer be able to decrypt reports that it receives from
@@ -270,7 +265,6 @@ TEST_F(ErrorReporterTest, DecryptExampleReport) {
   ASSERT_TRUE(ErrorReporter::DecryptErrorReport(
       server_private_key_, encrypted_request, &decrypted_serialized_report));
 }
-#endif
 
 }  // namespace
 

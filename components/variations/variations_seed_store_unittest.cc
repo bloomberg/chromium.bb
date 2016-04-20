@@ -329,15 +329,10 @@ TEST(VariationsSeedStoreTest, VerifySeedSignature) {
             seed_store.VerifySeedSignature(seed_data, seed_data));
 
   // Using a different signature (e.g. the base64 seed data) should fail.
-#if defined(USE_OPENSSL)
   // OpenSSL doesn't distinguish signature decode failure from the
   // signature not matching.
   EXPECT_EQ(VariationsSeedStore::VARIATIONS_SEED_SIGNATURE_INVALID_SEED,
             seed_store.VerifySeedSignature(seed_data, base64_seed_data));
-#else
-  EXPECT_EQ(VariationsSeedStore::VARIATIONS_SEED_SIGNATURE_INVALID_SIGNATURE,
-            seed_store.VerifySeedSignature(seed_data, base64_seed_data));
-#endif
 
   // Using a different seed should not match the signature.
   seed_data[0] = 'x';

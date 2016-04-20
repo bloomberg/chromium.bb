@@ -279,8 +279,6 @@ places are noted in the table below.
 | `use_gnome_keyring` (0/1)               | `is_desktop_linux` (true/false)                |                               |
 | `use_goma` (0/1)                        | `use_goma` (true/false)                        | `//build/toolchain/goma.gni`  |
 | `use_nss_certs` (0/1)                   | `use_nss_certs` (true/false)                   | `//build/config/crypto.gni` (Many of these conditions can be deleted, see the "SSL" notes on targets below.) |
-| `use_nss_verifier` (0/1)                | `use_nss_verifier` (true/false)                | `//build/config/crypto.gni` (Many of these conditions can be deleted, see the "SSL" notes on targets below.) |
-| `use_openssl` (0/1)                     | `use_openssl` (true/false)                     | `//build/config/crypto.gni` (Many of these conditions can be deleted, see the "SSL" notes on targets below.) |
 | `use_pango` (0/1)                       | `use_pango` (true/false)                       | `//build/config/ui.gni`       |
 | `use_ozone` (0/1)                       | `use_ozone` (true/false)                       | `//build/config/ui.gni`       |
 | `use_seccomp_bpf` (0/1)                 | `use_seccomp_bpf` (true/false)                 | `//build/config/features.gni` |

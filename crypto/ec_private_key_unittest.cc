@@ -223,7 +223,6 @@ TEST(ECPrivateKeyUnitTest, LoadOpenSSLKeyTest) {
 // The Android code writes out Channel IDs differently from the NSS
 // implementation; the empty password is converted to "\0\0". The OpenSSL port
 // should support either.
-#if defined(USE_OPENSSL)
 TEST(ECPrivateKeyUnitTest, LoadOldOpenSSLKeyTest) {
   static const uint8_t kOpenSSLKey[] = {
       0x30, 0x82, 0x01, 0xa1, 0x30, 0x1b, 0x06, 0x0a, 0x2a, 0x86, 0x48, 0x86,
@@ -303,4 +302,3 @@ TEST(ECPrivateKeyUnitTest, LoadOldOpenSSLKeyTest) {
 
   EXPECT_TRUE(keypair_openssl.get());
 }
-#endif  // defined(USE_OPENSSL)

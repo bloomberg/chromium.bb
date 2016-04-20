@@ -45,7 +45,7 @@
 #include "net/url_request/url_request_throttler_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS_VERIFIER)
+#if defined(USE_NSS_CERTS)
 #include "net/cert_net/nss_ocsp.h"
 #endif
 
@@ -425,14 +425,14 @@ class URLFetcherTest : public testing::Test {
         kDefaultResponsePath));
     ASSERT_TRUE(hanging_url_.is_valid());
 
-#if defined(USE_NSS_VERIFIER)
+#if defined(USE_NSS_CERTS)
     crypto::EnsureNSSInit();
     EnsureNSSHttpIOInit();
 #endif
   }
 
   void TearDown() override {
-#if defined(USE_NSS_VERIFIER)
+#if defined(USE_NSS_CERTS)
     ShutdownNSSHttpIO();
 #endif
   }

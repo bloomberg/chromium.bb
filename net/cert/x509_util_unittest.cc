@@ -188,7 +188,6 @@ TEST(X509UtilTest, CreateSelfSigned) {
   EXPECT_FALSE(cert->HasExpired());
 }
 
-#if defined(USE_OPENSSL)
 // This is a test case based on
 // http://blogs.msdn.com/b/openspecification/archive/2013/03/26/ntlm-and-channel-binding-hash-aka-exteneded-protection-for-authentication.aspx
 // There doesn't seem to be too many public test vectors for channel bindings.
@@ -698,7 +697,6 @@ TEST(X509UtilTest, CreateChannelBindings_Unsupported_MD4) {
       x509_util::GetTLSServerEndPointChannelBinding(*cert, &channel_bindings));
   EXPECT_TRUE(channel_bindings.empty());
 }
-#endif
 
 }  // namespace x509_util
 

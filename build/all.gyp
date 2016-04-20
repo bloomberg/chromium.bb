@@ -30,6 +30,7 @@
         '../sql/sql.gyp:*',
         '../testing/gmock.gyp:*',
         '../testing/gtest.gyp:*',
+        '../third_party/boringssl/boringssl.gyp:*',
         '../third_party/icu/icu.gyp:*',
         '../third_party/libxml/libxml.gyp:*',
         '../third_party/sqlite/sqlite.gyp:*',
@@ -167,11 +168,6 @@
             '<(libjpeg_gyp_path):*',
           ],
         }],
-        ['use_openssl==0 and OS=="ios"', {
-          'dependencies': [
-            '../third_party/nss/nss.gyp:*',
-           ],
-        }],
         ['OS=="win" or OS=="ios" or OS=="linux"', {
           'dependencies': [
             '../breakpad/breakpad.gyp:*',
@@ -254,17 +250,7 @@
             '../remoting/remoting_all.gyp:remoting_all',
           ],
         }],
-        ['use_openssl==0', {
-          'dependencies': [
-            '../net/third_party/nss/ssl.gyp:*',
-          ],
-        }],
-        ['use_openssl==1', {
-          'dependencies': [
-            '../third_party/boringssl/boringssl.gyp:*',
-          ],
-        }],
-        ['use_openssl==1 and OS!="ios"', {
+        ['OS!="ios"', {
           'dependencies': [
             '../third_party/boringssl/boringssl_tests.gyp:*',
           ],
