@@ -238,7 +238,6 @@ source_set("base") {
   deps = [
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//gpu",
-    "//media:media_features",
     "//media:shared_memory_support",
     "//skia",
     "//ui/events:events_base",
@@ -385,7 +384,6 @@ source_set("test_support") {
   ]
   configs += [ "//media:media_config" ]
   deps = [
-    "//media:media_features",
     "//media:shared_memory_support",
     "//testing/gmock",
   ]
