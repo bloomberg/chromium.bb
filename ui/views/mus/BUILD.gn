@@ -186,6 +186,7 @@ test("views_mus_unittests") {
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
     "//ui/resources",
+    "//ui/resources:ui_test_pak",
     "//ui/strings",
     "//ui/touch_selection",
     "//ui/views",
