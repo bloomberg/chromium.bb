@@ -24,7 +24,17 @@ void PostKeyboardWillChangeNotification(CGRect beginFrame, CGRect endFrame) {
                   }];
 }
 
-typedef PlatformTest HardwareKeyboardWatcherTest;
+class HardwareKeyboardWatcherTest : public PlatformTest {
+ public:
+  HardwareKeyboardWatcherTest() {
+    _window.reset(
+        [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]]);
+    [_window makeKeyAndVisible];
+  }
+
+ protected:
+  base::scoped_nsobject<UIWindow> _window;
+};
 
 TEST_F(HardwareKeyboardWatcherTest, AccessoryViewNotInHierarchy_NoHistogram) {
   base::HistogramTester histogram_tester;
