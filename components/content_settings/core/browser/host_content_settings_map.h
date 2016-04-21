@@ -306,6 +306,9 @@ class HostContentSettingsMap : public content_settings::Observer,
   // leave in some code to remove old-format settings for a long time.
   void MigrateOldSettings();
 
+  // Collect UMA data about the number of exceptions.
+  void RecordNumberOfExceptions();
+
   // Adds content settings for |content_type| and |resource_identifier|,
   // provided by |provider|, into |settings|. If |incognito| is true, adds only
   // the content settings which are applicable to the incognito mode and differ

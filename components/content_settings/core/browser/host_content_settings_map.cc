@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -168,6 +169,8 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
   content_settings_providers_[DEFAULT_PROVIDER] = default_provider;
 
   MigrateOldSettings();
+
+  RecordNumberOfExceptions();
 }
 
 // static
@@ -484,6 +487,30 @@ void HostContentSettingsMap::MigrateOldSettings() {
                                       content_setting);
       }
     }
+  }
+}
+
+void HostContentSettingsMap::RecordNumberOfExceptions() {
+  for (const content_settings::WebsiteSettingsInfo* info :
+       *content_settings::WebsiteSettingsRegistry::GetInstance()) {
+    ContentSettingsType content_type = info->type();
+    const std::string type_name = info->name();
+
+    ContentSettingsForOneType settings;
+    GetSettingsForOneType(content_type, std::string(), &settings);
+    size_t num_exceptions = 0;
+    for (const ContentSettingPatternSource& setting_entry : settings) {
+      if (setting_entry.source == "preference")
+        ++num_exceptions;
+    }
+
+    std::string histogram_name =
+        "ContentSettings.Exceptions." + type_name;
+
+    base::HistogramBase* histogram_pointer = base::Histogram::FactoryGet(
+        histogram_name, 1, 1000, 30,
+        base::HistogramBase::kUmaTargetedHistogramFlag);
+    histogram_pointer->Add(num_exceptions);
   }
 }
 

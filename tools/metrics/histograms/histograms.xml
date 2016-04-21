@@ -5958,6 +5958,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.Exceptions">
+  <owner>lshang@chromium.org</owner>
+  <summary>
+    The number of user defined content setting exceptions at browser start.
+    Suffixed with the name of content setting types.
+  </summary>
+</histogram>
+
 <histogram name="ContentSettings.LastSettingParsed" enum="LastSettingParsed">
   <obsolete>
     Deprecated 2015-10-05 in Issue 433475. Histogram was used temorarily for
@@ -88391,6 +88399,37 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
   <affected-histogram name="PLT.LoadType"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ContentSettingsType" separator=".">
+  <suffix name="app-banner" label="App banner exceptions"/>
+  <suffix name="auto-select-certificate" label="Auto-select cert exceptions"/>
+  <suffix name="automatic-downloads" label="Automatic downloads exceptions"/>
+  <suffix name="background-sync" label="Background sync exceptions"/>
+  <suffix name="bluetooth-guard" label="Bluetooth guard exceptions"/>
+  <suffix name="cookies" label="Cookies exceptions"/>
+  <suffix name="durable-storage" label="Durable Storage Exceptions"/>
+  <suffix name="fullscreen" label="Fullscreen exceptions"/>
+  <suffix name="geolocation" label="Geolocation exceptions"/>
+  <suffix name="images" label="Images exceptions"/>
+  <suffix name="javascript" label="JavaScript exceptions"/>
+  <suffix name="keygen" label="Keygen exceptions"/>
+  <suffix name="media-stream-camera" label="Camera exceptions"/>
+  <suffix name="media-stream-mic" label="Microphone exceptions"/>
+  <suffix name="midi-sysex" label="Midi exceptions"/>
+  <suffix name="mixed-script" label="Mixed script exceptions"/>
+  <suffix name="mouselock" label="Mouse lock exceptions"/>
+  <suffix name="notifications" label="Notification exceptions"/>
+  <suffix name="plugins" label="Plugins exceptions"/>
+  <suffix name="popups" label="Popups exceptions"/>
+  <suffix name="ppapi-broker" label="Ppapi broker exceptions"/>
+  <suffix name="protected-media-identifier" label="Protected media exceptions"/>
+  <suffix name="protocol-handler" label="Protocol handler exceptions"/>
+  <suffix name="push-messaging" label="Push messaging exceptions"/>
+  <suffix name="site-engagement" label="Site engagement exceptions"/>
+  <suffix name="ssl-cert-decisions" label="SSL cert decisions exceptions"/>
+  <suffix name="usb-chooser-data" label="USB chooser data exceptions"/>
+  <affected-histogram name="ContentSettings.Exceptions"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ContextMenuType" separator=".">
