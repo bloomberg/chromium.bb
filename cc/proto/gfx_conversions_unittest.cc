@@ -192,6 +192,13 @@ TEST(GfxProtoConversionsTest, SerializeDeserializeTransform) {
 
   // Test ProtoToTransform
   EXPECT_EQ(transform, ProtoToTransform(proto));
+
+  // Test for identity transforms.
+  gfx::Transform transform2;
+  EXPECT_TRUE(transform2.IsIdentity());
+  proto::Transform proto2;
+  TransformToProto(transform2, &proto2);
+  EXPECT_EQ(transform2, ProtoToTransform(proto2));
 }
 
 TEST(GfxProtoConversionsTest, SerializeDeserializeVector2dF) {

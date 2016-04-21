@@ -100,6 +100,9 @@ gfx::SizeF ProtoToSizeF(const proto::SizeF& proto) {
 
 void TransformToProto(const gfx::Transform& transform,
                       proto::Transform* proto) {
+  if (transform.IsIdentity())
+    return;
+
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
       proto->add_matrix(transform.matrix().get(i, j));
@@ -110,6 +113,7 @@ void TransformToProto(const gfx::Transform& transform,
 gfx::Transform ProtoToTransform(const proto::Transform& proto) {
   if (proto.matrix_size() == 0)
     return gfx::Transform();
+
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   DCHECK_EQ(16, proto.matrix_size());
   for (int i = 0; i < 4; i++) {

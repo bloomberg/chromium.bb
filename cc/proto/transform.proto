@@ -9,5 +9,7 @@ option optimize_for = LITE_RUNTIME;
 package cc.proto;
 
 message Transform {
+  // If the matrix is not set, the deserializer will assume an identity
+  // transform.
   repeated float matrix = 1 [packed = true];
 }
