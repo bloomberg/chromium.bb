@@ -20,9 +20,15 @@ from telemetry.testing import unittest_runner
 
 
 def main():
+  telemetry_test_config = os.path.join(
+      chromium_config.GetTelemetryDir(), 'telemetry',
+      'telemetry_unittest_deps.json')
   project_config = chromium_config.ChromiumConfig(
-      top_level_dir=chromium_config.GetTelemetryDir())
-  return unittest_runner.Run(project_config)
+      top_level_dir=chromium_config.GetTelemetryDir(),
+      client_configs=[chromium_config.CLIENT_CONFIG_PATH, telemetry_test_config]
+  )
+  return unittest_runner.Run(
+      project_config, disable_cloud_storage_io_during_test=True)
 
 if __name__ == '__main__':
   sys.exit(main())
