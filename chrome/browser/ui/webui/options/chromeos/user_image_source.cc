@@ -36,7 +36,7 @@ void ParseRequest(const GURL& url, std::string* email) {
   // TODO(alemate): DCHECK(status) - should happen after options page is
   // migrated.
   if (!status) {
-    LOG(WARNING) << "Failed to deserialize '" << serialized_account_id << "'";
+    LOG(WARNING) << "Failed to deserialize account_id.";
     account_id = user_manager::known_user::GetAccountId(
         serialized_account_id, std::string() /* gaia_id */);
   }
