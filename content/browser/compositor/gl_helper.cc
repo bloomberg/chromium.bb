@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/display_compositor/gl_helper.h"
+#include "content/browser/compositor/gl_helper.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -19,8 +19,8 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "components/display_compositor/gl_helper_readback_support.h"
-#include "components/display_compositor/gl_helper_scaling.h"
+#include "content/browser/compositor/gl_helper_readback_support.h"
+#include "content/browser/compositor/gl_helper_scaling.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -52,12 +52,11 @@ class TextureFrameBufferPair {
  public:
   TextureFrameBufferPair(GLES2Interface* gl, gfx::Size size)
       : texture_(gl), framebuffer_(gl), size_(size) {
-    display_compositor::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
-        gl, texture_);
+    content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl, texture_);
     gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
                    GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    display_compositor::ScopedFramebufferBinder<GL_FRAMEBUFFER>
-        framebuffer_binder(gl, framebuffer_);
+    content::ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
+        gl, framebuffer_);
     gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                              GL_TEXTURE_2D, texture_, 0);
   }
@@ -67,8 +66,8 @@ class TextureFrameBufferPair {
   gfx::Size size() const { return size_; }
 
  private:
-  display_compositor::ScopedTexture texture_;
-  display_compositor::ScopedFramebuffer framebuffer_;
+  content::ScopedTexture texture_;
+  content::ScopedFramebuffer framebuffer_;
   gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureFrameBufferPair);
@@ -79,17 +78,14 @@ class TextureFrameBufferPair {
 // when the output of a scaler is to be sent to a readback.
 class ScalerHolder {
  public:
-  ScalerHolder(GLES2Interface* gl,
-               display_compositor::GLHelper::ScalerInterface* scaler)
+  ScalerHolder(GLES2Interface* gl, content::GLHelper::ScalerInterface* scaler)
       : texture_and_framebuffer_(gl, scaler->DstSize()), scaler_(scaler) {}
 
   void Scale(GLuint src_texture) {
     scaler_->Scale(src_texture, texture_and_framebuffer_.texture());
   }
 
-  display_compositor::GLHelper::ScalerInterface* scaler() const {
-    return scaler_.get();
-  }
+  content::GLHelper::ScalerInterface* scaler() const { return scaler_.get(); }
   TextureFrameBufferPair* texture_and_framebuffer() {
     return &texture_and_framebuffer_;
   }
@@ -97,14 +93,14 @@ class ScalerHolder {
 
  private:
   TextureFrameBufferPair texture_and_framebuffer_;
-  std::unique_ptr<display_compositor::GLHelper::ScalerInterface> scaler_;
+  std::unique_ptr<content::GLHelper::ScalerInterface> scaler_;
 
   DISALLOW_COPY_AND_ASSIGN(ScalerHolder);
 };
 
 }  // namespace
 
-namespace display_compositor {
+namespace content {
 typedef GLHelperReadbackSupport::FormatSupport FormatSupport;
 
 // Implements GLHelper::CropScaleReadbackAndCleanTexture and encapsulates
@@ -334,10 +330,8 @@ class GLHelper::CopyTextureToImpl
     GLHelper::ScalerQuality quality_;
     ReadbackSwizzle swizzle_;
     ScalerHolder scaler_;
-    std::unique_ptr<display_compositor::GLHelperScaling::ShaderInterface>
-        pass1_shader_;
-    std::unique_ptr<display_compositor::GLHelperScaling::ShaderInterface>
-        pass2_shader_;
+    std::unique_ptr<content::GLHelperScaling::ShaderInterface> pass1_shader_;
+    std::unique_ptr<content::GLHelperScaling::ShaderInterface> pass2_shader_;
     TextureFrameBufferPair y_;
     ScopedTexture uv_;
     TextureFrameBufferPair u_;
@@ -874,8 +868,7 @@ void GLHelper::CopySubBufferDamage(GLenum target,
 GLuint GLHelper::CreateTexture() {
   GLuint texture = 0u;
   gl_->GenTextures(1, &texture);
-  display_compositor::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
-      gl_, texture);
+  content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -921,22 +914,19 @@ GLuint GLHelper::ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
 }
 
 void GLHelper::ResizeTexture(GLuint texture, const gfx::Size& size) {
-  display_compositor::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
-      gl_, texture);
+  content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
   gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size.width(), size.height(), 0,
                   GL_RGB, GL_UNSIGNED_BYTE, NULL);
 }
 
 void GLHelper::CopyTextureSubImage(GLuint texture, const gfx::Rect& rect) {
-  display_compositor::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
-      gl_, texture);
+  content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
   gl_->CopyTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.x(),
                          rect.y(), rect.width(), rect.height());
 }
 
 void GLHelper::CopyTextureFullImage(GLuint texture, const gfx::Size& size) {
-  display_compositor::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
-      gl_, texture);
+  content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
   gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, size.width(),
                       size.height(), 0);
 }
@@ -1127,8 +1117,7 @@ GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV_MRT(
   DCHECK(!(dst_size.width() & 1));
   DCHECK(!(dst_size.height() & 1));
 
-  display_compositor::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl,
-                                                                        uv_);
+  content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl, uv_);
   gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (dst_size.width() + 3) / 4,
                  dst_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 }
@@ -1245,4 +1234,4 @@ ReadbackYUVInterface* GLHelper::CreateReadbackPipelineYUV(
       quality, src_size, src_subrect, dst_size, flip_vertically, use_mrt);
 }
 
-}  // namespace display_compositor
+}  // namespace content

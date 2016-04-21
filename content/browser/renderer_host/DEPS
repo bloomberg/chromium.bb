@@ -1,7 +1,6 @@
 include_rules = [
   "+cc/switches.h", # For cc command line switches.
   "+components/mus/public",
-  "+components/display_compositor",
   "+media/base",  # For media command line switches.
   "+media/audio/audio_util.h",  # For audio hardware sample-rate.
   "+third_party/zlib",

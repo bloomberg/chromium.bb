@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DISPLAY_COMPOSITOR_BUFFER_QUEUE_H_
-#define COMPONENTS_DISPLAY_COMPOSITOR_BUFFER_QUEUE_H_
+#ifndef CONTENT_BROWSER_COMPOSITOR_BUFFER_QUEUE_H_
+#define CONTENT_BROWSER_COMPOSITOR_BUFFER_QUEUE_H_
 
 #include <stddef.h>
 
@@ -13,7 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/display_compositor/display_compositor_export.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -29,7 +29,7 @@ namespace gpu {
 class GpuMemoryBufferManager;
 }
 
-namespace display_compositor {
+namespace content {
 
 class GLHelper;
 
@@ -37,7 +37,7 @@ class GLHelper;
 // created using CHROMIUM_gpu_memory_buffer_image. Double/triple buffering is
 // implemented internally. Doublebuffering occurs if PageFlipComplete is called
 // before the next BindFramebuffer call, otherwise it creates extra buffers.
-class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
+class CONTENT_EXPORT BufferQueue {
  public:
   BufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
               unsigned int texture_target,
@@ -65,7 +65,7 @@ class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
   friend class BufferQueueTest;
   friend class AllocatedSurface;
 
-  struct DISPLAY_COMPOSITOR_EXPORT AllocatedSurface {
+  struct CONTENT_EXPORT AllocatedSurface {
     AllocatedSurface(BufferQueue* buffer_queue,
                      std::unique_ptr<gfx::GpuMemoryBuffer> buffer,
                      unsigned int texture,
@@ -121,6 +121,6 @@ class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
   DISALLOW_COPY_AND_ASSIGN(BufferQueue);
 };
 
-}  // namespace display_compositor
+}  // namespace content
 
-#endif  // COMPONENTS_DISPLAY_COMPOSITOR_BUFFER_QUEUE_H_
+#endif  // CONTENT_BROWSER_COMPOSITOR_BUFFER_QUEUE_H_

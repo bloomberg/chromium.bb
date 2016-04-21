@@ -22,7 +22,7 @@
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_hittest.h"
 #include "cc/surfaces/surface_manager.h"
-#include "components/display_compositor/gl_helper.h"
+#include "content/browser/compositor/gl_helper.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/resize_lock.h"
@@ -336,7 +336,7 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   if (!idle_frame_subscriber_textures_.empty()) {
     subscriber_texture = idle_frame_subscriber_textures_.back();
     idle_frame_subscriber_textures_.pop_back();
-  } else if (display_compositor::GLHelper* helper =
+  } else if (GLHelper* helper =
                  ImageTransportFactory::GetInstance()->GetGLHelper()) {
     subscriber_texture = new OwnedMailbox(helper);
   }
@@ -596,8 +596,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceFinishedForVideo(
 
   gpu::SyncToken sync_token;
   if (result) {
-    display_compositor::GLHelper* gl_helper =
-        ImageTransportFactory::GetInstance()->GetGLHelper();
+    GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
     gl_helper->GenerateSyncToken(&sync_token);
   }
   if (release_callback) {
@@ -671,7 +670,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
   }
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  display_compositor::GLHelper* gl_helper = factory->GetGLHelper();
+  GLHelper* gl_helper = factory->GetGLHelper();
   if (!gl_helper)
     return;
   if (subscriber_texture.get() && !subscriber_texture->texture_id())
@@ -684,7 +683,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
 
   gfx::Rect result_rect(result->size());
 
-  display_compositor::ReadbackYUVInterface* yuv_readback_pipeline =
+  content::ReadbackYUVInterface* yuv_readback_pipeline =
       dfh->yuv_readback_pipeline_.get();
   if (yuv_readback_pipeline == NULL ||
       yuv_readback_pipeline->scaler()->SrcSize() != result_rect.size() ||
@@ -698,11 +697,11 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
     // When up-scaling, always use "best" because the quality improvement is
     // huge with insignificant performance penalty.  Note that this strategy
     // differs from single-frame snapshot capture.
-    display_compositor::GLHelper::ScalerQuality quality =
+    GLHelper::ScalerQuality quality =
         ((result_rect.size().width() < region_in_frame.size().width()) &&
          (result_rect.size().height() < region_in_frame.size().height()))
-            ? display_compositor::GLHelper::SCALER_QUALITY_BEST
-            : display_compositor::GLHelper::SCALER_QUALITY_FAST;
+            ? GLHelper::SCALER_QUALITY_BEST
+            : GLHelper::SCALER_QUALITY_FAST;
 
     dfh->yuv_readback_pipeline_.reset(gl_helper->CreateReadbackPipelineYUV(
         quality, result_rect.size(), result_rect, region_in_frame.size(), true,

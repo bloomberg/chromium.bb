@@ -8,9 +8,9 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
-#include "components/display_compositor/buffer_queue.h"
-#include "components/display_compositor/gl_helper.h"
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
+#include "content/browser/compositor/buffer_queue.h"
+#include "content/browser/compositor/gl_helper.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -49,9 +49,9 @@ GpuSurfacelessBrowserCompositorOutputSurface::
   // implementation.
   capabilities_.max_frames_pending = 2;
 
-  gl_helper_.reset(new display_compositor::GLHelper(
-      context_provider_->ContextGL(), context_provider_->ContextSupport()));
-  output_surface_.reset(new display_compositor::BufferQueue(
+  gl_helper_.reset(new GLHelper(context_provider_->ContextGL(),
+                                context_provider_->ContextSupport()));
+  output_surface_.reset(new BufferQueue(
       context_provider_, target, internalformat_, gl_helper_.get(),
       gpu_memory_buffer_manager_, surface_id));
   output_surface_->Initialize();

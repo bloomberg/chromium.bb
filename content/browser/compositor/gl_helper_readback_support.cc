@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/compositor/gl_helper_readback_support.h"
 #include "base/logging.h"
-#include "components/display_compositor/gl_helper_readback_support.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
-namespace display_compositor {
+namespace content {
 
 GLHelperReadbackSupport::GLHelperReadbackSupport(gpu::gles2::GLES2Interface* gl)
     : gl_(gl) {
@@ -75,7 +75,7 @@ void GLHelperReadbackSupport::GetAdditionalFormat(GLenum format,
   }
 
   const int kTestSize = 64;
-  display_compositor::ScopedTexture dst_texture(gl_);
+  content::ScopedTexture dst_texture(gl_);
   ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, dst_texture);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -169,4 +169,4 @@ GLHelperReadbackSupport::GetReadbackConfig(SkColorType color_type,
   return GLHelperReadbackSupport::NOT_SUPPORTED;
 }
 
-}  // namespace display_compositor
+}  // namespace content
