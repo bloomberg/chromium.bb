@@ -7,7 +7,7 @@ InspectorTest.startProfilerTest = function(callback)
 {
     InspectorTest.addResult("Profiler was enabled.");
     InspectorTest.addSniffer(WebInspector.panels.profiles, "_addProfileHeader", InspectorTest._profileHeaderAdded, true);
-    InspectorTest.addSniffer(WebInspector.CPUProfileView.prototype, "refresh", InspectorTest._profileViewRefresh, true);
+    InspectorTest.addSniffer(WebInspector.ProfileView.prototype, "refresh", InspectorTest._profileViewRefresh, true);
     InspectorTest.safeWrap(callback)();
 };
 
@@ -69,5 +69,15 @@ InspectorTest._profileViewRefresh = function()
         callback.callback(this);
     }
 };
+
+InspectorTest.startSamplingHeapProfiler = function()
+{
+    WebInspector.SamplingHeapProfileType.instance.startRecordingProfile();
+}
+
+InspectorTest.stopSamplingHeapProfiler = function()
+{
+    WebInspector.SamplingHeapProfileType.instance.stopRecordingProfile();
+}
 
 };
