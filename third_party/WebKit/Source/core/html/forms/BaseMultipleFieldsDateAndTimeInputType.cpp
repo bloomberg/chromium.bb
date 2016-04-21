@@ -68,7 +68,7 @@ public:
     void visitField(DateTimeFormat::FieldType, int) final;
     void visitLiteral(const String&) final { }
 
-    bool validateFormat(const String& format, const BaseDateAndTimeInputType&);
+    bool validateFormat(const String& format, const BaseTemporalInputType&);
 
 private:
     bool m_hasYear;
@@ -120,39 +120,39 @@ void DateTimeFormatValidator::visitField(DateTimeFormat::FieldType fieldType, in
     }
 }
 
-bool DateTimeFormatValidator::validateFormat(const String& format, const BaseDateAndTimeInputType& inputType)
+bool DateTimeFormatValidator::validateFormat(const String& format, const BaseTemporalInputType& inputType)
 {
     if (!DateTimeFormat::parse(format, *this))
         return false;
     return inputType.isValidFormat(m_hasYear, m_hasMonth, m_hasWeek, m_hasDay, m_hasAMPM, m_hasHour, m_hasMinute, m_hasSecond);
 }
 
-DateTimeEditElement* BaseMultipleFieldsDateAndTimeInputType::dateTimeEditElement() const
+DateTimeEditElement* MultipleFieldsTemporalInputTypeView::dateTimeEditElement() const
 {
     return toDateTimeEditElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::dateTimeEdit()));
 }
 
-SpinButtonElement* BaseMultipleFieldsDateAndTimeInputType::spinButtonElement() const
+SpinButtonElement* MultipleFieldsTemporalInputTypeView::spinButtonElement() const
 {
     return toSpinButtonElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton()));
 }
 
-ClearButtonElement* BaseMultipleFieldsDateAndTimeInputType::clearButtonElement() const
+ClearButtonElement* MultipleFieldsTemporalInputTypeView::clearButtonElement() const
 {
     return toClearButtonElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::clearButton()));
 }
 
-PickerIndicatorElement* BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorElement() const
+PickerIndicatorElement* MultipleFieldsTemporalInputTypeView::pickerIndicatorElement() const
 {
     return toPickerIndicatorElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::pickerIndicator()));
 }
 
-inline bool BaseMultipleFieldsDateAndTimeInputType::containsFocusedShadowElement() const
+inline bool MultipleFieldsTemporalInputTypeView::containsFocusedShadowElement() const
 {
     return element().userAgentShadowRoot()->contains(element().document().focusedElement());
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::didBlurFromControl()
+void MultipleFieldsTemporalInputTypeView::didBlurFromControl()
 {
     // We don't need to call blur(). This function is called when control
     // lost focus.
@@ -166,7 +166,7 @@ void BaseMultipleFieldsDateAndTimeInputType::didBlurFromControl()
         spinButton->releaseCapture();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::didFocusOnControl()
+void MultipleFieldsTemporalInputTypeView::didFocusOnControl()
 {
     // We don't need to call focus(). This function is called when control
     // got focus.
@@ -178,7 +178,7 @@ void BaseMultipleFieldsDateAndTimeInputType::didFocusOnControl()
     element().setFocus(true);
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::editControlValueChanged()
+void MultipleFieldsTemporalInputTypeView::editControlValueChanged()
 {
     String oldValue = element().value();
     String newValue = m_inputType->sanitizeValue(dateTimeEditElement()->value());
@@ -194,38 +194,38 @@ void BaseMultipleFieldsDateAndTimeInputType::editControlValueChanged()
     element().updateClearButtonVisibility();
 }
 
-String BaseMultipleFieldsDateAndTimeInputType::formatDateTimeFieldsState(const DateTimeFieldsState& state) const
+String MultipleFieldsTemporalInputTypeView::formatDateTimeFieldsState(const DateTimeFieldsState& state) const
 {
     return m_inputType->formatDateTimeFieldsState(state);
 }
 
-bool BaseMultipleFieldsDateAndTimeInputType::hasCustomFocusLogic() const
+bool MultipleFieldsTemporalInputTypeView::hasCustomFocusLogic() const
 {
     return false;
 }
 
-bool BaseMultipleFieldsDateAndTimeInputType::isEditControlOwnerDisabled() const
+bool MultipleFieldsTemporalInputTypeView::isEditControlOwnerDisabled() const
 {
     return element().isDisabledFormControl();
 }
 
-bool BaseMultipleFieldsDateAndTimeInputType::isEditControlOwnerReadOnly() const
+bool MultipleFieldsTemporalInputTypeView::isEditControlOwnerReadOnly() const
 {
     return element().isReadOnly();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::focusAndSelectSpinButtonOwner()
+void MultipleFieldsTemporalInputTypeView::focusAndSelectSpinButtonOwner()
 {
     if (DateTimeEditElement* edit = dateTimeEditElement())
         edit->focusIfNoFocus();
 }
 
-bool BaseMultipleFieldsDateAndTimeInputType::shouldSpinButtonRespondToMouseEvents()
+bool MultipleFieldsTemporalInputTypeView::shouldSpinButtonRespondToMouseEvents()
 {
     return !element().isDisabledOrReadOnly();
 }
 
-bool BaseMultipleFieldsDateAndTimeInputType::shouldSpinButtonRespondToWheelEvents()
+bool MultipleFieldsTemporalInputTypeView::shouldSpinButtonRespondToWheelEvents()
 {
     if (!shouldSpinButtonRespondToMouseEvents())
         return false;
@@ -234,30 +234,30 @@ bool BaseMultipleFieldsDateAndTimeInputType::shouldSpinButtonRespondToWheelEvent
     return false;
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::spinButtonStepDown()
+void MultipleFieldsTemporalInputTypeView::spinButtonStepDown()
 {
     if (DateTimeEditElement* edit = dateTimeEditElement())
         edit->stepDown();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::spinButtonStepUp()
+void MultipleFieldsTemporalInputTypeView::spinButtonStepUp()
 {
     if (DateTimeEditElement* edit = dateTimeEditElement())
         edit->stepUp();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::spinButtonDidReleaseMouseCapture(SpinButtonElement::EventDispatch eventDispatch)
+void MultipleFieldsTemporalInputTypeView::spinButtonDidReleaseMouseCapture(SpinButtonElement::EventDispatch eventDispatch)
 {
     if (eventDispatch == SpinButtonElement::EventDispatchAllowed)
         element().dispatchFormControlChangeEvent();
 }
 
-bool BaseMultipleFieldsDateAndTimeInputType::isPickerIndicatorOwnerDisabledOrReadOnly() const
+bool MultipleFieldsTemporalInputTypeView::isPickerIndicatorOwnerDisabledOrReadOnly() const
 {
     return element().isDisabledOrReadOnly();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(const String& value)
+void MultipleFieldsTemporalInputTypeView::pickerIndicatorChooseValue(const String& value)
 {
     if (element().isValidValue(value)) {
         element().setValue(value, DispatchInputAndChangeEvent);
@@ -275,7 +275,7 @@ void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(const St
     element().dispatchFormControlChangeEvent();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(double value)
+void MultipleFieldsTemporalInputTypeView::pickerIndicatorChooseValue(double value)
 {
     ASSERT(std::isfinite(value) || std::isnan(value));
     if (std::isnan(value))
@@ -284,17 +284,17 @@ void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(double v
         element().setValueAsNumber(value, ASSERT_NO_EXCEPTION, DispatchInputAndChangeEvent);
 }
 
-Element& BaseMultipleFieldsDateAndTimeInputType::pickerOwnerElement() const
+Element& MultipleFieldsTemporalInputTypeView::pickerOwnerElement() const
 {
     return element();
 }
 
-bool BaseMultipleFieldsDateAndTimeInputType::setupDateTimeChooserParameters(DateTimeChooserParameters& parameters)
+bool MultipleFieldsTemporalInputTypeView::setupDateTimeChooserParameters(DateTimeChooserParameters& parameters)
 {
     return element().setupDateTimeChooserParameters(parameters);
 }
 
-BaseMultipleFieldsDateAndTimeInputType::BaseMultipleFieldsDateAndTimeInputType(HTMLInputElement& element, BaseDateAndTimeInputType& inputType)
+MultipleFieldsTemporalInputTypeView::MultipleFieldsTemporalInputTypeView(HTMLInputElement& element, BaseTemporalInputType& inputType)
     : InputTypeView(element)
     , m_inputType(inputType)
     , m_isDestroyingShadowSubtree(false)
@@ -303,28 +303,28 @@ BaseMultipleFieldsDateAndTimeInputType::BaseMultipleFieldsDateAndTimeInputType(H
 {
 }
 
-BaseMultipleFieldsDateAndTimeInputType* BaseMultipleFieldsDateAndTimeInputType::create(HTMLInputElement& element, BaseDateAndTimeInputType& inputType)
+MultipleFieldsTemporalInputTypeView* MultipleFieldsTemporalInputTypeView::create(HTMLInputElement& element, BaseTemporalInputType& inputType)
 {
-    return new BaseMultipleFieldsDateAndTimeInputType(element, inputType);
+    return new MultipleFieldsTemporalInputTypeView(element, inputType);
 }
 
-BaseMultipleFieldsDateAndTimeInputType::~BaseMultipleFieldsDateAndTimeInputType()
+MultipleFieldsTemporalInputTypeView::~MultipleFieldsTemporalInputTypeView()
 {
 }
 
-DEFINE_TRACE(BaseMultipleFieldsDateAndTimeInputType)
+DEFINE_TRACE(MultipleFieldsTemporalInputTypeView)
 {
     visitor->trace(m_inputType);
     InputTypeView::trace(visitor);
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::blur()
+void MultipleFieldsTemporalInputTypeView::blur()
 {
     if (DateTimeEditElement* edit = dateTimeEditElement())
         edit->blurByOwner();
 }
 
-PassRefPtr<ComputedStyle> BaseMultipleFieldsDateAndTimeInputType::customStyleForLayoutObject(PassRefPtr<ComputedStyle> originalStyle)
+PassRefPtr<ComputedStyle> MultipleFieldsTemporalInputTypeView::customStyleForLayoutObject(PassRefPtr<ComputedStyle> originalStyle)
 {
     EDisplay originalDisplay = originalStyle->display();
     EDisplay newDisplay = originalDisplay;
@@ -343,7 +343,7 @@ PassRefPtr<ComputedStyle> BaseMultipleFieldsDateAndTimeInputType::customStyleFor
     return style.release();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
+void MultipleFieldsTemporalInputTypeView::createShadowSubtree()
 {
     ASSERT(element().shadow());
 
@@ -368,7 +368,7 @@ void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
     updatePickerIndicatorVisibility();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::destroyShadowSubtree()
+void MultipleFieldsTemporalInputTypeView::destroyShadowSubtree()
 {
     ASSERT(!m_isDestroyingShadowSubtree);
     m_isDestroyingShadowSubtree = true;
@@ -390,7 +390,7 @@ void BaseMultipleFieldsDateAndTimeInputType::destroyShadowSubtree()
     m_isDestroyingShadowSubtree = false;
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::handleFocusInEvent(Element* oldFocusedElement, WebFocusType type)
+void MultipleFieldsTemporalInputTypeView::handleFocusInEvent(Element* oldFocusedElement, WebFocusType type)
 {
     DateTimeEditElement* edit = dateTimeEditElement();
     if (!edit || m_isDestroyingShadowSubtree)
@@ -405,7 +405,7 @@ void BaseMultipleFieldsDateAndTimeInputType::handleFocusInEvent(Element* oldFocu
     }
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::forwardEvent(Event* event)
+void MultipleFieldsTemporalInputTypeView::forwardEvent(Event* event)
 {
     if (SpinButtonElement* element = spinButtonElement()) {
         element->forwardEvent(event);
@@ -417,7 +417,7 @@ void BaseMultipleFieldsDateAndTimeInputType::forwardEvent(Event* event)
         edit->defaultEventHandler(event);
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::disabledAttributeChanged()
+void MultipleFieldsTemporalInputTypeView::disabledAttributeChanged()
 {
     EventQueueScope scope;
     spinButtonElement()->releaseCapture();
@@ -425,12 +425,12 @@ void BaseMultipleFieldsDateAndTimeInputType::disabledAttributeChanged()
         edit->disabledStateChanged();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::requiredAttributeChanged()
+void MultipleFieldsTemporalInputTypeView::requiredAttributeChanged()
 {
     updateClearButtonVisibility();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::handleKeydownEvent(KeyboardEvent* event)
+void MultipleFieldsTemporalInputTypeView::handleKeydownEvent(KeyboardEvent* event)
 {
     if (!element().focused())
         return;
@@ -444,28 +444,28 @@ void BaseMultipleFieldsDateAndTimeInputType::handleKeydownEvent(KeyboardEvent* e
     }
 }
 
-bool BaseMultipleFieldsDateAndTimeInputType::hasBadInput() const
+bool MultipleFieldsTemporalInputTypeView::hasBadInput() const
 {
     DateTimeEditElement* edit = dateTimeEditElement();
     return element().value().isEmpty() && edit && edit->anyEditableFieldsHaveValues();
 }
 
-AtomicString BaseMultipleFieldsDateAndTimeInputType::localeIdentifier() const
+AtomicString MultipleFieldsTemporalInputTypeView::localeIdentifier() const
 {
     return element().computeInheritedLanguage();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::editControlDidChangeValueByKeyboard()
+void MultipleFieldsTemporalInputTypeView::editControlDidChangeValueByKeyboard()
 {
     element().dispatchFormControlChangeEvent();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::minOrMaxAttributeChanged()
+void MultipleFieldsTemporalInputTypeView::minOrMaxAttributeChanged()
 {
     updateView();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::readonlyAttributeChanged()
+void MultipleFieldsTemporalInputTypeView::readonlyAttributeChanged()
 {
     EventQueueScope scope;
     spinButtonElement()->releaseCapture();
@@ -473,7 +473,7 @@ void BaseMultipleFieldsDateAndTimeInputType::readonlyAttributeChanged()
         edit->readOnlyStateChanged();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::restoreFormControlState(const FormControlState& state)
+void MultipleFieldsTemporalInputTypeView::restoreFormControlState(const FormControlState& state)
 {
     DateTimeEditElement* edit = dateTimeEditElement();
     if (!edit)
@@ -484,14 +484,14 @@ void BaseMultipleFieldsDateAndTimeInputType::restoreFormControlState(const FormC
     updateClearButtonVisibility();
 }
 
-FormControlState BaseMultipleFieldsDateAndTimeInputType::saveFormControlState() const
+FormControlState MultipleFieldsTemporalInputTypeView::saveFormControlState() const
 {
     if (DateTimeEditElement* edit = dateTimeEditElement())
         return edit->valueAsDateTimeFieldsState().saveFormControlState();
     return FormControlState();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::didSetValue(const String& sanitizedValue, bool valueChanged)
+void MultipleFieldsTemporalInputTypeView::didSetValue(const String& sanitizedValue, bool valueChanged)
 {
     DateTimeEditElement* edit = dateTimeEditElement();
     if (valueChanged || (sanitizedValue.isEmpty() && edit && edit->anyEditableFieldsHaveValues())) {
@@ -500,12 +500,12 @@ void BaseMultipleFieldsDateAndTimeInputType::didSetValue(const String& sanitized
     }
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::stepAttributeChanged()
+void MultipleFieldsTemporalInputTypeView::stepAttributeChanged()
 {
     updateView();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::updateView()
+void MultipleFieldsTemporalInputTypeView::updateView()
 {
     DateTimeEditElement* edit = dateTimeEditElement();
     if (!edit)
@@ -540,24 +540,24 @@ void BaseMultipleFieldsDateAndTimeInputType::updateView()
     updateClearButtonVisibility();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::closePopupView()
+void MultipleFieldsTemporalInputTypeView::closePopupView()
 {
     if (PickerIndicatorElement* picker = pickerIndicatorElement())
         picker->closePopup();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::valueAttributeChanged()
+void MultipleFieldsTemporalInputTypeView::valueAttributeChanged()
 {
     if (!element().hasDirtyValue())
         updateView();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::listAttributeTargetChanged()
+void MultipleFieldsTemporalInputTypeView::listAttributeTargetChanged()
 {
     updatePickerIndicatorVisibility();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::updatePickerIndicatorVisibility()
+void MultipleFieldsTemporalInputTypeView::updatePickerIndicatorVisibility()
 {
     if (m_pickerIndicatorIsAlwaysVisible) {
         showPickerIndicator();
@@ -569,7 +569,7 @@ void BaseMultipleFieldsDateAndTimeInputType::updatePickerIndicatorVisibility()
         hidePickerIndicator();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::hidePickerIndicator()
+void MultipleFieldsTemporalInputTypeView::hidePickerIndicator()
 {
     if (!m_pickerIndicatorIsVisible)
         return;
@@ -578,7 +578,7 @@ void BaseMultipleFieldsDateAndTimeInputType::hidePickerIndicator()
     pickerIndicatorElement()->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::showPickerIndicator()
+void MultipleFieldsTemporalInputTypeView::showPickerIndicator()
 {
     if (m_pickerIndicatorIsVisible)
         return;
@@ -587,23 +587,23 @@ void BaseMultipleFieldsDateAndTimeInputType::showPickerIndicator()
     pickerIndicatorElement()->removeInlineStyleProperty(CSSPropertyDisplay);
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::focusAndSelectClearButtonOwner()
+void MultipleFieldsTemporalInputTypeView::focusAndSelectClearButtonOwner()
 {
     element().focus();
 }
 
-bool BaseMultipleFieldsDateAndTimeInputType::shouldClearButtonRespondToMouseEvents()
+bool MultipleFieldsTemporalInputTypeView::shouldClearButtonRespondToMouseEvents()
 {
     return !element().isDisabledOrReadOnly() && !element().isRequired();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::clearValue()
+void MultipleFieldsTemporalInputTypeView::clearValue()
 {
     element().setValue("", DispatchInputAndChangeEvent);
     element().updateClearButtonVisibility();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::updateClearButtonVisibility()
+void MultipleFieldsTemporalInputTypeView::updateClearButtonVisibility()
 {
     ClearButtonElement* clearButton = clearButtonElement();
     if (!clearButton)
@@ -618,12 +618,12 @@ void BaseMultipleFieldsDateAndTimeInputType::updateClearButtonVisibility()
     }
 }
 
-TextDirection BaseMultipleFieldsDateAndTimeInputType::computedTextDirection()
+TextDirection MultipleFieldsTemporalInputTypeView::computedTextDirection()
 {
     return element().locale().isRTL() ? RTL : LTR;
 }
 
-AXObject* BaseMultipleFieldsDateAndTimeInputType::popupRootAXObject()
+AXObject* MultipleFieldsTemporalInputTypeView::popupRootAXObject()
 {
     if (PickerIndicatorElement* picker = pickerIndicatorElement())
         return picker->popupRootAXObject();

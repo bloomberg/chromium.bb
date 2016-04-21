@@ -34,17 +34,16 @@
 
 namespace blink {
 
-// TODO(tkent): Rename this to ChooserOnlyDateAndTimeInputTypeView.
-class BaseChooserOnlyDateAndTimeInputType final : public InputTypeView, public DateTimeChooserClient {
-    USING_GARBAGE_COLLECTED_MIXIN(BaseChooserOnlyDateAndTimeInputType);
-    USING_PRE_FINALIZER(BaseChooserOnlyDateAndTimeInputType, closeDateTimeChooser);
+class ChooserOnlyTemporalInputTypeView final : public InputTypeView, public DateTimeChooserClient {
+    USING_GARBAGE_COLLECTED_MIXIN(ChooserOnlyTemporalInputTypeView);
+    USING_PRE_FINALIZER(ChooserOnlyTemporalInputTypeView, closeDateTimeChooser);
 public:
-    static BaseChooserOnlyDateAndTimeInputType* create(HTMLInputElement&, BaseDateAndTimeInputType&);
-    ~BaseChooserOnlyDateAndTimeInputType() override;
+    static ChooserOnlyTemporalInputTypeView* create(HTMLInputElement&, BaseTemporalInputType&);
+    ~ChooserOnlyTemporalInputTypeView() override;
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    BaseChooserOnlyDateAndTimeInputType(HTMLInputElement&, BaseDateAndTimeInputType&);
+    ChooserOnlyTemporalInputTypeView(HTMLInputElement&, BaseTemporalInputType&);
     void closeDateTimeChooser();
 
     // InputTypeView functions:
@@ -64,7 +63,7 @@ private:
     void didChooseValue(double) override;
     void didEndChooser() override;
 
-    Member<BaseDateAndTimeInputType> m_inputType;
+    Member<BaseTemporalInputType> m_inputType;
     Member<DateTimeChooser> m_dateTimeChooser;
 };
 

@@ -39,25 +39,24 @@
 
 namespace blink {
 
-class BaseDateAndTimeInputType;
+class BaseTemporalInputType;
 struct DateTimeChooserParameters;
 
-// TODO(tkent): Rename this to MultipleFieldsTemporalInputTypeView.
-class BaseMultipleFieldsDateAndTimeInputType final
+class MultipleFieldsTemporalInputTypeView final
     : public InputTypeView
     , protected DateTimeEditElement::EditControlOwner
     , protected PickerIndicatorElement::PickerIndicatorOwner
     , protected SpinButtonElement::SpinButtonOwner
     , protected ClearButtonElement::ClearButtonOwner {
-    USING_GARBAGE_COLLECTED_MIXIN(BaseMultipleFieldsDateAndTimeInputType);
+    USING_GARBAGE_COLLECTED_MIXIN(MultipleFieldsTemporalInputTypeView);
 
 public:
-    static BaseMultipleFieldsDateAndTimeInputType* create(HTMLInputElement&, BaseDateAndTimeInputType&);
-    ~BaseMultipleFieldsDateAndTimeInputType() override;
+    static MultipleFieldsTemporalInputTypeView* create(HTMLInputElement&, BaseTemporalInputType&);
+    ~MultipleFieldsTemporalInputTypeView() override;
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    BaseMultipleFieldsDateAndTimeInputType(HTMLInputElement&, BaseDateAndTimeInputType&);
+    MultipleFieldsTemporalInputTypeView(HTMLInputElement&, BaseTemporalInputType&);
 
     // DateTimeEditElement::EditControlOwner functions
     void didBlurFromControl() final;
@@ -124,7 +123,7 @@ private:
     void hidePickerIndicator();
     void updatePickerIndicatorVisibility();
 
-    Member<BaseDateAndTimeInputType> m_inputType;
+    Member<BaseTemporalInputType> m_inputType;
     bool m_isDestroyingShadowSubtree;
     bool m_pickerIndicatorIsVisible;
     bool m_pickerIndicatorIsAlwaysVisible;

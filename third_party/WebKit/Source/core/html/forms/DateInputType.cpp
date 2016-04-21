@@ -49,7 +49,7 @@ static const int dateDefaultStepBase = 0;
 static const int dateStepScaleFactor = 86400000;
 
 inline DateInputType::DateInputType(HTMLInputElement& element)
-    : BaseDateAndTimeInputType(element)
+    : BaseTemporalInputType(element)
 {
 }
 

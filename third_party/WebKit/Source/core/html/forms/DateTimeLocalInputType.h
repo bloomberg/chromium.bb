@@ -37,12 +37,12 @@ namespace blink {
 
 class ExceptionState;
 
-class DateTimeLocalInputType final : public BaseDateAndTimeInputType {
+class DateTimeLocalInputType final : public BaseTemporalInputType {
 public:
     static InputType* create(HTMLInputElement&);
 
 private:
-    explicit DateTimeLocalInputType(HTMLInputElement& element) : BaseDateAndTimeInputType(element) {}
+    explicit DateTimeLocalInputType(HTMLInputElement& element) : BaseTemporalInputType(element) {}
 
     void countUsage() override;
     const AtomicString& formControlType() const override;
@@ -54,7 +54,7 @@ private:
     String localizeValue(const String&) const override;
     void warnIfValueIsInvalid(const String&) const override;
 
-    // BaseDateAndTimeInputType functions
+    // BaseTemporalInputType functions
     String formatDateTimeFieldsState(const DateTimeFieldsState&) const final;
     void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const final;
     bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const override;

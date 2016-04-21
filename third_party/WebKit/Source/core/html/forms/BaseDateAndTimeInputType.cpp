@@ -48,70 +48,70 @@ using namespace HTMLNames;
 static const int msecPerMinute = 60 * 1000;
 static const int msecPerSecond = 1000;
 
-String BaseDateAndTimeInputType::badInputText() const
+String BaseTemporalInputType::badInputText() const
 {
     return locale().queryString(WebLocalizedString::ValidationBadInputForDateTime);
 }
 
-InputTypeView* BaseDateAndTimeInputType::createView()
+InputTypeView* BaseTemporalInputType::createView()
 {
     if (RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled())
-        return BaseMultipleFieldsDateAndTimeInputType::create(element(), *this);
-    return BaseChooserOnlyDateAndTimeInputType::create(element(), *this);
+        return MultipleFieldsTemporalInputTypeView::create(element(), *this);
+    return ChooserOnlyTemporalInputTypeView::create(element(), *this);
 }
 
-double BaseDateAndTimeInputType::valueAsDate() const
+double BaseTemporalInputType::valueAsDate() const
 {
     return valueAsDouble();
 }
 
-void BaseDateAndTimeInputType::setValueAsDate(double value, ExceptionState&) const
+void BaseTemporalInputType::setValueAsDate(double value, ExceptionState&) const
 {
     element().setValue(serializeWithMilliseconds(value));
 }
 
-double BaseDateAndTimeInputType::valueAsDouble() const
+double BaseTemporalInputType::valueAsDouble() const
 {
     const Decimal value = parseToNumber(element().value(), Decimal::nan());
     return value.isFinite() ? value.toDouble() : DateComponents::invalidMilliseconds();
 }
 
-void BaseDateAndTimeInputType::setValueAsDouble(double newValue, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState) const
+void BaseTemporalInputType::setValueAsDouble(double newValue, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState) const
 {
     setValueAsDecimal(Decimal::fromDouble(newValue), eventBehavior, exceptionState);
 }
 
-bool BaseDateAndTimeInputType::typeMismatchFor(const String& value) const
+bool BaseTemporalInputType::typeMismatchFor(const String& value) const
 {
     return !value.isEmpty() && !parseToDateComponents(value, 0);
 }
 
-bool BaseDateAndTimeInputType::typeMismatch() const
+bool BaseTemporalInputType::typeMismatch() const
 {
     return typeMismatchFor(element().value());
 }
 
-String BaseDateAndTimeInputType::rangeOverflowText(const Decimal& maximum) const
+String BaseTemporalInputType::rangeOverflowText(const Decimal& maximum) const
 {
     return locale().queryString(WebLocalizedString::ValidationRangeOverflowDateTime, localizeValue(serialize(maximum)));
 }
 
-String BaseDateAndTimeInputType::rangeUnderflowText(const Decimal& minimum) const
+String BaseTemporalInputType::rangeUnderflowText(const Decimal& minimum) const
 {
     return locale().queryString(WebLocalizedString::ValidationRangeUnderflowDateTime, localizeValue(serialize(minimum)));
 }
 
-Decimal BaseDateAndTimeInputType::defaultValueForStepUp() const
+Decimal BaseTemporalInputType::defaultValueForStepUp() const
 {
     return Decimal::fromDouble(convertToLocalTime(currentTimeMS()));
 }
 
-bool BaseDateAndTimeInputType::isSteppable() const
+bool BaseTemporalInputType::isSteppable() const
 {
     return true;
 }
 
-Decimal BaseDateAndTimeInputType::parseToNumber(const String& source, const Decimal& defaultValue) const
+Decimal BaseTemporalInputType::parseToNumber(const String& source, const Decimal& defaultValue) const
 {
     DateComponents date;
     if (!parseToDateComponents(source, &date))
@@ -121,7 +121,7 @@ Decimal BaseDateAndTimeInputType::parseToNumber(const String& source, const Deci
     return Decimal::fromDouble(msec);
 }
 
-bool BaseDateAndTimeInputType::parseToDateComponents(const String& source, DateComponents* out) const
+bool BaseTemporalInputType::parseToDateComponents(const String& source, DateComponents* out) const
 {
     if (source.isEmpty())
         return false;
@@ -131,7 +131,7 @@ bool BaseDateAndTimeInputType::parseToDateComponents(const String& source, DateC
     return parseToDateComponentsInternal(source, out);
 }
 
-String BaseDateAndTimeInputType::serialize(const Decimal& value) const
+String BaseTemporalInputType::serialize(const Decimal& value) const
 {
     if (!value.isFinite())
         return String();
@@ -141,7 +141,7 @@ String BaseDateAndTimeInputType::serialize(const Decimal& value) const
     return serializeWithComponents(date);
 }
 
-String BaseDateAndTimeInputType::serializeWithComponents(const DateComponents& date) const
+String BaseTemporalInputType::serializeWithComponents(const DateComponents& date) const
 {
     Decimal step;
     if (!element().getAllowedValueStep(&step))
@@ -153,12 +153,12 @@ String BaseDateAndTimeInputType::serializeWithComponents(const DateComponents& d
     return date.toString(DateComponents::Millisecond);
 }
 
-String BaseDateAndTimeInputType::serializeWithMilliseconds(double value) const
+String BaseTemporalInputType::serializeWithMilliseconds(double value) const
 {
     return serialize(Decimal::fromDouble(value));
 }
 
-String BaseDateAndTimeInputType::localizeValue(const String& proposedValue) const
+String BaseTemporalInputType::localizeValue(const String& proposedValue) const
 {
     DateComponents date;
     if (!parseToDateComponents(proposedValue, &date))
@@ -168,37 +168,37 @@ String BaseDateAndTimeInputType::localizeValue(const String& proposedValue) cons
     return localized.isEmpty() ? proposedValue : localized;
 }
 
-String BaseDateAndTimeInputType::visibleValue() const
+String BaseTemporalInputType::visibleValue() const
 {
     return localizeValue(element().value());
 }
 
-String BaseDateAndTimeInputType::sanitizeValue(const String& proposedValue) const
+String BaseTemporalInputType::sanitizeValue(const String& proposedValue) const
 {
     return typeMismatchFor(proposedValue) ? emptyString() : proposedValue;
 }
 
-bool BaseDateAndTimeInputType::supportsReadOnly() const
+bool BaseTemporalInputType::supportsReadOnly() const
 {
     return true;
 }
 
-bool BaseDateAndTimeInputType::shouldRespectListAttribute()
+bool BaseTemporalInputType::shouldRespectListAttribute()
 {
     return true;
 }
 
-bool BaseDateAndTimeInputType::valueMissing(const String& value) const
+bool BaseTemporalInputType::valueMissing(const String& value) const
 {
     return element().isRequired() && value.isEmpty();
 }
 
-bool BaseDateAndTimeInputType::shouldShowFocusRingOnMouseFocus() const
+bool BaseTemporalInputType::shouldShowFocusRingOnMouseFocus() const
 {
     return true;
 }
 
-bool BaseDateAndTimeInputType::shouldHaveSecondField(const DateComponents& date) const
+bool BaseTemporalInputType::shouldHaveSecondField(const DateComponents& date) const
 {
     StepRange stepRange = createStepRange(AnyIsDefaultStep);
     return date.second() || date.millisecond()

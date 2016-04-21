@@ -36,24 +36,24 @@
 
 namespace blink {
 
-BaseChooserOnlyDateAndTimeInputType::BaseChooserOnlyDateAndTimeInputType(HTMLInputElement& element, BaseDateAndTimeInputType& inputType)
+ChooserOnlyTemporalInputTypeView::ChooserOnlyTemporalInputTypeView(HTMLInputElement& element, BaseTemporalInputType& inputType)
     : InputTypeView(element)
     , m_inputType(inputType)
 {
     ThreadState::current()->registerPreFinalizer(this);
 }
 
-BaseChooserOnlyDateAndTimeInputType* BaseChooserOnlyDateAndTimeInputType::create(HTMLInputElement& element, BaseDateAndTimeInputType& inputType)
+ChooserOnlyTemporalInputTypeView* ChooserOnlyTemporalInputTypeView::create(HTMLInputElement& element, BaseTemporalInputType& inputType)
 {
-    return new BaseChooserOnlyDateAndTimeInputType(element, inputType);
+    return new ChooserOnlyTemporalInputTypeView(element, inputType);
 }
 
-BaseChooserOnlyDateAndTimeInputType::~BaseChooserOnlyDateAndTimeInputType()
+ChooserOnlyTemporalInputTypeView::~ChooserOnlyTemporalInputTypeView()
 {
     ASSERT(!m_dateTimeChooser);
 }
 
-DEFINE_TRACE(BaseChooserOnlyDateAndTimeInputType)
+DEFINE_TRACE(ChooserOnlyTemporalInputTypeView)
 {
     visitor->trace(m_inputType);
     visitor->trace(m_dateTimeChooser);
@@ -61,7 +61,7 @@ DEFINE_TRACE(BaseChooserOnlyDateAndTimeInputType)
     DateTimeChooserClient::trace(visitor);
 }
 
-void BaseChooserOnlyDateAndTimeInputType::handleDOMActivateEvent(Event*)
+void ChooserOnlyTemporalInputTypeView::handleDOMActivateEvent(Event*)
 {
     if (element().isDisabledOrReadOnly() || !element().layoutObject() || !UserGestureIndicator::processingUserGesture() || element().openShadowRoot())
         return;
@@ -76,7 +76,7 @@ void BaseChooserOnlyDateAndTimeInputType::handleDOMActivateEvent(Event*)
     m_dateTimeChooser = element().document().frameHost()->chromeClient().openDateTimeChooser(this, parameters);
 }
 
-void BaseChooserOnlyDateAndTimeInputType::createShadowSubtree()
+void ChooserOnlyTemporalInputTypeView::createShadowSubtree()
 {
     DEFINE_STATIC_LOCAL(AtomicString, valueContainerPseudo, ("-webkit-date-and-time-value"));
 
@@ -86,7 +86,7 @@ void BaseChooserOnlyDateAndTimeInputType::createShadowSubtree()
     updateView();
 }
 
-void BaseChooserOnlyDateAndTimeInputType::updateView()
+void ChooserOnlyTemporalInputTypeView::updateView()
 {
     Node* node = element().userAgentShadowRoot()->firstChild();
     if (!node || !node->isHTMLElement())
@@ -103,28 +103,28 @@ void BaseChooserOnlyDateAndTimeInputType::updateView()
     toHTMLElement(node)->setTextContent(displayValue);
 }
 
-void BaseChooserOnlyDateAndTimeInputType::didSetValue(const String& value, bool valueChanged)
+void ChooserOnlyTemporalInputTypeView::didSetValue(const String& value, bool valueChanged)
 {
     if (valueChanged)
         updateView();
 }
 
-void BaseChooserOnlyDateAndTimeInputType::closePopupView()
+void ChooserOnlyTemporalInputTypeView::closePopupView()
 {
     closeDateTimeChooser();
 }
 
-Element& BaseChooserOnlyDateAndTimeInputType::ownerElement() const
+Element& ChooserOnlyTemporalInputTypeView::ownerElement() const
 {
     return element();
 }
 
-void BaseChooserOnlyDateAndTimeInputType::didChooseValue(const String& value)
+void ChooserOnlyTemporalInputTypeView::didChooseValue(const String& value)
 {
     element().setValue(value, DispatchInputAndChangeEvent);
 }
 
-void BaseChooserOnlyDateAndTimeInputType::didChooseValue(double value)
+void ChooserOnlyTemporalInputTypeView::didChooseValue(double value)
 {
     ASSERT(std::isfinite(value) || std::isnan(value));
     if (std::isnan(value))
@@ -133,33 +133,33 @@ void BaseChooserOnlyDateAndTimeInputType::didChooseValue(double value)
         element().setValueAsNumber(value, ASSERT_NO_EXCEPTION, DispatchInputAndChangeEvent);
 }
 
-void BaseChooserOnlyDateAndTimeInputType::didEndChooser()
+void ChooserOnlyTemporalInputTypeView::didEndChooser()
 {
     m_dateTimeChooser.clear();
 }
 
-void BaseChooserOnlyDateAndTimeInputType::closeDateTimeChooser()
+void ChooserOnlyTemporalInputTypeView::closeDateTimeChooser()
 {
     if (m_dateTimeChooser)
         m_dateTimeChooser->endChooser();
 }
 
-void BaseChooserOnlyDateAndTimeInputType::handleKeydownEvent(KeyboardEvent* event)
+void ChooserOnlyTemporalInputTypeView::handleKeydownEvent(KeyboardEvent* event)
 {
     BaseClickableWithKeyInputType::handleKeydownEvent(element(), event);
 }
 
-void BaseChooserOnlyDateAndTimeInputType::handleKeypressEvent(KeyboardEvent* event)
+void ChooserOnlyTemporalInputTypeView::handleKeypressEvent(KeyboardEvent* event)
 {
     BaseClickableWithKeyInputType::handleKeypressEvent(element(), event);
 }
 
-void BaseChooserOnlyDateAndTimeInputType::handleKeyupEvent(KeyboardEvent* event)
+void ChooserOnlyTemporalInputTypeView::handleKeyupEvent(KeyboardEvent* event)
 {
     BaseClickableWithKeyInputType::handleKeyupEvent(*this, event);
 }
 
-void BaseChooserOnlyDateAndTimeInputType::accessKeyAction(bool sendMouseEvents)
+void ChooserOnlyTemporalInputTypeView::accessKeyAction(bool sendMouseEvents)
 {
     InputTypeView::accessKeyAction(sendMouseEvents);
     BaseClickableWithKeyInputType::accessKeyAction(element(), sendMouseEvents);

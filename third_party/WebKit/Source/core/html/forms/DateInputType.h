@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class DateInputType final : public BaseDateAndTimeInputType {
+class DateInputType final : public BaseTemporalInputType {
 public:
     static InputType* create(HTMLInputElement&);
 
@@ -49,7 +49,7 @@ private:
     bool setMillisecondToDateComponents(double, DateComponents*) const override;
     void warnIfValueIsInvalid(const String&) const override;
 
-    // BaseDateAndTimeInputType functions
+    // BaseTemporalInputType functions
     String formatDateTimeFieldsState(const DateTimeFieldsState&) const override;
     void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const override;
     bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const override;

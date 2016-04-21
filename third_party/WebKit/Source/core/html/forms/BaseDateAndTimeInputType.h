@@ -41,11 +41,10 @@ class ExceptionState;
 
 // A super class of date, datetime, datetime-local, month, time, and week types.
 // TODO(tkent): A single temporal input type creates two InputTypeView instances
-// unnecessarily.  One is BaseChooserOnlyDateAndTimeInputType or
-// BaseMultipleFieldsDateAndTimeInputType, and another is
-// BaseDateAndTimeInputType, which inherits from InputTypeView through
-// InputType.  The latter is not used.
-class BaseDateAndTimeInputType : public InputType {
+// unnecessarily.  One is ChooserOnlyTemporalInputTypeView or
+// MultipleFieldsTemporalInputType, and another is BaseTemporalInputType, which
+// inherits from InputTypeView through InputType.  The latter is not used.
+class BaseTemporalInputType : public InputType {
 public:
     String visibleValue() const override;
     String sanitizeValue(const String&) const override;
@@ -56,13 +55,13 @@ public:
     bool parseToDateComponents(const String&, DateComponents*) const;
     virtual bool setMillisecondToDateComponents(double, DateComponents*) const = 0;
 
-    // Provide some helpers for BaseMultipleFieldsDateAndTimeInputType.
+    // Provide some helpers for MultipleFieldsTemporalInputTypeView.
     virtual String formatDateTimeFieldsState(const DateTimeFieldsState&) const = 0;
     virtual void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const = 0;
     virtual bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const = 0;
 
 protected:
-    BaseDateAndTimeInputType(HTMLInputElement& element) : InputType(element) { }
+    BaseTemporalInputType(HTMLInputElement& element) : InputType(element) { }
     Decimal parseToNumber(const String&, const Decimal&) const override;
     String serialize(const Decimal&) const override;
     String serializeWithComponents(const DateComponents&) const;

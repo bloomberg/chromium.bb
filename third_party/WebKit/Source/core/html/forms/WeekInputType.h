@@ -35,12 +35,12 @@
 
 namespace blink {
 
-class WeekInputType final : public BaseDateAndTimeInputType {
+class WeekInputType final : public BaseTemporalInputType {
 public:
     static InputType* create(HTMLInputElement&);
 
 private:
-    explicit WeekInputType(HTMLInputElement& element) : BaseDateAndTimeInputType(element) {}
+    explicit WeekInputType(HTMLInputElement& element) : BaseTemporalInputType(element) {}
 
     void countUsage() override;
     const AtomicString& formControlType() const override;
@@ -49,7 +49,7 @@ private:
     bool setMillisecondToDateComponents(double, DateComponents*) const override;
     void warnIfValueIsInvalid(const String&) const override;
 
-    // BaseDateAndTimeInputType functions
+    // BaseTemporalInputType functions
     String formatDateTimeFieldsState(const DateTimeFieldsState&) const override;
     void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const override;
     bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const override;
