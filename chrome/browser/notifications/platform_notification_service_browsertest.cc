@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
+#include "chrome/browser/notifications/message_center_display_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -94,6 +95,7 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
   const base::FilePath server_root_;
   const std::string test_page_url_;
   std::unique_ptr<StubNotificationUIManager> ui_manager_;
+  std::unique_ptr<MessageCenterDisplayService> display_service_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
@@ -122,20 +124,19 @@ void PlatformNotificationServiceBrowserTest::SetUp() {
       new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
   https_server_->ServeFilesFromSourceDirectory(server_root_);
   ASSERT_TRUE(https_server_->Start());
-
-  service()->SetNotificationUIManagerForTesting(ui_manager_.get());
-
   InProcessBrowserTest::SetUp();
 }
 
 void PlatformNotificationServiceBrowserTest::SetUpOnMainThread() {
   NavigateToTestPage(test_page_url_);
-
+  display_service_.reset(
+      new MessageCenterDisplayService(browser()->profile(), ui_manager_.get()));
+  service()->SetNotificationDisplayServiceForTesting(display_service_.get());
   InProcessBrowserTest::SetUpOnMainThread();
 }
 
 void PlatformNotificationServiceBrowserTest::TearDown() {
-  service()->SetNotificationUIManagerForTesting(nullptr);
+  service()->SetNotificationDisplayServiceForTesting(nullptr);
 }
 
 void PlatformNotificationServiceBrowserTest::

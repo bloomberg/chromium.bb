@@ -6,17 +6,17 @@
 
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
@@ -46,62 +46,46 @@ namespace {
 // native ones.
 NSString* const kNotificationOriginKey = @"notification_origin";
 NSString* const kNotificationPersistentIdKey = @"notification_persistent_id";
-NSString* const kNotificationDelegateIdKey = @"notification_delegate_id";
 
-// TODO(miguelg) get rid of this key once ProfileID has been ported
-// from the void* it is today to the stable identifier provided
-// in kNotificationProfilePersistentIdKey.
-NSString* const kNotificationProfileIdKey = @"notification_profile_id";
 NSString* const kNotificationProfilePersistentIdKey =
     @"notification_profile_persistent_id";
 NSString* const kNotificationIncognitoKey = @"notification_incognito";
 
 }  // namespace
 
-// Only use native notifications for web, behind a flag and on 10.8+
 // static
-NotificationUIManager*
-NotificationUIManager::CreateNativeNotificationManager() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNativeNotifications) &&
-      base::mac::IsOSMountainLionOrLater()) {
-    return new NotificationUIManagerMac();
-  }
-  return nullptr;
+NotificationPlatformBridge* NotificationPlatformBridge::Create() {
+  return new NotificationUIManagerMac(
+      [NSUserNotificationCenter defaultUserNotificationCenter]);
 }
 
 // A Cocoa class that represents the delegate of NSUserNotificationCenter and
 // can forward commands to C++.
 @interface NotificationCenterDelegate
     : NSObject<NSUserNotificationCenterDelegate> {
- @private
-  NotificationUIManagerMac* manager_;  // Weak, owns self.
 }
-- (id)initWithManager:(NotificationUIManagerMac*)manager;
 @end
 
 // /////////////////////////////////////////////////////////////////////////////
 
-NotificationUIManagerMac::NotificationUIManagerMac()
-    : delegate_([[NotificationCenterDelegate alloc] initWithManager:this]) {
-  [[NSUserNotificationCenter defaultUserNotificationCenter]
-      setDelegate:delegate_.get()];
+NotificationUIManagerMac::NotificationUIManagerMac(
+    NSUserNotificationCenter* notification_center)
+    : delegate_([NotificationCenterDelegate alloc]),
+      notification_center_(notification_center) {
+  [notification_center_ setDelegate:delegate_.get()];
 }
 
 NotificationUIManagerMac::~NotificationUIManagerMac() {
-  [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:nil];
-  CancelAll();
+  [notification_center_ setDelegate:nil];
+
+  // TODO(miguelg) lift this restriction if possible.
+  [notification_center_ removeAllDeliveredNotifications];
 }
 
-void NotificationUIManagerMac::Add(const Notification& notification,
-                                   Profile* profile) {
-  // The Mac notification UI manager only supports Web Notifications, which
-  // have a PersistentNotificationDelegate. The persistent id of the
-  // notification is exposed through it's interface.
-  PersistentNotificationDelegate* delegate =
-      static_cast<PersistentNotificationDelegate*>(notification.delegate());
-  DCHECK(delegate);
-
+void NotificationUIManagerMac::Display(const std::string& notification_id,
+                                       const std::string& profile_id,
+                                       bool incognito,
+                                       const Notification& notification) {
   base::scoped_nsobject<NSUserNotification> toast(
       [[NSUserNotification alloc] init]);
   [toast setTitle:base::SysUTF16ToNSString(notification.title())];
@@ -109,13 +93,13 @@ void NotificationUIManagerMac::Add(const Notification& notification,
 
   // TODO(miguelg): try to elide the origin perhaps See NSString
   // stringWithFormat. It seems that the informativeText font is constant.
-  NSString* informativeText =
+  NSString* informative_text =
       notification.context_message().empty()
           ? base::SysUTF8ToNSString(notification.origin_url().spec())
           : base::SysUTF16ToNSString(notification.context_message());
-  [toast setInformativeText:informativeText];
+  [toast setInformativeText:informative_text];
 
-  // Some functionality is only available in 10.9+ or requires private APIs
+  // Some functionality requires private APIs
   // Icon
   if ([toast respondsToSelector:@selector(_identityImage)] &&
       !notification.icon().IsEmpty()) {
@@ -186,120 +170,63 @@ void NotificationUIManagerMac::Add(const Notification& notification,
     }
   }
 
-  int64_t persistent_notification_id = delegate->persistent_notification_id();
-  int64_t profile_id = reinterpret_cast<int64_t>(GetProfileID(profile));
-
   toast.get().userInfo = @{
     kNotificationOriginKey :
         base::SysUTF8ToNSString(notification.origin_url().spec()),
-    kNotificationPersistentIdKey :
-        [NSNumber numberWithLongLong:persistent_notification_id],
-    kNotificationDelegateIdKey :
-        base::SysUTF8ToNSString(notification.delegate_id()),
-    kNotificationProfileIdKey : [NSNumber numberWithLongLong:profile_id],
-    kNotificationProfilePersistentIdKey :
-        base::SysUTF8ToNSString(profile->GetPath().BaseName().value()),
-    kNotificationIncognitoKey :
-        [NSNumber numberWithBool:profile->IsOffTheRecord()]
+    kNotificationPersistentIdKey : base::SysUTF8ToNSString(notification_id),
+    kNotificationProfilePersistentIdKey : base::SysUTF8ToNSString(profile_id),
+    kNotificationIncognitoKey : [NSNumber numberWithBool:incognito]
   };
 
-  [[NSUserNotificationCenter defaultUserNotificationCenter]
-      deliverNotification:toast];
+  [notification_center_ deliverNotification:toast];
+  notification.delegate()->Display();
 }
 
-bool NotificationUIManagerMac::Update(const Notification& notification,
-                                      Profile* profile) {
-  NOTREACHED();
-  return false;
-}
+void NotificationUIManagerMac::Close(const std::string& profile_id,
+                                     const std::string& notification_id) {
+  NSString* candidate_id = base::SysUTF8ToNSString(notification_id);
 
-const Notification* NotificationUIManagerMac::FindById(
-    const std::string& delegate_id,
-    ProfileID profile_id) const {
-  NOTREACHED();
-  return nil;
-}
-
-bool NotificationUIManagerMac::CancelById(const std::string& delegate_id,
-                                          ProfileID profile_id) {
-  int64_t persistent_notification_id = 0;
-  // TODO(peter): Use the |delegate_id| directly when notification ids are being
-  // generated by content/ instead of us.
-  if (!base::StringToInt64(delegate_id, &persistent_notification_id))
-    return false;
-
-  NSUserNotificationCenter* notificationCenter =
-      [NSUserNotificationCenter defaultUserNotificationCenter];
+  NSString* current_profile_id = base::SysUTF8ToNSString(profile_id);
   for (NSUserNotification* toast in
-       [notificationCenter deliveredNotifications]) {
-    NSNumber* toast_id =
+       [notification_center_ deliveredNotifications]) {
+    NSString* toast_id =
         [toast.userInfo objectForKey:kNotificationPersistentIdKey];
-    if (toast_id.longLongValue == persistent_notification_id) {
-      [notificationCenter removeDeliveredNotification:toast];
-      return true;
+
+    NSString* persistent_profile_id =
+        [toast.userInfo objectForKey:kNotificationProfilePersistentIdKey];
+
+    if (toast_id == candidate_id &&
+        persistent_profile_id == current_profile_id) {
+      [notification_center_ removeDeliveredNotification:toast];
     }
   }
-
-  return false;
 }
 
-std::set<std::string>
-NotificationUIManagerMac::GetAllIdsByProfileAndSourceOrigin(
-    ProfileID profile_id,
-    const GURL& source) {
-  NOTREACHED();
-  return std::set<std::string>();
-}
-
-std::set<std::string> NotificationUIManagerMac::GetAllIdsByProfile(
-    ProfileID profile_id) {
-  // ProfileID in mac is not safe to use across browser restarts
-  // Therefore because when chrome quits we cancel all pending notifications.
-  // TODO(miguelg) get rid of ProfileID as a void* for native notifications.
-  std::set<std::string> delegate_ids;
-  NSUserNotificationCenter* notificationCenter =
-      [NSUserNotificationCenter defaultUserNotificationCenter];
+bool NotificationUIManagerMac::GetDisplayed(
+    const std::string& profile_id,
+    bool incognito,
+    std::set<std::string>* notifications) const {
+  DCHECK(notifications);
+  NSString* current_profile_id = base::SysUTF8ToNSString(profile_id);
   for (NSUserNotification* toast in
-       [notificationCenter deliveredNotifications]) {
-    NSNumber* toast_profile_id =
-        [toast.userInfo objectForKey:kNotificationProfileIdKey];
-    if (toast_profile_id.longLongValue ==
-        reinterpret_cast<int64_t>(profile_id)) {
-      delegate_ids.insert(base::SysNSStringToUTF8(
-          [toast.userInfo objectForKey:kNotificationDelegateIdKey]));
+       [notification_center_ deliveredNotifications]) {
+    NSString* toast_profile_id =
+        [toast.userInfo objectForKey:kNotificationProfilePersistentIdKey];
+    if (toast_profile_id == current_profile_id) {
+      notifications->insert(base::SysNSStringToUTF8(
+          [toast.userInfo objectForKey:kNotificationPersistentIdKey]));
     }
   }
-  return delegate_ids;
+  return true;
 }
 
-bool NotificationUIManagerMac::CancelAllBySourceOrigin(
-    const GURL& source_origin) {
-  NOTREACHED();
-  return false;
-}
-
-bool NotificationUIManagerMac::CancelAllByProfile(ProfileID profile_id) {
-  NOTREACHED();
-  return false;
-}
-
-void NotificationUIManagerMac::CancelAll() {
-  [[NSUserNotificationCenter defaultUserNotificationCenter]
-      removeAllDeliveredNotifications];
+bool NotificationUIManagerMac::SupportsNotificationCenter() const {
+  return true;
 }
 
 // /////////////////////////////////////////////////////////////////////////////
 
 @implementation NotificationCenterDelegate
-
-- (id)initWithManager:(NotificationUIManagerMac*)manager {
-  if ((self = [super init])) {
-    DCHECK(manager);
-    manager_ = manager;
-  }
-  return self;
-}
-
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
        didActivateNotification:(NSUserNotification*)notification {
   std::string notificationOrigin = base::SysNSStringToUTF8(

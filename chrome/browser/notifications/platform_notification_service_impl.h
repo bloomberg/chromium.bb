@@ -24,7 +24,7 @@
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 class NotificationDelegate;
-class NotificationUIManager;
+class NotificationDisplayService;
 
 namespace content {
 class BrowserContext;
@@ -50,6 +50,10 @@ class PlatformNotificationServiceImpl
   // Returns the active instance of the service in the browser process. Safe to
   // be called from any thread.
   static PlatformNotificationServiceImpl* GetInstance();
+
+  // Returns the notification display service to use. This is overriden in tests
+  // TODO(miguelg) make it private once the tests are updated
+  NotificationDisplayService* GetNotificationDisplayService(Profile* profile);
 
   // Load the profile corresponding to |profile_id| and perform the
   // |operation| on the given notification once it has been loaded.
@@ -79,9 +83,6 @@ class PlatformNotificationServiceImpl
                                      const GURL& origin,
                                      bool by_user);
 
-  // Returns the Notification UI Manager through which notifications can be
-  // displayed to the user. Can be overridden for testing.
-  NotificationUIManager* GetNotificationUIManager() const;
 
   // Open the Notification settings screen when clicking the right button.
   void OpenNotificationSettings(content::BrowserContext* browser_context);
@@ -138,20 +139,12 @@ class PlatformNotificationServiceImpl
       const content::NotificationResources& notification_resources,
       NotificationDelegate* delegate) const;
 
-  // Overrides the Notification UI Manager to use to |manager|. Only to be
-  // used by tests. Tests are responsible for cleaning up after themselves.
-  void SetNotificationUIManagerForTesting(NotificationUIManager* manager);
-
   // Returns a display name for an origin, to be used in the context message
   base::string16 DisplayNameForContextMessage(Profile* profile,
                                               const GURL& origin) const;
 
-  // Platforms that display native notification interact with them through this
-  // object.
-  std::unique_ptr<NotificationUIManager> native_notification_ui_manager_;
-
-  // Weak reference. Ownership maintains with the test.
-  NotificationUIManager* notification_ui_manager_for_tests_;
+  void SetNotificationDisplayServiceForTesting(
+      NotificationDisplayService* service);
 
   // Mapping between a persistent notification id and the id of the associated
   // message_center::Notification object. Must only be used on the UI thread.
@@ -160,6 +153,9 @@ class PlatformNotificationServiceImpl
   // Tracks the id of persistent notifications that have been closed
   // programmatically to avoid dispatching close events for them.
   std::unordered_set<int64_t> closed_notifications_;
+
+  // Only set and used for tests, owned by the caller in that case.
+  NotificationDisplayService* test_display_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformNotificationServiceImpl);
 };

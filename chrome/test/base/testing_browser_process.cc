@@ -214,7 +214,7 @@ TestingBrowserProcess::extension_event_router_forwarder() {
 }
 
 NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
-#if defined(ENABLE_NOTIFICATIONS)
+#if defined(ENABLE_NOTIFICATIONS) && !defined(OS_ANDROID)
   if (!notification_ui_manager_.get())
     notification_ui_manager_.reset(
         NotificationUIManager::Create(local_state()));
@@ -223,6 +223,11 @@ NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
   NOTIMPLEMENTED();
   return nullptr;
 #endif
+}
+
+NotificationPlatformBridge*
+TestingBrowserProcess::notification_platform_bridge() {
+  return nullptr;
 }
 
 message_center::MessageCenter* TestingBrowserProcess::message_center() {

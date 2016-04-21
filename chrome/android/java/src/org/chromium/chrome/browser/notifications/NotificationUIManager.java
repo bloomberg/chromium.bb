@@ -95,7 +95,8 @@ public class NotificationUIManager {
     @CalledByNative
     private static NotificationUIManager create(long nativeNotificationManager, Context context) {
         if (sInstance != null) {
-            throw new IllegalStateException("There must only be a single NotificationUIManager.");
+            throw new IllegalStateException(
+                    "There must only be a single NotificationPlatformBridge.");
         }
 
         sInstance = new NotificationUIManager(nativeNotificationManager, context);
@@ -640,12 +641,15 @@ public class NotificationUIManager {
     /**
      * Closes the notification associated with the given parameters.
      *
+     * @param profileId of the profile whose notification this is for.
      * @param persistentNotificationId The persistent id of the notification.
      * @param origin The origin to which the notification belongs.
      * @param tag The tag of the notification. May be NULL.
      */
     @CalledByNative
-    private void closeNotification(long persistentNotificationId, String origin, String tag) {
+    private void closeNotification(
+            String profileId, long persistentNotificationId, String origin, String tag) {
+        // TODO(miguelg) make profile_id part of the tag.
         String platformTag = makePlatformTag(persistentNotificationId, origin, tag);
         mNotificationManager.cancel(platformTag, PLATFORM_ID);
     }

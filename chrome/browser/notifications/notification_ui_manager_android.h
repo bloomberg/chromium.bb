@@ -8,25 +8,26 @@
 #include <jni.h>
 #include <stdint.h>
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_platform_bridge.h"
 
-// Implementation of the Notification UI Manager for Android, which defers to
+// Implementation of the NotificationPlatformBridge for Android, which defers to
 // the Android framework for displaying notifications.
 //
-// Android does not support getting the notifications currently shown by an
-// app without very intrusive permissions, which means that it's not possible
-// to provide reliable implementations for methods which have to iterate over
-// the existing notifications. Because of this, these have not been implemented.
+// Prior to Android Marshmellow, Android did not have the ability to retrieve
+// the notifications currently showing for an app without a rather intrusive
+// permission. The GetDisplayed() method may return false because of this.
 //
-// The UI manager implementation *is* reliable for adding and canceling single
-// notifications based on their delegate id. Finally, events for persistent Web
-// Notifications will be forwarded directly to the associated event handlers,
-// as such notifications may outlive the browser process on Android.
-class NotificationUIManagerAndroid : public NotificationUIManager {
+// The Android implementation *is* reliable for adding and canceling
+// single notifications based on their delegate id. Finally, events for
+// persistent Web Notifications will be forwarded directly to the associated
+// event handlers, as such notifications may outlive the browser process on
+// Android.
+class NotificationUIManagerAndroid : public NotificationPlatformBridge {
  public:
   NotificationUIManagerAndroid();
   ~NotificationUIManagerAndroid() override;
@@ -53,23 +54,19 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
       const base::android::JavaParamRef<jstring>& java_tag,
       jboolean by_user);
 
-  // NotificationUIManager implementation.
-  void Add(const Notification& notification, Profile* profile) override;
-  bool Update(const Notification& notification,
-              Profile* profile) override;
-  const Notification* FindById(const std::string& delegate_id,
-                               ProfileID profile_id) const override;
-  bool CancelById(const std::string& delegate_id,
-                  ProfileID profile_id) override;
-  std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
-      ProfileID profile_id,
-      const GURL& source) override;
-  std::set<std::string> GetAllIdsByProfile(ProfileID profile_id) override;
-  bool CancelAllBySourceOrigin(const GURL& source_origin) override;
-  bool CancelAllByProfile(ProfileID profile_id) override;
-  void CancelAll() override;
+  // NotificationPlatformBridge implementation.
+  void Display(const std::string& notification_id,
+               const std::string& profile_id,
+               bool incognito,
+               const Notification& notification) override;
+  void Close(const std::string& profile_id,
+             const std::string& notification_id) override;
+  bool GetDisplayed(const std::string& profile_id,
+                    bool incognito,
+                    std::set<std::string>* notifications) const override;
+  bool SupportsNotificationCenter() const override;
 
-  static bool RegisterNotificationUIManager(JNIEnv* env);
+  static bool RegisterNotificationPlatformBridge(JNIEnv* env);
 
  private:
   // Pair containing the information necessary in order to enable closing

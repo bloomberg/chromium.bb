@@ -107,6 +107,7 @@ class BrowserProcessImpl : public BrowserProcess,
   BrowserProcessPlatformPart* platform_part() override;
   extensions::EventRouterForwarder* extension_event_router_forwarder() override;
   NotificationUIManager* notification_ui_manager() override;
+  NotificationPlatformBridge* notification_platform_bridge() override;
   message_center::MessageCenter* message_center() override;
   policy::BrowserPolicyConnector* browser_policy_connector() override;
   policy::PolicyService* policy_service() override;
@@ -169,6 +170,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateViewedPageTracker();
   void CreateIconManager();
   void CreateIntranetRedirectDetector();
+  void CreateNotificationPlatformBridge();
   void CreateNotificationUIManager();
   void CreateStatusTrayManager();
   void CreatePrintPreviewDialogController();
@@ -245,6 +247,9 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<IntranetRedirectDetector> intranet_redirect_detector_;
 
   std::unique_ptr<StatusTray> status_tray_;
+
+  bool created_notification_bridge_;
+  std::unique_ptr<NotificationPlatformBridge> notification_bridge_;
 
 #if BUILDFLAG(ENABLE_BACKGROUND)
   std::unique_ptr<BackgroundModeManager> background_mode_manager_;

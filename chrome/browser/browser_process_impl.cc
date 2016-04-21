@@ -53,6 +53,7 @@
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/net/chrome_net_log_helper.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
+#include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -190,6 +191,7 @@ BrowserProcessImpl::BrowserProcessImpl(
       created_local_state_(false),
       created_icon_manager_(false),
       created_notification_ui_manager_(false),
+      created_notification_bridge_(false),
       created_safe_browsing_service_(false),
       shutting_down_(false),
       tearing_down_(false),
@@ -571,9 +573,25 @@ BrowserProcessImpl::extension_event_router_forwarder() {
 
 NotificationUIManager* BrowserProcessImpl::notification_ui_manager() {
   DCHECK(CalledOnValidThread());
+// TODO(miguelg) return NULL for MAC as well once native notifications
+// are enabled by default.
+#if defined(OS_ANDROID)
+  return nullptr;
+#else
   if (!created_notification_ui_manager_)
     CreateNotificationUIManager();
   return notification_ui_manager_.get();
+#endif
+}
+
+NotificationPlatformBridge* BrowserProcessImpl::notification_platform_bridge() {
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+  if (!created_notification_bridge_)
+    CreateNotificationPlatformBridge();
+  return notification_bridge_.get();
+#else
+  return nullptr;
+#endif
 }
 
 message_center::MessageCenter* BrowserProcessImpl::message_center() {
@@ -1058,8 +1076,18 @@ void BrowserProcessImpl::CreateIntranetRedirectDetector() {
   intranet_redirect_detector_.swap(intranet_redirect_detector);
 }
 
+void BrowserProcessImpl::CreateNotificationPlatformBridge() {
+#if (defined(OS_ANDROID) || defined(OS_MACOSX)) && defined(ENABLE_NOTIFICATIONS)
+  DCHECK(notification_bridge_.get() == NULL);
+  notification_bridge_.reset(NotificationPlatformBridge::Create());
+  created_notification_bridge_ = true;
+#endif
+}
+
 void BrowserProcessImpl::CreateNotificationUIManager() {
-#if defined(ENABLE_NOTIFICATIONS)
+// Android does not use the NotificationUIManager anuymore
+// All notification traffic is routed through NotificationPlatformBridge.
+#if defined(ENABLE_NOTIFICATIONS) && !defined(OS_ANDROID)
   DCHECK(notification_ui_manager_.get() == NULL);
   notification_ui_manager_.reset(NotificationUIManager::Create(local_state()));
   created_notification_ui_manager_ = true;

@@ -312,7 +312,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      RegisterExternalEstimateProviderAndroid},
     {"NewTabPagePrefs", NewTabPagePrefs::RegisterNewTabPagePrefs},
     {"NotificationUIManager",
-     NotificationUIManagerAndroid::RegisterNotificationUIManager},
+     NotificationUIManagerAndroid::RegisterNotificationPlatformBridge},
     {"NTPSnippetsBridge", NTPSnippetsBridge::Register},
     {"NTPSnippetsLauncher", NTPSnippetsLauncher::Register},
     {"OAuth2TokenServiceDelegateAndroid",

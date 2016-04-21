@@ -30,6 +30,7 @@ class IconManager;
 class IntranetRedirectDetector;
 class IOThread;
 class MediaFileSystemRegistry;
+class NotificationPlatformBridge;
 class NotificationUIManager;
 class PrefRegistrySimple;
 class PrefService;
@@ -150,7 +151,10 @@ class BrowserProcess {
       extension_event_router_forwarder() = 0;
 
   // Returns the manager for desktop notifications.
+  // TODO(miguelg) This is in the process of being deprecated in favour of
+  // NotificationPlatformBridge + NotificationDisplayService
   virtual NotificationUIManager* notification_ui_manager() = 0;
+  virtual NotificationPlatformBridge* notification_platform_bridge() = 0;
 
   // MessageCenter is a global list of currently displayed notifications.
   virtual message_center::MessageCenter* message_center() = 0;

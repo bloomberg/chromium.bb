@@ -10,44 +10,39 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_platform_bridge.h"
 
 class Notification;
 @class NotificationCenterDelegate;
+@class NSUserNotificationCenter;
 class PrefService;
-class Profile;
 
-// This class is an implementation of NotificationUIManager that will
-// send platform notifications to the Notification Center on 10.8 and above.
-// 10.7 and below don't offer native notification support so chrome
-// notifications are still used there.
-class NotificationUIManagerMac : public NotificationUIManager {
+// This class is an implementation of NotificationPlatfrormBridge that will
+// send platform notifications to the the MacOSX notification center.
+class NotificationUIManagerMac : public NotificationPlatformBridge {
  public:
-  NotificationUIManagerMac();
+  explicit NotificationUIManagerMac(
+      NSUserNotificationCenter* notification_center);
   ~NotificationUIManagerMac() override;
 
-  // NotificationUIManager implementation
-  void Add(const Notification& notification, Profile* profile) override;
-  bool Update(const Notification& notification, Profile* profile) override;
-
-  // |delegate_id| need to reference a PersistentNotificationDelegate
-  const Notification* FindById(const std::string& delegate_id,
-                               ProfileID profile_id) const override;
-
-  // |delegate_id| need to reference a PersistentNotificationDelegate
-  bool CancelById(const std::string& delegate_id,
-                  ProfileID profile_id) override;
-  std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
-      ProfileID profile_id,
-      const GURL& source) override;
-  std::set<std::string> GetAllIdsByProfile(ProfileID profile_id) override;
-  bool CancelAllBySourceOrigin(const GURL& source_origin) override;
-  bool CancelAllByProfile(ProfileID profile_id) override;
-  void CancelAll() override;
+  // NotificationPlatformBridge implementation.
+  void Display(const std::string& notification_id,
+               const std::string& profile_id,
+               bool incognito,
+               const Notification& notification) override;
+  void Close(const std::string& profile_id,
+             const std::string& notification_id) override;
+  bool GetDisplayed(const std::string& profile_id,
+                    bool incognito,
+                    std::set<std::string>* notifications) const override;
+  bool SupportsNotificationCenter() const override;
 
  private:
   // Cocoa class that receives callbacks from the NSUserNotificationCenter.
   base::scoped_nsobject<NotificationCenterDelegate> delegate_;
+
+  // The notification center to use, this can be overriden in tests
+  NSUserNotificationCenter* notification_center_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationUIManagerMac);
 };

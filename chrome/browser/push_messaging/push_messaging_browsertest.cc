@@ -22,6 +22,7 @@
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/notifications/message_center_display_service.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -114,8 +115,6 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
 #if defined(ENABLE_NOTIFICATIONS)
     notification_manager_.reset(new StubNotificationUIManager);
-    notification_service()->SetNotificationUIManagerForTesting(
-        notification_manager());
 #endif
 
     InProcessBrowserTest::SetUp();
@@ -136,9 +135,14 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     gcm_service_->set_collect(true);
     push_service_ =
         PushMessagingServiceFactory::GetForProfile(GetBrowser()->profile());
+#if defined(ENABLE_NOTIFICATIONS)
+    display_service_.reset(new MessageCenterDisplayService(
+        GetBrowser()->profile(), notification_manager_.get()));
+    notification_service()->SetNotificationDisplayServiceForTesting(
+        display_service_.get());
+#endif
 
     LoadTestPage();
-
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
@@ -155,7 +159,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   // InProcessBrowserTest:
   void TearDown() override {
 #if defined(ENABLE_NOTIFICATIONS)
-    notification_service()->SetNotificationUIManagerForTesting(nullptr);
+    notification_service()->SetNotificationDisplayServiceForTesting(nullptr);
 #endif
 
     InProcessBrowserTest::TearDown();
@@ -247,6 +251,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
 #if defined(ENABLE_NOTIFICATIONS)
   std::unique_ptr<StubNotificationUIManager> notification_manager_;
+  std::unique_ptr<MessageCenterDisplayService> display_service_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingBrowserTest);

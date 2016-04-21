@@ -13,10 +13,13 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/notifications/message_center_display_service.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/common/notification_resources.h"
@@ -82,17 +85,23 @@ class MockDesktopNotificationDelegate
 class PlatformNotificationServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    ui_manager_.reset(new StubNotificationUIManager);
     profile_.reset(new TestingProfile());
-
-    service()->SetNotificationUIManagerForTesting(ui_manager_.get());
+    ui_manager_.reset(new StubNotificationUIManager);
+    display_service_.reset(
+        new MessageCenterDisplayService(profile_.get(), ui_manager_.get()));
+    service()->SetNotificationDisplayServiceForTesting(display_service_.get());
+    profile_manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    ASSERT_TRUE(profile_manager_->SetUp());
   }
 
   void TearDown() override {
-    service()->SetNotificationUIManagerForTesting(nullptr);
-
-    profile_.reset();
+    service()->SetNotificationDisplayServiceForTesting(nullptr);
+    display_service_.reset();
     ui_manager_.reset();
+    profile_.reset();
+    profile_manager_.reset();
+    TestingBrowserProcess::DeleteInstance();
   }
 
  protected:
@@ -133,9 +142,11 @@ class PlatformNotificationServiceTest : public testing::Test {
   StubNotificationUIManager* ui_manager() const { return ui_manager_.get(); }
 
  private:
-  std::unique_ptr<StubNotificationUIManager> ui_manager_;
   std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<StubNotificationUIManager> ui_manager_;
+  std::unique_ptr<MessageCenterDisplayService> display_service_;
 
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
