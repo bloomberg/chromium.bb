@@ -205,6 +205,7 @@
       'Linux ARM': 'swarming_gyp_release_bot_arm',
       'Site Isolation Linux': 'gn_release_trybot',
       'Site Isolation Win': 'gyp_release_trybot_x64',
+      'UBSanVptr Linux': 'gn_ubsan_vptr_release_bot',
       'Vista Tests (dbg)(1)': 'none',
       'Vista Tests (dbg)(2)': 'none',
       'WebKit Linux - TraceWrappables': 'swarming_gn_release_bot_x64',
@@ -1160,6 +1161,10 @@
 
     'gn_release_trybot_x86': [
       'gn', 'release_trybot', 'x86',
+    ],
+
+    'gn_ubsan_vptr_release_bot': [
+      'gn', 'ubsan_vptr', 'release_bot',
     ],
 
     'gyp_asan_lsan_edge_fuzzer_debug_bot': [
