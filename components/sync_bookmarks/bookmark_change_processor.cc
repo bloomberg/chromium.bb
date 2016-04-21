@@ -8,6 +8,7 @@
 
 #include <map>
 #include <stack>
+#include <string>
 #include <vector>
 
 #include "base/location.h"
@@ -241,9 +242,6 @@ void BookmarkChangeProcessor::CreateOrUpdateSyncNode(const BookmarkNode* node) {
     return;
   }
 
-  const BookmarkNode* parent = node->parent();
-  int index = node->parent()->GetIndexOf(node);
-
   int64_t new_version = syncer::syncable::kInvalidTransactionVersion;
   int64_t sync_id = syncer::kInvalidId;
   {
@@ -254,6 +252,8 @@ void BookmarkChangeProcessor::CreateOrUpdateSyncNode(const BookmarkNode* node) {
       UpdateSyncNode(
           node, bookmark_model_, &trans, model_associator_, error_handler());
     } else {
+      const BookmarkNode* parent = node->parent();
+      int index = parent->GetIndexOf(node);
       sync_id = CreateSyncNode(parent,
                                bookmark_model_,
                                index,
@@ -268,10 +268,8 @@ void BookmarkChangeProcessor::CreateOrUpdateSyncNode(const BookmarkNode* node) {
     // PREV_ID/NEXT_ID and thus get a new version. But we only update version
     // of added node here. After switching to ordinals for positioning,
     // PREV_ID/NEXT_ID will be deprecated and siblings will not be updated.
-    UpdateTransactionVersion(
-        new_version,
-        bookmark_model_,
-        std::vector<const BookmarkNode*>(1, parent->GetChild(index)));
+    UpdateTransactionVersion(new_version, bookmark_model_,
+                             std::vector<const BookmarkNode*>(1, node));
   }
 }
 
@@ -457,7 +455,14 @@ void BookmarkChangeProcessor::BookmarkNodeFaviconChanged(
     return;
   }
 
-  BookmarkNodeChanged(model, node);
+  // Ignore updates to favicon if model associator doesn't know about this
+  // bookmark node.
+  if (model_associator_->GetSyncIdFromChromeId(node->id()) ==
+      syncer::kInvalidId) {
+    return;
+  }
+
+  CreateOrUpdateSyncNode(node);
 }
 
 void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
