@@ -236,8 +236,12 @@ source_set("base") {
   defines = []
   public_deps = []
   deps = [
+    "//base/third_party/dynamic_annotations:dynamic_annotations",
+    "//gpu",
+    "//media:shared_memory_support",
     "//skia",
     "//ui/events:events_base",
+    "//url:url",
   ]
   libs = []
   configs += [
