@@ -61,6 +61,7 @@ class EmptyBeginFrameSource : public BeginFrameSource {
   void DidFinishFrame(size_t remaining_frames) override{};
   void AddObserver(BeginFrameObserver* obs) override{};
   void RemoveObserver(BeginFrameObserver* obs) override{};
+  void AsValueInto(base::trace_event::TracedValue* dict) const override{};
 };
 
 class SurfaceManagerTest : public testing::Test {

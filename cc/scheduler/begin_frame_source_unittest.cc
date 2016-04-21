@@ -173,6 +173,38 @@ TEST(BeginFrameSourceBaseTest, MultipleObservers) {
   source.RemoveObserver(&obs2);
 }
 
+class LoopingBeginFrameObserver : public BeginFrameObserverBase {
+ public:
+  BeginFrameSource* source_;
+
+  void AsValueInto(base::trace_event::TracedValue* dict) const override {
+    dict->SetString("type", "LoopingBeginFrameObserver");
+    dict->BeginDictionary("source");
+    source_->AsValueInto(dict);
+    dict->EndDictionary();
+  }
+
+ protected:
+  // BeginFrameObserverBase
+  bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override {
+    return true;
+  }
+
+  void OnBeginFrameSourcePausedChanged(bool paused) override {}
+};
+
+TEST(BeginFrameSourceBaseTest, DetectAsValueIntoLoop) {
+  LoopingBeginFrameObserver obs;
+  FakeBeginFrameSource source;
+
+  obs.source_ = &source;
+  source.AddObserver(&obs);
+
+  std::unique_ptr<base::trace_event::TracedValue> state(
+      new base::trace_event::TracedValue());
+  source.AsValueInto(state.get());
+}
+
 // BackToBackBeginFrameSource testing -----------------------------------------
 class TestBackToBackBeginFrameSource : public BackToBackBeginFrameSource {
  public:

@@ -109,6 +109,9 @@ class FakeBeginFrameSource : public BeginFrameSourceBase {
 
   bool has_observers() const { return !observers_.empty(); }
 
+  // BeginFrameSource
+  void AsValueInto(base::trace_event::TracedValue* dict) const override;
+
   using BeginFrameSourceBase::SetBeginFrameSourcePaused;
 
  private:
