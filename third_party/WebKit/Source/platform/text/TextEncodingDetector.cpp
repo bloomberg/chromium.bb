@@ -36,7 +36,7 @@
 
 namespace blink {
 
-bool detectTextEncoding(const char* data, size_t length,
+bool detectTextEncodingUniversal(const char* data, size_t length,
     const char* hintEncodingName, WTF::TextEncoding* detectedEncoding)
 {
     *detectedEncoding = WTF::TextEncoding();

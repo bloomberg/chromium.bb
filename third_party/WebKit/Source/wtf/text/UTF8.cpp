@@ -442,5 +442,23 @@ bool equalLatin1WithUTF8(const LChar* a, const LChar* aEnd, const char* b, const
     return equalWithUTF8Internal(a, aEnd, b, bEnd);
 }
 
+bool isUTF8andNotASCII(const char* data, size_t length)
+{
+    // This cast is necessary because U8_NEXT uses int32_ts.
+    int32_t srcLen = static_cast<int32_t>(length);
+    int32_t charIndex = 0;
+    bool isASCIIOnly = true;
+
+    while (charIndex < srcLen) {
+        int32_t codePoint;
+        if (static_cast<uint8_t>(data[charIndex]) >= 0x80)
+            isASCIIOnly = false;
+        U8_NEXT(data, charIndex, srcLen, codePoint);
+        if (!U_IS_UNICODE_CHAR(codePoint))
+            return false;
+    }
+    return !isASCIIOnly;
+}
+
 } // namespace Unicode
 } // namespace WTF

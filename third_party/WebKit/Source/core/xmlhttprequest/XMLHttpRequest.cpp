@@ -1542,8 +1542,11 @@ PassOwnPtr<TextResourceDecoder> XMLHttpRequest::createDecoder() const
     if (m_responseTypeCode == ResponseTypeJSON)
         return TextResourceDecoder::create("application/json", "UTF-8");
 
-    if (!m_finalResponseCharset.isEmpty())
-        return TextResourceDecoder::create("text/plain", m_finalResponseCharset);
+    if (!m_finalResponseCharset.isEmpty()) {
+        OwnPtr<TextResourceDecoder> decoder(TextResourceDecoder::create("text/plain"));
+        decoder->setEncoding(WTF::TextEncoding(m_finalResponseCharset), TextResourceDecoder::EncodingFromHTTPHeader);
+        return decoder.release();
+    }
 
     // allow TextResourceDecoder to look inside the m_response if it's XML or HTML
     if (responseIsXML()) {

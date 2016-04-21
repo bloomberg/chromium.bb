@@ -28,6 +28,7 @@
 #include "wtf/StringExtras.h"
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncodingRegistry.h"
+#include "wtf/text/UTF8.h"
 
 using namespace WTF;
 
@@ -349,23 +350,6 @@ void TextResourceDecoder::checkForMetaCharset(const char* data, size_t length)
     return;
 }
 
-// We use the encoding detector in two cases:
-//   1. Encoding detector is turned ON and no other encoding source is
-//      available (that is, it's DefaultEncoding).
-//   2. Encoding detector is turned ON and the encoding is set to
-//      the encoding of the parent frame, which is also auto-detected.
-//   Note that condition #2 is NOT satisfied unless parent-child frame
-//   relationship is compliant to the same-origin policy. If they're from
-//   different domains, |m_source| would not be set to EncodingFromParentFrame
-//   in the first place.
-bool TextResourceDecoder::shouldAutoDetect() const
-{
-    // Just checking m_hintEncoding suffices here because it's only set
-    // in setHintEncoding when the source is AutoDetectedEncoding.
-    return m_encodingDetectionOption == UseAllAutoDetection
-        && (m_source == DefaultEncoding || (m_source == EncodingFromParentFrame && m_hintEncoding));
-}
-
 String TextResourceDecoder::decode(const char* data, size_t len)
 {
     size_t lengthOfBOM = 0;
@@ -402,11 +386,7 @@ String TextResourceDecoder::decode(const char* data, size_t len)
     if (m_contentType == HTMLContent && !m_checkedForMetaCharset)
         checkForMetaCharset(dataForDecode, lengthForDecode);
 
-    if (shouldAutoDetect()) {
-        WTF::TextEncoding detectedEncoding;
-        if (detectTextEncoding(data, len, m_hintEncoding, &detectedEncoding))
-            setEncoding(detectedEncoding, EncodingFromContentSniffing);
-    }
+    detectTextEncoding(data, len);
 
     ASSERT(m_encoding.isValid());
 
@@ -419,16 +399,53 @@ String TextResourceDecoder::decode(const char* data, size_t len)
     return result;
 }
 
+// We use the encoding detector in following cases:
+//   1. Encoding detector is turned ON and no other encoding source is
+//      available (that is, it's DefaultEncoding).
+//   2. Encoding detector is turned ON and the encoding is set to
+//      the encoding of the parent frame, which is also auto-detected.
+//   Note that condition #2 is NOT satisfied unless parent-child frame
+//   relationship is compliant to the same-origin policy. If they're from
+//   different domains, |m_source| would not be set to EncodingFromParentFrame
+//   in the first place.
+//   We also check if the text is encoded in UTF-8 in case the encoding has not
+//   been determined by auto encoding detector (optional). Then |m_source| needs
+//   to be set to anything but DefaultEncoding to avoid further detection
+//   attempts.
+void TextResourceDecoder::detectTextEncoding(const char* data, size_t len)
+{
+    if (!shouldDetectEncoding())
+        return;
+
+    if (m_encodingDetectionOption == UseAllAutoDetection) {
+        WTF::TextEncoding detectedEncoding;
+        if (detectTextEncodingUniversal(data, len, m_hintEncoding, &detectedEncoding)) {
+            setEncoding(detectedEncoding, EncodingFromContentSniffing);
+            return;
+        }
+    }
+
+    if (WTF::Unicode::isUTF8andNotASCII(data, len))
+        setEncoding(UTF8Encoding(), EncodingFromContentSniffing);
+    else
+        m_source = EncodingFromContentSniffing;
+}
+
+bool TextResourceDecoder::shouldDetectEncoding() const
+{
+    // Just checking m_hintEncoding suffices here because it's only set
+    // in setHintEncoding when the source is AutoDetectedEncoding.
+    return m_source == DefaultEncoding || (m_source == EncodingFromParentFrame && m_hintEncoding);
+}
+
 String TextResourceDecoder::flush()
 {
     // If we can not identify the encoding even after a document is completely
     // loaded, we need to detect the encoding if other conditions for
     // autodetection is satisfied.
-    if (m_buffer.size() && shouldAutoDetect()
+    if (m_buffer.size()
         && ((!m_checkedForXMLCharset && (m_contentType == HTMLContent || m_contentType == XMLContent)) || (!m_checkedForCSSCharset && (m_contentType == CSSContent)))) {
-        WTF::TextEncoding detectedEncoding;
-        if (detectTextEncoding(m_buffer.data(), m_buffer.size(), m_hintEncoding, &detectedEncoding))
-            setEncoding(detectedEncoding, EncodingFromContentSniffing);
+        detectTextEncoding(m_buffer.data(), m_buffer.size());
     }
 
     if (!m_codec)
