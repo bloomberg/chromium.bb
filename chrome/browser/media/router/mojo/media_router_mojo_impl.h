@@ -12,6 +12,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -100,6 +101,17 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
   void OnUserGesture() override;
+  void SearchSinksAndCreateRoute(
+      const MediaSink::Id& sink_id,
+      const MediaSource::Id& source_id,
+      const std::string& search_input,
+      const std::string& domain,
+      const GURL& origin,
+      content::WebContents* web_contents,
+      const std::vector<MediaRouteResponseCallback>& route_callbacks,
+      const MediaSinkSearchResponseCallback& sink_callback,
+      base::TimeDelta timeout,
+      bool off_the_record) override;
 
   const std::string& media_route_provider_extension_id() const {
     return media_route_provider_extension_id_;
@@ -253,6 +265,17 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void DoStopObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStartObservingMediaRoutes(const MediaSource::Id& source_id);
   void DoStopObservingMediaRoutes(const MediaSource::Id& source_id);
+  void DoSearchSinksAndCreateRoute(
+      const MediaSink::Id& sink_id,
+      const MediaSource::Id& source_id,
+      const std::string& search_input,
+      const std::string& domain,
+      const std::string& origin,
+      int tab_id,
+      const std::vector<MediaRouteResponseCallback>& route_callbacks,
+      const MediaSinkSearchResponseCallback& sink_callback,
+      base::TimeDelta timeout,
+      bool off_the_record);
 
   // Invoked when the next batch of messages arrives.
   // |route_id|: ID of route of the messages.
@@ -275,6 +298,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void OnSinksReceived(const mojo::String& media_source,
                        mojo::Array<interfaces::MediaSinkPtr> sinks,
                        mojo::Array<mojo::String> origins) override;
+  void OnSearchSinkIdReceived(const mojo::String& pseudo_sink_id,
+                              const mojo::String& sink_id) override;
   void OnRoutesUpdated(mojo::Array<interfaces::MediaRoutePtr> routes,
                        const mojo::String& media_source,
                        mojo::Array<mojo::String> joinable_route_ids) override;
@@ -348,8 +373,11 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   base::ScopedPtrHashMap<MediaSource::Id, std::unique_ptr<MediaSinksQuery>>
       sinks_queries_;
 
-  base::ScopedPtrHashMap<MediaSource::Id, std::unique_ptr<MediaRoutesQuery>>
+  base::ScopedPtrHashMap<MediaSource::Id, scoped_ptr<MediaRoutesQuery>>
       routes_queries_;
+
+  std::unordered_map<std::string, std::vector<MediaSinkSearchResponseCallback>>
+      search_callbacks_;
 
   using PresentationSessionMessagesObserverList =
       base::ObserverList<PresentationSessionMessagesObserver>;

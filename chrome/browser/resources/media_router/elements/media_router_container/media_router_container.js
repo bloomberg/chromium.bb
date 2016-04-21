@@ -201,6 +201,25 @@ Polymer({
     },
 
     /**
+     * Pseudo sinks from MRPs that represent their ability to accept sink search
+     * requests.
+     * @private {!Array<!media_router.Sink>}
+     */
+    pseudoSinks_: {
+      type: Array,
+      value: [],
+    },
+
+    /**
+     * Helps manage the state of creating a sink and a route from a pseudo sink.
+     * @private {PseudoSinkSearchState}
+     */
+    pseudoSinkSearchState_: {
+      type: Object,
+      value: null,
+    },
+
+    /**
      * Whether the next character input should cause a filter action metric to
      * be sent.
      * @type {boolean}
@@ -651,6 +670,7 @@ Polymer({
    */
   computeIssueBannerShown_: function(view, issue) {
     return !!issue && (view == media_router.MediaRouterView.SINK_LIST ||
+                       view == media_router.MediaRouterView.FILTER ||
                        view == media_router.MediaRouterView.ISSUE);
   },
 
@@ -983,6 +1003,31 @@ Polymer({
                                 substrings: matchSubstrings});
     }
     searchResultsToShow.sort(this.compareSearchMatches_);
+
+    var pendingPseudoSink = (this.pseudoSinkSearchState_) ?
+        this.pseudoSinkSearchState_.getPseudoSink() :
+        null;
+    // We may need to add pseudo sinks to the filter results. A pseudo sink will
+    // be shown if there is no real sink with the same icon and name exactly
+    // matching the filter text. The map() call transforms any pseudo sink
+    // objects that will be shown to the search result format, where we know
+    // that the entire sink name will be a match.
+    //
+    // The exception to this is when there is a pending pseudo sink search. Then
+    // the pseudo sink for the search will be treated like a real sink because
+    // it will actually be in |sinksToShow_| until a real sink is returned by
+    // search. So the filter here shouldn't treat it like a pseudo sink.
+    searchResultsToShow = this.pseudoSinks_.filter(function(pseudoSink) {
+      return (!pendingPseudoSink || pseudoSink.id != pendingPseudoSink.id) &&
+          !searchResultsToShow.find(function(searchResult) {
+            return searchResult.sinkItem.name == searchInputText &&
+                   searchResult.sinkItem.iconType == pseudoSink.iconType;
+          });
+    }).map(function(pseudoSink) {
+      pseudoSink.name = searchInputText;
+      return {sinkItem: pseudoSink,
+              substrings: [[0, searchInputText.length - 1]]};
+    }).concat(searchResultsToShow);
     this.searchResultsToShow_ = searchResultsToShow;
   },
 
@@ -1228,6 +1273,10 @@ Polymer({
       return;
     }
 
+    if (this.pseudoSinkSearchState_) {
+      sinkId = this.pseudoSinkSearchState_.mapRouteSinkId(sinkId);
+    }
+
     // Check that |sinkId| exists and corresponds to |currentLaunchingSinkId_|.
     if (!this.sinkMap_[sinkId] || this.currentLaunchingSinkId_ != sinkId) {
       this.fire('report-resolved-route', {
@@ -1325,6 +1374,25 @@ Polymer({
   },
 
   /**
+   * Called when a search has completed up to route creation. |sinkId|
+   * identifies the sink that should be in |allSinks|, if a sink was found.
+   *
+   * @param {string} sinkId The ID of the sink that is the result of the
+   *     currently pending search.
+   */
+  onReceiveSearchResult: function(sinkId) {
+    this.pseudoSinkSearchState_.receiveSinkResponse(sinkId);
+    this.currentLaunchingSinkId_ =
+        this.pseudoSinkSearchState_.checkForRealSink(this.allSinks);
+    this.rebuildSinksToShow_();
+    // If we're in filter view, make sure the |sinksToShow_| change is picked
+    // up.
+    if (this.isUserSearching_) {
+      this.filterSinks_(this.searchInputText_);
+    }
+  },
+
+  /**
    * Called when a sink is clicked.
    *
    * @param {!Event} event The event object.
@@ -1392,11 +1460,24 @@ Polymer({
    * name.
    */
   rebuildSinksToShow_: function() {
-    var sinksToShow = [];
+    var sinksToShow = this.allSinks.filter(function(sink) {
+      return !sink.isPseudoSink;
+    }, this);
+    if (this.pseudoSinkSearchState_) {
+      var pendingPseudoSink = this.pseudoSinkSearchState_.getPseudoSink();
+      // Here we will treat the pseudo sink that launched the search as a real
+      // sink until one is returned by search. This way it isn't possible to
+      // ever reach a UI state where there is no spinner being shown in the sink
+      // list but |currentLaunchingSinkId_| is non-empty (thereby preventing any
+      // other sink from launching).
+      if (pendingPseudoSink.id == this.currentLaunchingSinkId_) {
+        sinksToShow.unshift(pendingPseudoSink);
+      }
+    }
     if (this.userHasSelectedCastMode_) {
       // If user explicitly selected a cast mode, then we show only sinks that
       // are compatible with current cast mode or sinks that are active.
-      sinksToShow = this.allSinks.filter(function(element) {
+      sinksToShow = sinksToShow.filter(function(element) {
         return (element.castModes & this.shownCastModeValue_) ||
                this.sinkToRouteMap_[element.id];
       }, this);
@@ -1407,7 +1488,6 @@ Polymer({
       // - Otherwise, the cast mode becomes auto mode.
       // Either way, all sinks will be shown.
       this.setShownCastMode_(this.computeCastMode_());
-      sinksToShow = this.allSinks;
     }
 
     this.sinksToShow_ = sinksToShow;
@@ -1422,9 +1502,17 @@ Polymer({
     this.sinkMap_ = {};
 
     this.allSinks.forEach(function(sink) {
-      this.sinkMap_[sink.id] = sink;
+      if (!sink.isPseudoSink) {
+        this.sinkMap_[sink.id] = sink;
+      }
     }, this);
 
+    if (this.pseudoSinkSearchState_) {
+      this.currentLaunchingSinkId_ =
+          this.pseudoSinkSearchState_.checkForRealSink(this.allSinks);
+    }
+    this.pseudoSinks_ =
+        this.allSinks.filter(function(sink) { return sink.isPseudoSink; });
     this.rebuildSinksToShow_();
     if (this.isUserSearching_) {
       this.filterSinks_(this.searchInputText_);
@@ -1440,6 +1528,7 @@ Polymer({
    * @private
    */
   resetRouteCreationProperties_: function(creationSuccess) {
+    this.pseudoSinkSearchState_ = null;
     this.currentLaunchingSinkId_ = '';
     this.pendingCreatedRouteId_ = '';
 
@@ -1544,21 +1633,35 @@ Polymer({
           media_router.MediaRouterUserAction.STATUS_REMOTE);
     } else if (this.currentLaunchingSinkId_ == '') {
       // Allow one launch at a time.
-      this.fire('create-route', {
-        sinkId: sink.id,
-        // If user selected a cast mode, then we will create a route using that
-        // cast mode. Otherwise, the UI is in "auto" cast mode and will use the
-        // preferred cast mode compatible with the sink. The preferred cast mode
-        // value is the least significant bit on the bitset.
-        selectedCastModeValue:
-            this.shownCastModeValue_ == media_router.CastModeType.AUTO ?
-                sink.castModes & -sink.castModes : this.shownCastModeValue_
-      });
-      this.currentLaunchingSinkId_ = sink.id;
+      var selectedCastModeValue =
+          this.shownCastModeValue_ == media_router.CastModeType.AUTO ?
+              sink.castModes & -sink.castModes : this.shownCastModeValue_;
+      if (sink.isPseudoSink) {
+        this.pseudoSinkSearchState_ = new PseudoSinkSearchState(sink);
+        this.fire('search-sinks-and-create-route', {
+          id: sink.id,
+          name: sink.name,
+          domain: sink.domain,
+          selectedCastMode: selectedCastModeValue
+        });
+      } else {
+        this.fire('create-route', {
+          sinkId: sink.id,
+          // If user selected a cast mode, then we will create a route using
+          // that cast mode. Otherwise, the UI is in "auto" cast mode and will
+          // use the preferred cast mode compatible with the sink. The preferred
+          // cast mode value is the least significant bit on the bitset.
+          selectedCastModeValue: selectedCastModeValue
+        });
 
-      var timeToSelectSink =
-          performance.now() - this.populatedSinkListSeenTimeMs_;
-      this.fire('report-sink-click-time', {timeMs: timeToSelectSink});
+        var timeToSelectSink =
+            performance.now() - this.populatedSinkListSeenTimeMs_;
+        this.fire('report-sink-click-time', {timeMs: timeToSelectSink});
+      }
+      this.currentLaunchingSinkId_ = sink.id;
+      if (sink.isPseudoSink) {
+        this.rebuildSinksToShow_();
+      }
 
       this.maybeReportUserFirstAction(
           media_router.MediaRouterUserAction.START_LOCAL);

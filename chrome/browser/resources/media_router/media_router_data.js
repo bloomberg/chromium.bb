@@ -227,6 +227,9 @@ cr.define('media_router', function() {
 
     /** @type {number} */
     this.castModes = castModes;
+
+    /** @type {boolean} */
+    this.isPseudoSink = false;
   };
 
 
