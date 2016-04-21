@@ -128,8 +128,6 @@ public:
 
     class PLATFORM_EXPORT ImageExtractor final {
         STACK_ALLOCATED();
-        WTF_MAKE_NONCOPYABLE(ImageExtractor);
-
     public:
         ImageExtractor(Image*, ImageHtmlDomSource, bool premultiplyAlpha, bool ignoreGammaAndColorProfile);
 
