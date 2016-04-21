@@ -56,7 +56,7 @@ class DigestorImpl : public blink::WebCryptoDigestor {
   }
 
   Status FinishWithVectorAndStatus(std::vector<uint8_t>* result) {
-    const int hash_expected_size = EVP_MD_CTX_size(digest_context_.get());
+    const size_t hash_expected_size = EVP_MD_CTX_size(digest_context_.get());
     result->resize(hash_expected_size);
     unsigned int hash_buffer_size;  // ignored
     return FinishInternal(result->data(), &hash_buffer_size);
@@ -87,13 +87,13 @@ class DigestorImpl : public blink::WebCryptoDigestor {
     if (!error.IsSuccess())
       return error;
 
-    const int hash_expected_size = EVP_MD_CTX_size(digest_context_.get());
-    if (hash_expected_size <= 0)
+    const size_t hash_expected_size = EVP_MD_CTX_size(digest_context_.get());
+    if (hash_expected_size == 0)
       return Status::ErrorUnexpected();
-    DCHECK_LE(hash_expected_size, EVP_MAX_MD_SIZE);
+    DCHECK_LE(hash_expected_size, static_cast<unsigned>(EVP_MAX_MD_SIZE));
 
     if (!EVP_DigestFinal_ex(digest_context_.get(), result, result_size) ||
-        static_cast<int>(*result_size) != hash_expected_size)
+        *result_size != hash_expected_size)
       return Status::OperationError();
 
     return Status::Success();
