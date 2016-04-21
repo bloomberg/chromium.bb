@@ -104,7 +104,7 @@ class TestGraphics2D : public TestCase {
   std::string TestBindNull();
 
   // Used by the tests that access the C API directly.
-  const PPB_Graphics2D_1_1* graphics_2d_interface_;
+  const PPB_Graphics2D_1_2* graphics_2d_interface_;
   const PPB_ImageData_1_0* image_data_interface_;
 
   // Used to indicate that DidChangeView has happened, in order to make plugin

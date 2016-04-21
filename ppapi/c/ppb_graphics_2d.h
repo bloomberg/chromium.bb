@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_graphics_2d.idl modified Fri Apr 26 08:49:08 2013. */
+/* From ppb_graphics_2d.idl modified Wed Apr 20 13:37:06 2016. */
 
 #ifndef PPAPI_C_PPB_GRAPHICS_2D_H_
 #define PPAPI_C_PPB_GRAPHICS_2D_H_
@@ -20,7 +20,8 @@
 
 #define PPB_GRAPHICS_2D_INTERFACE_1_0 "PPB_Graphics2D;1.0"
 #define PPB_GRAPHICS_2D_INTERFACE_1_1 "PPB_Graphics2D;1.1"
-#define PPB_GRAPHICS_2D_INTERFACE PPB_GRAPHICS_2D_INTERFACE_1_1
+#define PPB_GRAPHICS_2D_INTERFACE_1_2 "PPB_Graphics2D;1.2"
+#define PPB_GRAPHICS_2D_INTERFACE PPB_GRAPHICS_2D_INTERFACE_1_2
 
 /**
  * @file
@@ -36,7 +37,7 @@
 /**
  * <code>PPB_Graphics2D</code> defines the interface for a 2D graphics context.
  */
-struct PPB_Graphics2D_1_1 {
+struct PPB_Graphics2D_1_2 {
   /**
    * Create() creates a 2D graphics context. The returned graphics context will
    * not be bound to the module instance on creation (call BindGraphics() on
@@ -276,9 +277,28 @@ struct PPB_Graphics2D_1_1 {
    * is not a valid <code>Graphics2D</code> context, this will return 0.0.
    */
   float (*GetScale)(PP_Resource resource);
+  /**
+   * SetLayerTransform() sets a transformation factor that will be applied for
+   * the current graphics context displayed on the output device.  If both
+   * SetScale and SetLayerTransform will be used, they are going to get combined
+   * for the final result.
+   *
+   * This function has no effect until you call Flush().
+   *
+   * @param[in] scale The scale to be applied.
+   * @param[in] origin The origin of the scale.
+   * @param[in] translate The translation to be applied.
+   *
+   * @return Returns <code>PP_TRUE</code> on success or <code>PP_FALSE</code>
+   * if the resource is invalid or the scale factor is 0 or less.
+   */
+  PP_Bool (*SetLayerTransform)(PP_Resource resource,
+                               float scale,
+                               const struct PP_Point* origin,
+                               const struct PP_Point* translate);
 };
 
-typedef struct PPB_Graphics2D_1_1 PPB_Graphics2D;
+typedef struct PPB_Graphics2D_1_2 PPB_Graphics2D;
 
 struct PPB_Graphics2D_1_0 {
   PP_Resource (*Create)(PP_Instance instance,
@@ -298,6 +318,28 @@ struct PPB_Graphics2D_1_0 {
   void (*ReplaceContents)(PP_Resource graphics_2d, PP_Resource image_data);
   int32_t (*Flush)(PP_Resource graphics_2d,
                    struct PP_CompletionCallback callback);
+};
+
+struct PPB_Graphics2D_1_1 {
+  PP_Resource (*Create)(PP_Instance instance,
+                        const struct PP_Size* size,
+                        PP_Bool is_always_opaque);
+  PP_Bool (*IsGraphics2D)(PP_Resource resource);
+  PP_Bool (*Describe)(PP_Resource graphics_2d,
+                      struct PP_Size* size,
+                      PP_Bool* is_always_opaque);
+  void (*PaintImageData)(PP_Resource graphics_2d,
+                         PP_Resource image_data,
+                         const struct PP_Point* top_left,
+                         const struct PP_Rect* src_rect);
+  void (*Scroll)(PP_Resource graphics_2d,
+                 const struct PP_Rect* clip_rect,
+                 const struct PP_Point* amount);
+  void (*ReplaceContents)(PP_Resource graphics_2d, PP_Resource image_data);
+  int32_t (*Flush)(PP_Resource graphics_2d,
+                   struct PP_CompletionCallback callback);
+  PP_Bool (*SetScale)(PP_Resource resource, float scale);
+  float (*GetScale)(PP_Resource resource);
 };
 /**
  * @}

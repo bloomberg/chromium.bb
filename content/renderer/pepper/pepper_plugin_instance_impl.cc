@@ -479,6 +479,8 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       module_(module),
       instance_interface_(instance_interface),
       pp_instance_(0),
+      graphics2d_translation_(0, 0),
+      graphics2d_scale_(1.f),
       container_(container),
       layer_bound_to_fullscreen_(false),
       layer_is_hardware_(false),
@@ -1544,6 +1546,15 @@ bool PepperPluginInstanceImpl::LoadTextInputInterface() {
   return !!plugin_textinput_interface_;
 }
 
+void PepperPluginInstanceImpl::SetGraphics2DTransform(
+    const float& scale,
+    const gfx::PointF& translation) {
+  graphics2d_scale_ = scale;
+  graphics2d_translation_ = translation;
+
+  UpdateLayerTransform();
+}
+
 void PepperPluginInstanceImpl::UpdateLayerTransform() {
   if (!bound_graphics_2d_platform_ || !texture_layer_) {
     // Currently the transform is only applied for Graphics2D.
@@ -1563,11 +1574,24 @@ void PepperPluginInstanceImpl::UpdateLayerTransform() {
   gfx::Size plugin_size_in_dip(view_data_.rect.size.width,
                                view_data_.rect.size.height);
 
+  // Adding the SetLayerTransform from Graphics2D to the UV.
+  // If graphics2d_scale_ is 1.f and graphics2d_translation_ is 0 then UV will
+  // be top_left (0,0) and lower_right (plugin_size_in_dip.width() /
+  // graphics_2d_size_in_dip.width(), plugin_size_in_dip.height() /
+  // graphics_2d_size_in_dip.height())
+  gfx::PointF top_left =
+      gfx::PointF(-graphics2d_translation_.x() / graphics2d_scale_,
+                  -graphics2d_translation_.y() / graphics2d_scale_);
+  gfx::PointF lower_right =
+      gfx::PointF((1 / graphics2d_scale_) * plugin_size_in_dip.width() -
+                      graphics2d_translation_.x() / graphics2d_scale_,
+                  (1 / graphics2d_scale_) * plugin_size_in_dip.height() -
+                      graphics2d_translation_.y() / graphics2d_scale_);
   texture_layer_->SetUV(
-      gfx::PointF(0.0f, 0.0f),
-      gfx::PointF(
-          plugin_size_in_dip.width() / graphics_2d_size_in_dip.width(),
-          plugin_size_in_dip.height() / graphics_2d_size_in_dip.height()));
+      gfx::PointF(top_left.x() / graphics_2d_size_in_dip.width(),
+                  top_left.y() / graphics_2d_size_in_dip.height()),
+      gfx::PointF(lower_right.x() / graphics_2d_size_in_dip.width(),
+                  lower_right.y() / graphics_2d_size_in_dip.height()));
 }
 
 bool PepperPluginInstanceImpl::PluginHasFocus() const {

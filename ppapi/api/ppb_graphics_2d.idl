@@ -12,7 +12,8 @@
 
 label Chrome {
   M14 = 1.0,
-  M27 = 1.1
+  M27 = 1.1,
+  M52 = 1.2
 };
 
 /**
@@ -282,5 +283,26 @@ interface PPB_Graphics2D {
   float_t GetScale(
       [in] PP_Resource resource);
 
+  /**
+   * SetLayerTransform() sets a transformation factor that will be applied for
+   * the current graphics context displayed on the output device.  If both
+   * SetScale and SetLayerTransform will be used, they are going to get combined
+   * for the final result.
+   *
+   * This function has no effect until you call Flush().
+   *
+   * @param[in] scale The scale to be applied.
+   * @param[in] origin The origin of the scale.
+   * @param[in] translate The translation to be applied.
+   *
+   * @return Returns <code>PP_TRUE</code> on success or <code>PP_FALSE</code>
+   * if the resource is invalid or the scale factor is 0 or less.
+   */
+  [version=1.2]
+  PP_Bool SetLayerTransform(
+      [in] PP_Resource resource,
+      [in] float_t scale,
+      [in] PP_Point origin,
+      [in] PP_Point translate);
 };
 

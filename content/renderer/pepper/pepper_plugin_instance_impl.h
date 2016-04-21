@@ -372,6 +372,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   ContentDecryptorDelegate* GetContentDecryptorDelegate();
 
+  void SetGraphics2DTransform(const float& scale,
+                              const gfx::PointF& translation);
+
   // PluginInstance implementation
   RenderView* GetRenderView() override;
   blink::WebPluginContainer* GetContainer() override;
@@ -710,6 +713,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   std::unique_ptr<ppapi::PPP_Instance_Combined> original_instance_interface_;
 
   PP_Instance pp_instance_;
+
+  // These are the scale and the translation that will be applied to the layer.
+  gfx::PointF graphics2d_translation_;
+  float graphics2d_scale_;
 
   // NULL until we have been initialized.
   blink::WebPluginContainer* container_;

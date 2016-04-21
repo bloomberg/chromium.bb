@@ -1655,6 +1655,9 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_Graphics2D_ReplaceContents,
                      ppapi::HostResource /* image_data */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_Graphics2D_SetScale,
                      float /* scale */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_Graphics2D_SetLayerTransform,
+                     float /* scale */,
+                     PP_FloatPoint /* translate */)
 
 // Graphics2D, plugin -> host -> plugin
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Graphics2D_Flush)

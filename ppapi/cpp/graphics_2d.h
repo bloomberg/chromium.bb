@@ -284,6 +284,9 @@ class Graphics2D : public Resource {
   /// is 1.0.
   float GetScale();
 
+  bool SetLayerTransform(float scale,
+                         const Point& origin,
+                         const Point& translate);
  private:
   Size size_;
 };

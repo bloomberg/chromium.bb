@@ -80020,6 +80020,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="125017713" label="PPB_CameraCapabilities_Private;0.1"/>
   <int value="126651696" label="PPB_ContentDecryptor_Private;0.12"/>
   <int value="138418890" label="PPB_Memory(Dev);0.1"/>
+  <int value="150724524" label="PPB_Graphics2D;1.2"/>
   <int value="153443470" label="PPB_URLResponseInfo;1.0"/>
   <int value="153532707" label="PPB_Buffer(Dev);0.4"/>
   <int value="156766028" label="PPB_UMA_Private;0.3"/>

@@ -42,6 +42,9 @@ class PPAPI_PROXY_EXPORT Graphics2DResource
   void ReplaceContents(PP_Resource image_data) override;
   PP_Bool SetScale(float scale) override;
   float GetScale() override;
+  PP_Bool SetLayerTransform(float scale,
+                            const PP_Point* origin,
+                            const PP_Point* translate) override;
   int32_t Flush(scoped_refptr<TrackedCallback> callback) override;
   bool ReadImageData(PP_Resource image, const PP_Point* top_left) override;
 

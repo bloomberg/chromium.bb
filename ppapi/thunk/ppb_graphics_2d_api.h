@@ -36,6 +36,9 @@ class PPAPI_THUNK_EXPORT PPB_Graphics2D_API {
   virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) = 0;
   virtual PP_Bool SetScale(float scale) = 0;
   virtual float GetScale() = 0;
+  virtual PP_Bool SetLayerTransform(float scale,
+                                    const PP_Point* origin,
+                                    const PP_Point* translate) = 0;
 
   // Test only
   virtual bool ReadImageData(PP_Resource image, const PP_Point* top_left) = 0;

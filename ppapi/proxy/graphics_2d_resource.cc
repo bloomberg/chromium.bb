@@ -113,6 +113,20 @@ float Graphics2DResource::GetScale() {
   return scale_;
 }
 
+PP_Bool Graphics2DResource::SetLayerTransform(float scale,
+                                              const PP_Point* origin,
+                                              const PP_Point* translate) {
+  if (scale <= 0.0f)
+    return PP_FALSE;
+  // Adding the origin to the transform.
+  PP_FloatPoint translate_with_origin;
+  translate_with_origin.x = (1 - scale) * origin->x - translate->x;
+  translate_with_origin.y = (1 - scale) * origin->y - translate->y;
+  Post(RENDERER,
+       PpapiHostMsg_Graphics2D_SetLayerTransform(scale, translate_with_origin));
+  return PP_TRUE;
+}
+
 int32_t Graphics2DResource::Flush(scoped_refptr<TrackedCallback> callback) {
   // If host is not even created, return failure immediately.  This can happen
   // when failed to initialize (in constructor).

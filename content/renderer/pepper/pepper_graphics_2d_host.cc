@@ -130,7 +130,7 @@ void ConvertImageData(PPB_ImageData_Impl* src_image,
 }  // namespace
 
 struct PepperGraphics2DHost::QueuedOperation {
-  enum Type { PAINT, SCROLL, REPLACE, };
+  enum Type { PAINT, SCROLL, REPLACE, TRANSFORM };
 
   QueuedOperation(Type t)
       : type(t), paint_x(0), paint_y(0), scroll_dx(0), scroll_dy(0) {}
@@ -148,6 +148,10 @@ struct PepperGraphics2DHost::QueuedOperation {
 
   // Valid when type == REPLACE.
   scoped_refptr<PPB_ImageData_Impl> replace_image;
+
+  // Valid when type == TRANSFORM
+  float scale;
+  gfx::PointF translation;
 };
 
 // static
@@ -223,6 +227,8 @@ int32_t PepperGraphics2DHost::OnResourceMessageReceived(
                                         OnHostMsgFlush)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Graphics2D_SetScale,
                                       OnHostMsgSetScale)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Graphics2D_SetLayerTransform,
+                                      OnHostMsgSetLayerTransform)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Graphics2D_ReadImageData,
                                       OnHostMsgReadImageData)
   PPAPI_END_MESSAGE_MAP()
@@ -524,6 +530,21 @@ int32_t PepperGraphics2DHost::OnHostMsgSetScale(
   return PP_ERROR_BADARGUMENT;
 }
 
+int32_t PepperGraphics2DHost::OnHostMsgSetLayerTransform(
+            ppapi::host::HostMessageContext* context,
+            float scale,
+            const PP_FloatPoint& translation) {
+  if (scale < 0.0f)
+    return PP_ERROR_BADARGUMENT;
+
+  QueuedOperation operation(QueuedOperation::TRANSFORM);
+  operation.scale = scale;
+  operation.translation = gfx::PointF(translation.x, translation.y);
+  queued_operations_.push_back(operation);
+  return PP_OK;
+}
+
+
 int32_t PepperGraphics2DHost::OnHostMsgReadImageData(
     ppapi::host::HostMessageContext* context,
     PP_Resource image,
@@ -590,10 +611,15 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
   bool done_replace_contents = false;
   bool no_update_visible = true;
   bool is_plugin_visible = true;
+
   for (size_t i = 0; i < queued_operations_.size(); i++) {
     QueuedOperation& operation = queued_operations_[i];
     gfx::Rect op_rect;
     switch (operation.type) {
+      case QueuedOperation::TRANSFORM:
+        ExecuteTransform(operation.scale, operation.translation);
+        no_update_visible = false;
+        break;
       case QueuedOperation::PAINT:
         ExecutePaintImageData(operation.paint_image.get(),
                               operation.paint_x,
@@ -677,6 +703,11 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
   }
 
   return PP_OK_COMPLETIONPENDING;
+}
+
+void PepperGraphics2DHost::ExecuteTransform(const float& scale,
+                                            const gfx::PointF& translate) {
+  bound_instance_->SetGraphics2DTransform(scale, translate);
 }
 
 void PepperGraphics2DHost::ExecutePaintImageData(PPB_ImageData_Impl* image,

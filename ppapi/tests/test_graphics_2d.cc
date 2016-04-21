@@ -32,7 +32,7 @@ bool CanFlushContext(pp::Instance* instance, pp::Graphics2D* context) {
 }
 
 bool CanFlushContextC(pp::Instance* instance, PP_Resource graphics_2d,
-                      const PPB_Graphics2D_1_1* graphics_2d_if) {
+                      const PPB_Graphics2D_1_2* graphics_2d_if) {
   TestCompletionCallback callback(instance->pp_instance());
   callback.WaitForResult(graphics_2d_if->Flush(
       graphics_2d, callback.GetCallback().pp_completion_callback()));
@@ -49,7 +49,7 @@ TestGraphics2D::TestGraphics2D(TestingInstance* instance)
 
 bool TestGraphics2D::Init() {
   graphics_2d_interface_ = static_cast<const PPB_Graphics2D*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_GRAPHICS_2D_INTERFACE_1_1));
+      pp::Module::Get()->GetBrowserInterface(PPB_GRAPHICS_2D_INTERFACE_1_2));
   image_data_interface_ = static_cast<const PPB_ImageData*>(
       pp::Module::Get()->GetBrowserInterface(PPB_IMAGEDATA_INTERFACE_1_0));
   return graphics_2d_interface_ && image_data_interface_ &&

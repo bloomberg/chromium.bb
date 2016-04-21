@@ -26,6 +26,11 @@ template <> const char* interface_name<PPB_Graphics2D_1_1>() {
   return PPB_GRAPHICS_2D_INTERFACE_1_1;
 }
 
+template <> const char* interface_name<PPB_Graphics2D_1_2>() {
+    return PPB_GRAPHICS_2D_INTERFACE_1_2;
+}
+
+
 }  // namespace
 
 Graphics2D::Graphics2D() : Resource() {
@@ -151,5 +156,15 @@ float Graphics2D::GetScale() {
     return 1.0f;
   return get_interface<PPB_Graphics2D_1_1>()->GetScale(pp_resource());
 }
+
+bool Graphics2D::SetLayerTransform(float scale,
+                                   const Point& origin,
+                                   const Point& translate) {
+  if (!has_interface<PPB_Graphics2D_1_2>())
+    return false;
+  return PP_ToBool(get_interface<PPB_Graphics2D_1_2>()->SetLayerTransform(
+      pp_resource(), scale, &origin.pp_point(), &translate.pp_point()));
+}
+
 
 }  // namespace pp

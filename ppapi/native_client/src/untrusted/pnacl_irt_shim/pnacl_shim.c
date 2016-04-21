@@ -107,6 +107,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileSystem_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics3D_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseInputEvent_1_0;
@@ -870,6 +871,60 @@ static float Pnacl_M27_PPB_Graphics2D_GetScale(PP_Resource resource) {
 }
 
 /* End wrapper methods for PPB_Graphics2D_1_1 */
+
+/* Begin wrapper methods for PPB_Graphics2D_1_2 */
+
+static PP_Resource Pnacl_M52_PPB_Graphics2D_Create(PP_Instance instance, const struct PP_Size* size, PP_Bool is_always_opaque) {
+  const struct PPB_Graphics2D_1_2 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_2.real_iface;
+  return iface->Create(instance, size, is_always_opaque);
+}
+
+static PP_Bool Pnacl_M52_PPB_Graphics2D_IsGraphics2D(PP_Resource resource) {
+  const struct PPB_Graphics2D_1_2 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_2.real_iface;
+  return iface->IsGraphics2D(resource);
+}
+
+static PP_Bool Pnacl_M52_PPB_Graphics2D_Describe(PP_Resource graphics_2d, struct PP_Size* size, PP_Bool* is_always_opaque) {
+  const struct PPB_Graphics2D_1_2 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_2.real_iface;
+  return iface->Describe(graphics_2d, size, is_always_opaque);
+}
+
+static void Pnacl_M52_PPB_Graphics2D_PaintImageData(PP_Resource graphics_2d, PP_Resource image_data, const struct PP_Point* top_left, const struct PP_Rect* src_rect) {
+  const struct PPB_Graphics2D_1_2 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_2.real_iface;
+  iface->PaintImageData(graphics_2d, image_data, top_left, src_rect);
+}
+
+static void Pnacl_M52_PPB_Graphics2D_Scroll(PP_Resource graphics_2d, const struct PP_Rect* clip_rect, const struct PP_Point* amount) {
+  const struct PPB_Graphics2D_1_2 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_2.real_iface;
+  iface->Scroll(graphics_2d, clip_rect, amount);
+}
+
+static void Pnacl_M52_PPB_Graphics2D_ReplaceContents(PP_Resource graphics_2d, PP_Resource image_data) {
+  const struct PPB_Graphics2D_1_2 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_2.real_iface;
+  iface->ReplaceContents(graphics_2d, image_data);
+}
+
+static int32_t Pnacl_M52_PPB_Graphics2D_Flush(PP_Resource graphics_2d, struct PP_CompletionCallback* callback) {
+  const struct PPB_Graphics2D_1_2 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_2.real_iface;
+  return iface->Flush(graphics_2d, *callback);
+}
+
+static PP_Bool Pnacl_M52_PPB_Graphics2D_SetScale(PP_Resource resource, float scale) {
+  const struct PPB_Graphics2D_1_2 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_2.real_iface;
+  return iface->SetScale(resource, scale);
+}
+
+static float Pnacl_M52_PPB_Graphics2D_GetScale(PP_Resource resource) {
+  const struct PPB_Graphics2D_1_2 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_2.real_iface;
+  return iface->GetScale(resource);
+}
+
+static PP_Bool Pnacl_M52_PPB_Graphics2D_SetLayerTransform(PP_Resource resource, float scale, const struct PP_Point* origin, const struct PP_Point* translate) {
+  const struct PPB_Graphics2D_1_2 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_2.real_iface;
+  return iface->SetLayerTransform(resource, scale, origin, translate);
+}
+
+/* End wrapper methods for PPB_Graphics2D_1_2 */
 
 /* Begin wrapper methods for PPB_Graphics3D_1_0 */
 
@@ -4795,6 +4850,19 @@ static const struct PPB_Graphics2D_1_1 Pnacl_Wrappers_PPB_Graphics2D_1_1 = {
     .GetScale = (float (*)(PP_Resource resource))&Pnacl_M27_PPB_Graphics2D_GetScale
 };
 
+static const struct PPB_Graphics2D_1_2 Pnacl_Wrappers_PPB_Graphics2D_1_2 = {
+    .Create = (PP_Resource (*)(PP_Instance instance, const struct PP_Size* size, PP_Bool is_always_opaque))&Pnacl_M52_PPB_Graphics2D_Create,
+    .IsGraphics2D = (PP_Bool (*)(PP_Resource resource))&Pnacl_M52_PPB_Graphics2D_IsGraphics2D,
+    .Describe = (PP_Bool (*)(PP_Resource graphics_2d, struct PP_Size* size, PP_Bool* is_always_opaque))&Pnacl_M52_PPB_Graphics2D_Describe,
+    .PaintImageData = (void (*)(PP_Resource graphics_2d, PP_Resource image_data, const struct PP_Point* top_left, const struct PP_Rect* src_rect))&Pnacl_M52_PPB_Graphics2D_PaintImageData,
+    .Scroll = (void (*)(PP_Resource graphics_2d, const struct PP_Rect* clip_rect, const struct PP_Point* amount))&Pnacl_M52_PPB_Graphics2D_Scroll,
+    .ReplaceContents = (void (*)(PP_Resource graphics_2d, PP_Resource image_data))&Pnacl_M52_PPB_Graphics2D_ReplaceContents,
+    .Flush = (int32_t (*)(PP_Resource graphics_2d, struct PP_CompletionCallback callback))&Pnacl_M52_PPB_Graphics2D_Flush,
+    .SetScale = (PP_Bool (*)(PP_Resource resource, float scale))&Pnacl_M52_PPB_Graphics2D_SetScale,
+    .GetScale = (float (*)(PP_Resource resource))&Pnacl_M52_PPB_Graphics2D_GetScale,
+    .SetLayerTransform = (PP_Bool (*)(PP_Resource resource, float scale, const struct PP_Point* origin, const struct PP_Point* translate))&Pnacl_M52_PPB_Graphics2D_SetLayerTransform
+};
+
 static const struct PPB_Graphics3D_1_0 Pnacl_Wrappers_PPB_Graphics3D_1_0 = {
     .GetAttribMaxValue = (int32_t (*)(PP_Resource instance, int32_t attribute, int32_t* value))&Pnacl_M15_PPB_Graphics3D_GetAttribMaxValue,
     .Create = (PP_Resource (*)(PP_Instance instance, PP_Resource share_context, const int32_t attrib_list[]))&Pnacl_M15_PPB_Graphics3D_Create,
@@ -5927,6 +5995,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_1 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_2 = {
+  .iface_macro = PPB_GRAPHICS_2D_INTERFACE_1_2,
+  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_Graphics2D_1_2,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics3D_1_0 = {
   .iface_macro = PPB_GRAPHICS_3D_INTERFACE_1_0,
   .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_Graphics3D_1_0,
@@ -6524,6 +6598,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_FileSystem_1_0,
   &Pnacl_WrapperInfo_PPB_Graphics2D_1_0,
   &Pnacl_WrapperInfo_PPB_Graphics2D_1_1,
+  &Pnacl_WrapperInfo_PPB_Graphics2D_1_2,
   &Pnacl_WrapperInfo_PPB_Graphics3D_1_0,
   &Pnacl_WrapperInfo_PPB_HostResolver_1_0,
   &Pnacl_WrapperInfo_PPB_MouseInputEvent_1_0,

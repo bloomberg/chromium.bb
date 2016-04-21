@@ -18,6 +18,7 @@
 #include "ppapi/host/resource_host.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
@@ -86,6 +87,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
 
   void SetScale(float scale);
   float GetScale() const;
+  void SetLayerTransform(float scale, const PP_Point& transform);
   bool IsAlwaysOpaque() const;
   PPB_ImageData_Impl* ImageData();
   gfx::Size Size() const;
@@ -116,6 +118,9 @@ class CONTENT_EXPORT PepperGraphics2DHost
   int32_t OnHostMsgFlush(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgSetScale(ppapi::host::HostMessageContext* context,
                             float scale);
+  int32_t OnHostMsgSetLayerTransform(ppapi::host::HostMessageContext* context,
+                                     float Scale,
+                                     const PP_FloatPoint& Transform);
   int32_t OnHostMsgReadImageData(ppapi::host::HostMessageContext* context,
                                  PP_Resource image,
                                  const PP_Point& top_left);
@@ -129,6 +134,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
   // rect argument will be filled by each function with the area affected by
   // the update that requires invalidation. If there were no pixels changed,
   // this rect can be untouched.
+  void ExecuteTransform(const float& scale, const gfx::PointF& translate);
   void ExecutePaintImageData(PPB_ImageData_Impl* image,
                              int x,
                              int y,
