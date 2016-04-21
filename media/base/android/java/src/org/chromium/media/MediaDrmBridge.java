@@ -12,6 +12,7 @@ import android.os.Build;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
@@ -89,6 +90,7 @@ public class MediaDrmBridge {
     /**
      *  An equivalent of MediaDrm.KeyStatus, which is only available on M+.
      */
+    @MainDex
     private static class KeyStatus {
         private final byte[] mKeyId;
         private final int mStatusCode;
@@ -122,6 +124,7 @@ public class MediaDrmBridge {
     /**
      *  This class contains data needed to call createSession().
      */
+    @MainDex
     private static class PendingCreateSessionData {
         private final byte[] mInitData;
         private final String mMimeType;
@@ -913,6 +916,7 @@ public class MediaDrmBridge {
         }
     }
 
+    @MainDex
     private class EventListener implements MediaDrm.OnEventListener {
         @Override
         public void onEvent(
@@ -976,6 +980,7 @@ public class MediaDrmBridge {
     }
 
     @TargetApi(Build.VERSION_CODES.M)
+    @MainDex
     private class KeyStatusChangeListener implements MediaDrm.OnKeyStatusChangeListener {
         private List<KeyStatus> getKeysInfo(List<MediaDrm.KeyStatus> keyInformation) {
             List<KeyStatus> keysInfo = new ArrayList<KeyStatus>();
@@ -995,6 +1000,7 @@ public class MediaDrmBridge {
     }
 
     @TargetApi(Build.VERSION_CODES.M)
+    @MainDex
     private class ExpirationUpdateListener implements MediaDrm.OnExpirationUpdateListener {
         @Override
         public void onExpirationUpdate(MediaDrm md, byte[] sessionId, long expirationTime) {
