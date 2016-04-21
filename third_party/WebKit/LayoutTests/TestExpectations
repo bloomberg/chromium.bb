@@ -2714,6 +2714,8 @@ crbug.com/593679 virtual/scalefactor150/fast/hidpi/static/calendar-picker-appear
 crbug.com/593679 virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ NeedsManualRebaseline ]
 crbug.com/593679 virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ NeedsManualRebaseline ]
 
+crbug.com/605525 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
+
 crbug.com/603703 [ Linux ] imported/web-platform-tests/web-animations/animation-timeline/document-timeline.html [ Failure Pass ]
 
 crbug.com/600248 imported/web-platform-tests/web-animations/animation-effect-timing/endDelay.html [ Failure ]
