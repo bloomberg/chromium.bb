@@ -27,7 +27,7 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   // ImageTransportFactory implementation.
   ui::ContextFactory* GetContextFactory() override;
   cc::SurfaceManager* GetSurfaceManager() override;
-  GLHelper* GetGLHelper() override;
+  display_compositor::GLHelper* GetGLHelper() override;
   void AddObserver(ImageTransportFactoryObserver* observer) override;
   void RemoveObserver(ImageTransportFactoryObserver* observer) override;
 #if defined(OS_MACOSX)
@@ -45,7 +45,7 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
   std::unique_ptr<ui::ContextFactory> context_factory_;
   scoped_refptr<cc::ContextProvider> context_provider_;
-  std::unique_ptr<GLHelper> gl_helper_;
+  std::unique_ptr<display_compositor::GLHelper> gl_helper_;
   base::ObserverList<ImageTransportFactoryObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NoTransportImageTransportFactory);

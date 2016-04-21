@@ -1,0 +1,95 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+component("display_compositor") {
+  sources = [
+    "buffer_queue.cc",
+    "buffer_queue.h",
+    "display_compositor_export.h",
+    "gl_helper.cc",
+    "gl_helper.h",
+    "gl_helper_readback_support.cc",
+    "gl_helper_readback_support.h",
+    "gl_helper_scaling.cc",
+    "gl_helper_scaling.h",
+  ]
+
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  defines = [ "DISPLAY_COMPOSITOR_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//cc",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common",
+    "//skia",
+    "//ui/gfx",
+  ]
+}
+
+test("display_compositor_unittests") {
+  sources = [
+    "buffer_queue_unittest.cc",
+    "display_compositor_test_suite.cc",
+    "display_compositor_test_suite.h",
+    "gl_helper_unittest.cc",
+    "run_all_unittests.cc",
+    "yuv_readback_unittest.cc",
+  ]
+
+  configs += [ "//third_party/khronos:khronos_headers" ]
+
+  deps = [
+    ":display_compositor",
+    "//base",
+    "//base/test:test_support",
+    "//cc:test_support",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gl_in_process_context",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//media",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gl:test_support",
+  ]
+
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
+}
+
+test("display_compositor_benchmark") {
+  sources = [
+    "display_compositor_test_suite.cc",
+    "display_compositor_test_suite.h",
+    "gl_helper_benchmark.cc",
+    "run_all_unittests.cc",
+  ]
+
+  configs += [ "//third_party/khronos:khronos_headers" ]
+
+  deps = [
+    ":display_compositor",
+    "//base",
+    "//base/test:test_support",
+    "//cc:test_support",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gl_in_process_context",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//media",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gl:test_support",
+  ]
+
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
+}

@@ -5,12 +5,12 @@
 #include "content/browser/compositor/owned_mailbox.h"
 
 #include "base/logging.h"
-#include "content/browser/compositor/gl_helper.h"
+#include "components/display_compositor/gl_helper.h"
 #include "content/browser/compositor/image_transport_factory.h"
 
 namespace content {
 
-OwnedMailbox::OwnedMailbox(GLHelper* gl_helper)
+OwnedMailbox::OwnedMailbox(display_compositor::GLHelper* gl_helper)
     : texture_id_(0), gl_helper_(gl_helper) {
   texture_id_ = gl_helper_->CreateTexture();
   mailbox_holder_ = gl_helper_->ProduceMailboxHolderFromTexture(texture_id_);

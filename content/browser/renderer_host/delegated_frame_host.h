@@ -40,10 +40,13 @@ namespace media {
 class VideoFrame;
 }
 
+namespace display_compositor {
+class ReadbackYUVInterface;
+}
+
 namespace content {
 
 class DelegatedFrameHost;
-class ReadbackYUVInterface;
 class RenderWidgetHostViewFrameSubscriber;
 class RenderWidgetHostImpl;
 class ResizeLock;
@@ -315,7 +318,8 @@ class CONTENT_EXPORT DelegatedFrameHost
       request_copy_of_output_callback_for_testing_;
 
   // YUV readback pipeline.
-  std::unique_ptr<content::ReadbackYUVInterface> yuv_readback_pipeline_;
+  std::unique_ptr<display_compositor::ReadbackYUVInterface>
+      yuv_readback_pipeline_;
 
   std::unique_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
 };

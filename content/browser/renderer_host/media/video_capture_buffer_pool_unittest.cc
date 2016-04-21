@@ -22,7 +22,7 @@
 #include "build/build_config.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
-#include "content/browser/compositor/buffer_queue.h"
+#include "components/display_compositor/buffer_queue.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "media/base/video_frame.h"
@@ -113,7 +113,7 @@ class VideoCaptureBufferPoolTest
       return base::WrapUnique(new MockGpuMemoryBuffer(size));
     }
   };
-  class MockBufferQueue : public BufferQueue {
+  class MockBufferQueue : public display_compositor::BufferQueue {
    public:
     MockBufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
                     BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager,

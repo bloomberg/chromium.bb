@@ -54,7 +54,6 @@
         '../content/content.gyp:content_app_browser',
         '../content/content.gyp:content_app_child',
         '../content/content_shell_and_tests.gyp:content_browsertests',
-        '../content/content_shell_and_tests.gyp:content_gl_benchmark',
         '../content/content_shell_and_tests.gyp:content_gl_tests',
         '../content/content_shell_and_tests.gyp:content_perftests',
         '../content/content_shell_and_tests.gyp:content_unittests',
