@@ -33,8 +33,14 @@ using testing::DoAll;
 
 namespace {
 
+// Aura window capture unit tests are not stable in linux. crbug.com/602494 and
+// crbug.com/603823.
+#if defined(OS_WIN)
+#define ENABLE_AURA_WINDOW_TESTS
+#endif
+
 static const int kDefaultWindowCount = 2;
-#if defined(USE_AURA)
+#if defined(ENABLE_AURA_WINDOW_TESTS)
 static const int kDefaultAuraCount = 1;
 #else
 static const int kDefaultAuraCount = 0;
@@ -186,7 +192,7 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
         std::unique_ptr<webrtc::WindowCapturer>(window_capturer_)));
 
     // Set update period to reduce the time it takes to run tests.
-    model_->SetUpdatePeriod(base::TimeDelta::FromMilliseconds(5));
+    model_->SetUpdatePeriod(base::TimeDelta::FromMilliseconds(20));
   }
 
   void AddNativeWindow(int id) {
@@ -388,7 +394,7 @@ TEST_F(NativeDesktopMediaListTest, AddNativeWindow) {
   EXPECT_EQ(model_->GetSource(index).id.id, index);
 }
 
-#if defined(USE_AURA)
+#if defined(ENABLE_AURA_WINDOW_TESTS)
 TEST_F(NativeDesktopMediaListTest, AddAuraWindow) {
   AddWindowsAndVerify(true, kDefaultWindowCount, kDefaultAuraCount, false);
 
@@ -408,7 +414,7 @@ TEST_F(NativeDesktopMediaListTest, AddAuraWindow) {
   EXPECT_EQ(model_->GetSource(index).id.aura_id,
             native_aura_id_map_[native_id]);
 }
-#endif  // defined(USE_AURA)
+#endif  // defined(ENABLE_AURA_WINDOW_TESTS)
 
 TEST_F(NativeDesktopMediaListTest, RemoveNativeWindow) {
   AddWindowsAndVerify(true, kDefaultWindowCount, kDefaultAuraCount, false);
@@ -423,7 +429,7 @@ TEST_F(NativeDesktopMediaListTest, RemoveNativeWindow) {
   message_loop()->Run();
 }
 
-#if defined(USE_AURA)
+#if defined(ENABLE_AURA_WINDOW_TESTS)
 TEST_F(NativeDesktopMediaListTest, RemoveAuraWindow) {
   AddWindowsAndVerify(true, kDefaultWindowCount, kDefaultAuraCount, false);
 
@@ -437,7 +443,7 @@ TEST_F(NativeDesktopMediaListTest, RemoveAuraWindow) {
 
   message_loop()->Run();
 }
-#endif  // defined(USE_AURA)
+#endif  // defined(ENABLE_AURA_WINDOW_TESTS)
 
 TEST_F(NativeDesktopMediaListTest, RemoveAllWindows) {
   AddWindowsAndVerify(true, kDefaultWindowCount, kDefaultAuraCount, false);

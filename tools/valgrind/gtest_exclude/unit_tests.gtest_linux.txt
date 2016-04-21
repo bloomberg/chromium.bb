@@ -27,9 +27,3 @@ MultiUserWindowManagerChromeOSTest.FullUserSwitchAnimationTests
 ClientCertStoreChromeOSTest.Filter
 ClientCertStoreChromeOSTest.RequestsAfterNSSInitSucceed
 ClientCertStoreChromeOSTest.CertRequestMatching
-
-# http://crbug.com/602494
-NativeDesktopMediaListTest.AddAuraWindow
-NativeDesktopMediaListTest.AddNativeWindow
-NativeDesktopMediaListTest.RemoveNativeWindow
-NativeDesktopMediaListTest.UpdateThumbnail
