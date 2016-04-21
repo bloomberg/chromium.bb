@@ -490,12 +490,6 @@ void BlinkPlatformImpl::recordAction(const blink::UserMetricsAction& name) {
         child_thread->RecordComputedAction(name.action());
 }
 
-blink::Platform::WebMemoryAllocatorDumpGuid
-BlinkPlatformImpl::createWebMemoryAllocatorDumpGuid(
-    const blink::WebString& guidStr) {
-  return base::trace_event::MemoryAllocatorDumpGuid(guidStr.utf8()).ToUint64();
-}
-
 void BlinkPlatformImpl::addTraceLogEnabledStateObserver(
     TraceLogEnabledStateObserver* observer) {
   TraceLogObserverAdapter* adapter = new TraceLogObserverAdapter(observer);

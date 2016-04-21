@@ -100,8 +100,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   blink::WebThread* createThread(const char* name) override;
   blink::WebThread* currentThread() override;
   void recordAction(const blink::UserMetricsAction&) override;
-  blink::Platform::WebMemoryAllocatorDumpGuid createWebMemoryAllocatorDumpGuid(
-      const blink::WebString& guidStr) override;
   void addTraceLogEnabledStateObserver(
       blink::Platform::TraceLogEnabledStateObserver* observer) override;
   void removeTraceLogEnabledStateObserver(

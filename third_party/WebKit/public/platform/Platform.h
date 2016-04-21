@@ -446,10 +446,6 @@ public:
 
     typedef uint64_t WebMemoryAllocatorDumpGuid;
 
-    // Returns guid corresponding to the given string (the hash value) for
-    // creating a WebMemoryAllocatorDump.
-    virtual WebMemoryAllocatorDumpGuid createWebMemoryAllocatorDumpGuid(const WebString& guidStr) { return 0; }
-
     // GPU ----------------------------------------------------------------
     //
     struct ContextAttributes {
