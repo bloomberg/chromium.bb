@@ -729,6 +729,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/signin/AccountTrackerService.java",
   "java/src/org/chromium/chrome/browser/signin/AddGoogleAccountDialogFragment.java",
   "java/src/org/chromium/chrome/browser/signin/ConfirmManagedSigninFragment.java",
+  "java/src/org/chromium/chrome/browser/signin/GoogleActivityController.java",
   "java/src/org/chromium/chrome/browser/signin/OAuth2TokenService.java",
   "java/src/org/chromium/chrome/browser/signin/SignOutDialogFragment.java",
   "java/src/org/chromium/chrome/browser/signin/SigninHelper.java",

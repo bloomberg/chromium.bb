@@ -41,8 +41,15 @@
         android:order="1005"/>
 
     <Preference
+        android:key="google_activity_controls"
+        android:icon="@drawable/googleg"
+        android:title="@string/sign_in_google_activity_controls"
+        android:summary="@string/sign_in_google_activity_controls_message"
+        android:order="1006" />
+
+    <Preference
         android:key="sign_out"
         android:title="@string/account_management_sign_out"
-        android:order="1006"/>
+        android:order="1007"/>
 
 </PreferenceScreen>

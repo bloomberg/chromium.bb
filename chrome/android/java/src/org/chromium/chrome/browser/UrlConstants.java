@@ -32,4 +32,6 @@ public class UrlConstants {
     public static final String PHYSICAL_WEB_HOST = "physical-web";
     public static final String ABOUT_BLANK = "about:blank";
 
+    public static final String GOOGLE_ACCOUNT_ACTIVITY_CONTROLS_URL =
+            "https://myaccount.google.com/activitycontrols/search";
 }

@@ -77,6 +77,7 @@ import org.chromium.chrome.browser.services.AccountsChangedReceiver;
 import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.sync.GmsCoreSyncListener;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
@@ -720,6 +721,13 @@ public class ChromeApplication extends ContentApplication {
      */
     public GmsCoreSyncListener createGmsCoreSyncListener() {
         return null;
+    }
+
+    /**
+    * @return An instance of GoogleActivityController.
+    */
+    public GoogleActivityController createGoogleActivityController() {
+        return new GoogleActivityController();
     }
 
     /**
