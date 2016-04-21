@@ -741,7 +741,7 @@ def v8_conversion_type(idl_type, extended_attributes):
     # Array or sequence types
     native_array_element_type = idl_type.native_array_element_type
     if native_array_element_type:
-        return 'array'
+        return 'FrozenArray' if idl_type.is_frozen_array else 'array'
 
     # Simple types
     base_idl_type = idl_type.base_type
@@ -787,6 +787,7 @@ V8_SET_RETURN_VALUE = {
     # No special v8SetReturnValue* function, but instead convert value to V8
     # and then use general v8SetReturnValue.
     'array': 'v8SetReturnValue(info, {cpp_value})',
+    'FrozenArray': 'v8SetReturnValue(info, {cpp_value})',
     'Date': 'v8SetReturnValue(info, {cpp_value})',
     'EventHandler': 'v8SetReturnValue(info, {cpp_value})',
     'ScriptValue': 'v8SetReturnValue(info, {cpp_value})',
@@ -828,7 +829,7 @@ def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wr
     idl_type, cpp_value = preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes)
     this_v8_conversion_type = idl_type.v8_conversion_type(extended_attributes)
     # SetReturn-specific overrides
-    if this_v8_conversion_type in ['Date', 'EventHandler', 'ScriptValue', 'SerializedScriptValue', 'array']:
+    if this_v8_conversion_type in ['Date', 'EventHandler', 'ScriptValue', 'SerializedScriptValue', 'array', 'FrozenArray']:
         # Convert value to V8 and then use general v8SetReturnValue
         cpp_value = idl_type.cpp_value_to_v8_value(cpp_value, extended_attributes=extended_attributes)
     if this_v8_conversion_type == 'DOMWrapper':
@@ -865,8 +866,8 @@ CPP_VALUE_TO_V8_VALUE = {
     'ScriptValue': '{cpp_value}.v8Value()',
     'SerializedScriptValue': '{cpp_value} ? {cpp_value}->deserialize() : v8::Local<v8::Value>(v8::Null({isolate}))',
     # General
-    # TODO(bashi): Freeze converted array when the type is FrozenArray.
     'array': 'toV8({cpp_value}, {creation_context}, {isolate})',
+    'FrozenArray': 'freezeV8Object(toV8({cpp_value}, {creation_context}, {isolate}), {isolate})',
     'DOMWrapper': 'toV8({cpp_value}, {creation_context}, {isolate})',
     # Passing nullable dictionaries isn't a pattern currently used
     # anywhere in the web platform, and more work would be needed in

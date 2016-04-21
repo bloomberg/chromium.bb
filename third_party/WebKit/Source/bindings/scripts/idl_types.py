@@ -363,6 +363,10 @@ class IdlArrayOrSequenceType(IdlTypeBase):
         return True
 
     @property
+    def is_frozen_array(self):
+        return False
+
+    @property
     def enum_values(self):
         return self.element_type.enum_values
 
@@ -410,6 +414,10 @@ class IdlFrozenArrayType(IdlArrayOrSequenceType):
     @property
     def name(self):
         return self.element_type.name + 'Array'
+
+    @property
+    def is_frozen_array(self):
+        return True
 
 
 
