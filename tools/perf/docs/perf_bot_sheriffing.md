@@ -54,9 +54,28 @@ postings for important announcements about bot turndowns and other known issues.
 
 ##<a name="botfailures"></a> Handle Device and Bot Failures
 
+###<a name="offline"></a> Offline Buildslaves
+
+Some build configurations, in particular the perf builders and trybots, have
+multiple machines attached. If one or more of the machines go down, there are
+still other machines running, so the console or waterfall view will still show
+green, but those configs will run at reduced throughput. At least once during
+your shift, you should check the lists of buildslaves and ensure they're all
+running.
+
+*   [chromium.perf buildslaves](https://build.chromium.org/p/chromium.perf/buildslaves)
+*   [tryserver.chromium.perf buildslaves](https://build.chromium.org/p/tryserver.chromium.perf/buildslaves)
+
+The machines restart between test runs, so just looking for "Status: Not
+connected" is not enough to indicate a problem. For each disconnected machine,
+you can also check the "Last heard from" column to ensure that it's been gone
+for at least an hour. To get it running again,
+[file a bug](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-1,Performance-BotHealth,Infra-Troopers,OS-?&comment=Hostname:&summary=Buildslave+offline+on+chromium.perf)
+against the current trooper.
+
 ###<a name="purplebots"></a> Purple bots
 
-When a bot goes purple, it's it's usually because of an infrastructure failure
+When a bot goes purple, it's usually because of an infrastructure failure
 outside of the tests. But you should first check the logs of a purple bot to
 try to better understand the problem. Sometimes a telemetry test failure can
 turn the bot purple, for example.
