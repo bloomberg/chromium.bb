@@ -41,7 +41,10 @@ const char kOpenSLLibraryName[] = "libOpenSLES.so";
 base::NativeLibrary IntializeLibraryHandle() {
   base::NativeLibrary handle =
       base::LoadNativeLibrary(base::FilePath(kOpenSLLibraryName), NULL);
-  DCHECK(handle) << "Unable to load " << kOpenSLLibraryName;
+  if (!handle) {
+    DLOG(ERROR) << "Unable to load " << kOpenSLLibraryName;
+    return NULL;
+  }
 
   // Setup the proxy for each symbol.
   // Attach the symbol name to the proxy address.
@@ -58,15 +61,16 @@ base::NativeLibrary IntializeLibraryHandle() {
       {"SL_IID_RECORD", &SL_IID_RECORD},
       {"SL_IID_BUFFERQUEUE", &SL_IID_BUFFERQUEUE},
       {"SL_IID_VOLUME", &SL_IID_VOLUME},
-      {"SL_IID_PLAY", &SL_IID_PLAY}
-  };
+      {"SL_IID_PLAY", &SL_IID_PLAY}};
 
   for (size_t i = 0; i < sizeof(kSymbols) / sizeof(kSymbols[0]); ++i) {
-    memcpy(kSymbols[i].sl_iid,
-           base::GetFunctionPointerFromNativeLibrary(handle, kSymbols[i].name),
-           sizeof(SLInterfaceID));
-    DCHECK(*kSymbols[i].sl_iid) << "Unable to find symbol for "
-                                << kSymbols[i].name;
+    void* func_ptr =
+        base::GetFunctionPointerFromNativeLibrary(handle, kSymbols[i].name);
+    if (!func_ptr) {
+      DLOG(ERROR) << "Unable to find symbol for " << kSymbols[i].name;
+      return NULL;
+    }
+    memcpy(kSymbols[i].sl_iid, func_ptr, sizeof(SLInterfaceID));
   }
   return handle;
 }
@@ -75,9 +79,8 @@ base::NativeLibrary IntializeLibraryHandle() {
 // loaded during the first call to this function.
 base::NativeLibrary LibraryHandle() {
   // The handle is lazily initialized on the first call.
-  static base::NativeLibrary g_opensles_LibraryHandle =
-      IntializeLibraryHandle();
-  return g_opensles_LibraryHandle;
+  static base::NativeLibrary g_handle = IntializeLibraryHandle();
+  return g_handle;
 }
 
 }  // namespace
@@ -89,22 +92,22 @@ SLresult slCreateEngine(SLObjectItf* engine,
                         SLuint32 num_interfaces,
                         SLInterfaceID* interface_ids,
                         SLboolean* interfaces_required) {
-  typedef SLresult (*SlCreateEngineSignature)(SLObjectItf*,
-                                              SLuint32,
-                                              SLEngineOption*,
-                                              SLuint32,
-                                              SLInterfaceID*,
-                                              SLboolean*);
+  typedef SLresult (*SlCreateEngineSignature)(SLObjectItf*, SLuint32,
+                                              SLEngineOption*, SLuint32,
+                                              SLInterfaceID*, SLboolean*);
+  base::NativeLibrary handle = LibraryHandle();
+  if (!handle)
+    return SL_RESULT_INTERNAL_ERROR;
+
   static SlCreateEngineSignature g_sl_create_engine_handle =
       reinterpret_cast<SlCreateEngineSignature>(
-          base::GetFunctionPointerFromNativeLibrary(LibraryHandle(),
-                                                    "slCreateEngine"));
-  DCHECK(g_sl_create_engine_handle)
-      << "Unable to find symbol for slCreateEngine";
-  return g_sl_create_engine_handle(engine,
-                                   num_options,
-                                   engine_options,
-                                   num_interfaces,
-                                   interface_ids,
+          base::GetFunctionPointerFromNativeLibrary(handle, "slCreateEngine"));
+  if (!g_sl_create_engine_handle) {
+    DLOG(ERROR) << "Unable to find symbol for slCreateEngine";
+    return SL_RESULT_INTERNAL_ERROR;
+  }
+
+  return g_sl_create_engine_handle(engine, num_options, engine_options,
+                                   num_interfaces, interface_ids,
                                    interfaces_required);
 }
