@@ -8,10 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/tick_clock.h"
 #include "media/cast/logging/logging_defines.h"
@@ -47,7 +48,7 @@ class StatsEventSubscriber : public RawEventSubscriber {
   // The inner dictionary consists of string - double entries, where the string
   // describes the name of the stat, and the double describes
   // the value of the stat. See CastStat and StatsMap below.
-  scoped_ptr<base::DictionaryValue> GetStats() const;
+  std::unique_ptr<base::DictionaryValue> GetStats() const;
 
   // Resets stats in this object.
   void Reset();
@@ -102,7 +103,7 @@ class StatsEventSubscriber : public RawEventSubscriber {
 
     void Reset();
 
-    scoped_ptr<base::ListValue> GetHistogram() const;
+    std::unique_ptr<base::ListValue> GetHistogram() const;
 
    private:
     int64_t min_;

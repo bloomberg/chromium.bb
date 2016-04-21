@@ -5,9 +5,10 @@
 #ifndef MEDIA_CAST_TEST_IN_PROCESS_RECEIVER_H_
 #define MEDIA_CAST_TEST_IN_PROCESS_RECEIVER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
@@ -48,9 +49,9 @@ class InProcessReceiver {
 
     void OnStatusChanged(CastTransportStatus status) final;
     void OnLoggingEventsReceived(
-        scoped_ptr<std::vector<FrameEvent>> frame_events,
-        scoped_ptr<std::vector<PacketEvent>> packet_events) final {}
-    void ProcessRtpPacket(scoped_ptr<Packet> packet) final;
+        std::unique_ptr<std::vector<FrameEvent>> frame_events,
+        std::unique_ptr<std::vector<PacketEvent>> packet_events) final {}
+    void ProcessRtpPacket(std::unique_ptr<Packet> packet) final;
 
    private:
     InProcessReceiver* in_process_receiver_;
@@ -85,7 +86,7 @@ class InProcessReceiver {
  protected:
   // To be implemented by subclasses.  These are called on the Cast MAIN thread
   // as each frame is received.
-  virtual void OnAudioFrame(scoped_ptr<AudioBus> audio_frame,
+  virtual void OnAudioFrame(std::unique_ptr<AudioBus> audio_frame,
                             const base::TimeTicks& playout_time,
                             bool is_continuous) = 0;
   virtual void OnVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
@@ -111,7 +112,7 @@ class InProcessReceiver {
   // CastReceiver callbacks that receive a frame and then request another.  See
   // comments for the callbacks defined in src/media/cast/cast_receiver.h for
   // argument description and semantics.
-  void GotAudioFrame(scoped_ptr<AudioBus> audio_frame,
+  void GotAudioFrame(std::unique_ptr<AudioBus> audio_frame,
                      const base::TimeTicks& playout_time,
                      bool is_continuous);
   void GotVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
@@ -120,7 +121,7 @@ class InProcessReceiver {
   void PullNextAudioFrame();
   void PullNextVideoFrame();
 
-  void ReceivePacket(scoped_ptr<Packet> packet);
+  void ReceivePacket(std::unique_ptr<Packet> packet);
 
   const scoped_refptr<CastEnvironment> cast_environment_;
   const net::IPEndPoint local_end_point_;
@@ -128,8 +129,8 @@ class InProcessReceiver {
   const FrameReceiverConfig audio_config_;
   const FrameReceiverConfig video_config_;
 
-  scoped_ptr<CastTransport> transport_;
-  scoped_ptr<CastReceiver> cast_receiver_;
+  std::unique_ptr<CastTransport> transport_;
+  std::unique_ptr<CastReceiver> cast_receiver_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<InProcessReceiver> weak_factory_;

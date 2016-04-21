@@ -80,7 +80,7 @@ base::LazyInstance<GlobalCounter>::Leaky g_counter =
 class ByteCounterPipe : public media::cast::test::PacketPipe {
  public:
   ByteCounterPipe(ByteCounter* counter) : counter_(counter) {}
-  void Send(scoped_ptr<media::cast::Packet> packet) final {
+  void Send(std::unique_ptr<media::cast::Packet> packet) final {
     counter_->Increment(packet->size());
     pipe_->Send(std::move(packet));
   }
@@ -88,13 +88,13 @@ class ByteCounterPipe : public media::cast::test::PacketPipe {
   ByteCounter* counter_;
 };
 
-void SetupByteCounters(scoped_ptr<media::cast::test::PacketPipe>* pipe,
+void SetupByteCounters(std::unique_ptr<media::cast::test::PacketPipe>* pipe,
                        ByteCounter* pipe_input_counter,
                        ByteCounter* pipe_output_counter) {
   media::cast::test::PacketPipe* new_pipe =
       new ByteCounterPipe(pipe_input_counter);
   new_pipe->AppendToPipe(std::move(*pipe));
-  new_pipe->AppendToPipe(scoped_ptr<media::cast::test::PacketPipe>(
+  new_pipe->AppendToPipe(std::unique_ptr<media::cast::test::PacketPipe>(
       new ByteCounterPipe(pipe_output_counter)));
   pipe->reset(new_pipe);
 }
@@ -164,8 +164,8 @@ int main(int argc, char** argv) {
                                   static_cast<uint16_t>(remote_port));
   net::IPEndPoint local_endpoint(net::IPAddress::IPv4AllZeros(),
                                  static_cast<uint16_t>(local_port));
-  scoped_ptr<media::cast::test::PacketPipe> in_pipe, out_pipe;
-  scoped_ptr<media::cast::test::InterruptedPoissonProcess> ipp(
+  std::unique_ptr<media::cast::test::PacketPipe> in_pipe, out_pipe;
+  std::unique_ptr<media::cast::test::InterruptedPoissonProcess> ipp(
       media::cast::test::DefaultInterruptedPoissonProcess());
 
   if (network_type == "perfect") {
@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
       &(g_counter.Get().out_pipe_output_counter));
 
   printf("Press Ctrl-C when done.\n");
-  scoped_ptr<media::cast::test::UDPProxy> proxy(
+  std::unique_ptr<media::cast::test::UDPProxy> proxy(
       media::cast::test::UDPProxy::Create(local_endpoint, remote_endpoint,
                                           std::move(in_pipe),
                                           std::move(out_pipe), NULL));

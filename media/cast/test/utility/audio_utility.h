@@ -34,7 +34,7 @@ class TestAudioBusFactory {
 
   // Creates a new AudioBus of the given |duration|, filled with the next batch
   // of sine wave samples.
-  scoped_ptr<AudioBus> NextAudioBus(const base::TimeDelta& duration);
+  std::unique_ptr<AudioBus> NextAudioBus(const base::TimeDelta& duration);
 
   // A reasonable test tone.
   static const int kMiddleANoteFreq = 440;

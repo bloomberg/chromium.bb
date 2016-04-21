@@ -5,10 +5,11 @@
 #include "media/cast/logging/receiver_time_offset_estimator_impl.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "media/base/fake_single_thread_task_runner.h"
@@ -25,7 +26,7 @@ class ReceiverTimeOffsetEstimatorImplTest : public ::testing::Test {
       : sender_clock_(new base::SimpleTestTickClock()),
         task_runner_(new FakeSingleThreadTaskRunner(sender_clock_)),
         cast_environment_(
-            new CastEnvironment(scoped_ptr<base::TickClock>(sender_clock_),
+            new CastEnvironment(std::unique_ptr<base::TickClock>(sender_clock_),
                                 task_runner_,
                                 task_runner_,
                                 task_runner_)) {
@@ -67,7 +68,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
 
-  scoped_ptr<FrameEvent> encode_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> encode_event(new FrameEvent());
   encode_event->timestamp = sender_clock_->NowTicks();
   encode_event->type = FRAME_ENCODED;
   encode_event->media_type = VIDEO_EVENT;
@@ -80,7 +81,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
   encode_event->idealized_bitrate_utilization = 11.12;
   cast_environment_->logger()->DispatchFrameEvent(std::move(encode_event));
 
-  scoped_ptr<PacketEvent> send_event(new PacketEvent());
+  std::unique_ptr<PacketEvent> send_event(new PacketEvent());
   send_event->timestamp = sender_clock_->NowTicks();
   send_event->type = PACKET_SENT_TO_NETWORK;
   send_event->media_type = VIDEO_EVENT;
@@ -94,7 +95,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
   EXPECT_FALSE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(10));
-  scoped_ptr<FrameEvent> ack_sent_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> ack_sent_event(new FrameEvent());
   ack_sent_event->timestamp = receiver_clock_.NowTicks();
   ack_sent_event->type = FRAME_ACK_SENT;
   ack_sent_event->media_type = VIDEO_EVENT;
@@ -102,7 +103,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
   ack_sent_event->frame_id = frame_id;
   cast_environment_->logger()->DispatchFrameEvent(std::move(ack_sent_event));
 
-  scoped_ptr<PacketEvent> receive_event(new PacketEvent());
+  std::unique_ptr<PacketEvent> receive_event(new PacketEvent());
   receive_event->timestamp = receiver_clock_.NowTicks();
   receive_event->type = PACKET_RECEIVED;
   receive_event->media_type = VIDEO_EVENT;
@@ -116,7 +117,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
   EXPECT_FALSE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(30));
-  scoped_ptr<FrameEvent> ack_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> ack_event(new FrameEvent());
   ack_event->timestamp = sender_clock_->NowTicks();
   ack_event->type = FRAME_ACK_RECEIVED;
   ack_event->media_type = VIDEO_EVENT;
@@ -150,7 +151,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
 
-  scoped_ptr<FrameEvent> encode_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> encode_event(new FrameEvent());
   encode_event->timestamp = sender_clock_->NowTicks();
   encode_event->type = FRAME_ENCODED;
   encode_event->media_type = VIDEO_EVENT;
@@ -163,7 +164,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
   encode_event->idealized_bitrate_utilization = 11.12;
   cast_environment_->logger()->DispatchFrameEvent(std::move(encode_event));
 
-  scoped_ptr<PacketEvent> send_event(new PacketEvent());
+  std::unique_ptr<PacketEvent> send_event(new PacketEvent());
   send_event->timestamp = sender_clock_->NowTicks();
   send_event->type = PACKET_SENT_TO_NETWORK;
   send_event->media_type = VIDEO_EVENT;
@@ -181,7 +182,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
   AdvanceClocks(base::TimeDelta::FromMilliseconds(30));
   base::TimeTicks event_c_time = sender_clock_->NowTicks();
 
-  scoped_ptr<FrameEvent> ack_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> ack_event(new FrameEvent());
   ack_event->timestamp = event_c_time;
   ack_event->type = FRAME_ACK_RECEIVED;
   ack_event->media_type = VIDEO_EVENT;
@@ -191,7 +192,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
 
   EXPECT_FALSE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
-  scoped_ptr<PacketEvent> receive_event(new PacketEvent());
+  std::unique_ptr<PacketEvent> receive_event(new PacketEvent());
   receive_event->timestamp = event_b_time;
   receive_event->type = PACKET_RECEIVED;
   receive_event->media_type = VIDEO_EVENT;
@@ -202,7 +203,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
   receive_event->size = 1500;
   cast_environment_->logger()->DispatchPacketEvent(std::move(receive_event));
 
-  scoped_ptr<FrameEvent> ack_sent_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> ack_sent_event(new FrameEvent());
   ack_sent_event->timestamp = event_b_time;
   ack_sent_event->type = FRAME_ACK_SENT;
   ack_sent_event->media_type = VIDEO_EVENT;
@@ -242,7 +243,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
   // Bound should end up at [95, 103]
   // Events times in chronological order: 20, 30 x2, 50, 55, 60, 77, 80, 110
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
-  scoped_ptr<FrameEvent> encode_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> encode_event(new FrameEvent());
   encode_event->timestamp = sender_clock_->NowTicks();
   encode_event->type = FRAME_ENCODED;
   encode_event->media_type = VIDEO_EVENT;
@@ -255,7 +256,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
   encode_event->idealized_bitrate_utilization = 11.12;
   cast_environment_->logger()->DispatchFrameEvent(std::move(encode_event));
 
-  scoped_ptr<PacketEvent> send_event(new PacketEvent());
+  std::unique_ptr<PacketEvent> send_event(new PacketEvent());
   send_event->timestamp = sender_clock_->NowTicks();
   send_event->type = PACKET_SENT_TO_NETWORK;
   send_event->media_type = VIDEO_EVENT;
@@ -291,7 +292,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
   send_event->size = 1500;
   cast_environment_->logger()->DispatchPacketEvent(std::move(send_event));
 
-  scoped_ptr<FrameEvent> ack_sent_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> ack_sent_event(new FrameEvent());
   ack_sent_event->timestamp = receiver_clock_.NowTicks();
   ack_sent_event->type = FRAME_ACK_SENT;
   ack_sent_event->media_type = VIDEO_EVENT;
@@ -301,7 +302,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
 
-  scoped_ptr<PacketEvent> receive_event(new PacketEvent());
+  std::unique_ptr<PacketEvent> receive_event(new PacketEvent());
   receive_event->timestamp = receiver_clock_.NowTicks();
   receive_event->type = PACKET_RECEIVED;
   receive_event->media_type = VIDEO_EVENT;
@@ -321,7 +322,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
   cast_environment_->logger()->DispatchFrameEvent(std::move(ack_sent_event));
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(5));
-  scoped_ptr<FrameEvent> ack_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> ack_event(new FrameEvent());
   ack_event->timestamp = sender_clock_->NowTicks();
   ack_event->type = FRAME_ACK_RECEIVED;
   ack_event->media_type = VIDEO_EVENT;

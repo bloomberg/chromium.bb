@@ -41,13 +41,13 @@ int LookupOptionWithDefault(const base::DictionaryValue& options,
 
 }  // namespace
 
-scoped_ptr<CastTransport> CastTransport::Create(
+std::unique_ptr<CastTransport> CastTransport::Create(
     base::TickClock* clock,  // Owned by the caller.
     base::TimeDelta logging_flush_interval,
-    scoped_ptr<Client> client,
-    scoped_ptr<PacketTransport> transport,
+    std::unique_ptr<Client> client,
+    std::unique_ptr<PacketTransport> transport,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner) {
-  return scoped_ptr<CastTransport>(
+  return std::unique_ptr<CastTransport>(
       new CastTransportImpl(clock, logging_flush_interval, std::move(client),
                             std::move(transport), transport_task_runner.get()));
 }
@@ -59,8 +59,8 @@ PacketReceiverCallback CastTransport::PacketReceiverForTesting() {
 CastTransportImpl::CastTransportImpl(
     base::TickClock* clock,
     base::TimeDelta logging_flush_interval,
-    scoped_ptr<Client> client,
-    scoped_ptr<PacketTransport> transport,
+    std::unique_ptr<Client> client,
+    std::unique_ptr<PacketTransport> transport,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner)
     : clock_(clock),
       logging_flush_interval_(logging_flush_interval),
@@ -259,10 +259,10 @@ void CastTransportImpl::SendRawEvents() {
   DCHECK(logging_flush_interval_ > base::TimeDelta());
 
   if (!recent_frame_events_.empty() || !recent_packet_events_.empty()) {
-    scoped_ptr<std::vector<FrameEvent>> frame_events(
+    std::unique_ptr<std::vector<FrameEvent>> frame_events(
         new std::vector<FrameEvent>());
     frame_events->swap(recent_frame_events_);
-    scoped_ptr<std::vector<PacketEvent>> packet_events(
+    std::unique_ptr<std::vector<PacketEvent>> packet_events(
         new std::vector<PacketEvent>());
     packet_events->swap(recent_packet_events_);
     transport_client_->OnLoggingEventsReceived(std::move(frame_events),
@@ -275,7 +275,7 @@ void CastTransportImpl::SendRawEvents() {
       logging_flush_interval_);
 }
 
-bool CastTransportImpl::OnReceivedPacket(scoped_ptr<Packet> packet) {
+bool CastTransportImpl::OnReceivedPacket(std::unique_ptr<Packet> packet) {
   const uint8_t* const data = &packet->front();
   const size_t length = packet->size();
   uint32_t ssrc;

@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
@@ -41,7 +42,7 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
       const FrameEncodedCallback& frame_encoded_callback) final;
   void SetBitRate(int new_bit_rate) final;
   void GenerateKeyFrame() final;
-  scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory() final;
+  std::unique_ptr<VideoFrameFactory> CreateVideoFrameFactory() final;
   void EmitFrames() final;
 
  protected:
@@ -65,7 +66,7 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
 
   // Overridden by subclasses to create a new encoder instance that handles
   // frames of the size specified by |frame_size()|.
-  virtual scoped_ptr<VideoEncoder> CreateEncoder() = 0;
+  virtual std::unique_ptr<VideoEncoder> CreateEncoder() = 0;
 
   // Overridden by subclasses to perform additional steps when
   // |replacement_encoder| becomes the active encoder.
@@ -86,7 +87,7 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
 
   // Called by the |encoder_| with the next EncodedFrame.
   void OnEncodedVideoFrame(const FrameEncodedCallback& frame_encoded_callback,
-                           scoped_ptr<SenderEncodedFrame> encoded_frame);
+                           std::unique_ptr<SenderEncodedFrame> encoded_frame);
 
   const scoped_refptr<CastEnvironment> cast_environment_;
 
@@ -98,7 +99,7 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
   const StatusChangeCallback status_change_cb_;
 
   // The underlying platform video encoder and the frame size it expects.
-  scoped_ptr<VideoEncoder> encoder_;
+  std::unique_ptr<VideoEncoder> encoder_;
   gfx::Size frame_size_;
 
   // The number of frames in |encoder_|'s pipeline.  If this is set to

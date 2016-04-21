@@ -5,6 +5,7 @@
 #include "media/cast/receiver/audio_decoder.h"
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -12,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "third_party/opus/src/include/opus.h"
@@ -42,7 +44,7 @@ class AudioDecoder::ImplBase
     return operational_status_;
   }
 
-  void DecodeFrame(scoped_ptr<EncodedFrame> encoded_frame,
+  void DecodeFrame(std::unique_ptr<EncodedFrame> encoded_frame,
                    const DecodeFrameCallback& callback) {
     DCHECK_EQ(operational_status_, STATUS_INITIALIZED);
 
@@ -60,11 +62,11 @@ class AudioDecoder::ImplBase
     }
     last_frame_id_ = encoded_frame->frame_id;
 
-    scoped_ptr<AudioBus> decoded_audio = Decode(
-        encoded_frame->mutable_bytes(),
-        static_cast<int>(encoded_frame->data.size()));
+    std::unique_ptr<AudioBus> decoded_audio =
+        Decode(encoded_frame->mutable_bytes(),
+               static_cast<int>(encoded_frame->data.size()));
 
-    scoped_ptr<FrameEvent> event(new FrameEvent());
+    std::unique_ptr<FrameEvent> event(new FrameEvent());
     event->timestamp = cast_environment_->Clock()->NowTicks();
     event->type = FRAME_DECODED;
     event->media_type = AUDIO_EVENT;
@@ -86,7 +88,7 @@ class AudioDecoder::ImplBase
   virtual void RecoverBecauseFramesWereDropped() {}
 
   // Note: Implementation of Decode() is allowed to mutate |data|.
-  virtual scoped_ptr<AudioBus> Decode(uint8_t* data, int len) = 0;
+  virtual std::unique_ptr<AudioBus> Decode(uint8_t* data, int len) = 0;
 
   const scoped_refptr<CastEnvironment> cast_environment_;
   const Codec codec_;
@@ -137,8 +139,8 @@ class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
     DCHECK_GE(result, 0);
   }
 
-  scoped_ptr<AudioBus> Decode(uint8_t* data, int len) final {
-    scoped_ptr<AudioBus> audio_bus;
+  std::unique_ptr<AudioBus> Decode(uint8_t* data, int len) final {
+    std::unique_ptr<AudioBus> audio_bus;
     const opus_int32 num_samples_decoded = opus_decode_float(
         opus_decoder_, data, len, buffer_.get(), max_samples_per_frame_, 0);
     if (num_samples_decoded <= 0)
@@ -158,10 +160,10 @@ class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
     return audio_bus;
   }
 
-  const scoped_ptr<uint8_t[]> decoder_memory_;
+  const std::unique_ptr<uint8_t[]> decoder_memory_;
   OpusDecoder* const opus_decoder_;
   const int max_samples_per_frame_;
-  const scoped_ptr<float[]> buffer_;
+  const std::unique_ptr<float[]> buffer_;
 
   // According to documentation in third_party/opus/src/include/opus.h, we must
   // provide enough space in |buffer_| to contain 120ms of samples.  At 48 kHz,
@@ -188,8 +190,8 @@ class AudioDecoder::Pcm16Impl : public AudioDecoder::ImplBase {
  private:
   ~Pcm16Impl() final {}
 
-  scoped_ptr<AudioBus> Decode(uint8_t* data, int len) final {
-    scoped_ptr<AudioBus> audio_bus;
+  std::unique_ptr<AudioBus> Decode(uint8_t* data, int len) final {
+    std::unique_ptr<AudioBus> audio_bus;
     const int num_samples = len / sizeof(int16_t) / num_channels_;
     if (num_samples <= 0)
       return audio_bus;
@@ -236,13 +238,12 @@ OperationalStatus AudioDecoder::InitializationResult() const {
   return STATUS_UNSUPPORTED_CODEC;
 }
 
-void AudioDecoder::DecodeFrame(
-    scoped_ptr<EncodedFrame> encoded_frame,
-    const DecodeFrameCallback& callback) {
+void AudioDecoder::DecodeFrame(std::unique_ptr<EncodedFrame> encoded_frame,
+                               const DecodeFrameCallback& callback) {
   DCHECK(encoded_frame.get());
   DCHECK(!callback.is_null());
   if (!impl_.get() || impl_->InitializationResult() != STATUS_INITIALIZED) {
-    callback.Run(make_scoped_ptr<AudioBus>(NULL), false);
+    callback.Run(base::WrapUnique<AudioBus>(NULL), false);
     return;
   }
   cast_environment_->PostTask(CastEnvironment::AUDIO,

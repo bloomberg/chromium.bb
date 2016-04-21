@@ -24,7 +24,7 @@ LogEventDispatcher::LogEventDispatcher(CastEnvironment* env)
 LogEventDispatcher::~LogEventDispatcher() {}
 
 void LogEventDispatcher::DispatchFrameEvent(
-    scoped_ptr<FrameEvent> event) const {
+    std::unique_ptr<FrameEvent> event) const {
   if (env_->CurrentlyOn(CastEnvironment::MAIN)) {
     impl_->DispatchFrameEvent(std::move(event));
   } else {
@@ -35,7 +35,7 @@ void LogEventDispatcher::DispatchFrameEvent(
 }
 
 void LogEventDispatcher::DispatchPacketEvent(
-    scoped_ptr<PacketEvent> event) const {
+    std::unique_ptr<PacketEvent> event) const {
   if (env_->CurrentlyOn(CastEnvironment::MAIN)) {
     impl_->DispatchPacketEvent(std::move(event));
   } else {
@@ -46,8 +46,8 @@ void LogEventDispatcher::DispatchPacketEvent(
 }
 
 void LogEventDispatcher::DispatchBatchOfEvents(
-    scoped_ptr<std::vector<FrameEvent>> frame_events,
-    scoped_ptr<std::vector<PacketEvent>> packet_events) const {
+    std::unique_ptr<std::vector<FrameEvent>> frame_events,
+    std::unique_ptr<std::vector<PacketEvent>> packet_events) const {
   if (env_->CurrentlyOn(CastEnvironment::MAIN)) {
     impl_->DispatchBatchOfEvents(std::move(frame_events),
                                  std::move(packet_events));
@@ -100,20 +100,20 @@ LogEventDispatcher::Impl::~Impl() {
 }
 
 void LogEventDispatcher::Impl::DispatchFrameEvent(
-    scoped_ptr<FrameEvent> event) const {
+    std::unique_ptr<FrameEvent> event) const {
   for (RawEventSubscriber* s : subscribers_)
     s->OnReceiveFrameEvent(*event);
 }
 
 void LogEventDispatcher::Impl::DispatchPacketEvent(
-    scoped_ptr<PacketEvent> event) const {
+    std::unique_ptr<PacketEvent> event) const {
   for (RawEventSubscriber* s : subscribers_)
     s->OnReceivePacketEvent(*event);
 }
 
 void LogEventDispatcher::Impl::DispatchBatchOfEvents(
-    scoped_ptr<std::vector<FrameEvent>> frame_events,
-    scoped_ptr<std::vector<PacketEvent>> packet_events) const {
+    std::unique_ptr<std::vector<FrameEvent>> frame_events,
+    std::unique_ptr<std::vector<PacketEvent>> packet_events) const {
   for (RawEventSubscriber* s : subscribers_) {
     for (const FrameEvent& e : *frame_events)
       s->OnReceiveFrameEvent(e);

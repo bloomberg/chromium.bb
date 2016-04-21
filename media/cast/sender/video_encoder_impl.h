@@ -5,8 +5,9 @@
 #ifndef MEDIA_CAST_SENDER_VIDEO_ENCODER_IMPL_H_
 #define MEDIA_CAST_SENDER_VIDEO_ENCODER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/sender/software_video_encoder.h"
@@ -51,7 +52,7 @@ class VideoEncoderImpl : public VideoEncoder {
   // dereferenced on the main thread. We manage the lifetime of this member
   // manually because it needs to be initialize, used and destroyed on the
   // video encoder thread and video encoder thread can out-live the main thread.
-  scoped_ptr<SoftwareVideoEncoder> encoder_;
+  std::unique_ptr<SoftwareVideoEncoder> encoder_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderImpl);
 };

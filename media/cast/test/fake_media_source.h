@@ -134,11 +134,11 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
   // The following three members are used only for fake frames.
   int audio_frame_count_;  // Each audio frame is exactly 10ms.
   int video_frame_count_;
-  scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
+  std::unique_ptr<TestAudioBusFactory> audio_bus_factory_;
 
   base::MemoryMappedFile file_data_;
-  scoped_ptr<InMemoryUrlProtocol> protocol_;
-  scoped_ptr<FFmpegGlue> glue_;
+  std::unique_ptr<InMemoryUrlProtocol> protocol_;
+  std::unique_ptr<FFmpegGlue> glue_;
   AVFormatContext* av_format_context_;
 
   int audio_stream_index_;
@@ -150,13 +150,13 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
   int video_frame_rate_denominator_;
 
   // These are used for audio resampling.
-  scoped_ptr<media::AudioConverter> audio_converter_;
-  scoped_ptr<media::AudioFifo> audio_fifo_;
-  scoped_ptr<media::AudioBus> audio_fifo_input_bus_;
+  std::unique_ptr<media::AudioConverter> audio_converter_;
+  std::unique_ptr<media::AudioFifo> audio_fifo_;
+  std::unique_ptr<media::AudioBus> audio_fifo_input_bus_;
   media::AudioRendererAlgorithm audio_algo_;
 
   // Track the timestamp of audio sent to the receiver.
-  scoped_ptr<media::AudioTimestampHelper> audio_sent_ts_;
+  std::unique_ptr<media::AudioTimestampHelper> audio_sent_ts_;
 
   std::queue<scoped_refptr<VideoFrame> > video_frame_queue_;
   std::queue<scoped_refptr<VideoFrame> > inserted_video_frame_queue_;

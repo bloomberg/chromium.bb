@@ -7,9 +7,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 

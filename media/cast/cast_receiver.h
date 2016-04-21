@@ -8,9 +8,10 @@
 #ifndef MEDIA_CAST_CAST_RECEIVER_H_
 #define MEDIA_CAST_CAST_RECEIVER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
@@ -28,9 +29,10 @@ namespace cast {
 // frames (or decoding errors).  This allows the client to take steps to smooth
 // discontinuities for playback.  Note: A NULL pointer can be returned when data
 // is not available (e.g., bad/missing packet).
-typedef base::Callback<void(scoped_ptr<AudioBus> audio_bus,
+typedef base::Callback<void(std::unique_ptr<AudioBus> audio_bus,
                             const base::TimeTicks& playout_time,
-                            bool is_continuous)> AudioFrameDecodedCallback;
+                            bool is_continuous)>
+    AudioFrameDecodedCallback;
 // TODO(miu): |video_frame| includes a timestamp, so use that instead.
 typedef base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
                             const base::TimeTicks& playout_time,
@@ -40,12 +42,12 @@ typedef base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
 // should examine the |frame_id| field to determine whether any frames have been
 // dropped (i.e., frame_id should be incrementing by one each time).  Note: A
 // NULL pointer can be returned on error.
-typedef base::Callback<void(scoped_ptr<EncodedFrame>)>
+typedef base::Callback<void(std::unique_ptr<EncodedFrame>)>
     ReceiveEncodedFrameCallback;
 
 class CastReceiver {
  public:
-  static scoped_ptr<CastReceiver> Create(
+  static std::unique_ptr<CastReceiver> Create(
       scoped_refptr<CastEnvironment> cast_environment,
       const FrameReceiverConfig& audio_config,
       const FrameReceiverConfig& video_config,
@@ -53,7 +55,7 @@ class CastReceiver {
 
   // All received RTP and RTCP packets for the call should be sent to this
   // PacketReceiver.  Can be called from any thread.
-  virtual void ReceivePacket(scoped_ptr<Packet> packet) = 0;
+  virtual void ReceivePacket(std::unique_ptr<Packet> packet) = 0;
 
   // Polling interface to get audio and video frames from the CastReceiver.  The
   // the RequestDecodedXXXXXFrame() methods utilize internal software-based

@@ -212,11 +212,11 @@ struct FrameReceiverConfig {
 
 // TODO(miu): Remove the CreateVEA callbacks.  http://crbug.com/454029
 typedef base::Callback<void(scoped_refptr<base::SingleThreadTaskRunner>,
-                            scoped_ptr<media::VideoEncodeAccelerator>)>
+                            std::unique_ptr<media::VideoEncodeAccelerator>)>
     ReceiveVideoEncodeAcceleratorCallback;
 typedef base::Callback<void(const ReceiveVideoEncodeAcceleratorCallback&)>
     CreateVideoEncodeAcceleratorCallback;
-typedef base::Callback<void(scoped_ptr<base::SharedMemory>)>
+typedef base::Callback<void(std::unique_ptr<base::SharedMemory>)>
     ReceiveVideoEncodeMemoryCallback;
 typedef base::Callback<void(size_t size,
                             const ReceiveVideoEncodeMemoryCallback&)>

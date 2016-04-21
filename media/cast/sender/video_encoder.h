@@ -5,9 +5,10 @@
 #ifndef MEDIA_CAST_SENDER_VIDEO_ENCODER_H_
 #define MEDIA_CAST_SENDER_VIDEO_ENCODER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
@@ -24,7 +25,7 @@ class VideoEncoder {
  public:
   // Callback used to deliver an encoded frame on the Cast MAIN thread.
   using FrameEncodedCallback =
-      base::Callback<void(scoped_ptr<SenderEncodedFrame>)>;
+      base::Callback<void(std::unique_ptr<SenderEncodedFrame>)>;
 
   // Creates a VideoEncoder instance from the given |video_config| and based on
   // the current platform's hardware/library support; or null if no
@@ -35,7 +36,7 @@ class VideoEncoder {
   // sequences of differently-size VideoFrames.
   //
   // TODO(miu): Remove the CreateVEA callbacks.  http://crbug.com/454029
-  static scoped_ptr<VideoEncoder> Create(
+  static std::unique_ptr<VideoEncoder> Create(
       const scoped_refptr<CastEnvironment>& cast_environment,
       const VideoSenderConfig& video_config,
       const StatusChangeCallback& status_change_cb,
@@ -62,7 +63,7 @@ class VideoEncoder {
   // Creates a |VideoFrameFactory| object to vend |VideoFrame| object with
   // encoder affinity (defined as offering some sort of performance benefit).
   // This is an optional capability and by default returns null.
-  virtual scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory();
+  virtual std::unique_ptr<VideoFrameFactory> CreateVideoFrameFactory();
 
   // Instructs the encoder to finish and emit all frames that have been
   // submitted for encoding. An encoder may hold a certain number of frames for

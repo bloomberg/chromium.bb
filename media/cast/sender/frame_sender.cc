@@ -213,7 +213,7 @@ base::TimeDelta FrameSender::GetAllowedInFlightMediaDuration() const {
 
 void FrameSender::SendEncodedFrame(
     int requested_bitrate_before_encode,
-    scoped_ptr<SenderEncodedFrame> encoded_frame) {
+    std::unique_ptr<SenderEncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   VLOG(2) << SENDER_SSRC << "About to send another frame: last_sent="
@@ -247,7 +247,7 @@ void FrameSender::SendEncodedFrame(
   VLOG_IF(1, !is_audio_ && encoded_frame->dependency == EncodedFrame::KEY)
       << SENDER_SSRC << "Sending encoded key frame, id=" << frame_id;
 
-  scoped_ptr<FrameEvent> encode_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> encode_event(new FrameEvent());
   encode_event->timestamp = encoded_frame->encode_completion_time;
   encode_event->type = FRAME_ENCODED;
   encode_event->media_type = is_audio_ ? AUDIO_EVENT : VIDEO_EVENT;
@@ -361,7 +361,7 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
                                         now);
   }
 
-  scoped_ptr<FrameEvent> ack_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> ack_event(new FrameEvent());
   ack_event->timestamp = now;
   ack_event->type = FRAME_ACK_RECEIVED;
   ack_event->media_type = is_audio_ ? AUDIO_EVENT : VIDEO_EVENT;

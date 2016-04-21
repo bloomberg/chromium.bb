@@ -4,10 +4,10 @@
 
 #include "media/cast/logging/simple_event_subscriber.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "media/base/fake_single_thread_task_runner.h"
@@ -23,11 +23,11 @@ class SimpleEventSubscriberTest : public ::testing::Test {
   SimpleEventSubscriberTest()
       : testing_clock_(new base::SimpleTestTickClock()),
         task_runner_(new FakeSingleThreadTaskRunner(testing_clock_)),
-        cast_environment_(
-            new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
-                                task_runner_,
-                                task_runner_,
-                                task_runner_)) {
+        cast_environment_(new CastEnvironment(
+            std::unique_ptr<base::TickClock>(testing_clock_),
+            task_runner_,
+            task_runner_,
+            task_runner_)) {
     cast_environment_->logger()->Subscribe(&event_subscriber_);
   }
 
@@ -43,7 +43,7 @@ class SimpleEventSubscriberTest : public ::testing::Test {
 
 TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   // Log some frame events.
-  scoped_ptr<FrameEvent> encode_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> encode_event(new FrameEvent());
   encode_event->timestamp = testing_clock_->NowTicks();
   encode_event->type = FRAME_ENCODED;
   encode_event->media_type = AUDIO_EVENT;
@@ -56,7 +56,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   encode_event->idealized_bitrate_utilization = 0.02;
   cast_environment_->logger()->DispatchFrameEvent(std::move(encode_event));
 
-  scoped_ptr<FrameEvent> playout_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> playout_event(new FrameEvent());
   playout_event->timestamp = testing_clock_->NowTicks();
   playout_event->type = FRAME_PLAYOUT;
   playout_event->media_type = AUDIO_EVENT;
@@ -65,7 +65,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   playout_event->delay_delta = base::TimeDelta::FromMilliseconds(100);
   cast_environment_->logger()->DispatchFrameEvent(std::move(playout_event));
 
-  scoped_ptr<FrameEvent> decode_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> decode_event(new FrameEvent());
   decode_event->timestamp = testing_clock_->NowTicks();
   decode_event->type = FRAME_DECODED;
   decode_event->media_type = AUDIO_EVENT;
@@ -74,7 +74,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   cast_environment_->logger()->DispatchFrameEvent(std::move(decode_event));
 
   // Log some packet events.
-  scoped_ptr<PacketEvent> receive_event(new PacketEvent());
+  std::unique_ptr<PacketEvent> receive_event(new PacketEvent());
   receive_event->timestamp = testing_clock_->NowTicks();
   receive_event->type = PACKET_RECEIVED;
   receive_event->media_type = AUDIO_EVENT;

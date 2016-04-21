@@ -62,11 +62,11 @@ void StatsEventSubscriber::SimpleHistogram::Reset() {
   buckets_.assign(buckets_.size(), 0);
 }
 
-scoped_ptr<base::ListValue>
+std::unique_ptr<base::ListValue>
 StatsEventSubscriber::SimpleHistogram::GetHistogram() const {
-  scoped_ptr<base::ListValue> histo(new base::ListValue);
+  std::unique_ptr<base::ListValue> histo(new base::ListValue);
 
-  scoped_ptr<base::DictionaryValue> bucket(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> bucket(new base::DictionaryValue);
 
   if (buckets_.front()) {
     bucket->SetInteger(base::StringPrintf("<%" PRId64, min_),
@@ -223,12 +223,12 @@ void StatsEventSubscriber::UpdateFirstLastEventTime(base::TimeTicks timestamp,
   }
 }
 
-scoped_ptr<base::DictionaryValue> StatsEventSubscriber::GetStats() const {
+std::unique_ptr<base::DictionaryValue> StatsEventSubscriber::GetStats() const {
   StatsMap stats_map;
   GetStatsInternal(&stats_map);
-  scoped_ptr<base::DictionaryValue> ret(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> ret(new base::DictionaryValue);
 
-  scoped_ptr<base::DictionaryValue> stats(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> stats(new base::DictionaryValue);
   for (StatsMap::const_iterator it = stats_map.begin(); it != stats_map.end();
        ++it) {
     // Round to 3 digits after the decimal point.

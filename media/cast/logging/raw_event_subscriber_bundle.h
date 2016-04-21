@@ -72,7 +72,7 @@ class RawEventSubscriberBundle {
       SubscribersMapByStream;
   const scoped_refptr<CastEnvironment> cast_environment_;
   SubscribersMapByStream subscribers_;
-  scoped_ptr<ReceiverTimeOffsetEstimator> receiver_offset_estimator_;
+  std::unique_ptr<ReceiverTimeOffsetEstimator> receiver_offset_estimator_;
 
   DISALLOW_COPY_AND_ASSIGN(RawEventSubscriberBundle);
 };

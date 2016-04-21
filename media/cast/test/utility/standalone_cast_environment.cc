@@ -4,6 +4,7 @@
 
 #include "media/cast/test/utility/standalone_cast_environment.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/time/default_tick_clock.h"
 
 namespace media {
@@ -11,7 +12,7 @@ namespace cast {
 
 StandaloneCastEnvironment::StandaloneCastEnvironment()
     : CastEnvironment(
-          make_scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
+          base::WrapUnique<base::TickClock>(new base::DefaultTickClock()),
           NULL,
           NULL,
           NULL),

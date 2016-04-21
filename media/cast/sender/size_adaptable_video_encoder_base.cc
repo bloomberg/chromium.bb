@@ -79,8 +79,8 @@ void SizeAdaptableVideoEncoderBase::GenerateKeyFrame() {
     encoder_->GenerateKeyFrame();
 }
 
-scoped_ptr<VideoFrameFactory>
-    SizeAdaptableVideoEncoderBase::CreateVideoFrameFactory() {
+std::unique_ptr<VideoFrameFactory>
+SizeAdaptableVideoEncoderBase::CreateVideoFrameFactory() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   return nullptr;
 }
@@ -152,7 +152,7 @@ void SizeAdaptableVideoEncoderBase::OnEncoderStatusChange(
 
 void SizeAdaptableVideoEncoderBase::OnEncodedVideoFrame(
     const FrameEncodedCallback& frame_encoded_callback,
-    scoped_ptr<SenderEncodedFrame> encoded_frame) {
+    std::unique_ptr<SenderEncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   --frames_in_encoder_;
   DCHECK_GE(frames_in_encoder_, 0);

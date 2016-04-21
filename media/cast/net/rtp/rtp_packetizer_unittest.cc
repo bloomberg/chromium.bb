@@ -7,8 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/fake_single_thread_task_runner.h"
 #include "media/cast/net/pacing/paced_sender.h"
@@ -144,9 +145,9 @@ class RtpPacketizerTest : public ::testing::Test {
   EncodedFrame video_frame_;
   PacketStorage packet_storage_;
   RtpPacketizerConfig config_;
-  scoped_ptr<TestRtpPacketTransport> transport_;
-  scoped_ptr<PacedSender> pacer_;
-  scoped_ptr<RtpPacketizer> rtp_packetizer_;
+  std::unique_ptr<TestRtpPacketTransport> transport_;
+  std::unique_ptr<PacedSender> pacer_;
+  std::unique_ptr<RtpPacketizer> rtp_packetizer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RtpPacketizerTest);

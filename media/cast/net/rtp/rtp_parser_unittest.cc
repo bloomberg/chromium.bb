@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/cast/net/rtp/rtp_parser.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/rand_util.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 #include "media/cast/net/rtp/rtp_packet_builder.h"
-#include "media/cast/net/rtp/rtp_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

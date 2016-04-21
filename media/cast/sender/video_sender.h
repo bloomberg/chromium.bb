@@ -5,10 +5,11 @@
 #ifndef MEDIA_CAST_SENDER_VIDEO_SENDER_H_
 #define MEDIA_CAST_SENDER_VIDEO_SENDER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
@@ -60,7 +61,7 @@ class VideoSender : public FrameSender,
   // Creates a |VideoFrameFactory| object to vend |VideoFrame| object with
   // encoder affinity (defined as offering some sort of performance benefit). If
   // the encoder does not have any such capability, returns null.
-  scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory();
+  std::unique_ptr<VideoFrameFactory> CreateVideoFrameFactory();
 
  protected:
   int GetNumberOfFramesInEncoder() const final;
@@ -70,12 +71,12 @@ class VideoSender : public FrameSender,
   // Called by the |video_encoder_| with the next EncodedFrame to send.
   void OnEncodedVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
                            int encoder_bitrate,
-                           scoped_ptr<SenderEncodedFrame> encoded_frame);
+                           std::unique_ptr<SenderEncodedFrame> encoded_frame);
 
   // Encodes media::VideoFrame images into EncodedFrames.  Per configuration,
   // this will point to either the internal software-based encoder or a proxy to
   // a hardware-based encoder.
-  scoped_ptr<VideoEncoder> video_encoder_;
+  std::unique_ptr<VideoEncoder> video_encoder_;
 
   // The number of frames queued for encoding, but not yet sent.
   int frames_in_encoder_;

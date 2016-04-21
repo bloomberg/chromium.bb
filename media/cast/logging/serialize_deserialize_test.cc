@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/cast/logging/log_deserializer.h"
 #include "media/cast/logging/log_serializer.h"
 #include "media/cast/logging/logging_defines.h"
@@ -145,7 +146,7 @@ class SerializeDeserializeTest : public ::testing::Test {
   LogMetadata metadata_;
   FrameEventList frame_event_list_;
   PacketEventList packet_event_list_;
-  scoped_ptr<char[]> serialized_;
+  std::unique_ptr<char[]> serialized_;
   int output_bytes_;
 };
 

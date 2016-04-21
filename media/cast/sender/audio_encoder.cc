@@ -86,7 +86,7 @@ class AudioEncoder::ImplBase
 
   base::TimeDelta frame_duration() const { return frame_duration_; }
 
-  void EncodeAudio(scoped_ptr<AudioBus> audio_bus,
+  void EncodeAudio(std::unique_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time) {
     DCHECK_EQ(operational_status_, STATUS_INITIALIZED);
     DCHECK(!recorded_time.is_null());
@@ -139,8 +139,7 @@ class AudioEncoder::ImplBase
       if (buffer_fill_end_ < samples_per_frame_)
         break;
 
-      scoped_ptr<SenderEncodedFrame> audio_frame(
-          new SenderEncodedFrame());
+      std::unique_ptr<SenderEncodedFrame> audio_frame(new SenderEncodedFrame());
       audio_frame->dependency = EncodedFrame::KEY;
       audio_frame->frame_id = frame_id_;
       audio_frame->referenced_frame_id = frame_id_;
@@ -321,9 +320,9 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
            duration == base::TimeDelta::FromMilliseconds(60);
   }
 
-  const scoped_ptr<uint8_t[]> encoder_memory_;
+  const std::unique_ptr<uint8_t[]> encoder_memory_;
   OpusEncoder* const opus_encoder_;
-  const scoped_ptr<float[]> buffer_;
+  const std::unique_ptr<float[]> buffer_;
 
   // This is the recommended value, according to documentation in
   // third_party/opus/src/include/opus.h, so that the Opus encoder does not
@@ -495,7 +494,7 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
 
     // Allocate a buffer to store one access unit. This is the only location
     // where the implementation modifies |access_unit_buffer_|.
-    const_cast<scoped_ptr<uint8_t[]>&>(access_unit_buffer_)
+    const_cast<std::unique_ptr<uint8_t[]>&>(access_unit_buffer_)
         .reset(new uint8_t[max_access_unit_size]);
 
     // Initialize the converter ABL. Note that the buffer size has to be set
@@ -515,7 +514,7 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
                                       nullptr) != noErr) {
       return false;
     }
-    scoped_ptr<uint8_t[]> cookie_data(new uint8_t[cookie_size]);
+    std::unique_ptr<uint8_t[]> cookie_data(new uint8_t[cookie_size]);
     if (AudioConverterGetProperty(converter_,
                                   kAudioConverterCompressionMagicCookie,
                                   &cookie_size,
@@ -692,7 +691,7 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
 
   // Buffer that holds one AAC access unit worth of samples. The input callback
   // function provides samples from this buffer via |input_bus_| to the encoder.
-  const scoped_ptr<AudioBus> input_buffer_;
+  const std::unique_ptr<AudioBus> input_buffer_;
 
   // Wrapper AudioBus used by the input callback function. Normally it wraps
   // |input_buffer_|. However, as an optimization when the client submits a
@@ -700,11 +699,11 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
   // redirected to the client buffer temporarily. We know that the base
   // implementation will call us right after to encode the buffer and thus we
   // can eliminate the copy into |input_buffer_|.
-  const scoped_ptr<AudioBus> input_bus_;
+  const std::unique_ptr<AudioBus> input_bus_;
 
   // A buffer that holds one AAC access unit. Initialized in |Initialize| once
   // the maximum access unit size is known.
-  const scoped_ptr<uint8_t[]> access_unit_buffer_;
+  const std::unique_ptr<uint8_t[]> access_unit_buffer_;
 
   // The maximum size of an access unit that the encoder can emit.
   const uint32_t max_access_unit_size_;
@@ -782,7 +781,7 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
   }
 
  private:
-  const scoped_ptr<int16_t[]> buffer_;
+  const std::unique_ptr<int16_t[]> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(Pcm16Impl);
 };
@@ -857,7 +856,7 @@ base::TimeDelta AudioEncoder::GetFrameDuration() const {
   return impl_->frame_duration();
 }
 
-void AudioEncoder::InsertAudio(scoped_ptr<AudioBus> audio_bus,
+void AudioEncoder::InsertAudio(std::unique_ptr<AudioBus> audio_bus,
                                const base::TimeTicks& recorded_time) {
   DCHECK(insert_thread_checker_.CalledOnValidThread());
   DCHECK(audio_bus.get());

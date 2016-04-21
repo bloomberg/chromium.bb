@@ -30,11 +30,11 @@ TestAudioBusFactory::TestAudioBusFactory(int num_channels,
 
 TestAudioBusFactory::~TestAudioBusFactory() {}
 
-scoped_ptr<AudioBus> TestAudioBusFactory::NextAudioBus(
+std::unique_ptr<AudioBus> TestAudioBusFactory::NextAudioBus(
     const base::TimeDelta& duration) {
   const int num_samples = static_cast<int>((sample_rate_ * duration) /
                                            base::TimeDelta::FromSeconds(1));
-  scoped_ptr<AudioBus> bus(AudioBus::Create(num_channels_, num_samples));
+  std::unique_ptr<AudioBus> bus(AudioBus::Create(num_channels_, num_samples));
   source_.OnMoreData(bus.get(), 0, 0);
   bus->Scale(volume_);
   return bus;

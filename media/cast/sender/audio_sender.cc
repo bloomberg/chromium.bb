@@ -77,7 +77,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
 
 AudioSender::~AudioSender() {}
 
-void AudioSender::InsertAudio(scoped_ptr<AudioBus> audio_bus,
+void AudioSender::InsertAudio(std::unique_ptr<AudioBus> audio_bus,
                               const base::TimeTicks& recorded_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
@@ -110,7 +110,7 @@ base::TimeDelta AudioSender::GetInFlightMediaDuration() const {
 
 void AudioSender::OnEncodedAudioFrame(
     int encoder_bitrate,
-    scoped_ptr<SenderEncodedFrame> encoded_frame,
+    std::unique_ptr<SenderEncodedFrame> encoded_frame,
     int samples_skipped) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 

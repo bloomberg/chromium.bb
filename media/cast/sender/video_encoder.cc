@@ -16,17 +16,17 @@ namespace media {
 namespace cast {
 
 // static
-scoped_ptr<VideoEncoder> VideoEncoder::Create(
-      const scoped_refptr<CastEnvironment>& cast_environment,
-      const VideoSenderConfig& video_config,
-      const StatusChangeCallback& status_change_cb,
-      const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
-      const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb) {
-  // On MacOS or IOS, attempt to use the system VideoToolbox library to
-  // perform optimized H.264 encoding.
+std::unique_ptr<VideoEncoder> VideoEncoder::Create(
+    const scoped_refptr<CastEnvironment>& cast_environment,
+    const VideoSenderConfig& video_config,
+    const StatusChangeCallback& status_change_cb,
+    const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
+    const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb) {
+// On MacOS or IOS, attempt to use the system VideoToolbox library to
+// perform optimized H.264 encoding.
 #if defined(OS_MACOSX) || defined(OS_IOS)
   if (H264VideoToolboxEncoder::IsSupported(video_config)) {
-    return scoped_ptr<VideoEncoder>(new H264VideoToolboxEncoder(
+    return std::unique_ptr<VideoEncoder>(new H264VideoToolboxEncoder(
         cast_environment, video_config, status_change_cb));
   }
 #endif  // defined(OS_MACOSX)
@@ -34,20 +34,15 @@ scoped_ptr<VideoEncoder> VideoEncoder::Create(
 #if !defined(OS_IOS)
   // If the system provides a hardware-accelerated encoder, use it.
   if (ExternalVideoEncoder::IsSupported(video_config)) {
-    return scoped_ptr<VideoEncoder>(new SizeAdaptableExternalVideoEncoder(
-        cast_environment,
-        video_config,
-        status_change_cb,
-        create_vea_cb,
+    return std::unique_ptr<VideoEncoder>(new SizeAdaptableExternalVideoEncoder(
+        cast_environment, video_config, status_change_cb, create_vea_cb,
         create_video_encode_memory_cb));
   }
 
   // Attempt to use the software encoder implementation.
   if (VideoEncoderImpl::IsSupported(video_config)) {
-    return scoped_ptr<VideoEncoder>(new VideoEncoderImpl(
-        cast_environment,
-        video_config,
-        status_change_cb));
+    return std::unique_ptr<VideoEncoder>(
+        new VideoEncoderImpl(cast_environment, video_config, status_change_cb));
   }
 #endif  // !defined(OS_IOS)
 
@@ -55,7 +50,7 @@ scoped_ptr<VideoEncoder> VideoEncoder::Create(
   return nullptr;
 }
 
-scoped_ptr<VideoFrameFactory> VideoEncoder::CreateVideoFrameFactory() {
+std::unique_ptr<VideoFrameFactory> VideoEncoder::CreateVideoFrameFactory() {
   return nullptr;
 }
 

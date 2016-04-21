@@ -5,10 +5,11 @@
 #ifndef MEDIA_CAST_RECEIVER_VIDEO_DECODER_H_
 #define MEDIA_CAST_RECEIVER_VIDEO_DECODER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/video_frame.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/cast_transport_config.h"
@@ -44,7 +45,7 @@ class VideoDecoder {
   // monotonically-increasing by 1 for each successive call to this method.
   // When it is not, the decoder will assume one or more frames have been
   // dropped (e.g., due to packet loss), and will perform recovery actions.
-  void DecodeFrame(scoped_ptr<EncodedFrame> encoded_frame,
+  void DecodeFrame(std::unique_ptr<EncodedFrame> encoded_frame,
                    const DecodeFrameCallback& callback);
 
  private:

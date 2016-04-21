@@ -40,7 +40,7 @@ void EncodeVideoFrameOnEncoderThread(
   }
   encoder->UpdateRates(dynamic_config.bit_rate);
 
-  scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
+  std::unique_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
   encoder->Encode(video_frame, reference_time, encoded_frame.get());
   encoded_frame->encode_completion_time = environment->Clock()->NowTicks();
   environment->PostTask(

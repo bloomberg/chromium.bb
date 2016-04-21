@@ -48,7 +48,7 @@ class H264VideoToolboxEncoder : public VideoEncoder,
       const FrameEncodedCallback& frame_encoded_callback) final;
   void SetBitRate(int new_bit_rate) final;
   void GenerateKeyFrame() final;
-  scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory() final;
+  std::unique_ptr<VideoFrameFactory> CreateVideoFrameFactory() final;
   void EmitFrames() final;
 
   // base::PowerObserver

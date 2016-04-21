@@ -56,7 +56,7 @@ class LocalVideoFrameInput : public VideoFrameInput {
 
   const scoped_refptr<CastEnvironment> cast_environment_;
   const base::WeakPtr<VideoSender> video_sender_;
-  const scoped_ptr<VideoFrameFactory> video_frame_factory_;
+  const std::unique_ptr<VideoFrameFactory> video_frame_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalVideoFrameInput);
 };
@@ -69,7 +69,7 @@ class LocalAudioFrameInput : public AudioFrameInput {
                        base::WeakPtr<AudioSender> audio_sender)
       : cast_environment_(cast_environment), audio_sender_(audio_sender) {}
 
-  void InsertAudio(scoped_ptr<AudioBus> audio_bus,
+  void InsertAudio(std::unique_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time) final {
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
@@ -91,11 +91,11 @@ class LocalAudioFrameInput : public AudioFrameInput {
   DISALLOW_COPY_AND_ASSIGN(LocalAudioFrameInput);
 };
 
-scoped_ptr<CastSender> CastSender::Create(
+std::unique_ptr<CastSender> CastSender::Create(
     scoped_refptr<CastEnvironment> cast_environment,
     CastTransport* const transport_sender) {
   CHECK(cast_environment.get());
-  return scoped_ptr<CastSender>(
+  return std::unique_ptr<CastSender>(
       new CastSenderImpl(cast_environment, transport_sender));
 }
 

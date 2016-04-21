@@ -97,7 +97,8 @@ class MetadataRecorder : public base::RefCountedThreadSafe<MetadataRecorder> {
                                    expected_reference_time});
   }
 
-  void CompareFrameWithExpected(scoped_ptr<SenderEncodedFrame> encoded_frame) {
+  void CompareFrameWithExpected(
+      std::unique_ptr<SenderEncodedFrame> encoded_frame) {
     ASSERT_LT(0u, expectations_.size());
     auto e = expectations_.front();
     expectations_.pop();
@@ -152,7 +153,7 @@ class EndToEndFrameChecker
     expectations_.push(frame);
   }
 
-  void EncodeDone(scoped_ptr<SenderEncodedFrame> encoded_frame) {
+  void EncodeDone(std::unique_ptr<SenderEncodedFrame> encoded_frame) {
     auto buffer = DecoderBuffer::CopyFrom(encoded_frame->bytes(),
                                           encoded_frame->data.size());
     decoder_.Decode(buffer, base::Bind(&EndToEndFrameChecker::DecodeDone,
@@ -198,8 +199,7 @@ void CreateFrameAndMemsetPlane(VideoFrameFactory* const video_frame_factory) {
 }
 
 void NoopFrameEncodedCallback(
-    scoped_ptr<media::cast::SenderEncodedFrame> /*encoded_frame*/) {
-}
+    std::unique_ptr<media::cast::SenderEncodedFrame> /*encoded_frame*/) {}
 
 class TestPowerSource : public base::PowerMonitorSource {
  public:
@@ -225,11 +225,11 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
     clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
 
     power_source_ = new TestPowerSource();
-    power_monitor_.reset(
-        new base::PowerMonitor(scoped_ptr<TestPowerSource>(power_source_)));
+    power_monitor_.reset(new base::PowerMonitor(
+        std::unique_ptr<TestPowerSource>(power_source_)));
 
     cast_environment_ = new CastEnvironment(
-        scoped_ptr<base::TickClock>(clock_), message_loop_.task_runner(),
+        std::unique_ptr<base::TickClock>(clock_), message_loop_.task_runner(),
         message_loop_.task_runner(), message_loop_.task_runner());
     encoder_.reset(new H264VideoToolboxEncoder(
         cast_environment_, video_sender_config_,
@@ -268,10 +268,10 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
   base::SimpleTestTickClock* clock_;  // Owned by CastEnvironment.
   base::MessageLoop message_loop_;
   scoped_refptr<CastEnvironment> cast_environment_;
-  scoped_ptr<VideoEncoder> encoder_;
+  std::unique_ptr<VideoEncoder> encoder_;
   OperationalStatus operational_status_;
   TestPowerSource* power_source_;  // Owned by the power monitor.
-  scoped_ptr<base::PowerMonitor> power_monitor_;
+  std::unique_ptr<base::PowerMonitor> power_monitor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(H264VideoToolboxEncoderTest);

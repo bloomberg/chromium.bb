@@ -184,8 +184,8 @@ class RtcpTest : public ::testing::Test {
 
   void OnReceivedPli() { received_pli_ = true; }
 
-  scoped_ptr<base::SimpleTestTickClock> sender_clock_;
-  scoped_ptr<test::SkewedTickClock> receiver_clock_;
+  std::unique_ptr<base::SimpleTestTickClock> sender_clock_;
+  std::unique_ptr<test::SkewedTickClock> receiver_clock_;
   FakeRtcpTransport rtp_sender_pacer_;
   FakeRtcpTransport rtp_receiver_pacer_;
   SenderRtcpSession rtcp_at_rtp_sender_;

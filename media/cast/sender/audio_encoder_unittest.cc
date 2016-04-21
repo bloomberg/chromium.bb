@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/cast/sender/audio_encoder.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <sstream>
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "media/base/audio_bus.h"
 #include "media/base/fake_single_thread_task_runner.h"
@@ -19,7 +21,6 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/common/rtp_time.h"
-#include "media/cast/sender/audio_encoder.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +48,7 @@ class TestEncodedAudioFrameReceiver {
     samples_per_frame_ = samples_per_frame;
   }
 
-  void FrameEncoded(scoped_ptr<SenderEncodedFrame> encoded_frame,
+  void FrameEncoded(std::unique_ptr<SenderEncodedFrame> encoded_frame,
                     int samples_skipped) {
     EXPECT_EQ(encoded_frame->dependency, EncodedFrame::KEY);
     EXPECT_EQ(static_cast<uint8_t>(frames_received_ & 0xff),
@@ -112,7 +113,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
   void SetUp() final {
     task_runner_ = new FakeSingleThreadTaskRunner(testing_clock_);
     cast_environment_ =
-        new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
+        new CastEnvironment(std::unique_ptr<base::TickClock>(testing_clock_),
                             task_runner_, task_runner_, task_runner_);
   }
 
@@ -172,9 +173,9 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
-  scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
-  scoped_ptr<TestEncodedAudioFrameReceiver> receiver_;
-  scoped_ptr<AudioEncoder> audio_encoder_;
+  std::unique_ptr<TestAudioBusFactory> audio_bus_factory_;
+  std::unique_ptr<TestEncodedAudioFrameReceiver> receiver_;
+  std::unique_ptr<AudioEncoder> audio_encoder_;
   scoped_refptr<CastEnvironment> cast_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioEncoderTest);

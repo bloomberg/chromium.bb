@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport_defines.h"
 
@@ -156,11 +156,11 @@ struct SendRtcpFromRtpReceiver_Params {
   uint32_t ssrc;
   uint32_t sender_ssrc;
   RtcpTimeData time_data;
-  scoped_ptr<RtcpCastMessage> cast_message;
-  scoped_ptr<RtcpPliMessage> pli_message;
+  std::unique_ptr<RtcpCastMessage> cast_message;
+  std::unique_ptr<RtcpPliMessage> pli_message;
   base::TimeDelta target_delay;
-  scoped_ptr<std::vector<std::pair<RtpTimeTicks, RtcpEvent>>> rtcp_events;
-  scoped_ptr<RtpReceiverStatistics> rtp_receiver_statistics;
+  std::unique_ptr<std::vector<std::pair<RtpTimeTicks, RtcpEvent>>> rtcp_events;
+  std::unique_ptr<RtpReceiverStatistics> rtp_receiver_statistics;
 };
 
 

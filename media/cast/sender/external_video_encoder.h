@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/sender/size_adaptable_video_encoder_base.h"
@@ -59,7 +60,7 @@ class ExternalVideoEncoder : public VideoEncoder {
       uint32_t first_frame_id,
       const StatusChangeCallback& status_change_cb,
       scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
-      scoped_ptr<media::VideoEncodeAccelerator> vea);
+      std::unique_ptr<media::VideoEncodeAccelerator> vea);
 
   const scoped_refptr<CastEnvironment> cast_environment_;
   const CreateVideoEncodeMemoryCallback create_video_encode_memory_cb_;
@@ -93,7 +94,7 @@ class SizeAdaptableExternalVideoEncoder : public SizeAdaptableVideoEncoderBase {
   ~SizeAdaptableExternalVideoEncoder() final;
 
  protected:
-  scoped_ptr<VideoEncoder> CreateEncoder() final;
+  std::unique_ptr<VideoEncoder> CreateEncoder() final;
 
  private:
   // Special callbacks needed by media::cast::ExternalVideoEncoder.
@@ -153,7 +154,7 @@ class QuantizerEstimator {
   // A cache of a subset of rows of pixels from the last frame examined.  This
   // is used to compute the entropy of the difference between frames, which in
   // turn is used to compute the entropy and quantizer.
-  scoped_ptr<uint8_t[]> last_frame_pixel_buffer_;
+  std::unique_ptr<uint8_t[]> last_frame_pixel_buffer_;
   gfx::Size last_frame_size_;
 
   DISALLOW_COPY_AND_ASSIGN(QuantizerEstimator);

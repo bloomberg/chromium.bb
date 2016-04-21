@@ -37,7 +37,7 @@ TEST(QuantizerEstimator, EstimatesForTrivialFrames) {
   QuantizerEstimator qe;
 
   const gfx::Size frame_size(320, 180);
-  const scoped_ptr<uint8_t[]> black_frame_data(
+  const std::unique_ptr<uint8_t[]> black_frame_data(
       new uint8_t[frame_size.GetArea()]);
   memset(black_frame_data.get(), 0, frame_size.GetArea());
   const scoped_refptr<VideoFrame> black_frame =
@@ -51,7 +51,7 @@ TEST(QuantizerEstimator, EstimatesForTrivialFrames) {
   for (int i = 0; i < 3; ++i)
     EXPECT_EQ(4.0, qe.EstimateForDeltaFrame(*black_frame));
 
-  const scoped_ptr<uint8_t[]> checkerboard_frame_data(
+  const std::unique_ptr<uint8_t[]> checkerboard_frame_data(
       new uint8_t[frame_size.GetArea()]);
   for (int i = 0, end = frame_size.GetArea(); i < end; ++i)
     checkerboard_frame_data.get()[i] = (((i % 2) == 0) ? 0 : 255);
@@ -68,7 +68,7 @@ TEST(QuantizerEstimator, EstimatesForTrivialFrames) {
   // results in high quantizer estimates.
   for (int i = 0; i < 3; ++i) {
     int rand_seed = 0xdeadbeef + i;
-    const scoped_ptr<uint8_t[]> random_frame_data(
+    const std::unique_ptr<uint8_t[]> random_frame_data(
         new uint8_t[frame_size.GetArea()]);
     for (int j = 0, end = frame_size.GetArea(); j < end; ++j) {
       rand_seed = (1103515245 * rand_seed + 12345) % (1 << 31);

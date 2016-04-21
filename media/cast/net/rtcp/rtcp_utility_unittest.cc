@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/cast/net/rtcp/rtcp_utility.h"
+
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/fake_single_thread_task_runner.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport_defines.h"
-#include "media/cast/net/rtcp/rtcp_utility.h"
 #include "media/cast/net/rtcp/test_rtcp_packet_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -134,7 +136,7 @@ class RtcpParserTest : public ::testing::Test {
     }
   }
 
-  scoped_ptr<base::SimpleTestTickClock> testing_clock_;
+  std::unique_ptr<base::SimpleTestTickClock> testing_clock_;
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
 
  private:

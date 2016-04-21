@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/cast/sender/video_sender.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/fake_single_thread_task_runner.h"
 #include "media/base/video_frame.h"
@@ -21,7 +24,6 @@
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/sender/fake_video_encode_accelerator_factory.h"
 #include "media/cast/sender/video_frame_factory.h"
-#include "media/cast/sender/video_sender.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "media/video/fake_video_encode_accelerator.h"
@@ -135,9 +137,9 @@ class TransportClient : public CastTransport::Client {
     EXPECT_EQ(TRANSPORT_VIDEO_INITIALIZED, status);
   };
   void OnLoggingEventsReceived(
-      scoped_ptr<std::vector<FrameEvent>> frame_events,
-      scoped_ptr<std::vector<PacketEvent>> packet_events) final{};
-  void ProcessRtpPacket(scoped_ptr<Packet> packet) final{};
+      std::unique_ptr<std::vector<FrameEvent>> frame_events,
+      std::unique_ptr<std::vector<PacketEvent>> packet_events) final{};
+  void ProcessRtpPacket(std::unique_ptr<Packet> packet) final{};
 
   DISALLOW_COPY_AND_ASSIGN(TransportClient);
 };
@@ -149,11 +151,11 @@ class VideoSenderTest : public ::testing::Test {
   VideoSenderTest()
       : testing_clock_(new base::SimpleTestTickClock()),
         task_runner_(new FakeSingleThreadTaskRunner(testing_clock_)),
-        cast_environment_(
-            new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
-                                task_runner_,
-                                task_runner_,
-                                task_runner_)),
+        cast_environment_(new CastEnvironment(
+            std::unique_ptr<base::TickClock>(testing_clock_),
+            task_runner_,
+            task_runner_,
+            task_runner_)),
         operational_status_(STATUS_UNINITIALIZED),
         vea_factory_(task_runner_) {
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
@@ -162,8 +164,8 @@ class VideoSenderTest : public ::testing::Test {
     transport_ = new TestPacketSender();
     transport_sender_.reset(
         new CastTransportImpl(testing_clock_, base::TimeDelta(),
-                              make_scoped_ptr(new TransportClient()),
-                              make_scoped_ptr(transport_), task_runner_));
+                              base::WrapUnique(new TransportClient()),
+                              base::WrapUnique(transport_), task_runner_));
   }
 
   ~VideoSenderTest() override {}
@@ -239,8 +241,8 @@ class VideoSenderTest : public ::testing::Test {
   OperationalStatus operational_status_;
   FakeVideoEncodeAcceleratorFactory vea_factory_;
   TestPacketSender* transport_;  // Owned by CastTransport.
-  scoped_ptr<CastTransportImpl> transport_sender_;
-  scoped_ptr<PeerVideoSender> video_sender_;
+  std::unique_ptr<CastTransportImpl> transport_sender_;
+  std::unique_ptr<PeerVideoSender> video_sender_;
   int last_pixel_value_;
   base::TimeTicks first_frame_timestamp_;
 

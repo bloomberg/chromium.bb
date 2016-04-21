@@ -4,9 +4,10 @@
 #ifndef MEDIA_CAST_CAST_SENDER_IMPL_H_
 #define MEDIA_CAST_CAST_SENDER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/sender/audio_sender.h"
@@ -43,14 +44,14 @@ class CastSenderImpl : public CastSender {
   scoped_refptr<VideoFrameInput> video_frame_input() final;
 
  private:
-  void ReceivedPacket(scoped_ptr<Packet> packet);
+  void ReceivedPacket(std::unique_ptr<Packet> packet);
   void OnAudioStatusChange(const StatusChangeCallback& status_change_cb,
                            OperationalStatus status);
   void OnVideoStatusChange(const StatusChangeCallback& status_change_cb,
                            OperationalStatus status);
 
-  scoped_ptr<AudioSender> audio_sender_;
-  scoped_ptr<VideoSender> video_sender_;
+  std::unique_ptr<AudioSender> audio_sender_;
+  std::unique_ptr<VideoSender> video_sender_;
   scoped_refptr<AudioFrameInput> audio_frame_input_;
   scoped_refptr<VideoFrameInput> video_frame_input_;
   scoped_refptr<CastEnvironment> cast_environment_;

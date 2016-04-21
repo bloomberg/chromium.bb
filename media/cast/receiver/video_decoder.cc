@@ -45,7 +45,7 @@ class VideoDecoder::ImplBase
     return operational_status_;
   }
 
-  void DecodeFrame(scoped_ptr<EncodedFrame> encoded_frame,
+  void DecodeFrame(std::unique_ptr<EncodedFrame> encoded_frame,
                    const DecodeFrameCallback& callback) {
     DCHECK_EQ(operational_status_, STATUS_INITIALIZED);
 
@@ -69,7 +69,7 @@ class VideoDecoder::ImplBase
     decoded_frame->set_timestamp(
         encoded_frame->rtp_timestamp.ToTimeDelta(kVideoFrequency));
 
-    scoped_ptr<FrameEvent> decode_event(new FrameEvent());
+    std::unique_ptr<FrameEvent> decode_event(new FrameEvent());
     decode_event->timestamp = cast_environment_->Clock()->NowTicks();
     decode_event->type = FRAME_DECODED;
     decode_event->media_type = VIDEO_EVENT;
@@ -204,7 +204,7 @@ class VideoDecoder::FakeImpl : public VideoDecoder::ImplBase {
     if (!len || data[0] != '{')
       return NULL;
     base::JSONReader reader;
-    scoped_ptr<base::Value> values(
+    std::unique_ptr<base::Value> values(
         reader.Read(base::StringPiece(reinterpret_cast<char*>(data), len)));
     if (!values)
       return NULL;
@@ -259,9 +259,8 @@ OperationalStatus VideoDecoder::InitializationResult() const {
   return STATUS_UNSUPPORTED_CODEC;
 }
 
-void VideoDecoder::DecodeFrame(
-    scoped_ptr<EncodedFrame> encoded_frame,
-    const DecodeFrameCallback& callback) {
+void VideoDecoder::DecodeFrame(std::unique_ptr<EncodedFrame> encoded_frame,
+                               const DecodeFrameCallback& callback) {
   DCHECK(encoded_frame.get());
   DCHECK(!callback.is_null());
   if (!impl_.get() || impl_->InitializationResult() != STATUS_INITIALIZED) {

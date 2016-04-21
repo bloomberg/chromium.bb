@@ -9,10 +9,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/non_thread_safe.h"
 
@@ -42,8 +42,8 @@ class TransportEncryptionHandler : public base::NonThreadSafe {
   bool is_activated() const { return is_activated_; }
 
  private:
-  scoped_ptr<crypto::SymmetricKey> key_;
-  scoped_ptr<crypto::Encryptor> encryptor_;
+  std::unique_ptr<crypto::SymmetricKey> key_;
+  std::unique_ptr<crypto::Encryptor> encryptor_;
   std::string iv_mask_;
   bool is_activated_;
 

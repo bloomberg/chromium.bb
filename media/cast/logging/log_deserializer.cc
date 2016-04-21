@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/big_endian.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/zlib/zlib.h"
 
 using media::cast::FrameEventMap;
@@ -231,7 +231,7 @@ bool DeserializeEvents(const char* data,
   DCHECK_GT(data_bytes, 0);
 
   if (compressed) {
-    scoped_ptr<char[]> uncompressed(new char[kMaxUncompressedBytes]);
+    std::unique_ptr<char[]> uncompressed(new char[kMaxUncompressedBytes]);
     int uncompressed_bytes = 0;
     if (!Uncompress(data,
                     data_bytes,

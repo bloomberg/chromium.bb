@@ -80,7 +80,7 @@ class Vp8QuantizerParserTest : public ::testing::Test {
 
   base::TimeDelta next_frame_timestamp_;
   VideoSenderConfig video_config_;
-  scoped_ptr<Vp8Encoder> vp8_encoder_;
+  std::unique_ptr<Vp8Encoder> vp8_encoder_;
 
   DISALLOW_COPY_AND_ASSIGN(Vp8QuantizerParserTest);
 };
@@ -88,7 +88,7 @@ class Vp8QuantizerParserTest : public ::testing::Test {
 // Encode 3 frames to test the cases with insufficient data input.
 TEST_F(Vp8QuantizerParserTest, InsufficientData) {
   for (int i = 0; i < 3; ++i) {
-    scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
+    std::unique_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
     const uint8_t* encoded_data =
         reinterpret_cast<const uint8_t*>(encoded_frame->data.data());
     // Null input.
@@ -138,7 +138,8 @@ TEST_F(Vp8QuantizerParserTest, VariedQuantizer) {
   for (int qp = 4; qp <= 63; qp += 10) {
     UpdateQuantizer(qp);
     for (int i = 0; i < 3; ++i) {
-      scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
+      std::unique_ptr<SenderEncodedFrame> encoded_frame(
+          new SenderEncodedFrame());
       EncodeOneFrame(encoded_frame.get());
       decoded_quantizer = ParseVp8HeaderQuantizer(
           reinterpret_cast<const uint8_t*>(encoded_frame->data.data()),

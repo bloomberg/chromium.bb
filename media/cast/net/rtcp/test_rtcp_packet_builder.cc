@@ -229,9 +229,9 @@ void TestRtcpPacketBuilder::AddReceiverEventLog(uint16_t event_data,
   big_endian_writer_.WriteU16(type_and_delta);
 }
 
-scoped_ptr<media::cast::Packet> TestRtcpPacketBuilder::GetPacket() {
+std::unique_ptr<media::cast::Packet> TestRtcpPacketBuilder::GetPacket() {
   PatchLengthField();
-  return scoped_ptr<media::cast::Packet>(
+  return std::unique_ptr<media::cast::Packet>(
       new media::cast::Packet(buffer_, buffer_ + Length()));
 }
 

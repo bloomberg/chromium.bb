@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/net/rtp/cast_message_builder.h"
@@ -84,7 +84,7 @@ class Framer {
 
   const bool decoder_faster_than_max_frame_rate_;
   FrameList frames_;
-  scoped_ptr<CastMessageBuilder> cast_msg_builder_;
+  std::unique_ptr<CastMessageBuilder> cast_msg_builder_;
   bool waiting_for_key_;
   uint32_t last_released_frame_;
   uint32_t newest_frame_id_;

@@ -26,7 +26,7 @@ class MockPacketReceiver {
   MockPacketReceiver(const base::Closure& callback)
       : packet_callback_(callback) {}
 
-  bool ReceivedPacket(scoped_ptr<Packet> packet) {
+  bool ReceivedPacket(std::unique_ptr<Packet> packet) {
     packet_ = std::string(packet->size(), '\0');
     std::copy(packet->begin(), packet->end(), packet_.begin());
     packet_callback_.Run();

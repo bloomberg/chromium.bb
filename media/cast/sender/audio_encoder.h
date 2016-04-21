@@ -5,9 +5,10 @@
 #ifndef MEDIA_CAST_SENDER_AUDIO_ENCODER_H_
 #define MEDIA_CAST_SENDER_AUDIO_ENCODER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_environment.h"
@@ -26,7 +27,7 @@ class AudioEncoder {
   // Callback to deliver each SenderEncodedFrame, plus the number of audio
   // samples skipped since the last frame.
   using FrameEncodedCallback =
-      base::Callback<void(scoped_ptr<SenderEncodedFrame>, int)>;
+      base::Callback<void(std::unique_ptr<SenderEncodedFrame>, int)>;
 
   AudioEncoder(const scoped_refptr<CastEnvironment>& cast_environment,
                int num_channels,
@@ -41,7 +42,7 @@ class AudioEncoder {
   int GetSamplesPerFrame() const;
   base::TimeDelta GetFrameDuration() const;
 
-  void InsertAudio(scoped_ptr<AudioBus> audio_bus,
+  void InsertAudio(std::unique_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time);
 
  private:

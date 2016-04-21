@@ -82,14 +82,13 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
   void FeedMoreAudio(const base::TimeDelta& duration,
                      int num_dropped_frames) {
     // Prepare a simulated EncodedFrame to feed into the AudioDecoder.
-    scoped_ptr<EncodedFrame> encoded_frame(
-        new EncodedFrame());
+    std::unique_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
     encoded_frame->dependency = EncodedFrame::KEY;
     encoded_frame->frame_id = last_frame_id_ + 1 + num_dropped_frames;
     encoded_frame->referenced_frame_id = encoded_frame->frame_id;
     last_frame_id_ = encoded_frame->frame_id;
 
-    const scoped_ptr<AudioBus> audio_bus(
+    const std::unique_ptr<AudioBus> audio_bus(
         audio_bus_factory_->NextAudioBus(duration));
 
     // Encode |audio_bus| into |encoded_frame->data|.
@@ -149,7 +148,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
  private:
   // Called by |audio_decoder_| to deliver each frame of decoded audio.
   void OnDecodedFrame(bool should_be_continuous,
-                      scoped_ptr<AudioBus> audio_bus,
+                      std::unique_ptr<AudioBus> audio_bus,
                       bool is_continuous) {
     DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
@@ -185,11 +184,11 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
   }
 
   const scoped_refptr<StandaloneCastEnvironment> cast_environment_;
-  scoped_ptr<AudioDecoder> audio_decoder_;
-  scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
+  std::unique_ptr<AudioDecoder> audio_decoder_;
+  std::unique_ptr<TestAudioBusFactory> audio_bus_factory_;
   uint32_t last_frame_id_;
   bool seen_a_decoded_frame_;
-  scoped_ptr<uint8_t[]> opus_encoder_memory_;
+  std::unique_ptr<uint8_t[]> opus_encoder_memory_;
 
   base::Lock lock_;
   base::ConditionVariable cond_;

@@ -5,11 +5,11 @@
 #ifndef MEDIA_CAST_LOGGING_LOG_EVENT_DISPATCHER_H_
 #define MEDIA_CAST_LOGGING_LOG_EVENT_DISPATCHER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/raw_event_subscriber.h"
 
@@ -31,11 +31,11 @@ class LogEventDispatcher {
 
   // Called on any thread to schedule the sending of event(s) to all
   // EventSubscribers on the MAIN thread.
-  void DispatchFrameEvent(scoped_ptr<FrameEvent> event) const;
-  void DispatchPacketEvent(scoped_ptr<PacketEvent> event) const;
+  void DispatchFrameEvent(std::unique_ptr<FrameEvent> event) const;
+  void DispatchPacketEvent(std::unique_ptr<PacketEvent> event) const;
   void DispatchBatchOfEvents(
-      scoped_ptr<std::vector<FrameEvent>> frame_events,
-      scoped_ptr<std::vector<PacketEvent>> packet_events) const;
+      std::unique_ptr<std::vector<FrameEvent>> frame_events,
+      std::unique_ptr<std::vector<PacketEvent>> packet_events) const;
 
   // Adds |subscriber| to the active list to begin receiving events on MAIN
   // thread.  Unsubscribe() must be called before |subscriber| is destroyed.
@@ -51,11 +51,11 @@ class LogEventDispatcher {
    public:
     Impl();
 
-    void DispatchFrameEvent(scoped_ptr<FrameEvent> event) const;
-    void DispatchPacketEvent(scoped_ptr<PacketEvent> event) const;
+    void DispatchFrameEvent(std::unique_ptr<FrameEvent> event) const;
+    void DispatchPacketEvent(std::unique_ptr<PacketEvent> event) const;
     void DispatchBatchOfEvents(
-        scoped_ptr<std::vector<FrameEvent>> frame_events,
-        scoped_ptr<std::vector<PacketEvent>> packet_events) const;
+        std::unique_ptr<std::vector<FrameEvent>> frame_events,
+        std::unique_ptr<std::vector<PacketEvent>> packet_events) const;
     void Subscribe(RawEventSubscriber* subscriber);
     void Unsubscribe(RawEventSubscriber* subscriber);
 

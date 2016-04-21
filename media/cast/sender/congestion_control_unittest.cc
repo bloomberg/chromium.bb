@@ -63,7 +63,7 @@ class CongestionControlTest : public ::testing::Test {
   }
 
   base::SimpleTestTickClock testing_clock_;
-  scoped_ptr<CongestionControl> congestion_control_;
+  std::unique_ptr<CongestionControl> congestion_control_;
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   uint32_t frame_id_;
 

@@ -89,7 +89,7 @@ class TestRtcpPacketBuilder {
                            CastLoggingEvent event,
                            uint16_t event_timesamp_delta);
 
-  scoped_ptr<Packet> GetPacket();
+  std::unique_ptr<Packet> GetPacket();
   const uint8_t* Data();
   int Length() { return kMaxIpPacketSize - big_endian_writer_.remaining(); }
   base::BigEndianReader* Reader();

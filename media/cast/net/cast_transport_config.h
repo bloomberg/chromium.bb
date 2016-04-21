@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "media/cast/common/rtp_time.h"
 #include "media/cast/net/cast_transport_defines.h"
@@ -123,8 +123,9 @@ struct EncodedFrame {
   std::string data;
 };
 
-typedef base::Callback<void(scoped_ptr<Packet> packet)> PacketReceiverCallback;
-typedef base::Callback<bool(scoped_ptr<Packet> packet)>
+typedef base::Callback<void(std::unique_ptr<Packet> packet)>
+    PacketReceiverCallback;
+typedef base::Callback<bool(std::unique_ptr<Packet> packet)>
     PacketReceiverCallbackWithStatus;
 
 class PacketTransport {

@@ -7,10 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/single_thread_task_runner.h"
 #include "media/cast/cast_config.h"
@@ -75,9 +76,9 @@ class FakeVideoEncodeAcceleratorFactory {
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool will_init_succeed_;
   bool auto_respond_;
-  scoped_ptr<media::VideoEncodeAccelerator> next_response_vea_;
+  std::unique_ptr<media::VideoEncodeAccelerator> next_response_vea_;
   ReceiveVideoEncodeAcceleratorCallback vea_response_callback_;
-  scoped_ptr<base::SharedMemory> next_response_shm_;
+  std::unique_ptr<base::SharedMemory> next_response_shm_;
   ReceiveVideoEncodeMemoryCallback shm_response_callback_;
   int vea_response_count_;
   int shm_response_count_;

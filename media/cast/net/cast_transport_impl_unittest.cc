@@ -6,12 +6,14 @@
 
 #include <gtest/gtest.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"
 #include "media/base/fake_single_thread_task_runner.h"
@@ -109,7 +111,7 @@ class CastTransportImplTest : public ::testing::Test {
 
   base::SimpleTestTickClock testing_clock_;
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
-  scoped_ptr<CastTransportImpl> transport_sender_;
+  std::unique_ptr<CastTransportImpl> transport_sender_;
   FakePacketSender* transport_;  // Owned by CastTransport.
   int num_times_logging_callback_called_;
 };
@@ -124,12 +126,12 @@ class TransportClient : public CastTransport::Client {
 
   void OnStatusChanged(CastTransportStatus status) final{};
   void OnLoggingEventsReceived(
-      scoped_ptr<std::vector<FrameEvent>> frame_events,
-      scoped_ptr<std::vector<PacketEvent>> packet_events) final {
+      std::unique_ptr<std::vector<FrameEvent>> frame_events,
+      std::unique_ptr<std::vector<PacketEvent>> packet_events) final {
     CHECK(cast_transport_sender_impl_test_);
     cast_transport_sender_impl_test_->ReceivedLoggingEvents();
   };
-  void ProcessRtpPacket(scoped_ptr<Packet> packet) final{};
+  void ProcessRtpPacket(std::unique_ptr<Packet> packet) final{};
 
  private:
   CastTransportImplTest* const cast_transport_sender_impl_test_;
@@ -143,13 +145,13 @@ void CastTransportImplTest::InitWithoutLogging() {
   transport_ = new FakePacketSender();
   transport_sender_.reset(
       new CastTransportImpl(&testing_clock_, base::TimeDelta(),
-                            make_scoped_ptr(new TransportClient(nullptr)),
-                            make_scoped_ptr(transport_), task_runner_));
+                            base::WrapUnique(new TransportClient(nullptr)),
+                            base::WrapUnique(transport_), task_runner_));
   task_runner_->RunTasks();
 }
 
 void CastTransportImplTest::InitWithOptions() {
-  scoped_ptr<base::DictionaryValue> options(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> options(new base::DictionaryValue);
   options->SetBoolean("disable_wifi_scan", true);
   options->SetBoolean("media_streaming_mode", true);
   options->SetInteger("pacer_target_burst_size", 20);
@@ -157,8 +159,8 @@ void CastTransportImplTest::InitWithOptions() {
   transport_ = new FakePacketSender();
   transport_sender_.reset(
       new CastTransportImpl(&testing_clock_, base::TimeDelta(),
-                            make_scoped_ptr(new TransportClient(nullptr)),
-                            make_scoped_ptr(transport_), task_runner_));
+                            base::WrapUnique(new TransportClient(nullptr)),
+                            base::WrapUnique(transport_), task_runner_));
   transport_sender_->SetOptions(*options);
   task_runner_->RunTasks();
 }
@@ -167,7 +169,7 @@ void CastTransportImplTest::InitWithLogging() {
   transport_ = new FakePacketSender();
   transport_sender_.reset(new CastTransportImpl(
       &testing_clock_, base::TimeDelta::FromMilliseconds(10),
-      make_scoped_ptr(new TransportClient(this)), make_scoped_ptr(transport_),
+      base::WrapUnique(new TransportClient(this)), base::WrapUnique(transport_),
       task_runner_));
   task_runner_->RunTasks();
 }

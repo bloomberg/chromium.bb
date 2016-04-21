@@ -86,7 +86,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
     PopulateVideoFrame(video_frame.get(), 0);
 
     // Encode |frame| into |encoded_frame->data|.
-    scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
+    std::unique_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
     // Test only supports VP8, currently.
     CHECK_EQ(CODEC_VIDEO_VP8, GetParam());
     vp8_encoder_.Encode(video_frame, reference_time, encoded_frame.get());
@@ -152,7 +152,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
   }
 
   const scoped_refptr<StandaloneCastEnvironment> cast_environment_;
-  scoped_ptr<VideoDecoder> video_decoder_;
+  std::unique_ptr<VideoDecoder> video_decoder_;
   gfx::Size next_frame_size_;
   base::TimeDelta next_frame_timestamp_;
   uint32_t last_frame_id_;

@@ -10,9 +10,10 @@
 #ifndef MEDIA_CAST_CAST_SENDER_H_
 #define MEDIA_CAST_CAST_SENDER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
@@ -68,7 +69,7 @@ class AudioFrameInput : public base::RefCountedThreadSafe<AudioFrameInput> {
  public:
   // Insert audio frames into Cast sender. Frames will be encoded, packetized
   // and sent to the network.
-  virtual void InsertAudio(scoped_ptr<AudioBus> audio_bus,
+  virtual void InsertAudio(std::unique_ptr<AudioBus> audio_bus,
                            const base::TimeTicks& recorded_time) = 0;
 
  protected:
@@ -88,7 +89,7 @@ using StatusChangeCallback = base::Callback<void(OperationalStatus)>;
 // Provided CastTransport will also be called on the main thread.
 class CastSender {
  public:
-  static scoped_ptr<CastSender> Create(
+  static std::unique_ptr<CastSender> Create(
       scoped_refptr<CastEnvironment> cast_environment,
       CastTransport* const transport_sender);
 

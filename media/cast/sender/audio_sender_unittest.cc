@@ -5,12 +5,14 @@
 #include "media/cast/sender/audio_sender.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"
 #include "media/base/fake_single_thread_task_runner.h"
@@ -43,9 +45,9 @@ class TransportClient : public CastTransport::Client {
     EXPECT_EQ(TRANSPORT_AUDIO_INITIALIZED, status);
   };
   void OnLoggingEventsReceived(
-      scoped_ptr<std::vector<FrameEvent>> frame_events,
-      scoped_ptr<std::vector<PacketEvent>> packet_events) final{};
-  void ProcessRtpPacket(scoped_ptr<Packet> packet) final{};
+      std::unique_ptr<std::vector<FrameEvent>> frame_events,
+      std::unique_ptr<std::vector<PacketEvent>> packet_events) final{};
+  void ProcessRtpPacket(std::unique_ptr<Packet> packet) final{};
 
   DISALLOW_COPY_AND_ASSIGN(TransportClient);
 };
@@ -97,7 +99,7 @@ class AudioSenderTest : public ::testing::Test {
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
     task_runner_ = new FakeSingleThreadTaskRunner(testing_clock_);
     cast_environment_ =
-        new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
+        new CastEnvironment(std::unique_ptr<base::TickClock>(testing_clock_),
                             task_runner_, task_runner_, task_runner_);
     audio_config_.codec = CODEC_AUDIO_OPUS;
     audio_config_.use_external_encoder = false;
@@ -109,8 +111,8 @@ class AudioSenderTest : public ::testing::Test {
     transport_ = new TestPacketSender();
     transport_sender_.reset(
         new CastTransportImpl(testing_clock_, base::TimeDelta(),
-                              make_scoped_ptr(new TransportClient()),
-                              make_scoped_ptr(transport_), task_runner_));
+                              base::WrapUnique(new TransportClient()),
+                              base::WrapUnique(transport_), task_runner_));
     OperationalStatus operational_status = STATUS_UNINITIALIZED;
     audio_sender_.reset(new AudioSender(
         cast_environment_,
@@ -125,20 +127,19 @@ class AudioSenderTest : public ::testing::Test {
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   TestPacketSender* transport_;               // Owned by CastTransport.
-  scoped_ptr<CastTransportImpl> transport_sender_;
+  std::unique_ptr<CastTransportImpl> transport_sender_;
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
-  scoped_ptr<AudioSender> audio_sender_;
+  std::unique_ptr<AudioSender> audio_sender_;
   scoped_refptr<CastEnvironment> cast_environment_;
   AudioSenderConfig audio_config_;
 };
 
 TEST_F(AudioSenderTest, Encode20ms) {
   const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(20);
-  scoped_ptr<AudioBus> bus(
-      TestAudioBusFactory(audio_config_.channels,
-                          audio_config_.frequency,
-                          TestAudioBusFactory::kMiddleANoteFreq,
-                          0.5f).NextAudioBus(kDuration));
+  std::unique_ptr<AudioBus> bus(
+      TestAudioBusFactory(audio_config_.channels, audio_config_.frequency,
+                          TestAudioBusFactory::kMiddleANoteFreq, 0.5f)
+          .NextAudioBus(kDuration));
 
   audio_sender_->InsertAudio(std::move(bus), testing_clock_->NowTicks());
   task_runner_->RunTasks();
@@ -148,11 +149,10 @@ TEST_F(AudioSenderTest, Encode20ms) {
 
 TEST_F(AudioSenderTest, RtcpTimer) {
   const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(20);
-  scoped_ptr<AudioBus> bus(
-      TestAudioBusFactory(audio_config_.channels,
-                          audio_config_.frequency,
-                          TestAudioBusFactory::kMiddleANoteFreq,
-                          0.5f).NextAudioBus(kDuration));
+  std::unique_ptr<AudioBus> bus(
+      TestAudioBusFactory(audio_config_.channels, audio_config_.frequency,
+                          TestAudioBusFactory::kMiddleANoteFreq, 0.5f)
+          .NextAudioBus(kDuration));
 
   audio_sender_->InsertAudio(std::move(bus), testing_clock_->NowTicks());
   task_runner_->RunTasks();

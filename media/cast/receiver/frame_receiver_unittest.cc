@@ -6,13 +6,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <deque>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/fake_single_thread_task_runner.h"
 #include "media/cast/cast_environment.h"
@@ -46,7 +47,7 @@ class FakeFrameClient {
         std::make_pair(expected_frame_id, expected_playout_time));
   }
 
-  void DeliverEncodedFrame(scoped_ptr<EncodedFrame> frame) {
+  void DeliverEncodedFrame(std::unique_ptr<EncodedFrame> frame) {
     SCOPED_TRACE(::testing::Message() << "num_called_ is " << num_called_);
     ASSERT_TRUE(frame)
         << "If at shutdown: There were unsatisfied requests enqueued.";
@@ -76,7 +77,7 @@ class FrameReceiverTest : public ::testing::Test {
     task_runner_ = new FakeSingleThreadTaskRunner(testing_clock_);
 
     cast_environment_ =
-        new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
+        new CastEnvironment(std::unique_ptr<base::TickClock>(testing_clock_),
                             task_runner_, task_runner_, task_runner_);
   }
 
@@ -145,7 +146,7 @@ class FrameReceiverTest : public ::testing::Test {
 
   // Important for the FrameReceiver to be declared last, since its dependencies
   // must remain alive until after its destruction.
-  scoped_ptr<FrameReceiver> receiver_;
+  std::unique_ptr<FrameReceiver> receiver_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameReceiverTest);
@@ -161,7 +162,7 @@ TEST_F(FrameReceiverTest, RejectsUnparsablePackets) {
   cast_environment_->logger()->Subscribe(&event_subscriber);
 
   const bool success = receiver_->ProcessPacket(
-      scoped_ptr<Packet>(new Packet(kPacketSize, 0xff)));
+      std::unique_ptr<Packet>(new Packet(kPacketSize, 0xff)));
   EXPECT_FALSE(success);
 
   // Confirm no log events.

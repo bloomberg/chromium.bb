@@ -170,7 +170,7 @@ class PacedSenderTest : public ::testing::Test {
   base::SimpleTestTickClock testing_clock_;
   TestPacketSender mock_transport_;
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
-  scoped_ptr<PacedSender> paced_sender_;
+  std::unique_ptr<PacedSender> paced_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(PacedSenderTest);
 };

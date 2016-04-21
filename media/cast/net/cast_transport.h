@@ -20,8 +20,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
@@ -52,8 +53,8 @@ struct RtcpTimeData;
 typedef base::Callback<void(CastTransportStatus status)>
     CastTransportStatusCallback;
 
-typedef base::Callback<void(scoped_ptr<std::vector<FrameEvent>>,
-                            scoped_ptr<std::vector<PacketEvent>>)>
+typedef base::Callback<void(std::unique_ptr<std::vector<FrameEvent>>,
+                            std::unique_ptr<std::vector<PacketEvent>>)>
     BulkRawEventsCallback;
 
 // The application should only trigger this class from the transport thread.
@@ -72,18 +73,18 @@ class CastTransport : public base::NonThreadSafe {
     // the configured logging flush interval passed to
     // CastTransport::Create().
     virtual void OnLoggingEventsReceived(
-        scoped_ptr<std::vector<FrameEvent>> frame_events,
-        scoped_ptr<std::vector<PacketEvent>> packet_events) = 0;
+        std::unique_ptr<std::vector<FrameEvent>> frame_events,
+        std::unique_ptr<std::vector<PacketEvent>> packet_events) = 0;
 
     // Called to pass RTP packets to the Client.
-    virtual void ProcessRtpPacket(scoped_ptr<Packet> packet) = 0;
+    virtual void ProcessRtpPacket(std::unique_ptr<Packet> packet) = 0;
   };
 
-  static scoped_ptr<CastTransport> Create(
+  static std::unique_ptr<CastTransport> Create(
       base::TickClock* clock,  // Owned by the caller.
       base::TimeDelta logging_flush_interval,
-      scoped_ptr<Client> client,
-      scoped_ptr<PacketTransport> transport,
+      std::unique_ptr<Client> client,
+      std::unique_ptr<PacketTransport> transport,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
   virtual ~CastTransport() {}

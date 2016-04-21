@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -102,12 +103,12 @@ class UdpTransport : public PacketTransport {
   const scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy_;
   const net::IPEndPoint local_addr_;
   net::IPEndPoint remote_addr_;
-  scoped_ptr<net::UDPSocket> udp_socket_;
+  std::unique_ptr<net::UDPSocket> udp_socket_;
   bool send_pending_;
   bool receive_pending_;
   bool client_connected_;
   net::DiffServCodePoint next_dscp_value_;
-  scoped_ptr<Packet> next_packet_;
+  std::unique_ptr<Packet> next_packet_;
   scoped_refptr<net::WrappedIOBuffer> recv_buf_;
   net::IPEndPoint recv_addr_;
   PacketReceiverCallbackWithStatus packet_receiver_;

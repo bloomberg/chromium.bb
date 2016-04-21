@@ -52,12 +52,12 @@ const int64_t kMinKeyFrameRequestOnPliIntervalMs = 500;
 void LogVideoCaptureTimestamps(CastEnvironment* cast_environment,
                                const media::VideoFrame& video_frame,
                                RtpTimeTicks rtp_timestamp) {
-  scoped_ptr<FrameEvent> capture_begin_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> capture_begin_event(new FrameEvent());
   capture_begin_event->type = FRAME_CAPTURE_BEGIN;
   capture_begin_event->media_type = VIDEO_EVENT;
   capture_begin_event->rtp_timestamp = rtp_timestamp;
 
-  scoped_ptr<FrameEvent> capture_end_event(new FrameEvent());
+  std::unique_ptr<FrameEvent> capture_end_event(new FrameEvent());
   capture_end_event->type = FRAME_CAPTURE_END;
   capture_end_event->media_type = VIDEO_EVENT;
   capture_end_event->rtp_timestamp = rtp_timestamp;
@@ -300,7 +300,7 @@ void VideoSender::InsertRawVideoFrame(
   }
 }
 
-scoped_ptr<VideoFrameFactory> VideoSender::CreateVideoFrameFactory() {
+std::unique_ptr<VideoFrameFactory> VideoSender::CreateVideoFrameFactory() {
   return video_encoder_ ? video_encoder_->CreateVideoFrameFactory() : nullptr;
 }
 
@@ -321,7 +321,7 @@ base::TimeDelta VideoSender::GetInFlightMediaDuration() const {
 void VideoSender::OnEncodedVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
     int encoder_bitrate,
-    scoped_ptr<SenderEncodedFrame> encoded_frame) {
+    std::unique_ptr<SenderEncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   frames_in_encoder_--;

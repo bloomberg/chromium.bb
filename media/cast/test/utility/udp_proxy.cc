@@ -37,7 +37,7 @@ void PacketPipe::InitOnIOThread(
     pipe_->InitOnIOThread(task_runner, clock);
   }
 }
-void PacketPipe::AppendToPipe(scoped_ptr<PacketPipe> pipe) {
+void PacketPipe::AppendToPipe(std::unique_ptr<PacketPipe> pipe) {
   if (pipe_) {
     pipe_->AppendToPipe(std::move(pipe));
   } else {
@@ -59,7 +59,7 @@ class Buffer : public PacketPipe {
     CHECK_GT(max_megabits_per_second, 0);
   }
 
-  void Send(scoped_ptr<Packet> packet) final {
+  void Send(std::unique_ptr<Packet> packet) final {
     if (packet->size() + buffer_size_ <= max_buffer_size_) {
       buffer_size_ += packet->size();
       buffer_.push_back(linked_ptr<Packet>(packet.release()));
@@ -91,7 +91,7 @@ class Buffer : public PacketPipe {
     while (!buffer_.empty() &&
            static_cast<int64_t>(buffer_.front()->size()) <= bytes_to_send) {
       CHECK(!buffer_.empty());
-      scoped_ptr<Packet> packet(buffer_.front().release());
+      std::unique_ptr<Packet> packet(buffer_.front().release());
       bytes_to_send -= packet->size();
       buffer_size_ -= packet->size();
       buffer_.pop_front();
@@ -110,8 +110,8 @@ class Buffer : public PacketPipe {
   base::WeakPtrFactory<Buffer> weak_factory_;
 };
 
-scoped_ptr<PacketPipe> NewBuffer(size_t buffer_size, double bandwidth) {
-  return scoped_ptr<PacketPipe>(new Buffer(buffer_size, bandwidth));
+std::unique_ptr<PacketPipe> NewBuffer(size_t buffer_size, double bandwidth) {
+  return std::unique_ptr<PacketPipe>(new Buffer(buffer_size, bandwidth));
 }
 
 class RandomDrop : public PacketPipe {
@@ -119,7 +119,7 @@ class RandomDrop : public PacketPipe {
   RandomDrop(double drop_fraction)
       : drop_fraction_(static_cast<int>(drop_fraction * RAND_MAX)) {}
 
-  void Send(scoped_ptr<Packet> packet) final {
+  void Send(std::unique_ptr<Packet> packet) final {
     if (rand() > drop_fraction_) {
       pipe_->Send(std::move(packet));
     }
@@ -129,8 +129,8 @@ class RandomDrop : public PacketPipe {
   int drop_fraction_;
 };
 
-scoped_ptr<PacketPipe> NewRandomDrop(double drop_fraction) {
-  return scoped_ptr<PacketPipe>(new RandomDrop(drop_fraction));
+std::unique_ptr<PacketPipe> NewRandomDrop(double drop_fraction) {
+  return std::unique_ptr<PacketPipe>(new RandomDrop(drop_fraction));
 }
 
 class SimpleDelayBase : public PacketPipe {
@@ -138,7 +138,7 @@ class SimpleDelayBase : public PacketPipe {
   SimpleDelayBase() : weak_factory_(this) {}
   ~SimpleDelayBase() override {}
 
-  void Send(scoped_ptr<Packet> packet) override {
+  void Send(std::unique_ptr<Packet> packet) override {
     double seconds = GetDelay();
     task_runner_->PostDelayedTask(
         FROM_HERE,
@@ -150,7 +150,7 @@ class SimpleDelayBase : public PacketPipe {
   virtual double GetDelay() = 0;
 
  private:
-  virtual void SendInternal(scoped_ptr<Packet> packet) {
+  virtual void SendInternal(std::unique_ptr<Packet> packet) {
     pipe_->Send(std::move(packet));
   }
 
@@ -166,8 +166,8 @@ class ConstantDelay : public SimpleDelayBase {
   double delay_seconds_;
 };
 
-scoped_ptr<PacketPipe> NewConstantDelay(double delay_seconds) {
-  return scoped_ptr<PacketPipe>(new ConstantDelay(delay_seconds));
+std::unique_ptr<PacketPipe> NewConstantDelay(double delay_seconds) {
+  return std::unique_ptr<PacketPipe>(new ConstantDelay(delay_seconds));
 }
 
 class RandomUnsortedDelay : public SimpleDelayBase {
@@ -180,8 +180,8 @@ class RandomUnsortedDelay : public SimpleDelayBase {
   double random_delay_;
 };
 
-scoped_ptr<PacketPipe> NewRandomUnsortedDelay(double random_delay) {
-  return scoped_ptr<PacketPipe>(new RandomUnsortedDelay(random_delay));
+std::unique_ptr<PacketPipe> NewRandomUnsortedDelay(double random_delay) {
+  return std::unique_ptr<PacketPipe>(new RandomUnsortedDelay(random_delay));
 }
 
 class DuplicateAndDelay : public RandomUnsortedDelay {
@@ -191,8 +191,8 @@ class DuplicateAndDelay : public RandomUnsortedDelay {
       RandomUnsortedDelay(random_delay),
       delay_min_(delay_min) {
   }
-  void Send(scoped_ptr<Packet> packet) final {
-    pipe_->Send(scoped_ptr<Packet>(new Packet(*packet.get())));
+  void Send(std::unique_ptr<Packet> packet) final {
+    pipe_->Send(std::unique_ptr<Packet>(new Packet(*packet.get())));
     RandomUnsortedDelay::Send(std::move(packet));
   }
   double GetDelay() final {
@@ -202,9 +202,10 @@ class DuplicateAndDelay : public RandomUnsortedDelay {
   double delay_min_;
 };
 
-scoped_ptr<PacketPipe> NewDuplicateAndDelay(double delay_min,
-                                            double random_delay) {
-  return scoped_ptr<PacketPipe>(new DuplicateAndDelay(delay_min, random_delay));
+std::unique_ptr<PacketPipe> NewDuplicateAndDelay(double delay_min,
+                                                 double random_delay) {
+  return std::unique_ptr<PacketPipe>(
+      new DuplicateAndDelay(delay_min, random_delay));
 }
 
 class RandomSortedDelay : public PacketPipe {
@@ -217,7 +218,7 @@ class RandomSortedDelay : public PacketPipe {
         seconds_between_extra_delay_(seconds_between_extra_delay),
         weak_factory_(this) {}
 
-  void Send(scoped_ptr<Packet> packet) final {
+  void Send(std::unique_ptr<Packet> packet) final {
     buffer_.push_back(linked_ptr<Packet>(packet.release()));
     if (buffer_.size() == 1) {
       next_send_ = std::max(
@@ -261,7 +262,7 @@ class RandomSortedDelay : public PacketPipe {
   void ProcessBuffer() {
     base::TimeTicks now = clock_->NowTicks();
     while (!buffer_.empty() && next_send_ <= now) {
-      scoped_ptr<Packet> packet(buffer_.front().release());
+      std::unique_ptr<Packet> packet(buffer_.front().release());
       pipe_->Send(std::move(packet));
       buffer_.pop_front();
 
@@ -287,11 +288,11 @@ class RandomSortedDelay : public PacketPipe {
   base::WeakPtrFactory<RandomSortedDelay> weak_factory_;
 };
 
-scoped_ptr<PacketPipe> NewRandomSortedDelay(
+std::unique_ptr<PacketPipe> NewRandomSortedDelay(
     double random_delay,
     double extra_delay,
     double seconds_between_extra_delay) {
-  return scoped_ptr<PacketPipe>(new RandomSortedDelay(
+  return std::unique_ptr<PacketPipe>(new RandomSortedDelay(
       random_delay, extra_delay, seconds_between_extra_delay));
 }
 
@@ -310,7 +311,7 @@ class NetworkGlitchPipe : public PacketPipe {
     Flip();
   }
 
-  void Send(scoped_ptr<Packet> packet) final {
+  void Send(std::unique_ptr<Packet> packet) final {
     if (works_) {
       pipe_->Send(std::move(packet));
     }
@@ -334,9 +335,9 @@ class NetworkGlitchPipe : public PacketPipe {
   base::WeakPtrFactory<NetworkGlitchPipe> weak_factory_;
 };
 
-scoped_ptr<PacketPipe> NewNetworkGlitchPipe(double average_work_time,
-                                            double average_outage_time) {
-  return scoped_ptr<PacketPipe>(
+std::unique_ptr<PacketPipe> NewNetworkGlitchPipe(double average_work_time,
+                                                 double average_outage_time) {
+  return std::unique_ptr<PacketPipe>(
       new NetworkGlitchPipe(average_work_time, average_outage_time));
 }
 
@@ -353,7 +354,7 @@ class InterruptedPoissonProcess::InternalBuffer : public PacketPipe {
         weak_factory_(this) {
   }
 
-  void Send(scoped_ptr<Packet> packet) final {
+  void Send(std::unique_ptr<Packet> packet) final {
     // Drop if buffer is full.
     if (stored_size_ >= stored_limit_)
       return;
@@ -373,7 +374,7 @@ class InterruptedPoissonProcess::InternalBuffer : public PacketPipe {
   }
 
   void SendOnePacket() {
-    scoped_ptr<Packet> packet(buffer_.front().release());
+    std::unique_ptr<Packet> packet(buffer_.front().release());
     stored_size_ -= packet->size();
     buffer_.pop_front();
     buffer_time_.pop_front();
@@ -440,8 +441,8 @@ void InterruptedPoissonProcess::InitOnIOThread(
   SendPacket();
 }
 
-scoped_ptr<PacketPipe> InterruptedPoissonProcess::NewBuffer(size_t size) {
-  scoped_ptr<InternalBuffer> buffer(
+std::unique_ptr<PacketPipe> InterruptedPoissonProcess::NewBuffer(size_t size) {
+  std::unique_ptr<InternalBuffer> buffer(
       new InternalBuffer(weak_factory_.GetWeakPtr(), size));
   send_buffers_.push_back(buffer->GetWeakPtr());
   return std::move(buffer);
@@ -545,8 +546,8 @@ class PacketSender : public PacketPipe {
  public:
   PacketSender(UDPProxyImpl* udp_proxy, const net::IPEndPoint* destination)
       : udp_proxy_(udp_proxy), destination_(destination) {}
-  void Send(scoped_ptr<Packet> packet) final;
-  void AppendToPipe(scoped_ptr<PacketPipe> pipe) final { NOTREACHED(); }
+  void Send(std::unique_ptr<Packet> packet) final;
+  void AppendToPipe(std::unique_ptr<PacketPipe> pipe) final { NOTREACHED(); }
 
  private:
   UDPProxyImpl* udp_proxy_;
@@ -554,18 +555,18 @@ class PacketSender : public PacketPipe {
 };
 
 namespace {
-void BuildPipe(scoped_ptr<PacketPipe>* pipe, PacketPipe* next) {
+void BuildPipe(std::unique_ptr<PacketPipe>* pipe, PacketPipe* next) {
   if (*pipe) {
-    (*pipe)->AppendToPipe(scoped_ptr<PacketPipe>(next));
+    (*pipe)->AppendToPipe(std::unique_ptr<PacketPipe>(next));
   } else {
     pipe->reset(next);
   }
 }
 }  // namespace
 
-scoped_ptr<PacketPipe> GoodNetwork() {
+std::unique_ptr<PacketPipe> GoodNetwork() {
   // This represents the buffer on the sender.
-  scoped_ptr<PacketPipe> pipe;
+  std::unique_ptr<PacketPipe> pipe;
   BuildPipe(&pipe, new Buffer(2 << 20, 50));
   BuildPipe(&pipe, new ConstantDelay(1E-3));
   BuildPipe(&pipe, new RandomSortedDelay(1E-3, 2E-3, 3));
@@ -574,9 +575,9 @@ scoped_ptr<PacketPipe> GoodNetwork() {
   return pipe;
 }
 
-scoped_ptr<PacketPipe> WifiNetwork() {
+std::unique_ptr<PacketPipe> WifiNetwork() {
   // This represents the buffer on the sender.
-  scoped_ptr<PacketPipe> pipe;
+  std::unique_ptr<PacketPipe> pipe;
   BuildPipe(&pipe, new Buffer(256 << 10, 20));
   BuildPipe(&pipe, new RandomDrop(0.005));
   // This represents the buffer on the router.
@@ -591,8 +592,8 @@ scoped_ptr<PacketPipe> WifiNetwork() {
   return pipe;
 }
 
-scoped_ptr<PacketPipe> BadNetwork() {
-  scoped_ptr<PacketPipe> pipe;
+std::unique_ptr<PacketPipe> BadNetwork() {
+  std::unique_ptr<PacketPipe> pipe;
   // This represents the buffer on the sender.
   BuildPipe(&pipe, new Buffer(64 << 10, 5)); // 64 kb buf, 5mbit/s
   BuildPipe(&pipe, new RandomDrop(0.05));  // 5% packet drop
@@ -608,10 +609,9 @@ scoped_ptr<PacketPipe> BadNetwork() {
   return pipe;
 }
 
-
-scoped_ptr<PacketPipe> EvilNetwork() {
+std::unique_ptr<PacketPipe> EvilNetwork() {
   // This represents the buffer on the sender.
-  scoped_ptr<PacketPipe> pipe;
+  std::unique_ptr<PacketPipe> pipe;
   BuildPipe(&pipe, new Buffer(4 << 10, 5));  // 4 kb buf, 2mbit/s
   // This represents the buffer on the router.
   BuildPipe(&pipe, new RandomDrop(0.1));  // 10% packet drop
@@ -626,7 +626,7 @@ scoped_ptr<PacketPipe> EvilNetwork() {
   return pipe;
 }
 
-scoped_ptr<InterruptedPoissonProcess> DefaultInterruptedPoissonProcess() {
+std::unique_ptr<InterruptedPoissonProcess> DefaultInterruptedPoissonProcess() {
   // The following values are taken from a session reported from a user.
   // They are experimentally tested to demonstrate challenging network
   // conditions. The average bitrate is about 2mbits/s.
@@ -654,9 +654,8 @@ scoped_ptr<InterruptedPoissonProcess> DefaultInterruptedPoissonProcess() {
   const double burstiness = 0.609;
   const double variance = 4.1;
 
-  scoped_ptr<InterruptedPoissonProcess> ipp(
-      new InterruptedPoissonProcess(
-          average_rates, burstiness, variance, 0));
+  std::unique_ptr<InterruptedPoissonProcess> ipp(
+      new InterruptedPoissonProcess(average_rates, burstiness, variance, 0));
   return ipp;
 }
 
@@ -664,8 +663,8 @@ class UDPProxyImpl : public UDPProxy {
  public:
   UDPProxyImpl(const net::IPEndPoint& local_port,
                const net::IPEndPoint& destination,
-               scoped_ptr<PacketPipe> to_dest_pipe,
-               scoped_ptr<PacketPipe> from_dest_pipe,
+               std::unique_ptr<PacketPipe> to_dest_pipe,
+               std::unique_ptr<PacketPipe> from_dest_pipe,
                net::NetLog* net_log)
       : local_port_(local_port),
         destination_(destination),
@@ -698,7 +697,7 @@ class UDPProxyImpl : public UDPProxy {
     proxy_thread_.Stop();
   }
 
-  void Send(scoped_ptr<Packet> packet,
+  void Send(std::unique_ptr<Packet> packet,
             const net::IPEndPoint& destination) {
     if (blocked_) {
       LOG(ERROR) << "Cannot write packet right now: blocked";
@@ -807,7 +806,7 @@ class UDPProxyImpl : public UDPProxy {
   }
 
   void AllowWrite(scoped_refptr<net::IOBuffer> buf,
-                  scoped_ptr<Packet> packet,
+                  std::unique_ptr<Packet> packet,
                   int unused_len) {
     DCHECK(blocked_);
     blocked_ = false;
@@ -824,13 +823,13 @@ class UDPProxyImpl : public UDPProxy {
 
   base::DefaultTickClock tick_clock_;
   base::Thread proxy_thread_;
-  scoped_ptr<net::UDPServerSocket> socket_;
-  scoped_ptr<PacketPipe> to_dest_pipe_;
-  scoped_ptr<PacketPipe> from_dest_pipe_;
+  std::unique_ptr<net::UDPServerSocket> socket_;
+  std::unique_ptr<PacketPipe> to_dest_pipe_;
+  std::unique_ptr<PacketPipe> from_dest_pipe_;
 
   // For receiving.
   net::IPEndPoint recv_address_;
-  scoped_ptr<Packet> packet_;
+  std::unique_ptr<Packet> packet_;
 
   // For sending.
   bool blocked_;
@@ -838,17 +837,17 @@ class UDPProxyImpl : public UDPProxy {
   base::WeakPtrFactory<UDPProxyImpl> weak_factory_;
 };
 
-void PacketSender::Send(scoped_ptr<Packet> packet) {
+void PacketSender::Send(std::unique_ptr<Packet> packet) {
   udp_proxy_->Send(std::move(packet), *destination_);
 }
 
-scoped_ptr<UDPProxy> UDPProxy::Create(
+std::unique_ptr<UDPProxy> UDPProxy::Create(
     const net::IPEndPoint& local_port,
     const net::IPEndPoint& destination,
-    scoped_ptr<PacketPipe> to_dest_pipe,
-    scoped_ptr<PacketPipe> from_dest_pipe,
+    std::unique_ptr<PacketPipe> to_dest_pipe,
+    std::unique_ptr<PacketPipe> from_dest_pipe,
     net::NetLog* net_log) {
-  scoped_ptr<UDPProxy> ret(
+  std::unique_ptr<UDPProxy> ret(
       new UDPProxyImpl(local_port, destination, std::move(to_dest_pipe),
                        std::move(from_dest_pipe), net_log));
   return ret;

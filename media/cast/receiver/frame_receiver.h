@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/cast/cast_receiver.h"
@@ -68,7 +68,7 @@ class FrameReceiver : public RtpPayloadFeedback,
 
   // Called to deliver another packet, possibly a duplicate, and possibly
   // out-of-order.  Returns true if the parsing of the packet succeeded.
-  bool ProcessPacket(scoped_ptr<Packet> packet);
+  bool ProcessPacket(std::unique_ptr<Packet> packet);
 
  protected:
   friend class FrameReceiverTest;  // Invokes ProcessParsedPacket().
@@ -96,7 +96,7 @@ class FrameReceiver : public RtpPayloadFeedback,
   // loop, but make sure that FrameReceiver is still alive before the callback
   // is run.
   void EmitOneFrame(const ReceiveEncodedFrameCallback& callback,
-                    scoped_ptr<EncodedFrame> encoded_frame) const;
+                    std::unique_ptr<EncodedFrame> encoded_frame) const;
 
   // Computes the playout time for a frame with the given |rtp_timestamp|.
   // Because lip-sync info is refreshed regularly, calling this method with the

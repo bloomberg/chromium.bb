@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <tuple>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"

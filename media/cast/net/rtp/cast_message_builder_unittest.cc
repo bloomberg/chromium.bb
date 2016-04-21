@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/cast/net/rtp/cast_message_builder.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
-#include "media/cast/net/rtp/cast_message_builder.h"
 #include "media/cast/net/rtp/framer.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -137,7 +139,7 @@ class CastMessageBuilderTest : public ::testing::Test {
 
   NackFeedbackVerification feedback_;
   Framer framer_;
-  scoped_ptr<CastMessageBuilder> cast_msg_builder_;
+  std::unique_ptr<CastMessageBuilder> cast_msg_builder_;
   RtpCastHeader rtp_header_;
   base::SimpleTestTickClock testing_clock_;
 

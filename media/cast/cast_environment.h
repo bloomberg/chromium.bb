@@ -5,9 +5,10 @@
 #ifndef MEDIA_CAST_CAST_ENVIRONMENT_H_
 #define MEDIA_CAST_CAST_ENVIRONMENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -31,7 +32,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   };
 
   CastEnvironment(
-      scoped_ptr<base::TickClock> clock,
+      std::unique_ptr<base::TickClock> clock,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> audio_thread_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> video_thread_proxy);
@@ -72,7 +73,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> video_thread_proxy_;
-  scoped_ptr<base::TickClock> clock_;
+  std::unique_ptr<base::TickClock> clock_;
   LogEventDispatcher logger_;
 
  private:

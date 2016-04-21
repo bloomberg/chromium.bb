@@ -81,7 +81,7 @@ class ExternalVideoEncoder::VEAClientImpl
   VEAClientImpl(
       const scoped_refptr<CastEnvironment>& cast_environment,
       const scoped_refptr<base::SingleThreadTaskRunner>& encoder_task_runner,
-      scoped_ptr<media::VideoEncodeAccelerator> vea,
+      std::unique_ptr<media::VideoEncodeAccelerator> vea,
       int max_frame_rate,
       const StatusChangeCallback& status_change_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb)
@@ -223,7 +223,8 @@ class ExternalVideoEncoder::VEAClientImpl
     } else if (!in_progress_frame_encodes_.empty()) {
       const InProgressFrameEncode& request = in_progress_frame_encodes_.front();
 
-      scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
+      std::unique_ptr<SenderEncodedFrame> encoded_frame(
+          new SenderEncodedFrame());
       encoded_frame->dependency = key_frame ? EncodedFrame::KEY :
           EncodedFrame::DEPENDENT;
       encoded_frame->frame_id = next_frame_id_++;
@@ -361,14 +362,14 @@ class ExternalVideoEncoder::VEAClientImpl
   }
 
   // Note: This method can be called on any thread.
-  void OnCreateSharedMemory(scoped_ptr<base::SharedMemory> memory) {
+  void OnCreateSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&VEAClientImpl::OnReceivedSharedMemory,
                                       this,
                                       base::Passed(&memory)));
   }
 
-  void OnReceivedSharedMemory(scoped_ptr<base::SharedMemory> memory) {
+  void OnReceivedSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
     output_buffers_.push_back(std::move(memory));
@@ -450,7 +451,7 @@ class ExternalVideoEncoder::VEAClientImpl
   const int max_frame_rate_;
   const StatusChangeCallback status_change_cb_;  // Must be run on MAIN thread.
   const CreateVideoEncodeMemoryCallback create_video_encode_memory_cb_;
-  scoped_ptr<media::VideoEncodeAccelerator> video_encode_accelerator_;
+  std::unique_ptr<media::VideoEncodeAccelerator> video_encode_accelerator_;
   bool encoder_active_;
   uint32_t next_frame_id_;
   bool key_frame_encountered_;
@@ -567,7 +568,7 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
     uint32_t first_frame_id,
     const StatusChangeCallback& status_change_cb,
     scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
-    scoped_ptr<media::VideoEncodeAccelerator> vea) {
+    std::unique_ptr<media::VideoEncodeAccelerator> vea) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   // The callback will be invoked with null pointers in the case where the
@@ -627,14 +628,11 @@ SizeAdaptableExternalVideoEncoder::SizeAdaptableExternalVideoEncoder(
 
 SizeAdaptableExternalVideoEncoder::~SizeAdaptableExternalVideoEncoder() {}
 
-scoped_ptr<VideoEncoder> SizeAdaptableExternalVideoEncoder::CreateEncoder() {
-  return scoped_ptr<VideoEncoder>(new ExternalVideoEncoder(
-      cast_environment(),
-      video_config(),
-      frame_size(),
-      last_frame_id() + 1,
-      CreateEncoderStatusChangeCallback(),
-      create_vea_cb_,
+std::unique_ptr<VideoEncoder>
+SizeAdaptableExternalVideoEncoder::CreateEncoder() {
+  return std::unique_ptr<VideoEncoder>(new ExternalVideoEncoder(
+      cast_environment(), video_config(), frame_size(), last_frame_id() + 1,
+      CreateEncoderStatusChangeCallback(), create_vea_cb_,
       create_video_encode_memory_cb_));
 }
 

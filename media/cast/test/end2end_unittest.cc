@@ -21,6 +21,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -151,7 +152,7 @@ class LoopBackPacketPipe : public test::PacketPipe {
   ~LoopBackPacketPipe() final {}
 
   // PacketPipe implementations.
-  void Send(scoped_ptr<Packet> packet) final {
+  void Send(std::unique_ptr<Packet> packet) final {
     packet_receiver_.Run(std::move(packet));
   }
 
@@ -178,7 +179,7 @@ class LoopBackTransport : public PacketTransport {
       const PacketReceiverCallback& packet_receiver,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       base::TickClock* clock) {
-    scoped_ptr<test::PacketPipe> loopback_pipe(
+    std::unique_ptr<test::PacketPipe> loopback_pipe(
         new LoopBackPacketPipe(packet_receiver));
     if (packet_pipe_) {
       packet_pipe_->AppendToPipe(std::move(loopback_pipe));
@@ -200,7 +201,7 @@ class LoopBackTransport : public PacketTransport {
         return true;
     }
 
-    scoped_ptr<Packet> packet_copy(new Packet(packet->data));
+    std::unique_ptr<Packet> packet_copy(new Packet(packet->data));
     packet_pipe_->Send(std::move(packet_copy));
     return true;
   }
@@ -218,7 +219,7 @@ class LoopBackTransport : public PacketTransport {
     drop_packets_belonging_to_odd_frames_ = true;
   }
 
-  void SetPacketPipe(scoped_ptr<test::PacketPipe> pipe) {
+  void SetPacketPipe(std::unique_ptr<test::PacketPipe> pipe) {
     // Append the loopback pipe to the end.
     pipe->AppendToPipe(std::move(packet_pipe_));
     packet_pipe_ = std::move(pipe);
@@ -228,7 +229,7 @@ class LoopBackTransport : public PacketTransport {
   bool send_packets_;
   bool drop_packets_belonging_to_odd_frames_;
   scoped_refptr<CastEnvironment> cast_environment_;
-  scoped_ptr<test::PacketPipe> packet_pipe_;
+  std::unique_ptr<test::PacketPipe> packet_pipe_;
   int64_t bytes_sent_;
 };
 
@@ -237,7 +238,7 @@ class TestReceiverAudioCallback
     : public base::RefCountedThreadSafe<TestReceiverAudioCallback> {
  public:
   struct ExpectedAudioFrame {
-    scoped_ptr<AudioBus> audio_bus;
+    std::unique_ptr<AudioBus> audio_bus;
     base::TimeTicks playout_time;
   };
 
@@ -249,7 +250,7 @@ class TestReceiverAudioCallback
 
   void AddExpectedResult(const AudioBus& audio_bus,
                          const base::TimeTicks& playout_time) {
-    scoped_ptr<ExpectedAudioFrame> expected_audio_frame(
+    std::unique_ptr<ExpectedAudioFrame> expected_audio_frame(
         new ExpectedAudioFrame());
     expected_audio_frame->audio_bus =
         AudioBus::Create(audio_bus.channels(), audio_bus.frames());
@@ -258,20 +259,20 @@ class TestReceiverAudioCallback
     expected_frames_.push_back(expected_audio_frame.release());
   }
 
-  void IgnoreAudioFrame(scoped_ptr<AudioBus> audio_bus,
+  void IgnoreAudioFrame(std::unique_ptr<AudioBus> audio_bus,
                         const base::TimeTicks& playout_time,
                         bool is_continuous) {
     ++num_called_;
   }
 
-  void CheckAudioFrame(scoped_ptr<AudioBus> audio_bus,
+  void CheckAudioFrame(std::unique_ptr<AudioBus> audio_bus,
                        const base::TimeTicks& playout_time,
                        bool is_continuous) {
     ++num_called_;
 
     ASSERT_TRUE(audio_bus);
     ASSERT_FALSE(expected_frames_.empty());
-    const scoped_ptr<ExpectedAudioFrame> expected_audio_frame(
+    const std::unique_ptr<ExpectedAudioFrame> expected_audio_frame(
         expected_frames_.front());
     expected_frames_.pop_front();
 
@@ -397,7 +398,7 @@ class TestReceiverVideoCallback
 // send those through the sender and receiver and analyzes the result.
 class End2EndTest : public ::testing::Test {
  public:
-  void ReceivePacket(scoped_ptr<media::cast::Packet> packet) {
+  void ReceivePacket(std::unique_ptr<media::cast::Packet> packet) {
     cast_receiver_->ReceivePacket(std::move(packet));
   };
 
@@ -412,12 +413,12 @@ class End2EndTest : public ::testing::Test {
         task_runner_receiver_(
             new test::SkewedSingleThreadTaskRunner(task_runner_)),
         cast_environment_sender_(new CastEnvironment(
-            scoped_ptr<base::TickClock>(testing_clock_sender_),
+            std::unique_ptr<base::TickClock>(testing_clock_sender_),
             task_runner_sender_,
             task_runner_sender_,
             task_runner_sender_)),
         cast_environment_receiver_(new CastEnvironment(
-            scoped_ptr<base::TickClock>(testing_clock_receiver_),
+            std::unique_ptr<base::TickClock>(testing_clock_receiver_),
             task_runner_receiver_,
             task_runner_receiver_,
             task_runner_receiver_)),
@@ -513,7 +514,7 @@ class End2EndTest : public ::testing::Test {
 
   void FeedAudioFrames(int count, bool will_be_checked) {
     for (int i = 0; i < count; ++i) {
-      scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
+      std::unique_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
           base::TimeDelta::FromMilliseconds(kAudioFrameDurationMs)));
       const base::TimeTicks reference_time =
           testing_clock_sender_->NowTicks() +
@@ -531,7 +532,7 @@ class End2EndTest : public ::testing::Test {
   void FeedAudioFramesWithExpectedDelay(int count,
                                         const base::TimeDelta& delay) {
     for (int i = 0; i < count; ++i) {
-      scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
+      std::unique_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
           base::TimeDelta::FromMilliseconds(kAudioFrameDurationMs)));
       const base::TimeTicks reference_time =
           testing_clock_sender_->NowTicks() +
@@ -805,7 +806,7 @@ class End2EndTest : public ::testing::Test {
                    base::Unretained(this)));
   }
 
-  void BasicPlayerGotAudioFrame(scoped_ptr<AudioBus> audio_bus,
+  void BasicPlayerGotAudioFrame(std::unique_ptr<AudioBus> audio_bus,
                                 const base::TimeTicks& playout_time,
                                 bool is_continuous) {
     VLOG_IF(1, !last_audio_playout_time_.is_null())
@@ -862,18 +863,18 @@ class End2EndTest : public ::testing::Test {
   LoopBackTransport* receiver_to_sender_;  // Owned by CastTransport.
   LoopBackTransport* sender_to_receiver_;  // Owned by CastTransport.
 
-  scoped_ptr<CastTransportImpl> transport_sender_;
-  scoped_ptr<CastTransportImpl> transport_receiver_;
+  std::unique_ptr<CastTransportImpl> transport_sender_;
+  std::unique_ptr<CastTransportImpl> transport_receiver_;
 
-  scoped_ptr<CastReceiver> cast_receiver_;
-  scoped_ptr<CastSender> cast_sender_;
+  std::unique_ptr<CastReceiver> cast_receiver_;
+  std::unique_ptr<CastSender> cast_sender_;
   scoped_refptr<AudioFrameInput> audio_frame_input_;
   scoped_refptr<VideoFrameInput> video_frame_input_;
 
   scoped_refptr<TestReceiverAudioCallback> test_receiver_audio_callback_;
   scoped_refptr<TestReceiverVideoCallback> test_receiver_video_callback_;
 
-  scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
+  std::unique_ptr<TestAudioBusFactory> audio_bus_factory_;
 
   SimpleEventSubscriber event_subscriber_sender_;
 
@@ -898,12 +899,12 @@ class TransportClient : public CastTransport::Client {
     EXPECT_TRUE(result);
   };
   void OnLoggingEventsReceived(
-      scoped_ptr<std::vector<FrameEvent>> frame_events,
-      scoped_ptr<std::vector<PacketEvent>> packet_events) final {
+      std::unique_ptr<std::vector<FrameEvent>> frame_events,
+      std::unique_ptr<std::vector<PacketEvent>> packet_events) final {
     log_event_dispatcher_->DispatchBatchOfEvents(std::move(frame_events),
                                                  std::move(packet_events));
   };
-  void ProcessRtpPacket(scoped_ptr<Packet> packet) final {
+  void ProcessRtpPacket(std::unique_ptr<Packet> packet) final {
     if (e2e_test_)
       e2e_test_->ReceivePacket(std::move(packet));
   };
@@ -920,15 +921,15 @@ class TransportClient : public CastTransport::Client {
 void End2EndTest::Create() {
   transport_sender_.reset(new CastTransportImpl(
       testing_clock_sender_, base::TimeDelta::FromMilliseconds(1),
-      make_scoped_ptr(
+      base::WrapUnique(
           new TransportClient(cast_environment_sender_->logger(), nullptr)),
-      make_scoped_ptr(sender_to_receiver_), task_runner_sender_));
+      base::WrapUnique(sender_to_receiver_), task_runner_sender_));
 
   transport_receiver_.reset(new CastTransportImpl(
       testing_clock_sender_, base::TimeDelta::FromMilliseconds(1),
-      make_scoped_ptr(
+      base::WrapUnique(
           new TransportClient(cast_environment_receiver_->logger(), this)),
-      make_scoped_ptr(receiver_to_sender_), task_runner_sender_));
+      base::WrapUnique(receiver_to_sender_), task_runner_sender_));
 
   cast_receiver_ =
       CastReceiver::Create(cast_environment_receiver_, audio_receiver_config_,
@@ -1207,7 +1208,7 @@ TEST_F(End2EndTest, ShoveHighFrameRateDownYerThroat) {
 TEST_F(End2EndTest, OldPacketNetwork) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   sender_to_receiver_->SetPacketPipe(test::NewRandomDrop(0.01));
-  scoped_ptr<test::PacketPipe> echo_chamber(
+  std::unique_ptr<test::PacketPipe> echo_chamber(
       test::NewDuplicateAndDelay(1, 10 * kFrameTimerMs));
   echo_chamber->AppendToPipe(
       test::NewDuplicateAndDelay(1, 20 * kFrameTimerMs));

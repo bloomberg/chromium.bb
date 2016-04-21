@@ -26,7 +26,7 @@ class LoopBackPacketPipe : public test::PacketPipe {
   ~LoopBackPacketPipe() final {}
 
   // PacketPipe implementations.
-  void Send(scoped_ptr<Packet> packet) final {
+  void Send(std::unique_ptr<Packet> packet) final {
     packet_receiver_.Run(std::move(packet));
   }
 
@@ -50,7 +50,7 @@ LoopBackTransport::~LoopBackTransport() {
 bool LoopBackTransport::SendPacket(PacketRef packet,
                                    const base::Closure& cb) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  scoped_ptr<Packet> packet_copy(new Packet(packet->data));
+  std::unique_ptr<Packet> packet_copy(new Packet(packet->data));
   packet_pipe_->Send(std::move(packet_copy));
   bytes_sent_ += packet->data.size();
   return true;
@@ -61,11 +61,11 @@ int64_t LoopBackTransport::GetBytesSent() {
 }
 
 void LoopBackTransport::Initialize(
-    scoped_ptr<test::PacketPipe> pipe,
+    std::unique_ptr<test::PacketPipe> pipe,
     const PacketReceiverCallback& packet_receiver,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     base::TickClock* clock) {
-  scoped_ptr<test::PacketPipe> loopback_pipe(
+  std::unique_ptr<test::PacketPipe> loopback_pipe(
       new LoopBackPacketPipe(packet_receiver));
   if (pipe) {
     // Append the loopback pipe to the end.

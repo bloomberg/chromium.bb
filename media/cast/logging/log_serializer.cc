@@ -20,9 +20,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/big_endian.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/zlib/zlib.h"
 
 namespace media {
@@ -164,7 +165,8 @@ bool SerializeEvents(const LogMetadata& log_metadata,
 
   if (compress) {
     // Allocate a reasonably large temp buffer to hold uncompressed data.
-    scoped_ptr<char[]> uncompressed_buffer(new char[kMaxUncompressedBytes]);
+    std::unique_ptr<char[]> uncompressed_buffer(
+        new char[kMaxUncompressedBytes]);
     int uncompressed_bytes;
     bool success = DoSerializeEvents(log_metadata,
                                      frame_events,

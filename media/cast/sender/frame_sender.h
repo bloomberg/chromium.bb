@@ -51,7 +51,7 @@ class FrameSender {
 
   // Called by the encoder with the next EncodeFrame to send.
   void SendEncodedFrame(int requested_bitrate_before_encode,
-                        scoped_ptr<SenderEncodedFrame> encoded_frame);
+                        std::unique_ptr<SenderEncodedFrame> encoded_frame);
 
  protected:
   // Returns the number of frames in the encoder's backlog.
@@ -164,7 +164,7 @@ class FrameSender {
 
   // This object controls how we change the bitrate to make sure the
   // buffer doesn't overflow.
-  scoped_ptr<CongestionControl> congestion_control_;
+  std::unique_ptr<CongestionControl> congestion_control_;
 
   // The most recently measured round trip time.
   base::TimeDelta current_round_trip_time_;
