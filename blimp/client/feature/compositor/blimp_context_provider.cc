@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -43,7 +44,7 @@ BlimpContextProvider::BlimpContextProvider(
   context_.reset(gpu::GLInProcessContext::Create(
       nullptr /* service */, nullptr /* surface */, false /* is_offscreen */,
       widget, gfx::Size(1, 1), nullptr /* share_context */, attribs_for_gles2,
-      gfx::PreferDiscreteGpu, gpu::GLInProcessContextSharedMemoryLimits(),
+      gfx::PreferDiscreteGpu, gpu::SharedMemoryLimits(),
       gpu_memory_buffer_manager, nullptr /* memory_limits */));
   context_->GetImplementation()->SetLostContextCallback(
       base::Bind(&BlimpContextProvider::OnLostContext, base::Unretained(this)));

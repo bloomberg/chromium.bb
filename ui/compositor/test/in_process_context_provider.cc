@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -89,8 +90,8 @@ bool InProcessContextProvider::BindToCurrentThread() {
         !window_, /* is_offscreen */
         window_, gfx::Size(1, 1),
         (shared_context_ ? shared_context_->context_.get() : nullptr), attribs_,
-        gpu_preference, gpu::GLInProcessContextSharedMemoryLimits(),
-        gpu_memory_buffer_manager_, image_factory_));
+        gpu_preference, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_,
+        image_factory_));
 
     if (!context_)
       return false;

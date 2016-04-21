@@ -43,17 +43,11 @@ namespace gpu {
 
 namespace {
 
-const int32_t kDefaultCommandBufferSize = 1024 * 1024;
-const unsigned int kDefaultStartTransferBufferSize = 4 * 1024 * 1024;
-const unsigned int kDefaultMinTransferBufferSize = 1 * 256 * 1024;
-const unsigned int kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
-
 class GLInProcessContextImpl
     : public GLInProcessContext,
       public base::SupportsWeakPtr<GLInProcessContextImpl> {
  public:
-  explicit GLInProcessContextImpl(
-      const GLInProcessContextSharedMemoryLimits& mem_limits);
+  GLInProcessContextImpl();
   ~GLInProcessContextImpl() override;
 
   bool Initialize(scoped_refptr<gfx::GLSurface> surface,
@@ -64,12 +58,12 @@ class GLInProcessContextImpl
                   const gpu::gles2::ContextCreationAttribHelper& attribs,
                   gfx::GpuPreference gpu_preference,
                   const scoped_refptr<InProcessCommandBuffer::Service>& service,
+                  const SharedMemoryLimits& mem_limits,
                   GpuMemoryBufferManager* gpu_memory_buffer_manager,
                   ImageFactory* image_factory);
 
   // GLInProcessContext implementation:
   gles2::GLES2Implementation* GetImplementation() override;
-  size_t GetMappedMemoryLimit() override;
   void SetLock(base::Lock* lock) override;
 
  private:
@@ -81,14 +75,10 @@ class GLInProcessContextImpl
   std::unique_ptr<gles2::GLES2Implementation> gles2_implementation_;
   std::unique_ptr<InProcessCommandBuffer> command_buffer_;
 
-  const GLInProcessContextSharedMemoryLimits mem_limits_;
-
   DISALLOW_COPY_AND_ASSIGN(GLInProcessContextImpl);
 };
 
-GLInProcessContextImpl::GLInProcessContextImpl(
-    const GLInProcessContextSharedMemoryLimits& mem_limits)
-    : mem_limits_(mem_limits) {}
+GLInProcessContextImpl::GLInProcessContextImpl() = default;
 
 GLInProcessContextImpl::~GLInProcessContextImpl() {
   Destroy();
@@ -96,10 +86,6 @@ GLInProcessContextImpl::~GLInProcessContextImpl() {
 
 gles2::GLES2Implementation* GLInProcessContextImpl::GetImplementation() {
   return gles2_implementation_.get();
-}
-
-size_t GLInProcessContextImpl::GetMappedMemoryLimit() {
-  return mem_limits_.mapped_memory_reclaim_limit;
 }
 
 void GLInProcessContextImpl::SetLock(base::Lock* lock) {
@@ -115,6 +101,7 @@ bool GLInProcessContextImpl::Initialize(
     const gles2::ContextCreationAttribHelper& attribs,
     gfx::GpuPreference gpu_preference,
     const scoped_refptr<InProcessCommandBuffer::Service>& service,
+    const SharedMemoryLimits& mem_limits,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     ImageFactory* image_factory) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
@@ -150,7 +137,7 @@ bool GLInProcessContextImpl::Initialize(
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_.reset(new gles2::GLES2CmdHelper(command_buffer_.get()));
-  if (!gles2_helper_->Initialize(mem_limits_.command_buffer_size)) {
+  if (!gles2_helper_->Initialize(mem_limits.command_buffer_size)) {
     LOG(ERROR) << "Failed to initialize GLES2CmdHelper";
     Destroy();
     return false;
@@ -175,10 +162,10 @@ bool GLInProcessContextImpl::Initialize(
                                      command_buffer_.get()));
 
   if (!gles2_implementation_->Initialize(
-          mem_limits_.start_transfer_buffer_size,
-          mem_limits_.min_transfer_buffer_size,
-          mem_limits_.max_transfer_buffer_size,
-          mem_limits_.mapped_memory_reclaim_limit)) {
+          mem_limits.start_transfer_buffer_size,
+          mem_limits.min_transfer_buffer_size,
+          mem_limits.max_transfer_buffer_size,
+          mem_limits.mapped_memory_reclaim_limit)) {
     return false;
   }
 
@@ -204,13 +191,6 @@ void GLInProcessContextImpl::Destroy() {
 
 }  // anonymous namespace
 
-GLInProcessContextSharedMemoryLimits::GLInProcessContextSharedMemoryLimits()
-    : command_buffer_size(kDefaultCommandBufferSize),
-      start_transfer_buffer_size(kDefaultStartTransferBufferSize),
-      min_transfer_buffer_size(kDefaultMinTransferBufferSize),
-      max_transfer_buffer_size(kDefaultMaxTransferBufferSize),
-      mapped_memory_reclaim_limit(SharedMemoryLimits::kNoLimit) {}
-
 // static
 GLInProcessContext* GLInProcessContext::Create(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
@@ -221,7 +201,7 @@ GLInProcessContext* GLInProcessContext::Create(
     GLInProcessContext* share_context,
     const ::gpu::gles2::ContextCreationAttribHelper& attribs,
     gfx::GpuPreference gpu_preference,
-    const GLInProcessContextSharedMemoryLimits& memory_limits,
+    const SharedMemoryLimits& memory_limits,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     ImageFactory* image_factory) {
   if (surface.get()) {
@@ -230,18 +210,10 @@ GLInProcessContext* GLInProcessContext::Create(
     DCHECK_EQ(gfx::kNullAcceleratedWidget, window);
   }
 
-  std::unique_ptr<GLInProcessContextImpl> context(
-      new GLInProcessContextImpl(memory_limits));
-  if (!context->Initialize(surface,
-                           is_offscreen,
-                           share_context,
-                           window,
-                           size,
-                           attribs,
-                           gpu_preference,
-                           service,
-                           gpu_memory_buffer_manager,
-                           image_factory))
+  std::unique_ptr<GLInProcessContextImpl> context(new GLInProcessContextImpl);
+  if (!context->Initialize(surface, is_offscreen, share_context, window, size,
+                           attribs, gpu_preference, service, memory_limits,
+                           gpu_memory_buffer_manager, image_factory))
     return NULL;
 
   return context.release();

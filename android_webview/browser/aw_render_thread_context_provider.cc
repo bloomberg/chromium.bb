@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -50,11 +51,20 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
   attributes.samples = 0;
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
+
+  gpu::SharedMemoryLimits limits;
+  // This context is only used for the display compositor, and there are no
+  // uploads done with it at all. We choose a small transfer buffer limit
+  // here, the minimums match the display compositor context for the android
+  // browser. We don't set the max since we expect the transfer buffer to be
+  // relatively unused.
+  limits.start_transfer_buffer_size = 64 * 1024;
+  limits.min_transfer_buffer_size = 64 * 1024;
+
   context_.reset(gpu::GLInProcessContext::Create(
       service, surface, surface->IsOffscreen(), gfx::kNullAcceleratedWidget,
       surface->GetSize(), nullptr /* share_context */, attributes,
-      gfx::PreferDiscreteGpu, gpu::GLInProcessContextSharedMemoryLimits(),
-      nullptr, nullptr));
+      gfx::PreferDiscreteGpu, limits, nullptr, nullptr));
 
   context_->GetImplementation()->SetLostContextCallback(base::Bind(
       &AwRenderThreadContextProvider::OnLostContext, base::Unretained(this)));

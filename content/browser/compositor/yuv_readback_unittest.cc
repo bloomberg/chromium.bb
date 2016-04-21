@@ -11,6 +11,7 @@
 #include "content/browser/compositor/gl_helper.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,8 +46,7 @@ class YUVReadbackTest : public testing::Test {
         gfx::kNullAcceleratedWidget, /* window */
         gfx::Size(1, 1),             /* size */
         nullptr,                     /* share_context */
-        attributes, gfx::PreferDiscreteGpu,
-        ::gpu::GLInProcessContextSharedMemoryLimits(),
+        attributes, gfx::PreferDiscreteGpu, gpu::SharedMemoryLimits(),
         nullptr, /* gpu_memory_buffer_manager */
         nullptr /* image_factory */));
     gl_ = context_->GetImplementation();
