@@ -134,12 +134,6 @@ class XMLHttpRequest;
     [Debugger]
     void didExecuteScript(const InspectorInstrumentationCookie&);
 
-    [DOMDebugger]
-    InspectorInstrumentationCookie willHandleEvent([Keep] EventTarget*, Event*, EventListener* listener, bool useCapture);
-
-    [DOMDebugger]
-    void cancelPauseOnNextStatement(const InspectorInstrumentationCookie&);
-
     [Page]
     void didUpdateLayout(LocalFrame*);
 
@@ -262,9 +256,6 @@ class XMLHttpRequest;
 
     [Page]
     void didRunJavaScriptDialog(const InspectorInstrumentationCookie&, bool result);
-
-    [DOMDebugger]
-    InspectorInstrumentationCookie allowNativeBreakpoint(ExecutionContext*, const String& name, bool sync);
 
     [Worker]
     void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, bool waitingForDebugger);

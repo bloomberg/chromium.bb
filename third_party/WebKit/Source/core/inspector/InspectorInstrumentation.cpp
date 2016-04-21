@@ -36,6 +36,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorConsoleAgent.h"
+#include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
@@ -75,6 +76,31 @@ AsyncTask::~AsyncTask()
 {
     if (m_instrumentingAgents && m_instrumentingAgents->inspectorDebuggerAgent())
         m_instrumentingAgents->inspectorDebuggerAgent()->asyncTaskFinished(m_task);
+}
+
+NativeBreakpoint::NativeBreakpoint(ExecutionContext* context, const String& name, bool sync)
+    : m_instrumentingAgents(instrumentingAgentsFor(context))
+    , m_sync(sync)
+{
+    if (m_instrumentingAgents && m_instrumentingAgents->inspectorDOMDebuggerAgent())
+        m_instrumentingAgents->inspectorDOMDebuggerAgent()->allowNativeBreakpoint(name, nullptr, m_sync);
+}
+
+NativeBreakpoint::NativeBreakpoint(ExecutionContext* context, EventTarget* eventTarget, Event* event)
+    : m_instrumentingAgents(instrumentingAgentsFor(context))
+    , m_sync(false)
+{
+    if (m_instrumentingAgents && m_instrumentingAgents->inspectorDOMDebuggerAgent()) {
+        Node* node = eventTarget->toNode();
+        String targetName = node ? node->nodeName() : eventTarget->interfaceName();
+        m_instrumentingAgents->inspectorDOMDebuggerAgent()->allowNativeBreakpoint(event->type(), &targetName, m_sync);
+    }
+}
+
+NativeBreakpoint::~NativeBreakpoint()
+{
+    if (!m_sync && m_instrumentingAgents && m_instrumentingAgents->inspectorDOMDebuggerAgent())
+        m_instrumentingAgents->inspectorDOMDebuggerAgent()->cancelNativeBreakpoint();
 }
 
 int FrontendCounter::s_frontendCounter = 0;

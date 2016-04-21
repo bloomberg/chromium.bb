@@ -124,7 +124,7 @@ v8::MaybeLocal<v8::Value> ScriptController::callFunction(ExecutionContext* conte
 v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Local<v8::Context> context, const ScriptSourceCode& source, AccessControlStatus accessControlStatus, double* compilationFinishTime)
 {
     TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(frame(), source.url().getString(), source.startPosition()));
-    InspectorInstrumentation::allowNativeBreakpoint(frame()->document(), "scriptFirstStatement", false);
+    InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(frame()->document(), "scriptFirstStatement", false);
 
     v8::Local<v8::Value> result;
     {

@@ -78,7 +78,6 @@ public:
     void getEventListeners(ErrorString*, const String16& objectId, OwnPtr<protocol::Array<protocol::DOMDebugger::EventListener>>* listeners) override;
 
     // InspectorInstrumentation API
-    void allowNativeBreakpoint(const String& breakpointName, bool sync);
     void willInsertDOMNode(Node* parent);
     void didInvalidateStyleAttr(Node*);
     void didInsertDOMNode(Node*);
@@ -86,11 +85,11 @@ public:
     void didRemoveDOMNode(Node*);
     void willModifyDOMAttr(Element*, const AtomicString&, const AtomicString&);
     void willSendXMLHttpRequest(const String& url);
-    void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
     void didFireWebGLError(const String& errorName);
     void didFireWebGLWarning();
     void didFireWebGLErrorOrWarning(const String& message);
-    void cancelPauseOnNextStatement();
+    void allowNativeBreakpoint(const String& breakpointName, const String* targetName, bool sync);
+    void cancelNativeBreakpoint();
 
     void disable(ErrorString*) override;
     void restore() override;

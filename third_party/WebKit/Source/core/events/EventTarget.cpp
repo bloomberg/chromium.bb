@@ -439,7 +439,7 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
 
         event->setHandlingPassive(registeredListener.passive);
 
-        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willHandleEvent(this, event, registeredListener.listener.get(), registeredListener.useCapture);
+        InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(context, this, event);
 
         // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
         // event listeners, even though that violates some versions of the DOM spec.
@@ -447,8 +447,6 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         event->setHandlingPassive(false);
 
         RELEASE_ASSERT(i <= size);
-
-        InspectorInstrumentation::cancelPauseOnNextStatement(cookie);
     }
     d->firingEventIterators->removeLast();
 }

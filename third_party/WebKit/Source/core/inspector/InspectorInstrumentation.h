@@ -71,6 +71,18 @@ private:
     void* m_task;
 };
 
+class CORE_EXPORT NativeBreakpoint {
+    STACK_ALLOCATED();
+public:
+    NativeBreakpoint(ExecutionContext*, const String& name, bool sync);
+    NativeBreakpoint(ExecutionContext*, EventTarget*, Event*);
+    ~NativeBreakpoint();
+
+private:
+    Member<InstrumentingAgents> m_instrumentingAgents;
+    bool m_sync;
+};
+
 class CORE_EXPORT FrontendCounter {
     STATIC_ONLY(FrontendCounter);
 private:

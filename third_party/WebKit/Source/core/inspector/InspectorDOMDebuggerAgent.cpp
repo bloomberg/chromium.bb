@@ -404,9 +404,9 @@ PassOwnPtr<protocol::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buil
     return value.release();
 }
 
-void InspectorDOMDebuggerAgent::allowNativeBreakpoint(const String& breakpointName, bool sync)
+void InspectorDOMDebuggerAgent::allowNativeBreakpoint(const String& breakpointName, const String* targetName, bool sync)
 {
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(breakpointName, 0), sync);
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(breakpointName, targetName), sync);
 }
 
 void InspectorDOMDebuggerAgent::willInsertDOMNode(Node* parent)
@@ -535,13 +535,6 @@ PassOwnPtr<protocol::DictionaryValue> InspectorDOMDebuggerAgent::preparePauseOnN
     return eventData.release();
 }
 
-void InspectorDOMDebuggerAgent::willHandleEvent(EventTarget* target, Event* event, EventListener*, bool)
-{
-    Node* node = target->toNode();
-    String targetName = node ? node->nodeName() : target->interfaceName();
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(event->type(), &targetName), false);
-}
-
 void InspectorDOMDebuggerAgent::didFireWebGLError(const String& errorName)
 {
     OwnPtr<protocol::DictionaryValue> eventData = preparePauseOnNativeEventData(webglErrorFiredEventName, 0);
@@ -565,7 +558,7 @@ void InspectorDOMDebuggerAgent::didFireWebGLErrorOrWarning(const String& message
         didFireWebGLWarning();
 }
 
-void InspectorDOMDebuggerAgent::cancelPauseOnNextStatement()
+void InspectorDOMDebuggerAgent::cancelNativeBreakpoint()
 {
     m_debuggerAgent->cancelPauseOnNextStatement();
 }
