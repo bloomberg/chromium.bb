@@ -51639,6 +51639,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Storage.Blob.InvalidReference" enum="RefcountOperation">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Counts the number of times we have an invalid refcount operation. An invalid
+    increment means the blob didn't exist, and an invalid decrement means we
+    don't have any record of the blob in our host.
+  </summary>
+</histogram>
+
+<histogram name="Storage.Blob.InvalidURLRegister" enum="RefcountOperation">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Counts the number of times we have an invalid url registration operation. An
+    invalid increment means the blob isn't in use by the host yet or the url is
+    already mapped. An invalid decrement means the url isn't registered.
+  </summary>
+</histogram>
+
 <histogram name="Storage.Blob.ItemCount" units="Blob Items">
   <owner>dmurph@chromium.org</owner>
   <summary>
@@ -82015,6 +82033,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="RunElevatedSucceeded"/>
   <int value="8" label="RunElevatedSkipped"/>
   <int value="9" label="DownloadError"/>
+</enum>
+
+<enum name="RefcountOperation" type="int">
+  <int value="0" label="Decrement"/>
+  <int value="1" label="Increment"/>
 </enum>
 
 <enum name="RemotePlaybackDeviceType" type="int">

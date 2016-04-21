@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/common/fileapi/webblob_messages.h"
@@ -24,6 +25,16 @@ using storage::BlobTransportResult;
 using storage::IPCBlobCreationCancelCode;
 
 namespace content {
+namespace {
+
+// These are used for UMA stats, don't change.
+enum RefcountOperation {
+  BDH_DECREMENT = 0,
+  BDH_INCREMENT,
+  BDH_TRACING_ENUM_LAST
+};
+
+} // namespace
 
 BlobDispatcherHost::BlobDispatcherHost(
     ChromeBlobStorageContext* blob_storage_context)
@@ -209,6 +220,8 @@ void BlobDispatcherHost::OnIncrementBlobRefCount(const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BlobStorageContext* context = this->context();
   if (uuid.empty() || !context->registry().HasEntry(uuid)) {
+    UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidReference", BDH_INCREMENT,
+                              BDH_TRACING_ENUM_LAST);
     bad_message::ReceivedBadMessage(
         this, bad_message::BDH_INVALID_REFCOUNT_OPERATION);
     return;
@@ -220,6 +233,8 @@ void BlobDispatcherHost::OnIncrementBlobRefCount(const std::string& uuid) {
 void BlobDispatcherHost::OnDecrementBlobRefCount(const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (uuid.empty() || !IsInUseInHost(uuid)) {
+    UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidReference", BDH_DECREMENT,
+                              BDH_TRACING_ENUM_LAST);
     bad_message::ReceivedBadMessage(
         this, bad_message::BDH_INVALID_REFCOUNT_OPERATION);
     return;
@@ -249,6 +264,8 @@ void BlobDispatcherHost::OnRegisterPublicBlobURL(const GURL& public_url,
   BlobStorageContext* context = this->context();
   if (uuid.empty() || !IsInUseInHost(uuid) ||
       context->registry().IsURLMapped(public_url)) {
+    UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidURLRegister", BDH_INCREMENT,
+                              BDH_TRACING_ENUM_LAST);
     bad_message::ReceivedBadMessage(this,
                                     bad_message::BDH_INVALID_URL_OPERATION);
     return;
@@ -260,6 +277,8 @@ void BlobDispatcherHost::OnRegisterPublicBlobURL(const GURL& public_url,
 void BlobDispatcherHost::OnRevokePublicBlobURL(const GURL& public_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!IsUrlRegisteredInHost(public_url)) {
+    UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidURLRegister", BDH_DECREMENT,
+                              BDH_TRACING_ENUM_LAST);
     bad_message::ReceivedBadMessage(this,
                                     bad_message::BDH_INVALID_URL_OPERATION);
     return;
