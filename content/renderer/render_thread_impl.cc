@@ -447,7 +447,8 @@ void StringToUintVector(const std::string& str, std::vector<unsigned>* vector) {
 }
 
 std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> CreateOffscreenContext(
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+    bool share_resources) {
   DCHECK(gpu_channel_host);
   // This is used to create a few different offscreen contexts:
   // - The shared main thread context (offscreen) used by blink for canvas.
@@ -462,8 +463,7 @@ std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> CreateOffscreenContext(
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
-  bool share_resources = true;
-  bool automatic_flushes = false;
+  constexpr bool automatic_flushes = false;
   return base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
       gpu::kNullSurfaceHandle,
       GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext3d"),
@@ -1506,8 +1506,9 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
     return nullptr;
   }
 
+  constexpr bool share_resources = false;
   shared_main_thread_contexts_ = new ContextProviderCommandBuffer(
-      CreateOffscreenContext(std::move(gpu_channel_host)),
+      CreateOffscreenContext(std::move(gpu_channel_host), share_resources),
       gpu::SharedMemoryLimits(), RENDERER_MAINTHREAD_CONTEXT);
   if (!shared_main_thread_contexts_->BindToCurrentThread())
     shared_main_thread_contexts_ = nullptr;
@@ -2017,8 +2018,9 @@ RenderThreadImpl::SharedWorkerContextProvider() {
     return shared_worker_context_provider_;
   }
 
+  constexpr bool share_resources = true;
   shared_worker_context_provider_ = new ContextProviderCommandBuffer(
-      CreateOffscreenContext(std::move(gpu_channel_host)),
+      CreateOffscreenContext(std::move(gpu_channel_host), share_resources),
       gpu::SharedMemoryLimits(), RENDER_WORKER_CONTEXT);
   if (!shared_worker_context_provider_->BindToCurrentThread())
     shared_worker_context_provider_ = nullptr;
