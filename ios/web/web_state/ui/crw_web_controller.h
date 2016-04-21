@@ -300,6 +300,12 @@ class WebStateImpl;
 
 @interface CRWWebController (UsedOnlyForTesting)  // Testing or internal API.
 
+// YES if a user interaction has been registered at any time since the page has
+// loaded.
+@property(nonatomic, readwrite) BOOL userInteractionRegistered;
+// Returns whether the user is interacting with the page.
+@property(nonatomic, readonly) BOOL userIsInteracting;
+
 // Injects a CRWWebViewContentView for testing.  Takes ownership of
 // |webViewContentView|.
 - (void)injectWebViewContentView:(CRWWebViewContentView*)webViewContentView;
@@ -318,6 +324,12 @@ class WebStateImpl;
 // Caches request POST data in the given session entry.  Exposed for testing.
 - (void)cachePOSTDataForRequest:(NSURLRequest*)request
                  inSessionEntry:(CRWSessionEntry*)currentSessionEntry;
+
+// Acts on a single message from the JS object, parsed from JSON into a
+// DictionaryValue. Returns NO if the format for the message was invalid.
+- (BOOL)respondToMessage:(base::DictionaryValue*)crwMessage
+       userIsInteracting:(BOOL)userIsInteracting
+               originURL:(const GURL&)originURL;
 
 @end
 

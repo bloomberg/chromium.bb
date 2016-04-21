@@ -31,7 +31,6 @@
 #import "ios/web/test/wk_web_view_crash_utils.h"
 #include "ios/web/web_state/blocked_popup_info.h"
 #import "ios/web/web_state/js/crw_js_invoke_parameter_queue.h"
-#import "ios/web/web_state/ui/crw_web_controller+protected.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
@@ -461,7 +460,9 @@ TEST_F(CRWWebControllerTest, SslCertErrorDeprecatedApi) {
                       userInfo:@{
                         web::kNSErrorPeerCertificateChainKey : chain,
                       }];
-  WKWebView* webView = static_cast<WKWebView*>([webController_ webView]);
+
+  WKWebView* webView = static_cast<WKWebView*>(
+      [webController_ containerView].webViewContentView.webView);
   base::scoped_nsobject<NSObject> navigation([[NSObject alloc] init]);
   [static_cast<id<WKNavigationDelegate>>(webController_.get())
                             webView:webView
@@ -506,7 +507,8 @@ TEST_F(CRWWebControllerTest, SslCertError) {
                         web::kNSErrorPeerCertificateChainKey : chain,
                         web::kNSErrorFailingURLKey : net::NSURLWithGURL(url),
                       }];
-  WKWebView* webView = static_cast<WKWebView*>([webController_ webView]);
+  WKWebView* webView = static_cast<WKWebView*>(
+      [webController_ containerView].webViewContentView.webView);
   base::scoped_nsobject<NSObject> navigation([[NSObject alloc] init]);
   [static_cast<id<WKNavigationDelegate>>(webController_.get())
                             webView:webView
