@@ -20,8 +20,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.CommandLine;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.PasswordUIView.PasswordListObserver;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
@@ -31,7 +32,6 @@ import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.ui.text.SpanApplier;
 
 /**
@@ -51,6 +51,9 @@ public class SavePasswordsPreferences extends PreferenceFragment
 
     public static final String PREF_SAVE_PASSWORDS_SWITCH = "save_passwords_switch";
     public static final String PREF_AUTOSIGNIN_SWITCH = "autosignin_switch";
+
+    @VisibleForTesting
+    public static final String CREDENTIAL_MANAGER_API = "CredentialManagementAPI";
 
     private static final String PREF_CATEGORY_SAVED_PASSWORDS = "saved_passwords";
     private static final String PREF_CATEGORY_EXCEPTIONS = "exceptions";
@@ -257,7 +260,7 @@ public class SavePasswordsPreferences extends PreferenceFragment
     }
 
     private void createAutoSignInCheckbox() {
-        if (!CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_CREDENTIAL_MANAGER_API)) {
+        if (!ChromeFeatureList.isEnabled(CREDENTIAL_MANAGER_API)) {
             return;
         }
         mAutoSignInSwitch = new ChromeBaseCheckBoxPreference(getActivity(), null);

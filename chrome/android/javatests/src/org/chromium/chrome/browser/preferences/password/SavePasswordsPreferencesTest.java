@@ -6,16 +6,16 @@ package org.chromium.chrome.browser.preferences.password;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
-import org.chromium.content.common.ContentSwitches;
 
 /**
  * Tests for the "Save Passwords" settings screen.
@@ -25,7 +25,6 @@ public class SavePasswordsPreferencesTest extends NativeLibraryTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        CommandLine.getInstance().appendSwitch(ContentSwitches.ENABLE_CREDENTIAL_MANAGER_API);
         loadNativeLibraryAndInitBrowserProcess();
     }
 
@@ -87,6 +86,7 @@ public class SavePasswordsPreferencesTest extends NativeLibraryTestBase {
      * disables auto sign-in.
      */
     @SmallTest
+    @CommandLineFlags.Add("enable-features=" + SavePasswordsPreferences.CREDENTIAL_MANAGER_API)
     @Feature({"Preferences"})
     public void testAutoSignInCheckbox() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -102,8 +102,8 @@ public class SavePasswordsPreferencesTest extends NativeLibraryTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertTrue(CommandLine.getInstance().hasSwitch(
-                        ContentSwitches.ENABLE_CREDENTIAL_MANAGER_API));
+                assertTrue(ChromeFeatureList.isEnabled(
+                        SavePasswordsPreferences.CREDENTIAL_MANAGER_API));
                 SavePasswordsPreferences passwordPrefs =
                         (SavePasswordsPreferences) preferences.getFragmentForTest();
                 ChromeBaseCheckBoxPreference onOffSwitch =
@@ -127,8 +127,8 @@ public class SavePasswordsPreferencesTest extends NativeLibraryTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertTrue(CommandLine.getInstance().hasSwitch(
-                        ContentSwitches.ENABLE_CREDENTIAL_MANAGER_API));
+                assertTrue(ChromeFeatureList.isEnabled(
+                        SavePasswordsPreferences.CREDENTIAL_MANAGER_API));
                 SavePasswordsPreferences passwordPrefs =
                         (SavePasswordsPreferences) preferences2.getFragmentForTest();
                 ChromeBaseCheckBoxPreference onOffSwitch =
