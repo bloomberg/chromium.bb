@@ -18,8 +18,14 @@ namespace arc {
 
 using CanHandleResolutionCallback = base::Callback<void(bool)>;
 
-// Launch an app and let the system decide how big and where to place it.
+// Launch an app and let the system decides how big and where to place it.
 bool LaunchApp(content::BrowserContext* context, const std::string& app_id);
+
+// Launch an app with given layout and let the system decides how big and where
+// to place it.
+bool LaunchApp(content::BrowserContext* context,
+               const std::string& app_id,
+               bool landscape_layout);
 
 // Launch an app and place it at the specified coordinates.
 bool LaunchAppWithRect(content::BrowserContext* context,

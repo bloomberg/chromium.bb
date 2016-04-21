@@ -23,13 +23,17 @@ namespace {
 // done.
 class LaunchAppWithoutSize {
  public:
-  LaunchAppWithoutSize(content::BrowserContext* context, std::string app_id) :
-      context_(context), app_id_(app_id) {}
+  LaunchAppWithoutSize(content::BrowserContext* context,
+                       const std::string& app_id,
+                       bool landscape_mode) :
+      context_(context), app_id_(app_id), landscape_mode_(landscape_mode) {}
 
   // This will launch the request and after the return the creator does not
   // need to delete the object anymore.
   bool LaunchAndRelease() {
-    landscape_ = gfx::Rect(0, 0, NEXUS5_WIDTH, NEXUS5_HEIGHT);
+    landscape_ = landscape_mode_ ?
+        gfx::Rect(0, 0, NEXUS7_WIDTH, NEXUS7_HEIGHT) :
+        gfx::Rect(0, 0, NEXUS5_WIDTH, NEXUS5_HEIGHT);
     if (!ash::Shell::HasInstance()) {
       // Skip this if there is no Ash shell.
       LaunchAppWithRect(context_, app_id_, landscape_);
@@ -55,6 +59,7 @@ class LaunchAppWithoutSize {
 
   content::BrowserContext* context_;
   const std::string app_id_;
+  const bool landscape_mode_;
   gfx::Rect landscape_;
 
   // The callback handler which gets called from the CanHandleResolution
@@ -164,8 +169,16 @@ bool LaunchAppWithRect(content::BrowserContext* context,
 }
 
 bool LaunchApp(content::BrowserContext* context, const std::string& app_id) {
-  return (new LaunchAppWithoutSize(context, app_id))->LaunchAndRelease();
+  return LaunchApp(context, app_id, false);
 }
+
+bool LaunchApp(content::BrowserContext* context,
+               const std::string& app_id,
+               bool landscape_layout) {
+  return (new LaunchAppWithoutSize(context, app_id, landscape_layout))->
+      LaunchAndRelease();
+}
+
 
 bool CanHandleResolution(content::BrowserContext* context,
     const std::string& app_id,
