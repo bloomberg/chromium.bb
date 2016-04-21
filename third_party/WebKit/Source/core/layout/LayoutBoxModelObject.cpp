@@ -554,7 +554,8 @@ LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length 
 {
     // For percentage heights: The percentage is calculated with respect to the height of the generated box's
     // containing block. If the height of the containing block is not specified explicitly (i.e., it depends
-    // on content height), and this element is not absolutely positioned, the value computes to 'auto'.
+    // on content height), and this element is not absolutely positioned,  the used height is calculated
+    // as if 'auto' was specified.
     if (!logicalHeight.hasPercent() || isOutOfFlowPositioned())
         return nullptr;
 

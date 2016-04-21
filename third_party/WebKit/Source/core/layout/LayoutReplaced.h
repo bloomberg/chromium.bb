@@ -52,8 +52,8 @@ public:
     LayoutReplaced(Element*, const LayoutSize& intrinsicSize);
     ~LayoutReplaced() override;
 
-    LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;
-    LayoutUnit computeReplacedLogicalHeight() const override;
+    LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred = ComputeActual) const override;
+    LayoutUnit computeReplacedLogicalHeight(LayoutUnit estimatedUsedWidth = LayoutUnit()) const override;
 
     bool hasReplacedLogicalHeight() const;
     LayoutRect replacedContentRect(const LayoutSize* overriddenIntrinsicSize = nullptr) const;
@@ -125,6 +125,8 @@ private:
 
     void computeIntrinsicSizingInfoForReplacedContent(LayoutReplaced*, IntrinsicSizingInfo&) const;
     FloatSize constrainIntrinsicSizeToMinMax(const IntrinsicSizingInfo&) const;
+
+    LayoutUnit computeConstrainedLogicalWidth(ShouldComputePreferred) const;
 
     mutable LayoutSize m_intrinsicSize;
 };

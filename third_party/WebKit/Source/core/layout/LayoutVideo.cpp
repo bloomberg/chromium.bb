@@ -182,9 +182,9 @@ LayoutUnit LayoutVideo::computeReplacedLogicalWidth(ShouldComputePreferred shoul
     return LayoutReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
 }
 
-LayoutUnit LayoutVideo::computeReplacedLogicalHeight() const
+LayoutUnit LayoutVideo::computeReplacedLogicalHeight(LayoutUnit estimatedUsedWidth) const
 {
-    return LayoutReplaced::computeReplacedLogicalHeight();
+    return LayoutReplaced::computeReplacedLogicalHeight(estimatedUsedWidth);
 }
 
 LayoutUnit LayoutVideo::minimumReplacedHeight() const

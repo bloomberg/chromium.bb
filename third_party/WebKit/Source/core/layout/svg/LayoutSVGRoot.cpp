@@ -122,7 +122,7 @@ LayoutUnit LayoutSVGRoot::computeReplacedLogicalWidth(ShouldComputePreferred sho
     return LayoutReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
 }
 
-LayoutUnit LayoutSVGRoot::computeReplacedLogicalHeight() const
+LayoutUnit LayoutSVGRoot::computeReplacedLogicalHeight(LayoutUnit estimatedUsedWidth) const
 {
     // When we're embedded through SVGImage (border-image/background-image/<html:img>/...) we're forced to resize to a specific size.
     if (!m_containerSize.isEmpty())
@@ -131,7 +131,7 @@ LayoutUnit LayoutSVGRoot::computeReplacedLogicalHeight() const
     if (isEmbeddedThroughFrameContainingSVGDocument())
         return containingBlock()->availableLogicalHeight(IncludeMarginBorderPadding);
 
-    return LayoutReplaced::computeReplacedLogicalHeight();
+    return LayoutReplaced::computeReplacedLogicalHeight(estimatedUsedWidth);
 }
 
 void LayoutSVGRoot::layout()

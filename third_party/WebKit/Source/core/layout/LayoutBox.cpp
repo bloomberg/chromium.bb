@@ -2794,7 +2794,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalWidthUsing(SizeType sizeType, const 
     return LayoutUnit();
 }
 
-LayoutUnit LayoutBox::computeReplacedLogicalHeight() const
+LayoutUnit LayoutBox::computeReplacedLogicalHeight(LayoutUnit) const
 {
     return computeReplacedLogicalHeightRespectingMinMaxHeight(computeReplacedLogicalHeightUsing(MainOrPreferredSize, style()->logicalHeight()));
 }
