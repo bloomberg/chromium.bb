@@ -451,8 +451,15 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
     if ((m_substituteData.isValid() && m_substituteData.forceSynchronousLoad()) || !Document::threadedParsingEnabledForTesting())
         parsingPolicy = ForceSynchronousParsing;
 
-    m_writer = createWriterFor(init, mimeType, encoding, false, parsingPolicy, overridingURL);
+    m_writer = createWriterFor(init, mimeType, encoding, false, parsingPolicy);
     m_writer->setDocumentWasLoadedAsPartOfNavigation();
+
+    // This should be set before receivedFirstData().
+    if (!overridingURL.isEmpty())
+        m_frame->document()->setBaseURLOverride(overridingURL);
+
+    // Call receivedFirstData() exactly once per load.
+    frameLoader()->receivedFirstData();
     m_frame->document()->maybeHandleHttpRefresh(m_response.httpHeaderField(HTTPNames::Refresh), Document::HttpRefreshFromHeader);
 }
 
@@ -653,7 +660,7 @@ void DocumentLoader::endWriting(DocumentWriter* writer)
     m_writer.clear();
 }
 
-DocumentWriter* DocumentLoader::createWriterFor(const DocumentInit& init, const AtomicString& mimeType, const AtomicString& encoding, bool dispatchWindowObjectAvailable, ParserSynchronizationPolicy parsingPolicy, const KURL& overridingURL)
+DocumentWriter* DocumentLoader::createWriterFor(const DocumentInit& init, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy parsingPolicy)
 {
     LocalFrame* frame = init.frame();
 
@@ -665,18 +672,7 @@ DocumentWriter* DocumentLoader::createWriterFor(const DocumentInit& init, const 
 
     Document* document = frame->localDOMWindow()->installNewDocument(mimeType, init);
 
-    // This should be set before receivedFirstData().
-    if (!overridingURL.isEmpty())
-        frame->document()->setBaseURLOverride(overridingURL);
-
-    frame->loader().didInstallNewDocument(dispatchWindowObjectAvailable);
-
-    // This must be called before DocumentWriter is created, otherwise HTML parser
-    // will use stale values from HTMLParserOption.
-    if (!dispatchWindowObjectAvailable)
-        frame->loader().receivedFirstData();
-
-    frame->loader().didBeginDocument();
+    frame->loader().didBeginDocument(dispatch);
 
     return DocumentWriter::create(document, parsingPolicy, mimeType, encoding);
 }

@@ -13,7 +13,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebFrameContentDumper.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using testing::_;
@@ -89,16 +88,15 @@ TEST_F(ChromeRenderViewTest, DISABLED_AllowDOMStorage) {
 // Regression test for http://crbug.com/35011
 TEST_F(ChromeRenderViewTest, JSBlockSentAfterPageLoad) {
   // 1. Load page with JS.
-  const char kHtml[] =
-      "<html>"
-      "<head>"
-      "<script>document.createElement('div');</script>"
-      "</head>"
-      "<body>"
-      "</body>"
-      "</html>";
+  std::string html = "<html>"
+                     "<head>"
+                     "<script>document.createElement('div');</script>"
+                     "</head>"
+                     "<body>"
+                     "</body>"
+                     "</html>";
   render_thread_->sink().ClearMessages();
-  LoadHTML(kHtml);
+  LoadHTML(html.c_str());
 
   // 2. Block JavaScript.
   RendererContentSettingRules content_setting_rules;
@@ -120,7 +118,7 @@ TEST_F(ChromeRenderViewTest, JSBlockSentAfterPageLoad) {
 
   // 3. Reload page.
   std::string url_str = "data:text/html;charset=utf-8,";
-  url_str.append(kHtml);
+  url_str.append(html);
   GURL url(url_str);
   Reload(url);
   ProcessPendingMessages();
@@ -271,15 +269,14 @@ TEST_F(ChromeRenderViewTest, ContentSettingsBlockScripts) {
   observer->SetContentSettingRules(&content_setting_rules);
 
   // Load a page which contains a script.
-  const char kHtml[] =
-      "<html>"
-      "<head>"
-      "<script src='data:foo'></script>"
-      "</head>"
-      "<body>"
-      "</body>"
-      "</html>";
-  LoadHTML(kHtml);
+  std::string html = "<html>"
+                     "<head>"
+                     "<script src='data:foo'></script>"
+                     "</head>"
+                     "<body>"
+                     "</body>"
+                     "</html>";
+  LoadHTML(html.c_str());
 
   // Verify that the script was blocked.
   bool was_blocked = false;
@@ -308,15 +305,14 @@ TEST_F(ChromeRenderViewTest, ContentSettingsAllowScripts) {
   observer->SetContentSettingRules(&content_setting_rules);
 
   // Load a page which contains a script.
-  const char kHtml[] =
-      "<html>"
-      "<head>"
-      "<script src='data:foo'></script>"
-      "</head>"
-      "<body>"
-      "</body>"
-      "</html>";
-  LoadHTML(kHtml);
+  std::string html = "<html>"
+                     "<head>"
+                     "<script src='data:foo'></script>"
+                     "</head>"
+                     "<body>"
+                     "</body>"
+                     "</html>";
+  LoadHTML(html.c_str());
 
   // Verify that the script was not blocked.
   bool was_blocked = false;
@@ -326,110 +322,6 @@ TEST_F(ChromeRenderViewTest, ContentSettingsAllowScripts) {
       was_blocked = true;
   }
   EXPECT_FALSE(was_blocked);
-}
-
-// Regression test for crbug.com/232410: Load a page with JS blocked. Then,
-// allow JS and reload the page. In each case, only one of noscript or script
-// tags should be enabled, but never both.
-TEST_F(ChromeRenderViewTest, ContentSettingsNoscriptTag) {
-  // 1. Block JavaScript.
-  RendererContentSettingRules content_setting_rules;
-  ContentSettingsForOneType& script_setting_rules =
-      content_setting_rules.script_rules;
-  script_setting_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTING_BLOCK, std::string(), false));
-
-  ContentSettingsObserver* observer =
-      ContentSettingsObserver::Get(view_->GetMainRenderFrame());
-  observer->SetContentSettingRules(&content_setting_rules);
-
-  // 2. Load a page which contains a noscript tag and a script tag. Note that
-  // the page doesn't have a body tag.
-  const char kHtml[] =
-      "<html>"
-      "<noscript>JS_DISABLED</noscript>"
-      "<script>document.write('JS_ENABLED');</script>"
-      "</html>";
-  LoadHTML(kHtml);
-  EXPECT_NE(
-      std::string::npos,
-      blink::WebFrameContentDumper::dumpLayoutTreeAsText(
-          GetMainFrame(), blink::WebFrameContentDumper::LayoutAsTextNormal)
-          .utf8()
-          .find("JS_DISABLED"));
-  EXPECT_EQ(
-      std::string::npos,
-      blink::WebFrameContentDumper::dumpLayoutTreeAsText(
-          GetMainFrame(), blink::WebFrameContentDumper::LayoutAsTextNormal)
-          .utf8()
-          .find("JS_ENABLED"));
-
-  // 3. Allow JavaScript.
-  script_setting_rules.clear();
-  script_setting_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTING_ALLOW, std::string(), false));
-  observer->SetContentSettingRules(&content_setting_rules);
-
-  // 4. Reload the page.
-  std::string url_str = "data:text/html;charset=utf-8,";
-  url_str.append(kHtml);
-  GURL url(url_str);
-  Reload(url);
-  EXPECT_NE(
-      std::string::npos,
-      blink::WebFrameContentDumper::dumpLayoutTreeAsText(
-          GetMainFrame(), blink::WebFrameContentDumper::LayoutAsTextNormal)
-          .utf8()
-          .find("JS_ENABLED"));
-  EXPECT_EQ(
-      std::string::npos,
-      blink::WebFrameContentDumper::dumpLayoutTreeAsText(
-          GetMainFrame(), blink::WebFrameContentDumper::LayoutAsTextNormal)
-          .utf8()
-          .find("JS_DISABLED"));
-}
-
-// Checks that same page navigations don't update content settings for the page.
-TEST_F(ChromeRenderViewTest, ContentSettingsSamePageNavigation) {
-  MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame());
-  // Load a page which contains a script.
-  const char kHtml[] =
-      "<html>"
-      "<head>"
-      "<script src='data:foo'></script>"
-      "</head>"
-      "<body>"
-      "</body>"
-      "</html>";
-  LoadHTML(kHtml);
-
-  // Verify that the script was not blocked.
-  bool was_blocked = false;
-  for (size_t i = 0; i < render_thread_->sink().message_count(); ++i) {
-    const IPC::Message* msg = render_thread_->sink().GetMessageAt(i);
-    if (msg->type() == ChromeViewHostMsg_ContentBlocked::ID)
-      was_blocked = true;
-  }
-  EXPECT_FALSE(was_blocked);
-
-  // Block JavaScript.
-  RendererContentSettingRules content_setting_rules;
-  ContentSettingsForOneType& script_setting_rules =
-      content_setting_rules.script_rules;
-  script_setting_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTING_BLOCK, std::string(), false));
-
-  ContentSettingsObserver* observer =
-      ContentSettingsObserver::Get(view_->GetMainRenderFrame());
-  observer->SetContentSettingRules(&content_setting_rules);
-
-  // The page shouldn't see the change to script blocking setting after a
-  // same page navigation.
-  DidNavigateWithinPage(GetMainFrame(), true);
-  EXPECT_TRUE(observer->allowScript(true));
 }
 
 TEST_F(ChromeRenderViewTest, ContentSettingsInterstitialPages) {
@@ -460,15 +352,14 @@ TEST_F(ChromeRenderViewTest, ContentSettingsInterstitialPages) {
   observer->OnSetAsInterstitial();
 
   // Load a page which contains a script.
-  const char kHtml[] =
-      "<html>"
-      "<head>"
-      "<script src='data:foo'></script>"
-      "</head>"
-      "<body>"
-      "</body>"
-      "</html>";
-  LoadHTML(kHtml);
+  std::string html = "<html>"
+                     "<head>"
+                     "<script src='data:foo'></script>"
+                     "</head>"
+                     "<body>"
+                     "</body>"
+                     "</html>";
+  LoadHTML(html.c_str());
 
   // Verify that the script was allowed.
   bool was_blocked = false;

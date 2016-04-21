@@ -149,7 +149,7 @@ protected:
     Vector<KURL> m_redirectChain;
 
 private:
-    static DocumentWriter* createWriterFor(const DocumentInit&, const AtomicString& mimeType, const AtomicString& encoding, bool dispatchWindowObjectAvailable, ParserSynchronizationPolicy, const KURL& overridingURL = KURL());
+    static DocumentWriter* createWriterFor(const DocumentInit&, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy);
 
     void ensureWriter(const AtomicString& mimeType, const KURL& overridingURL = KURL());
     void endWriting(DocumentWriter*);

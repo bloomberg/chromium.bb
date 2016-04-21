@@ -127,9 +127,7 @@ public:
     void didExplicitOpen();
 
     // Callbacks from DocumentWriter
-    void didInstallNewDocument(bool dispatchWindowObjectAvailable);
-
-    void didBeginDocument();
+    void didBeginDocument(bool dispatchWindowObjectAvailable);
 
     void receivedFirstData();
 

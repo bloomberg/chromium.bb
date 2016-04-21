@@ -435,27 +435,17 @@ void FrameLoader::receivedFirstData()
     dispatchDidClearDocumentOfWindowObject();
 }
 
-void FrameLoader::didInstallNewDocument(bool dispatchWindowObjectAvailable)
-{
-    ASSERT(m_frame);
-    ASSERT(m_frame->document());
-
-    m_frame->document()->setReadyState(Document::Loading);
-
-    if (dispatchWindowObjectAvailable)
-        dispatchDidClearDocumentOfWindowObject();
-
-    m_frame->document()->initContentSecurityPolicy(m_documentLoader ? m_documentLoader->releaseContentSecurityPolicy() : ContentSecurityPolicy::create());
-
-    if (m_provisionalItem && isBackForwardLoadType(m_loadType))
-        m_frame->document()->setStateForNewFormElements(m_provisionalItem->documentState());
-}
-
-void FrameLoader::didBeginDocument()
+void FrameLoader::didBeginDocument(bool dispatch)
 {
     ASSERT(m_frame);
     ASSERT(m_frame->document());
     ASSERT(m_frame->document()->fetcher());
+    m_frame->document()->setReadyState(Document::Loading);
+
+    if (dispatch)
+        dispatchDidClearDocumentOfWindowObject();
+
+    m_frame->document()->initContentSecurityPolicy(m_documentLoader ? m_documentLoader->releaseContentSecurityPolicy() : ContentSecurityPolicy::create());
 
     if (m_documentLoader) {
         String suboriginHeader = m_documentLoader->response().httpHeaderField(HTTPNames::Suborigin);
@@ -491,6 +481,9 @@ void FrameLoader::didBeginDocument()
                 m_frame->document()->setContentLanguage(AtomicString(headerContentLanguage));
         }
     }
+
+    if (m_provisionalItem && isBackForwardLoadType(m_loadType))
+        m_frame->document()->setStateForNewFormElements(m_provisionalItem->documentState());
 
     client()->didCreateNewDocument();
 }
