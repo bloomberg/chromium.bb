@@ -1275,7 +1275,8 @@ crbug.com/605487 [ Win ] fast/dom/Window/property-access-on-cached-window-after-
 crbug.com/605487 [ Win ] usb/usb.html [ Crash ]
 crbug.com/605487 [ Win ] usb/usbDevice.html  [ Crash ]
 
-crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure ]
+crbug.com/540528 [ Linux ] intersection-observer/remove-element.html [ Leak ]
+crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure Timeout Pass ]
 
 crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Failure ]
 
