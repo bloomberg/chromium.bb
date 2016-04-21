@@ -399,6 +399,21 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
     self._AbortPreviousHWTestSuites()
 
 
+class ConfigDumpStage(generic_stages.BuilderStage):
+  """Stage that dumps the current build config to the build log.
+
+  This stage runs immediately after BuildReexecutionFinishedStage, at which
+  point the build is finalized.
+  """
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def PerformStage(self):
+    """Dump the running config to info logs."""
+    config = self._run.config
+    logging.info('The current build config is dumped below:\n%s',
+                 config_lib.PrettyJsonDict(config))
+
+
 class ReportStage(generic_stages.BuilderStage,
                   generic_stages.ArchivingStageMixin):
   """Summarize all the builds."""

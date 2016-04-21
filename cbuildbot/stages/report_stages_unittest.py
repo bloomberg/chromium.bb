@@ -85,6 +85,17 @@ class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTestCase):
     return report_stages.BuildReexecutionFinishedStage(self._run)
 
 
+class ConfigDumpStageTest(generic_stages_unittest.AbstractStageTestCase):
+  """Tests that ConfigDumpStage runs without syntax error."""
+
+  def ConstructStage(self):
+    return report_stages.ConfigDumpStage(self._run)
+
+  def testPerformStage(self):
+    self._Prepare()
+    self.RunStage()
+
+
 class SlaveFailureSummaryStageTest(
     generic_stages_unittest.AbstractStageTestCase):
   """Tests that SlaveFailureSummaryStage behaves as expected."""

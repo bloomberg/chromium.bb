@@ -310,6 +310,7 @@ class Builder(object):
         success = self._ReExecuteInBuildroot(sync_instance)
       else:
         self._RunStage(report_stages.BuildReexecutionFinishedStage)
+        self._RunStage(report_stages.ConfigDumpStage)
         self.RunStages()
 
     except Exception as ex:

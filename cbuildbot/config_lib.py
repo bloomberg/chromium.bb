@@ -1241,12 +1241,6 @@ class SiteConfig(dict):
 
     return cfg
 
-  class _JSONEncoder(json.JSONEncoder):
-    """Json Encoder that encodes objects as their dictionaries."""
-    # pylint: disable=method-hidden
-    def default(self, obj):
-      return self.encode(obj.__dict__)
-
   def SaveConfigToString(self):
     """Save this Config object to a Json format string."""
     default = self.GetDefault()
@@ -1260,8 +1254,7 @@ class SiteConfig(dict):
     config_dict['_templates'] = self._templates
     config_dict['_site_params'] = SiteParameters.HideDefaults(site_params)
 
-    return json.dumps(config_dict, cls=self._JSONEncoder,
-                      sort_keys=True, indent=4, separators=(',', ': '))
+    return PrettyJsonDict(config_dict)
 
   def DumpExpandedConfigToString(self):
     """Dump the SiteConfig to Json with all configs full expanded.
@@ -1269,8 +1262,21 @@ class SiteConfig(dict):
     This is intended for debugging default/template behavior. The dumped JSON
     can't be reloaded (at least not reliably).
     """
-    return json.dumps(self, cls=self._JSONEncoder,
-                      sort_keys=True, indent=4, separators=(',', ': '))
+    return PrettyJsonDict(self)
+
+
+class ObjectJSONEncoder(json.JSONEncoder):
+  """Json Encoder that encodes objects as their dictionaries."""
+  # pylint: disable=method-hidden
+  def default(self, obj):
+    return self.encode(obj.__dict__)
+
+
+def PrettyJsonDict(dictionary):
+  """Returns a pretty-ified json dump of a dictionary."""
+  return json.dumps(dictionary, cls=ObjectJSONEncoder,
+                    sort_keys=True, indent=4, separators=(',', ': '))
+
 
 #
 # Methods related to loading/saving Json.
