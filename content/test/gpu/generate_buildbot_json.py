@@ -601,11 +601,13 @@ COMMON_GTESTS = {
   'gl_tests': {'args': ['--use-gpu-in-tests']},
   'gl_unittests': {'args': ['--use-gpu-in-tests']},
   # The gles2_conform_tests are closed-source and deliberately only run
-  # on the FYI waterfall.
+  # on the FYI waterfall and the optional tryservers.
   'gles2_conform_test': {
     'tester_configs': [
       {
         'fyi_only': True,
+        # Run this on the optional tryservers.
+        'run_on_optional': True,
       }
     ],
     'args': ['--use-gpu-in-tests']
@@ -614,7 +616,9 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         'fyi_only': True,
-        'os_types': ['win']
+        'os_types': ['win'],
+        # Run this on the optional tryservers.
+        'run_on_optional': True,
       }
     ],
     'args': [
@@ -627,7 +631,9 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         'fyi_only': True,
-        'os_types': ['win']
+        'os_types': ['win'],
+        # Run this on the optional tryservers.
+        'run_on_optional': True,
       }
     ],
     'args': [
@@ -717,8 +723,8 @@ TELEMETRY_TESTS = {
     'tester_configs': [
       {
         'fyi_only': True,
+        'os_types': ['win'],
         'run_on_optional': True,
-        'os_types': ['win']
       }
     ],
     'target_name': 'webgl_conformance',
@@ -730,8 +736,8 @@ TELEMETRY_TESTS = {
     'tester_configs': [
       {
         'fyi_only': True,
+        'os_types': ['win'],
         'run_on_optional': True,
-        'os_types': ['win']
       }
     ],
     'disabled_tester_configs': [
