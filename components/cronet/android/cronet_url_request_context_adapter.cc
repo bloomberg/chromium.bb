@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <map>
 #include <utility>
 
@@ -20,6 +21,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
@@ -168,7 +170,7 @@ class SdchOwnerPrefStorage : public net::SdchOwner::PrefStorage,
     return result_value->GetAsDictionary(result);
   }
 
-  void SetValue(scoped_ptr<base::DictionaryValue> value) override {
+  void SetValue(std::unique_ptr<base::DictionaryValue> value) override {
     storage_->SetValue(storage_key_, std::move(value),
                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
@@ -354,7 +356,7 @@ bool CronetUrlRequestContextAdapterRegisterJni(JNIEnv* env) {
 }
 
 CronetURLRequestContextAdapter::CronetURLRequestContextAdapter(
-    scoped_ptr<URLRequestContextConfig> context_config)
+    std::unique_ptr<URLRequestContextConfig> context_config)
     : network_thread_(new base::Thread("network")),
       http_server_properties_manager_(nullptr),
       context_config_(std::move(context_config)),
@@ -406,7 +408,7 @@ void CronetURLRequestContextAdapter::
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   DCHECK(!network_quality_estimator_);
   network_quality_estimator_.reset(new net::NetworkQualityEstimator(
-      scoped_ptr<net::ExternalEstimateProvider>(),
+      std::unique_ptr<net::ExternalEstimateProvider>(),
       std::map<std::string, std::string>(), use_local_host_requests,
       use_smaller_responses));
   context_->set_network_quality_estimator(network_quality_estimator_.get());
@@ -469,7 +471,7 @@ void CronetURLRequestContextAdapter::ProvideThroughputObservations(
 }
 
 void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
-    scoped_ptr<URLRequestContextConfig> config,
+    std::unique_ptr<URLRequestContextConfig> config,
     const base::android::ScopedJavaGlobalRef<jobject>&
         jcronet_url_request_context) {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
@@ -485,7 +487,8 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   context_builder.set_http_network_session_params(
       custom_http_network_session_params);
 
-  scoped_ptr<net::NetworkDelegate> network_delegate(new BasicNetworkDelegate());
+  std::unique_ptr<net::NetworkDelegate> network_delegate(
+      new BasicNetworkDelegate());
 #if defined(DATA_REDUCTION_PROXY_SUPPORT)
   DCHECK(!data_reduction_proxy_);
   // For now, the choice to enable the data reduction proxy happens once,
@@ -500,7 +503,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         std::move(network_delegate));
     context_builder.set_proxy_delegate(
         data_reduction_proxy_->CreateProxyDelegate());
-    std::vector<scoped_ptr<net::URLRequestInterceptor>> interceptors;
+    std::vector<std::unique_ptr<net::URLRequestInterceptor>> interceptors;
     interceptors.push_back(data_reduction_proxy_->CreateInterceptor());
     context_builder.SetInterceptors(std::move(interceptors));
   }
@@ -526,8 +529,9 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     base::FilePath filepath =
         storage_path.Append(FILE_PATH_LITERAL(kPrefsDirectoryName))
             .Append(FILE_PATH_LITERAL(kPrefsFileName));
-    json_pref_store_ = new JsonPrefStore(
-        filepath, GetFileThread()->task_runner(), scoped_ptr<PrefFilter>());
+    json_pref_store_ =
+        new JsonPrefStore(filepath, GetFileThread()->task_runner(),
+                          std::unique_ptr<PrefFilter>());
     context_builder.SetFileTaskRunner(GetFileThread()->task_runner());
 
     // Set up HttpServerPropertiesManager.
@@ -538,8 +542,8 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
                                      new base::DictionaryValue());
     pref_service_ = factory.Create(registry.get());
 
-    scoped_ptr<net::HttpServerPropertiesManager> http_server_properties_manager(
-        new net::HttpServerPropertiesManager(
+    std::unique_ptr<net::HttpServerPropertiesManager>
+        http_server_properties_manager(new net::HttpServerPropertiesManager(
             new PrefServiceAdapter(pref_service_.get()),
             GetNetworkTaskRunner()));
     http_server_properties_manager->InitializeOnNetworkThread();
@@ -567,7 +571,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         new net::SdchOwner(context_->sdch_manager(), context_.get()));
     if (json_pref_store_) {
       sdch_owner_->EnablePersistentStorage(
-          make_scoped_ptr(new SdchOwnerPrefStorage(json_pref_store_.get())));
+          base::WrapUnique(new SdchOwnerPrefStorage(json_pref_store_.get())));
     }
   }
 
@@ -800,7 +804,7 @@ static jlong CreateRequestContextConfig(
                                       jdata_reduction_proxy_fallback_proxy),
       ConvertNullableJavaStringToUTF8(
           env, jdata_reduction_proxy_secure_proxy_check_url),
-      make_scoped_ptr(
+      base::WrapUnique(
           reinterpret_cast<net::CertVerifier*>(jmock_cert_verifier))));
 }
 
@@ -814,7 +818,7 @@ static void AddQuicHint(JNIEnv* env,
   URLRequestContextConfig* config =
       reinterpret_cast<URLRequestContextConfig*>(jurl_request_context_config);
   config->quic_hints.push_back(
-      make_scoped_ptr(new URLRequestContextConfig::QuicHint(
+      base::WrapUnique(new URLRequestContextConfig::QuicHint(
           base::android::ConvertJavaStringToUTF8(env, jhost), jport,
           jalternate_port)));
 }
@@ -834,10 +838,12 @@ static void AddPkp(JNIEnv* env,
                    jlong jexpiration_time) {
   URLRequestContextConfig* config =
       reinterpret_cast<URLRequestContextConfig*>(jurl_request_context_config);
-  scoped_ptr<URLRequestContextConfig::Pkp> pkp(new URLRequestContextConfig::Pkp(
-      base::android::ConvertJavaStringToUTF8(env, jhost), jinclude_subdomains,
-      base::Time::UnixEpoch() +
-          base::TimeDelta::FromMilliseconds(jexpiration_time)));
+  std::unique_ptr<URLRequestContextConfig::Pkp> pkp(
+      new URLRequestContextConfig::Pkp(
+          base::android::ConvertJavaStringToUTF8(env, jhost),
+          jinclude_subdomains,
+          base::Time::UnixEpoch() +
+              base::TimeDelta::FromMilliseconds(jexpiration_time)));
   size_t hash_count = env->GetArrayLength(jhashes);
   for (size_t i = 0; i < hash_count; ++i) {
     ScopedJavaLocalRef<jbyteArray> bytes_array(
@@ -864,7 +870,7 @@ static void AddPkp(JNIEnv* env,
 static jlong CreateRequestContextAdapter(JNIEnv* env,
                                          const JavaParamRef<jclass>& jcaller,
                                          jlong jconfig) {
-  scoped_ptr<URLRequestContextConfig> context_config(
+  std::unique_ptr<URLRequestContextConfig> context_config(
       reinterpret_cast<URLRequestContextConfig*>(jconfig));
 
   CronetURLRequestContextAdapter* context_adapter =

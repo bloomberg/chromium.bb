@@ -60,14 +60,14 @@ void URLRequestAdapter::AddHeader(const std::string& name,
 
 void URLRequestAdapter::SetUploadContent(const char* bytes, int bytes_len) {
   std::vector<char> data(bytes, bytes + bytes_len);
-  scoped_ptr<net::UploadElementReader> reader(
+  std::unique_ptr<net::UploadElementReader> reader(
       new net::UploadOwnedBytesElementReader(&data));
   upload_data_stream_ =
       net::ElementsUploadDataStream::CreateWithReader(std::move(reader), 0);
 }
 
 void URLRequestAdapter::SetUploadChannel(JNIEnv* env, int64_t content_length) {
-  scoped_ptr<net::UploadElementReader> reader(
+  std::unique_ptr<net::UploadElementReader> reader(
       new WrappedChannelElementReader(delegate_, content_length));
   upload_data_stream_ =
       net::ElementsUploadDataStream::CreateWithReader(std::move(reader), 0);
@@ -84,7 +84,7 @@ void URLRequestAdapter::EnableChunkedUpload() {
 void URLRequestAdapter::AppendChunk(const char* bytes, int bytes_len,
                                     bool is_last_chunk) {
   VLOG(1) << "AppendChunk, len: " << bytes_len << ", last: " << is_last_chunk;
-  scoped_ptr<char[]> buf(new char[bytes_len]);
+  std::unique_ptr<char[]> buf(new char[bytes_len]);
   memcpy(buf.get(), bytes, bytes_len);
   context_->PostTaskToNetworkThread(
       FROM_HERE,
@@ -126,8 +126,9 @@ void URLRequestAdapter::Start() {
                  base::Unretained(this)));
 }
 
-void URLRequestAdapter::OnAppendChunk(const scoped_ptr<char[]> bytes,
-                                      int bytes_len, bool is_last_chunk) {
+void URLRequestAdapter::OnAppendChunk(const std::unique_ptr<char[]> bytes,
+                                      int bytes_len,
+                                      bool is_last_chunk) {
   DCHECK(OnNetworkThread());
   // If AppendData returns false, the request has been cancelled or completed
   // without uploading the entire request body.  Either way, that result will
@@ -162,7 +163,7 @@ void URLRequestAdapter::OnInitiateConnection() {
   if (upload_data_stream_) {
     url_request_->set_upload(std::move(upload_data_stream_));
   } else if (chunked_upload_) {
-    scoped_ptr<net::ChunkedUploadDataStream> chunked_upload_data_stream(
+    std::unique_ptr<net::ChunkedUploadDataStream> chunked_upload_data_stream(
         new net::ChunkedUploadDataStream(0));
     // Create a ChunkedUploadDataStream::Writer, which keeps a weak reference to
     // the UploadDataStream, before passing ownership of the stream to the

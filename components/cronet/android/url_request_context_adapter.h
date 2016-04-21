@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_ADAPTER_H_
 #define COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_ADAPTER_H_
 
+#include <memory>
 #include <queue>
 #include <string>
 
@@ -13,7 +14,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "net/log/net_log.h"
 #include "net/url_request/url_request_context.h"
@@ -59,7 +59,7 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
 
   URLRequestContextAdapter(URLRequestContextAdapterDelegate* delegate,
                            std::string user_agent);
-  void Initialize(scoped_ptr<URLRequestContextConfig> config);
+  void Initialize(std::unique_ptr<URLRequestContextConfig> config);
 
   // Posts a task that might depend on the context being initialized
   // to the network thread.
@@ -100,15 +100,15 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
   void StopNetLogHelper();
 
   scoped_refptr<URLRequestContextAdapterDelegate> delegate_;
-  scoped_ptr<net::URLRequestContext> context_;
+  std::unique_ptr<net::URLRequestContext> context_;
   std::string user_agent_;
   bool load_disable_cache_;
   base::Thread* network_thread_;
-  scoped_ptr<NetLogObserver> net_log_observer_;
-  scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<net::SdchOwner> sdch_owner_;
-  scoped_ptr<URLRequestContextConfig> config_;
+  std::unique_ptr<NetLogObserver> net_log_observer_;
+  std::unique_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<net::SdchOwner> sdch_owner_;
+  std::unique_ptr<URLRequestContextConfig> config_;
 
   // A queue of tasks that need to be run after context has been initialized.
   std::queue<RunAfterContextInitTask> tasks_waiting_for_context_;

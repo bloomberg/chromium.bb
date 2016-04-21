@@ -58,7 +58,7 @@ class CronetBidirectionalStreamTest : public ::testing::Test {
     cronet_environment_->set_quic_enabled(true);
     cronet_environment_->set_ssl_key_log_file_name("SSLKEYLOGFILE");
 
-    scoped_ptr<net::MockCertVerifier> mock_cert_verifier(
+    std::unique_ptr<net::MockCertVerifier> mock_cert_verifier(
         new net::MockCertVerifier());
     mock_cert_verifier->set_default_result(net::OK);
 

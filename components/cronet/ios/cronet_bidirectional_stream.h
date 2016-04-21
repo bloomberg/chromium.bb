@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_CRONET_IOS_CRONET_BIDIRECTIONAL_STREAM_H_
 #define COMPONENTS_CRONET_IOS_CRONET_BIDIRECTIONAL_STREAM_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "net/http/bidirectional_stream.h"
 
@@ -126,7 +127,7 @@ class CronetBidirectionalStream : public net::BidirectionalStream::Delegate {
   void MaybeOnSucceded();
 
   void StartOnNetworkThread(
-      scoped_ptr<net::BidirectionalStreamRequestInfo> request_info);
+      std::unique_ptr<net::BidirectionalStreamRequestInfo> request_info);
   void ReadDataOnNetworkThread(scoped_refptr<net::WrappedIOBuffer> read_buffer,
                                int buffer_size);
   void WriteDataOnNetworkThread(scoped_refptr<net::WrappedIOBuffer> read_buffer,
@@ -155,7 +156,7 @@ class CronetBidirectionalStream : public net::BidirectionalStream::Delegate {
 
   scoped_refptr<net::WrappedIOBuffer> read_buffer_;
   scoped_refptr<net::WrappedIOBuffer> write_buffer_;
-  scoped_ptr<net::BidirectionalStream> bidi_stream_;
+  std::unique_ptr<net::BidirectionalStream> bidi_stream_;
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetBidirectionalStream);

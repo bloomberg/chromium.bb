@@ -6,6 +6,8 @@
 #define COMPONENTS_CRONET_ANDROID_CRONET_BIDIRECTIONAL_STREAM_ADAPTER_H_
 
 #include <jni.h>
+
+#include <memory>
 #include <string>
 
 #include "base/android/jni_android.h"
@@ -14,7 +16,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/http/bidirectional_stream.h"
 
 namespace net {
@@ -98,7 +99,7 @@ class CronetBidirectionalStreamAdapter
   void OnFailed(int error) override;
 
   void StartOnNetworkThread(
-      scoped_ptr<net::BidirectionalStreamRequestInfo> request_info);
+      std::unique_ptr<net::BidirectionalStreamRequestInfo> request_info);
   void ReadDataOnNetworkThread(
       scoped_refptr<IOBufferWithByteBuffer> read_buffer,
       int buffer_size);
@@ -119,7 +120,7 @@ class CronetBidirectionalStreamAdapter
 
   scoped_refptr<IOBufferWithByteBuffer> read_buffer_;
   scoped_refptr<IOBufferWithByteBuffer> write_buffer_;
-  scoped_ptr<net::BidirectionalStream> bidi_stream_;
+  std::unique_ptr<net::BidirectionalStream> bidi_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetBidirectionalStreamAdapter);
 };

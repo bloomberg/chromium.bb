@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <limits>
 #include <utility>
 
@@ -13,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -121,7 +123,7 @@ URLRequestContextAdapter::URLRequestContextAdapter(
 }
 
 void URLRequestContextAdapter::Initialize(
-    scoped_ptr<URLRequestContextConfig> config) {
+    std::unique_ptr<URLRequestContextConfig> config) {
   network_thread_ = new base::Thread("network");
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -152,7 +154,7 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
       custom_http_network_session_params);
 
   context_builder.set_network_delegate(
-      make_scoped_ptr(new BasicNetworkDelegate()));
+      base::WrapUnique(new BasicNetworkDelegate()));
   context_builder.set_proxy_config_service(std::move(proxy_config_service_));
   config_->ConfigureURLRequestContextBuilder(&context_builder, nullptr,
                                              nullptr);

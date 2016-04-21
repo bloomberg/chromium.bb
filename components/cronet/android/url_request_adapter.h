@@ -8,11 +8,11 @@
 #include <jni.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
@@ -140,7 +140,8 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   void OnRequestSucceeded();
   void OnRequestFailed();
   void OnRequestCompleted();
-  void OnAppendChunk(const scoped_ptr<char[]> bytes, int bytes_len,
+  void OnAppendChunk(const std::unique_ptr<char[]> bytes,
+                     int bytes_len,
                      bool is_last_chunk);
 
   void Read();
@@ -155,9 +156,9 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   net::RequestPriority priority_;
   std::string method_;
   net::HttpRequestHeaders headers_;
-  scoped_ptr<net::URLRequest> url_request_;
-  scoped_ptr<net::UploadDataStream> upload_data_stream_;
-  scoped_ptr<net::ChunkedUploadDataStream::Writer> chunked_upload_writer_;
+  std::unique_ptr<net::URLRequest> url_request_;
+  std::unique_ptr<net::UploadDataStream> upload_data_stream_;
+  std::unique_ptr<net::ChunkedUploadDataStream::Writer> chunked_upload_writer_;
   scoped_refptr<net::IOBufferWithSize> read_buffer_;
   int total_bytes_read_;
   int error_code_;

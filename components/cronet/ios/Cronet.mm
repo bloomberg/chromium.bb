@@ -4,9 +4,10 @@
 
 #import "components/cronet/ios/Cronet.h"
 
+#include <memory>
+
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/cronet/ios/cronet_environment.h"
@@ -17,8 +18,8 @@ namespace {
 // Currently there is one and only one instance of CronetEnvironment,
 // which is leaked at the shutdown. We should consider allowing multiple
 // instances if that makes sense in the future.
-base::LazyInstance<scoped_ptr<cronet::CronetEnvironment>>::Leaky gChromeNet =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::unique_ptr<cronet::CronetEnvironment>>::Leaky
+    gChromeNet = LAZY_INSTANCE_INITIALIZER;
 
 BOOL gHttp2Enabled = YES;
 BOOL gQuicEnabled = NO;

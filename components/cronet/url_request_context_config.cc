@@ -66,7 +66,7 @@ void ParseAndSetExperimentalOptions(
     return;
 
   DVLOG(1) << "Experimental Options:" << experimental_options;
-  scoped_ptr<base::Value> options =
+  std::unique_ptr<base::Value> options =
       base::JSONReader::Read(experimental_options);
 
   if (!options) {
@@ -75,7 +75,7 @@ void ParseAndSetExperimentalOptions(
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> dict =
+  std::unique_ptr<base::DictionaryValue> dict =
       base::DictionaryValue::From(std::move(options));
 
   if (!dict) {
@@ -193,7 +193,7 @@ void ParseAndSetExperimentalOptions(
       if (net_log == nullptr) {
         DCHECK(false) << "AsyncDNS experiment requires NetLog.";
       } else {
-        scoped_ptr<net::HostResolver> host_resolver(
+        std::unique_ptr<net::HostResolver> host_resolver(
             net::HostResolver::CreateDefaultResolver(net_log));
         host_resolver->SetDnsClientEnabled(true);
         context_builder->set_host_resolver(std::move(host_resolver));
@@ -249,7 +249,7 @@ URLRequestContextConfig::URLRequestContextConfig(
     const std::string& data_reduction_primary_proxy,
     const std::string& data_reduction_fallback_proxy,
     const std::string& data_reduction_secure_proxy_check_url,
-    scoped_ptr<net::CertVerifier> mock_cert_verifier)
+    std::unique_ptr<net::CertVerifier> mock_cert_verifier)
     : enable_quic(enable_quic),
       quic_user_agent_id(quic_user_agent_id),
       enable_spdy(enable_spdy),

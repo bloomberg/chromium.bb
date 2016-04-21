@@ -8,6 +8,7 @@
 #include <jni.h>
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 #include <string>
 
@@ -15,7 +16,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "components/prefs/json_pref_store.h"
 #include "net/base/network_quality_estimator.h"
@@ -52,7 +52,7 @@ class CronetURLRequestContextAdapter
       public net::NetworkQualityEstimator::ThroughputObserver {
  public:
   explicit CronetURLRequestContextAdapter(
-      scoped_ptr<URLRequestContextConfig> context_config);
+      std::unique_ptr<URLRequestContextConfig> context_config);
 
   ~CronetURLRequestContextAdapter() override;
 
@@ -111,9 +111,10 @@ class CronetURLRequestContextAdapter
 
  private:
   // Initializes |context_| on the Network thread.
-  void InitializeOnNetworkThread(scoped_ptr<URLRequestContextConfig> config,
-                                 const base::android::ScopedJavaGlobalRef<
-                                     jobject>& jcronet_url_request_context);
+  void InitializeOnNetworkThread(
+      std::unique_ptr<URLRequestContextConfig> config,
+      const base::android::ScopedJavaGlobalRef<jobject>&
+          jcronet_url_request_context);
 
   // Runs a task that might depend on the context being initialized.
   // This method should only be run on the network thread.
@@ -157,27 +158,27 @@ class CronetURLRequestContextAdapter
   base::Thread* network_thread_;
 
   // File thread should be destroyed last.
-  scoped_ptr<base::Thread> file_thread_;
+  std::unique_ptr<base::Thread> file_thread_;
 
   // |write_to_file_observer_| and |context_| should only be accessed on
   // network thread.
-  scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
+  std::unique_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
 
   // |pref_service_| should outlive the HttpServerPropertiesManager owned by
   // |context_|.
-  scoped_ptr<PrefService> pref_service_;
-  scoped_ptr<net::URLRequestContext> context_;
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<PrefService> pref_service_;
+  std::unique_ptr<net::URLRequestContext> context_;
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_refptr<JsonPrefStore> json_pref_store_;
   net::HttpServerPropertiesManager* http_server_properties_manager_;
 
   // |sdch_owner_| should be destroyed before |json_pref_store_|, because
   // tearing down |sdch_owner_| forces |json_pref_store_| to flush pending
   // writes to the disk.
-  scoped_ptr<net::SdchOwner> sdch_owner_;
+  std::unique_ptr<net::SdchOwner> sdch_owner_;
 
   // Context config is only valid until context is initialized.
-  scoped_ptr<URLRequestContextConfig> context_config_;
+  std::unique_ptr<URLRequestContextConfig> context_config_;
 
   // A queue of tasks that need to be run after context has been initialized.
   std::queue<base::Closure> tasks_waiting_for_context_;
@@ -185,13 +186,13 @@ class CronetURLRequestContextAdapter
   int default_load_flags_;
 
   // A network quality estimator.
-  scoped_ptr<net::NetworkQualityEstimator> network_quality_estimator_;
+  std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator_;
 
   // Java object that owns this CronetURLRequestContextAdapter.
   base::android::ScopedJavaGlobalRef<jobject> jcronet_url_request_context_;
 
 #if defined(DATA_REDUCTION_PROXY_SUPPORT)
-  scoped_ptr<CronetDataReductionProxy> data_reduction_proxy_;
+  std::unique_ptr<CronetDataReductionProxy> data_reduction_proxy_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(CronetURLRequestContextAdapter);

@@ -4,6 +4,7 @@
 
 #include "components/cronet/ios/cronet_bidirectional_stream.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,7 +12,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/cronet/ios/cronet_environment.h"
 #include "net/base/io_buffer.h"
@@ -51,7 +51,7 @@ int CronetBidirectionalStream::Start(const char* url,
                                      const net::HttpRequestHeaders& headers,
                                      bool end_of_stream) {
   // Prepare request info here to be able to return the error.
-  scoped_ptr<net::BidirectionalStreamRequestInfo> request_info(
+  std::unique_ptr<net::BidirectionalStreamRequestInfo> request_info(
       new net::BidirectionalStreamRequestInfo());
   request_info->url = GURL(url);
   request_info->priority = static_cast<net::RequestPriority>(priority);
@@ -185,7 +185,7 @@ void CronetBidirectionalStream::OnFailed(int error) {
 }
 
 void CronetBidirectionalStream::StartOnNetworkThread(
-    scoped_ptr<net::BidirectionalStreamRequestInfo> request_info) {
+    std::unique_ptr<net::BidirectionalStreamRequestInfo> request_info) {
   DCHECK(environment_->IsOnNetworkThread());
   DCHECK(!bidi_stream_);
   DCHECK(environment_->GetURLRequestContext());

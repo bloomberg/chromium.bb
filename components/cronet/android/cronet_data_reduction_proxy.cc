@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "components/cronet/android/cronet_in_memory_pref_store.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -33,14 +34,14 @@ namespace {
 // Name of the preference that governs enabling the Data Reduction Proxy.
 const char kDataReductionProxyEnabled[] = "data_reduction_proxy.enabled";
 
-scoped_ptr<PrefService> CreatePrefService() {
+std::unique_ptr<PrefService> CreatePrefService() {
   scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
   pref_registry->RegisterBooleanPref(kDataReductionProxyEnabled, false);
   data_reduction_proxy::RegisterSimpleProfilePrefs(pref_registry.get());
   PrefServiceFactory pref_service_factory;
   pref_service_factory.set_user_prefs(
       make_scoped_refptr(new CronetInMemoryPrefStore()));
-  scoped_ptr<PrefService> pref_service =
+  std::unique_ptr<PrefService> pref_service =
       pref_service_factory.Create(pref_registry.get());
   pref_registry = nullptr;
   return pref_service;
@@ -100,18 +101,19 @@ CronetDataReductionProxy::~CronetDataReductionProxy() {
   io_data_->ShutdownOnUIThread();
 }
 
-scoped_ptr<net::NetworkDelegate>
+std::unique_ptr<net::NetworkDelegate>
 CronetDataReductionProxy::CreateNetworkDelegate(
-    scoped_ptr<net::NetworkDelegate> wrapped_network_delegate) {
+    std::unique_ptr<net::NetworkDelegate> wrapped_network_delegate) {
   return io_data_->CreateNetworkDelegate(std::move(wrapped_network_delegate),
                                          false /* No bypass UMA */);
 }
 
-scoped_ptr<net::ProxyDelegate> CronetDataReductionProxy::CreateProxyDelegate() {
+std::unique_ptr<net::ProxyDelegate>
+CronetDataReductionProxy::CreateProxyDelegate() {
   return io_data_->CreateProxyDelegate();
 }
 
-scoped_ptr<net::URLRequestInterceptor>
+std::unique_ptr<net::URLRequestInterceptor>
 CronetDataReductionProxy::CreateInterceptor() {
   return io_data_->CreateInterceptor();
 }
@@ -121,12 +123,11 @@ void CronetDataReductionProxy::Init(bool enable,
   url_request_context_getter_ =
       new net::TrivialURLRequestContextGetter(
           context, task_runner_);
-  scoped_ptr<data_reduction_proxy::DataReductionProxyService>
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyService>
       data_reduction_proxy_service(
           new data_reduction_proxy::DataReductionProxyService(
-              settings_.get(), prefs_.get(),
-              url_request_context_getter_.get(),
-              make_scoped_ptr(new data_reduction_proxy::DataStore()),
+              settings_.get(), prefs_.get(), url_request_context_getter_.get(),
+              base::WrapUnique(new data_reduction_proxy::DataStore()),
               task_runner_, task_runner_, task_runner_, base::TimeDelta()));
   io_data_->SetDataReductionProxyService(
       data_reduction_proxy_service->GetWeakPtr());

@@ -73,7 +73,7 @@ jint CronetBidirectionalStreamAdapter::Start(
     const JavaParamRef<jobjectArray>& jheaders,
     jboolean jend_of_stream) {
   // Prepare request info here to be able to return the error.
-  scoped_ptr<net::BidirectionalStreamRequestInfo> request_info(
+  std::unique_ptr<net::BidirectionalStreamRequestInfo> request_info(
       new net::BidirectionalStreamRequestInfo());
   request_info->url = GURL(ConvertJavaStringToUTF8(env, jurl));
   request_info->priority = static_cast<net::RequestPriority>(jpriority);
@@ -244,7 +244,7 @@ void CronetBidirectionalStreamAdapter::OnFailed(int error) {
 }
 
 void CronetBidirectionalStreamAdapter::StartOnNetworkThread(
-    scoped_ptr<net::BidirectionalStreamRequestInfo> request_info) {
+    std::unique_ptr<net::BidirectionalStreamRequestInfo> request_info) {
   DCHECK(context_->IsOnNetworkThread());
   DCHECK(!bidi_stream_);
   request_info->extra_headers.SetHeaderIfMissing(

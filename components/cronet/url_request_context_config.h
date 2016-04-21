@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_CRONET_URL_REQUEST_CONTEXT_CONFIG_H_
 #define COMPONENTS_CRONET_URL_REQUEST_CONTEXT_CONFIG_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "net/base/hash_value.h"
@@ -107,7 +107,7 @@ struct URLRequestContextConfig {
       // Data reduction proxy secure proxy check URL.
       const std::string& data_reduction_secure_proxy_check_url,
       // MockCertVerifier to use for testing purposes.
-      scoped_ptr<net::CertVerifier> mock_cert_verifier);
+      std::unique_ptr<net::CertVerifier> mock_cert_verifier);
   ~URLRequestContextConfig();
 
   // Configure |context_builder| based on |this|.
@@ -149,7 +149,7 @@ struct URLRequestContextConfig {
   const std::string data_reduction_secure_proxy_check_url;
 
   // Certificate verifier for testing.
-  scoped_ptr<net::CertVerifier> mock_cert_verifier;
+  std::unique_ptr<net::CertVerifier> mock_cert_verifier;
 
   // App-provided list of servers that support QUIC.
   ScopedVector<QuicHint> quic_hints;

@@ -115,7 +115,7 @@ jboolean CronetURLRequestAdapter::AddRequestHeader(
 }
 
 void CronetURLRequestAdapter::SetUpload(
-    scoped_ptr<net::UploadDataStream> upload) {
+    std::unique_ptr<net::UploadDataStream> upload) {
   DCHECK(!context_->IsOnNetworkThread());
   DCHECK(!upload_);
   upload_ = std::move(upload);

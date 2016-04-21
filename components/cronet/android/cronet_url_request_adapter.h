@@ -6,6 +6,8 @@
 #define COMPONENTS_CRONET_ANDROID_CRONET_URL_REQUEST_ADAPTER_H_
 
 #include <jni.h>
+
+#include <memory>
 #include <string>
 
 #include "base/android/jni_android.h"
@@ -16,7 +18,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
@@ -76,7 +77,7 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
                             const base::android::JavaParamRef<jstring>& jvalue);
 
   // Adds a request body to the request before it starts.
-  void SetUpload(scoped_ptr<net::UploadDataStream> upload);
+  void SetUpload(std::unique_ptr<net::UploadDataStream> upload);
 
   // Starts the request.
   void Start(JNIEnv* env, const base::android::JavaParamRef<jobject>& jcaller);
@@ -149,10 +150,10 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   std::string initial_method_;
   int load_flags_;
   net::HttpRequestHeaders initial_request_headers_;
-  scoped_ptr<net::UploadDataStream> upload_;
+  std::unique_ptr<net::UploadDataStream> upload_;
 
   scoped_refptr<IOBufferWithByteBuffer> read_buffer_;
-  scoped_ptr<net::URLRequest> url_request_;
+  std::unique_ptr<net::URLRequest> url_request_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetURLRequestAdapter);
 };

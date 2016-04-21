@@ -4,6 +4,7 @@
 
 #include "components/cronet/url_request_context_config.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "net/cert/cert_verifier.h"
 #include "net/http/http_network_session.h"
@@ -56,15 +57,15 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
       // Data reduction proxy secure proxy check URL.
       "",
       // MockCertVerifier to use for testing purposes.
-      scoped_ptr<net::CertVerifier>());
+      std::unique_ptr<net::CertVerifier>());
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
   config.ConfigureURLRequestContextBuilder(&builder, &net_log, nullptr);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
-  builder.set_proxy_config_service(make_scoped_ptr(
+  builder.set_proxy_config_service(base::WrapUnique(
       new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));
-  scoped_ptr<net::URLRequestContext> context(builder.Build());
+  std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
   // Check Quic Connection options.
@@ -133,15 +134,15 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
       // Data reduction proxy secure proxy check URL.
       "",
       // MockCertVerifier to use for testing purposes.
-      scoped_ptr<net::CertVerifier>());
+      std::unique_ptr<net::CertVerifier>());
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
   config.ConfigureURLRequestContextBuilder(&builder, &net_log, nullptr);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
-  builder.set_proxy_config_service(make_scoped_ptr(
+  builder.set_proxy_config_service(base::WrapUnique(
       new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));
-  scoped_ptr<net::URLRequestContext> context(builder.Build());
+  std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
 

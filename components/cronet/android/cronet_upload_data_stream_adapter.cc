@@ -120,7 +120,7 @@ static jlong AttachUploadDataToRequest(
   CronetUploadDataStreamAdapter* adapter =
       new CronetUploadDataStreamAdapter(env, jupload_data_stream);
 
-  scoped_ptr<CronetUploadDataStream> upload_data_stream(
+  std::unique_ptr<CronetUploadDataStream> upload_data_stream(
       new CronetUploadDataStream(adapter, jlength));
 
   request_adapter->SetUpload(std::move(upload_data_stream));

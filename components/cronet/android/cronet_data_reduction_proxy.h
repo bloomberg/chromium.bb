@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_CRONET_ANDROID_CRONET_DATA_REDUCTION_PROXY_H_
 #define COMPONENTS_CRONET_ANDROID_CRONET_DATA_REDUCTION_PROXY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 class PrefService;
 
@@ -55,16 +55,16 @@ class CronetDataReductionProxy {
 
   // Constructs a network delegate suitable for adding Data Reduction Proxy
   // request headers.
-  scoped_ptr<net::NetworkDelegate> CreateNetworkDelegate(
-      scoped_ptr<net::NetworkDelegate> wrapped_network_delegate);
+  std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate(
+      std::unique_ptr<net::NetworkDelegate> wrapped_network_delegate);
 
   // Constructs a proxy delegate suitable for adding Data Reduction Proxy
   // proxy resolution.
-  scoped_ptr<net::ProxyDelegate> CreateProxyDelegate();
+  std::unique_ptr<net::ProxyDelegate> CreateProxyDelegate();
 
   // Constructs a URLRequestInterceptor suitable for carrying out the Data
   // Reduction Proxy's bypass protocol.
-  scoped_ptr<net::URLRequestInterceptor> CreateInterceptor();
+  std::unique_ptr<net::URLRequestInterceptor> CreateInterceptor();
 
   // Constructs a bridge between the Settings and IOData objects, sets up a
   // context for secure proxy check requests, and enables the proxy, if
@@ -73,10 +73,10 @@ class CronetDataReductionProxy {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<PrefService> prefs_;
+  std::unique_ptr<PrefService> prefs_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  scoped_ptr<data_reduction_proxy::DataReductionProxySettings> settings_;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyIOData> io_data_;
+  std::unique_ptr<data_reduction_proxy::DataReductionProxySettings> settings_;
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData> io_data_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetDataReductionProxy);
 };

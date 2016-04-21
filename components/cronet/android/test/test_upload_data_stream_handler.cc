@@ -19,7 +19,7 @@ namespace cronet {
 static const size_t kReadBufferSize = 32768;
 
 TestUploadDataStreamHandler::TestUploadDataStreamHandler(
-    scoped_ptr<net::UploadDataStream> upload_data_stream,
+    std::unique_ptr<net::UploadDataStream> upload_data_stream,
     JNIEnv* env,
     jobject jtest_upload_data_stream_handler)
     : init_callback_invoked_(false),
@@ -43,7 +43,7 @@ void TestUploadDataStreamHandler::Destroy(
   DCHECK(!network_thread_->task_runner()->BelongsToCurrentThread());
   // Stick network_thread_ in a local, so |this| may be destroyed from the
   // network thread before the network thread is destroyed.
-  scoped_ptr<base::Thread> network_thread = std::move(network_thread_);
+  std::unique_ptr<base::Thread> network_thread = std::move(network_thread_);
   network_thread->task_runner()->DeleteSoon(FROM_HERE, this);
   // Deleting thread stops it after all tasks are completed.
   network_thread.reset();
@@ -180,7 +180,7 @@ static jlong CreateTestUploadDataStreamHandler(
     JNIEnv* env,
     const JavaParamRef<jobject>& jtest_upload_data_stream_handler,
     jlong jupload_data_stream) {
-  scoped_ptr<net::UploadDataStream> upload_data_stream(
+  std::unique_ptr<net::UploadDataStream> upload_data_stream(
       reinterpret_cast<net::UploadDataStream*>(jupload_data_stream));
   TestUploadDataStreamHandler* handler = new TestUploadDataStreamHandler(
       std::move(upload_data_stream), env, jtest_upload_data_stream_handler);

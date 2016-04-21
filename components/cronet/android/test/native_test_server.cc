@@ -4,6 +4,7 @@
 
 #include "components/cronet/android/test/native_test_server.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -14,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -48,7 +48,7 @@ const char kSdchDictPath[] = "/sdch/dict/";
 
 net::EmbeddedTestServer* g_test_server = nullptr;
 
-scoped_ptr<net::test_server::RawHttpResponse> ConstructResponseBasedOnFile(
+std::unique_ptr<net::test_server::RawHttpResponse> ConstructResponseBasedOnFile(
     const base::FilePath& file_path) {
   std::string file_contents;
   bool read_file = base::ReadFileToString(file_path, &file_contents);
@@ -58,15 +58,15 @@ scoped_ptr<net::test_server::RawHttpResponse> ConstructResponseBasedOnFile(
   std::string headers_contents;
   bool read_headers = base::ReadFileToString(headers_path, &headers_contents);
   DCHECK(read_headers);
-  scoped_ptr<net::test_server::RawHttpResponse> http_response(
+  std::unique_ptr<net::test_server::RawHttpResponse> http_response(
       new net::test_server::RawHttpResponse(headers_contents, file_contents));
   return http_response;
 }
 
-scoped_ptr<net::test_server::HttpResponse> NativeTestServerRequestHandler(
+std::unique_ptr<net::test_server::HttpResponse> NativeTestServerRequestHandler(
     const net::test_server::HttpRequest& request) {
   DCHECK(g_test_server);
-  scoped_ptr<net::test_server::BasicHttpResponse> response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> response(
       new net::test_server::BasicHttpResponse());
   response->set_content_type("text/plain");
 
@@ -108,10 +108,10 @@ scoped_ptr<net::test_server::HttpResponse> NativeTestServerRequestHandler(
   }
 
   // Unhandled requests result in the Embedded test server sending a 404.
-  return scoped_ptr<net::test_server::BasicHttpResponse>();
+  return std::unique_ptr<net::test_server::BasicHttpResponse>();
 }
 
-scoped_ptr<net::test_server::HttpResponse> SdchRequestHandler(
+std::unique_ptr<net::test_server::HttpResponse> SdchRequestHandler(
     const net::test_server::HttpRequest& request) {
   DCHECK(g_test_server);
   base::FilePath dir_path;
@@ -122,7 +122,7 @@ scoped_ptr<net::test_server::HttpResponse> SdchRequestHandler(
   if (base::StartsWith(request.relative_url, kSdchPath,
                        base::CompareCase::SENSITIVE)) {
     base::FilePath file_path = dir_path.Append("sdch/index");
-    scoped_ptr<net::test_server::RawHttpResponse> response =
+    std::unique_ptr<net::test_server::RawHttpResponse> response =
         ConstructResponseBasedOnFile(file_path);
     // Check for query params to see which dictionary to advertise.
     // For instance, ?q=dictionaryA will make the server advertise dictionaryA.
@@ -149,7 +149,7 @@ scoped_ptr<net::test_server::HttpResponse> SdchRequestHandler(
           "sdch/" + avail_dictionary_header->second + "_encoded");
       return ConstructResponseBasedOnFile(file_path);
     }
-    scoped_ptr<net::test_server::BasicHttpResponse> response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse());
     response->set_content_type("text/plain");
     response->set_content("Sdch is not used.\n");
@@ -157,7 +157,7 @@ scoped_ptr<net::test_server::HttpResponse> SdchRequestHandler(
   }
 
   // Unhandled requests result in the Embedded test server sending a 404.
-  return scoped_ptr<net::test_server::BasicHttpResponse>();
+  return std::unique_ptr<net::test_server::BasicHttpResponse>();
 }
 
 }  // namespace

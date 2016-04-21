@@ -68,7 +68,7 @@ class CronetEnvironment {
   bool http2_enabled() const { return http2_enabled_; }
   bool quic_enabled() const { return quic_enabled_; }
 
-  void set_cert_verifier(scoped_ptr<net::CertVerifier> cert_verifier) {
+  void set_cert_verifier(std::unique_ptr<net::CertVerifier> cert_verifier) {
     cert_verifier_ = std::move(cert_verifier);
   }
 
@@ -113,19 +113,19 @@ class CronetEnvironment {
 
   std::list<net::HostPortPair> quic_hints_;
 
-  scoped_ptr<base::Thread> network_io_thread_;
-  scoped_ptr<base::Thread> network_cache_thread_;
-  scoped_ptr<base::Thread> file_thread_;
-  scoped_ptr<base::Thread> file_user_blocking_thread_;
+  std::unique_ptr<base::Thread> network_io_thread_;
+  std::unique_ptr<base::Thread> network_cache_thread_;
+  std::unique_ptr<base::Thread> file_thread_;
+  std::unique_ptr<base::Thread> file_user_blocking_thread_;
   scoped_refptr<base::SequencedTaskRunner> pref_store_worker_pool_;
   scoped_refptr<JsonPrefStore> net_pref_store_;
-  scoped_ptr<net::CertVerifier> cert_verifier_;
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<net::HttpServerProperties> http_server_properties_;
-  scoped_ptr<net::URLRequestContext> main_context_;
+  std::unique_ptr<net::CertVerifier> cert_verifier_;
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<net::HttpServerProperties> http_server_properties_;
+  std::unique_ptr<net::URLRequestContext> main_context_;
   std::string user_agent_product_name_;
-  scoped_ptr<net::NetLog> net_log_;
-  scoped_ptr<net::WriteToFileNetLogObserver> net_log_observer_;
+  std::unique_ptr<net::NetLog> net_log_;
+  std::unique_ptr<net::WriteToFileNetLogObserver> net_log_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetEnvironment);
 };

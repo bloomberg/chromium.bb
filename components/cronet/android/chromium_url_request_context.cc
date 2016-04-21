@@ -4,6 +4,7 @@
 
 #include "components/cronet/android/chromium_url_request_context.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -11,7 +12,6 @@
 #include "base/android/jni_string.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/values.h"
 #include "components/cronet/android/chromium_url_request.h"
@@ -70,7 +70,7 @@ static jlong CreateRequestContextAdapter(
     jlong jconfig) {
   std::string user_agent = ConvertJavaStringToUTF8(env, juser_agent);
 
-  scoped_ptr<URLRequestContextConfig> context_config(
+  std::unique_ptr<URLRequestContextConfig> context_config(
       reinterpret_cast<URLRequestContextConfig*>(jconfig));
 
   // TODO(mef): MinLogLevel is global, shared by all URLRequestContexts.

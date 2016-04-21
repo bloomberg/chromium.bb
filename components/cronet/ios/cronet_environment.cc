@@ -69,7 +69,7 @@ class FakeCertVerifier : public net::CertVerifier {
              net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,
-             scoped_ptr<Request>* out_req,
+             std::unique_ptr<Request>* out_req,
              const net::BoundNetLog& net_log) override {
     // It's all good!
     verify_result->verified_cert = cert;
@@ -210,7 +210,7 @@ CronetEnvironment::CronetEnvironment(const std::string& user_agent_product_name)
 void CronetEnvironment::Start() {
 #if USE_FAKE_CERT_VERIFIER
   // TODO(mef): Remove this and FakeCertVerifier after GRPC testing.
-  set_cert_verifier(scoped_ptr<net::CertVerifier>(new FakeCertVerifier()));
+  set_cert_verifier(std::unique_ptr<net::CertVerifier>(new FakeCertVerifier()));
 #endif  // USE_FAKE_CERT_VERIFIER
 
   // Threads setup.
@@ -278,7 +278,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   // the objects in question; this should be fixed by having an object
   // corresponding to URLRequestContextStorage that actually owns those
   // objects.  See http://crbug.com/523858.
-  scoped_ptr<net::MappedHostResolver> mapped_host_resolver(
+  std::unique_ptr<net::MappedHostResolver> mapped_host_resolver(
       new net::MappedHostResolver(
           net::HostResolver::CreateDefaultResolver(nullptr)));
 
@@ -303,7 +303,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   if (!PathService::Get(base::DIR_CACHE, &cache_path))
     return;
   cache_path = cache_path.Append(FILE_PATH_LITERAL("cronet"));
-  scoped_ptr<net::HttpCache::DefaultBackend> main_backend(
+  std::unique_ptr<net::HttpCache::DefaultBackend> main_backend(
       new net::HttpCache::DefaultBackend(net::DISK_CACHE,
                                          net::CACHE_BACKEND_SIMPLE, cache_path,
                                          0,  // Default cache size.
