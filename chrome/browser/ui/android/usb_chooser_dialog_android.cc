@@ -166,6 +166,7 @@ void UsbChooserDialogAndroid::LoadUsbHelpPage(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   OpenUrl(chrome::kChooserUsbOverviewURL);
+  Cancel();
 }
 
 // Get a list of devices that can be shown in the chooser bubble UI for
