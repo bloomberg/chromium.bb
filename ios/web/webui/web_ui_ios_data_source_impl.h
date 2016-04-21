@@ -58,10 +58,6 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   void StartDataRequest(const std::string& path,
                         const URLDataSourceIOS::GotDataCallback& callback);
 
-  void disable_set_font_strings_for_testing() {
-    disable_set_font_strings_ = true;
-  }
-
   // The name of this source.
   // E.g., for favicons, this could be "favicon", which results in paths for
   // specific resources like "favicon/34" getting sent to this source.
@@ -71,7 +67,6 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   std::map<std::string, int> path_to_idr_map_;
   base::DictionaryValue localized_strings_;
   bool deny_xframe_options_;
-  bool disable_set_font_strings_;
   bool replace_existing_source_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIIOSDataSourceImpl);
