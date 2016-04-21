@@ -632,7 +632,6 @@ public:
         V8SVGFEConvolveMatrixElement_PreserveAlpha_AttributeGetter = 791,
         V8SVGStyleElement_Disabled_AttributeGetter = 798,
         V8SVGStyleElement_Disabled_AttributeSetter = 799,
-        ElementCreateShadowRootMultipleWithUserAgentShadowRoot = 800,
         InputTypeFileSecureOrigin = 801,
         InputTypeFileInsecureOrigin = 802,
         ElementAttachShadow = 804,

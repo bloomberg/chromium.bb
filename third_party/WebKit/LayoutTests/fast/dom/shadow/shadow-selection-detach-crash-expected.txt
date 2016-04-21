@@ -1,4 +1,3 @@
-CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a user-agent shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
 Garbage collection of Selection objects with shorter lifetimes must not crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

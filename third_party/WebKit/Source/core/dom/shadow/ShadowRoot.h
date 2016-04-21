@@ -34,6 +34,7 @@
 #include "core/dom/TreeScope.h"
 #include "core/dom/shadow/SlotAssignment.h"
 #include "wtf/DoublyLinkedList.h"
+#include <iosfwd>
 
 namespace blink {
 
@@ -199,6 +200,8 @@ inline ShadowRoot* Element::shadowRootIfV1() const
 DEFINE_NODE_TYPE_CASTS(ShadowRoot, isShadowRoot());
 DEFINE_TYPE_CASTS(ShadowRoot, TreeScope, treeScope, treeScope->rootNode().isShadowRoot(), treeScope.rootNode().isShadowRoot());
 DEFINE_TYPE_CASTS(TreeScope, ShadowRoot, shadowRoot, true, true);
+
+std::ostream& operator<<(std::ostream&, const ShadowRootType&);
 
 } // namespace blink
 

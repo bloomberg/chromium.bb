@@ -351,4 +351,25 @@ DEFINE_TRACE(ShadowRoot)
     DocumentFragment::trace(visitor);
 }
 
+#if DCHECK_IS_ON()
+std::ostream& operator<<(std::ostream& ostream, const ShadowRootType& type)
+{
+    switch (type) {
+    case ShadowRootType::UserAgent:
+        ostream << "ShadowRootType::UserAgent";
+        break;
+    case ShadowRootType::V0:
+        ostream << "ShadowRootType::V0";
+        break;
+    case ShadowRootType::Open:
+        ostream << "ShadowRootType::Open";
+        break;
+    case ShadowRootType::Closed:
+        ostream << "ShadowRootType::Closed";
+        break;
+    }
+    return ostream;
+}
+#endif
+
 } // namespace blink

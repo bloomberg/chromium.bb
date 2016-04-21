@@ -159,13 +159,6 @@ void HTMLInputElement::didAddUserAgentShadowRoot(ShadowRoot&)
     m_inputTypeView->createShadowSubtree();
 }
 
-void HTMLInputElement::willAddFirstAuthorShadowRoot()
-{
-    m_inputTypeView->destroyShadowSubtree();
-    m_inputTypeView = InputTypeView::create(*this);
-    lazyReattachIfAttached();
-}
-
 HTMLInputElement::~HTMLInputElement()
 {
 }
@@ -472,10 +465,7 @@ void HTMLInputElement::updateType()
     lazyReattachIfAttached();
 
     m_inputType = newType;
-    if (openShadowRoot())
-        m_inputTypeView = InputTypeView::create(*this);
-    else
-        m_inputTypeView = m_inputType->createView();
+    m_inputTypeView = m_inputType->createView();
     m_inputTypeView->createShadowSubtree();
 
     updateTouchEventHandlerRegistry();

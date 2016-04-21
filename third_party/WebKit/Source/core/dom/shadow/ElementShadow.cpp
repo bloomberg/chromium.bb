@@ -149,17 +149,9 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRootType typ
     EventDispatchForbiddenScope assertNoEventDispatch;
     ScriptForbiddenScope forbidScript;
 
-    if (type == ShadowRootType::V0) {
-        if (m_shadowRoots.isEmpty()) {
-            shadowHost.willAddFirstAuthorShadowRoot();
-        } else if (m_shadowRoots.head()->type() == ShadowRootType::UserAgent) {
-            shadowHost.willAddFirstAuthorShadowRoot();
-            Deprecation::countDeprecation(shadowHost.document(), UseCounter::ElementCreateShadowRootMultipleWithUserAgentShadowRoot);
-        } else {
-            Deprecation::countDeprecation(shadowHost.document(), UseCounter::ElementCreateShadowRootMultiple);
-        }
-    } else if (type == ShadowRootType::Open || type == ShadowRootType::Closed) {
-        shadowHost.willAddFirstAuthorShadowRoot();
+    if (type == ShadowRootType::V0 && !m_shadowRoots.isEmpty()) {
+        DCHECK_NE(ShadowRootType::UserAgent, m_shadowRoots.head()->type());
+        Deprecation::countDeprecation(shadowHost.document(), UseCounter::ElementCreateShadowRootMultiple);
     }
 
     for (ShadowRoot* root = m_shadowRoots.head(); root; root = root->olderShadowRoot())

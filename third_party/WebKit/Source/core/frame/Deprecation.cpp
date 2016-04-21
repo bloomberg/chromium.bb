@@ -312,9 +312,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::ElementCreateShadowRootMultiple:
         return "Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.";
 
-    case UseCounter::ElementCreateShadowRootMultipleWithUserAgentShadowRoot:
-        return "Calling Element.createShadowRoot() for an element which already hosts a user-agent shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.";
-
     case UseCounter::CSSDeepCombinator:
         return "/deep/ combinator is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.";
 

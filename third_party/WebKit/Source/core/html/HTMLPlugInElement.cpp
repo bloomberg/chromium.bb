@@ -586,11 +586,6 @@ void HTMLPlugInElement::didAddUserAgentShadowRoot(ShadowRoot&)
     userAgentShadowRoot()->appendChild(HTMLContentElement::create(document()));
 }
 
-void HTMLPlugInElement::willAddFirstAuthorShadowRoot()
-{
-    lazyReattachIfAttached();
-}
-
 bool HTMLPlugInElement::hasFallbackContent() const
 {
     return false;
@@ -598,7 +593,7 @@ bool HTMLPlugInElement::hasFallbackContent() const
 
 bool HTMLPlugInElement::useFallbackContent() const
 {
-    return openShadowRoot();
+    return false;
 }
 
 void HTMLPlugInElement::lazyReattachIfNeeded()

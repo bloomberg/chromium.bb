@@ -158,19 +158,6 @@ TEST_F(TextIteratorTest, EnteringTextControlsWithOptionComplex)
     EXPECT_EQ("[][\n][Beginning of range][\n][][\n][Under DOM nodes][\n][][\n][End of range]", iterate<FlatTree>(TextIteratorEntersTextControls));
 }
 
-TEST_F(TextIteratorTest, NotEnteringTextControlHostingShadowTreeEvenWithOption)
-{
-    static const char* bodyContent = "<div>Hello, <input type='text' value='input' id='input'> iterator.</div>";
-    static const char* shadowContent = "<span>shadow</span>";
-    // TextIterator doesn't emit "input" nor "shadow" since (1) the layoutObject for <input> is not created; and
-    // (2) we don't (yet) recurse into shadow trees.
-    setBodyContent(bodyContent);
-    createShadowRootForElementWithIDAndSetInnerHTML(document(), "input", shadowContent);
-    // FIXME: Why is an empty string emitted here?
-    EXPECT_EQ("[Hello, ][][ iterator.]", iterate<DOMTree>());
-    EXPECT_EQ("[Hello, ][][shadow][ iterator.]", iterate<FlatTree>());
-}
-
 TEST_F(TextIteratorTest, NotEnteringShadowTree)
 {
     static const char* bodyContent = "<div>Hello, <span id='host'>text</span> iterator.</div>";

@@ -362,7 +362,6 @@ public:
     ShadowRoot* shadowRootIfV1() const;
 
     ShadowRoot& ensureUserAgentShadowRoot();
-    virtual void willAddFirstAuthorShadowRoot() { }
 
     bool isInDescendantTreeOf(const Element* shadowHost) const;
 

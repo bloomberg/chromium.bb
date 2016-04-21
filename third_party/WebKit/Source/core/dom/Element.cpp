@@ -1901,6 +1901,9 @@ ShadowRoot* Element::createShadowRoot(const ScriptState* scriptState, ExceptionS
             exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts an user-agent shadow tree.");
             return nullptr;
         }
+    } else if (alwaysCreateUserAgentShadowRoot()) {
+        exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts an user-agent shadow tree.");
+        return nullptr;
     }
     document().setShadowCascadeOrder(ShadowCascadeOrder::ShadowCascadeV0);
 
