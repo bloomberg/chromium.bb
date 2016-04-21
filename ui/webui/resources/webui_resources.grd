@@ -223,6 +223,8 @@ without changes to the corresponding grd file. -->
                  file="css/i18n_process.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_LIST"
                  file="css/list.css" type="chrome_html" />
+      <structure name="IDR_WEBUI_CSS_MD_COLORS"
+                 file="css/md_colors.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_MENU"
                  file="css/menu.css" type="chrome_html"
                  flattenhtml="true" />

@@ -19,8 +19,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <title i18n-content="title"></title>
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
   <style>
+:root {
+  /* These are custom, Chrome-specific colors that don't have --paper or
+   * --google equivalents. Blame bettes@. http://crbug.com/598451 */
+  --md-background-color: rgb(236, 239, 241);
+  --md-toolbar-color: rgb(52, 73, 94);
+}
+
+</style>
+  <style>
     html {
-      background: rgb(236, 239, 241);
+      background: var(--md-background-color);
     }
 
     html,
@@ -36,8 +45,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </head>
 <body><div hidden="" by-vulcanize=""><script src="chrome://resources/js/load_time_data.js"></script>
 <script src="chrome://downloads/strings.js"></script>
-
-
 <dom-module id="iron-list" assetpath="chrome://resources/polymer/v1_0/iron-list/">
   <template>
     <style>
@@ -427,6 +434,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
 </style>
+
+
 <dom-module id="iron-icon" assetpath="chrome://resources/polymer/v1_0/iron-icon/">
 
   <style>
@@ -917,6 +926,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
   </template>
 </dom-module>
+
+
 <dom-module id="paper-material" assetpath="chrome://resources/polymer/v1_0/paper-material/">
   <template>
     <style include="paper-material-shared-styles"></style>
@@ -1308,6 +1319,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
 </style>
+
+
 <dom-module id="paper-progress" assetpath="chrome://resources/polymer/v1_0/paper-progress/">
   <template>
     <style>
@@ -1821,8 +1834,6 @@ paper-button {
   </dom-module>
 
 
-
-
 <style is="custom-style">
 
   :root {
@@ -1937,7 +1948,9 @@ paper-button {
     </style>
   </template>
 </dom-module>
-</llink><dom-module id="paper-item" assetpath="chrome://resources/polymer/v1_0/paper-item/">
+</llink>
+
+<dom-module id="paper-item" assetpath="chrome://resources/polymer/v1_0/paper-item/">
   <template>
     <style include="paper-item-shared-styles"></style>
     <style>
@@ -1991,6 +2004,8 @@ paper-button {
     </style>
   </template>
 </dom-module>
+
+
 <dom-module id="paper-menu" assetpath="chrome://resources/polymer/v1_0/paper-menu/">
   <template>
     <style include="paper-menu-shared-styles"></style>
@@ -2046,6 +2061,8 @@ paper-button {
 </dom-module>
 
 <script src="chrome://resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js"></script>
+
+
 <dom-module id="iron-dropdown" assetpath="chrome://resources/polymer/v1_0/iron-dropdown/">
   <style>
     :host {
@@ -2192,6 +2209,36 @@ paper-button {
   </template>
 
   </dom-module>
+<style>
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Roboto Light'), local('Roboto-Light'),
+      url("chrome://resources/roboto/roboto-light.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto'), local('Roboto-Regular'),
+      url("chrome://resources/roboto/roboto-regular.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Roboto Medium'), local('Roboto-Medium'),
+      url("chrome://resources/roboto/roboto-medium.woff2") format('woff2');
+}
+
+</style>
 <style is="custom-style">
 
   :root {
@@ -2348,36 +2395,8 @@ paper-button {
   }
 
 </style>
-<style>
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
 
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 300;
-  src: local('Roboto Light'), local('Roboto-Light'),
-      url("chrome://resources/roboto/roboto-light.woff2") format('woff2');
-}
 
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Roboto'), local('Roboto-Regular'),
-      url("chrome://resources/roboto/roboto-regular.woff2") format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 500;
-  src: local('Roboto Medium'), local('Roboto-Medium'),
-      url("chrome://resources/roboto/roboto-medium.woff2") format('woff2');
-}
-
-</style>
 <dom-module id="paper-input-container" assetpath="chrome://resources/polymer/v1_0/paper-input/">
   <template>
     <style>
@@ -2705,7 +2724,7 @@ paper-icon-button {
 
 :host {
   align-items: center;
-  background: rgb(52, 73, 94);
+  background: var(--md-toolbar-color);
   color: white;
   content-sizing: padding-box;
   display: flex;
@@ -2917,6 +2936,20 @@ paper-button {
 }
 
 </style>
+    <style>
+:root {
+  /* These are custom, Chrome-specific colors that don't have --paper or
+   * --google equivalents. Blame bettes@. http://crbug.com/598451 */
+  --md-background-color: rgb(236, 239, 241);
+  --md-toolbar-color: rgb(52, 73, 94);
+}
+
+</style>
+    <style>
+      #toolbar {
+        background: var(--md-toolbar-color);
+      }
+    </style>
     <downloads-toolbar id="toolbar"></downloads-toolbar>
     <iron-list id="downloads-list" items="{{items_}}" hidden="[[!hasDownloads_]]">
       <template>

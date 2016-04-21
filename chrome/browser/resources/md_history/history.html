@@ -5,6 +5,7 @@
   <title>$i18n{title}</title>
 
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
+  <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
 
   <style>
     html,
@@ -14,7 +15,7 @@
     }
 
     body {
-      background: #f2f2f2;
+      background: var(--md-background-color);
       display: flex;
       flex-direction: column;
       min-width: 800px;
@@ -54,11 +55,15 @@
     .loading #loading-toolbar {
       -webkit-padding-start: 24px;
       align-items: center;
-      background: rgb(63, 85, 102);
       color: #fff;
       flex-direction: row;
       font-weight: 400;
       height: 56px;
+    }
+
+    #toolbar,
+    .loading #loading-toolbar {
+      background: var(--md-toolbar-color);
     }
 
     .loading #loading-message {
@@ -73,6 +78,7 @@
 
 <body class="loading">
   <history-toolbar class="paper-header" id="toolbar"></history-toolbar>
+
   <div id="main-container">
     <history-side-bar id="history-side-bar"></history-side-bar>
     <history-list id="history-list"></history-list>

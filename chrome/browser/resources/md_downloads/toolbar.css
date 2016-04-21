@@ -4,7 +4,7 @@
 
 :host {
   align-items: center;
-  background: rgb(52, 73, 94);
+  background: var(--md-toolbar-color);
   color: white;
   content-sizing: padding-box;
   display: flex;
