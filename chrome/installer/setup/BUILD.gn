@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/version.gni")
 import("//testing/test.gni")
 
 if (is_win) {
@@ -22,6 +23,7 @@ if (is_win) {
 
     deps = [
       ":lib",
+      ":setup_exe_version",
       "//build/config/sanitizers:deps",
       "//build/win:default_exe_manifest",
       "//components/crash/content/app:app",
@@ -67,6 +69,11 @@ if (is_win) {
       "//third_party/bspatch",
       "//third_party/zlib",
     ]
+  }
+
+  process_version("setup_exe_version") {
+    template_file = "setup_exe_version.rc.version"
+    output = "$target_gen_dir/setup_exe_version.rc"
   }
 
   # This test covers the mini installer and setup tests.
