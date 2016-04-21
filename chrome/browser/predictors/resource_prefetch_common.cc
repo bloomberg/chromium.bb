@@ -35,7 +35,7 @@ const char kSpeculativePrefetchingTrialName[] =
  * The function below extracts the value corresponding to a key provided from
  * the SpeculativeResourcePrefetching field trial.
  */
-std::string GetFiledTrialSpecValue(string key) {
+std::string GetFieldTrialSpecValue(string key) {
   std::string trial_name =
       FieldTrialList::FindFullName(kSpeculativePrefetchingTrialName);
   for (const base::StringPiece& element : base::SplitStringPiece(
@@ -87,11 +87,11 @@ bool IsSpeculativeResourcePrefetchingEnabled(
     return false;
 
   // Enabled by field trial.
-  std::string spec_prefetching = GetFiledTrialSpecValue("Prefetching");
-  std::string spec_predictor = GetFiledTrialSpecValue("Predictor");
-  std::string spec_confidence = GetFiledTrialSpecValue("Confidence");
-  std::string spec_more_resources = GetFiledTrialSpecValue("MoreResources");
-  std::string spec_small_db = GetFiledTrialSpecValue("SmallDB");
+  std::string spec_prefetching = GetFieldTrialSpecValue("Prefetching");
+  std::string spec_predictor = GetFieldTrialSpecValue("Predictor");
+  std::string spec_confidence = GetFieldTrialSpecValue("Confidence");
+  std::string spec_more_resources = GetFieldTrialSpecValue("MoreResources");
+  std::string spec_small_db = GetFieldTrialSpecValue("SmallDB");
 
   if (spec_prefetching == "Learning") {
     if (spec_predictor == "Url") {
