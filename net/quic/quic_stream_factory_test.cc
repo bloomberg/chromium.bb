@@ -216,7 +216,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         always_require_handshake_confirmation_(false),
         disable_connection_pooling_(false),
         load_server_info_timeout_srtt_multiplier_(0.0f),
-        enable_connection_racing_(true),
+        enable_connection_racing_(GetParam().enable_connection_racing),
         enable_non_blocking_io_(true),
         disable_disk_cache_(false),
         prefer_aes_(false),
