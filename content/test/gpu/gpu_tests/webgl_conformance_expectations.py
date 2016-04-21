@@ -200,6 +200,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mavericks', ('nvidia', 0xfe9)], bug=586536)
 
     # Mac Retina AMD failures
+    self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
+        ['mac', ('amd', 0x6821)], bug=599272)
     self.Fail('conformance/textures/image_bitmap_from_image/*',
         ['mac', ('amd', 0x6821)], bug=589930)
 
