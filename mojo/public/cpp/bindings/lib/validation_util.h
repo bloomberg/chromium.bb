@@ -73,8 +73,7 @@ bool ValidateInlinedUnionNonNullable(const T& input,
   return false;
 }
 
-bool ValidateHandleNonNullable(const Handle_Data& input,
-                               const char* error_message);
+bool ValidateHandleNonNullable(const Handle& input, const char* error_message);
 
 bool ValidateInterfaceIdNonNullable(InterfaceId input,
                                     const char* error_message);
@@ -120,7 +119,7 @@ bool ValidateInlinedUnion(const T& input, BoundsChecker* bounds_checker) {
   return T::Validate(&input, bounds_checker, true);
 }
 
-bool ValidateHandle(const Handle_Data& input, BoundsChecker* bounds_checker);
+bool ValidateHandle(const Handle& input, BoundsChecker* bounds_checker);
 
 bool ValidateAssociatedInterfaceId(InterfaceId input);
 

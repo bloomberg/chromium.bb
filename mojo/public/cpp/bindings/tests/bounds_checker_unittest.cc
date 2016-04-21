@@ -16,8 +16,6 @@ namespace mojo {
 namespace test {
 namespace {
 
-using Handle_Data = mojo::internal::Handle_Data;
-
 const void* ToPtr(uintptr_t ptr) {
   return reinterpret_cast<const void*>(ptr);
 }
@@ -41,12 +39,12 @@ TEST(BoundsCheckerTest, ConstructorRangeOverflow) {
         static_cast<size_t>(std::numeric_limits<uint32_t>::max()) + 5;
     internal::BoundsChecker checker(ToPtr(0), 0, num_handles);
 
-    EXPECT_FALSE(checker.ClaimHandle(Handle_Data(0)));
-    EXPECT_FALSE(checker.ClaimHandle(
-        Handle_Data(std::numeric_limits<uint32_t>::max() - 1)));
+    EXPECT_FALSE(checker.ClaimHandle(Handle(0)));
+    EXPECT_FALSE(
+        checker.ClaimHandle(Handle(std::numeric_limits<uint32_t>::max() - 1)));
 
-    EXPECT_TRUE(checker.ClaimHandle(
-        Handle_Data(internal::kEncodedInvalidHandleValue)));
+    EXPECT_TRUE(
+        checker.ClaimHandle(Handle(internal::kEncodedInvalidHandleValue)));
   }
 }
 #endif
@@ -118,32 +116,32 @@ TEST(BoundsCheckerTest, ClaimHandle) {
     internal::BoundsChecker checker(ToPtr(0), 0, 10);
 
     // Basics.
-    EXPECT_TRUE(checker.ClaimHandle(Handle_Data(0)));
-    EXPECT_FALSE(checker.ClaimHandle(Handle_Data(0)));
+    EXPECT_TRUE(checker.ClaimHandle(Handle(0)));
+    EXPECT_FALSE(checker.ClaimHandle(Handle(0)));
 
-    EXPECT_TRUE(checker.ClaimHandle(Handle_Data(9)));
-    EXPECT_FALSE(checker.ClaimHandle(Handle_Data(10)));
+    EXPECT_TRUE(checker.ClaimHandle(Handle(9)));
+    EXPECT_FALSE(checker.ClaimHandle(Handle(10)));
 
     // Should fail because it is smaller than the max index that has been
     // claimed.
-    EXPECT_FALSE(checker.ClaimHandle(Handle_Data(8)));
+    EXPECT_FALSE(checker.ClaimHandle(Handle(8)));
 
     // Should return true for invalid handle.
-    EXPECT_TRUE(checker.ClaimHandle(
-        Handle_Data(internal::kEncodedInvalidHandleValue)));
-    EXPECT_TRUE(checker.ClaimHandle(
-        Handle_Data(internal::kEncodedInvalidHandleValue)));
+    EXPECT_TRUE(
+        checker.ClaimHandle(Handle(internal::kEncodedInvalidHandleValue)));
+    EXPECT_TRUE(
+        checker.ClaimHandle(Handle(internal::kEncodedInvalidHandleValue)));
   }
 
   {
     // No handle to claim.
     internal::BoundsChecker checker(ToPtr(0), 0, 0);
 
-    EXPECT_FALSE(checker.ClaimHandle(Handle_Data(0)));
+    EXPECT_FALSE(checker.ClaimHandle(Handle(0)));
 
     // Should still return true for invalid handle.
-    EXPECT_TRUE(checker.ClaimHandle(
-        Handle_Data(internal::kEncodedInvalidHandleValue)));
+    EXPECT_TRUE(
+        checker.ClaimHandle(Handle(internal::kEncodedInvalidHandleValue)));
   }
 
   {
@@ -154,15 +152,15 @@ TEST(BoundsCheckerTest, ClaimHandle) {
     internal::BoundsChecker checker(
         ToPtr(0), 0, std::numeric_limits<uint32_t>::max());
 
-    EXPECT_TRUE(checker.ClaimHandle(
-        Handle_Data(std::numeric_limits<uint32_t>::max() - 1)));
-    EXPECT_FALSE(checker.ClaimHandle(
-        Handle_Data(std::numeric_limits<uint32_t>::max() - 1)));
-    EXPECT_FALSE(checker.ClaimHandle(Handle_Data(0)));
+    EXPECT_TRUE(
+        checker.ClaimHandle(Handle(std::numeric_limits<uint32_t>::max() - 1)));
+    EXPECT_FALSE(
+        checker.ClaimHandle(Handle(std::numeric_limits<uint32_t>::max() - 1)));
+    EXPECT_FALSE(checker.ClaimHandle(Handle(0)));
 
     // Should still return true for invalid handle.
-    EXPECT_TRUE(checker.ClaimHandle(
-        Handle_Data(internal::kEncodedInvalidHandleValue)));
+    EXPECT_TRUE(
+        checker.ClaimHandle(Handle(internal::kEncodedInvalidHandleValue)));
   }
 }
 

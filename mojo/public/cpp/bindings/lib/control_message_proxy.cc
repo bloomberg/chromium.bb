@@ -35,7 +35,7 @@ bool RunResponseForwardToCallback::Accept(Message* message) {
   RunResponseMessageParams_Data* params =
       reinterpret_cast<RunResponseMessageParams_Data*>(
           message->mutable_payload());
-  params->DecodePointers();
+  params->DecodePointersAndHandles(message->mutable_handles());
 
   RunResponseMessageParamsPtr params_ptr;
   Deserialize_(params, &params_ptr, nullptr);
@@ -57,7 +57,7 @@ void SendRunMessage(MessageReceiverWithResponder* receiver,
 
   RunMessageParams_Data* params = nullptr;
   Serialize_(std::move(params_ptr), builder.buffer(), &params, nullptr);
-  params->EncodePointers();
+  params->EncodePointersAndHandles(builder.message()->mutable_handles());
   MessageReceiver* responder = new RunResponseForwardToCallback(callback);
   if (!receiver->AcceptWithResponder(builder.message(), responder))
     delete responder;
@@ -75,7 +75,7 @@ void SendRunOrClosePipeMessage(MessageReceiverWithResponder* receiver,
 
   RunOrClosePipeMessageParams_Data* params = nullptr;
   Serialize_(std::move(params_ptr), builder.buffer(), &params, nullptr);
-  params->EncodePointers();
+  params->EncodePointersAndHandles(builder.message()->mutable_handles());
   bool ok = receiver->Accept(builder.message());
   ALLOW_UNUSED_LOCAL(ok);
 }

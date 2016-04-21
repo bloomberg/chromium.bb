@@ -10,19 +10,20 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/cpp/system/handle.h"
 
 namespace mojo {
 namespace internal {
 
-struct SerializationContext;
 class MultiplexRouter;
+
+// Please note that this is a different value than |mojo::kInvalidHandleValue|,
+// which is the "decoded" invalid handle.
+const MojoHandle kEncodedInvalidHandleValue = static_cast<MojoHandle>(-1);
 
 size_t Align(size_t size);
 char* AlignPointer(char* ptr);
@@ -47,22 +48,48 @@ inline void DecodePointer(const uint64_t* offset, T** ptr) {
   *ptr = reinterpret_cast<T*>(const_cast<void*>(DecodePointerRaw(offset)));
 }
 
+// Handles are encoded as indices into a vector of handles. These functions
+// manipulate the value of |handle|, mapping it to and from an index.
+
+void EncodeHandle(Handle* handle, std::vector<Handle>* handles);
+void EncodeHandle(Interface_Data* data, std::vector<Handle>* handles);
+void EncodeHandle(MojoHandle* handle, std::vector<Handle>* handles);
+// Note: The following three functions don't validate the encoded handle value.
+void DecodeHandle(Handle* handle, std::vector<Handle>* handles);
+void DecodeHandle(Interface_Data* data, std::vector<Handle>* handles);
+void DecodeHandle(MojoHandle* handle, std::vector<Handle>* handles);
+
 // The following 2 functions are used to encode/decode all objects (structs and
 // arrays) in a consistent manner.
 
 template <typename T>
-inline void Encode(T* obj) {
+inline void Encode(T* obj, std::vector<Handle>* handles) {
   if (obj->ptr)
-    obj->ptr->EncodePointers();
+    obj->ptr->EncodePointersAndHandles(handles);
   EncodePointer(obj->ptr, &obj->offset);
 }
 
 // Note: This function doesn't validate the encoded pointer and handle values.
 template <typename T>
-inline void Decode(T* obj) {
+inline void Decode(T* obj, std::vector<Handle>* handles) {
   DecodePointer(&obj->offset, &obj->ptr);
   if (obj->ptr)
-    obj->ptr->DecodePointers();
+    obj->ptr->DecodePointersAndHandles(handles);
+}
+
+template <typename T>
+inline void InterfacePointerToData(InterfacePtr<T> input,
+                                   Interface_Data* output) {
+  InterfacePtrInfo<T> info = input.PassInterface();
+  output->handle = info.PassHandle().release();
+  output->version = info.version();
+}
+
+template <typename T>
+inline void InterfaceDataToPointer(Interface_Data* input,
+                                   InterfacePtr<T>* output) {
+  output->Bind(InterfacePtrInfo<T>(
+      MakeScopedHandle(FetchAndReset(&input->handle)), input->version));
 }
 
 template <typename T>
@@ -90,37 +117,6 @@ class WTFStringContext {
   virtual ~WTFStringContext() {}
 };
 
-// A container for handles during serialization/deserialization.
-class SerializedHandleVector {
- public:
-  SerializedHandleVector();
-  ~SerializedHandleVector();
-
-  size_t size() const { return handles_.size(); }
-
-  // Adds a handle to the handle list and returns its index for encoding.
-  Handle_Data AddHandle(mojo::Handle handle);
-
-  // Takes a handle from the list of serialized handle data.
-  mojo::Handle TakeHandle(const Handle_Data& encoded_handle);
-
-  // Takes a handle from the list of serialized handle data and returns it in
-  // |*out_handle| as a specific scoped handle type.
-  template <typename T>
-  ScopedHandleBase<T> TakeHandleAs(const Handle_Data& encoded_handle) {
-    return MakeScopedHandle(T(TakeHandle(encoded_handle).value()));
-  }
-
-  // Swaps all owned handles out with another Handle vector.
-  void Swap(std::vector<mojo::Handle>* other);
-
- private:
-  // Handles are owned by this object.
-  std::vector<mojo::Handle> handles_;
-
-  DISALLOW_COPY_AND_ASSIGN(SerializedHandleVector);
-};
-
 // Context information for serialization/deserialization routines.
 struct SerializationContext {
   SerializationContext();
@@ -132,28 +128,7 @@ struct SerializationContext {
   scoped_refptr<MultiplexRouter> router;
 
   scoped_ptr<WTFStringContext> wtf_string_context;
-
-  // Stashes handles encoded in a message by index.
-  SerializedHandleVector handles;
 };
-
-template <typename T>
-inline void InterfacePointerToData(InterfacePtr<T> input,
-                                   Interface_Data* output,
-                                   SerializationContext* context) {
-  InterfacePtrInfo<T> info = input.PassInterface();
-  output->handle = context->handles.AddHandle(info.PassHandle().release());
-  output->version = info.version();
-}
-
-template <typename T>
-inline void InterfaceDataToPointer(Interface_Data* input,
-                                   InterfacePtr<T>* output,
-                                   SerializationContext* context) {
-  output->Bind(InterfacePtrInfo<T>(
-      context->handles.TakeHandleAs<mojo::MessagePipeHandle>(input->handle),
-      input->version));
-}
 
 }  // namespace internal
 }  // namespace mojo

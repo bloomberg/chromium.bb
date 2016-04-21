@@ -55,12 +55,19 @@ void {{class_name}}::set_null() {
 {{class_name}}::{{class_name}}() {
 }
 
-void {{class_name}}::EncodePointers() {
+void {{class_name}}::EncodePointersAndHandles(
+    std::vector<mojo::Handle>* handles) {
   switch (tag) {
 {%- for field in union.fields %}
     case {{enum_name}}::{{field.name|upper}}: {
 {%-   if field.kind|is_object_kind %}
-      mojo::internal::Encode(&data.f_{{field.name}});
+      mojo::internal::Encode(&data.f_{{field.name}}, handles);
+{%-   elif field.kind|is_any_handle_kind %}
+      mojo::internal::EncodeHandle(&data.f_{{field.name}}, handles);
+{%-   elif field.kind|is_interface_kind %}
+      mojo::internal::EncodeHandle(
+          reinterpret_cast<mojo::internal::Interface_Data*>(
+              &data.f_{{field.name}}), handles);
 {%-   endif %}
       return;
     }
@@ -68,12 +75,19 @@ void {{class_name}}::EncodePointers() {
   }
 }
 
-void {{class_name}}::DecodePointers() {
+void {{class_name}}::DecodePointersAndHandles(
+    std::vector<mojo::Handle>* handles) {
   switch (tag) {
 {%- for field in union.fields %}
     case {{enum_name}}::{{field.name|upper}}: {
 {%-   if field.kind|is_object_kind %}
-      mojo::internal::Decode(&data.f_{{field.name}});
+      mojo::internal::Decode(&data.f_{{field.name}}, handles);
+{%-   elif field.kind|is_any_handle_kind %}
+      mojo::internal::DecodeHandle(&data.f_{{field.name}}, handles);
+{%-   elif field.kind|is_interface_kind %}
+      mojo::internal::DecodeHandle(
+          reinterpret_cast<mojo::internal::Interface_Data*>(
+              &data.f_{{field.name}}), handles);
 {%-   endif %}
       return;
     }

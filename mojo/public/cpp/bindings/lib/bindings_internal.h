@@ -25,10 +25,6 @@ class InlinedStructPtr;
 
 namespace internal {
 
-// Please note that this is a different value than |mojo::kInvalidHandleValue|,
-// which is the "decoded" invalid handle.
-const uint32_t kEncodedInvalidHandleValue = static_cast<uint32_t>(-1);
-
 template <typename T>
 class Array_Data;
 
@@ -55,18 +51,8 @@ union Pointer {
 };
 static_assert(sizeof(Pointer<char>) == 8, "Bad_sizeof(Pointer)");
 
-struct Handle_Data {
-  Handle_Data() = default;
-  explicit Handle_Data(uint32_t value) : value(value) {}
-
-  bool is_valid() const { return value != kEncodedInvalidHandleValue; }
-
-  uint32_t value;
-};
-static_assert(sizeof(Handle_Data) == 4, "Bad_sizeof(Handle_Data)");
-
 struct Interface_Data {
-  Handle_Data handle;
+  MessagePipeHandle handle;
   uint32_t version;
 };
 static_assert(sizeof(Interface_Data) == 8, "Bad_sizeof(Interface_Data)");
@@ -97,12 +83,7 @@ T FetchAndReset(T* ptr) {
 
 template <typename H>
 struct IsHandle {
-  enum { value = 0 };
-};
-
-template <>
-struct IsHandle<Handle_Data> {
-  enum { value = 1 };
+  enum { value = IsBaseOf<Handle, H>::value };
 };
 
 template <typename T>
@@ -131,7 +112,7 @@ struct GetDataTypeAsArrayElement<T, false> {
 };
 template <typename H>
 struct GetDataTypeAsArrayElement<ScopedHandleBase<H>, true> {
-  using Data = Handle_Data;
+  using Data = H;
 };
 template <typename S>
 struct GetDataTypeAsArrayElement<StructPtr<S>, true> {

@@ -5,15 +5,12 @@
 {%- set proxy_name = interface.name ~ "Proxy" %}
 {%- set namespace_as_string = "%s"|format(namespace|replace(".","::")) %}
 
-{%- macro alloc_params(struct, params, message, serialization_context) %}
-  ({{params}})->DecodePointers();
-  ({{serialization_context}})->handles.Swap(({{message}})->mutable_handles());
+{%- macro alloc_params(struct, serialization_context) %}
   bool success = true;
 {%-   for param in struct.packed.packed_fields_in_ordinal_order %}
   {{param.field.kind|cpp_wrapper_type}} p_{{param.field.name}}{};
 {%-   endfor %}
-  {{struct_macros.deserialize(
-      struct, params, "p_%s", serialization_context, "success")}}
+  {{struct_macros.deserialize(struct, "params", "p_%s", serialization_context, "success")}}
   if (!success)
     return false;
 {%- endmacro %}
@@ -34,10 +31,7 @@ p_{{param.name}}
   {{struct_macros.serialize(struct, struct_display_name, input_pattern,
                             "params", "builder.buffer()",
                             serialization_context)}}
-  ({{serialization_context}})->handles.Swap(
-      builder.message()->mutable_handles());
-  params->EncodePointers();
-
+  params->EncodePointersAndHandles(builder.message()->mutable_handles());
 {%- endmacro %}
 
 {#--- Begin #}
@@ -86,8 +80,8 @@ bool {{class_name}}_{{method.name}}_HandleSyncResponse::Accept(
       reinterpret_cast<internal::{{class_name}}_{{method.name}}_ResponseParams_Data*>(
           message->mutable_payload());
 
-  {{alloc_params(method.response_param_struct, "params", "message",
-                 "&serialization_context_")}}
+  params->DecodePointersAndHandles(message->mutable_handles());
+  {{alloc_params(method.response_param_struct, "&serialization_context_")}}
 
 {%-       for param in method.response_parameters %}
 {%-         if param.kind|is_move_only_kind %}
@@ -121,8 +115,8 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
       reinterpret_cast<internal::{{class_name}}_{{method.name}}_ResponseParams_Data*>(
           message->mutable_payload());
 
-  {{alloc_params(method.response_param_struct, "params", "message",
-                 "&serialization_context_")}}
+  params->DecodePointersAndHandles(message->mutable_handles());
+  {{alloc_params(method.response_param_struct, "&serialization_context_")}}
   callback_.Run({{pass_params(method.response_parameters)}});
   return true;
 }
@@ -282,8 +276,8 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
           reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
               message->mutable_payload());
 
-      {{alloc_params(method.param_struct, "params", "message",
-          "&serialization_context_")|indent(4)}}
+      params->DecodePointersAndHandles(message->mutable_handles());
+      {{alloc_params(method.param_struct, "&serialization_context_")|indent(4)}}
       // A null |sink_| means no implementation was bound.
       assert(sink_);
       TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");
@@ -312,8 +306,8 @@ bool {{class_name}}Stub::AcceptWithResponder(
           reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
               message->mutable_payload());
 
-      {{alloc_params(method.param_struct, "params", "message",
-          "&serialization_context_")|indent(4)}}
+      params->DecodePointersAndHandles(message->mutable_handles());
+      {{alloc_params(method.param_struct, "&serialization_context_")|indent(4)}}
       {{class_name}}::{{method.name}}Callback::Runnable* runnable =
           new {{class_name}}_{{method.name}}_ProxyToResponder(
               message->request_id(),

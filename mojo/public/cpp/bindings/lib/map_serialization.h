@@ -46,9 +46,9 @@ struct MapSerializer<bool, bool, false, false> {
 };
 
 template <typename H>
-struct MapSerializer<ScopedHandleBase<H>, Handle_Data, true, false> {
+struct MapSerializer<ScopedHandleBase<H>, H, true, false> {
   static size_t GetBaseArraySize(size_t count) {
-    return Align(count * sizeof(Handle_Data));
+    return Align(count * sizeof(H));
   }
   static size_t GetItemSize(const ScopedHandleBase<H>& item,
                             SerializationContext* context) {

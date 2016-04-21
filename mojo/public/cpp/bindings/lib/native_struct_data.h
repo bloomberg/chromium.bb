@@ -20,8 +20,8 @@ class NativeStruct_Data {
  public:
   static bool Validate(const void* data, BoundsChecker* bounds_checker);
 
-  void EncodePointers() {}
-  void DecodePointers() {}
+  void EncodePointersAndHandles(std::vector<Handle>* handles) {}
+  void DecodePointersAndHandles(std::vector<Handle>* handles) {}
 
   // Unlike normal structs, the memory layout is exactly the same as an array
   // of uint8_t.

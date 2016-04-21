@@ -19,6 +19,16 @@ _kind_to_cpp_type = {
   mojom.INT32:                 "int32_t",
   mojom.UINT32:                "uint32_t",
   mojom.FLOAT:                 "float",
+  mojom.HANDLE:                "mojo::Handle",
+  mojom.DCPIPE:                "mojo::DataPipeConsumerHandle",
+  mojom.DPPIPE:                "mojo::DataPipeProducerHandle",
+  mojom.MSGPIPE:               "mojo::MessagePipeHandle",
+  mojom.SHAREDBUFFER:          "mojo::SharedBufferHandle",
+  mojom.NULLABLE_HANDLE:       "mojo::Handle",
+  mojom.NULLABLE_DCPIPE:       "mojo::DataPipeConsumerHandle",
+  mojom.NULLABLE_DPPIPE:       "mojo::DataPipeProducerHandle",
+  mojom.NULLABLE_MSGPIPE:      "mojo::MessagePipeHandle",
+  mojom.NULLABLE_SHAREDBUFFER: "mojo::SharedBufferHandle",
   mojom.INT64:                 "int64_t",
   mojom.UINT64:                "uint64_t",
   mojom.DOUBLE:                "double",
@@ -166,7 +176,7 @@ def GetCppType(kind):
   if mojom.IsInterfaceKind(kind):
     return "mojo::internal::Interface_Data"
   if mojom.IsInterfaceRequestKind(kind):
-    return "mojo::internal::Handle_Data"
+    return "mojo::MessagePipeHandle"
   if mojom.IsAssociatedInterfaceKind(kind):
     return "mojo::internal::AssociatedInterface_Data"
   if mojom.IsAssociatedInterfaceRequestKind(kind):
@@ -175,8 +185,6 @@ def GetCppType(kind):
     return "int32_t"
   if mojom.IsStringKind(kind):
     return "mojo::internal::String_Data*"
-  if mojom.IsAnyHandleKind(kind):
-    return "mojo::internal::Handle_Data"
   return _kind_to_cpp_type[kind]
 
 def GetCppPodType(kind):
@@ -352,7 +360,7 @@ def GetCppFieldType(kind):
   if mojom.IsInterfaceKind(kind):
     return "mojo::internal::Interface_Data"
   if mojom.IsInterfaceRequestKind(kind):
-    return "mojo::internal::Handle_Data"
+    return "mojo::MessagePipeHandle"
   if mojom.IsAssociatedInterfaceKind(kind):
     return "mojo::internal::AssociatedInterface_Data"
   if mojom.IsAssociatedInterfaceRequestKind(kind):
@@ -361,13 +369,11 @@ def GetCppFieldType(kind):
     return "int32_t"
   if mojom.IsStringKind(kind):
     return "mojo::internal::Pointer<mojo::internal::String_Data>"
-  if mojom.IsAnyHandleKind(kind):
-    return "mojo::internal::Handle_Data"
   return _kind_to_cpp_type[kind]
 
 def GetCppUnionFieldType(kind):
   if mojom.IsAnyHandleKind(kind):
-    return "mojo::internal::Handle_Data"
+    return "MojoHandle"
   if mojom.IsInterfaceKind(kind):
     return "uint64_t"
   if mojom.IsEnumKind(kind):

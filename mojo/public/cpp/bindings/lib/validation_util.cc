@@ -101,9 +101,8 @@ bool ValidateControlResponse(const Message* message) {
   return false;
 }
 
-bool ValidateHandleNonNullable(const Handle_Data& input,
-                               const char* error_message) {
-  if (input.is_valid())
+bool ValidateHandleNonNullable(const Handle& input, const char* error_message) {
+  if (input.value() != kEncodedInvalidHandleValue)
     return true;
 
   ReportValidationError(VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
@@ -121,7 +120,7 @@ bool ValidateInterfaceIdNonNullable(InterfaceId input,
   return false;
 }
 
-bool ValidateHandle(const Handle_Data& input, BoundsChecker* bounds_checker) {
+bool ValidateHandle(const Handle& input, BoundsChecker* bounds_checker) {
   if (bounds_checker->ClaimHandle(input))
     return true;
 

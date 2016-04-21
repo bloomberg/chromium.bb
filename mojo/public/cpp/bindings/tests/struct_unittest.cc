@@ -55,13 +55,13 @@ U SerializeAndDeserialize(T input) {
   using OutputDataType = typename std::remove_pointer<decltype(
       std::declval<U>().get())>::type::Data_*;
 
-  mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(input, &context);
+  size_t size = GetSerializedSize_(input, nullptr);
   mojo::internal::FixedBufferForTesting buf(size + 32);
   InputDataType data;
-  Serialize_(std::move(input), &buf, &data, &context);
+  Serialize_(std::move(input), &buf, &data, nullptr);
 
-  data->EncodePointers();
+  std::vector<Handle> handles;
+  data->EncodePointersAndHandles(&handles);
 
   // Set the subsequent area to a special value, so that we can find out if we
   // mistakenly access the area.
@@ -69,10 +69,10 @@ U SerializeAndDeserialize(T input) {
   memset(subsequent_area, 0xAA, 32);
 
   OutputDataType output_data = reinterpret_cast<OutputDataType>(data);
-  output_data->DecodePointers();
+  output_data->DecodePointersAndHandles(&handles);
 
   U output;
-  Deserialize_(output_data, &output, &context);
+  Deserialize_(output_data, &output, nullptr);
   return std::move(output);
 }
 
@@ -469,8 +469,12 @@ TEST_F(StructTest, Serialization_NativeStruct) {
 
     EXPECT_NE(nullptr, data);
 
-    data->EncodePointers();
-    data->DecodePointers();
+    std::vector<Handle> handles;
+    data->EncodePointersAndHandles(&handles);
+
+    EXPECT_TRUE(handles.empty());
+
+    data->DecodePointersAndHandles(&handles);
 
     NativeStructPtr output_native;
     Deserialize_(data, &output_native, nullptr);

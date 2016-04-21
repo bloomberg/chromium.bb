@@ -92,14 +92,11 @@
 {%-     endif %}
 {%-   elif kind|is_any_handle_kind or kind|is_interface_kind %}
 {%-     if kind|is_interface_kind %}
-  mojo::internal::InterfacePointerToData(
-      std::move({{input_field}}), &{{output}}->{{name}}, {{context}});
+  mojo::internal::InterfacePointerToData(std::move({{input_field}}), &{{output}}->{{name}});
 {%-     elif kind|is_interface_request_kind %}
-  {{output}}->{{name}} = ({{context}})->handles.AddHandle(
-      {{input_field}}.PassMessagePipe().release());
+  {{output}}->{{name}} = {{input_field}}.PassMessagePipe().release();
 {%-     else %}
-  {{output}}->{{name}} =
-      ({{context}})->handles.AddHandle({{input_field}}.release());
+  {{output}}->{{name}} = {{input_field}}.release();
 {%-     endif %}
 {%-     if not kind|is_nullable_kind %}
   MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
@@ -141,7 +138,7 @@
       arguments. #}
 {%- macro deserialize(struct, input, output_field_pattern, context, success) -%}
   do {
-    // NOTE: The memory backing |{{input}}| may be smaller than
+    // NOTE: The memory backing |{{input}}| may has be smaller than
     // |sizeof(*{{input}})| if the message comes from an older version.
 {#-   Before deserialize fields introduced at a certain version, we need to add
       a version check, which makes sure we skip further deserialization if
@@ -177,16 +174,11 @@
       {{success}} = false;
 {%-       endif %}
 {%-     elif kind|is_interface_kind %}
-    mojo::internal::InterfaceDataToPointer(
-        &{{input}}->{{name}}, &{{output_field}}, {{context}});
+    mojo::internal::InterfaceDataToPointer(&{{input}}->{{name}}, &{{output_field}});
 {%-     elif kind|is_interface_request_kind %}
-    {{output_field}}.Bind(
-        ({{context}})->handles.TakeHandleAs<mojo::MessagePipeHandle>(
-            {{input}}->{{name}}));
+    {{output_field}}.Bind(mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&{{input}}->{{name}})));
 {%-     elif kind|is_any_handle_kind %}
-    {{output_field}} = ({{context}})->handles.TakeHandleAs<
-        typename decltype({{output_field}})::RawHandleType>(
-            {{input}}->{{name}});
+    {{output_field}}.reset(mojo::internal::FetchAndReset(&{{input}}->{{name}}));
 {%-   elif kind|is_associated_interface_kind %}
     mojo::internal::AssociatedInterfaceDataToPtrInfo(&{{input}}->{{name}}, &{{output_field}}, ({{context}})->router.get());
 {%-   elif kind|is_associated_interface_request_kind %}

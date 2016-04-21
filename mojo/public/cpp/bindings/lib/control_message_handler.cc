@@ -61,7 +61,8 @@ bool ControlMessageHandler::Run(Message* message,
   RunResponseMessageParams_Data* response_params = nullptr;
   Serialize_(std::move(response_params_ptr), builder.buffer(), &response_params,
              nullptr);
-  response_params->EncodePointers();
+  response_params->EncodePointersAndHandles(
+      builder.message()->mutable_handles());
   bool ok = responder->Accept(builder.message());
   ALLOW_UNUSED_LOCAL(ok);
   delete responder;
@@ -73,7 +74,7 @@ bool ControlMessageHandler::RunOrClosePipe(Message* message) {
   RunOrClosePipeMessageParams_Data* params =
       reinterpret_cast<RunOrClosePipeMessageParams_Data*>(
           message->mutable_payload());
-  params->DecodePointers();
+  params->DecodePointersAndHandles(message->mutable_handles());
 
   RunOrClosePipeMessageParamsPtr params_ptr;
   Deserialize_(params, &params_ptr, nullptr);

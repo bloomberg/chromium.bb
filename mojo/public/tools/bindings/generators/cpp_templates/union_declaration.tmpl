@@ -45,8 +45,8 @@ class {{class_name}} {
   {{enum_name}} tag;
   Union_ data;
 
-  void EncodePointers();
-  void DecodePointers();
+  void EncodePointersAndHandles(std::vector<mojo::Handle>* handles);
+  void DecodePointersAndHandles(std::vector<mojo::Handle>* handles);
 };
 static_assert(sizeof({{class_name}}) == 16,
               "Bad sizeof({{class_name}})");
