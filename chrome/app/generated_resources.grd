@@ -3337,7 +3337,7 @@ Even if you have downloaded files from this website before, the website might ha
             Shared memory
           </message>
           <message name="IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN" desc="Task manager process swapped memory column. Shows the size of the memory that lives in the swap space.">
-            Swapped nemory
+            Swapped memory
           </message>
           <message name="IDS_TASK_MANAGER_PROFILE_NAME_COLUMN" desc="The name of the column with the name of the profile in which the page is running, if any.">
             Profile
