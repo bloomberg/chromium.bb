@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/chromeos_export.h"
 
 namespace base {
 class TaskRunner;
@@ -33,7 +34,7 @@ namespace chromeos {
 //     as appropriate to the subclass.
 //   - When the there is no more data to read, the PipeReader calls
 //     |callback|.
-class PipeReader {
+class CHROMEOS_EXPORT PipeReader {
  public:
   typedef base::Callback<void(void)> IOCompleteCallback;
 
@@ -70,7 +71,7 @@ class PipeReader {
 };
 
 // PipeReader subclass which accepts incoming data to a string.
-class PipeReaderForString : public PipeReader {
+class CHROMEOS_EXPORT PipeReaderForString : public PipeReader {
  public:
   PipeReaderForString(const scoped_refptr<base::TaskRunner>& task_runner,
                       const IOCompleteCallback& callback);

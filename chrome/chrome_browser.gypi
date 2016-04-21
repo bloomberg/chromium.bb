@@ -1058,6 +1058,8 @@
       'browser/metrics/chromeos_metrics_provider.h',
       'browser/metrics/perf/cpu_identity.cc',
       'browser/metrics/perf/cpu_identity.h',
+      'browser/metrics/perf/perf_output.cc',
+      'browser/metrics/perf/perf_output.h',
       'browser/metrics/perf/random_selector.cc',
       'browser/metrics/perf/random_selector.h',
       'browser/metrics/perf/windowed_incognito_observer.cc',

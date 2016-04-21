@@ -72846,6 +72846,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6" label="Illegal data returned by debugd.">
     The perf data sent back to Chrome by debugd is invalid.
   </int>
+  <int value="7" label="Already collecting.">
+    A perf data collection was already active.
+  </int>
 </enum>
 
 <enum name="GetUserDataTempDirResult" type="int">

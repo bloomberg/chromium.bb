@@ -17,6 +17,7 @@
 #include "base/trace_event/tracing_agent.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
+#include "dbus/file_descriptor.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -89,21 +90,20 @@ class CHROMEOS_EXPORT DebugDaemonClient
   virtual void GetNetworkInterfaces(
       const GetNetworkInterfacesCallback& callback) = 0;
 
-  // Called once GetPerfOutput() is complete only if the the data is
-  // successfully obtained from debugd.
-  // Arguments:
-  // - The status from running perf.
-  // - Output from "perf record", in PerfDataProto format.
-  // - Output from "perf stat", in PerfStatProto format.
-  using GetPerfOutputCallback =
-      base::Callback<void(int status,
-                          const std::vector<uint8_t>& perf_data,
-                          const std::vector<uint8_t>& perf_stat)>;
+  using DBusMethodErrorCallback =
+      base::Callback<void(const std::string& error_name,
+                          const std::string& error_message)>;
 
-  // Runs perf with arguments for |duration| seconds and returns data collected.
-  virtual void GetPerfOutput(uint32_t duration,
+  // Runs perf (via quipper) with arguments for |duration| (converted to
+  // seconds) and returns data collected over the passed |file_descriptor|.
+  // |error_callback| is called if there is an error with the DBus call.
+  // Note that quipper failures may occur after successfully running the DBus
+  // method. Such errors can be detected by |file_descriptor| being closed with
+  // no data written.
+  virtual void GetPerfOutput(base::TimeDelta duration,
                              const std::vector<std::string>& perf_args,
-                             const GetPerfOutputCallback& callback) = 0;
+                             dbus::ScopedFileDescriptor file_descriptor,
+                             const DBusMethodErrorCallback& error_callback) = 0;
 
   // Callback type for GetScrubbedLogs(), GetAllLogs() or GetUserLogFiles().
   using GetLogsCallback =

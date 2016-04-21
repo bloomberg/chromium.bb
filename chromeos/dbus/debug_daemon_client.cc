@@ -42,7 +42,7 @@ const int kBigLogsDBusTimeoutMS = 120 * 1000;
 // The type of the callback to be invoked once the pipe reader has been
 // initialized and a D-Bus file descriptor has been created for it.
 using OnPipeReaderInitializedCallback =
-    base::Callback<void(std::unique_ptr<dbus::FileDescriptor>)>;
+    base::Callback<void(dbus::ScopedFileDescriptor)>;
 
 // Used in DebugDaemonClient::EmptyStopAgentTracingCallback().
 void EmptyStopAgentTracingCallbackBody(
@@ -51,7 +51,7 @@ void EmptyStopAgentTracingCallbackBody(
     const scoped_refptr<base::RefCountedString>& unused_result) {}
 
 // Creates a D-Bus file descriptor from a base::File.
-std::unique_ptr<dbus::FileDescriptor> CreateFileDescriptorForPipeWriteEnd(
+dbus::ScopedFileDescriptor CreateFileDescriptorForPipeWriteEnd(
     base::File pipe_write_end) {
   if (!pipe_write_end.IsValid()) {
     VLOG(1) << "Cannot create pipe reader";
@@ -60,8 +60,7 @@ std::unique_ptr<dbus::FileDescriptor> CreateFileDescriptorForPipeWriteEnd(
                               base::File::FLAG_OPEN | base::File::FLAG_WRITE);
     // TODO(afakhry): If this fails AppendFileDescriptor will abort.
   }
-  std::unique_ptr<dbus::FileDescriptor> file_descriptor(
-      new dbus::FileDescriptor);
+  dbus::ScopedFileDescriptor file_descriptor(new dbus::FileDescriptor);
   file_descriptor->PutValue(pipe_write_end.TakePlatformFile());
   file_descriptor->CheckValidity();
   return file_descriptor;
@@ -241,19 +240,23 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
-  void GetPerfOutput(uint32_t duration,
+  void GetPerfOutput(base::TimeDelta duration,
                      const std::vector<std::string>& perf_args,
-                     const GetPerfOutputCallback& callback) override {
+                     dbus::ScopedFileDescriptor file_descriptor,
+                     const DBusMethodErrorCallback& error_callback) override {
+    DCHECK(file_descriptor);
     dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kGetPerfOutput);
+                                 debugd::kGetPerfOutputFd);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendUint32(duration);
+    writer.AppendUint32(duration.InSeconds());
     writer.AppendArrayOfStrings(perf_args);
+    writer.AppendFileDescriptor(*file_descriptor);
 
-    debugdaemon_proxy_->CallMethod(
+    debugdaemon_proxy_->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnGetPerfOutput,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        dbus::ObjectProxy::EmptyResponseCallback(),
+        base::Bind(&DebugDaemonClientImpl::OnDBusMethodError,
+                   weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
   void GetScrubbedLogs(const GetLogsCallback& callback) override {
@@ -558,35 +561,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       callback.Run(false, "");
   }
 
-  void OnGetPerfOutput(const GetPerfOutputCallback& callback,
-                       dbus::Response* response) {
-    if (!response)
-      return;
-
-    dbus::MessageReader reader(response);
-
-    int status = 0;
-    if (!reader.PopInt32(&status))
-      return;
-
-    const uint8_t* buffer = nullptr;
-    size_t buf_size = 0;
-
-    if (!reader.PopArrayOfBytes(&buffer, &buf_size))
-      return;
-    std::vector<uint8_t> perf_data;
-    if (buf_size > 0)
-      perf_data.insert(perf_data.end(), buffer, buffer + buf_size);
-
-    if (!reader.PopArrayOfBytes(&buffer, &buf_size))
-      return;
-    std::vector<uint8_t> perf_stat;
-    if (buf_size > 0)
-      perf_stat.insert(perf_stat.end(), buffer, buffer + buf_size);
-
-    callback.Run(status, perf_data, perf_stat);
-  }
-
   void OnGetAllLogs(const GetLogsCallback& callback,
                     dbus::Response* response) {
     std::map<std::string, std::string> logs;
@@ -615,9 +589,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     return OnGetAllLogs(callback, response);
   }
 
-  void OnBigLogsPipeReaderReady(
-      base::WeakPtr<PipeReaderWrapper> pipe_reader,
-      std::unique_ptr<dbus::FileDescriptor> file_descriptor) {
+  void OnBigLogsPipeReaderReady(base::WeakPtr<PipeReaderWrapper> pipe_reader,
+                                dbus::ScopedFileDescriptor file_descriptor) {
     DCHECK(file_descriptor);
 
     dbus::MethodCall method_call(debugd::kDebugdInterface,
@@ -647,6 +620,20 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       LOG(ERROR) << "Failed to request start";
       return;
     }
+  }
+
+  void OnDBusMethodError(DBusMethodErrorCallback error_callback,
+                         dbus::ErrorResponse* response) {
+    // Error response has optional error message argument.
+    std::string error_name = "<unknown>";
+    std::string error_message = "<empty>";
+    if (response) {
+      dbus::MessageReader reader(response);
+      error_name = response->GetErrorName();
+      reader.PopString(&error_message);
+    }
+    VLOG(1) << "DBus method error: " << error_name << ": " << error_message;
+    error_callback.Run(error_name, error_message);
   }
 
   void OnEnableDebuggingFeatures(
@@ -685,7 +672,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   // Called when a CheckValidity response is received.
   void OnCreateFileDescriptorRequestStopSystem(
       const StopAgentTracingCallback& callback,
-      std::unique_ptr<dbus::FileDescriptor> file_descriptor) {
+      dbus::ScopedFileDescriptor file_descriptor) {
     DCHECK(file_descriptor);
 
     // Issue the dbus request to stop system tracing

@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/metrics/perf/cpu_identity.h"
+#include "chrome/browser/metrics/perf/perf_output.h"
 #include "chrome/browser/metrics/perf/random_selector.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -41,6 +42,13 @@ class PerfProvider : public base::NonThreadSafe,
   bool GetSampledProfiles(std::vector<SampledProfile>* sampled_profiles);
 
  protected:
+  enum PerfSubcommand {
+    PERF_COMMAND_RECORD,
+    PERF_COMMAND_STAT,
+    PERF_COMMAND_MEM,
+    PERF_COMMAND_UNSUPPORTED,
+  };
+
   typedef int64_t TimeDeltaInternalType;
 
   class CollectionParams {
@@ -121,22 +129,21 @@ class PerfProvider : public base::NonThreadSafe,
     DISALLOW_COPY_AND_ASSIGN(CollectionParams);
   };
 
-  // Parses a PerfDataProto from serialized data |perf_data|, if it exists.
-  // Parses a PerfStatProto from serialized data |perf_stat|, if it exists.
-  // Only one of these may contain data. If both |perf_data| and |perf_stat|
-  // contain data, it is counted as an error and neither is parsed.
-  // |incognito_observer| indicates whether an incognito window had been opened
-  // during the profile collection period. If there was an incognito window,
-  // discard the incoming data.
-  // |trigger_event| is the cause of the perf data collection.
-  // |result| is the return value of running perf/quipper. It is 0 if successful
-  // and nonzero if not successful.
+  // Returns one of the above enums given an vector of perf arguments, starting
+  // with "perf" itself in |args[0]|.
+  static PerfSubcommand GetPerfSubcommandType(
+      const std::vector<std::string>& args);
+
+  // Parses a PerfDataProto or PerfStatProto from serialized data |perf_stdout|,
+  // if non-empty. Which proto to use depends on |subcommand|. If |perf_stdout|
+  // is empty, it is counted as an error. |incognito_observer| indicates
+  // whether an incognito window had been opened during the profile collection
+  // period. If there was an incognito window, discard the incoming data.
   void ParseOutputProtoIfValid(
       std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
       std::unique_ptr<SampledProfile> sampled_profile,
-      int result,
-      const std::vector<uint8_t>& perf_data,
-      const std::vector<uint8_t>& perf_stat);
+      PerfSubcommand subcommand,
+      const std::string& perf_stdout);
 
   // Called when a session restore has finished.
   void OnSessionRestoreDone(int num_tabs_restored);
@@ -218,6 +225,9 @@ class PerfProvider : public base::NonThreadSafe,
 
   // Set of commands to choose from.
   RandomSelector command_selector_;
+
+  // An active call to perf/quipper, if set.
+  std::unique_ptr<PerfOutputCall> perf_output_call_;
 
   // Vector of SampledProfile protobufs containing perf profiles.
   std::vector<SampledProfile> cached_perf_data_;
