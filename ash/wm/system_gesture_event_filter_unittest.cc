@@ -18,7 +18,6 @@
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/window_positioning_utils.h"
-#include "ash/wm/gestures/long_press_affordance_handler.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/time/time.h"
@@ -112,25 +111,6 @@ class SystemGestureEventFilterTest : public AshTestBase {
   SystemGestureEventFilterTest() : AshTestBase() {}
   ~SystemGestureEventFilterTest() override {}
 
-  LongPressAffordanceHandler* GetLongPressAffordance() {
-    ShellTestApi shell_test(Shell::GetInstance());
-    return shell_test.system_gesture_event_filter()->
-        long_press_affordance_.get();
-  }
-
-  base::OneShotTimer* GetLongPressAffordanceTimer() {
-    return &GetLongPressAffordance()->timer_;
-  }
-
-  aura::Window* GetLongPressAffordanceTarget() {
-    return GetLongPressAffordance()->tap_down_target_;
-  }
-
-  views::View* GetLongPressAffordanceView() {
-    return reinterpret_cast<views::View*>(
-        GetLongPressAffordance()->view_.get());
-  }
-
   // Overridden from AshTestBase:
   void SetUp() override {
     // TODO(jonross): TwoFingerDragDelayed() and ThreeFingerGestureStopsDrag()
@@ -167,55 +147,6 @@ ui::GestureEvent* CreateGesture(ui::EventType type,
   return new ui::GestureEvent(x, y, 0,
       base::TimeDelta::FromMilliseconds(base::Time::Now().ToDoubleT() * 1000),
       ui::GestureEventDetails(type, delta_x, delta_y));
-}
-
-TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
-
-  aura::test::TestWindowDelegate delegate;
-  std::unique_ptr<aura::Window> window0(
-      aura::test::CreateTestWindowWithDelegate(
-          &delegate, 9, gfx::Rect(0, 0, 100, 100), root_window));
-  std::unique_ptr<aura::Window> window1(
-      aura::test::CreateTestWindowWithDelegate(
-          &delegate, 10, gfx::Rect(0, 0, 100, 50), window0.get()));
-  std::unique_ptr<aura::Window> window2(
-      aura::test::CreateTestWindowWithDelegate(
-          &delegate, 11, gfx::Rect(0, 50, 100, 50), window0.get()));
-
-  const int kTouchId = 5;
-
-  // Capture first window.
-  window1->SetCapture();
-  EXPECT_TRUE(window1->HasCapture());
-
-  // Send touch event to first window.
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
-                       gfx::Point(10, 10),
-                       kTouchId,
-                       ui::EventTimeForNow());
-  ui::EventDispatchDetails details =
-      root_window->GetHost()->dispatcher()->OnEventFromSource(&press);
-  ASSERT_FALSE(details.dispatcher_destroyed);
-  EXPECT_TRUE(window1->HasCapture());
-
-  base::OneShotTimer* timer = GetLongPressAffordanceTimer();
-  EXPECT_TRUE(timer->IsRunning());
-  EXPECT_EQ(window1.get(), GetLongPressAffordanceTarget());
-
-  // Force timeout so that the affordance animation can start.
-  timer->user_task().Run();
-  timer->Stop();
-  EXPECT_TRUE(GetLongPressAffordance()->is_animating());
-
-  // Change capture, cancelling the active touch sequence.
-  window2->SetCapture();
-  EXPECT_TRUE(window2->HasCapture());
-
-  EXPECT_FALSE(GetLongPressAffordance()->is_animating());
-  EXPECT_EQ(NULL, GetLongPressAffordanceTarget());
-  EXPECT_FALSE(timer->IsRunning());
-  EXPECT_EQ(NULL, GetLongPressAffordanceView());
 }
 
 TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {

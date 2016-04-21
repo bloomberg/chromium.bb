@@ -582,8 +582,6 @@
       'wm/drag_window_resizer.h',
       'wm/event_client_impl.cc',
       'wm/event_client_impl.h',
-      'wm/gestures/long_press_affordance_handler.cc',
-      'wm/gestures/long_press_affordance_handler.h',
       'wm/gestures/overview_gesture_handler.cc',
       'wm/gestures/overview_gesture_handler.h',
       'wm/gestures/shelf_gesture_handler.cc',
