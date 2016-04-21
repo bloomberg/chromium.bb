@@ -75,6 +75,8 @@ class ScopedHandleBase {
   MOVE_ONLY_TYPE_FOR_CPP_03(ScopedHandleBase);
 
  public:
+  using RawHandleType = HandleType;
+
   ScopedHandleBase() {}
   explicit ScopedHandleBase(HandleType handle) : handle_(handle) {}
   ~ScopedHandleBase() { CloseIfNecessary(); }

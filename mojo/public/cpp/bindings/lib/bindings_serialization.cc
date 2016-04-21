@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <limits>
+
 #include "base/logging.h"
 
 namespace mojo {
@@ -54,39 +56,39 @@ const void* DecodePointerRaw(const uint64_t* offset) {
   return reinterpret_cast<const char*>(offset) + *offset;
 }
 
-void EncodeHandle(Handle* handle, std::vector<Handle>* handles) {
-  if (handle->is_valid()) {
-    handles->push_back(*handle);
-    handle->set_value(static_cast<MojoHandle>(handles->size() - 1));
+SerializedHandleVector::SerializedHandleVector() {}
+
+SerializedHandleVector::~SerializedHandleVector() {
+  for (auto handle : handles_) {
+    if (handle.is_valid()) {
+      MojoResult rv = MojoClose(handle.value());
+      DCHECK_EQ(rv, MOJO_RESULT_OK);
+    }
+  }
+}
+
+Handle_Data SerializedHandleVector::AddHandle(mojo::Handle handle) {
+  Handle_Data data;
+  if (!handle.is_valid()) {
+    data.value = kEncodedInvalidHandleValue;
   } else {
-    handle->set_value(kEncodedInvalidHandleValue);
+    DCHECK_LT(handles_.size(), std::numeric_limits<uint32_t>::max());
+    data.value = static_cast<uint32_t>(handles_.size());
+    handles_.push_back(handle);
   }
+  return data;
 }
 
-void EncodeHandle(Interface_Data* data, std::vector<Handle>* handles) {
-  EncodeHandle(&data->handle, handles);
+mojo::Handle SerializedHandleVector::TakeHandle(
+    const Handle_Data& encoded_handle) {
+  if (!encoded_handle.is_valid())
+    return mojo::Handle();
+  DCHECK_LT(encoded_handle.value, handles_.size());
+  return FetchAndReset(&handles_[encoded_handle.value]);
 }
 
-void EncodeHandle(MojoHandle* handle, std::vector<Handle>* handles) {
-  EncodeHandle(reinterpret_cast<Handle*>(handle), handles);
-}
-
-void DecodeHandle(Handle* handle, std::vector<Handle>* handles) {
-  if (handle->value() == kEncodedInvalidHandleValue) {
-    *handle = Handle();
-    return;
-  }
-  DCHECK(handle->value() < handles->size());
-  // Just leave holes in the vector so we don't screw up other indices.
-  *handle = FetchAndReset(&handles->at(handle->value()));
-}
-
-void DecodeHandle(Interface_Data* data, std::vector<Handle>* handles) {
-  DecodeHandle(&data->handle, handles);
-}
-
-void DecodeHandle(MojoHandle* handle, std::vector<Handle>* handles) {
-  DecodeHandle(reinterpret_cast<Handle*>(handle), handles);
+void SerializedHandleVector::Swap(std::vector<mojo::Handle>* other) {
+  handles_.swap(*other);
 }
 
 SerializationContext::SerializationContext() {}

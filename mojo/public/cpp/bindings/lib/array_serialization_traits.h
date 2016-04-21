@@ -169,7 +169,8 @@ struct ArraySerializer<MojomType, UserType, ArraySerializerType::HANDLE> {
     size_t size = Traits::GetSize(input);
     for (size_t i = 0; i < size; ++i) {
       // Transfer ownership of the handle.
-      output->at(i) = Traits::GetAt(input, i).release();
+      output->at(i) =
+          context->handles.AddHandle(Traits::GetAt(input, i).release());
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
           !validate_params->element_is_nullable && !output->at(i).is_valid(),
           VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
@@ -180,10 +181,11 @@ struct ArraySerializer<MojomType, UserType, ArraySerializerType::HANDLE> {
   static bool DeserializeElements(Data* input,
                                   UserType* output,
                                   SerializationContext* context) {
+    using HandleType = typename Element::RawHandleType;
     Traits::Resize(*output, input->size());
     for (size_t i = 0; i < input->size(); ++i) {
-      Traits::GetAt(*output, i) =
-          MakeScopedHandle(FetchAndReset(&input->at(i)));
+      Traits::GetAt(*output, i) = MakeScopedHandle(HandleType(
+          context->handles.TakeHandle(input->at(i)).value()));
     }
     return true;
   }

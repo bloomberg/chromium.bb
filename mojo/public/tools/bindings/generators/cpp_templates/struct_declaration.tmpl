@@ -7,8 +7,8 @@ class {{class_name}} {
   static bool Validate(const void* data,
                        mojo::internal::BoundsChecker* bounds_checker);
 
-  void EncodePointersAndHandles(std::vector<mojo::Handle>* handles);
-  void DecodePointersAndHandles(std::vector<mojo::Handle>* handles);
+  void EncodePointers();
+  void DecodePointers();
 
 {% from "enum_macros.tmpl" import enum_data_decl -%}
 {#--- Enums #}

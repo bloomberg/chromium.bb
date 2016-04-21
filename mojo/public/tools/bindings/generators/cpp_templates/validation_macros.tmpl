@@ -25,10 +25,11 @@ if (!{{field.kind|cpp_wrapper_type}}::Data_::Validate(
 {%- endmacro %}
 
 {%- macro validate_handle(field_expr, field, object_name) -%}
-  const mojo::Handle {{field.name}}_handle(object->data.f_{{field.name}});
+  const mojo::internal::Handle_Data {{field.name}}_handle =
+      object->data.f_{{field.name}};
 
 {%-   if not field.kind|is_nullable_kind %}
-  if ({{field.name}}_handle.value() == mojo::internal::kEncodedInvalidHandleValue) {
+  if (!{{field.name}}_handle.is_valid()) {
     ReportValidationError(
         mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
         "invalid {{field.name}} field in {{object_name}}");

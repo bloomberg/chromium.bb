@@ -61,9 +61,11 @@ class SerializationWarningTest : public testing::Test {
                              mojo::internal::ValidationError expected_warning) {
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
-    mojo::internal::FixedBufferForTesting buf(GetSerializedSize_(obj, nullptr));
+    mojo::internal::SerializationContext context;
+    mojo::internal::FixedBufferForTesting buf(
+        GetSerializedSize_(obj, &context));
     typename T::Data_* data;
-    Serialize_(std::move(obj), &buf, &data, nullptr);
+    Serialize_(std::move(obj), &buf, &data, &context);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
@@ -74,9 +76,11 @@ class SerializationWarningTest : public testing::Test {
                         const ArrayValidateParams* validate_params) {
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
-    mojo::internal::FixedBufferForTesting buf(GetSerializedSize_(obj, nullptr));
+    mojo::internal::SerializationContext context;
+    mojo::internal::FixedBufferForTesting buf(
+        GetSerializedSize_(obj, &context));
     typename T::Data_* data;
-    SerializeArray_(std::move(obj), &buf, &data, validate_params, nullptr);
+    SerializeArray_(std::move(obj), &buf, &data, validate_params, &context);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }

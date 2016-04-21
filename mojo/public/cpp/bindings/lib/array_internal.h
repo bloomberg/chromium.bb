@@ -128,20 +128,18 @@ struct ArrayDataTraits<bool> {
 // of unions are inlined so they are not pointers, but comparing with primitives
 // they require more work for serialization/validation.
 
-template <typename T, bool is_handle, bool is_union>
+template <typename T, bool is_union>
 struct ArraySerializationHelper;
 
 template <typename T>
-struct ArraySerializationHelper<T, false, false> {
+struct ArraySerializationHelper<T, false> {
   typedef typename ArrayDataTraits<T>::StorageType ElementType;
 
-  static void EncodePointersAndHandles(const ArrayHeader* header,
-                                       ElementType* elements,
-                                       std::vector<Handle>* handles) {}
+  static void EncodePointers(const ArrayHeader* header,
+                             ElementType* elements) {}
 
-  static void DecodePointersAndHandles(const ArrayHeader* header,
-                                       ElementType* elements,
-                                       std::vector<Handle>* handles) {}
+  static void DecodePointers(const ArrayHeader* header,
+                             ElementType* elements) {}
 
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
@@ -165,16 +163,14 @@ struct ArraySerializationHelper<T, false, false> {
 };
 
 template <>
-struct ArraySerializationHelper<Handle, true, false> {
-  typedef ArrayDataTraits<Handle>::StorageType ElementType;
+struct ArraySerializationHelper<Handle_Data, false> {
+  typedef ArrayDataTraits<Handle_Data>::StorageType ElementType;
 
-  static void EncodePointersAndHandles(const ArrayHeader* header,
-                                       ElementType* elements,
-                                       std::vector<Handle>* handles);
+  static void EncodePointers(const ArrayHeader* header,
+                             ElementType* elements) {}
 
-  static void DecodePointersAndHandles(const ArrayHeader* header,
-                                       ElementType* elements,
-                                       std::vector<Handle>* handles);
+  static void DecodePointers(const ArrayHeader* header,
+                             ElementType* elements) {}
 
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
@@ -184,8 +180,7 @@ struct ArraySerializationHelper<Handle, true, false> {
         << "Handle type should not have array validate params";
 
     for (uint32_t i = 0; i < header->num_elements; ++i) {
-      if (!validate_params->element_is_nullable &&
-          elements[i].value() == kEncodedInvalidHandleValue) {
+      if (!validate_params->element_is_nullable && !elements[i].is_valid()) {
         ReportValidationError(
             VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
             MakeMessageWithArrayIndex(
@@ -203,49 +198,18 @@ struct ArraySerializationHelper<Handle, true, false> {
   }
 };
 
-template <typename H>
-struct ArraySerializationHelper<H, true, false> {
-  typedef typename ArrayDataTraits<H>::StorageType ElementType;
-
-  static void EncodePointersAndHandles(const ArrayHeader* header,
-                                       ElementType* elements,
-                                       std::vector<Handle>* handles) {
-    ArraySerializationHelper<Handle, true, false>::EncodePointersAndHandles(
-        header, elements, handles);
-  }
-
-  static void DecodePointersAndHandles(const ArrayHeader* header,
-                                       ElementType* elements,
-                                       std::vector<Handle>* handles) {
-    ArraySerializationHelper<Handle, true, false>::DecodePointersAndHandles(
-        header, elements, handles);
-  }
-
-  static bool ValidateElements(const ArrayHeader* header,
-                               const ElementType* elements,
-                               BoundsChecker* bounds_checker,
-                               const ArrayValidateParams* validate_params) {
-    return ArraySerializationHelper<Handle, true, false>::ValidateElements(
-        header, elements, bounds_checker, validate_params);
-  }
-};
-
 template <typename P>
-struct ArraySerializationHelper<P*, false, false> {
+struct ArraySerializationHelper<P*, false> {
   typedef typename ArrayDataTraits<P*>::StorageType ElementType;
 
-  static void EncodePointersAndHandles(const ArrayHeader* header,
-                                       ElementType* elements,
-                                       std::vector<Handle>* handles) {
+  static void EncodePointers(const ArrayHeader* header, ElementType* elements) {
     for (uint32_t i = 0; i < header->num_elements; ++i)
-      Encode(&elements[i], handles);
+      Encode(&elements[i]);
   }
 
-  static void DecodePointersAndHandles(const ArrayHeader* header,
-                                       ElementType* elements,
-                                       std::vector<Handle>* handles) {
+  static void DecodePointers(const ArrayHeader* header, ElementType* elements) {
     for (uint32_t i = 0; i < header->num_elements; ++i)
-      Decode(&elements[i], handles);
+      Decode(&elements[i]);
   }
 
   static bool ValidateElements(const ArrayHeader* header,
@@ -308,21 +272,17 @@ struct ArraySerializationHelper<P*, false, false> {
 };
 
 template <typename U>
-struct ArraySerializationHelper<U, false, true> {
+struct ArraySerializationHelper<U, true> {
   typedef typename ArrayDataTraits<U>::StorageType ElementType;
 
-  static void EncodePointersAndHandles(const ArrayHeader* header,
-                                       ElementType* elements,
-                                       std::vector<Handle>* handles) {
+  static void EncodePointers(const ArrayHeader* header, ElementType* elements) {
     for (uint32_t i = 0; i < header->num_elements; ++i)
-      elements[i].EncodePointersAndHandles(handles);
+      elements[i].EncodePointers();
   }
 
-  static void DecodePointersAndHandles(const ArrayHeader* header,
-                                       ElementType* elements,
-                                       std::vector<Handle>* handles) {
+  static void DecodePointers(const ArrayHeader* header, ElementType* elements) {
     for (uint32_t i = 0; i < header->num_elements; ++i)
-      elements[i].DecodePointersAndHandles(handles);
+      elements[i].DecodePointers();
   }
 
   static bool ValidateElements(const ArrayHeader* header,
@@ -352,9 +312,7 @@ class Array_Data {
   using StorageType = typename Traits::StorageType;
   using Ref = typename Traits::Ref;
   using ConstRef = typename Traits::ConstRef;
-  using Helper = ArraySerializationHelper<T,
-                                          IsHandle<T>::value,
-                                          IsUnionDataType<T>::value>;
+  using Helper = ArraySerializationHelper<T, IsUnionDataType<T>::value>;
   using Element = T;
 
   // Returns null if |num_elements| or the corresponding storage size cannot be
@@ -430,13 +388,8 @@ class Array_Data {
         reinterpret_cast<const char*>(this) + sizeof(*this));
   }
 
-  void EncodePointersAndHandles(std::vector<Handle>* handles) {
-    Helper::EncodePointersAndHandles(&header_, storage(), handles);
-  }
-
-  void DecodePointersAndHandles(std::vector<Handle>* handles) {
-    Helper::DecodePointersAndHandles(&header_, storage(), handles);
-  }
+  void EncodePointers() { Helper::EncodePointers(&header_, storage()); }
+  void DecodePointers() { Helper::DecodePointers(&header_, storage()); }
 
  private:
   Array_Data(uint32_t num_bytes, uint32_t num_elements) {
