@@ -38,8 +38,12 @@ private:
 
 URLSearchParams* URLSearchParams::create(const URLSearchParamsInit& init)
 {
-    if (init.isUSVString())
-        return new URLSearchParams(init.getAsUSVString());
+    if (init.isUSVString()) {
+        const String& queryString = init.getAsUSVString();
+        if (queryString.startsWith('?'))
+            return new URLSearchParams(queryString.substring(1));
+        return new URLSearchParams(queryString);
+    }
     if (init.isURLSearchParams())
         return new URLSearchParams(init.getAsURLSearchParams());
 

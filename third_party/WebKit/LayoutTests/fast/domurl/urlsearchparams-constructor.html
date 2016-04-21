@@ -33,6 +33,20 @@ test(function() {
     assert_equals(params + '', 'a=b');
     params = new URLSearchParams(params);
     assert_equals(params + '', 'a=b');
+
+    // Leading '?' should be ignored.
+    params = new URLSearchParams('?a=b');
+    assert_equals(params + '', 'a=b');
+
+    // https://url.spec.whatwg.org/#concept-urlencoded-byte-serializer
+    // is performed upon stringification of |params|, requiring that
+    // '?' is percent encoded.
+    params = new URLSearchParams('??a=b');
+    assert_equals(params + '', '%3Fa=b');
+    params = new URLSearchParams('?');
+    assert_equals(params + '', '');
+    params = new URLSearchParams('??');
+    assert_equals(params + '', '%3F=');
 }, 'Basic URLSearchParams construction');
 
 test(function() {
