@@ -36,9 +36,9 @@ struct QueryFields {
   QueryFields();
   ~QueryFields();
 
-  scoped_ptr<base::string16> word_phrase_query;
-  scoped_ptr<base::string16> url;
-  scoped_ptr<base::string16> title;
+  std::unique_ptr<base::string16> word_phrase_query;
+  std::unique_ptr<base::string16> url;
+  std::unique_ptr<base::string16> title;
 };
 
 // Clones bookmark node, adding newly created nodes to |parent| starting at

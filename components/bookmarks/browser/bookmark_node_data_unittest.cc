@@ -4,9 +4,10 @@
 
 #include "components/bookmarks/browser/bookmark_node_data.h"
 
+#include <memory>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -52,8 +53,8 @@ class BookmarkNodeDataTest : public testing::Test {
 
  private:
   base::ScopedTempDir profile_dir_;
-  scoped_ptr<BookmarkModel> model_;
-  scoped_ptr<ui::PlatformEventSource> event_source_;
+  std::unique_ptr<BookmarkModel> model_;
+  std::unique_ptr<ui::PlatformEventSource> event_source_;
   base::MessageLoopForUI loop_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNodeDataTest);

@@ -382,7 +382,7 @@ bool BookmarkCodec::DecodeMetaInfo(const base::DictionaryValue& value,
   if (!value.Get(kMetaInfo, &meta_info))
     return true;
 
-  scoped_ptr<base::Value> deserialized_holder;
+  std::unique_ptr<base::Value> deserialized_holder;
 
   // Meta info used to be stored as a serialized dictionary, so attempt to
   // parse the value as one.

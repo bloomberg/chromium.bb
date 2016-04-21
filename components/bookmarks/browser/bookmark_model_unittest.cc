@@ -370,7 +370,7 @@ class BookmarkModelTest : public testing::Test,
   void OnBookmarkNodeRemoved(BookmarkModel* model,
                              const BookmarkNode* parent,
                              int index,
-                             scoped_ptr<BookmarkNode> node) override {
+                             std::unique_ptr<BookmarkNode> node) override {
     node_removal_details_.push_back(
         NodeRemovalDetail(parent, index, node.get()));
   }
@@ -429,7 +429,7 @@ class BookmarkModelTest : public testing::Test,
     BookmarkPermanentNodeList extra_nodes;
     extra_nodes.push_back(extra_node);
 
-    scoped_ptr<TestBookmarkClient> client(new TestBookmarkClient);
+    std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient);
     client->SetExtraNodesToLoad(std::move(extra_nodes));
 
     model_ = TestBookmarkClient::CreateModelWithClient(std::move(client));
@@ -443,7 +443,7 @@ class BookmarkModelTest : public testing::Test,
   }
 
  protected:
-  scoped_ptr<BookmarkModel> model_;
+  std::unique_ptr<BookmarkModel> model_;
   ObserverDetails observer_details_;
   std::vector<NodeRemovalDetail> node_removal_details_;
 
@@ -1233,7 +1233,7 @@ TEST(BookmarkModelTest2, CreateAndRestore) {
     { "a [ b ]", "" },
     { "a b c [ d e [ f ] ]", "g h i [ j k [ l ] ]"},
   };
-  scoped_ptr<BookmarkModel> model;
+  std::unique_ptr<BookmarkModel> model;
   for (size_t i = 0; i < arraysize(data); ++i) {
     model = TestBookmarkClient::CreateModel();
 
@@ -1326,7 +1326,7 @@ class BookmarkModelFaviconTest : public testing::Test,
       const std::set<GURL>& removed_urls) override {
   }
 
-  scoped_ptr<BookmarkModel> model_;
+  std::unique_ptr<BookmarkModel> model_;
   std::vector<const BookmarkNode*> updated_nodes_;
 
  private:

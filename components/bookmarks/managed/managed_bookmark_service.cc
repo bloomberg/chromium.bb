@@ -29,9 +29,10 @@ namespace {
 // representation, title id and starting node id.
 class BookmarkPermanentNodeLoader {
  public:
-  BookmarkPermanentNodeLoader(scoped_ptr<BookmarkPermanentNode> node,
-                              scoped_ptr<base::ListValue> initial_bookmarks,
-                              int title_id)
+  BookmarkPermanentNodeLoader(
+      std::unique_ptr<BookmarkPermanentNode> node,
+      std::unique_ptr<base::ListValue> initial_bookmarks,
+      int title_id)
       : node_(std::move(node)),
         initial_bookmarks_(std::move(initial_bookmarks)),
         title_id_(title_id) {
@@ -43,7 +44,7 @@ class BookmarkPermanentNodeLoader {
   // Initializes |node_| from |initial_bookmarks_| and |title_id_| and returns
   // it. The ids are assigned starting at |next_node_id| and the value is
   // updated as a side-effect.
-  scoped_ptr<BookmarkPermanentNode> Load(int64_t* next_node_id) {
+  std::unique_ptr<BookmarkPermanentNode> Load(int64_t* next_node_id) {
     node_->set_id(*next_node_id);
     *next_node_id = ManagedBookmarksTracker::LoadInitial(
         node_.get(), initial_bookmarks_.get(), node_->id() + 1);
@@ -53,8 +54,8 @@ class BookmarkPermanentNodeLoader {
   }
 
  private:
-  scoped_ptr<BookmarkPermanentNode> node_;
-  scoped_ptr<base::ListValue> initial_bookmarks_;
+  std::unique_ptr<BookmarkPermanentNode> node_;
+  std::unique_ptr<base::ListValue> initial_bookmarks_;
   int title_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkPermanentNodeLoader);
@@ -107,8 +108,9 @@ LoadExtraCallback ManagedBookmarkService::GetLoadExtraNodesCallback() {
   // Create two BookmarkPermanentNode with a temporary id of 0. They will be
   // populated and assigned proper ids in the LoadExtraNodes callback. Until
   // then, they are owned by the returned closure.
-  scoped_ptr<BookmarkPermanentNode> managed(new BookmarkPermanentNode(0));
-  scoped_ptr<BookmarkPermanentNode> supervised(new BookmarkPermanentNode(0));
+  std::unique_ptr<BookmarkPermanentNode> managed(new BookmarkPermanentNode(0));
+  std::unique_ptr<BookmarkPermanentNode> supervised(
+      new BookmarkPermanentNode(0));
 
   managed_node_ = managed.get();
   supervised_node_ = supervised.get();

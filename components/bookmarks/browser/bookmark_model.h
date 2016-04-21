@@ -7,14 +7,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
@@ -72,7 +73,7 @@ class BookmarkModel : public BookmarkUndoProvider,
     base::string16 title;
   };
 
-  explicit BookmarkModel(scoped_ptr<BookmarkClient> client);
+  explicit BookmarkModel(std::unique_ptr<BookmarkClient> client);
   ~BookmarkModel() override;
 
   // KeyedService:
@@ -331,7 +332,7 @@ class BookmarkModel : public BookmarkUndoProvider,
   // BookmarkUndoProvider:
   void RestoreRemovedNode(const BookmarkNode* parent,
                           int index,
-                          scoped_ptr<BookmarkNode> node) override;
+                          std::unique_ptr<BookmarkNode> node) override;
 
   // Notifies the observers for adding every descedent of |node|.
   void NotifyNodeAddedForAllDescendents(const BookmarkNode* node);
@@ -348,7 +349,7 @@ class BookmarkModel : public BookmarkUndoProvider,
 
   // Invoked when loading is finished. Sets |loaded_| and notifies observers.
   // BookmarkModel takes ownership of |details|.
-  void DoneLoading(scoped_ptr<BookmarkLoadDetails> details);
+  void DoneLoading(std::unique_ptr<BookmarkLoadDetails> details);
 
   // Populates |nodes_ordered_by_url_set_| from root.
   void PopulateNodesByURL(BookmarkNode* node);
@@ -415,11 +416,11 @@ class BookmarkModel : public BookmarkUndoProvider,
 
   // Creates and returns a new BookmarkLoadDetails. It's up to the caller to
   // delete the returned object.
-  scoped_ptr<BookmarkLoadDetails> CreateLoadDetails();
+  std::unique_ptr<BookmarkLoadDetails> CreateLoadDetails();
 
   BookmarkUndoDelegate* undo_delegate() const;
 
-  scoped_ptr<BookmarkClient> client_;
+  std::unique_ptr<BookmarkClient> client_;
 
   // Whether the initial set of data has been loaded.
   bool loaded_;
@@ -450,21 +451,21 @@ class BookmarkModel : public BookmarkUndoProvider,
   base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Reads/writes bookmarks to disk.
-  scoped_ptr<BookmarkStorage> store_;
+  std::unique_ptr<BookmarkStorage> store_;
 
-  scoped_ptr<BookmarkIndex> index_;
+  std::unique_ptr<BookmarkIndex> index_;
 
   base::WaitableEvent loaded_signal_;
 
   // See description of IsDoingExtensiveChanges above.
   int extensive_changes_;
 
-  scoped_ptr<BookmarkExpandedStateTracker> expanded_state_tracker_;
+  std::unique_ptr<BookmarkExpandedStateTracker> expanded_state_tracker_;
 
   std::set<std::string> non_cloned_keys_;
 
   BookmarkUndoDelegate* undo_delegate_;
-  scoped_ptr<BookmarkUndoDelegate> empty_undo_delegate_;
+  std::unique_ptr<BookmarkUndoDelegate> empty_undo_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModel);
 };

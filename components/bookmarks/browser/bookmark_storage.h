@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/files/important_file_writer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -118,12 +118,12 @@ class BookmarkLoadDetails {
   bool ids_reassigned() const { return ids_reassigned_; }
 
  private:
-  scoped_ptr<BookmarkPermanentNode> bb_node_;
-  scoped_ptr<BookmarkPermanentNode> other_folder_node_;
-  scoped_ptr<BookmarkPermanentNode> mobile_folder_node_;
+  std::unique_ptr<BookmarkPermanentNode> bb_node_;
+  std::unique_ptr<BookmarkPermanentNode> other_folder_node_;
+  std::unique_ptr<BookmarkPermanentNode> mobile_folder_node_;
   LoadExtraCallback load_extra_callback_;
   BookmarkPermanentNodeList extra_nodes_;
-  scoped_ptr<BookmarkIndex> index_;
+  std::unique_ptr<BookmarkIndex> index_;
   BookmarkNode::MetaInfoMap model_meta_info_map_;
   int64_t model_sync_transaction_version_;
   int64_t max_id_;
@@ -153,7 +153,7 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
   // takes ownership of |details| and send the |OnLoadFinished| callback from
   // a task in |task_runner|. See BookmarkLoadDetails for details.
   void LoadBookmarks(
-      scoped_ptr<BookmarkLoadDetails> details,
+      std::unique_ptr<BookmarkLoadDetails> details,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   // Schedules saving the bookmark bar model to disk.
@@ -164,7 +164,7 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
   void BookmarkModelDeleted();
 
   // Callback from backend after loading the bookmark file.
-  void OnLoadFinished(scoped_ptr<BookmarkLoadDetails> details);
+  void OnLoadFinished(std::unique_ptr<BookmarkLoadDetails> details);
 
   // ImportantFileWriter::DataSerializer implementation.
   bool SerializeData(std::string* output) override;

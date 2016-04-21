@@ -7,11 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -88,20 +89,20 @@ class BookmarkCodecTest : public testing::Test {
  protected:
   // Helpers to create bookmark models with different data.
   BookmarkModel* CreateTestModel1() {
-    scoped_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
+    std::unique_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
     const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
     model->AddURL(bookmark_bar, 0, ASCIIToUTF16(kUrl1Title), GURL(kUrl1Url));
     return model.release();
   }
   BookmarkModel* CreateTestModel2() {
-    scoped_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
+    std::unique_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
     const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
     model->AddURL(bookmark_bar, 0, ASCIIToUTF16(kUrl1Title), GURL(kUrl1Url));
     model->AddURL(bookmark_bar, 1, ASCIIToUTF16(kUrl2Title), GURL(kUrl2Url));
     return model.release();
   }
   BookmarkModel* CreateTestModel3() {
-    scoped_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
+    std::unique_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
     const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
     model->AddURL(bookmark_bar, 0, ASCIIToUTF16(kUrl1Title), GURL(kUrl1Url));
     const BookmarkNode* folder1 =
@@ -150,7 +151,7 @@ class BookmarkCodecTest : public testing::Test {
     EXPECT_EQ("", encoder.computed_checksum());
     EXPECT_EQ("", encoder.stored_checksum());
 
-    scoped_ptr<base::Value> value(encoder.Encode(model));
+    std::unique_ptr<base::Value> value(encoder.Encode(model));
     const std::string& computed_checksum = encoder.computed_checksum();
     const std::string& stored_checksum = encoder.stored_checksum();
 
@@ -189,7 +190,7 @@ class BookmarkCodecTest : public testing::Test {
     EXPECT_EQ("", decoder.computed_checksum());
     EXPECT_EQ("", decoder.stored_checksum());
 
-    scoped_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
+    std::unique_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
     EXPECT_TRUE(Decode(&decoder, model.get(), value));
 
     *computed_checksum = decoder.computed_checksum();
@@ -230,38 +231,40 @@ class BookmarkCodecTest : public testing::Test {
 };
 
 TEST_F(BookmarkCodecTest, ChecksumEncodeDecodeTest) {
-  scoped_ptr<BookmarkModel> model_to_encode(CreateTestModel1());
+  std::unique_ptr<BookmarkModel> model_to_encode(CreateTestModel1());
   std::string enc_checksum;
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       EncodeHelper(model_to_encode.get(), &enc_checksum));
 
   EXPECT_TRUE(value.get() != NULL);
 
   std::string dec_checksum;
-  scoped_ptr<BookmarkModel> decoded_model(
+  std::unique_ptr<BookmarkModel> decoded_model(
       DecodeHelper(*value.get(), enc_checksum, &dec_checksum, false));
 }
 
 TEST_F(BookmarkCodecTest, ChecksumEncodeIdenticalModelsTest) {
   // Encode two identical models and make sure the check-sums are same as long
   // as the data is the same.
-  scoped_ptr<BookmarkModel> model1(CreateTestModel1());
+  std::unique_ptr<BookmarkModel> model1(CreateTestModel1());
   std::string enc_checksum1;
-  scoped_ptr<base::Value> value1(EncodeHelper(model1.get(), &enc_checksum1));
+  std::unique_ptr<base::Value> value1(
+      EncodeHelper(model1.get(), &enc_checksum1));
   EXPECT_TRUE(value1.get() != NULL);
 
-  scoped_ptr<BookmarkModel> model2(CreateTestModel1());
+  std::unique_ptr<BookmarkModel> model2(CreateTestModel1());
   std::string enc_checksum2;
-  scoped_ptr<base::Value> value2(EncodeHelper(model2.get(), &enc_checksum2));
+  std::unique_ptr<base::Value> value2(
+      EncodeHelper(model2.get(), &enc_checksum2));
   EXPECT_TRUE(value2.get() != NULL);
 
   ASSERT_EQ(enc_checksum1, enc_checksum2);
 }
 
 TEST_F(BookmarkCodecTest, ChecksumManualEditTest) {
-  scoped_ptr<BookmarkModel> model_to_encode(CreateTestModel1());
+  std::unique_ptr<BookmarkModel> model_to_encode(CreateTestModel1());
   std::string enc_checksum;
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       EncodeHelper(model_to_encode.get(), &enc_checksum));
 
   EXPECT_TRUE(value.get() != NULL);
@@ -274,17 +277,17 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditTest) {
   child1_value->SetString(BookmarkCodec::kNameKey, title + "1");
 
   std::string dec_checksum;
-  scoped_ptr<BookmarkModel> decoded_model1(
+  std::unique_ptr<BookmarkModel> decoded_model1(
       DecodeHelper(*value.get(), enc_checksum, &dec_checksum, true));
 
   // Undo the change and make sure the checksum is same as original.
   child1_value->SetString(BookmarkCodec::kNameKey, title);
-  scoped_ptr<BookmarkModel> decoded_model2(
+  std::unique_ptr<BookmarkModel> decoded_model2(
       DecodeHelper(*value.get(), enc_checksum, &dec_checksum, false));
 }
 
 TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
-  scoped_ptr<BookmarkModel> model_to_encode(CreateTestModel3());
+  std::unique_ptr<BookmarkModel> model_to_encode(CreateTestModel3());
 
   // The test depends on existence of multiple children under bookmark bar, so
   // make sure that's the case.
@@ -292,7 +295,7 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
   ASSERT_GT(bb_child_count, 1);
 
   std::string enc_checksum;
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       EncodeHelper(model_to_encode.get(), &enc_checksum));
 
   EXPECT_TRUE(value.get() != NULL);
@@ -307,7 +310,7 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
   }
 
   std::string dec_checksum;
-  scoped_ptr<BookmarkModel> decoded_model(
+  std::unique_ptr<BookmarkModel> decoded_model(
       DecodeHelper(*value.get(), enc_checksum, &dec_checksum, true));
 
   ExpectIDsUnique(decoded_model.get());
@@ -323,11 +326,13 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
 }
 
 TEST_F(BookmarkCodecTest, PersistIDsTest) {
-  scoped_ptr<BookmarkModel> model_to_encode(CreateTestModel3());
+  std::unique_ptr<BookmarkModel> model_to_encode(CreateTestModel3());
   BookmarkCodec encoder;
-  scoped_ptr<base::Value> model_value(encoder.Encode(model_to_encode.get()));
+  std::unique_ptr<base::Value> model_value(
+      encoder.Encode(model_to_encode.get()));
 
-  scoped_ptr<BookmarkModel> decoded_model(TestBookmarkClient::CreateModel());
+  std::unique_ptr<BookmarkModel> decoded_model(
+      TestBookmarkClient::CreateModel());
   BookmarkCodec decoder;
   ASSERT_TRUE(Decode(&decoder, decoded_model.get(), *model_value.get()));
   ASSERT_NO_FATAL_FAILURE(
@@ -346,9 +351,11 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
       folder2_node, 0, ASCIIToUTF16(kUrl4Title), GURL(kUrl4Url));
 
   BookmarkCodec encoder2;
-  scoped_ptr<base::Value> model_value2(encoder2.Encode(decoded_model.get()));
+  std::unique_ptr<base::Value> model_value2(
+      encoder2.Encode(decoded_model.get()));
 
-  scoped_ptr<BookmarkModel> decoded_model2(TestBookmarkClient::CreateModel());
+  std::unique_ptr<BookmarkModel> decoded_model2(
+      TestBookmarkClient::CreateModel());
   BookmarkCodec decoder2;
   ASSERT_TRUE(Decode(&decoder2, decoded_model2.get(), *model_value2.get()));
   ASSERT_NO_FATAL_FAILURE(
@@ -361,9 +368,10 @@ TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
   ASSERT_TRUE(base::PathExists(test_file));
 
   JSONFileValueDeserializer deserializer(test_file);
-  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
+  std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
 
-  scoped_ptr<BookmarkModel> decoded_model(TestBookmarkClient::CreateModel());
+  std::unique_ptr<BookmarkModel> decoded_model(
+      TestBookmarkClient::CreateModel());
   BookmarkCodec decoder;
   ASSERT_TRUE(Decode(&decoder, decoded_model.get(), *root.get()));
   ExpectIDsUnique(decoded_model.get());
@@ -397,12 +405,12 @@ TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
 
 TEST_F(BookmarkCodecTest, EncodeAndDecodeMetaInfo) {
   // Add meta info and encode.
-  scoped_ptr<BookmarkModel> model(CreateTestModel1());
+  std::unique_ptr<BookmarkModel> model(CreateTestModel1());
   model->SetNodeMetaInfo(model->root_node(), "model_info", "value1");
   model->SetNodeMetaInfo(
       model->bookmark_bar_node()->GetChild(0), "node_info", "value2");
   std::string checksum;
-  scoped_ptr<base::Value> value(EncodeHelper(model.get(), &checksum));
+  std::unique_ptr<base::Value> value(EncodeHelper(model.get(), &checksum));
   ASSERT_TRUE(value.get() != NULL);
 
   // Decode and check for meta info.
@@ -421,13 +429,13 @@ TEST_F(BookmarkCodecTest, EncodeAndDecodeMetaInfo) {
 
 TEST_F(BookmarkCodecTest, EncodeAndDecodeSyncTransactionVersion) {
   // Add sync transaction version and encode.
-  scoped_ptr<BookmarkModel> model(CreateTestModel2());
+  std::unique_ptr<BookmarkModel> model(CreateTestModel2());
   model->SetNodeSyncTransactionVersion(model->root_node(), 1);
   const BookmarkNode* bbn = model->bookmark_bar_node();
   model->SetNodeSyncTransactionVersion(bbn->GetChild(1), 42);
 
   std::string checksum;
-  scoped_ptr<base::Value> value(EncodeHelper(model.get(), &checksum));
+  std::unique_ptr<base::Value> value(EncodeHelper(model.get(), &checksum));
   ASSERT_TRUE(value.get() != NULL);
 
   // Decode and verify.
@@ -447,9 +455,9 @@ TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
   ASSERT_TRUE(base::PathExists(test_file));
 
   JSONFileValueDeserializer deserializer(test_file);
-  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
+  std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
 
-  scoped_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
+  std::unique_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
   BookmarkCodec decoder;
   ASSERT_TRUE(Decode(&decoder, model.get(), *root.get()));
 

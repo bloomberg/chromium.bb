@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_UNDO_DELEGATE_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_UNDO_DELEGATE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace bookmarks {
 
@@ -26,7 +26,7 @@ class BookmarkUndoDelegate {
   virtual void OnBookmarkNodeRemoved(BookmarkModel* model,
                                      const BookmarkNode* parent,
                                      int index,
-                                     scoped_ptr<BookmarkNode> node) = 0;
+                                     std::unique_ptr<BookmarkNode> node) = 0;
 };
 
 

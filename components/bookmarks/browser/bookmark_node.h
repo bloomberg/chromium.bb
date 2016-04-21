@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "components/favicon_base/favicon_types.h"
@@ -184,7 +185,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   base::CancelableTaskTracker::TaskId favicon_load_task_id_;
 
   // A map that stores arbitrary meta information about the node.
-  scoped_ptr<MetaInfoMap> meta_info_map_;
+  std::unique_ptr<MetaInfoMap> meta_info_map_;
 
   // The sync transaction version. Defaults to kInvalidSyncTransactionVersion.
   int64_t sync_transaction_version_;

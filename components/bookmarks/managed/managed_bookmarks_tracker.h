@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -51,7 +52,7 @@ class ManagedBookmarksTracker {
 
   // Returns the initial list of managed bookmarks, which can be passed to
   // LoadInitial() to do the initial load.
-  scoped_ptr<base::ListValue> GetInitialManagedBookmarks();
+  std::unique_ptr<base::ListValue> GetInitialManagedBookmarks();
 
   // Loads the initial managed/supervised bookmarks in |list| into |folder|.
   // New nodes will be assigned IDs starting at |next_node_id|.

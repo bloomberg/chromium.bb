@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -137,7 +138,7 @@ class BookmarkIndexTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<BookmarkModel> model_;
+  std::unique_ptr<BookmarkModel> model_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkIndexTest);
@@ -526,8 +527,9 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   for (size_t i = 0; i < arraysize(data); ++i)
     typed_count_map.insert(std::make_pair(data[i].url, data[i].typed_count));
 
-  scoped_ptr<BookmarkModel> model = TestBookmarkClient::CreateModelWithClient(
-      make_scoped_ptr(new BookmarkClientMock(typed_count_map)));
+  std::unique_ptr<BookmarkModel> model =
+      TestBookmarkClient::CreateModelWithClient(
+          base::WrapUnique(new BookmarkClientMock(typed_count_map)));
 
   for (size_t i = 0; i < arraysize(data); ++i)
     // Populate the BookmarkIndex.

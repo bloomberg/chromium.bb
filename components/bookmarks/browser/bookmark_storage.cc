@@ -52,13 +52,13 @@ void AddBookmarksToIndex(BookmarkLoadDetails* details,
 
 void LoadCallback(const base::FilePath& path,
                   const base::WeakPtr<BookmarkStorage>& storage,
-                  scoped_ptr<BookmarkLoadDetails> details,
+                  std::unique_ptr<BookmarkLoadDetails> details,
                   base::SequencedTaskRunner* task_runner) {
   bool load_index = false;
   bool bookmark_file_exists = base::PathExists(path);
   if (bookmark_file_exists) {
     JSONFileValueDeserializer deserializer(path);
-    scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
+    std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
 
     if (root.get()) {
       // Building the index can take a while, so we do it on the background
@@ -160,7 +160,7 @@ BookmarkStorage::~BookmarkStorage() {
 }
 
 void BookmarkStorage::LoadBookmarks(
-    scoped_ptr<BookmarkLoadDetails> details,
+    std::unique_ptr<BookmarkLoadDetails> details,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   sequenced_task_runner_->PostTask(
       FROM_HERE,
@@ -202,13 +202,14 @@ void BookmarkStorage::BookmarkModelDeleted() {
 
 bool BookmarkStorage::SerializeData(std::string* output) {
   BookmarkCodec codec;
-  scoped_ptr<base::Value> value(codec.Encode(model_));
+  std::unique_ptr<base::Value> value(codec.Encode(model_));
   JSONStringValueSerializer serializer(output);
   serializer.set_pretty_print(true);
   return serializer.Serialize(*(value.get()));
 }
 
-void BookmarkStorage::OnLoadFinished(scoped_ptr<BookmarkLoadDetails> details) {
+void BookmarkStorage::OnLoadFinished(
+    std::unique_ptr<BookmarkLoadDetails> details) {
   if (!model_)
     return;
 
@@ -223,7 +224,7 @@ bool BookmarkStorage::SaveNow() {
     return false;
   }
 
-  scoped_ptr<std::string> data(new std::string);
+  std::unique_ptr<std::string> data(new std::string);
   if (!SerializeData(data.get()))
     return false;
   writer_.WriteNow(std::move(data));

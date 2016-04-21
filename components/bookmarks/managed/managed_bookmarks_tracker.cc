@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -41,10 +42,10 @@ ManagedBookmarksTracker::ManagedBookmarksTracker(
 
 ManagedBookmarksTracker::~ManagedBookmarksTracker() {}
 
-scoped_ptr<base::ListValue>
+std::unique_ptr<base::ListValue>
 ManagedBookmarksTracker::GetInitialManagedBookmarks() {
   const base::ListValue* list = prefs_->GetList(GetPrefName());
-  return make_scoped_ptr(list->DeepCopy());
+  return base::WrapUnique(list->DeepCopy());
 }
 
 // static

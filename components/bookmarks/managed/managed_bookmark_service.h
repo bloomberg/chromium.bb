@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_BOOKMARKS_MANAGED_MANAGED_BOOKMARK_SERVICE_H_
 #define COMPONENTS_BOOKMARKS_MANAGED_MANAGED_BOOKMARK_SERVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_storage.h"
@@ -85,13 +85,13 @@ class ManagedBookmarkService : public KeyedService,
 
   // Managed bookmarks are defined by an enterprise policy. The lifetime of the
   // BookmarkPermanentNode is controlled by BookmarkModel.
-  scoped_ptr<ManagedBookmarksTracker> managed_bookmarks_tracker_;
+  std::unique_ptr<ManagedBookmarksTracker> managed_bookmarks_tracker_;
   GetManagementDomainCallback managed_domain_callback_;
   BookmarkPermanentNode* managed_node_;
 
   // Supervised bookmarks are defined by the custodian of a supervised user. The
   // lifetime of the BookmarkPermanentNode is controlled by BookmarkModel.
-  scoped_ptr<ManagedBookmarksTracker> supervised_bookmarks_tracker_;
+  std::unique_ptr<ManagedBookmarksTracker> supervised_bookmarks_tracker_;
   BookmarkPermanentNode* supervised_node_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedBookmarkService);

@@ -5,11 +5,13 @@
 #include "components/bookmarks/test/test_bookmark_client.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_storage.h"
@@ -21,16 +23,17 @@ TestBookmarkClient::TestBookmarkClient() {}
 TestBookmarkClient::~TestBookmarkClient() {}
 
 // static
-scoped_ptr<BookmarkModel> TestBookmarkClient::CreateModel() {
-  return CreateModelWithClient(make_scoped_ptr(new TestBookmarkClient));
+std::unique_ptr<BookmarkModel> TestBookmarkClient::CreateModel() {
+  return CreateModelWithClient(base::WrapUnique(new TestBookmarkClient));
 }
 
 // static
-scoped_ptr<BookmarkModel> TestBookmarkClient::CreateModelWithClient(
-    scoped_ptr<BookmarkClient> client) {
-  scoped_ptr<BookmarkModel> bookmark_model(
+std::unique_ptr<BookmarkModel> TestBookmarkClient::CreateModelWithClient(
+    std::unique_ptr<BookmarkClient> client) {
+  std::unique_ptr<BookmarkModel> bookmark_model(
       new BookmarkModel(std::move(client)));
-  scoped_ptr<BookmarkLoadDetails> details = bookmark_model->CreateLoadDetails();
+  std::unique_ptr<BookmarkLoadDetails> details =
+      bookmark_model->CreateLoadDetails();
   details->LoadExtraNodes();
   bookmark_model->DoneLoading(std::move(details));
   return bookmark_model;

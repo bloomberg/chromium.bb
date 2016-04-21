@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_UNDO_PROVIDER_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_UNDO_PROVIDER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace bookmarks {
 
@@ -18,7 +18,7 @@ class BookmarkUndoProvider {
   // |index|.
   virtual void RestoreRemovedNode(const BookmarkNode* parent,
                                   int index,
-                                  scoped_ptr<BookmarkNode> node) = 0;
+                                  std::unique_ptr<BookmarkNode> node) = 0;
 
  protected:
   virtual ~BookmarkUndoProvider() {}

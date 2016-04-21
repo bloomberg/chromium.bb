@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 
 namespace bookmarks {
@@ -21,11 +22,11 @@ class TestBookmarkClient : public BookmarkClient {
   ~TestBookmarkClient() override;
 
   // Returns a new BookmarkModel using a TestBookmarkClient.
-  static scoped_ptr<BookmarkModel> CreateModel();
+  static std::unique_ptr<BookmarkModel> CreateModel();
 
   // Returns a new BookmarkModel using |client|.
-  static scoped_ptr<BookmarkModel> CreateModelWithClient(
-      scoped_ptr<BookmarkClient> client);
+  static std::unique_ptr<BookmarkModel> CreateModelWithClient(
+      std::unique_ptr<BookmarkClient> client);
 
   // Sets the list of extra nodes to be returned by the next call to
   // CreateModel() or GetLoadExtraNodesCallback().
