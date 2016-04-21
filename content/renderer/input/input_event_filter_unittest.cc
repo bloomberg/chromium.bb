@@ -355,6 +355,8 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
     InputEventDispatchType dispatch_type = base::get<2>(params);
 
     EXPECT_EQ(kEvents[i].size, event->size);
+    kEvents[i].dispatchType =
+        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN,
               dispatch_type);
@@ -371,6 +373,8 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
         static_cast<const WebMouseWheelEvent*>(base::get<0>(params));
     InputEventDispatchType dispatch_type = base::get<2>(params);
 
+    kEvents[2].dispatchType =
+        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
     EXPECT_EQ(kEvents[2].size, event->size);
     EXPECT_EQ(kEvents[2].deltaX + kEvents[3].deltaX, event->deltaX);
     EXPECT_EQ(kEvents[2].deltaY + kEvents[3].deltaY, event->deltaY);

@@ -328,14 +328,10 @@ void RenderWidgetInputHandler::HandleInputEvent(
         processed, static_cast<const WebTouchEvent&>(input_event).dispatchType,
         input_event.timeStampSeconds, latency_info);
   } else if (input_event.type == WebInputEvent::MouseWheel) {
-    bool non_blocking =
-        dispatch_type ==
-            InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN ||
-        dispatch_type == InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING;
-    LogPassiveEventListenersUma(processed,
-                                non_blocking ? WebInputEvent::EventNonBlocking
-                                             : WebInputEvent::Blocking,
-                                input_event.timeStampSeconds, latency_info);
+    LogPassiveEventListenersUma(
+        processed,
+        static_cast<const WebMouseWheelEvent&>(input_event).dispatchType,
+        input_event.timeStampSeconds, latency_info);
   }
 
   // If this RawKeyDown event corresponds to a browser keyboard shortcut and

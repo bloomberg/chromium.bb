@@ -61,11 +61,11 @@ public:
         const FloatPoint& rawDelta, unsigned deltaMode, AbstractView* view,
         const IntPoint& screenLocation, const IntPoint& windowLocation,
         PlatformEvent::Modifiers modifiers, unsigned short buttons, double platformTimeStamp,
-        bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode)
+        bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode, bool cancelable)
     {
         return new WheelEvent(wheelTicks, rawDelta, deltaMode, view,
             screenLocation, windowLocation, modifiers, buttons, platformTimeStamp,
-            canScroll, resendingPluginId,  hasPreciseScrollingDeltas, railsMode);
+            canScroll, resendingPluginId, hasPreciseScrollingDeltas, railsMode, cancelable);
     }
 
     double deltaX() const { return m_deltaX; } // Positive when scrolling right.
@@ -96,7 +96,7 @@ private:
     WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
         unsigned, AbstractView*, const IntPoint& screenLocation, const IntPoint& windowLocation,
         PlatformEvent::Modifiers, unsigned short buttons, double platformTimeStamp,
-        bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode);
+        bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode, bool cancelable);
 
     IntPoint m_wheelDelta;
     double m_deltaX;

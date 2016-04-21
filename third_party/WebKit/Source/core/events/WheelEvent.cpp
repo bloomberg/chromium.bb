@@ -41,7 +41,8 @@ WheelEvent* WheelEvent::create(const PlatformWheelEvent& event, AbstractView* vi
         event.getModifiers(),
         MouseEvent::platformModifiersToButtons(event.getModifiers()), event.timestamp(),
         event.canScroll(), event.resendingPluginId(), event.hasPreciseScrollingDeltas(),
-        static_cast<Event::RailsMode>(event.getRailsMode()));
+        static_cast<Event::RailsMode>(event.getRailsMode()),
+        event.cancelable());
 }
 
 WheelEvent::WheelEvent()
@@ -73,8 +74,8 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
 WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta, unsigned deltaMode,
     AbstractView* view, const IntPoint& screenLocation, const IntPoint& windowLocation,
     PlatformEvent::Modifiers modifiers, unsigned short buttons, double platformTimeStamp,
-    bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode)
-    : MouseEvent(EventTypeNames::wheel, true, true, view, 0, screenLocation.x(), screenLocation.y(),
+    bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode, bool cancelable)
+    : MouseEvent(EventTypeNames::wheel, true, cancelable, view, 0, screenLocation.x(), screenLocation.y(),
         windowLocation.x(), windowLocation.y(), 0, 0, modifiers, 0, buttons,
         nullptr, platformTimeStamp, PlatformMouseEvent::RealOrIndistinguishable,
         // TODO(zino): Should support canvas hit region because the wheel event

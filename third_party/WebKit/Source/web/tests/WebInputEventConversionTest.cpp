@@ -904,23 +904,35 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
     webViewImpl->updateAllLifecyclePhases();
 
     Document* document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
-    WheelEvent* event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
-        WheelEvent::DOM_DELTA_PAGE, document->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
-        PlatformEvent::CtrlKey, 0, 0, true, -1 /* null plugin id */, true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal);
-    WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document->layoutView(), *event);
-    EXPECT_EQ(1, webMouseWheel.wheelTicksX);
-    EXPECT_EQ(3, webMouseWheel.wheelTicksY);
-    EXPECT_EQ(5, webMouseWheel.deltaX);
-    EXPECT_EQ(10, webMouseWheel.deltaY);
-    EXPECT_EQ(2, webMouseWheel.globalX);
-    EXPECT_EQ(6, webMouseWheel.globalY);
-    EXPECT_EQ(10, webMouseWheel.windowX);
-    EXPECT_EQ(30, webMouseWheel.windowY);
-    EXPECT_TRUE(webMouseWheel.scrollByPage);
-    EXPECT_EQ(WebInputEvent::ControlKey, webMouseWheel.modifiers);
-    EXPECT_TRUE(webMouseWheel.canScroll);
-    EXPECT_EQ(WebInputEvent::RailsModeHorizontal, webMouseWheel.railsMode);
-    EXPECT_TRUE(webMouseWheel.hasPreciseScrollingDeltas);
+    {
+        WheelEvent* event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
+            WheelEvent::DOM_DELTA_PAGE, document->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
+            PlatformEvent::CtrlKey, 0, 0, true, -1 /* null plugin id */,
+            true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal, true /*cancelable*/);
+        WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document->layoutView(), *event);
+        EXPECT_EQ(1, webMouseWheel.wheelTicksX);
+        EXPECT_EQ(3, webMouseWheel.wheelTicksY);
+        EXPECT_EQ(5, webMouseWheel.deltaX);
+        EXPECT_EQ(10, webMouseWheel.deltaY);
+        EXPECT_EQ(2, webMouseWheel.globalX);
+        EXPECT_EQ(6, webMouseWheel.globalY);
+        EXPECT_EQ(10, webMouseWheel.windowX);
+        EXPECT_EQ(30, webMouseWheel.windowY);
+        EXPECT_TRUE(webMouseWheel.scrollByPage);
+        EXPECT_EQ(WebInputEvent::ControlKey, webMouseWheel.modifiers);
+        EXPECT_TRUE(webMouseWheel.canScroll);
+        EXPECT_EQ(WebInputEvent::RailsModeHorizontal, webMouseWheel.railsMode);
+        EXPECT_TRUE(webMouseWheel.hasPreciseScrollingDeltas);
+        EXPECT_EQ(WebInputEvent::Blocking, webMouseWheel.dispatchType);
+    }
+
+    {
+        WheelEvent* event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
+            WheelEvent::DOM_DELTA_PAGE, document->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
+            PlatformEvent::CtrlKey, 0, 0, true, -1 /* null plugin id */, true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal, false);
+        WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document->layoutView(), *event);
+        EXPECT_EQ(WebInputEvent::EventNonBlocking, webMouseWheel.dispatchType);
+    }
 }
 
 TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)

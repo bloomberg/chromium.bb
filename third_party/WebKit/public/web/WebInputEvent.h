@@ -449,6 +449,10 @@ public:
 
     RailsMode railsMode;
 
+    // Whether the event is blocking, non-blocking, all event
+    // listeners were passive or was forced to be non-blocking.
+    DispatchType dispatchType;
+
     WebMouseWheelEvent()
         : WebMouseEvent(sizeof(WebMouseWheelEvent))
         , deltaX(0.0f)
@@ -466,6 +470,7 @@ public:
         , hasPreciseScrollingDeltas(false)
         , canScroll(true)
         , railsMode(RailsModeFree)
+        , dispatchType(Blocking)
     {
     }
 };
