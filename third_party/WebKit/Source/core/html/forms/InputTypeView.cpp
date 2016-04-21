@@ -106,7 +106,7 @@ void InputTypeView::accessKeyAction(bool)
 
 bool InputTypeView::shouldSubmitImplicitly(Event* event)
 {
-    return false;
+    return event->isKeyboardEvent() && event->type() == EventTypeNames::keypress && toKeyboardEvent(event)->charCode() == '\r';
 }
 
 HTMLFormElement* InputTypeView::formForSubmission() const
@@ -136,7 +136,7 @@ void InputTypeView::blur()
 
 bool InputTypeView::hasCustomFocusLogic() const
 {
-    return false;
+    return true;
 }
 
 void InputTypeView::handleFocusEvent(Element*, WebFocusType)

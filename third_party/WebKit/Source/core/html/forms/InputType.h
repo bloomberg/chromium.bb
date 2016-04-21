@@ -200,10 +200,6 @@ public:
     virtual unsigned height() const;
     virtual unsigned width() const;
 
-    // InputTypeView override
-    bool shouldSubmitImplicitly(Event*) override;
-    bool hasCustomFocusLogic() const override;
-
     virtual bool shouldDispatchFormControlChangeEvent(String&, String&);
     virtual void dispatchSearchEvent();
 

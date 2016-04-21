@@ -412,11 +412,6 @@ std::pair<String, String> InputType::validationMessage() const
     return std::make_pair(emptyString(), emptyString());
 }
 
-bool InputType::shouldSubmitImplicitly(Event* event)
-{
-    return event->isKeyboardEvent() && event->type() == EventTypeNames::keypress && toKeyboardEvent(event)->charCode() == '\r';
-}
-
 Decimal InputType::parseToNumber(const String&, const Decimal& defaultValue) const
 {
     ASSERT_NOT_REACHED();
@@ -447,11 +442,6 @@ Locale& InputType::locale() const
 }
 
 bool InputType::canSetStringValue() const
-{
-    return true;
-}
-
-bool InputType::hasCustomFocusLogic() const
 {
     return true;
 }
