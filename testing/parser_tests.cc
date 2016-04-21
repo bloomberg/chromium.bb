@@ -666,67 +666,99 @@ TEST_F(ParserTest, StereoModeParsedCorrectly) {
 TEST_F(ParserTest, Vp9CodecLevelTest) {
   const int kCodecPrivateLength = 3;
   const uint8_t good_codec_private_level[kCodecPrivateLength] = {2, 1, 11};
-  int profile;
-  int level;
-  EXPECT_EQ(true, libwebm::ParseVpxCodecPrivate(&good_codec_private_level[0],
-                                                kCodecPrivateLength, &profile,
-                                                &level));
-  EXPECT_EQ(-1, profile);
-  EXPECT_EQ(11, level);
+  libwebm::Vp9CodecFeatures features;
+  EXPECT_TRUE(libwebm::ParseVpxCodecPrivate(&good_codec_private_level[0],
+                                            kCodecPrivateLength, &features));
+  EXPECT_EQ(libwebm::Vp9CodecFeatures::kValueNotPresent, features.profile);
+  EXPECT_EQ(11, features.level);
+  EXPECT_EQ(libwebm::Vp9CodecFeatures::kValueNotPresent, features.bit_depth);
+  EXPECT_EQ(libwebm::Vp9CodecFeatures::kValueNotPresent,
+            features.chroma_subsampling);
 }
 
 TEST_F(ParserTest, Vp9CodecProfileTest) {
   const int kCodecPrivateLength = 3;
   const uint8_t good_codec_private_profile[kCodecPrivateLength] = {1, 1, 1};
-  int profile;
-  int level;
-  EXPECT_EQ(true, libwebm::ParseVpxCodecPrivate(&good_codec_private_profile[0],
-                                                kCodecPrivateLength, &profile,
-                                                &level));
-  EXPECT_EQ(1, profile);
-  EXPECT_EQ(-1, level);
+  libwebm::Vp9CodecFeatures features;
+  EXPECT_TRUE(libwebm::ParseVpxCodecPrivate(&good_codec_private_profile[0],
+                                            kCodecPrivateLength, &features));
+  EXPECT_EQ(1, features.profile);
+  EXPECT_EQ(libwebm::Vp9CodecFeatures::kValueNotPresent, features.level);
+  EXPECT_EQ(libwebm::Vp9CodecFeatures::kValueNotPresent, features.bit_depth);
+  EXPECT_EQ(libwebm::Vp9CodecFeatures::kValueNotPresent,
+            features.chroma_subsampling);
+}
+
+TEST_F(ParserTest, Vp9CodecBitDepthTest) {
+  const int kCodecPrivateLength = 3;
+  const uint8_t good_codec_private_profile[kCodecPrivateLength] = {3, 1, 8};
+  libwebm::Vp9CodecFeatures features;
+  EXPECT_TRUE(libwebm::ParseVpxCodecPrivate(&good_codec_private_profile[0],
+                                            kCodecPrivateLength, &features));
+  EXPECT_EQ(libwebm::Vp9CodecFeatures::kValueNotPresent, features.profile);
+  EXPECT_EQ(libwebm::Vp9CodecFeatures::kValueNotPresent, features.level);
+  EXPECT_EQ(8, features.bit_depth);
+  EXPECT_EQ(libwebm::Vp9CodecFeatures::kValueNotPresent,
+            features.chroma_subsampling);
+}
+
+TEST_F(ParserTest, Vp9CodecChromaSubsamplingTest) {
+  const int kCodecPrivateLength = 3;
+  const uint8_t good_codec_private_profile[kCodecPrivateLength] = {4, 1, 0};
+  libwebm::Vp9CodecFeatures features;
+  EXPECT_TRUE(libwebm::ParseVpxCodecPrivate(&good_codec_private_profile[0],
+                                            kCodecPrivateLength, &features));
+  EXPECT_EQ(libwebm::Vp9CodecFeatures::kValueNotPresent, features.profile);
+  EXPECT_EQ(libwebm::Vp9CodecFeatures::kValueNotPresent, features.level);
+  EXPECT_EQ(libwebm::Vp9CodecFeatures::kValueNotPresent, features.bit_depth);
+  EXPECT_EQ(0, features.chroma_subsampling);
 }
 
 TEST_F(ParserTest, Vp9CodecProfileLevelTest) {
   const int kCodecPrivateLength = 6;
   const uint8_t codec_private[kCodecPrivateLength] = {1, 1, 1, 2, 1, 11};
-  int profile;
-  int level;
-  EXPECT_EQ(true,
-            libwebm::ParseVpxCodecPrivate(
-                &codec_private[0], kCodecPrivateLength, &profile, &level));
-  EXPECT_EQ(1, profile);
-  EXPECT_EQ(11, level);
+  libwebm::Vp9CodecFeatures features;
+  EXPECT_TRUE(libwebm::ParseVpxCodecPrivate(&codec_private[0],
+                                            kCodecPrivateLength, &features));
+  EXPECT_EQ(1, features.profile);
+  EXPECT_EQ(11, features.level);
+}
+
+TEST_F(ParserTest, Vp9CodecAllTest) {
+  const int kCodecPrivateLength = 12;
+  const uint8_t codec_private[kCodecPrivateLength] = {1, 1, 1, 2, 1, 11,
+                                                      3, 1, 8, 4, 1, 0};
+  libwebm::Vp9CodecFeatures features;
+  EXPECT_TRUE(libwebm::ParseVpxCodecPrivate(&codec_private[0],
+                                            kCodecPrivateLength, &features));
+  EXPECT_EQ(1, features.profile);
+  EXPECT_EQ(11, features.level);
+  EXPECT_EQ(8, features.bit_depth);
+  EXPECT_EQ(0, features.chroma_subsampling);
 }
 
 TEST_F(ParserTest, Vp9CodecPrivateBadTest) {
   const int kCodecPrivateLength = 3;
-  int profile;
-  int level;
-
+  libwebm::Vp9CodecFeatures features;
   // Test invalid codec private data; all of these should return false.
   const uint8_t bad_codec_private[kCodecPrivateLength] = {0, 0, 0};
-  EXPECT_EQ(false, libwebm::ParseVpxCodecPrivate(NULL, kCodecPrivateLength,
-                                                 &profile, &level));
-  EXPECT_EQ(false, libwebm::ParseVpxCodecPrivate(&bad_codec_private[0], 0,
-                                                 &profile, &level));
-  EXPECT_EQ(false,
-            libwebm::ParseVpxCodecPrivate(
-                &bad_codec_private[0], kCodecPrivateLength, &profile, &level));
+  EXPECT_FALSE(
+      libwebm::ParseVpxCodecPrivate(NULL, kCodecPrivateLength, &features));
+  EXPECT_FALSE(
+      libwebm::ParseVpxCodecPrivate(&bad_codec_private[0], 0, &features));
+  EXPECT_FALSE(libwebm::ParseVpxCodecPrivate(&bad_codec_private[0],
+                                             kCodecPrivateLength, &features));
   const uint8_t good_codec_private_level[kCodecPrivateLength] = {2, 1, 11};
 
   // Test parse of codec private chunks, but lie about length.
-  EXPECT_EQ(false, libwebm::ParseVpxCodecPrivate(&bad_codec_private[0], 0,
-                                                 &profile, &level));
-  EXPECT_EQ(false, libwebm::ParseVpxCodecPrivate(&good_codec_private_level[0],
-                                                 0, &profile, &level));
-  EXPECT_EQ(false,
-            libwebm::ParseVpxCodecPrivate(&good_codec_private_level[0],
-                                          kCodecPrivateLength, NULL, &level));
-  EXPECT_EQ(false,
-            libwebm::ParseVpxCodecPrivate(&good_codec_private_level[0],
-                                          kCodecPrivateLength, &profile, NULL));
+  EXPECT_FALSE(
+      libwebm::ParseVpxCodecPrivate(&bad_codec_private[0], 0, &features));
+  EXPECT_FALSE(libwebm::ParseVpxCodecPrivate(&good_codec_private_level[0], 0,
+                                             &features));
+  EXPECT_FALSE(libwebm::ParseVpxCodecPrivate(&good_codec_private_level[0],
+                                             kCodecPrivateLength, NULL));
 }
+
 }  // namespace test
 
 int main(int argc, char* argv[]) {
