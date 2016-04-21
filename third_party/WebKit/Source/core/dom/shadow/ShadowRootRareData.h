@@ -40,33 +40,17 @@ namespace blink {
 class ShadowRootRareData : public GarbageCollected<ShadowRootRareData> {
 public:
     ShadowRootRareData()
-        : m_descendantShadowElementCount(0)
-        , m_descendantContentElementCount(0)
-        , m_childShadowRootCount(0)
+        : m_childShadowRootCount(0)
         , m_descendantSlotCount(0)
     {
     }
 
-    HTMLShadowElement* shadowInsertionPointOfYoungerShadowRoot() const { return m_shadowInsertionPointOfYoungerShadowRoot.get(); }
-    void setShadowInsertionPointOfYoungerShadowRoot(HTMLShadowElement* shadowInsertionPoint) { m_shadowInsertionPointOfYoungerShadowRoot = shadowInsertionPoint; }
-
-    void didAddInsertionPoint(InsertionPoint*);
-    void didRemoveInsertionPoint(InsertionPoint*);
-
-    bool containsShadowElements() const { return m_descendantShadowElementCount; }
-    bool containsContentElements() const { return m_descendantContentElementCount; }
     bool containsShadowRoots() const { return m_childShadowRootCount; }
-
-    unsigned descendantShadowElementCount() const { return m_descendantShadowElementCount; }
 
     void didAddChildShadowRoot() { ++m_childShadowRootCount; }
     void didRemoveChildShadowRoot() { DCHECK_GT(m_childShadowRootCount, 0u); --m_childShadowRootCount; }
 
     unsigned childShadowRootCount() const { return m_childShadowRootCount; }
-
-    const HeapVector<Member<InsertionPoint>>& descendantInsertionPoints() { return m_descendantInsertionPoints; }
-    void setDescendantInsertionPoints(HeapVector<Member<InsertionPoint>>& list) { m_descendantInsertionPoints.swap(list); }
-    void clearDescendantInsertionPoints() { m_descendantInsertionPoints.clear(); }
 
     StyleSheetList* styleSheets() { return m_styleSheetList.get(); }
     void setStyleSheets(StyleSheetList* styleSheetList) { m_styleSheetList = styleSheetList; }
@@ -83,47 +67,16 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-        visitor->trace(m_shadowInsertionPointOfYoungerShadowRoot);
-        visitor->trace(m_descendantInsertionPoints);
         visitor->trace(m_styleSheetList);
         visitor->trace(m_descendantSlots);
     }
 
 private:
-    Member<HTMLShadowElement> m_shadowInsertionPointOfYoungerShadowRoot;
-    unsigned m_descendantShadowElementCount;
-    unsigned m_descendantContentElementCount;
     unsigned m_childShadowRootCount;
-    HeapVector<Member<InsertionPoint>> m_descendantInsertionPoints;
     Member<StyleSheetList> m_styleSheetList;
     unsigned m_descendantSlotCount;
     HeapVector<Member<HTMLSlotElement>> m_descendantSlots;
 };
-
-inline void ShadowRootRareData::didAddInsertionPoint(InsertionPoint* point)
-{
-    DCHECK(point);
-    if (isHTMLShadowElement(*point))
-        ++m_descendantShadowElementCount;
-    else if (isHTMLContentElement(*point))
-        ++m_descendantContentElementCount;
-    else
-        ASSERT_NOT_REACHED();
-}
-
-inline void ShadowRootRareData::didRemoveInsertionPoint(InsertionPoint* point)
-{
-    DCHECK(point);
-    if (isHTMLShadowElement(*point)) {
-        DCHECK_GT(m_descendantShadowElementCount, 0u);
-        --m_descendantShadowElementCount;
-    } else if (isHTMLContentElement(*point)) {
-        DCHECK_GT(m_descendantContentElementCount, 0u);
-        --m_descendantContentElementCount;
-    } else {
-        ASSERT_NOT_REACHED();
-    }
-}
 
 } // namespace blink
 

@@ -44,6 +44,7 @@ class ExceptionState;
 class HTMLShadowElement;
 class InsertionPoint;
 class ShadowRootRareData;
+class ShadowRootRareDataV0;
 class StyleSheetList;
 
 enum class ShadowRootType {
@@ -158,6 +159,7 @@ private:
     void childrenChanged(const ChildrenChange&) override;
 
     ShadowRootRareData* ensureShadowRootRareData();
+    ShadowRootRareDataV0* ensureShadowRootRareDataV0();
 
     void addChildShadowRoot();
     void removeChildShadowRoot();
@@ -175,6 +177,8 @@ private:
     Member<ShadowRoot> m_prev;
     Member<ShadowRoot> m_next;
     Member<ShadowRootRareData> m_shadowRootRareData;
+    Member<ShadowRootRareDataV0> m_shadowRootRareDataV0;
+
     Member<SlotAssignment> m_slotAssignment;
     unsigned m_numberOfStyles : 26;
     unsigned m_type : 2;
