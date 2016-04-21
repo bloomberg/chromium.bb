@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 #include "media/base/media_export.h"
+#include "media/media_features.h"
 
 namespace media {
 
@@ -32,9 +33,12 @@ enum VideoCodec {
   kVideoCodecMax = kCodecHEVC  // Must equal the last "real" codec above.
 };
 
-// Video stream profile.  This *must* match PP_VideoDecoder_Profile.
-// (enforced in webkit/plugins/ppapi/ppb_video_decoder_impl.cc) and
-// gpu::VideoCodecProfile.
+// Video codec profiles. Keep in sync with mojo::VideoCodecProfile (see
+// media/mojo/interfaces/media_types.mojom) and gpu::VideoCodecProfile (see
+// gpu/config/gpu_info.h), as well as PP_VideoDecoder_Profile (translation is
+// performed in content/renderer/pepper/ppb_video_decoder_impl.cc).
+// NOTE: These values are histogrammed over time in UMA so the values must
+// never ever change (add new values to tools/metrics/histograms/histograms.xml)
 enum VideoCodecProfile {
   // Keep the values in this enum unique, as they imply format (h.264 vs. VP8,
   // for example), and keep the values for a particular format grouped
@@ -63,7 +67,12 @@ enum VideoCodecProfile {
   VP9PROFILE_PROFILE2 = 14,
   VP9PROFILE_PROFILE3 = 15,
   VP9PROFILE_MAX = VP9PROFILE_PROFILE3,
-  VIDEO_CODEC_PROFILE_MAX = VP9PROFILE_MAX,
+  HEVCPROFILE_MIN = 16,
+  HEVCPROFILE_MAIN = HEVCPROFILE_MIN,
+  HEVCPROFILE_MAIN10 = 17,
+  HEVCPROFILE_MAIN_STILL_PICTURE = 18,
+  HEVCPROFILE_MAX = HEVCPROFILE_MAIN_STILL_PICTURE,
+  VIDEO_CODEC_PROFILE_MAX = HEVCPROFILE_MAX,
 };
 
 std::string MEDIA_EXPORT GetCodecName(VideoCodec codec);
@@ -73,6 +82,12 @@ std::string MEDIA_EXPORT GetProfileName(VideoCodecProfile profile);
 MEDIA_EXPORT bool ParseAVCCodecId(const std::string& codec_id,
                                   VideoCodecProfile* profile,
                                   uint8_t* level_idc);
+
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+MEDIA_EXPORT bool ParseHEVCCodecId(const std::string& codec_id,
+                                   VideoCodecProfile* profile,
+                                   uint8_t* level_idc);
+#endif
 
 }  // namespace media
 

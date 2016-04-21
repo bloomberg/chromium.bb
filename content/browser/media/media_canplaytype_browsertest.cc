@@ -43,7 +43,9 @@ const char* kHlsMaybe = kPropMaybe;
 #endif  // !OS_ANDROID
 
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-const char* kHevcSupported = kPropProbably;
+// TODO(servolk): Change this to kPropProbably after adding platform-level
+// checks for HEVC codec ids. crbug.com/601949
+const char* kHevcSupported = kPropMaybe;
 #else
 const char* kHevcSupported = kNot;
 #endif
@@ -313,28 +315,27 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"HEV2.1.6.L93.B0\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"HVC2.1.6.L93.B0\"'"));
 
-    // TODO(servolk): Uncomment these after crbug.com/482761 is fixed.
     // Trailing dot is not allowed.
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.1.6.L93.B0.\"'"));
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.1.6.L93.B0.\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.1.6.L93.B0.\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.1.6.L93.B0.\"'"));
     // Invalid general_profile_space/general_profile_idc
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.x.6.L93.B0\"'"));
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.x.6.L93.B0\"'"));
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.d1.6.L93.B0\"'"));
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.d1.6.L93.B0\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.x.6.L93.B0\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.x.6.L93.B0\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.d1.6.L93.B0\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.d1.6.L93.B0\"'"));
     // Invalid general_profile_compatibility_flags
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.1.x.L93.B0\"'"));
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.1.x.L93.B0\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.1.x.L93.B0\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.1.x.L93.B0\"'"));
     // Invalid general_tier_flag
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.1.6.x.B0\"'"));
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.1.6.x.B0\"'"));
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.1.6.Lx.B0\"'"));
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.1.6.Lx.B0\"'"));
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.1.6.Hx.B0\"'"));
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.1.6.Hx.B0\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.1.6.x.B0\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.1.6.x.B0\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.1.6.Lx.B0\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.1.6.Lx.B0\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.1.6.Hx.B0\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.1.6.Hx.B0\"'"));
     // Invalid constraint flags
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.1.6.L93.x\"'"));
-    //EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.1.6.L93.x\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.1.6.L93.x\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.1.6.L93.x\"'"));
   }
 
   void TestOGGUnacceptableCombinations(const std::string& mime) {
@@ -764,8 +765,6 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   EXPECT_EQ(kPropMaybe,
             CanPlay("'video/mp4; codecs=\"avc3.42E01E, mp4a.40\"'"));
 
-  // TODO(servolk): Add more unit test coverage once we have more info about
-  // various HEVC levels/profiles (crbug.com/482761).
   EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=\"hev1.1.6.L93.B0\"'"));
   EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=\"hvc1.1.6.L93.B0\"'"));
   EXPECT_EQ(kHevcSupported,
@@ -1252,9 +1251,117 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mp4Vp9Variants) {
   EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"vp09.04.01.08.02.01.01.00\"'"));
 }
 
-// TODO(servolk): Add extensive tests for various HEVC profiles, levels and
-// tiers, similar to avc1/avc3 tests above, after proper HEVC codec id parsing
-// is implemented (crbug.com/482761)
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_HEVCVariants) {
+  // Both hev1 and hvc1 should be supported
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hev1.1.6.L93.B0'"));
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.1.6.L93.B0'"));
+
+  // Check that codec id string with insufficient number of dot-separated
+  // elements are rejected. There must be at least 4 elements: hev1/hvc1 prefix,
+  // profile, profile_compatibility, tier+level.
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.1.6.L93'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hev1'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1..'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1...'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1....'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1..'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1...'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6..'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6...'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1..L93'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1..L93.'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1..L93..'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1..6'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1..6.'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1..6..'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1..6...'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1..6.L93'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1..6.L93.'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1..6.L93..'"));
+
+  // Check that codec ids with empty constraint bytes are rejected.
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L93.'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L93..'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L93...'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L93....'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L93.....'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L93......'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L93.......'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L93.......0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L93.0.'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L93.0..'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L93.0..0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L93.0..0.0.0.0.0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L93.0.0.0.0.0.0.'"));
+
+  // Different variations of general_profile_space (empty, 'A', 'B', 'C')
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.1.6.L93.B0'"));
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.A1.6.L93.B0'"));
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.B1.6.L93.B0'"));
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.C1.6.L93.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.D1.6.L93.B0'"));
+
+  // general_profile_idc (the number after the first dot) must be a 5-bit
+  // decimal-encoded number (between 0 and 31)
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.0.6.L93.B0'"));
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.31.6.L93.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.-1.6.L93.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.32.6.L93.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.999.6.L93.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.A.6.L93.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1F.6.L93.B0'"));
+
+  // general_profile_compatibility_flags is a 32-bit hex number
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.1.0.L93.B0'"));
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.1.FF.L93.B0'"));
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.1.FFFF.L93.B0'"));
+  EXPECT_EQ(kHevcSupported,
+            CanPlay("'video/mp4; codecs=hvc1.1.FFFFFFFF.L93.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.100000000.L93.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.FFFFFFFFF.L93.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.-1.L93.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.0G.L93.B0'"));
+
+  // general_tier_flag is encoded as either character 'L' (general_tier_flag==0)
+  // or character 'H' (general_tier_flag==1) in the fourth element of the string
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.1.6.L93.B0'"));
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.1.0.H93.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.0.93.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.0.A93.B0'"));
+
+  // general_level_idc is 8-bit decimal-encoded number after general_tier_flag.
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.1.6.L0.B0'"));
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.1.6.L1.B0'"));
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.1.6.L255.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L256.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L999.B0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L-1.B0'"));
+
+  // The elements after the fourth dot are hex-encoded bytes containing
+  // constraint flags (up to 6 bytes), trailing zero bytes may be omitted
+  EXPECT_EQ(kHevcSupported,
+            CanPlay("'video/mp4; codecs=hvc1.1.6.L0.0.0.0.0.0.0'"));
+  EXPECT_EQ(kHevcSupported,
+            CanPlay("'video/mp4; codecs=hvc1.1.6.L0.00.00.00.00.00.00'"));
+  EXPECT_EQ(kHevcSupported, CanPlay("'video/mp4; codecs=hvc1.1.6.L0.12'"));
+  EXPECT_EQ(kHevcSupported,
+            CanPlay("'video/mp4; codecs=hvc1.1.6.L0.12.34.56'"));
+  EXPECT_EQ(kHevcSupported,
+            CanPlay("'video/mp4; codecs=hvc1.1.6.L0.12.34.56.78.9A.BC'"));
+  EXPECT_EQ(kHevcSupported,
+            CanPlay("'video/mp4; codecs=hvc1.1.6.L0.FF.FF.FF.FF.FF.FF'"));
+  EXPECT_EQ(kNot,
+            CanPlay("'video/mp4; codecs=hvc1.1.6.L0.FF.FF.FF.FF.FF.FF.0'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L0.100'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L0.1FF'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=hvc1.1.6.L0.-1'"));
+}
 
 // All values that return positive results are tested. There are also
 // negative tests for values around or that could potentially be confused with

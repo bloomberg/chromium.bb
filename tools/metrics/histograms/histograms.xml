@@ -86882,6 +86882,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="13" label="VP9 Profile1"/>
   <int value="14" label="VP9 Profile2"/>
   <int value="15" label="VP9 Profile3"/>
+  <int value="16" label="HEVC Main"/>
+  <int value="17" label="HEVC Main10"/>
+  <int value="18" label="HEVC Main Still-picture"/>
 </enum>
 
 <enum name="VideoDecodeAcceleratorError" type="int">

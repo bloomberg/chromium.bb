@@ -35,7 +35,7 @@ class MEDIA_EXPORT MimeUtil {
     VORBIS,
     OPUS,
     H264,
-    HEVC_MAIN,
+    HEVC,
     VP8,
     VP9,
     THEORA,

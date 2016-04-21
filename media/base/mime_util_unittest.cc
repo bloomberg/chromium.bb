@@ -282,7 +282,7 @@ TEST(IsCodecSupportedOnPlatformTest, EncryptedCodecBehavior) {
             EXPECT_EQ(info.has_platform_vp9_decoder, result);
             break;
 
-          case MimeUtil::HEVC_MAIN:
+          case MimeUtil::HEVC:
             EXPECT_EQ(HasHevcSupport(), result);
             break;
         }
@@ -333,7 +333,7 @@ TEST(IsCodecSupportedOnPlatformTest, ClearCodecBehaviorWithAndroidPipeline) {
             EXPECT_FALSE(result);
             break;
 
-          case MimeUtil::HEVC_MAIN:
+          case MimeUtil::HEVC:
             EXPECT_EQ(HasHevcSupport(), result);
             break;
         }
@@ -390,7 +390,7 @@ TEST(IsCodecSupportedOnPlatformTest, ClearCodecBehaviorWithUnifiedPipeline) {
             EXPECT_EQ(info.has_platform_decoders, result);
             break;
 
-          case MimeUtil::HEVC_MAIN:
+          case MimeUtil::HEVC:
             EXPECT_EQ(HasHevcSupport() && info.has_platform_decoders, result);
             break;
         }

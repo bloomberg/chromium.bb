@@ -27,6 +27,10 @@ VideoCodec VideoCodecProfileToVideoCodec(VideoCodecProfile profile) {
     case H264PROFILE_STEREOHIGH:
     case H264PROFILE_MULTIVIEWHIGH:
       return kCodecH264;
+    case HEVCPROFILE_MAIN:
+    case HEVCPROFILE_MAIN10:
+    case HEVCPROFILE_MAIN_STILL_PICTURE:
+      return kCodecHEVC;
     case VP8PROFILE_ANY:
       return kCodecVP8;
     case VP9PROFILE_PROFILE0:

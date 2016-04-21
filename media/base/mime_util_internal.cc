@@ -149,42 +149,6 @@ static bool IsValidH264Level(uint8_t level_idc) {
           (level_idc >= 50 && level_idc <= 51));
 }
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-// ISO/IEC FDIS 14496-15 standard section E.3 describes the syntax of codec ids
-// reserved for HEVC. According to that spec HEVC codec id must start with
-// either "hev1." or "hvc1.". We don't yet support full parsing of HEVC codec
-// ids, but since no other codec id starts with those string we'll just treat
-// any string starting with "hev1." or "hvc1." as valid HEVC codec ids.
-// crbug.com/482761
-static bool ParseHEVCCodecID(const std::string& codec_id,
-                             MimeUtil::Codec* codec,
-                             bool* is_ambiguous) {
-  if (base::StartsWith(codec_id, "hev1.", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(codec_id, "hvc1.", base::CompareCase::SENSITIVE)) {
-    *codec = MimeUtil::HEVC_MAIN;
-
-    // TODO(servolk): Full HEVC codec id parsing is not implemented yet (see
-    // crbug.com/482761). So treat HEVC codec ids as ambiguous for now.
-    *is_ambiguous = true;
-
-    // TODO(servolk): Most HEVC codec ids are treated as ambiguous (see above),
-    // but we need to recognize at least one valid unambiguous HEVC codec id,
-    // which is added into kMP4VideoCodecsExpression. We need it to be
-    // unambiguous to avoid DCHECK(!is_ambiguous) in InitializeMimeTypeMaps. We
-    // also use these in unit tests (see
-    // content/browser/media/media_canplaytype_browsertest.cc).
-    // Remove this workaround after crbug.com/482761 is fixed.
-    if (codec_id == "hev1.1.6.L93.B0" || codec_id == "hvc1.1.6.L93.B0") {
-      *is_ambiguous = false;
-    }
-
-    return true;
-  }
-
-  return false;
-}
-#endif
-
 // Handle parsing of vp9 codec IDs.
 static bool ParseVp9CodecID(const std::string& mime_type_lower_case,
                             const std::string& codec_id,
@@ -392,7 +356,7 @@ void MimeUtil::AddSupportedMediaFormats() {
   CodecSet mp4_video_codecs;
   mp4_video_codecs.insert(H264);
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  mp4_video_codecs.insert(HEVC_MAIN);
+  mp4_video_codecs.insert(HEVC);
 #endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
 #if BUILDFLAG(ENABLE_MP4_VP9_DEMUXING)
   // Only VP9 with valid codec string vp09.xx.xx.xx.xx.xx.xx.xx is supported.
@@ -616,7 +580,7 @@ bool MimeUtil::IsCodecSupportedOnPlatform(
       DCHECK(!is_encrypted || platform_info.has_platform_decoders);
       return true;
 
-    case HEVC_MAIN:
+    case HEVC:
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
       if (platform_info.is_unified_media_pipeline_enabled &&
           !platform_info.has_platform_decoders) {
@@ -682,15 +646,9 @@ bool MimeUtil::StringToCodec(const std::string& mime_type_lower_case,
 // If |codec_id| is not in |string_to_codec_map_|, then we assume that it is
 // either H.264 or HEVC/H.265 codec ID because currently those are the only
 // ones that are not added to the |string_to_codec_map_| and require parsing.
-
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  if (ParseHEVCCodecID(codec_id, codec, is_ambiguous)) {
-    return true;
-  }
-#endif
-
   VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
   uint8_t level_idc = 0;
+
   if (ParseAVCCodecId(codec_id, &profile, &level_idc)) {
     *codec = MimeUtil::H264;
     switch (profile) {
@@ -734,6 +692,18 @@ bool MimeUtil::StringToCodec(const std::string& mime_type_lower_case,
     return true;
   }
 
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  if (ParseHEVCCodecId(codec_id, &profile, &level_idc)) {
+    // TODO(servolk): Set |is_ambiguous| to true for now to make CanPlayType
+    // return 'maybe' for HEVC codec ids, instead of probably. This needs to be
+    // changed to false after adding platform-level HEVC profile and level
+    // checks, see crbug.com/601949.
+    *is_ambiguous = true;
+    *codec = MimeUtil::HEVC;
+    return true;
+  }
+#endif
+
   DVLOG(4) << __FUNCTION__ << ": Unrecognized codec id " << codec_id;
   return false;
 }
@@ -762,7 +732,7 @@ bool MimeUtil::IsCodecProprietary(Codec codec) const {
     case MPEG2_AAC:
     case MPEG4_AAC:
     case H264:
-    case HEVC_MAIN:
+    case HEVC:
       return true;
 
     case PCM:
