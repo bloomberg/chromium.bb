@@ -1,92 +1,64 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Test that cues are rendered when only the track mode is changed.</title>
+<script src="../media-file.js"></script>
+<script src="../media-controls.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+    var video = document.createElement('video');
+    video.src = findMediaFile('video', '../content/test');
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script src=../media-controls.js></script>
+    video.oncanplaythrough = t.step_func_done(function() {
+        addTracks();
+        testCueActiveState();
+        testCueVisibility();
+    });
 
-        <script>
+    var testTrackArabic;
+    var testTrackEnglish;
+    var testCueDisplayBox;
 
-        var testTrackArabic;
-        var testTrackEnglish;
-        var testCueDisplayBox;
+    function addTracks() {
+        // Add 'Arabic' text track with one cue.
+        testTrackArabic = video.addTextTrack('captions', 'Arabic', 'ar');
+        testTrackArabic.addCue(new VTTCue(0, 10, 'Arabic'));
 
-        function addTracks()
-        {
-            consoleWrite("");
+        // Add 'English' text track with one cue.
+        testTrackEnglish = video.addTextTrack('captions', 'English', 'en');
+        testTrackEnglish.addCue(new VTTCue(0, 10, 'English'));
 
-            consoleWrite("Add 'Arabic' text track with one cue");
-            testTrackArabic = video.addTextTrack('captions', 'Arabic', 'ar');
-            testTrackArabic.addCue(new VTTCue(0.0, 10.0, 'Arabic'));
+        // Set the mode of the 'Arabic' track to showing.
+        testTrackArabic.mode = 'showing';
 
-            consoleWrite("Add 'English' text track with one cue");
-            testTrackEnglish = video.addTextTrack('captions', 'English', 'en');
-            testTrackEnglish.addCue(new VTTCue(0.0, 10.0, 'English'));
+        // Set the mode of the 'English' track to hidden.
+        testTrackEnglish.mode = 'hidden';
+    }
 
-            consoleWrite("");
-            consoleWrite("Set the mode of the 'Arabic' track to showing");
-            testTrackArabic.mode = "showing";
+    function testCueActiveState() {
+        // Both cues should be active.
+        assert_equals(testTrackEnglish.activeCues.length, 1);
+        assert_equals(testTrackEnglish.activeCues[0].text, 'English');
 
-            consoleWrite("Set the mode of the 'English' track to hidden");
-            testTrackEnglish.mode = "hidden";
-        }
+        assert_equals(testTrackArabic.activeCues.length, 1);
+        assert_equals(testTrackArabic.activeCues[0].text, 'Arabic');
+    }
 
-        function testCueActiveState()
-        {
-            consoleWrite("");
-            consoleWrite("** Both cues should be active **");
-            testExpected("testTrackEnglish.activeCues.length", 1);
-            testExpected("testTrackEnglish.activeCues[0].text", "English");
+    function testCueVisibility() {
+        // Only one cue should be visible.
+        testCueDisplayBox = textTrackDisplayElement(video, 'display', 0);
+        assert_equals(testCueDisplayBox.innerText, 'Arabic');
+        assert_equals(testCueDisplayBox.nextSibling, null);
 
-            testExpected("testTrackArabic.activeCues.length", 1);
-            testExpected("testTrackArabic.activeCues[0].text", "Arabic");
-        }
+        // Set the mode of the 'English' track to showing.
+        testTrackEnglish.mode = 'showing';
 
-        function testCueVisibility()
-        {
-            consoleWrite("");
-            consoleWrite("** Only one cue should be visible **");
-            testCueDisplayBox = textTrackDisplayElement(video, 'display', 0);
-            testExpected("testCueDisplayBox.innerText", "Arabic");
-            testExpected("testCueDisplayBox.nextSibling", null);
+        // Both cues shold be visible.
+        testCueDisplayBox = textTrackDisplayElement(video, 'display', 0);
+        assert_equals(testCueDisplayBox.innerText, 'Arabic');
 
-            consoleWrite("");
-            consoleWrite("Set the mode of the 'English' track to showing");
-            testTrackEnglish.mode = "showing";
-
-            consoleWrite("");
-            consoleWrite("** Both cues shold be visible. **");
-            testCueDisplayBox = textTrackDisplayElement(video, 'display', 0);
-            testExpected("testCueDisplayBox.innerText", "Arabic");
-
-            testCueDisplayBox = textTrackDisplayElement(video, 'display', 1);
-            testExpected("testCueDisplayBox.innerText", "English");
-        }
-
-        function runTests() {
-            addTracks();
-            testCueActiveState();
-            testCueVisibility();
-            endTest();
-        }
-
-        function loaded()
-        {
-            consoleWrite("Test that cues are rendered when only the track mode is changed");
-
-            findMediaElement();
-            video.src = findMediaFile('video', '../content/test');
-
-            waitForEvent('canplaythrough', runTests);
-        }
-
-        </script>
-    </head>
-    <body onload="loaded()">
-        <video controls ></video>
-    </body>
-</html>
+        testCueDisplayBox = textTrackDisplayElement(video, 'display', 1);
+        assert_equals(testCueDisplayBox.innerText, 'English');
+    }
+});
+</script>
