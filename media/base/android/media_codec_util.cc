@@ -25,23 +25,44 @@ using base::android::ScopedJavaLocalRef;
 
 namespace media {
 
+namespace {
+
+const char kMp4aMimeType[] = "audio/mp4a-latm";
+const char kOpusMimeType[] = "audio/opus";
+const char kVorbisMimeType[] = "audio/vorbis";
+const char kAvcMimeType[] = "video/avc";
+const char kHevcMimeType[] = "video/hevc";
+const char kVp8MimeType[] = "video/x-vnd.on2.vp8";
+const char kVp9MimeType[] = "video/x-vnd.on2.vp9";
+
+}  // namespace
+
 static std::string CodecTypeToAndroidMimeType(const std::string& codec) {
   // TODO(xhwang): Shall we handle more detailed strings like "mp4a.40.2"?
   if (codec == "avc1")
-    return "video/avc";
+    return kAvcMimeType;
   if (codec == "hvc1")
-    return "video/hevc";
+    return kHevcMimeType;
   if (codec == "mp4a")
-    return "audio/mp4a-latm";
+    return kMp4aMimeType;
   if (codec == "vp8" || codec == "vp8.0")
-    return "video/x-vnd.on2.vp8";
+    return kVp8MimeType;
   if (codec == "vp9" || codec == "vp9.0")
-    return "video/x-vnd.on2.vp9";
+    return kVp9MimeType;
   if (codec == "vorbis")
-    return "audio/vorbis";
+    return kVorbisMimeType;
   if (codec == "opus")
-    return "audio/opus";
+    return kOpusMimeType;
+  DLOG(WARNING) << "Cannot convert codec to Android MIME type: " << codec;
   return std::string();
+}
+
+static bool IsSupportedAndroidMimeType(const std::string& mime_type) {
+  std::vector<std::string> supported{
+      kMp4aMimeType, kOpusMimeType, kVorbisMimeType, kAvcMimeType,
+      kHevcMimeType, kVp8MimeType,  kVp9MimeType};
+  return std::find(supported.begin(), supported.end(), mime_type) !=
+         supported.end();
 }
 
 static std::string GetDefaultCodecName(const std::string& mime_type,
@@ -54,10 +75,12 @@ static std::string GetDefaultCodecName(const std::string& mime_type,
   return ConvertJavaStringToUTF8(env, j_codec_name.obj());
 }
 
-static bool IsDecoderSupportedByDevice(const std::string& mime_type) {
+static bool IsDecoderSupportedByDevice(const std::string& android_mime_type) {
   DCHECK(MediaCodecUtil::IsMediaCodecAvailable());
+  DCHECK(IsSupportedAndroidMimeType(android_mime_type));
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime_type);
+  ScopedJavaLocalRef<jstring> j_mime =
+      ConvertUTF8ToJavaString(env, android_mime_type);
   return Java_MediaCodecUtil_isDecoderSupportedForDevice(env, j_mime.obj());
 }
 
@@ -116,13 +139,14 @@ bool MediaCodecUtil::CanDecode(const std::string& codec, bool is_secure) {
 }
 
 // static
-bool MediaCodecUtil::IsKnownUnaccelerated(const std::string& mime_type,
+bool MediaCodecUtil::IsKnownUnaccelerated(const std::string& android_mime_type,
                                           MediaCodecDirection direction) {
+  DCHECK(IsSupportedAndroidMimeType(android_mime_type));
   if (!IsMediaCodecAvailable())
     return true;
 
-  std::string codec_name = GetDefaultCodecName(mime_type, direction);
-  DVLOG(1) << __FUNCTION__ << "Default codec for " << mime_type << " : "
+  std::string codec_name = GetDefaultCodecName(android_mime_type, direction);
+  DVLOG(1) << __FUNCTION__ << "Default codec for " << android_mime_type << " : "
            << codec_name << ", direction: " << direction;
   if (!codec_name.size())
     return true;
@@ -131,10 +155,10 @@ bool MediaCodecUtil::IsKnownUnaccelerated(const std::string& mime_type,
   // MediaTek hardware vp9 is known crashy, see http://crbug.com/446974 and
   // http://crbug.com/597836.
   if (base::StartsWith(codec_name, "OMX.MTK.", base::CompareCase::SENSITIVE)) {
-    if (mime_type == "video/x-vnd.on2.vp8")
+    if (android_mime_type == kVp8MimeType)
       return true;
 
-    if (mime_type == "video/x-vnd.on2.vp9")
+    if (android_mime_type == kVp9MimeType)
       return base::android::BuildInfo::GetInstance()->sdk_int() < 21;
 
     return false;
@@ -178,8 +202,7 @@ bool MediaCodecUtil::RegisterMediaCodecUtil(JNIEnv* env) {
 
 // static
 bool MediaCodecUtil::IsVp8DecoderAvailable() {
-  return IsMediaCodecAvailable() &&
-         IsDecoderSupportedByDevice(CodecTypeToAndroidMimeType("vp8"));
+  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kVp8MimeType);
 }
 
 // static
@@ -191,8 +214,7 @@ bool MediaCodecUtil::IsVp8EncoderAvailable() {
 
 // static
 bool MediaCodecUtil::IsVp9DecoderAvailable() {
-  return IsMediaCodecAvailable() &&
-         IsDecoderSupportedByDevice(CodecTypeToAndroidMimeType("vp9"));
+  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kVp9MimeType);
 }
 
 // static
