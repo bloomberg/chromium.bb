@@ -4,11 +4,13 @@
 
 #include "courgette/disassembler_elf_32_x86.h"
 
+#include <ctype.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -34,6 +36,24 @@ class TestDisassemblerElf32X86 : public DisassemblerElf32X86 {
     }
     EXPECT_EQ(static_cast<size_t>(SectionHeaderCount()), file_offsets.size());
     EXPECT_TRUE(std::is_sorted(file_offsets.begin(), file_offsets.end()));
+  }
+
+  void TestSectionName() {
+    std::set<std::string> name_set;
+    for (const Elf32_Shdr& section_header : section_header_table_) {
+      std::string name;
+      EXPECT_TRUE(SectionName(section_header, &name));
+      // Ensure |name| is unique and is printable (may be empty though).
+      EXPECT_EQ(0U, name_set.count(name));
+      EXPECT_TRUE(std::all_of(name.begin(), name.end(), ::isprint));
+      name_set.insert(name);
+    }
+    // Check for existence of a few common sections.
+    EXPECT_EQ(1U, name_set.count(".text"));
+    EXPECT_EQ(1U, name_set.count(".data"));
+    EXPECT_EQ(1U, name_set.count(".rodata"));
+    EXPECT_EQ(1U, name_set.count(".bss"));
+    EXPECT_EQ(1U, name_set.count(".shstrtab"));
   }
 };
 
@@ -104,6 +124,8 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
   EXPECT_FALSE(found_match);
 
   disassembler->TestSectionHeaderFileOffsetOrder();
+
+  disassembler->TestSectionName();
 }
 
 }  // namespace

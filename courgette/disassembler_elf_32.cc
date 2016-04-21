@@ -122,6 +122,8 @@ bool DisassemblerElf32::ParseHeader() {
   section_header_table_.assign(section_header_table_raw,
       section_header_table_raw + section_header_table_size_);
 
+  // TODO(huangs): Validate offsets of all section headers.
+
   section_header_file_offset_order_ =
       GetSectionHeaderFileOffsetOrder(section_header_table_);
 
@@ -132,11 +134,18 @@ bool DisassemblerElf32::ParseHeader() {
       FileOffsetToPointer(header_->e_phoff));
   program_header_table_size_ = header_->e_phnum;
 
-  if (header_->e_shstrndx >= header_->e_shnum)
+  Elf32_Half string_section_id = header_->e_shstrndx;
+  if (string_section_id >= header_->e_shnum)
     return Bad("Out of bounds string section index");
 
-  default_string_section_ = reinterpret_cast<const char*>(
-      SectionBody(static_cast<int>(header_->e_shstrndx)));
+  default_string_section_ =
+      reinterpret_cast<const char*>(SectionBody(string_section_id));
+  default_string_section_size_ = SectionHeader(string_section_id)->sh_size;
+  // String section may be empty. If nonempty, then last byte must be null.
+  if (default_string_section_size_ > 0) {
+    if (default_string_section_[default_string_section_size_ - 1] != '\0')
+      return Bad("String section does not terminate");
+  }
 
   if (!UpdateLength())
     return Bad("Out of bounds section or segment");
@@ -203,6 +212,22 @@ bool DisassemblerElf32::UpdateLength() {
   result = std::max(result, segment_table_end);
 
   ReduceLength(result);
+  return true;
+}
+
+CheckBool DisassemblerElf32::SectionName(const Elf32_Shdr& shdr,
+                                         std::string* name) const {
+  DCHECK(name);
+  size_t string_pos = shdr.sh_name;
+  if (string_pos == 0) {
+    // Empty string by convention. Valid even if string section is empty.
+    name->clear();
+  } else {
+    if (string_pos >= default_string_section_size_)
+      return false;
+    // Safe because string section must terminate with null.
+    *name = default_string_section_ + string_pos;
+  }
   return true;
 }
 

@@ -105,8 +105,12 @@ class DisassemblerElf32 : public Disassembler {
   }
 
   const uint8_t* SectionBody(Elf32_Half id) const {
+    // TODO(huangs): Assert that section does not have SHT_NOBITS.
     return FileOffsetToPointer(SectionHeader(id)->sh_offset);
   }
+
+  // Gets the |name| of section |shdr|. Returns true on success.
+  CheckBool SectionName(const Elf32_Shdr& shdr, std::string* name) const;
 
   // Misc Segment Helpers
 
@@ -174,8 +178,9 @@ class DisassemblerElf32 : public Disassembler {
   const Elf32_Phdr* program_header_table_;
   Elf32_Half program_header_table_size_;
 
-  // Pointer to section names.
+  // Pointer to string table containing section names.
   const char* default_string_section_;
+  size_t default_string_section_size_;
 
   std::vector<RVA> abs32_locations_;
   ScopedVector<TypedRVA> rel32_locations_;
