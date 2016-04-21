@@ -318,6 +318,11 @@ bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps,
       sps->frame_crop_top_offset);
   if (visible_rect.width() <= 0 || visible_rect.height() <= 0)
     return false;
+  if (visible_rect.width() > std::numeric_limits<int>::max() / sar_width) {
+    DVLOG(1) << "Integer overflow detected: visible_rect.width()="
+             << visible_rect.width() << " sar_width=" << sar_width;
+    return false;
+  }
   gfx::Size natural_size(
       (visible_rect.width() * sar_width) / sar_height,
       visible_rect.height());
