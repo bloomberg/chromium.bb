@@ -257,11 +257,6 @@ TEST_F(ManagementApiUnitTest, SetEnabledAfterIncreasedPermissions) {
   // Due to a permission increase, prefs will contain escalation information.
   EXPECT_TRUE(prefs->DidExtensionEscalatePermissions(extension_id));
 
-  // TODO(lazyboy): Running this on UI thread shouldn't be necessary once
-  // api_test_utils::RunFunction uses base::RunLoop instead of
-  // content::RunMessageLoop(). Fix.
-  ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
-
   auto enable_extension_via_management_api = [this](
       const std::string& extension_id, bool use_user_gesture,
       bool accept_dialog, bool expect_success) {

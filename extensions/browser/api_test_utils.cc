@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
@@ -34,13 +35,9 @@ std::unique_ptr<base::ListValue> ParseList(const std::string& data) {
 class SendResponseDelegate
     : public UIThreadExtensionFunction::DelegateForTests {
  public:
-  SendResponseDelegate() : should_post_quit_(false) {}
+  SendResponseDelegate() {}
 
   virtual ~SendResponseDelegate() {}
-
-  void set_should_post_quit(bool should_quit) {
-    should_post_quit_ = should_quit;
-  }
 
   bool HasResponse() { return response_.get() != NULL; }
 
@@ -56,14 +53,19 @@ class SendResponseDelegate
     ASSERT_FALSE(HasResponse());
     response_.reset(new bool);
     *response_ = success;
-    if (should_post_quit_) {
-      base::MessageLoopForUI::current()->QuitWhenIdle();
-    }
+    run_loop_.Quit();
+  }
+
+  void WaitForResponse() {
+    // If the RunAsync of UIThreadExtensionFunction already called SendResponse,
+    // this will finish immediately.
+    run_loop_.Run();
   }
 
  private:
+  base::RunLoop run_loop_;
   std::unique_ptr<bool> response_;
-  bool should_post_quit_;
+  DISALLOW_COPY_AND_ASSIGN(SendResponseDelegate);
 };
 
 }  // namespace
@@ -233,13 +235,7 @@ bool RunFunction(
   function->set_browser_context(context);
   function->set_include_incognito(flags & INCLUDE_INCOGNITO);
   function->Run()->Execute();
-
-  // If the RunAsync of |function| didn't already call SendResponse, run the
-  // message loop until they do.
-  if (!response_delegate.HasResponse()) {
-    response_delegate.set_should_post_quit(true);
-    content::RunMessageLoop();
-  }
+  response_delegate.WaitForResponse();
 
   EXPECT_TRUE(response_delegate.HasResponse());
   return response_delegate.GetResponse();
