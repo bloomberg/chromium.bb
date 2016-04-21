@@ -181,8 +181,8 @@ TEST_P(InkDropAnimationTest, AnimationsAbortedDuringDeletion) {
   EXPECT_EQ(1, observer_.last_animation_started_ordinal());
   EXPECT_EQ(2, observer_.last_animation_ended_ordinal());
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
-            observer_.last_animation_state_ended());
-  EXPECT_EQ(InkDropAnimationObserver::InkDropAnimationEndedReason::PRE_EMPTED,
+            observer_.last_animation_ended_context());
+  EXPECT_EQ(InkDropAnimationEndedReason::PRE_EMPTED,
             observer_.last_animation_ended_reason());
 }
 
@@ -193,7 +193,7 @@ TEST_P(InkDropAnimationTest, VerifyObserversAreNotified) {
   EXPECT_EQ(1, observer_.last_animation_started_ordinal());
   EXPECT_TRUE(observer_.AnimationHasNotEnded());
   EXPECT_EQ(InkDropState::ACTION_PENDING,
-            observer_.last_animation_state_started());
+            observer_.last_animation_started_context());
 
   test_api_->CompleteAnimations();
 
@@ -201,7 +201,7 @@ TEST_P(InkDropAnimationTest, VerifyObserversAreNotified) {
   EXPECT_EQ(1, observer_.last_animation_started_ordinal());
   EXPECT_EQ(2, observer_.last_animation_ended_ordinal());
   EXPECT_EQ(InkDropState::ACTION_PENDING,
-            observer_.last_animation_state_ended());
+            observer_.last_animation_ended_context());
 }
 
 TEST_P(InkDropAnimationTest, VerifyObserversAreNotifiedOfSuccessfulAnimations) {
@@ -209,7 +209,7 @@ TEST_P(InkDropAnimationTest, VerifyObserversAreNotifiedOfSuccessfulAnimations) {
   test_api_->CompleteAnimations();
 
   EXPECT_EQ(2, observer_.last_animation_ended_ordinal());
-  EXPECT_EQ(InkDropAnimationObserver::InkDropAnimationEndedReason::SUCCESS,
+  EXPECT_EQ(InkDropAnimationEndedReason::SUCCESS,
             observer_.last_animation_ended_reason());
 }
 
@@ -218,7 +218,7 @@ TEST_P(InkDropAnimationTest, VerifyObserversAreNotifiedOfPreemptedAnimations) {
   ink_drop_animation_->AnimateToState(InkDropState::ALTERNATE_ACTION_PENDING);
 
   EXPECT_EQ(2, observer_.last_animation_ended_ordinal());
-  EXPECT_EQ(InkDropAnimationObserver::InkDropAnimationEndedReason::PRE_EMPTED,
+  EXPECT_EQ(InkDropAnimationEndedReason::PRE_EMPTED,
             observer_.last_animation_ended_reason());
 }
 
@@ -266,8 +266,8 @@ TEST_P(InkDropAnimationTest, HideImmediatelyWithActiveAnimations) {
   EXPECT_EQ(1, observer_.last_animation_started_ordinal());
   EXPECT_EQ(2, observer_.last_animation_ended_ordinal());
   EXPECT_EQ(InkDropState::ACTION_PENDING,
-            observer_.last_animation_state_ended());
-  EXPECT_EQ(InkDropAnimationObserver::InkDropAnimationEndedReason::PRE_EMPTED,
+            observer_.last_animation_ended_context());
+  EXPECT_EQ(InkDropAnimationEndedReason::PRE_EMPTED,
             observer_.last_animation_ended_reason());
 
   EXPECT_EQ(InkDropAnimation::kHiddenOpacity, test_api_->GetCurrentOpacity());
@@ -312,8 +312,8 @@ TEST_P(InkDropAnimationTest, SnapToActivatedWithActiveAnimations) {
             ink_drop_animation_->target_ink_drop_state());
   EXPECT_EQ(3, observer_.last_animation_started_ordinal());
   EXPECT_EQ(4, observer_.last_animation_ended_ordinal());
-  EXPECT_EQ(InkDropState::ACTIVATED, observer_.last_animation_state_ended());
-  EXPECT_EQ(InkDropAnimationObserver::InkDropAnimationEndedReason::SUCCESS,
+  EXPECT_EQ(InkDropState::ACTIVATED, observer_.last_animation_ended_context());
+  EXPECT_EQ(InkDropAnimationEndedReason::SUCCESS,
             observer_.last_animation_ended_reason());
 
   EXPECT_EQ(InkDropAnimation::kVisibleOpacity, test_api_->GetCurrentOpacity());

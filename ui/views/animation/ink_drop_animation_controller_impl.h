@@ -68,9 +68,9 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
   bool IsHoverFadingInOrVisible() const;
 
   // views::InkDropAnimationObserver:
-  void InkDropAnimationStarted(InkDropState ink_drop_state) override;
-  void InkDropAnimationEnded(InkDropState ink_drop_state,
-                             InkDropAnimationEndedReason reason) override;
+  void AnimationStarted(InkDropState ink_drop_state) override;
+  void AnimationEnded(InkDropState ink_drop_state,
+                      InkDropAnimationEndedReason reason) override;
 
   // Enables or disables the hover state based on |is_hovered| and if an
   // animation is triggered it will be scheduled to have the given

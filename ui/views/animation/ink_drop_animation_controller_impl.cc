@@ -152,14 +152,13 @@ bool InkDropAnimationControllerImpl::IsHoverFadingInOrVisible() const {
   return hover_ && hover_->IsFadingInOrVisible();
 }
 
-void InkDropAnimationControllerImpl::InkDropAnimationStarted(
-    InkDropState ink_drop_state) {
-}
+void InkDropAnimationControllerImpl::AnimationStarted(
+    InkDropState ink_drop_state) {}
 
-void InkDropAnimationControllerImpl::InkDropAnimationEnded(
+void InkDropAnimationControllerImpl::AnimationEnded(
     InkDropState ink_drop_state,
     InkDropAnimationEndedReason reason) {
-  if (reason != SUCCESS)
+  if (reason != InkDropAnimationEndedReason::SUCCESS)
     return;
   if (ShouldAnimateToHidden(ink_drop_state)) {
     ink_drop_animation_->AnimateToState(views::InkDropState::HIDDEN);

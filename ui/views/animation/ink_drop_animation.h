@@ -46,6 +46,10 @@ class VIEWS_EXPORT InkDropAnimation {
   InkDropAnimation();
   virtual ~InkDropAnimation();
 
+  // In the event that an animation is in progress for ink drop state 's1' and
+  // an animation to a new state 's2' is triggered, then
+  // AnimationEnded(s1, PRE_EMPTED) will be called before
+  // AnimationStarted(s2).
   void set_observer(InkDropAnimationObserver* observer) {
     observer_ = observer;
   }
