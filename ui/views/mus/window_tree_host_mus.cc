@@ -24,11 +24,6 @@ WindowTreeHostMus::WindowTreeHostMus(shell::Connector* connector,
       show_state_(ui::PLATFORM_WINDOW_STATE_UNKNOWN) {
   SetPlatformWindow(
       base::WrapUnique(new PlatformWindowMus(this, connector, window)));
-  // The location of events is already transformed, and there is no way to
-  // correctly determine the reverse transform. So, don't attempt to transform
-  // event locations, else the root location is wrong.
-  // TODO(sky): we need to transform for device scale though.
-  dispatcher()->set_transform_events(false);
   compositor()->SetHostHasTransparentBackground(true);
 
   input_method_.reset(new InputMethodMUS(this, window));

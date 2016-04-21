@@ -87,7 +87,6 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
       move_hold_count_(0),
       dispatching_held_event_(nullptr),
       observer_manager_(this),
-      transform_events_(true),
       repost_event_factory_(this),
       held_event_factory_(this) {
   ui::GestureRecognizer::Get()->AddGestureEventHelper(this);
@@ -439,10 +438,8 @@ void WindowEventDispatcher::OnEventProcessingStarted(ui::Event* event) {
   // The held events are already in |window()|'s coordinate system. So it is
   // not necessary to apply the transform to convert from the host's
   // coordinate system to |window()|'s coordinate system.
-  if (event->IsLocatedEvent() && !is_dispatched_held_event(*event) &&
-      transform_events_) {
+  if (event->IsLocatedEvent() && !is_dispatched_held_event(*event))
     TransformEventForDeviceScaleFactor(static_cast<ui::LocatedEvent*>(event));
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

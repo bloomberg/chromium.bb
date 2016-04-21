@@ -16,6 +16,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/test/events_test_utils.h"
+#include "ui/gfx/transform.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -423,6 +424,20 @@ TEST(EventTest, KeyEventCode) {
     EXPECT_EQ(kCodeForHome, key.GetCodeString());
   }
 #endif  // OS_WIN
+}
+
+TEST(EventTest, LocatedEventTransform) {
+  const gfx::Point root_location(10, 20);
+  const gfx::Point location(0, 14);
+  MouseEvent mouseev(ET_MOUSE_MOVED, location, root_location,
+                     EventTimeForNow(), EF_NONE, EF_NONE);
+  gfx::Transform transform;
+  transform.Scale(0.5, 0.5);
+  mouseev.UpdateForRootTransform(transform);
+  EXPECT_EQ(gfx::Point(5, 10).ToString(),
+            mouseev.root_location().ToString());
+  EXPECT_EQ(gfx::Point(0, 7).ToString(),
+            mouseev.location().ToString());
 }
 
 namespace {
