@@ -736,27 +736,11 @@ std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 Scheduler::AsValue() const {
   std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
-  AsValueInto(state.get());
-  return std::move(state);
-}
-
-void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   base::TimeTicks now = Now();
 
   state->BeginDictionary("state_machine");
-  state_machine_.AsValueInto(state);
+  state_machine_.AsValueInto(state.get());
   state->EndDictionary();
-
-  // Only trace frame sources when explicitly enabled - http://crbug.com/420607
-  bool frame_tracing_enabled = false;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
-      &frame_tracing_enabled);
-  if (frame_tracing_enabled && begin_frame_source_) {
-    state->BeginDictionary("begin_frame_source_");
-    begin_frame_source_->AsValueInto(state);
-    state->EndDictionary();
-  }
 
   state->BeginDictionary("scheduler_state");
   state->SetBoolean("throttle_frame_production_",
@@ -775,7 +759,7 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
                    SchedulerStateMachine::ActionToString(inside_action_));
 
   state->BeginDictionary("begin_impl_frame_args");
-  begin_impl_frame_tracker_.AsValueInto(now, state);
+  begin_impl_frame_tracker_.AsValueInto(now, state.get());
   state->EndDictionary();
 
   state->SetString("begin_impl_frame_deadline_mode_",
@@ -784,8 +768,10 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   state->EndDictionary();
 
   state->BeginDictionary("compositor_timing_history");
-  compositor_timing_history_->AsValueInto(state);
+  compositor_timing_history_->AsValueInto(state.get());
   state->EndDictionary();
+
+  return std::move(state);
 }
 
 void Scheduler::UpdateCompositorTimingHistoryRecordingEnabled() {
