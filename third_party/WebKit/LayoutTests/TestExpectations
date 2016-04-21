@@ -1509,6 +1509,9 @@ crbug.com/601166 [ Mac10.9 ]  fast/text/zero-font-size.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  ietestcenter/css3/text/textshadow-003.htm [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  ietestcenter/css3/text/textshadow-004.htm [ Failure ]
 
+crbug.com/603507 [ Mac Win ] fast/table/split-table-section-before-anonymous-block-2.html [ NeedsManualRebaseline ]
+crbug.com/603507 [ Mac Win ] fast/table/split-table-section-before-anonymous-block-4.html [ NeedsManualRebaseline ]
+
 crbug.com/600261 imported/web-platform-tests/mediacapture-streams/GUM-deny.html [ Failure ]
 crbug.com/600261 imported/web-platform-tests/mediacapture-streams/MediaStream-MediaElement-srcObject.html [ Failure ]
 

@@ -2669,14 +2669,10 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
         availableHeight = overrideContainingBlockContentLogicalHeight();
     } else if (cb->isTableCell()) {
         if (!skippedAutoHeightContainingBlock) {
-            // The second clause in this conditional (after the ||) is to support this line from the
-            // definition of height in CSS 2.2:
-            // "If the height of the containing block is not specified explicitly (i.e., it depends on
-            // content height), and this element is not absolutely positioned, the used height is
-            // calculated as if 'auto' was specified."
-            // But FF doesn't apply this logic (1) in quirks mode or (2) when "this element" is a table.
-            // TODO(dgrogan): Maybe we shouldn't make tables an exception. See https://crbug.com/353580
-            if (!cb->hasOverrideLogicalContentHeight() || (!document().inQuirksMode() && !isTable() && cbstyle.logicalHeight().isAuto())) {
+            // Table cells violate what the CSS spec says to do with heights. Basically we
+            // don't care if the cell specified a height or not. We just always make ourselves
+            // be a percentage of the cell's current content height.
+            if (!cb->hasOverrideLogicalContentHeight()) {
                 // Normally we would let the cell size intrinsically, but scrolling overflow has to be
                 // treated differently, since WinIE lets scrolled overflow regions shrink as needed.
                 // While we can't get all cases right, we can at least detect when the cell has a specified
