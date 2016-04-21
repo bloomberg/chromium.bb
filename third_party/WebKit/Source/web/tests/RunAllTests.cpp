@@ -36,6 +36,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "content/test/blink_test_environment.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "platform/heap/ThreadState.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include <v8.h>
 
@@ -53,8 +54,10 @@ int runHelper(base::TestSuite* testSuite)
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
 
-    // Collect garbage in order to release mock objects referred from v8 or
-    // Oilpan heap. Otherwise false mock leaks will be reported.
+    // Collect garbage (including threadspecific persistent handles) in order
+    // to release mock objects referred from v8 or Oilpan heap. Otherwise false
+    // mock leaks will be reported.
+    blink::ThreadState::current()->callThreadShutdownHooks();
     blink::V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
 
     content::TearDownBlinkTestEnvironment();

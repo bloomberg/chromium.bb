@@ -524,6 +524,8 @@ public:
     void decreaseAllocatedObjectSize(size_t);
     void increaseMarkedObjectSize(size_t);
 
+    void callThreadShutdownHooks();
+
 private:
     enum SnapshotType {
         HeapSnapshot,

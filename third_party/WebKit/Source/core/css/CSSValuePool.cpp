@@ -28,14 +28,20 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Threading.h"
 
 namespace blink {
 
 CSSValuePool& cssValuePool()
 {
-    DEFINE_STATIC_LOCAL(CSSValuePool, pool, (new CSSValuePool));
-    return pool;
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<Persistent<CSSValuePool>>, threadSpecificPool, new ThreadSpecific<Persistent<CSSValuePool>>());
+    Persistent<CSSValuePool>& poolHandle = *threadSpecificPool;
+    if (!poolHandle) {
+        poolHandle = new CSSValuePool();
+        poolHandle.clearOnThreadShutdown();
+    }
+    return *poolHandle;
 }
 
 CSSValuePool::CSSValuePool()
@@ -78,14 +84,6 @@ CSSColorValue* CSSValuePool::createColorValue(RGBA32 rgbValue)
     // Just because it is common.
     if (rgbValue == Color::black)
         return m_colorBlack;
-
-    if (!isMainThread()) {
-        // TODO (crbug.com/599659): Make CSS color parsing work properly in a
-        // worker thread.
-        // Currently, ColorValueCache is not thread-safe; so we avoid interacting
-        // with it on a non-main thread.
-        return CSSColorValue::create(rgbValue);
-    }
 
     // Just wipe out the cache and start rebuilding if it gets too big.
     const unsigned maximumColorCacheSize = 512;

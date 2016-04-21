@@ -273,6 +273,15 @@ void ThreadState::cleanupPages()
         m_arenas[i]->cleanupPages();
 }
 
+void ThreadState::callThreadShutdownHooks()
+{
+    // Invoke the cleanup hooks. This gives an opportunity to release any
+    // persistent handles that may exist, e.g. in thread-specific static
+    // locals.
+    for (const OwnPtr<SameThreadClosure>& hook : m_threadShutdownHooks)
+        (*hook)();
+}
+
 void ThreadState::cleanup()
 {
     ASSERT(checkThread());
@@ -292,11 +301,7 @@ void ThreadState::cleanup()
         // pointers into the heap owned by this thread.
         m_isTerminating = true;
 
-        // Invoke the cleanup hooks. This gives an opportunity to release any
-        // persistent handles that may exist, e.g. in thread-specific static
-        // locals.
-        for (const OwnPtr<SameThreadClosure>& hook : m_threadShutdownHooks)
-            (*hook)();
+        ThreadState::callThreadShutdownHooks();
 
         // Set the terminate flag on all heap pages of this thread. This is used to
         // ensure we don't trace pages on other threads that are not part of the
