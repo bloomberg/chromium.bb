@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ENROLLER_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ENROLLER_H
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace proximity_auth {
@@ -39,7 +39,7 @@ class CryptAuthEnrollerFactory {
  public:
   virtual ~CryptAuthEnrollerFactory() {}
 
-  virtual scoped_ptr<CryptAuthEnroller> CreateInstance() = 0;
+  virtual std::unique_ptr<CryptAuthEnroller> CreateInstance() = 0;
 };
 
 }  // namespace proximity_auth

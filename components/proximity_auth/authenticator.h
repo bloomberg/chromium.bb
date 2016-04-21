@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_AUTHENTICATOR_H
 #define COMPONENTS_PROXIMITY_AUTH_AUTHENTICATOR_H
 
+#include <memory>
+
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace proximity_auth {
 
@@ -33,7 +34,7 @@ class Authenticator {
   // contain the SecureContext used to securely exchange messages. Otherwise, it
   // will be null if the protocol fails.
   typedef base::Callback<void(Result result,
-                              scoped_ptr<SecureContext> secure_context)>
+                              std::unique_ptr<SecureContext> secure_context)>
       AuthenticationCallback;
   virtual void Authenticate(const AuthenticationCallback& callback) = 0;
 };

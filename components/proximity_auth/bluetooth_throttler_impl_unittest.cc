@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "components/proximity_auth/fake_connection.h"
@@ -18,7 +19,7 @@ namespace {
 
 class TestBluetoothThrottler : public BluetoothThrottlerImpl {
  public:
-  explicit TestBluetoothThrottler(scoped_ptr<base::TickClock> clock)
+  explicit TestBluetoothThrottler(std::unique_ptr<base::TickClock> clock)
       : BluetoothThrottlerImpl(std::move(clock)) {}
   ~TestBluetoothThrottler() override {}
 
@@ -35,7 +36,7 @@ class ProximityAuthBluetoothThrottlerImplTest : public testing::Test {
  public:
   ProximityAuthBluetoothThrottlerImplTest()
       : clock_(new base::SimpleTestTickClock),
-        throttler_(make_scoped_ptr(clock_)) {
+        throttler_(base::WrapUnique(clock_)) {
     // The throttler treats null times as special, so start with a non-null
     // time.
     clock_->Advance(base::TimeDelta::FromSeconds(1));

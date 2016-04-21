@@ -4,11 +4,12 @@
 
 #include "components/proximity_auth/proximity_monitor_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
@@ -40,7 +41,7 @@ const char kPersistentSymmetricKey[] = "PSK";
 class TestProximityMonitorImpl : public ProximityMonitorImpl {
  public:
   explicit TestProximityMonitorImpl(const RemoteDevice& remote_device,
-                                    scoped_ptr<base::TickClock> clock)
+                                    std::unique_ptr<base::TickClock> clock)
       : ProximityMonitorImpl(remote_device, std::move(clock)) {}
   ~TestProximityMonitorImpl() override {}
 
@@ -91,7 +92,7 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
                               kBluetoothAddress,
                               kPersistentSymmetricKey,
                               std::string()),
-                 make_scoped_ptr(clock_)),
+                 base::WrapUnique(clock_)),
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {
     ON_CALL(*bluetooth_adapter_, GetDevice(kBluetoothAddress))
@@ -544,7 +545,7 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
       RemoteDevice::BLUETOOTH_CLASSIC, kBluetoothAddress,
       kPersistentSymmetricKey, std::string());
 
-  scoped_ptr<base::TickClock> clock(new base::SimpleTestTickClock());
+  std::unique_ptr<base::TickClock> clock(new base::SimpleTestTickClock());
   ProximityMonitorImpl monitor(unnamed_remote_device, std::move(clock));
   monitor.AddObserver(&observer_);
   monitor.Start();

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/proximity_auth/connection.h"
@@ -34,7 +35,7 @@ const char kPermitIdPrefix[] = "permit://google.com/easyunlock/v1/";
 DeviceToDeviceAuthenticator::DeviceToDeviceAuthenticator(
     Connection* connection,
     const std::string& account_id,
-    scoped_ptr<SecureMessageDelegate> secure_message_delegate)
+    std::unique_ptr<SecureMessageDelegate> secure_message_delegate)
     : connection_(connection),
       account_id_(account_id),
       secure_message_delegate_(std::move(secure_message_delegate)),
@@ -90,8 +91,8 @@ void DeviceToDeviceAuthenticator::OnKeyPairGenerated(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-scoped_ptr<base::Timer> DeviceToDeviceAuthenticator::CreateTimer() {
-  return make_scoped_ptr(new base::OneShotTimer());
+std::unique_ptr<base::Timer> DeviceToDeviceAuthenticator::CreateTimer() {
+  return base::WrapUnique(new base::OneShotTimer());
 }
 
 void DeviceToDeviceAuthenticator::OnHelloMessageCreated(
@@ -114,7 +115,7 @@ void DeviceToDeviceAuthenticator::OnHelloMessageCreated(
   hello_message_ = message;
   std::string permit_id = kPermitIdPrefix + account_id_;
   connection_->SendMessage(
-      make_scoped_ptr(new WireMessage(hello_message_, permit_id)));
+      base::WrapUnique(new WireMessage(hello_message_, permit_id)));
 }
 
 void DeviceToDeviceAuthenticator::OnResponderAuthTimedOut() {
@@ -153,7 +154,7 @@ void DeviceToDeviceAuthenticator::OnInitiatorAuthCreated(
   }
 
   state_ = State::SENT_INITIATOR_AUTH;
-  connection_->SendMessage(make_scoped_ptr(new WireMessage(message)));
+  connection_->SendMessage(base::WrapUnique(new WireMessage(message)));
 }
 
 void DeviceToDeviceAuthenticator::Fail(const std::string& error_message) {
@@ -180,7 +181,7 @@ void DeviceToDeviceAuthenticator::Succeed() {
   connection_->RemoveObserver(this);
   callback_.Run(
       Result::SUCCESS,
-      make_scoped_ptr(new DeviceToDeviceSecureContext(
+      base::WrapUnique(new DeviceToDeviceSecureContext(
           std::move(secure_message_delegate_), session_symmetric_key_,
           responder_auth_message_, SecureContext::PROTOCOL_VERSION_THREE_ONE)));
 }

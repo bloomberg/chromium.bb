@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_THROTTLED_BLUETOOTH_CONNECTION_FINDER_H
 #define COMPONENTS_PROXIMITY_AUTH_THROTTLED_BLUETOOTH_CONNECTION_FINDER_H
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/proximity_auth/connection_finder.h"
 
@@ -27,7 +28,7 @@ class ThrottledBluetoothConnectionFinder : public ConnectionFinder {
  public:
   // Note: The |throttler| is not owned, and must outlive |this| instance.
   ThrottledBluetoothConnectionFinder(
-      scoped_ptr<BluetoothConnectionFinder> connection_finder,
+      std::unique_ptr<BluetoothConnectionFinder> connection_finder,
       scoped_refptr<base::TaskRunner> task_runner,
       BluetoothThrottler* throttler);
   ~ThrottledBluetoothConnectionFinder() override;
@@ -38,10 +39,10 @@ class ThrottledBluetoothConnectionFinder : public ConnectionFinder {
  private:
   // Callback to be called when a connection is found.
   void OnConnection(const ConnectionCallback& connection_callback,
-                    scoped_ptr<Connection> connection);
+                    std::unique_ptr<Connection> connection);
 
   // The underlying connection finder.
-  scoped_ptr<BluetoothConnectionFinder> connection_finder_;
+  std::unique_ptr<BluetoothConnectionFinder> connection_finder_;
 
   // The task runner used for posting delayed messages.
   scoped_refptr<base::TaskRunner> task_runner_;

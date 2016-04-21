@@ -42,7 +42,7 @@ class BluetoothConnection : public Connection,
 
  protected:
   // Connection:
-  void SendMessageImpl(scoped_ptr<WireMessage> message) override;
+  void SendMessageImpl(std::unique_ptr<WireMessage> message) override;
 
   // BluetoothAdapter::Observer:
   void DeviceChanged(device::BluetoothAdapter* adapter,
@@ -78,7 +78,7 @@ class BluetoothConnection : public Connection,
 
   // The message that was sent over the backing |socket_|. NULL iff there is no
   // send operation in progress.
-  scoped_ptr<WireMessage> pending_message_;
+  std::unique_ptr<WireMessage> pending_message_;
 
   base::WeakPtrFactory<BluetoothConnection> weak_ptr_factory_;
 

@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ACCESS_TOKEN_FETCHER_IMPL_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ACCESS_TOKEN_FETCHER_IMPL_H
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -45,7 +46,7 @@ class CryptAuthAccessTokenFetcherImpl : public CryptAuthAccessTokenFetcher,
   bool fetch_started_;
 
   // Stores the request from |token_service_| to mint the token.
-  scoped_ptr<OAuth2TokenService::Request> token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> token_request_;
 
   // Callback to invoke when the token fetch succeeds or fails.
   AccessTokenCallback callback_;

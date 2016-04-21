@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_BLUETOOTH_CONNECTION_FINDER_H
 #define COMPONENTS_PROXIMITY_AUTH_BLUETOOTH_CONNECTION_FINDER_H
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/proximity_auth/bluetooth_util.h"
@@ -38,7 +39,7 @@ class BluetoothConnectionFinder : public ConnectionFinder,
 
  protected:
   // Exposed for mocking out the connection in tests.
-  virtual scoped_ptr<Connection> CreateConnection();
+  virtual std::unique_ptr<Connection> CreateConnection();
 
   // Calls bluetooth_util::SeekDeviceByAddress. Exposed for testing, as this
   // utility function is platform dependent.
@@ -105,7 +106,7 @@ class BluetoothConnectionFinder : public ConnectionFinder,
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // The Bluetooth connection that will be opened.
-  scoped_ptr<Connection> connection_;
+  std::unique_ptr<Connection> connection_;
 
   // Whether there is currently a polling task scheduled.
   bool has_delayed_poll_scheduled_;

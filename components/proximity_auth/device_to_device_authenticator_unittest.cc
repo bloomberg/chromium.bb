@@ -9,6 +9,7 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/timer/mock_timer.h"
@@ -84,7 +85,7 @@ class FakeConnection : public Connection {
 
  protected:
   // Connection:
-  void SendMessageImpl(scoped_ptr<WireMessage> message) override {
+  void SendMessageImpl(std::unique_ptr<WireMessage> message) override {
     const WireMessage& message_alias = *message;
     message_buffer_.push_back(std::move(message));
     OnDidSendMessage(message_alias, !connection_blocked_);
@@ -103,7 +104,7 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
  public:
   DeviceToDeviceAuthenticatorForTest(
       Connection* connection,
-      scoped_ptr<SecureMessageDelegate> secure_message_delegate)
+      std::unique_ptr<SecureMessageDelegate> secure_message_delegate)
       : DeviceToDeviceAuthenticator(connection,
                                     kAccountId,
                                     std::move(secure_message_delegate)),
@@ -114,11 +115,11 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
 
  private:
   // DeviceToDeviceAuthenticator:
-  scoped_ptr<base::Timer> CreateTimer() override {
+  std::unique_ptr<base::Timer> CreateTimer() override {
     bool retain_user_task = false;
     bool is_repeating = false;
 
-    scoped_ptr<base::MockTimer> timer(
+    std::unique_ptr<base::MockTimer> timer(
         new base::MockTimer(retain_user_task, is_repeating));
 
     timer_ = timer.get();
@@ -140,7 +141,7 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
         connection_(remote_device_),
         secure_message_delegate_(new FakeSecureMessageDelegate),
         authenticator_(&connection_,
-                       make_scoped_ptr(secure_message_delegate_)) {}
+                       base::WrapUnique(secure_message_delegate_)) {}
   ~ProximityAuthDeviceToDeviceAuthenticatorTest() override {}
 
   void SetUp() override {
@@ -213,7 +214,7 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
   }
 
   void OnAuthenticationResult(Authenticator::Result result,
-                              scoped_ptr<SecureContext> secure_context) {
+                              std::unique_ptr<SecureContext> secure_context) {
     secure_context_ = std::move(secure_context);
     OnAuthenticationResultProxy(result);
   }
@@ -240,7 +241,7 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
   std::string session_symmetric_key_;
 
   // Stores the SecureContext returned after authentication succeeds.
-  scoped_ptr<SecureContext> secure_context_;
+  std::unique_ptr<SecureContext> secure_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthDeviceToDeviceAuthenticatorTest);
 };
@@ -340,10 +341,10 @@ TEST_F(ProximityAuthDeviceToDeviceAuthenticatorTest,
   // completes.
   WireMessage wire_message(base::RandBytesAsString(300u));
   connection_.SendMessage(
-      make_scoped_ptr(new WireMessage(base::RandBytesAsString(300u))));
+      base::WrapUnique(new WireMessage(base::RandBytesAsString(300u))));
   connection_.OnBytesReceived(wire_message.Serialize());
   connection_.SendMessage(
-      make_scoped_ptr(new WireMessage(base::RandBytesAsString(300u))));
+      base::WrapUnique(new WireMessage(base::RandBytesAsString(300u))));
   connection_.OnBytesReceived(wire_message.Serialize());
 }
 

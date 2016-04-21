@@ -165,7 +165,7 @@ void BluetoothLowEnergyConnection::SetTaskRunnerForTesting(
 }
 
 void BluetoothLowEnergyConnection::SendMessageImpl(
-    scoped_ptr<WireMessage> message) {
+    std::unique_ptr<WireMessage> message) {
   PA_LOG(INFO) << "Sending message " << message->Serialize();
   std::string serialized_msg = message->Serialize();
 
@@ -339,7 +339,7 @@ void BluetoothLowEnergyConnection::OnCreateGattConnectionError(
 }
 
 void BluetoothLowEnergyConnection::OnGattConnectionCreated(
-    scoped_ptr<device::BluetoothGattConnection> gatt_connection) {
+    std::unique_ptr<device::BluetoothGattConnection> gatt_connection) {
   DCHECK(sub_status() == SubStatus::WAITING_GATT_CONNECTION);
   PA_LOG(INFO) << "GATT connection with " << gatt_connection->GetDeviceAddress()
                << " created.";
@@ -434,7 +434,7 @@ void BluetoothLowEnergyConnection::OnNotifySessionError(
 }
 
 void BluetoothLowEnergyConnection::OnNotifySessionStarted(
-    scoped_ptr<BluetoothGattNotifySession> notify_session) {
+    std::unique_ptr<BluetoothGattNotifySession> notify_session) {
   DCHECK(sub_status() == SubStatus::WAITING_NOTIFY_SESSION);
   PA_LOG(INFO) << "Notification session started "
                << notify_session->GetCharacteristicIdentifier();

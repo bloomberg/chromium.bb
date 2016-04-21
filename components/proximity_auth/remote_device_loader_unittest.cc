@@ -5,11 +5,12 @@
 #include "components/proximity_auth/remote_device_loader.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
 #include "components/proximity_auth/proximity_auth_pref_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -70,7 +71,7 @@ class ProximityAuthRemoteDeviceLoaderTest : public testing::Test {
  protected:
   // Handles deriving the PSK. Ownership will be passed to the
   // RemoteDeviceLoader under test.
-  scoped_ptr<FakeSecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<FakeSecureMessageDelegate> secure_message_delegate_;
 
   // The private key of the user local device.
   std::string user_private_key_;
@@ -79,7 +80,7 @@ class ProximityAuthRemoteDeviceLoaderTest : public testing::Test {
   std::vector<RemoteDevice> remote_devices_;
 
   // Stores the bluetooth address for BLE devices.
-  scoped_ptr<MockProximityAuthPrefManager> pref_manager_;
+  std::unique_ptr<MockProximityAuthPrefManager> pref_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthRemoteDeviceLoaderTest);
 };

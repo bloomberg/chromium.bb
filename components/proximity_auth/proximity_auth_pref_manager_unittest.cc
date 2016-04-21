@@ -5,11 +5,11 @@
 #include "components/proximity_auth/proximity_auth_pref_manager.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/proximity_auth/proximity_auth_pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"

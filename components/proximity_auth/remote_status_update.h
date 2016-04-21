@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_REMOTE_STATUS_UPDATE_H
 #define COMPONENTS_PROXIMITY_AUTH_REMOTE_STATUS_UPDATE_H
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace base {
 class DictionaryValue;
@@ -40,7 +40,7 @@ enum TrustAgentState {
 struct RemoteStatusUpdate {
   // Parses a dictionary value into a RemoteStatusUpdate. Returns a null pointer
   // if the serialized dictionary value is not valid.
-  static scoped_ptr<RemoteStatusUpdate> Deserialize(
+  static std::unique_ptr<RemoteStatusUpdate> Deserialize(
       const base::DictionaryValue& serialized_value);
 
   UserPresence user_presence;

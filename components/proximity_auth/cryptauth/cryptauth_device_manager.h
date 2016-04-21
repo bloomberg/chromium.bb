@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_DEVICE_MANAGER_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_DEVICE_MANAGER_H
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/clock.h"
@@ -64,8 +65,8 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate,
   // |pref_service|: Stores syncing metadata and unlock key information to
   //                 persist across browser restarts. Must already be registered
   //                 with RegisterPrefs().
-  CryptAuthDeviceManager(scoped_ptr<base::Clock> clock,
-                         scoped_ptr<CryptAuthClientFactory> client_factory,
+  CryptAuthDeviceManager(std::unique_ptr<base::Clock> clock,
+                         std::unique_ptr<CryptAuthClientFactory> client_factory,
                          CryptAuthGCMManager* gcm_manager,
                          PrefService* pref_service);
 
@@ -111,7 +112,7 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate,
 
  protected:
   // Creates a new SyncScheduler instance. Exposed for testing.
-  virtual scoped_ptr<SyncScheduler> CreateSyncScheduler();
+  virtual std::unique_ptr<SyncScheduler> CreateSyncScheduler();
 
  private:
   // CryptAuthGCMManager::Observer:
@@ -122,17 +123,17 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate,
 
   // SyncScheduler::Delegate:
   void OnSyncRequested(
-      scoped_ptr<SyncScheduler::SyncRequest> sync_request) override;
+      std::unique_ptr<SyncScheduler::SyncRequest> sync_request) override;
 
   // Callback when |cryptauth_client_| completes with the response.
   void OnGetMyDevicesSuccess(const cryptauth::GetMyDevicesResponse& response);
   void OnGetMyDevicesFailure(const std::string& error);
 
   // Used to determine the time.
-  scoped_ptr<base::Clock> clock_;
+  std::unique_ptr<base::Clock> clock_;
 
   // Creates CryptAuthClient instances for each sync attempt.
-  scoped_ptr<CryptAuthClientFactory> client_factory_;
+  std::unique_ptr<CryptAuthClientFactory> client_factory_;
 
   // Notifies when GCM push messages trigger device sync. Not owned and must
   // outlive this instance.
@@ -147,15 +148,15 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate,
   std::vector<cryptauth::ExternalDeviceInfo> unlock_keys_;
 
   // Schedules the time between device sync attempts.
-  scoped_ptr<SyncScheduler> scheduler_;
+  std::unique_ptr<SyncScheduler> scheduler_;
 
   // Contains the SyncRequest that |scheduler_| requests when a device sync
   // attempt is made.
-  scoped_ptr<SyncScheduler::SyncRequest> sync_request_;
+  std::unique_ptr<SyncScheduler::SyncRequest> sync_request_;
 
   // The CryptAuthEnroller instance for the current sync attempt. A new
   // instance will be created for each individual attempt.
-  scoped_ptr<CryptAuthClient> cryptauth_client_;
+  std::unique_ptr<CryptAuthClient> cryptauth_client_;
 
   // List of observers.
   base::ObserverList<Observer> observers_;

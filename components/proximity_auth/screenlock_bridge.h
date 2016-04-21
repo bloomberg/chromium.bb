@@ -10,7 +10,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
@@ -50,7 +49,7 @@ class ScreenlockBridge {
 
     // Converts parameters to a dictionary values that can be sent to the
     // screenlock web UI.
-    scoped_ptr<base::DictionaryValue> ToDictionaryValue() const;
+    std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
 
     // Sets the icon that should be shown in the UI.
     void SetIcon(UserPodCustomIcon icon);

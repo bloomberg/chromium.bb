@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_BLUETOOTH_THROTTLER_IMPL_H
 #define COMPONENTS_PROXIMITY_AUTH_BLUETOOTH_THROTTLER_IMPL_H
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/proximity_auth/bluetooth_throttler.h"
 #include "components/proximity_auth/connection_observer.h"
@@ -30,7 +30,7 @@ class BluetoothThrottlerImpl : public BluetoothThrottler,
  public:
   // Creates a throttler for connections to a remote device, using the |clock|
   // as a time source.
-  explicit BluetoothThrottlerImpl(scoped_ptr<base::TickClock> clock);
+  explicit BluetoothThrottlerImpl(std::unique_ptr<base::TickClock> clock);
   ~BluetoothThrottlerImpl() override;
 
   // BluetoothThrottler:
@@ -52,7 +52,7 @@ class BluetoothThrottlerImpl : public BluetoothThrottler,
   base::TimeTicks last_disconnect_time_;
 
   // The time source.
-  scoped_ptr<base::TickClock> clock_;
+  std::unique_ptr<base::TickClock> clock_;
 
   // The currently connected connections.
   // Each connection is stored as a weak reference, which is safe because |this|

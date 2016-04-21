@@ -36,14 +36,14 @@ const char kTrustAgentUnsupported[] = "unsupported";
 namespace proximity_auth {
 
 // static
-scoped_ptr<RemoteStatusUpdate> RemoteStatusUpdate::Deserialize(
+std::unique_ptr<RemoteStatusUpdate> RemoteStatusUpdate::Deserialize(
     const base::DictionaryValue& serialized_value) {
   std::string type;
   if (!serialized_value.GetString(kType, &type) || type != kStatusUpdateType) {
     VLOG(1) << "Unable to parse remote status update: unexpected type. "
             << "Expected: '" << kStatusUpdateType << "', "
             << "Saw: '" << type << "'.";
-    return scoped_ptr<RemoteStatusUpdate>();
+    return std::unique_ptr<RemoteStatusUpdate>();
   }
 
   std::string user_presence, secure_screen_lock_state, trust_agent_state;
@@ -53,10 +53,10 @@ scoped_ptr<RemoteStatusUpdate> RemoteStatusUpdate::Deserialize(
       !serialized_value.GetString(kTrustAgent, &trust_agent_state)) {
     VLOG(1) << "Unable to parse remote status update: missing data value. "
             << "Status update:\n" << serialized_value;
-    return scoped_ptr<RemoteStatusUpdate>();
+    return std::unique_ptr<RemoteStatusUpdate>();
   }
 
-  scoped_ptr<RemoteStatusUpdate> parsed_update(new RemoteStatusUpdate);
+  std::unique_ptr<RemoteStatusUpdate> parsed_update(new RemoteStatusUpdate);
   if (user_presence == kUserPresent) {
     parsed_update->user_presence = USER_PRESENT;
   } else if (user_presence == kUserAbsent) {
@@ -66,7 +66,7 @@ scoped_ptr<RemoteStatusUpdate> RemoteStatusUpdate::Deserialize(
   } else {
     VLOG(1) << "Unable to parse remote status update: invalid user presence: '"
             << user_presence << "'.";
-    return scoped_ptr<RemoteStatusUpdate>();
+    return std::unique_ptr<RemoteStatusUpdate>();
   }
 
   if (secure_screen_lock_state == kSecureScreenLockEnabled) {
@@ -78,7 +78,7 @@ scoped_ptr<RemoteStatusUpdate> RemoteStatusUpdate::Deserialize(
   } else {
     VLOG(1) << "Unable to parse remote status update: invalid secure screen "
             << "lock state: '" << secure_screen_lock_state << "'.";
-    return scoped_ptr<RemoteStatusUpdate>();
+    return std::unique_ptr<RemoteStatusUpdate>();
   }
 
   if (trust_agent_state == kTrustAgentEnabled) {
@@ -90,7 +90,7 @@ scoped_ptr<RemoteStatusUpdate> RemoteStatusUpdate::Deserialize(
   } else {
     VLOG(1) << "Unable to parse remote status update: invalid trust agent "
             << "state: '" << trust_agent_state << "'.";
-    return scoped_ptr<RemoteStatusUpdate>();
+    return std::unique_ptr<RemoteStatusUpdate>();
   }
 
   return parsed_update;

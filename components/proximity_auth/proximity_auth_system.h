@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_PROXIMITY_AUTH_SYSTEM_H
 #define COMPONENTS_PROXIMITY_AUTH_PROXIMITY_AUTH_SYSTEM_H
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/remote_device_life_cycle.h"
@@ -86,10 +86,10 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
 
   // Responsible for the life cycle of connecting and authenticating to
   // the RemoteDevice of the currently focused user.
-  scoped_ptr<RemoteDeviceLifeCycle> remote_device_life_cycle_;
+  std::unique_ptr<RemoteDeviceLifeCycle> remote_device_life_cycle_;
 
   // Handles the interaction with the lock screen UI.
-  scoped_ptr<UnlockManager> unlock_manager_;
+  std::unique_ptr<UnlockManager> unlock_manager_;
 
   // True if the system is suspended.
   bool suspended_;

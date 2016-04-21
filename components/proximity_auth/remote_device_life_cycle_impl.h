@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_REMOTE_DEVICE_LIFE_CYCLE_IMPL_H
 #define COMPONENTS_PROXIMITY_AUTH_REMOTE_DEVICE_LIFE_CYCLE_IMPL_H
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -46,11 +47,11 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
  protected:
   // Creates and returns a ConnectionFinder instance for |remote_device_|.
   // Exposed for testing.
-  virtual scoped_ptr<ConnectionFinder> CreateConnectionFinder();
+  virtual std::unique_ptr<ConnectionFinder> CreateConnectionFinder();
 
   // Creates and returns an Authenticator instance for |connection_|.
   // Exposed for testing.
-  virtual scoped_ptr<Authenticator> CreateAuthenticator();
+  virtual std::unique_ptr<Authenticator> CreateAuthenticator();
 
  private:
   // Transitions to |new_state|, and notifies observers.
@@ -61,11 +62,11 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   void FindConnection();
 
   // Called when |connection_finder_| finds a connection.
-  void OnConnectionFound(scoped_ptr<Connection> connection);
+  void OnConnectionFound(std::unique_ptr<Connection> connection);
 
   // Callback when |authenticator_| completes authentication.
   void OnAuthenticationResult(Authenticator::Result result,
-                              scoped_ptr<SecureContext> secure_context);
+                              std::unique_ptr<SecureContext> secure_context);
 
   // Creates the messenger which parses status updates.
   void CreateMessenger();
@@ -86,27 +87,27 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   base::ObserverList<Observer> observers_;
 
   // The connection that is established by |connection_finder_|.
-  scoped_ptr<Connection> connection_;
+  std::unique_ptr<Connection> connection_;
 
   // Context for encrypting and decrypting messages. Created after
   // authentication succeeds. Ownership is eventually passed to |messenger_|.
-  scoped_ptr<SecureContext> secure_context_;
+  std::unique_ptr<SecureContext> secure_context_;
 
   // The messenger for sending and receiving messages in the
   // SECURE_CHANNEL_ESTABLISHED state.
-  scoped_ptr<Messenger> messenger_;
+  std::unique_ptr<Messenger> messenger_;
 
   // Authenticates the remote device after it is connected. Used in the
   // AUTHENTICATING state.
-  scoped_ptr<Authenticator> authenticator_;
+  std::unique_ptr<Authenticator> authenticator_;
 
   // Used in the FINDING_CONNECTION state to establish a connection to the
   // remote device.
-  scoped_ptr<ConnectionFinder> connection_finder_;
+  std::unique_ptr<ConnectionFinder> connection_finder_;
 
   // Rate limits Bluetooth connections to the same device. Used to in the
   // created ConnectionFinder.
-  scoped_ptr<BluetoothThrottler> bluetooth_throttler_;
+  std::unique_ptr<BluetoothThrottler> bluetooth_throttler_;
 
   // After authentication fails, this timer waits for a period of time before
   // retrying the connection.

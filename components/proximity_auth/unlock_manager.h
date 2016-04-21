@@ -62,7 +62,7 @@ class UnlockManager : public MessengerObserver,
  protected:
   // Creates a ProximityMonitor instance for the given |remote_device|.
   // Exposed for testing.
-  virtual scoped_ptr<ProximityMonitor> CreateProximityMonitor(
+  virtual std::unique_ptr<ProximityMonitor> CreateProximityMonitor(
       const RemoteDevice& remote_device);
 
  private:
@@ -146,7 +146,7 @@ class UnlockManager : public MessengerObserver,
 
   // Whether the user is present at the remote device. Unset if no remote status
   // update has yet been received.
-  scoped_ptr<RemoteScreenlockState> remote_screenlock_state_;
+  std::unique_ptr<RemoteScreenlockState> remote_screenlock_state_;
 
   // Controls the proximity auth flow logic for a remote device. Not owned, and
   // expcted to outlive |this| instance.
@@ -154,7 +154,7 @@ class UnlockManager : public MessengerObserver,
 
   // Tracks whether the remote device is currently in close enough proximity to
   // the local device to allow unlocking.
-  scoped_ptr<ProximityMonitor> proximity_monitor_;
+  std::unique_ptr<ProximityMonitor> proximity_monitor_;
 
   // Used to call into the embedder. Expected to outlive |this| instance.
   ProximityAuthClient* proximity_auth_client_;
@@ -175,7 +175,7 @@ class UnlockManager : public MessengerObserver,
 
   // The sign-in secret received from the remote device by decrypting the
   // sign-in challenge.
-  scoped_ptr<std::string> sign_in_secret_;
+  std::unique_ptr<std::string> sign_in_secret_;
 
   // The state of the current screen lock UI.
   ScreenlockState screenlock_state_;

@@ -54,8 +54,8 @@ std::string CreateEnrollmentPublicMetadata() {
 }  // namespace
 
 CryptAuthEnrollerImpl::CryptAuthEnrollerImpl(
-    scoped_ptr<CryptAuthClientFactory> client_factory,
-    scoped_ptr<SecureMessageDelegate> secure_message_delegate)
+    std::unique_ptr<CryptAuthClientFactory> client_factory,
+    std::unique_ptr<SecureMessageDelegate> secure_message_delegate)
     : client_factory_(std::move(client_factory)),
       secure_message_delegate_(std::move(secure_message_delegate)),
       weak_ptr_factory_(this) {}

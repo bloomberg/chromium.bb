@@ -16,7 +16,7 @@
 namespace proximity_auth {
 
 ThrottledBluetoothConnectionFinder::ThrottledBluetoothConnectionFinder(
-    scoped_ptr<BluetoothConnectionFinder> connection_finder,
+    std::unique_ptr<BluetoothConnectionFinder> connection_finder,
     scoped_refptr<base::TaskRunner> task_runner,
     BluetoothThrottler* throttler)
     : connection_finder_(std::move(connection_finder)),
@@ -48,7 +48,7 @@ void ThrottledBluetoothConnectionFinder::Find(
 
 void ThrottledBluetoothConnectionFinder::OnConnection(
     const ConnectionCallback& connection_callback,
-    scoped_ptr<Connection> connection) {
+    std::unique_ptr<Connection> connection) {
   throttler_->OnConnection(connection.get());
   connection_callback.Run(std::move(connection));
 }

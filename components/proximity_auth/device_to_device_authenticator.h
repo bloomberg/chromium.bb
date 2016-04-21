@@ -50,7 +50,7 @@ class DeviceToDeviceAuthenticator : public Authenticator,
   DeviceToDeviceAuthenticator(
       Connection* connection,
       const std::string& account_id,
-      scoped_ptr<SecureMessageDelegate> secure_message_delegate);
+      std::unique_ptr<SecureMessageDelegate> secure_message_delegate);
 
   ~DeviceToDeviceAuthenticator() override;
 
@@ -59,7 +59,7 @@ class DeviceToDeviceAuthenticator : public Authenticator,
 
  protected:
   // Creates a base::Timer instance. Exposed for testing.
-  virtual scoped_ptr<base::Timer> CreateTimer();
+  virtual std::unique_ptr<base::Timer> CreateTimer();
 
  private:
   // The current state of the authentication flow.
@@ -124,7 +124,7 @@ class DeviceToDeviceAuthenticator : public Authenticator,
   const std::string account_id_;
 
   // Handles SecureMessage crypto operations.
-  scoped_ptr<SecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<SecureMessageDelegate> secure_message_delegate_;
 
   // The current state in the authentication flow.
   State state_;
@@ -133,7 +133,7 @@ class DeviceToDeviceAuthenticator : public Authenticator,
   AuthenticationCallback callback_;
 
   // Used for timing out when waiting for [Remote Auth] from the remote device.
-  scoped_ptr<base::Timer> timer_;
+  std::unique_ptr<base::Timer> timer_;
 
   // The bytes of the [Hello] message sent to the remote device.
   std::string hello_message_;

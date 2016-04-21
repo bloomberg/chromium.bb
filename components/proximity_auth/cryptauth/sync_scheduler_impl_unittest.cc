@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/timer/mock_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,11 +58,11 @@ class TestSyncSchedulerImpl : public SyncSchedulerImpl {
   base::MockTimer* timer() { return mock_timer_; }
 
  private:
-  scoped_ptr<base::Timer> CreateTimer() override {
+  std::unique_ptr<base::Timer> CreateTimer() override {
     bool retain_user_task = false;
     bool is_repeating = false;
     mock_timer_ = new base::MockTimer(retain_user_task, is_repeating);
-    return make_scoped_ptr(mock_timer_);
+    return base::WrapUnique(mock_timer_);
   }
 
   // A timer instance for testing. Owned by the parent scheduler.
@@ -88,7 +89,7 @@ class ProximityAuthSyncSchedulerImplTest : public testing::Test,
   ~ProximityAuthSyncSchedulerImplTest() override {}
 
   void OnSyncRequested(
-      scoped_ptr<SyncScheduler::SyncRequest> sync_request) override {
+      std::unique_ptr<SyncScheduler::SyncRequest> sync_request) override {
     sync_request_ = std::move(sync_request);
   }
 
@@ -100,9 +101,9 @@ class ProximityAuthSyncSchedulerImplTest : public testing::Test,
   base::TimeDelta zero_elapsed_time_;
 
   // The scheduler instance under test.
-  scoped_ptr<TestSyncSchedulerImpl> scheduler_;
+  std::unique_ptr<TestSyncSchedulerImpl> scheduler_;
 
-  scoped_ptr<SyncScheduler::SyncRequest> sync_request_;
+  std::unique_ptr<SyncScheduler::SyncRequest> sync_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthSyncSchedulerImplTest);
 };

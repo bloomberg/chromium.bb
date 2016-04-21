@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -318,10 +319,10 @@ void UnlockManager::OnAuthAttempted(
   }
 }
 
-scoped_ptr<ProximityMonitor> UnlockManager::CreateProximityMonitor(
+std::unique_ptr<ProximityMonitor> UnlockManager::CreateProximityMonitor(
     const RemoteDevice& remote_device) {
-  return make_scoped_ptr(new ProximityMonitorImpl(
-      remote_device, make_scoped_ptr(new base::DefaultTickClock())));
+  return base::WrapUnique(new ProximityMonitorImpl(
+      remote_device, base::WrapUnique(new base::DefaultTickClock())));
 }
 
 void UnlockManager::SendSignInChallenge() {

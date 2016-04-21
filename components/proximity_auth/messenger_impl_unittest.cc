@@ -4,9 +4,11 @@
 
 #include "components/proximity_auth/messenger_impl.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/fake_connection.h"
 #include "components/proximity_auth/fake_secure_context.h"
@@ -61,9 +63,9 @@ class MockMessengerObserver : public MessengerObserver {
 class TestMessenger : public MessengerImpl {
  public:
   TestMessenger()
-      : MessengerImpl(make_scoped_ptr(new FakeConnection(
+      : MessengerImpl(base::WrapUnique(new FakeConnection(
                           CreateClassicRemoteDeviceForTest())),
-                      make_scoped_ptr(new FakeSecureContext())) {}
+                      base::WrapUnique(new FakeSecureContext())) {}
   ~TestMessenger() override {}
 
   // Simple getters for the mock objects owned by |this| messenger.

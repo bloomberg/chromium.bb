@@ -8,6 +8,7 @@
 
 #include "base/base64url.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
@@ -76,7 +77,7 @@ class MockCryptAuthEnrollerFactory : public CryptAuthEnrollerFactory {
   ~MockCryptAuthEnrollerFactory() override {}
 
   // CryptAuthEnrollerFactory:
-  scoped_ptr<CryptAuthEnroller> CreateInstance() override {
+  std::unique_ptr<CryptAuthEnroller> CreateInstance() override {
     auto passed_cryptauth_enroller = std::move(next_cryptauth_enroller_);
     next_cryptauth_enroller_.reset(new NiceMock<MockCryptAuthEnroller>());
     return std::move(passed_cryptauth_enroller);
@@ -89,7 +90,7 @@ class MockCryptAuthEnrollerFactory : public CryptAuthEnrollerFactory {
  private:
   // Stores the next CryptAuthEnroller to be created.
   // Ownership is passed to the caller of |CreateInstance()|.
-  scoped_ptr<MockCryptAuthEnroller> next_cryptauth_enroller_;
+  std::unique_ptr<MockCryptAuthEnroller> next_cryptauth_enroller_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCryptAuthEnrollerFactory);
 };
@@ -98,9 +99,9 @@ class MockCryptAuthEnrollerFactory : public CryptAuthEnrollerFactory {
 class TestCryptAuthEnrollmentManager : public CryptAuthEnrollmentManager {
  public:
   TestCryptAuthEnrollmentManager(
-      scoped_ptr<base::Clock> clock,
-      scoped_ptr<CryptAuthEnrollerFactory> enroller_factory,
-      scoped_ptr<SecureMessageDelegate> secure_message_delegate,
+      std::unique_ptr<base::Clock> clock,
+      std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
+      std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
       const cryptauth::GcmDeviceInfo& device_info,
       CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service)
@@ -115,7 +116,7 @@ class TestCryptAuthEnrollmentManager : public CryptAuthEnrollmentManager {
 
   ~TestCryptAuthEnrollmentManager() override {}
 
-  scoped_ptr<SyncScheduler> CreateSyncScheduler() override {
+  std::unique_ptr<SyncScheduler> CreateSyncScheduler() override {
     EXPECT_TRUE(scoped_sync_scheduler_);
     return std::move(scoped_sync_scheduler_);
   }
@@ -127,7 +128,7 @@ class TestCryptAuthEnrollmentManager : public CryptAuthEnrollmentManager {
  private:
   // Ownership is passed to |CryptAuthEnrollmentManager| super class when
   // |CreateSyncScheduler()| is called.
-  scoped_ptr<MockSyncScheduler> scoped_sync_scheduler_;
+  std::unique_ptr<MockSyncScheduler> scoped_sync_scheduler_;
 
   // Stores the pointer of |scoped_sync_scheduler_| after ownership is passed to
   // the super class.
@@ -150,9 +151,9 @@ class ProximityAuthCryptAuthEnrollmentManagerTest
         enroller_factory_(new MockCryptAuthEnrollerFactory()),
         secure_message_delegate_(new FakeSecureMessageDelegate()),
         gcm_manager_(kGCMRegistrationId),
-        enrollment_manager_(make_scoped_ptr(clock_),
-                            make_scoped_ptr(enroller_factory_),
-                            make_scoped_ptr(secure_message_delegate_),
+        enrollment_manager_(base::WrapUnique(clock_),
+                            base::WrapUnique(enroller_factory_),
+                            base::WrapUnique(secure_message_delegate_),
                             device_info_,
                             &gcm_manager_,
                             &pref_service_) {}
@@ -220,7 +221,7 @@ class ProximityAuthCryptAuthEnrollmentManagerTest
         Enroll(public_key_, private_key_, _, expected_invocation_reason, _))
         .WillOnce(SaveArg<4>(&completion_callback));
 
-    auto sync_request = make_scoped_ptr(
+    auto sync_request = base::WrapUnique(
         new SyncScheduler::SyncRequest(enrollment_manager_.GetSyncScheduler()));
     EXPECT_CALL(*this, OnEnrollmentStartedProxy());
 
@@ -299,7 +300,7 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, GetEnrollmentState) {
 }
 
 TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, InitWithDefaultPrefs) {
-  scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
+  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
   clock->SetNow(base::Time::FromDoubleT(kInitialTimeNowSeconds));
   base::TimeDelta elapsed_time = clock->Now() - base::Time::FromDoubleT(0);
 
@@ -307,8 +308,8 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, InitWithDefaultPrefs) {
   CryptAuthEnrollmentManager::RegisterPrefs(pref_service.registry());
 
   TestCryptAuthEnrollmentManager enrollment_manager(
-      std::move(clock), make_scoped_ptr(new MockCryptAuthEnrollerFactory()),
-      make_scoped_ptr(new FakeSecureMessageDelegate()), device_info_,
+      std::move(clock), base::WrapUnique(new MockCryptAuthEnrollerFactory()),
+      base::WrapUnique(new FakeSecureMessageDelegate()), device_info_,
       &gcm_manager_, &pref_service);
 
   EXPECT_CALL(
@@ -408,7 +409,7 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest,
 
   // Trigger a sync request.
   EXPECT_CALL(*this, OnEnrollmentStartedProxy());
-  auto sync_request = make_scoped_ptr(
+  auto sync_request = base::WrapUnique(
       new SyncScheduler::SyncRequest(enrollment_manager_.GetSyncScheduler()));
   static_cast<SyncScheduler::Delegate*>(&enrollment_manager_)
       ->OnSyncRequested(std::move(sync_request));
@@ -444,7 +445,7 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, GCMRegistrationFails) {
 
   // Trigger a sync request.
   EXPECT_CALL(*this, OnEnrollmentStartedProxy());
-  auto sync_request = make_scoped_ptr(
+  auto sync_request = base::WrapUnique(
       new SyncScheduler::SyncRequest(enrollment_manager_.GetSyncScheduler()));
   static_cast<SyncScheduler::Delegate*>(&enrollment_manager_)
       ->OnSyncRequested(std::move(sync_request));

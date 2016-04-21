@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
@@ -47,7 +48,7 @@ RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
       state_(RemoteDeviceLifeCycle::State::STOPPED),
       observers_(base::ObserverList<Observer>::NOTIFY_EXISTING_ONLY),
       bluetooth_throttler_(new BluetoothThrottlerImpl(
-          make_scoped_ptr(new base::DefaultTickClock()))),
+          base::WrapUnique(new base::DefaultTickClock()))),
       weak_ptr_factory_(this) {}
 
 RemoteDeviceLifeCycleImpl::~RemoteDeviceLifeCycleImpl() {}
@@ -79,22 +80,23 @@ void RemoteDeviceLifeCycleImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-scoped_ptr<ConnectionFinder>
+std::unique_ptr<ConnectionFinder>
 RemoteDeviceLifeCycleImpl::CreateConnectionFinder() {
   if (remote_device_.bluetooth_type == RemoteDevice::BLUETOOTH_LE) {
-    return make_scoped_ptr(new BluetoothLowEnergyConnectionFinder(
+    return base::WrapUnique(new BluetoothLowEnergyConnectionFinder(
         remote_device_, kBLESmartLockServiceUUID,
         BluetoothLowEnergyConnectionFinder::FinderStrategy::FIND_PAIRED_DEVICE,
         nullptr, bluetooth_throttler_.get(), 3));
   } else {
-    return make_scoped_ptr(new BluetoothConnectionFinder(
+    return base::WrapUnique(new BluetoothConnectionFinder(
         remote_device_, device::BluetoothUUID(kClassicBluetoothServiceUUID),
         base::TimeDelta::FromSeconds(3)));
   }
 }
 
-scoped_ptr<Authenticator> RemoteDeviceLifeCycleImpl::CreateAuthenticator() {
-  return make_scoped_ptr(new DeviceToDeviceAuthenticator(
+std::unique_ptr<Authenticator>
+RemoteDeviceLifeCycleImpl::CreateAuthenticator() {
+  return base::WrapUnique(new DeviceToDeviceAuthenticator(
       connection_.get(), remote_device_.user_id,
       proximity_auth_client_->CreateSecureMessageDelegate()));
 }
@@ -118,7 +120,7 @@ void RemoteDeviceLifeCycleImpl::FindConnection() {
 }
 
 void RemoteDeviceLifeCycleImpl::OnConnectionFound(
-    scoped_ptr<Connection> connection) {
+    std::unique_ptr<Connection> connection) {
   DCHECK(state_ == RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
   connection_ = std::move(connection);
   authenticator_ = CreateAuthenticator();
@@ -130,7 +132,7 @@ void RemoteDeviceLifeCycleImpl::OnConnectionFound(
 
 void RemoteDeviceLifeCycleImpl::OnAuthenticationResult(
     Authenticator::Result result,
-    scoped_ptr<SecureContext> secure_context) {
+    std::unique_ptr<SecureContext> secure_context) {
   DCHECK(state_ == RemoteDeviceLifeCycle::State::AUTHENTICATING);
   authenticator_.reset();
   if (result != Authenticator::Result::SUCCESS) {

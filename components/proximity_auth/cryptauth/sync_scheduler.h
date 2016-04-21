@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_SYNC_SCHEDULER_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_SYNC_SCHEDULER_H
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
@@ -56,7 +57,7 @@ class SyncScheduler {
 
     // Called when the scheduler fires and requests a sync attempt. The delegate
     // should call sync_request->Complete() when the request finishes.
-    virtual void OnSyncRequested(scoped_ptr<SyncRequest> sync_request) = 0;
+    virtual void OnSyncRequested(std::unique_ptr<SyncRequest> sync_request) = 0;
   };
 
   virtual ~SyncScheduler() {}

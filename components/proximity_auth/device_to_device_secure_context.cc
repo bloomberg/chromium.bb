@@ -27,7 +27,7 @@ const int kAuthenticationSequenceNumber = 2;
 }  // namespace
 
 DeviceToDeviceSecureContext::DeviceToDeviceSecureContext(
-    scoped_ptr<SecureMessageDelegate> secure_message_delegate,
+    std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
     const std::string& symmetric_key,
     const std::string& responder_auth_message,
     ProtocolVersion protocol_version)

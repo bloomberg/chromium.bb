@@ -4,10 +4,10 @@
 
 #include "components/proximity_auth/proximity_auth_pref_manager.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"

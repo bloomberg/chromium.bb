@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_characteristics_finder.h"
@@ -117,7 +117,7 @@ class BluetoothLowEnergyConnection : public Connection,
           error_callback);
 
   // proximity_auth::Connection:
-  void SendMessageImpl(scoped_ptr<WireMessage> message) override;
+  void SendMessageImpl(std::unique_ptr<WireMessage> message) override;
 
   // device::BluetoothAdapter::Observer:
   void DeviceChanged(device::BluetoothAdapter* adapter,
@@ -151,7 +151,7 @@ class BluetoothLowEnergyConnection : public Connection,
 
   // Called when a GATT connection is created.
   void OnGattConnectionCreated(
-      scoped_ptr<device::BluetoothGattConnection> gatt_connection);
+      std::unique_ptr<device::BluetoothGattConnection> gatt_connection);
 
   // Callback called when there is an error creating the GATT connection.
   void OnCreateGattConnectionError(
@@ -175,7 +175,7 @@ class BluetoothLowEnergyConnection : public Connection,
   // Called when a notification session is successfully started for
   // |from_peripheral_char_| characteristic.
   void OnNotifySessionStarted(
-      scoped_ptr<device::BluetoothGattNotifySession> notify_session);
+      std::unique_ptr<device::BluetoothGattNotifySession> notify_session);
 
   // Called when there is an error starting a notification session for
   // |from_peripheral_char_| characteristic.
@@ -264,13 +264,14 @@ class BluetoothLowEnergyConnection : public Connection,
   scoped_refptr<base::TaskRunner> task_runner_;
 
   // The GATT connection with the remote device.
-  scoped_ptr<device::BluetoothGattConnection> gatt_connection_;
+  std::unique_ptr<device::BluetoothGattConnection> gatt_connection_;
 
   // The characteristics finder for remote device.
-  scoped_ptr<BluetoothLowEnergyCharacteristicsFinder> characteristic_finder_;
+  std::unique_ptr<BluetoothLowEnergyCharacteristicsFinder>
+      characteristic_finder_;
 
   // The notify session for |from_peripheral_char|.
-  scoped_ptr<device::BluetoothGattNotifySession> notify_session_;
+  std::unique_ptr<device::BluetoothGattNotifySession> notify_session_;
 
   // Internal connection status
   SubStatus sub_status_;

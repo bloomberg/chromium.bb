@@ -5,9 +5,11 @@
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/base64url.h"
+#include "base/memory/ptr_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -38,9 +40,10 @@ const char kExternalDeviceKeyBluetoothAddress[] = "bluetooth_address";
 
 // Converts an unlock key proto to a dictionary that can be stored in user
 // prefs.
-scoped_ptr<base::DictionaryValue> UnlockKeyToDictionary(
+std::unique_ptr<base::DictionaryValue> UnlockKeyToDictionary(
     const cryptauth::ExternalDeviceInfo& device) {
-  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dictionary(
+      new base::DictionaryValue());
 
   // We store the device information in Base64Url form because dictionary values
   // must be valid UTF8 strings.
@@ -101,8 +104,8 @@ bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
 }  // namespace
 
 CryptAuthDeviceManager::CryptAuthDeviceManager(
-    scoped_ptr<base::Clock> clock,
-    scoped_ptr<CryptAuthClientFactory> client_factory,
+    std::unique_ptr<base::Clock> clock,
+    std::unique_ptr<CryptAuthClientFactory> client_factory,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service)
     : clock_(std::move(clock)),
@@ -184,8 +187,8 @@ bool CryptAuthDeviceManager::IsRecoveringFromFailure() const {
 void CryptAuthDeviceManager::OnGetMyDevicesSuccess(
     const cryptauth::GetMyDevicesResponse& response) {
   // Update the unlock keys stored in the user's prefs.
-  scoped_ptr<base::ListValue> unlock_keys_pref(new base::ListValue());
-  scoped_ptr<base::ListValue> devices_as_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> unlock_keys_pref(new base::ListValue());
+  std::unique_ptr<base::ListValue> devices_as_list(new base::ListValue());
   for (const auto& device : response.devices()) {
     devices_as_list->Append(UnlockKeyToDictionary(device));
     if (device.unlock_key())
@@ -231,8 +234,8 @@ void CryptAuthDeviceManager::OnGetMyDevicesFailure(const std::string& error) {
       OnSyncFinished(SyncResult::FAILURE, DeviceChangeResult::UNCHANGED));
 }
 
-scoped_ptr<SyncScheduler> CryptAuthDeviceManager::CreateSyncScheduler() {
-  return make_scoped_ptr(new SyncSchedulerImpl(
+std::unique_ptr<SyncScheduler> CryptAuthDeviceManager::CreateSyncScheduler() {
+  return base::WrapUnique(new SyncSchedulerImpl(
       this, base::TimeDelta::FromHours(kRefreshPeriodHours),
       base::TimeDelta::FromMinutes(kDeviceSyncBaseRecoveryPeriodMinutes),
       kDeviceSyncMaxJitterRatio, "CryptAuth DeviceSync"));
@@ -264,7 +267,7 @@ void CryptAuthDeviceManager::UpdateUnlockKeysFromPrefs() {
 }
 
 void CryptAuthDeviceManager::OnSyncRequested(
-    scoped_ptr<SyncScheduler::SyncRequest> sync_request) {
+    std::unique_ptr<SyncScheduler::SyncRequest> sync_request) {
   FOR_EACH_OBSERVER(Observer, observers_, OnSyncStarted());
 
   sync_request_ = std::move(sync_request);

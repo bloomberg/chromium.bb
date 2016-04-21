@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_PROXIMITY_AUTH_CLIENT_H_
 #define COMPONENTS_PROXIMITY_AUTH_PROXIMITY_AUTH_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/screenlock_state.h"
 
@@ -59,10 +59,12 @@ class ProximityAuthClient {
   virtual PrefService* GetPrefService() = 0;
 
   // Returns the SecureMessageDelegate used by the system.
-  virtual scoped_ptr<SecureMessageDelegate> CreateSecureMessageDelegate() = 0;
+  virtual std::unique_ptr<SecureMessageDelegate>
+  CreateSecureMessageDelegate() = 0;
 
   // Constructs the CryptAuthClientFactory that can be used for API requests.
-  virtual scoped_ptr<CryptAuthClientFactory> CreateCryptAuthClientFactory() = 0;
+  virtual std::unique_ptr<CryptAuthClientFactory>
+  CreateCryptAuthClientFactory() = 0;
 
   // Constructs the DeviceClassifier message that is sent to CryptAuth for all
   // API requests.

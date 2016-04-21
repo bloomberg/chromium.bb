@@ -5,11 +5,12 @@
 #include "components/proximity_auth/remote_device_life_cycle_impl.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/proximity_auth/authenticator.h"
@@ -66,7 +67,7 @@ class FakeConnectionFinder : public ConnectionFinder {
 
   void OnConnectionFound() {
     ASSERT_FALSE(connection_callback_.is_null());
-    scoped_ptr<FakeConnection> scoped_connection_(
+    std::unique_ptr<FakeConnection> scoped_connection_(
         new FakeConnection(remote_device_));
     connection_ = scoped_connection_.get();
     connection_callback_.Run(std::move(scoped_connection_));
@@ -103,7 +104,7 @@ class FakeAuthenticator : public Authenticator {
 
   void OnAuthenticationResult(Authenticator::Result result) {
     ASSERT_FALSE(callback_.is_null());
-    scoped_ptr<SecureContext> secure_context;
+    std::unique_ptr<SecureContext> secure_context;
     if (result == Authenticator::Result::SUCCESS)
       secure_context.reset(new StubSecureContext());
     callback_.Run(result, std::move(secure_context));
@@ -136,16 +137,16 @@ class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
   FakeAuthenticator* authenticator() { return authenticator_; }
 
  private:
-  scoped_ptr<ConnectionFinder> CreateConnectionFinder() override {
-    scoped_ptr<FakeConnectionFinder> scoped_connection_finder(
+  std::unique_ptr<ConnectionFinder> CreateConnectionFinder() override {
+    std::unique_ptr<FakeConnectionFinder> scoped_connection_finder(
         new FakeConnectionFinder(remote_device_));
     connection_finder_ = scoped_connection_finder.get();
     return std::move(scoped_connection_finder);
   }
 
-  scoped_ptr<Authenticator> CreateAuthenticator() override {
+  std::unique_ptr<Authenticator> CreateAuthenticator() override {
     EXPECT_TRUE(connection_finder_);
-    scoped_ptr<FakeAuthenticator> scoped_authenticator(
+    std::unique_ptr<FakeAuthenticator> scoped_authenticator(
         new FakeAuthenticator(connection_finder_->connection()));
     authenticator_ = scoped_authenticator.get();
     return std::move(scoped_authenticator);

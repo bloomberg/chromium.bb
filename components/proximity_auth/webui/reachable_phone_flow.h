@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_WEBUI_REACHABLE_PHONE_FLOW_H_
 #define COMPONENTS_PROXIMITY_AUTH_WEBUI_REACHABLE_PHONE_FLOW_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace cryptauth {
@@ -68,7 +68,7 @@ class ReachablePhoneFlow {
   ReachablePhonesCallback callback_;
 
   // The client making the current CryptAuth API call.
-  scoped_ptr<CryptAuthClient> client_;
+  std::unique_ptr<CryptAuthClient> client_;
 
   base::WeakPtrFactory<ReachablePhoneFlow> weak_ptr_factory_;
 

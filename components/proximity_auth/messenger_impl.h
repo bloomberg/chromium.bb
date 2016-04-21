@@ -6,9 +6,9 @@
 #define COMPONENTS_PROXIMITY_AUTH_MESSENGER_IMPL_H
 
 #include <deque>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/proximity_auth/connection_observer.h"
@@ -30,8 +30,8 @@ class MessengerImpl : public Messenger, public ConnectionObserver {
   // |connection|, using the |secure_context| to encrypt and decrypt the
   // messages. The |connection| must be connected. The messenger begins
   // observing messages as soon as it is constructed.
-  MessengerImpl(scoped_ptr<Connection> connection,
-                scoped_ptr<SecureContext> secure_context);
+  MessengerImpl(std::unique_ptr<Connection> connection,
+                std::unique_ptr<SecureContext> secure_context);
   ~MessengerImpl() override;
 
   // Messenger:
@@ -99,11 +99,11 @@ class MessengerImpl : public Messenger, public ConnectionObserver {
                        bool success) override;
 
   // The connection used to send and receive events and status updates.
-  scoped_ptr<Connection> connection_;
+  std::unique_ptr<Connection> connection_;
 
   // Used to encrypt and decrypt payloads sent and received over the
   // |connection_|.
-  scoped_ptr<SecureContext> secure_context_;
+  std::unique_ptr<SecureContext> secure_context_;
 
   // The registered observers of |this_| messenger.
   base::ObserverList<MessengerObserver> observers_;
@@ -113,7 +113,7 @@ class MessengerImpl : public Messenger, public ConnectionObserver {
 
   // The current message being sent or waiting on the remote device for a
   // response. Null if there is no message currently in this state.
-  scoped_ptr<PendingMessage> pending_message_;
+  std::unique_ptr<PendingMessage> pending_message_;
 
   base::WeakPtrFactory<MessengerImpl> weak_ptr_factory_;
 

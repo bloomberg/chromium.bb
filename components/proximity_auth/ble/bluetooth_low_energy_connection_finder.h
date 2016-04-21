@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_LOW_ENERGY_CONNECTION_FINDER_H
 #define COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_LOW_ENERGY_CONNECTION_FINDER_H
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/connection_finder.h"
@@ -81,7 +81,7 @@ class BluetoothLowEnergyConnectionFinder
  protected:
   // Creates a proximity_auth::Connection with the device given by
   // |device_address|. Exposed for testing.
-  virtual scoped_ptr<Connection> CreateConnection(
+  virtual std::unique_ptr<Connection> CreateConnection(
       const std::string& device_address);
 
  private:
@@ -94,7 +94,7 @@ class BluetoothLowEnergyConnectionFinder
 
   // Callback called when a new discovery session is started.
   void OnDiscoverySessionStarted(
-      scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
+      std::unique_ptr<device::BluetoothDiscoverySession> discovery_session);
 
   // Callback called when there is an error starting a new discovery session.
   void OnStartDiscoverySessionError();
@@ -147,10 +147,10 @@ class BluetoothLowEnergyConnectionFinder
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // The discovery session associated to this object.
-  scoped_ptr<device::BluetoothDiscoverySession> discovery_session_;
+  std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
 
   // The connection with |remote_device|.
-  scoped_ptr<Connection> connection_;
+  std::unique_ptr<Connection> connection_;
 
   // Callback called when the connection is established.
   // device::BluetoothDevice::GattConnectionCallback connection_callback_;

@@ -34,13 +34,13 @@ class FakeConnection : public Connection {
 
  private:
   // Connection:
-  void SendMessageImpl(scoped_ptr<WireMessage> message) override;
-  scoped_ptr<WireMessage> DeserializeWireMessage(
+  void SendMessageImpl(std::unique_ptr<WireMessage> message) override;
+  std::unique_ptr<WireMessage> DeserializeWireMessage(
       bool* is_incomplete_message) override;
 
   // The message currently being sent. Only set between a call to
   // SendMessageImpl() and FinishSendingMessageWithSuccess().
-  scoped_ptr<WireMessage> current_message_;
+  std::unique_ptr<WireMessage> current_message_;
 
   // The payload that should be returned when DeserializeWireMessage() is
   // called.

@@ -5,12 +5,14 @@
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
@@ -137,20 +139,20 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
         task_runner_(new base::TestSimpleTaskRunner) {}
 
   void SetUp() override {
-    device_ = make_scoped_ptr(new NiceMock<device::MockBluetoothDevice>(
+    device_ = base::WrapUnique(new NiceMock<device::MockBluetoothDevice>(
         adapter_.get(), 0, kTestRemoteDeviceName,
         kTestRemoteDeviceBluetoothAddress, false, false));
 
-    service_ = make_scoped_ptr(new NiceMock<device::MockBluetoothGattService>(
+    service_ = base::WrapUnique(new NiceMock<device::MockBluetoothGattService>(
         device_.get(), kServiceID, service_uuid_, true, false));
     to_peripheral_char_ =
-        make_scoped_ptr(new NiceMock<device::MockBluetoothGattCharacteristic>(
+        base::WrapUnique(new NiceMock<device::MockBluetoothGattCharacteristic>(
             service_.get(), kToPeripheralCharID, to_peripheral_char_uuid_,
             false, kCharacteristicProperties,
             device::BluetoothRemoteGattCharacteristic::PERMISSION_NONE));
 
     from_peripheral_char_ =
-        make_scoped_ptr(new NiceMock<device::MockBluetoothGattCharacteristic>(
+        base::WrapUnique(new NiceMock<device::MockBluetoothGattCharacteristic>(
             service_.get(), kFromPeripheralCharID, from_peripheral_char_uuid_,
             false, kCharacteristicProperties,
             device::BluetoothRemoteGattCharacteristic::PERMISSION_NONE));
@@ -172,11 +174,11 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
 
   // Creates a BluetoothLowEnergyConnection and verifies it's in DISCONNECTED
   // state.
-  scoped_ptr<MockBluetoothLowEnergyConnection> CreateConnection() {
+  std::unique_ptr<MockBluetoothLowEnergyConnection> CreateConnection() {
     EXPECT_CALL(*adapter_, AddObserver(_));
     EXPECT_CALL(*adapter_, RemoveObserver(_));
 
-    scoped_ptr<MockBluetoothLowEnergyConnection> connection(
+    std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
         new MockBluetoothLowEnergyConnection(
             remote_device_, adapter_, service_uuid_, bluetooth_throttler_.get(),
             kMaxNumberOfTries));
@@ -218,7 +220,7 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
             Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>)));
 
     create_gatt_connection_success_callback_.Run(
-        make_scoped_ptr(new NiceMock<device::MockBluetoothGattConnection>(
+        base::WrapUnique(new NiceMock<device::MockBluetoothGattConnection>(
             adapter_, kTestRemoteDeviceBluetoothAddress)));
 
     EXPECT_EQ(connection->sub_status(),
@@ -257,7 +259,7 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
     ASSERT_FALSE(notify_session_success_callback_.is_null());
 
     // Store an alias for the notify session passed |connection|.
-    scoped_ptr<device::MockBluetoothGattNotifySession> notify_session(
+    std::unique_ptr<device::MockBluetoothGattNotifySession> notify_session(
         new NiceMock<device::MockBluetoothGattNotifySession>(
             kToPeripheralCharID));
     notify_session_alias_ = notify_session.get();
@@ -356,13 +358,14 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
   device::BluetoothUUID service_uuid_;
   device::BluetoothUUID to_peripheral_char_uuid_;
   device::BluetoothUUID from_peripheral_char_uuid_;
-  scoped_ptr<device::MockBluetoothDevice> device_;
-  scoped_ptr<device::MockBluetoothGattService> service_;
-  scoped_ptr<device::MockBluetoothGattCharacteristic> to_peripheral_char_;
-  scoped_ptr<device::MockBluetoothGattCharacteristic> from_peripheral_char_;
+  std::unique_ptr<device::MockBluetoothDevice> device_;
+  std::unique_ptr<device::MockBluetoothGattService> service_;
+  std::unique_ptr<device::MockBluetoothGattCharacteristic> to_peripheral_char_;
+  std::unique_ptr<device::MockBluetoothGattCharacteristic>
+      from_peripheral_char_;
   std::vector<uint8_t> last_value_written_on_to_peripheral_char_;
   device::MockBluetoothGattNotifySession* notify_session_alias_;
-  scoped_ptr<MockBluetoothThrottler> bluetooth_throttler_;
+  std::unique_ptr<MockBluetoothThrottler> bluetooth_throttler_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::MessageLoop message_loop_;
 
@@ -396,12 +399,14 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        Disconect_WithoutConnectDoesntCrash) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
   Disconnect(connection.get());
 }
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest, Connect_Success) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
   ConnectGatt(connection.get());
   CharacteristicsFound(connection.get());
   NotifySessionStarted(connection.get());
@@ -410,21 +415,24 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest, Connect_Success) {
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        Connect_Success_Disconnect) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
   InitializeConnection(connection.get());
   Disconnect(connection.get());
 }
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        Connect_Incomplete_Disconnect_FromWaitingCharacteristicsState) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
   ConnectGatt(connection.get());
   Disconnect(connection.get());
 }
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        Connect_Incomplete_Disconnect_FromWaitingNotifySessionState) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
   ConnectGatt(connection.get());
   CharacteristicsFound(connection.get());
   Disconnect(connection.get());
@@ -432,7 +440,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        Connect_Incomplete_Disconnect_FromWaitingResponseSignalState) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
   ConnectGatt(connection.get());
   CharacteristicsFound(connection.get());
   NotifySessionStarted(connection.get());
@@ -441,7 +450,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        Connect_Fails_CharacteristicsNotFound) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
   ConnectGatt(connection.get());
 
   EXPECT_CALL(*from_peripheral_char_, StartNotifySession(_, _)).Times(0);
@@ -459,7 +469,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        Connect_Fails_NotifySessionError) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
   ConnectGatt(connection.get());
   CharacteristicsFound(connection.get());
 
@@ -478,7 +489,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        Connect_Fails_ErrorSendingInviteToConnectSignal) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
   ConnectGatt(connection.get());
   CharacteristicsFound(connection.get());
   NotifySessionStarted(connection.get());
@@ -514,7 +526,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        Receive_MessageSmallerThanCharacteristicSize) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
   InitializeConnection(connection.get());
 
   std::string received_bytes;
@@ -534,7 +547,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        Receive_MessageLargerThanCharacteristicSize) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
   InitializeConnection(connection.get());
 
   std::string received_bytes;
@@ -568,7 +582,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        SendMessage_SmallerThanCharacteristicSize) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
   InitializeConnection(connection.get());
 
   // Expecting a first call of WriteRemoteCharacteristic, after SendMessage is
@@ -583,7 +598,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
   int message_size = 100;
   std::string message(message_size, 'A');
   message[0] = 'B';
-  connection->SendMessage(make_scoped_ptr(new FakeWireMessage(message)));
+  connection->SendMessage(base::WrapUnique(new FakeWireMessage(message)));
 
   // Expecting that |kSendSignal| + |message_size| + |message| was written.
   EXPECT_EQ(last_value_written_on_to_peripheral_char_,
@@ -595,7 +610,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        SendMessage_LagerThanCharacteristicSize) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
   InitializeConnection(connection.get());
 
   // Expecting a first call of WriteRemoteCharacteristic, after SendMessage is
@@ -610,7 +626,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
   int message_size = 600;
   std::string message(message_size, 'A');
   message[0] = 'B';
-  connection->SendMessage(make_scoped_ptr(new FakeWireMessage(message)));
+  connection->SendMessage(base::WrapUnique(new FakeWireMessage(message)));
 
   // Expecting that |kSendSignal| + |message_size| was written in the first 8
   // bytes.
@@ -646,7 +662,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        Connect_AfterADelayWhenThrottled) {
-  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
+      CreateConnection());
 
   EXPECT_CALL(*bluetooth_throttler_, GetDelay())
       .WillOnce(Return(base::TimeDelta(base::TimeDelta::FromSeconds(1))));
@@ -675,7 +692,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
           Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>)));
 
   create_gatt_connection_success_callback_.Run(
-      make_scoped_ptr(new NiceMock<device::MockBluetoothGattConnection>(
+      base::WrapUnique(new NiceMock<device::MockBluetoothGattConnection>(
           adapter_, kTestRemoteDeviceBluetoothAddress)));
 
   CharacteristicsFound(connection.get());

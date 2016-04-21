@@ -68,7 +68,7 @@ class MockCryptAuthClientFactory : public CryptAuthClientFactory {
   ~MockCryptAuthClientFactory() override;
 
   // CryptAuthClientFactory:
-  scoped_ptr<CryptAuthClient> CreateInstance() override;
+  std::unique_ptr<CryptAuthClient> CreateInstance() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

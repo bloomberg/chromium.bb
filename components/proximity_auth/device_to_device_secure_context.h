@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_DEVICE_TO_DEVICE_SECURE_CONTEXT_H
 #define COMPONENTS_PROXIMITY_AUTH_DEVICE_TO_DEVICE_SECURE_CONTEXT_H
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/proximity_auth/secure_context.h"
 
@@ -22,7 +23,7 @@ class SecureMessageDelegate;
 class DeviceToDeviceSecureContext : public SecureContext {
  public:
   DeviceToDeviceSecureContext(
-      scoped_ptr<SecureMessageDelegate> secure_message_delegate,
+      std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
       const std::string& symmetric_key,
       const std::string& responder_auth_message_,
       ProtocolVersion protocol_version);
@@ -48,7 +49,7 @@ class DeviceToDeviceSecureContext : public SecureContext {
       const securemessage::Header& header);
 
   // Delegate for handling the creation and unwrapping of SecureMessages.
-  scoped_ptr<SecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<SecureMessageDelegate> secure_message_delegate_;
 
   // The symmetric key used to create and unwrap messages.
   const std::string symmetric_key_;

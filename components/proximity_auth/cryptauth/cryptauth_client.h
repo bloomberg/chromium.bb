@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_H
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace cryptauth {
 class DeviceClassifier;
@@ -107,7 +107,7 @@ class CryptAuthClientFactory {
  public:
   virtual ~CryptAuthClientFactory() {}
 
-  virtual scoped_ptr<CryptAuthClient> CreateInstance() = 0;
+  virtual std::unique_ptr<CryptAuthClient> CreateInstance() = 0;
 };
 
 }  // namespace proximity_auth

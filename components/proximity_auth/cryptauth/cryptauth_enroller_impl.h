@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ENROLLER_IMPL_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ENROLLER_IMPL_H
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enroller.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
@@ -32,8 +33,8 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
   // |client_factory| creates CryptAuthClient instances for making API calls.
   // |crypto_delegate| is responsible for SecureMessage operations.
   CryptAuthEnrollerImpl(
-      scoped_ptr<CryptAuthClientFactory> client_factory,
-      scoped_ptr<SecureMessageDelegate> secure_message_delegate);
+      std::unique_ptr<CryptAuthClientFactory> client_factory,
+      std::unique_ptr<SecureMessageDelegate> secure_message_delegate);
   ~CryptAuthEnrollerImpl() override;
 
   // CryptAuthEnroller:
@@ -62,13 +63,13 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
   void OnOuterSecureMessageCreated(const std::string& outer_message);
 
   // Creates the CryptAuthClient instances to make API requests.
-  scoped_ptr<CryptAuthClientFactory> client_factory_;
+  std::unique_ptr<CryptAuthClientFactory> client_factory_;
 
   // Handles SecureMessage operations.
-  scoped_ptr<SecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<SecureMessageDelegate> secure_message_delegate_;
 
   // The CryptAuthClient for the latest request.
-  scoped_ptr<CryptAuthClient> cryptauth_client_;
+  std::unique_ptr<CryptAuthClient> cryptauth_client_;
 
   // The ephemeral key-pair generated for a single enrollment.
   std::string session_public_key_;

@@ -4,6 +4,7 @@
 
 #include "components/proximity_auth/cryptauth_enroller_factory_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enroller_impl.h"
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
@@ -16,8 +17,9 @@ CryptAuthEnrollerFactoryImpl::CryptAuthEnrollerFactoryImpl(
 
 CryptAuthEnrollerFactoryImpl::~CryptAuthEnrollerFactoryImpl() {}
 
-scoped_ptr<CryptAuthEnroller> CryptAuthEnrollerFactoryImpl::CreateInstance() {
-  return make_scoped_ptr(new CryptAuthEnrollerImpl(
+std::unique_ptr<CryptAuthEnroller>
+CryptAuthEnrollerFactoryImpl::CreateInstance() {
+  return base::WrapUnique(new CryptAuthEnrollerImpl(
       proximity_auth_client_->CreateCryptAuthClientFactory(),
       proximity_auth_client_->CreateSecureMessageDelegate()));
 }

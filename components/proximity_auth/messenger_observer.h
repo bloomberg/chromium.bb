@@ -5,9 +5,8 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_MESSENGER_OBSERVER_H
 #define COMPONENTS_PROXIMITY_AUTH_MESSENGER_OBSERVER_H
 
+#include <memory>
 #include <string>
-
-#include "base/memory/scoped_ptr.h"
 
 namespace proximity_auth {
 

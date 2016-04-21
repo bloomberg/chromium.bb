@@ -43,7 +43,7 @@ class SyncSchedulerImpl : public SyncScheduler {
 
  protected:
   // Creates and returns a base::Timer object. Exposed for testing.
-  virtual scoped_ptr<base::Timer> CreateTimer();
+  virtual std::unique_ptr<base::Timer> CreateTimer();
 
  private:
   // SyncScheduler:
@@ -92,7 +92,7 @@ class SyncSchedulerImpl : public SyncScheduler {
   size_t failure_count_;
 
   // Timer firing for the next sync request.
-  scoped_ptr<base::Timer> timer_;
+  std::unique_ptr<base::Timer> timer_;
 
   base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_;
 

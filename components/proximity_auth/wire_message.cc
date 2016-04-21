@@ -13,6 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/proximity_auth/logging/logging.h"
 
@@ -79,17 +80,17 @@ WireMessage::~WireMessage() {
 }
 
 // static
-scoped_ptr<WireMessage> WireMessage::Deserialize(
+std::unique_ptr<WireMessage> WireMessage::Deserialize(
     const std::string& serialized_message,
     bool* is_incomplete_message) {
   if (!ParseHeader(serialized_message, is_incomplete_message))
-    return scoped_ptr<WireMessage>();
+    return std::unique_ptr<WireMessage>();
 
-  scoped_ptr<base::Value> body_value =
+  std::unique_ptr<base::Value> body_value =
       base::JSONReader::Read(serialized_message.substr(kHeaderLength));
   if (!body_value || !body_value->IsType(base::Value::TYPE_DICTIONARY)) {
     PA_LOG(WARNING) << "Error: Unable to parse message as JSON.";
-    return scoped_ptr<WireMessage>();
+    return std::unique_ptr<WireMessage>();
   }
 
   base::DictionaryValue* body;
@@ -105,7 +106,7 @@ scoped_ptr<WireMessage> WireMessage::Deserialize(
   if (!body->GetString(kPayloadKey, &payload_base64) ||
       payload_base64.empty()) {
     PA_LOG(WARNING) << "Error: Missing payload.";
-    return scoped_ptr<WireMessage>();
+    return std::unique_ptr<WireMessage>();
   }
 
   std::string payload;
@@ -113,10 +114,10 @@ scoped_ptr<WireMessage> WireMessage::Deserialize(
                              base::Base64UrlDecodePolicy::REQUIRE_PADDING,
                              &payload)) {
     PA_LOG(WARNING) << "Error: Invalid base64 encoding for payload.";
-    return scoped_ptr<WireMessage>();
+    return std::unique_ptr<WireMessage>();
   }
 
-  return make_scoped_ptr(new WireMessage(payload, permit_id));
+  return base::WrapUnique(new WireMessage(payload, permit_id));
 }
 
 std::string WireMessage::Serialize() const {

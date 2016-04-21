@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CONNECTION_FINDER_H
 #define COMPONENTS_PROXIMITY_AUTH_CONNECTION_FINDER_H
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace proximity_auth {
 
@@ -23,7 +24,7 @@ class ConnectionFinder {
   // |connection_callback| with the open connection once the remote device is
   // connected.
   // TODO(isherman): Can this just be done as part of the constructor?
-  typedef base::Callback<void(scoped_ptr<Connection> connection)>
+  typedef base::Callback<void(std::unique_ptr<Connection> connection)>
       ConnectionCallback;
   virtual void Find(const ConnectionCallback& connection_callback) = 0;
 };

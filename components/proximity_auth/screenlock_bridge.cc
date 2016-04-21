@@ -61,9 +61,9 @@ ScreenlockBridge::UserPodCustomIconOptions::UserPodCustomIconOptions()
 ScreenlockBridge::UserPodCustomIconOptions::~UserPodCustomIconOptions() {
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   std::string icon_id = GetIdForIcon(icon_);
   result->SetString("id", icon_id);
 

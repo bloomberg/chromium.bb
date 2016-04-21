@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_WIRE_MESSAGE_H
 #define COMPONENTS_PROXIMITY_AUTH_WIRE_MESSAGE_H
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace proximity_auth {
 
@@ -26,7 +26,7 @@ class WireMessage {
   // message is malformed. Sets |is_incomplete_message| to true if the message
   // does not have enough data to parse the header, or if the message length
   // encoded in the message header exceeds the size of the |serialized_message|.
-  static scoped_ptr<WireMessage> Deserialize(
+  static std::unique_ptr<WireMessage> Deserialize(
       const std::string& serialized_message,
       bool* is_incomplete_message);
 

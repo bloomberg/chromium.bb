@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/null_task_runner.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
 #include "components/proximity_auth/cryptauth/cryptauth_api_call_flow.h"
@@ -111,9 +112,10 @@ class ProximityAuthCryptAuthClientTest : public testing::Test {
     device_classifier.set_device_software_package(kDeviceSoftwarePackage);
     device_classifier.set_device_type(kDeviceType);
 
-    client_.reset(new CryptAuthClientImpl(
-        make_scoped_ptr(api_call_flow_), make_scoped_ptr(access_token_fetcher_),
-        url_request_context_, device_classifier));
+    client_.reset(
+        new CryptAuthClientImpl(base::WrapUnique(api_call_flow_),
+                                base::WrapUnique(access_token_fetcher_),
+                                url_request_context_, device_classifier));
   }
 
   // Sets up an expectation and captures a CryptAuth API request to
@@ -146,7 +148,7 @@ class ProximityAuthCryptAuthClientTest : public testing::Test {
   StrictMock<MockCryptAuthApiCallFlow>* api_call_flow_;
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
-  scoped_ptr<CryptAuthClient> client_;
+  std::unique_ptr<CryptAuthClient> client_;
 
   std::string serialized_request_;
   CryptAuthApiCallFlow::ResultCallback flow_result_callback_;

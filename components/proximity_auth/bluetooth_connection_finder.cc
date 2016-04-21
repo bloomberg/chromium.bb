@@ -51,8 +51,9 @@ void BluetoothConnectionFinder::Find(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-scoped_ptr<Connection> BluetoothConnectionFinder::CreateConnection() {
-  return scoped_ptr<Connection>(new BluetoothConnection(remote_device_, uuid_));
+std::unique_ptr<Connection> BluetoothConnectionFinder::CreateConnection() {
+  return std::unique_ptr<Connection>(
+      new BluetoothConnection(remote_device_, uuid_));
 }
 
 void BluetoothConnectionFinder::SeekDeviceByAddress(

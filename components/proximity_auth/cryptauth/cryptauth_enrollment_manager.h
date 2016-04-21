@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_ENROLLMENT_MANAGER_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_ENROLLMENT_MANAGER_H
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -61,9 +62,9 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
   // |pref_service|: Contains preferences across browser restarts, and should
   //                 have been registered through RegisterPrefs().
   CryptAuthEnrollmentManager(
-      scoped_ptr<base::Clock> clock,
-      scoped_ptr<CryptAuthEnrollerFactory> enroller_factory,
-      scoped_ptr<SecureMessageDelegate> secure_message_delegate,
+      std::unique_ptr<base::Clock> clock,
+      std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
+      std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
       const cryptauth::GcmDeviceInfo& device_info,
       CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service);
@@ -116,7 +117,7 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
 
  protected:
   // Creates a new SyncScheduler instance. Exposed for testing.
-  virtual scoped_ptr<SyncScheduler> CreateSyncScheduler();
+  virtual std::unique_ptr<SyncScheduler> CreateSyncScheduler();
 
  private:
   // CryptAuthGCMManager::Observer:
@@ -129,7 +130,7 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
 
   // SyncScheduler::Delegate:
   void OnSyncRequested(
-      scoped_ptr<SyncScheduler::SyncRequest> sync_request) override;
+      std::unique_ptr<SyncScheduler::SyncRequest> sync_request) override;
 
   // Starts a CryptAuth enrollment attempt, generating a new keypair if one is
   // not already stored in the user prefs.
@@ -143,14 +144,14 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
   void OnEnrollmentFinished(bool success);
 
   // Used to determine the time.
-  scoped_ptr<base::Clock> clock_;
+  std::unique_ptr<base::Clock> clock_;
 
   // Creates CryptAuthEnroller instances for each enrollment attempt.
-  scoped_ptr<CryptAuthEnrollerFactory> enroller_factory_;
+  std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory_;
 
   // The SecureMessageDelegate used to generate the user's keypair if it does
   // not already exist.
-  scoped_ptr<SecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<SecureMessageDelegate> secure_message_delegate_;
 
   // The local device information to upload to CryptAuth.
   const cryptauth::GcmDeviceInfo device_info_;
@@ -165,15 +166,15 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
   PrefService* pref_service_;
 
   // Schedules the time between enrollment attempts.
-  scoped_ptr<SyncScheduler> scheduler_;
+  std::unique_ptr<SyncScheduler> scheduler_;
 
   // Contains the SyncRequest that |scheduler_| requests when an enrollment
   // attempt is made.
-  scoped_ptr<SyncScheduler::SyncRequest> sync_request_;
+  std::unique_ptr<SyncScheduler::SyncRequest> sync_request_;
 
   // The CryptAuthEnroller instance for the current enrollment attempt. A new
   // instance will be created for each individual attempt.
-  scoped_ptr<CryptAuthEnroller> cryptauth_enroller_;
+  std::unique_ptr<CryptAuthEnroller> cryptauth_enroller_;
 
   // List of observers.
   base::ObserverList<Observer> observers_;

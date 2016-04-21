@@ -4,20 +4,22 @@
 
 #include "components/proximity_auth/mock_proximity_auth_client.h"
 
+#include "base/memory/ptr_util.h"
+
 namespace proximity_auth {
 
 MockProximityAuthClient::MockProximityAuthClient() {}
 
 MockProximityAuthClient::~MockProximityAuthClient() {}
 
-scoped_ptr<SecureMessageDelegate>
+std::unique_ptr<SecureMessageDelegate>
 MockProximityAuthClient::CreateSecureMessageDelegate() {
-  return make_scoped_ptr(CreateSecureMessageDelegatePtr());
+  return base::WrapUnique(CreateSecureMessageDelegatePtr());
 }
 
-scoped_ptr<CryptAuthClientFactory>
+std::unique_ptr<CryptAuthClientFactory>
 MockProximityAuthClient::CreateCryptAuthClientFactory() {
-  return make_scoped_ptr(CreateCryptAuthClientFactoryPtr());
+  return base::WrapUnique(CreateCryptAuthClientFactoryPtr());
 }
 
 }  // proximity_auth

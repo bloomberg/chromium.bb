@@ -4,8 +4,9 @@
 
 #include "components/proximity_auth/cryptauth/cryptauth_api_call_flow.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -100,12 +101,12 @@ class ProximityAuthCryptAuthApiCallFlowTest
   void OnRequestEnd(int fetcher_id) override {}
 
   net::TestURLFetcher* url_fetcher_;
-  scoped_ptr<std::string> result_;
-  scoped_ptr<std::string> error_message_;
+  std::unique_ptr<std::string> result_;
+  std::unique_ptr<std::string> error_message_;
 
  private:
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
-  scoped_ptr<net::TestURLFetcherFactory> url_fetcher_factory_;
+  std::unique_ptr<net::TestURLFetcherFactory> url_fetcher_factory_;
   CryptAuthApiCallFlow flow_;
 
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthCryptAuthApiCallFlowTest);

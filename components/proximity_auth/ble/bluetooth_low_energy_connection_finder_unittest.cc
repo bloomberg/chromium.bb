@@ -4,13 +4,14 @@
 
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -69,9 +70,9 @@ class MockBluetoothLowEnergyConnectionFinder
 
   ~MockBluetoothLowEnergyConnectionFinder() override {}
 
-  // Mock methods don't support return type scoped_ptr<>. This is a possible
-  // workaround: mock a proxy method to be called by the target overrided method
-  // (CreateConnection).
+  // Mock methods don't support return type std::unique_ptr<>. This is a
+  // possible workaround: mock a proxy method to be called by the target
+  // overridden method (CreateConnection).
   MOCK_METHOD0(CreateConnectionProxy, Connection*());
 
   // Creates a mock connection and sets an expectation that the mock connection
@@ -80,7 +81,7 @@ class MockBluetoothLowEnergyConnectionFinder
   // NOTE: The returned connection's lifetime is managed by the connection
   // finder.
   FakeConnection* ExpectCreateConnection() {
-    scoped_ptr<FakeConnection> connection(
+    std::unique_ptr<FakeConnection> connection(
         new FakeConnection(CreateLERemoteDeviceForTest()));
     FakeConnection* connection_alias = connection.get();
     EXPECT_CALL(*this, CreateConnectionProxy())
@@ -91,9 +92,9 @@ class MockBluetoothLowEnergyConnectionFinder
   MOCK_METHOD0(CloseGattConnectionProxy, void(void));
 
  protected:
-  scoped_ptr<Connection> CreateConnection(
+  std::unique_ptr<Connection> CreateConnection(
       const std::string& device_address) override {
-    return make_scoped_ptr(CreateConnectionProxy());
+    return base::WrapUnique(CreateConnectionProxy());
   }
 
  private:
@@ -132,14 +133,14 @@ class ProximityAuthBluetoothLowEnergyConnectionFinderTest
         .WillByDefault(Return(false));
   }
 
-  void OnConnectionFound(scoped_ptr<Connection> connection) {
+  void OnConnectionFound(std::unique_ptr<Connection> connection) {
     last_found_connection_ = std::move(connection);
   }
 
   void FindAndExpectStartDiscovery(
       BluetoothLowEnergyConnectionFinder& connection_finder) {
     device::BluetoothAdapter::DiscoverySessionCallback discovery_callback;
-    scoped_ptr<device::MockBluetoothDiscoverySession> discovery_session(
+    std::unique_ptr<device::MockBluetoothDiscoverySession> discovery_session(
         new NiceMock<device::MockBluetoothDiscoverySession>());
     last_discovery_session_alias_ = discovery_session.get();
 
@@ -172,9 +173,9 @@ class ProximityAuthBluetoothLowEnergyConnectionFinderTest
 
   scoped_refptr<device::MockBluetoothAdapter> adapter_;
   ConnectionFinder::ConnectionCallback connection_callback_;
-  scoped_ptr<device::MockBluetoothDevice> device_;
-  scoped_ptr<Connection> last_found_connection_;
-  scoped_ptr<MockBluetoothLowEnergyDeviceWhitelist> device_whitelist_;
+  std::unique_ptr<device::MockBluetoothDevice> device_;
+  std::unique_ptr<Connection> last_found_connection_;
+  std::unique_ptr<MockBluetoothLowEnergyDeviceWhitelist> device_whitelist_;
   device::MockBluetoothDiscoverySession* last_discovery_session_alias_;
 
  private:
@@ -211,7 +212,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
       device_whitelist_.get(), nullptr, kMaxNumberOfAttempts);
 
   device::BluetoothAdapter::DiscoverySessionCallback discovery_callback;
-  scoped_ptr<device::MockBluetoothDiscoverySession> discovery_session(
+  std::unique_ptr<device::MockBluetoothDiscoverySession> discovery_session(
       new NiceMock<device::MockBluetoothDiscoverySession>());
   device::MockBluetoothDiscoverySession* discovery_session_alias =
       discovery_session.get();
@@ -413,7 +414,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   }
 
   // Restarting the discovery session.
-  scoped_ptr<device::MockBluetoothDiscoverySession> discovery_session(
+  std::unique_ptr<device::MockBluetoothDiscoverySession> discovery_session(
       new NiceMock<device::MockBluetoothDiscoverySession>());
   last_discovery_session_alias_ = discovery_session.get();
   ON_CALL(*last_discovery_session_alias_, IsActive())
@@ -460,7 +461,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   ON_CALL(*adapter_, IsPowered()).WillByDefault(Return(true));
 
   device::BluetoothAdapter::DiscoverySessionCallback discovery_callback;
-  scoped_ptr<device::MockBluetoothDiscoverySession> discovery_session(
+  std::unique_ptr<device::MockBluetoothDiscoverySession> discovery_session(
       new NiceMock<device::MockBluetoothDiscoverySession>());
   last_discovery_session_alias_ = discovery_session.get();
 

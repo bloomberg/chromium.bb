@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
@@ -112,13 +113,13 @@ void SyncSchedulerImpl::OnTimerFired() {
   }
 
   delegate_->OnSyncRequested(
-      make_scoped_ptr(new SyncRequest(weak_ptr_factory_.GetWeakPtr())));
+      base::WrapUnique(new SyncRequest(weak_ptr_factory_.GetWeakPtr())));
 }
 
-scoped_ptr<base::Timer> SyncSchedulerImpl::CreateTimer() {
+std::unique_ptr<base::Timer> SyncSchedulerImpl::CreateTimer() {
   bool retain_user_task = false;
   bool is_repeating = false;
-  return make_scoped_ptr(new base::Timer(retain_user_task, is_repeating));
+  return base::WrapUnique(new base::Timer(retain_user_task, is_repeating));
 }
 
 void SyncSchedulerImpl::ScheduleNextSync(const base::TimeDelta& sync_delta) {

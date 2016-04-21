@@ -23,8 +23,8 @@ MockCryptAuthClientFactory::MockCryptAuthClientFactory(MockType mock_type)
 MockCryptAuthClientFactory::~MockCryptAuthClientFactory() {
 }
 
-scoped_ptr<CryptAuthClient> MockCryptAuthClientFactory::CreateInstance() {
-  scoped_ptr<MockCryptAuthClient> client;
+std::unique_ptr<CryptAuthClient> MockCryptAuthClientFactory::CreateInstance() {
+  std::unique_ptr<MockCryptAuthClient> client;
   if (mock_type_ == MockType::MAKE_STRICT_MOCKS)
     client.reset(new testing::StrictMock<MockCryptAuthClient>());
   else

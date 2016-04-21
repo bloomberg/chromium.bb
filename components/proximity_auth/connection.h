@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CONNECTION_H
 #define COMPONENTS_PROXIMITY_AUTH_CONNECTION_H
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/proximity_auth/remote_device.h"
 
@@ -39,7 +40,7 @@ class Connection {
   // Sends a message to the remote device.
   // |OnSendCompleted()| will be called for all observers upon completion with
   // either success or failure.
-  void SendMessage(scoped_ptr<WireMessage> message);
+  void SendMessage(std::unique_ptr<WireMessage> message);
 
   void AddObserver(ConnectionObserver* observer);
   void RemoveObserver(ConnectionObserver* observer);
@@ -79,14 +80,14 @@ class Connection {
   // OnDidSendMessage() once the send succeeds or fails. At most one send will
   // be
   // in progress.
-  virtual void SendMessageImpl(scoped_ptr<WireMessage> message) = 0;
+  virtual void SendMessageImpl(std::unique_ptr<WireMessage> message) = 0;
 
   // Deserializes the |recieved_bytes_| and returns the resulting WireMessage,
   // or NULL if the message is malformed. Sets |is_incomplete_message| to true
   // if the |serialized_message| does not have enough data to parse the header,
   // or if the message length encoded in the message header exceeds the size of
   // the |serialized_message|. Exposed for testing.
-  virtual scoped_ptr<WireMessage> DeserializeWireMessage(
+  virtual std::unique_ptr<WireMessage> DeserializeWireMessage(
       bool* is_incomplete_message);
 
  private:

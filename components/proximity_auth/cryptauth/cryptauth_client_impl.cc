@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher_impl.h"
 #include "components/proximity_auth/cryptauth/switches.h"
 
@@ -48,8 +49,8 @@ GURL CreateRequestUrl(const std::string& request_path) {
 }  // namespace
 
 CryptAuthClientImpl::CryptAuthClientImpl(
-    scoped_ptr<CryptAuthApiCallFlow> api_call_flow,
-    scoped_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher,
+    std::unique_ptr<CryptAuthApiCallFlow> api_call_flow,
+    std::unique_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher,
     scoped_refptr<net::URLRequestContextGetter> url_request_context,
     const cryptauth::DeviceClassifier& device_classifier)
     : api_call_flow_(std::move(api_call_flow)),
@@ -191,10 +192,10 @@ CryptAuthClientFactoryImpl::CryptAuthClientFactoryImpl(
 CryptAuthClientFactoryImpl::~CryptAuthClientFactoryImpl() {
 }
 
-scoped_ptr<CryptAuthClient> CryptAuthClientFactoryImpl::CreateInstance() {
-  return make_scoped_ptr(new CryptAuthClientImpl(
-      make_scoped_ptr(new CryptAuthApiCallFlow()),
-      make_scoped_ptr(
+std::unique_ptr<CryptAuthClient> CryptAuthClientFactoryImpl::CreateInstance() {
+  return base::WrapUnique(new CryptAuthClientImpl(
+      base::WrapUnique(new CryptAuthApiCallFlow()),
+      base::WrapUnique(
           new CryptAuthAccessTokenFetcherImpl(token_service_, account_id_)),
       url_request_context_, device_classifier_));
 }

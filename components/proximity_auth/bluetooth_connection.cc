@@ -72,7 +72,8 @@ void BluetoothConnection::Disconnect() {
   }
 }
 
-void BluetoothConnection::SendMessageImpl(scoped_ptr<WireMessage> message) {
+void BluetoothConnection::SendMessageImpl(
+    std::unique_ptr<WireMessage> message) {
   DCHECK_EQ(status(), CONNECTED);
 
   // Serialize the message.

@@ -5,10 +5,12 @@
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/base64url.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_clock.h"
@@ -113,10 +115,11 @@ void ExpectUnlockKeysAndPrefAreEqual(
 // Harness for testing CryptAuthDeviceManager.
 class TestCryptAuthDeviceManager : public CryptAuthDeviceManager {
  public:
-  TestCryptAuthDeviceManager(scoped_ptr<base::Clock> clock,
-                             scoped_ptr<CryptAuthClientFactory> client_factory,
-                             CryptAuthGCMManager* gcm_manager,
-                             PrefService* pref_service)
+  TestCryptAuthDeviceManager(
+      std::unique_ptr<base::Clock> clock,
+      std::unique_ptr<CryptAuthClientFactory> client_factory,
+      CryptAuthGCMManager* gcm_manager,
+      PrefService* pref_service)
       : CryptAuthDeviceManager(std::move(clock),
                                std::move(client_factory),
                                gcm_manager,
@@ -126,7 +129,7 @@ class TestCryptAuthDeviceManager : public CryptAuthDeviceManager {
 
   ~TestCryptAuthDeviceManager() override {}
 
-  scoped_ptr<SyncScheduler> CreateSyncScheduler() override {
+  std::unique_ptr<SyncScheduler> CreateSyncScheduler() override {
     EXPECT_TRUE(scoped_sync_scheduler_);
     return std::move(scoped_sync_scheduler_);
   }
@@ -138,7 +141,7 @@ class TestCryptAuthDeviceManager : public CryptAuthDeviceManager {
  private:
   // Ownership is passed to |CryptAuthDeviceManager| super class when
   // |CreateSyncScheduler()| is called.
-  scoped_ptr<MockSyncScheduler> scoped_sync_scheduler_;
+  std::unique_ptr<MockSyncScheduler> scoped_sync_scheduler_;
 
   // Stores the pointer of |scoped_sync_scheduler_| after ownership is passed to
   // the super class.
@@ -182,7 +185,7 @@ class ProximityAuthCryptAuthDeviceManagerTest
         prefs::kCryptAuthDeviceSyncReason,
         new base::FundamentalValue(cryptauth::INVOCATION_REASON_UNKNOWN));
 
-    scoped_ptr<base::DictionaryValue> unlock_key_dictionary(
+    std::unique_ptr<base::DictionaryValue> unlock_key_dictionary(
         new base::DictionaryValue());
 
     std::string public_key_b64, device_name_b64, bluetooth_address_b64;
@@ -207,7 +210,7 @@ class ProximityAuthCryptAuthDeviceManagerTest
     }
 
     device_manager_.reset(new TestCryptAuthDeviceManager(
-        make_scoped_ptr(clock_), make_scoped_ptr(client_factory_),
+        base::WrapUnique(clock_), base::WrapUnique(client_factory_),
         &gcm_manager_, &pref_service_));
     device_manager_->AddObserver(this);
 
@@ -253,7 +256,7 @@ class ProximityAuthCryptAuthDeviceManagerTest
     SyncScheduler::Delegate* delegate =
         static_cast<SyncScheduler::Delegate*>(device_manager_.get());
 
-    scoped_ptr<SyncScheduler::SyncRequest> sync_request = make_scoped_ptr(
+    std::unique_ptr<SyncScheduler::SyncRequest> sync_request = base::WrapUnique(
         new SyncScheduler::SyncRequest(device_manager_->GetSyncScheduler()));
     EXPECT_CALL(*this, OnSyncStartedProxy());
     delegate->OnSyncRequested(std::move(sync_request));
@@ -290,7 +293,7 @@ class ProximityAuthCryptAuthDeviceManagerTest
 
   FakeCryptAuthGCMManager gcm_manager_;
 
-  scoped_ptr<TestCryptAuthDeviceManager> device_manager_;
+  std::unique_ptr<TestCryptAuthDeviceManager> device_manager_;
 
   cryptauth::GetMyDevicesResponse get_my_devices_response_;
 
@@ -341,7 +344,7 @@ TEST_F(ProximityAuthCryptAuthDeviceManagerTest, GetSyncState) {
 }
 
 TEST_F(ProximityAuthCryptAuthDeviceManagerTest, InitWithDefaultPrefs) {
-  scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
+  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
   clock->SetNow(base::Time::FromDoubleT(kInitialTimeNowSeconds));
   base::TimeDelta elapsed_time = clock->Now() - base::Time::FromDoubleT(0);
 
@@ -350,7 +353,7 @@ TEST_F(ProximityAuthCryptAuthDeviceManagerTest, InitWithDefaultPrefs) {
 
   TestCryptAuthDeviceManager device_manager(
       std::move(clock),
-      make_scoped_ptr(new MockCryptAuthClientFactory(
+      base::WrapUnique(new MockCryptAuthClientFactory(
           MockCryptAuthClientFactory::MockType::MAKE_STRICT_MOCKS)),
       &gcm_manager_, &pref_service);
 

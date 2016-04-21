@@ -21,7 +21,7 @@ class CryptAuthEnrollerFactoryImpl : public CryptAuthEnrollerFactory {
   ~CryptAuthEnrollerFactoryImpl() override;
 
   // CryptAuthEnrollerFactory:
-  scoped_ptr<CryptAuthEnroller> CreateInstance() override;
+  std::unique_ptr<CryptAuthEnroller> CreateInstance() override;
 
  private:
   proximity_auth::ProximityAuthClient* proximity_auth_client_;

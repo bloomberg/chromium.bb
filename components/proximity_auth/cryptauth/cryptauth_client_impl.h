@@ -30,8 +30,8 @@ class CryptAuthClientImpl : public CryptAuthClient {
   // CryptAuth requests. The |device_classifier| argument contains basic device
   // information of the caller (e.g. version and device type).
   CryptAuthClientImpl(
-      scoped_ptr<CryptAuthApiCallFlow> api_call_flow,
-      scoped_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher,
+      std::unique_ptr<CryptAuthApiCallFlow> api_call_flow,
+      std::unique_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher,
       scoped_refptr<net::URLRequestContextGetter> url_request_context,
       const cryptauth::DeviceClassifier& device_classifier);
   ~CryptAuthClientImpl() override;
@@ -88,10 +88,10 @@ class CryptAuthClientImpl : public CryptAuthClient {
   void OnApiCallFailed(const std::string& error_message);
 
   // Constructs and executes the actual HTTP request.
-  scoped_ptr<CryptAuthApiCallFlow> api_call_flow_;
+  std::unique_ptr<CryptAuthApiCallFlow> api_call_flow_;
 
   // Fetches the access token authorizing the API calls.
-  scoped_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher_;
+  std::unique_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher_;
 
   // The context for network requests.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
@@ -134,7 +134,7 @@ class CryptAuthClientFactoryImpl : public CryptAuthClientFactory {
   ~CryptAuthClientFactoryImpl() override;
 
   // CryptAuthClientFactory:
-  scoped_ptr<CryptAuthClient> CreateInstance() override;
+  std::unique_ptr<CryptAuthClient> CreateInstance() override;
 
  private:
   OAuth2TokenService* token_service_;

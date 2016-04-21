@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
 #include "components/proximity_auth/cryptauth/mock_cryptauth_client.h"
@@ -105,8 +106,8 @@ class ProximityAuthCryptAuthEnrollerTest
       : client_factory_(new MockCryptAuthClientFactory(
             MockCryptAuthClientFactory::MockType::MAKE_NICE_MOCKS)),
         secure_message_delegate_(new FakeSecureMessageDelegate()),
-        enroller_(make_scoped_ptr(client_factory_),
-                  make_scoped_ptr(secure_message_delegate_)) {
+        enroller_(base::WrapUnique(client_factory_),
+                  base::WrapUnique(secure_message_delegate_)) {
     client_factory_->AddObserver(this);
 
     // This call is actually synchronous.
@@ -249,11 +250,11 @@ class ProximityAuthCryptAuthEnrollerTest
   CryptAuthEnrollerImpl enroller_;
 
   // Stores the result of running |enroller_|.
-  scoped_ptr<bool> enroller_result_;
+  std::unique_ptr<bool> enroller_result_;
 
   // Stored callbacks and requests for SetupEnrollment and FinishEnrollment.
-  scoped_ptr<cryptauth::SetupEnrollmentRequest> setup_request_;
-  scoped_ptr<cryptauth::FinishEnrollmentRequest> finish_request_;
+  std::unique_ptr<cryptauth::SetupEnrollmentRequest> setup_request_;
+  std::unique_ptr<cryptauth::FinishEnrollmentRequest> finish_request_;
   CryptAuthClient::SetupEnrollmentCallback setup_callback_;
   CryptAuthClient::FinishEnrollmentCallback finish_callback_;
   CryptAuthClient::ErrorCallback error_callback_;

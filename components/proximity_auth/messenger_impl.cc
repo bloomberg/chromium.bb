@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/proximity_auth/connection.h"
@@ -67,8 +68,8 @@ std::string GetMessageType(const base::DictionaryValue& message) {
 
 }  // namespace
 
-MessengerImpl::MessengerImpl(scoped_ptr<Connection> connection,
-                             scoped_ptr<SecureContext> secure_context)
+MessengerImpl::MessengerImpl(std::unique_ptr<Connection> connection,
+                             std::unique_ptr<SecureContext> secure_context)
     : connection_(std::move(connection)),
       secure_context_(std::move(secure_context)),
       weak_ptr_factory_(this) {
@@ -176,7 +177,7 @@ void MessengerImpl::ProcessMessageQueue() {
 }
 
 void MessengerImpl::OnMessageEncoded(const std::string& encoded_message) {
-  connection_->SendMessage(make_scoped_ptr(new WireMessage(encoded_message)));
+  connection_->SendMessage(base::WrapUnique(new WireMessage(encoded_message)));
 }
 
 void MessengerImpl::OnMessageDecoded(const std::string& decoded_message) {
@@ -196,7 +197,7 @@ void MessengerImpl::OnMessageDecoded(const std::string& decoded_message) {
   }
 
   // The decoded message should be a JSON string.
-  scoped_ptr<base::Value> message_value =
+  std::unique_ptr<base::Value> message_value =
       base::JSONReader::Read(decoded_message);
   if (!message_value || !message_value->IsType(base::Value::TYPE_DICTIONARY)) {
     PA_LOG(ERROR) << "Unable to parse message as JSON:\n" << decoded_message;
@@ -255,7 +256,7 @@ void MessengerImpl::OnMessageDecoded(const std::string& decoded_message) {
 
 void MessengerImpl::HandleRemoteStatusUpdateMessage(
     const base::DictionaryValue& message) {
-  scoped_ptr<RemoteStatusUpdate> status_update =
+  std::unique_ptr<RemoteStatusUpdate> status_update =
       RemoteStatusUpdate::Deserialize(message);
   if (!status_update) {
     PA_LOG(ERROR) << "Unexpected remote status update: " << message;

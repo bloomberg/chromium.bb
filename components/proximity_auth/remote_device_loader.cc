@@ -19,7 +19,7 @@ RemoteDeviceLoader::RemoteDeviceLoader(
     const std::vector<cryptauth::ExternalDeviceInfo>& unlock_keys,
     const std::string& user_id,
     const std::string& user_private_key,
-    scoped_ptr<SecureMessageDelegate> secure_message_delegate,
+    std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
     ProximityAuthPrefManager* pref_manager)
     : remaining_unlock_keys_(unlock_keys),
       user_id_(user_id),

@@ -102,11 +102,11 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
 
   // Converts an ExternalDeviceInfo proto to a JSON dictionary used in
   // JavaScript.
-  scoped_ptr<base::DictionaryValue> ExternalDeviceInfoToDictionary(
+  std::unique_ptr<base::DictionaryValue> ExternalDeviceInfoToDictionary(
       const cryptauth::ExternalDeviceInfo& device_info);
 
   // Converts an IneligibleDevice proto to a JSON dictionary used in JavaScript.
-  scoped_ptr<base::DictionaryValue> IneligibleDeviceToDictionary(
+  std::unique_ptr<base::DictionaryValue> IneligibleDeviceToDictionary(
       const cryptauth::IneligibleDevice& ineligible_device);
 
   // Cleans up the connection to the selected remote device.
@@ -120,25 +120,25 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   void OnRemoteStatusUpdate(const RemoteStatusUpdate& status_update) override;
 
   // Returns the current enrollment state that can be used as a JSON object.
-  scoped_ptr<base::DictionaryValue> GetEnrollmentStateDictionary();
+  std::unique_ptr<base::DictionaryValue> GetEnrollmentStateDictionary();
 
   // Returns the current device sync state that can be used as a JSON object.
-  scoped_ptr<base::DictionaryValue> GetDeviceSyncStateDictionary();
+  std::unique_ptr<base::DictionaryValue> GetDeviceSyncStateDictionary();
 
   // Returns the current unlock keys that can be used as a JSON object.
-  scoped_ptr<base::ListValue> GetUnlockKeysList();
+  std::unique_ptr<base::ListValue> GetUnlockKeysList();
 
   // The delegate used to fetch dependencies. Must outlive this instance.
   ProximityAuthClient* proximity_auth_client_;
 
   // Creates CryptAuth client instances to make API calls.
-  scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory_;
+  std::unique_ptr<CryptAuthClientFactory> cryptauth_client_factory_;
 
   // We only support one concurrent API call.
-  scoped_ptr<CryptAuthClient> cryptauth_client_;
+  std::unique_ptr<CryptAuthClient> cryptauth_client_;
 
   // The flow for getting a list of reachable phones.
-  scoped_ptr<ReachablePhoneFlow> reachable_phone_flow_;
+  std::unique_ptr<ReachablePhoneFlow> reachable_phone_flow_;
 
   // True if we get a message from the loaded WebContents to know that it is
   // initialized, and we can inject JavaScript.
@@ -146,10 +146,10 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
 
   // Member variables for connecting to and authenticating the remote device.
   // TODO(tengs): Support multiple simultaenous connections.
-  scoped_ptr<RemoteDeviceLoader> remote_device_loader_;
+  std::unique_ptr<RemoteDeviceLoader> remote_device_loader_;
   RemoteDevice selected_remote_device_;
-  scoped_ptr<RemoteDeviceLifeCycle> life_cycle_;
-  scoped_ptr<RemoteStatusUpdate> last_remote_status_update_;
+  std::unique_ptr<RemoteDeviceLifeCycle> life_cycle_;
+  std::unique_ptr<RemoteStatusUpdate> last_remote_status_update_;
 
   base::WeakPtrFactory<ProximityAuthWebUIHandler> weak_ptr_factory_;
 

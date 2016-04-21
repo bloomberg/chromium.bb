@@ -25,7 +25,7 @@ bool Connection::IsConnected() const {
   return status_ == CONNECTED;
 }
 
-void Connection::SendMessage(scoped_ptr<WireMessage> message) {
+void Connection::SendMessage(std::unique_ptr<WireMessage> message) {
   if (!IsConnected()) {
     VLOG(1) << "Cannot send message when disconnected.";
     return;
@@ -84,7 +84,7 @@ void Connection::OnBytesReceived(const std::string& bytes) {
   received_bytes_ += bytes;
 
   bool is_incomplete_message;
-  scoped_ptr<WireMessage> message =
+  std::unique_ptr<WireMessage> message =
       DeserializeWireMessage(&is_incomplete_message);
   if (is_incomplete_message)
     return;
@@ -99,7 +99,7 @@ void Connection::OnBytesReceived(const std::string& bytes) {
   received_bytes_.clear();
 }
 
-scoped_ptr<WireMessage> Connection::DeserializeWireMessage(
+std::unique_ptr<WireMessage> Connection::DeserializeWireMessage(
     bool* is_incomplete_message) {
   return WireMessage::Deserialize(received_bytes_, is_incomplete_message);
 }

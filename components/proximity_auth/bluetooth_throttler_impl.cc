@@ -19,7 +19,7 @@ const int kCooldownTimeSecs = 7;
 }  // namespace
 
 BluetoothThrottlerImpl::BluetoothThrottlerImpl(
-    scoped_ptr<base::TickClock> clock)
+    std::unique_ptr<base::TickClock> clock)
     : clock_(std::move(clock)) {}
 
 BluetoothThrottlerImpl::~BluetoothThrottlerImpl() {
