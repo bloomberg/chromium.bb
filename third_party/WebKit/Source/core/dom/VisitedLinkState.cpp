@@ -30,6 +30,8 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "public/platform/Platform.h"
@@ -58,11 +60,9 @@ VisitedLinkState::VisitedLinkState(const Document& document)
 {
 }
 
-void VisitedLinkState::invalidateStyleForAllLinks(bool invalidateVisitedLinkHashes)
+static void invalidateStyleForAllLinksRecursively(Node& rootNode, bool invalidateVisitedLinkHashes)
 {
-    if (m_linksCheckedForVisitedState.isEmpty())
-        return;
-    for (Node& node : NodeTraversal::startsAt(document().firstChild())) {
+    for (Node& node : NodeTraversal::startsAt(&rootNode)) {
         if (node.isLink()) {
             if (invalidateVisitedLinkHashes && isHTMLAnchorElement(node))
                 toHTMLAnchorElement(node).invalidateCachedVisitedLinkHash();
@@ -70,20 +70,37 @@ void VisitedLinkState::invalidateStyleForAllLinks(bool invalidateVisitedLinkHash
             toElement(node).pseudoStateChanged(CSSSelector::PseudoVisited);
             toElement(node).pseudoStateChanged(CSSSelector::PseudoAnyLink);
         }
+        if (isShadowHost(&node)) {
+            for (ShadowRoot* root = node.youngestShadowRoot(); root; root = root->olderShadowRoot())
+                invalidateStyleForAllLinksRecursively(*root, invalidateVisitedLinkHashes);
+        }
     }
 }
 
-void VisitedLinkState::invalidateStyleForLink(LinkHash linkHash)
+void VisitedLinkState::invalidateStyleForAllLinks(bool invalidateVisitedLinkHashes)
 {
-    if (!m_linksCheckedForVisitedState.contains(linkHash))
-        return;
-    for (Node& node : NodeTraversal::startsAt(document().firstChild())) {
+    if (!m_linksCheckedForVisitedState.isEmpty())
+        invalidateStyleForAllLinksRecursively(*document().firstChild(), invalidateVisitedLinkHashes);
+}
+
+static void invalidateStyleForLinkRecursively(Node& rootNode, LinkHash linkHash)
+{
+    for (Node& node : NodeTraversal::startsAt(&rootNode)) {
         if (node.isLink() && linkHashForElement(toElement(node)) == linkHash) {
             toElement(node).pseudoStateChanged(CSSSelector::PseudoLink);
             toElement(node).pseudoStateChanged(CSSSelector::PseudoVisited);
             toElement(node).pseudoStateChanged(CSSSelector::PseudoAnyLink);
         }
+        if (isShadowHost(&node))
+            for (ShadowRoot* root = node.youngestShadowRoot(); root; root = root->olderShadowRoot())
+                invalidateStyleForLinkRecursively(*root, linkHash);
     }
+}
+
+void VisitedLinkState::invalidateStyleForLink(LinkHash linkHash)
+{
+    if (m_linksCheckedForVisitedState.contains(linkHash))
+        invalidateStyleForLinkRecursively(*document().firstChild(), linkHash);
 }
 
 EInsideLink VisitedLinkState::determineLinkStateSlowCase(const Element& element)
