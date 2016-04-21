@@ -172,6 +172,7 @@ std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteServer(
   DCHECK(params->main_task_runner.get());
   DCHECK(params->settings);
   DCHECK(remote_proto_channel);
+  TRACE_EVENT0("cc.remote", "LayerTreeHost::CreateRemoteServer");
 
   // Using an external begin frame source is not supported on the server in
   // remote mode.
@@ -1503,14 +1504,18 @@ void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) {
   proto->set_source_frame_number(source_frame_number_);
   proto->set_meta_information_sequence_number(
       meta_information_sequence_number_);
+
   LayerProtoConverter::SerializeLayerHierarchy(root_layer_,
                                                proto->mutable_root_layer());
+
   // layers_that_should_push_properties_ should be serialized before layer
   // properties because it is cleared during the properties serialization.
   for (auto layer : layers_that_should_push_properties_)
     proto->add_layers_that_should_push_properties(layer->id());
+
   LayerProtoConverter::SerializeLayerProperties(this,
                                                 proto->mutable_layer_updates());
+
   proto->set_hud_layer_id(hud_layer_ ? hud_layer_->id() : Layer::INVALID_ID);
   debug_state_.ToProtobuf(proto->mutable_debug_state());
   SizeToProto(device_viewport_size_, proto->mutable_device_viewport_size());
@@ -1555,7 +1560,9 @@ void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) {
                                    : Layer::INVALID_ID);
 
   LayerSelectionToProtobuf(selection_, proto->mutable_selection());
+
   property_trees_.ToProtobuf(proto->mutable_property_trees());
+
   proto->set_surface_id_namespace(surface_id_namespace_);
   proto->set_next_surface_sequence(next_surface_sequence_);
 

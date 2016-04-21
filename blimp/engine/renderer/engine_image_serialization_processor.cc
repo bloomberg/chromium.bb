@@ -14,6 +14,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "blimp/common/blob_cache/id_util.h"
 #include "blimp/common/compositor/webp_decoder.h"
 #include "blimp/common/proto/blob_cache.pb.h"
@@ -48,11 +49,14 @@ class WebPImageEncoder : public SkPixelSerializer {
   ~WebPImageEncoder() override{};
 
   bool onUseEncodedData(const void* data, size_t len) override {
+    TRACE_EVENT1("blimp", "WebPImageEncoded::UsingEncodedData",
+                 "OriginalImageSize", len);
     // Encode all images regardless of their format, including WebP images.
     return false;
   }
 
   SkData* onEncode(const SkPixmap& pixmap) override {
+    TRACE_EVENT0("blimp", "WebImageEncoder::onEncode");
     // Initialize an empty WebPConfig.
     WebPConfig config;
     if (!WebPConfigInit(&config))
@@ -84,6 +88,8 @@ class WebPImageEncoder : public SkPixelSerializer {
         g_client_cache_contents.Get().end()) {
       // Found image in client cache, so skip sending decoded payload.
       SkData* sk_data = BlobCacheImageMetadataProtoAsSkData(proto);
+      TRACE_EVENT1("blimp", "WebPImageEncoder::onEncode ImageFoundInCache",
+                   "EncodedImageSize", sk_data->size());
       DVLOG(2) << "Sending cached: " << blob_id_hex
                << " size = " << sk_data->size();
       return sk_data;
@@ -117,8 +123,11 @@ class WebPImageEncoder : public SkPixelSerializer {
     // crbug.com/603643.
     config.method = 0;  // quality/speed trade-off (0=fast, 6=slower-better).
 
+    TRACE_EVENT_BEGIN0("blimp", "WebPImageEncoder::onEncode WebPEncode");
     // Encode the picture using the given configuration.
     bool success = WebPEncode(&config, &picture);
+    TRACE_EVENT_END1("blimp", "WebPImageEncoder::onEncode WebPEncode",
+                     "EncodedImageSize", encoded_data.size());
 
     // Release the memory allocated by WebPPictureImport*(). This does not free
     // the memory used by the picture object itself.

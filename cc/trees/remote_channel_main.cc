@@ -33,6 +33,7 @@ RemoteChannelMain::RemoteChannelMain(RemoteProtoChannel* remote_proto_channel,
       task_runner_provider_(task_runner_provider),
       initialized_(false),
       weak_factory_(this) {
+  TRACE_EVENT0("cc.remote", "RemoteChannelMain::RemoteChannelMain");
   DCHECK(remote_proto_channel_);
   DCHECK(proxy_main_);
   DCHECK(task_runner_provider_);
@@ -41,6 +42,7 @@ RemoteChannelMain::RemoteChannelMain(RemoteProtoChannel* remote_proto_channel,
 }
 
 RemoteChannelMain::~RemoteChannelMain() {
+  TRACE_EVENT0("cc.remote", "~RemoteChannelMain::RemoteChannelMain");
   DCHECK(task_runner_provider_->IsMainThread());
   DCHECK(!initialized_);
 
@@ -49,6 +51,7 @@ RemoteChannelMain::~RemoteChannelMain() {
 
 void RemoteChannelMain::OnProtoReceived(
     std::unique_ptr<proto::CompositorMessage> proto) {
+  TRACE_EVENT0("cc.remote", "RemoteChannelMain::OnProtoReceived");
   DCHECK(task_runner_provider_->IsMainThread());
   DCHECK(proto->has_to_main());
 
@@ -77,6 +80,8 @@ void RemoteChannelMain::MainThreadHasStoppedFlingingOnImpl() {
 void RemoteChannelMain::SetInputThrottledUntilCommitOnImpl(bool is_throttled) {}
 
 void RemoteChannelMain::SetDeferCommitsOnImpl(bool defer_commits) {
+  TRACE_EVENT1("cc.remote", "RemoteChannelMain::SetDeferCommitsOnImpl",
+               "defer_commits", defer_commits);
   proto::CompositorMessage proto;
   proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
   to_impl_proto->set_message_type(
@@ -113,6 +118,7 @@ void RemoteChannelMain::MainFrameWillHappenOnImplForTesting(
 }
 
 void RemoteChannelMain::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
+  TRACE_EVENT0("cc.remote", "RemoteChannelMain::SetNeedsRedrawOnImpl");
   proto::CompositorMessage proto;
   proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
   to_impl_proto->set_message_type(
@@ -131,6 +137,7 @@ void RemoteChannelMain::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
 }
 
 void RemoteChannelMain::SetNeedsCommitOnImpl() {
+  TRACE_EVENT0("cc.remote", "RemoteChannelMain::SetNeedsCommitOnImpl");
   proto::CompositorMessage proto;
   proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
   to_impl_proto->set_message_type(
@@ -143,6 +150,8 @@ void RemoteChannelMain::SetNeedsCommitOnImpl() {
 void RemoteChannelMain::BeginMainFrameAbortedOnImpl(
     CommitEarlyOutReason reason,
     base::TimeTicks main_thread_start_time) {
+  TRACE_EVENT1("cc.remote", "RemoteChannelMain::BeginMainFrameAbortedOnImpl",
+               "reason", CommitEarlyOutReasonToString(reason));
   proto::CompositorMessage proto;
   proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
   to_impl_proto->set_message_type(
@@ -162,6 +171,7 @@ void RemoteChannelMain::StartCommitOnImpl(
     LayerTreeHost* layer_tree_host,
     base::TimeTicks main_thread_start_time,
     bool hold_commit_for_activation) {
+  TRACE_EVENT0("cc.remote", "RemoteChannelMain::StartCommitOnImpl");
   proto::CompositorMessage proto;
   proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
   to_impl_proto->set_message_type(proto::CompositorMessageToImpl::START_COMMIT);
@@ -194,6 +204,7 @@ void RemoteChannelMain::StartCommitOnImpl(
 void RemoteChannelMain::SynchronouslyInitializeImpl(
     LayerTreeHost* layer_tree_host,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+  TRACE_EVENT0("cc.remote", "RemoteChannelMain::SynchronouslyInitializeImpl");
   DCHECK(!initialized_);
 
   proto::CompositorMessage proto;
@@ -212,6 +223,7 @@ void RemoteChannelMain::SynchronouslyInitializeImpl(
 }
 
 void RemoteChannelMain::SynchronouslyCloseImpl() {
+  TRACE_EVENT0("cc.remote", "RemoteChannelMain::SynchronouslyCloseImpl");
   DCHECK(initialized_);
   proto::CompositorMessage proto;
   proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
@@ -224,11 +236,13 @@ void RemoteChannelMain::SynchronouslyCloseImpl() {
 
 void RemoteChannelMain::SendMessageProto(
     const proto::CompositorMessage& proto) {
+  TRACE_EVENT0("cc.remote", "RemoteChannelMain::SendMessageProto");
   remote_proto_channel_->SendCompositorProto(proto);
 }
 
 void RemoteChannelMain::HandleProto(
     const proto::CompositorMessageToMain& proto) {
+  TRACE_EVENT0("cc.remote", "RemoteChannelMain::HandleProto");
   DCHECK(proto.has_message_type());
 
   switch (proto.message_type()) {
@@ -236,6 +250,7 @@ void RemoteChannelMain::HandleProto(
       NOTIMPLEMENTED() << "Ignoring message proto of unknown type";
       break;
     case proto::CompositorMessageToMain::BEGIN_MAIN_FRAME: {
+      TRACE_EVENT0("cc.remote", "RemoteChannelMain::BeginMainFrame");
       VLOG(1) << "Received BeginMainFrame request from client.";
       const proto::BeginMainFrame& begin_main_frame_message =
           proto.begin_main_frame_message();

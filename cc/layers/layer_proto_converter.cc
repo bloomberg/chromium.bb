@@ -5,6 +5,7 @@
 #include "cc/layers/layer_proto_converter.h"
 
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/layers/empty_content_layer_client.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/layer.h"
@@ -24,6 +25,7 @@ LayerProtoConverter::~LayerProtoConverter() {}
 void LayerProtoConverter::SerializeLayerHierarchy(
     const scoped_refptr<Layer> root_layer,
     proto::LayerNode* root_node) {
+  TRACE_EVENT0("cc.remote", "LayerProtoConverter::SerializeLayerHierarchy");
   root_layer->ToLayerNodeProto(root_node);
 }
 
@@ -53,6 +55,7 @@ scoped_refptr<Layer> LayerProtoConverter::DeserializeLayerHierarchy(
 void LayerProtoConverter::SerializeLayerProperties(
     LayerTreeHost* host,
     proto::LayerUpdate* layer_update) {
+  TRACE_EVENT0("cc.remote", "LayerProtoConverter::SerializeLayerProperties");
   for (auto layer : host->LayersThatShouldPushProperties())
     layer->ToLayerPropertiesProto(layer_update);
   host->LayersThatShouldPushProperties().clear();

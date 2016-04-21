@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/tab_control.pb.h"
 #include "blimp/engine/app/blimp_engine_config.h"
@@ -339,6 +340,7 @@ void BlimpEngineSession::HandleResize(float device_pixel_ratio,
 }
 
 void BlimpEngineSession::LoadUrl(const int target_tab_id, const GURL& url) {
+  TRACE_EVENT1("blimp", "BlimpEngineSession::LoadUrl", "URL", url.spec());
   DVLOG(1) << "Load URL " << url << " in tab " << target_tab_id;
   if (url.is_empty()) {
     return;
@@ -371,12 +373,15 @@ void BlimpEngineSession::Reload(const int target_tab_id) {
 void BlimpEngineSession::OnWebGestureEvent(
     content::RenderWidgetHost* render_widget_host,
     std::unique_ptr<blink::WebGestureEvent> event) {
+  TRACE_EVENT0("blimp", "BlimpEngineSession::OnWebGestureEvent");
+
   render_widget_host->ForwardGestureEvent(*event);
 }
 
 void BlimpEngineSession::OnCompositorMessageReceived(
     content::RenderWidgetHost* render_widget_host,
     const std::vector<uint8_t>& message) {
+  TRACE_EVENT0("blimp", "BlimpEngineSession::OnCompositorMessageReceived");
 
   render_widget_host->HandleCompositorProto(message);
 }
@@ -417,6 +422,7 @@ void BlimpEngineSession::OnInputMethodDestroyed(
 
 // Called when a user input should trigger showing the IME.
 void BlimpEngineSession::OnShowImeIfNeeded() {
+  TRACE_EVENT0("blimp", "BlimpEngineSession::OnShowImeIfNeeded");
   if (!web_contents_->GetRenderWidgetHostView() ||
       !window_tree_host_->GetInputMethod()->GetTextInputClient())
     return;
@@ -430,6 +436,8 @@ void BlimpEngineSession::OnShowImeIfNeeded() {
 void BlimpEngineSession::ProcessMessage(
     std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
+  TRACE_EVENT1("blimp", "BlimpEngineSession::ProcessMessage", "TabId",
+               message->target_tab_id());
   DCHECK(!callback.is_null());
   DCHECK(message->type() == BlimpMessage::TAB_CONTROL ||
          message->type() == BlimpMessage::NAVIGATION);
@@ -532,6 +540,7 @@ void BlimpEngineSession::ActivateContents(content::WebContents* contents) {
 void BlimpEngineSession::ForwardCompositorProto(
     content::RenderWidgetHost* render_widget_host,
     const std::vector<uint8_t>& proto) {
+  TRACE_EVENT0("blimp", "BlimpEngineSession::ForwardCompositorProto");
   render_widget_feature_.SendCompositorMessage(kDummyTabId, render_widget_host,
                                                proto);
 }
@@ -539,6 +548,7 @@ void BlimpEngineSession::ForwardCompositorProto(
 void BlimpEngineSession::NavigationStateChanged(
     content::WebContents* source,
     content::InvalidateTypes changed_flags) {
+  TRACE_EVENT0("blimp", "BlimpEngineSession::NavigationStateChanged");
   if (source != web_contents_.get() || !changed_flags)
     return;
 

@@ -117,6 +117,7 @@ void RemoteChannelImpl::HandleProto(
 
       main().layer_tree_host->FromProtobufForCommit(
           start_commit_message.layer_tree_host());
+
       {
         DebugScopedSetMainThreadBlocked main_thread_blocked(
             task_runner_provider_);

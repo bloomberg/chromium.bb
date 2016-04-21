@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/debug/picture_debug_util.h"
@@ -61,12 +62,15 @@ void DrawingDisplayItem::SetNew(sk_sp<const SkPicture> picture) {
 void DrawingDisplayItem::ToProtobuf(
     proto::DisplayItem* proto,
     ImageSerializationProcessor* image_serialization_processor) const {
+  TRACE_EVENT0("cc.remote", "DrawingDisplayItem::ToProtobuf");
   proto->set_type(proto::DisplayItem::Type_Drawing);
 
   proto::DrawingDisplayItem* details = proto->mutable_drawing_item();
 
   // Just use skia's serialize() method for now.
   if (picture_) {
+    TRACE_EVENT0("cc.remote",
+                 "DrawingDisplayItem::ToProtobuf SkPicture::Serialize");
     SkDynamicMemoryWStream stream;
     picture_->serialize(&stream,
                         image_serialization_processor->GetPixelSerializer());
