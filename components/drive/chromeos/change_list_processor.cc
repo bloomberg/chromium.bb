@@ -27,18 +27,12 @@ class ChangeListToEntryMapUMAStats {
  public:
   ChangeListToEntryMapUMAStats()
     : num_regular_files_(0),
-      num_hosted_documents_(0),
-      num_shared_with_me_entries_(0) {
+      num_hosted_documents_(0) {
   }
 
   // Increments number of files.
   void IncrementNumFiles(bool is_hosted_document) {
     is_hosted_document ? num_hosted_documents_++ : num_regular_files_++;
-  }
-
-  // Increments number of shared-with-me entries.
-  void IncrementNumSharedWithMeEntries() {
-    num_shared_with_me_entries_++;
   }
 
   // Updates UMA histograms with file counts.
@@ -48,14 +42,11 @@ class ChangeListToEntryMapUMAStats {
     UMA_HISTOGRAM_COUNTS("Drive.NumberOfHostedDocuments",
                          num_hosted_documents_);
     UMA_HISTOGRAM_COUNTS("Drive.NumberOfTotalFiles", num_total_files);
-    UMA_HISTOGRAM_COUNTS("Drive.NumberOfSharedWithMeEntries",
-                         num_shared_with_me_entries_);
   }
 
  private:
   int num_regular_files_;
   int num_hosted_documents_;
-  int num_shared_with_me_entries_;
 };
 
 // Returns true if it's OK to overwrite the local entry with the remote one.
@@ -161,8 +152,6 @@ FileError ChangeListProcessor::Apply(
       if (!entry->file_info().is_directory()) {
         uma_stats.IncrementNumFiles(
             entry->file_specific_info().is_hosted_document());
-        if (entry->shared_with_me())
-          uma_stats.IncrementNumSharedWithMeEntries();
       }
       parent_resource_id_map_[entry->resource_id()] =
           change_list->parent_resource_ids()[i];
