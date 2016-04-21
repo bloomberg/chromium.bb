@@ -57,7 +57,6 @@ class ConsoleMessageStorage;
 class ExceptionState;
 class V8AbstractEventListener;
 class WorkerClients;
-class WorkerConsole;
 class WorkerInspectorController;
 class WorkerLocation;
 class WorkerNavigator;
@@ -97,7 +96,6 @@ public:
 
     // WorkerGlobalScope
     WorkerGlobalScope* self() { return this; }
-    WorkerConsole* console();
     WorkerLocation* location() const;
     void close();
 
@@ -178,7 +176,6 @@ private:
     String m_userAgent;
     V8CacheOptions m_v8CacheOptions;
 
-    mutable Member<WorkerConsole> m_console;
     mutable Member<WorkerLocation> m_location;
     mutable Member<WorkerNavigator> m_navigator;
 

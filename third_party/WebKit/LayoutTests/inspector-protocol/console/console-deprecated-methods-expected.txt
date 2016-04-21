@@ -1,0 +1,4 @@
+CONSOLE WARNING: 'console.timeline' is deprecated. Please use 'console.time' instead.
+CONSOLE WARNING: 'console.timelineEnd' is deprecated. Please use 'console.timeEnd' instead.
+CONSOLE WARNING: 'console.markTimeline' is deprecated. Please use 'console.timeStamp' instead.
+Tests checks that deprecation messages for console.

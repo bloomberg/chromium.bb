@@ -53,7 +53,6 @@ public:
     double devicePixelRatio() const override;
     ApplicationCache* applicationCache() const override;
     int orientation() const override;
-    Console* console() const override;
     DOMSelection* getSelection() override;
     void blur() override;
     void print() override;

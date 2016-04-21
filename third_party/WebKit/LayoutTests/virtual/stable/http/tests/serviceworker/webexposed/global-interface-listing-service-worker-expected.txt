@@ -619,7 +619,6 @@ interface WindowClient : Client
     method focus
     method navigate
 interface WorkerGlobalScope : EventTarget
-    getter console
     getter crypto
     getter indexedDB
     getter location
@@ -641,7 +640,6 @@ interface WorkerGlobalScope : EventTarget
     method importScripts
     method setInterval
     method setTimeout
-    setter console
     setter onerror
     setter onrejectionhandled
     setter onunhandledrejection
@@ -772,6 +770,7 @@ interface webkitIDBTransaction : EventTarget
     setter oncomplete
     setter onerror
 global object
+    attribute console
     getter caches
     getter clients
     getter onactivate

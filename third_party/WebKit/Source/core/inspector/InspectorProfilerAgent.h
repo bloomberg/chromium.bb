@@ -62,9 +62,6 @@ public:
     void dispose() override;
     void restore() override;
 
-    void consoleProfile(ExecutionContext*, const String16& title);
-    void consoleProfileEnd(const String16& title);
-
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
     void setSamplingInterval(ErrorString*, int) override;

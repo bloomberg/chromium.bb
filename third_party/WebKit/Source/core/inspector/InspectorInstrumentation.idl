@@ -342,12 +342,6 @@ class ConsoleMessage;
     [Console]
     void addMessageToConsole(ExecutionContext* context, ConsoleMessage* consoleMessage);
 
-    [Profiler]
-    void consoleProfile([Keep] ExecutionContext* context, const String& title);
-
-    [Profiler]
-    void consoleProfileEnd(ExecutionContext* context, const String& title);
-
     [Console]
     void consoleMessagesCleared(ExecutionContext* context);
 }

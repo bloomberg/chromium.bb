@@ -1,0 +1,20 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.sendCommand("Runtime.evaluate", { expression: "\"use strict\"\nconsole.memory = {};undefined" }, dumpResult);
+
+    function dumpResult(result)
+    {
+        result.id = 0;
+        InspectorTest.logObject(result);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">Tests checks that console.memory property can be set in strict mode (crbug.com/468611).</body>
+</html>

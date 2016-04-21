@@ -4,6 +4,8 @@
 
 #include "core/inspector/ThreadDebugger.h"
 
+#include "bindings/core/v8/ScriptCallStack.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8DOMTokenList.h"
@@ -11,7 +13,10 @@
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeList.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
+#include "core/inspector/InspectorTraceEvents.h"
+#include "core/inspector/ScriptArguments.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "wtf/CurrentTime.h"
 
@@ -62,5 +67,42 @@ double ThreadDebugger::currentTimeMS()
     return WTF::currentTimeMS();
 }
 
+void ThreadDebugger::reportMessageToConsole(v8::Local<v8::Context> context, MessageType type, MessageLevel level, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount, int maxStackSize)
+{
+    ScriptState* scriptState = ScriptState::from(context);
+    ScriptArguments* scriptArguments = nullptr;
+    if (arguments && scriptState->contextIsValid())
+        scriptArguments = ScriptArguments::create(scriptState, *arguments, skipArgumentCount);
+    String messageText = message;
+    if (messageText.isEmpty() && scriptArguments)
+        scriptArguments->getFirstArgumentAsString(messageText);
+
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, messageText);
+    consoleMessage->setType(type);
+    consoleMessage->setScriptState(scriptState);
+    if (arguments)
+        consoleMessage->setScriptArguments(scriptArguments);
+    if (maxStackSize == -1)
+        consoleMessage->setCallStack(ScriptCallStack::captureForConsole());
+    else if (maxStackSize)
+        consoleMessage->setCallStack(ScriptCallStack::capture(maxStackSize));
+    reportMessageToConsole(context, consoleMessage);
+}
+
+void ThreadDebugger::consoleTime(const String16& title)
+{
+    TRACE_EVENT_COPY_ASYNC_BEGIN0("blink.console", String(title).utf8().data(), this);
+}
+
+void ThreadDebugger::consoleTimeEnd(const String16& title)
+{
+    TRACE_EVENT_COPY_ASYNC_END0("blink.console", String(title).utf8().data(), this);
+}
+
+void ThreadDebugger::consoleTimeStamp(const String16& title)
+{
+    v8::Isolate* isolate = m_isolate;
+    TRACE_EVENT_INSTANT1("devtools.timeline", "TimeStamp", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTimeStampEvent::data(currentExecutionContext(isolate), title));
+}
 
 } // namespace blink

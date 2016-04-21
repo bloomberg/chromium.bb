@@ -55,7 +55,6 @@
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerNavigator.h"
 #include "core/workers/WorkerClients.h"
-#include "core/workers/WorkerConsole.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerLocation.h"
 #include "core/workers/WorkerNavigator.h"
@@ -162,13 +161,6 @@ void WorkerGlobalScope::close()
 {
     // Let current script run to completion, but tell the worker micro task runner to tear down the thread after this task.
     m_closing = true;
-}
-
-WorkerConsole* WorkerGlobalScope::console()
-{
-    if (!m_console)
-        m_console = WorkerConsole::create(this);
-    return m_console.get();
 }
 
 WorkerNavigator* WorkerGlobalScope::navigator() const
@@ -415,7 +407,6 @@ v8::Local<v8::Object> WorkerGlobalScope::associateWithWrapper(v8::Isolate*, cons
 
 DEFINE_TRACE(WorkerGlobalScope)
 {
-    visitor->trace(m_console);
     visitor->trace(m_location);
     visitor->trace(m_navigator);
     visitor->trace(m_scriptController);

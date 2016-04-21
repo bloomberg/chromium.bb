@@ -119,6 +119,9 @@ public:
     void disconnect(V8InspectorSessionImpl*);
     V8InspectorSessionImpl* sessionForContextGroup(int contextGroupId);
 
+    v8::MaybeLocal<v8::FunctionTemplate> functionTemplate(const String16& name);
+    void setFunctionTemplate(const String16& name, v8::Local<v8::FunctionTemplate>);
+
 private:
     void enable();
     void disable();
@@ -157,6 +160,8 @@ private:
     v8::Local<v8::Context> m_pausedContext;
     bool m_runningNestedMessageLoop;
     v8::Global<v8::Context> m_regexContext;
+    using FunctionTemplateMap = protocol::HashMap<String16, OwnPtr<v8::Global<v8::FunctionTemplate>>>;
+    FunctionTemplateMap m_templates;
 };
 
 } // namespace blink

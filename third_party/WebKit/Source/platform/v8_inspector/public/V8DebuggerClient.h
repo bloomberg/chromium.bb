@@ -6,6 +6,8 @@
 #define V8DebuggerClient_h
 
 #include "platform/PlatformExport.h"
+#include "platform/v8_inspector/public/ConsoleAPITypes.h"
+#include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"
 #include "platform/v8_inspector/public/V8EventListenerInfo.h"
 
@@ -29,6 +31,14 @@ public:
     virtual bool isExecutionAllowed() = 0;
     virtual double currentTimeMS() = 0;
     virtual int ensureDefaultContextInGroup(int contextGroupId) = 0;
+
+    virtual void reportMessageToConsole(v8::Local<v8::Context>, MessageType, MessageLevel, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount, int maxStackSize) = 0;
+
+    virtual void consoleTime(const String16& title) = 0;
+    virtual void consoleTimeEnd(const String16& title) = 0;
+    virtual void consoleTimeStamp(const String16& title) = 0;
+
+    virtual v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>, v8::Local<v8::Object> creationContext) = 0;
 };
 
 } // namespace blink

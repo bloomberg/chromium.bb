@@ -45,7 +45,9 @@
 
     // Console API
     // https://console.spec.whatwg.org/#console-interface
-    [Replaceable] readonly attribute WorkerConsole console;
+    // [Replaceable] readonly attribute Console console;
+    // Console is installed by v8 inspector when context is created
+    // and is left commented here just for documentation.
 
     // CORS and RFC1918
     // https://mikewest.github.io/cors-rfc1918/#feature-detect

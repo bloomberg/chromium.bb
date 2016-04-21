@@ -7,12 +7,12 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
-#include "core/frame/ConsoleTypes.h"
-#include "core/inspector/ConsoleAPITypes.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
+#include "platform/v8_inspector/public/ConsoleAPITypes.h"
+#include "platform/v8_inspector/public/ConsoleTypes.h"
+#include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

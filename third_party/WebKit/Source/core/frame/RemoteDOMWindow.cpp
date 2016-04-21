@@ -197,12 +197,6 @@ int RemoteDOMWindow::orientation() const
     return 0;
 }
 
-Console* RemoteDOMWindow::console() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
 DOMSelection* RemoteDOMWindow::getSelection()
 {
     ASSERT_NOT_REACHED();

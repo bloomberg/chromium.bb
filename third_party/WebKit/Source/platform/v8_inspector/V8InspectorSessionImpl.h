@@ -34,6 +34,7 @@ public:
 
     V8DebuggerImpl* debugger() const { return m_debugger; }
     V8DebuggerAgentImpl* debuggerAgentImpl() { return m_debuggerAgent.get(); }
+    V8ProfilerAgentImpl* profilerAgentImpl() { return m_profilerAgent.get(); }
     V8RuntimeAgentImpl* runtimeAgentImpl() { return m_runtimeAgent.get(); }
     int contextGroupId() const { return m_contextGroupId; }
 

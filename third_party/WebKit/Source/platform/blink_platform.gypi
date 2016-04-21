@@ -1069,6 +1069,8 @@
       'v8_inspector/V8FunctionCall.h',
       'v8_inspector/V8HeapProfilerAgentImpl.cpp',
       'v8_inspector/V8HeapProfilerAgentImpl.h',
+      'v8_inspector/V8Console.cpp',
+      'v8_inspector/V8Console.h',
       'v8_inspector/V8InjectedScriptHost.cpp',
       'v8_inspector/V8InjectedScriptHost.h',
       'v8_inspector/V8InspectorSessionImpl.cpp',

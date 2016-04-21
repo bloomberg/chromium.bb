@@ -100,10 +100,9 @@ CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137:     method getReader
 CONSOLE MESSAGE: line 137:     method tee
 CONSOLE MESSAGE: line 137: interface WorkletGlobalScope
-CONSOLE MESSAGE: line 137:     getter console
 CONSOLE MESSAGE: line 137:     method constructor
-CONSOLE MESSAGE: line 137:     setter console
 CONSOLE MESSAGE: line 137: global object
+CONSOLE MESSAGE: line 137:     attribute console
 CONSOLE MESSAGE: line 137:     method gc
 CONSOLE MESSAGE: line 137:     method registerPaint
 

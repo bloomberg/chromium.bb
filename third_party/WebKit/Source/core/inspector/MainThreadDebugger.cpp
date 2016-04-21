@@ -42,6 +42,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorTaskRunner.h"
+#include "core/timing/MemoryInfo.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
@@ -103,7 +104,7 @@ void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* fr
     DOMWrapperWorld& world = scriptState->world();
     if (frame->localFrameRoot() == frame && world.isMainWorld())
         debugger()->resetContextGroup(contextGroupId(frame));
-    debugger()->contextCreated(V8ContextInfo(scriptState->context(), contextGroupId(frame), world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame)));
+    debugger()->contextCreated(V8ContextInfo(scriptState->context(), contextGroupId(frame), world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame), scriptState->getExecutionContext()->isDocument()));
 }
 
 void MainThreadDebugger::contextWillBeDestroyed(ScriptState* scriptState)
@@ -202,6 +203,35 @@ int MainThreadDebugger::ensureDefaultContextInGroup(int contextGroupId)
         return 0;
     v8::HandleScope scopes(scriptState->isolate());
     return V8Debugger::contextId(scriptState->context());
+}
+
+void MainThreadDebugger::reportMessageToConsole(v8::Local<v8::Context> context, ConsoleMessage* consoleMessage)
+{
+    ExecutionContext* executionContext = toExecutionContext(context);
+    ASSERT(executionContext);
+    if (executionContext->isWorkletGlobalScope()) {
+        executionContext->addConsoleMessage(consoleMessage);
+        return;
+    }
+
+    DOMWindow* window = toDOMWindow(context);
+    if (!window)
+        return;
+    LocalDOMWindow* localDomWindow = toLocalDOMWindow(window);
+    if (!localDomWindow)
+        return;
+    LocalFrame* frame = localDomWindow->frame();
+    if (!frame)
+        return;
+    frame->console().addMessage(consoleMessage);
+}
+
+v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(v8::Isolate* isolate, v8::Local<v8::Context> context, v8::Local<v8::Object> creationContext)
+{
+    ExecutionContext* executionContext = toExecutionContext(context);
+    ASSERT_UNUSED(executionContext, executionContext);
+    ASSERT(executionContext->isDocument());
+    return toV8(MemoryInfo::create(), creationContext, isolate);
 }
 
 } // namespace blink

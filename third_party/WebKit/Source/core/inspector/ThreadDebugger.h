@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class ConsoleMessage;
 class WorkerThread;
 
 class CORE_EXPORT ThreadDebugger : public V8DebuggerClient {
@@ -28,11 +29,16 @@ public:
     bool formatAccessorsAsProperties(v8::Local<v8::Value>) override;
     bool isExecutionAllowed() override;
     double currentTimeMS() override;
+    void reportMessageToConsole(v8::Local<v8::Context>, MessageType, MessageLevel, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount, int maxStackSize) final;
+    void consoleTime(const String16& title) override;
+    void consoleTimeEnd(const String16& title) override;
+    void consoleTimeStamp(const String16& title) override;
 
     V8Debugger* debugger() const { return m_debugger.get(); }
     virtual bool isWorker() { return true; }
-
 protected:
+    virtual void reportMessageToConsole(v8::Local<v8::Context>, ConsoleMessage*) = 0;
+
     v8::Isolate* m_isolate;
     OwnPtr<V8Debugger> m_debugger;
 };

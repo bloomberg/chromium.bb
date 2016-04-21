@@ -24,7 +24,6 @@
 
 #include "modules/webaudio/MediaElementAudioSourceNode.h"
 #include "core/dom/CrossThreadTask.h"
-#include "core/frame/ConsoleTypes.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/webaudio/AbstractAudioContext.h"

@@ -48,7 +48,6 @@
 #include "core/events/PopStateEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/frame/BarProp.h"
-#include "core/frame/Console.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameView.h"
@@ -531,7 +530,6 @@ void LocalDOMWindow::reset()
     m_scrollbars = nullptr;
     m_statusbar = nullptr;
     m_toolbar = nullptr;
-    m_console = nullptr;
     m_navigator = nullptr;
     m_media = nullptr;
     m_customElements = nullptr;
@@ -632,13 +630,6 @@ BarProp* LocalDOMWindow::toolbar() const
     if (!m_toolbar)
         m_toolbar = BarProp::create(frame(), BarProp::Toolbar);
     return m_toolbar.get();
-}
-
-Console* LocalDOMWindow::console() const
-{
-    if (!m_console)
-        m_console = Console::create(frame());
-    return m_console.get();
 }
 
 FrameConsole* LocalDOMWindow::frameConsole() const
@@ -1491,7 +1482,6 @@ DEFINE_TRACE(LocalDOMWindow)
     visitor->trace(m_scrollbars);
     visitor->trace(m_statusbar);
     visitor->trace(m_toolbar);
-    visitor->trace(m_console);
     visitor->trace(m_navigator);
     visitor->trace(m_media);
     visitor->trace(m_customElements);

@@ -8,7 +8,6 @@
 #include "core/frame/FrameConsole.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/MainThreadDebugger.h"
-#include "modules/worklet/WorkletConsole.h"
 
 namespace blink {
 
@@ -33,13 +32,6 @@ void WorkletGlobalScope::dispose()
     m_scriptController->willScheduleExecutionTermination();
     m_scriptController->dispose();
     m_scriptController.clear();
-}
-
-WorkletConsole* WorkletGlobalScope::console()
-{
-    if (!m_console)
-        m_console = WorkletConsole::create(this);
-    return m_console.get();
 }
 
 v8::Local<v8::Object> WorkletGlobalScope::wrap(v8::Isolate*, v8::Local<v8::Object> creationContext)
@@ -104,7 +96,6 @@ KURL WorkletGlobalScope::virtualCompleteURL(const String& url) const
 DEFINE_TRACE(WorkletGlobalScope)
 {
     visitor->trace(m_scriptController);
-    visitor->trace(m_console);
     ExecutionContext::trace(visitor);
     SecurityContext::trace(visitor);
     MainThreadWorkletGlobalScope::trace(visitor);

@@ -20,7 +20,6 @@ class ApplicationCache;
 class BarProp;
 class CSSRuleList;
 class CSSStyleDeclaration;
-class Console;
 class CustomElementsRegistry;
 class DOMSelection;
 class DOMWindowCSS;
@@ -128,8 +127,6 @@ public:
     //  0 is straight up; -90 is when the device is rotated 90 clockwise;
     //  90 is when rotated counter clockwise.
     virtual int orientation() const = 0;
-
-    virtual Console* console() const  = 0;
 
     virtual DOMSelection* getSelection() = 0;
 

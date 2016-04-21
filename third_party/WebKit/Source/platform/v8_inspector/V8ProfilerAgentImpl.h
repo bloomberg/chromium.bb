@@ -25,6 +25,8 @@ public:
     explicit V8ProfilerAgentImpl(V8InspectorSessionImpl*);
     ~V8ProfilerAgentImpl() override;
 
+    bool enabled() const { return m_enabled; }
+
     void setInspectorState(protocol::DictionaryValue* state) override { m_state = state; }
     void setFrontend(protocol::Frontend::Profiler* frontend) override { m_frontend = frontend; }
     void clearFrontend() override;
@@ -36,8 +38,8 @@ public:
     void start(ErrorString*) override;
     void stop(ErrorString*, OwnPtr<protocol::Profiler::CPUProfile>*) override;
 
-    void consoleProfile(const String16& title) override;
-    void consoleProfileEnd(const String16& title) override;
+    void consoleProfile(const String16& title);
+    void consoleProfileEnd(const String16& title);
 
     void idleStarted() override;
     void idleFinished() override;

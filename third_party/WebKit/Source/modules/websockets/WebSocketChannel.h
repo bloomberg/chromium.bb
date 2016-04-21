@@ -31,9 +31,9 @@
 #ifndef WebSocketChannel_h
 #define WebSocketChannel_h
 
-#include "core/frame/ConsoleTypes.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 

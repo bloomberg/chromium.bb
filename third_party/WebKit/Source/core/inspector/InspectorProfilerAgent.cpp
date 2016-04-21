@@ -80,18 +80,6 @@ void InspectorProfilerAgent::restore()
     enable(&errorString);
 }
 
-// Protocol implementation.
-void InspectorProfilerAgent::consoleProfile(ExecutionContext* context, const String16& title)
-{
-    UseCounter::count(context, UseCounter::DevToolsConsoleProfile);
-    m_v8ProfilerAgent->consoleProfile(title);
-}
-
-void InspectorProfilerAgent::consoleProfileEnd(const String16& title)
-{
-    m_v8ProfilerAgent->consoleProfileEnd(title);
-}
-
 void InspectorProfilerAgent::enable(ErrorString* errorString)
 {
     m_v8ProfilerAgent->enable(errorString);

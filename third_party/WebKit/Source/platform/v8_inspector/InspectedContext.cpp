@@ -5,7 +5,9 @@
 #include "platform/v8_inspector/InspectedContext.h"
 
 #include "platform/v8_inspector/InjectedScript.h"
+#include "platform/v8_inspector/V8Console.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
+#include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 
@@ -28,6 +30,14 @@ InspectedContext::InspectedContext(V8DebuggerImpl* debugger, const V8ContextInfo
     , m_reported(false)
 {
     m_context.SetWeak(this, &InspectedContext::weakCallback, v8::WeakCallbackType::kParameter);
+
+    v8::Isolate* isolate = m_debugger->isolate();
+    v8::Local<v8::Object> global = info.context->Global();
+    v8::Local<v8::Object> console;
+    if (!V8Console::create(info.context, this, info.hasMemoryOnConsole).ToLocal(&console))
+        return;
+    if (!global->Set(info.context, toV8StringInternalized(isolate, "console"), console).FromMaybe(false))
+        return;
 }
 
 InspectedContext::~InspectedContext()

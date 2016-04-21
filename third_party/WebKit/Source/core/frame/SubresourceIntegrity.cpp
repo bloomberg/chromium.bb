@@ -8,7 +8,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/fetch/Resource.h"
-#include "core/frame/ConsoleTypes.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Crypto.h"

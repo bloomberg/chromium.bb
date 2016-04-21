@@ -117,7 +117,6 @@ public:
     double devicePixelRatio() const override;
     ApplicationCache* applicationCache() const override;
     int orientation() const override;
-    Console* console() const override;
     DOMSelection* getSelection() override;
     void blur() override;
     void print() override;
@@ -260,7 +259,6 @@ private:
     mutable Member<BarProp> m_scrollbars;
     mutable Member<BarProp> m_statusbar;
     mutable Member<BarProp> m_toolbar;
-    mutable Member<Console> m_console;
     mutable Member<Navigator> m_navigator;
     mutable Member<StyleMedia> m_media;
     mutable Member<CustomElementsRegistry> m_customElements;

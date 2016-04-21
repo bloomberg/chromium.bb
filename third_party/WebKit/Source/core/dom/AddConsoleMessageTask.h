@@ -28,7 +28,7 @@
 #define AddConsoleMessageTask_h
 
 #include "core/dom/ExecutionContextTask.h"
-#include "core/frame/ConsoleTypes.h"
+#include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"

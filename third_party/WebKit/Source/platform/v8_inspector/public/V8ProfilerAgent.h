@@ -15,10 +15,6 @@ class PLATFORM_EXPORT V8ProfilerAgent : public protocol::Backend::Profiler, publ
 public:
     virtual ~V8ProfilerAgent() { }
 
-    // API for the embedder.
-    virtual void consoleProfile(const String16& title) = 0;
-    virtual void consoleProfileEnd(const String16& title) = 0;
-
     virtual void idleStarted() = 0;
     virtual void idleFinished() = 0;
 };

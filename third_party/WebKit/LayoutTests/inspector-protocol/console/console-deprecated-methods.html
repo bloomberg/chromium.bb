@@ -1,0 +1,30 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.eventHandler["Console.messageAdded"] = messageAdded;
+    InspectorTest.sendCommand("Console.enable", {});
+
+    var deprecatedMethods = [
+        "console.timeline(\"42\")",
+        "console.timeline(\"42\")",
+        "console.timeline(\"42\")", // three calls should produce one warning message
+        "console.timelineEnd(\"42\")",
+        "console.markTimeline(\"42\")",
+    ];
+    InspectorTest.sendCommand("Runtime.evaluate", { expression: deprecatedMethods.join(";") });
+
+    var messagesLeft = 3;
+    function messageAdded(data)
+    {
+        if (!--messagesLeft)
+            InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">Tests checks that deprecation messages for console.</body>
+</html>

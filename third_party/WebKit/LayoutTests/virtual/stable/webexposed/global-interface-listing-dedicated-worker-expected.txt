@@ -631,7 +631,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onopen
 [Worker] interface WorkerGlobalScope : EventTarget
 [Worker]     attribute @@toStringTag
-[Worker]     getter console
 [Worker]     getter crypto
 [Worker]     getter indexedDB
 [Worker]     getter location
@@ -653,7 +652,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method importScripts
 [Worker]     method setInterval
 [Worker]     method setTimeout
-[Worker]     setter console
 [Worker]     setter onerror
 [Worker]     setter onrejectionhandled
 [Worker]     setter onunhandledrejection
@@ -845,6 +843,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter oncomplete
 [Worker]     setter onerror
 [Worker] [GLOBAL OBJECT]
+[Worker]     attribute console
 [Worker]     getter caches
 [Worker]     getter onmessage
 [Worker]     method gc
