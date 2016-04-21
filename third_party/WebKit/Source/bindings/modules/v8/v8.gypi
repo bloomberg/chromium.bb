@@ -18,7 +18,6 @@
             'SerializedScriptValueForModulesFactory.cpp',
             'SerializedScriptValueForModulesFactory.h',
             'ToV8ForModules.h',
-            'TransferablesForModules.h',
             'V8BindingForModules.cpp',
             'V8BindingForModules.h',
             'V8ServiceWorkerMessageEventInternal.h',

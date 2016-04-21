@@ -127,7 +127,6 @@ private:
     intptr_t m_externallyAllocatedMemory;
 
     friend class SerializedScriptValueFactory;
-    friend class SerializedScriptValueForModulesFactory;
 };
 
 } // namespace blink

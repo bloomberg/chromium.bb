@@ -32,8 +32,6 @@ public:
     virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, const String&);
     PassRefPtr<SerializedScriptValue> create();
     PassRefPtr<SerializedScriptValue> create(v8::Isolate*, const ScriptValue&, WebBlobInfoArray*, ExceptionState&);
-    virtual bool extractTransferables(v8::Isolate*, Transferables&, ExceptionState&, v8::Local<v8::Value>&, unsigned);
-    virtual Transferables* createTransferables() { return new Transferables; }
 
     // Never throws exceptions.
     PassRefPtr<SerializedScriptValue> createAndSwallowExceptions(v8::Isolate*, v8::Local<v8::Value>);
@@ -60,7 +58,7 @@ public:
 protected:
     ScriptValueSerializer::Status doSerialize(v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, SerializedScriptValue*, v8::TryCatch&, String& errorMessage, v8::Isolate*);
     virtual ScriptValueSerializer::Status doSerialize(v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, String& errorMessage, v8::Isolate*);
-    virtual void transferData(v8::Isolate*, Transferables*, ExceptionState&, SerializedScriptValue*, SerializedScriptValueWriter&);
+    void transferData(SerializedScriptValue*, SerializedScriptValueWriter&, Transferables*, ExceptionState&, v8::Isolate*);
 
     virtual v8::Local<v8::Value> deserialize(String& data, BlobDataHandleMap& blobDataHandles, ArrayBufferContentsArray*, ImageBitmapContentsArray*, v8::Isolate*, MessagePortArray* messagePorts, const WebBlobInfoArray*);
 

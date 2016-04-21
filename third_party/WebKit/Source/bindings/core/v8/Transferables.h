@@ -19,16 +19,17 @@ using ArrayBufferArray = HeapVector<Member<DOMArrayBufferBase>>;
 using ImageBitmapArray = HeapVector<Member<ImageBitmap>>;
 using MessagePortArray = HeapVector<Member<MessagePort>>;
 
-class CORE_EXPORT Transferables : public GarbageCollectedFinalized<Transferables> {
+class CORE_EXPORT Transferables final {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(Transferables);
 public:
-    Transferables() { }
-    virtual ~Transferables() { }
+    Transferables()
+    {
+    }
 
     ArrayBufferArray arrayBuffers;
     ImageBitmapArray imageBitmaps;
     MessagePortArray messagePorts;
-    DECLARE_VIRTUAL_TRACE();
 };
 
 // Along with extending |Transferables| to hold a new kind of transferable

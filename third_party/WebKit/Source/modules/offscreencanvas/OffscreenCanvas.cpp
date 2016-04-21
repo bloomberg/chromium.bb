@@ -35,21 +35,8 @@ void OffscreenCanvas::setHeight(unsigned height)
     m_size.setHeight(clampTo<int>(height));
 }
 
-void OffscreenCanvas::setNeutered()
+OffscreenCanvasRenderingContext2D* OffscreenCanvas::getContext(const String& id, const CanvasContextCreationAttributes& attributes)
 {
-    ASSERT(!m_context);
-    m_isNeutered = true;
-    m_size.setWidth(0);
-    m_size.setHeight(0);
-}
-
-OffscreenCanvasRenderingContext2D* OffscreenCanvas::getContext(const String& id, const CanvasContextCreationAttributes& attributes, ExceptionState& exceptionState)
-{
-    if (m_isNeutered) {
-        exceptionState.throwDOMException(InvalidStateError, "Cannot get context of a neutered OffscreenCanvas");
-        return nullptr;
-    }
-
     OffscreenCanvasRenderingContext::ContextType contextType = OffscreenCanvasRenderingContext::contextTypeFromId(id);
 
     // Unknown type.
@@ -77,10 +64,6 @@ OffscreenCanvasRenderingContext2D* OffscreenCanvas::getContext(const String& id,
 
 ImageBitmap* OffscreenCanvas::transferToImageBitmap(ExceptionState& exceptionState)
 {
-    if (m_isNeutered) {
-        exceptionState.throwDOMException(InvalidStateError, "Cannot transfer an ImageBitmap from a neutered OffscreenCanvas");
-        return nullptr;
-    }
     if (!m_context) {
         exceptionState.throwDOMException(InvalidStateError, "Cannot transfer an ImageBitmap from an OffscreenCanvas with no context");
         return nullptr;
@@ -95,7 +78,6 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(ExceptionState& exceptionSta
 
 OffscreenCanvasRenderingContext2D* OffscreenCanvas::renderingContext() const
 {
-    ASSERT(!m_isNeutered);
     // TODO: When there're more than one context type implemented in the future,
     // the return type here should be changed to base class of all Offscreen
     // context types.
@@ -125,6 +107,7 @@ void OffscreenCanvas::registerRenderingContextFactory(PassOwnPtr<OffscreenCanvas
 DEFINE_TRACE(OffscreenCanvas)
 {
     visitor->trace(m_context);
+    visitor->trace(m_canvas);
 }
 
 } // namespace blink

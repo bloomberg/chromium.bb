@@ -7,10 +7,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValueSerializer.h"
 #include "bindings/core/v8/Transferables.h"
-#include "bindings/core/v8/V8ArrayBuffer.h"
-#include "bindings/core/v8/V8ImageBitmap.h"
-#include "bindings/core/v8/V8MessagePort.h"
-#include "bindings/core/v8/V8SharedArrayBuffer.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/MessagePort.h"
 #include "core/frame/ImageBitmap.h"
@@ -42,7 +38,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isola
         exceptionState.throwDOMException(ScriptValueSerializer::DataCloneError, errorMessage);
         return serializedValue.release();
     case ScriptValueSerializer::Success:
-        transferData(isolate, transferables, exceptionState, serializedValue.get(), writer);
+        transferData(serializedValue.get(), writer, transferables, exceptionState, isolate);
         return serializedValue.release();
     case ScriptValueSerializer::JSException:
         ASSERT_NOT_REACHED();
@@ -107,7 +103,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create()
     return adoptRef(new SerializedScriptValue());
 }
 
-void SerializedScriptValueFactory::transferData(v8::Isolate* isolate, Transferables* transferables, ExceptionState& exceptionState, SerializedScriptValue* serializedValue, SerializedScriptValueWriter& writer)
+void SerializedScriptValueFactory::transferData(SerializedScriptValue* serializedValue, SerializedScriptValueWriter& writer, Transferables* transferables, ExceptionState& exceptionState, v8::Isolate* isolate)
 {
     serializedValue->setData(writer.takeWireString());
     ASSERT(serializedValue->data().impl()->hasOneRef());
@@ -159,47 +155,5 @@ v8::Local<v8::Value> SerializedScriptValueFactory::deserialize(String& data, Blo
     return deserializer.deserialize();
 }
 
-bool SerializedScriptValueFactory::extractTransferables(v8::Isolate* isolate, Transferables& transferables, ExceptionState& exceptionState, v8::Local<v8::Value>& transferableObject, unsigned index)
-{
-    // Validation of Objects implementing an interface, per WebIDL spec 4.1.15.
-    if (V8MessagePort::hasInstance(transferableObject, isolate)) {
-        MessagePort* port = V8MessagePort::toImpl(v8::Local<v8::Object>::Cast(transferableObject));
-        // Check for duplicate MessagePorts.
-        if (transferables.messagePorts.contains(port)) {
-            exceptionState.throwDOMException(DataCloneError, "Message port at index " + String::number(index) + " is a duplicate of an earlier port.");
-            return false;
-        }
-        transferables.messagePorts.append(port);
-        return true;
-    }
-    if (V8ArrayBuffer::hasInstance(transferableObject, isolate)) {
-        DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferableObject));
-        if (transferables.arrayBuffers.contains(arrayBuffer)) {
-            exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(index) + " is a duplicate of an earlier ArrayBuffer.");
-            return false;
-        }
-        transferables.arrayBuffers.append(arrayBuffer);
-        return true;
-    }
-    if (V8SharedArrayBuffer::hasInstance(transferableObject, isolate)) {
-        DOMSharedArrayBuffer* sharedArrayBuffer = V8SharedArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferableObject));
-        if (transferables.arrayBuffers.contains(sharedArrayBuffer)) {
-            exceptionState.throwDOMException(DataCloneError, "SharedArrayBuffer at index " + String::number(index) + " is a duplicate of an earlier SharedArrayBuffer.");
-            return false;
-        }
-        transferables.arrayBuffers.append(sharedArrayBuffer);
-        return true;
-    }
-    if (V8ImageBitmap::hasInstance(transferableObject, isolate)) {
-        ImageBitmap* imageBitmap = V8ImageBitmap::toImpl(v8::Local<v8::Object>::Cast(transferableObject));
-        if (transferables.imageBitmaps.contains(imageBitmap)) {
-            exceptionState.throwDOMException(DataCloneError, "ImageBitmap at index " + String::number(index) + " is a duplicate of an earlier ImageBitmap.");
-            return false;
-        }
-        transferables.imageBitmaps.append(imageBitmap);
-        return true;
-    }
-    return false;
-}
 
 } // namespace blink

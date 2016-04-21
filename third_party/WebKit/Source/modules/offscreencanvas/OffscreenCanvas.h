@@ -34,15 +34,13 @@ public:
     void setHeight(unsigned);
 
     // API Methods
-    OffscreenCanvasRenderingContext2D* getContext(const String&, const CanvasContextCreationAttributes&, ExceptionState&);
+    OffscreenCanvasRenderingContext2D* getContext(const String&, const CanvasContextCreationAttributes&);
     ImageBitmap* transferToImageBitmap(ExceptionState&);
 
     IntSize size() const { return m_size; }
     OffscreenCanvasRenderingContext2D* renderingContext() const;
-    void setAssociatedCanvasId(int canvasId) { m_canvasId = canvasId; }
-    int getAssociatedCanvasId() const { return m_canvasId; }
-    bool isNeutered() const { return m_isNeutered; }
-    void setNeutered();
+    void setAssociatedCanvas(HTMLCanvasElement* canvas) { m_canvas = canvas; }
+    HTMLCanvasElement* getAssociatedCanvas() const { return m_canvas; }
 
     static void registerRenderingContextFactory(PassOwnPtr<OffscreenCanvasRenderingContextFactory>);
 
@@ -56,9 +54,8 @@ private:
     static OffscreenCanvasRenderingContextFactory* getRenderingContextFactory(int);
 
     Member<OffscreenCanvasRenderingContext> m_context;
-    int m_canvasId = -1; // DOMNodeIds starts from 0, using -1 to indicate no associated canvas element.
+    WeakMember<HTMLCanvasElement> m_canvas;
     IntSize m_size;
-    bool m_isNeutered = false;
 };
 
 } // namespace blink

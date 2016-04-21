@@ -7,8 +7,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/modules/v8/ScriptValueSerializerForModules.h"
-#include "bindings/modules/v8/TransferablesForModules.h"
-#include "bindings/modules/v8/V8OffscreenCanvas.h"
 #include "core/dom/ExceptionCode.h"
 
 namespace blink {
@@ -34,7 +32,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create
         exceptionState.throwDOMException(DataCloneError, errorMessage);
         return serializedValue.release();
     case ScriptValueSerializer::Success:
-        transferData(isolate, transferables, exceptionState, serializedValue.get(), writer);
+        transferData(serializedValue.get(), writer, transferables, exceptionState, isolate);
         return serializedValue.release();
     case ScriptValueSerializer::JSException:
         ASSERT_NOT_REACHED();
@@ -50,33 +48,6 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create
     writer.writeWebCoreString(data);
     String wireData = writer.takeWireString();
     return createFromWire(wireData);
-}
-
-void SerializedScriptValueForModulesFactory::transferData(v8::Isolate* isolate, Transferables* transferables, ExceptionState& exceptionState, SerializedScriptValue* serializedValue, SerializedScriptValueWriter& writer)
-{
-    serializedValue->setData(writer.takeWireString());
-    ASSERT(serializedValue->data().impl()->hasOneRef());
-    if (!transferables)
-        return;
-    auto& offscreenCanvases = static_cast<TransferablesForModules*>(transferables)->offscreenCanvases;
-    if (offscreenCanvases.size()) {
-        HeapHashSet<Member<OffscreenCanvas>> visited;
-        for (size_t i = 0; i < offscreenCanvases.size(); i++) {
-            if (offscreenCanvases[i]->isNeutered()) {
-                exceptionState.throwDOMException(DataCloneError, "OffscreenCanvas at index " + String::number(i) + " is already neutered.");
-                return;
-            }
-            if (offscreenCanvases[i]->renderingContext()) {
-                exceptionState.throwDOMException(DataCloneError, "OffscreenCanvas at index " + String::number(i) + " has an associated context.");
-                return;
-            }
-            if (visited.contains(offscreenCanvases[i].get()))
-                continue;
-            visited.add(offscreenCanvases[i].get());
-            offscreenCanvases[i].get()->setNeutered();
-        }
-    }
-    SerializedScriptValueFactory::transferData(isolate, transferables, exceptionState, serializedValue, writer);
 }
 
 ScriptValueSerializer::Status SerializedScriptValueForModulesFactory::doSerialize(v8::Local<v8::Value> value, SerializedScriptValueWriter& writer, Transferables* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, String& errorMessage, v8::Isolate* isolate)
@@ -100,23 +71,6 @@ v8::Local<v8::Value> SerializedScriptValueForModulesFactory::deserialize(String&
     SerializedScriptValueReaderForModules reader(reinterpret_cast<const uint8_t*>(data.impl()->characters16()), 2 * data.length(), blobInfo, blobDataHandles, ScriptState::current(isolate));
     ScriptValueDeserializerForModules deserializer(reader, messagePorts, arrayBufferContentsArray, imageBitmapContentsArray);
     return deserializer.deserialize();
-}
-
-bool SerializedScriptValueForModulesFactory::extractTransferables(v8::Isolate* isolate, Transferables& transferables, ExceptionState& exceptionState, v8::Local<v8::Value>& transferableObject, unsigned index)
-{
-    if (SerializedScriptValueFactory::extractTransferables(isolate, transferables, exceptionState, transferableObject, index))
-        return true;
-    if (V8OffscreenCanvas::hasInstance(transferableObject, isolate)) {
-        OffscreenCanvas* offscreenCanvas = V8OffscreenCanvas::toImpl(v8::Local<v8::Object>::Cast(transferableObject));
-        auto& offscreenCanvases = static_cast<TransferablesForModules*>(&transferables)->offscreenCanvases;
-        if (offscreenCanvases.contains(offscreenCanvas)) {
-            exceptionState.throwDOMException(DataCloneError, "OffscreenCanvas at index " + String::number(index) + " is a duplicate of an earlier OffscreenCanvas.");
-            return false;
-        }
-        offscreenCanvases.append(offscreenCanvas);
-        return true;
-    }
-    return false;
 }
 
 } // namespace blink

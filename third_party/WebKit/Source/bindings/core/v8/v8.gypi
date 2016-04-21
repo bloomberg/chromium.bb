@@ -102,7 +102,6 @@
             'SerializedScriptValueFactory.cpp',
             'SerializedScriptValueFactory.h',
             'SharedPersistent.h',
-            'Transferables.cpp',
             'Transferables.h',
             'ToV8.cpp',
             'ToV8.h',
