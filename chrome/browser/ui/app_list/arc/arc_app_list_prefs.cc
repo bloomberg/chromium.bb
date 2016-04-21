@@ -211,6 +211,10 @@ void ArcAppListPrefs::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+bool ArcAppListPrefs::HasObserver(Observer* observer) {
+  return observer_list_.HasObserver(observer);
+}
+
 std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
   std::vector<std::string> ids;
 

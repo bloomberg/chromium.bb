@@ -19,6 +19,7 @@
 #include "google_apis/gaia/ubertoken_fetcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+class ArcAppLauncher;
 class GaiaAuthFetcher;
 class Profile;
 
@@ -174,6 +175,7 @@ class ArcAuthService : public ArcService,
   base::ObserverList<Observer> observer_list_;
   std::unique_ptr<GaiaAuthFetcher> merger_fetcher_;
   std::unique_ptr<UbertokenFetcher> ubertoken_fethcher_;
+  std::unique_ptr<ArcAppLauncher> playstore_launcher_;
   std::string auth_code_;
   GetAuthCodeCallback auth_callback_;
   bool initial_opt_in_ = false;

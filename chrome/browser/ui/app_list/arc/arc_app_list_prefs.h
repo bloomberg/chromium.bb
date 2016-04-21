@@ -125,6 +125,7 @@ class ArcAppListPrefs : public KeyedService,
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+  bool HasObserver(Observer* observer);
 
  private:
   // See the Create methods.

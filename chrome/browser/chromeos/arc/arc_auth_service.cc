@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/pref_names.h"
@@ -52,6 +53,7 @@ ArcAuthService* arc_auth_service = nullptr;
 base::LazyInstance<base::ThreadChecker> thread_checker =
     LAZY_INSTANCE_INITIALIZER;
 
+const char kPlayStoreAppId[] = "gpkmicpkkebkmabiaedjognfppcchdfa";
 const char kArcSupportExtensionId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
 const char kArcSupportStorageId[] = "arc_support";
 
@@ -147,6 +149,11 @@ void ArcAuthService::OnSignInComplete() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK_EQ(state_, State::ACTIVE);
 
+  if (!profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn)) {
+    playstore_launcher_.reset(
+        new ArcAppLauncher(profile_, kPlayStoreAppId, true));
+  }
+
   profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
   CloseUI();
 }
@@ -182,7 +189,8 @@ void ArcAuthService::OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) {
       UpdateOptInCancelUMA(OptInCancelReason::UNKNOWN_ERROR);
   }
 
-  profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
+  if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
+    profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
   ShutdownBridgeAndShowUI(UIPage::ERROR,
                           l10n_util::GetStringUTF16(error_message_id));
 }
@@ -370,6 +378,7 @@ void ArcAuthService::OnOptInPreferenceChanged() {
 }
 
 void ArcAuthService::ShutdownBridge() {
+  playstore_launcher_.reset();
   auth_callback_.reset();
   ubertoken_fethcher_.reset();
   merger_fetcher_.reset();

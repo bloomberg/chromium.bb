@@ -735,6 +735,8 @@
       'browser/ui/app_list/arc/arc_app_icon_loader.h',
       'browser/ui/app_list/arc/arc_app_item.cc',
       'browser/ui/app_list/arc/arc_app_item.h',
+      'browser/ui/app_list/arc/arc_app_launcher.cc',
+      'browser/ui/app_list/arc/arc_app_launcher.h',
       'browser/ui/app_list/arc/arc_app_list_prefs.cc',
       'browser/ui/app_list/arc/arc_app_list_prefs.h',
       'browser/ui/app_list/arc/arc_app_list_prefs_factory.cc',

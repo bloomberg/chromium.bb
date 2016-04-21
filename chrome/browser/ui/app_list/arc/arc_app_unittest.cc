@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
@@ -617,4 +618,51 @@ TEST_F(ArcAppModelBuilderTest, IconLoader) {
   EXPECT_EQ(1 + scale_factors.size(), delegate.update_image_cnt());
   EXPECT_EQ(app_id, delegate.app_id());
   ValidateIcon(delegate.image());
+}
+
+TEST_F(ArcAppModelBuilderTest, AppLauncher) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile());
+
+  // App1 is called in deferred mode, after refreshing apps.
+  // App2 is never called since app is not avaialble.
+  // App3 is never called immediately because app is available already.
+  const arc::mojom::AppInfo& app1 = fake_apps()[0];
+  const arc::mojom::AppInfo& app2 = fake_apps()[1];
+  const arc::mojom::AppInfo& app3 = fake_apps()[2];
+  const std::string id1 = ArcAppTest::GetAppId(app1);
+  const std::string id2 = ArcAppTest::GetAppId(app2);
+  const std::string id3 = ArcAppTest::GetAppId(app3);
+
+  ArcAppLauncher launcher1(profile(), id1, true);
+  EXPECT_FALSE(launcher1.app_launched());
+  EXPECT_TRUE(prefs->HasObserver(&launcher1));
+
+  bridge_service()->SetReady();
+
+  ArcAppLauncher launcher3(profile(), id3, true);
+  EXPECT_FALSE(launcher1.app_launched());
+  EXPECT_TRUE(prefs->HasObserver(&launcher1));
+  EXPECT_FALSE(launcher3.app_launched());
+  EXPECT_TRUE(prefs->HasObserver(&launcher3));
+
+  EXPECT_EQ(0u, app_instance()->launch_requests().size());
+
+  std::vector<arc::mojom::AppInfo> apps(fake_apps().begin(),
+                                        fake_apps().begin() + 2);
+  app_instance()->SendRefreshAppList(apps);
+
+  EXPECT_TRUE(launcher1.app_launched());
+  app_instance()->WaitForIncomingMethodCall();
+  ASSERT_EQ(1u, app_instance()->launch_requests().size());
+  EXPECT_TRUE(app_instance()->launch_requests()[0]->IsForApp(app1));
+  EXPECT_FALSE(launcher3.app_launched());
+  EXPECT_FALSE(prefs->HasObserver(&launcher1));
+  EXPECT_TRUE(prefs->HasObserver(&launcher3));
+
+  ArcAppLauncher launcher2(profile(), id2, true);
+  EXPECT_TRUE(launcher2.app_launched());
+  app_instance()->WaitForIncomingMethodCall();
+  EXPECT_FALSE(prefs->HasObserver(&launcher2));
+  ASSERT_EQ(2u, app_instance()->launch_requests().size());
+  EXPECT_TRUE(app_instance()->launch_requests()[1]->IsForApp(app2));
 }
