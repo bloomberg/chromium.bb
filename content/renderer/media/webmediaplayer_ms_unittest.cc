@@ -26,6 +26,8 @@ enum class FrameType {
 using TestFrame = std::pair<FrameType, scoped_refptr<media::VideoFrame>>;
 
 static const int kOddSizeOffset = 3;
+static const int kStandardWidth = 320;
+static const int kStandardHeight = 240;
 
 class FakeWebMediaPlayerDelegate
     : public media::WebMediaPlayerDelegate,
@@ -133,7 +135,8 @@ class MockVideoFrameProvider : public VideoFrameProvider {
   // Methods for test use
   void QueueFrames(const std::vector<int>& timestamps_or_frame_type,
                    bool opaque_frame = true,
-                   bool odd_size_frame = false);
+                   bool odd_size_frame = false,
+                   int double_size_index = -1);
   bool Started() { return started_; }
   bool Paused() { return paused_; }
 
@@ -191,8 +194,14 @@ void MockVideoFrameProvider::AddFrame(
 void MockVideoFrameProvider::QueueFrames(
     const std::vector<int>& timestamp_or_frame_type,
     bool opaque_frame,
-    bool odd_size_frame) {
-  for (const int token : timestamp_or_frame_type) {
+    bool odd_size_frame,
+    int double_size_index) {
+  gfx::Size standard_size = gfx::Size(kStandardWidth, kStandardHeight);
+  for (size_t i = 0; i < timestamp_or_frame_type.size(); i++) {
+    const int token = timestamp_or_frame_type[i];
+    if (static_cast<int>(i) == double_size_index) {
+      standard_size = gfx::Size(kStandardWidth * 2, kStandardHeight * 2);
+    }
     if (token < static_cast<int>(FrameType::MIN_TYPE)) {
       CHECK(false) << "Unrecognized frame type: " << token;
       return;
@@ -204,14 +213,16 @@ void MockVideoFrameProvider::QueueFrames(
     }
 
     if (token >= 0) {
-      gfx::Size natural_size = media::TestVideoConfig::NormalCodedSize();
+      gfx::Size frame_size;
       if (odd_size_frame) {
-        natural_size.SetSize(natural_size.width() - kOddSizeOffset,
-                             natural_size.height() - kOddSizeOffset);
+        frame_size.SetSize(standard_size.width() - kOddSizeOffset,
+                           standard_size.height() - kOddSizeOffset);
+      } else {
+        frame_size.SetSize(standard_size.width(), standard_size.height());
       }
       auto frame = media::VideoFrame::CreateZeroInitializedFrame(
           opaque_frame ? media::PIXEL_FORMAT_YV12 : media::PIXEL_FORMAT_YV12A,
-          natural_size, gfx::Rect(natural_size), natural_size,
+          frame_size, gfx::Rect(frame_size), frame_size,
           base::TimeDelta::FromMilliseconds(token));
 
       frame->metadata()->SetTimeTicks(
@@ -372,7 +383,7 @@ class WebMediaPlayerMSTest
   void timeChanged() override {}
   void repaint() override {}
   void durationChanged() override {}
-  void sizeChanged() override {}
+  void sizeChanged() override;
   void playbackStateChanged() override {}
   void setWebLayer(blink::WebLayer* layer) override;
   blink::WebMediaPlayer::TrackId addAudioTrack(const blink::WebString& id,
@@ -419,6 +430,7 @@ class WebMediaPlayerMSTest
   MOCK_METHOD1(DoNetworkStateChanged,
                void(blink::WebMediaPlayer::NetworkState));
   MOCK_METHOD1(DoReadyStateChanged, void(blink::WebMediaPlayer::ReadyState));
+  MOCK_METHOD1(CheckSizeChanged, void(gfx::Size));
 
   base::MessageLoop message_loop_;
   MockRenderFactory* render_factory_;
@@ -528,6 +540,11 @@ void WebMediaPlayerMSTest::RenderFrame() {
       base::TimeDelta::FromSecondsD(1.0 / 60.0));
 }
 
+void WebMediaPlayerMSTest::sizeChanged() {
+  gfx::Size frame_size = compositor_->GetCurrentSize();
+  CheckSizeChanged(frame_size);
+}
+
 TEST_F(WebMediaPlayerMSTest, Playing_Normal) {
   // This test sends a bunch of normal frames with increasing timestamps
   // and verifies that they are produced by WebMediaPlayerMS in appropriate
@@ -546,6 +563,8 @@ TEST_F(WebMediaPlayerMSTest, Playing_Normal) {
                          blink::WebMediaPlayer::ReadyStateHaveMetadata));
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::ReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
   testing::Mock::VerifyAndClearExpectations(this);
@@ -574,6 +593,8 @@ TEST_F(WebMediaPlayerMSTest, Playing_ErrorFrame) {
                          blink::WebMediaPlayer::ReadyStateHaveEnoughData));
   EXPECT_CALL(*this, DoNetworkStateChanged(
                          blink::WebMediaPlayer::NetworkStateFormatError));
+  EXPECT_CALL(*this,
+              CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_ERROR_NETWORK);
   testing::Mock::VerifyAndClearExpectations(this);
@@ -602,6 +623,10 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPause) {
                          blink::WebMediaPlayer::ReadyStateHaveMetadata));
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::ReadyStateHaveEnoughData));
+  gfx::Size frame_size =
+      gfx::Size(kStandardWidth - (odd_size_frame ? kOddSizeOffset : 0),
+                kStandardHeight - (odd_size_frame ? kOddSizeOffset : 0));
+  EXPECT_CALL(*this, CheckSizeChanged(frame_size));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
   testing::Mock::VerifyAndClearExpectations(this);
@@ -639,6 +664,10 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
                          blink::WebMediaPlayer::ReadyStateHaveMetadata));
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::ReadyStateHaveEnoughData));
+  gfx::Size frame_size =
+      gfx::Size(kStandardWidth - (odd_size_frame ? kOddSizeOffset : 0),
+                kStandardHeight - (odd_size_frame ? kOddSizeOffset : 0));
+  EXPECT_CALL(*this, CheckSizeChanged(frame_size));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
   testing::Mock::VerifyAndClearExpectations(this);
@@ -694,7 +723,8 @@ TEST_F(WebMediaPlayerMSTest, BackgroundRendering) {
                          blink::WebMediaPlayer::ReadyStateHaveMetadata));
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::ReadyStateHaveEnoughData));
-
+  gfx::Size frame_size = gfx::Size(kStandardWidth, kStandardHeight);
+  EXPECT_CALL(*this, CheckSizeChanged(frame_size));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
   testing::Mock::VerifyAndClearExpectations(this);
@@ -714,6 +744,35 @@ TEST_F(WebMediaPlayerMSTest, BackgroundRendering) {
       media::PipelineStatus::PIPELINE_OK);
   after_frame = compositor_->GetCurrentFrame();
   EXPECT_NE(prev_frame->timestamp(), after_frame->timestamp());
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoStopRendering());
+}
+
+TEST_F(WebMediaPlayerMSTest, FrameSizeChange) {
+  // During this test, the frame size of the input changes.
+  // We need to make sure, when sizeChanged() gets called, new size should be
+  // returned by GetCurrentSize().
+  MockVideoFrameProvider* provider = LoadAndGetFrameProvider(true);
+
+  int tokens[] = {0,   33,  66,  100, 133, 166, 200, 233, 266, 300,
+                  333, 366, 400, 433, 466, 500, 533, 566, 600};
+  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
+  provider->QueueFrames(timestamps, false, false, 7);
+
+  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoStartRendering());
+  EXPECT_CALL(*this, DoReadyStateChanged(
+                         blink::WebMediaPlayer::ReadyStateHaveMetadata));
+  EXPECT_CALL(*this, DoReadyStateChanged(
+                         blink::WebMediaPlayer::ReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
+  EXPECT_CALL(*this, CheckSizeChanged(
+                         gfx::Size(kStandardWidth * 2, kStandardHeight * 2)));
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
   testing::Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*this, DoSetWebLayer(false));

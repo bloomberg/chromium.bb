@@ -395,10 +395,19 @@ void WebMediaPlayerMSCompositor::Render(base::TimeTicks deadline_min,
 void WebMediaPlayerMSCompositor::SetCurrentFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
   current_frame_lock_.AssertAcquired();
+
   if (!current_frame_used_by_compositor_)
     ++dropped_frame_count_;
   current_frame_used_by_compositor_ = false;
+
+  const bool size_changed =
+      !current_frame_ ||
+      current_frame_->natural_size() != frame->natural_size();
   current_frame_ = frame;
+  if (size_changed) {
+    main_message_loop_->PostTask(
+        FROM_HERE, base::Bind(&WebMediaPlayerMS::TriggerResize, player_));
+  }
   main_message_loop_->PostTask(
       FROM_HERE, base::Bind(&WebMediaPlayerMS::ResetCanvasCache, player_));
 }

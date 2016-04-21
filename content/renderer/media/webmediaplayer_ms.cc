@@ -496,15 +496,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
     }
   }
 
-  // As EnqueueFrame can potentially change |current_frame_|, we need to do
-  // the size change check before it. Otherwise, we are running the risk of not
-  // detecting a size change event.
-  const bool size_changed =
-      compositor_->GetCurrentSize() != frame->natural_size();
-
   compositor_->EnqueueFrame(frame);
-  if (size_changed)
-    get_client()->sizeChanged();
 }
 
 void WebMediaPlayerMS::RepaintInternal() {
@@ -540,6 +532,10 @@ media::SkCanvasVideoRenderer* WebMediaPlayerMS::GetSkCanvasVideoRenderer() {
 void WebMediaPlayerMS::ResetCanvasCache() {
   DCHECK(thread_checker_.CalledOnValidThread());
   video_renderer_.ResetCache();
+}
+
+void WebMediaPlayerMS::TriggerResize() {
+  get_client()->sizeChanged();
 }
 
 }  // namespace content

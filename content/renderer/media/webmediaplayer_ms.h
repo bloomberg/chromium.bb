@@ -110,6 +110,9 @@ class CONTENT_EXPORT WebMediaPlayerMS
   media::SkCanvasVideoRenderer* GetSkCanvasVideoRenderer();
   void ResetCanvasCache();
 
+  // Methods to trigger resize event.
+  void TriggerResize();
+
   // True if the loaded media has a playable video/audio track.
   bool hasVideo() const override;
   bool hasAudio() const override;
