@@ -73,19 +73,44 @@ namespace WTF {
 // For bound parameters (arguments supplied on the creation of a functor), you can move your argument into the internal
 // storage of the functor by supplying an rvalue to that argument (this is done in wrap() of ParamStorageTraits).
 // However, to make the functor be able to get called multiple times, the stored object does not get moved out
-// automatically when the underlying function is actually invoked. If you want to move the argument throughout the
-// process, you can do so by receiving the argument as a non-const lvalue reference and applying std::move() to it:
+// automatically when the underlying function is actually invoked. If you want to make an argument "auto-passed",
+// you can do so by wrapping your bound argument with passed() function, as shown below:
 //
-//     void yourFunction(Argument& argument)
+//     void yourFunction(Argument argument)
 //     {
-//         std::move(argument); // Move out the argument from the internal storage.
+//         // |argument| is passed from the internal storage of functor.
 //         ...
 //     }
 //
 //     ...
-//     OwnPtr<Function<void()>> functor = bind(yourFunction, Argument()); // Pass the argument by rvalue.
+//     OwnPtr<Function<void()>> functor = bind(yourFunction, passed(Argument()));
 //     ...
 //     (*functor)();
+//
+// The underlying function must receive the argument wrapped by passed() by rvalue reference or by value.
+//
+// Obviously, if you create a functor this way, you shouldn't call the functor twice or more; after the second call,
+// the passed argument may be invalid.
+
+template <typename T>
+class PassedWrapper final {
+public:
+    explicit PassedWrapper(T&& scoper) : m_scoper(std::move(scoper)) { }
+    PassedWrapper(PassedWrapper&& other) : m_scoper(std::move(other.m_scoper)) { }
+    T moveOut() { return std::move(m_scoper); }
+
+private:
+    T m_scoper;
+};
+
+template <typename T>
+PassedWrapper<T> passed(T&& value)
+{
+    static_assert(!std::is_reference<T>::value,
+        "You must pass an rvalue to passed() so it can be moved. Add std::move() if necessary.");
+    static_assert(!std::is_const<T>::value, "|value| must not be const so it can be moved.");
+    return PassedWrapper<T>(std::move(value));
+}
 
 // A FunctionWrapper is a class template that can wrap a function pointer or a member function pointer and
 // provide a unified interface for calling that function.
@@ -160,7 +185,7 @@ struct ParamStorageTraits {
     static StorageType wrap(T&& value) { return std::move(value); }
 
     // Don't move out, because the functor may be called multiple times.
-    static T& unwrap(StorageType& value) { return value; }
+    static const T& unwrap(const StorageType& value) { return value; }
 };
 
 template <typename T>
@@ -189,11 +214,20 @@ struct ParamStorageTraits<RetainPtr<T>> {
     static typename RetainPtr<T>::PtrType unwrap(const StorageType& value) { return value.get(); }
 };
 
-template<> struct ParamStorageTraits<void*> {
+template <>
+struct ParamStorageTraits<void*> {
     typedef void* StorageType;
 
     static StorageType wrap(void* value) { return value; }
     static void* unwrap(const StorageType& value) { return value; }
+};
+
+template <typename T>
+struct ParamStorageTraits<PassedWrapper<T>> {
+    typedef PassedWrapper<T> StorageType;
+
+    static StorageType wrap(PassedWrapper<T>&& value) { return std::move(value); }
+    static T unwrap(StorageType& value) { return value.moveOut(); }
 };
 
 enum FunctionThreadAffinity {
@@ -310,6 +344,7 @@ typedef Function<void(), CrossThreadAffinity> CrossThreadClosure;
 
 } // namespace WTF
 
+using WTF::passed;
 using WTF::Function;
 using WTF::bind;
 using WTF::SameThreadClosure;
