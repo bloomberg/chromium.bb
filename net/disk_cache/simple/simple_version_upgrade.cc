@@ -161,39 +161,44 @@ bool UpgradeSimpleCacheOnDisk(const base::FilePath& path) {
     LOG(ERROR) << "Inconsistent cache version.";
     return false;
   }
-  bool upgrade_needed = (version_from != kSimpleVersion);
-  if (version_from == kMinVersionAbleToUpgrade) {
-    // Upgrade only the index for V4 -> V5 move.
+  bool new_fake_index_needed = (version_from != kSimpleVersion);
+
+  // There should be one upgrade routine here for each incremental upgrade
+  // starting at kMinVersionAbleToUpgrade.
+  static_assert(kMinVersionAbleToUpgrade == 5, "upgrade routines don't match");
+  DCHECK_LE(5U, version_from);
+  if (version_from == 5) {
+    // Upgrade only the index for V5 -> V6 move.
     if (!UpgradeIndexV5V6(path)) {
       LogMessageFailedUpgradeFromVersion(file_header.version);
       return false;
     }
     version_from++;
   }
-  if (version_from == kSimpleVersion) {
-    if (!upgrade_needed) {
-      return true;
-    } else {
-      const base::FilePath temp_fake_index = path.AppendASCII("upgrade-index");
-      if (!WriteFakeIndexFile(temp_fake_index)) {
-        base::DeleteFile(temp_fake_index, /* recursive = */ false);
-        LOG(ERROR) << "Failed to write a new fake index.";
-        LogMessageFailedUpgradeFromVersion(file_header.version);
-        return false;
-      }
-      if (!base::ReplaceFile(temp_fake_index, fake_index, NULL)) {
-        LOG(ERROR) << "Failed to replace the fake index.";
-        LogMessageFailedUpgradeFromVersion(file_header.version);
-        return false;
-      }
-      return true;
-    }
+  DCHECK_LE(6U, version_from);
+  if (version_from == 6) {
+    // No upgrade from V6 -> V7, because the entry format has not changed and
+    // the V7 index reader is backwards compatible.
+    version_from++;
   }
-  // Verify during the test stage that the upgraders are implemented for all
-  // versions. The release build would cause backend initialization failure
-  // which would then later lead to removing all files known to the backend.
   DCHECK_EQ(kSimpleVersion, version_from);
-  return false;
+
+  if (!new_fake_index_needed)
+    return true;
+
+  const base::FilePath temp_fake_index = path.AppendASCII("upgrade-index");
+  if (!WriteFakeIndexFile(temp_fake_index)) {
+    base::DeleteFile(temp_fake_index, /* recursive = */ false);
+    LOG(ERROR) << "Failed to write a new fake index.";
+    LogMessageFailedUpgradeFromVersion(file_header.version);
+    return false;
+  }
+  if (!base::ReplaceFile(temp_fake_index, fake_index, NULL)) {
+    LOG(ERROR) << "Failed to replace the fake index.";
+    LogMessageFailedUpgradeFromVersion(file_header.version);
+    return false;
+  }
+  return true;
 }
 
 }  // namespace disk_cache

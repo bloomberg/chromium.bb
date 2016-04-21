@@ -158,7 +158,9 @@ SimpleIndex::SimpleIndex(
       io_thread_(io_thread),
       // Creating the callback once so it is reused every time
       // write_to_disk_timer_.Start() is called.
-      write_to_disk_cb_(base::Bind(&SimpleIndex::WriteToDisk, AsWeakPtr())),
+      write_to_disk_cb_(base::Bind(&SimpleIndex::WriteToDisk,
+                                   AsWeakPtr(),
+                                   INDEX_WRITE_REASON_IDLE)),
       app_on_background_(false) {}
 
 SimpleIndex::~SimpleIndex() {
@@ -433,7 +435,7 @@ void SimpleIndex::MergeInitializingSet(
   // The actual IO is asynchronous, so calling WriteToDisk() shouldn't slow the
   // merge down much.
   if (load_result->flush_required)
-    WriteToDisk();
+    WriteToDisk(INDEX_WRITE_REASON_STARTUP_MERGE);
 
   SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
                    "IndexInitializationWaiters", cache_type_,
@@ -457,12 +459,12 @@ void SimpleIndex::OnApplicationStateChange(
   } else if (state ==
       base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES) {
     app_on_background_ = true;
-    WriteToDisk();
+    WriteToDisk(INDEX_WRITE_REASON_ANDROID_STOPPED);
   }
 }
 #endif
 
-void SimpleIndex::WriteToDisk() {
+void SimpleIndex::WriteToDisk(IndexWriteToDiskReason reason) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   if (!initialized_)
     return;
@@ -483,8 +485,8 @@ void SimpleIndex::WriteToDisk() {
   }
   last_write_to_disk_ = start;
 
-  index_file_->WriteToDisk(entries_set_, cache_size_,
-                           start, app_on_background_, base::Closure());
+  index_file_->WriteToDisk(reason, entries_set_, cache_size_, start,
+                           app_on_background_, base::Closure());
 }
 
 }  // namespace disk_cache

@@ -67,7 +67,8 @@ class MockSimpleIndexFile : public SimpleIndexFile,
     ++load_index_entries_calls_;
   }
 
-  void WriteToDisk(const SimpleIndex::EntrySet& entry_set,
+  void WriteToDisk(SimpleIndex::IndexWriteToDiskReason reason,
+                   const SimpleIndex::EntrySet& entry_set,
                    uint64_t cache_size,
                    const base::TimeTicks& start,
                    bool app_on_background,

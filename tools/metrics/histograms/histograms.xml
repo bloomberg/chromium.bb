@@ -49217,6 +49217,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.IndexWriteReasonAtLoad"
+    enum="SimpleCacheIndexWriteReason">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    Recorded immediately after loading a fresh index (INDEX_STATE_FRESH or
+    INDEX_STATE_FRESH_CONCURRENT_UPDATES), the reason the loaded index was
+    written to disk.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.IndexWriteToDiskTime" units="ms">
   <obsolete>
     Deprecated 2013-05 in favour of
@@ -83904,6 +83914,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="New Cache"/>
 </enum>
 
+<enum name="SimpleCacheIndexWriteReason" type="int">
+  <int value="0" label="Shutdown"/>
+  <int value="1" label="Startup Merge"/>
+  <int value="2" label="Saved While Idle"/>
+  <int value="3" label="Stopped (Android only)"/>
+</enum>
+
 <enum name="SimpleCacheOpenEntryIndexState" type="int">
   <int value="0" label="No index"/>
   <int value="1" label="Hit"/>
@@ -88049,6 +88066,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SimpleCache.IndexRestoreTime"/>
   <affected-histogram name="SimpleCache.IndexWriteInterval.Background"/>
   <affected-histogram name="SimpleCache.IndexWriteInterval.Foreground"/>
+  <affected-histogram name="SimpleCache.IndexWriteReasonAtLoad"/>
   <affected-histogram name="SimpleCache.IndexWriteToDiskTime.Background"/>
   <affected-histogram name="SimpleCache.IndexWriteToDiskTime.Foreground"/>
   <affected-histogram name="SimpleCache.KeyMatchedOnOpen"/>

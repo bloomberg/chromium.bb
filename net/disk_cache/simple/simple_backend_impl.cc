@@ -245,7 +245,7 @@ SimpleBackendImpl::SimpleBackendImpl(
 }
 
 SimpleBackendImpl::~SimpleBackendImpl() {
-  index_->WriteToDisk();
+  index_->WriteToDisk(SimpleIndex::INDEX_WRITE_REASON_SHUTDOWN);
 }
 
 int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {

@@ -86,6 +86,14 @@ class NET_EXPORT_PRIVATE SimpleIndex
     INITIALIZE_METHOD_NEWCACHE = 2,
     INITIALIZE_METHOD_MAX = 3,
   };
+  // Used in histograms. Please only add entries at the end.
+  enum IndexWriteToDiskReason {
+    INDEX_WRITE_REASON_SHUTDOWN = 0,
+    INDEX_WRITE_REASON_STARTUP_MERGE = 1,
+    INDEX_WRITE_REASON_IDLE = 2,
+    INDEX_WRITE_REASON_ANDROID_STOPPED = 3,
+    INDEX_WRITE_REASON_MAX = 4,
+  };
 
   typedef std::vector<uint64_t> HashList;
 
@@ -111,7 +119,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // iff the entry exist in the index.
   bool UseIfExists(uint64_t entry_hash);
 
-  void WriteToDisk();
+  void WriteToDisk(IndexWriteToDiskReason reason);
 
   // Update the size (in bytes) of an entry, in the metadata stored in the
   // index. This should be the total disk-file size including all streams of the

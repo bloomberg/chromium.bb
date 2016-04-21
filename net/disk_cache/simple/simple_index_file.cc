@@ -33,7 +33,7 @@ namespace {
 const int kEntryFilesHashLength = 16;
 const int kEntryFilesSuffixLength = 2;
 
-const uint64_t kMaxEntiresInIndex = 100000000;
+const uint64_t kMaxEntriesInIndex = 100000000;
 
 uint32_t CalculatePickleCRC(const base::Pickle& pickle) {
   return crc32(crc32(0, Z_NULL, 0),
@@ -59,6 +59,12 @@ void UmaRecordIndexInitMethod(SimpleIndex::IndexInitMethod method,
                               net::CacheType cache_type) {
   SIMPLE_CACHE_UMA(ENUMERATION, "IndexInitializeMethod", cache_type, method,
                    SimpleIndex::INITIALIZE_METHOD_MAX);
+}
+
+void UmaRecordIndexWriteReasonAtLoad(SimpleIndex::IndexWriteToDiskReason reason,
+                                     net::CacheType cache_type) {
+  SIMPLE_CACHE_UMA(ENUMERATION, "IndexWriteReasonAtLoad", cache_type, reason,
+                   SimpleIndex::INDEX_WRITE_REASON_MAX);
 }
 
 bool WritePickleFile(base::Pickle* pickle, const base::FilePath& file_name) {
@@ -126,15 +132,17 @@ void ProcessEntryFile(SimpleIndex::EntrySet* entries,
 
 }  // namespace
 
-SimpleIndexLoadResult::SimpleIndexLoadResult() : did_load(false),
-                                                 flush_required(false) {
-}
+SimpleIndexLoadResult::SimpleIndexLoadResult()
+    : did_load(false),
+      index_write_reason(SimpleIndex::INDEX_WRITE_REASON_MAX),
+      flush_required(false) {}
 
 SimpleIndexLoadResult::~SimpleIndexLoadResult() {
 }
 
 void SimpleIndexLoadResult::Reset() {
   did_load = false;
+  index_write_reason = SimpleIndex::INDEX_WRITE_REASON_MAX;
   flush_required = false;
   entries.clear();
 }
@@ -149,13 +157,17 @@ const char SimpleIndexFile::kTempIndexFileName[] = "temp-index";
 SimpleIndexFile::IndexMetadata::IndexMetadata()
     : magic_number_(kSimpleIndexMagicNumber),
       version_(kSimpleVersion),
+      reason_(SimpleIndex::INDEX_WRITE_REASON_MAX),
       number_of_entries_(0),
       cache_size_(0) {}
 
-SimpleIndexFile::IndexMetadata::IndexMetadata(uint64_t number_of_entries,
-                                              uint64_t cache_size)
+SimpleIndexFile::IndexMetadata::IndexMetadata(
+    SimpleIndex::IndexWriteToDiskReason reason,
+    uint64_t number_of_entries,
+    uint64_t cache_size)
     : magic_number_(kSimpleIndexMagicNumber),
       version_(kSimpleVersion),
+      reason_(reason),
       number_of_entries_(number_of_entries),
       cache_size_(cache_size) {}
 
@@ -165,6 +177,7 @@ void SimpleIndexFile::IndexMetadata::Serialize(base::Pickle* pickle) const {
   pickle->WriteUInt32(version_);
   pickle->WriteUInt64(number_of_entries_);
   pickle->WriteUInt64(cache_size_);
+  pickle->WriteUInt32(static_cast<uint32_t>(reason_));
 }
 
 // static
@@ -179,10 +192,19 @@ bool SimpleIndexFile::SerializeFinalData(base::Time cache_modified,
 
 bool SimpleIndexFile::IndexMetadata::Deserialize(base::PickleIterator* it) {
   DCHECK(it);
-  return it->ReadUInt64(&magic_number_) &&
-      it->ReadUInt32(&version_) &&
-      it->ReadUInt64(&number_of_entries_)&&
-      it->ReadUInt64(&cache_size_);
+
+  bool v6_format_index_read_results =
+      it->ReadUInt64(&magic_number_) && it->ReadUInt32(&version_) &&
+      it->ReadUInt64(&number_of_entries_) && it->ReadUInt64(&cache_size_);
+  if (!v6_format_index_read_results)
+    return false;
+  if (version_ >= 7) {
+    uint32_t tmp_reason;
+    if (!it->ReadUInt32(&tmp_reason))
+      return false;
+    reason_ = static_cast<SimpleIndex::IndexWriteToDiskReason>(tmp_reason);
+  }
+  return true;
 }
 
 void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
@@ -236,9 +258,16 @@ void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
 }
 
 bool SimpleIndexFile::IndexMetadata::CheckIndexMetadata() {
-  return number_of_entries_ <= kMaxEntiresInIndex &&
-      magic_number_ == kSimpleIndexMagicNumber &&
-      version_ == kSimpleVersion;
+  if (number_of_entries_ > kMaxEntriesInIndex ||
+      magic_number_ != kSimpleIndexMagicNumber) {
+    return false;
+  }
+
+  static_assert(kSimpleVersion == 7, "index metadata reader out of date");
+  // No |reason_| is saved in the version 6 file format.
+  if (version_ == 6)
+    return reason_ == SimpleIndex::INDEX_WRITE_REASON_MAX;
+  return version_ == 7 && reason_ < SimpleIndex::INDEX_WRITE_REASON_MAX;
 }
 
 SimpleIndexFile::SimpleIndexFile(
@@ -268,12 +297,13 @@ void SimpleIndexFile::LoadIndexEntries(base::Time cache_last_modified,
   worker_pool_->PostTaskAndReply(FROM_HERE, task, callback);
 }
 
-void SimpleIndexFile::WriteToDisk(const SimpleIndex::EntrySet& entry_set,
+void SimpleIndexFile::WriteToDisk(SimpleIndex::IndexWriteToDiskReason reason,
+                                  const SimpleIndex::EntrySet& entry_set,
                                   uint64_t cache_size,
                                   const base::TimeTicks& start,
                                   bool app_on_background,
                                   const base::Closure& callback) {
-  IndexMetadata index_metadata(entry_set.size(), cache_size);
+  IndexMetadata index_metadata(reason, entry_set.size(), cache_size);
   std::unique_ptr<base::Pickle> pickle = Serialize(index_metadata, entry_set);
   base::Closure task =
       base::Bind(&SimpleIndexFile::SyncWriteToDisk,
@@ -303,6 +333,11 @@ void SimpleIndexFile::SyncLoadIndexEntries(
       UmaRecordIndexFileState(INDEX_STATE_CORRUPT, cache_type);
   } else {
     if (cache_last_modified <= last_cache_seen_by_index) {
+      if (out_result->index_write_reason !=
+          SimpleIndex::INDEX_WRITE_REASON_MAX) {
+        UmaRecordIndexWriteReasonAtLoad(out_result->index_write_reason,
+                                        cache_type);
+      }
       base::Time latest_dir_mtime;
       simple_util::GetMTime(cache_directory, &latest_dir_mtime);
       if (LegacyIsIndexFileStale(latest_dir_mtime, index_file_path)) {
@@ -438,6 +473,7 @@ void SimpleIndexFile::Deserialize(const char* data, int data_len,
   DCHECK(out_cache_last_modified);
   *out_cache_last_modified = base::Time::FromInternalValue(cache_last_modified);
 
+  out_result->index_write_reason = index_metadata.reason();
   out_result->did_load = true;
 }
 

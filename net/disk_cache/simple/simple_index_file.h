@@ -36,6 +36,7 @@ struct NET_EXPORT_PRIVATE SimpleIndexLoadResult {
 
   bool did_load;
   SimpleIndex::EntrySet entries;
+  SimpleIndex::IndexWriteToDiskReason index_write_reason;
   SimpleIndex::IndexInitMethod init_method;
   bool flush_required;
 };
@@ -56,21 +57,27 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   class NET_EXPORT_PRIVATE IndexMetadata {
    public:
     IndexMetadata();
-    IndexMetadata(uint64_t number_of_entries, uint64_t cache_size);
+    IndexMetadata(SimpleIndex::IndexWriteToDiskReason reason,
+                  uint64_t number_of_entries,
+                  uint64_t cache_size);
 
-    void Serialize(base::Pickle* pickle) const;
+    virtual void Serialize(base::Pickle* pickle) const;
     bool Deserialize(base::PickleIterator* it);
 
     bool CheckIndexMetadata();
 
+    SimpleIndex::IndexWriteToDiskReason reason() const { return reason_; }
     uint64_t GetNumberOfEntries() { return number_of_entries_; }
 
    private:
     FRIEND_TEST_ALL_PREFIXES(IndexMetadataTest, Basics);
     FRIEND_TEST_ALL_PREFIXES(IndexMetadataTest, Serialize);
+    FRIEND_TEST_ALL_PREFIXES(IndexMetadataTest, ReadV6Format);
+    friend class V6IndexMetadataForTest;
 
     uint64_t magic_number_;
     uint32_t version_;
+    SimpleIndex::IndexWriteToDiskReason reason_;
     uint64_t number_of_entries_;
     uint64_t cache_size_;  // Total cache storage size in bytes.
   };
@@ -88,7 +95,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                                 SimpleIndexLoadResult* out_result);
 
   // Write the specified set of entries to disk.
-  virtual void WriteToDisk(const SimpleIndex::EntrySet& entry_set,
+  virtual void WriteToDisk(SimpleIndex::IndexWriteToDiskReason reason,
+                           const SimpleIndex::EntrySet& entry_set,
                            uint64_t cache_size,
                            const base::TimeTicks& start,
                            bool app_on_background,

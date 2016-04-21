@@ -49,11 +49,15 @@ TEST(IndexMetadataTest, Basics) {
   EXPECT_EQ(0U, index_metadata.GetNumberOfEntries());
   EXPECT_EQ(0U, index_metadata.cache_size_);
 
+  // Without setting a |reason_|, the index metadata isn't valid.
+  index_metadata.reason_ = SimpleIndex::INDEX_WRITE_REASON_SHUTDOWN;
+
   EXPECT_TRUE(index_metadata.CheckIndexMetadata());
 }
 
 TEST(IndexMetadataTest, Serialize) {
-  SimpleIndexFile::IndexMetadata index_metadata(123, 456);
+  SimpleIndexFile::IndexMetadata index_metadata(
+      SimpleIndex::INDEX_WRITE_REASON_SHUTDOWN, 123, 456);
   base::Pickle pickle;
   index_metadata.Serialize(&pickle);
   base::PickleIterator it(pickle);
@@ -62,9 +66,54 @@ TEST(IndexMetadataTest, Serialize) {
 
   EXPECT_EQ(new_index_metadata.magic_number_, index_metadata.magic_number_);
   EXPECT_EQ(new_index_metadata.version_, index_metadata.version_);
+  EXPECT_EQ(new_index_metadata.reason_, index_metadata.reason_);
   EXPECT_EQ(new_index_metadata.GetNumberOfEntries(),
             index_metadata.GetNumberOfEntries());
   EXPECT_EQ(new_index_metadata.cache_size_, index_metadata.cache_size_);
+
+  EXPECT_TRUE(new_index_metadata.CheckIndexMetadata());
+}
+
+// This derived index metadata class allows us to serialize the older V6 format
+// of the index metadata, thus allowing us to test deserializing the old format.
+class V6IndexMetadataForTest : public SimpleIndexFile::IndexMetadata {
+ public:
+  // Do not default to |SimpleIndex::INDEX_WRITE_REASON_MAX|, because we want to
+  // ensure we don't serialize that value and then deserialize it and have a
+  // false positive result.
+  V6IndexMetadataForTest(uint64_t number_of_entries, uint64_t cache_size)
+      : SimpleIndexFile::IndexMetadata(SimpleIndex::INDEX_WRITE_REASON_SHUTDOWN,
+                                       number_of_entries,
+                                       cache_size) {
+    version_ = 6;
+  }
+
+  // Copied and pasted from the V6 implementation of
+  // |SimpleIndexFile::IndexMetadata()| (removing DCHECKs).
+  void Serialize(base::Pickle* pickle) const override {
+    pickle->WriteUInt64(magic_number_);
+    pickle->WriteUInt32(version_);
+    pickle->WriteUInt64(number_of_entries_);
+    pickle->WriteUInt64(cache_size_);
+  }
+};
+
+TEST(IndexMetadataTest, ReadV6Format) {
+  V6IndexMetadataForTest v6_index_metadata(123, 456);
+  EXPECT_EQ(6U, v6_index_metadata.version_);
+  base::Pickle pickle;
+  v6_index_metadata.Serialize(&pickle);
+  base::PickleIterator it(pickle);
+  SimpleIndexFile::IndexMetadata new_index_metadata;
+  new_index_metadata.Deserialize(&it);
+
+  EXPECT_EQ(new_index_metadata.magic_number_, v6_index_metadata.magic_number_);
+  EXPECT_EQ(new_index_metadata.version_, v6_index_metadata.version_);
+
+  EXPECT_EQ(new_index_metadata.reason_, SimpleIndex::INDEX_WRITE_REASON_MAX);
+  EXPECT_EQ(new_index_metadata.GetNumberOfEntries(),
+            v6_index_metadata.GetNumberOfEntries());
+  EXPECT_EQ(new_index_metadata.cache_size_, v6_index_metadata.cache_size_);
 
   EXPECT_TRUE(new_index_metadata.CheckIndexMetadata());
 }
@@ -115,6 +164,7 @@ TEST_F(SimpleIndexFileTest, Serialize) {
   EntryMetadata metadata_entries[kNumHashes];
 
   SimpleIndexFile::IndexMetadata index_metadata(
+      SimpleIndex::INDEX_WRITE_REASON_SHUTDOWN,
       static_cast<uint64_t>(kNumHashes), 456);
   for (size_t i = 0; i < kNumHashes; ++i) {
     uint64_t hash = kHashes[i];
@@ -196,8 +246,9 @@ TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
   net::TestClosure closure;
   {
     WrappedSimpleIndexFile simple_index_file(cache_dir.path());
-    simple_index_file.WriteToDisk(entries, kCacheSize, base::TimeTicks(),
-                                  false, closure.closure());
+    simple_index_file.WriteToDisk(SimpleIndex::INDEX_WRITE_REASON_SHUTDOWN,
+                                  entries, kCacheSize, base::TimeTicks(), false,
+                                  closure.closure());
     closure.WaitForResult();
     EXPECT_TRUE(base::PathExists(simple_index_file.GetIndexFilePath()));
   }
@@ -336,7 +387,8 @@ TEST_F(SimpleIndexFileTest, OverwritesStaleTempFile) {
   SimpleIndex::EntrySet entries;
   SimpleIndex::InsertInEntrySet(11, EntryMetadata(Time(), 11), &entries);
   net::TestClosure closure;
-  simple_index_file.WriteToDisk(entries, 120U, base::TimeTicks(), false,
+  simple_index_file.WriteToDisk(SimpleIndex::INDEX_WRITE_REASON_SHUTDOWN,
+                                entries, 120U, base::TimeTicks(), false,
                                 closure.closure());
   closure.WaitForResult();
 
