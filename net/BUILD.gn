@@ -498,10 +498,9 @@ if (!is_ios) {
 }
 
 bundle_data("test_support_bundle_data") {
+  visibility = [ ":test_support" ]
   testonly = true
-  sources = [
-    "data/ssl/certificates",
-  ]
+  sources = gypi_values.net_test_support_data_sources
   outputs = [
     "{{bundle_resources_dir}}/" +
         "{{source_root_relative_dir}}/{{source_file_part}}",
@@ -613,10 +612,6 @@ source_set("test_support") {
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
-  deps = [
-    ":test_support_bundle_data",
-  ]
-
   public_deps = [
     "//base",
     "//base/test:test_support",
@@ -626,6 +621,10 @@ source_set("test_support") {
     "//testing/gmock",
     "//testing/gtest",
     "//url",
+  ]
+
+  deps = [
+    ":test_support_bundle_data",
   ]
 
   if (!is_ios) {
@@ -1318,18 +1317,7 @@ if (!is_ios) {
 
 bundle_data("net_unittests_bundle_data") {
   testonly = true
-  sources = [
-    "data/certificate_policies_unittest",
-    "data/name_constraints_unittest",
-    "data/parse_certificate_unittest",
-    "data/parse_ocsp_unittest",
-    "data/test.html",
-    "data/url_request_unittest",
-    "data/verify_certificate_chain_unittest",
-    "data/verify_name_match_unittest/names",
-    "third_party/nist-pkits/certs",
-    "third_party/nist-pkits/crls",
-  ]
+  sources = gypi_values.net_unittests_data_sources
   outputs = [
     "{{bundle_resources_dir}}/" +
         "{{source_root_relative_dir}}/{{source_file_part}}",
