@@ -177,7 +177,7 @@ void SerializedScriptValue::transferArrayBuffers(v8::Isolate* isolate, const Arr
 
             DOMArrayBufferBase* toTransfer = arrayBuffers[i];
             if (!isNeuterable)
-                toTransfer = DOMArrayBuffer::create(arrayBuffers[i]->buffer());
+                toTransfer = DOMArrayBuffer::create(arrayBuffers[i]->buffer()->data(), arrayBuffers[i]->buffer()->byteLength());
             bool result = toTransfer->transfer(contents->at(i));
             if (!result) {
                 exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " could not be transferred.");
