@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/layout/LayoutBlock.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/PaintControllerPaintTest.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -316,6 +318,35 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat)
     EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseFloat());
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseFloat());
     paint();
+    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), floatDiv, DisplayItem::BoxDecorationBackground));
+}
+
+TEST_P(PaintLayerPainterTest, PaintPhaseFloatUnderInlineLayer)
+{
+    setBodyInnerHTML(
+        "<div id='self-painting-layer' style='position: absolute'>"
+        "  <div id='non-self-painting-layer' style='overflow: hidden'>"
+        "    <span id='span' style='position: relative'>"
+        "      <div id='float' style='width: 10px; height: 10px; background-color: blue; float: left'></div>"
+        "    </span>"
+        "  </div>"
+        "</div>");
+    document().view()->updateAllLifecyclePhases();
+
+    LayoutObject& floatDiv = *document().getElementById("float")->layoutObject();
+    LayoutInline& span = *toLayoutInline(document().getElementById("span")->layoutObject());
+    PaintLayer& spanLayer = *span.layer();
+    ASSERT_TRUE(&spanLayer == floatDiv.enclosingLayer());
+    ASSERT_FALSE(spanLayer.needsPaintPhaseFloat());
+    LayoutBlock& selfPaintingLayerObject = *toLayoutBlock(document().getElementById("self-painting-layer")->layoutObject());
+    PaintLayer& selfPaintingLayer = *selfPaintingLayerObject.layer();
+    ASSERT_TRUE(selfPaintingLayer.isSelfPaintingLayer());
+    PaintLayer& nonSelfPaintingLayer = *toLayoutBoxModelObject(document().getElementById("non-self-painting-layer")->layoutObject())->layer();
+    ASSERT_FALSE(nonSelfPaintingLayer.isSelfPaintingLayer());
+
+    EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseFloat());
+    EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseFloat());
+    EXPECT_FALSE(spanLayer.needsPaintPhaseFloat());
     EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), floatDiv, DisplayItem::BoxDecorationBackground));
 }
 

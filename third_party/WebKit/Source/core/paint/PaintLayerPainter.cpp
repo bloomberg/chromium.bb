@@ -727,9 +727,8 @@ void PaintLayerPainter::paintForegroundForFragments(const PaintLayerFragments& l
     } else {
         if (m_paintLayer.needsPaintPhaseDescendantBlockBackgrounds())
             paintForegroundForFragmentsWithPhase(PaintPhaseDescendantBlockBackgroundsOnly, layerFragments, context, localPaintingInfo, paintFlags, clipState);
-        // TODO(wangxianzhu): Enable float empty-phase optimization after fixing crbug.com/603910.
-        // if (m_paintLayer.needsPaintPhaseFloat())
-        paintForegroundForFragmentsWithPhase(PaintPhaseFloat, layerFragments, context, localPaintingInfo, paintFlags, clipState);
+        if (m_paintLayer.needsPaintPhaseFloat())
+            paintForegroundForFragmentsWithPhase(PaintPhaseFloat, layerFragments, context, localPaintingInfo, paintFlags, clipState);
         paintForegroundForFragmentsWithPhase(PaintPhaseForeground, layerFragments, context, localPaintingInfo, paintFlags, clipState);
         if (m_paintLayer.needsPaintPhaseDescendantOutlines())
             paintForegroundForFragmentsWithPhase(PaintPhaseDescendantOutlinesOnly, layerFragments, context, localPaintingInfo, paintFlags, clipState);

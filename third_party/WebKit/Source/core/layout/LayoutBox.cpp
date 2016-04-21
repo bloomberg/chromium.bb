@@ -1479,9 +1479,6 @@ bool LayoutBox::intersectsVisibleViewport()
 
 PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    if (isFloating())
-        paintInvalidationState.enclosingSelfPaintingLayer(*this).setNeedsPaintPhaseFloat();
-
     if (hasBoxDecorationBackground()
         // We also paint overflow controls in background phase.
         || (hasOverflowClip() && getScrollableArea()->hasOverflowControls())) {

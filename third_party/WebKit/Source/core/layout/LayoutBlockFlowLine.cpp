@@ -2099,6 +2099,9 @@ void LayoutBlockFlow::invalidateDisplayItemClientsOfFirstLine()
 
 PaintInvalidationReason LayoutBlockFlow::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
+    if (containsFloats())
+        paintInvalidationState.enclosingSelfPaintingLayer(*this).setNeedsPaintPhaseFloat();
+
     PaintInvalidationReason reason = LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState);
     if (reason == PaintInvalidationNone)
         return reason;
