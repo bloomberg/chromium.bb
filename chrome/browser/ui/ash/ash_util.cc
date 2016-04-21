@@ -59,6 +59,10 @@ bool IsNativeWindowInAsh(gfx::NativeWindow native_window) {
 }
 
 bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator) {
+  // When running in mash the browser doesn't handle ash accelerators.
+  if (chrome::IsRunningInMash())
+    return false;
+
   ash::AcceleratorController* controller =
       ash::Shell::GetInstance()->accelerator_controller();
   return controller->IsDeprecated(accelerator);
