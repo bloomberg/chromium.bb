@@ -4,12 +4,17 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS (new Blob()) instanceof window.Blob is true
+PASS (new Blob(undefined)) instanceof window.Blob is true
 PASS (new Blob([])) instanceof window.Blob is true
 PASS (new Blob(['hello'])) instanceof window.Blob is true
 PASS (new Blob(['hello'], {})) instanceof window.Blob is true
 PASS (new Blob(['hello'], {type:'text/html'})) instanceof window.Blob is true
 PASS (new Blob(['hello'], {type:'text/html', endings:'native'})) instanceof window.Blob is true
 PASS (new Blob(['hello'], {type:'text/html', endings:'transparent'})) instanceof window.Blob is true
+PASS (new Blob()).size is 0
+PASS (new Blob(undefined)).size is 0
+PASS (new Blob()).type is ""
+PASS (new Blob(undefined)).type is ""
 PASS new Blob('hello') threw exception TypeError: Failed to construct 'Blob': The 1st argument is neither an array, nor does it have indexed properties..
 PASS new Blob(0) threw exception TypeError: Failed to construct 'Blob': The 1st argument is neither an array, nor does it have indexed properties..
 PASS new Blob(null) threw exception TypeError: Failed to construct 'Blob': The 1st argument is neither an array, nor does it have indexed properties..

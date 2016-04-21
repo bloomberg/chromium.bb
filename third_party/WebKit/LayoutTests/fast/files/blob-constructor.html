@@ -7,12 +7,19 @@ var jsTestIsAsync = true;
 
 // Test the different ways you can construct a Blob.
 shouldBeTrue("(new Blob()) instanceof window.Blob");
+shouldBeTrue("(new Blob(undefined)) instanceof window.Blob");
 shouldBeTrue("(new Blob([])) instanceof window.Blob");
 shouldBeTrue("(new Blob(['hello'])) instanceof window.Blob");
 shouldBeTrue("(new Blob(['hello'], {})) instanceof window.Blob");
 shouldBeTrue("(new Blob(['hello'], {type:'text/html'})) instanceof window.Blob");
 shouldBeTrue("(new Blob(['hello'], {type:'text/html', endings:'native'})) instanceof window.Blob");
 shouldBeTrue("(new Blob(['hello'], {type:'text/html', endings:'transparent'})) instanceof window.Blob");
+
+// Test default sizes/types.
+shouldBe("(new Blob()).size", "0");
+shouldBe("(new Blob(undefined)).size", "0");
+shouldBeEqualToString("(new Blob()).type", "");
+shouldBeEqualToString("(new Blob(undefined)).type", "");
 
 // Test invalid blob parts.
 shouldThrow("new Blob('hello')", '"TypeError: Failed to construct \'Blob\': The 1st argument is neither an array, nor does it have indexed properties."');

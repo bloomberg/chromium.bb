@@ -31,8 +31,7 @@
 // https://w3c.github.io/FileAPI/#blob
 
 [
-    Constructor,
-    Constructor(sequence<(ArrayBuffer or ArrayBufferView or Blob or DOMString)> blobParts, optional BlobPropertyBag options),
+    Constructor(optional sequence<(ArrayBuffer or ArrayBufferView or Blob or DOMString)> blobParts, optional BlobPropertyBag options),
     RaisesException=Constructor,
     Exposed=(Window,Worker),
 ] interface Blob {
