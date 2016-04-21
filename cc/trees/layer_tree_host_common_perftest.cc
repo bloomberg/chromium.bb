@@ -178,12 +178,10 @@ class BspTreePerfTest : public CalcDrawPropsTest {
   }
 
   void BuildLayerImplList(LayerImpl* layer, LayerImplList* list) {
-    if (layer->Is3dSorted() && !layer->bounds().IsEmpty()) {
-      list->push_back(layer);
-    }
-
-    for (size_t i = 0; i < layer->children().size(); i++) {
-      BuildLayerImplList(layer->children()[i], list);
+    for (auto* layer_impl : *layer->layer_tree_impl()) {
+      if (layer_impl->Is3dSorted() && !layer_impl->bounds().IsEmpty()) {
+        list->push_back(layer_impl);
+      }
     }
   }
 

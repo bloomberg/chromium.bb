@@ -478,10 +478,10 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     Renderer* renderer = host_impl->renderer();
 
-    LayerImpl* root = host_impl->active_tree()->root_layer();
-    LayerImpl* grand_parent = root->children()[0];
-    LayerImpl* parent = grand_parent->children()[0];
-    LayerImpl* copy_layer = parent->children()[0];
+    LayerImpl* parent =
+        host_impl->active_tree()->LayerById(parent_layer_->id());
+    LayerImpl* copy_layer =
+        host_impl->active_tree()->LayerById(copy_layer_->id());
 
     // |parent| owns a surface, but it was hidden and not part of the copy
     // request so it should not allocate any resource.
@@ -654,8 +654,7 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     if (impl->active_tree()->source_frame_number() == 0) {
-      LayerImpl* root = impl->active_tree()->root_layer();
-      EXPECT_TRUE(root->children()[0]->HasCopyRequest());
+      EXPECT_TRUE(impl->active_tree()->LayerById(copy_layer_->id()));
       saw_copy_request_ = true;
     }
   }
@@ -1193,7 +1192,7 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
     LayerImpl* root = host_impl->active_tree()->root_layer();
-    LayerImpl* child = root->children()[0];
+    LayerImpl* child = host_impl->active_tree()->LayerById(child_->id());
 
     bool saw_root = false;
     bool saw_child = false;

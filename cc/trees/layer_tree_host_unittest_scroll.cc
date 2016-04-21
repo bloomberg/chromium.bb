@@ -85,6 +85,10 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
         num_scrolls_(0) {}
 
   void BeginTest() override {
+    outer_viewport_container_layer_id_ = layer_tree_host()
+                                             ->outer_viewport_scroll_layer()
+                                             ->scroll_clip_layer()
+                                             ->id();
     layer_tree_host()->outer_viewport_scroll_layer()->SetScrollOffset(
         initial_scroll_);
     PostSetNeedsCommitToMainThread();
@@ -109,7 +113,7 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
     LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
     EXPECT_VECTOR_EQ(gfx::Vector2d(), ScrollDelta(scroll_layer));
 
-    scroll_layer->SetScrollClipLayer(root->children()[0]->id());
+    scroll_layer->SetScrollClipLayer(outer_viewport_container_layer_id_);
     scroll_layer->SetBounds(
         gfx::Size(root->bounds().width() + 100, root->bounds().height() + 100));
     scroll_layer->ScrollBy(scroll_amount_);
@@ -147,6 +151,7 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
   gfx::ScrollOffset second_scroll_;
   gfx::Vector2dF scroll_amount_;
   int num_scrolls_;
+  int outer_viewport_container_layer_id_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollSimple);
@@ -606,7 +611,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     FakePictureLayerImpl* root_scroll_layer_impl =
         static_cast<FakePictureLayerImpl*>(impl->OuterViewportScrollLayer());
     FakePictureLayerImpl* child_layer_impl = static_cast<FakePictureLayerImpl*>(
-        root_scroll_layer_impl->children()[0]);
+        root_scroll_layer_impl->layer_tree_impl()->LayerById(
+            child_layer_->id()));
 
     LayerImpl* expected_scroll_layer_impl = NULL;
     LayerImpl* expected_no_scroll_layer_impl = NULL;
@@ -1075,12 +1081,18 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
  public:
   LayerTreeHostScrollTestScrollZeroMaxScrollOffset() {}
 
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+  void BeginTest() override {
+    outer_viewport_container_layer_id_ = layer_tree_host()
+                                             ->outer_viewport_scroll_layer()
+                                             ->scroll_clip_layer()
+                                             ->id();
+    PostSetNeedsCommitToMainThread();
+  }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer();
     LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
-    scroll_layer->SetScrollClipLayer(root->children()[0]->id());
+    scroll_layer->SetScrollClipLayer(outer_viewport_container_layer_id_);
 
     // Set max_scroll_offset = (100, 100).
     scroll_layer->SetBounds(
@@ -1129,6 +1141,9 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
   }
 
   void AfterTest() override {}
+
+ private:
+  int outer_viewport_container_layer_id_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
