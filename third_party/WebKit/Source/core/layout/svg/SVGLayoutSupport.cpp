@@ -259,25 +259,27 @@ bool SVGLayoutSupport::layoutSizeOfNearestViewportChanged(const LayoutObject* st
     return false;
 }
 
-bool SVGLayoutSupport::transformToRootChanged(const LayoutObject* ancestor)
+bool SVGLayoutSupport::screenScaleFactorChanged(const LayoutObject* ancestor)
 {
     while (ancestor && !ancestor->isSVGRoot()) {
         if (ancestor->isSVGTransformableContainer())
-            return toLayoutSVGTransformableContainer(ancestor)->didTransformToRootUpdate();
+            return toLayoutSVGTransformableContainer(ancestor)->didScreenScaleFactorChange();
         if (ancestor->isSVGViewportContainer())
-            return toLayoutSVGViewportContainer(ancestor)->didTransformToRootUpdate();
+            return toLayoutSVGViewportContainer(ancestor)->didScreenScaleFactorChange();
         ancestor = ancestor->parent();
     }
     return false;
 }
 
-void SVGLayoutSupport::layoutChildren(LayoutObject* firstChild, bool forceLayout, bool transformChanged, bool layoutSizeChanged)
+void SVGLayoutSupport::layoutChildren(
+    LayoutObject* firstChild, bool forceLayout, bool screenScalingFactorChanged, bool layoutSizeChanged)
 {
     for (LayoutObject* child = firstChild; child; child = child->nextSibling()) {
         bool forceChildLayout = forceLayout;
 
-        if (transformChanged) {
-            // If the transform changed we need to update the text metrics (note: this also happens for layoutSizeChanged=true).
+        if (screenScalingFactorChanged) {
+            // If the screen scaling factor changed we need to update the text
+            // metrics (note: this also happens for layoutSizeChanged=true).
             if (child->isSVGText())
                 toLayoutSVGText(child)->setNeedsTextMetricsUpdate();
             forceChildLayout = true;

@@ -223,8 +223,8 @@ void LayoutSVGText::layout()
         m_needsPositioningValuesUpdate = false;
         updateCachedBoundariesInParents = true;
     } else if (m_needsTextMetricsUpdate || SVGLayoutSupport::findTreeRootObject(this)->isLayoutSizeChanged()) {
-        // If the root layout size changed (eg. window size changes) or the transform to the root
-        // context has changed then recompute the on-screen font size.
+        // If the root layout size changed (eg. window size changes), or the screen scale factor has
+        // changed, then recompute the on-screen font size.
         updateFontAndMetrics(*this);
 
         ASSERT(!m_needsReordering);
