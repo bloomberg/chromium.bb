@@ -857,6 +857,8 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
   EXPECT_EQ(GURL("about:blank"), contents->GetVisibleURL());
 }
 
+// Flaky on win_chromium_x64_rel_ng: http://crbug605357
+#if !defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
     ConfirmationRequiredForNonsecureSignin) {
   FakeGaia fake_gaia;
@@ -885,3 +887,4 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
   run_loop.Run();
   base::MessageLoop::current()->RunUntilIdle();
 }
+#endif  // OS_WIN
