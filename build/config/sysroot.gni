@@ -14,7 +14,8 @@ declare_args() {
   use_sysroot = true
 }
 
-if (current_toolchain == default_toolchain && target_sysroot != "") {
+if (current_os == target_os && current_cpu == target_cpu &&
+    target_sysroot != "") {
   sysroot = target_sysroot
 } else if (is_android) {
   import("//build/config/android/config.gni")
