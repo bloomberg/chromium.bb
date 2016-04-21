@@ -37,23 +37,6 @@ cr.define('downloads', function() {
         value: '',
       },
 
-      i18n_: {
-        readOnly: true,
-        type: Object,
-        value: function() {
-          return {
-            cancel: loadTimeData.getString('controlCancel'),
-            discard: loadTimeData.getString('dangerDiscard'),
-            pause: loadTimeData.getString('controlPause'),
-            remove: loadTimeData.getString('controlRemoveFromList'),
-            resume: loadTimeData.getString('controlResume'),
-            restore: loadTimeData.getString('dangerRestore'),
-            retry: loadTimeData.getString('controlRetry'),
-            save: loadTimeData.getString('dangerSave'),
-          };
-        },
-      },
-
       isActive_: {
         computed: 'computeIsActive_(' +
             'data.state, data.file_externally_removed)',

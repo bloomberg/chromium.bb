@@ -9,30 +9,33 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu-button/paper-menu-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
-<link rel="import" href="chrome://downloads/i18n_setup.html">
 
 <dom-module id="downloads-toolbar">
   <template>
     <div id="title">
-      <h1 i18n-content="title"></h1>
+      <h1>$i18n{title}</h1>
     </div>
     <div id="actions">
-      <paper-button class="clear-all" i18n-content="clearAll"
-          on-tap="onClearAllTap_"></paper-button>
-      <paper-button i18n-content="openDownloadsFolder"
-          on-tap="onOpenDownloadsFolderTap_"></paper-button>
+      <paper-button class="clear-all" on-tap="onClearAllTap_">
+        $i18n{clearAll}
+      </paper-button>
+      <paper-button on-tap="onOpenDownloadsFolderTap_">
+        $i18n{openDownloadsFolder}
+      </paper-button>
     </div>
     <div id="search">
-      <cr-search-field id="search-input"
-          i18n-values="label:search;clear-label:clearSearch"></cr-search-field>
+      <cr-search-field id="search-input" label="$i18n{search}"
+          clear-label="$i18n{clearSearch}"></cr-search-field>
       <paper-menu-button id="more" horizontal-align="[[overflowAlign_]]">
-        <paper-icon-button icon="more-vert" i18n-values="title:moreActions"
+        <paper-icon-button icon="more-vert" title="$i18n{moreActions}"
              class="dropdown-trigger"></paper-icon-button>
         <paper-menu class="dropdown-content">
-          <paper-item class="clear-all" i18n-content="clearAll"
-              on-tap="onClearAllTap_"></paper-item>
-          <paper-item i18n-content="openDownloadsFolder"
-              on-tap="onOpenDownloadsFolderTap_"></paper-item>
+          <paper-item class="clear-all" on-tap="onClearAllTap_">
+            $i18n{clearAll}
+          </paper-item>
+          <paper-item on-tap="onOpenDownloadsFolderTap_">
+            $i18n{openDownloadsFolder}
+          </paper-item>
         </paper-menu>
       </paper-menu-button>
     </div>

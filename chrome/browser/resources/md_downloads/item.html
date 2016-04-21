@@ -60,23 +60,27 @@
         </template>
 
         <div id="safe" class="controls" hidden="[[isDangerous_]]">
-          <a is="action-link" id="show" i18n-content="controlShowInFolder"
-              on-tap="onShowTap_" hidden="[[!completelyOnDisk_]]"></a>
+          <a is="action-link" id="show" on-tap="onShowTap_"
+              hidden="[[!completelyOnDisk_]]">$i18n{controlShowInFolder}</a>
           <template is="dom-if" if="[[data.retry]]">
-            <paper-button id="retry"
-                on-tap="onRetryTap_">[[i18n_.retry]]</paper-button>
+            <paper-button id="retry" on-tap="onRetryTap_">
+              $i18n{controlRetry}
+            </paper-button>
           </template>
           <template is="dom-if" if="[[isInProgress_]]">
-            <paper-button id="pause"
-                on-tap="onPauseTap_">[[i18n_.pause]]</paper-button>
+            <paper-button id="pause" on-tap="onPauseTap_">
+              $i18n{controlPause}
+            </paper-button>
           </template>
           <template is="dom-if" if="[[data.resume]]">
-            <paper-button id="resume"
-                on-tap="onResumeTap_">[[i18n_.resume]]</paper-button>
+            <paper-button id="resume" on-tap="onResumeTap_">
+              $i18n{controlResume}
+            </paper-button>
           </template>
           <template is="dom-if" if="[[showCancel_]]">
-            <paper-button id="cancel"
-                on-tap="onCancelTap_">[[i18n_.cancel]]</paper-button>
+            <paper-button id="cancel" on-tap="onCancelTap_">
+              $i18n{controlCancel}
+            </paper-button>
           </template>
           <span id="controlled-by"><!-- Text populated dynamically. --></span>
         </div>
@@ -86,30 +90,30 @@
             <!-- Dangerous file types (e.g. .exe, .jar). -->
             <template is="dom-if" if="[[!isMalware_]]">
               <paper-button id="discard" on-tap="onDiscardDangerousTap_"
-                  class="discard">[[i18n_.discard]]</paper-button>
+                  class="discard">$i18n{dangerDiscard}</paper-button>
               <paper-button id="save" on-tap="onSaveDangerousTap_"
-                  class="keep">[[i18n_.save]]</paper-button>
+                  class="keep">$i18n{dangerSave}</paper-button>
             </template>
 
             <!-- Things that safe browsing has determined to be dangerous. -->
             <template is="dom-if" if="[[isMalware_]]">
               <paper-button id="danger-remove" on-tap="onDiscardDangerousTap_"
-                  class="discard">[[i18n_.remove]]</paper-button>
+                  class="discard">$i18n{controlRemoveFromList}</paper-button>
               <paper-button id="restore" on-tap="onSaveDangerousTap_"
-                  class="keep">[[i18n_.restore]]</paper-button>
+                  class="keep">$i18n{dangerRestore}</paper-button>
             </template>
           </div>
         </template>
       </div>
 
       <div id="remove-wrapper" class="icon-wrapper">
-        <inky-text-button id="remove" i18n-values="title:controlRemoveFromList"
+        <inky-text-button id="remove" title="$i18n{controlRemoveFromList}"
             style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]"
             on-tap="onRemoveTap_">&#x2715;</inky-text-button>
       </div>
 
-      <div id="incognito" i18n-values="title:inIncognito"
-          hidden="[[!data.otr]]"></div>
+      <div id="incognito" title="$i18n{inIncognito}" hidden="[[!data.otr]]">
+      </div>
     </div>
 
   </template>

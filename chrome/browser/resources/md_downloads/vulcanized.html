@@ -1,4 +1,4 @@
-<!DOCTYPE html><html i18n-values="dir:textdirection;lang:language"><head><!--
+<!DOCTYPE html><html dir="$i18n{textdirection}" lang="$i18n{language}"><head><!--
 @license
 Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
@@ -16,7 +16,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
   <meta charset="utf-8">
-  <title i18n-content="title"></title>
+  <title>$i18n{title}</title>
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
   <style>
 :root {
@@ -1787,18 +1787,26 @@ paper-button {
         </template>
 
         <div id="safe" class="controls" hidden="[[isDangerous_]]">
-          <a is="action-link" id="show" i18n-content="controlShowInFolder" on-tap="onShowTap_" hidden="[[!completelyOnDisk_]]"></a>
+          <a is="action-link" id="show" on-tap="onShowTap_" hidden="[[!completelyOnDisk_]]">$i18n{controlShowInFolder}</a>
           <template is="dom-if" if="[[data.retry]]">
-            <paper-button id="retry" on-tap="onRetryTap_">[[i18n_.retry]]</paper-button>
+            <paper-button id="retry" on-tap="onRetryTap_">
+              $i18n{controlRetry}
+            </paper-button>
           </template>
           <template is="dom-if" if="[[isInProgress_]]">
-            <paper-button id="pause" on-tap="onPauseTap_">[[i18n_.pause]]</paper-button>
+            <paper-button id="pause" on-tap="onPauseTap_">
+              $i18n{controlPause}
+            </paper-button>
           </template>
           <template is="dom-if" if="[[data.resume]]">
-            <paper-button id="resume" on-tap="onResumeTap_">[[i18n_.resume]]</paper-button>
+            <paper-button id="resume" on-tap="onResumeTap_">
+              $i18n{controlResume}
+            </paper-button>
           </template>
           <template is="dom-if" if="[[showCancel_]]">
-            <paper-button id="cancel" on-tap="onCancelTap_">[[i18n_.cancel]]</paper-button>
+            <paper-button id="cancel" on-tap="onCancelTap_">
+              $i18n{controlCancel}
+            </paper-button>
           </template>
           <span id="controlled-by"></span>
         </div>
@@ -1807,24 +1815,25 @@ paper-button {
           <div id="dangerous" class="controls">
             
             <template is="dom-if" if="[[!isMalware_]]">
-              <paper-button id="discard" on-tap="onDiscardDangerousTap_" class="discard">[[i18n_.discard]]</paper-button>
-              <paper-button id="save" on-tap="onSaveDangerousTap_" class="keep">[[i18n_.save]]</paper-button>
+              <paper-button id="discard" on-tap="onDiscardDangerousTap_" class="discard">$i18n{dangerDiscard}</paper-button>
+              <paper-button id="save" on-tap="onSaveDangerousTap_" class="keep">$i18n{dangerSave}</paper-button>
             </template>
 
             
             <template is="dom-if" if="[[isMalware_]]">
-              <paper-button id="danger-remove" on-tap="onDiscardDangerousTap_" class="discard">[[i18n_.remove]]</paper-button>
-              <paper-button id="restore" on-tap="onSaveDangerousTap_" class="keep">[[i18n_.restore]]</paper-button>
+              <paper-button id="danger-remove" on-tap="onDiscardDangerousTap_" class="discard">$i18n{controlRemoveFromList}</paper-button>
+              <paper-button id="restore" on-tap="onSaveDangerousTap_" class="keep">$i18n{dangerRestore}</paper-button>
             </template>
           </div>
         </template>
       </div>
 
       <div id="remove-wrapper" class="icon-wrapper">
-        <inky-text-button id="remove" i18n-values="title:controlRemoveFromList" style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]" on-tap="onRemoveTap_">✕</inky-text-button>
+        <inky-text-button id="remove" title="$i18n{controlRemoveFromList}" style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]" on-tap="onRemoveTap_">✕</inky-text-button>
       </div>
 
-      <div id="incognito" i18n-values="title:inIncognito" hidden="[[!data.otr]]"></div>
+      <div id="incognito" title="$i18n{inIncognito}" hidden="[[!data.otr]]">
+      </div>
     </div>
 
   </template>
@@ -2849,19 +2858,27 @@ paper-button {
 
 </style>
     <div id="title">
-      <h1 i18n-content="title"></h1>
+      <h1>$i18n{title}</h1>
     </div>
     <div id="actions">
-      <paper-button class="clear-all" i18n-content="clearAll" on-tap="onClearAllTap_"></paper-button>
-      <paper-button i18n-content="openDownloadsFolder" on-tap="onOpenDownloadsFolderTap_"></paper-button>
+      <paper-button class="clear-all" on-tap="onClearAllTap_">
+        $i18n{clearAll}
+      </paper-button>
+      <paper-button on-tap="onOpenDownloadsFolderTap_">
+        $i18n{openDownloadsFolder}
+      </paper-button>
     </div>
     <div id="search">
-      <cr-search-field id="search-input" i18n-values="label:search;clear-label:clearSearch"></cr-search-field>
+      <cr-search-field id="search-input" label="$i18n{search}" clear-label="$i18n{clearSearch}"></cr-search-field>
       <paper-menu-button id="more" horizontal-align="[[overflowAlign_]]">
-        <paper-icon-button icon="more-vert" i18n-values="title:moreActions" class="dropdown-trigger"></paper-icon-button>
+        <paper-icon-button icon="more-vert" title="$i18n{moreActions}" class="dropdown-trigger"></paper-icon-button>
         <paper-menu class="dropdown-content">
-          <paper-item class="clear-all" i18n-content="clearAll" on-tap="onClearAllTap_"></paper-item>
-          <paper-item i18n-content="openDownloadsFolder" on-tap="onOpenDownloadsFolderTap_"></paper-item>
+          <paper-item class="clear-all" on-tap="onClearAllTap_">
+            $i18n{clearAll}
+          </paper-item>
+          <paper-item on-tap="onOpenDownloadsFolderTap_">
+            $i18n{openDownloadsFolder}
+          </paper-item>
         </paper-menu>
       </paper-menu-button>
     </div>
@@ -2979,5 +2996,4 @@ paper-button {
   <command id="find-command" shortcut="Ctrl-U+0046"></command>
 </if>
   <link rel="import" href="chrome://resources/html/polymer.html">
-  
   <script src="crisper.js"></script></body></html>
