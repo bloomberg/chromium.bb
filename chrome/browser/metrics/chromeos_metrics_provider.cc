@@ -145,9 +145,13 @@ ChromeOSMetricsProvider::GetEnrollmentStatus() {
 void ChromeOSMetricsProvider::Init() {
   perf_provider_.Init();
 
+#if defined(ARCH_CPU_X86_64)
+  // Currently, the runtime memory leak detector is only supported on x86_64
+  // systems.
   if (base::FeatureList::IsEnabled(features::kRuntimeMemoryLeakDetector)) {
     leak_detector_controller_.reset(new metrics::LeakDetectorController);
   }
+#endif
 }
 
 void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {
