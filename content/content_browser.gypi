@@ -1725,8 +1725,6 @@
     'android_in_process_browser_sources': [
       'browser/android/in_process/synchronous_compositor_renderer_statics.cc',
       'browser/android/in_process/synchronous_compositor_renderer_statics.h',
-      'browser/android/synchronous_compositor_base.cc',
-      'browser/android/synchronous_compositor_base.h',
       'browser/android/synchronous_compositor_host.cc',
       'browser/android/synchronous_compositor_host.h',
     ],

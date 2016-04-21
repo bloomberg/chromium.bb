@@ -40,7 +40,7 @@
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/overscroll_controller_android.h"
 #include "content/browser/android/popup_touch_handle_drawable.h"
-#include "content/browser/android/synchronous_compositor_base.h"
+#include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -1135,7 +1135,7 @@ void RenderWidgetHostViewAndroid::RetainFrame(
       new LastFrameInfo(output_surface_id, std::move(frame)));
 }
 
-SynchronousCompositorBase*
+SynchronousCompositorHost*
 RenderWidgetHostViewAndroid::GetSynchronousCompositor() {
   return sync_compositor_.get();
 }
@@ -1783,7 +1783,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   }
 
   if (!sync_compositor_) {
-    sync_compositor_ = SynchronousCompositorBase::Create(
+    sync_compositor_ = SynchronousCompositorHost::Create(
         this, content_view_core_->GetWebContents());
   }
   if (sync_compositor_)
