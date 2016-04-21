@@ -168,7 +168,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Returns true if there is an existing session to |server_id| which can be
   // used for request to |origin_host|.
   bool CanUseExistingSession(const QuicServerId& server_id,
-                             StringPiece origin_host);
+                             base::StringPiece origin_host);
 
   // Creates a new QuicHttpStream to |host_port_pair| which will be
   // owned by |request|.

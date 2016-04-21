@@ -18,6 +18,7 @@
 #include "net/quic/quic_utils.h"
 #include "net/quic/reliable_quic_stream.h"
 
+using base::StringPiece;
 using std::min;
 using std::numeric_limits;
 using std::string;

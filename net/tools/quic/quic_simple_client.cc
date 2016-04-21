@@ -89,7 +89,7 @@ bool QuicSimpleClient::Initialize() {
 }
 
 QuicSimpleClient::QuicDataToResend::QuicDataToResend(HttpRequestInfo* headers,
-                                                     StringPiece body,
+                                                     base::StringPiece body,
                                                      bool fin)
     : headers_(headers), body_(body), fin_(fin) {}
 
@@ -240,7 +240,7 @@ void QuicSimpleClient::Disconnect() {
 }
 
 void QuicSimpleClient::SendRequest(const HttpRequestInfo& headers,
-                                   StringPiece body,
+                                   base::StringPiece body,
                                    bool fin) {
   QuicSpdyClientStream* stream = CreateReliableClientStream();
   if (stream == nullptr) {
@@ -280,7 +280,7 @@ void QuicSimpleClient::MaybeAddQuicDataToResend(
 
 void QuicSimpleClient::SendRequestAndWaitForResponse(
     const HttpRequestInfo& request,
-    StringPiece body,
+    base::StringPiece body,
     bool fin) {
   SendRequest(request, body, fin);
   while (WaitForEvents()) {

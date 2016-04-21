@@ -96,7 +96,7 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   // is received for this stream.
   // May be called multiple times, with each call providing additional headers
   // data until OnPromiseHeadersComplete is called.
-  virtual void OnPromiseHeaders(StringPiece headers_data);
+  virtual void OnPromiseHeaders(base::StringPiece headers_data);
 
   // Called by the session when decompressed push promise headers have
   // been completely delivered to this stream.

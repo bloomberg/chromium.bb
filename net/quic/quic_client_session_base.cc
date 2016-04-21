@@ -8,6 +8,7 @@
 #include "net/quic/quic_flags.h"
 #include "net/quic/spdy_utils.h"
 
+using base::StringPiece;
 using std::string;
 
 namespace net {

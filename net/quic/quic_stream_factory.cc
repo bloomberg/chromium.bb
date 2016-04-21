@@ -757,7 +757,7 @@ void QuicStreamFactory::set_quic_server_info_factory(
 }
 
 bool QuicStreamFactory::CanUseExistingSession(const QuicServerId& server_id,
-                                              StringPiece origin_host) {
+                                              base::StringPiece origin_host) {
   // TODO(zhongyi): delete active_sessions_.empty() checks once the
   // android crash issue(crbug.com/498823) is resolved.
   if (active_sessions_.empty())

@@ -48,7 +48,7 @@ class NET_EXPORT_PRIVATE QuicClientSessionBase
   // Called by |headers_stream_| when push promise headers have been
   // received for a stream.
   void OnPromiseHeaders(QuicStreamId stream_id,
-                        StringPiece headers_data) override;
+                        base::StringPiece headers_data) override;
 
   // Called by |headers_stream_| when push promise headers have been
   // completely received.  |fin| will be true if the fin flag was set

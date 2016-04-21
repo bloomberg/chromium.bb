@@ -281,7 +281,7 @@ std::unique_ptr<base::Value> NetLogSpdyGoAwayCallback(
     int active_streams,
     int unclaimed_streams,
     SpdyGoAwayStatus status,
-    StringPiece debug_data,
+    base::StringPiece debug_data,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("last_accepted_stream_id",
@@ -2527,7 +2527,7 @@ void SpdySession::OnRstStream(SpdyStreamId stream_id,
 
 void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
                            SpdyGoAwayStatus status,
-                           StringPiece debug_data) {
+                           base::StringPiece debug_data) {
   CHECK(in_io_loop_);
 
   // TODO(jgraettinger): UMA histogram on |status|.

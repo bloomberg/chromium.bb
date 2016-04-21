@@ -23,6 +23,8 @@
 #include "net/tools/quic/quic_client.h"
 #include "net/tools/quic/test_tools/simple_client.h"
 
+using base::StringPiece;
+
 namespace net {
 
 class ProofVerifier;

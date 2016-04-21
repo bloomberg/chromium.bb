@@ -3286,7 +3286,7 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeaders) {
   test_cases[1].expected_headers["hello"] = "bye";
   test_cases[2].expected_headers["hello"] = "bye";
 
-  test_cases[0].expected_headers["cookie"] = StringPiece("val1\0val2", 9);
+  test_cases[0].expected_headers["cookie"] = base::StringPiece("val1\0val2", 9);
   test_cases[2].expected_headers["cookie"] = "val1,val2";
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
@@ -3327,7 +3327,7 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeaders) {
     while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
       SpdyHeaderBlock::StringPieceProxy mutable_header_block_value =
           header_block[name];
-      if (static_cast<StringPiece>(mutable_header_block_value).empty()) {
+      if (static_cast<base::StringPiece>(mutable_header_block_value).empty()) {
         mutable_header_block_value = value;
       } else {
         std::string joint_value = mutable_header_block_value.as_string();

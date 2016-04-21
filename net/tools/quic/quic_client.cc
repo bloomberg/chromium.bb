@@ -32,6 +32,7 @@
 // TODO(rtenneti): Add support for MMSG_MORE.
 #define MMSG_MORE 0
 
+using base::StringPiece;
 using std::string;
 using std::vector;
 

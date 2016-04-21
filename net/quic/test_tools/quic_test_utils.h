@@ -34,6 +34,8 @@
 #include "net/tools/quic/test_tools/mock_quic_server_session_visitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using base::StringPiece;
+
 namespace net {
 
 namespace test {
@@ -138,7 +140,7 @@ void CompareCharArraysWithHexError(const std::string& description,
                                    const char* expected,
                                    const int expected_len);
 
-bool DecodeHexString(const base::StringPiece& hex, std::string* bytes);
+bool DecodeHexString(const StringPiece& hex, std::string* bytes);
 
 // Returns the length of a QuicPacket that is capable of holding either a
 // stream frame or a minimal ack frame.  Sets |*payload_length| to the number
@@ -481,7 +483,7 @@ class MockQuicSpdySession : public QuicSpdySession {
                     QuicStreamOffset bytes_written));
 
   MOCK_METHOD2(OnStreamHeaders,
-               void(QuicStreamId stream_id, base::StringPiece headers_data));
+               void(QuicStreamId stream_id, StringPiece headers_data));
   MOCK_METHOD2(OnStreamHeadersPriority,
                void(QuicStreamId stream_id, SpdyPriority priority));
   MOCK_METHOD3(OnStreamHeadersComplete,
