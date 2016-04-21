@@ -99,11 +99,11 @@ bool IsModifierKey(ui::DomCode dom_code) {
   return dom_code == ui::DomCode::CONTROL_LEFT ||
          dom_code == ui::DomCode::SHIFT_LEFT ||
          dom_code == ui::DomCode::ALT_LEFT ||
-         dom_code == ui::DomCode::OS_LEFT ||
+         dom_code == ui::DomCode::META_LEFT ||
          dom_code == ui::DomCode::CONTROL_RIGHT ||
          dom_code == ui::DomCode::SHIFT_RIGHT ||
          dom_code == ui::DomCode::ALT_RIGHT ||
-         dom_code == ui::DomCode::OS_RIGHT;
+         dom_code == ui::DomCode::META_RIGHT;
 }
 
 // Pixel-to-wheel-ticks conversion ratio used by GTK.

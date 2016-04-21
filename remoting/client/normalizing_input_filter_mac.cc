@@ -36,8 +36,8 @@ void NormalizingInputFilterMac::InjectKeyEvent(const protocol::KeyEvent& event)
       dom_code == ui::DomCode::TAB;
 
   bool is_cmd_key =
-      dom_code == ui::DomCode::OS_LEFT ||
-      dom_code == ui::DomCode::OS_RIGHT;
+      dom_code == ui::DomCode::META_LEFT ||
+      dom_code == ui::DomCode::META_RIGHT;
 
   if (dom_code == ui::DomCode::CAPS_LOCK) {
     // Mac OS X generates keydown/keyup on lock-state transitions, rather than

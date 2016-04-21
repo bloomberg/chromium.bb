@@ -67,19 +67,19 @@ TEST(NormalizingInputFilterCrosTest, PressReleaseOsKey) {
     InSequence s;
 
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::OS_LEFT, true)));
+        ui::DomCode::META_LEFT, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::OS_LEFT, false)));
+        ui::DomCode::META_LEFT, false)));
 
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::OS_RIGHT, true)));
+        ui::DomCode::META_RIGHT, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::OS_RIGHT, false)));
+        ui::DomCode::META_RIGHT, false)));
   }
 
   // Inject press & release events for left & right OSKeys.
-  PressAndReleaseKey(processor.get(), ui::DomCode::OS_LEFT);
-  PressAndReleaseKey(processor.get(), ui::DomCode::OS_RIGHT);
+  PressAndReleaseKey(processor.get(), ui::DomCode::META_LEFT);
+  PressAndReleaseKey(processor.get(), ui::DomCode::META_RIGHT);
 }
 
 // Test OSKey key repeat switches it to "modifying" mode.
@@ -92,18 +92,18 @@ TEST(NormalizingInputFilterCrosTest, OSKeyRepeats) {
     InSequence s;
 
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::OS_LEFT, true)));
+        ui::DomCode::META_LEFT, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::OS_LEFT, true)));
+        ui::DomCode::META_LEFT, true)));
     EXPECT_CALL(stub,InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::OS_LEFT, true)));
+        ui::DomCode::META_LEFT, true)));
   }
 
   // Inject a press and repeats for the left OSKey, but don't release it, and
   // verify that the repeats result in press events.
-  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::OS_LEFT, true));
-  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::OS_LEFT, true));
-  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::OS_LEFT, true));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::META_LEFT, true));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::META_LEFT, true));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::META_LEFT, true));
 }
 
 // Test OSKey press followed by function key press and release results in
@@ -123,9 +123,9 @@ TEST(NormalizingInputFilterCrosTest, FunctionKey) {
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
-  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::OS_LEFT, true));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::META_LEFT, true));
   PressAndReleaseKey(processor.get(), ui::DomCode::F1);
-  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::OS_LEFT, false));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::META_LEFT, false));
 }
 
 // Test OSKey press followed by extended key press and release results in
@@ -145,9 +145,9 @@ TEST(NormalizingInputFilterCrosTest, ExtendedKey) {
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
-  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::OS_LEFT, true));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::META_LEFT, true));
   PressAndReleaseKey(processor.get(), ui::DomCode::INSERT);
-  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::OS_LEFT, false));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::META_LEFT, false));
 }
 
 // Test OSKey press followed by non-function, non-extended key press and release
@@ -162,19 +162,19 @@ TEST(NormalizingInputFilterCrosTest, OtherKey) {
     InSequence s;
 
     EXPECT_CALL(stub,InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::OS_LEFT, true)));
+        ui::DomCode::META_LEFT, true)));
     EXPECT_CALL(stub,InjectKeyEvent(EqualsKeyEventWithNumLock(
         ui::DomCode::TAB, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
         ui::DomCode::TAB, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::OS_LEFT, false)));
+        ui::DomCode::META_LEFT, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
-  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::OS_LEFT, true));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::META_LEFT, true));
   PressAndReleaseKey(processor.get(), ui::DomCode::TAB);
-  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::OS_LEFT, false));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::META_LEFT, false));
 }
 
 // Test OSKey press followed by extended key press, then normal key press
@@ -192,20 +192,20 @@ TEST(NormalizingInputFilterCrosTest, ExtendedThenOtherKey) {
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
         ui::DomCode::INSERT, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::OS_LEFT, true)));
+        ui::DomCode::META_LEFT, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
         ui::DomCode::TAB, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
         ui::DomCode::TAB, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::OS_LEFT, false)));
+        ui::DomCode::META_LEFT, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
-  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::OS_LEFT, true));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::META_LEFT, true));
   PressAndReleaseKey(processor.get(), ui::DomCode::INSERT);
   PressAndReleaseKey(processor.get(), ui::DomCode::TAB);
-  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::OS_LEFT, false));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::META_LEFT, false));
 }
 
 // Test OSKey press followed by mouse event puts the OSKey into modifying mode.
@@ -218,16 +218,16 @@ TEST(NormalizingInputFilterCrosTest, MouseEvent) {
     InSequence s;
 
     EXPECT_CALL(stub,InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::OS_LEFT, true)));
+        ui::DomCode::META_LEFT, true)));
     EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseMoveEvent(0, 0)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::OS_LEFT, false)));
+        ui::DomCode::META_LEFT, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
-  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::OS_LEFT, true));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::META_LEFT, true));
   processor->InjectMouseEvent(MakeMouseMoveEvent(0, 0));
-  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::OS_LEFT, false));
+  processor->InjectKeyEvent(MakeKeyEvent(ui::DomCode::META_LEFT, false));
 }
 
 // Test left alt + right click is remapped to left alt + left click.

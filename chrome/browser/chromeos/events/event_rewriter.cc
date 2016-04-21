@@ -95,7 +95,7 @@ const struct ModifierRemapping {
     {ui::EF_COMMAND_DOWN,
      input_method::kSearchKey,
      prefs::kLanguageRemapSearchKeyTo,
-     {ui::EF_COMMAND_DOWN, ui::DomCode::OS_LEFT, ui::DomKey::META,
+     {ui::EF_COMMAND_DOWN, ui::DomCode::META_LEFT, ui::DomKey::META,
       ui::VKEY_LWIN}},
     {ui::EF_ALT_DOWN,
      input_method::kAltKey,
@@ -283,9 +283,9 @@ ui::DomCode RelocateModifier(ui::DomCode code, ui::DomKeyLocation location) {
     case ui::DomCode::ALT_LEFT:
     case ui::DomCode::ALT_RIGHT:
       return right ? ui::DomCode::ALT_RIGHT : ui::DomCode::ALT_LEFT;
-    case ui::DomCode::OS_LEFT:
-    case ui::DomCode::OS_RIGHT:
-      return right ? ui::DomCode::OS_RIGHT : ui::DomCode::OS_LEFT;
+    case ui::DomCode::META_LEFT:
+    case ui::DomCode::META_RIGHT:
+      return right ? ui::DomCode::META_RIGHT : ui::DomCode::META_LEFT;
     default:
       break;
   }
@@ -755,8 +755,8 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
       remapped_key =
           GetRemappedKey(prefs::kLanguageRemapCapsLockKeyTo, *pref_service);
       break;
-    case ui::DomCode::OS_LEFT:
-    case ui::DomCode::OS_RIGHT:
+    case ui::DomCode::META_LEFT:
+    case ui::DomCode::META_RIGHT:
       characteristic_flag = ui::EF_COMMAND_DOWN;
       // Rewrite Command-L/R key presses on an Apple keyboard to Control.
       if (IsAppleKeyboard()) {

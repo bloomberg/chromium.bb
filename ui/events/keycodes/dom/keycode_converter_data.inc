@@ -423,13 +423,13 @@ USB_KEYMAP_DECLARATION {
   // USB#0700e2: left Alt key (Mac left Option key).
   USB_KEYMAP(0x0700e2, 0x0038, 0x0040, 0x0038, 0x003a, "AltLeft", ALT_LEFT),
   // USB#0700e3: left GUI key, e.g. Windows, Mac Command, ChromeOS Search.
-  USB_KEYMAP(0x0700e3, 0x007d, 0x0085, 0xe05b, 0x0037, "OSLeft", OS_LEFT),
+  USB_KEYMAP(0x0700e3, 0x007d, 0x0085, 0xe05b, 0x0037, "MetaLeft", META_LEFT),
   USB_KEYMAP(0x0700e4, 0x0061, 0x0069, 0xe01d, 0x003e, "ControlRight", CONTROL_RIGHT),
   USB_KEYMAP(0x0700e5, 0x0036, 0x003e, 0x0036, 0x003c, "ShiftRight", SHIFT_RIGHT),
   // USB#0700e6: right Alt key (Mac right Option key).
   USB_KEYMAP(0x0700e6, 0x0064, 0x006c, 0xe038, 0x003d, "AltRight", ALT_RIGHT),
   // USB#0700e7: right GUI key, e.g. Windows, Mac Command, ChromeOS Search.
-  USB_KEYMAP(0x0700e7, 0x007e, 0x0086, 0xe05c, 0x0036, "OSRight", OS_RIGHT),
+  USB_KEYMAP(0x0700e7, 0x007e, 0x0086, 0xe05c, 0x0036, "MetaRight", META_RIGHT),
 
   // USB#0700e8 - #07ffff are reserved
 

@@ -219,8 +219,8 @@ const struct NonPrintableCodeEntry {
     // {DomCode::NUMPAD_MEMORY_STORE, DomKey::_}
     // {DomCode::NUMPAD_MEMORY_SUBTRACT, DomKey::_}
     {DomCode::OPEN, DomKey::OPEN},
-    {DomCode::OS_LEFT, DomKey::META},
-    {DomCode::OS_RIGHT, DomKey::META},
+    {DomCode::META_LEFT, DomKey::META},
+    {DomCode::META_RIGHT, DomKey::META},
     {DomCode::PAGE_DOWN, DomKey::PAGE_DOWN},
     {DomCode::PAGE_UP, DomKey::PAGE_UP},
     {DomCode::PASTE, DomKey::PASTE},
@@ -567,11 +567,11 @@ const struct DomCodeToKeyboardCodeEntry {
     {DomCode::CONTROL_LEFT, VKEY_LCONTROL},     // 0x0700E0 ControlLeft
     {DomCode::SHIFT_LEFT, VKEY_LSHIFT},         // 0x0700E1 ShiftLeft
     {DomCode::ALT_LEFT, VKEY_LMENU},            // 0x0700E2 AltLeft
-    {DomCode::OS_LEFT, VKEY_LWIN},              // 0x0700E3 OSLeft
+    {DomCode::META_LEFT, VKEY_LWIN},              // 0x0700E3 OSLeft
     {DomCode::CONTROL_RIGHT, VKEY_RCONTROL},    // 0x0700E4 ControlRight
     {DomCode::SHIFT_RIGHT, VKEY_RSHIFT},        // 0x0700E5 ShiftRight
     {DomCode::ALT_RIGHT, VKEY_RMENU},           // 0x0700E6 AltRight
-    {DomCode::OS_RIGHT, VKEY_RWIN},             // 0x0700E7 OSRight
+    {DomCode::META_RIGHT, VKEY_RWIN},             // 0x0700E7 OSRight
 #if defined(OS_POSIX)
     {DomCode::BRIGHTNESS_UP,
      VKEY_BRIGHTNESS_UP},                       // 0x0C006F BrightnessUp

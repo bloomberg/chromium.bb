@@ -81,8 +81,8 @@ void InputEventTracker::ReleaseAllIfModifiersStuck(bool alt_expected,
       pressed_keys_.find(ui::DomCode::CONTROL_LEFT) != pressed_keys_.end() ||
       pressed_keys_.find(ui::DomCode::CONTROL_RIGHT) != pressed_keys_.end();
   bool os_down =
-      pressed_keys_.find(ui::DomCode::OS_LEFT) != pressed_keys_.end() ||
-      pressed_keys_.find(ui::DomCode::OS_RIGHT) != pressed_keys_.end();
+      pressed_keys_.find(ui::DomCode::META_LEFT) != pressed_keys_.end() ||
+      pressed_keys_.find(ui::DomCode::META_RIGHT) != pressed_keys_.end();
   bool shift_down =
       pressed_keys_.find(ui::DomCode::SHIFT_LEFT) != pressed_keys_.end() ||
       pressed_keys_.find(ui::DomCode::SHIFT_RIGHT) != pressed_keys_.end();

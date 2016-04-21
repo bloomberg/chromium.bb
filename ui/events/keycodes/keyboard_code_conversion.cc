@@ -18,7 +18,7 @@ namespace {
 
 bool IsRightSideDomCode(DomCode code) {
   return (code == DomCode::SHIFT_RIGHT) || (code == DomCode::CONTROL_RIGHT) ||
-         (code == DomCode::ALT_RIGHT) || (code == DomCode::OS_RIGHT);
+         (code == DomCode::ALT_RIGHT) || (code == DomCode::META_RIGHT);
 }
 
 }  // anonymous namespace

@@ -595,7 +595,7 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
     modifiers |= blink::WebInputEvent::MetaKey;
     InjectRawKeyEvent(
         web_contents, blink::WebInputEvent::RawKeyDown, ui::VKEY_COMMAND,
-        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::OS_LEFT),
+        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::META_LEFT),
         modifiers);
   }
   InjectRawKeyEvent(web_contents, blink::WebInputEvent::RawKeyDown, key_code,
@@ -636,7 +636,7 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
     modifiers &= ~blink::WebInputEvent::MetaKey;
     InjectRawKeyEvent(
         web_contents, blink::WebInputEvent::KeyUp, ui::VKEY_COMMAND,
-        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::OS_LEFT),
+        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::META_LEFT),
         modifiers);
   }
 
