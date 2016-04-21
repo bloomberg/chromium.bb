@@ -40,7 +40,10 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   // PasswordsPrivateDelegate implementation.
   void SendSavedPasswordsList() override;
+  const std::vector<api::passwords_private::PasswordUiEntry>*
+  GetSavedPasswordsList() const override;
   void SendPasswordExceptionsList() override;
+  const std::vector<std::string>* GetPasswordExceptionsList() const override;
   void RemoveSavedPassword(
       const std::string& origin_url, const std::string& username) override;
   void RemovePasswordException(const std::string& exception_url) override;

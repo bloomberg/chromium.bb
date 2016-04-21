@@ -67,12 +67,29 @@ chrome.passwordsPrivate.removePasswordException = function(exceptionUrl) {};
  * Returns the plaintext password corresponding to |loginPair|. Note that on
  * some operating systems, this call may result in an OS-level reauthentication.
  * Once the password has been fetched, it will be returned via the
- * onPlaintextPasswordRetrieved event.
+ * onPlaintextPasswordRetrieved event. TODO(hcarmona): Investigate using a
+ * callback for consistency.
  * @param {!chrome.passwordsPrivate.LoginPair} loginPair The LoginPair
  *     corresponding to the entry whose password     is to be returned.
  * @see https://developer.chrome.com/extensions/passwordsPrivate#method-requestPlaintextPassword
  */
 chrome.passwordsPrivate.requestPlaintextPassword = function(loginPair) {};
+
+/**
+ * Returns the list of saved passwords.
+ * @param {function(!Array<!chrome.passwordsPrivate.PasswordUiEntry>):void}
+ *     callback Called with the list of saved passwords.
+ * @see https://developer.chrome.com/extensions/passwordsPrivate#method-getSavedPasswordList
+ */
+chrome.passwordsPrivate.getSavedPasswordList = function(callback) {};
+
+/**
+ * Returns the list of password exceptions.
+ * @param {function(!Array<string>):void} callback Called with the list of
+ *     password exceptions.
+ * @see https://developer.chrome.com/extensions/passwordsPrivate#method-getPasswordExceptionList
+ */
+chrome.passwordsPrivate.getPasswordExceptionList = function(callback) {};
 
 /**
  * Fired when the saved passwords list has changed, meaning that an entry has

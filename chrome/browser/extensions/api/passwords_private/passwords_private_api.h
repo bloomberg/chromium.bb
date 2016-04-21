@@ -65,6 +65,40 @@ class PasswordsPrivateRequestPlaintextPasswordFunction :
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateRequestPlaintextPasswordFunction);
 };
 
+class PasswordsPrivateGetSavedPasswordListFunction
+    : public UIThreadExtensionFunction {
+ public:
+  PasswordsPrivateGetSavedPasswordListFunction() {}
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.getSavedPasswordList",
+                             PASSWORDSPRIVATE_GETSAVEDPASSWORDLIST);
+
+ protected:
+  ~PasswordsPrivateGetSavedPasswordListFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateGetSavedPasswordListFunction);
+};
+
+class PasswordsPrivateGetPasswordExceptionListFunction
+    : public UIThreadExtensionFunction {
+ public:
+  PasswordsPrivateGetPasswordExceptionListFunction() {}
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.getPasswordExceptionList",
+                             PASSWORDSPRIVATE_GETPASSWORDEXCEPTIONLIST);
+
+ protected:
+  ~PasswordsPrivateGetPasswordExceptionListFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateGetPasswordExceptionListFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORDS_PRIVATE_API_H_

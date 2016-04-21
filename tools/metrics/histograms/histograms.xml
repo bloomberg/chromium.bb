@@ -69166,6 +69166,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1115" label="AUTOTESTPRIVATE_GETVISIBLENOTIFICATIONS"/>
   <int value="1116" label="WEBRTCLOGGINGPRIVATE_STARTRTCEVENTLOGGING"/>
   <int value="1117" label="WEBRTCLOGGINGPRIVATE_STOPRTCEVENTLOGGING"/>
+  <int value="1118" label="PASSWORDSPRIVATE_GETSAVEDPASSWORDLIST"/>
+  <int value="1119" label="PASSWORDSPRIVATE_GETPASSWORDEXCEPTIONLIST"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

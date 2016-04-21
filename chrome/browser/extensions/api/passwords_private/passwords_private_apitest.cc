@@ -72,11 +72,20 @@ class TestDelegate : public PasswordsPrivateDelegate {
       router->OnSavedPasswordsListChanged(current_entries_);
   }
 
+  const std::vector<api::passwords_private::PasswordUiEntry>*
+  GetSavedPasswordsList() const override {
+    return &current_entries_;
+  }
+
   void SendPasswordExceptionsList() override {
     PasswordsPrivateEventRouter* router =
         PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
     if (router)
       router->OnPasswordExceptionsListChanged(current_exceptions_);
+  }
+
+  const std::vector<std::string>* GetPasswordExceptionsList() const override {
+    return &current_exceptions_;
   }
 
   void RemoveSavedPassword(
@@ -183,6 +192,14 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RemovePasswordException) {
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RequestPlaintextPassword) {
   EXPECT_TRUE(RunPasswordsSubtest("requestPlaintextPassword")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetSavedPasswordList) {
+  EXPECT_TRUE(RunPasswordsSubtest("getSavedPasswordList")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetPasswordExceptionList) {
+  EXPECT_TRUE(RunPasswordsSubtest("getPasswordExceptionList")) << message_;
 }
 
 }  // namespace extensions

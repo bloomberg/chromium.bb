@@ -64,6 +64,26 @@ var availableTests = [
     chrome.passwordsPrivate.requestPlaintextPassword(
         {originUrl: 'http://www.test.com', username: 'test@test.com'});
   },
+
+  function getSavedPasswordList() {
+    var callback = function(list) {
+      chrome.test.assertTrue(!!list);
+      // Ensure that the callback is invoked.
+      chrome.test.succeed();
+    };
+
+    chrome.passwordsPrivate.getSavedPasswordList(callback);
+  },
+
+  function getPasswordExceptionList() {
+    var callback = function(list) {
+      chrome.test.assertTrue(!!list);
+      // Ensure that the callback is invoked.
+      chrome.test.succeed();
+    };
+
+    chrome.passwordsPrivate.getPasswordExceptionList(callback);
+  },
 ];
 
 var testToRun = window.location.search.substring(1);

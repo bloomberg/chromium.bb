@@ -85,4 +85,36 @@ ExtensionFunction::ResponseAction
   return RespondNow(NoArguments());
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// PasswordsPrivateGetSavedPasswordListFunction
+
+PasswordsPrivateGetSavedPasswordListFunction::
+    ~PasswordsPrivateGetSavedPasswordListFunction() {}
+
+ExtensionFunction::ResponseAction
+PasswordsPrivateGetSavedPasswordListFunction::Run() {
+  PasswordsPrivateDelegate* delegate =
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
+                                                            true /* create */);
+  return RespondNow(ArgumentList(
+      api::passwords_private::GetSavedPasswordList::Results::Create(
+          *(delegate->GetSavedPasswordsList()))));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PasswordsPrivateGetPasswordExceptionListFunction
+
+PasswordsPrivateGetPasswordExceptionListFunction::
+    ~PasswordsPrivateGetPasswordExceptionListFunction() {}
+
+ExtensionFunction::ResponseAction
+PasswordsPrivateGetPasswordExceptionListFunction::Run() {
+  PasswordsPrivateDelegate* delegate =
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
+                                                            true /* create */);
+  return RespondNow(ArgumentList(
+      api::passwords_private::GetPasswordExceptionList::Results::Create(
+          *(delegate->GetPasswordExceptionsList()))));
+}
+
 }  // namespace extensions

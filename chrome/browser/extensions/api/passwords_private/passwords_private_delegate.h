@@ -41,8 +41,15 @@ class PasswordsPrivateDelegate : public KeyedService {
   // Sends the saved passwords list to the event router.
   virtual void SendSavedPasswordsList() = 0;
 
+  // Gets the saved passwords list.
+  virtual const std::vector<api::passwords_private::PasswordUiEntry>*
+  GetSavedPasswordsList() const = 0;
+
   // Sends the password exceptions list to the event router.
   virtual void SendPasswordExceptionsList() = 0;
+
+  // Gets the password exceptions list.
+  virtual const std::vector<std::string>* GetPasswordExceptionsList() const = 0;
 
   // Removes the saved password entry corresponding to |origin_url| and
   // |username|.

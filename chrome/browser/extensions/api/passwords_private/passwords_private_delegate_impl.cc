@@ -49,11 +49,21 @@ void PasswordsPrivateDelegateImpl::SendSavedPasswordsList() {
     router->OnSavedPasswordsListChanged(current_entries_);
 }
 
+const std::vector<api::passwords_private::PasswordUiEntry>*
+PasswordsPrivateDelegateImpl::GetSavedPasswordsList() const {
+  return &current_entries_;
+}
+
 void PasswordsPrivateDelegateImpl::SendPasswordExceptionsList() {
   PasswordsPrivateEventRouter* router =
       PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
   if (router)
     router->OnPasswordExceptionsListChanged(current_exceptions_);
+}
+
+const std::vector<std::string>*
+PasswordsPrivateDelegateImpl::GetPasswordExceptionsList() const {
+  return &current_exceptions_;
 }
 
 void PasswordsPrivateDelegateImpl::RemoveSavedPassword(
