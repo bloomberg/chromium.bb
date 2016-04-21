@@ -16,31 +16,10 @@
           '../testing/scripts/common.py',
           '../testing/scripts/run_telemetry_as_googletest.py',
         ],
-      }
-    }],
-    ['OS=="mac"', {
-      'variables': {
         'command': [
           '../testing/scripts/run_telemetry_as_googletest.py',
           '../tools/perf/run_telemetry_tests',
           '-v',
-          '--chrome-root',
-          '..',
-        ],
-      },
-    }],
-    ['OS=="win"', {
-      'variables': {
-        'command': [
-          '../testing/scripts/run_telemetry_as_googletest.py',
-          '../tools/perf/run_telemetry_tests',
-          '-v',
-          '--chrome-root',
-          '..',
-          # crbug.com/570955
-          # TODO(nednguyen): Remove --jobs=1 once the bug is fixed to speed up
-          # the test run.
-          '--job=1',
         ],
       },
     }],
