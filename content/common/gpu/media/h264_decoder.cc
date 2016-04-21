@@ -1086,6 +1086,13 @@ bool H264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
   int height_mb = (2 - sps->frame_mbs_only_flag) *
                   (sps->pic_height_in_map_units_minus1 + 1);
 
+  if (width_mb > std::numeric_limits<int>::max() / 16 ||
+      height_mb > std::numeric_limits<int>::max() / 16) {
+    DVLOG(1) << "Picture size is too big: width_mb=" << width_mb
+             << " height_mb=" << height_mb;
+    return false;
+  }
+
   gfx::Size new_pic_size(16 * width_mb, 16 * height_mb);
   if (new_pic_size.IsEmpty()) {
     DVLOG(1) << "Invalid picture size: " << new_pic_size.ToString();

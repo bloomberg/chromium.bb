@@ -4,6 +4,8 @@
 
 #include "media/formats/mp2t/es_parser_h264.h"
 
+#include <limits>
+
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/encryption_scheme.h"
@@ -297,8 +299,16 @@ bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps,
 
   // TODO(damienv): a MAP unit can be either 16 or 32 pixels.
   // although it's 16 pixels for progressive non MBAFF frames.
-  gfx::Size coded_size((sps->pic_width_in_mbs_minus1 + 1) * 16,
-                       (sps->pic_height_in_map_units_minus1 + 1) * 16);
+  int width_mb = sps->pic_width_in_mbs_minus1 + 1;
+  int height_mb = sps->pic_height_in_map_units_minus1 + 1;
+  if (width_mb > std::numeric_limits<int>::max() / 16 ||
+      height_mb > std::numeric_limits<int>::max() / 16) {
+    DVLOG(1) << "Picture size is too big: width_mb=" << width_mb
+             << " height_mb=" << height_mb;
+    return false;
+  }
+
+  gfx::Size coded_size(16 * width_mb, 16 * height_mb);
   gfx::Rect visible_rect(
       sps->frame_crop_left_offset,
       sps->frame_crop_top_offset,
