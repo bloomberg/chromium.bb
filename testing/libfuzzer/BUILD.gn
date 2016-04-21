@@ -10,7 +10,7 @@
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
-static_library("libfuzzer_main") {
+source_set("libfuzzer_main") {
   deps = []
   sources = []
   if (use_libfuzzer) {
