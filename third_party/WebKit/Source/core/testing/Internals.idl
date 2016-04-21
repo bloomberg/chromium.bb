@@ -350,7 +350,6 @@
     // support overlay scrollbars.
     bool setScrollbarVisibilityInScrollableArea(Node node, boolean visible);
 
-    void forceRestrictIFramePermissions();
     [RaisesException] double monotonicTimeToZeroBasedDocumentTime(double platformTime);
 
     void setMediaElementNetworkState(HTMLMediaElement element, long state);

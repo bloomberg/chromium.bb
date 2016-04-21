@@ -2549,11 +2549,6 @@ bool Internals::setScrollbarVisibilityInScrollableArea(Node* node, bool visible)
     return false;
 }
 
-void Internals::forceRestrictIFramePermissions()
-{
-    RuntimeEnabledFeatures::setRestrictIFramePermissionsEnabled(true);
-}
-
 double Internals::monotonicTimeToZeroBasedDocumentTime(double platformTime, ExceptionState& exceptionState)
 {
     Document* document = contextDocument();

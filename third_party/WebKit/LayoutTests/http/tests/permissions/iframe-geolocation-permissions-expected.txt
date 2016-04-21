@@ -1,3 +1,0 @@
-CONSOLE WARNING: line 18: A cross-origin iframe needs its permissions attribute properly set in order to use the geolocation API.
-CONSOLE WARNING: line 23: A cross-origin iframe needs its permissions attribute properly set in order to use the geolocation API.
-

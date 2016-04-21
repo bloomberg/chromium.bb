@@ -894,11 +894,6 @@ const char kRemoteDebuggingTargets[] = "remote-debugging-targets";
 // sent to the ui_test.
 const char kRestoreLastSession[]            = "restore-last-session";
 
-// Causes all iframes to be denied all permissions by default. Allowing
-// particular permissions for an iframe may involve listing the names of
-// these permissions as values of new iframe attributes.
-const char kRestrictIFramePermissions[] = "restrict-iframe-permissions";
-
 // Disable saving pages as HTML-only, disable saving pages as HTML Complete
 // (with a directory of sub-resources). Enable only saving pages as MHTML.
 // See http://crbug.com/120416 for how to remove this switch.

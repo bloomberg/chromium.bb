@@ -169,7 +169,6 @@ RequestIdleCallback status=stable
 RequestAutocomplete status=test
 ResponseConstructedWithReadableStream status=experimental
 ResponseBodyWithV8ExtraStream status=experimental
-RestrictIFramePermissions
 SandboxBlocksModals status=stable
 ScreenOrientation status=stable
 ScriptedSpeech status=stable

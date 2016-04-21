@@ -6532,12 +6532,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable hardware-accelerated mjpeg decode for captured frame where available.
         </message>
       </if>
-      <message name="IDS_FLAGS_RESTRICT_IFRAME_PERMISSIONS_NAME" desc="Name of the flag to enable the restricted iframe permissions model.">
-        Restrict iframe permissions.
-      </message>
-      <message name="IDS_FLAGS_RESTRICT_IFRAME_PERMISSIONS_DESCRIPTION" desc="Description of the flag to enable the restricted iframe permissions model.">
-        Causes all iframes to be denied all permissions by default. Allowing particular permissions for an iframe may involve listing the names of these permissions as values of new iframe attributes.
-      </message>
       <if expr="enable_task_manager">
         <message name="IDS_FLAGS_NEW_TASK_MANAGER_NAME" desc="Name of the flag for the new implementation of the task manager.">
           New task manager
