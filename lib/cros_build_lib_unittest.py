@@ -1832,3 +1832,25 @@ EEC571FFB6E1)
 
     self.assertRaises(KeyError, cros_build_lib.GetImageDiskPartitionInfo,
                       '_ignored', 'PB')
+
+
+class CreateTarballTests(cros_test_lib.TempDirTestCase):
+  """Test the CreateTarball function."""
+
+  def setUp(self):
+    """Create files/dirs needed for tar test."""
+    self.target = os.path.join(self.tempdir, 'test.tar.xz')
+    self.inputDir = os.path.join(self.tempdir, 'inputs')
+    self.inputs = [
+        'inputA',
+        'inputB',
+        'inputC',
+    ]
+
+    # Create the input files.
+    for i in self.inputs:
+      osutils.WriteFile(os.path.join(self.inputDir, i), i, makedirs=True)
+
+  def testSuccess(self):
+    """Create a tarfile."""
+    cros_build_lib.CreateTarball(self.target, self.inputDir, inputs=self.inputs)

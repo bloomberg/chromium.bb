@@ -960,7 +960,23 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
          ['--sparse', '-I', comp, '-cf', target] +
          list(inputs))
   rc_func = SudoRunCommand if sudo else RunCommand
-  return rc_func(cmd, cwd=cwd, **kwargs)
+  try:
+    return rc_func(cmd, cwd=cwd, **kwargs)
+  except RunCommandError as e:
+    # TODO(dgarrett): Cleanup temp debugging for crbug.com/547055
+    #
+    # In the condition we are watching for, tar output contains:
+    #  tar: <filename>: file changed as we read it
+    m = re.search(
+        r'tar: (.*): file changed as we read it',
+        e.result.output + e.result.error)
+
+    if m:
+      modified_file = m.group(1)
+      print('ERROR: crbug.com/547055 lsof for file: "%s"' % modified_file)
+      RunCommand(['lsof', modified_file], cwd=cwd, mute_output=False)
+
+    raise
 
 
 def GroupByKey(input_iter, key):
