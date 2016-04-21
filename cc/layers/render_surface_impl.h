@@ -42,10 +42,6 @@ class CC_EXPORT RenderSurfaceImpl {
   RenderSurfaceImpl* render_target();
   const RenderSurfaceImpl* render_target() const;
 
-  gfx::PointF ContentRectCenter() const {
-    return gfx::RectF(content_rect()).CenterPoint();
-  }
-
   // Returns the rect that encloses the RenderSurfaceImpl including any
   // reflection.
   gfx::RectF DrawableContentRect() const;

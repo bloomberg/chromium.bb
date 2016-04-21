@@ -81,8 +81,6 @@ class CC_EXPORT LayerImpl {
   typedef LayerImplList LayerListType;
   typedef RenderSurfaceImpl RenderSurfaceType;
 
-  enum RenderingContextConstants { NO_RENDERING_CONTEXT = 0 };
-
   static std::unique_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return base::WrapUnique(new LayerImpl(tree_impl, id));
   }
