@@ -2749,8 +2749,10 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
 
 void WebContentsImpl::GenerateMHTML(
     const base::FilePath& file,
+    bool use_binary_encoding,
     const base::Callback<void(int64_t)>& callback) {
-  MHTMLGenerationManager::GetInstance()->SaveMHTML(this, file, callback);
+  MHTMLGenerationManager::GetInstance()->SaveMHTML(this, use_binary_encoding,
+                                                   file, callback);
 }
 
 const std::string& WebContentsImpl::GetContentsMimeType() const {

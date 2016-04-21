@@ -4913,8 +4913,8 @@ void RenderFrameImpl::OnSerializeAsMHTML(
 
   // Generate MHTML parts.
   if (success) {
-    data = WebFrameSerializer::generateMHTMLParts(mhtml_boundary, GetWebFrame(),
-                                                  false, &delegate);
+    data = WebFrameSerializer::generateMHTMLParts(
+        mhtml_boundary, GetWebFrame(), params.mhtml_binary_encoding, &delegate);
     // TODO(jcivelli): write the chunks in deferred tasks to give a chance to
     //                 the message loop to process other events.
     if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {

@@ -40,6 +40,7 @@ class MHTMLGenerationManager {
   // Instructs the render view to generate a MHTML representation of the current
   // page for |web_contents|.
   void SaveMHTML(WebContents* web_contents,
+                 bool use_binary_encoding,
                  const base::FilePath& file_path,
                  const GenerateMHTMLCallback& callback);
 
@@ -73,7 +74,9 @@ class MHTMLGenerationManager {
   void OnFileClosed(int job_id, JobStatus job_status, int64_t file_size);
 
   // Creates and registers a new job.
-  int NewJob(WebContents* web_contents, const GenerateMHTMLCallback& callback);
+  int NewJob(WebContents* web_contents,
+             bool use_binary_encoding,
+             const GenerateMHTMLCallback& callback);
 
   // Finds job by id.  Returns nullptr if no job with a given id was found.
   Job* FindJob(int job_id);

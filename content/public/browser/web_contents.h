@@ -540,8 +540,13 @@ class WebContents : public PageNavigator,
                                     const std::string& headers) = 0;
 
   // Generate an MHTML representation of the current page in the given file.
+  // If |use_binary_encoding| is specified, a Content-Transfer-Encoding value of
+  // 'binary' will be used, instead of a combination of 'quoted-printable' and
+  // 'base64'.  Binary encoding is known to have interoperability issues and is
+  // not the recommended encoding for shareable content.
   virtual void GenerateMHTML(
       const base::FilePath& file,
+      bool use_binary_encoding,
       const base::Callback<void(int64_t /* size of the file */)>& callback) = 0;
 
   // Returns the contents MIME type after a navigation.

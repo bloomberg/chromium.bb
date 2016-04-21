@@ -496,6 +496,11 @@ IPC_STRUCT_BEGIN(FrameMsg_SerializeAsMHTML_Params)
   // |mhtml_boundary_marker| should be used for serialization of each frame.
   IPC_STRUCT_MEMBER(std::string, mhtml_boundary_marker)
 
+  // Whether to use binary encoding while serializing.  Binary encoding is not
+  // supported outside of Chrome, so this should not be used if the MHTML is
+  // intended for sharing.
+  IPC_STRUCT_MEMBER(bool, mhtml_binary_encoding)
+
   // Frame to content-id map.
   // Keys are routing ids of either RenderFrames or RenderFrameProxies.
   // Values are MHTML content-ids - see WebFrameSerializer::generateMHTMLParts.

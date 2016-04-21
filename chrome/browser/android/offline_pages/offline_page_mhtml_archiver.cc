@@ -111,8 +111,9 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
           GenerateFileName(url, base::UTF16ToUTF8(title), archive_id)));
 
   web_contents_->GenerateMHTML(
-      file_path, base::Bind(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
-                            weak_ptr_factory_.GetWeakPtr(), url, file_path));
+      file_path, true /* use_binary_encoding */,
+      base::Bind(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
+                 weak_ptr_factory_.GetWeakPtr(), url, file_path));
 }
 
 void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(

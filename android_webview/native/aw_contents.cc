@@ -411,6 +411,7 @@ void AwContents::GenerateMHTML(JNIEnv* env,
   base::FilePath target_path(ConvertJavaStringToUTF8(env, jpath));
   web_contents_->GenerateMHTML(
       target_path,
+      false /* use_binary_encoding */,
       base::Bind(&GenerateMHTMLCallback, base::Owned(j_callback), target_path));
 }
 

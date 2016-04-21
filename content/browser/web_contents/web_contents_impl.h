@@ -340,6 +340,7 @@ class CONTENT_EXPORT WebContentsImpl
                             const Referrer& referrer,
                             const std::string& headers) override;
   void GenerateMHTML(const base::FilePath& file,
+                     bool use_binary_encoding,
                      const base::Callback<void(int64_t)>& callback) override;
   const std::string& GetContentsMimeType() const override;
   bool WillNotifyDisconnection() const override;

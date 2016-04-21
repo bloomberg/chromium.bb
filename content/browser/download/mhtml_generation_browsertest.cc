@@ -24,6 +24,7 @@
 
 using testing::ContainsRegex;
 using testing::HasSubstr;
+using testing::Not;
 
 namespace content {
 
@@ -39,17 +40,30 @@ class MHTMLGenerationTest : public ContentBrowserTest {
   }
 
   void GenerateMHTML(const base::FilePath& path, const GURL& url) {
+    GenerateMHTML(path, url, false);
+  }
+
+  void GenerateMHTML(const base::FilePath& path,
+                     const GURL& url,
+                     bool use_binary_encoding) {
     NavigateToURL(shell(), url);
 
     base::RunLoop run_loop;
     shell()->web_contents()->GenerateMHTML(
-        path, base::Bind(&MHTMLGenerationTest::MHTMLGenerated, this,
-                         run_loop.QuitClosure()));
+        path, use_binary_encoding,
+        base::Bind(&MHTMLGenerationTest::MHTMLGenerated, this,
+                   run_loop.QuitClosure()));
 
     // Block until the MHTML is generated.
     run_loop.Run();
 
     EXPECT_TRUE(has_mhtml_callback_run());
+  }
+
+  int64_t ReadFileSizeFromDisk(base::FilePath path) {
+    int64_t file_size;
+    if (!base::GetFileSize(path, &file_size)) return -1;
+    return file_size;
   }
 
   bool has_mhtml_callback_run() const { return has_mhtml_callback_run_; }
@@ -81,9 +95,12 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
 
   // Make sure the actual generated file has some contents.
   EXPECT_GT(file_size(), 0);  // Verify the size reported by the callback.
-  int64_t file_size;
-  ASSERT_TRUE(base::GetFileSize(path, &file_size));
-  EXPECT_GT(file_size, 100);  // Verify the actual file size.
+  EXPECT_GT(ReadFileSizeFromDisk(path), 100);  // Verify the actual file size.
+
+  std::string mhtml;
+  ASSERT_TRUE(base::ReadFileToString(path, &mhtml));
+  EXPECT_THAT(mhtml,
+              HasSubstr("Content-Transfer-Encoding: quoted-printable"));
 }
 
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, InvalidPath) {
@@ -94,6 +111,46 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, InvalidPath) {
   ASSERT_FALSE(HasFailure());  // No failures with the invocation itself?
 
   EXPECT_EQ(file_size(), -1);  // Expecting that the callback reported failure.
+}
+
+// Tests that MHTML generated using the default 'quoted-printable' encoding does
+// not contain the 'binary' Content-Transfer-Encoding header, and generates
+// base64 encoding for the image part.
+IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateNonBinaryMHTMLWithImage) {
+  base::FilePath path(temp_dir_.path());
+  path = path.Append(FILE_PATH_LITERAL("test_binary.mht"));
+
+  GURL url(embedded_test_server()->GetURL("/page_with_image.html"));
+  GenerateMHTML(path, url, false);
+  ASSERT_FALSE(HasFailure());
+  EXPECT_GT(file_size(), 0);  // Verify the size reported by the callback.
+  EXPECT_GT(ReadFileSizeFromDisk(path), 100);  // Verify the actual file size.
+
+  std::string mhtml;
+  ASSERT_TRUE(base::ReadFileToString(path, &mhtml));
+  EXPECT_THAT(mhtml, HasSubstr("Content-Transfer-Encoding: base64"));
+  EXPECT_THAT(mhtml, Not(HasSubstr("Content-Transfer-Encoding: binary")));
+  EXPECT_THAT(mhtml, ContainsRegex("Content-Location:.*blank.jpg"));
+}
+
+// Tests that MHTML generated using the binary encoding contains the 'binary'
+// Content-Transfer-Encoding header, and does not contain any base64 encoded
+// parts.
+IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateBinaryMHTMLWithImage) {
+  base::FilePath path(temp_dir_.path());
+  path = path.Append(FILE_PATH_LITERAL("test_binary.mht"));
+
+  GURL url(embedded_test_server()->GetURL("/page_with_image.html"));
+  GenerateMHTML(path, url, true);
+  ASSERT_FALSE(HasFailure());
+  EXPECT_GT(file_size(), 0);  // Verify the size reported by the callback.
+  EXPECT_GT(ReadFileSizeFromDisk(path), 100);  // Verify the actual file size.
+
+  std::string mhtml;
+  ASSERT_TRUE(base::ReadFileToString(path, &mhtml));
+  EXPECT_THAT(mhtml, HasSubstr("Content-Transfer-Encoding: binary"));
+  EXPECT_THAT(mhtml, Not(HasSubstr("Content-Transfer-Encoding: base64")));
+  EXPECT_THAT(mhtml, ContainsRegex("Content-Location:.*blank.jpg"));
 }
 
 // Test suite that allows testing --site-per-process against cross-site frames.

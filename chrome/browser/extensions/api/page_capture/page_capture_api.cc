@@ -133,6 +133,7 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {
 
   web_contents->GenerateMHTML(
       mhtml_path_,
+      false /* use_binary_encoding */,
       base::Bind(&PageCaptureSaveAsMHTMLFunction::MHTMLGenerated, this));
 }
 

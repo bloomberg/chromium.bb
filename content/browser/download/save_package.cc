@@ -338,8 +338,9 @@ void SavePackage::InitWithDownloadItem(
     DCHECK(!saved_main_directory_path_.empty());
     GetSavableResourceLinks();
   } else if (save_type_ == SAVE_PAGE_TYPE_AS_MHTML) {
-    web_contents()->GenerateMHTML(saved_main_file_path_, base::Bind(
-        &SavePackage::OnMHTMLGenerated, this));
+    web_contents()->GenerateMHTML(
+        saved_main_file_path_, false /* use_binary_encoding */,
+        base::Bind(&SavePackage::OnMHTMLGenerated, this));
   } else {
     DCHECK_EQ(SAVE_PAGE_TYPE_AS_ONLY_HTML, save_type_);
     wait_state_ = NET_FILES;
