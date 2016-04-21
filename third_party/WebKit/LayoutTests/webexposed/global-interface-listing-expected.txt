@@ -3380,6 +3380,11 @@ interface ImageBitmapRenderingContext
     getter canvas
     method constructor
     method transferImageBitmap
+interface ImageCapture
+    attribute @@toStringTag
+    getter videoStreamTrack
+    method constructor
+    method grabFrame
 interface ImageData
     attribute @@toStringTag
     getter height

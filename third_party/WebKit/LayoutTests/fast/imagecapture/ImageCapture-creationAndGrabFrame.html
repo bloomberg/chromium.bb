@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+<script src=../../resources/testharness-helpers.js></script>
+<script>
+
+// This test verifies that ImageCapture can be created (or not) with different
+// Media Stream Track types (audio, video). The simplest API method grabFrame()
+// is also exercised here.
+
+var test = async_test('exercises the ImageCapture API creation and grabFrame().');
+
+gotStream = test.step_func(function(stream) {
+    assert_equals(stream.getAudioTracks().length, 1);
+    assert_equals(stream.getVideoTracks().length, 1);
+    assert_throws("NotSupportedError",
+                  function() {
+                      capturer = new ImageCapture(stream.getAudioTracks()[0]);
+                  },
+                  'an ImageCapturer can only be created from a video track');
+
+    assert_equals(stream.getVideoTracks()[0].readyState, 'live');
+    assert_true(stream.getVideoTracks()[0].enabled);
+    assert_false(stream.getVideoTracks()[0].muted);
+    capturer = new ImageCapture(stream.getVideoTracks()[0]);
+
+    assert_equals(capturer.videoStreamTrack, stream.getVideoTracks()[0]);
+
+    // TODO(mcasas): Remove this assert after the method is implemented, and
+    // substitute with something more relevant.
+    stream.getVideoTracks()[0].enabled = true;
+    assert_promise_rejects(capturer.grabFrame(),
+                           'NotSupportedError',
+                           'ImageCapturer grabFrame() is not implemented');
+
+    // Assert that grabFrame() is rejected if the associated video track is
+    // disabled, or ended. grabFrame() would also reject if the video Track is
+    // muted but that's a read-only property.
+    stream.getVideoTracks()[0].enabled = false;
+    assert_promise_rejects(capturer.grabFrame(),
+                           'InvalidStateError',
+                           'ImageCapturer cannot grabFrame() of a disabled Track');
+
+    stream.getVideoTracks()[0].stop();
+    assert_equals(stream.getVideoTracks()[0].readyState, 'ended');
+    assert_promise_rejects(capturer.grabFrame(),
+                           'InvalidStateError',
+                           'ImageCapturer cannot grabFrame() of a non-live Track');
+
+    test.done();
+});
+
+onError = test.step_func(function() {
+    assert_unreached('Error creating MediaStream');
+});
+
+navigator.webkitGetUserMedia({video:true, audio:true}, gotStream, onError);
+
+</script>

@@ -8,6 +8,7 @@ modules/compositorworker/CompositorWorker
 modules/compositorworker/CompositorWorkerGlobalScope
 modules/encryptedmedia/MediaKeySession
 modules/filesystem/FileWriter
+modules/imagecapture/ImageCapture
 modules/indexeddb/IDBDatabase
 modules/indexeddb/IDBOpenDBRequest
 modules/indexeddb/IDBRequest
