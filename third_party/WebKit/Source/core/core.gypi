@@ -3993,6 +3993,7 @@
             'events/PointerEventFactoryTest.cpp',
             'fetch/CachingCorrectnessTest.cpp',
             'fetch/ClientHintsPreferencesTest.cpp',
+            'fetch/CrossOriginAccessControlTest.cpp',
             'fetch/FetchUtilsTest.cpp',
             'fetch/ImageResourceTest.cpp',
             'fetch/MemoryCacheTest.cpp',

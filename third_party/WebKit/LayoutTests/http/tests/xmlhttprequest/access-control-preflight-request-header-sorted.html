@@ -16,7 +16,7 @@ function sendRequest()
     xhr.setRequestHeader("X-Custom-V", "foobar");
     xhr.setRequestHeader("X-Custom-s", "foobar");
     xhr.setRequestHeader("X-Custom-U", "foobar");
-    // Check that a simple header is also included in the
+    // Check that a simple header is excluded when building the
     // Access-Control-Request-Headers header.
     xhr.setRequestHeader("Content-Type", "text/plain");
     xhr.onerror = function() {
