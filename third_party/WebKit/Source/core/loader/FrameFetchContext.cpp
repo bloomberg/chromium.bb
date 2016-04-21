@@ -380,7 +380,11 @@ void FrameFetchContext::willStartLoadingResource(Resource* resource, ResourceReq
 {
     TRACE_EVENT_ASYNC_BEGIN1("blink.net", "Resource", resource, "data", loadResourceTraceData(resource->identifier(), resource->url(), resource->resourceRequest().priority()));
 
-    if (m_documentLoader)
+    if (!m_documentLoader)
+        return;
+    if (resource->getType() == Resource::MainResource)
+        m_documentLoader->applicationCacheHost()->willStartLoadingMainResource(request);
+    else
         m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);
 }
 

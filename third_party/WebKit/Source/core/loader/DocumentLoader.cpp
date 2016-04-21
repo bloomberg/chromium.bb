@@ -630,20 +630,12 @@ void DocumentLoader::startLoadingMainResource()
     ASSERT(!timing().fetchStart());
     timing().markFetchStart();
 
-    m_applicationCacheHost->willStartLoadingMainResource(m_request);
-
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, mainResourceLoadOptions,
         (DoNotBufferData, AllowStoredCredentials, ClientRequestedCredentials, CheckContentSecurityPolicy, DocumentContext));
     FetchRequest fetchRequest(m_request, FetchInitiatorTypeNames::document, mainResourceLoadOptions);
     m_mainResource = RawResource::fetchMainResource(fetchRequest, fetcher(), m_substituteData);
     if (!m_mainResource) {
-        m_request = ResourceRequest();
-        // If the load was aborted by clearing m_request, it's possible the ApplicationCacheHost
-        // is now in a state where starting an empty load will be inconsistent. Replace it with
-        // a new ApplicationCacheHost.
-        if (m_applicationCacheHost)
-            m_applicationCacheHost->detachFromDocumentLoader();
-        m_applicationCacheHost = ApplicationCacheHost::create(this);
+        m_request = ResourceRequest(blankURL());
         maybeLoadEmpty();
         return;
     }
