@@ -19,9 +19,7 @@ namespace extensions {
 // An event router that observes changes to saved passwords and password
 // exceptions and notifies listeners to the onSavedPasswordsListChanged and
 // onPasswordExceptionsListChanged events of changes.
-class PasswordsPrivateEventRouter :
-    public KeyedService,
-    public EventRouter::Observer {
+class PasswordsPrivateEventRouter : public KeyedService {
  public:
   static PasswordsPrivateEventRouter* Create(
       content::BrowserContext* browser_context);
@@ -48,12 +46,6 @@ class PasswordsPrivateEventRouter :
 
  protected:
   explicit PasswordsPrivateEventRouter(content::BrowserContext* context);
-
-  // KeyedService overrides:
-  void Shutdown() override;
-
-  // EventRouter::Observer overrides:
-  void OnListenerAdded(const EventListenerInfo& details) override;
 
  private:
   void SendSavedPasswordListToListeners();

@@ -29,6 +29,7 @@ var availableTests = [
     };
 
     chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(callback);
+    chrome.passwordsPrivate.getSavedPasswordList(callback);
   },
 
   function removePasswordException() {
@@ -52,6 +53,7 @@ var availableTests = [
 
     chrome.passwordsPrivate.onPasswordExceptionsListChanged.addListener(
         callback);
+    chrome.passwordsPrivate.getPasswordExceptionList(callback);
   },
 
   function requestPlaintextPassword() {

@@ -24,41 +24,10 @@ PasswordsPrivateEventRouter::PasswordsPrivateEventRouter(
     content::BrowserContext* context)
     : context_(context),
       event_router_(nullptr) {
-  // Register with the event router so we know when renderers are listening to
-  // our events. We first check and see if there *is* an event router, because
-  // some unit tests try to create all context services, but don't initialize
-  // the event router first.
   event_router_ = EventRouter::Get(context_);
-  if (!event_router_)
-    return;
-
-  event_router_->RegisterObserver(
-      this,
-      api::passwords_private::OnSavedPasswordsListChanged::kEventName);
-  event_router_->RegisterObserver(
-      this,
-      api::passwords_private::OnPasswordExceptionsListChanged::kEventName);
-  event_router_->RegisterObserver(
-      this,
-      api::passwords_private::OnPlaintextPasswordRetrieved::kEventName);
 }
 
 PasswordsPrivateEventRouter::~PasswordsPrivateEventRouter() {}
-
-void PasswordsPrivateEventRouter::Shutdown() {
-  if (event_router_)
-    event_router_->UnregisterObserver(this);
-}
-
-void PasswordsPrivateEventRouter::OnListenerAdded(
-    const EventListenerInfo& details) {
-  PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(context_, true);
-  if (delegate) {
-    delegate->SendSavedPasswordsList();
-    delegate->SendPasswordExceptionsList();
-  }
-}
 
 void PasswordsPrivateEventRouter::OnSavedPasswordsListChanged(
     const std::vector<api::passwords_private::PasswordUiEntry>& entries) {

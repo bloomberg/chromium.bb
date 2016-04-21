@@ -93,8 +93,7 @@ chrome.passwordsPrivate.getPasswordExceptionList = function(callback) {};
 
 /**
  * Fired when the saved passwords list has changed, meaning that an entry has
- * been added or removed. Note that this event fires as soon as a  listener is
- * added.
+ * been added or removed.
  * @type {!ChromeEvent}
  * @see https://developer.chrome.com/extensions/passwordsPrivate#event-onSavedPasswordsListChanged
  */
@@ -102,8 +101,7 @@ chrome.passwordsPrivate.onSavedPasswordsListChanged;
 
 /**
  * Fired when the password exceptions list has changed, meaning that an entry
- * has been added or removed. Note that this event fires as soon as a listener
- * is added.
+ * has been added or removed.
  * @type {!ChromeEvent}
  * @see https://developer.chrome.com/extensions/passwordsPrivate#event-onPasswordExceptionsListChanged
  */

@@ -24,11 +24,10 @@ PasswordManager.PlaintextPasswordEvent;
 
 PasswordManager.prototype = {
   /**
-   * Register a callback for when the list of passwords is updated.
-   * Calling this function should trigger an update.
+   * Request the list of saved passwords and observe future changes.
    * @param {function(!Array<!PasswordManager.PasswordUiEntry>):void} callback
    */
-  onSavedPasswordListChangedCallback: assertNotReached,
+  setSavedPasswordListChangedCallback: assertNotReached,
 
   /**
    * Should remove the saved password and notify that the list has changed.
@@ -38,11 +37,10 @@ PasswordManager.prototype = {
   removeSavedPassword: assertNotReached,
 
   /**
-   * Register a callback for when the list of exceptions is updated.
-   * Calling this function should trigger an update.
+   * Request the list of password exceptions and observe future changes.
    * @param {function(!Array<!string>):void} callback
    */
-  onExceptionListChangedCallback: assertNotReached,
+  setExceptionListChangedCallback: assertNotReached,
 
   /**
    * Should remove the password exception and notify that the list has changed.
@@ -77,7 +75,10 @@ PasswordManagerImpl.prototype = {
   __proto__: PasswordManager,
 
   /** @override */
-  onSavedPasswordListChangedCallback: function(callback) {
+  setSavedPasswordListChangedCallback: function(callback) {
+    // Get the list of passwords...
+    chrome.passwordsPrivate.getSavedPasswordList(callback);
+    // ...and listen for future changes.
     chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(callback);
   },
 
@@ -87,7 +88,10 @@ PasswordManagerImpl.prototype = {
   },
 
   /** @override */
-  onExceptionListChangedCallback: function(callback) {
+  setExceptionListChangedCallback: function(callback) {
+    // Get the list of exceptions...
+    chrome.passwordsPrivate.getPasswordExceptionList(callback);
+    // ...and listen for future changes.
     chrome.passwordsPrivate.onPasswordExceptionsListChanged.addListener(
         callback);
   },
@@ -161,10 +165,10 @@ Polymer({
   ready: function() {
     this.passwordManager_ = PasswordManagerImpl.getInstance();
 
-    this.passwordManager_.onSavedPasswordListChangedCallback(function(list) {
+    this.passwordManager_.setSavedPasswordListChangedCallback(function(list) {
       this.savedPasswords = list;
     }.bind(this));
-    this.passwordManager_.onExceptionListChangedCallback(function(list) {
+    this.passwordManager_.setExceptionListChangedCallback(function(list) {
       this.passwordExceptions = list;
     }.bind(this));
     this.passwordManager_.onPlaintextPasswordRequestedCallback(function(e) {
