@@ -47,7 +47,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
 
   blink::WebURLLoader* createURLLoader() override;
   blink::WebString userAgent() override;
-  blink::WebData loadResource(const char* name) override;
   blink::WebString queryLocalizedString(
       blink::WebLocalizedString::Name name) override;
   blink::WebString queryLocalizedString(blink::WebLocalizedString::Name name,
