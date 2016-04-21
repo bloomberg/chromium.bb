@@ -130,9 +130,10 @@ For each alert that fires, determine if it's a real alert and file a bug if so.
 1. Go to [go/chromecrash](https://goto.google.com/chromecrash).
 
 2. For each platform, look through the releases for which releases to
-   investigate.  As per bug-triage.txt, this should be the most recent canary,
-   the previous canary (if the most recent is less than a day old), and any of
-   dev/beta/stable that were released in the last couple of days.
+   investigate.  As per [bug-triage.md](bug-triage.md), this should be the most
+   recent canary, the previous canary (if the most recent is less than a day
+   old), and any of dev/beta/stable that were released in the last couple of
+   days.
 
 3. For each release, in the "Process Type" frame, click on "browser".
 
