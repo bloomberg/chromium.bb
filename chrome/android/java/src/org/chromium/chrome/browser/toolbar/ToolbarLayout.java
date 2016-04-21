@@ -104,8 +104,8 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         mProgressBar = (ToolbarProgressBar) findViewById(R.id.progress);
         if (mProgressBar != null) {
             removeView(mProgressBar);
-            getFrameLayoutParams(mProgressBar).topMargin = mToolbarHeightWithoutShadow
-                    - getFrameLayoutParams(mProgressBar).height;
+            mProgressBar.prepareForAttach(mToolbarHeightWithoutShadow);
+
             if (isNativeLibraryReady()) mProgressBar.initializeAnimation();
         }
 
@@ -252,6 +252,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             int progressBarPosition = UiUtils.insertAfter(
                     controlContainer, mProgressBar, (View) getParent());
             assert progressBarPosition >= 0;
+            mProgressBar.setControlContainer(controlContainer);
         }
     }
 

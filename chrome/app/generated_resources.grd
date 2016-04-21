@@ -6565,6 +6565,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_PROGRESS_BAR_ANIMATION_SMOOTH" desc="Smooth progress bar animation style">
           Smooth
         </message>
+        <message name="IDS_FLAGS_PROGRESS_BAR_ANIMATION_SMOOTH_INDETERMINATE" desc="Smooth progress bar animation style with an indeterminate animation" translateable="false">
+          Smooth indeterminate
+        </message>
         <message name="IDS_FLAGS_PROGRESS_BAR_ANIMATION_FAST_START" desc="Fast start progress bar animation style">
           Fast start
         </message>

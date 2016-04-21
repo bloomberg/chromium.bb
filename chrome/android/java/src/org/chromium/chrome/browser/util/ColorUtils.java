@@ -17,6 +17,7 @@ public class ColorUtils {
     private static final float LIGHTNESS_OPAQUE_BOX_THRESHOLD = 0.82f;
     private static final float LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA = 0.2f;
     private static final float LIGHT_PROGRESSBAR_BACKGROUND_ALPHA = 0.5f;
+    private static final float PROGRESS_BAR_ANIMATION_ALPHA = 0.3f;
 
     /** Percentage to darken a color by when setting the status bar color. */
     private static final float DARKEN_COLOR_FRACTION = 0.6f;
@@ -54,6 +55,13 @@ public class ColorUtils {
     public static int getTextBoxColorForToolbarBackground(int color) {
         if (shouldUseOpaqueTextboxBackground(color)) return Color.WHITE;
         return getColorWithOverlay(Color.WHITE, color, LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA);
+    }
+
+    /**
+     * @return The color of the progress bar animation based on the current progress bar foreground.
+     */
+    public static int getProgressBarAnimationColor(int color) {
+        return getColorWithOverlay(Color.WHITE, color, PROGRESS_BAR_ANIMATION_ALPHA);
     }
 
     /**

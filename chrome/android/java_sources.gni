@@ -904,6 +904,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/TintedImageButton.java",
   "java/src/org/chromium/chrome/browser/widget/TintedImageView.java",
   "java/src/org/chromium/chrome/browser/widget/ToolbarProgressBar.java",
+  "java/src/org/chromium/chrome/browser/widget/ToolbarProgressBarAnimatingView.java",
   "java/src/org/chromium/chrome/browser/widget/VerticallyFixedEditText.java",
   "java/src/org/chromium/chrome/browser/widget/ViewResourceFrameLayout.java",
   "java/src/org/chromium/chrome/browser/widget/accessibility/AccessibilityTabModelAdapter.java",

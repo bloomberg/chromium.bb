@@ -415,9 +415,11 @@ const FeatureEntry::Choice kProgressBarAnimationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
       switches::kProgressBarAnimation, "disabled" },
   { IDS_FLAGS_PROGRESS_BAR_ANIMATION_LINEAR,
-        switches::kProgressBarAnimation, "linear" },
+      switches::kProgressBarAnimation, "linear" },
   { IDS_FLAGS_PROGRESS_BAR_ANIMATION_SMOOTH,
       switches::kProgressBarAnimation, "smooth" },
+  { IDS_FLAGS_PROGRESS_BAR_ANIMATION_SMOOTH_INDETERMINATE,
+      switches::kProgressBarAnimation, "smooth-indeterminate" },
   { IDS_FLAGS_PROGRESS_BAR_ANIMATION_FAST_START,
       switches::kProgressBarAnimation, "fast-start" },
 };
