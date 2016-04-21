@@ -32,6 +32,7 @@ class LayerTreeHostVideoTestSetNeedsDisplay
     video->SetBounds(gfx::Size(4, 5));
     video->SetIsDrawable(true);
     root->AddChild(video);
+    video_layer_id_ = video->id();
 
     layer_tree_host()->SetRootLayer(root);
     layer_tree_host()->SetDeviceScaleFactor(2.f);
@@ -69,7 +70,7 @@ class LayerTreeHostVideoTestSetNeedsDisplay
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     VideoLayerImpl* video = static_cast<VideoLayerImpl*>(
-        host_impl->active_tree()->root_layer()->children()[0]);
+        host_impl->active_tree()->LayerById(video_layer_id_));
 
     EXPECT_EQ(media::VIDEO_ROTATION_90, video->video_rotation());
 
@@ -83,6 +84,7 @@ class LayerTreeHostVideoTestSetNeedsDisplay
 
  private:
   int num_draws_;
+  int video_layer_id_;
 
   FakeVideoFrameProvider video_frame_provider_;
 };

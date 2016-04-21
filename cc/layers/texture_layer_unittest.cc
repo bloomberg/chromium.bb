@@ -1329,6 +1329,7 @@ class TextureLayerReleaseResourcesBase
     texture_layer->SetIsDrawable(true);
 
     layer_tree_host()->root_layer()->AddChild(texture_layer);
+    texture_layer_id_ = texture_layer->id();
   }
 
   void BeginTest() override {
@@ -1340,6 +1341,9 @@ class TextureLayerReleaseResourcesBase
 
   void AfterTest() override { EXPECT_TRUE(mailbox_released_); }
 
+ protected:
+  int texture_layer_id_;
+
  private:
   bool mailbox_released_;
 };
@@ -1350,7 +1354,7 @@ class TextureLayerReleaseResourcesAfterCommit
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     LayerTreeImpl* tree = nullptr;
     tree = host_impl->sync_tree();
-    tree->root_layer()->children()[0]->ReleaseResources();
+    tree->LayerById(texture_layer_id_)->ReleaseResources();
   }
 };
 
@@ -1360,7 +1364,7 @@ class TextureLayerReleaseResourcesAfterActivate
     : public TextureLayerReleaseResourcesBase {
  public:
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    host_impl->active_tree()->root_layer()->children()[0]->ReleaseResources();
+    host_impl->active_tree()->LayerById(texture_layer_id_)->ReleaseResources();
   }
 };
 
