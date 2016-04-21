@@ -136,11 +136,8 @@ bool RecordingSource::UpdateAndExpandInvalidation(
   ScopedRecordingSourceUpdateTimer timer;
   bool updated = false;
 
-  // TODO(chrishtr): delete this conditional once synchronized paint launches.
-  if (size_ != layer_size) {
+  if (size_ != layer_size)
     size_ = layer_size;
-    updated = true;
-  }
 
   invalidation_.Swap(invalidation);
   invalidation_.Clear();
