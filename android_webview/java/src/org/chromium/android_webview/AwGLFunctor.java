@@ -36,18 +36,19 @@ class AwGLFunctor {
     // Same gc-life time as this, but does not reference any members like |mContainerView|.
     private final Object mLifetimeObject;
     private final CleanupReference mCleanupReference;
-    private final AwContents.NativeGLDelegate mNativeGLDelegate;
+    private final AwContents.NativeDrawGLFunctor mNativeDrawGLFunctor;
     private final ViewGroup mContainerView;
     private final Runnable mFunctorReleasedCallback;
 
-    public AwGLFunctor(AwContents.NativeGLDelegate nativeGLDelegate, ViewGroup containerView) {
+    public AwGLFunctor(AwContents.NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory,
+            ViewGroup containerView) {
         mNativeAwGLFunctor = nativeCreate(this);
         mLifetimeObject = new Object();
         mCleanupReference =
                 new CleanupReference(mLifetimeObject, new DestroyRunnable(mNativeAwGLFunctor));
-        mNativeGLDelegate = nativeGLDelegate;
+        mNativeDrawGLFunctor = nativeDrawGLFunctorFactory.createFunctor(getAwDrawGLViewContext());
         mContainerView = containerView;
-        if (mNativeGLDelegate.supportsDrawGLFunctorReleasedCallback()) {
+        if (mNativeDrawGLFunctor.supportsDrawGLFunctorReleasedCallback()) {
             mFunctorReleasedCallback = new Runnable() {
                 @Override
                 public void run() {
@@ -73,18 +74,17 @@ class AwGLFunctor {
     }
 
     public boolean requestDrawGLForCanvas(Canvas canvas) {
-        return mNativeGLDelegate.requestDrawGL(
-                canvas, false, mContainerView, mFunctorReleasedCallback);
+        return mNativeDrawGLFunctor.requestDrawGL(canvas, mFunctorReleasedCallback);
     }
 
     @CalledByNative
-    private boolean requestDrawGL(boolean waitForCompletion) {
-        return mNativeGLDelegate.requestDrawGL(null, waitForCompletion, mContainerView, null);
+    private boolean requestInvokeGL(boolean waitForCompletion) {
+        return mNativeDrawGLFunctor.requestInvokeGL(mContainerView, waitForCompletion);
     }
 
     @CalledByNative
     private void detachFunctorFromView() {
-        mNativeGLDelegate.detachGLFunctor();
+        mNativeDrawGLFunctor.detach(mContainerView);
         mContainerView.invalidate();
     }
 

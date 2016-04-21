@@ -41,13 +41,13 @@ void AwGLFunctor::OnParentDrawConstraintsUpdated() {
     browser_view_renderer_->OnParentDrawConstraintsUpdated();
 }
 
-bool AwGLFunctor::RequestDrawGL(bool wait_for_completion) {
+bool AwGLFunctor::RequestInvokeGL(bool wait_for_completion) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return false;
-  return Java_AwGLFunctor_requestDrawGL(env, obj.obj(), wait_for_completion);
+  return Java_AwGLFunctor_requestInvokeGL(env, obj.obj(), wait_for_completion);
 }
 
 void AwGLFunctor::DetachFunctorFromView() {

@@ -18,7 +18,7 @@ class BrowserViewRenderer;
 class AwGLFunctor : public RenderThreadManagerClient {
  public:
   void OnParentDrawConstraintsUpdated() override;
-  bool RequestDrawGL(bool wait_for_completion) override;
+  bool RequestInvokeGL(bool wait_for_completion) override;
   void DetachFunctorFromView() override;
 
   AwGLFunctor(const JavaObjectWeakGlobalRef& java_ref);

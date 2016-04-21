@@ -423,11 +423,10 @@ public class AwTestBase
 
         AwSettings awSettings = testDependencyFactory.createAwSettings(getActivity(),
                 supportsLegacyQuirks);
-        testContainerView.initialize(new AwContents(
-                mBrowserContext, testContainerView, testContainerView.getContext(),
-                testContainerView.getInternalAccessDelegate(),
-                testContainerView.getNativeGLDelegate(), awContentsClient,
-                awSettings, testDependencyFactory));
+        testContainerView.initialize(new AwContents(mBrowserContext, testContainerView,
+                testContainerView.getContext(), testContainerView.getInternalAccessDelegate(),
+                testContainerView.getNativeDrawGLFunctorFactory(), awContentsClient, awSettings,
+                testDependencyFactory));
         return testContainerView;
     }
 

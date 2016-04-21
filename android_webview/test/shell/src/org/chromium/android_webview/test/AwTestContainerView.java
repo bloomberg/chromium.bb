@@ -35,7 +35,6 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class AwTestContainerView extends FrameLayout {
     private AwContents mAwContents;
-    private AwContents.NativeGLDelegate mNativeGLDelegate;
     private AwContents.InternalAccessDelegate mInternalAccessDelegate;
 
     private HardwareView mHardwareView = null;
@@ -97,9 +96,9 @@ public class AwTestContainerView extends FrameLayout {
             setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         }
 
-        public void initialize(long drawGL, long viewContext) {
+        public void initialize(long drawGL) {
             mDrawGL = drawGL;
-            mViewContext = viewContext;
+            mViewContext = 0;
         }
 
         public boolean isReadyToRender() {
@@ -144,8 +143,10 @@ public class AwTestContainerView extends FrameLayout {
             }
         }
 
-        public void requestRender(Canvas canvas, boolean waitForCompletion) {
+        public void requestRender(long viewContext, Canvas canvas, boolean waitForCompletion) {
             synchronized (mSyncLock) {
+                assert mViewContext == 0 || mViewContext == viewContext;
+                mViewContext = viewContext;
                 super.requestRender();
                 mFunctorAttached = true;
                 mWaitForCompletion = waitForCompletion;
@@ -240,7 +241,6 @@ public class AwTestContainerView extends FrameLayout {
         } else {
             setLayerType(LAYER_TYPE_SOFTWARE, null);
         }
-        mNativeGLDelegate = new NativeGLDelegate();
         mInternalAccessDelegate = new InternalAccessAdapter();
         setOverScrollMode(View.OVER_SCROLL_ALWAYS);
         setFocusable(true);
@@ -250,8 +250,7 @@ public class AwTestContainerView extends FrameLayout {
     public void initialize(AwContents awContents) {
         mAwContents = awContents;
         if (isBackedByHardwareView()) {
-            mHardwareView.initialize(
-                    AwContents.getAwDrawGLFunction(), mAwContents.getAwDrawGLViewContext());
+            mHardwareView.initialize(AwContents.getAwDrawGLFunction());
         }
     }
 
@@ -267,8 +266,8 @@ public class AwTestContainerView extends FrameLayout {
         return mAwContents;
     }
 
-    public AwContents.NativeGLDelegate getNativeGLDelegate() {
-        return mNativeGLDelegate;
+    public AwContents.NativeDrawGLFunctorFactory getNativeDrawGLFunctorFactory() {
+        return new NativeDrawGLFunctorFactory();
     }
 
     public AwContents.InternalAccessDelegate getInternalAccessDelegate() {
@@ -415,23 +414,41 @@ public class AwTestContainerView extends FrameLayout {
         return mAwContents.performAccessibilityAction(action, arguments);
     }
 
-    private class NativeGLDelegate implements AwContents.NativeGLDelegate {
+    private class NativeDrawGLFunctorFactory implements AwContents.NativeDrawGLFunctorFactory {
+        public NativeDrawGLFunctor createFunctor(long context) {
+            return new NativeDrawGLFunctor(context);
+        }
+    }
+
+    private class NativeDrawGLFunctor implements AwContents.NativeDrawGLFunctor {
+        private long mContext;
+
+        NativeDrawGLFunctor(long context) {
+            mContext = context;
+        }
+
         @Override
         public boolean supportsDrawGLFunctorReleasedCallback() {
             return false;
         }
 
         @Override
-        public boolean requestDrawGL(Canvas canvas, boolean waitForCompletion, View containerview,
-                Runnable releasedRunnable) {
+        public boolean requestDrawGL(Canvas canvas, Runnable releasedRunnable) {
             assert releasedRunnable == null;
             if (!isBackedByHardwareView()) return false;
-            mHardwareView.requestRender(canvas, waitForCompletion);
+            mHardwareView.requestRender(mContext, canvas, false);
             return true;
         }
 
         @Override
-        public void detachGLFunctor() {
+        public boolean requestInvokeGL(View containerView, boolean waitForCompletion) {
+            if (!isBackedByHardwareView()) return false;
+            mHardwareView.requestRender(mContext, null, waitForCompletion);
+            return true;
+        }
+
+        @Override
+        public void detach(View containerView) {
             if (isBackedByHardwareView()) mHardwareView.detachGLFunctor();
         }
     }

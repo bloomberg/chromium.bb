@@ -91,8 +91,8 @@ void RenderingTest::WillOnDraw() {
   compositor_->SetHardwareFrame(0u, ConstructEmptyFrame());
 }
 
-bool RenderingTest::RequestDrawGL(bool wait_for_completion) {
-  window_->RequestDrawGL(wait_for_completion);
+bool RenderingTest::RequestInvokeGL(bool wait_for_completion) {
+  window_->RequestInvokeGL(wait_for_completion);
   return true;
 }
 

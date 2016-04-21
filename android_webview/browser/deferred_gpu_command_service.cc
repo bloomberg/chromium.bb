@@ -91,7 +91,7 @@ void DeferredGpuCommandService::RequestProcessGL(bool for_idle) {
     LOG(ERROR) << "No hardware renderer. Deadlock likely";
     return;
   }
-  renderer_state->ClientRequestDrawGL(for_idle);
+  renderer_state->ClientRequestInvokeGL(for_idle);
 }
 
 // Called from different threads!

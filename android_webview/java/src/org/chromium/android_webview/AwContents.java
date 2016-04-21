@@ -165,31 +165,55 @@ public class AwContents implements SmartClipProvider,
     }
 
     /**
+     * Factory interface used for constructing functors that the Android framework uses for
+     * calling back into Chromium code to render the the contents of a Chromium frame into
+     * an Android view.
+     */
+    public interface NativeDrawGLFunctorFactory {
+        /**
+         * Create a functor associated with native context |context|.
+         */
+        NativeDrawGLFunctor createFunctor(long context);
+    }
+
+    /**
      * Interface that consumers of {@link AwContents} must implement to support
      * native GL rendering.
      */
-    public interface NativeGLDelegate {
-        boolean supportsDrawGLFunctorReleasedCallback();
-
+    public interface NativeDrawGLFunctor {
         /**
-         * Requests a callback on the native DrawGL method (see getAwDrawGLFunction)
-         * if called from within onDraw, |canvas| will be non-null and hardware accelerated.
-         * Otherwise, |canvas| will be null, and the container view itself will be hardware
-         * accelerated. If |waitForCompletion| is true, this method will not return until
-         * functor has returned.
-         * Should avoid setting |waitForCompletion| when |canvas| is not null.
-         * |containerView| is the view where the AwContents should be drawn.
+         * Requests a callback on the native DrawGL method (see getAwDrawGLFunction).
+         *
+         * If called from within onDraw, |canvas| should be non-null and must be hardware
+         * accelerated. |releasedCallback| should be null if |canvas| is null, or if
+         * supportsDrawGLFunctorReleasedCallback returns false.
          *
          * @return false indicates the GL draw request was not accepted, and the caller
          *         should fallback to the SW path.
          */
-        boolean requestDrawGL(Canvas canvas, boolean waitForCompletion, View containerView,
-                Runnable releasedRunnable);
+        boolean requestDrawGL(Canvas canvas, Runnable releasedCallback);
+
+        /**
+         * Requests a callback on the native DrawGL method (see getAwDrawGLFunction).
+         *
+         * |containerView| must be hardware accelerated. If |waitForCompletion| is true, this method
+         * will not return until functor has returned.
+         */
+        boolean requestInvokeGL(View containerView, boolean waitForCompletion);
+
+        /**
+         * Test whether the Android framework supports notifying when a functor is free
+         * to be destroyed via the callback mechanism provided to the functor factory.
+         *
+         * @return true if destruction needs to wait on a framework callback, or false
+         *         if it can occur immediately.
+         */
+        boolean supportsDrawGLFunctorReleasedCallback();
 
         /**
          * Detaches the GLFunctor from the view tree.
          */
-        void detachGLFunctor();
+        void detach(View containerView);
     }
 
     /**
@@ -239,7 +263,7 @@ public class AwContents implements SmartClipProvider,
     private final AwContentsIoThreadClient mIoThreadClient;
     private final InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     private InternalAccessDelegate mInternalAccessAdapter;
-    private final NativeGLDelegate mNativeGLDelegate;
+    private final NativeDrawGLFunctorFactory mNativeDrawGLFunctorFactory;
     private final AwLayoutSizer mLayoutSizer;
     private final AwZoomControls mZoomControls;
     private final AwScrollOffsetManager mScrollOffsetManager;
@@ -675,10 +699,11 @@ public class AwContents implements SmartClipProvider,
      * This constructor uses the default view sizing policy.
      */
     public AwContents(AwBrowserContext browserContext, ViewGroup containerView, Context context,
-            InternalAccessDelegate internalAccessAdapter, NativeGLDelegate nativeGLDelegate,
-            AwContentsClient contentsClient, AwSettings awSettings) {
-        this(browserContext, containerView, context, internalAccessAdapter, nativeGLDelegate,
-                contentsClient, awSettings, new DependencyFactory());
+            InternalAccessDelegate internalAccessAdapter,
+            NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory, AwContentsClient contentsClient,
+            AwSettings awSettings) {
+        this(browserContext, containerView, context, internalAccessAdapter,
+                nativeDrawGLFunctorFactory, contentsClient, awSettings, new DependencyFactory());
     }
 
     /**
@@ -689,9 +714,9 @@ public class AwContents implements SmartClipProvider,
      * documented classes.
      */
     public AwContents(AwBrowserContext browserContext, ViewGroup containerView, Context context,
-            InternalAccessDelegate internalAccessAdapter, NativeGLDelegate nativeGLDelegate,
-            AwContentsClient contentsClient, AwSettings settings,
-            DependencyFactory dependencyFactory) {
+            InternalAccessDelegate internalAccessAdapter,
+            NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory, AwContentsClient contentsClient,
+            AwSettings settings, DependencyFactory dependencyFactory) {
         setLocale(LocaleUtils.getDefaultLocale());
         settings.updateAcceptLanguages();
 
@@ -707,7 +732,7 @@ public class AwContents implements SmartClipProvider,
         mContext = context;
         mAppTargetSdkVersion = mContext.getApplicationInfo().targetSdkVersion;
         mInternalAccessAdapter = internalAccessAdapter;
-        mNativeGLDelegate = nativeGLDelegate;
+        mNativeDrawGLFunctorFactory = nativeDrawGLFunctorFactory;
         mContentsClient = contentsClient;
         mAwViewMethods = new AwViewMethodsImpl();
         mFullScreenTransitionsState = new FullScreenTransitionsState(
@@ -976,7 +1001,7 @@ public class AwContents implements SmartClipProvider,
         mContentViewCore = createAndInitializeContentViewCore(mContainerView, mContext,
                 mInternalAccessAdapter, webContents, new AwGestureStateListener(),
                 mContentViewClient, mZoomControls, mWindowAndroid.getWindowAndroid());
-        mAwGLFunctor = new AwGLFunctor(mNativeGLDelegate, mContainerView);
+        mAwGLFunctor = new AwGLFunctor(mNativeDrawGLFunctorFactory, mContainerView);
         nativeSetAwGLFunctor(mNativeAwContents, mAwGLFunctor.getNativeAwGLFunctor());
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate);

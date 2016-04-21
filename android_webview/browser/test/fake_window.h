@@ -53,7 +53,7 @@ class FakeWindow {
   void Detach();
 
   // BrowserViewRendererClient methods.
-  void RequestDrawGL(bool wait_for_completion);
+  void RequestInvokeGL(bool wait_for_completion);
   void PostInvalidate();
   const gfx::Size& surface_size() { return surface_size_; }
 

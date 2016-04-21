@@ -79,7 +79,7 @@ void FakeWindow::Detach() {
   render_thread_.reset();
 }
 
-void FakeWindow::RequestDrawGL(bool wait_for_completion) {
+void FakeWindow::RequestInvokeGL(bool wait_for_completion) {
   CheckCurrentlyOnUIThread();
   base::WaitableEvent completion(true, false);
   render_thread_loop_->PostTask(

@@ -22,7 +22,7 @@ struct AwDrawGLInfo;
 namespace android_webview {
 
 namespace internal {
-class RequestDrawGLTracker;
+class RequestInvokeGLTracker;
 }
 
 class RenderThreadManagerClient;
@@ -48,7 +48,7 @@ class RenderThreadManager {
   ~RenderThreadManager();
 
   // This function can be called from any thread.
-  void ClientRequestDrawGL(bool for_idle);
+  void ClientRequestInvokeGL(bool for_idle);
 
   // UI thread methods.
   void SetScrollOffsetOnUI(gfx::Vector2d scroll_offset);
@@ -72,7 +72,7 @@ class RenderThreadManager {
                                    uint32_t output_surface_id);
 
  private:
-  friend class internal::RequestDrawGLTracker;
+  friend class internal::RequestInvokeGLTracker;
   class InsideHardwareReleaseReset {
    public:
     explicit InsideHardwareReleaseReset(
@@ -84,12 +84,12 @@ class RenderThreadManager {
   };
 
   // RT thread method.
-  void DidDrawGLProcess();
+  void DidInvokeGLProcess();
   bool HasFrameForHardwareRendererOnRT() const;
 
   // UI thread methods.
-  void ResetRequestDrawGLCallback();
-  void ClientRequestDrawGLOnUI();
+  void ResetRequestInvokeGLCallback();
+  void ClientRequestInvokeGLOnUI();
   void UpdateParentDrawConstraintsOnUI();
   bool IsInsideHardwareRelease() const;
   void SetInsideHardwareRelease(bool inside);

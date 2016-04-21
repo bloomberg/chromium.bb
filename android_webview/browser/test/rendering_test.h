@@ -52,7 +52,7 @@ class RenderingTest : public testing::Test,
 
   // RenderThreadManagerClient overrides.
   void OnParentDrawConstraintsUpdated() override;
-  bool RequestDrawGL(bool wait_for_completion) override;
+  bool RequestInvokeGL(bool wait_for_completion) override;
   void DetachFunctorFromView() override;
 
   // WindowHooks overrides.
