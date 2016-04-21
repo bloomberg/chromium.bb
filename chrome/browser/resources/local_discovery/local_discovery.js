@@ -607,14 +607,6 @@ cr.define('local_discovery', function() {
     }
   }
 
-  function removeCloudPrintConnectorSection() {
-    if (!cr.isChromeOS) {
-       var connectorSectionElm = $('cloud-print-connector-section');
-       if (connectorSectionElm)
-          connectorSectionElm.parentNode.removeChild(connectorSectionElm);
-     }
-  }
-
   function getOverlayIDFromPath() {
     if (document.location.pathname == '/register') {
       var params = parseQueryParams(document.location);
@@ -693,6 +685,5 @@ cr.define('local_discovery', function() {
     onRegistrationTimeout: onRegistrationTimeout,
     setUserLoggedIn: setUserLoggedIn,
     setupCloudPrintConnectorSection: setupCloudPrintConnectorSection,
-    removeCloudPrintConnectorSection: removeCloudPrintConnectorSection
   };
 });

@@ -24,6 +24,8 @@ struct UserSettings;
 // For use only in tests.
 class CloudPrintTestsDelegate {
  public:
+  static CloudPrintTestsDelegate* Get();
+
   CloudPrintTestsDelegate();
   virtual ~CloudPrintTestsDelegate();
 
@@ -38,12 +40,6 @@ class CloudPrintTestsDelegate {
   virtual std::string GetClientId() = 0;
 
   virtual std::vector<std::string> GetPrinters() = 0;
-
-  static CloudPrintTestsDelegate* instance();
-
- private:
-  // Points to single instance of this class during testing.
-  static CloudPrintTestsDelegate* instance_;
 };
 
 class CloudPrintPrivateSetupConnectorFunction

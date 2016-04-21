@@ -21,8 +21,9 @@
 #define CLOUD_PRINT_CONNECTOR_UI_AVAILABLE
 #endif
 
+class CloudPrintProxyService;
+
 namespace cloud_print {
-class PrivetConfirmApiCallFlow;
 class PrivetHTTPAsynchronousFactory;
 class PrivetHTTPResolution;
 class PrivetV1HTTPClient;
@@ -85,9 +86,9 @@ class LocalDiscoveryUIHandler
                        const std::string& username) override;
 
  private:
-  typedef std::map<std::string,
-                   cloud_print::DeviceDescription> DeviceDescriptionMap;
-  typedef base::Callback<void(bool result)> ResultCallback;
+  using DeviceDescriptionMap =
+      std::map<std::string, cloud_print::DeviceDescription>;
+  using ResultCallback = base::Callback<void(bool result)>;
 
   // Message handlers:
   // For when the page is ready to receive device notifications.
@@ -130,7 +131,7 @@ class LocalDiscoveryUIHandler
   void SetIsVisible(bool visible);
 
   // Get the sync account email.
-  std::string GetSyncAccount();
+  std::string GetSyncAccount() const;
 
   // Reset and cancel the current registration.
   void ResetCurrentRegistration();
@@ -155,8 +156,8 @@ class LocalDiscoveryUIHandler
   void ShowCloudPrintSetupDialog(const base::ListValue* args);
   void HandleDisableCloudPrintConnector(const base::ListValue* args);
   void SetupCloudPrintConnectorSection();
-  void RemoveCloudPrintConnectorSection();
   void RefreshCloudPrintStatusFromService();
+  CloudPrintProxyService* GetCloudPrintProxyService();
 #endif
 
   // A map of current device descriptions provided by the PrivetDeviceLister.
@@ -197,7 +198,6 @@ class LocalDiscoveryUIHandler
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
   StringPrefMember cloud_print_connector_email_;
   BooleanPrefMember cloud_print_connector_enabled_;
-  bool cloud_print_connector_ui_enabled_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryUIHandler);
@@ -206,4 +206,5 @@ class LocalDiscoveryUIHandler
 #undef CLOUD_PRINT_CONNECTOR_UI_AVAILABLE
 
 }  // namespace local_discovery
+
 #endif  // CHROME_BROWSER_UI_WEBUI_LOCAL_DISCOVERY_LOCAL_DISCOVERY_UI_HANDLER_H_

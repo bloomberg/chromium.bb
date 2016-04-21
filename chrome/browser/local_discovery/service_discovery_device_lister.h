@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/local_discovery/service_discovery_client.h"
 
@@ -39,8 +38,8 @@ class ServiceDiscoveryDeviceLister {
   std::string service_type() { return service_type_; }
 
  private:
-  typedef std::map<std::string, linked_ptr<ServiceResolver> >
-     ServiceResolverMap;
+  using ServiceResolverMap =
+      std::map<std::string, std::unique_ptr<ServiceResolver>>;
 
   void OnServiceUpdated(ServiceWatcher::UpdateType update,
                         const std::string& service_name);

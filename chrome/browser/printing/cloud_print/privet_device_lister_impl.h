@@ -31,10 +31,12 @@ class PrivetDeviceListerImpl
 
   ~PrivetDeviceListerImpl() override;
 
+  // PrivetDeviceLister:
   void Start() override;
   void DiscoverNewDevices(bool force_update) override;
 
  protected:
+  // ServiceDiscoveryDeviceLister:
   void OnDeviceChanged(
       bool added,
       const local_discovery::ServiceDescription& service_description) override;
@@ -42,7 +44,7 @@ class PrivetDeviceListerImpl
   void OnDeviceCacheFlushed() override;
 
  private:
-  PrivetDeviceLister::Delegate* delegate_;
+  PrivetDeviceLister::Delegate* const delegate_;
   local_discovery::ServiceDiscoveryDeviceLister device_lister_;
 };
 

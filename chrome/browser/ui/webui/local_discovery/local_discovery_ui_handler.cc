@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
@@ -80,13 +79,13 @@ void ReadDevicesList(const CloudPrintPrinterList::DeviceList& devices,
                      const std::set<std::string>& local_ids,
                      base::ListValue* devices_list) {
   for (const auto& i : devices) {
-    if (local_ids.count(i.id) > 0) {
+    if (ContainsKey(local_ids, i.id)) {
       devices_list->Append(CreateDeviceInfo(i).release());
     }
   }
 
   for (const auto& i : devices) {
-    if (local_ids.count(i.id) == 0) {
+    if (!ContainsKey(local_ids, i.id)) {
       devices_list->Append(CreateDeviceInfo(i).release());
     }
   }
@@ -98,20 +97,6 @@ LocalDiscoveryUIHandler::LocalDiscoveryUIHandler()
     : is_visible_(false),
       failed_list_count_(0),
       succeded_list_count_(0) {
-#if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
-#if !defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
-  // On Windows, we need the PDF plugin which is only guaranteed to exist on
-  // Google Chrome builds. Use a command-line switch for Windows non-Google
-  //  Chrome builds.
-  cloud_print_connector_ui_enabled_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCloudPrintProxy);
-#else
-  // Always enabled for Linux and Google Chrome Windows builds.
-  // Never enabled for Chrome OS, we don't even need to indicate it.
-  cloud_print_connector_ui_enabled_ = true;
-#endif
-#endif  // defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
 }
 
 LocalDiscoveryUIHandler::~LocalDiscoveryUIHandler() {
@@ -155,24 +140,22 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
 
   // Cloud print connector related messages
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
-  if (cloud_print_connector_ui_enabled_) {
-    web_ui()->RegisterMessageCallback(
-        "showCloudPrintSetupDialog",
-        base::Bind(&LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog,
-                   base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
-        "disableCloudPrintConnector",
-        base::Bind(&LocalDiscoveryUIHandler::HandleDisableCloudPrintConnector,
-                   base::Unretained(this)));
-  }
+  web_ui()->RegisterMessageCallback(
+      "showCloudPrintSetupDialog",
+      base::Bind(&LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "disableCloudPrintConnector",
+      base::Bind(&LocalDiscoveryUIHandler::HandleDisableCloudPrintConnector,
+                 base::Unretained(this)));
 #endif  // defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
 }
 
 void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  // If privet_lister_ is already set, it is a mock used for tests or the result
-  // of a reload.
+  // If |privet_lister_| is already set, it is a mock used for tests or the
+  // result of a reload.
   if (!privet_lister_) {
     service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
     privet_lister_.reset(
@@ -208,20 +191,19 @@ void LocalDiscoveryUIHandler::HandleIsVisible(const base::ListValue* args) {
 void LocalDiscoveryUIHandler::HandleRegisterDevice(
     const base::ListValue* args) {
   std::string device;
-
   bool rv = args->GetString(0, &device);
   DCHECK(rv);
 
-  DeviceDescriptionMap::iterator found = device_descriptions_.find(device);
-  if (found == device_descriptions_.end()) {
+  DeviceDescriptionMap::iterator it = device_descriptions_.find(device);
+  if (it == device_descriptions_.end()) {
     OnSetupError();
     return;
   }
 
-  if (found->second.version < kCloudDevicesPrivetVersion) {
+  if (it->second.version < kCloudDevicesPrivetVersion) {
     privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(device);
     privet_resolution_->Start(
-        found->second.address,
+        it->second.address,
         base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
                    base::Unretained(this)));
   } else {
@@ -279,25 +261,23 @@ void LocalDiscoveryUIHandler::StartRegisterHTTP(
   current_http_client_ =
       cloud_print::PrivetV1HTTPClient::CreateDefault(std::move(http_client));
 
-  std::string user = GetSyncAccount();
-
   if (!current_http_client_) {
     SendRegisterError();
     return;
   }
 
   current_register_operation_ =
-      current_http_client_->CreateRegisterOperation(user, this);
+      current_http_client_->CreateRegisterOperation(GetSyncAccount(), this);
   current_register_operation_->Start();
 }
 
 void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
-    cloud_print::PrivetRegisterOperation* operation,
+    PrivetRegisterOperation* operation,
     const std::string& token,
     const GURL& url) {
   web_ui()->CallJavascriptFunction(
       "local_discovery.onRegistrationConfirmedOnPrinter");
-  if (device_descriptions_.count(current_http_client_->GetName()) == 0) {
+  if (!ContainsKey(device_descriptions_, current_http_client_->GetName())) {
     SendRegisterError();
     return;
   }
@@ -327,7 +307,8 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterError(
         web_ui()->CallJavascriptFunction(
             "local_discovery.onRegistrationTimeout");
       return;
-    } else if (error == cloud_print::kPrivetErrorCancel) {
+    }
+    if (error == cloud_print::kPrivetErrorCancel) {
       web_ui()->CallJavascriptFunction(
             "local_discovery.onRegistrationCanceledPrinter");
       return;
@@ -435,17 +416,16 @@ void LocalDiscoveryUIHandler::SendRegisterDone(
   // block the printer's announcement.
   privet_lister_->DiscoverNewDevices(false);
 
-  DeviceDescriptionMap::iterator found =
-      device_descriptions_.find(service_name);
+  DeviceDescriptionMap::iterator it = device_descriptions_.find(service_name);
 
-  if (found == device_descriptions_.end()) {
+  if (it == device_descriptions_.end()) {
     // TODO(noamsml): Handle the case where a printer's record is not present at
     // the end of registration.
     SendRegisterError();
     return;
   }
 
-  const DeviceDescription& device = found->second;
+  const DeviceDescription& device = it->second;
   base::DictionaryValue device_value;
 
   device_value.SetString(kDictionaryKeyType, device.type);
@@ -459,22 +439,22 @@ void LocalDiscoveryUIHandler::SendRegisterDone(
 }
 
 void LocalDiscoveryUIHandler::SetIsVisible(bool visible) {
-  if (visible != is_visible_) {
-    g_num_visible += visible ? 1 : -1;
-    is_visible_ = visible;
-  }
+  if (visible == is_visible_)
+    return;
+
+  g_num_visible += visible ? 1 : -1;
+  is_visible_ = visible;
 }
 
-std::string LocalDiscoveryUIHandler::GetSyncAccount() {
+std::string LocalDiscoveryUIHandler::GetSyncAccount() const {
   Profile* profile = Profile::FromWebUI(web_ui());
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfileIfExists(profile);
 
-  if (!signin_manager) {
-    return "";
-  }
-
-  return signin_manager->GetAuthenticatedAccountInfo().email;
+  std::string email;
+  if (signin_manager)
+    email = signin_manager->GetAuthenticatedAccountInfo().email;
+  return email;
 }
 
 // TODO(noamsml): Create master object for registration flow.
@@ -497,10 +477,7 @@ void LocalDiscoveryUIHandler::CheckUserLoggedIn() {
 }
 
 void LocalDiscoveryUIHandler::CheckListingDone() {
-  int started = 0;
-  if (cloud_print_printer_list_)
-    ++started;
-
+  int started = cloud_print_printer_list_ ? 1 : 0;
   if (started > failed_list_count_ + succeded_list_count_)
     return;
 
@@ -513,10 +490,8 @@ void LocalDiscoveryUIHandler::CheckListingDone() {
   base::ListValue devices_list;
   std::set<std::string> local_ids;
 
-  for (DeviceDescriptionMap::iterator i = device_descriptions_.begin();
-       i != device_descriptions_.end(); i++) {
-    local_ids.insert(i->second.id);
-  }
+  for (const auto& it : device_descriptions_)
+    local_ids.insert(it.second.id);
 
   ReadDevicesList(cloud_devices_, local_ids, &devices_list);
 
@@ -529,14 +504,17 @@ std::unique_ptr<GCDApiFlow> LocalDiscoveryUIHandler::CreateApiFlow() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile)
     return std::unique_ptr<GCDApiFlow>();
+
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   if (!token_service)
     return std::unique_ptr<GCDApiFlow>();
+
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetInstance()->GetForProfile(profile);
   if (!signin_manager)
     return std::unique_ptr<GCDApiFlow>();
+
   return GCDApiFlow::Create(profile->GetRequestContext(),
                             token_service,
                             signin_manager->GetAuthenticatedAccountId());
@@ -544,7 +522,6 @@ std::unique_ptr<GCDApiFlow> LocalDiscoveryUIHandler::CreateApiFlow() {
 
 bool LocalDiscoveryUIHandler::IsUserSupervisedOrOffTheRecord() {
   Profile* profile = Profile::FromWebUI(web_ui());
-
   return profile->IsSupervised() || profile->IsOffTheRecord();
 }
 
@@ -567,17 +544,12 @@ void LocalDiscoveryUIHandler::StartCloudPrintConnector() {
         cloud_print_callback);
   }
 
-  if (cloud_print_connector_ui_enabled_) {
-    SetupCloudPrintConnectorSection();
-    RefreshCloudPrintStatusFromService();
-  } else {
-    RemoveCloudPrintConnectorSection();
-  }
+  SetupCloudPrintConnectorSection();
+  RefreshCloudPrintStatusFromService();
 }
 
 void LocalDiscoveryUIHandler::OnCloudPrintPrefsChanged() {
-  if (cloud_print_connector_ui_enabled_)
-    SetupCloudPrintConnectorSection();
+  SetupCloudPrintConnectorSection();
 }
 
 void LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog(
@@ -585,14 +557,10 @@ void LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog(
   content::RecordAction(
       base::UserMetricsAction("Options_EnableCloudPrintProxy"));
   // Open the connector enable page in the current tab.
-  Profile* profile = Profile::FromWebUI(web_ui());
-  content::OpenURLParams params(
-      cloud_devices::GetCloudPrintEnableURL(
-          CloudPrintProxyServiceFactory::GetForProfile(profile)->proxy_id()),
-      content::Referrer(),
-      CURRENT_TAB,
-      ui::PAGE_TRANSITION_LINK,
-      false);
+  content::OpenURLParams params(cloud_devices::GetCloudPrintEnableURL(
+                                    GetCloudPrintProxyService()->proxy_id()),
+                                content::Referrer(), CURRENT_TAB,
+                                ui::PAGE_TRANSITION_LINK, false);
   web_ui()->GetWebContents()->OpenURL(params);
 }
 
@@ -600,25 +568,17 @@ void LocalDiscoveryUIHandler::HandleDisableCloudPrintConnector(
     const base::ListValue* args) {
   content::RecordAction(
       base::UserMetricsAction("Options_DisableCloudPrintProxy"));
-  CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()))->
-      DisableForUser();
+  GetCloudPrintProxyService()->DisableForUser();
 }
 
 void LocalDiscoveryUIHandler::SetupCloudPrintConnectorSection() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-
-  if (!CloudPrintProxyServiceFactory::GetForProfile(profile)) {
-    cloud_print_connector_ui_enabled_ = false;
-    RemoveCloudPrintConnectorSection();
-    return;
-  }
-
   bool cloud_print_connector_allowed =
       !cloud_print_connector_enabled_.IsManaged() ||
       cloud_print_connector_enabled_.GetValue();
   base::FundamentalValue allowed(cloud_print_connector_allowed);
 
   std::string email;
+  Profile* profile = Profile::FromWebUI(web_ui());
   if (profile->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail) &&
       cloud_print_connector_allowed) {
     email = profile->GetPrefs()->GetString(prefs::kCloudPrintEmail);
@@ -643,17 +603,14 @@ void LocalDiscoveryUIHandler::SetupCloudPrintConnectorSection() {
       allowed);
 }
 
-void LocalDiscoveryUIHandler::RemoveCloudPrintConnectorSection() {
-  web_ui()->CallJavascriptFunction(
-      "local_discovery.removeCloudPrintConnectorSection");
-}
-
 void LocalDiscoveryUIHandler::RefreshCloudPrintStatusFromService() {
-  if (cloud_print_connector_ui_enabled_)
-    CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()))->
-        RefreshStatusFromService();
+  GetCloudPrintProxyService()->RefreshStatusFromService();
 }
 
-#endif // cloud print connector option stuff
+CloudPrintProxyService* LocalDiscoveryUIHandler::GetCloudPrintProxyService() {
+  return CloudPrintProxyServiceFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
+}
+#endif  // defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
 
 }  // namespace local_discovery

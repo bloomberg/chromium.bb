@@ -25,22 +25,22 @@ var tests = [
   function getHostName() {
     chrome.cloudPrintPrivate.getHostName(
         chrome.test.callbackPass(function(result) {
-           chrome.test.assertNoLastError();
-           chrome.test.assertEq("TestHostName", result);
+            chrome.test.assertNoLastError();
+            chrome.test.assertEq("TestHostName", result);
         }));
   },
   function getPrinters() {
     chrome.cloudPrintPrivate.getPrinters(
         chrome.test.callbackPass(function(result) {
-             chrome.test.assertNoLastError();
-             chrome.test.assertEq(result, ['printer1', 'printer2']);
-          }));
+            chrome.test.assertNoLastError();
+            chrome.test.assertEq(result, ['printer1', 'printer2']);
+        }));
   },
   function getClientId() {
     chrome.cloudPrintPrivate.getClientId(
         chrome.test.callbackPass(function(result) {
-          chrome.test.assertNoLastError();
-          chrome.test.assertEq("TestAPIClient", result);
+            chrome.test.assertNoLastError();
+            chrome.test.assertEq("TestAPIClient", result);
         }));
   }
 ];
