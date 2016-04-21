@@ -27,6 +27,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/updater/extension_cache.h"
+#include "extensions/browser/updater/extension_downloader_test_delegate.h"
 #include "extensions/browser/updater/request_queue_impl.h"
 #include "extensions/browser/updater/safe_manifest_parser.h"
 #include "extensions/common/extension_urls.h"
@@ -89,6 +90,8 @@ const char kGoogleDotCom[] = "google.com";
 const char kTokenServiceConsumerId[] = "extension_downloader";
 const char kWebstoreOAuth2Scope[] =
     "https://www.googleapis.com/auth/chromewebstore.readonly";
+
+ExtensionDownloaderTestDelegate* g_test_delegate = nullptr;
 
 #define RETRY_HISTOGRAM(name, retry_count, url)                           \
   if ((url).DomainIs(kGoogleDotCom)) {                                    \
@@ -278,6 +281,12 @@ void ExtensionDownloader::SetWebstoreIdentityProvider(
   identity_provider_.swap(identity_provider);
 }
 
+// static
+void ExtensionDownloader::set_test_delegate(
+    ExtensionDownloaderTestDelegate* delegate) {
+  g_test_delegate = delegate;
+}
+
 bool ExtensionDownloader::AddExtensionData(const std::string& id,
                                            const Version& version,
                                            Manifest::Type extension_type,
@@ -405,6 +414,11 @@ void ExtensionDownloader::ReportStats() const {
 
 void ExtensionDownloader::StartUpdateCheck(
     scoped_ptr<ManifestFetchData> fetch_data) {
+  if (g_test_delegate) {
+    g_test_delegate->StartUpdateCheck(this, delegate_, std::move(fetch_data));
+    return;
+  }
+
   const std::set<std::string>& id_set(fetch_data->extension_ids());
 
   if (!ExtensionsBrowserClient::Get()->IsBackgroundUpdateAllowed()) {

@@ -4,9 +4,12 @@
 
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
 
+#include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -23,11 +26,14 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_set.h"
 #include "extensions/common/api/runtime.h"
+#include "extensions/common/constants.h"
+#include "net/base/backoff_entry.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -55,17 +61,95 @@ const int kFastReloadTime = 10000;
 // disabled.
 const int kFastReloadCount = 5;
 
+// A holder class for the policy we use for exponential backoff of update check
+// requests.
+class BackoffPolicy {
+ public:
+  BackoffPolicy();
+  ~BackoffPolicy();
+
+  // Returns the actual policy to use.
+  static const net::BackoffEntry::Policy* Get();
+
+ private:
+  net::BackoffEntry::Policy policy_;
+};
+
+// We use a LazyInstance since one of the the policy values references an
+// extern symbol, which would cause a static initializer to be generated if we
+// just declared the policy struct as a static variable.
+base::LazyInstance<BackoffPolicy> g_backoff_policy = LAZY_INSTANCE_INITIALIZER;
+
+BackoffPolicy::BackoffPolicy() {
+  policy_ = {
+      // num_errors_to_ignore
+      0,
+
+      // initial_delay_ms (note that we set 'always_use_initial_delay' to false
+      // below)
+      1000 * extensions::kDefaultUpdateFrequencySeconds,
+
+      // multiply_factor
+      1,
+
+      // jitter_factor
+      0.1,
+
+      // maximum_backoff_ms (-1 means no maximum)
+      -1,
+
+      // entry_lifetime_ms (-1 means never discard)
+      -1,
+
+      // always_use_initial_delay
+      false,
+  };
+}
+
+BackoffPolicy::~BackoffPolicy() {}
+
+// static
+const net::BackoffEntry::Policy* BackoffPolicy::Get() {
+  return &g_backoff_policy.Get().policy_;
+}
+
+base::TickClock* g_test_clock = nullptr;
+
 }  // namespace
+
+struct ChromeRuntimeAPIDelegate::UpdateCheckInfo {
+ public:
+  UpdateCheckInfo() {
+    if (g_test_clock)
+      backoff.reset(
+          new net::BackoffEntry(BackoffPolicy::Get(), g_test_clock));
+    else
+      backoff.reset(new net::BackoffEntry(BackoffPolicy::Get()));
+  }
+
+  std::unique_ptr<net::BackoffEntry> backoff;
+  std::vector<UpdateCheckCallback> callbacks;
+};
 
 ChromeRuntimeAPIDelegate::ChromeRuntimeAPIDelegate(
     content::BrowserContext* context)
-    : browser_context_(context), registered_for_updates_(false) {
+    : browser_context_(context),
+      registered_for_updates_(false),
+      extension_registry_observer_(this) {
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
                  content::NotificationService::AllSources());
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(browser_context_));
 }
 
 ChromeRuntimeAPIDelegate::~ChromeRuntimeAPIDelegate() {
+}
+
+// static
+void ChromeRuntimeAPIDelegate::set_tick_clock_for_tests(
+    base::TickClock* clock) {
+  g_test_clock = clock;
 }
 
 void ChromeRuntimeAPIDelegate::AddUpdateObserver(
@@ -152,17 +236,20 @@ bool ChromeRuntimeAPIDelegate::CheckForUpdates(
   if (!updater) {
     return false;
   }
-  if (!updater->CheckExtensionSoon(
-          extension_id,
-          base::Bind(&ChromeRuntimeAPIDelegate::UpdateCheckComplete,
-                     base::Unretained(this),
-                     extension_id))) {
+
+  UpdateCheckInfo& info = update_check_info_[extension_id];
+
+  // If not enough time has elapsed, or we have 10 or more outstanding calls,
+  // return a status of throttled.
+  if (info.backoff->ShouldRejectRequest() || info.callbacks.size() >= 10) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, UpdateCheckResult(true, kUpdateThrottled, "")));
   } else {
-    UpdateCallbackList& callbacks = pending_update_checks_[extension_id];
-    callbacks.push_back(callback);
+    info.callbacks.push_back(callback);
+    updater->CheckExtensionSoon(
+        extension_id, base::Bind(&ChromeRuntimeAPIDelegate::UpdateCheckComplete,
+                                 base::Unretained(this), extension_id));
   }
   return true;
 }
@@ -259,11 +346,31 @@ void ChromeRuntimeAPIDelegate::Observe(
   }
 }
 
+void ChromeRuntimeAPIDelegate::OnExtensionInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update) {
+  if (!is_update)
+    return;
+  auto info = update_check_info_.find(extension->id());
+  if (info != update_check_info_.end()) {
+    info->second.backoff->Reset();
+  }
+}
+
 void ChromeRuntimeAPIDelegate::UpdateCheckComplete(
     const std::string& extension_id) {
   ExtensionSystem* system = ExtensionSystem::Get(browser_context_);
   ExtensionService* service = system->extension_service();
   const Extension* update = service->GetPendingExtensionUpdate(extension_id);
+  UpdateCheckInfo& info = update_check_info_[extension_id];
+
+  // We always inform the BackoffEntry of a "failure" here, because we only
+  // want to consider an update check request a success from a throttling
+  // standpoint once the extension goes on to actually update to a new
+  // version. See OnExtensionInstalled for where we reset the BackoffEntry.
+  info.backoff->InformOfRequest(false);
+
   if (update) {
     CallUpdateCallbacks(
         extension_id,
@@ -277,12 +384,12 @@ void ChromeRuntimeAPIDelegate::UpdateCheckComplete(
 void ChromeRuntimeAPIDelegate::CallUpdateCallbacks(
     const std::string& extension_id,
     const UpdateCheckResult& result) {
-  UpdateCallbackList callbacks = pending_update_checks_[extension_id];
-  pending_update_checks_.erase(extension_id);
-  for (UpdateCallbackList::const_iterator iter = callbacks.begin();
-       iter != callbacks.end();
-       ++iter) {
-    const UpdateCheckCallback& callback = *iter;
+  auto it = update_check_info_.find(extension_id);
+  if (it == update_check_info_.end())
+    return;
+  std::vector<UpdateCheckCallback> callbacks;
+  it->second.callbacks.swap(callbacks);
+  for (const auto& callback : callbacks) {
     callback.Run(result);
   }
 }
