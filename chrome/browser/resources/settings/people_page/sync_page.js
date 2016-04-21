@@ -30,6 +30,7 @@ Polymer({
 
   behaviors: [
     I18nBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -42,7 +43,7 @@ Polymer({
     },
 
     /**
-     * The current sync preferences, supplied by settings.SyncPrivateApi.
+     * The current sync preferences, supplied by SyncBrowserProxy.
      * @type {?settings.SyncPrefs}
      */
     syncPrefs: {
@@ -78,11 +79,22 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private {!settings.SyncBrowserProxyImpl} */
+    browserProxy_: {
+      type: Object,
+      value: function() {
+        return settings.SyncBrowserProxyImpl.getInstance();
+      },
+    },
   },
 
-  created: function() {
-    settings.SyncPrivateApi.setSyncPrefsCallback(
-        this.handleSyncPrefsFetched_.bind(this));
+  /** @override */
+  attached: function() {
+    this.addWebUIListener('page-status-changed',
+                          this.handlePageStatusChanged_.bind(this));
+    this.addWebUIListener('sync-prefs-changed',
+                          this.handleSyncPrefsChanged_.bind(this));
   },
 
   /** @private */
@@ -92,17 +104,17 @@ Polymer({
         this.currentRoute.subpage[0] == 'sync') {
       // Display loading page until the settings have been retrieved.
       this.$.pages.selected = 'loading';
-      settings.SyncPrivateApi.didNavigateToSyncPage();
+      this.browserProxy_.didNavigateToSyncPage();
     } else {
-      settings.SyncPrivateApi.didNavigateAwayFromSyncPage();
+      this.browserProxy_.didNavigateAwayFromSyncPage();
     }
   },
 
   /**
-   * Handler for when the sync state is pushed from settings.SyncPrivateApi.
+   * Handler for when the sync preferences are updated.
    * @private
    */
-  handleSyncPrefsFetched_: function(syncPrefs) {
+  handleSyncPrefsChanged_: function(syncPrefs) {
     this.syncPrefs = syncPrefs;
 
     this.askOldGooglePassphrase =
@@ -135,12 +147,16 @@ Polymer({
 
   /** @private */
   onCancelTap_: function() {
-    // Event is caught by settings-animated-pages.
-    this.fire('subpage-back');
+    if (this.currentRoute.section == 'people' &&
+        this.currentRoute.subpage.length == 1 &&
+        this.currentRoute.subpage[0] == 'sync') {
+      // Event is caught by settings-animated-pages.
+      this.fire('subpage-back');
+    }
   },
 
   /**
-   * Sets the sync data by sending it to the settings.SyncPrivateApi.
+   * Sets the sync data by sending it to the browser.
    * @private
    */
   onOkTap_: function() {
@@ -164,22 +180,21 @@ Polymer({
       field.value = '';
     }
 
-    settings.SyncPrivateApi.setSyncPrefs(
-        this.syncPrefs, this.setPageStatusCallback_.bind(this));
+    this.browserProxy_.setSyncPrefs(this.syncPrefs).then(
+        this.handlePageStatusChanged_.bind(this));
   },
 
   /**
-   * Callback invoked from calling settings.SyncPrivateApi.setSyncPrefs().
-   * @param {!settings.PageStatus} callbackState
+   * Called when the page status updates.
+   * @param {!settings.PageStatus} pageStatus
    * @private
    */
-  setPageStatusCallback_: function(callbackState) {
-    if (callbackState == settings.PageStatus.DONE) {
+  handlePageStatusChanged_: function(pageStatus) {
+    if (pageStatus == settings.PageStatus.DONE) {
       this.onCancelTap_();
-    } else if (callbackState == settings.PageStatus.TIMEOUT) {
+    } else if (pageStatus == settings.PageStatus.TIMEOUT) {
       this.$.pages.selected = 'timeout';
-    } else if (callbackState ==
-               settings.PageStatus.PASSPHRASE_ERROR) {
+    } else if (pageStatus == settings.PageStatus.PASSPHRASE_FAILED) {
       this.$$('#incorrectPassphraseError').hidden = false;
     }
   },

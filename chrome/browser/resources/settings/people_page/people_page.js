@@ -39,7 +39,7 @@ Polymer({
     },
 
     /**
-     * The current sync status, supplied by settings.SyncPrivateApi.
+     * The current sync status, supplied by SyncBrowserProxy.
      * @type {?settings.SyncStatus}
      */
     syncStatus: Object,
@@ -53,6 +53,14 @@ Polymer({
      * The current profile name.
      */
     profileName_: String,
+
+    /** @private {!settings.SyncBrowserProxyImpl} */
+    syncBrowserProxy_: {
+      type: Object,
+      value: function() {
+        return settings.SyncBrowserProxyImpl.getInstance();
+      },
+    },
 
 <if expr="chromeos">
     /** @private {!settings.EasyUnlockBrowserProxyImpl} */
@@ -105,8 +113,10 @@ Polymer({
     this.addWebUIListener('profile-info-changed',
                           this.handleProfileInfo_.bind(this));
 
-    settings.SyncPrivateApi.getSyncStatus(
-        this.handleSyncStatusFetched_.bind(this));
+    this.syncBrowserProxy_.getSyncStatus().then(
+        this.handleSyncStatus_.bind(this));
+    this.addWebUIListener('sync-status-changed',
+                          this.handleSyncStatus_.bind(this));
 
 <if expr="chromeos">
     if (this.easyUnlockAllowed_) {
@@ -130,10 +140,10 @@ Polymer({
   },
 
   /**
-   * Handler for when the sync state is pushed from settings.SyncPrivateApi.
+   * Handler for when the sync state is pushed from the browser.
    * @private
    */
-  handleSyncStatusFetched_: function(syncStatus) {
+  handleSyncStatus_: function(syncStatus) {
     this.syncStatus = syncStatus;
 
     // TODO(tommycli): Remove once we figure out how to refactor the sync
@@ -153,7 +163,7 @@ Polymer({
 
   /** @private */
   onActionLinkTap_: function() {
-    settings.SyncPrivateApi.showSetupUI();
+    this.syncBrowserProxy_.showSetupUI();
   },
 
   /** @private */
@@ -175,7 +185,7 @@ Polymer({
 
   /** @private */
   onSigninTap_: function() {
-    settings.SyncPrivateApi.startSignIn();
+    this.syncBrowserProxy_.startSignIn();
   },
 
   /** @private */
@@ -186,7 +196,7 @@ Polymer({
   /** @private */
   onDisconnectConfirm_: function() {
     var deleteProfile = this.$.deleteProfile && this.$.deleteProfile.checked;
-    settings.SyncPrivateApi.disconnect(deleteProfile);
+    this.syncBrowserProxy_.signOut(deleteProfile);
 
     // Dialog automatically closed because button has dialog-confirm attribute.
   },
@@ -211,7 +221,7 @@ Polymer({
   /** @private */
   onManageOtherPeople_: function() {
 <if expr="not chromeos">
-    settings.SyncPrivateApi.manageOtherPeople();
+    this.syncBrowserProxy_.manageOtherPeople();
 </if>
 <if expr="chromeos">
     this.$.pages.setSubpageChain(['users']);

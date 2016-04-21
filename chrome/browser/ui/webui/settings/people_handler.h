@@ -41,6 +41,14 @@ class PeopleHandler : public SettingsPageUIHandler,
                       public LoginUIService::LoginUI,
                       public sync_driver::SyncServiceObserver {
  public:
+  // TODO(tommycli): Remove these strings and instead use WebUIListener events.
+  // These string constants are used from JavaScript (sync_browser_proxy.js).
+  static const char kSpinnerPageStatus[];
+  static const char kConfigurePageStatus[];
+  static const char kTimeoutPageStatus[];
+  static const char kDonePageStatus[];
+  static const char kPassphraseFailedPageStatus[];
+
   explicit PeopleHandler(Profile* profile);
   ~PeopleHandler() override;
 
@@ -78,7 +86,7 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // Returns a newly created dictionary with a number of properties that
   // correspond to the status of sync.
-  std::unique_ptr<base::DictionaryValue> GetSyncStateDictionary();
+  std::unique_ptr<base::DictionaryValue> GetSyncStatusDictionary();
 
  protected:
   friend class PeopleHandlerTest;
@@ -106,9 +114,6 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerFirstSigninTest, DisplayBasicLogin);
 
   bool is_configuring_sync() const { return configuring_sync_; }
-
-  // Called when configuring sync is done to close the dialog and start syncing.
-  void ConfigureSyncDone();
 
   // Helper routine that gets the ProfileSyncService associated with the parent
   // profile.
@@ -164,12 +169,11 @@ class PeopleHandler : public SettingsPageUIHandler,
   // If a wizard already exists, focus it and return true.
   bool FocusExistingWizardIfPresent();
 
-  // Display the configure sync UI. If |passphrase_failed| is true, the account
-  // requires a passphrase and one hasn't been provided or it was invalid.
-  void DisplayConfigureSync(bool passphrase_failed);
+  // Pushes the updated sync prefs to JavaScript.
+  void PushSyncPrefs();
 
   // Sends the current sync status to the JavaScript WebUI code.
-  void UpdateSyncState();
+  void UpdateSyncStatus();
 
   // Will be called when the kSigninAllowed pref has changed.
   void OnSigninAllowedPrefChange();
