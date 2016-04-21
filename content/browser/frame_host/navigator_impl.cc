@@ -647,9 +647,8 @@ void NavigatorImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                                    WindowOpenDisposition disposition,
                                    bool should_replace_current_entry,
                                    bool user_gesture) {
-  // This call only makes sense for subframes if OOPIFs are possible.
-  DCHECK(!render_frame_host->GetParent() ||
-         SiteIsolationPolicy::AreCrossProcessFramesPossible());
+  // Note: This can be called for subframes (even when OOPIFs are not possible)
+  // if the disposition calls for a different window.
 
   // Only the current RenderFrameHost should be sending an OpenURL request.
   // Pending RenderFrameHost should know where it is navigating and pending

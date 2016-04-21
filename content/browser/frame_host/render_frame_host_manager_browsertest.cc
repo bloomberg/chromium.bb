@@ -2688,4 +2688,21 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   }
 }
 
+// Test coverage for attempts to open subframe links in new windows, to prevent
+// incorrect invariant checks.  See https://crbug.com/605055.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, CtrlClickSubframeLink) {
+  StartEmbeddedServer();
+
+  // Load a page with a subframe link.
+  NavigateToURL(shell(), embedded_test_server()->GetURL(
+                             "/ctrl-click-subframe-link.html"));
+
+  // Simulate a ctrl click on the link.  This won't actually create a new Shell
+  // because Shell::OpenURLFromTab only supports CURRENT_TAB, but it's enough to
+  // trigger the crash from https://crbug.com/605055.
+  EXPECT_TRUE(
+      ExecuteScript(shell()->web_contents(),
+                    "window.domAutomationController.send(ctrlClickLink());"));
+}
+
 }  // namespace content
