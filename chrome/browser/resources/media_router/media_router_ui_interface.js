@@ -27,15 +27,6 @@ cr.define('media_router.ui', function() {
   }
 
   /**
-   * Handles the search response by forwarding |sinkId| to the container.
-   *
-   * @param {string} sinkId The ID of the sink found by search.
-   */
-  function receiveSearchResult(sinkId) {
-    container.onReceiveSearchResult(sinkId);
-  }
-
-  /**
    * Sets the cast mode list.
    *
    * @param {!Array<!media_router.CastMode>} castModeList
@@ -167,7 +158,6 @@ cr.define('media_router.ui', function() {
 
   return {
     onCreateRouteResponseReceived: onCreateRouteResponseReceived,
-    receiveSearchResult: receiveSearchResult,
     setCastModeList: setCastModeList,
     setElements: setElements,
     setFirstRunFlowData: setFirstRunFlowData,
@@ -366,27 +356,6 @@ cr.define('media_router.browserApi', function() {
                 [{sinkId: sinkId, selectedCastMode: selectedCastMode}]);
   }
 
-  /**
-   * Requests that the media router search all providers for a sink matching
-   * |searchCriteria| that can be used with the media source associated with the
-   * cast mode |selectedCastMode|. If such a sink is found, a route is also
-   * created between the sink and the media source.
-   *
-   * @param {string} sinkId Sink ID of the pseudo sink generating the request.
-   * @param {string} searchCriteria Search criteria for the route providers.
-   * @param {string} domain User's current hosted domain.
-   * @param {number} selectedCastMode The value of the cast mode to be used with
-   *   the sink.
-   */
-  function searchSinksAndCreateRoute(
-      sinkId, searchCriteria, domain, selectedCastMode) {
-    chrome.send('searchSinksAndCreateRoute',
-                [{sinkId: sinkId,
-                  searchCriteria: searchCriteria,
-                  domain: domain,
-                  selectedCastMode: selectedCastMode}]);
-  }
-
   return {
     acknowledgeFirstRunFlow: acknowledgeFirstRunFlow,
     actOnIssue: actOnIssue,
@@ -408,6 +377,5 @@ cr.define('media_router.browserApi', function() {
     reportTimeToInitialActionClose: reportTimeToInitialActionClose,
     requestInitialData: requestInitialData,
     requestRoute: requestRoute,
-    searchSinksAndCreateRoute: searchSinksAndCreateRoute,
   };
 });

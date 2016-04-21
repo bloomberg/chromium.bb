@@ -40,12 +40,6 @@ cr.define('media_router_container_filter', function() {
       var container;
 
       /**
-       * The blocking issue to show.
-       * @type {?media_router.Issue}
-       */
-      var fakeNonBlockingIssue;
-
-      /**
        * The list of current routes.
        * @type {!Array<!media_router.Route>}
        */
@@ -107,7 +101,6 @@ cr.define('media_router_container_filter', function() {
         checkCurrentView = test_base.checkCurrentView;
         checkElementsVisibleWithId = test_base.checkElementsVisibleWithId;
         checkElementText = test_base.checkElementText;
-        fakeNonBlockingIssue = test_base.fakeNonBlockingIssue;
         fakeRouteList = test_base.fakeRouteList;
         fakeSinkList = test_base.fakeSinkList;
         searchTextAll = test_base.searchTextAll;
@@ -303,27 +296,6 @@ cr.define('media_router_container_filter', function() {
               });
             });
           });
-        });
-      });
-
-      // Tests for expected visible UI when the view is FILTER, and there is
-      // a non blocking issue.
-      test('filter view visibility non blocking issue', function(done) {
-        container.showSinkList_();
-
-        // Set an non-empty sink list.
-        container.allSinks = fakeSinkList;
-
-        // Set a non-blocking issue. The issue should be shown.
-        container.issue = fakeNonBlockingIssue;
-        MockInteractions.tap(container.$['sink-search-icon']);
-        setTimeout(function() {
-          checkElementsVisibleWithId(['container-header',
-                                      'issue-banner',
-                                      'search-results',
-                                      'sink-search',
-                                      'sink-list-view']);
-          done();
         });
       });
 

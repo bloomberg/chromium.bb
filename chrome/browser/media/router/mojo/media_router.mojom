@@ -114,14 +114,6 @@ struct RouteMessage {
   array<uint8>? data;
 };
 
-struct SinkSearchCriteria {
-  // Input to the search method which each Media Route Provider may interpret
-  // differently.
-  string input;
-  // The user's current hosted domain.
-  string domain;
-};
-
 // Maps to a ResultCode value in route_request_result.h
 // The enum defined here is a subset of those defined in route_request_result.h.
 enum RouteRequestResultCode {
@@ -196,7 +188,7 @@ interface MediaRouteProvider {
 
   // Creates a new route for |media_source| that connects to the established
   // route given by |route_id|.
-  //
+  // 
   // The presentation ID of the new route will be |presentation_id|, but it may
   // be overridden by a provider implementation.  The presentation ID will be
   // used by the presentation API to refer to the created route.
@@ -297,24 +289,6 @@ interface MediaRouteProvider {
 
   // Updates media sinks capable of displaying |media_source|.
   UpdateMediaSinks(string media_source);
-
-  // Indicates that the Media Router is interested in finding a sink that
-  // matches |search_criteria| and is compatible with the source urn
-  // |media_source|. The user's current domain is also used to search. If a sink
-  // is found, a route is also created from |media_source| to the new sink. The
-  // parameters beyond |search_criteria| will be forwarded to CreateRoute if a
-  // sink is found.
-  SearchSinksAndCreateRoute(string sink_id,
-                            string media_source,
-                            SinkSearchCriteria search_criteria,
-                            string presentation_id,
-                            string origin,
-                            int32 tab_id,
-                            int64 timeout_millis,
-                            bool off_the_record) =>
-                                (MediaRoute? route,
-                                 string? error_text,
-                                 RouteRequestResultCode result_code);
 };
 
 // Interface for a service which observes state changes across media
@@ -358,12 +332,6 @@ interface MediaRouter {
   // |origins| is empty, the result is valid for any origin.
   OnSinksReceived(string media_source, array<MediaSink> sinks,
       array<string> origins);
-
-  // Called when the Media Route Manager has found a sink for a current search
-  // to inform the MR and UI of the ID of the new sink. The sink object itself
-  // will be returned in the next OnSinksReceived() as part of the normal sink
-  // list update process. |pseudo_sink_id| identifies the current search.
-  OnSearchSinkIdReceived(string pseudo_sink_id, string sink_id);
 
   // Called when issues are reported for media routes.
   OnIssue(Issue issue);

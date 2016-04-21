@@ -237,21 +237,6 @@ void MediaRouterMojoImpl::OnSinksReceived(
   }
 }
 
-void MediaRouterMojoImpl::OnSearchSinkIdReceived(
-    const mojo::String& pseudo_sink_id,
-    const mojo::String& sink_id) {
-  auto sink_id_callback_entry = search_callbacks_.find(pseudo_sink_id);
-  if (sink_id_callback_entry == search_callbacks_.end()) {
-    // Another concurrent search query might have already called the callback
-    // the MRPM was trying to reference.
-    return;
-  }
-  for (auto& callback : sink_id_callback_entry->second) {
-    callback.Run(sink_id);
-  }
-  search_callbacks_.erase(sink_id_callback_entry);
-}
-
 void MediaRouterMojoImpl::OnRoutesUpdated(
     mojo::Array<interfaces::MediaRoutePtr> routes,
     const mojo::String& media_source,
@@ -452,28 +437,6 @@ void MediaRouterMojoImpl::OnUserGesture() {
 #if defined(OS_WIN)
   EnsureMdnsDiscoveryEnabled();
 #endif
-}
-
-void MediaRouterMojoImpl::SearchSinksAndCreateRoute(
-    const MediaSink::Id& sink_id,
-    const MediaSource::Id& source_id,
-    const std::string& search_input,
-    const std::string& domain,
-    const GURL& origin,
-    content::WebContents* web_contents,
-    const std::vector<MediaRouteResponseCallback>& route_callbacks,
-    const MediaSinkSearchResponseCallback& sink_callback,
-    base::TimeDelta timeout,
-    bool off_the_record) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
-  SetWakeReason(MediaRouteProviderWakeReason::SEARCH_SINKS);
-  RunOrDefer(
-      base::Bind(&MediaRouterMojoImpl::DoSearchSinksAndCreateRoute,
-                 base::Unretained(this), sink_id, source_id, search_input,
-                 domain, origin.is_empty() ? "" : origin.spec(), tab_id,
-                 route_callbacks, sink_callback, timeout, off_the_record));
 }
 
 bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
@@ -742,40 +705,6 @@ void MediaRouterMojoImpl::DoStopListeningForRouteMessages(
   // It will be removed when there are no more observers by the time
   // |OnRouteMessagesReceived| is invoked.
   media_route_provider_->StopListeningForRouteMessages(route_id);
-}
-
-void MediaRouterMojoImpl::DoSearchSinksAndCreateRoute(
-    const MediaSink::Id& sink_id,
-    const MediaSource::Id& source_id,
-    const std::string& search_input,
-    const std::string& domain,
-    const std::string& origin,
-    int tab_id,
-    const std::vector<MediaRouteResponseCallback>& route_callbacks,
-    const MediaSinkSearchResponseCallback& sink_callback,
-    base::TimeDelta timeout,
-    bool off_the_record) {
-  auto sink_callback_entry = search_callbacks_.find(sink_id);
-  if (sink_callback_entry != search_callbacks_.end()) {
-    sink_callback_entry->second.push_back(sink_callback);
-  } else {
-    std::vector<MediaSinkSearchResponseCallback> callbacks{sink_callback};
-    search_callbacks_.insert(std::make_pair(sink_id, callbacks));
-  }
-
-  std::string presentation_id("mr_");
-  presentation_id += base::GenerateGUID();
-  DVLOG_WITH_INSTANCE(1) << "SearchSinksAndCreateRoute";
-  auto sink_search_criteria = interfaces::SinkSearchCriteria::New();
-  sink_search_criteria->input = search_input;
-  sink_search_criteria->domain = domain;
-  media_route_provider_->SearchSinksAndCreateRoute(
-      sink_id, source_id, std::move(sink_search_criteria), presentation_id,
-      origin, tab_id,
-      timeout > base::TimeDelta() ? timeout.InMilliseconds() : 0,
-      off_the_record, base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
-                                 weak_factory_.GetWeakPtr(), presentation_id,
-                                 off_the_record, route_callbacks));
 }
 
 void MediaRouterMojoImpl::OnRouteMessagesReceived(

@@ -73,9 +73,6 @@ void AddPolymerElements(content::WebUIDataSource* html_source) {
   html_source->AddResourcePath(
       "elements/route_details/route_details.js",
       IDR_ROUTE_DETAILS_JS);
-  html_source->AddResourcePath(
-      "elements/media_router_container/pseudo_sink_search_state.js",
-      IDR_PSEUDO_SINK_SEARCH_STATE_JS);
 }
 
 }  // namespace

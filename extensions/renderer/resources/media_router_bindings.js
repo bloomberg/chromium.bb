@@ -275,20 +275,6 @@ define('media_router_bindings', [
   };
 
   /**
-   * Called by the provider manager when a sink is found to notify the MR of the
-   * sink's ID. The actual sink will be returned through the normal sink list
-   * update process, so this helps the MR identify the search result in the
-   * list.
-   * @param {string} pseudoSinkId  ID of the pseudo sink that started the
-   *     search.
-   * @param {string} sinkId ID of the newly-found sink.
-   */
-  MediaRouter.prototype.onSearchSinkIdReceived = function(
-      pseudoSinkId, sinkId) {
-    this.service_.onSearchSinkIdReceived(pseudoSinkId, sinkId);
-  };
-
-  /**
    * Called by the provider manager to keep the extension from suspending
    * if it enters a state where suspension is undesirable (e.g. there is an
    * active MediaRoute.)
@@ -497,12 +483,6 @@ define('media_router_bindings', [
      * @type {function()}
      */
     this.updateMediaSinks = null;
-
-    /**
-     * @type {function(!string, !string, !SinkSearchCriteria, !string, !string,
-     *                 !number, !number, !boolean)}
-     */
-    this.searchSinksAndCreateRoute = null;
   };
 
   /**
@@ -553,7 +533,6 @@ define('media_router_bindings', [
       'connectRouteByRouteId',
       'enableMdnsDiscovery',
       'updateMediaSinks',
-      'searchSinksAndCreateRoute',
     ];
     requiredHandlers.forEach(function(nextHandler) {
       if (handlers[nextHandler] === undefined) {
@@ -786,42 +765,6 @@ define('media_router_bindings', [
    */
   MediaRouteProvider.prototype.updateMediaSinks = function(sourceUrn) {
     this.handlers_.updateMediaSinks(sourceUrn);
-  };
-
-  /**
-   * Requests that the provider manager search its providers for a sink matching
-   * |searchCriteria| that is compatible with |sourceUrn|. If a sink is found, a
-   * route is created with the remaining parameters the same as createRoute().
-   * The route will be returned by this function as for createRoute() but the
-   * sink will be returned through the normal sink update process and its ID
-   * will be returned through onSearchSinkIdReceived().
-   * @param {string} sinkId Sink ID of the pseudo sink generating the request.
-   * @param {string} sourceUrn Media source to be used with the sink.
-   * @param {!SinkSearchCriteria} searchCriteria Search criteria for the route
-   *     providers.
-   * @param {!string} presentationId Presentation ID from the site
-   *     requesting presentation. TODO(mfoltz): Remove.
-   * @param {!string} origin Origin of site requesting presentation.
-   * @param {!number} tabId ID of tab requesting presentation.
-   * @param {!number} timeoutMillis If positive, the timeout duration for the
-   *     request, measured in seconds. Otherwise, the default duration will be
-   *     used.
-   * @param {!boolean} offTheRecord If true, the route is being requested by
-   *     an off the record (incognito) profile.
-   * @return {!Promise.<!Object>} A Promise resolving to an object describing
-   *     the newly created media route, or rejecting with an error message on
-   *     failure.
-   */
-  MediaRouteProvider.prototype.searchSinksAndCreateRoute = function(
-      sinkId, sourceUrn, searchCriteria, presentationId, origin, tabId,
-      timeoutMillis, offTheRecord) {
-    return this.handlers_
-        .searchSinksAndCreateRoute(
-            sinkId, sourceUrn, searchCriteria, presentationId, origin, tabId,
-            timeoutMillis, offTheRecord)
-        .then(
-            function(route) { return toSuccessRouteResponse_(route); },
-            function(err) { return toErrorRouteResponse_(err); });
   };
 
   mediaRouter = new MediaRouter(connector.bindHandleToProxy(

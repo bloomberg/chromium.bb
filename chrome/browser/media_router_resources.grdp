@@ -30,5 +30,4 @@
   <include name="IDR_ROUTE_DETAILS_HTML" file="resources\media_router\elements\route_details\route_details.html" type="BINDATA" />
   <include name="IDR_ROUTE_DETAILS_CSS" file="resources\media_router\elements\route_details\route_details.css" type="BINDATA" />
   <include name="IDR_ROUTE_DETAILS_JS" file="resources\media_router\elements\route_details\route_details.js" type="BINDATA" />
-  <include name="IDR_PSEUDO_SINK_SEARCH_STATE_JS" file="resources\media_router\elements\media_router_container\pseudo_sink_search_state.js" type="BINDATA" />
 </grit-part>

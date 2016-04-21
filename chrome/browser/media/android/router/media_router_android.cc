@@ -243,20 +243,6 @@ void MediaRouterAndroid::ClearIssue(const Issue::Id& issue_id) {
 void MediaRouterAndroid::OnUserGesture() {
 }
 
-void MediaRouterAndroid::SearchSinksAndCreateRoute(
-    const MediaSource::Id& source_id,
-    const MediaSink::Id& sink_id,
-    const std::string& search_input,
-    const std::string& domain,
-    const GURL& origin,
-    content::WebContents* web_contents,
-    const std::vector<MediaRouteResponseCallback>& route_callbacks,
-    const MediaSinkSearchResponseCallback& sink_callback,
-    base::TimeDelta timeout,
-    bool off_the_record) {
-  NOTIMPLEMENTED();
-}
-
 void MediaRouterAndroid::DetachRoute(const MediaRoute::Id& route_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jroute_id =

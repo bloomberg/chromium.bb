@@ -345,29 +345,12 @@ void MediaRouterUI::UIInitialized() {
 
 bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
                                 MediaCastMode cast_mode) {
-  MediaSource::Id source_id;
-  GURL origin;
-  std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  base::TimeDelta timeout;
-  bool off_the_record;
-  if (!SetRouteParameters(sink_id, cast_mode, &source_id, &origin,
-                          &route_response_callbacks, &timeout,
-                          &off_the_record)) {
-    return false;
-  }
-  router_->CreateRoute(source_id, sink_id, origin, initiator_,
-                       route_response_callbacks, timeout, off_the_record);
-  return true;
+  return CreateOrConnectRoute(sink_id, cast_mode, MediaRoute::Id());
 }
 
-bool MediaRouterUI::SetRouteParameters(
-    const MediaSink::Id& sink_id,
-    MediaCastMode cast_mode,
-    MediaSource::Id* source_id,
-    GURL* origin,
-    std::vector<MediaRouteResponseCallback>* route_response_callbacks,
-    base::TimeDelta* timeout,
-    bool* off_the_record) {
+bool MediaRouterUI::CreateOrConnectRoute(const MediaSink::Id& sink_id,
+                                              MediaCastMode cast_mode,
+                                              const MediaRoute::Id& route_id) {
   DCHECK(query_result_manager_.get());
   DCHECK(initiator_);
 
@@ -383,7 +366,6 @@ bool MediaRouterUI::SetRouteParameters(
                << static_cast<int>(cast_mode);
     return false;
   }
-  *source_id = source.id();
 
   bool for_default_source = cast_mode == MediaCastMode::DEFAULT;
   if (for_default_source && !presentation_request_) {
@@ -393,11 +375,12 @@ bool MediaRouterUI::SetRouteParameters(
   }
 
   current_route_request_id_ = ++route_request_counter_;
-  *origin = for_default_source ? presentation_request_->frame_url().GetOrigin()
-                               : GURL(chrome::kChromeUIMediaRouterURL);
-  DCHECK(origin->is_valid());
+  GURL origin = for_default_source
+                    ? presentation_request_->frame_url().GetOrigin()
+                    : GURL(chrome::kChromeUIMediaRouterURL);
+  DCHECK(origin.is_valid());
 
-  DVLOG(1) << "DoCreateRoute: origin: " << *origin;
+  DVLOG(1) << "DoCreateRoute: origin: " << origin;
 
   // There are 3 cases. In all cases the MediaRouterUI will need to be notified.
   // (1) Non-presentation route request (e.g., mirroring). No additional
@@ -410,7 +393,8 @@ bool MediaRouterUI::SetRouteParameters(
   // PresentationServiceDelegateImpl will have to be notified. Note that we
   // treat subsequent route requests from a Presentation API-initiated dialogs
   // as browser-initiated.
-  route_response_callbacks->push_back(base::Bind(
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(base::Bind(
       &MediaRouterUI::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
       current_route_request_id_, sink_id, cast_mode,
       base::UTF8ToUTF16(GetTruncatedPresentationRequestSourceName())));
@@ -418,38 +402,33 @@ bool MediaRouterUI::SetRouteParameters(
     if (create_session_request_) {
       // |create_session_request_| will be nullptr after this call, as the
       // object will be transferred to the callback.
-      route_response_callbacks->push_back(
+      route_response_callbacks.push_back(
           base::Bind(&CreatePresentationConnectionRequest::HandleRouteResponse,
                      base::Passed(&create_session_request_)));
     } else if (presentation_service_delegate_) {
-      route_response_callbacks->push_back(
+      route_response_callbacks.push_back(
           base::Bind(&PresentationServiceDelegateImpl::OnRouteResponse,
                      presentation_service_delegate_, *presentation_request_));
     }
   }
 
-  *timeout = GetRouteRequestTimeout(cast_mode);
-  *off_the_record = Profile::FromWebUI(web_ui())->IsOffTheRecord();
-
+  base::TimeDelta timeout = GetRouteRequestTimeout(cast_mode);
+  bool off_the_record = Profile::FromWebUI(web_ui())->IsOffTheRecord();
+  if (route_id.empty()) {
+    router_->CreateRoute(source.id(), sink_id, origin, initiator_,
+                         route_response_callbacks, timeout,
+                         off_the_record);
+  } else {
+    router_->ConnectRouteByRouteId(source.id(), route_id, origin, initiator_,
+                                   route_response_callbacks, timeout,
+                                   off_the_record);
+  }
   return true;
 }
 
 bool MediaRouterUI::ConnectRoute(const MediaSink::Id& sink_id,
                                  const MediaRoute::Id& route_id) {
-  MediaSource::Id source_id;
-  GURL origin;
-  std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  base::TimeDelta timeout;
-  bool off_the_record;
-  if (!SetRouteParameters(sink_id, MediaCastMode::DEFAULT, &source_id, &origin,
-                          &route_response_callbacks, &timeout,
-                          &off_the_record)) {
-    return false;
-  }
-  router_->ConnectRouteByRouteId(source_id, route_id, origin, initiator_,
-                                 route_response_callbacks, timeout,
-                                 off_the_record);
-  return true;
+  return CreateOrConnectRoute(sink_id, MediaCastMode::DEFAULT, route_id);
 }
 
 void MediaRouterUI::CloseRoute(const MediaRoute::Id& route_id) {
@@ -460,31 +439,6 @@ void MediaRouterUI::AddIssue(const Issue& issue) { router_->AddIssue(issue); }
 
 void MediaRouterUI::ClearIssue(const std::string& issue_id) {
   router_->ClearIssue(issue_id);
-}
-
-bool MediaRouterUI::SearchSinksAndCreateRoute(
-    const MediaSink::Id& sink_id,
-    const std::string& search_criteria,
-    const std::string& domain,
-    MediaCastMode cast_mode) {
-  MediaSource::Id source_id;
-  GURL origin;
-  std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  base::TimeDelta timeout;
-  bool off_the_record;
-  if (!SetRouteParameters(sink_id, cast_mode, &source_id, &origin,
-                          &route_response_callbacks, &timeout,
-                          &off_the_record)) {
-    return false;
-  }
-  router_->SearchSinksAndCreateRoute(
-      sink_id, query_result_manager_->GetSourceForCastMode(cast_mode).id(),
-      search_criteria, domain, origin, initiator_,
-      route_response_callbacks,
-      base::Bind(&MediaRouterUI::OnSearchSinkResponseReceived,
-                 weak_factory_.GetWeakPtr()),
-      timeout, off_the_record);
-  return true;
 }
 
 void MediaRouterUI::OnResultsUpdated(
@@ -550,10 +504,6 @@ void MediaRouterUI::OnRouteResponseReceived(
 
   if (result.result_code() == RouteRequestResult::TIMED_OUT)
     SendIssueForRouteTimeout(cast_mode, presentation_request_source_name);
-}
-
-void MediaRouterUI::OnSearchSinkResponseReceived(const std::string& sink_id) {
-  handler_->ReturnSearchResult(sink_id);
 }
 
 void MediaRouterUI::SendIssueForRouteTimeout(

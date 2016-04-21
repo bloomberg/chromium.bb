@@ -51,32 +51,12 @@ cr.define('media_router', function() {
     container.addEventListener('report-sink-count', onSinkCountReported);
     container.addEventListener('report-resolved-route',
                                onReportRouteCreationOutcome);
-    container.addEventListener('search-sinks-and-create-route',
-                               onSearchSinksAndCreateRoute);
     container.addEventListener('show-initial-state', onShowInitialState);
     container.addEventListener('sink-click', onSinkClick);
     container.addEventListener('start-casting-to-route-click',
                                onStartCastingToRouteClick);
 
     window.addEventListener('blur', onWindowBlur);
-  }
-
-  /**
-   * Requests that the Media Router searches for a sink with criteria
-   * |event.detail.name|.
-   * @param {!Event} event
-   * Parameters in |event|.detail:
-   *   id - id of the pseudo sink generating the request.
-   *   name - sink search criteria.
-   *   domain - user's current domain.
-   *   selectedCastMode - type of cast mode selected by the user.
-   */
-  function onSearchSinksAndCreateRoute(event) {
-    /** @type {{id: string, domain: string, name: string,
-     *          selectedCastMode: number}} */
-    var detail = event.detail;
-    media_router.browserApi.searchSinksAndCreateRoute(
-        detail.id, detail.name, detail.domain, detail.selectedCastMode);
   }
 
   /**

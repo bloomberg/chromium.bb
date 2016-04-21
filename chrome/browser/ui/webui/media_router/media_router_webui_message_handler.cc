@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/user_metrics.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/issue.h"
@@ -60,14 +59,12 @@ const char kReportSelectedCastMode[] = "reportSelectedCastMode";
 const char kReportSinkCount[] = "reportSinkCount";
 const char kReportTimeToClickSink[] = "reportTimeToClickSink";
 const char kReportTimeToInitialActionClose[] = "reportTimeToInitialActionClose";
-const char kSearchSinksAndCreateRoute[] = "searchSinksAndCreateRoute";
 const char kOnInitialDataReceived[] = "onInitialDataReceived";
 
 // JS function names.
 const char kSetInitialData[] = "media_router.ui.setInitialData";
 const char kOnCreateRouteResponseReceived[] =
     "media_router.ui.onCreateRouteResponseReceived";
-const char kReceiveSearchResult[] = "media_router.ui.receiveSearchResult";
 const char kSetFirstRunFlowData[] = "media_router.ui.setFirstRunFlowData";
 const char kSetIssue[] = "media_router.ui.setIssue";
 const char kSetSinkListAndIdentity[] = "media_router.ui.setSinkListAndIdentity";
@@ -124,9 +121,6 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
       cast_mode_bits |= cast_mode;
 
     sink_val->SetInteger("castModes", cast_mode_bits);
-    sink_val->SetBoolean(
-        "isPseudoSink",
-        base::StartsWith(sink.id(), "pseudo:", base::CompareCase::SENSITIVE));
     sinks_val->Append(sink_val.release());
   }
 
@@ -295,13 +289,6 @@ void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
   }
 }
 
-void MediaRouterWebUIMessageHandler::ReturnSearchResult(
-    const std::string& sink_id) {
-  DVLOG(2) << "ReturnSearchResult";
-  web_ui()->CallJavascriptFunction(kReceiveSearchResult,
-                                   base::StringValue(sink_id));
-}
-
 void MediaRouterWebUIMessageHandler::UpdateIssue(const Issue* issue) {
   DVLOG(2) << "UpdateIssue";
   web_ui()->CallJavascriptFunction(kSetIssue,
@@ -392,10 +379,6 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
       base::Bind(
           &MediaRouterWebUIMessageHandler::OnReportTimeToInitialActionClose,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      kSearchSinksAndCreateRoute,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnSearchSinksAndCreateRoute,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kOnInitialDataReceived,
       base::Bind(&MediaRouterWebUIMessageHandler::OnInitialDataReceived,
@@ -749,40 +732,6 @@ void MediaRouterWebUIMessageHandler::OnReportTimeToInitialActionClose(
   }
   UMA_HISTOGRAM_TIMES("MediaRouter.Ui.Action.CloseLatency",
                       base::TimeDelta::FromMillisecondsD(time_to_close));
-}
-
-void MediaRouterWebUIMessageHandler::OnSearchSinksAndCreateRoute(
-    const base::ListValue* args) {
-  DVLOG(1) << "OnSearchSinksAndCreateRoute";
-  const base::DictionaryValue* args_dict = nullptr;
-  std::string sink_id;
-  std::string search_criteria;
-  std::string domain;
-  int cast_mode_num = -1;
-  if (!args->GetDictionary(0, &args_dict) ||
-      !args_dict->GetString("sinkId", &sink_id) ||
-      !args_dict->GetString("searchCriteria", &search_criteria) ||
-      !args_dict->GetString("domain", &domain) ||
-      !args_dict->GetInteger("selectedCastMode", &cast_mode_num)) {
-    DVLOG(1) << "Unable to extract args";
-    return;
-  }
-
-  if (search_criteria.empty()) {
-    DVLOG(1) << "Media Router UI did not provide valid search criteria. "
-                "Aborting.";
-    return;
-  }
-
-  if (!IsValidCastModeNum(cast_mode_num)) {
-    DVLOG(1) << "Invalid cast mode: " << cast_mode_num << ". Aborting.";
-    return;
-  }
-
-  // TODO(btolsch): Check result and add an issue if it failed.
-  media_router_ui_->SearchSinksAndCreateRoute(
-      sink_id, search_criteria, domain,
-      static_cast<MediaCastMode>(cast_mode_num));
 }
 
 void MediaRouterWebUIMessageHandler::OnInitialDataReceived(
