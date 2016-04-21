@@ -37,10 +37,6 @@
 #include "bindings/core/v8/ScriptValueSerializer.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/Transferables.h"
-#include "bindings/core/v8/V8ArrayBuffer.h"
-#include "bindings/core/v8/V8ImageBitmap.h"
-#include "bindings/core/v8/V8MessagePort.h"
-#include "bindings/core/v8/V8SharedArrayBuffer.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
 #include "core/dom/ExceptionCode.h"
@@ -236,38 +232,9 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
             exceptionState.throwTypeError("Value at index " + String::number(i) + " is an untransferable " + (transferableObject->IsUndefined() ? "'undefined'" : "'null'") + " value.");
             return false;
         }
-        // Validation of Objects implementing an interface, per WebIDL spec 4.1.15.
-        if (V8MessagePort::hasInstance(transferableObject, isolate)) {
-            MessagePort* port = V8MessagePort::toImpl(v8::Local<v8::Object>::Cast(transferableObject));
-            // Check for duplicate MessagePorts.
-            if (transferables.messagePorts.contains(port)) {
-                exceptionState.throwDOMException(DataCloneError, "Message port at index " + String::number(i) + " is a duplicate of an earlier port.");
-                return false;
-            }
-            transferables.messagePorts.append(port);
-        } else if (V8ArrayBuffer::hasInstance(transferableObject, isolate)) {
-            DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferableObject));
-            if (transferables.arrayBuffers.contains(arrayBuffer)) {
-                exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " is a duplicate of an earlier ArrayBuffer.");
-                return false;
-            }
-            transferables.arrayBuffers.append(arrayBuffer);
-        } else if (V8SharedArrayBuffer::hasInstance(transferableObject, isolate)) {
-            DOMSharedArrayBuffer* sharedArrayBuffer = V8SharedArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferableObject));
-            if (transferables.arrayBuffers.contains(sharedArrayBuffer)) {
-                exceptionState.throwDOMException(DataCloneError, "SharedArrayBuffer at index " + String::number(i) + " is a duplicate of an earlier SharedArrayBuffer.");
-                return false;
-            }
-            transferables.arrayBuffers.append(sharedArrayBuffer);
-        } else if (V8ImageBitmap::hasInstance(transferableObject, isolate)) {
-            ImageBitmap* imageBitmap = V8ImageBitmap::toImpl(v8::Local<v8::Object>::Cast(transferableObject));
-            if (transferables.imageBitmaps.contains(imageBitmap)) {
-                exceptionState.throwDOMException(DataCloneError, "ImageBitmap at index " + String::number(i) + " is a duplicate of an earlier ImageBitmap.");
-                return false;
-            }
-            transferables.imageBitmaps.append(imageBitmap);
-        } else {
-            exceptionState.throwTypeError("Value at index " + String::number(i) + " does not have a transferable type.");
+        if (!SerializedScriptValueFactory::instance().extractTransferables(isolate, transferables, exceptionState, transferableObject, i)) {
+            if (!exceptionState.hadException())
+                exceptionState.throwTypeError("Value at index " + String::number(i) + " does not have a transferable type.");
             return false;
         }
     }

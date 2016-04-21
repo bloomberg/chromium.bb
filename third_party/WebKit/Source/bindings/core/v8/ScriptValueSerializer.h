@@ -143,6 +143,7 @@ public:
     void writeTransferredMessagePort(uint32_t index);
     void writeTransferredArrayBuffer(uint32_t index);
     void writeTransferredImageBitmap(uint32_t index);
+    virtual void writeTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id) { };
     void writeTransferredSharedArrayBuffer(uint32_t index);
     void writeObjectReference(uint32_t reference);
     void writeObject(uint32_t numProperties);
@@ -208,7 +209,7 @@ public:
         JSException
     };
 
-    ScriptValueSerializer(SerializedScriptValueWriter&, const Transferables*, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
+    ScriptValueSerializer(SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
     v8::Isolate* isolate() { return m_scriptState->isolate(); }
     v8::Local<v8::Context> context() { return m_scriptState->context(); }
 
@@ -465,6 +466,7 @@ public:
     virtual bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) = 0;
     virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) = 0;
     virtual bool tryGetTransferredImageBitmap(uint32_t index, v8::Local<v8::Value>*) = 0;
+    virtual bool tryGetTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id, v8::Local<v8::Value>*) { return true; };
     virtual bool tryGetTransferredSharedArrayBuffer(uint32_t index, v8::Local<v8::Value>*) = 0;
     virtual bool newSparseArray(uint32_t length) = 0;
     virtual bool newDenseArray(uint32_t length) = 0;

@@ -193,7 +193,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     //   postMessage(message, targetOrigin, {sequence of transferrables})
     // Legacy non-standard implementations in webkit allowed:
     //   postMessage(message, {sequence of transferrables}, targetOrigin);
-    Transferables transferables;
+    Transferables* transferables = SerializedScriptValueFactory::instance().createTransferables();
     int targetOriginArgIndex = 1;
     if (info.Length() > 2) {
         int transferablesArgIndex = 2;
@@ -202,18 +202,18 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
             targetOriginArgIndex = 2;
             transferablesArgIndex = 1;
         }
-        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, transferables, exceptionState)) {
+        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, *transferables, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
     }
     TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, targetOrigin, info[targetOriginArgIndex]);
 
-    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], &transferables, exceptionState);
+    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], transferables, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
 
-    window->postMessage(message.release(), transferables.messagePorts, targetOrigin, source, exceptionState);
+    window->postMessage(message.release(), transferables->messagePorts, targetOrigin, source, exceptionState);
     exceptionState.throwIfNeeded();
 }
 

@@ -1,0 +1,15 @@
+Test OffscreenCanvas transferable with exception cases.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS ctx = offscreenCanvas1.getContext('2d') did not throw exception.
+PASS ctx is an instance of OffscreenCanvasRenderingContext2D
+PASS Transfer an offscreenCanvas with a context should throw an exception: DataCloneError: Failed to execute 'postMessage' on 'Worker': An OffscreenCanvas with a context could not be cloned.
+PASS Calling transferToImageBitmap from a neutered offscreenCanvas should throw an exception: InvalidStateError: Failed to execute 'transferToImageBitmap' on 'OffscreenCanvas': Cannot transfer an ImageBitmap from a neutered OffscreenCanvas
+PASS Transfer a neutered offscreenCanvas should throw an exception: DataCloneError: Failed to execute 'postMessage' on 'Worker': An OffscreenCanvas is neutered and could not be cloned.
+PASS Calling getContext('2d') from a neutered offscreenCanvas should throw an exception: InvalidStateError: Failed to execute 'getContext' on 'OffscreenCanvas': Cannot get context of a neutered OffscreenCanvas
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -6,8 +6,10 @@
 
 #include "bindings/core/v8/SerializationTag.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/modules/v8/TransferablesForModules.h"
 #include "bindings/modules/v8/V8CryptoKey.h"
 #include "bindings/modules/v8/V8DOMFileSystem.h"
+#include "bindings/modules/v8/V8OffscreenCanvas.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "public/platform/Platform.h"
 
@@ -72,10 +74,25 @@ enum AssymetricCryptoKeyType {
     // Maximum allowed value is 2^32-1
 };
 
-
-ScriptValueSerializerForModules::ScriptValueSerializerForModules(SerializedScriptValueWriter& writer, const Transferables* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
+ScriptValueSerializerForModules::ScriptValueSerializerForModules(SerializedScriptValueWriter& writer, Transferables* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
     : ScriptValueSerializer(writer, transferables, blobInfo, blobDataHandles, tryCatch, scriptState)
+    , m_writer(writer)
 {
+    ASSERT(!tryCatch.HasCaught());
+    if (!transferables)
+        return;
+    auto& offscreenCanvases = static_cast<TransferablesForModules*>(transferables)->offscreenCanvases;
+    for (size_t i = 0; i < offscreenCanvases.size(); i++) {
+        v8::Local<v8::Object> v8OffscreenCanvas;
+        if (offscreenCanvases[i].get()) {
+            v8::Local<v8::Value> wrapper = toV8(offscreenCanvases[i].get(), scriptState);
+            if (!wrapper.IsEmpty()) {
+                v8OffscreenCanvas = wrapper.As<v8::Object>();
+                if (!m_transferredOffscreenCanvas.contains(v8OffscreenCanvas))
+                    m_transferredOffscreenCanvas.set(v8OffscreenCanvas, i);
+            }
+        }
+    }
 }
 
 ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::writeDOMFileSystem(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
@@ -104,6 +121,15 @@ void SerializedScriptValueWriterForModules::writeDOMFileSystem(int type, const S
     doWriteUint32(type);
     doWriteWebCoreString(name);
     doWriteWebCoreString(url);
+}
+
+void SerializedScriptValueWriterForModules::writeTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id)
+{
+    append(OffscreenCanvasTransferTag);
+    doWriteUint32(index);
+    doWriteUint32(width);
+    doWriteUint32(height);
+    doWriteUint32(id);
 }
 
 bool SerializedScriptValueWriterForModules::writeCryptoKey(const WebCryptoKey& key)
@@ -306,7 +332,25 @@ ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::doSerializeVa
             return handleError(DataCloneError, "Couldn't serialize key data", next);
         return 0;
     }
+    v8::Local<v8::Object> jsObject = value.As<v8::Object>();
+    uint32_t offscreenCanvasIndex;
+    if (V8OffscreenCanvas::hasInstance(value, isolate()) && m_transferredOffscreenCanvas.tryGet(jsObject, &offscreenCanvasIndex)) {
+        return writeTransferredOffscreenCanvas(value, offscreenCanvasIndex, next);
+    }
     return ScriptValueSerializer::doSerializeValue(value, next);
+}
+
+ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::writeTransferredOffscreenCanvas(v8::Local<v8::Value> value, uint32_t index, ScriptValueSerializer::StateBase* next)
+{
+    OffscreenCanvas* offscreenCanvas = V8OffscreenCanvas::toImpl(value.As<v8::Object>());
+    if (!offscreenCanvas)
+        return nullptr;
+    if (offscreenCanvas->isNeutered())
+        return handleError(DataCloneError, "An OffscreenCanvas is neutered and could not be cloned.", next);
+    if (offscreenCanvas->renderingContext())
+        return handleError(DataCloneError, "An OffscreenCanvas with a context could not be cloned.", next);
+    m_writer.writeTransferredOffscreenCanvas(index, offscreenCanvas->width(), offscreenCanvas->height(), offscreenCanvas->getAssociatedCanvasId());
+    return nullptr;
 }
 
 bool SerializedScriptValueReaderForModules::read(v8::Local<v8::Value>* value, ScriptValueCompositeCreator& creator)
@@ -324,6 +368,19 @@ bool SerializedScriptValueReaderForModules::read(v8::Local<v8::Value>* value, Sc
         if (!readCryptoKey(value))
             return false;
         creator.pushObjectReference(*value);
+        break;
+    case OffscreenCanvasTransferTag:
+        uint32_t index, width, height, id;
+        if (!doReadUint32(&index))
+            return false;
+        if (!doReadUint32(&width))
+            return false;
+        if (!doReadUint32(&height))
+            return false;
+        if (!doReadUint32(&id))
+            return false;
+        if (!creator.tryGetTransferredOffscreenCanvas(index, width, height, id, value))
+            return false;
         break;
     default:
         return SerializedScriptValueReader::readWithTag(tag, value, creator);
@@ -625,7 +682,18 @@ bool SerializedScriptValueReaderForModules::doReadKeyUsages(WebCryptoKeyUsageMas
 
 ScriptValueDeserializerForModules::ScriptValueDeserializerForModules(SerializedScriptValueReaderForModules& reader, MessagePortArray* messagePorts, ArrayBufferContentsArray* arrayBufferContents, ImageBitmapContentsArray* imageBitmapContents)
     : ScriptValueDeserializer(reader, messagePorts, arrayBufferContents, imageBitmapContents)
+    , m_reader(reader)
 {
+}
+
+bool ScriptValueDeserializerForModules::tryGetTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id, v8::Local<v8::Value>* object)
+{
+    OffscreenCanvas* offscreenCanvas = OffscreenCanvas::create(width, height);
+    offscreenCanvas->setAssociatedCanvasId(id);
+    *object = toV8(offscreenCanvas, m_reader.getScriptState());
+    if ((*object).IsEmpty())
+        return false;
+    return true;
 }
 
 bool ScriptValueDeserializerForModules::read(v8::Local<v8::Value>* value)

@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+description("Test OffscreenCanvas transferable with exception cases.");
+window.jsTestIsAsync = true;
+
+var worker = new Worker('./resources/OffscreenCanvas-transferable.js');
+
+var width = 50;
+var height = 50;
+var offscreenCanvas1 = new OffscreenCanvas(width, height);
+
+var ctx;
+shouldNotThrow("ctx = offscreenCanvas1.getContext('2d')");
+shouldBeType("ctx", "OffscreenCanvasRenderingContext2D");
+try {
+    worker.postMessage({data: offscreenCanvas1}, [offscreenCanvas1]);
+    testFailed("Transfer an offscreenCanvas with a context succeed, expected to fail");
+} catch(e) {
+    testPassed("Transfer an offscreenCanvas with a context should throw an exception: " + e);
+}
+
+var offscreenCanvas2 = new OffscreenCanvas(width, height);
+worker.postMessage({data: offscreenCanvas2}, [offscreenCanvas2]);
+try {
+    var image = offscreenCanvas2.transferToImageBitmap();
+    testFailed("Calling transferToImageBitmap from a neutered offscreenCanvas succeed, expected to fail");
+} catch(e) {
+    testPassed("Calling transferToImageBitmap from a neutered offscreenCanvas should throw an exception: " + e);
+}
+
+try {
+    worker.postMessage({data: offscreenCanvas2}, [offscreenCanvas2]);
+    testFailed("Transfer a neutered offscreenCanvas succeed, expected to fail");
+} catch(e) {
+    testPassed("Transfer a neutered offscreenCanvas should throw an exception: " + e);
+}
+
+try {
+    var ctx = offscreenCanvas2.getContext('2d');
+    testFailed("Calling getContext('2d') from a neutered offscreenCanvas succeed, expected to fail");
+} catch(e) {
+    testPassed("Calling getContext('2d') from a neutered offscreenCanvas should throw an exception: " + e);
+}
+
+finishJSTest();
+</script>
+</body>
+</html>

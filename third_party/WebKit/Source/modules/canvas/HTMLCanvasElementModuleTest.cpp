@@ -4,6 +4,7 @@
 
 #include "modules/canvas/HTMLCanvasElementModule.h"
 
+#include "core/dom/DOMNodeIds.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLDocument.h"
@@ -36,8 +37,8 @@ TEST_F(HTMLCanvasElementModuleTest, TransferControlToOffscreen)
 {
     NonThrowableExceptionState exceptionState;
     OffscreenCanvas* offscreenCanvas = HTMLCanvasElementModule::transferControlToOffscreen(canvasElement(), exceptionState);
-    HTMLCanvasElement* canvas = offscreenCanvas->getAssociatedCanvas();
-    EXPECT_EQ(canvas, canvasElement());
+    int canvasId = offscreenCanvas->getAssociatedCanvasId();
+    EXPECT_EQ(canvasId, DOMNodeIds::idForNode(&(canvasElement())));
 }
 
 } // namespace blink

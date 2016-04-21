@@ -23,6 +23,7 @@ public:
     }
 
     void writeDOMFileSystem(int type, const String& name, const String& url);
+    void writeTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id);
     bool writeCryptoKey(const WebCryptoKey&);
 
 private:
@@ -70,13 +71,17 @@ class ScriptValueSerializerForModules final : public ScriptValueSerializer {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ScriptValueSerializerForModules);
 public:
-    ScriptValueSerializerForModules(SerializedScriptValueWriter&, const Transferables*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, ScriptState*);
+    ScriptValueSerializerForModules(SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, ScriptState*);
 
 private:
     ScriptValueSerializer::StateBase* doSerializeValue(v8::Local<v8::Value>, ScriptValueSerializer::StateBase* next) override;
 
     ScriptValueSerializer::StateBase* writeDOMFileSystem(v8::Local<v8::Value>, ScriptValueSerializer::StateBase* next);
+    ScriptValueSerializer::StateBase* writeTransferredOffscreenCanvas(v8::Local<v8::Value>, uint32_t index, ScriptValueSerializer::StateBase* next);
     bool writeCryptoKey(v8::Local<v8::Value>);
+    typedef V8ObjectMap<v8::Object, uint32_t> ObjectPool;
+    ObjectPool m_transferredOffscreenCanvas;
+    SerializedScriptValueWriter& m_writer;
 };
 
 class ScriptValueDeserializerForModules final : public ScriptValueDeserializer {
@@ -84,9 +89,11 @@ class ScriptValueDeserializerForModules final : public ScriptValueDeserializer {
     WTF_MAKE_NONCOPYABLE(ScriptValueDeserializerForModules);
 public:
     ScriptValueDeserializerForModules(SerializedScriptValueReaderForModules&, MessagePortArray* messagePorts, ArrayBufferContentsArray*, ImageBitmapContentsArray*);
+    bool tryGetTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id, v8::Local<v8::Value>*) override;
 
 private:
     bool read(v8::Local<v8::Value>*) override;
+    SerializedScriptValueReader& m_reader;
 };
 
 } // namespace blink

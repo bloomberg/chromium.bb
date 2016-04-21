@@ -4,6 +4,7 @@
 
 #include "modules/canvas/HTMLCanvasElementModule.h"
 
+#include "core/dom/DOMNodeIds.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 
@@ -24,7 +25,7 @@ OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(HTMLCanvasE
         return nullptr;
     }
     OffscreenCanvas* offscreenCanvas = OffscreenCanvas::create(canvas.width(), canvas.height());
-    offscreenCanvas->setAssociatedCanvas(&canvas);
+    offscreenCanvas->setAssociatedCanvasId(DOMNodeIds::idForNode(&canvas));
     return offscreenCanvas;
 }
 
