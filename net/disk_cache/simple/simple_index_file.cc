@@ -61,6 +61,12 @@ void UmaRecordIndexInitMethod(SimpleIndex::IndexInitMethod method,
                    SimpleIndex::INITIALIZE_METHOD_MAX);
 }
 
+void UmaRecordIndexWriteReason(SimpleIndex::IndexWriteToDiskReason reason,
+                               net::CacheType cache_type) {
+  SIMPLE_CACHE_UMA(ENUMERATION, "IndexWriteReason", cache_type, reason,
+                   SimpleIndex::INDEX_WRITE_REASON_MAX);
+}
+
 void UmaRecordIndexWriteReasonAtLoad(SimpleIndex::IndexWriteToDiskReason reason,
                                      net::CacheType cache_type) {
   SIMPLE_CACHE_UMA(ENUMERATION, "IndexWriteReasonAtLoad", cache_type, reason,
@@ -303,6 +309,7 @@ void SimpleIndexFile::WriteToDisk(SimpleIndex::IndexWriteToDiskReason reason,
                                   const base::TimeTicks& start,
                                   bool app_on_background,
                                   const base::Closure& callback) {
+  UmaRecordIndexWriteReason(reason, cache_type_);
   IndexMetadata index_metadata(reason, entry_set.size(), cache_size);
   std::unique_ptr<base::Pickle> pickle = Serialize(index_metadata, entry_set);
   base::Closure task =

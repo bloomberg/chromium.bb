@@ -49217,6 +49217,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.IndexWriteReason"
+    enum="SimpleCacheIndexWriteReason">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    The reason an index was written to disk. Recorded every time an index is
+    saved.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.IndexWriteReasonAtLoad"
     enum="SimpleCacheIndexWriteReason">
   <owner>gavinp@chromium.org</owner>
@@ -88076,6 +88085,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SimpleCache.IndexRestoreTime"/>
   <affected-histogram name="SimpleCache.IndexWriteInterval.Background"/>
   <affected-histogram name="SimpleCache.IndexWriteInterval.Foreground"/>
+  <affected-histogram name="SimpleCache.IndexWriteReason"/>
   <affected-histogram name="SimpleCache.IndexWriteReasonAtLoad"/>
   <affected-histogram name="SimpleCache.IndexWriteToDiskTime.Background"/>
   <affected-histogram name="SimpleCache.IndexWriteToDiskTime.Foreground"/>
