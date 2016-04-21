@@ -3,6 +3,17 @@
 // found in the LICENSE file.
 'use strict';
 
+function toCamelCase(property) {
+  for (var i = property.length - 2; i > 0; --i) {
+    if (property[i] === '-') {
+      property = property.substring(0, i) +
+        property[i + 1].toUpperCase() +
+        property.substring(i + 2);
+    }
+  }
+  return property;
+}
+
 function perfTestCSSValue(options) {
   var svgTag = options.svgTag;
   var property = options.property;
@@ -47,8 +58,8 @@ function perfTestCSSValue(options) {
     break;
   case 'web_animations':
     var keyframes = [{}, {}];
-    keyframes[0][property] = from;
-    keyframes[1][property] = to;
+    keyframes[0][toCamelCase(property)] = from;
+    keyframes[1][toCamelCase(property)] = to;
     targets.forEach(function(target) {
       target.animate(keyframes, {
         duration: duration,
