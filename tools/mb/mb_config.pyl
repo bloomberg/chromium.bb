@@ -890,6 +890,7 @@
         'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x86',
       'win_pgo': 'gyp_official_winpgo',
       'win_upload_clang': 'gn_release_bot',
+      'win_chrome_official': 'gyp_official_goma_minimal_symbols_x86',
     },
 
     'tryserver.v8': {
