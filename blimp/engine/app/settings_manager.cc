@@ -22,9 +22,8 @@ void SettingsManager::RemoveObserver(Observer* observer) {
 }
 
 void SettingsManager::UpdateWebkitPreferences(content::WebPreferences* prefs) {
-  DCHECK(prefs);
-
   prefs->record_whole_document = settings_.record_whole_document;
+  prefs->animation_policy = settings_.animation_policy;
 }
 
 const EngineSettings& SettingsManager::GetEngineSettings() const {

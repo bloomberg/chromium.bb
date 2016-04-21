@@ -40,6 +40,25 @@ TEST_F(SettingsManagerTest, InformsObserversCorrectly) {
   settings_manager_.UpdateEngineSettings(settings);
 }
 
+TEST_F(SettingsManagerTest, UpdatesSettingsCorrectly) {
+  EngineSettings settings = settings_manager_.GetEngineSettings();
+  EXPECT_FALSE(settings.record_whole_document);
+  EXPECT_EQ(settings.animation_policy,
+            content::ImageAnimationPolicy::IMAGE_ANIMATION_POLICY_NO_ANIMATION);
+
+  settings.record_whole_document = true;
+  settings.animation_policy =
+      content::ImageAnimationPolicy::IMAGE_ANIMATION_POLICY_ANIMATION_ONCE;
+  settings_manager_.UpdateEngineSettings(settings);
+
+  content::WebPreferences prefs;
+  settings_manager_.UpdateWebkitPreferences(&prefs);
+  EXPECT_TRUE(prefs.record_whole_document);
+  EXPECT_EQ(
+      prefs.animation_policy,
+      content::ImageAnimationPolicy::IMAGE_ANIMATION_POLICY_ANIMATION_ONCE);
+}
+
 }  // namespace
 
 }  // namespace engine

@@ -5,16 +5,26 @@
 #ifndef BLIMP_ENGINE_APP_ENGINE_SETTINGS_H_
 #define BLIMP_ENGINE_APP_ENGINE_SETTINGS_H_
 
+#include "content/public/common/web_preferences.h"
+
 namespace blimp {
 namespace engine {
 
+// The EngineSettings includes all parameters which are configured for the
+// BlimpEngine and can be set by the client. This includes the values for
+// content::WebPreferences which override the default values.
 struct EngineSettings {
-  // -------WebPreferences-------
-  bool record_whole_document;
+  EngineSettings() {}
 
-  EngineSettings();
-  EngineSettings(const EngineSettings& other);
-  ~EngineSettings();
+  // -------WebPreferences-------
+  // These members mirror the parameters in content::WebPreferences. See
+  // content/public/common/web_preferences.h for details.
+
+  bool record_whole_document = false;
+
+  // Disable animation in images by default.
+  content::ImageAnimationPolicy animation_policy =
+      content::ImageAnimationPolicy::IMAGE_ANIMATION_POLICY_NO_ANIMATION;
 };
 
 }  // namespace engine

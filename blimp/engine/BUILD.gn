@@ -65,7 +65,6 @@ source_set("app") {
     "app/blimp_system_url_request_context_getter.h",
     "app/blimp_url_request_context_getter.cc",
     "app/blimp_url_request_context_getter.h",
-    "app/engine_settings.cc",
     "app/engine_settings.h",
     "app/settings_manager.cc",
     "app/settings_manager.h",
