@@ -19,10 +19,15 @@ bool ChromeServiceRegistrarAndroid::Register(JNIEnv* env) {
 void ChromeServiceRegistrarAndroid::RegisterRenderFrameMojoServices(
     content::ServiceRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+
+  // Happens when, for example, showing the malware interstitial page.
+  if (!web_contents)
+    return;
+
   Java_ChromeServiceRegistrar_registerRenderFrameMojoServices(
       base::android::AttachCurrentThread(),
       content::ServiceRegistryAndroid::Create(registry)->GetObj().obj(),
-      content::WebContents::FromRenderFrameHost(render_frame_host)
-          ->GetJavaWebContents()
-          .obj());
+      web_contents->GetJavaWebContents().obj());
 }
