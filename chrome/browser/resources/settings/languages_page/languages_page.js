@@ -12,10 +12,6 @@
 Polymer({
   is: 'settings-languages-page',
 
-  behaviors: [
-    I18nBehavior,
-  ],
-
   properties: {
     /**
      * The current active route.

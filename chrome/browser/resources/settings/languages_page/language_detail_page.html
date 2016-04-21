@@ -43,23 +43,25 @@
               disabled$="[[isUILanguageChangeDisabled_(
                   detail.language.code, prefs.intl.app_locale.value)]]">
           </paper-toggle-button>
-          <span i18n-content="isDisplayedInThisLanguage"
-              hidden$="[[!isCurrentUILanguage_(
+          <span hidden$="[[!isCurrentUILanguage_(
                   detail.language.code, prefs.intl.app_locale.value)]]">
+            $i18n{isDisplayedInThisLanguage}
           </span>
           <span hidden$="[[isCurrentUILanguage_(
               detail.language.code, prefs.intl.app_locale.value)]]">
-            <span i18n-content="displayInThisLanguage"></span>
-            <paper-button i18n-content="restart" on-tap="onRestartTap_"
+            <span>$i18n{displayInThisLanguage}</span>
+            <paper-button on-tap="onRestartTap_"
                 hidden$="[[!isRestartRequired_(
                     detail.language.code, prefs.intl.app_locale.value)]]">
+              $i18n{restart}
             </paper-button>
           </span>
           <cr-policy-pref-indicator id="policyIndicator">
           </cr-policy-pref-indicator>
         </label>
-        <span i18n-content="cannotBeDisplayedInThisLanguage"
-            hidden$="[[detail.language.supportsUI]]"></span>
+        <span hidden$="[[detail.language.supportsUI]]">
+          $i18n{cannotBeDisplayedInThisLanguage}
+        </span>
       </div>
 </if>
       <div class="list-item"
@@ -67,13 +69,14 @@
               detail.language.code, prefs.translate.enabled.value)]]">
         <paper-checkbox checked="[[detail.state.translateEnabled]]"
             on-change="onTranslateEnabledChange_"
-            i18n-content="offerToTranslateInThisLanguage"
             hidden$="[[!detail.language.supportsTranslate]]"
             disabled="[[isTranslateDisabled_(
                 detail.language.code, languages.translateTarget)]]">
+          $i18n{offerToTranslateInThisLanguage}
         </paper-checkbox>
-        <div i18n-content="cannotTranslateInThisLanguage"
-            hidden$="[[detail.language.supportsTranslate]]"></div>
+        <div hidden$="[[detail.language.supportsTranslate]]">
+          $i18n{cannotTranslateInThisLanguage}
+       </div>
       </div>
     </div>
   </template>

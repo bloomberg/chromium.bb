@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -28,7 +27,7 @@
       <neon-animatable id="main">
         <div class="settings-box first two-line">
           <div class="start">
-            <div i18n-content="languagesListTitle"></div>
+            <div>$i18n{languagesListTitle}</div>
             <div class="secondary">
               [[getProspectiveUILanguageName_(
                     languages, prefs.intl.app_locale.value)]]
@@ -63,15 +62,15 @@
                     on-tap="onShowLanguageDetailTap_"></paper-icon-button>
               </div>
             </template>
-            <div class="list-item list-button" i18n-content="manageLanguages"
-                on-tap="onManageLanguagesTap_">
+            <div class="list-item list-button" on-tap="onManageLanguagesTap_">
+              $i18n{manageLanguages}
             </div>
           </div>
         </iron-collapse>
 <if expr="chromeos">
         <div class="settings-box two-line">
           <div class="start">
-            <div i18n-content="inputMethodsListTitle"></div>
+            <div>$i18n{inputMethodsListTitle}</div>
             <div class="secondary">[[inputMethodsSecondary_]]</div>
           </div>
           <cr-expand-button expanded="{{inputMethodsOpened_}}">
@@ -93,16 +92,14 @@
                 <paper-icon-button icon="settings"></paper-icon-button>
               </div>
             </template>
-            <div class="list-item list-button"
-                i18n-content="manageInputMethods">
-            </div>
+            <div class="list-item list-button">$i18n{manageInputMethods}</div>
           </div>
         </iron-collapse>
 </if>
 <if expr="not is_macosx">
         <div class="settings-box two-line">
           <div class="start">
-            <div i18n-content="spellCheckListTitle"></div>
+            <div>$i18n{spellCheckListTitle}</div>
             <div class="secondary">[[spellCheckSecondary_]]</div>
           </div>
           <cr-expand-button expanded="{{spellCheckOpened_}}">
@@ -124,15 +121,15 @@
                     on-tap="onShowLanguageDetailTap_"></paper-icon-button>
               </div>
             </template>
-            <div class="list-item list-button" i18n-content="manageSpellCheck"
-                on-tap="onEditDictionaryTap_">
+            <div class="list-item list-button" on-tap="onEditDictionaryTap_">
+              $i18n{manageSpellCheck}
             </div>
           </div>
         </iron-collapse>
 </if>
       </neon-animatable>
       <template is="dom-if" name="manage-languages">
-        <settings-subpage page-title="[[i18n('manageLanguagesPageTitle')]]">
+        <settings-subpage page-title="$i18n{manageLanguagesPageTitle}">
           <settings-manage-languages-page
               prefs="{{prefs}}"></settings-manage-languages-page>
         </settings-subpage>
@@ -147,7 +144,7 @@
       </template>
 <if expr="not is_macosx">
       <template is="dom-if" name="edit-dictionary">
-        <settings-subpage page-title="[[i18n('editDictionaryPageTitle')]]">
+        <settings-subpage page-title="$i18n{editDictionaryPageTitle}">
           <settings-edit-dictionary-page></settings-edit-dictionary-page>
         </settings-subpage>
       </template>

@@ -37,13 +37,14 @@
         <iron-a11y-keys id="keys" keys="enter esc"
             on-keys-pressed="onKeysPress_"></iron-a11y-keys>
         <paper-input id="newWord" no-label-float
-            i18n-values="label:addDictionaryWordLabel"></paper-input>
-        <paper-button on-tap="onAddWordTap_"
-            i18n-content="addDictionaryWordButton"></paper-button>
+            label="$i18n{addDictionaryWordLabel}"></paper-input>
+        <paper-button on-tap="onAddWordTap_">
+          $i18n{addDictionaryWordButton}
+        </paper-button>
       </div>
     </div>
     <div class="settings-box block">
-      <h2 i18n-content="customDictionaryWords"></h2>
+      <h2>$i18n{customDictionaryWords}</h2>
       <div class="list-frame">
         <iron-list id="list" items="{{words_}}">
           <template>

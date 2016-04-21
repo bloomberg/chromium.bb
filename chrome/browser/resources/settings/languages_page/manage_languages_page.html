@@ -24,7 +24,7 @@
     <settings-languages languages="{{languages}}"></settings-languages>
     <div class="settings-box first content">
       <div class="start">
-        <h2 i18n-content="enabledLanguages"></h2>
+        <h2>$i18n{enabledLanguages}</h2>
         <div class="list-frame vertical-list">
           <template is="dom-repeat" items="{{languages.enabledLanguages}}">
             <div class="list-item">
@@ -38,7 +38,7 @@
             </div>
           </template>
         </div>
-        <h2 i18n-content="allLanguages"></h2>
+        <h2>$i18n{allLanguages}</h2>
         <div class="list-frame vertical-list">
           <iron-list items="{{availableLanguages_}}" as="item">
             <template>
