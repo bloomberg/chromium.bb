@@ -4149,55 +4149,6 @@ TEST_P(SpdyFramerTest, ExpectContinuationReceiveControlFrame) {
   EXPECT_EQ(0, visitor.data_frame_count_);
 }
 
-TEST_P(SpdyFramerTest, EndSegmentOnDataFrame) {
-  if (!IsHttp2()) {
-    return;
-  }
-
-  const unsigned char kInput[] = {
-    0x00, 0x00, 0x0c, 0x00, 0x02,  // DATA: END_SEGMENT
-    0x00, 0x00, 0x00, 0x01,  // Stream 1
-    0xde, 0xad, 0xbe, 0xef,
-    0xde, 0xad, 0xbe, 0xef,
-    0xde, 0xad, 0xbe, 0xef,
-  };
-
-  TestSpdyVisitor visitor(spdy_version_);
-  visitor.SimulateInFramer(kInput, sizeof(kInput));
-
-  // TODO(jgraettinger): Verify END_SEGMENT when support is added.
-  EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(12, visitor.data_bytes_);
-  EXPECT_EQ(0, visitor.fin_frame_count_);
-  EXPECT_EQ(0, visitor.fin_flag_count_);
-}
-
-TEST_P(SpdyFramerTest, EndSegmentOnHeadersFrame) {
-  if (!IsHttp2()) {
-    return;
-  }
-
-  const unsigned char kInput[] = {
-    0x00, 0x00, 0x10, 0x01, 0x06,  // HEADERS: END_SEGMENT | END_HEADERS
-    0x00, 0x00, 0x00, 0x01,  // Stream 1
-    0x00, 0x06, 0x63, 0x6f,
-    0x6f, 0x6b, 0x69, 0x65,
-    0x07, 0x66, 0x6f, 0x6f,
-    0x3d, 0x62, 0x61, 0x72,
-  };
-
-  TestSpdyVisitor visitor(spdy_version_);
-  visitor.SimulateInFramer(kInput, sizeof(kInput));
-
-  // TODO(jgraettinger): Verify END_SEGMENT when support is added.
-  EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(1, visitor.headers_frame_count_);
-  EXPECT_EQ(1, visitor.zero_length_control_frame_header_data_count_);
-
-  EXPECT_THAT(visitor.headers_,
-              testing::ElementsAre(testing::Pair("cookie", "foo=bar")));
-}
-
 TEST_P(SpdyFramerTest, ReadGarbage) {
   SpdyFramer framer(spdy_version_);
   unsigned char garbage_frame[256];
@@ -4578,8 +4529,7 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV4) {
     return;
   }
 
-  uint8_t valid_data_flags =
-      DATA_FLAG_FIN | DATA_FLAG_END_SEGMENT | DATA_FLAG_PADDED;
+  uint8_t valid_data_flags = DATA_FLAG_FIN | DATA_FLAG_PADDED;
 
   uint8_t flags = 0;
   do {
@@ -4630,8 +4580,7 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV4disabled) {
     return;
   }
 
-  uint8_t valid_data_flags =
-      DATA_FLAG_FIN | DATA_FLAG_END_SEGMENT | DATA_FLAG_PADDED;
+  uint8_t valid_data_flags = DATA_FLAG_FIN | DATA_FLAG_PADDED;
 
   uint8_t flags = 0;
   do {
@@ -5067,8 +5016,7 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
     } else if (IsHttp2() &&
                flags &
                    ~(CONTROL_FLAG_FIN | HEADERS_FLAG_END_HEADERS |
-                     HEADERS_FLAG_END_SEGMENT | HEADERS_FLAG_PADDED |
-                     HEADERS_FLAG_PRIORITY)) {
+                     HEADERS_FLAG_PADDED | HEADERS_FLAG_PRIORITY)) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
       // Expected callback values
@@ -5107,8 +5055,7 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
     } else if (IsHttp2() &&
                flags &
                    ~(CONTROL_FLAG_FIN | HEADERS_FLAG_END_HEADERS |
-                     HEADERS_FLAG_END_SEGMENT | HEADERS_FLAG_PADDED |
-                     HEADERS_FLAG_PRIORITY)) {
+                     HEADERS_FLAG_PADDED | HEADERS_FLAG_PRIORITY)) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
                 framer.error_code())
@@ -5158,8 +5105,7 @@ TEST_P(SpdyFramerTest, HeadersFrameFlagsDisabled) {
     } else if (IsHttp2() &&
                flags &
                    ~(CONTROL_FLAG_FIN | HEADERS_FLAG_END_HEADERS |
-                     HEADERS_FLAG_END_SEGMENT | HEADERS_FLAG_PADDED |
-                     HEADERS_FLAG_PRIORITY)) {
+                     HEADERS_FLAG_PADDED | HEADERS_FLAG_PRIORITY)) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
       // Expected callback values
@@ -5197,7 +5143,6 @@ TEST_P(SpdyFramerTest, HeadersFrameFlagsDisabled) {
           << SpdyFramer::ErrorCodeToString(framer.error_code());
     } else if (IsHttp2() && flags & ~(CONTROL_FLAG_FIN |
                                       HEADERS_FLAG_END_HEADERS |
-                                      HEADERS_FLAG_END_SEGMENT |
                                       HEADERS_FLAG_PADDED |
                                       HEADERS_FLAG_PRIORITY)) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());

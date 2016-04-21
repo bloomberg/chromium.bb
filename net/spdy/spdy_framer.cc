@@ -873,8 +873,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     if (protocol_version_ == SPDY3) {
       valid_data_flags = DATA_FLAG_FIN;
     } else {
-      valid_data_flags =
-          DATA_FLAG_FIN | DATA_FLAG_END_SEGMENT | DATA_FLAG_PADDED;
+      valid_data_flags = DATA_FLAG_FIN | DATA_FLAG_PADDED;
     }
 
     if (current_frame_flags_ & ~valid_data_flags) {
@@ -1003,8 +1002,7 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
         } else if (protocol_version_ == HTTP2 &&
                    current_frame_flags_ &
                        ~(CONTROL_FLAG_FIN | HEADERS_FLAG_PRIORITY |
-                         HEADERS_FLAG_END_HEADERS | HEADERS_FLAG_END_SEGMENT |
-                         HEADERS_FLAG_PADDED)) {
+                         HEADERS_FLAG_END_HEADERS | HEADERS_FLAG_PADDED)) {
           set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
         }
       }

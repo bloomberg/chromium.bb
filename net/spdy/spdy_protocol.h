@@ -282,9 +282,7 @@ enum SpdyFrameType {
 enum SpdyDataFlags {
   DATA_FLAG_NONE = 0x00,
   DATA_FLAG_FIN = 0x01,
-  DATA_FLAG_END_SEGMENT = 0x02,
   DATA_FLAG_PADDED = 0x08,
-  DATA_FLAG_COMPRESSED = 0x20,
 };
 
 // Flags on control packets
@@ -300,7 +298,6 @@ enum SpdyPingFlags {
 
 // Used by HEADERS, PUSH_PROMISE, and CONTINUATION.
 enum SpdyHeadersFlags {
-  HEADERS_FLAG_END_SEGMENT = 0x02,
   HEADERS_FLAG_END_HEADERS = 0x04,
   HEADERS_FLAG_PADDED = 0x08,
   HEADERS_FLAG_PRIORITY = 0x20,
