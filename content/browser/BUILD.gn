@@ -99,9 +99,6 @@ source_set("browser") {
     "//third_party/leveldatabase",
     "//third_party/libyuv",
     "//third_party/re2",
-    "//third_party/webrtc",
-    "//third_party/webrtc/base:rtc_base",
-    "//third_party/webrtc/modules/desktop_capture:primitives",
     "//third_party/zlib",
     "//third_party/zlib:zip",
     "//ui/accessibility",
@@ -191,6 +188,9 @@ source_set("browser") {
     deps += [
       "//jingle:jingle_glue",
       "//third_party/libjingle:libjingle_webrtc",
+      "//third_party/webrtc",
+      "//third_party/webrtc/base:rtc_base",
+      "//third_party/webrtc/modules/desktop_capture:primitives",
     ]
     if (is_linux || is_mac || is_win) {
       sources += [
