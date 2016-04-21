@@ -2710,8 +2710,6 @@ Bug(eae) [ Win Linux Mac10.10 Mac10.11 ] fast/text/zero-font-size.html [ NeedsMa
 Bug(eae) [ Win Linux Mac10.10 Mac10.11 ] ietestcenter/css3/text/textshadow-003.htm [ NeedsManualRebaseline ]
 Bug(eae) [ Win Linux Mac10.10 Mac10.11 ] ietestcenter/css3/text/textshadow-004.htm [ NeedsManualRebaseline ]
 Bug(eae) [ Win ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ NeedsManualRebaseline ]
-Bug(eae) [ Linux ] svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsManualRebaseline ]
-Bug(eae) [ Win ] svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsManualRebaseline ]
 Bug(eae) [ Win Release ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsManualRebaseline ]
 
 crbug.com/593679 virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ NeedsManualRebaseline ]
@@ -2726,7 +2724,6 @@ crbug.com/600248 imported/web-platform-tests/web-animations/animation-effect-tim
 crbug.com/600248 imported/web-platform-tests/web-animations/animation/constructor.html [ Failure Timeout ]
 
 crbug.com/604642 [ Mac ]  fast/text/midword-break-after-breakable-char.html [ Failure ]
-crbug.com/605024 [ Mac ]  svg/transforms/animated-path-inside-transformed-html.xhtml [ Failure ]
 
 crbug.com/605047 [ Mac10.11 Retina ] fast/text/emphasis.html [ Failure ]
 crbug.com/605047 [ Mac10.11 Retina ] fast/text/international/complex-character-based-fallback.html [ Failure ]
