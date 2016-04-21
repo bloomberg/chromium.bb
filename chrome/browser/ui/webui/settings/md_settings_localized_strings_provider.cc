@@ -21,6 +21,7 @@
 #include "chrome/grit/settings_google_chrome_strings.h"
 #include "chrome/grit/settings_strings.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -599,6 +600,12 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"editPasswordUsernameLabel", IDS_SETTINGS_PASSWORDS_USERNAME},
       {"editPasswordPasswordLabel", IDS_SETTINGS_PASSWORDS_PASSWORD},
   };
+  html_source->AddString(
+      "managePasswordsLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS,
+          base::ASCIIToUTF16(
+              password_manager::kPasswordManagerAccountDashboardURL)));
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 }
