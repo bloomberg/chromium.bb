@@ -4,22 +4,10 @@
 
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
 
-#include "base/logging.h"
-
 namespace device {
 
 BluetoothLocalGattService::BluetoothLocalGattService() {}
 
 BluetoothLocalGattService::~BluetoothLocalGattService() {}
-
-// static
-BluetoothLocalGattService* BluetoothLocalGattService::Create(
-    const BluetoothUUID& uuid,
-    bool is_primary,
-    BluetoothLocalGattService* included_service,
-    Delegate* delegate) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
 
 }  // namespace device

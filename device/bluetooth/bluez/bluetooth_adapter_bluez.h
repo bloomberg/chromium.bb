@@ -44,6 +44,7 @@ namespace bluez {
 class BluetoothBlueZTest;
 class BluetoothAdapterProfileBlueZ;
 class BluetoothDeviceBlueZ;
+class BluetoothLocalGattServiceBlueZ;
 class BluetoothPairingBlueZ;
 
 // The BluetoothAdapterBlueZ class implements BluetoothAdapter for platforms
@@ -148,6 +149,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // Release use of a profile by a device.
   void ReleaseProfile(const dbus::ObjectPath& device_path,
                       BluetoothAdapterProfileBlueZ* profile);
+
+  void AddLocalGattService(
+      std::unique_ptr<BluetoothLocalGattServiceBlueZ> service);
 
  protected:
   // BluetoothAdapter:
@@ -387,6 +391,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       profile_queues_;
 
   std::unique_ptr<device::BluetoothDiscoveryFilter> current_filter_;
+
+  std::vector<std::unique_ptr<BluetoothLocalGattServiceBlueZ>>
+      owned_gatt_services_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

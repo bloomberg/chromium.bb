@@ -11,6 +11,8 @@
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -27,6 +29,7 @@ class BluetoothLocalGattDescriptor;
 // adapter is used in the "peripheral" role. Such instances are meant to be
 // constructed directly and registered. Once registered, a GATT attribute
 // hierarchy will be visible to remote devices in the "central" role.
+// BT local GATT services will be owned by the adapter they are created with.
 //
 // Note: We use virtual inheritance on the gatt service since it will be
 // inherited by platform specific versions of the gatt service classes also. The
@@ -127,39 +130,33 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
         const ErrorCallback& error_callback) = 0;
   };
 
-  ~BluetoothLocalGattService() override;
-
-  // Constructs a BluetoothLocalGattService that can be locally hosted when the
-  // local adapter is in the peripheral role. The resulting object can then be
-  // made available by calling the "Register" method. This method constructs a
-  // service with UUID |uuid|. Whether the constructed service is primary or
-  // secondary is determined by |is_primary|. |delegate| is used to send certain
-  // peripheral role events. If |delegate| is NULL, then this service will
-  // employ a default behavior when responding to read and write requests based
-  // on the cached value of its characteristics and descriptors at a given time.
+  // Creates a local GATT service to be used with |adapter| (which will own
+  // the created service object).  A service can register or unregister itself
+  // at any time by calling its Register/Unregister methods. |delegate|
+  // receives read/write requests for characteristic/descriptor values. It
+  // needs to outlive this object.
   // TODO(rkc): Implement included services.
-  static BluetoothLocalGattService* Create(
+  static base::WeakPtr<BluetoothLocalGattService> Create(
+      BluetoothAdapter* adapter,
       const BluetoothUUID& uuid,
       bool is_primary,
       BluetoothLocalGattService* included_service,
-      Delegate* delegate);
+      BluetoothLocalGattService::Delegate* delegate);
 
   // Registers this GATT service. Calling Register will make this service and
   // all of its associated attributes available on the local adapters GATT
-  // database and the service UUID will be advertised to nearby devices if the
-  // local adapter is discoverable. Call Unregister to make this service no
-  // longer available.
-  //
-  // These methods only make sense for services that are local and will hence
-  // fail if this instance represents a remote GATT service. |callback| is
-  // called to denote success and |error_callback| to denote failure.
+  // database. Call Unregister to make this service no longer available.
   virtual void Register(const base::Closure& callback,
                         const ErrorCallback& error_callback) = 0;
+
+  // Unregisters this GATT service. This will remove the service from the list
+  // of services exposed by the adapter this service was registered on.
   virtual void Unregister(const base::Closure& callback,
                           const ErrorCallback& error_callback) = 0;
 
  protected:
   BluetoothLocalGattService();
+  ~BluetoothLocalGattService() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BluetoothLocalGattService);

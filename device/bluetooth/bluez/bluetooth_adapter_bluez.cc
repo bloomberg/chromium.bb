@@ -26,6 +26,7 @@
 #include "device/bluetooth/bluez/bluetooth_advertisement_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_audio_sink_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_device_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_local_gatt_service_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_pairing_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_socket_bluez.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
@@ -145,6 +146,7 @@ void BluetoothAdapterBlueZ::Shutdown() {
                         base::Bind(&OnUnregisterAgentError));
 
   agent_.reset();
+
   dbus_is_shutdown_ = true;
 }
 
@@ -1019,6 +1021,11 @@ void BluetoothAdapterBlueZ::RemoveProfile(const BluetoothUUID& uuid) {
     delete profiles_[uuid];
     profiles_.erase(uuid);
   }
+}
+
+void BluetoothAdapterBlueZ::AddLocalGattService(
+    std::unique_ptr<BluetoothLocalGattServiceBlueZ> service) {
+  owned_gatt_services_.push_back(std::move(service));
 }
 
 void BluetoothAdapterBlueZ::OnRegisterProfile(

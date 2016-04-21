@@ -4,47 +4,72 @@
 
 #include "device/bluetooth/bluez/bluetooth_local_gatt_service_bluez.h"
 
-#include "base/bind.h"
 #include "base/callback.h"
+#include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
+#include "dbus/object_path.h"
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
-#include "device/bluetooth/dbus/bluetooth_gatt_manager_client.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
 namespace bluez {
 
 BluetoothLocalGattServiceBlueZ::BluetoothLocalGattServiceBlueZ(
     BluetoothAdapterBlueZ* adapter,
-    const dbus::ObjectPath& object_path)
-    : BluetoothGattServiceBlueZ(adapter, object_path), weak_ptr_factory_(this) {
+    const device::BluetoothUUID& uuid,
+    bool is_primary,
+    device::BluetoothLocalGattService::Delegate* delegate)
+    : BluetoothGattServiceBlueZ(adapter),
+      uuid_(uuid),
+      is_primary_(is_primary),
+      delegate_(delegate),
+      weak_ptr_factory_(this) {
+  // TODO(rkc): Move this code in a common location. It is used by
+  // BluetoothAdvertisementBlueZ() also.
+  std::string GuidString = base::GenerateGUID();
+  base::RemoveChars(GuidString, "-", &GuidString);
+  object_path_ = dbus::ObjectPath(adapter_->object_path().value() +
+                                  "/service/" + GuidString);
   VLOG(1) << "Creating local GATT service with identifier: "
-          << object_path.value();
+          << object_path_.value();
 }
 
 BluetoothLocalGattServiceBlueZ::~BluetoothLocalGattServiceBlueZ() {}
 
+device::BluetoothUUID BluetoothLocalGattServiceBlueZ::GetUUID() const {
+  return uuid_;
+}
+
+bool BluetoothLocalGattServiceBlueZ::IsPrimary() const {
+  return is_primary_;
+}
+
+// static
+base::WeakPtr<device::BluetoothLocalGattService>
+BluetoothLocalGattServiceBlueZ::Create(
+    device::BluetoothAdapter* adapter,
+    const device::BluetoothUUID& uuid,
+    bool is_primary,
+    BluetoothLocalGattService* /* included_service */,
+    BluetoothLocalGattService::Delegate* delegate) {
+  BluetoothAdapterBlueZ* adapter_bluez =
+      static_cast<BluetoothAdapterBlueZ*>(adapter);
+  BluetoothLocalGattServiceBlueZ* service = new BluetoothLocalGattServiceBlueZ(
+      adapter_bluez, uuid, is_primary, delegate);
+  adapter_bluez->AddLocalGattService(base::WrapUnique(service));
+  return service->weak_ptr_factory_.GetWeakPtr();
+}
+
 void BluetoothLocalGattServiceBlueZ::Register(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  DCHECK(bluez::BluezDBusManager::Get());
-  bluez::BluezDBusManager::Get()
-      ->GetBluetoothGattManagerClient()
-      ->RegisterService(
-          object_path(), BluetoothGattManagerClient::Options(), callback,
-          base::Bind(&BluetoothLocalGattServiceBlueZ::OnRegistrationError,
-                     weak_ptr_factory_.GetWeakPtr(), error_callback));
+  // TODO(rkc): Call adapter_->RegisterGattService.
 }
 
 void BluetoothLocalGattServiceBlueZ::Unregister(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  DCHECK(bluez::BluezDBusManager::Get());
-  bluez::BluezDBusManager::Get()
-      ->GetBluetoothGattManagerClient()
-      ->UnregisterService(
-          object_path(), callback,
-          base::Bind(&BluetoothLocalGattServiceBlueZ::OnRegistrationError,
-                     weak_ptr_factory_.GetWeakPtr(), error_callback));
+  // TODO(rkc): Call adapter_->UnregisterGattService.
 }
 
 void BluetoothLocalGattServiceBlueZ::OnRegistrationError(

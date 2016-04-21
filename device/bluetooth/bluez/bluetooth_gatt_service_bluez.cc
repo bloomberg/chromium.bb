@@ -23,9 +23,8 @@ const char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
 }  // namespace
 
 BluetoothGattServiceBlueZ::BluetoothGattServiceBlueZ(
-    BluetoothAdapterBlueZ* adapter,
-    const dbus::ObjectPath& object_path)
-    : adapter_(adapter), object_path_(object_path) {
+    BluetoothAdapterBlueZ* adapter)
+    : adapter_(adapter) {
   DCHECK(adapter_);
 }
 
