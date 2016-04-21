@@ -169,8 +169,14 @@ MockDistillerFactory* DomDistillerViewerSourceBrowserTest::distiller_factory_ =
 
 // The DomDistillerViewerSource renders untrusted content, so ensure no bindings
 // are enabled when the article exists in the database.
+// Flaky on Linux Debug, see http://crbug.com/605432.
+#if defined(OS_LINUX) && !defined(NDEBUG)
+#define MAYBE_NoWebUIBindingsArticleExists DISABLED_NoWebUIBindingsArticleExists
+#else
+#define MAYBE_NoWebUIBindingsArticleExists NoWebUIBindingsArticleExists
+#endif
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       NoWebUIBindingsArticleExists) {
+                       MAYBE_NoWebUIBindingsArticleExists) {
   // Ensure there is one item in the database, which will trigger distillation.
   const ArticleEntry entry = CreateEntry("DISTILLED", "http://example.com/1");
   AddEntry(entry, database_model_);
@@ -183,8 +189,14 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
 
 // The DomDistillerViewerSource renders untrusted content, so ensure no bindings
 // are enabled when the article is not found.
+// Flaky on Linux Debug, see http://crbug.com/605432.
+#if defined(OS_LINUX) && !defined(NDEBUG)
+#define MAYBE_NoWebUIBindingsArticleNotFound DISABLED_NoWebUIBindingsArticleNotFound
+#else
+#define MAYBE_NoWebUIBindingsArticleNotFound NoWebUIBindingsArticleNotFound
+#endif
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       NoWebUIBindingsArticleNotFound) {
+                       MAYBE_NoWebUIBindingsArticleNotFound) {
   // The article does not exist, so assume no distillation will happen.
   expect_distillation_ = false;
   expect_distiller_page_ = false;
