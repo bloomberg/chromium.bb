@@ -756,7 +756,7 @@ bool IsContentWithCertificateErrorsRelevantToUI(
 // possible to load such a URL and find different content.
 bool UseWebMediaPlayerImpl(const GURL& url) {
   // WMPI does not support HLS.
-  if (media::MediaCodecUtil::IsHLSPath(url))
+  if (media::MediaCodecUtil::IsHLSURL(url))
     return false;
 
   // Don't use WMPI if the container likely contains a codec we can't decode in
