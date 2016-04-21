@@ -86,6 +86,7 @@
     ['OS=="ios"', {
       'targets': [
         {
+          # GN version: //components/favicon/ios
           'target_name': 'favicon_ios',
           'type': 'static_library',
           'dependencies': [
