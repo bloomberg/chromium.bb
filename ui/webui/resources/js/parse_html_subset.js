@@ -22,12 +22,10 @@ var parseHtmlSubset = (function() {
           value.indexOf('https://') == 0);
     },
     'target': function(node, value) {
-      // Allow a[target] but reset the value to "".
-      if (node.tagName != 'A')
-        return false;
-      node.setAttribute('target', '');
-      return true;
-    }
+      // Only allow a[target='_blank'].
+      // TODO(dbeam): are there valid use cases for target != '_blank'?
+      return node.tagName == 'A' && value == '_blank';
+    },
   };
 
   /**

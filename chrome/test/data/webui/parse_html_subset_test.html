@@ -13,24 +13,19 @@ function parseAndAssertThrows() {
   });
 }
 
-function parseAndAssertNotThrows() {
-  var args = arguments;
-  parseHtmlSubset.apply(null, args);
-}
-
 function testText() {
-  parseAndAssertNotThrows('');
-  parseAndAssertNotThrows('abc');
-  parseAndAssertNotThrows('&nbsp;');
+  parseHtmlSubset('');
+  parseHtmlSubset('abc');
+  parseHtmlSubset('&nbsp;');
 }
 
 function testSupportedTags() {
-  parseAndAssertNotThrows('<b>bold</b>');
-  parseAndAssertNotThrows('Some <b>bold</b> text');
-  parseAndAssertNotThrows('Some <strong>strong</strong> text');
-  parseAndAssertNotThrows('<B>bold</B>');
-  parseAndAssertNotThrows('Some <B>bold</B> text');
-  parseAndAssertNotThrows('Some <STRONG>strong</STRONG> text');
+  parseHtmlSubset('<b>bold</b>');
+  parseHtmlSubset('Some <b>bold</b> text');
+  parseHtmlSubset('Some <strong>strong</strong> text');
+  parseHtmlSubset('<B>bold</B>');
+  parseHtmlSubset('Some <B>bold</B> text');
+  parseHtmlSubset('Some <STRONG>strong</STRONG> text');
 }
 
 function testInvalidTags() {
@@ -47,8 +42,8 @@ function testInvalidAttributes() {
 }
 
 function testValidAnchors() {
-  parseAndAssertNotThrows('<a href="https://google.com">Google</a>');
-  parseAndAssertNotThrows('<a href="chrome://settings">Google</a>');
+  parseHtmlSubset('<a href="https://google.com">Google</a>');
+  parseHtmlSubset('<a href="chrome://settings">Google</a>');
 }
 
 function testInvalidAnchorHrefs() {
@@ -67,14 +62,19 @@ function testInvalidAnchorAttributes() {
 }
 
 function testAnchorTarget() {
-  parseAndAssertNotThrows(
+  var df = parseHtmlSubset(
       '<a href="https://google.com" target="_blank">Google</a>');
-  parseAndAssertNotThrows(
-      '<a href="https://google.com" target="foo">Google</a>');
+  assertEquals('_blank', df.firstChild.target);
+}
+
+function testInvalidTarget() {
+  parseAndAssertThrows('<form target="_evil">', ['form']);
+  parseAndAssertThrows('<iframe target="_evil">', ['iframe']);
+  parseAndAssertThrows('<a href="https://google.com" target="foo">Google</a>');
 }
 
 function testCustomTags() {
-  parseAndAssertNotThrows('yo <I>ho</i><bR>yo <EM>ho</em>', ['i', 'EM', 'Br']);
+  parseHtmlSubset('yo <I>ho</i><bR>yo <EM>ho</em>', ['i', 'EM', 'Br']);
 }
 
 function testInvalidCustomTags() {
@@ -87,7 +87,7 @@ function testCustomAttributes() {
     assertEquals('fancy', value);
     return true;
   }
-  parseAndAssertNotThrows('<a class="fancy">I\'m fancy!</a>', null,
+  parseHtmlSubset('<a class="fancy">I\'m fancy!</a>', null,
       {class: returnsTruthy});
 }
 
