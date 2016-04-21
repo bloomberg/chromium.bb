@@ -6,12 +6,12 @@ package com.android.webview.chromium;
 
 import android.net.ParseException;
 import android.net.WebAddress;
-import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebView;
 
 import org.chromium.android_webview.AwCookieManager;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
 /**
@@ -21,7 +21,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 @SuppressWarnings("deprecation")
 @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
 public class CookieManagerAdapter extends CookieManager {
-    private static final String LOGTAG = "CookieManager";
+    private static final String TAG = "CookieManager";
 
     AwCookieManager mChromeCookieManager;
 
@@ -51,19 +51,29 @@ public class CookieManagerAdapter extends CookieManager {
 
     @Override
     public void setCookie(String url, String value) {
+        if (value == null) {
+            Log.e(TAG, "Not setting cookie with null value for URL: %s", url);
+            return;
+        }
+
         try {
             mChromeCookieManager.setCookie(fixupUrl(url), value);
         } catch (ParseException e) {
-            Log.e(LOGTAG, "Not setting cookie due to error parsing URL: " + url, e);
+            Log.e(TAG, "Not setting cookie due to error parsing URL: %s", url, e);
         }
     }
 
     @Override
     public void setCookie(String url, String value, ValueCallback<Boolean> callback) {
+        if (value == null) {
+            Log.e(TAG, "Not setting cookie with null value for URL: %s", url);
+            return;
+        }
+
         try {
             mChromeCookieManager.setCookie(fixupUrl(url), value, callback);
         } catch (ParseException e) {
-            Log.e(LOGTAG, "Not setting cookie due to error parsing URL: " + url, e);
+            Log.e(TAG, "Not setting cookie due to error parsing URL: %s", url, e);
         }
     }
 
@@ -72,7 +82,7 @@ public class CookieManagerAdapter extends CookieManager {
         try {
             return mChromeCookieManager.getCookie(fixupUrl(url));
         } catch (ParseException e) {
-            Log.e(LOGTAG, "Unable to get cookies due to error parsing URL: " + url, e);
+            Log.e(TAG, "Unable to get cookies due to error parsing URL: %s", url, e);
             return null;
         }
     }
