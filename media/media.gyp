@@ -471,6 +471,8 @@
         'cdm/cdm_adapter.h',
         'cdm/cdm_allocator.cc',
         'cdm/cdm_allocator.h',
+        'cdm/cdm_file_io.h',
+        'cdm/cdm_file_io.h',
         'cdm/cdm_helpers.cc',
         'cdm/cdm_helpers.h',
         'cdm/default_cdm_factory.cc',

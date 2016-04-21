@@ -85,6 +85,8 @@ component("media") {
     "cdm/cdm_adapter.h",
     "cdm/cdm_allocator.cc",
     "cdm/cdm_allocator.h",
+    "cdm/cdm_file_io.cc",
+    "cdm/cdm_file_io.h",
     "cdm/cdm_helpers.cc",
     "cdm/cdm_helpers.h",
     "cdm/cdm_wrapper.h",

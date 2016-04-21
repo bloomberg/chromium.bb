@@ -26,6 +26,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/cdm/cdm_allocator.h"
+#include "media/cdm/cdm_file_io.h"
 #include "media/cdm/cdm_helpers.h"
 #include "media/cdm/cdm_wrapper.h"
 #include "ui/gfx/geometry/rect.h"
@@ -333,6 +334,7 @@ void CdmAdapter::Create(
     const base::FilePath& cdm_path,
     const CdmConfig& cdm_config,
     scoped_ptr<CdmAllocator> allocator,
+    const CreateCdmFileIOCB& create_cdm_file_io_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const LegacySessionErrorCB& legacy_session_error_cb,
@@ -347,9 +349,9 @@ void CdmAdapter::Create(
   DCHECK(!session_expiration_update_cb.is_null());
 
   scoped_refptr<CdmAdapter> cdm = new CdmAdapter(
-      key_system, cdm_config, std::move(allocator), session_message_cb,
-      session_closed_cb, legacy_session_error_cb, session_keys_change_cb,
-      session_expiration_update_cb);
+      key_system, cdm_config, std::move(allocator), create_cdm_file_io_cb,
+      session_message_cb, session_closed_cb, legacy_session_error_cb,
+      session_keys_change_cb, session_expiration_update_cb);
 
   // |cdm| ownership passed to the promise.
   scoped_ptr<CdmInitializedPromise> cdm_created_promise(
@@ -362,6 +364,7 @@ CdmAdapter::CdmAdapter(
     const std::string& key_system,
     const CdmConfig& cdm_config,
     scoped_ptr<CdmAllocator> allocator,
+    const CreateCdmFileIOCB& create_cdm_file_io_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const LegacySessionErrorCB& legacy_session_error_cb,
@@ -377,6 +380,7 @@ CdmAdapter::CdmAdapter(
       audio_samples_per_second_(0),
       audio_channel_layout_(CHANNEL_LAYOUT_NONE),
       allocator_(std::move(allocator)),
+      create_cdm_file_io_cb_(create_cdm_file_io_cb),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DCHECK(!key_system_.empty());
@@ -891,13 +895,14 @@ void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
   NOTREACHED() << "Unexpected cdm::StreamType " << stream_type;
 }
 
-// The CDM owns the returned object and must call FileIO::Close() to release it.
 cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // TODO(jrummell): This should use the mojo FileIO client.
-  NOTIMPLEMENTED();
-  return nullptr;
+  std::unique_ptr<CdmFileIO> file_io = create_cdm_file_io_cb_.Run(client);
+
+  // The CDM owns the returned object and must call FileIO::Close()
+  // to release it.
+  return file_io.release();
 }
 
 bool CdmAdapter::AudioFramesDataToAudioFrames(

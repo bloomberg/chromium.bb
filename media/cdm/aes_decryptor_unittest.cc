@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "media/cdm/aes_decryptor.h"
 
+#include <stdint.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -19,9 +21,9 @@
 #include "media/base/decrypt_config.h"
 #include "media/base/decryptor.h"
 #include "media/base/mock_filters.h"
-#include "media/cdm/aes_decryptor.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/cdm_adapter.h"
+#include "media/cdm/cdm_file_io.h"
 #include "media/cdm/external_clear_key_test_helper.h"
 #include "media/cdm/simple_cdm_allocator.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -248,8 +250,10 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
       scoped_ptr<CdmAllocator> allocator(new SimpleCdmAllocator());
       CdmAdapter::Create(
           helper_->KeySystemName(), helper_->LibraryPath(), cdm_config,
-          std::move(allocator), base::Bind(&AesDecryptorTest::OnSessionMessage,
+          std::move(allocator), base::Bind(&AesDecryptorTest::CreateCdmFileIO,
                                            base::Unretained(this)),
+          base::Bind(&AesDecryptorTest::OnSessionMessage,
+                     base::Unretained(this)),
           base::Bind(&AesDecryptorTest::OnSessionClosed,
                      base::Unretained(this)),
           base::Bind(&AesDecryptorTest::OnLegacySessionError,
@@ -453,6 +457,11 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
         EXPECT_TRUE(decrypted_text.empty());
         break;
     }
+  }
+
+  std::unique_ptr<CdmFileIO> CreateCdmFileIO(cdm::FileIOClient* client) {
+    ADD_FAILURE() << "Should never be called";
+    return nullptr;
   }
 
   MOCK_METHOD4(OnSessionMessage,
