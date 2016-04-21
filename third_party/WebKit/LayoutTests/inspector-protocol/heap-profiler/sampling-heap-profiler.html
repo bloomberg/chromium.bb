@@ -65,7 +65,7 @@ function test()
 
     function logNode(node)
     {
-        var size = node.totalSize ? ">0" : "=0";
+        var size = typeof node.selfSize === "number" ? node.selfSize ? ">0" : "=0" : "-";
         InspectorTest.log(`size${size}   ${node.functionName}:${node.lineNumber}:${node.columnNumber}`);
     }
 

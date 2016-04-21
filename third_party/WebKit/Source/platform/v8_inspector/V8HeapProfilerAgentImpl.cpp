@@ -324,16 +324,16 @@ PassOwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> buildSampingHeapProf
     auto children = protocol::Array<protocol::HeapProfiler::SamplingHeapProfileNode>::create();
     for (const auto* child : node->children)
         children->addItem(buildSampingHeapProfileNode(child));
-    size_t totalSize = 0;
+    size_t selfSize = 0;
     for (const auto& allocation : node->allocations)
-        totalSize += allocation.size * allocation.count;
+        selfSize += allocation.size * allocation.count;
     OwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> result = protocol::HeapProfiler::SamplingHeapProfileNode::create()
         .setFunctionName(toProtocolString(node->name))
         .setScriptId(String16::number(node->script_id))
         .setUrl(toProtocolString(node->script_name))
         .setLineNumber(node->line_number)
         .setColumnNumber(node->column_number)
-        .setTotalSize(totalSize)
+        .setSelfSize(selfSize)
         .setChildren(children).build();
     return result.release();
 }
