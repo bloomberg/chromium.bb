@@ -339,7 +339,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     if self._test_instance.app_files:
       self._delegate.PullAppFiles(device, self._test_instance.app_files,
                                   self._test_instance.app_file_dir)
-    if not self._test_instance.skip_clear_data:
+    if not self._env.skip_clear_data:
       self._delegate.Clear(device)
 
     # Parse the output.

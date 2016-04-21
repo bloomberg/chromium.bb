@@ -34,13 +34,14 @@ class LocalDeviceEnvironment(environment.Environment):
     self._device_serial = args.test_device
     self._devices_lock = threading.Lock()
     self._devices = []
-    self._max_tries = 1 + args.num_retries
-    self._tool_name = args.tool
-    self._enable_device_cache = args.enable_device_cache
     self._concurrent_adb = args.enable_concurrent_adb
+    self._enable_device_cache = args.enable_device_cache
+    self._logcat_monitors = []
     self._logcat_output_dir = args.logcat_output_dir
     self._logcat_output_file = args.logcat_output_file
-    self._logcat_monitors = []
+    self._max_tries = 1 + args.num_retries
+    self._skip_clear_data = args.skip_clear_data
+    self._tool_name = args.tool
 
   #override
   def SetUp(self):
@@ -81,22 +82,26 @@ class LocalDeviceEnvironment(environment.Environment):
         monitor.Start()
 
   @property
+  def concurrent_adb(self):
+    return self._concurrent_adb
+
+  @property
   def devices(self):
     if not self._devices:
       raise device_errors.NoDevicesError()
     return self._devices
 
   @property
-  def concurrent_adb(self):
-    return self._concurrent_adb
+  def max_tries(self):
+    return self._max_tries
 
   @property
   def parallel_devices(self):
     return parallelizer.SyncParallelizer(self.devices)
 
   @property
-  def max_tries(self):
-    return self._max_tries
+  def skip_clear_data(self):
+    return self._skip_clear_data
 
   @property
   def tool(self):

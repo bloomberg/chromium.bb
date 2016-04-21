@@ -247,10 +247,6 @@ class LocalDeviceInstrumentationTestRun(
 
     # TODO(jbudorick): Make instrumentation tests output a JSON so this
     # doesn't have to parse the output.
-    logging.debug('output from %s:', test_display_name)
-    for l in output:
-      logging.debug('  %s', l)
-
     result_code, result_bundle, statuses = (
         self._test_instance.ParseAmInstrumentRawOutput(output))
     results = self._test_instance.GenerateTestResults(
@@ -263,8 +259,21 @@ class LocalDeviceInstrumentationTestRun(
       for r in results:
         if r.GetType() == base_test_result.ResultType.UNKNOWN:
           r.SetType(base_test_result.ResultType.CRASH)
-    # TODO(jbudorick): ClearApplicationState on failure before switching
-    # instrumentation tests to platform mode (but respect --skip-clear-data).
+
+    if any(r.GetType() not in (base_test_result.ResultType.PASS,
+                               base_test_result.ResultType.SKIP)
+           for r in results):
+      logging.info('detected failure in %s. raw output:', test_display_name)
+      for l in output:
+        logging.info('  %s', l)
+      if (not self._env.skip_clear_data
+          and self._test_instance.package_info):
+        device.ClearApplicationState(self._test_instance.package_info.package)
+    else:
+      logging.debug('raw output from %s:', test_display_name)
+      for l in output:
+        logging.debug('  %s', l)
+
     return results
 
   #override
