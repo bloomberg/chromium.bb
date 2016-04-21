@@ -14,16 +14,7 @@
 # combinations of the real targets.
 #
 
-declare_args() {
-  # Untrusted architecture
-  use_nacl_x86 = target_cpu == "x86"
-  use_nacl_x64 = target_cpu == "x64" || target_os == "win"
-  use_nacl_arm = target_cpu == "arm"
-
-  # Untrusted libc
-  use_gcc_glibc = false
-  use_clang_newlib = true
-}
+import("config.gni")
 
 group("trusted") {
   deps = [
@@ -31,38 +22,12 @@ group("trusted") {
   ]
 }
 
-
 #
 # This is the root untrusted target which will build all trusted components
 #
 group("untrusted") {
-  deps = []
-  if (use_nacl_x86) {
-    if (use_gcc_glibc) {
-      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:glibc_x86)" ]
-    }
-    if (use_clang_newlib) {
-      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:clang_newlib_x86)" ]
-    }
-    deps += [ "//native_client/src/:irt_targets(//build/toolchain/nacl:irt_x86)" ]
-  }
-  if (use_nacl_x64) {
-    if (use_gcc_glibc) {
-      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:glibc_x64)" ]
-    }
-    if (use_clang_newlib) {
-      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:clang_newlib_x64)" ]
-    }
-    deps += [ "//native_client/src/:irt_targets(//build/toolchain/nacl:irt_x64)" ]
-  }
-  if (use_nacl_arm) {
-    if (use_gcc_glibc) {
-      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:glibc_arm)" ]
-    }
-    if (use_clang_newlib) {
-      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:clang_newlib_arm)" ]
-    }
-
-    deps += [ "//native_client/src/:irt_targets(//build/toolchain/nacl:irt_arm)" ]
-  }
+  deps = [
+    "//native_client/src/:irt_targets($toolchain_irt)",
+    "//native_client/src/:untrusted_targets($toolchain_untrusted)",
+  ]
 }
