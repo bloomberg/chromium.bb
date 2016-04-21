@@ -343,11 +343,7 @@ TEST_F(HandlePassingTest, PipesAreClosed) {
 TEST_F(HandlePassingTest, IsHandle) {
   // Validate that mojo::internal::IsHandle<> works as expected since this.
   // template is key to ensuring that we don't leak handles.
-  EXPECT_TRUE(internal::IsHandle<Handle>::value);
-  EXPECT_TRUE(internal::IsHandle<MessagePipeHandle>::value);
-  EXPECT_TRUE(internal::IsHandle<DataPipeConsumerHandle>::value);
-  EXPECT_TRUE(internal::IsHandle<DataPipeProducerHandle>::value);
-  EXPECT_TRUE(internal::IsHandle<SharedBufferHandle>::value);
+  EXPECT_TRUE(internal::IsHandle<internal::Handle_Data>::value);
 
   // Basic sanity checks...
   EXPECT_FALSE(internal::IsHandle<int>::value);

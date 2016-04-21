@@ -51,7 +51,7 @@ bool PipeControlMessageHandler::RunOrClosePipe(Message* message) {
       reinterpret_cast<
           pipe_control::internal::RunOrClosePipeMessageParams_Data*>(
           message->mutable_payload());
-  params->DecodePointersAndHandles(message->mutable_handles());
+  params->DecodePointers();
 
   pipe_control::RunOrClosePipeMessageParamsPtr params_ptr;
   Deserialize_(params, &params_ptr, nullptr);
