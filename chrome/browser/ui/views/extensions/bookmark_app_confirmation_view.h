@@ -36,6 +36,7 @@ class BookmarkAppConfirmationView : public views::DialogDelegateView,
 
   // Overridden from views::WidgetDelegate:
   views::View* GetInitiallyFocusedView() override;
+  ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void WindowClosing() override;

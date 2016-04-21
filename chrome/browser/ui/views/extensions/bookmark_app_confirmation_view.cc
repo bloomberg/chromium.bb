@@ -104,6 +104,10 @@ views::View* BookmarkAppConfirmationView::GetInitiallyFocusedView() {
   return title_tf_;
 }
 
+ui::ModalType BookmarkAppConfirmationView::GetModalType() const {
+  return ui::MODAL_TYPE_WINDOW;
+}
+
 base::string16 BookmarkAppConfirmationView::GetWindowTitle() const {
 #if defined(USE_ASH)
   int ids = IDS_ADD_TO_SHELF_BUBBLE_TITLE;
