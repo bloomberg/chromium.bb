@@ -833,11 +833,13 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
     LayoutTextInfo layoutTextInfo;
     VerticalPositionCache verticalPositionCache;
 
+    // Pagination may require us to delete and re-create a line due to floats. When this happens,
+    // we need to store the pagination strut in the meantime.
+    LayoutUnit paginationStrutFromDeletedLine;
+
     LineBreaker lineBreaker(LineLayoutBlockFlow(this));
 
     while (!endOfLine.atEnd()) {
-        bool logicalWidthIsAvailable = false;
-
         // The runs from the previous line should have been cleaned up.
         ASSERT(!resolver.runs().runCount());
 
@@ -875,6 +877,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
 
         // This is a short-cut for empty lines.
         if (layoutState.lineInfo().isEmpty()) {
+            ASSERT(!paginationStrutFromDeletedLine);
             if (lastRootBox())
                 lastRootBox()->setLineBreakInfo(endOfLine.getLineLayoutItem(), endOfLine.offset(), resolver.status());
             resolver.runs().deleteRuns();
@@ -904,34 +907,52 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
             bidiRuns.deleteRuns();
             resolver.markCurrentRunEmpty(); // FIXME: This can probably be replaced by an ASSERT (or just removed).
 
+            // If we decided to re-create the line due to pagination, we better have a new line now.
+            ASSERT(lineBox || !paginationStrutFromDeletedLine);
+
             if (lineBox) {
                 lineBox->setLineBreakInfo(endOfLine.getLineLayoutItem(), endOfLine.offset(), resolver.status());
                 if (layoutState.usesPaintInvalidationBounds())
                     layoutState.updatePaintInvalidationRangeFromBox(lineBox);
 
                 if (paginated) {
-                    LayoutUnit adjustment;
-                    adjustLinePositionForPagination(*lineBox, adjustment);
-                    if (adjustment) {
-                        LayoutUnit oldLineWidth = availableLogicalWidthForLine(oldLogicalHeight, layoutState.lineInfo().isFirstLine() ? IndentText : DoNotIndentText);
-                        lineBox->moveInBlockDirection(adjustment);
-                        if (layoutState.usesPaintInvalidationBounds())
-                            layoutState.updatePaintInvalidationRangeFromBox(lineBox);
+                    if (paginationStrutFromDeletedLine) {
+                        // This is a line that got re-created because it got pushed to the next fragmentainer, and there
+                        // were floats in the vicinity that affected the available width. Restore the pagination info
+                        // for this line.
+                        lineBox->setIsFirstAfterPageBreak(true);
+                        lineBox->setPaginationStrut(paginationStrutFromDeletedLine);
+                        paginationStrutFromDeletedLine = LayoutUnit();
+                    } else {
+                        LayoutUnit adjustment;
+                        adjustLinePositionForPagination(*lineBox, adjustment);
+                        if (adjustment) {
+                            LayoutUnit oldLineWidth = availableLogicalWidthForLine(oldLogicalHeight, layoutState.lineInfo().isFirstLine() ? IndentText : DoNotIndentText);
+                            lineBox->moveInBlockDirection(adjustment);
+                            if (layoutState.usesPaintInvalidationBounds())
+                                layoutState.updatePaintInvalidationRangeFromBox(lineBox);
 
-                        if (availableLogicalWidthForLine(oldLogicalHeight + adjustment, layoutState.lineInfo().isFirstLine() ? IndentText: DoNotIndentText) != oldLineWidth) {
-                            // We have to delete this line, remove all floats that got added, and let line layout re-run.
-                            lineBox->deleteLine();
-                            endOfLine = restartLayoutRunsAndFloatsInRange(oldLogicalHeight, oldLogicalHeight + adjustment, lastFloatFromPreviousLine, resolver, previousEndofLine);
-                            logicalWidthIsAvailable = true;
-                        } else {
-                            setLogicalHeight(lineBox->lineBottomWithLeading());
+                            if (availableLogicalWidthForLine(oldLogicalHeight + adjustment, layoutState.lineInfo().isFirstLine() ? IndentText: DoNotIndentText) != oldLineWidth) {
+                                // We have to delete this line, remove all floats that got added, and let line layout
+                                // re-run. We had just calculated the pagination strut for this line, and we need to
+                                // stow it away, so that we can re-apply it when the new line has been created.
+                                paginationStrutFromDeletedLine = lineBox->paginationStrut();
+                                ASSERT(paginationStrutFromDeletedLine);
+                                // We're also going to assume that we're right after a page break when re-creating this
+                                // line, so it better be so.
+                                ASSERT(lineBox->isFirstAfterPageBreak());
+                                lineBox->deleteLine();
+                                endOfLine = restartLayoutRunsAndFloatsInRange(oldLogicalHeight, oldLogicalHeight + adjustment, lastFloatFromPreviousLine, resolver, previousEndofLine);
+                            } else {
+                                setLogicalHeight(lineBox->lineBottomWithLeading());
+                            }
                         }
                     }
                 }
             }
         }
 
-        if (!logicalWidthIsAvailable) {
+        if (!paginationStrutFromDeletedLine) {
             for (size_t i = 0; i < lineBreaker.positionedObjects().size(); ++i)
                 setStaticPositions(LineLayoutBlockFlow(this), LineLayoutBox(lineBreaker.positionedObjects()[i]), DoNotIndentText);
 
