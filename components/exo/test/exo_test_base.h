@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_EXO_TEST_EXO_TEST_BASE_H_
 #define COMPONENTS_EXO_TEST_EXO_TEST_BASE_H_
 
+#include <memory>
+
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace exo {
 namespace test {
@@ -25,7 +26,7 @@ class ExoTestBase : public ash::test::AshTestBase {
   ExoTestHelper* exo_test_helper() { return exo_test_helper_.get(); }
 
  private:
-  scoped_ptr<ExoTestHelper> exo_test_helper_;
+  std::unique_ptr<ExoTestHelper> exo_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ExoTestBase);
 };

@@ -18,7 +18,7 @@ ExoTestHelper::ExoTestHelper() {}
 
 ExoTestHelper::~ExoTestHelper() {}
 
-scoped_ptr<gfx::GpuMemoryBuffer> ExoTestHelper::CreateGpuMemoryBuffer(
+std::unique_ptr<gfx::GpuMemoryBuffer> ExoTestHelper::CreateGpuMemoryBuffer(
     const gfx::Size& size) {
   return aura::Env::GetInstance()
       ->context_factory()

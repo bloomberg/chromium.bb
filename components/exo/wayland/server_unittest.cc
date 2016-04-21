@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/exo/wayland/server.h"
+
 #include <wayland-client-core.h>
+
+#include <memory>
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "components/exo/display.h"
-#include "components/exo/wayland/server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace exo {
@@ -26,8 +28,8 @@ std::string GetUniqueSocketName() {
 }
 
 TEST(ServerTest, AddSocket) {
-  scoped_ptr<Display> display(new Display);
-  scoped_ptr<Server> server(new Server(display.get()));
+  std::unique_ptr<Display> display(new Display);
+  std::unique_ptr<Server> server(new Server(display.get()));
 
   // Check that calling AddSocket() with a unique socket name succeeds.
   bool rv = server->AddSocket(GetUniqueSocketName());
@@ -35,8 +37,8 @@ TEST(ServerTest, AddSocket) {
 }
 
 TEST(ServerTest, GetFileDescriptor) {
-  scoped_ptr<Display> display(new Display);
-  scoped_ptr<Server> server(new Server(display.get()));
+  std::unique_ptr<Display> display(new Display);
+  std::unique_ptr<Server> server(new Server(display.get()));
 
   bool rv = server->AddSocket(GetUniqueSocketName());
   EXPECT_TRUE(rv);
@@ -56,8 +58,8 @@ void ConnectToServer(const std::string socket_name,
 }
 
 TEST(ServerTest, Dispatch) {
-  scoped_ptr<Display> display(new Display);
-  scoped_ptr<Server> server(new Server(display.get()));
+  std::unique_ptr<Display> display(new Display);
+  std::unique_ptr<Server> server(new Server(display.get()));
 
   std::string socket_name = GetUniqueSocketName();
   bool rv = server->AddSocket(socket_name);
@@ -82,8 +84,8 @@ TEST(ServerTest, Dispatch) {
 }
 
 TEST(ServerTest, Flush) {
-  scoped_ptr<Display> display(new Display);
-  scoped_ptr<Server> server(new Server(display.get()));
+  std::unique_ptr<Display> display(new Display);
+  std::unique_ptr<Server> server(new Server(display.get()));
 
   bool rv = server->AddSocket(GetUniqueSocketName());
   EXPECT_TRUE(rv);

@@ -21,7 +21,7 @@ void ReleaseBuffer(int* release_buffer_call_count) {
 
 TEST_F(SurfaceTest, Attach) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
 
   // Set the release callback that will be run when buffer is no longer in use.
@@ -29,7 +29,7 @@ TEST_F(SurfaceTest, Attach) {
   buffer->set_release_callback(
       base::Bind(&ReleaseBuffer, base::Unretained(&release_buffer_call_count)));
 
-  scoped_ptr<Surface> surface(new Surface);
+  std::unique_ptr<Surface> surface(new Surface);
 
   // Attach the buffer to surface1.
   surface->Attach(buffer.get());
@@ -48,9 +48,9 @@ TEST_F(SurfaceTest, Attach) {
 
 TEST_F(SurfaceTest, Damage) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  scoped_ptr<Surface> surface(new Surface);
+  std::unique_ptr<Surface> surface(new Surface);
 
   // Attach the buffer to the surface. This will update the pending bounds of
   // the surface to the buffer size.
@@ -70,7 +70,7 @@ void SetFrameTime(base::TimeTicks* result, base::TimeTicks frame_time) {
 }
 
 TEST_F(SurfaceTest, RequestFrameCallback) {
-  scoped_ptr<Surface> surface(new Surface);
+  std::unique_ptr<Surface> surface(new Surface);
 
   base::TimeTicks frame_time;
   surface->RequestFrameCallback(
@@ -82,7 +82,7 @@ TEST_F(SurfaceTest, RequestFrameCallback) {
 }
 
 TEST_F(SurfaceTest, SetOpaqueRegion) {
-  scoped_ptr<Surface> surface(new Surface);
+  std::unique_ptr<Surface> surface(new Surface);
 
   // Setting a non-empty opaque region should succeed.
   surface->SetOpaqueRegion(SkRegion(SkIRect::MakeWH(256, 256)));
@@ -92,7 +92,7 @@ TEST_F(SurfaceTest, SetOpaqueRegion) {
 }
 
 TEST_F(SurfaceTest, SetInputRegion) {
-  scoped_ptr<Surface> surface(new Surface);
+  std::unique_ptr<Surface> surface(new Surface);
 
   // Setting a non-empty input region should succeed.
   surface->SetInputRegion(SkRegion(SkIRect::MakeWH(256, 256)));
@@ -103,9 +103,9 @@ TEST_F(SurfaceTest, SetInputRegion) {
 
 TEST_F(SurfaceTest, SetBufferScale) {
   gfx::Size buffer_size(512, 512);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  scoped_ptr<Surface> surface(new Surface);
+  std::unique_ptr<Surface> surface(new Surface);
 
   // This will update the bounds of the surface and take the buffer scale into
   // account.
@@ -120,9 +120,9 @@ TEST_F(SurfaceTest, SetBufferScale) {
 
 TEST_F(SurfaceTest, SetViewport) {
   gfx::Size buffer_size(1, 1);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  scoped_ptr<Surface> surface(new Surface);
+  std::unique_ptr<Surface> surface(new Surface);
 
   // This will update the bounds of the surface and take the viewport into
   // account.
@@ -135,16 +135,16 @@ TEST_F(SurfaceTest, SetViewport) {
 
 TEST_F(SurfaceTest, SetOnlyVisibleOnSecureOutput) {
   gfx::Size buffer_size(1, 1);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  scoped_ptr<Surface> surface(new Surface);
+  std::unique_ptr<Surface> surface(new Surface);
 
   surface->Attach(buffer.get());
   surface->SetOnlyVisibleOnSecureOutput(true);
   surface->Commit();
 
   cc::TextureMailbox mailbox;
-  scoped_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
   bool rv = surface->layer()->PrepareTextureMailbox(&mailbox, &release_callback,
                                                     false);
   ASSERT_TRUE(rv);
@@ -154,7 +154,7 @@ TEST_F(SurfaceTest, SetOnlyVisibleOnSecureOutput) {
 }
 
 TEST_F(SurfaceTest, Commit) {
-  scoped_ptr<Surface> surface(new Surface);
+  std::unique_ptr<Surface> surface(new Surface);
 
   // Calling commit without a buffer should succeed.
   surface->Commit();

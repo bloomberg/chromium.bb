@@ -29,7 +29,7 @@ void Release(int* release_call_count) {
 
 TEST_F(BufferTest, ReleaseCallback) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
 
   // Set the release callback.
@@ -39,7 +39,7 @@ TEST_F(BufferTest, ReleaseCallback) {
 
   // Produce a texture mailbox for the contents of the buffer.
   cc::TextureMailbox texture_mailbox;
-  scoped_ptr<cc::SingleReleaseCallback> buffer_release_callback =
+  std::unique_ptr<cc::SingleReleaseCallback> buffer_release_callback =
       buffer->ProduceTextureMailbox(&texture_mailbox, false, false);
   ASSERT_TRUE(buffer_release_callback);
 
@@ -52,12 +52,12 @@ TEST_F(BufferTest, ReleaseCallback) {
 
 TEST_F(BufferTest, IsLost) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
 
   // Acquire a texture mailbox for the contents of the buffer.
   cc::TextureMailbox texture_mailbox;
-  scoped_ptr<cc::SingleReleaseCallback> buffer_release_callback =
+  std::unique_ptr<cc::SingleReleaseCallback> buffer_release_callback =
       buffer->ProduceTextureMailbox(&texture_mailbox, false, false);
   ASSERT_TRUE(buffer_release_callback);
 

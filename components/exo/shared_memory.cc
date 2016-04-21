@@ -6,9 +6,11 @@
 
 #include <GLES2/gl2extchromium.h>
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/exo/buffer.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -39,10 +41,10 @@ SharedMemory::SharedMemory(const base::SharedMemoryHandle& handle)
 
 SharedMemory::~SharedMemory() {}
 
-scoped_ptr<Buffer> SharedMemory::CreateBuffer(const gfx::Size& size,
-                                              gfx::BufferFormat format,
-                                              unsigned offset,
-                                              int stride) {
+std::unique_ptr<Buffer> SharedMemory::CreateBuffer(const gfx::Size& size,
+                                                   gfx::BufferFormat format,
+                                                   unsigned offset,
+                                                   int stride) {
   TRACE_EVENT2("exo", "SharedMemory::CreateBuffer", "size", size.ToString(),
                "format", static_cast<int>(format));
 
@@ -67,7 +69,7 @@ scoped_ptr<Buffer> SharedMemory::CreateBuffer(const gfx::Size& size,
   handle.offset = offset;
   handle.stride = stride;
 
-  scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
       aura::Env::GetInstance()
           ->context_factory()
           ->GetGpuMemoryBufferManager()
@@ -82,7 +84,7 @@ scoped_ptr<Buffer> SharedMemory::CreateBuffer(const gfx::Size& size,
   // buffers. Making the copy explicit allows the buffer to be reused earlier.
   bool use_zero_copy = false;
 
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new Buffer(std::move(gpu_memory_buffer), GL_TEXTURE_2D,
                  // COMMANDS_ISSUED queries are sufficient for shared memory
                  // buffers as binding to texture is implemented using a call to

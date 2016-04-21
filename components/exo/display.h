@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory_handle.h"
 
 #if defined(USE_OZONE)
@@ -40,34 +41,36 @@ class Display {
   ~Display();
 
   // Creates a new surface.
-  scoped_ptr<Surface> CreateSurface();
+  std::unique_ptr<Surface> CreateSurface();
 
   // Creates a shared memory segment from |handle| of |size| with the
   // given |id|. This function takes ownership of |handle|.
-  scoped_ptr<SharedMemory> CreateSharedMemory(
+  std::unique_ptr<SharedMemory> CreateSharedMemory(
       const base::SharedMemoryHandle& handle,
       size_t size);
 
 #if defined(USE_OZONE)
   // Creates a buffer for a Linux DMA-buf file descriptor.
-  scoped_ptr<Buffer> CreateLinuxDMABufBuffer(base::ScopedFD fd,
-                                             const gfx::Size& size,
-                                             gfx::BufferFormat format,
-                                             int stride);
+  std::unique_ptr<Buffer> CreateLinuxDMABufBuffer(base::ScopedFD fd,
+                                                  const gfx::Size& size,
+                                                  gfx::BufferFormat format,
+                                                  int stride);
 #endif
 
   // Creates a shell surface for an existing surface.
-  scoped_ptr<ShellSurface> CreateShellSurface(Surface* surface);
+  std::unique_ptr<ShellSurface> CreateShellSurface(Surface* surface);
 
   // Creates a popup shell surface for an existing surface at |position| and
   // with |parent|. |position| is in |parent| surface local coordinates.
-  scoped_ptr<ShellSurface> CreatePopupShellSurface(Surface* surface,
-                                                   ShellSurface* parent,
-                                                   const gfx::Point& position);
+  std::unique_ptr<ShellSurface> CreatePopupShellSurface(
+      Surface* surface,
+      ShellSurface* parent,
+      const gfx::Point& position);
 
   // Creates a sub-surface for an existing surface. The sub-surface will be
   // a child of |parent|.
-  scoped_ptr<SubSurface> CreateSubSurface(Surface* surface, Surface* parent);
+  std::unique_ptr<SubSurface> CreateSubSurface(Surface* surface,
+                                               Surface* parent);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Display);

@@ -38,28 +38,28 @@ class MockTouchDelegate : public TouchDelegate {
 TEST_F(TouchTest, OnTouchDown) {
   ash::WindowPositioner::DisableAutoPositioning(true);
 
-  scoped_ptr<Surface> bottom_surface(new Surface);
-  scoped_ptr<ShellSurface> bottom_shell_surface(
+  std::unique_ptr<Surface> bottom_surface(new Surface);
+  std::unique_ptr<ShellSurface> bottom_shell_surface(
       new ShellSurface(bottom_surface.get()));
   gfx::Size bottom_buffer_size(10, 10);
-  scoped_ptr<Buffer> bottom_buffer(
+  std::unique_ptr<Buffer> bottom_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(bottom_buffer_size)));
   bottom_surface->Attach(bottom_buffer.get());
   bottom_surface->Commit();
   ash::wm::CenterWindow(bottom_shell_surface->GetWidget()->GetNativeWindow());
 
-  scoped_ptr<Surface> top_surface(new Surface);
-  scoped_ptr<ShellSurface> top_shell_surface(
+  std::unique_ptr<Surface> top_surface(new Surface);
+  std::unique_ptr<ShellSurface> top_shell_surface(
       new ShellSurface(top_surface.get()));
   gfx::Size top_buffer_size(8, 8);
-  scoped_ptr<Buffer> top_buffer(
+  std::unique_ptr<Buffer> top_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(top_buffer_size)));
   top_surface->Attach(top_buffer.get());
   top_surface->Commit();
   ash::wm::CenterWindow(top_shell_surface->GetWidget()->GetNativeWindow());
 
   MockTouchDelegate delegate;
-  scoped_ptr<Touch> touch(new Touch(&delegate));
+  std::unique_ptr<Touch> touch(new Touch(&delegate));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(top_surface.get()))
@@ -82,16 +82,16 @@ TEST_F(TouchTest, OnTouchDown) {
 }
 
 TEST_F(TouchTest, OnTouchUp) {
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   surface->Attach(buffer.get());
   surface->Commit();
 
   MockTouchDelegate delegate;
-  scoped_ptr<Touch> touch(new Touch(&delegate));
+  std::unique_ptr<Touch> touch(new Touch(&delegate));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(surface.get()))
@@ -113,16 +113,16 @@ TEST_F(TouchTest, OnTouchUp) {
 }
 
 TEST_F(TouchTest, OnTouchMotion) {
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   surface->Attach(buffer.get());
   surface->Commit();
 
   MockTouchDelegate delegate;
-  scoped_ptr<Touch> touch(new Touch(&delegate));
+  std::unique_ptr<Touch> touch(new Touch(&delegate));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(surface.get()))
@@ -150,16 +150,16 @@ TEST_F(TouchTest, OnTouchMotion) {
 }
 
 TEST_F(TouchTest, OnTouchCancel) {
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   surface->Attach(buffer.get());
   surface->Commit();
 
   MockTouchDelegate delegate;
-  scoped_ptr<Touch> touch(new Touch(&delegate));
+  std::unique_ptr<Touch> touch(new Touch(&delegate));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(surface.get()))

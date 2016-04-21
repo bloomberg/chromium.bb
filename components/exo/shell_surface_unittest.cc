@@ -31,10 +31,10 @@ uint32_t ConfigureFullscreen(uint32_t serial,
 
 TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
   gfx::Size buffer_size(32, 32);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   surface->Attach(buffer.get());
   surface->Commit();
@@ -54,7 +54,7 @@ TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
             surface->GetBoundsInRootWindow().origin().ToString());
 
   shell_surface->AcknowledgeConfigure(kSerial);
-  scoped_ptr<Buffer> fullscreen_buffer(
+  std::unique_ptr<Buffer> fullscreen_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(
           CurrentContext()->bounds().size())));
   surface->Attach(fullscreen_buffer.get());
@@ -66,19 +66,19 @@ TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
 
 TEST_F(ShellSurfaceTest, SetParent) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> parent_buffer(
+  std::unique_ptr<Buffer> parent_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  scoped_ptr<Surface> parent_surface(new Surface);
-  scoped_ptr<ShellSurface> parent_shell_surface(
+  std::unique_ptr<Surface> parent_surface(new Surface);
+  std::unique_ptr<ShellSurface> parent_shell_surface(
       new ShellSurface(parent_surface.get()));
 
   parent_surface->Attach(parent_buffer.get());
   parent_surface->Commit();
 
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   shell_surface->SetParent(parent_shell_surface.get());
 
   surface->Attach(buffer.get());
@@ -90,10 +90,10 @@ TEST_F(ShellSurfaceTest, SetParent) {
 
 TEST_F(ShellSurfaceTest, Maximize) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   surface->Attach(buffer.get());
   shell_surface->Maximize();
@@ -104,10 +104,10 @@ TEST_F(ShellSurfaceTest, Maximize) {
 
 TEST_F(ShellSurfaceTest, Restore) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   surface->Attach(buffer.get());
   surface->Commit();
@@ -123,10 +123,10 @@ TEST_F(ShellSurfaceTest, Restore) {
 
 TEST_F(ShellSurfaceTest, SetFullscreen) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   shell_surface->SetFullscreen(true);
   surface->Attach(buffer.get());
@@ -136,16 +136,16 @@ TEST_F(ShellSurfaceTest, SetFullscreen) {
 }
 
 TEST_F(ShellSurfaceTest, SetTitle) {
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   shell_surface->SetTitle(base::string16(base::ASCIIToUTF16("test")));
   surface->Commit();
 }
 
 TEST_F(ShellSurfaceTest, SetApplicationId) {
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   surface->Commit();
   EXPECT_EQ("", ShellSurface::GetApplicationId(
@@ -156,8 +156,8 @@ TEST_F(ShellSurfaceTest, SetApplicationId) {
 }
 
 TEST_F(ShellSurfaceTest, Move) {
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   // Map shell surface.
   surface->Commit();
@@ -170,8 +170,8 @@ TEST_F(ShellSurfaceTest, Move) {
 }
 
 TEST_F(ShellSurfaceTest, Resize) {
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   // Map shell surface.
   surface->Commit();
@@ -185,10 +185,10 @@ TEST_F(ShellSurfaceTest, Resize) {
 
 TEST_F(ShellSurfaceTest, SetGeometry) {
   gfx::Size buffer_size(64, 64);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   gfx::Rect geometry(16, 16, 32, 32);
   shell_surface->SetGeometry(geometry);
@@ -207,8 +207,8 @@ void Close(int* close_call_count) {
 }
 
 TEST_F(ShellSurfaceTest, CloseCallback) {
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   int close_call_count = 0;
   shell_surface->set_close_callback(
@@ -221,13 +221,13 @@ TEST_F(ShellSurfaceTest, CloseCallback) {
   EXPECT_EQ(1, close_call_count);
 }
 
-void DestroyShellSurface(scoped_ptr<ShellSurface>* shell_surface) {
+void DestroyShellSurface(std::unique_ptr<ShellSurface>* shell_surface) {
   shell_surface->reset();
 }
 
 TEST_F(ShellSurfaceTest, SurfaceDestroyedCallback) {
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   shell_surface->set_surface_destroyed_callback(
       base::Bind(&DestroyShellSurface, base::Unretained(&shell_surface)));
@@ -255,8 +255,8 @@ uint32_t Configure(gfx::Size* suggested_size,
 }
 
 TEST_F(ShellSurfaceTest, ConfigureCallback) {
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   gfx::Size suggested_size;
   ash::wm::WindowStateType has_state_type = ash::wm::WINDOW_STATE_TYPE_NORMAL;
@@ -282,7 +282,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   shell_surface->AcknowledgeConfigure(0);
 
   gfx::Size buffer_size(64, 64);
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   surface->Attach(buffer.get());
   surface->Commit();

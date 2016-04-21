@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_EXO_SHARED_MEMORY_H_
 #define COMPONENTS_EXO_SHARED_MEMORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -26,10 +27,10 @@ class SharedMemory {
   // arguments specifies the number of bytes from beginning of one row to the
   // beginning of the next. The format is the pixel format of the buffer and
   // must be one of RGBX_8888, RGBA_8888, BGRX_8888, BGRA_8888.
-  scoped_ptr<Buffer> CreateBuffer(const gfx::Size& size,
-                                  gfx::BufferFormat format,
-                                  unsigned offset,
-                                  int stride);
+  std::unique_ptr<Buffer> CreateBuffer(const gfx::Size& size,
+                                       gfx::BufferFormat format,
+                                       unsigned offset,
+                                       int stride);
 
  private:
   base::SharedMemory shared_memory_;

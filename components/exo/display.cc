@@ -7,6 +7,7 @@
 #include <iterator>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/exo/shared_memory.h"
@@ -33,13 +34,13 @@ Display::Display() {}
 
 Display::~Display() {}
 
-scoped_ptr<Surface> Display::CreateSurface() {
+std::unique_ptr<Surface> Display::CreateSurface() {
   TRACE_EVENT0("exo", "Display::CreateSurface");
 
-  return make_scoped_ptr(new Surface);
+  return base::WrapUnique(new Surface);
 }
 
-scoped_ptr<SharedMemory> Display::CreateSharedMemory(
+std::unique_ptr<SharedMemory> Display::CreateSharedMemory(
     const base::SharedMemoryHandle& handle,
     size_t size) {
   TRACE_EVENT1("exo", "Display::CreateSharedMemory", "size", size);
@@ -47,14 +48,15 @@ scoped_ptr<SharedMemory> Display::CreateSharedMemory(
   if (!base::SharedMemory::IsHandleValid(handle))
     return nullptr;
 
-  return make_scoped_ptr(new SharedMemory(handle));
+  return base::WrapUnique(new SharedMemory(handle));
 }
 
 #if defined(USE_OZONE)
-scoped_ptr<Buffer> Display::CreateLinuxDMABufBuffer(base::ScopedFD fd,
-                                                    const gfx::Size& size,
-                                                    gfx::BufferFormat format,
-                                                    int stride) {
+std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
+    base::ScopedFD fd,
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    int stride) {
   TRACE_EVENT1("exo", "Display::CreateLinuxDMABufBuffer", "size",
                size.ToString());
 
@@ -63,7 +65,7 @@ scoped_ptr<Buffer> Display::CreateLinuxDMABufBuffer(base::ScopedFD fd,
   handle.native_pixmap_handle.fd = base::FileDescriptor(std::move(fd));
   handle.native_pixmap_handle.stride = stride;
 
-  scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
       aura::Env::GetInstance()
           ->context_factory()
           ->GetGpuMemoryBufferManager()
@@ -83,14 +85,14 @@ scoped_ptr<Buffer> Display::CreateLinuxDMABufBuffer(base::ScopedFD fd,
       std::find(std::begin(kOverlayFormats), std::end(kOverlayFormats),
                 format) != std::end(kOverlayFormats);
 
-  return make_scoped_ptr(new Buffer(
+  return base::WrapUnique(new Buffer(
       std::move(gpu_memory_buffer), GL_TEXTURE_EXTERNAL_OES,
       // COMMANDS_COMPLETED queries are required by native pixmaps.
       GL_COMMANDS_COMPLETED_CHROMIUM, use_zero_copy, is_overlay_candidate));
 }
 #endif
 
-scoped_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
+std::unique_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
   TRACE_EVENT1("exo", "Display::CreateShellSurface", "surface",
                surface->AsTracedValue());
 
@@ -99,10 +101,11 @@ scoped_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
     return nullptr;
   }
 
-  return make_scoped_ptr(new ShellSurface(surface, nullptr, gfx::Rect(), true));
+  return base::WrapUnique(
+      new ShellSurface(surface, nullptr, gfx::Rect(), true));
 }
 
-scoped_ptr<ShellSurface> Display::CreatePopupShellSurface(
+std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
     Surface* surface,
     ShellSurface* parent,
     const gfx::Point& position) {
@@ -119,12 +122,12 @@ scoped_ptr<ShellSurface> Display::CreatePopupShellSurface(
     return nullptr;
   }
 
-  return make_scoped_ptr(new ShellSurface(
+  return base::WrapUnique(new ShellSurface(
       surface, parent, gfx::Rect(position, gfx::Size(1, 1)), false));
 }
 
-scoped_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,
-                                                 Surface* parent) {
+std::unique_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,
+                                                      Surface* parent) {
   TRACE_EVENT2("exo", "Display::CreateSubSurface", "surface",
                surface->AsTracedValue(), "parent", parent->AsTracedValue());
 
@@ -138,7 +141,7 @@ scoped_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,
     return nullptr;
   }
 
-  return make_scoped_ptr(new SubSurface(surface, parent));
+  return base::WrapUnique(new SubSurface(surface, parent));
 }
 
 }  // namespace exo

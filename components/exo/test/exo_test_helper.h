@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_EXO_TEST_EXO_TEST_HELPER_H_
 #define COMPONENTS_EXO_TEST_EXO_TEST_HELPER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
@@ -24,7 +25,8 @@ class ExoTestHelper {
   ~ExoTestHelper();
 
   // Creates a GpuMemoryBuffer instance that can be used for tests.
-  scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(const gfx::Size& size);
+  std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
+      const gfx::Size& size);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExoTestHelper);

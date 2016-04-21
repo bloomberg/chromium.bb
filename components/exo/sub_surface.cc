@@ -80,8 +80,9 @@ void SubSurface::SetCommitBehavior(bool synchronized) {
   is_synchronized_ = synchronized;
 }
 
-scoped_ptr<base::trace_event::TracedValue> SubSurface::AsTracedValue() const {
-  scoped_ptr<base::trace_event::TracedValue> value(
+std::unique_ptr<base::trace_event::TracedValue> SubSurface::AsTracedValue()
+    const {
+  std::unique_ptr<base::trace_event::TracedValue> value(
       new base::trace_event::TracedValue());
   value->SetBoolean("is_synchronized", is_synchronized_);
   return value;

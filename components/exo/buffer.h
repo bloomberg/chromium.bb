@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_EXO_BUFFER_H_
 #define COMPONENTS_EXO_BUFFER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -37,8 +38,8 @@ namespace exo {
 // and not defined as part of this class.
 class Buffer : public base::SupportsWeakPtr<Buffer> {
  public:
-  explicit Buffer(scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer);
-  Buffer(scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
+  explicit Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer);
+  Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
          unsigned texture_target,
          unsigned query_type,
          bool use_zero_copy,
@@ -56,7 +57,7 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // buffer. Returns a release callback on success. The release callback should
   // be called before a new texture mailbox can be acquired unless
   // |lost_context| is true.
-  scoped_ptr<cc::SingleReleaseCallback> ProduceTextureMailbox(
+  std::unique_ptr<cc::SingleReleaseCallback> ProduceTextureMailbox(
       cc::TextureMailbox* mailbox,
       bool secure_output_only,
       bool lost_context);
@@ -65,7 +66,7 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   gfx::Size GetSize() const;
 
   // Returns a trace value representing the state of the buffer.
-  scoped_ptr<base::trace_event::TracedValue> AsTracedValue() const;
+  std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
  private:
   class Texture;
@@ -76,15 +77,15 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
 
   // This is used by ProduceTextureMailbox() to produce a release callback
   // that releases a texture so it can be destroyed or reused.
-  void ReleaseTexture(scoped_ptr<Texture> texture);
+  void ReleaseTexture(std::unique_ptr<Texture> texture);
 
   // This is used by ProduceTextureMailbox() to produce a release callback
   // that releases the buffer contents referenced by a texture before the
   // texture is destroyed or reused.
-  void ReleaseContentsTexture(scoped_ptr<Texture> texture);
+  void ReleaseContentsTexture(std::unique_ptr<Texture> texture);
 
   // The GPU memory buffer that contains the contents of this buffer.
-  scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
 
   // Texture target that must be used when creating a texture for buffer.
   const unsigned texture_target_;
@@ -105,11 +106,11 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
 
   // The last used texture. ProduceTextureMailbox() will use this
   // instead of creating a new texture when possible.
-  scoped_ptr<Texture> texture_;
+  std::unique_ptr<Texture> texture_;
 
   // The last used contents texture. ProduceTextureMailbox() will use this
   // instead of creating a new texture when possible.
-  scoped_ptr<Texture> contents_texture_;
+  std::unique_ptr<Texture> contents_texture_;
 
   // The client release callback.
   base::Closure release_callback_;

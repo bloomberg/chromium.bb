@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_EXO_POINTER_H_
 #define COMPONENTS_EXO_POINTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
 #include "ui/events/event_handler.h"
@@ -64,7 +65,7 @@ class Pointer : public ui::EventHandler,
   PointerDelegate* delegate_;
 
   // The widget for the pointer cursor.
-  scoped_ptr<views::Widget> widget_;
+  std::unique_ptr<views::Widget> widget_;
 
   // The current pointer surface.
   Surface* surface_;

@@ -6,11 +6,11 @@
 #define COMPONENTS_EXO_SHELL_SURFACE_H_
 
 #include <deque>
+#include <memory>
 #include <string>
 
 #include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
@@ -128,7 +128,7 @@ class ShellSurface : public SurfaceDelegate,
   static Surface* GetMainSurface(const aura::Window* window);
 
   // Returns a trace value representing the state of the surface.
-  scoped_ptr<base::trace_event::TracedValue> AsTracedValue() const;
+  std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
@@ -230,7 +230,7 @@ class ShellSurface : public SurfaceDelegate,
   int resize_component_;  // HT constant (see ui/base/hit_test.h)
   int pending_resize_component_;
   std::deque<Config> pending_configs_;
-  scoped_ptr<ash::WindowResizer> resizer_;
+  std::unique_ptr<ash::WindowResizer> resizer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };

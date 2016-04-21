@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/exo/shared_memory.h"
+
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "components/exo/buffer.h"
-#include "components/exo/shared_memory.h"
 #include "components/exo/test/exo_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -15,40 +17,40 @@ namespace {
 
 using SharedMemoryTest = test::ExoTestBase;
 
-scoped_ptr<SharedMemory> CreateSharedMemory(size_t size) {
-  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
+std::unique_ptr<SharedMemory> CreateSharedMemory(size_t size) {
+  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
   bool rv = shared_memory->CreateAnonymous(size);
   DCHECK(rv);
   base::SharedMemoryHandle handle =
       base::SharedMemory::DuplicateHandle(shared_memory->handle());
   DCHECK(base::SharedMemory::IsHandleValid(handle));
-  return make_scoped_ptr(new SharedMemory(handle));
+  return base::WrapUnique(new SharedMemory(handle));
 }
 
 TEST_F(SharedMemoryTest, CreateBuffer) {
   const gfx::Size buffer_size(256, 256);
   const gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
 
-  scoped_ptr<SharedMemory> shared_memory =
+  std::unique_ptr<SharedMemory> shared_memory =
       CreateSharedMemory(gfx::BufferSizeForBufferFormat(buffer_size, format));
   ASSERT_TRUE(shared_memory);
 
   // Creating a full size buffer should succeed.
-  scoped_ptr<Buffer> buffer = shared_memory->CreateBuffer(
+  std::unique_ptr<Buffer> buffer = shared_memory->CreateBuffer(
       buffer_size, format, 0,
       gfx::RowSizeForBufferFormat(buffer_size.width(), format, 0));
   EXPECT_TRUE(buffer);
 
   // Creating a buffer for the top-left rectangle should succeed.
   const gfx::Size top_left_buffer_size(128, 128);
-  scoped_ptr<Buffer> top_left_buffer = shared_memory->CreateBuffer(
+  std::unique_ptr<Buffer> top_left_buffer = shared_memory->CreateBuffer(
       top_left_buffer_size, format, 0,
       gfx::RowSizeForBufferFormat(buffer_size.width(), format, 0));
   EXPECT_TRUE(top_left_buffer);
 
   // Creating a buffer for the bottom-right rectangle should succeed.
   const gfx::Size bottom_right_buffer_size(64, 64);
-  scoped_ptr<Buffer> bottom_right_buffer = shared_memory->CreateBuffer(
+  std::unique_ptr<Buffer> bottom_right_buffer = shared_memory->CreateBuffer(
       bottom_right_buffer_size, format,
       (buffer_size.height() - bottom_right_buffer_size.height()) *
               gfx::RowSizeForBufferFormat(buffer_size.width(), format, 0) +

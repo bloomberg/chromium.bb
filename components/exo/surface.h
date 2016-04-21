@@ -6,11 +6,11 @@
 #define COMPONENTS_EXO_SURFACE_H_
 
 #include <list>
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -128,7 +128,7 @@ class Surface : public aura::Window,
   bool HasSurfaceObserver(const SurfaceObserver* observer) const;
 
   // Returns a trace value representing the state of the surface.
-  scoped_ptr<base::trace_event::TracedValue> AsTracedValue() const;
+  std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
   bool HasPendingDamageForTesting(const gfx::Rect& damage) const {
     return pending_damage_.contains(gfx::RectToSkIRect(damage));

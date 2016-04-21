@@ -9,6 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/resources/single_release_callback.h"
@@ -144,7 +145,7 @@ Surface::Surface()
   SetName("ExoSurface");
   SetProperty(kSurfaceKey, this);
   Init(ui::LAYER_SOLID_COLOR);
-  SetEventTargeter(make_scoped_ptr(new CustomWindowTargeter));
+  SetEventTargeter(base::WrapUnique(new CustomWindowTargeter));
   set_owned_by_parent(false);
   AddObserver(this);
 }
@@ -342,7 +343,7 @@ void Surface::CommitSurfaceHierarchy() {
     pending_only_visible_on_secure_output_ = false;
 
     cc::TextureMailbox texture_mailbox;
-    scoped_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback;
+    std::unique_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback;
     if (current_buffer_) {
       texture_mailbox_release_callback = current_buffer_->ProduceTextureMailbox(
           &texture_mailbox, secure_output_only, false);
@@ -464,8 +465,8 @@ bool Surface::HasSurfaceObserver(const SurfaceObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 
-scoped_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
-  scoped_ptr<base::trace_event::TracedValue> value(
+std::unique_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
+  std::unique_ptr<base::trace_event::TracedValue> value(
       new base::trace_event::TracedValue());
   value->SetString("name", layer()->name());
   return value;
@@ -524,7 +525,7 @@ void Surface::OnCompositingEnded(ui::Compositor* compositor) {
 
   // Update contents by producing a new texture mailbox for the current buffer.
   cc::TextureMailbox texture_mailbox;
-  scoped_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback =
+  std::unique_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback =
       current_buffer_->ProduceTextureMailbox(&texture_mailbox,
                                              secure_output_only, true);
   if (texture_mailbox_release_callback) {

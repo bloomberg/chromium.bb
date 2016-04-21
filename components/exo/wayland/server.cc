@@ -28,6 +28,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
@@ -80,8 +81,8 @@ T* GetUserDataAs(wl_resource* resource) {
 }
 
 template <class T>
-scoped_ptr<T> TakeUserDataAs(wl_resource* resource) {
-  scoped_ptr<T> user_data = make_scoped_ptr(GetUserDataAs<T>(resource));
+std::unique_ptr<T> TakeUserDataAs(wl_resource* resource) {
+  std::unique_ptr<T> user_data = base::WrapUnique(GetUserDataAs<T>(resource));
   wl_resource_set_user_data(resource, nullptr);
   return user_data;
 }
@@ -94,7 +95,7 @@ void DestroyUserData(wl_resource* resource) {
 template <class T>
 void SetImplementation(wl_resource* resource,
                        const void* implementation,
-                       scoped_ptr<T> user_data) {
+                       std::unique_ptr<T> user_data) {
   wl_resource_set_implementation(resource, implementation, user_data.release(),
                                  DestroyUserData<T>);
 }
@@ -173,7 +174,7 @@ void surface_frame(wl_client* client,
       wl_resource_create(client, &wl_callback_interface, 1, callback);
 
   // base::Unretained is safe as the resource owns the callback.
-  scoped_ptr<base::CancelableCallback<void(base::TimeTicks)>>
+  std::unique_ptr<base::CancelableCallback<void(base::TimeTicks)>>
   cancelable_callback(
       new base::CancelableCallback<void(base::TimeTicks)>(base::Bind(
           &HandleSurfaceFrameCallback, base::Unretained(callback_resource))));
@@ -271,7 +272,7 @@ const struct wl_region_interface region_implementation = {
 void compositor_create_surface(wl_client* client,
                                wl_resource* resource,
                                uint32_t id) {
-  scoped_ptr<Surface> surface =
+  std::unique_ptr<Surface> surface =
       GetUserDataAs<Display>(resource)->CreateSurface();
 
   wl_resource* surface_resource = wl_resource_create(
@@ -291,7 +292,7 @@ void compositor_create_region(wl_client* client,
       wl_resource_create(client, &wl_region_interface, 1, id);
 
   SetImplementation(region_resource, &region_implementation,
-                    make_scoped_ptr(new SkRegion));
+                    base::WrapUnique(new SkRegion));
 }
 
 const struct wl_compositor_interface compositor_implementation = {
@@ -350,10 +351,10 @@ void shm_pool_create_buffer(wl_client* client,
     return;
   }
 
-  scoped_ptr<Buffer> buffer =
-      GetUserDataAs<SharedMemory>(resource)
-          ->CreateBuffer(gfx::Size(width, height),
-                         supported_format->buffer_format, offset, stride);
+  std::unique_ptr<Buffer> buffer =
+      GetUserDataAs<SharedMemory>(resource)->CreateBuffer(
+          gfx::Size(width, height), supported_format->buffer_format, offset,
+          stride);
   if (!buffer) {
     wl_resource_post_no_memory(resource);
     return;
@@ -387,9 +388,9 @@ void shm_create_pool(wl_client* client,
                      uint32_t id,
                      int fd,
                      int32_t size) {
-  scoped_ptr<SharedMemory> shared_memory =
-      GetUserDataAs<Display>(resource)
-          ->CreateSharedMemory(base::FileDescriptor(fd, true), size);
+  std::unique_ptr<SharedMemory> shared_memory =
+      GetUserDataAs<Display>(resource)->CreateSharedMemory(
+          base::FileDescriptor(fd, true), size);
   if (!shared_memory) {
     wl_resource_post_no_memory(resource);
     return;
@@ -486,7 +487,7 @@ void drm_create_prime_buffer(wl_client* client,
     return;
   }
 
-  scoped_ptr<Buffer> buffer =
+  std::unique_ptr<Buffer> buffer =
       GetUserDataAs<Display>(resource)->CreateLinuxDMABufBuffer(
           base::ScopedFD(name), gfx::Size(width, height),
           supported_format->buffer_format, stride0);
@@ -618,7 +619,7 @@ void linux_buffer_params_create(wl_client* client,
     return;
   }
 
-  scoped_ptr<Buffer> buffer =
+  std::unique_ptr<Buffer> buffer =
       linux_buffer_params->display->CreateLinuxDMABufBuffer(
           std::move(linux_buffer_params->fd), gfx::Size(width, height),
           supported_format->buffer_format, linux_buffer_params->stride);
@@ -651,8 +652,8 @@ void linux_dmabuf_destroy(wl_client* client, wl_resource* resource) {
 void linux_dmabuf_create_params(wl_client* client,
                                 wl_resource* resource,
                                 uint32_t id) {
-  scoped_ptr<LinuxBufferParams> linux_buffer_params =
-      make_scoped_ptr(new LinuxBufferParams(GetUserDataAs<Display>(resource)));
+  std::unique_ptr<LinuxBufferParams> linux_buffer_params =
+      base::WrapUnique(new LinuxBufferParams(GetUserDataAs<Display>(resource)));
 
   wl_resource* linux_buffer_params_resource =
       wl_resource_create(client, &zwp_linux_buffer_params_v1_interface, 1, id);
@@ -733,7 +734,7 @@ void subcompositor_get_subsurface(wl_client* client,
                                   uint32_t id,
                                   wl_resource* surface,
                                   wl_resource* parent) {
-  scoped_ptr<SubSurface> subsurface =
+  std::unique_ptr<SubSurface> subsurface =
       GetUserDataAs<Display>(resource)->CreateSubSurface(
           GetUserDataAs<Surface>(surface), GetUserDataAs<Surface>(parent));
   if (!subsurface) {
@@ -901,9 +902,9 @@ void shell_get_shell_surface(wl_client* client,
                              wl_resource* resource,
                              uint32_t id,
                              wl_resource* surface) {
-  scoped_ptr<ShellSurface> shell_surface =
-      GetUserDataAs<Display>(resource)
-          ->CreateShellSurface(GetUserDataAs<Surface>(surface));
+  std::unique_ptr<ShellSurface> shell_surface =
+      GetUserDataAs<Display>(resource)->CreateShellSurface(
+          GetUserDataAs<Surface>(surface));
   if (!shell_surface) {
     wl_resource_post_error(resource, WL_SHELL_ERROR_ROLE,
                            "surface has already been assigned a role");
@@ -1036,7 +1037,7 @@ void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
 
   SetImplementation(
       resource, nullptr,
-      make_scoped_ptr(new WaylandDisplayObserver(display, resource)));
+      base::WrapUnique(new WaylandDisplayObserver(display, resource)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1246,9 +1247,9 @@ void xdg_shell_get_xdg_surface(wl_client* client,
                                wl_resource* resource,
                                uint32_t id,
                                wl_resource* surface) {
-  scoped_ptr<ShellSurface> shell_surface =
-      GetUserDataAs<Display>(resource)
-          ->CreateShellSurface(GetUserDataAs<Surface>(surface));
+  std::unique_ptr<ShellSurface> shell_surface =
+      GetUserDataAs<Display>(resource)->CreateShellSurface(
+          GetUserDataAs<Surface>(surface));
   if (!shell_surface) {
     wl_resource_post_error(resource, XDG_SHELL_ERROR_ROLE,
                            "surface has already been assigned a role");
@@ -1304,7 +1305,7 @@ void xdg_shell_get_xdg_popup(wl_client* client,
 
   // TODO(reveman): Automatically close popup when clicking outside the
   // popup window.
-  scoped_ptr<ShellSurface> shell_surface =
+  std::unique_ptr<ShellSurface> shell_surface =
       GetUserDataAs<Display>(resource)->CreatePopupShellSurface(
           GetUserDataAs<Surface>(surface),
           // Shell surface widget delegate implementation of GetContentsView()
@@ -1572,7 +1573,7 @@ class WaylandKeyboardDelegate : public KeyboardDelegate {
                                               nullptr,
                                               XKB_KEYMAP_COMPILE_NO_FLAGS)),
         xkb_state_(xkb_state_new(xkb_keymap_.get())) {
-    scoped_ptr<char, base::FreeDeleter> keymap_string(
+    std::unique_ptr<char, base::FreeDeleter> keymap_string(
         xkb_keymap_get_as_string(xkb_keymap_.get(), XKB_KEYMAP_FORMAT_TEXT_V1));
     DCHECK(keymap_string.get());
     size_t keymap_size = strlen(keymap_string.get()) + 1;
@@ -1691,9 +1692,9 @@ class WaylandKeyboardDelegate : public KeyboardDelegate {
   wl_resource* const keyboard_resource_;
 
   // The Xkb state used for the keyboard.
-  scoped_ptr<xkb_context, ui::XkbContextDeleter> xkb_context_;
-  scoped_ptr<xkb_keymap, ui::XkbKeymapDeleter> xkb_keymap_;
-  scoped_ptr<xkb_state, ui::XkbStateDeleter> xkb_state_;
+  std::unique_ptr<xkb_context, ui::XkbContextDeleter> xkb_context_;
+  std::unique_ptr<xkb_keymap, ui::XkbKeymapDeleter> xkb_keymap_;
+  std::unique_ptr<xkb_state, ui::XkbStateDeleter> xkb_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandKeyboardDelegate);
 };
@@ -1784,7 +1785,7 @@ void seat_get_pointer(wl_client* client, wl_resource* resource, uint32_t id) {
       client, &wl_pointer_interface, wl_resource_get_version(resource), id);
 
   SetImplementation(pointer_resource, &pointer_implementation,
-                    make_scoped_ptr(new Pointer(
+                    base::WrapUnique(new Pointer(
                         new WaylandPointerDelegate(pointer_resource))));
 }
 
@@ -1795,7 +1796,7 @@ void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
       wl_resource_create(client, &wl_keyboard_interface, version, id);
 
   SetImplementation(keyboard_resource, &keyboard_implementation,
-                    make_scoped_ptr(new Keyboard(
+                    base::WrapUnique(new Keyboard(
                         new WaylandKeyboardDelegate(keyboard_resource))));
 
   // TODO(reveman): Keep repeat info synchronized with chromium and the host OS.
@@ -1812,7 +1813,7 @@ void seat_get_touch(wl_client* client, wl_resource* resource, uint32_t id) {
 
   SetImplementation(
       touch_resource, &touch_implementation,
-      make_scoped_ptr(new Touch(new WaylandTouchDelegate(touch_resource))));
+      base::WrapUnique(new Touch(new WaylandTouchDelegate(touch_resource))));
 }
 
 void seat_release(wl_client* client, wl_resource* resource) {
@@ -1943,7 +1944,7 @@ void scaler_get_viewport(wl_client* client,
       client, &wl_viewport_interface, wl_resource_get_version(resource), id);
 
   SetImplementation(viewport_resource, &viewport_implementation,
-                    make_scoped_ptr(new Viewport(surface)));
+                    base::WrapUnique(new Viewport(surface)));
 }
 
 const struct wl_scaler_interface scaler_implementation = {scaler_destroy,
@@ -2027,7 +2028,7 @@ void secure_output_get_security(wl_client* client,
       wl_resource_create(client, &zwp_security_v1_interface, 1, id);
 
   SetImplementation(security_resource, &security_implementation,
-                    make_scoped_ptr(new Security(surface)));
+                    base::WrapUnique(new Security(surface)));
 }
 
 const struct zwp_secure_output_v1_interface secure_output_implementation = {
@@ -2081,8 +2082,8 @@ Server::Server(Display* display)
 Server::~Server() {}
 
 // static
-scoped_ptr<Server> Server::Create(Display* display) {
-  scoped_ptr<Server> server(new Server(display));
+std::unique_ptr<Server> Server::Create(Display* display) {
+  std::unique_ptr<Server> server(new Server(display));
 
   char* runtime_dir = getenv("XDG_RUNTIME_DIR");
   if (!runtime_dir) {

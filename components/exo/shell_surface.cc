@@ -11,6 +11,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -348,8 +349,9 @@ Surface* ShellSurface::GetMainSurface(const aura::Window* window) {
   return window->GetProperty(kMainSurfaceKey);
 }
 
-scoped_ptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue() const {
-  scoped_ptr<base::trace_event::TracedValue> value(
+std::unique_ptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
+    const {
+  std::unique_ptr<base::trace_event::TracedValue> value(
       new base::trace_event::TracedValue());
   value->SetString("title", base::UTF16ToUTF8(title_));
   value->SetString("application_id", application_id_);
@@ -685,7 +687,7 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   widget_->GetNativeWindow()->SetName("ExoShellSurface");
   widget_->GetNativeWindow()->AddChild(surface_);
   widget_->GetNativeWindow()->SetEventTargeter(
-      make_scoped_ptr(new CustomWindowTargeter));
+      base::WrapUnique(new CustomWindowTargeter));
   SetApplicationId(widget_->GetNativeWindow(), &application_id_);
   SetMainSurface(widget_->GetNativeWindow(), surface_);
 

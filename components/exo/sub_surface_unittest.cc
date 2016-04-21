@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "components/exo/sub_surface.h"
+
+#include "base/memory/ptr_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
@@ -14,9 +16,9 @@ namespace {
 using SubSurfaceTest = test::ExoTestBase;
 
 TEST_F(SubSurfaceTest, SetPosition) {
-  scoped_ptr<Surface> parent(new Surface);
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<SubSurface> sub_surface(
+  std::unique_ptr<Surface> parent(new Surface);
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<SubSurface> sub_surface(
       new SubSurface(surface.get(), parent.get()));
 
   // Initial position is at the origin.
@@ -35,7 +37,7 @@ TEST_F(SubSurfaceTest, SetPosition) {
 
   // Create and commit a new sub-surface using the same surface.
   sub_surface.reset();
-  sub_surface = make_scoped_ptr(new SubSurface(surface.get(), parent.get()));
+  sub_surface = base::WrapUnique(new SubSurface(surface.get(), parent.get()));
   parent->Commit();
 
   // Initial position should be reset to origin.
@@ -43,13 +45,13 @@ TEST_F(SubSurfaceTest, SetPosition) {
 }
 
 TEST_F(SubSurfaceTest, PlaceAbove) {
-  scoped_ptr<Surface> parent(new Surface);
-  scoped_ptr<Surface> surface1(new Surface);
-  scoped_ptr<Surface> surface2(new Surface);
-  scoped_ptr<Surface> non_sibling_surface(new Surface);
-  scoped_ptr<SubSurface> sub_surface1(
+  std::unique_ptr<Surface> parent(new Surface);
+  std::unique_ptr<Surface> surface1(new Surface);
+  std::unique_ptr<Surface> surface2(new Surface);
+  std::unique_ptr<Surface> non_sibling_surface(new Surface);
+  std::unique_ptr<SubSurface> sub_surface1(
       new SubSurface(surface1.get(), parent.get()));
-  scoped_ptr<SubSurface> sub_surface2(
+  std::unique_ptr<SubSurface> sub_surface2(
       new SubSurface(surface2.get(), parent.get()));
 
   ASSERT_EQ(2u, parent->children().size());
@@ -74,13 +76,13 @@ TEST_F(SubSurfaceTest, PlaceAbove) {
 }
 
 TEST_F(SubSurfaceTest, PlaceBelow) {
-  scoped_ptr<Surface> parent(new Surface);
-  scoped_ptr<Surface> surface1(new Surface);
-  scoped_ptr<Surface> surface2(new Surface);
-  scoped_ptr<Surface> non_sibling_surface(new Surface);
-  scoped_ptr<SubSurface> sub_surface1(
+  std::unique_ptr<Surface> parent(new Surface);
+  std::unique_ptr<Surface> surface1(new Surface);
+  std::unique_ptr<Surface> surface2(new Surface);
+  std::unique_ptr<Surface> non_sibling_surface(new Surface);
+  std::unique_ptr<SubSurface> sub_surface1(
       new SubSurface(surface1.get(), parent.get()));
-  scoped_ptr<SubSurface> sub_surface2(
+  std::unique_ptr<SubSurface> sub_surface2(
       new SubSurface(surface2.get(), parent.get()));
 
   ASSERT_EQ(2u, parent->children().size());
@@ -105,12 +107,12 @@ TEST_F(SubSurfaceTest, PlaceBelow) {
 }
 
 TEST_F(SubSurfaceTest, SetCommitBehavior) {
-  scoped_ptr<Surface> parent(new Surface);
-  scoped_ptr<Surface> child(new Surface);
-  scoped_ptr<Surface> grandchild(new Surface);
-  scoped_ptr<SubSurface> child_sub_surface(
+  std::unique_ptr<Surface> parent(new Surface);
+  std::unique_ptr<Surface> child(new Surface);
+  std::unique_ptr<Surface> grandchild(new Surface);
+  std::unique_ptr<SubSurface> child_sub_surface(
       new SubSurface(child.get(), parent.get()));
-  scoped_ptr<SubSurface> grandchild_sub_surface(
+  std::unique_ptr<SubSurface> grandchild_sub_surface(
       new SubSurface(grandchild.get(), child.get()));
 
   // Initial position is at the origin.
