@@ -74,7 +74,7 @@ SyncBackendHostImpl::~SyncBackendHostImpl() {
 
 void SyncBackendHostImpl::Initialize(
     sync_driver::SyncFrontend* frontend,
-    scoped_ptr<base::Thread> sync_thread,
+    std::unique_ptr<base::Thread> sync_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
@@ -82,12 +82,13 @@ void SyncBackendHostImpl::Initialize(
     const std::string& sync_user_agent,
     const syncer::SyncCredentials& credentials,
     bool delete_sync_data_folder,
-    scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+    std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
     const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
         unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
     const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-    scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state) {
+    std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+        saved_nigori_state) {
   registrar_.reset(new browser_sync::SyncBackendRegistrar(
       name_, sync_client_, std::move(sync_thread), ui_thread_, db_thread,
       file_thread));
@@ -123,7 +124,7 @@ void SyncBackendHostImpl::Initialize(
   std::map<syncer::ModelType, int64_t> invalidation_versions;
   sync_prefs_->GetInvalidationVersions(&invalidation_versions);
 
-  scoped_ptr<DoInitializeOptions> init_opts(new DoInitializeOptions(
+  std::unique_ptr<DoInitializeOptions> init_opts(new DoInitializeOptions(
       registrar_->sync_thread()->message_loop(), registrar_.get(), routing_info,
       workers, sync_client_->GetExtensionsActivity(), event_handler,
       sync_service_url, sync_user_agent,
@@ -133,7 +134,7 @@ void SyncBackendHostImpl::Initialize(
       std::move(sync_manager_factory), delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
       sync_prefs_->GetKeystoreEncryptionBootstrapToken(),
-      scoped_ptr<InternalComponentsFactory>(
+      std::unique_ptr<InternalComponentsFactory>(
           new syncer::InternalComponentsFactoryImpl(factory_switches)),
       unrecoverable_error_handler, report_unrecoverable_error_function,
       std::move(saved_nigori_state), clear_data_option, invalidation_versions));
@@ -249,7 +250,7 @@ void SyncBackendHostImpl::StopSyncingForShutdown() {
   core_->ShutdownOnUIThread();
 }
 
-scoped_ptr<base::Thread> SyncBackendHostImpl::Shutdown(
+std::unique_ptr<base::Thread> SyncBackendHostImpl::Shutdown(
     syncer::ShutdownReason reason) {
   // StopSyncingForShutdown() (which nulls out |frontend_|) should be
   // called first.
@@ -282,7 +283,7 @@ scoped_ptr<base::Thread> SyncBackendHostImpl::Shutdown(
   if (sync_thread_claimed)
     return detached_registrar->ReleaseSyncThread();
   else
-    return scoped_ptr<base::Thread>();
+    return std::unique_ptr<base::Thread>();
 }
 
 void SyncBackendHostImpl::UnregisterInvalidationIds() {
@@ -440,7 +441,7 @@ void SyncBackendHostImpl::DeactivateDirectoryDataType(syncer::ModelType type) {
 
 void SyncBackendHostImpl::ActivateNonBlockingDataType(
     syncer::ModelType type,
-    scoped_ptr<syncer_v2::ActivationContext> activation_context) {
+    std::unique_ptr<syncer_v2::ActivationContext> activation_context) {
   registrar_->RegisterNonBlockingType(type);
   model_type_connector_->ConnectType(type, std::move(activation_context));
 }
@@ -543,7 +544,8 @@ void SyncBackendHostImpl::GetAllNodesForTypes(
                             types, frontend_loop_->task_runner(), callback));
 }
 
-void SyncBackendHostImpl::InitCore(scoped_ptr<DoInitializeOptions> options) {
+void SyncBackendHostImpl::InitCore(
+    std::unique_ptr<DoInitializeOptions> options) {
   registrar_->sync_thread()->task_runner()->PostTask(
       FROM_HERE, base::Bind(&SyncBackendHostCore::DoInitialize, core_.get(),
                             base::Passed(&options)));
@@ -600,7 +602,7 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
     const syncer::WeakHandle<syncer::JsBackend> js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
         debug_info_listener,
-    scoped_ptr<syncer_v2::ModelTypeConnector> model_type_connector,
+    std::unique_ptr<syncer_v2::ModelTypeConnector> model_type_connector,
     const std::string& cache_guid) {
   DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
 
@@ -800,7 +802,7 @@ void SyncBackendHostImpl::HandleConnectionStatusChangeOnFrontendLoop(
 
 void SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop(
     syncer::ProtocolEvent* event) {
-  scoped_ptr<syncer::ProtocolEvent> scoped_event(event);
+  std::unique_ptr<syncer::ProtocolEvent> scoped_event(event);
   if (!frontend_)
     return;
   frontend_->OnProtocolEvent(*scoped_event);

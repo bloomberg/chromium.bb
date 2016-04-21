@@ -68,12 +68,12 @@ bool FakeGenericChangeProcessor::CryptoReadyIfNecessary() {
 }
 
 FakeGenericChangeProcessorFactory::FakeGenericChangeProcessorFactory(
-    scoped_ptr<FakeGenericChangeProcessor> processor)
+    std::unique_ptr<FakeGenericChangeProcessor> processor)
     : processor_(std::move(processor)) {}
 
 FakeGenericChangeProcessorFactory::~FakeGenericChangeProcessorFactory() {}
 
-scoped_ptr<GenericChangeProcessor>
+std::unique_ptr<GenericChangeProcessor>
 FakeGenericChangeProcessorFactory::CreateGenericChangeProcessor(
     syncer::ModelType type,
     syncer::UserShare* user_share,

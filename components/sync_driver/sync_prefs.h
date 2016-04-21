@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
@@ -179,7 +179,7 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // initialization after transition.
   void SetSavedNigoriStateForPassphraseEncryptionTransition(
       const syncer::SyncEncryptionHandler::NigoriState& nigori_state);
-  scoped_ptr<syncer::SyncEncryptionHandler::NigoriState>
+  std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
   GetSavedNigoriStateForPassphraseEncryptionTransition() const;
 
  private:

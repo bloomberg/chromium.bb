@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_H_
 #define COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "components/sync_driver/backend_data_type_configurer.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -48,8 +48,9 @@ namespace browser_sync {
 class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
  public:
   typedef syncer::SyncStatus Status;
-  typedef base::Callback<scoped_ptr<syncer::HttpPostProviderFactory>(
-      syncer::CancelationSignal*)> HttpPostProviderFactoryGetter;
+  typedef base::Callback<std::unique_ptr<syncer::HttpPostProviderFactory>(
+      syncer::CancelationSignal*)>
+      HttpPostProviderFactoryGetter;
 
   // Stubs used by implementing classes.
   SyncBackendHost();
@@ -63,7 +64,7 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   // backend instance. May be null.
   virtual void Initialize(
       sync_driver::SyncFrontend* frontend,
-      scoped_ptr<base::Thread> sync_thread,
+      std::unique_ptr<base::Thread> sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
@@ -71,12 +72,12 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
       const std::string& sync_user_agent,
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
-      scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+      std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
       const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
           unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
       const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-      scoped_ptr<syncer::SyncEncryptionHandler::NigoriState>
+      std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
           saved_nigori_state) = 0;
 
   // Called on the frontend's thread to trigger a refresh.
@@ -132,7 +133,8 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   //   later, initialization of new backend is serialized on previous sync
   //   thread after cleanup of previous backend to avoid old/new backends
   //   interfere with each other.
-  virtual scoped_ptr<base::Thread> Shutdown(syncer::ShutdownReason reason) = 0;
+  virtual std::unique_ptr<base::Thread> Shutdown(
+      syncer::ShutdownReason reason) = 0;
 
   // Removes all current registrations from the backend on the
   // InvalidationService.

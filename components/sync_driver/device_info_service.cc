@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "sync/api/entity_change.h"
 #include "sync/api/metadata_batch.h"
@@ -72,12 +73,13 @@ DeviceInfoService::DeviceInfoService(
 
 DeviceInfoService::~DeviceInfoService() {}
 
-scoped_ptr<MetadataChangeList> DeviceInfoService::CreateMetadataChangeList() {
-  return make_scoped_ptr(new SimpleMetadataChangeList());
+std::unique_ptr<MetadataChangeList>
+DeviceInfoService::CreateMetadataChangeList() {
+  return base::WrapUnique(new SimpleMetadataChangeList());
 }
 
 SyncError DeviceInfoService::MergeSyncData(
-    scoped_ptr<MetadataChangeList> metadata_change_list,
+    std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityDataMap entity_data_map) {
   if (!has_provider_initialized_ || !has_metadata_loaded_ ||
       !change_processor()) {
@@ -101,7 +103,7 @@ SyncError DeviceInfoService::MergeSyncData(
   const DeviceInfo* local_info =
       local_device_info_provider_->GetLocalDeviceInfo();
   std::string local_guid = local_info->guid();
-  scoped_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   for (const auto& kv : entity_data_map) {
     const DeviceInfoSpecifics& specifics =
         kv.second.value().specifics.device_info();
@@ -115,7 +117,7 @@ SyncError DeviceInfoService::MergeSyncData(
       // Remote data wins conflicts.
       local_guids_to_put.erase(specifics.cache_guid());
       has_changes = true;
-      StoreSpecifics(make_scoped_ptr(new DeviceInfoSpecifics(specifics)),
+      StoreSpecifics(base::WrapUnique(new DeviceInfoSpecifics(specifics)),
                      batch.get());
     }
   }
@@ -132,7 +134,7 @@ SyncError DeviceInfoService::MergeSyncData(
 }
 
 SyncError DeviceInfoService::ApplySyncChanges(
-    scoped_ptr<MetadataChangeList> metadata_change_list,
+    std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
   if (!has_provider_initialized_ || !has_metadata_loaded_) {
     return SyncError(
@@ -141,7 +143,7 @@ SyncError DeviceInfoService::ApplySyncChanges(
         syncer::DEVICE_INFO);
   }
 
-  scoped_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   bool has_changes = false;
   for (EntityChange& change : entity_changes) {
     const std::string guid = TagToCacheGuid(change.client_tag());
@@ -157,7 +159,7 @@ SyncError DeviceInfoService::ApplySyncChanges(
       const DeviceInfoSpecifics& specifics =
           change.data().specifics.device_info();
       DCHECK(guid == specifics.cache_guid());
-      StoreSpecifics(make_scoped_ptr(new DeviceInfoSpecifics(specifics)),
+      StoreSpecifics(base::WrapUnique(new DeviceInfoSpecifics(specifics)),
                      batch.get());
       has_changes = true;
     }
@@ -175,11 +177,11 @@ void DeviceInfoService::GetData(ClientTagList client_tags,
         SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
                   "Should not call GetData before metadata has loaded.",
                   syncer::DEVICE_INFO),
-        scoped_ptr<DataBatchImpl>());
+        std::unique_ptr<DataBatchImpl>());
     return;
   }
 
-  scoped_ptr<DataBatchImpl> batch(new DataBatchImpl());
+  std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
   for (const auto& tag : client_tags) {
     const auto& iter = all_data_.find(TagToCacheGuid(tag));
     if (iter != all_data_.end()) {
@@ -196,11 +198,11 @@ void DeviceInfoService::GetAllData(DataCallback callback) {
         SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
                   "Should not call GetAllData before metadata has loaded.",
                   syncer::DEVICE_INFO),
-        scoped_ptr<DataBatchImpl>());
+        std::unique_ptr<DataBatchImpl>());
     return;
   }
 
-  scoped_ptr<DataBatchImpl> batch(new DataBatchImpl());
+  std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
   for (const auto& kv : all_data_) {
     batch->Put(SpecificsToTag(*kv.second), CopyToEntityData(*kv.second));
   }
@@ -220,7 +222,7 @@ void DeviceInfoService::OnChangeProcessorSet() {
   // have created the processor ourselves because we had no metadata. So there
   // must not be any metadata on disk.
   if (has_metadata_loaded_) {
-    change_processor()->OnMetadataLoaded(make_scoped_ptr(new MetadataBatch()));
+    change_processor()->OnMetadataLoaded(base::WrapUnique(new MetadataBatch()));
     TryReconcileLocalAndStored();
   }
 }
@@ -229,11 +231,11 @@ bool DeviceInfoService::IsSyncing() const {
   return !all_data_.empty();
 }
 
-scoped_ptr<DeviceInfo> DeviceInfoService::GetDeviceInfo(
+std::unique_ptr<DeviceInfo> DeviceInfoService::GetDeviceInfo(
     const std::string& client_id) const {
   const ClientIdToSpecifics::const_iterator iter = all_data_.find(client_id);
   if (iter == all_data_.end()) {
-    return scoped_ptr<DeviceInfo>();
+    return std::unique_ptr<DeviceInfo>();
   }
 
   return CopyToModel(*iter->second);
@@ -280,10 +282,10 @@ std::string DeviceInfoService::TagToCacheGuid(const std::string& tag) {
 // TODO(skym): crbug.com/543406: It might not make sense for this to be a
 // scoped_ptr.
 // Static.
-scoped_ptr<DeviceInfoSpecifics> DeviceInfoService::CopyToSpecifics(
+std::unique_ptr<DeviceInfoSpecifics> DeviceInfoService::CopyToSpecifics(
     const DeviceInfo& info) {
-  scoped_ptr<DeviceInfoSpecifics> specifics =
-      make_scoped_ptr(new DeviceInfoSpecifics);
+  std::unique_ptr<DeviceInfoSpecifics> specifics =
+      base::WrapUnique(new DeviceInfoSpecifics);
   specifics->set_cache_guid(info.guid());
   specifics->set_client_name(info.client_name());
   specifics->set_chrome_version(info.chrome_version());
@@ -294,25 +296,25 @@ scoped_ptr<DeviceInfoSpecifics> DeviceInfoService::CopyToSpecifics(
 }
 
 // Static.
-scoped_ptr<DeviceInfo> DeviceInfoService::CopyToModel(
+std::unique_ptr<DeviceInfo> DeviceInfoService::CopyToModel(
     const DeviceInfoSpecifics& specifics) {
-  return make_scoped_ptr(new DeviceInfo(
+  return base::WrapUnique(new DeviceInfo(
       specifics.cache_guid(), specifics.client_name(),
       specifics.chrome_version(), specifics.sync_user_agent(),
       specifics.device_type(), specifics.signin_scoped_device_id()));
 }
 
 // Static.
-scoped_ptr<EntityData> DeviceInfoService::CopyToEntityData(
+std::unique_ptr<EntityData> DeviceInfoService::CopyToEntityData(
     const DeviceInfoSpecifics& specifics) {
-  scoped_ptr<EntityData> entity_data(new EntityData());
+  std::unique_ptr<EntityData> entity_data(new EntityData());
   *entity_data->specifics.mutable_device_info() = specifics;
   entity_data->non_unique_name = specifics.client_name();
   return entity_data;
 }
 
 void DeviceInfoService::StoreSpecifics(
-    scoped_ptr<DeviceInfoSpecifics> specifics,
+    std::unique_ptr<DeviceInfoSpecifics> specifics,
     WriteBatch* batch) {
   const std::string guid = specifics->cache_guid();
   DVLOG(1) << "Storing DEVICE_INFO for " << specifics->client_name()
@@ -341,7 +343,7 @@ void DeviceInfoService::OnProviderInitialized() {
 }
 
 void DeviceInfoService::OnStoreCreated(Result result,
-                                       scoped_ptr<ModelTypeStore> store) {
+                                       std::unique_ptr<ModelTypeStore> store) {
   if (result == Result::SUCCESS) {
     std::swap(store_, store);
     store_->ReadAllData(base::Bind(&DeviceInfoService::OnReadAllData,
@@ -354,7 +356,7 @@ void DeviceInfoService::OnStoreCreated(Result result,
 }
 
 void DeviceInfoService::OnReadAllData(Result result,
-                                      scoped_ptr<RecordList> record_list) {
+                                      std::unique_ptr<RecordList> record_list) {
   if (result != Result::SUCCESS) {
     LOG(WARNING) << "Initial load of data failed.";
     // TODO(skym, crbug.com/582460): Handle unrecoverable initialization
@@ -363,8 +365,8 @@ void DeviceInfoService::OnReadAllData(Result result,
   }
 
   for (const Record& r : *record_list.get()) {
-    scoped_ptr<DeviceInfoSpecifics> specifics(
-        make_scoped_ptr(new DeviceInfoSpecifics()));
+    std::unique_ptr<DeviceInfoSpecifics> specifics(
+        base::WrapUnique(new DeviceInfoSpecifics()));
     if (specifics->ParseFromString(r.value)) {
       all_data_[specifics->cache_guid()] = std::move(specifics);
     } else {
@@ -379,7 +381,7 @@ void DeviceInfoService::OnReadAllData(Result result,
 
 void DeviceInfoService::OnReadAllMetadata(
     Result result,
-    scoped_ptr<RecordList> metadata_records,
+    std::unique_ptr<RecordList> metadata_records,
     const std::string& global_metadata) {
   if (result != Result::SUCCESS) {
     // Store has encountered some serious error. We should still be able to
@@ -411,7 +413,7 @@ void DeviceInfoService::OnReadAllMetadata(
     return;
   }
 
-  scoped_ptr<MetadataBatch> batch(new MetadataBatch());
+  std::unique_ptr<MetadataBatch> batch(new MetadataBatch());
   DataTypeState state;
   if (state.ParseFromString(global_metadata)) {
     batch->SetDataTypeState(state);
@@ -465,23 +467,23 @@ void DeviceInfoService::TryReconcileLocalAndStored() {
 }
 
 void DeviceInfoService::PutAndStore(const DeviceInfo& device_info) {
-  scoped_ptr<DeviceInfoSpecifics> specifics = CopyToSpecifics(device_info);
+  std::unique_ptr<DeviceInfoSpecifics> specifics = CopyToSpecifics(device_info);
 
-  scoped_ptr<MetadataChangeList> metadata_change_list =
+  std::unique_ptr<MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
   change_processor()->Put(SpecificsToTag(*specifics),
                           CopyToEntityData(*specifics),
                           metadata_change_list.get());
 
-  scoped_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   StoreSpecifics(std::move(specifics), batch.get());
 
   CommitAndNotify(std::move(batch), std::move(metadata_change_list), true);
 }
 
 void DeviceInfoService::CommitAndNotify(
-    scoped_ptr<WriteBatch> batch,
-    scoped_ptr<MetadataChangeList> metadata_change_list,
+    std::unique_ptr<WriteBatch> batch,
+    std::unique_ptr<MetadataChangeList> metadata_change_list,
     bool should_notify) {
   static_cast<SimpleMetadataChangeList*>(metadata_change_list.get())
       ->TransferChanges(store_.get(), batch.get());

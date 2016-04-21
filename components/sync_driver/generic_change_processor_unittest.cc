@@ -5,10 +5,11 @@
 #include "components/sync_driver/generic_change_processor.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -44,7 +45,7 @@ namespace {
 class MockAttachmentService : public syncer::AttachmentServiceImpl {
  public:
   MockAttachmentService(
-      scoped_ptr<syncer::AttachmentStoreForSync> attachment_store);
+      std::unique_ptr<syncer::AttachmentStoreForSync> attachment_store);
   ~MockAttachmentService() override;
   void UploadAttachments(
       const syncer::AttachmentIdList& attachment_ids) override;
@@ -55,11 +56,11 @@ class MockAttachmentService : public syncer::AttachmentServiceImpl {
 };
 
 MockAttachmentService::MockAttachmentService(
-    scoped_ptr<syncer::AttachmentStoreForSync> attachment_store)
+    std::unique_ptr<syncer::AttachmentStoreForSync> attachment_store)
     : AttachmentServiceImpl(std::move(attachment_store),
-                            scoped_ptr<syncer::AttachmentUploader>(
+                            std::unique_ptr<syncer::AttachmentUploader>(
                                 new syncer::FakeAttachmentUploader),
-                            scoped_ptr<syncer::AttachmentDownloader>(
+                            std::unique_ptr<syncer::AttachmentDownloader>(
                                 new syncer::FakeAttachmentDownloader),
                             NULL,
                             base::TimeDelta(),
@@ -105,21 +106,23 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
       const base::FilePath& sync_folder) override {
     return nullptr;
   }
-  scoped_ptr<sync_driver::LocalDeviceInfoProvider>
-      CreateLocalDeviceInfoProvider() override { return nullptr; }
+  std::unique_ptr<sync_driver::LocalDeviceInfoProvider>
+  CreateLocalDeviceInfoProvider() override {
+    return nullptr;
+  }
   SyncComponents CreateBookmarkSyncComponents(
       sync_driver::SyncService* sync_service,
       sync_driver::DataTypeErrorHandler* error_handler) override {
     return SyncComponents(nullptr, nullptr);
   }
 
-  scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
-      scoped_ptr<syncer::AttachmentStoreForSync> attachment_store,
+  std::unique_ptr<syncer::AttachmentService> CreateAttachmentService(
+      std::unique_ptr<syncer::AttachmentStoreForSync> attachment_store,
       const syncer::UserShare& user_share,
       const std::string& store_birthday,
       syncer::ModelType model_type,
       syncer::AttachmentService::Delegate* delegate) override {
-    scoped_ptr<MockAttachmentService> attachment_service(
+    std::unique_ptr<MockAttachmentService> attachment_service(
         new MockAttachmentService(std::move(attachment_store)));
     // GenericChangeProcessor takes ownership of the AttachmentService, but we
     // need to have a pointer to it so we can see that it was used properly.
@@ -184,7 +187,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   }
 
   void ConstructGenericChangeProcessor(syncer::ModelType type) {
-    scoped_ptr<syncer::AttachmentStore> attachment_store =
+    std::unique_ptr<syncer::AttachmentStore> attachment_store =
         syncer::AttachmentStore::CreateInMemoryStore();
     change_processor_.reset(new GenericChangeProcessor(
         type, &data_type_error_handler_,
@@ -222,8 +225,8 @@ class SyncGenericChangeProcessorTest : public testing::Test {
  private:
   base::MessageLoopForUI loop_;
 
-  scoped_ptr<syncer::SyncMergeResult> sync_merge_result_;
-  scoped_ptr<base::WeakPtrFactory<syncer::SyncMergeResult> >
+  std::unique_ptr<syncer::SyncMergeResult> sync_merge_result_;
+  std::unique_ptr<base::WeakPtrFactory<syncer::SyncMergeResult>>
       merge_result_ptr_factory_;
 
   syncer::FakeSyncableService fake_syncable_service_;
@@ -231,12 +234,12 @@ class SyncGenericChangeProcessorTest : public testing::Test {
       syncable_service_ptr_factory_;
 
   DataTypeErrorHandlerMock data_type_error_handler_;
-  scoped_ptr<syncer::TestUserShare> test_user_share_;
+  std::unique_ptr<syncer::TestUserShare> test_user_share_;
   MockAttachmentService* mock_attachment_service_;
   FakeSyncClient sync_client_;
   MockSyncApiComponentFactory sync_factory_;
 
-  scoped_ptr<GenericChangeProcessor> change_processor_;
+  std::unique_ptr<GenericChangeProcessor> change_processor_;
 };
 
 // Similar to above, but focused on the method that implements sync/api

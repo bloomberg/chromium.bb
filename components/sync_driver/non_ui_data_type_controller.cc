@@ -380,9 +380,9 @@ void NonUIDataTypeController::
     // Passes a reference to |shared_change_processor|.
     local_merge_result = local_service_->MergeDataAndStartSyncing(
         type(), initial_sync_data,
-        scoped_ptr<syncer::SyncChangeProcessor>(
+        std::unique_ptr<syncer::SyncChangeProcessor>(
             new SharedChangeProcessorRef(shared_change_processor)),
-        scoped_ptr<syncer::SyncErrorFactory>(
+        std::unique_ptr<syncer::SyncErrorFactory>(
             new SharedChangeProcessorRef(shared_change_processor)));
     RecordAssociationTime(base::TimeTicks::Now() - start_time);
     if (local_merge_result.error().IsSet()) {

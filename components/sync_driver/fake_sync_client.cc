@@ -5,6 +5,7 @@
 #include "components/sync_driver/fake_sync_client.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "components/sync_driver/fake_sync_service.h"
 #include "sync/util/extensions_activity.h"
 
@@ -20,11 +21,11 @@ void DummyRegisterPlatformTypesCallback(SyncService* sync_service,
 
 FakeSyncClient::FakeSyncClient()
     : factory_(nullptr),
-      sync_service_(make_scoped_ptr(new FakeSyncService())) {}
+      sync_service_(base::WrapUnique(new FakeSyncService())) {}
 
 FakeSyncClient::FakeSyncClient(SyncApiComponentFactory* factory)
     : factory_(factory),
-      sync_service_(make_scoped_ptr(new FakeSyncService())) {}
+      sync_service_(base::WrapUnique(new FakeSyncService())) {}
 
 FakeSyncClient::~FakeSyncClient() {}
 

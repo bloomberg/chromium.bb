@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_TRACKER_H_
 #define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_TRACKER_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/sync_driver/device_info.h"
 
@@ -29,7 +29,7 @@ class DeviceInfoTracker {
   // Gets DeviceInfo the synced device with specified client ID.
   // Returns an empty scoped_ptr if device with the given |client_id| hasn't
   // been synced.
-  virtual scoped_ptr<DeviceInfo> GetDeviceInfo(
+  virtual std::unique_ptr<DeviceInfo> GetDeviceInfo(
       const std::string& client_id) const = 0;
   // Gets DeviceInfo for all synced devices (including the local one).
   virtual ScopedVector<DeviceInfo> GetAllDeviceInfo() const = 0;

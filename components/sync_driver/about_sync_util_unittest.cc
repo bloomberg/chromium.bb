@@ -44,9 +44,8 @@ class SyncServiceMock : public sync_driver::FakeSyncService {
 TEST(SyncUIUtilTestAbout, ConstructAboutInformationWithUnrecoverableErrorTest) {
   SyncServiceMock service;
 
-  scoped_ptr<base::DictionaryValue> strings(
-      ConstructAboutInformation(&service, NULL,
-                                version_info::Channel::UNKNOWN));
+  std::unique_ptr<base::DictionaryValue> strings(ConstructAboutInformation(
+      &service, NULL, version_info::Channel::UNKNOWN));
 
   EXPECT_TRUE(strings->HasKey("unrecoverable_error_detected"));
 }

@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -46,8 +46,8 @@ class DeviceInfoSyncService : public syncer::SyncableService,
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+      std::unique_ptr<syncer::SyncErrorFactory> error_handler) override;
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
@@ -56,7 +56,7 @@ class DeviceInfoSyncService : public syncer::SyncableService,
 
   // DeviceInfoTracker implementation.
   bool IsSyncing() const override;
-  scoped_ptr<DeviceInfo> GetDeviceInfo(
+  std::unique_ptr<DeviceInfo> GetDeviceInfo(
       const std::string& client_id) const override;
   ScopedVector<DeviceInfo> GetAllDeviceInfo() const override;
   void AddObserver(Observer* observer) override;
@@ -114,8 +114,8 @@ class DeviceInfoSyncService : public syncer::SyncableService,
 
   // Receives ownership of |sync_processor_| and |error_handler_| in
   // MergeDataAndStartSyncing() and destroy them in StopSyncing().
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
-  scoped_ptr<syncer::SyncErrorFactory> error_handler_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncErrorFactory> error_handler_;
 
   // Cache of all syncable and local data.
   typedef std::map<std::string, syncer::SyncData> SyncDataMap;

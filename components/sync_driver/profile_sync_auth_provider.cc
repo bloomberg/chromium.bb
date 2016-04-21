@@ -129,10 +129,10 @@ void ProfileSyncAuthProvider::InvalidateAccessToken(const std::string& token) {
   token_service_->InvalidateAccessToken(account_id_, oauth2_scope_, token);
 }
 
-scoped_ptr<syncer::SyncAuthProvider>
+std::unique_ptr<syncer::SyncAuthProvider>
 ProfileSyncAuthProvider::CreateProviderForSyncThread() {
   DCHECK(CalledOnValidThread());
-  scoped_ptr<syncer::SyncAuthProvider> auth_provider(new SyncThreadProxy(
+  std::unique_ptr<syncer::SyncAuthProvider> auth_provider(new SyncThreadProxy(
       weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
   return auth_provider;
 }

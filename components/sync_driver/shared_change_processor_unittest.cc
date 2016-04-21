@@ -61,8 +61,8 @@ class TestSyncApiComponentFactory : public SyncApiComponentFactory {
       const base::FilePath& sync_folder) override {
     return nullptr;
   }
-  scoped_ptr<sync_driver::LocalDeviceInfoProvider>
-      CreateLocalDeviceInfoProvider() override {
+  std::unique_ptr<sync_driver::LocalDeviceInfoProvider>
+  CreateLocalDeviceInfoProvider() override {
     return nullptr;
   }
   SyncApiComponentFactory::SyncComponents CreateBookmarkSyncComponents(
@@ -70,8 +70,8 @@ class TestSyncApiComponentFactory : public SyncApiComponentFactory {
       sync_driver::DataTypeErrorHandler* error_handler) override {
     return SyncApiComponentFactory::SyncComponents(nullptr, nullptr);
   }
-  scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
-      scoped_ptr<syncer::AttachmentStoreForSync> attachment_store,
+  std::unique_ptr<syncer::AttachmentService> CreateAttachmentService(
+      std::unique_ptr<syncer::AttachmentStoreForSync> attachment_store,
       const syncer::UserShare& user_share,
       const std::string& store_birthday,
       syncer::ModelType model_type,
@@ -214,7 +214,7 @@ class SyncSharedChangeProcessorTest :
   bool has_attachment_service_;
 
   // Used only on DB thread.
-  scoped_ptr<syncer::FakeSyncableService> db_syncable_service_;
+  std::unique_ptr<syncer::FakeSyncableService> db_syncable_service_;
 };
 
 // Simply connect the shared change processor.  It should succeed, and

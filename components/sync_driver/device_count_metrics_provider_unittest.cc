@@ -4,11 +4,11 @@
 
 #include "components/sync_driver/device_count_metrics_provider.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/device_info_tracker.h"
@@ -24,9 +24,9 @@ class FakeTracker : public DeviceInfoTracker {
 
   // DeviceInfoTracker
   bool IsSyncing() const override { return false; }
-  scoped_ptr<DeviceInfo> GetDeviceInfo(
+  std::unique_ptr<DeviceInfo> GetDeviceInfo(
       const std::string& client_id) const override {
-    return scoped_ptr<DeviceInfo>();
+    return std::unique_ptr<DeviceInfo>();
   }
   ScopedVector<DeviceInfo> GetAllDeviceInfo() const override {
     return ScopedVector<DeviceInfo>();
@@ -49,7 +49,8 @@ class DeviceCountMetricsProviderTest : public testing::Test {
                        base::Unretained(this))) {}
 
   void AddTracker(const int count) {
-    trackers_.push_back(scoped_ptr<DeviceInfoTracker>(new FakeTracker(count)));
+    trackers_.push_back(
+        std::unique_ptr<DeviceInfoTracker>(new FakeTracker(count)));
   }
   void GetTrackers(std::vector<const DeviceInfoTracker*>* trackers) {
     for (const auto& tracker : trackers_) {
@@ -66,7 +67,7 @@ class DeviceCountMetricsProviderTest : public testing::Test {
 
  private:
   DeviceCountMetricsProvider metrics_provider_;
-  std::vector<scoped_ptr<DeviceInfoTracker>> trackers_;
+  std::vector<std::unique_ptr<DeviceInfoTracker>> trackers_;
 };
 
 namespace {

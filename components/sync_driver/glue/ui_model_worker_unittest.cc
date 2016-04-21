@@ -4,13 +4,14 @@
 
 #include "components/sync_driver/glue/ui_model_worker.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
@@ -78,12 +79,12 @@ class SyncUIModelWorkerTest : public testing::Test {
   base::Thread faux_syncer_thread_;
   base::Thread faux_core_thread_;
   scoped_refptr<UIModelWorker> bmw_;
-  scoped_ptr<Syncer> syncer_;
+  std::unique_ptr<Syncer> syncer_;
 };
 
 TEST_F(SyncUIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
   base::WaitableEvent v_was_run(false, false);
-  scoped_ptr<UIModelWorkerVisitor> v(
+  std::unique_ptr<UIModelWorkerVisitor> v(
       new UIModelWorkerVisitor(&v_was_run, true));
 
   syncer_thread()->task_runner()->PostTask(

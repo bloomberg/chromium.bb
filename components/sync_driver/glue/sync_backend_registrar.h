@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -51,7 +51,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   SyncBackendRegistrar(
       const std::string& name,
       sync_driver::SyncClient* sync_client,
-      scoped_ptr<base::Thread> sync_thread,
+      std::unique_ptr<base::Thread> sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread);
@@ -133,7 +133,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   void OnWorkerLoopDestroyed(syncer::ModelSafeGroup group) override;
 
   // Release ownership of |sync_thread_|. Called when sync is disabled.
-  scoped_ptr<base::Thread> ReleaseSyncThread();
+  std::unique_ptr<base::Thread> ReleaseSyncThread();
 
   // Unregister workers from loop destruction observation.
   void Shutdown();
@@ -220,7 +220,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // objects above because tasks on sync thread depend on those objects,
   // e.g. Shutdown() depends on |lock_|, SyncManager::Init() depends on
   // workers, etc.
-  scoped_ptr<base::Thread> sync_thread_;
+  std::unique_ptr<base::Thread> sync_thread_;
 
   // Set of types with non-blocking implementation (as opposed to directory
   // based).

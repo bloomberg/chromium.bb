@@ -4,6 +4,7 @@
 
 #include "components/sync_driver/fake_sync_service.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
@@ -13,7 +14,7 @@ namespace sync_driver {
 
 FakeSyncService::FakeSyncService()
     : error_(GoogleServiceAuthError::NONE),
-      user_share_(make_scoped_ptr(new syncer::UserShare())) {}
+      user_share_(base::WrapUnique(new syncer::UserShare())) {}
 
 FakeSyncService::~FakeSyncService() {
 }
@@ -218,6 +219,6 @@ base::WeakPtr<syncer::JsController> FakeSyncService::GetJsController() {
 }
 
 void FakeSyncService::GetAllNodes(
-    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) {}
+    const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
 
 }  // namespace sync_driver

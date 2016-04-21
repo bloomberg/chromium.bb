@@ -242,11 +242,12 @@ std::string GetConnectionStatus(
 // its contents.  Most of the message consists of simple fields in about:sync
 // which are grouped into sections and populated with the help of the SyncStat
 // classes defined above.
-scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
+std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     sync_driver::SyncService* service,
     SigninManagerBase* signin,
     version_info::Channel channel) {
-  scoped_ptr<base::DictionaryValue> about_info(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> about_info(
+      new base::DictionaryValue());
 
   // 'details': A list of sections.
   base::ListValue* stats_list = new base::ListValue();

@@ -74,10 +74,10 @@ class ProfileSyncComponentsFactoryImpl
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
       const base::FilePath& sync_folder) override;
-  scoped_ptr<sync_driver::LocalDeviceInfoProvider>
+  std::unique_ptr<sync_driver::LocalDeviceInfoProvider>
   CreateLocalDeviceInfoProvider() override;
-  scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
-      scoped_ptr<syncer::AttachmentStoreForSync> attachment_store,
+  std::unique_ptr<syncer::AttachmentService> CreateAttachmentService(
+      std::unique_ptr<syncer::AttachmentStoreForSync> attachment_store,
       const syncer::UserShare& user_share,
       const std::string& store_birthday,
       syncer::ModelType model_type,

@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "components/invalidation/public/invalidation_handler.h"
@@ -81,7 +81,7 @@ class SyncBackendHostImpl
   // SyncBackendHost implementation.
   void Initialize(
       sync_driver::SyncFrontend* frontend,
-      scoped_ptr<base::Thread> sync_thread,
+      std::unique_ptr<base::Thread> sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
@@ -89,13 +89,13 @@ class SyncBackendHostImpl
       const std::string& sync_user_agent,
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
-      scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+      std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
       const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
           unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
       const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-      scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
-      override;
+      std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+          saved_nigori_state) override;
   void TriggerRefresh(const syncer::ModelTypeSet& types) override;
   void UpdateCredentials(const syncer::SyncCredentials& credentials) override;
   void StartSyncingWithServer() override;
@@ -104,7 +104,8 @@ class SyncBackendHostImpl
   bool SetDecryptionPassphrase(const std::string& passphrase) override
       WARN_UNUSED_RESULT;
   void StopSyncingForShutdown() override;
-  scoped_ptr<base::Thread> Shutdown(syncer::ShutdownReason reason) override;
+  std::unique_ptr<base::Thread> Shutdown(
+      syncer::ShutdownReason reason) override;
   void UnregisterInvalidationIds() override;
   syncer::ModelTypeSet ConfigureDataTypes(
       syncer::ConfigureReason reason,
@@ -119,7 +120,7 @@ class SyncBackendHostImpl
   void DeactivateDirectoryDataType(syncer::ModelType type) override;
   void ActivateNonBlockingDataType(
       syncer::ModelType type,
-      scoped_ptr<syncer_v2::ActivationContext>) override;
+      std::unique_ptr<syncer_v2::ActivationContext>) override;
   void DeactivateNonBlockingDataType(syncer::ModelType type) override;
   void EnableEncryptEverything() override;
   syncer::UserShare* GetUserShare() const override;
@@ -159,7 +160,7 @@ class SyncBackendHostImpl
   // subclasses can use them.
 
   // Allows tests to perform alternate core initialization work.
-  virtual void InitCore(scoped_ptr<DoInitializeOptions> options);
+  virtual void InitCore(std::unique_ptr<DoInitializeOptions> options);
 
   // Request the syncer to reconfigure with the specfied params.
   // Virtual for testing.
@@ -192,7 +193,7 @@ class SyncBackendHostImpl
       const syncer::WeakHandle<syncer::JsBackend> js_backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
           debug_info_listener,
-      scoped_ptr<syncer_v2::ModelTypeConnector> model_type_connector,
+      std::unique_ptr<syncer_v2::ModelTypeConnector> model_type_connector,
       const std::string& cache_guid);
 
   // Forwards a ProtocolEvent to the frontend.  Will not be called unless a
@@ -336,13 +337,13 @@ class SyncBackendHostImpl
 
   // A handle referencing the main interface for non-blocking sync types. This
   // object is owned because in production code it is a proxy object.
-  scoped_ptr<syncer_v2::ModelTypeConnector> model_type_connector_;
+  std::unique_ptr<syncer_v2::ModelTypeConnector> model_type_connector_;
 
   bool initialized_;
 
   const base::WeakPtr<sync_driver::SyncPrefs> sync_prefs_;
 
-  scoped_ptr<SyncBackendRegistrar> registrar_;
+  std::unique_ptr<SyncBackendRegistrar> registrar_;
 
   // The frontend which we serve (and are owned by).
   sync_driver::SyncFrontend* frontend_;

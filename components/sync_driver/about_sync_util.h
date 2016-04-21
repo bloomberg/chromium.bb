@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_ABOUT_SYNC_UTIL_H_
 #define COMPONENTS_SYNC_DRIVER_ABOUT_SYNC_UTIL_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/version_info/version_info.h"
 
 class SigninManagerBase;
@@ -65,7 +66,7 @@ extern const char kUpdate[];
 // This function returns a DictionaryValue which contains all the information
 // required to populate the 'About' tab of about:sync.
 // Note that |service| may be NULL.
-scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
+std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     sync_driver::SyncService* service,
     SigninManagerBase* signin,
     version_info::Channel channel);

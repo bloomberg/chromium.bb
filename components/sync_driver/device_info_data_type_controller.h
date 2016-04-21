@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_
 #define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/ui_data_type_controller.h"
@@ -34,7 +35,7 @@ class DeviceInfoDataTypeController : public UIDataTypeController {
   void OnLocalDeviceInfoLoaded();
 
   LocalDeviceInfoProvider* const local_device_info_provider_;
-  scoped_ptr<LocalDeviceInfoProvider::Subscription> subscription_;
+  std::unique_ptr<LocalDeviceInfoProvider::Subscription> subscription_;
   DISALLOW_COPY_AND_ASSIGN(DeviceInfoDataTypeController);
 };
 

@@ -16,7 +16,7 @@ SyncBackendHostMock::~SyncBackendHostMock() {}
 
 void SyncBackendHostMock::Initialize(
     sync_driver::SyncFrontend* frontend,
-    scoped_ptr<base::Thread> sync_thread,
+    std::unique_ptr<base::Thread> sync_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
@@ -24,12 +24,13 @@ void SyncBackendHostMock::Initialize(
     const std::string& sync_user_agent,
     const syncer::SyncCredentials& credentials,
     bool delete_sync_data_folder,
-    scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+    std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
     const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
         unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
     const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-    scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state) {
+    std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+        saved_nigori_state) {
   frontend->OnBackendInitialized(
       syncer::WeakHandle<syncer::JsBackend>(),
       syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(),
@@ -55,9 +56,9 @@ bool SyncBackendHostMock::SetDecryptionPassphrase(
 
 void SyncBackendHostMock::StopSyncingForShutdown() {}
 
-scoped_ptr<base::Thread> SyncBackendHostMock::Shutdown(
+std::unique_ptr<base::Thread> SyncBackendHostMock::Shutdown(
     syncer::ShutdownReason reason) {
-  return scoped_ptr<base::Thread>();
+  return std::unique_ptr<base::Thread>();
 }
 
 void SyncBackendHostMock::UnregisterInvalidationIds() {}
@@ -81,7 +82,7 @@ void SyncBackendHostMock::DeactivateDirectoryDataType(syncer::ModelType type) {}
 
 void SyncBackendHostMock::ActivateNonBlockingDataType(
     syncer::ModelType type,
-    scoped_ptr<syncer_v2::ActivationContext> activation_context) {}
+    std::unique_ptr<syncer_v2::ActivationContext> activation_context) {}
 
 void SyncBackendHostMock::DeactivateNonBlockingDataType(
     syncer::ModelType type) {}

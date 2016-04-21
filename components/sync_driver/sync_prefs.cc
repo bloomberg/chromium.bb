@@ -498,7 +498,7 @@ void SyncPrefs::GetInvalidationVersions(
 
 void SyncPrefs::UpdateInvalidationVersions(
     const std::map<syncer::ModelType, int64_t>& invalidation_versions) {
-  scoped_ptr<base::DictionaryValue> invalidation_dictionary(
+  std::unique_ptr<base::DictionaryValue> invalidation_dictionary(
       new base::DictionaryValue());
   for (const auto& map_iter : invalidation_versions) {
     std::string version_str = base::Int64ToString(map_iter.second);
@@ -536,18 +536,18 @@ void SyncPrefs::SetSavedNigoriStateForPassphraseEncryptionTransition(
                            encoded);
 }
 
-scoped_ptr<syncer::SyncEncryptionHandler::NigoriState>
+std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
 SyncPrefs::GetSavedNigoriStateForPassphraseEncryptionTransition() const {
   const std::string encoded =
       pref_service_->GetString(prefs::kSyncNigoriStateForPassphraseTransition);
   std::string decoded;
   if (!base::Base64Decode(encoded, &decoded))
-    return scoped_ptr<syncer::SyncEncryptionHandler::NigoriState>();
+    return std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>();
 
-  scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> result(
+  std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState> result(
       new syncer::SyncEncryptionHandler::NigoriState());
   if (!result->nigori_specifics.ParseFromString(decoded))
-    return scoped_ptr<syncer::SyncEncryptionHandler::NigoriState>();
+    return std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>();
   return result;
 }
 

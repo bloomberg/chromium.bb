@@ -4,11 +4,11 @@
 
 #include "components/sync_driver/ui_data_type_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
@@ -60,10 +60,10 @@ class SyncUIDataTypeControllerTest : public testing::Test,
 
  protected:
   void SetStartExpectations() {
-    scoped_ptr<FakeGenericChangeProcessor> p(
+    std::unique_ptr<FakeGenericChangeProcessor> p(
         new FakeGenericChangeProcessor(type_, this));
     change_processor_ = p.get();
-    scoped_ptr<GenericChangeProcessorFactory> f(
+    std::unique_ptr<GenericChangeProcessorFactory> f(
         new FakeGenericChangeProcessorFactory(std::move(p)));
     preference_dtc_->SetGenericChangeProcessorFactoryForTest(std::move(f));
     EXPECT_CALL(model_load_callback_, Run(_, _));

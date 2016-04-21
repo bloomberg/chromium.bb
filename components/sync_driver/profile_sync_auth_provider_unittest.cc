@@ -40,9 +40,9 @@ class ProfileSyncAuthProviderTest : public ::testing::Test {
  protected:
   base::MessageLoop message_loop_;
 
-  scoped_ptr<FakeProfileOAuth2TokenService> token_service_;
-  scoped_ptr<ProfileSyncAuthProvider> auth_provider_frontend_;
-  scoped_ptr<syncer::SyncAuthProvider> auth_provider_backend_;
+  std::unique_ptr<FakeProfileOAuth2TokenService> token_service_;
+  std::unique_ptr<ProfileSyncAuthProvider> auth_provider_frontend_;
+  std::unique_ptr<syncer::SyncAuthProvider> auth_provider_backend_;
 
   std::vector<std::string> issued_tokens_;
   std::vector<GoogleServiceAuthError> request_token_errors_;

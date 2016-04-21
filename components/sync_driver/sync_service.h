@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_H_
 #define COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/sync_driver/data_type_encryption_handler.h"
@@ -321,7 +321,8 @@ class SyncService : public DataTypeEncryptionHandler {
   // For safety, the callback should be bound to some sort of WeakPtr<> or
   // scoped_refptr<>.
   virtual void GetAllNodes(
-      const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) = 0;
+      const base::Callback<void(std::unique_ptr<base::ListValue>)>&
+          callback) = 0;
 
  protected:
   SyncService() {}

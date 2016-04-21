@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_MODEL_TYPE_CONTROLLER_H_
 #define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_MODEL_TYPE_CONTROLLER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/ui_model_type_controller.h"
 
@@ -29,7 +30,8 @@ class DeviceInfoModelTypeController : public UIModelTypeController {
   ~DeviceInfoModelTypeController() override;
 
   sync_driver::LocalDeviceInfoProvider* const local_device_info_provider_;
-  scoped_ptr<sync_driver::LocalDeviceInfoProvider::Subscription> subscription_;
+  std::unique_ptr<sync_driver::LocalDeviceInfoProvider::Subscription>
+      subscription_;
   DISALLOW_COPY_AND_ASSIGN(DeviceInfoModelTypeController);
 };
 

@@ -6,9 +6,9 @@
 #define COMPONENTS_SYNC_DRIVER_BACKEND_DATA_TYPE_CONFIGURER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
@@ -81,7 +81,7 @@ class BackendDataTypeConfigurer {
   // This must be called before initial sync for data type.
   virtual void ActivateNonBlockingDataType(
       syncer::ModelType type,
-      scoped_ptr<syncer_v2::ActivationContext> activation_context) = 0;
+      std::unique_ptr<syncer_v2::ActivationContext> activation_context) = 0;
 
   // Deactivates change processing for the given non-blocking data type.
   virtual void DeactivateNonBlockingDataType(syncer::ModelType type) = 0;

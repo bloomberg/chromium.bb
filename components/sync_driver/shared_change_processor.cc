@@ -81,7 +81,7 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
                                                       merge_result,
                                                       sync_client).release();
   // If available, propagate attachment service to the syncable service.
-  scoped_ptr<syncer::AttachmentService> attachment_service =
+  std::unique_ptr<syncer::AttachmentService> attachment_service =
       generic_change_processor_->GetAttachmentService();
   if (attachment_service) {
     local_service->SetAttachmentService(std::move(attachment_service));

@@ -27,7 +27,7 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   void Initialize(
       sync_driver::SyncFrontend* frontend,
-      scoped_ptr<base::Thread> sync_thread,
+      std::unique_ptr<base::Thread> sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
@@ -35,13 +35,13 @@ class SyncBackendHostMock : public SyncBackendHost {
       const std::string& sync_user_agent,
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
-      scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+      std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
       const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
           unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
       const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-      scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
-      override;
+      std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+          saved_nigori_state) override;
 
   void TriggerRefresh(const syncer::ModelTypeSet& types) override;
 
@@ -56,7 +56,8 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   void StopSyncingForShutdown() override;
 
-  scoped_ptr<base::Thread> Shutdown(syncer::ShutdownReason reason) override;
+  std::unique_ptr<base::Thread> Shutdown(
+      syncer::ShutdownReason reason) override;
 
   void UnregisterInvalidationIds() override;
 
@@ -77,7 +78,7 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   void ActivateNonBlockingDataType(
       syncer::ModelType type,
-      scoped_ptr<syncer_v2::ActivationContext>) override;
+      std::unique_ptr<syncer_v2::ActivationContext>) override;
   void DeactivateNonBlockingDataType(syncer::ModelType type) override;
 
   syncer::UserShare* GetUserShare() const override;

@@ -29,7 +29,7 @@ class LocalDeviceInfoProviderImpl
       const std::string& cache_guid,
       const std::string& signin_scoped_device_id,
       const scoped_refptr<base::TaskRunner>& blocking_task_runner) override;
-  scoped_ptr<Subscription> RegisterOnInitializedCallback(
+  std::unique_ptr<Subscription> RegisterOnInitializedCallback(
       const base::Closure& callback) override;
 
  private:
@@ -48,7 +48,7 @@ class LocalDeviceInfoProviderImpl
   const bool is_tablet_;
 
   std::string cache_guid_;
-  scoped_ptr<sync_driver::DeviceInfo> local_device_info_;
+  std::unique_ptr<sync_driver::DeviceInfo> local_device_info_;
   base::CallbackList<void(void)> callback_list_;
   base::WeakPtrFactory<LocalDeviceInfoProviderImpl> weak_factory_;
 

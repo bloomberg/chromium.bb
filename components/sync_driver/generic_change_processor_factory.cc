@@ -4,6 +4,7 @@
 
 #include "components/sync_driver/generic_change_processor_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "sync/api/syncable_service.h"
 
@@ -14,7 +15,7 @@ GenericChangeProcessorFactory::GenericChangeProcessorFactory() {}
 
 GenericChangeProcessorFactory::~GenericChangeProcessorFactory() {}
 
-scoped_ptr<GenericChangeProcessor>
+std::unique_ptr<GenericChangeProcessor>
 GenericChangeProcessorFactory::CreateGenericChangeProcessor(
     syncer::ModelType type,
     syncer::UserShare* user_share,
@@ -23,7 +24,7 @@ GenericChangeProcessorFactory::CreateGenericChangeProcessor(
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     SyncClient* sync_client) {
   DCHECK(user_share);
-  return make_scoped_ptr(new GenericChangeProcessor(
+  return base::WrapUnique(new GenericChangeProcessor(
       type, error_handler, local_service, merge_result, user_share, sync_client,
       local_service->GetAttachmentStoreForSync()));
 }

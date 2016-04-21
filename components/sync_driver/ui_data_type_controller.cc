@@ -47,7 +47,7 @@ UIDataTypeController::UIDataTypeController(
 }
 
 void UIDataTypeController::SetGenericChangeProcessorFactoryForTest(
-      scoped_ptr<GenericChangeProcessorFactory> factory) {
+    std::unique_ptr<GenericChangeProcessorFactory> factory) {
   DCHECK_EQ(state_, NOT_RUNNING);
   processor_factory_ = std::move(factory);
 }
@@ -228,9 +228,9 @@ void UIDataTypeController::Associate() {
     // Passes a reference to |shared_change_processor_|.
     local_merge_result = local_service_->MergeDataAndStartSyncing(
         type(), initial_sync_data,
-        scoped_ptr<syncer::SyncChangeProcessor>(
+        std::unique_ptr<syncer::SyncChangeProcessor>(
             new SharedChangeProcessorRef(shared_change_processor_)),
-        scoped_ptr<syncer::SyncErrorFactory>(
+        std::unique_ptr<syncer::SyncErrorFactory>(
             new SharedChangeProcessorRef(shared_change_processor_)));
     RecordAssociationTime(base::TimeTicks::Now() - start_time);
     if (local_merge_result.error().IsSet()) {

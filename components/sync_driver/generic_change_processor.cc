@@ -101,7 +101,7 @@ GenericChangeProcessor::GenericChangeProcessor(
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     syncer::UserShare* user_share,
     SyncClient* sync_client,
-    scoped_ptr<syncer::AttachmentStoreForSync> attachment_store)
+    std::unique_ptr<syncer::AttachmentStoreForSync> attachment_store)
     : ChangeProcessor(error_handler),
       type_(type),
       local_service_(local_service),
@@ -147,7 +147,7 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
   for (syncer::ChangeRecordList::const_iterator it =
            changes.Get().begin(); it != changes.Get().end(); ++it) {
     if (it->action == syncer::ChangeRecord::ACTION_DELETE) {
-      scoped_ptr<sync_pb::EntitySpecifics> specifics;
+      std::unique_ptr<sync_pb::EntitySpecifics> specifics;
       if (it->specifics.has_password()) {
         DCHECK(it->extra.get());
         specifics.reset(new sync_pb::EntitySpecifics(it->specifics));
@@ -712,9 +712,9 @@ void GenericChangeProcessor::UploadAllAttachmentsNotOnServer() {
   }
 }
 
-scoped_ptr<syncer::AttachmentService>
+std::unique_ptr<syncer::AttachmentService>
 GenericChangeProcessor::GetAttachmentService() const {
-  return scoped_ptr<syncer::AttachmentService>(
+  return std::unique_ptr<syncer::AttachmentService>(
       new syncer::AttachmentServiceProxy(attachment_service_proxy_));
 }
 

@@ -107,13 +107,13 @@ class DeviceInfoSyncServiceTest : public testing::Test,
 
   void OnDeviceInfoChange() override { num_device_info_changed_callbacks_++; }
 
-  scoped_ptr<SyncChangeProcessor> PassProcessor() {
-    return scoped_ptr<SyncChangeProcessor>(
+  std::unique_ptr<SyncChangeProcessor> PassProcessor() {
+    return std::unique_ptr<SyncChangeProcessor>(
         new SyncChangeProcessorWrapperForTest(sync_processor_.get()));
   }
 
-  scoped_ptr<SyncErrorFactory> CreateAndPassSyncErrorFactory() {
-    return scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock());
+  std::unique_ptr<SyncErrorFactory> CreateAndPassSyncErrorFactory() {
+    return std::unique_ptr<SyncErrorFactory>(new SyncErrorFactoryMock());
   }
 
   // Default |last_updated_timestamp| to now to avoid pulse update on merge.
@@ -170,9 +170,9 @@ class DeviceInfoSyncServiceTest : public testing::Test,
   base::MessageLoop message_loop_;
 
   int num_device_info_changed_callbacks_;
-  scoped_ptr<LocalDeviceInfoProviderMock> local_device_;
-  scoped_ptr<DeviceInfoSyncService> sync_service_;
-  scoped_ptr<TestChangeProcessor> sync_processor_;
+  std::unique_ptr<LocalDeviceInfoProviderMock> local_device_;
+  std::unique_ptr<DeviceInfoSyncService> sync_service_;
+  std::unique_ptr<TestChangeProcessor> sync_processor_;
 };
 
 namespace {

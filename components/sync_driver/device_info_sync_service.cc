@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -77,8 +78,8 @@ DeviceInfoSyncService::~DeviceInfoSyncService() {
 SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
     ModelType type,
     const SyncDataList& initial_sync_data,
-    scoped_ptr<SyncChangeProcessor> sync_processor,
-    scoped_ptr<SyncErrorFactory> error_handler) {
+    std::unique_ptr<SyncChangeProcessor> sync_processor,
+    std::unique_ptr<SyncErrorFactory> error_handler) {
   DCHECK(sync_processor.get());
   DCHECK(error_handler.get());
   DCHECK_EQ(type, syncer::DEVICE_INFO);
@@ -113,8 +114,8 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
 
     if (id == local_device_info->guid()) {
       // |initial_sync_data| contains data matching the local device.
-      scoped_ptr<DeviceInfo> synced_local_device_info =
-          make_scoped_ptr(CreateDeviceInfo(*iter));
+      std::unique_ptr<DeviceInfo> synced_local_device_info =
+          base::WrapUnique(CreateDeviceInfo(*iter));
 
       // TODO(pavely): Remove histogram once device_id mismatch is understood
       // (crbug/481596).
@@ -247,14 +248,14 @@ syncer::SyncError DeviceInfoSyncService::ProcessSyncChanges(
   return error;
 }
 
-scoped_ptr<DeviceInfo> DeviceInfoSyncService::GetDeviceInfo(
+std::unique_ptr<DeviceInfo> DeviceInfoSyncService::GetDeviceInfo(
     const std::string& client_id) const {
   SyncDataMap::const_iterator iter = all_data_.find(client_id);
   if (iter == all_data_.end()) {
-    return scoped_ptr<DeviceInfo>();
+    return std::unique_ptr<DeviceInfo>();
   }
 
-  return make_scoped_ptr(CreateDeviceInfo(iter->second));
+  return base::WrapUnique(CreateDeviceInfo(iter->second));
 }
 
 ScopedVector<DeviceInfo> DeviceInfoSyncService::GetAllDeviceInfo() const {

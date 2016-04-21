@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_SYNC_DRIVER_FRONTEND_DATA_TYPE_CONTROLLER_H__
 #define COMPONENTS_SYNC_DRIVER_FRONTEND_DATA_TYPE_CONTROLLER_H__
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/sync_driver/data_type_error_handler.h"
 #include "components/sync_driver/directory_data_type_controller.h"
@@ -122,8 +122,8 @@ class FrontendDataTypeController
 
   // TODO(sync): transition all datatypes to SyncableService and deprecate
   // AssociatorInterface.
-  scoped_ptr<sync_driver::AssociatorInterface> model_associator_;
-  scoped_ptr<sync_driver::ChangeProcessor> change_processor_;
+  std::unique_ptr<sync_driver::AssociatorInterface> model_associator_;
+  std::unique_ptr<sync_driver::ChangeProcessor> change_processor_;
 
  private:
   // Build sync components and associate models.

@@ -86,7 +86,7 @@ class FakeSyncService : public sync_driver::SyncService {
   void RemoveTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer) override;
   base::WeakPtr<syncer::JsController> GetJsController() override;
-  void GetAllNodes(const base::Callback<void(scoped_ptr<base::ListValue>)>&
+  void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
                        callback) override;
 
   // DataTypeEncryptionHandler:
@@ -96,7 +96,7 @@ class FakeSyncService : public sync_driver::SyncService {
   GoogleServiceAuthError error_;
   GURL sync_service_url_;
   std::string unrecoverable_error_message_;
-  scoped_ptr<syncer::UserShare> user_share_;
+  std::unique_ptr<syncer::UserShare> user_share_;
 };
 
 }  // namespace sync_driver

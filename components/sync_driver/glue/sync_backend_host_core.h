@@ -34,18 +34,20 @@ struct DoInitializeOptions {
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
       const std::string& sync_user_agent,
-      scoped_ptr<syncer::HttpPostProviderFactory> http_bridge_factory,
+      std::unique_ptr<syncer::HttpPostProviderFactory> http_bridge_factory,
       const syncer::SyncCredentials& credentials,
       const std::string& invalidator_client_id,
-      scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+      std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
       bool delete_sync_data_folder,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
-      scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory,
+      std::unique_ptr<syncer::InternalComponentsFactory>
+          internal_components_factory,
       const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
           unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
-      scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state,
+      std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+          saved_nigori_state,
       syncer::PassphraseTransitionClearDataOption clear_data_option,
       const std::map<syncer::ModelType, int64_t>& invalidation_versions);
   ~DoInitializeOptions();
@@ -59,19 +61,21 @@ struct DoInitializeOptions {
   GURL service_url;
   std::string sync_user_agent;
   // Overridden by tests.
-  scoped_ptr<syncer::HttpPostProviderFactory> http_bridge_factory;
+  std::unique_ptr<syncer::HttpPostProviderFactory> http_bridge_factory;
   syncer::SyncCredentials credentials;
   const std::string invalidator_client_id;
-  scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory;
+  std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory;
   std::string lsid;
   bool delete_sync_data_folder;
   std::string restored_key_for_bootstrapping;
   std::string restored_keystore_key_for_bootstrapping;
-  scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory;
+  std::unique_ptr<syncer::InternalComponentsFactory>
+      internal_components_factory;
   const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>
       unrecoverable_error_handler;
   base::Closure report_unrecoverable_error_function;
-  scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state;
+  std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+      saved_nigori_state;
   const syncer::PassphraseTransitionClearDataOption clear_data_option;
   const std::map<syncer::ModelType, int64_t> invalidation_versions;
 };
@@ -156,7 +160,7 @@ class SyncBackendHostCore
   //
   // Called to perform initialization of the syncapi on behalf of
   // SyncBackendHost::Initialize.
-  void DoInitialize(scoped_ptr<DoInitializeOptions> options);
+  void DoInitialize(std::unique_ptr<DoInitializeOptions> options);
 
   // Called to perform credential update on behalf of
   // SyncBackendHost::UpdateCredentials.
@@ -290,13 +294,13 @@ class SyncBackendHostCore
   SyncBackendRegistrar* registrar_;
 
   // The timer used to periodically call SaveChanges.
-  scoped_ptr<base::RepeatingTimer> save_changes_timer_;
+  std::unique_ptr<base::RepeatingTimer> save_changes_timer_;
 
   // Our encryptor, which uses Chrome's encryption functions.
   sync_driver::SystemEncryptor encryptor_;
 
   // The top-level syncapi entry point.  Lives on the sync thread.
-  scoped_ptr<syncer::SyncManager> sync_manager_;
+  std::unique_ptr<syncer::SyncManager> sync_manager_;
 
   // Temporary holder of sync manager's initialization results. Set by
   // OnInitializeComplete, and consumed when we pass it via OnBackendInitialized

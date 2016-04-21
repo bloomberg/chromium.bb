@@ -5,14 +5,15 @@
 #include "components/sync_driver/glue/sync_backend_host_impl.h"
 
 #include <stdint.h>
+
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -126,12 +127,12 @@ class FakeSyncManagerFactory : public syncer::SyncManagerFactory {
   ~FakeSyncManagerFactory() override {}
 
   // SyncManagerFactory implementation.  Called on the sync thread.
-  scoped_ptr<SyncManager> CreateSyncManager(
+  std::unique_ptr<SyncManager> CreateSyncManager(
       const std::string& /* name */) override {
     *fake_manager_ = new FakeSyncManager(initial_sync_ended_types_,
                                          progress_marker_types_,
                                          configure_fail_types_);
-    return scoped_ptr<SyncManager>(*fake_manager_);
+    return std::unique_ptr<SyncManager>(*fake_manager_);
   }
 
   void set_initial_sync_ended_types(syncer::ModelTypeSet types) {
@@ -229,7 +230,7 @@ class SyncBackendHostTest : public testing::Test {
                        nullptr,
                        base::Bind(&EmptyNetworkTimeUpdate));
     backend_->Initialize(
-        &mock_frontend_, scoped_ptr<base::Thread>(),
+        &mock_frontend_, std::unique_ptr<base::Thread>(),
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get(),
         syncer::WeakHandle<syncer::JsEventHandler>(), GURL(std::string()),
@@ -297,13 +298,14 @@ class SyncBackendHostTest : public testing::Test {
   syncer::SyncCredentials credentials_;
   BackendSyncClient sync_client_;
   syncer::TestUnrecoverableErrorHandler test_unrecoverable_error_handler_;
-  scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
-  scoped_ptr<SyncBackendHostImpl> backend_;
-  scoped_ptr<FakeSyncManagerFactory> fake_manager_factory_;
+  std::unique_ptr<sync_driver::SyncPrefs> sync_prefs_;
+  std::unique_ptr<SyncBackendHostImpl> backend_;
+  std::unique_ptr<FakeSyncManagerFactory> fake_manager_factory_;
   FakeSyncManager* fake_manager_;
   syncer::ModelTypeSet enabled_types_;
-  scoped_ptr<syncer::NetworkResources> network_resources_;
-  scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state_;
+  std::unique_ptr<syncer::NetworkResources> network_resources_;
+  std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+      saved_nigori_state_;
 };
 
 // Test basic initialization with no initial types (first time initialization).

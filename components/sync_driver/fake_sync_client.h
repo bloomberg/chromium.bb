@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_FAKE_SYNC_CLIENT_H_
 #define COMPONENTS_SYNC_DRIVER_FAKE_SYNC_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/sync_driver/sync_client.h"
 
@@ -44,7 +46,7 @@ class FakeSyncClient : public SyncClient {
 
  private:
   SyncApiComponentFactory* factory_;
-  scoped_ptr<FakeSyncService> sync_service_;
+  std::unique_ptr<FakeSyncService> sync_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncClient);
 };

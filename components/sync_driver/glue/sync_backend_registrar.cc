@@ -19,7 +19,7 @@ namespace browser_sync {
 SyncBackendRegistrar::SyncBackendRegistrar(
     const std::string& name,
     sync_driver::SyncClient* sync_client,
-    scoped_ptr<base::Thread> sync_thread,
+    std::unique_ptr<base::Thread> sync_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_thread)
@@ -338,7 +338,7 @@ void SyncBackendRegistrar::RemoveWorker(syncer::ModelSafeGroup group) {
   }
 }
 
-scoped_ptr<base::Thread> SyncBackendRegistrar::ReleaseSyncThread() {
+std::unique_ptr<base::Thread> SyncBackendRegistrar::ReleaseSyncThread() {
   return std::move(sync_thread_);
 }
 

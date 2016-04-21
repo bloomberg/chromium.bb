@@ -44,7 +44,7 @@ class SyncLocalDeviceInfoProviderTest : public testing::Test {
     // Subscribe to the notification and wait until the callback
     // is called. The callback will quit the loop.
     base::RunLoop run_loop;
-    scoped_ptr<LocalDeviceInfoProvider::Subscription> subscription(
+    std::unique_ptr<LocalDeviceInfoProvider::Subscription> subscription(
         provider_->RegisterOnInitializedCallback(
             base::Bind(&SyncLocalDeviceInfoProviderTest::QuitLoopOnInitialized,
                        base::Unretained(this), &run_loop)));
@@ -56,7 +56,7 @@ class SyncLocalDeviceInfoProviderTest : public testing::Test {
     loop->Quit();
   }
 
-  scoped_ptr<LocalDeviceInfoProviderImpl> provider_;
+  std::unique_ptr<LocalDeviceInfoProviderImpl> provider_;
 
   bool called_back_;
 

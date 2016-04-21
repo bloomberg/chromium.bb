@@ -73,7 +73,7 @@ std::string LocalDeviceInfoProviderImpl::GetLocalSyncCacheGUID() const {
   return cache_guid_;
 }
 
-scoped_ptr<sync_driver::LocalDeviceInfoProvider::Subscription>
+std::unique_ptr<sync_driver::LocalDeviceInfoProvider::Subscription>
 LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
     const base::Closure& callback) {
   DCHECK(!local_device_info_.get());

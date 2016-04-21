@@ -4,6 +4,7 @@
 
 #include "components/sync_driver/non_ui_data_type_controller.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -12,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -275,7 +275,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test,
   scoped_refptr<NonUIDataTypeControllerFake> non_ui_dtc_;
   scoped_refptr<NonUIDataTypeControllerMock> dtc_mock_;
   scoped_refptr<SharedChangeProcessorMock> change_processor_;
-  scoped_ptr<syncer::SyncChangeProcessor> saved_change_processor_;
+  std::unique_ptr<syncer::SyncChangeProcessor> saved_change_processor_;
 };
 
 TEST_F(SyncNonUIDataTypeControllerTest, StartOk) {

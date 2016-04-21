@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_SYNC_DRIVER_DEVICE_COUNT_METRICS_PROVIDER_H_
 #define COMPONENTS_SYNC_DRIVER_DEVICE_COUNT_METRICS_PROVIDER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/metrics/metrics_provider.h"
 
 namespace sync_driver {

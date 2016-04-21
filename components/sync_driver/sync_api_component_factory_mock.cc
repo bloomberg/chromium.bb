@@ -36,9 +36,9 @@ SyncApiComponentFactoryMock::SyncApiComponentFactoryMock(
 
 SyncApiComponentFactoryMock::~SyncApiComponentFactoryMock() {}
 
-scoped_ptr<syncer::AttachmentService>
+std::unique_ptr<syncer::AttachmentService>
 SyncApiComponentFactoryMock::CreateAttachmentService(
-    scoped_ptr<syncer::AttachmentStoreForSync> attachment_store,
+    std::unique_ptr<syncer::AttachmentStoreForSync> attachment_store,
     const syncer::UserShare& user_share,
     const std::string& store_birthday,
     syncer::ModelType model_type,
@@ -52,12 +52,12 @@ SyncApiComponentFactoryMock::MakeSyncComponents() {
       model_associator_.release(), change_processor_.release());
 }
 
-scoped_ptr<sync_driver::LocalDeviceInfoProvider>
+std::unique_ptr<sync_driver::LocalDeviceInfoProvider>
 SyncApiComponentFactoryMock::CreateLocalDeviceInfoProvider() {
   return std::move(local_device_);
 }
 
 void SyncApiComponentFactoryMock::SetLocalDeviceInfoProvider(
-    scoped_ptr<sync_driver::LocalDeviceInfoProvider> local_device) {
+    std::unique_ptr<sync_driver::LocalDeviceInfoProvider> local_device) {
   local_device_ = std::move(local_device);
 }

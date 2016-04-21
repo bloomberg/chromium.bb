@@ -47,9 +47,9 @@ class FakeGenericChangeProcessor : public GenericChangeProcessor {
 class FakeGenericChangeProcessorFactory : public GenericChangeProcessorFactory {
  public:
   explicit FakeGenericChangeProcessorFactory(
-      scoped_ptr<FakeGenericChangeProcessor> processor);
+      std::unique_ptr<FakeGenericChangeProcessor> processor);
   ~FakeGenericChangeProcessorFactory() override;
-  scoped_ptr<GenericChangeProcessor> CreateGenericChangeProcessor(
+  std::unique_ptr<GenericChangeProcessor> CreateGenericChangeProcessor(
       syncer::ModelType type,
       syncer::UserShare* user_share,
       DataTypeErrorHandler* error_handler,
@@ -58,7 +58,7 @@ class FakeGenericChangeProcessorFactory : public GenericChangeProcessorFactory {
       SyncClient* sync_client) override;
 
  private:
-  scoped_ptr<FakeGenericChangeProcessor> processor_;
+  std::unique_ptr<FakeGenericChangeProcessor> processor_;
   DISALLOW_COPY_AND_ASSIGN(FakeGenericChangeProcessorFactory);
 };
 

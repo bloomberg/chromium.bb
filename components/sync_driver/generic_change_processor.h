@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/sync_driver/change_processor.h"
@@ -60,7 +60,7 @@ class GenericChangeProcessor : public ChangeProcessor,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
       syncer::UserShare* user_share,
       SyncClient* sync_client,
-      scoped_ptr<syncer::AttachmentStoreForSync> attachment_store);
+      std::unique_ptr<syncer::AttachmentStoreForSync> attachment_store);
   ~GenericChangeProcessor() override;
 
   // ChangeProcessor interface.
@@ -105,7 +105,7 @@ class GenericChangeProcessor : public ChangeProcessor,
   virtual bool CryptoReadyIfNecessary();
 
   // Gets AttachmentService proxy for datatype.
-  scoped_ptr<syncer::AttachmentService> GetAttachmentService() const;
+  std::unique_ptr<syncer::AttachmentService> GetAttachmentService() const;
 
  protected:
   // ChangeProcessor interface.
@@ -164,12 +164,12 @@ class GenericChangeProcessor : public ChangeProcessor,
 
   // AttachmentService for datatype. Can be NULL if datatype doesn't use
   // attachments.
-  scoped_ptr<syncer::AttachmentService> attachment_service_;
+  std::unique_ptr<syncer::AttachmentService> attachment_service_;
 
   // Must be destroyed before attachment_service_ to ensure WeakPtrs are
   // invalidated before attachment_service_ is destroyed.
   // Can be NULL if attachment_service_ is NULL;
-  scoped_ptr<base::WeakPtrFactory<syncer::AttachmentService> >
+  std::unique_ptr<base::WeakPtrFactory<syncer::AttachmentService>>
       attachment_service_weak_ptr_factory_;
   syncer::AttachmentServiceProxy attachment_service_proxy_;
   base::WeakPtrFactory<GenericChangeProcessor> weak_ptr_factory_;

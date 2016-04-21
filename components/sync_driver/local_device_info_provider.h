@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_H_
 #define COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_list.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class TaskRunner;
@@ -53,7 +53,7 @@ class LocalDeviceInfoProvider {
   // The callback will remain registered until the
   // returned Subscription is destroyed, which must occur before the
   // CallbackList is destroyed.
-  virtual scoped_ptr<Subscription> RegisterOnInitializedCallback(
+  virtual std::unique_ptr<Subscription> RegisterOnInitializedCallback(
       const base::Closure& callback) = 0;
 };
 

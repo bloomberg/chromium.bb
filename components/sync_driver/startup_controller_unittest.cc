@@ -82,8 +82,8 @@ class StartupControllerTest : public testing::Test {
   bool started_;
   base::MessageLoop message_loop_;
   syncable_prefs::TestingPrefServiceSyncable pref_service_;
-  scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
-  scoped_ptr<StartupController> controller_;
+  std::unique_ptr<sync_driver::SyncPrefs> sync_prefs_;
+  std::unique_ptr<StartupController> controller_;
 };
 
 // Test that sync doesn't start until all conditions are met.

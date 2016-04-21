@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_SYNC_DRIVER_UI_DATA_TYPE_CONTROLLER_H_
 #define COMPONENTS_SYNC_DRIVER_UI_DATA_TYPE_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync_driver/directory_data_type_controller.h"
 #include "components/sync_driver/shared_change_processor.h"
@@ -56,7 +56,7 @@ class UIDataTypeController : public DirectoryDataTypeController {
   // Used by tests to override the factory used to create
   // GenericChangeProcessors.
   void SetGenericChangeProcessorFactoryForTest(
-      scoped_ptr<GenericChangeProcessorFactory> factory);
+      std::unique_ptr<GenericChangeProcessorFactory> factory);
 
  protected:
   // For testing only.
@@ -118,7 +118,7 @@ class UIDataTypeController : public DirectoryDataTypeController {
   // datatypes).
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
 
-  scoped_ptr<GenericChangeProcessorFactory> processor_factory_;
+  std::unique_ptr<GenericChangeProcessorFactory> processor_factory_;
 
   // A weak pointer to the actual local syncable service, which performs all the
   // real work. We do not own the object.

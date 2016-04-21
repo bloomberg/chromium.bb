@@ -49,12 +49,12 @@ void LocalDeviceInfoProviderMock::Initialize(
 }
 
 void LocalDeviceInfoProviderMock::Initialize(
-    scoped_ptr<DeviceInfo> local_device_info) {
+    std::unique_ptr<DeviceInfo> local_device_info) {
   local_device_info_.swap(local_device_info);
   SetInitialized(true);
 }
 
-scoped_ptr<LocalDeviceInfoProvider::Subscription>
+std::unique_ptr<LocalDeviceInfoProvider::Subscription>
 LocalDeviceInfoProviderMock::RegisterOnInitializedCallback(
     const base::Closure& callback) {
   DCHECK(!is_initialized_);

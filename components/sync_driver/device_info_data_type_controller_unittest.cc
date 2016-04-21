@@ -84,7 +84,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
 
  protected:
   scoped_refptr<DeviceInfoDataTypeController> controller_;
-  scoped_ptr<LocalDeviceInfoProviderMock> local_device_;
+  std::unique_ptr<LocalDeviceInfoProviderMock> local_device_;
   bool load_finished_;
 
  private:

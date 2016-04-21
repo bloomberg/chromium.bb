@@ -98,7 +98,7 @@ class SyncBackendMigratorTest : public testing::Test {
   sync_driver::FakeSyncService service_;
   NiceMock<DataTypeManagerMock> manager_;
   syncer::TestUserShare test_user_share_;
-  scoped_ptr<BackendMigrator> migrator_;
+  std::unique_ptr<BackendMigrator> migrator_;
 };
 
 class MockMigrationObserver : public MigrationObserver {

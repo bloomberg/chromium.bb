@@ -34,16 +34,16 @@ class LocalDeviceInfoProviderMock
       const std::string& cache_guid,
       const std::string& signin_scoped_device_id,
       const scoped_refptr<base::TaskRunner>& blocking_task_runner) override;
-  scoped_ptr<Subscription> RegisterOnInitializedCallback(
+  std::unique_ptr<Subscription> RegisterOnInitializedCallback(
       const base::Closure& callback) override;
 
-  void Initialize(scoped_ptr<DeviceInfo> local_device_info);
+  void Initialize(std::unique_ptr<DeviceInfo> local_device_info);
   void SetInitialized(bool is_initialized);
 
  private:
   bool is_initialized_;
 
-  scoped_ptr<DeviceInfo> local_device_info_;
+  std::unique_ptr<DeviceInfo> local_device_info_;
   base::CallbackList<void(void)> callback_list_;
 };
 

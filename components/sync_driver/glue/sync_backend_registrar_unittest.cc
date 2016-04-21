@@ -108,7 +108,7 @@ class SyncBackendRegistrarTest : public testing::Test {
     sync_client_.reset(new RegistrarSyncClient(
         ui_task_runner(), db_task_runner(), file_task_runner()));
     registrar_.reset(new SyncBackendRegistrar(
-        "test", sync_client_.get(), scoped_ptr<base::Thread>(),
+        "test", sync_client_.get(), std::unique_ptr<base::Thread>(),
         ui_task_runner(), db_task_runner(), file_task_runner()));
     sync_thread_ = registrar_->sync_thread();
   }
@@ -157,8 +157,8 @@ class SyncBackendRegistrarTest : public testing::Test {
   base::Thread file_thread_;
 
   syncer::TestUserShare test_user_share_;
-  scoped_ptr<RegistrarSyncClient> sync_client_;
-  scoped_ptr<SyncBackendRegistrar> registrar_;
+  std::unique_ptr<RegistrarSyncClient> sync_client_;
+  std::unique_ptr<SyncBackendRegistrar> registrar_;
 
   base::Thread* sync_thread_;
 };
@@ -358,7 +358,7 @@ class SyncBackendRegistrarShutdownTest : public testing::Test {
   base::Thread db_thread_;
   base::Thread file_thread_;
 
-  scoped_ptr<RegistrarSyncClient> sync_client_;
+  std::unique_ptr<RegistrarSyncClient> sync_client_;
   base::WaitableEvent db_thread_blocked_;
 
   base::Lock db_thread_lock_;
@@ -377,7 +377,7 @@ class TestRegistrar : public SyncBackendRegistrar {
       SyncBackendRegistrarShutdownTest* test)
       : SyncBackendRegistrar("test",
                              sync_client,
-                             scoped_ptr<base::Thread>(),
+                             std::unique_ptr<base::Thread>(),
                              ui_thread,
                              db_thread,
                              file_thread),
@@ -398,7 +398,7 @@ TEST_F(SyncBackendRegistrarShutdownTest, BlockingShutdown) {
       FROM_HERE, base::Bind(&SyncBackendRegistrarShutdownTest::BlockDBThread,
                             base::Unretained(this)));
 
-  scoped_ptr<TestRegistrar> registrar(
+  std::unique_ptr<TestRegistrar> registrar(
       new TestRegistrar(sync_client_.get(), ui_task_runner(), db_task_runner(),
                         file_task_runner(), this));
   base::Thread* sync_thread = registrar->sync_thread();

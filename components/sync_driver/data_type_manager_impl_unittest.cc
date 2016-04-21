@@ -113,9 +113,9 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
     activated_types_.Remove(type);
   }
 
-  void ActivateNonBlockingDataType(
-      syncer::ModelType type,
-      scoped_ptr<syncer_v2::ActivationContext> activation_context) override {
+  void ActivateNonBlockingDataType(syncer::ModelType type,
+                                   std::unique_ptr<syncer_v2::ActivationContext>
+                                       activation_context) override {
     // TODO(stanisc): crbug.com/515962: Add test coverage.
   }
 
@@ -350,7 +350,7 @@ class SyncDataTypeManagerImplTest : public testing::Test {
   DataTypeController::TypeMap controllers_;
   FakeBackendDataTypeConfigurer configurer_;
   FakeDataTypeManagerObserver observer_;
-  scoped_ptr<TestDataTypeManager> dtm_;
+  std::unique_ptr<TestDataTypeManager> dtm_;
   FakeDataTypeEncryptionHandler encryption_handler_;
 };
 

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -57,11 +58,12 @@ class NullCommitQueue : public syncer_v2::CommitQueue {
 // A class that pretends to be the sync backend.
 class MockSyncBackend {
  public:
-  void Connect(syncer::ModelType type,
-               scoped_ptr<syncer_v2::ActivationContext> activation_context) {
+  void Connect(
+      syncer::ModelType type,
+      std::unique_ptr<syncer_v2::ActivationContext> activation_context) {
     enabled_types_.Put(type);
     activation_context->type_processor->ConnectSync(
-        make_scoped_ptr(new NullCommitQueue()));
+        base::WrapUnique(new NullCommitQueue()));
   }
 
   void Disconnect(syncer::ModelType type) {
@@ -105,9 +107,9 @@ class MockBackendDataTypeConfigurer
     NOTREACHED() << "Not implemented.";
   }
 
-  void ActivateNonBlockingDataType(
-      syncer::ModelType type,
-      scoped_ptr<syncer_v2::ActivationContext> activation_context) override {
+  void ActivateNonBlockingDataType(syncer::ModelType type,
+                                   std::unique_ptr<syncer_v2::ActivationContext>
+                                       activation_context) override {
     // Post on Sync thread just like the real implementation does.
     sync_task_runner_->PostTask(
         FROM_HERE,
@@ -158,11 +160,12 @@ class UIModelTypeControllerTest : public testing::Test,
   }
 
  protected:
-  scoped_ptr<syncer_v2::ModelTypeChangeProcessor> CreateProcessor(
+  std::unique_ptr<syncer_v2::ModelTypeChangeProcessor> CreateProcessor(
       syncer::ModelType type,
       syncer_v2::ModelTypeService* service) {
-    scoped_ptr<syncer_v2::SharedModelTypeProcessor> processor =
-        make_scoped_ptr(new syncer_v2::SharedModelTypeProcessor(type, service));
+    std::unique_ptr<syncer_v2::SharedModelTypeProcessor> processor =
+        base::WrapUnique(
+            new syncer_v2::SharedModelTypeProcessor(type, service));
     type_processor_ = processor.get();
     return std::move(processor);
   }
@@ -177,7 +180,7 @@ class UIModelTypeControllerTest : public testing::Test,
         &UIModelTypeControllerTest::LoadModelsDone, base::Unretained(this)));
     if (!type_processor_->IsAllowingChanges()) {
       type_processor_->OnMetadataLoaded(
-          make_scoped_ptr(new syncer_v2::MetadataBatch()));
+          base::WrapUnique(new syncer_v2::MetadataBatch()));
     }
 
     if (auto_run_tasks_) {
@@ -248,7 +251,7 @@ class UIModelTypeControllerTest : public testing::Test,
   scoped_refptr<base::TestSimpleTaskRunner> sync_thread_runner_;
   MockSyncBackend backend_;
   MockBackendDataTypeConfigurer configurer_;
-  scoped_ptr<syncer_v2::FakeModelTypeService> service_;
+  std::unique_ptr<syncer_v2::FakeModelTypeService> service_;
 };
 
 TEST_F(UIModelTypeControllerTest, InitialState) {

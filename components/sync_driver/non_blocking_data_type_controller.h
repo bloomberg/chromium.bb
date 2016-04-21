@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
 #define COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -100,13 +100,13 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
   // started. This is called on the model thread.
   void OnProcessorStarted(
       syncer::SyncError error,
-      scoped_ptr<syncer_v2::ActivationContext> activation_context);
+      std::unique_ptr<syncer_v2::ActivationContext> activation_context);
 
   // The function will do the real work when OnProcessorStarted got called. This
   // is called on the UI thread.
   void OnProcessorStartedOnUIThread(
       syncer::SyncError error,
-      scoped_ptr<syncer_v2::ActivationContext> activation_context);
+      std::unique_ptr<syncer_v2::ActivationContext> activation_context);
 
   // The function LoadModels() will call this function to do some works which
   // need to be done on model thread.
@@ -126,7 +126,7 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
 
   // Controller receives |activation_context_| from SharedModelTypeProcessor
   // callback and must temporarily own it until ActivateDataType is called.
-  scoped_ptr<syncer_v2::ActivationContext> activation_context_;
+  std::unique_ptr<syncer_v2::ActivationContext> activation_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NonBlockingDataTypeController);
 };

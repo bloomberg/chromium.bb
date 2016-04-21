@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_AUTH_PROVIDER_H_
 #define COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_AUTH_PROVIDER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "sync/internal_api/public/sync_auth_provider.h"
@@ -46,7 +46,7 @@ class ProfileSyncAuthProvider : public OAuth2TokenService::Consumer,
 
   void InvalidateAccessToken(const std::string& token);
 
-  scoped_ptr<syncer::SyncAuthProvider> CreateProviderForSyncThread();
+  std::unique_ptr<syncer::SyncAuthProvider> CreateProviderForSyncThread();
 
  private:
   class SyncThreadProxy;
@@ -60,7 +60,7 @@ class ProfileSyncAuthProvider : public OAuth2TokenService::Consumer,
 
   // Only one outstanding request is allowed. Previous request is reported
   // cancelled if new one arrives.
-  scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
   syncer::SyncAuthProvider::RequestTokenCallback request_token_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner_;
 

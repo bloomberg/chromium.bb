@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SYNC_DRIVER_GENERIC_CHANGE_PROCESSOR_FACTORY_H_
 #define COMPONENTS_SYNC_DRIVER_GENERIC_CHANGE_PROCESSOR_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
 
@@ -36,7 +37,7 @@ class GenericChangeProcessorFactory {
  public:
   GenericChangeProcessorFactory();
   virtual ~GenericChangeProcessorFactory();
-  virtual scoped_ptr<GenericChangeProcessor> CreateGenericChangeProcessor(
+  virtual std::unique_ptr<GenericChangeProcessor> CreateGenericChangeProcessor(
       syncer::ModelType type,
       syncer::UserShare* user_share,
       DataTypeErrorHandler* error_handler,
