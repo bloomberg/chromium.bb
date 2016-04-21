@@ -13,6 +13,7 @@
 #include "base/win/win_util.h"
 #include "extensions/common/api/system_display.h"
 #include "ui/display/win/dpi.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace extensions {
@@ -39,12 +40,9 @@ EnumMonitorCallback(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data) {
   if (!EnumDisplayDevices(monitor_info.szDevice, 0, &device, 0))
     return FALSE;
 
-  gfx::Size dpi(display::win::GetDPI());
   unit.id =
       base::Int64ToString(base::Hash(base::WideToUTF8(monitor_info.szDevice)));
   unit.name = base::WideToUTF8(device.DeviceString);
-  unit.dpi_x = dpi.width();
-  unit.dpi_y = dpi.height();
   all_displays->push_back(std::move(unit));
 
   return TRUE;
@@ -75,8 +73,10 @@ void DisplayInfoProviderWin::UpdateDisplayUnitInfoForPlatform(
   for (size_t i = 0; i < all_displays.size(); ++i) {
     if (unit->id == all_displays[i].id) {
       unit->name = all_displays[i].name;
-      unit->dpi_x = all_displays[i].dpi_x;
-      unit->dpi_y = all_displays[i].dpi_y;
+      float device_scale_factor = display.device_scale_factor();
+      int dpi = display::win::GetDPIFromScalingFactor(device_scale_factor);
+      unit->dpi_x = dpi;
+      unit->dpi_y = dpi;
       break;
     }
   }

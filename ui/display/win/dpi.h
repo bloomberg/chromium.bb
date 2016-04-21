@@ -17,13 +17,14 @@ namespace win {
 // will be that returned by GetDPIScale().
 DISPLAY_EXPORT void SetDefaultDeviceScaleFactor(float scale);
 
-DISPLAY_EXPORT gfx::Size GetDPI();
-
 // Gets the scale factor of the display. For example, if the display DPI is
 // 96 then the scale factor is 1.0.  This clamps scale factors <= 1.25 to 1.0 to
 // maintain previous (non-DPI-aware) behavior where only the font size was
 // boosted.
 DISPLAY_EXPORT float GetDPIScale();
+
+// Returns the equivalent DPI for |device_scaling_factor|.
+DISPLAY_EXPORT int GetDPIFromScalingFactor(float device_scaling_factor);
 
 // Win32's GetSystemMetrics uses pixel measures. This function calls
 // GetSystemMetrics for the given |metric|, then converts the result to DIP.
