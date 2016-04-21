@@ -858,7 +858,7 @@ class NET_EXPORT_PRIVATE SpdyWindowUpdateIR : public SpdyFrameWithStreamIdIR {
   }
   int32_t delta() const { return delta_; }
   void set_delta(int32_t delta) {
-    DCHECK_LT(0, delta);
+    DCHECK_LE(0, delta);
     DCHECK_LE(delta, kSpdyMaximumWindowSize);
     delta_ = delta;
   }
