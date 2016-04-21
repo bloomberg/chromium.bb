@@ -869,6 +869,8 @@
       'browser/android/net/external_estimate_provider_android.h',
       'browser/android/ntp/most_visited_sites.cc',
       'browser/android/ntp/most_visited_sites.h',
+      'browser/android/ntp/most_visited_sites_bridge.cc',
+      'browser/android/ntp/most_visited_sites_bridge.h',
       'browser/android/ntp/new_tab_page_prefs.cc',
       'browser/android/ntp/new_tab_page_prefs.h',
       'browser/android/ntp/new_tab_page_url_handler.cc',

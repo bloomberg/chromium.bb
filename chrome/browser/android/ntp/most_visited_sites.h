@@ -5,14 +5,12 @@
 #ifndef CHROME_BROWSER_ANDROID_NTP_MOST_VISITED_SITES_H_
 #define CHROME_BROWSER_ANDROID_NTP_MOST_VISITED_SITES_H_
 
-#include <jni.h>
 #include <stddef.h>
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -52,45 +50,23 @@ class MostVisitedSitesObserver {
       const std::vector<std::string>& large_icon_urls) = 0;
 };
 
-// Provides the list of most visited sites and their thumbnails to Java.
+// Tracks the list of most visited sites and their thumbnails.
+//
+// Do not use, except from MostVisitedSitesBridge. The interface is in flux
+// while we are extracting the functionality of the Java class to make available
+// in C++.
+//
+// TODO(sfiera): finalize interface.
 class MostVisitedSites : public history::TopSitesObserver,
                          public SupervisedUserServiceObserver {
  public:
   explicit MostVisitedSites(Profile* profile);
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  // Java methods
+  ~MostVisitedSites() override;
 
+  // Does not take ownership of |observer|, which must outlive this object.
   void SetMostVisitedURLsObserver(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& j_observer,
-      jint num_sites);
-
-  void GetURLThumbnail(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& url,
-      const base::android::JavaParamRef<jobject>& j_callback);
-  void AddOrRemoveBlacklistedUrl(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& j_url,
-      jboolean add_url);
-  void RecordTileTypeMetrics(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jintArray>& jtile_types);
-  void RecordOpenedMostVisitedItem(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jint index,
-      jint tile_type);
-
-  // C++ methods
-
-  void SetMostVisitedURLsObserver(
-      std::unique_ptr<MostVisitedSitesObserver> observer, int num_sites);
+      MostVisitedSitesObserver* observer, int num_sites);
 
   using ThumbnailCallback = base::Callback<
       void(bool /* is_local_thumbnail */, const SkBitmap* /* bitmap */)>;
@@ -101,9 +77,6 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   // SupervisedUserServiceObserver implementation.
   void OnURLFilterChanged() override;
-
-  // Registers JNI methods.
-  static bool Register(JNIEnv* env);
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -136,7 +109,6 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   using SuggestionsVector = std::vector<std::unique_ptr<Suggestion>>;
 
-  ~MostVisitedSites() override;
   void QueryMostVisitedURLs();
 
   // Initialize the query to Top Sites. Called if the SuggestionsService is not
@@ -238,7 +210,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   // The profile whose most visited sites will be queried.
   Profile* profile_;
 
-  std::unique_ptr<MostVisitedSitesObserver> observer_;
+  MostVisitedSitesObserver* observer_;
 
   // The maximum number of most visited sites to return.
   int num_sites_;

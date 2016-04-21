@@ -13,7 +13,7 @@ import org.chromium.base.annotations.CalledByNative;
  */
 public class MostVisitedSites {
 
-    private long mNativeMostVisitedSites;
+    private long mNativeMostVisitedSitesBridge;
 
     /**
      * Interface for receiving the list of most visited urls.
@@ -66,16 +66,16 @@ public class MostVisitedSites {
      * @param profile The profile for which to fetch most visited sites.
      */
     public MostVisitedSites(Profile profile) {
-        mNativeMostVisitedSites = nativeInit(profile);
+        mNativeMostVisitedSitesBridge = nativeInit(profile);
     }
 
     /**
      * Cleans up the C++ side of this class. This instance must not be used after calling destroy().
      */
     public void destroy() {
-        assert mNativeMostVisitedSites != 0;
-        nativeDestroy(mNativeMostVisitedSites);
-        mNativeMostVisitedSites = 0;
+        assert mNativeMostVisitedSitesBridge != 0;
+        nativeDestroy(mNativeMostVisitedSitesBridge);
+        mNativeMostVisitedSitesBridge = 0;
     }
 
     /**
@@ -93,7 +93,7 @@ public class MostVisitedSites {
             public void onMostVisitedURLsAvailable(
                     String[] titles, String[] urls, String[] whitelistIconPaths) {
                 // Don't notify observer if we've already been destroyed.
-                if (mNativeMostVisitedSites != 0) {
+                if (mNativeMostVisitedSitesBridge != 0) {
                     observer.onMostVisitedURLsAvailable(titles, urls, whitelistIconPaths);
                 }
             }
@@ -101,12 +101,13 @@ public class MostVisitedSites {
             public void onPopularURLsAvailable(
                     String[] urls, String[] faviconUrls, String[] largeIconUrls) {
                 // Don't notify observer if we've already been destroyed.
-                if (mNativeMostVisitedSites != 0) {
+                if (mNativeMostVisitedSitesBridge != 0) {
                     observer.onPopularURLsAvailable(urls, faviconUrls, largeIconUrls);
                 }
             }
         };
-        nativeSetMostVisitedURLsObserver(mNativeMostVisitedSites, wrappedObserver, numSites);
+        nativeSetMostVisitedURLsObserver(
+                mNativeMostVisitedSitesBridge, wrappedObserver, numSites);
     }
 
     /**
@@ -121,26 +122,26 @@ public class MostVisitedSites {
             public void onMostVisitedURLsThumbnailAvailable(Bitmap thumbnail,
                     boolean isLocalThumbnail) {
                 // Don't notify callback if we've already been destroyed.
-                if (mNativeMostVisitedSites != 0) {
+                if (mNativeMostVisitedSitesBridge != 0) {
                     callback.onMostVisitedURLsThumbnailAvailable(thumbnail, isLocalThumbnail);
                 }
             }
         };
-        nativeGetURLThumbnail(mNativeMostVisitedSites, url, wrappedCallback);
+        nativeGetURLThumbnail(mNativeMostVisitedSitesBridge, url, wrappedCallback);
     }
 
     /**
      * Blacklists a URL from the most visited URLs list.
      */
     public void addBlacklistedUrl(String url) {
-        nativeAddOrRemoveBlacklistedUrl(mNativeMostVisitedSites, url, true);
+        nativeAddOrRemoveBlacklistedUrl(mNativeMostVisitedSitesBridge, url, true);
     }
 
     /**
      * Removes a URL from the most visited URLs blacklist.
      */
     public void removeBlacklistedUrl(String url) {
-        nativeAddOrRemoveBlacklistedUrl(mNativeMostVisitedSites, url, false);
+        nativeAddOrRemoveBlacklistedUrl(mNativeMostVisitedSitesBridge, url, false);
     }
 
     /**
@@ -149,7 +150,7 @@ public class MostVisitedSites {
      *                  tile that's currently showing.
      */
     public void recordTileTypeMetrics(int[] tileTypes) {
-        nativeRecordTileTypeMetrics(mNativeMostVisitedSites, tileTypes);
+        nativeRecordTileTypeMetrics(mNativeMostVisitedSitesBridge, tileTypes);
     }
 
     /**
@@ -158,19 +159,21 @@ public class MostVisitedSites {
      * @param tileType The visual type of the item. Valid values are listed in MostVisitedTileType.
      */
     public void recordOpenedMostVisitedItem(int index, int tileType) {
-        nativeRecordOpenedMostVisitedItem(mNativeMostVisitedSites, index, tileType);
+        nativeRecordOpenedMostVisitedItem(mNativeMostVisitedSitesBridge, index, tileType);
     }
 
     private native long nativeInit(Profile profile);
-    private native void nativeDestroy(long nativeMostVisitedSites);
-    private native void nativeSetMostVisitedURLsObserver(long nativeMostVisitedSites,
+    private native void nativeDestroy(long nativeMostVisitedSitesBridge);
+    private native void nativeSetMostVisitedURLsObserver(long nativeMostVisitedSitesBridge,
             MostVisitedURLsObserver observer, int numSites);
-    private native void nativeGetURLThumbnail(long nativeMostVisitedSites, String url,
+    private native void nativeGetURLThumbnail(long nativeMostVisitedSitesBridge, String url,
             ThumbnailCallback callback);
-    private native void nativeAddOrRemoveBlacklistedUrl(long nativeMostVisitedSites, String url,
+    private native void nativeAddOrRemoveBlacklistedUrl(
+            long nativeMostVisitedSitesBridge, String url,
             boolean addUrl);
-    private native void nativeRecordTileTypeMetrics(long nativeMostVisitedSites, int[] tileTypes);
-    private native void nativeRecordOpenedMostVisitedItem(long nativeMostVisitedSites, int index,
-            int tileType);
+    private native void nativeRecordTileTypeMetrics(
+            long nativeMostVisitedSitesBridge, int[] tileTypes);
+    private native void nativeRecordOpenedMostVisitedItem(
+            long nativeMostVisitedSitesBridge, int index, int tileType);
 
 }
