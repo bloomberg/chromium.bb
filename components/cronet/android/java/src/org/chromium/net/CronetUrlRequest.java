@@ -49,7 +49,6 @@ final class CronetUrlRequest implements UrlRequest {
 
     @GuardedBy("mUrlRequestAdapterLock")
     private boolean mStarted = false;
-    private boolean mDisableCache = false;
     @GuardedBy("mUrlRequestAdapterLock")
     private boolean mWaitingOnRedirect = false;
     @GuardedBy("mUrlRequestAdapterLock")
@@ -80,6 +79,8 @@ final class CronetUrlRequest implements UrlRequest {
     private String mInitialMethod;
     private final HeadersList mRequestHeaders = new HeadersList();
     private final Collection<Object> mRequestAnnotations;
+    private final boolean mDisableCache;
+    private final boolean mDisableConnectionMigration;
 
     private CronetUploadDataStream mUploadDataStream;
 
@@ -121,7 +122,8 @@ final class CronetUrlRequest implements UrlRequest {
 
     CronetUrlRequest(CronetUrlRequestContext requestContext, String url, int priority,
             UrlRequest.Callback callback, Executor executor, Collection<Object> requestAnnotations,
-            boolean metricsCollectionEnabled) {
+            boolean metricsCollectionEnabled, boolean disableCache,
+            boolean disableConnectionMigration) {
         if (url == null) {
             throw new NullPointerException("URL is required");
         }
@@ -144,6 +146,8 @@ final class CronetUrlRequest implements UrlRequest {
         mRequestAnnotations = requestAnnotations;
         mRequestMetricsAccumulator =
                 metricsCollectionEnabled ? new UrlRequestMetricsAccumulator() : null;
+        mDisableCache = disableCache;
+        mDisableConnectionMigration = disableConnectionMigration;
     }
 
     @Override
@@ -184,8 +188,9 @@ final class CronetUrlRequest implements UrlRequest {
             checkNotStarted();
 
             try {
-                mUrlRequestAdapter = nativeCreateRequestAdapter(
-                        mRequestContext.getUrlRequestContextAdapter(), mInitialUrl, mPriority);
+                mUrlRequestAdapter =
+                        nativeCreateRequestAdapter(mRequestContext.getUrlRequestContextAdapter(),
+                                mInitialUrl, mPriority, mDisableCache, mDisableConnectionMigration);
                 mRequestContext.onRequestStarted();
                 if (mInitialMethod != null) {
                     if (!nativeSetHttpMethod(mUrlRequestAdapter, mInitialMethod)) {
@@ -243,9 +248,6 @@ final class CronetUrlRequest implements UrlRequest {
      */
     @GuardedBy("mUrlRequestAdapterLock")
     private void startInternalLocked() {
-        if (mDisableCache) {
-            nativeDisableCache(mUrlRequestAdapter);
-        }
         if (mRequestMetricsAccumulator != null) {
             mRequestMetricsAccumulator.onRequestStarted();
         }
@@ -314,12 +316,6 @@ final class CronetUrlRequest implements UrlRequest {
     }
 
     @Override
-    public void disableCache() {
-        checkNotStarted();
-        mDisableCache = true;
-    }
-
-    @Override
     public void getStatus(final UrlRequest.StatusListener listener) {
         synchronized (mUrlRequestAdapterLock) {
             if (mUrlRequestAdapter != 0) {
@@ -344,6 +340,13 @@ final class CronetUrlRequest implements UrlRequest {
     @VisibleForTesting
     void setOnDestroyedUploadCallbackForTesting(Runnable onDestroyedUploadCallbackForTesting) {
         mUploadDataStream.setOnDestroyedCallbackForTesting(onDestroyedUploadCallbackForTesting);
+    }
+
+    @VisibleForTesting
+    long getUrlRequestAdapterForTesting() {
+        synchronized (mUrlRequestAdapterLock) {
+            return mUrlRequestAdapter;
+        }
     }
 
     /**
@@ -724,17 +727,14 @@ final class CronetUrlRequest implements UrlRequest {
 
     // Native methods are implemented in cronet_url_request_adapter.cc.
 
-    private native long nativeCreateRequestAdapter(
-            long urlRequestContextAdapter, String url, int priority);
+    private native long nativeCreateRequestAdapter(long urlRequestContextAdapter, String url,
+            int priority, boolean disableCache, boolean disableConnectionMigration);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native boolean nativeSetHttpMethod(long nativePtr, String method);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native boolean nativeAddRequestHeader(long nativePtr, String name, String value);
-
-    @NativeClassQualifiedName("CronetURLRequestAdapter")
-    private native void nativeDisableCache(long nativePtr);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native void nativeStart(long nativePtr);

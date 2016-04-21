@@ -6,12 +6,14 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "components/cronet/android/cronet_url_request_adapter.h"
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
 #include "components/cronet/android/test/native_test_server.h"
 #include "components/cronet/android/url_request_context_adapter.h"
 #include "jni/CronetTestUtil_jni.h"
 #include "net/dns/host_resolver_impl.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/url_request/url_request.h"
 
 namespace cronet {
 
@@ -77,6 +79,14 @@ void RegisterHostResolverProc(JNIEnv* env,
         FROM_HERE, base::Bind(&RegisterHostResolverProcOnNetworkThread,
                               base::Unretained(context_adapter), destination));
   }
+}
+
+jint GetLoadFlags(JNIEnv* env,
+                  const JavaParamRef<jclass>& jcaller,
+                  const jlong urlRequest) {
+  return reinterpret_cast<CronetURLRequestAdapter*>(urlRequest)
+      ->GetURLRequestForTesting()
+      ->load_flags();
 }
 
 bool RegisterCronetTestUtil(JNIEnv* env) {

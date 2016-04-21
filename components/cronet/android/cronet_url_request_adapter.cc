@@ -39,7 +39,9 @@ static jlong CreateRequestAdapter(JNIEnv* env,
                                   const JavaParamRef<jobject>& jurl_request,
                                   jlong jurl_request_context_adapter,
                                   const JavaParamRef<jstring>& jurl_string,
-                                  jint jpriority) {
+                                  jint jpriority,
+                                  jboolean jdisable_cache,
+                                  jboolean jdisable_connection_migration) {
   CronetURLRequestContextAdapter* context_adapter =
       reinterpret_cast<CronetURLRequestContextAdapter*>(
           jurl_request_context_adapter);
@@ -50,9 +52,10 @@ static jlong CreateRequestAdapter(JNIEnv* env,
   VLOG(1) << "New chromium network request_adapter: "
           << url.possibly_invalid_spec();
 
-  CronetURLRequestAdapter* adapter =
-      new CronetURLRequestAdapter(context_adapter, env, jurl_request, url,
-                                  static_cast<net::RequestPriority>(jpriority));
+  CronetURLRequestAdapter* adapter = new CronetURLRequestAdapter(
+      context_adapter, env, jurl_request, url,
+      static_cast<net::RequestPriority>(jpriority), jdisable_cache,
+      jdisable_connection_migration);
 
   return reinterpret_cast<jlong>(adapter);
 }
@@ -62,7 +65,9 @@ CronetURLRequestAdapter::CronetURLRequestAdapter(
     JNIEnv* env,
     jobject jurl_request,
     const GURL& url,
-    net::RequestPriority priority)
+    net::RequestPriority priority,
+    jboolean jdisable_cache,
+    jboolean jdisable_connection_migration)
     : context_(context),
       initial_url_(url),
       initial_priority_(priority),
@@ -70,6 +75,10 @@ CronetURLRequestAdapter::CronetURLRequestAdapter(
       load_flags_(context->default_load_flags()) {
   DCHECK(!context_->IsOnNetworkThread());
   owner_.Reset(env, jurl_request);
+  if (jdisable_cache == JNI_TRUE)
+    load_flags_ |= net::LOAD_DISABLE_CACHE;
+  if (jdisable_connection_migration == JNI_TRUE)
+    load_flags_ |= net::LOAD_DISABLE_CONNECTION_MIGRATION;
 }
 
 CronetURLRequestAdapter::~CronetURLRequestAdapter() {
@@ -103,13 +112,6 @@ jboolean CronetURLRequestAdapter::AddRequestHeader(
   }
   initial_request_headers_.SetHeader(name, value);
   return JNI_TRUE;
-}
-
-void CronetURLRequestAdapter::DisableCache(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller) {
-  DCHECK(!context_->IsOnNetworkThread());
-  load_flags_ |= net::LOAD_DISABLE_CACHE;
 }
 
 void CronetURLRequestAdapter::SetUpload(
@@ -367,6 +369,10 @@ bool CronetURLRequestAdapter::MaybeReportError(net::URLRequest* request) const {
       ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj(),
       request->GetTotalReceivedBytes());
   return true;
+}
+
+net::URLRequest* CronetURLRequestAdapter::GetURLRequestForTesting() {
+  return url_request_.get();
 }
 
 }  // namespace cronet

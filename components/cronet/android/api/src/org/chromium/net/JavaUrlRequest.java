@@ -710,11 +710,6 @@ final class JavaUrlRequest implements UrlRequest {
     }
 
     @Override
-    public void disableCache() {
-        // We have no cache
-    }
-
-    @Override
     public void getStatus(StatusListener listener) {
         State state = mState.get();
         int extraStatus = this.mAdditionalStatusDetails;

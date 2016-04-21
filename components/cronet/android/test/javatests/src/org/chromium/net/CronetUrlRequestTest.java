@@ -152,6 +152,42 @@ public class CronetUrlRequestTest extends CronetTestBase {
         return unknown;
     }
 
+    void runConnectionMigrationTest(boolean disableConnectionMigration) {
+        // URLRequest load flags at net/base/load_flags_list.h.
+        int connectionMigrationLoadFlag = 1 << 18;
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        callback.setAutoAdvance(false);
+        // Create builder, start a request, and check if default load_flags are set correctly.
+        UrlRequest.Builder builder =
+                new UrlRequest.Builder(NativeTestServer.getFileURL("/success.txt"), callback,
+                        callback.getExecutor(), mTestFramework.mCronetEngine);
+        // Disable connection migration.
+        if (disableConnectionMigration) builder.disableConnectionMigration();
+        UrlRequest urlRequest = builder.build();
+        urlRequest.start();
+        callback.waitForNextStep();
+        int loadFlags = CronetTestUtil.getLoadFlags(urlRequest);
+        if (disableConnectionMigration) {
+            assertEquals(connectionMigrationLoadFlag, loadFlags & connectionMigrationLoadFlag);
+        } else {
+            assertEquals(0, loadFlags & connectionMigrationLoadFlag);
+        }
+        callback.setAutoAdvance(true);
+        callback.startNextRead(urlRequest);
+        callback.blockForDone();
+    }
+
+    /**
+     * Tests that disabling connection migration sets the URLRequest load flag correctly.
+     */
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    public void testLoadFlagsWithConnectionMigration() throws Exception {
+        runConnectionMigrationTest(/*disableConnectionMigration=*/false);
+        runConnectionMigrationTest(/*disableConnectionMigration=*/true);
+    }
+
     /**
      * Tests a redirect by running it step-by-step. Also tests that delaying a
      * request works as expected. To make sure there are no unexpected pending

@@ -46,6 +46,8 @@ public interface UrlRequest {
                 new ArrayList<Pair<String, String>>();
         // Disable the cache for just this request.
         boolean mDisableCache;
+        // Disable connection migration for just this request.
+        boolean mDisableConnectionMigration;
         // Priority of request. Default is medium.
         @RequestPriority int mPriority = REQUEST_PRIORITY_MEDIUM;
         // Request reporting annotations. Avoid extra object creation if no annotations added.
@@ -137,6 +139,18 @@ public interface UrlRequest {
          */
         public Builder disableCache() {
             mDisableCache = true;
+            return this;
+        }
+
+        /**
+         * Disables connection migration for the request if enabled for
+         * the session.
+         * @return the builder to facilitate chaining.
+         *
+         * @hide as experimental.
+         */
+        public Builder disableConnectionMigration() {
+            mDisableConnectionMigration = true;
             return this;
         }
 
@@ -243,13 +257,10 @@ public interface UrlRequest {
          *         this {@link Builder}.
          */
         public UrlRequest build() {
-            final UrlRequest request = mCronetEngine.createRequest(
-                    mUrl, mCallback, mExecutor, mPriority, mRequestAnnotations);
+            final UrlRequest request = mCronetEngine.createRequest(mUrl, mCallback, mExecutor,
+                    mPriority, mRequestAnnotations, mDisableCache, mDisableConnectionMigration);
             if (mMethod != null) {
                 request.setHttpMethod(mMethod);
-            }
-            if (mDisableCache) {
-                request.disableCache();
             }
             for (Pair<String, String> header : mRequestHeaders) {
                 request.addHeader(header.first, header.second);
@@ -662,17 +673,6 @@ public interface UrlRequest {
     public boolean isDone();
 
     /**
-     * Disables cache for the request. If context is not set up to use cache,
-     * this call has no effect.
-     * @deprecated Use {@link Builder#disableCache}.
-     * @hide
-     */
-    // TODO(pauljensen): When all callers shifted to Builder.disableCache(),
-    // remove this method and instead add constructor argument and make
-    // CronetUrlRequest.mDisableCache final.
-    @Deprecated public void disableCache();
-
-    /**
      * Queries the status of the request.
      * @param listener a {@link StatusListener} that will be invoked with
      *         the request's current status. {@code listener} will be invoked
@@ -685,4 +685,3 @@ public interface UrlRequest {
     // here. Having none removes any ambiguity over when they are populated,
     // particularly in the redirect case.
 }
-

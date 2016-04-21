@@ -48,6 +48,14 @@ public class CronetTestUtil {
         sHostResolverBlock.close();
     }
 
+    /**
+     * Returns the value of load flags in |urlRequest|.
+     * @param urlRequest is the UrlRequest object of interest.
+     */
+    public static int getLoadFlags(UrlRequest urlRequest) {
+        return nativeGetLoadFlags(((CronetUrlRequest) urlRequest).getUrlRequestAdapterForTesting());
+    }
+
     @CalledByNative
     private static void onHostResolverProcRegistered() {
         sHostResolverBlock.open();
@@ -55,4 +63,6 @@ public class CronetTestUtil {
 
     private static native void nativeRegisterHostResolverProc(
             long contextAdapter, boolean isLegacyAPI, String destination);
+
+    private static native int nativeGetLoadFlags(long urlRequest);
 }

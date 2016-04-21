@@ -130,7 +130,8 @@ class CronetUrlRequestContext extends CronetEngine {
 
     @Override
     public UrlRequest createRequest(String url, UrlRequest.Callback callback, Executor executor,
-            int priority, Collection<Object> requestAnnotations) {
+            int priority, Collection<Object> requestAnnotations, boolean disableCache,
+            boolean disableConnectionMigration) {
         synchronized (mLock) {
             checkHaveAdapter();
             boolean metricsCollectionEnabled = mNetworkQualityEstimatorEnabled;
@@ -140,7 +141,7 @@ class CronetUrlRequestContext extends CronetEngine {
                 }
             }
             return new CronetUrlRequest(this, url, priority, callback, executor, requestAnnotations,
-                    metricsCollectionEnabled);
+                    metricsCollectionEnabled, disableCache, disableConnectionMigration);
         }
     }
 
