@@ -1667,14 +1667,14 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   auto passed_dmabuf_fds(base::WrapUnique(new std::vector<base::ScopedFD>()));
+#if defined(USE_OZONE)
   for (const auto& handle : gpu_memory_buffer_handles) {
     int fd = -1;
-#if defined(USE_OZONE)
     fd = handle.native_pixmap_handle.fd.fd;
-#endif
     DCHECK_NE(fd, -1);
     passed_dmabuf_fds->push_back(base::ScopedFD(fd));
   }
+#endif
 
   if (output_mode_ != Config::OutputMode::IMPORT) {
     LOGF(ERROR) << "Cannot import in non-import mode";
