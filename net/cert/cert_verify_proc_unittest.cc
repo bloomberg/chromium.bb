@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
@@ -203,7 +204,11 @@ TEST_F(CertVerifyProcTest, MAYBE_EVVerification) {
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_IS_EV);
 }
 
-TEST_F(CertVerifyProcTest, PaypalNullCertParsing) {
+// TODO(crbug.com/605457): the test expectation was incorrect on some
+// configurations, so disable the test until it is fixed (better to have
+// a bug to track a failing test than a false sense of security due to
+// false positive).
+TEST_F(CertVerifyProcTest, DISABLED_PaypalNullCertParsing) {
   scoped_refptr<X509Certificate> paypal_null_cert(
       X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(paypal_null_der),
