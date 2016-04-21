@@ -5,6 +5,7 @@
 #include "services/catalog/catalog.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "services/catalog/constants.h"
 #include "services/catalog/instance.h"
 #include "services/catalog/reader.h"
@@ -14,7 +15,7 @@
 namespace catalog {
 
 Catalog::Catalog(base::TaskRunner* file_task_runner,
-                 scoped_ptr<Store> store,
+                 std::unique_ptr<Store> store,
                  ManifestProvider* manifest_provider)
     : file_task_runner_(file_task_runner),
       store_(std::move(store)),
@@ -64,7 +65,7 @@ Instance* Catalog::GetInstanceForUserId(const std::string& user_id) {
 
   // TODO(beng): There needs to be a way to load the store from different users.
   Instance* instance = new Instance(std::move(store_), system_reader_.get());
-  instances_[user_id] = make_scoped_ptr(instance);
+  instances_[user_id] = base::WrapUnique(instance);
   if (loaded_)
     instance->CacheReady(&system_cache_);
 

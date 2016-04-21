@@ -21,9 +21,9 @@ class EntryTest : public testing::Test {
   ~EntryTest() override {}
 
  protected:
-  scoped_ptr<Entry> ReadEntry(const std::string& manifest,
-                              scoped_ptr<base::Value>* out_value) {
-    scoped_ptr<base::Value> value = ReadManifest(manifest);
+  std::unique_ptr<Entry> ReadEntry(const std::string& manifest,
+                                   std::unique_ptr<base::Value>* out_value) {
+    std::unique_ptr<base::Value> value = ReadManifest(manifest);
     base::DictionaryValue* dictionary = nullptr;
     CHECK(value->GetAsDictionary(&dictionary));
     if (out_value)
@@ -31,7 +31,7 @@ class EntryTest : public testing::Test {
     return Entry::Deserialize(*dictionary);
   }
 
-  scoped_ptr<base::Value> ReadManifest(const std::string& manifest) {
+  std::unique_ptr<base::Value> ReadManifest(const std::string& manifest) {
     base::FilePath manifest_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &manifest_path);
     manifest_path = manifest_path.AppendASCII(
@@ -54,21 +54,21 @@ class EntryTest : public testing::Test {
 };
 
 TEST_F(EntryTest, Simple) {
-  scoped_ptr<Entry> entry = ReadEntry("simple", nullptr);
+  std::unique_ptr<Entry> entry = ReadEntry("simple", nullptr);
   EXPECT_EQ("mojo:foo", entry->name());
   EXPECT_EQ(shell::GetNamePath(entry->name()), entry->qualifier());
   EXPECT_EQ("Foo", entry->display_name());
 }
 
 TEST_F(EntryTest, Instance) {
-  scoped_ptr<Entry> entry = ReadEntry("instance", nullptr);
+  std::unique_ptr<Entry> entry = ReadEntry("instance", nullptr);
   EXPECT_EQ("mojo:foo", entry->name());
   EXPECT_EQ("bar", entry->qualifier());
   EXPECT_EQ("Foo", entry->display_name());
 }
 
 TEST_F(EntryTest, Capabilities) {
-  scoped_ptr<Entry> entry = ReadEntry("capabilities", nullptr);
+  std::unique_ptr<Entry> entry = ReadEntry("capabilities", nullptr);
 
   EXPECT_EQ("mojo:foo", entry->name());
   EXPECT_EQ("bar", entry->qualifier());
@@ -81,20 +81,20 @@ TEST_F(EntryTest, Capabilities) {
 }
 
 TEST_F(EntryTest, Serialization) {
-  scoped_ptr<base::Value> value;
-  scoped_ptr<Entry> entry = ReadEntry("serialization", &value);
+  std::unique_ptr<base::Value> value;
+  std::unique_ptr<Entry> entry = ReadEntry("serialization", &value);
 
-  scoped_ptr<base::DictionaryValue> serialized(entry->Serialize());
+  std::unique_ptr<base::DictionaryValue> serialized(entry->Serialize());
 
   // We can't just compare values, since during deserialization some of the
   // lists get converted to std::sets, which are sorted, so Value::Equals will
   // fail.
-  scoped_ptr<Entry> reconstituted = Entry::Deserialize(*serialized.get());
+  std::unique_ptr<Entry> reconstituted = Entry::Deserialize(*serialized.get());
   EXPECT_EQ(*entry, *reconstituted);
 }
 
 TEST_F(EntryTest, Malformed) {
-  scoped_ptr<base::Value> value = ReadManifest("malformed");
+  std::unique_ptr<base::Value> value = ReadManifest("malformed");
   EXPECT_FALSE(value.get());
 }
 

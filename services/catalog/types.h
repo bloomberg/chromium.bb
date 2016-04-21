@@ -6,16 +6,16 @@
 #define SERVICES_CATALOG_TYPES_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace catalog {
 
 class Entry;
 
 // A map of mojo names -> catalog |Entry|s.
-using EntryCache = std::map<std::string, scoped_ptr<Entry>>;
+using EntryCache = std::map<std::string, std::unique_ptr<Entry>>;
 
 }  // namespace catalog
 

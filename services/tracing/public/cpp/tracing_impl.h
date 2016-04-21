@@ -41,7 +41,7 @@ class TracingImpl : public shell::InterfaceFactory<tracing::TraceProvider> {
   void Create(shell::Connection* connection,
               InterfaceRequest<tracing::TraceProvider> request) override;
 
-  scoped_ptr<shell::Connection> connection_;
+  std::unique_ptr<shell::Connection> connection_;
   TraceProviderImpl provider_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingImpl);

@@ -16,7 +16,7 @@
 
 namespace user_service {
 
-scoped_ptr<shell::ShellClient> CreateUserShellClient(
+std::unique_ptr<shell::ShellClient> CreateUserShellClient(
     scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
     scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner);
 
@@ -57,10 +57,10 @@ class UserShellClient
   // We create these two objects so we can delete them on the correct task
   // runners.
   class UserServiceObjects;
-  scoped_ptr<UserServiceObjects> user_objects_;
+  std::unique_ptr<UserServiceObjects> user_objects_;
 
   class LevelDBServiceObjects;
-  scoped_ptr<LevelDBServiceObjects> leveldb_objects_;
+  std::unique_ptr<LevelDBServiceObjects> leveldb_objects_;
 
   DISALLOW_COPY_AND_ASSIGN(UserShellClient);
 };

@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -54,8 +55,9 @@ base::FilePath GetPackagePath(const base::FilePath& package_dir,
   return base::FilePath();
 }
 
-scoped_ptr<Entry> ProcessManifest(scoped_ptr<base::Value> manifest_root,
-                                  const base::FilePath& package_dir) {
+std::unique_ptr<Entry> ProcessManifest(
+    std::unique_ptr<base::Value> manifest_root,
+    const base::FilePath& package_dir) {
   // Manifest was malformed or did not exist.
   if (!manifest_root)
     return nullptr;
@@ -64,14 +66,14 @@ scoped_ptr<Entry> ProcessManifest(scoped_ptr<base::Value> manifest_root,
   if (!manifest_root->GetAsDictionary(&dictionary))
     return nullptr;
 
-  scoped_ptr<Entry> entry = Entry::Deserialize(*dictionary);
+  std::unique_ptr<Entry> entry = Entry::Deserialize(*dictionary);
   if (!entry)
     return nullptr;
   entry->set_path(GetPackagePath(package_dir, entry->name()));
   return entry;
 }
 
-scoped_ptr<Entry> CreateEntryForManifestAt(
+std::unique_ptr<Entry> CreateEntryForManifestAt(
     const base::FilePath& manifest_path,
     const base::FilePath& package_dir) {
   JSONFileValueDeserializer deserializer(manifest_path);
@@ -96,7 +98,7 @@ void ScanDir(
     if (path.empty())
       break;
     base::FilePath manifest_path = path.AppendASCII("manifest.json");
-    scoped_ptr<Entry> entry =
+    std::unique_ptr<Entry> entry =
         CreateEntryForManifestAt(manifest_path, package_dir);
     if (!entry)
       continue;
@@ -116,9 +118,9 @@ void ScanDir(
   original_thread_task_runner->PostTask(FROM_HERE, read_complete_closure);
 }
 
-scoped_ptr<Entry> ReadManifest(const base::FilePath& package_dir,
-                               const std::string& mojo_name) {
-  scoped_ptr<Entry> entry = CreateEntryForManifestAt(
+std::unique_ptr<Entry> ReadManifest(const base::FilePath& package_dir,
+                                    const std::string& mojo_name) {
+  std::unique_ptr<Entry> entry = CreateEntryForManifestAt(
       GetManifestPath(package_dir, mojo_name), package_dir);
   if (!entry) {
     entry.reset(new Entry(mojo_name));
@@ -128,9 +130,9 @@ scoped_ptr<Entry> ReadManifest(const base::FilePath& package_dir,
   return entry;
 }
 
-void AddEntryToCache(EntryCache* cache, scoped_ptr<Entry> entry) {
+void AddEntryToCache(EntryCache* cache, std::unique_ptr<Entry> entry) {
   for (auto child : entry->applications())
-    AddEntryToCache(cache, make_scoped_ptr(child));
+    AddEntryToCache(cache, base::WrapUnique(child));
   (*cache)[entry->name()] = std::move(entry);
 }
 
@@ -167,7 +169,7 @@ void Reader::CreateEntryForName(
   if (manifest_provider_ &&
       manifest_provider_->GetApplicationManifest(mojo_name,
                                                  &manifest_contents)) {
-    scoped_ptr<base::Value> manifest_root =
+    std::unique_ptr<base::Value> manifest_root =
         base::JSONReader::Read(manifest_contents);
     base::PostTaskAndReplyWithResult(
         file_task_runner_, FROM_HERE,
@@ -188,7 +190,7 @@ void Reader::CreateEntryForName(
 void Reader::OnReadManifest(
     EntryCache* cache,
     const CreateEntryForNameCallback& entry_created_callback,
-    scoped_ptr<Entry> entry) {
+    std::unique_ptr<Entry> entry) {
   shell::mojom::ResolveResultPtr result =
       shell::mojom::ResolveResult::From(*entry);
   AddEntryToCache(cache, std::move(entry));

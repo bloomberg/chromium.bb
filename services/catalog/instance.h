@@ -26,7 +26,7 @@ class Instance : public shell::mojom::ShellResolver,
                  public mojom::Catalog {
  public:
   // |manifest_provider| may be null.
-  Instance(scoped_ptr<Store> store, Reader* system_reader);
+  Instance(std::unique_ptr<Store> store, Reader* system_reader);
   ~Instance() override;
 
   void BindShellResolver(shell::mojom::ShellResolverRequest request);
@@ -68,7 +68,7 @@ class Instance : public shell::mojom::ShellResolver,
                              shell::mojom::ResolveResultPtr result);
 
   // User-specific persistent storage of package manifests and other settings.
-  scoped_ptr<Store> store_;
+  std::unique_ptr<Store> store_;
 
   mojo::BindingSet<shell::mojom::ShellResolver> shell_resolver_bindings_;
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;

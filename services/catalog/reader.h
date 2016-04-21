@@ -5,10 +5,11 @@
 #ifndef SERVICES_CATALOG_READER_H_
 #define SERVICES_CATALOG_READER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "services/catalog/types.h"
 #include "services/shell/public/interfaces/shell_resolver.mojom.h"
@@ -25,9 +26,8 @@ class ManifestProvider;
 // Responsible for loading manifests & building the Entry data structures.
 class Reader {
  public:
-   using ReadManifestCallback =
-      base::Callback<void(scoped_ptr<Entry>)>;
-   using CreateEntryForNameCallback =
+  using ReadManifestCallback = base::Callback<void(std::unique_ptr<Entry>)>;
+  using CreateEntryForNameCallback =
       base::Callback<void(shell::mojom::ResolveResultPtr)>;
 
   Reader(base::TaskRunner* file_task_runner,
@@ -50,7 +50,7 @@ class Reader {
  private:
   void OnReadManifest(EntryCache* cache,
                       const CreateEntryForNameCallback& entry_created_callback,
-                      scoped_ptr<Entry> entry);
+                      std::unique_ptr<Entry> entry);
 
   base::FilePath system_package_dir_;
   base::TaskRunner* file_task_runner_;

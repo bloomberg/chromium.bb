@@ -5,7 +5,8 @@
 #ifndef SERVICES_CATALOG_STORE_H_
 #define SERVICES_CATALOG_STORE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/values.h"
 
 namespace catalog {
@@ -46,7 +47,7 @@ class Store {
 
   // Write the catalog to the store. Called when the Catalog learns of a newly
   // encountered application.
-  virtual void UpdateStore(scoped_ptr<base::ListValue> store) = 0;
+  virtual void UpdateStore(std::unique_ptr<base::ListValue> store) = 0;
 };
 
 }  // namespace catalog

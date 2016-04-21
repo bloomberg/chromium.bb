@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -63,7 +64,7 @@ class TracingApp
 
   void AllDataCollected();
 
-  scoped_ptr<TraceDataSink> sink_;
+  std::unique_ptr<TraceDataSink> sink_;
   ScopedVector<TraceRecorderImpl> recorder_impls_;
   mojo::InterfacePtrSet<TraceProvider> provider_ptrs_;
   mojo::Binding<TraceCollector> collector_binding_;

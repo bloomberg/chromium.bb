@@ -6,10 +6,10 @@
 #define SERVICES_CATALOG_CATALOG_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
@@ -41,7 +41,7 @@ class Catalog : public shell::ShellClient,
  public:
   // |manifest_provider| may be null.
   Catalog(base::TaskRunner* file_task_runner,
-          scoped_ptr<Store> store,
+          std::unique_ptr<Store> store,
           ManifestProvider* manifest_provider);
   ~Catalog() override;
 
@@ -64,14 +64,14 @@ class Catalog : public shell::ShellClient,
   void SystemPackageDirScanned();
 
   base::TaskRunner* const file_task_runner_;
-  scoped_ptr<Store> store_;
+  std::unique_ptr<Store> store_;
 
   shell::mojom::ShellClientPtr shell_client_;
-  scoped_ptr<shell::ShellConnection> shell_connection_;
+  std::unique_ptr<shell::ShellConnection> shell_connection_;
 
-  std::map<std::string, scoped_ptr<Instance>> instances_;
+  std::map<std::string, std::unique_ptr<Instance>> instances_;
 
-  scoped_ptr<Reader> system_reader_;
+  std::unique_ptr<Reader> system_reader_;
   EntryCache system_cache_;
   bool loaded_ = false;
 

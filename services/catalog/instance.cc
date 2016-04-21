@@ -26,7 +26,7 @@ void AddEntry(const Entry& entry, mojo::Array<mojom::EntryPtr>* ary) {
 ////////////////////////////////////////////////////////////////////////////////
 // Instance, public:
 
-Instance::Instance(scoped_ptr<Store> store, Reader* system_reader)
+Instance::Instance(std::unique_ptr<Store> store, Reader* system_reader)
     : store_(std::move(store)),
       system_reader_(system_reader),
       weak_factory_(this) {}
@@ -65,7 +65,7 @@ void Instance::ResolveMojoName(const mojo::String& mojo_name,
 
   std::string type = shell::GetNameType(mojo_name);
   if (type != shell::kNameType_Mojo && type != shell::kNameType_Exe) {
-    scoped_ptr<Entry> entry(new Entry(mojo_name));
+    std::unique_ptr<Entry> entry(new Entry(mojo_name));
     callback.Run(shell::mojom::ResolveResult::From(*entry));
     return;
   }
@@ -149,7 +149,7 @@ void Instance::DeserializeCatalog() {
     const base::DictionaryValue* dictionary = nullptr;
     const base::Value* v = *it;
     CHECK(v->GetAsDictionary(&dictionary));
-    scoped_ptr<Entry> entry = Entry::Deserialize(*dictionary);
+    std::unique_ptr<Entry> entry = Entry::Deserialize(*dictionary);
     // TODO(beng): user catalog.
     if (entry)
       (*system_cache_)[entry->name()] = std::move(entry);
@@ -158,7 +158,7 @@ void Instance::DeserializeCatalog() {
 
 void Instance::SerializeCatalog() {
   DCHECK(system_cache_);
-  scoped_ptr<base::ListValue> catalog(new base::ListValue);
+  std::unique_ptr<base::ListValue> catalog(new base::ListValue);
   // TODO(beng): user catalog.
   for (const auto& entry : *system_cache_)
     catalog->Append(entry.second->Serialize());

@@ -5,6 +5,7 @@
 #include "services/user/user_shell_client.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "components/filesystem/lock_table.h"
 #include "components/leveldb/leveldb_service_impl.h"
@@ -63,17 +64,17 @@ class UserShellClient::LevelDBServiceObjects
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Variables that are only accessible on the |leveldb_service_runner_| thread.
-  scoped_ptr<leveldb::LevelDBService> leveldb_service_;
+  std::unique_ptr<leveldb::LevelDBService> leveldb_service_;
   mojo::BindingSet<leveldb::LevelDBService> leveldb_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBServiceObjects);
 };
 
-scoped_ptr<shell::ShellClient> CreateUserShellClient(
+std::unique_ptr<shell::ShellClient> CreateUserShellClient(
     scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
     scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner) {
-  return make_scoped_ptr(new UserShellClient(std::move(user_service_runner),
-                                     std::move(leveldb_service_runner)));
+  return base::WrapUnique(new UserShellClient(
+      std::move(user_service_runner), std::move(leveldb_service_runner)));
 }
 
 UserShellClient::UserShellClient(

@@ -5,11 +5,11 @@
 #ifndef SERVICES_CATALOG_ENTRY_H_
 #define SERVICES_CATALOG_ENTRY_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/shell/public/cpp/capabilities.h"
 
@@ -27,12 +27,12 @@ class Entry {
   explicit Entry(const Entry& other);
   ~Entry();
 
-  scoped_ptr<base::DictionaryValue> Serialize() const;
+  std::unique_ptr<base::DictionaryValue> Serialize() const;
 
   // If the constructed Entry is a package that provides other Entrys, the
   // caller must assume ownership of the tree of Entrys by enumerating
   // applications().
-  static scoped_ptr<Entry> Deserialize(const base::DictionaryValue& value);
+  static std::unique_ptr<Entry> Deserialize(const base::DictionaryValue& value);
 
   bool ProvidesClass(const std::string& clazz) const;
 
