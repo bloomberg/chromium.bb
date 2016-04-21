@@ -159,12 +159,8 @@ source_set("common") {
     "//components/tracing",
     "//components/tracing:startup_tracing",
     "//device/bluetooth",
-
-    # TODO: the dependency on gl_in_process_context should be decoupled from
-    # content and moved to android_webview. See crbug.com/365797.
     "//gpu",
     "//gpu/blink",
-    "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
