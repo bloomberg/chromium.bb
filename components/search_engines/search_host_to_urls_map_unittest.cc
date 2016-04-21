@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/search_engines/search_host_to_urls_map.h"
+
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "components/search_engines/search_host_to_urls_map.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,8 +23,8 @@ class SearchHostToURLsMapTest : public testing::Test {
   void SetUp() override;
 
  protected:
-  scoped_ptr<SearchHostToURLsMap> provider_map_;
-  scoped_ptr<TemplateURL> t_urls_[2];
+  std::unique_ptr<SearchHostToURLsMap> provider_map_;
+  std::unique_ptr<TemplateURL> t_urls_[2];
   std::string host_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchHostToURLsMapTest);

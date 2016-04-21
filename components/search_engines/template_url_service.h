@@ -6,8 +6,10 @@
 #define COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_
 
 #include <stddef.h>
+
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -16,7 +18,6 @@
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "components/google/core/browser/google_url_tracker.h"
@@ -103,9 +104,9 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   TemplateURLService(
       PrefService* prefs,
-      scoped_ptr<SearchTermsData> search_terms_data,
+      std::unique_ptr<SearchTermsData> search_terms_data,
       const scoped_refptr<KeywordWebDataService>& web_data_service,
-      scoped_ptr<TemplateURLServiceClient> client,
+      std::unique_ptr<TemplateURLServiceClient> client,
       GoogleURLTracker* google_url_tracker,
       rappor::RapporService* rappor_service,
       const base::Closure& dsp_change_callback);
@@ -179,7 +180,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Adds a search engine with the specified info.
   void AddExtensionControlledTURL(
       TemplateURL* template_url,
-      scoped_ptr<TemplateURL::AssociatedExtensionInfo> info);
+      std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info);
 
   // Removes the keyword from the model. This deletes the supplied TemplateURL.
   // This fails if the supplied template_url is the default search provider.
@@ -292,7 +293,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Registers a callback to be called when the service has loaded.
   //
   // If the service has already loaded, this function does nothing.
-  scoped_ptr<Subscription> RegisterOnLoadedCallback(
+  std::unique_ptr<Subscription> RegisterOnLoadedCallback(
       const base::Closure& callback);
 
 #if defined(UNIT_TEST)
@@ -340,8 +341,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+      std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
   void StopSyncing(syncer::ModelType type) override;
 
   // Processes a local TemplateURL change for Sync. |turl| is the TemplateURL
@@ -371,7 +372,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // data, an appropriate SyncChange is added to |change_list|.  If the sync
   // data is bad for some reason, an ACTION_DELETE change is added and the
   // function returns NULL.
-  static scoped_ptr<TemplateURL> CreateTemplateURLFromTemplateURLAndSyncData(
+  static std::unique_ptr<TemplateURL>
+  CreateTemplateURLFromTemplateURLAndSyncData(
       TemplateURLServiceClient* client,
       PrefService* prefs,
       const SearchTermsData& search_terms_data,
@@ -384,7 +386,9 @@ class TemplateURLService : public WebDataServiceConsumer,
       const syncer::SyncDataList& sync_data);
 
 #if defined(UNIT_TEST)
-  void set_clock(scoped_ptr<base::Clock> clock) { clock_ = std::move(clock); }
+  void set_clock(std::unique_ptr<base::Clock> clock) {
+    clock_ = std::move(clock);
+  }
 #endif
 
  private:
@@ -700,13 +704,13 @@ class TemplateURLService : public WebDataServiceConsumer,
   // ---------- Browser state related members ---------------------------------
   PrefService* prefs_;
 
-  scoped_ptr<SearchTermsData> search_terms_data_;
+  std::unique_ptr<SearchTermsData> search_terms_data_;
 
   // ---------- Dependencies on other components ------------------------------
   // Service used to store entries.
   scoped_refptr<KeywordWebDataService> web_data_service_;
 
-  scoped_ptr<TemplateURLServiceClient> client_;
+  std::unique_ptr<TemplateURLServiceClient> client_;
 
   GoogleURLTracker* google_url_tracker_;
 
@@ -741,9 +745,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   base::ObserverList<TemplateURLServiceObserver> model_observers_;
 
   // Maps from host to set of TemplateURLs whose search url host is host.
-  // NOTE: This is always non-NULL; we use a scoped_ptr<> to avoid circular
+  // NOTE: This is always non-NULL; we use a std::unique_ptr<> to avoid circular
   // header dependencies.
-  scoped_ptr<SearchHostToURLsMap> provider_map_;
+  std::unique_ptr<SearchHostToURLsMap> provider_map_;
 
   // Whether the keywords have been loaded.
   bool loaded_;
@@ -769,7 +773,7 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // A temporary location for the DSE until Web Data has been loaded and it can
   // be merged into |template_urls_|.
-  scoped_ptr<TemplateURL> initial_default_search_provider_;
+  std::unique_ptr<TemplateURL> initial_default_search_provider_;
 
   // Source of the default search provider.
   DefaultSearchManager::Source default_search_provider_source_;
@@ -779,7 +783,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURLID next_id_;
 
   // Used to retrieve the current time, in base::Time units.
-  scoped_ptr<base::Clock> clock_;
+  std::unique_ptr<base::Clock> clock_;
 
   // Do we have an active association between the TemplateURLs and sync models?
   // Set in MergeDataAndStartSyncing, reset in StopSyncing. While this is not
@@ -792,10 +796,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   bool processing_syncer_changes_;
 
   // Sync's syncer::SyncChange handler. We push all our changes through this.
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   // Sync's error handler. We use it to create a sync error.
-  scoped_ptr<syncer::SyncErrorFactory> sync_error_factory_;
+  std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory_;
 
   // A set of sync GUIDs denoting TemplateURLs that have been removed from this
   // model or the underlying KeywordWebDataService prior to
@@ -815,7 +819,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Helper class to manage the default search engine.
   DefaultSearchManager default_search_manager_;
 
-  scoped_ptr<GoogleURLTracker::Subscription> google_url_updated_subscription_;
+  std::unique_ptr<GoogleURLTracker::Subscription>
+      google_url_updated_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };

@@ -123,9 +123,9 @@ WebDatabase::State KeywordWebDataService::PerformKeywordOperationsImpl(
       WebDatabase::COMMIT_NEEDED : WebDatabase::COMMIT_NOT_NEEDED;
 }
 
-scoped_ptr<WDTypedResult> KeywordWebDataService::GetKeywordsImpl(
+std::unique_ptr<WDTypedResult> KeywordWebDataService::GetKeywordsImpl(
     WebDatabase* db) {
-  scoped_ptr<WDTypedResult> result_ptr;
+  std::unique_ptr<WDTypedResult> result_ptr;
   WDKeywordsResult result;
   if (KeywordTable::FromWebDatabase(db)->GetKeywords(&result.keywords)) {
     result.default_search_provider_id =

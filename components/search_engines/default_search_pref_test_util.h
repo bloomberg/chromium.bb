@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_SEARCH_ENGINES_DEFAULT_SEARCH_PREF_TEST_UTIL_H_
 #define COMPONENTS_SEARCH_ENGINES_DEFAULT_SEARCH_PREF_TEST_UTIL_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/search_engines/default_search_manager.h"
 
@@ -15,7 +15,8 @@ class DefaultSearchPrefTestUtil {
  public:
   // Creates a DictionaryValue which can be used as a
   // kDefaultSearchProviderDataPrefName preference value.
-  static scoped_ptr<base::DictionaryValue> CreateDefaultSearchPreferenceValue(
+  static std::unique_ptr<base::DictionaryValue>
+  CreateDefaultSearchPreferenceValue(
       bool enabled,
       const std::string& name,
       const std::string& keyword,

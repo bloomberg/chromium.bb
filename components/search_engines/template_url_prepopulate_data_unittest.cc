@@ -121,7 +121,7 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   prefs_.SetUserPref(prefs::kSearchProviderOverridesVersion,
                      new base::FundamentalValue(1));
   base::ListValue* overrides = new base::ListValue;
-  scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   // Set only the minimal required settings for a search provider configuration.
   entry->SetString("name", "foo");
   entry->SetString("keyword", "fook");

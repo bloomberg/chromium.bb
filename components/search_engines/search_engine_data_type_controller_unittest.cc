@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/search_engines/search_engine_data_type_controller.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
-#include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_generic_change_processor.h"
@@ -67,9 +70,9 @@ class SyncSearchEngineDataTypeControllerTest
 
   void SetStartExpectations() {
     search_engine_dtc_->SetGenericChangeProcessorFactoryForTest(
-        make_scoped_ptr<sync_driver::GenericChangeProcessorFactory>(
+        base::WrapUnique<sync_driver::GenericChangeProcessorFactory>(
             new sync_driver::FakeGenericChangeProcessorFactory(
-                make_scoped_ptr(new sync_driver::FakeGenericChangeProcessor(
+                base::WrapUnique(new sync_driver::FakeGenericChangeProcessor(
                     syncer::SEARCH_ENGINES, this)))));
     EXPECT_CALL(model_load_callback_, Run(_, _));
   }
@@ -85,7 +88,7 @@ class SyncSearchEngineDataTypeControllerTest
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<TemplateURLService> template_url_service_;
+  std::unique_ptr<TemplateURLService> template_url_service_;
   scoped_refptr<SearchEngineDataTypeController> search_engine_dtc_;
   SyncApiComponentFactoryMock profile_sync_factory_;
   syncer::FakeSyncableService syncable_service_;

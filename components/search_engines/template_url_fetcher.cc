@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
-#include "base/macros.h"
 #include "components/search_engines/template_url_fetcher.h"
 
+#include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_parser.h"
 #include "components/search_engines/template_url_service.h"
@@ -48,16 +48,16 @@ class TemplateURLFetcher::RequestDelegate : public net::URLFetcherDelegate {
   void OnLoaded();
   void AddSearchProvider();
 
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
   TemplateURLFetcher* fetcher_;
-  scoped_ptr<TemplateURL> template_url_;
+  std::unique_ptr<TemplateURL> template_url_;
   base::string16 keyword_;
   const GURL osdd_url_;
   const GURL favicon_url_;
   const ProviderType provider_type_;
   ConfirmAddSearchProviderCallback confirm_add_callback_;
 
-  scoped_ptr<TemplateURLService::Subscription> template_url_subscription_;
+  std::unique_ptr<TemplateURLService::Subscription> template_url_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestDelegate);
 };
@@ -191,7 +191,7 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
       // The source WebContents' delegate takes care of adding the URL to the
       // model, which takes ownership, or of deleting it if the add is
       // cancelled.
-      confirm_add_callback_.Run(make_scoped_ptr(new TemplateURL(data)));
+      confirm_add_callback_.Run(base::WrapUnique(new TemplateURL(data)));
       break;
 
     default:

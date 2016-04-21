@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_SEARCH_ENGINES_SEARCH_ENGINE_DATA_TYPE_CONTROLLER_H__
 #define COMPONENTS_SEARCH_ENGINES_SEARCH_ENGINE_DATA_TYPE_CONTROLLER_H__
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 
@@ -46,7 +46,7 @@ class SearchEngineDataTypeController
   TemplateURLService* template_url_service_;
 
   // A subscription to the OnLoadedCallback so it can be cleared if necessary.
-  scoped_ptr<TemplateURLService::Subscription> template_url_subscription_;
+  std::unique_ptr<TemplateURLService::Subscription> template_url_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchEngineDataTypeController);
 };

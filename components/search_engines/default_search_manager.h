@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_SEARCH_ENGINES_DEFAULT_SEARCH_MANAGER_H_
 #define COMPONENTS_SEARCH_ENGINES_DEFAULT_SEARCH_MANAGER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace base {
@@ -77,7 +78,7 @@ class DefaultSearchManager {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Save default search provider pref values into the map provided.
-  static void AddPrefValueToMap(scoped_ptr<base::DictionaryValue> value,
+  static void AddPrefValueToMap(std::unique_ptr<base::DictionaryValue> value,
                                 PrefValueMap* pref_value_map);
 
   // Testing code can call this with |disabled| set to true to cause
@@ -144,16 +145,16 @@ class DefaultSearchManager {
   // Default search engine provided by pre-populated data or by the
   // |kSearchProviderOverrides| pref. This will be used when no other default
   // search engine has been selected.
-  scoped_ptr<TemplateURLData> fallback_default_search_;
+  std::unique_ptr<TemplateURLData> fallback_default_search_;
 
   // Default search engine provided by extension (usings Settings Override API).
   // This will be null if there are no extensions installed which provide
   // default search engines.
-  scoped_ptr<TemplateURLData> extension_default_search_;
+  std::unique_ptr<TemplateURLData> extension_default_search_;
 
   // Default search engine provided by prefs (either user prefs or policy
   // prefs). This will be null if no value was set in the pref store.
-  scoped_ptr<TemplateURLData> prefs_default_search_;
+  std::unique_ptr<TemplateURLData> prefs_default_search_;
 
   // True if the default search is currently enforced by policy.
   bool default_search_controlled_by_policy_;

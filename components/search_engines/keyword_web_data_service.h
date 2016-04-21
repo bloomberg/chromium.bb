@@ -101,7 +101,7 @@ class KeywordWebDataService : public WebDataServiceBase {
   WebDatabase::State PerformKeywordOperationsImpl(
       const KeywordTable::Operations& operations,
       WebDatabase* db);
-  scoped_ptr<WDTypedResult> GetKeywordsImpl(WebDatabase* db);
+  std::unique_ptr<WDTypedResult> GetKeywordsImpl(WebDatabase* db);
   WebDatabase::State SetDefaultSearchProviderIDImpl(TemplateURLID id,
                                                     WebDatabase* db);
   WebDatabase::State SetBuiltinKeywordVersionImpl(int version, WebDatabase* db);

@@ -207,7 +207,7 @@ void MergeEnginesFromPrepopulateData(
   // Remove items.
   for (std::vector<TemplateURL*>::iterator i = actions.removed_engines.begin();
        i < actions.removed_engines.end(); ++i) {
-    scoped_ptr<TemplateURL> template_url(*i);
+    std::unique_ptr<TemplateURL> template_url(*i);
     TemplateURLService::TemplateURLVector::iterator j = std::find(
         template_urls->begin(), template_urls->end(), template_url.get());
     DCHECK(j != template_urls->end());
@@ -225,7 +225,7 @@ void MergeEnginesFromPrepopulateData(
   for (EditedEngines::iterator i(actions.edited_engines.begin());
        i < actions.edited_engines.end(); ++i) {
     TemplateURLData& data = i->second;
-    scoped_ptr<TemplateURL> existing_url(i->first);
+    std::unique_ptr<TemplateURL> existing_url(i->first);
     if (service)
       service->UpdateKeyword(data);
 
@@ -266,7 +266,7 @@ ActionsFromPrepopulateData CreateActionsFromCurrentPrepopulateData(
   ActionsFromPrepopulateData actions;
   for (size_t i = 0; i < prepopulated_urls->size(); ++i) {
     // We take ownership of |prepopulated_urls[i]|.
-    scoped_ptr<TemplateURLData> prepopulated_url((*prepopulated_urls)[i]);
+    std::unique_ptr<TemplateURLData> prepopulated_url((*prepopulated_urls)[i]);
     const int prepopulated_id = prepopulated_url->prepopulate_id;
     DCHECK_NE(0, prepopulated_id);
 

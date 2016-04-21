@@ -108,7 +108,7 @@ void DefaultSearchManager::RegisterProfilePrefs(
 
 // static
 void DefaultSearchManager::AddPrefValueToMap(
-    scoped_ptr<base::DictionaryValue> value,
+    std::unique_ptr<base::DictionaryValue> value,
     PrefValueMap* pref_value_map) {
   pref_value_map->SetValue(kDefaultSearchProviderDataPrefName,
                            std::move(value));
@@ -189,7 +189,7 @@ void DefaultSearchManager::SetUserSelectedDefaultSearchEngine(
                      base::Int64ToString(data.last_modified.ToInternalValue()));
   url_dict.SetInteger(kUsageCount, data.usage_count);
 
-  scoped_ptr<base::ListValue> alternate_urls(new base::ListValue);
+  std::unique_ptr<base::ListValue> alternate_urls(new base::ListValue);
   for (std::vector<std::string>::const_iterator it =
            data.alternate_urls.begin();
        it != data.alternate_urls.end(); ++it) {
@@ -197,7 +197,7 @@ void DefaultSearchManager::SetUserSelectedDefaultSearchEngine(
   }
   url_dict.Set(kAlternateURLs, alternate_urls.release());
 
-  scoped_ptr<base::ListValue> encodings(new base::ListValue);
+  std::unique_ptr<base::ListValue> encodings(new base::ListValue);
   for (std::vector<std::string>::const_iterator it =
            data.input_encodings.begin();
        it != data.input_encodings.end(); ++it) {
@@ -405,7 +405,7 @@ void DefaultSearchManager::LoadDefaultSearchEngineFromPrefs() {
 }
 
 void DefaultSearchManager::LoadPrepopulatedDefaultSearch() {
-  scoped_ptr<TemplateURLData> data =
+  std::unique_ptr<TemplateURLData> data =
       TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(pref_service_);
   fallback_default_search_ = std::move(data);
   MergePrefsDataWithPrepopulated();

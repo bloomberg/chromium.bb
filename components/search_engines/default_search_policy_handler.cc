@@ -5,9 +5,11 @@
 #include "components/search_engines/default_search_policy_handler.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -232,7 +234,7 @@ bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
 void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                      PrefValueMap* prefs) {
   if (DefaultSearchProviderIsDisabled(policies)) {
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     dict->SetBoolean(DefaultSearchManager::kDisabledByPolicy, true);
     DefaultSearchManager::AddPrefValueToMap(std::move(dict), prefs);
     return;
@@ -246,7 +248,7 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   if (!DefaultSearchURLIsValid(policies, &dummy, &url))
     return;
 
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   for (size_t i = 0; i < arraysize(kDefaultSearchPolicyDataMap); ++i) {
     const char* policy_name = kDefaultSearchPolicyDataMap[i].policy_name;
     switch (kDefaultSearchPolicyDataMap[i].value_type) {
@@ -367,7 +369,7 @@ void DefaultSearchPolicyHandler::EnsureListPrefExists(
   base::Value* value;
   base::ListValue* list_value;
   if (!prefs->GetValue(path, &value) || !value->GetAsList(&list_value))
-    prefs->SetValue(path, make_scoped_ptr(new base::ListValue()));
+    prefs->SetValue(path, base::WrapUnique(new base::ListValue()));
 }
 
 }  // namespace policy

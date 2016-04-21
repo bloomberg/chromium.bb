@@ -4,9 +4,9 @@
 
 #include "components/search_engines/desktop_search_utils.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
@@ -43,7 +43,7 @@ bool DetectDesktopSearch(const GURL& url,
   DCHECK(search_terms);
   search_terms->clear();
 
-  scoped_ptr<TemplateURLData> template_url_data =
+  std::unique_ptr<TemplateURLData> template_url_data =
       TemplateURLPrepopulateData::MakeTemplateURLDataFromPrepopulatedEngine(
           TemplateURLPrepopulateData::bing);
   TemplateURL template_url(*template_url_data);

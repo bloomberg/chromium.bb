@@ -6,11 +6,11 @@
 #define COMPONENTS_SEARCH_ENGINES_UTIL_H_
 
 // This file contains utility functions for search engine functionality.
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/search_engines/template_url_service.h"
 

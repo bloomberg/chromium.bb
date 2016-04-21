@@ -104,8 +104,8 @@ class KeywordTableTest : public testing::Test {
  private:
   base::FilePath file_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<KeywordTable> table_;
-  scoped_ptr<WebDatabase> db_;
+  std::unique_ptr<KeywordTable> table_;
+  std::unique_ptr<WebDatabase> db_;
 
   DISALLOW_COPY_AND_ASSIGN(KeywordTableTest);
 };

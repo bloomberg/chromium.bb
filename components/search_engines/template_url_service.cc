@@ -217,9 +217,9 @@ class TemplateURLService::LessWithPrefix {
 
 TemplateURLService::TemplateURLService(
     PrefService* prefs,
-    scoped_ptr<SearchTermsData> search_terms_data,
+    std::unique_ptr<SearchTermsData> search_terms_data,
     const scoped_refptr<KeywordWebDataService>& web_data_service,
-    scoped_ptr<TemplateURLServiceClient> client,
+    std::unique_ptr<TemplateURLServiceClient> client,
     GoogleURLTracker* google_url_tracker,
     rappor::RapporService* rappor_service,
     const base::Closure& dsp_change_callback)
@@ -456,7 +456,7 @@ void TemplateURLService::AddWithOverrides(TemplateURL* template_url,
 
 void TemplateURLService::AddExtensionControlledTURL(
     TemplateURL* template_url,
-    scoped_ptr<TemplateURL::AssociatedExtensionInfo> info) {
+    std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info) {
   DCHECK(loaded_);
   DCHECK(template_url);
   DCHECK_EQ(kInvalidTemplateURLID, template_url->id());
@@ -547,7 +547,7 @@ void TemplateURLService::RegisterOmniboxKeyword(
   data.SetKeyword(base::UTF8ToUTF16(keyword));
   data.SetURL(template_url_string);
   TemplateURL* url = new TemplateURL(data);
-  scoped_ptr<TemplateURL::AssociatedExtensionInfo> info(
+  std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info(
       new TemplateURL::AssociatedExtensionInfo(
           TemplateURL::OMNIBOX_API_EXTENSION, extension_id));
   AddExtensionControlledTURL(url, std::move(info));
@@ -716,12 +716,10 @@ void TemplateURLService::Load() {
     ChangeToLoadedState();
 }
 
-scoped_ptr<TemplateURLService::Subscription>
-    TemplateURLService::RegisterOnLoadedCallback(
-        const base::Closure& callback) {
-  return loaded_ ?
-      scoped_ptr<TemplateURLService::Subscription>() :
-      on_loaded_callbacks_.Add(callback);
+std::unique_ptr<TemplateURLService::Subscription>
+TemplateURLService::RegisterOnLoadedCallback(const base::Closure& callback) {
+  return loaded_ ? std::unique_ptr<TemplateURLService::Subscription>()
+                 : on_loaded_callbacks_.Add(callback);
 }
 
 void TemplateURLService::OnWebDataServiceRequestDone(
@@ -930,9 +928,10 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
     std::string guid =
         iter->sync_data().GetSpecifics().search_engine().sync_guid();
     TemplateURL* existing_turl = GetTemplateURLForGUID(guid);
-    scoped_ptr<TemplateURL> turl(CreateTemplateURLFromTemplateURLAndSyncData(
-        client_.get(), prefs_, search_terms_data(), existing_turl,
-        iter->sync_data(), &new_changes));
+    std::unique_ptr<TemplateURL> turl(
+        CreateTemplateURLFromTemplateURLAndSyncData(
+            client_.get(), prefs_, search_terms_data(), existing_turl,
+            iter->sync_data(), &new_changes));
     if (!turl.get())
       continue;
 
@@ -1041,8 +1040,8 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
 syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-    scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+    std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK(loaded_);
   DCHECK_EQ(type, syncer::SEARCH_ENGINES);
   DCHECK(!sync_processor_.get());
@@ -1084,7 +1083,7 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
   for (SyncDataMap::const_iterator iter = sync_data_map.begin();
       iter != sync_data_map.end(); ++iter) {
     TemplateURL* local_turl = GetTemplateURLForGUID(iter->first);
-    scoped_ptr<TemplateURL> sync_turl(
+    std::unique_ptr<TemplateURL> sync_turl(
         CreateTemplateURLFromTemplateURLAndSyncData(
             client_.get(), prefs_, search_terms_data(), local_turl,
             iter->second, &new_changes));
@@ -1252,7 +1251,7 @@ syncer::SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
 }
 
 // static
-scoped_ptr<TemplateURL>
+std::unique_ptr<TemplateURL>
 TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
     TemplateURLServiceClient* client,
     PrefService* prefs,
@@ -1321,7 +1320,7 @@ TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
     data.alternate_urls.push_back(specifics.alternate_urls(i));
   data.search_terms_replacement_key = specifics.search_terms_replacement_key();
 
-  scoped_ptr<TemplateURL> turl(new TemplateURL(data));
+  std::unique_ptr<TemplateURL> turl(new TemplateURL(data));
   // If this TemplateURL matches a built-in prepopulated template URL, it's
   // possible that sync is trying to modify fields that should not be touched.
   // Revert these fields to the built-in values.

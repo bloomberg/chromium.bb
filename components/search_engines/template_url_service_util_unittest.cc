@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,11 +16,11 @@
 
 namespace {
 
-scoped_ptr<TemplateURLData> CreatePrepopulateTemplateURLData(
+std::unique_ptr<TemplateURLData> CreatePrepopulateTemplateURLData(
     int prepopulate_id,
     const std::string& keyword,
     TemplateURLID id) {
-  scoped_ptr<TemplateURLData> data(new TemplateURLData);
+  std::unique_ptr<TemplateURLData> data(new TemplateURLData);
   data->prepopulate_id = prepopulate_id;
   data->SetKeyword(base::ASCIIToUTF16(keyword));
   data->id = id;
@@ -29,10 +30,11 @@ scoped_ptr<TemplateURLData> CreatePrepopulateTemplateURLData(
 // Creates a TemplateURL with default values except for the prepopulate ID,
 // keyword and TemplateURLID. Only use this in tests if your tests do not
 // care about other fields.
-scoped_ptr<TemplateURL> CreatePrepopulateTemplateURL(int prepopulate_id,
-                                                     const std::string& keyword,
-                                                     TemplateURLID id) {
-  return make_scoped_ptr(new TemplateURL(
+std::unique_ptr<TemplateURL> CreatePrepopulateTemplateURL(
+    int prepopulate_id,
+    const std::string& keyword,
+    TemplateURLID id) {
+  return base::WrapUnique(new TemplateURL(
       *CreatePrepopulateTemplateURLData(prepopulate_id, keyword, id)));
 }
 

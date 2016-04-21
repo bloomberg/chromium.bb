@@ -4,10 +4,10 @@
 
 #include "components/search_engines/desktop_search_redirection_infobar_delegate.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "components/infobars/core/infobar.h"
@@ -45,8 +45,8 @@ void DesktopSearchRedirectionInfobarDelegate::Show(
     const base::Closure& manage_search_settings_callback,
     PrefService* pref_service) {
   DCHECK(infobar_manager);
-  infobar_manager->AddInfoBar(
-      infobar_manager->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+  infobar_manager->AddInfoBar(infobar_manager->CreateConfirmInfoBar(
+      std::unique_ptr<ConfirmInfoBarDelegate>(
           new DesktopSearchRedirectionInfobarDelegate(
               default_search_engine_name, manage_search_settings_callback))));
   pref_service->SetBoolean(prefs::kDesktopSearchRedirectionInfobarShownPref,

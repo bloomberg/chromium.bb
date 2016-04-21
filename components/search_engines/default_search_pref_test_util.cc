@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 // static
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 DefaultSearchPrefTestUtil::CreateDefaultSearchPreferenceValue(
     bool enabled,
     const std::string& name,
@@ -20,7 +20,7 @@ DefaultSearchPrefTestUtil::CreateDefaultSearchPreferenceValue(
     const std::string& encodings,
     const std::string& alternate_url,
     const std::string& search_terms_replacement_key) {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
   if (!enabled) {
     value->SetBoolean(DefaultSearchManager::kDisabledByPolicy, true);
     return value;
@@ -41,13 +41,13 @@ DefaultSearchPrefTestUtil::CreateDefaultSearchPreferenceValue(
   value->Set(DefaultSearchManager::kSearchTermsReplacementKey,
              new base::StringValue(search_terms_replacement_key));
 
-  scoped_ptr<base::ListValue> encodings_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> encodings_list(new base::ListValue);
   for (const std::string& term : base::SplitString(
            encodings, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
     encodings_list->AppendString(term);
   value->Set(DefaultSearchManager::kInputEncodings, encodings_list.release());
 
-  scoped_ptr<base::ListValue> alternate_url_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> alternate_url_list(new base::ListValue());
   if (!alternate_url.empty())
     alternate_url_list->Append(new base::StringValue(alternate_url));
   value->Set(DefaultSearchManager::kAlternateURLs,

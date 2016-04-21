@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
 #define COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -30,8 +31,8 @@ class TemplateURLFetcher : public KeyedService {
  public:
   typedef base::Callback<void(
       net::URLFetcher* url_fetcher)> URLFetcherCustomizeCallback;
-  typedef base::Callback<void(
-      scoped_ptr<TemplateURL> template_url)> ConfirmAddSearchProviderCallback;
+  typedef base::Callback<void(std::unique_ptr<TemplateURL> template_url)>
+      ConfirmAddSearchProviderCallback;
 
   enum ProviderType {
     AUTODETECTED_PROVIDER,

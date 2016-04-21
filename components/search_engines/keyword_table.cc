@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -327,7 +327,8 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
 
   data->alternate_urls.clear();
   base::JSONReader json_reader;
-  scoped_ptr<base::Value> value(json_reader.ReadToValue(s.ColumnString(17)));
+  std::unique_ptr<base::Value> value(
+      json_reader.ReadToValue(s.ColumnString(17)));
   base::ListValue* alternate_urls_value;
   if (value.get() && value->GetAsList(&alternate_urls_value)) {
     std::string alternate_url;

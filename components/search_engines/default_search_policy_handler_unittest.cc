@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include "components/search_engines/default_search_policy_handler.h"
+
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/search_engines/default_search_manager.h"
-#include "components/search_engines/default_search_policy_handler.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "policy/policy_constants.h"
 
@@ -31,7 +34,7 @@ class DefaultSearchPolicyHandlerTest
   }
 
   void SetUp() override {
-    handler_list_.AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+    handler_list_.AddHandler(base::WrapUnique<ConfigurationPolicyHandler>(
         new DefaultSearchPolicyHandler));
   }
 

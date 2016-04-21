@@ -4,11 +4,11 @@
 
 #include "components/search_engines/desktop_search_utils.h"
 
+#include <memory>
 #include <string>
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/prefs/pref_service.h"
@@ -50,7 +50,7 @@ class DesktopSearchUtilsTest : public testing::Test {
  protected:
   void SetFeatureEnabled(bool enabled) {
     base::FeatureList::ClearInstanceForTesting();
-    scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     if (enabled) {
       feature_list->InitializeFromCommandLine(
           kDesktopSearchRedirectionFeature.name, std::string());
@@ -61,7 +61,7 @@ class DesktopSearchUtilsTest : public testing::Test {
   void SetDefaultSearchEngine(
       const TemplateURLPrepopulateData::PrepopulatedEngine
           default_search_engine) {
-    scoped_ptr<TemplateURLData> template_url_data =
+    std::unique_ptr<TemplateURLData> template_url_data =
         TemplateURLPrepopulateData::MakeTemplateURLDataFromPrepopulatedEngine(
             default_search_engine);
     TemplateURL template_url(*template_url_data);

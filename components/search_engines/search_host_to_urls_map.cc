@@ -4,7 +4,8 @@
 
 #include "components/search_engines/search_host_to_urls_map.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/search_engines/template_url.h"
 
 SearchHostToURLsMap::SearchHostToURLsMap()

@@ -968,7 +968,7 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
   }
 }
 
-scoped_ptr<TemplateURLData> MakePrepopulatedTemplateURLData(
+std::unique_ptr<TemplateURLData> MakePrepopulatedTemplateURLData(
     const base::string16& name,
     const base::string16& keyword,
     const base::StringPiece& search_url,
@@ -986,7 +986,7 @@ scoped_ptr<TemplateURLData> MakePrepopulatedTemplateURLData(
     const base::ListValue& alternate_urls,
     const base::StringPiece& search_terms_replacement_key,
     int id) {
-  scoped_ptr<TemplateURLData> data(new TemplateURLData);
+  std::unique_ptr<TemplateURLData> data(new TemplateURLData);
 
   data->SetShortName(name);
   data->SetKeyword(keyword);
@@ -1125,7 +1125,7 @@ ScopedVector<TemplateURLData> GetPrepopulatedEngines(
   return t_urls;
 }
 
-scoped_ptr<TemplateURLData> MakeTemplateURLDataFromPrepopulatedEngine(
+std::unique_ptr<TemplateURLData> MakeTemplateURLDataFromPrepopulatedEngine(
     const PrepopulatedEngine& engine) {
   base::ListValue alternate_urls;
   if (engine.alternate_urls) {
@@ -1151,8 +1151,9 @@ void ClearPrepopulatedEnginesInPrefs(PrefService* prefs) {
   prefs->ClearPref(prefs::kSearchProviderOverridesVersion);
 }
 
-scoped_ptr<TemplateURLData> GetPrepopulatedDefaultSearch(PrefService* prefs) {
-  scoped_ptr<TemplateURLData> default_search_provider;
+std::unique_ptr<TemplateURLData> GetPrepopulatedDefaultSearch(
+    PrefService* prefs) {
+  std::unique_ptr<TemplateURLData> default_search_provider;
   size_t default_search_index;
   // This could be more efficient.  We are loading all the URLs to only keep
   // the first one.

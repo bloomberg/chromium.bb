@@ -7,10 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -25,26 +26,26 @@
 namespace {
 
 // Loads the user-selected DSE (if there is one) from legacy preferences.
-scoped_ptr<TemplateURLData> LoadDefaultSearchProviderFromLegacyPrefs(
+std::unique_ptr<TemplateURLData> LoadDefaultSearchProviderFromLegacyPrefs(
     PrefService* prefs) {
   if (!prefs->HasPrefPath(prefs::kDefaultSearchProviderSearchURL) ||
       !prefs->HasPrefPath(prefs::kDefaultSearchProviderKeyword))
-    return scoped_ptr<TemplateURLData>();
+    return std::unique_ptr<TemplateURLData>();
 
   const PrefService::Preference* pref =
       prefs->FindPreference(prefs::kDefaultSearchProviderSearchURL);
   DCHECK(pref);
   if (pref->IsManaged())
-    return scoped_ptr<TemplateURLData>();
+    return std::unique_ptr<TemplateURLData>();
 
   base::string16 keyword =
       base::UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderKeyword));
   std::string search_url =
       prefs->GetString(prefs::kDefaultSearchProviderSearchURL);
   if (keyword.empty() || search_url.empty())
-    return scoped_ptr<TemplateURLData>();
+    return std::unique_ptr<TemplateURLData>();
 
-  scoped_ptr<TemplateURLData> default_provider_data(new TemplateURLData);
+  std::unique_ptr<TemplateURLData> default_provider_data(new TemplateURLData);
   default_provider_data->SetShortName(
       base::UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderName)));
   default_provider_data->SetKeyword(keyword);
@@ -123,7 +124,7 @@ void ClearDefaultSearchProviderFromLegacyPrefs(PrefService* prefs) {
 void MigrateDefaultSearchPref(PrefService* pref_service) {
   DCHECK(pref_service);
 
-  scoped_ptr<TemplateURLData> legacy_dse_from_prefs =
+  std::unique_ptr<TemplateURLData> legacy_dse_from_prefs =
       LoadDefaultSearchProviderFromLegacyPrefs(pref_service);
   if (!legacy_dse_from_prefs)
     return;
