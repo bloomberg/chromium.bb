@@ -56,6 +56,7 @@ from pylib.device import intent
 from telemetry import android
 from telemetry import benchmark
 from telemetry import benchmark_runner
+from telemetry import project_config
 from telemetry import story
 from telemetry.internal import forwarders
 from telemetry.internal.forwarders import android_forwarder
@@ -324,10 +325,10 @@ def main():
       'binary_dependencies.json')
   with open(perf_config_file, "w") as config_file:
     config_file.write('{"config_type": "BaseConfig"}')
-  runner_config = benchmark_runner.ProjectConfig(
+  runner_config = project_config.ProjectConfig(
       top_level_dir=top_level_dir,
       benchmark_dirs=[top_level_dir],
-      client_config=perf_config_file,
+      client_configs=[perf_config_file],
       default_chrome_root=REPOSITORY_ROOT)
   sys.argv.insert(1, 'run')
   sys.argv.insert(2, 'run.CronetPerfTestBenchmark')
