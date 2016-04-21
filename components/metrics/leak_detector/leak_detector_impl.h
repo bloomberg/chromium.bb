@@ -172,6 +172,22 @@ class LeakDetectorImpl {
   void StoreHistoricalDataInReport(size_t size, const CallStack* call_site,
                                    LeakReport* report);
 
+  // Decrements the cooldown counter (value) for each entry in
+  // |cooldowns_per_leak_|. If the cooldown counter reaches 0, the entry is
+  // removed. Thus, all extantentries in |cooldowns_per_leak_| maintain a
+  // positive count.
+  void UpdateLeakCooldowns();
+
+  // Returns true if a particular leak signature (alloc size + call site) does
+  // not have an active cooldown counter (i.e. does not have an entry in
+  // |cooldowns_per_leak_|.
+  bool ReadyToGenerateReport(size_t size, const CallStack* call_stack) const;
+
+  // Resets the counter for a leak signature (alloc size + call site) in
+  // |cooldowns_per_leak_| to the max cooldown value. Creates a new entry in the
+  // container if none exists for this leak signature.
+  void ResetLeakCooldown(size_t size, const CallStack* call_stack);
+
   // Owns all unique call stack objects, which are allocated on the heap. Any
   // other class or function that references a call stack must get it from here,
   // but may not take ownership of the call stack object.
@@ -205,6 +221,11 @@ class LeakDetectorImpl {
   // breakdowns is at the head of the list, and new size breakdowns should be
   // added to the tail of the list.
   InternalList<InternalVector<uint32_t>> size_breakdown_history_;
+
+  // Key: leak signature (alloc size + call site)
+  // Value: number of leak analyses before another leak report can be generated
+  //        for that leak.
+  std::map<std::pair<size_t, const CallStack*>, size_t> cooldowns_per_leak_;
 
   // Address mapping info of the current binary.
   uintptr_t mapping_addr_;
