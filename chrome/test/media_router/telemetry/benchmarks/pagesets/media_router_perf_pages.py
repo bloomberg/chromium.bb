@@ -123,7 +123,7 @@ class MediaRouterDialogPageSet(story.StorySet):
   """Pageset for media router dialog latency tests."""
 
   def __init__(self):
-    super(MediaRouterDailogPageSet, self).__init__(
+    super(MediaRouterDialogPageSet, self).__init__(
         cloud_storage_bucket=story.PARTNER_BUCKET)
     self.AddStory(CastDialogPage(self))
 
