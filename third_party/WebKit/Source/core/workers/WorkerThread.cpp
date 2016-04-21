@@ -63,8 +63,7 @@ public:
     void willProcessTask() override
     {
         // No tasks should get executed after we have closed.
-        WorkerGlobalScope* globalScope = m_workerThread->workerGlobalScope();
-        ASSERT_UNUSED(globalScope, !globalScope || !globalScope->isClosing());
+        DCHECK(!m_workerThread->workerGlobalScope() || !m_workerThread->workerGlobalScope()->isClosing());
     }
 
     void didProcessTask() override
@@ -106,12 +105,12 @@ unsigned WorkerThread::workerThreadCount()
 
 void WorkerThread::performTask(PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
 {
-    ASSERT(isCurrentThread());
+    DCHECK(isCurrentThread());
     WorkerGlobalScope* globalScope = workerGlobalScope();
     // If the thread is terminated before it had a chance initialize (see
     // WorkerThread::Initialize()), we mustn't run any of the posted tasks.
     if (!globalScope) {
-        ASSERT(terminated());
+        DCHECK(terminated());
         return;
     }
 
@@ -124,7 +123,7 @@ PassOwnPtr<CrossThreadClosure> WorkerThread::createWorkerThreadTask(PassOwnPtr<E
     if (isInstrumented)
         isInstrumented = !task->taskNameForInstrumentation().isEmpty();
     if (isInstrumented) {
-        ASSERT(isCurrentThread());
+        DCHECK(isCurrentThread());
         InspectorInstrumentation::asyncTaskScheduled(workerGlobalScope(), "Worker task", task.get());
     }
     return threadSafeBind(&WorkerThread::performTask, AllowCrossThreadAccess(this), task, isInstrumented);
@@ -155,13 +154,13 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
 WorkerThread::~WorkerThread()
 {
     MutexLocker lock(threadSetMutex());
-    ASSERT(workerThreads().contains(this));
+    DCHECK(workerThreads().contains(this));
     workerThreads().remove(this);
 }
 
 void WorkerThread::start(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     if (m_started)
         return;
@@ -236,7 +235,7 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
 
 void WorkerThread::shutdown()
 {
-    ASSERT(isCurrentThread());
+    DCHECK(isCurrentThread());
     {
         MutexLocker lock(m_threadStateMutex);
         if (m_shutdown)
@@ -288,7 +287,7 @@ void WorkerThread::terminateAndWait()
 
 WorkerGlobalScope* WorkerThread::workerGlobalScope()
 {
-    ASSERT(isCurrentThread());
+    DCHECK(isCurrentThread());
     return m_workerGlobalScope.get();
 }
 
@@ -300,7 +299,7 @@ bool WorkerThread::terminated()
 
 void WorkerThread::terminateInternal()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     // Protect against this method, initialize() or termination via the global scope racing each other.
     MutexLocker lock(m_threadStateMutex);
@@ -404,7 +403,7 @@ void WorkerThread::appendDebuggerTask(PassOwnPtr<CrossThreadClosure> task)
 
 void WorkerThread::runDebuggerTask(PassOwnPtr<CrossThreadClosure> task)
 {
-    ASSERT(isCurrentThread());
+    DCHECK(isCurrentThread());
     InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
     {
         MutexLocker lock(m_threadStateMutex);

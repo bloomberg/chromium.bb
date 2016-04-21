@@ -76,7 +76,7 @@ void WorkerInspectorProxy::workerThreadCreated(Document* document, WorkerThread*
 void WorkerInspectorProxy::workerThreadTerminated()
 {
     if (m_workerThread) {
-        ASSERT(inspectorProxies().contains(this));
+        DCHECK(inspectorProxies().contains(this));
         inspectorProxies().remove(this);
         InspectorInstrumentation::workerTerminated(m_document, this);
     }
@@ -107,7 +107,7 @@ void WorkerInspectorProxy::connectToInspector(WorkerInspectorProxy::PageInspecto
 {
     if (!m_workerThread)
         return;
-    ASSERT(!m_pageInspector);
+    DCHECK(!m_pageInspector);
     m_pageInspector = pageInspector;
     m_workerThread->appendDebuggerTask(threadSafeBind(connectToWorkerGlobalScopeInspectorTask, AllowCrossThreadAccess(m_workerThread)));
 }
@@ -120,7 +120,7 @@ static void disconnectFromWorkerGlobalScopeInspectorTask(WorkerThread* workerThr
 
 void WorkerInspectorProxy::disconnectFromInspector(WorkerInspectorProxy::PageInspector* pageInspector)
 {
-    ASSERT(m_pageInspector == pageInspector);
+    DCHECK(m_pageInspector == pageInspector);
     m_pageInspector = nullptr;
     if (m_workerThread)
         m_workerThread->appendDebuggerTask(threadSafeBind(disconnectFromWorkerGlobalScopeInspectorTask, AllowCrossThreadAccess(m_workerThread)));

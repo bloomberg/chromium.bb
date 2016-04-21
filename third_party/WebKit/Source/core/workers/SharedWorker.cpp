@@ -56,8 +56,8 @@ inline SharedWorker::SharedWorker(ExecutionContext* context)
 
 SharedWorker* SharedWorker::create(ExecutionContext* context, const String& url, const String& name, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
+    DCHECK(isMainThread());
+    SECURITY_DCHECK(context->isDocument());
 
     UseCounter::count(context, UseCounter::SharedWorkerStart);
 
@@ -66,7 +66,7 @@ SharedWorker* SharedWorker::create(ExecutionContext* context, const String& url,
     MessageChannel* channel = MessageChannel::create(context);
     worker->m_port = channel->port1();
     OwnPtr<WebMessagePortChannel> remotePort = channel->port2()->disentangle();
-    ASSERT(remotePort);
+    DCHECK(remotePort);
 
     worker->suspendIfNeeded();
 

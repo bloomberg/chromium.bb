@@ -78,15 +78,15 @@ InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(InProcessWorkerBase
     , m_workerInspectorProxy(WorkerInspectorProxy::create())
     , m_workerClients(workerClients)
 {
-    ASSERT(m_workerObject);
-    ASSERT((m_executionContext->isDocument() && isMainThread())
+    DCHECK(m_workerObject);
+    DCHECK((m_executionContext->isDocument() && isMainThread())
         || (m_executionContext->isWorkerGlobalScope() && toWorkerGlobalScope(m_executionContext.get())->thread()->isCurrentThread()));
 }
 
 InProcessWorkerMessagingProxy::~InProcessWorkerMessagingProxy()
 {
-    ASSERT(!m_workerObject);
-    ASSERT((m_executionContext->isDocument() && isMainThread())
+    DCHECK(!m_workerObject);
+    DCHECK((m_executionContext->isDocument() && isMainThread())
         || (m_executionContext->isWorkerGlobalScope() && toWorkerGlobalScope(m_executionContext.get())->thread()->isCurrentThread()));
     if (m_loaderProxy)
         m_loaderProxy->detachProvider(this);
@@ -95,7 +95,7 @@ InProcessWorkerMessagingProxy::~InProcessWorkerMessagingProxy()
 void InProcessWorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode)
 {
     // FIXME: This need to be revisited when we support nested worker one day
-    ASSERT(m_executionContext->isDocument());
+    DCHECK(m_executionContext->isDocument());
     if (m_askedToTerminate) {
         // Worker.terminate() could be called from JS before the thread was created.
         return;
@@ -104,7 +104,7 @@ void InProcessWorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL
     SecurityOrigin* starterOrigin = document->getSecurityOrigin();
 
     ContentSecurityPolicy* csp = m_workerObject->contentSecurityPolicy() ? m_workerObject->contentSecurityPolicy() : document->contentSecurityPolicy();
-    ASSERT(csp);
+    DCHECK(csp);
 
     WorkerThreadStartMode startMode = m_workerInspectorProxy->workerStartMode(document);
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(scriptURL, userAgent, sourceCode, nullptr, startMode, csp->headers(), starterOrigin, m_workerClients.release(), document->addressSpace());
@@ -145,7 +145,7 @@ bool InProcessWorkerMessagingProxy::postTaskToWorkerGlobalScope(PassOwnPtr<Execu
     if (m_askedToTerminate)
         return false;
 
-    ASSERT(m_workerThread);
+    DCHECK(m_workerThread);
     m_workerThread->postTask(BLINK_FROM_HERE, task);
     return true;
 }
@@ -153,7 +153,7 @@ bool InProcessWorkerMessagingProxy::postTaskToWorkerGlobalScope(PassOwnPtr<Execu
 void InProcessWorkerMessagingProxy::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
 {
     // FIXME: In case of nested workers, this should go directly to the root Document context.
-    ASSERT(m_executionContext->isDocument());
+    DCHECK(m_executionContext->isDocument());
     m_executionContext->postTask(BLINK_FROM_HERE, task);
 }
 
@@ -175,7 +175,7 @@ void InProcessWorkerMessagingProxy::reportConsoleMessage(MessageSource source, M
     if (m_askedToTerminate)
         return;
     // FIXME: In case of nested workers, this should go directly to the root Document context.
-    ASSERT(m_executionContext->isDocument());
+    DCHECK(m_executionContext->isDocument());
     Document* document = toDocument(m_executionContext.get());
     LocalFrame* frame = document->frame();
     if (!frame)
@@ -188,10 +188,10 @@ void InProcessWorkerMessagingProxy::reportConsoleMessage(MessageSource source, M
 
 void InProcessWorkerMessagingProxy::workerThreadCreated()
 {
-    ASSERT(!m_askedToTerminate);
-    ASSERT(m_workerThread);
+    DCHECK(!m_askedToTerminate);
+    DCHECK(m_workerThread);
 
-    ASSERT(!m_unconfirmedMessageCount);
+    DCHECK(!m_unconfirmedMessageCount);
     m_unconfirmedMessageCount = m_queuedEarlyTasks.size();
     m_workerThreadHadPendingActivity = true; // Worker initialization means a pending activity.
 
@@ -205,7 +205,7 @@ void InProcessWorkerMessagingProxy::workerObjectDestroyed()
     // workerObjectDestroyed() is called in InProcessWorkerBase's destructor.
     // Thus it should be guaranteed that a weak pointer m_workerObject has been cleared
     // before this method gets called.
-    ASSERT(!m_workerObject);
+    DCHECK(!m_workerObject);
 
     m_executionContext->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::workerObjectDestroyedInternal, this));
 }
@@ -257,7 +257,7 @@ void InProcessWorkerMessagingProxy::postWorkerConsoleAgentEnabled()
 void InProcessWorkerMessagingProxy::confirmMessageFromWorkerObject(bool hasPendingActivity)
 {
     if (!m_askedToTerminate) {
-        ASSERT(m_unconfirmedMessageCount);
+        DCHECK(m_unconfirmedMessageCount);
         --m_unconfirmedMessageCount;
     }
     reportPendingActivity(hasPendingActivity);
@@ -278,7 +278,7 @@ void InProcessWorkerMessagingProxy::terminateInternally()
     m_workerInspectorProxy->workerThreadTerminated();
 
     // FIXME: This need to be revisited when we support nested worker one day
-    ASSERT(m_executionContext->isDocument());
+    DCHECK(m_executionContext->isDocument());
     Document* document = toDocument(m_executionContext.get());
     LocalFrame* frame = document->frame();
     if (frame)

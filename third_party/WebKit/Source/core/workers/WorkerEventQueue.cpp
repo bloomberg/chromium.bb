@@ -46,7 +46,7 @@ WorkerEventQueue::WorkerEventQueue(ExecutionContext* context)
 
 WorkerEventQueue::~WorkerEventQueue()
 {
-    ASSERT(m_eventTaskMap.isEmpty());
+    DCHECK(m_eventTaskMap.isEmpty());
 }
 
 DEFINE_TRACE(WorkerEventQueue)

@@ -46,7 +46,7 @@ public:
     KURL url() const override { return m_url; }
     String input() const override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return String();
     }
 

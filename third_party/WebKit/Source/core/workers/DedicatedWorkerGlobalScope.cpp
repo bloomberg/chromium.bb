@@ -83,13 +83,13 @@ DedicatedWorkerThread* DedicatedWorkerGlobalScope::thread() const
 
 static void countOnDocument(UseCounter::Feature feature, ExecutionContext* context)
 {
-    ASSERT(context->isDocument());
+    DCHECK(context->isDocument());
     UseCounter::count(context, feature);
 }
 
 static void countDeprecationOnDocument(UseCounter::Feature feature, ExecutionContext* context)
 {
-    ASSERT(context->isDocument());
+    DCHECK(context->isDocument());
     Deprecation::countDeprecation(context, feature);
 }
 

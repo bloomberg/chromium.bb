@@ -70,7 +70,7 @@ void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, c
     m_url = url;
 
     ResourceRequest request(createResourceRequest(creationAddressSpace));
-    ASSERT_WITH_SECURITY_IMPLICATION(executionContext.isWorkerGlobalScope());
+    SECURITY_DCHECK(executionContext.isWorkerGlobalScope());
 
     ThreadableLoaderOptions options;
     options.crossOriginRequestPolicy = crossOriginRequestPolicy;
@@ -85,7 +85,7 @@ void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, c
 
 void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, WebAddressSpace creationAddressSpace, PassOwnPtr<SameThreadClosure> responseCallback, PassOwnPtr<SameThreadClosure> finishedCallback)
 {
-    ASSERT(responseCallback || finishedCallback);
+    DCHECK(responseCallback || finishedCallback);
     m_responseCallback = responseCallback;
     m_finishedCallback = finishedCallback;
     m_url = url;
@@ -111,7 +111,7 @@ void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, 
 
 const KURL& WorkerScriptLoader::responseURL() const
 {
-    ASSERT(!failed());
+    DCHECK(!failed());
     return m_responseURL;
 }
 
@@ -126,7 +126,7 @@ ResourceRequest WorkerScriptLoader::createResourceRequest(WebAddressSpace creati
 
 void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
-    ASSERT_UNUSED(handle, !handle);
+    DCHECK(!handle);
     if (response.httpStatusCode() / 100 != 2 && response.httpStatusCode()) {
         notifyError();
         return;

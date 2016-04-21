@@ -20,7 +20,7 @@ Worker::Worker(ExecutionContext* context)
 
 Worker* Worker::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     Document* document = toDocument(context);
     UseCounter::count(context, UseCounter::WorkerStart);
     if (!document->page()) {
@@ -35,7 +35,7 @@ Worker* Worker::create(ExecutionContext* context, const String& url, ExceptionSt
 
 Worker::~Worker()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 }
 
 const AtomicString& Worker::interfaceName() const
@@ -47,7 +47,7 @@ InProcessWorkerGlobalScopeProxy* Worker::createInProcessWorkerGlobalScopeProxy(E
 {
     Document* document = toDocument(context);
     DedicatedWorkerGlobalScopeProxyProvider* proxyProvider = DedicatedWorkerGlobalScopeProxyProvider::from(*document->page());
-    ASSERT(proxyProvider);
+    DCHECK(proxyProvider);
     return proxyProvider->createWorkerGlobalScopeProxy(this);
 }
 

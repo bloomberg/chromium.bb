@@ -42,7 +42,7 @@ namespace blink {
 
 PassOwnPtr<InProcessWorkerObjectProxy> InProcessWorkerObjectProxy::create(InProcessWorkerMessagingProxy* messagingProxy)
 {
-    ASSERT(messagingProxy);
+    DCHECK(messagingProxy);
     return adoptPtr(new InProcessWorkerObjectProxy(messagingProxy));
 }
 
@@ -108,7 +108,7 @@ InProcessWorkerObjectProxy::InProcessWorkerObjectProxy(InProcessWorkerMessagingP
 
 ExecutionContext* InProcessWorkerObjectProxy::getExecutionContext()
 {
-    ASSERT(m_messagingProxy);
+    DCHECK(m_messagingProxy);
     return m_messagingProxy->getExecutionContext();
 }
 

@@ -55,7 +55,7 @@ public:
 
     WebThreadSupportingGC& backingThread()
     {
-        ASSERT(m_backingThread);
+        DCHECK(m_backingThread);
         return *m_backingThread;
     }
 

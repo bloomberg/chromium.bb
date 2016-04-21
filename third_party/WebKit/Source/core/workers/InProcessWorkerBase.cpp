@@ -26,7 +26,7 @@ InProcessWorkerBase::InProcessWorkerBase(ExecutionContext* context)
 
 InProcessWorkerBase::~InProcessWorkerBase()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (!m_contextProxy)
         return;
     m_contextProxy->workerObjectDestroyed();
@@ -34,7 +34,7 @@ InProcessWorkerBase::~InProcessWorkerBase()
 
 void InProcessWorkerBase::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray& ports, ExceptionState& exceptionState)
 {
-    ASSERT(m_contextProxy);
+    DCHECK(m_contextProxy);
     // Disentangle the port in preparation for sending it to the remote context.
     OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
     if (exceptionState.hadException())
@@ -98,7 +98,7 @@ void InProcessWorkerBase::onFinished()
     if (m_scriptLoader->failed()) {
         dispatchEvent(Event::createCancelable(EventTypeNames::error));
     } else {
-        ASSERT(m_contextProxy);
+        DCHECK(m_contextProxy);
         m_contextProxy->startWorkerGlobalScope(m_scriptLoader->url(), getExecutionContext()->userAgent(), m_scriptLoader->script());
         InspectorInstrumentation::scriptImported(getExecutionContext(), m_scriptLoader->identifier(), m_scriptLoader->script());
     }

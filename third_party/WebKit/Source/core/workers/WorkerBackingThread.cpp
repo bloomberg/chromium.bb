@@ -33,9 +33,9 @@ WorkerBackingThread::WorkerBackingThread(WebThread* thread, bool shouldCallGCOnS
 
 WorkerBackingThread::~WorkerBackingThread()
 {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     MutexLocker locker(m_mutex);
-    ASSERT(m_workerScriptCount == 0);
+    DCHECK_EQ(0u, m_workerScriptCount);
 #endif
 }
 
@@ -61,7 +61,7 @@ void WorkerBackingThread::detach()
 
 void WorkerBackingThread::initialize()
 {
-    ASSERT(!m_isolate);
+    DCHECK(!m_isolate);
     m_isolate = V8PerIsolateData::initialize();
     V8Initializer::initializeWorker(m_isolate);
     m_backingThread->initialize();
