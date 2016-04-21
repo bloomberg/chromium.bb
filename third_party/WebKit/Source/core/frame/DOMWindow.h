@@ -60,6 +60,7 @@ public:
 
     // EventTarget overrides:
     const AtomicString& interfaceName() const override;
+    const DOMWindow* toDOMWindow() const override;
 
     // DOM Level 0
     virtual Screen* screen() const = 0;

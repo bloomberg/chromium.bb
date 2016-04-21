@@ -29,9 +29,9 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% if interface_name == 'EventTarget' %}
     // Performance hack for EventTarget.  Checking whether it's a Window or not
     // prior to the call to BindingSecurity::shouldAllowAccessTo increases 30%
-    // of speed performance on Android Nexus 7 as of Dec 2016.  ALWAYS_INLINE
+    // of speed performance on Android Nexus 7 as of Dec 2015.  ALWAYS_INLINE
     // didn't work in this case.
-    if (LocalDOMWindow* window = impl->toLocalDOMWindow()) {
+    if (const DOMWindow* window = impl->toDOMWindow()) {
         if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), window, exceptionState)) {
             {% if not method.returns_promise %}
             exceptionState.throwIfNeeded();

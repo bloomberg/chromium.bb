@@ -60,6 +60,11 @@ const AtomicString& DOMWindow::interfaceName() const
     return EventTargetNames::DOMWindow;
 }
 
+const DOMWindow* DOMWindow::toDOMWindow() const
+{
+    return this;
+}
+
 Location* DOMWindow::location() const
 {
     if (!m_location)

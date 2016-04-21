@@ -26,10 +26,6 @@ http/tests/security/referrer-policy-origin-when-crossorigin-is-crossorigin.html 
 # https://crbug.com/582289 - dumpResourceLoadCallbacks test flag is not replicated into OOPIFs.
 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny.html [ Failure ]
 
-# https://crbug.com/582231 - expected an exception for cross-domain window access.
-http/tests/security/cross-frame-access-call.html [ Failure ]
-http/tests/security/cross-frame-access-dispatchEvent.html [ Failure ]
-
 # https://crbug.com/582201 - missing console message about blocked XSS.
 http/tests/security/javascriptURL/javascriptURL-execution-context-frame-src-getAttribute-value.html [ Failure ]
 http/tests/security/javascriptURL/javascriptURL-execution-context-frame-src-htmldom.html [ Failure ]

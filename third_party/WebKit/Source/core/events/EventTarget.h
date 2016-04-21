@@ -46,6 +46,7 @@
 
 namespace blink {
 
+class DOMWindow;
 class Event;
 class LocalDOMWindow;
 class ExceptionState;
@@ -107,6 +108,7 @@ public:
     virtual ExecutionContext* getExecutionContext() const = 0;
 
     virtual Node* toNode();
+    virtual const DOMWindow* toDOMWindow() const;
     virtual const LocalDOMWindow* toLocalDOMWindow() const;
     virtual LocalDOMWindow* toLocalDOMWindow();
     virtual MessagePort* toMessagePort();

@@ -100,7 +100,7 @@ bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWi
 bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWindow* accessingWindow, const EventTarget* target, ExceptionState& exceptionState)
 {
     ASSERT(target);
-    const DOMWindow* window = target->toLocalDOMWindow();
+    const DOMWindow* window = target->toDOMWindow();
     if (!window) {
         // We only need to check the access to Window objects which are
         // cross-origin accessible.  If it's not a Window, the object's
