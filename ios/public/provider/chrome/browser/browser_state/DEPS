@@ -1,9 +1,0 @@
-include_rules = [
-  "+ios/public/provider/web",
-]
-
-specific_include_rules = {
-  "chrome_browser_state.h": [
-    "+ios/chrome/browser/browser_state/chrome_browser_state.h",
-  ]
-}

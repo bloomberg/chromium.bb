@@ -9,9 +9,4 @@ specific_include_rules = {
   "^.*\.(cc|mm)$": [
     "+ios/web",
   ],
-  # Public headers are forbidden from using any content, even if it's currently
-  # allowed in the web implementation.
-  "^.*\.h$": [
-    "-content",
-  ],
 }

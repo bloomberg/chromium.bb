@@ -32,7 +32,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_formatter.h"
 #import "ios/net/http_response_headers_util.h"
 #import "ios/net/nsurlrequest_util.h"

@@ -1,12 +1,10 @@
 include_rules = [
-  "+components/prefs",
   "+components/url_formatter",
   "+crypto",
   "+ios/public/provider/web",
   "+ios/net",
   "+ios/web",
   "+net",
-  "+third_party/libwebp/webp",
   "+ui",
 
   # For tests.
