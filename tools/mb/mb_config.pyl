@@ -223,7 +223,6 @@
     'chromium.gpu': {
       'Android Debug (Nexus 5)': 'android_gn_debug_static_bot',
       'Android Debug (Nexus 6)': 'android_gn_debug_static_bot',
-      'Android Debug (Nexus 9)': 'android_gn_debug_static_bot_arm64',
       'GPU Mac Builder': 'swarming_gpu_tests_gyp_release_bot',
       'GPU Mac Builder (dbg)': 'swarming_gpu_tests_gyp_debug_bot',
       'GPU Linux Builder (dbg)': 'swarming_gpu_tests_gn_debug_bot',
@@ -246,6 +245,7 @@
     },
 
     'chromium.gpu.fyi': {
+      'Android Debug (Nexus 9)': 'android_gn_debug_static_bot_arm64',
       'GPU Linux Builder (dbg)': 'swarming_gpu_fyi_tests_gn_debug_bot',
       'GPU Linux Builder': 'swarming_gpu_fyi_tests_gn_release_bot',
       'GPU Mac Builder': 'swarming_gpu_fyi_tests_gyp_release_bot',
