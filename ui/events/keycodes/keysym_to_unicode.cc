@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/x/keysym_to_unicode.h"
+#include "ui/events/keycodes/keysym_to_unicode.h"
 
 #include <stddef.h>
 
@@ -868,8 +868,7 @@ class KeySymToUnicode {
     }
 
     // Other KeySyms which are not Unicode-style.
-    KeySymToUnicodeMap::const_iterator i =
-        keysym_to_unicode_map_.find(keysym);
+    KeySymToUnicodeMap::const_iterator i = keysym_to_unicode_map_.find(keysym);
     return i != keysym_to_unicode_map_.end() ? i->second : 0;
   }
 

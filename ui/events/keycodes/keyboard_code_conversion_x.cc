@@ -22,7 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion_xkb.h"
-#include "ui/events/x/keysym_to_unicode.h"
+#include "ui/events/keycodes/keysym_to_unicode.h"
 
 #define VKEY_UNSUPPORTED VKEY_UNKNOWN
 

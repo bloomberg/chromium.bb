@@ -85,8 +85,8 @@ component("events_base") {
     sources += [
       "keycodes/keyboard_code_conversion_x.cc",
       "keycodes/keyboard_code_conversion_x.h",
-      "x/keysym_to_unicode.cc",
-      "x/keysym_to_unicode.h",
+      "keycodes/keysym_to_unicode.cc",
+      "keycodes/keysym_to_unicode.h",
     ]
 
     deps += [ "//ui/gfx/x" ]

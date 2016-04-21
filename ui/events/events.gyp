@@ -68,8 +68,6 @@
         'keycodes/keyboard_codes.h',
         'latency_info.cc',
         'latency_info.h',
-        'x/keysym_to_unicode.cc',
-        'x/keysym_to_unicode.h',
       ],
       'export_dependent_settings': [
         '../../ui/gfx/gfx.gyp:gfx',
@@ -79,6 +77,10 @@
           'dependencies': [
             '../../build/linux/system.gyp:x11',
             '../gfx/x/gfx_x11.gyp:gfx_x11',
+          ],
+          'sources': [
+            'keycodes/keysym_to_unicode.cc',
+            'keycodes/keysym_to_unicode.h',
           ],
         }],
         ['use_x11==1 or use_xkbcommon==1', {
