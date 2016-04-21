@@ -305,7 +305,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -320,7 +319,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -335,7 +333,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is true
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -350,7 +347,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is true
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -365,7 +361,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is true
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -380,7 +375,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is true
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -395,7 +389,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is true
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -410,7 +403,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is true
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -425,7 +417,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is true
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -440,7 +431,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is true
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -455,37 +445,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is true
-PASS lastPointerEvents[0].getModifierState('Fn'); is false
-PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
-PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
-PASS lastPointerEvents[0].getModifierState('NumLock'); is false
-PASS lastPointerEvents[0].getModifierState('Symbol'); is false
-Received pointerup
-Received mouseup
-PASS lastPointerEvents.length is 1
-PASS lastPointerEvents[0].type is "pointerup"
-PASS lastPointerEvents[0].getModifierState('Control'); is false
-PASS lastPointerEvents[0].getModifierState('Shift'); is false
-PASS lastPointerEvents[0].getModifierState('Meta'); is false
-PASS lastPointerEvents[0].getModifierState('Alt'); is false
-PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is true
-PASS lastPointerEvents[0].getModifierState('Fn'); is false
-PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
-PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
-PASS lastPointerEvents[0].getModifierState('NumLock'); is false
-PASS lastPointerEvents[0].getModifierState('Symbol'); is false
-Received pointerdown
-Received mousedown
-PASS lastPointerEvents.length is 1
-PASS lastPointerEvents[0].type is "pointerdown"
-PASS lastPointerEvents[0].getModifierState('Control'); is false
-PASS lastPointerEvents[0].getModifierState('Shift'); is false
-PASS lastPointerEvents[0].getModifierState('Meta'); is false
-PASS lastPointerEvents[0].getModifierState('Alt'); is false
-PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is true
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -500,7 +459,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is true
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -515,7 +473,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is true
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -530,7 +487,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is true
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -545,7 +501,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is true
@@ -560,7 +515,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is true
@@ -575,7 +529,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -590,7 +543,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -605,7 +557,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false
@@ -620,7 +571,6 @@ PASS lastPointerEvents[0].getModifierState('Shift'); is false
 PASS lastPointerEvents[0].getModifierState('Meta'); is false
 PASS lastPointerEvents[0].getModifierState('Alt'); is false
 PASS lastPointerEvents[0].getModifierState('AltGraph'); is false
-PASS lastPointerEvents[0].getModifierState('OS'); is false
 PASS lastPointerEvents[0].getModifierState('Fn'); is false
 PASS lastPointerEvents[0].getModifierState('CapsLock'); is false
 PASS lastPointerEvents[0].getModifierState('ScrollLock'); is false

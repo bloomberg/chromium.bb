@@ -183,11 +183,10 @@ public:
         IsComposing      = 1 << 14,
 
         AltGrKey         = 1 << 15,
-        OSKey            = 1 << 16,
-        FnKey            = 1 << 17,
-        SymbolKey        = 1 << 18,
+        FnKey            = 1 << 16,
+        SymbolKey        = 1 << 17,
 
-        ScrollLockOn     = 1 << 19,
+        ScrollLockOn     = 1 << 18,
     };
 
     // Indicates whether the browser needs to block on the ACK result for

@@ -162,8 +162,6 @@ PASS new MouseEvent('eventType', { altKey: false }).getModifierState('Alt'); is 
 PASS new MouseEvent('eventType', { altKey: true }).getModifierState('Alt'); is true
 PASS new MouseEvent('eventType', { modifierAltGraph: false }).getModifierState('AltGraph'); is false
 PASS new MouseEvent('eventType', { modifierAltGraph: true }).getModifierState('AltGraph'); is true
-PASS new MouseEvent('eventType', { modifierOS: false }).getModifierState('OS'); is false
-PASS new MouseEvent('eventType', { modifierOS: true }).getModifierState('OS'); is true
 PASS new MouseEvent('eventType', { modifierFn: false }).getModifierState('Fn'); is false
 PASS new MouseEvent('eventType', { modifierFn: true }).getModifierState('Fn'); is true
 PASS new MouseEvent('eventType', { modifierCapsLock: false }).getModifierState('CapsLock'); is false

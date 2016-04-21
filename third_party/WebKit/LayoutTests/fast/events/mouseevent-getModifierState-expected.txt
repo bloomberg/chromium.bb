@@ -15,8 +15,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is false
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -47,8 +45,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is false
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -79,8 +75,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is true
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -111,8 +105,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is false
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -143,8 +135,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is false
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -175,8 +165,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is true
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -207,8 +195,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is true
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -239,8 +225,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is false
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -271,8 +255,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is false
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -303,8 +285,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is false
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -335,8 +315,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is true
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -367,8 +345,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is false
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is true
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -399,40 +375,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is false
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is true
-PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
-PASS lastMouseEvent.getModifierState('Fn') is false
-PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
-PASS lastMouseEvent.getModifierState('CapsLock') is false
-PASS typeof lastMouseEvent.getModifierState('ScrollLock') is 'boolean'
-PASS lastMouseEvent.getModifierState('ScrollLock') is false
-PASS typeof lastMouseEvent.getModifierState('NumLock') is 'boolean'
-PASS lastMouseEvent.getModifierState('NumLock') is false
-PASS typeof lastMouseEvent.getModifierState('Symbol') is 'boolean'
-PASS lastMouseEvent.getModifierState('Symbol') is false
-PASS typeof lastMouseEvent.ctrlKey is 'boolean'
-PASS lastMouseEvent.ctrlKey is false
-PASS typeof lastMouseEvent.shiftKey is 'boolean'
-PASS lastMouseEvent.shiftKey is false
-PASS typeof lastMouseEvent.metaKey is 'boolean'
-PASS lastMouseEvent.metaKey is false
-PASS typeof lastMouseEvent.altKey is 'boolean'
-PASS lastMouseEvent.altKey is false
-PASS lastMouseEvent.type is "mousedown"
-PASS lastMouseEvent.button is 1
-PASS typeof lastMouseEvent.getModifierState('Control') is 'boolean'
-PASS lastMouseEvent.getModifierState('Control') is false
-PASS typeof lastMouseEvent.getModifierState('Shift') is 'boolean'
-PASS lastMouseEvent.getModifierState('Shift') is false
-PASS typeof lastMouseEvent.getModifierState('Meta') is 'boolean'
-PASS lastMouseEvent.getModifierState('Meta') is false
-PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
-PASS lastMouseEvent.getModifierState('Alt') is false
-PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
-PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is true
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -463,8 +405,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is false
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -495,8 +435,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is false
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -527,8 +465,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is false
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'
@@ -559,8 +495,6 @@ PASS typeof lastMouseEvent.getModifierState('Alt') is 'boolean'
 PASS lastMouseEvent.getModifierState('Alt') is false
 PASS typeof lastMouseEvent.getModifierState('AltGraph') is 'boolean'
 PASS lastMouseEvent.getModifierState('AltGraph') is false
-PASS typeof lastMouseEvent.getModifierState('OS') is 'boolean'
-PASS lastMouseEvent.getModifierState('OS') is false
 PASS typeof lastMouseEvent.getModifierState('Fn') is 'boolean'
 PASS lastMouseEvent.getModifierState('Fn') is false
 PASS typeof lastMouseEvent.getModifierState('CapsLock') is 'boolean'

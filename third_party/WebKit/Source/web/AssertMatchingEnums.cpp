@@ -471,7 +471,6 @@ STATIC_ASSERT_ENUM(WebInputEvent::ControlKey, PlatformEvent::CtrlKey);
 STATIC_ASSERT_ENUM(WebInputEvent::AltKey, PlatformEvent::AltKey);
 STATIC_ASSERT_ENUM(WebInputEvent::MetaKey, PlatformEvent::MetaKey);
 STATIC_ASSERT_ENUM(WebInputEvent::AltGrKey, PlatformEvent::AltGrKey);
-STATIC_ASSERT_ENUM(WebInputEvent::OSKey, PlatformEvent::OSKey);
 STATIC_ASSERT_ENUM(WebInputEvent::FnKey, PlatformEvent::FnKey);
 STATIC_ASSERT_ENUM(WebInputEvent::SymbolKey, PlatformEvent::SymbolKey);
 STATIC_ASSERT_ENUM(WebInputEvent::IsKeyPad, PlatformEvent::IsKeyPad);

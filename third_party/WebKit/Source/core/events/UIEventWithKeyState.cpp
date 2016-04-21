@@ -50,8 +50,6 @@ UIEventWithKeyState::UIEventWithKeyState(const AtomicString& type, const EventMo
         m_modifiers |= PlatformEvent::MetaKey;
     if (initializer.modifierAltGraph())
         m_modifiers |= PlatformEvent::AltGrKey;
-    if (initializer.modifierOS())
-        m_modifiers |= PlatformEvent::OSKey;
     if (initializer.modifierFn())
         m_modifiers |= PlatformEvent::FnKey;
     if (initializer.modifierCapsLock())
@@ -88,8 +86,6 @@ void UIEventWithKeyState::setFromPlatformModifiers(EventModifierInit& initialize
         initializer.setMetaKey(true);
     if (modifiers & PlatformEvent::AltGrKey)
         initializer.setModifierAltGraph(true);
-    if (modifiers & PlatformEvent::OSKey)
-        initializer.setModifierOS(true);
     if (modifiers & PlatformEvent::FnKey)
         initializer.setModifierFn(true);
     if (modifiers & PlatformEvent::CapsLockOn)
@@ -121,7 +117,6 @@ bool UIEventWithKeyState::getModifierState(const String& keyIdentifier) const
             PlatformEvent::CtrlKey
 #endif
         },
-        { "OS", PlatformEvent::OSKey },
         { "Fn", PlatformEvent::FnKey },
         { "CapsLock", PlatformEvent::CapsLockOn },
         { "ScrollLock", PlatformEvent::ScrollLockOn },

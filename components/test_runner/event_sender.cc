@@ -256,8 +256,6 @@ int GetKeyModifier(const std::string& modifier_name) {
     return WebInputEvent::IsComposing;
   } else if (!strcmp(characters, "altGraphKey")) {
     return WebInputEvent::AltGrKey;
-  } else if (!strcmp(characters, "osKey")) {
-    return WebInputEvent::OSKey;
   } else if (!strcmp(characters, "fnKey")) {
     return WebInputEvent::FnKey;
   } else if (!strcmp(characters, "symbolKey")) {

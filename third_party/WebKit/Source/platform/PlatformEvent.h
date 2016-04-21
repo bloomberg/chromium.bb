@@ -102,18 +102,17 @@ public:
         IsComposing = 1 << 14,
 
         AltGrKey  = 1 << 15,
-        OSKey     = 1 << 16,
-        FnKey     = 1 << 17,
-        SymbolKey = 1 << 18,
+        FnKey     = 1 << 16,
+        SymbolKey = 1 << 17,
 
-        ScrollLockOn = 1 << 19,
+        ScrollLockOn = 1 << 18,
 
         // The set of non-stateful modifiers that specifically change the
         // interpretation of the key being pressed. For example; IsLeft,
         // IsRight, IsComposing don't change the meaning of the key
         // being pressed. NumLockOn, ScrollLockOn, CapsLockOn are stateful
         // and don't indicate explicit depressed state.
-        KeyModifiers = SymbolKey | FnKey | OSKey | AltGrKey | MetaKey | AltKey | CtrlKey | ShiftKey,
+        KeyModifiers = SymbolKey | FnKey | AltGrKey | MetaKey | AltKey | CtrlKey | ShiftKey,
     };
 
     enum RailsMode {

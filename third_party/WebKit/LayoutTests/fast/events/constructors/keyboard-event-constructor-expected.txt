@@ -116,8 +116,6 @@ PASS new KeyboardEvent('eventType', { altKey: false }).getModifierState('Alt'); 
 PASS new KeyboardEvent('eventType', { altKey: true }).getModifierState('Alt'); is true
 PASS new KeyboardEvent('eventType', { modifierAltGraph: false }).getModifierState('AltGraph'); is false
 PASS new KeyboardEvent('eventType', { modifierAltGraph: true }).getModifierState('AltGraph'); is true
-PASS new KeyboardEvent('eventType', { modifierOS: false }).getModifierState('OS'); is false
-PASS new KeyboardEvent('eventType', { modifierOS: true }).getModifierState('OS'); is true
 PASS new KeyboardEvent('eventType', { modifierFn: false }).getModifierState('Fn'); is false
 PASS new KeyboardEvent('eventType', { modifierFn: true }).getModifierState('Fn'); is true
 PASS new KeyboardEvent('eventType', { modifierCapsLock: false }).getModifierState('CapsLock'); is false
