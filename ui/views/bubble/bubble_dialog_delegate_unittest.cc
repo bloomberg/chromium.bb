@@ -48,12 +48,13 @@ class BubbleDialogDelegateTest : public ViewsTestBase {
   BubbleDialogDelegateTest() {}
   ~BubbleDialogDelegateTest() override {}
 
-  // Creates a test widget that owns its native widget.
+  // Creates and shows a test widget that owns its native widget.
   Widget* CreateTestWidget() {
     Widget* widget = new Widget();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget->Init(params);
+    widget->Show();
     return widget;
   }
 
@@ -248,7 +249,6 @@ TEST_F(BubbleDialogDelegateTest, VisibleWhenAnchorWidgetBoundsChanged) {
   test::TestWidgetObserver bubble_observer(bubble_widget);
   EXPECT_FALSE(bubble_observer.widget_closed());
 
-  anchor_widget->Show();
   bubble_widget->Show();
   EXPECT_TRUE(bubble_widget->IsVisible());
   anchor_widget->SetBounds(gfx::Rect(10, 10, 100, 100));
@@ -276,7 +276,6 @@ TEST_F(BubbleDialogDelegateTest, CloseMethods) {
     bubble_delegate->set_close_on_deactivate(true);
     Widget* bubble_widget =
         BubbleDialogDelegateView::CreateBubble(bubble_delegate);
-    anchor_widget->Show();
     bubble_widget->Show();
     anchor_widget->Activate();
     EXPECT_TRUE(bubble_widget->IsClosed());
