@@ -50,7 +50,6 @@ source_set("test_support") {
     "//cc:test_support",
     "//cc/blink",
     "//cc/surfaces",
-    "//components/display_compositor",
     "//components/scheduler:scheduler",
     "//components/scheduler:test_support",
     "//content/app:both_for_content_tests",
@@ -646,7 +645,6 @@ test("content_unittests") {
     "//cc",
     "//cc:test_support",
     "//cc/surfaces",
-    "//components/display_compositor",
     "//components/scheduler",
     "//content:resources",
     "//content/app:both_for_content_tests",
@@ -853,6 +851,7 @@ test("content_unittests") {
   }
   if (!use_aura && !is_mac) {
     sources -= [
+      "../browser/compositor/buffer_queue_unittest.cc",
       "../browser/compositor/reflector_impl_unittest.cc",
       "../browser/compositor/software_browser_compositor_output_surface_unittest.cc",
     ]
@@ -917,6 +916,8 @@ test("content_gl_tests") {
   }
 
   sources = [
+    "../browser/compositor/gl_helper_unittest.cc",
+    "../browser/compositor/yuv_readback_unittest.cc",
     "../common/gpu/client/gpu_context_tests.h",
     "../common/gpu/client/gpu_in_process_context_tests.cc",
     "run_all_gl_tests.cc",
@@ -954,6 +955,36 @@ test("content_gl_tests") {
       "//third_party/mesa:osmesa",
     ]
   }
+}
+
+test("content_gl_benchmark") {
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
+  sources = [
+    "../browser/compositor/gl_helper_benchmark.cc",
+    "run_gl_benchmark.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    "//base/test:test_support",
+    "//content/browser:for_content_tests",
+    "//content/public/common",
+    "//gpu/blink",
+    "//gpu/command_buffer/client:gl_in_process_context",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//testing/gtest",
+    "//third_party/WebKit/public:blink",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/gl:test_support",
+  ]
 }
 
 if (is_android) {

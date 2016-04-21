@@ -25,9 +25,9 @@
 #include "cc/surfaces/onscreen_display_client.h"
 #include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_manager.h"
-#include "components/display_compositor/gl_helper.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
+#include "content/browser/compositor/gl_helper.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
 #include "content/browser/compositor/offscreen_browser_compositor_output_surface.h"
@@ -520,8 +520,7 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
     // GLHelper created in this case would be lost/leaked if we just reset()
     // on the |gl_helper_| variable directly. So instead we call reset() on a
     // local std::unique_ptr.
-    std::unique_ptr<display_compositor::GLHelper> helper =
-        std::move(gl_helper_);
+    std::unique_ptr<GLHelper> helper = std::move(gl_helper_);
 
     // If there are any observer left at this point, make sure they clean up
     // before we destroy the GLHelper.
@@ -587,13 +586,13 @@ cc::SurfaceManager* GpuProcessTransportFactory::GetSurfaceManager() {
   return surface_manager_.get();
 }
 
-display_compositor::GLHelper* GpuProcessTransportFactory::GetGLHelper() {
+GLHelper* GpuProcessTransportFactory::GetGLHelper() {
   if (!gl_helper_ && !per_compositor_data_.empty()) {
     scoped_refptr<cc::ContextProvider> provider =
         SharedMainThreadContextProvider();
     if (provider.get())
-      gl_helper_.reset(new display_compositor::GLHelper(
-          provider->ContextGL(), provider->ContextSupport()));
+      gl_helper_.reset(new GLHelper(provider->ContextGL(),
+                                    provider->ContextSupport()));
   }
   return gl_helper_.get();
 }
@@ -710,8 +709,7 @@ void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
       shared_main_thread_contexts_;
   shared_main_thread_contexts_  = NULL;
 
-  std::unique_ptr<display_compositor::GLHelper> lost_gl_helper =
-      std::move(gl_helper_);
+  std::unique_ptr<GLHelper> lost_gl_helper = std::move(gl_helper_);
 
   FOR_EACH_OBSERVER(ImageTransportFactoryObserver,
                     observer_list_,

@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryTearDownBrowserTest,
   if (!GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
     return;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  display_compositor::GLHelper* helper = factory->GetGLHelper();
+  GLHelper* helper = factory->GetGLHelper();
   ASSERT_TRUE(helper);
   mailbox_ = new OwnedMailbox(helper);
   EXPECT_FALSE(mailbox_->mailbox().IsZero());

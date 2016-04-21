@@ -34,13 +34,13 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_host.h"
-#include "components/display_compositor/gl_helper.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/composited_touch_handle_drawable.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/overscroll_controller_android.h"
 #include "content/browser/android/popup_touch_handle_drawable.h"
 #include "content/browser/android/synchronous_compositor_base.h"
+#include "content/browser/compositor/gl_helper.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -122,7 +122,7 @@ class GLHelperHolder {
  public:
   static GLHelperHolder* Create();
 
-  display_compositor::GLHelper* gl_helper() { return gl_helper_.get(); }
+  GLHelper* gl_helper() { return gl_helper_.get(); }
   bool IsLost() {
     if (!gl_helper_)
       return true;
@@ -135,7 +135,7 @@ class GLHelperHolder {
   void OnContextLost();
 
   scoped_refptr<ContextProviderCommandBuffer> provider_;
-  std::unique_ptr<display_compositor::GLHelper> gl_helper_;
+  std::unique_ptr<GLHelper> gl_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(GLHelperHolder);
 };
@@ -196,8 +196,8 @@ void GLHelperHolder::Initialize() {
           .c_str());
   provider_->SetLostContextCallback(
       base::Bind(&GLHelperHolder::OnContextLost, base::Unretained(this)));
-  gl_helper_.reset(new display_compositor::GLHelper(
-      provider_->ContextGL(), provider_->ContextSupport()));
+  gl_helper_.reset(
+      new GLHelper(provider_->ContextGL(), provider_->ContextSupport()));
 }
 
 void GLHelperHolder::OnContextLost() {
@@ -209,7 +209,7 @@ void GLHelperHolder::OnContextLost() {
 
 // This can only be used for readback postprocessing. It may return null if the
 // channel was lost and not reestablished yet.
-display_compositor::GLHelper* GetPostReadbackGLHelper() {
+GLHelper* GetPostReadbackGLHelper() {
   static GLHelperHolder* g_readback_helper_holder = nullptr;
 
   if (g_readback_helper_holder && g_readback_helper_holder->IsLost()) {
@@ -235,7 +235,7 @@ void CopyFromCompositingSurfaceFinished(
   bitmap_pixels_lock.reset();
   gpu::SyncToken sync_token;
   if (result) {
-    display_compositor::GLHelper* gl_helper = GetPostReadbackGLHelper();
+    GLHelper* gl_helper = GetPostReadbackGLHelper();
     if (gl_helper)
       gl_helper->GenerateSyncToken(&sync_token);
   }
@@ -1939,7 +1939,7 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
   else
     output_size_in_pixel = dst_size_in_pixel;
 
-  display_compositor::GLHelper* gl_helper = GetPostReadbackGLHelper();
+  GLHelper* gl_helper = GetPostReadbackGLHelper();
   if (!gl_helper)
     return;
   if (!gl_helper->IsReadbackConfigSupported(color_type))
@@ -1973,7 +1973,7 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
       base::Bind(&CopyFromCompositingSurfaceFinished, callback,
                  base::Passed(&release_callback), base::Passed(&bitmap),
                  start_time, base::Passed(&bitmap_pixels_lock)),
-      display_compositor::GLHelper::SCALER_QUALITY_GOOD);
+      GLHelper::SCALER_QUALITY_GOOD);
 }
 
 void RenderWidgetHostViewAndroid::OnStylusSelectBegin(float x0,
