@@ -18,7 +18,7 @@ class RequestDependencyGraphTestCase(unittest.TestCase):
 
   def testUpdateRequestCost(self, serialize=False):
     requests = self.trace.request_track.GetEvents()
-    requests[0].timing = request_track.TimingFromDict(
+    requests[0].timing = request_track.Timing.FromDevToolsDict(
         {'requestTime': 12, 'loadingFinished': 10})
     dependencies_lens = request_dependencies_lens.RequestDependencyLens(
         self.trace)
@@ -35,7 +35,7 @@ class RequestDependencyGraphTestCase(unittest.TestCase):
   def testCost(self, serialize=False):
     requests = self.trace.request_track.GetEvents()
     for (index, request) in enumerate(requests):
-      request.timing = request_track.TimingFromDict(
+      request.timing = request_track.Timing.FromDevToolsDict(
           {'requestTime': index, 'receiveHeadersEnd': 10,
            'loadingFinished': 10})
     dependencies_lens = request_dependencies_lens.RequestDependencyLens(

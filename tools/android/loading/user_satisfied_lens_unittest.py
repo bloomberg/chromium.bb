@@ -25,9 +25,8 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
         'frame_id': '123.%s' % timestamp_msec,
         'initiator': {'type': 'other'},
         'timestamp': timestamp_sec,
-        'timing': request_track.TimingFromDict({
-            'requestTime': timestamp_sec,
-            'loadingFinished': duration})
+        'timing': {'request_time': timestamp_sec,
+                   'loading_finished': duration}
         })
     self._request_index += 1
     return rq

@@ -7,7 +7,7 @@ import unittest
 import devtools_monitor
 from loading_trace import LoadingTrace
 from request_dependencies_lens import RequestDependencyLens
-from request_track import (Request, TimingFromDict)
+from request_track import Request
 import test_utils
 
 
@@ -15,12 +15,12 @@ class TestRequests(object):
   FIRST_REDIRECT_REQUEST = Request.FromJsonDict(
       {'url': 'http://bla.com', 'request_id': '1234.redirect.1',
        'initiator': {'type': 'other'},
-       'timestamp': 0.5, 'timing': TimingFromDict({})})
+       'timestamp': 0.5, 'timing': {}})
   SECOND_REDIRECT_REQUEST = Request.FromJsonDict(
       {'url': 'http://bla.com/redirect1', 'request_id': '1234.redirect.2',
        'initiator': {'type': 'redirect',
                      'initiating_request': '1234.redirect.1'},
-       'timestamp': 1, 'timing': TimingFromDict({})})
+       'timestamp': 1, 'timing': {}})
   REDIRECTED_REQUEST = Request.FromJsonDict({
       'url': 'http://bla.com/index.html',
       'request_id': '1234.1',
@@ -28,13 +28,13 @@ class TestRequests(object):
       'initiator': {'type': 'redirect',
                     'initiating_request': '1234.redirect.2'},
       'timestamp': 2,
-      'timing': TimingFromDict({})})
+      'timing': {}})
   REQUEST = Request.FromJsonDict({'url': 'http://bla.com/index.html',
                                   'request_id': '1234.1',
                                   'frame_id': '123.1',
                                   'initiator': {'type': 'other'},
                                   'timestamp': 2,
-                                  'timing': TimingFromDict({})})
+                                  'timing': {}})
   JS_REQUEST = Request.FromJsonDict({'url': 'http://bla.com/nyancat.js',
                                      'request_id': '1234.12',
                                      'frame_id': '123.123',
@@ -42,21 +42,21 @@ class TestRequests(object):
                                          'type': 'parser',
                                          'url': 'http://bla.com/index.html'},
                                      'timestamp': 3,
-                                     'timing': TimingFromDict({})})
+                                     'timing': {}})
   JS_REQUEST_OTHER_FRAME = Request.FromJsonDict(
       {'url': 'http://bla.com/nyancat.js',
        'request_id': '1234.42',
        'frame_id': '123.13',
        'initiator': {'type': 'parser',
                      'url': 'http://bla.com/index.html'},
-       'timestamp': 4, 'timing': TimingFromDict({})})
+       'timestamp': 4, 'timing': {}})
   JS_REQUEST_UNRELATED_FRAME = Request.FromJsonDict(
       {'url': 'http://bla.com/nyancat.js',
        'request_id': '1234.56',
        'frame_id': '123.99',
        'initiator': {'type': 'parser',
                      'url': 'http://bla.com/index.html'},
-       'timestamp': 5, 'timing': TimingFromDict({})})
+       'timestamp': 5, 'timing': {}})
   JS_REQUEST_2 = Request.FromJsonDict(
       {'url': 'http://bla.com/cat.js', 'request_id': '1234.13',
        'frame_id': '123.123',
@@ -64,7 +64,7 @@ class TestRequests(object):
                      'stack': {'callFrames': [
                          {'url': 'unknown'},
                          {'url': 'http://bla.com/nyancat.js'}]}},
-       'timestamp': 10, 'timing': TimingFromDict({})})
+       'timestamp': 10, 'timing': {}})
   PAGE_EVENTS = [{'method': 'Page.frameAttached',
                    'frame_id': '123.13', 'parent_frame_id': '123.1'},
                  {'method': 'Page.frameAttached',
@@ -139,7 +139,7 @@ class RequestDependencyLensTestCase(unittest.TestCase):
              'stack': {'callFrames': [],
                        'parent': {'callFrames': [
                                       {'url': 'http://bla.com/nyancat.js'}]}}},
-         'timestamp': 10, 'timing': TimingFromDict({})})
+         'timestamp': 10, 'timing': {}})
     loading_trace = test_utils.LoadingTraceFromEvents(
         [TestRequests.JS_REQUEST, JS_REQUEST_WITH_ASYNC_STACK])
     request_dependencies_lens = RequestDependencyLens(loading_trace)

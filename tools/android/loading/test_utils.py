@@ -16,7 +16,9 @@ import user_satisfied_lens
 class FakeRequestTrack(devtools_monitor.Track):
   def __init__(self, events):
     super(FakeRequestTrack, self).__init__(None)
-    self._events = [self._RewriteEvent(e) for e in events]
+    self._events = events
+    for e in self._events:
+      e.timing.request_time = e.timestamp
 
   def Handle(self, _method, _msg):
     assert False  # Should never be called.
@@ -31,12 +33,6 @@ class FakeRequestTrack(devtools_monitor.Track):
             cls._METADATA_KEY: {
                 cls._DUPLICATES_KEY: 0,
                 cls._INCONSISTENT_INITIATORS_KEY: 0}}
-
-  def _RewriteEvent(self, event):
-    # This modifies the instance used across tests, so this method
-    # must be idempotent.
-    event.timing = event.timing._replace(request_time=event.timestamp)
-    return event
 
 
 class FakePageTrack(devtools_monitor.Track):
@@ -70,14 +66,14 @@ def MakeRequestWithTiming(
     source_url: a url or number which will be used as the source (initiating)
       url. If the source url is not present, then url will be a root. The
       convention in tests is to use a source_url of 'null' in this case.
-    timing_dict: (dict) Suitable to be passed to request_track.TimingFromDict().
+    timing_dict: (dict) Suitable to be passed to request_track.Timing().
     initiator_type: the initiator type to use.
 
   Returns:
     A request_track.Request.
   """
   assert initiator_type in ('other', 'parser')
-  timing = request_track.TimingFromDict(timing_dict)
+  timing = request_track.Timing.FromDevToolsDict(timing_dict)
   rq = request_track.Request.FromJsonDict({
       'timestamp': timing.request_time,
       'request_id': str(MakeRequestWithTiming._next_request_id),
@@ -86,7 +82,7 @@ def MakeRequestWithTiming(
       'response_headers': {'Content-Type':
                            'null' if not magic_content_type
                            else 'magic-debug-content' },
-      'timing': request_track.TimingAsList(timing)
+      'timing': timing.ToJsonDict()
   })
   MakeRequestWithTiming._next_request_id += 1
   return rq

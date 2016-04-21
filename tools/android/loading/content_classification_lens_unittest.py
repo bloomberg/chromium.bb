@@ -7,7 +7,7 @@ import unittest
 
 from content_classification_lens import (ContentClassificationLens,
                                          _RulesMatcher)
-from request_track import (Request, TimingFromDict)
+from request_track import Request
 import test_utils
 
 
@@ -21,7 +21,7 @@ class ContentClassificationLensTestCase(unittest.TestCase):
                                    'initiator': {'type': 'other'},
                                    'timestamp': 2,
                                    'status': 200,
-                                   'timing': TimingFromDict({})})
+                                   'timing': {}})
   _PAGE_EVENTS = [{'method': 'Page.frameStartedLoading',
                    'frame_id': _MAIN_FRAME_ID},
                   {'method': 'Page.frameAttached',
@@ -100,7 +100,7 @@ class _MatcherTestCase(unittest.TestCase):
        'frame_id': '123.1',
        'initiator': {'type': 'other'},
        'timestamp': 2,
-       'timing': TimingFromDict({})})
+       'timing': {}})
 
   def testRemovesWhitelistRules(self):
     matcher = _RulesMatcher(self._RULES_WITH_WHITELIST, False)

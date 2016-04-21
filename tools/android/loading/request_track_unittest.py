@@ -6,7 +6,7 @@ import copy
 import json
 import unittest
 
-from request_track import (TimeBetween, Request, RequestTrack, TimingFromDict)
+from request_track import (TimeBetween, Request, RequestTrack, Timing)
 
 
 class TimeBetweenTestCase(unittest.TestCase):
@@ -15,17 +15,17 @@ class TimeBetweenTestCase(unittest.TestCase):
                                    'frame_id': '123.1',
                                    'initiator': {'type': 'other'},
                                    'timestamp': 2,
-                                   'timing': TimingFromDict({})})
+                                   'timing': {}})
   def setUp(self):
     super(TimeBetweenTestCase, self).setUp()
     self.first = copy.deepcopy(self._REQUEST)
-    self.first.timing = TimingFromDict({'requestTime': 123456,
-                                        'receiveHeadersEnd': 100,
-                                        'loadingFinished': 500})
+    self.first.timing = Timing.FromDevToolsDict({'requestTime': 123456,
+                                                 'receiveHeadersEnd': 100,
+                                                 'loadingFinished': 500})
     self.second = copy.deepcopy(self._REQUEST)
-    self.second.timing = TimingFromDict({'requestTime': 123456 + 1,
-                                        'receiveHeadersEnd': 200,
-                                        'loadingFinished': 600})
+    self.second.timing = Timing.FromDevToolsDict({'requestTime': 123456 + 1,
+                                                  'receiveHeadersEnd': 200,
+                                                  'loadingFinished': 600})
 
   def testTimeBetweenParser(self):
     self.assertEquals(900, TimeBetween(self.first, self.second, 'parser'))
@@ -329,11 +329,11 @@ class RequestTrackTestCase(unittest.TestCase):
     self.assertEquals(False, r.served_from_cache)
     self.assertEquals(False, r.from_disk_cache)
     self.assertEquals(False, r.from_service_worker)
-    timing = TimingFromDict(response['timing'])
+    timing = Timing.FromDevToolsDict(response['timing'])
     loading_finished = RequestTrackTestCase._LOADING_FINISHED['params']
     loading_finished_offset = r._TimestampOffsetFromStartMs(
         loading_finished['timestamp'])
-    timing = timing._replace(loading_finished=loading_finished_offset)
+    timing.loading_finished = loading_finished_offset
     self.assertEquals(timing, r.timing)
     self.assertEquals(200, r.status)
     self.assertEquals(

@@ -18,17 +18,55 @@ import urlparse
 import devtools_monitor
 
 
-_TIMING_NAMES_MAPPING = {
-    'connectEnd': 'connect_end', 'connectStart': 'connect_start',
-    'dnsEnd': 'dns_end', 'dnsStart': 'dns_start', 'proxyEnd': 'proxy_end',
-    'proxyStart': 'proxy_start', 'receiveHeadersEnd': 'receive_headers_end',
-    'requestTime': 'request_time', 'sendEnd': 'send_end',
-    'sendStart': 'send_start', 'sslEnd': 'ssl_end', 'sslStart': 'ssl_start',
-    'workerReady': 'worker_ready', 'workerStart': 'worker_start',
-    'loadingFinished': 'loading_finished', 'pushStart' : 'push_start',
-    'pushEnd' : 'push_end'}
+class Timing(object):
+  """Collects the timing data for a request."""
+  _TIMING_NAMES = (
+      ('connectEnd', 'connect_end'), ('connectStart', 'connect_start'),
+      ('dnsEnd', 'dns_end'), ('dnsStart', 'dns_start'),
+      ('proxyEnd', 'proxy_end'), ('proxyStart', 'proxy_start'),
+      ('receiveHeadersEnd', 'receive_headers_end'),
+      ('requestTime', 'request_time'), ('sendEnd', 'send_end'),
+      ('sendStart', 'send_start'), ('sslEnd', 'ssl_end'),
+      ('sslStart', 'ssl_start'), ('workerReady', 'worker_ready'),
+      ('workerStart', 'worker_start'),
+      ('loadingFinished', 'loading_finished'), ('pushStart', 'push_start'),
+      ('pushEnd', 'push_end'))
+  _TIMING_NAMES_MAPPING = dict(_TIMING_NAMES)
+  __slots__ = tuple(x[1] for x in _TIMING_NAMES)
 
-Timing = collections.namedtuple('Timing', _TIMING_NAMES_MAPPING.values())
+  def __init__(self, **kwargs):
+    """Constructor.
+
+    Initialize with keywords arguments from __slots__.
+    """
+    for slot in self.__slots__:
+      setattr(self, slot, -1)
+    for (attr, value) in kwargs.items():
+      setattr(self, attr, value)
+
+  def __eq__(self, o):
+    return all(getattr(self, attr) == getattr(o, attr)
+               for attr in self.__slots__)
+
+  def LargestOffset(self):
+    """Returns the largest offset in the available timings."""
+    return max(0, max(
+        getattr(self, attr) for attr in self.__slots__
+        if attr != 'request_time'))
+
+  def ToJsonDict(self):
+    return {attr: getattr(self, attr)
+            for attr in self.__slots__ if getattr(self, attr) != -1}
+  @classmethod
+  def FromJsonDict(cls, json_dict):
+    return cls(**json_dict)
+
+  @classmethod
+  def FromDevToolsDict(cls, json_dict):
+    """Returns an instance of Timing from a dict, as passed by DevTools."""
+    timing_dict = {
+        cls._TIMING_NAMES_MAPPING[k]: v for (k, v) in json_dict.items()}
+    return cls(**timing_dict)
 
 
 def ShortName(url):
@@ -70,9 +108,7 @@ def IntervalBetween(first, second, reason):
   if reason == 'parser':
     first_offset_ms = first.timing.receive_headers_end
   else:
-    first_offset_ms = max(
-        [0] + [t for f, t in first.timing._asdict().iteritems()
-               if f != 'request_time'])
+    first_offset_ms = first.timing.LargestOffset()
   return (first.timing.request_time * 1000 + first_offset_ms, second_ms)
 
 
@@ -173,10 +209,7 @@ class Request(object):
   def end_msec(self):
     if self.start_msec is None:
       return None
-    return self.start_msec + max(
-        [0] + [t for f, t in self.timing._asdict().iteritems()
-               if f != 'request_time'])
-
+    return self.start_msec + self.timing.LargestOffset()
 
   def _TimestampOffsetFromStartMs(self, timestamp):
     assert self.timing.request_time != -1
@@ -184,7 +217,9 @@ class Request(object):
     return (timestamp - request_time) * 1000
 
   def ToJsonDict(self):
-    return copy.deepcopy(self.__dict__)
+    result = copy.deepcopy(self.__dict__)
+    result['timing'] = self.timing.ToJsonDict()
+    return result
 
   @classmethod
   def FromJsonDict(cls, data_dict):
@@ -194,9 +229,9 @@ class Request(object):
     if not result.response_headers:
       result.response_headers = {}
     if result.timing:
-      result.timing = Timing(*result.timing)
+      result.timing = Timing.FromJsonDict(result.timing)
     else:
-      result.timing = TimingFromDict({'requestTime': result.timestamp})
+      result.timing = Timing(request_time=result.timestamp)
     return result
 
   def GetHTTPResponseHeader(self, header_name):
@@ -269,8 +304,7 @@ class Request(object):
     request_time and the latest timing event.
     """
     # All fields in timing are millis relative to request_time.
-    return max([0] + [t for f, t in self.timing._asdict().iteritems()
-                      if f != 'request_time'])
+    return self.timing.LargestOffset()
 
   def __eq__(self, o):
     return self.__dict__ == o.__dict__
@@ -474,7 +508,7 @@ class RequestTrack(devtools_monitor.Track):
                           (('headers', 'response_headers'),
                            ('encodedDataLength', 'encoded_data_length'),
                            ('fromDiskCache', 'from_disk_cache')))
-    r.timing = TimingFromDict(redirect_response['timing'])
+    r.timing = Timing.FromDevToolsDict(redirect_response['timing'])
 
     redirect_index = self._redirects_count_by_id[request_id]
     self._redirects_count_by_id[request_id] += 1
@@ -530,7 +564,7 @@ class RequestTrack(devtools_monitor.Track):
       timing_dict = {'requestTime': r.timestamp}
     else:
       timing_dict = response['timing']
-    r.timing = TimingFromDict(timing_dict)
+    r.timing = Timing.FromDevToolsDict(timing_dict)
     self._requests_in_flight[request_id] = (r, RequestTrack._STATUS_RESPONSE)
     self._request_id_to_response_received[request_id] = params
 
@@ -548,8 +582,8 @@ class RequestTrack(devtools_monitor.Track):
     assert (status == RequestTrack._STATUS_RESPONSE
             or status == RequestTrack._STATUS_DATA)
     r.encoded_data_length = params['encodedDataLength']
-    r.timing = r.timing._replace(
-        loading_finished=r._TimestampOffsetFromStartMs(params['timestamp']))
+    r.timing.loading_finished = r._TimestampOffsetFromStartMs(
+        params['timestamp'])
     self._requests_in_flight[request_id] = (r, RequestTrack._STATUS_FINISHED)
     self._FinalizeRequest(request_id)
 
@@ -579,15 +613,6 @@ RequestTrack._METHOD_TO_HANDLER = {
     'Network.dataReceived': RequestTrack._DataReceived,
     'Network.loadingFinished': RequestTrack._LoadingFinished,
     'Network.loadingFailed': RequestTrack._LoadingFailed}
-
-
-def TimingFromDict(timing_dict):
-  """Returns an instance of Timing from an () dict."""
-  complete_timing_dict = {field: -1 for field in Timing._fields}
-  timing_dict_mapped = {
-      _TIMING_NAMES_MAPPING[k]: v for (k, v) in timing_dict.items()}
-  complete_timing_dict.update(timing_dict_mapped)
-  return Timing(**complete_timing_dict)
 
 
 def _CopyFromDictToObject(d, o, key_attrs):
