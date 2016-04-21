@@ -42,12 +42,10 @@ typedef (HTMLImageElement or
     NoInterfaceObject, // Always used on target of 'implements'
     Exposed=(Window,Worker),
 ] interface ImageBitmapFactories {
-    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageBitmapSource imageBitmap);
-    [CallWith=ScriptState, RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] Promise createImageBitmap(
-        ImageBitmapSource imageBitmap, ImageBitmapOptions options);
-    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageBitmapSource imageBitmap, long sx, long sy, long sw, long sh);
-    [CallWith=ScriptState, RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] Promise createImageBitmap(
-        ImageBitmapSource imageBitmap, long sx, long sy, long sw, long sh, ImageBitmapOptions options);
+    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(
+        ImageBitmapSource imageBitmap, optional ImageBitmapOptions options);
+    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(
+        ImageBitmapSource imageBitmap, long sx, long sy, long sw, long sh, optional ImageBitmapOptions options);
 };
 
 Window implements ImageBitmapFactories;

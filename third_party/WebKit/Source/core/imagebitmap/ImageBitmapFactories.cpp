@@ -71,16 +71,10 @@ static inline ImageBitmapSource* toImageBitmapSourceInternal(const ImageBitmapSo
     return nullptr;
 }
 
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, const ImageBitmapSourceUnion& bitmapSource, ExceptionState& exceptionState)
+ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, const ImageBitmapSourceUnion& bitmapSource, const ImageBitmapOptions& options, ExceptionState& exceptionState)
 {
     UseCounter::Feature feature = UseCounter::CreateImageBitmap;
     UseCounter::count(scriptState->getExecutionContext(), feature);
-    ImageBitmapOptions options;
-    return createImageBitmap(scriptState, eventTarget, bitmapSource, options, exceptionState);
-}
-
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, const ImageBitmapSourceUnion& bitmapSource, const ImageBitmapOptions& options, ExceptionState& exceptionState)
-{
     ImageBitmapSource* bitmapSourceInternal = toImageBitmapSourceInternal(bitmapSource);
     if (bitmapSourceInternal->isBlob()) {
         Blob* blob = static_cast<Blob*>(bitmapSourceInternal);
@@ -94,16 +88,10 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
     return createImageBitmap(scriptState, eventTarget, bitmapSourceInternal, 0, 0, srcSize.width(), srcSize.height(), options, exceptionState);
 }
 
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, const ImageBitmapSourceUnion& bitmapSource, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
+ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, const ImageBitmapSourceUnion& bitmapSource, int sx, int sy, int sw, int sh, const ImageBitmapOptions& options, ExceptionState& exceptionState)
 {
     UseCounter::Feature feature = UseCounter::CreateImageBitmap;
     UseCounter::count(scriptState->getExecutionContext(), feature);
-    ImageBitmapOptions options;
-    return createImageBitmap(scriptState, eventTarget, bitmapSource, sx, sy, sw, sh, options, exceptionState);
-}
-
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, const ImageBitmapSourceUnion& bitmapSource, int sx, int sy, int sw, int sh, const ImageBitmapOptions& options, ExceptionState& exceptionState)
-{
     ImageBitmapSource* bitmapSourceInternal = toImageBitmapSourceInternal(bitmapSource);
     return createImageBitmap(scriptState, eventTarget, bitmapSourceInternal, sx, sy, sw, sh, options, exceptionState);
 }

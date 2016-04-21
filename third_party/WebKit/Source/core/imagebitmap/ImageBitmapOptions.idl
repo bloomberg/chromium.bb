@@ -4,11 +4,11 @@
 
 // https://html.spec.whatwg.org/#imagebitmapoptions
 
-[RuntimeEnabled=ExperimentalCanvasFeatures] enum ImageOrientation { "none", "flipY" };
-[RuntimeEnabled=ExperimentalCanvasFeatures] enum PremultiplyAlpha { "none", "premultiply", "default" };
-[RuntimeEnabled=ExperimentalCanvasFeatures] enum ColorspaceConversion { "none", "default" };
+enum ImageOrientation { "none", "flipY" };
+enum PremultiplyAlpha { "none", "premultiply", "default" };
+enum ColorspaceConversion { "none", "default" };
 dictionary ImageBitmapOptions {
-    [RuntimeEnabled=ExperimentalCanvasFeatures] ImageOrientation imageOrientation = "none";
-    [RuntimeEnabled=ExperimentalCanvasFeatures] PremultiplyAlpha premultiplyAlpha = "default";
-    [RuntimeEnabled=ExperimentalCanvasFeatures] ColorspaceConversion colorspaceConversion = "default";
+    ImageOrientation imageOrientation = "none";
+    PremultiplyAlpha premultiplyAlpha = "default";
+    ColorspaceConversion colorspaceConversion = "default";
 };

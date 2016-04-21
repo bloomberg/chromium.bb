@@ -58,9 +58,7 @@ typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOr
 class ImageBitmapFactories final : public GarbageCollectedFinalized<ImageBitmapFactories>, public Supplement<LocalDOMWindow>, public Supplement<WorkerGlobalScope> {
     USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
 public:
-    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, const ImageBitmapSourceUnion&, ExceptionState&);
     static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, const ImageBitmapSourceUnion&, const ImageBitmapOptions&, ExceptionState&);
-    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, const ImageBitmapSourceUnion&, int sx, int sy, int sw, int sh, ExceptionState&);
     static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, const ImageBitmapSourceUnion&, int sx, int sy, int sw, int sh, const ImageBitmapOptions&, ExceptionState&);
     static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, ImageBitmapSource*, int sx, int sy, int sw, int sh, const ImageBitmapOptions&, ExceptionState&);
 
