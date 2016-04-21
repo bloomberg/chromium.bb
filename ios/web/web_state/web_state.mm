@@ -6,6 +6,11 @@
 
 namespace web {
 
+WebState::CreateParams::CreateParams(web::BrowserState* browser_state)
+    : browser_state(browser_state) {}
+
+WebState::CreateParams::~CreateParams() {}
+
 WebState::OpenURLParams::OpenURLParams(const GURL& url,
                                        const Referrer& referrer,
                                        WindowOpenDisposition disposition,

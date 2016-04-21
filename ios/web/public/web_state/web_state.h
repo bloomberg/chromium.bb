@@ -48,6 +48,14 @@ class WebStateWeakPtrFactory;
 // Core interface for interaction with the web.
 class WebState : public base::SupportsUserData {
  public:
+  // Parameters for the Create() method.
+  struct CreateParams {
+    explicit CreateParams(web::BrowserState* browser_state);
+    ~CreateParams();
+
+    web::BrowserState* browser_state;
+  };
+
   // Parameters for the OpenURL() method.
   struct OpenURLParams {
     OpenURLParams(const GURL& url,
@@ -83,6 +91,9 @@ class WebState : public base::SupportsUserData {
          resized, there should be a single returned bitmap. */
       const std::vector<gfx::Size>&)>
           ImageDownloadCallback;
+
+  // Creates a new WebState.
+  static std::unique_ptr<WebState> Create(const CreateParams& params);
 
   ~WebState() override {}
 

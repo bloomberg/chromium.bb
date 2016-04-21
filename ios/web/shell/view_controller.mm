@@ -15,12 +15,12 @@
 #include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/crn_http_protocol_handler.h"
 #import "ios/net/empty_nsurlcache.h"
+#import "ios/net/request_tracker.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
-#include "ios/web/shell/shell_browser_state.h"
-#include "ios/web/web_state/web_state_impl.h"
 #include "ui/base/page_transition_types.h"
 
 NSString* const kWebShellBackButtonAccessibilityLabel = @"Back";
@@ -33,7 +33,7 @@ using web::NavigationManager;
                              CRWWebStateObserver,
                              UITextFieldDelegate> {
   web::BrowserState* _browserState;
-  std::unique_ptr<web::WebStateImpl> _webState;
+  std::unique_ptr<web::WebState> _webState;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
 
@@ -111,8 +111,8 @@ using web::NavigationManager;
   // Set up the network stack before creating the WebState.
   [self setUpNetworkStack];
 
-  _webState.reset(new web::WebStateImpl(_browserState));
-  _webState->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, 0);
+  web::WebState::CreateParams webStateCreateParams(_browserState);
+  _webState = web::WebState::Create(webStateCreateParams);
   _webState->SetWebUsageEnabled(true);
 
   _webStateObserver.reset(

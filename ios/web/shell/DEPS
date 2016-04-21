@@ -3,9 +3,5 @@ include_rules = [
   "-ios/web",
   "+ios/web/public",
   "+ios/web/shell",
-
-  # TODO(crbug.com/597997): Remove these exceptions. Web shell must not use
-  # any private APIs from web.
-  "+ios/web/web_state/web_state_impl.h",
 ]
 

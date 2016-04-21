@@ -33,6 +33,21 @@
 
 namespace web {
 
+/* static */
+std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
+  std::unique_ptr<WebStateImpl> web_state(
+      new WebStateImpl(params.browser_state));
+
+  NSString* window_name = nil;
+  NSString* opener_id = nil;
+  BOOL opened_by_dom = NO;
+  int opener_navigation_index = 0;
+  web_state->GetNavigationManagerImpl().InitializeSession(
+      window_name, opener_id, opened_by_dom, opener_navigation_index);
+
+  return std::unique_ptr<WebState>(web_state.release());
+}
+
 WebStateImpl::WebStateImpl(BrowserState* browser_state)
     : delegate_(nullptr),
       is_loading_(false),
