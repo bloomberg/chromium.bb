@@ -142,7 +142,7 @@ bool BluetoothGetDeviceFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  scoped_ptr<GetDevice::Params> params(GetDevice::Params::Create(*args_));
+  std::unique_ptr<GetDevice::Params> params(GetDevice::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
   BluetoothDevice* device = adapter->GetDevice(params->device_address);

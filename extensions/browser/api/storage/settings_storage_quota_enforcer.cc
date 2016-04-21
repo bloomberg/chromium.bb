@@ -4,9 +4,10 @@
 
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -72,7 +73,7 @@ ValueStore::Status QuotaExceededError(Resource resource) {
 
 SettingsStorageQuotaEnforcer::SettingsStorageQuotaEnforcer(
     const Limits& limits,
-    scoped_ptr<ValueStore> delegate)
+    std::unique_ptr<ValueStore> delegate)
     : limits_(limits),
       delegate_(std::move(delegate)),
       used_total_(0),

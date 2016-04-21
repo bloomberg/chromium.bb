@@ -6,11 +6,11 @@
 #define EXTENSIONS_BROWSER_API_POWER_POWER_API_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
@@ -53,10 +53,11 @@ class PowerReleaseKeepAwakeFunction : public SyncExtensionFunction {
 class PowerAPI : public BrowserContextKeyedAPI,
                  public extensions::ExtensionRegistryObserver {
  public:
-  typedef base::Callback<scoped_ptr<content::PowerSaveBlocker>(
+  typedef base::Callback<std::unique_ptr<content::PowerSaveBlocker>(
       content::PowerSaveBlocker::PowerSaveBlockerType,
       content::PowerSaveBlocker::Reason,
-      const std::string&)> CreateBlockerFunction;
+      const std::string&)>
+      CreateBlockerFunction;
 
   static PowerAPI* Get(content::BrowserContext* context);
 
@@ -103,7 +104,7 @@ class PowerAPI : public BrowserContextKeyedAPI,
   // actually changing the system power-saving settings.
   CreateBlockerFunction create_blocker_function_;
 
-  scoped_ptr<content::PowerSaveBlocker> power_save_blocker_;
+  std::unique_ptr<content::PowerSaveBlocker> power_save_blocker_;
 
   // Current level used by |power_save_blocker_|.  Meaningless if
   // |power_save_blocker_| is NULL.

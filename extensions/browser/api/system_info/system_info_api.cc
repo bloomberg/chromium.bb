@@ -6,13 +6,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -78,7 +78,7 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
   // processes cross multiple profiles.
   void DispatchEvent(events::HistogramValue histogram_value,
                      const std::string& event_name,
-                     scoped_ptr<base::ListValue> args);
+                     std::unique_ptr<base::ListValue> args);
 
   // Called to dispatch the systemInfo.display.onDisplayChanged event.
   void OnDisplayChanged();
@@ -166,7 +166,7 @@ void SystemInfoEventRouter::OnRemovableStorageAttached(
     const storage_monitor::StorageInfo& info) {
   StorageUnitInfo unit;
   systeminfo::BuildStorageUnitInfo(info, &unit);
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(unit.ToValue().release());
   DispatchEvent(events::SYSTEM_STORAGE_ON_ATTACHED,
                 system_storage::OnAttached::kEventName, std::move(args));
@@ -174,7 +174,7 @@ void SystemInfoEventRouter::OnRemovableStorageAttached(
 
 void SystemInfoEventRouter::OnRemovableStorageDetached(
     const storage_monitor::StorageInfo& info) {
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   std::string transient_id =
       StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
           info.device_id());
@@ -198,7 +198,7 @@ void SystemInfoEventRouter::OnDisplayMetricsChanged(const gfx::Display& display,
 }
 
 void SystemInfoEventRouter::OnDisplayChanged() {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   DispatchEvent(events::SYSTEM_DISPLAY_ON_DISPLAY_CHANGED,
                 system_display::OnDisplayChanged::kEventName, std::move(args));
 }
@@ -206,7 +206,7 @@ void SystemInfoEventRouter::OnDisplayChanged() {
 void SystemInfoEventRouter::DispatchEvent(
     events::HistogramValue histogram_value,
     const std::string& event_name,
-    scoped_ptr<base::ListValue> args) {
+    std::unique_ptr<base::ListValue> args) {
   ExtensionsBrowserClient::Get()->BroadcastEventToRenderers(
       histogram_value, event_name, std::move(args));
 }

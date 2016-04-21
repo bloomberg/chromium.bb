@@ -35,7 +35,7 @@ class KeepAliveDelegate : public CastTransport::Delegate {
   //                     connection.
   KeepAliveDelegate(CastSocket* socket,
                     scoped_refptr<Logger> logger,
-                    scoped_ptr<CastTransport::Delegate> inner_delegate,
+                    std::unique_ptr<CastTransport::Delegate> inner_delegate,
                     base::TimeDelta ping_interval,
                     base::TimeDelta liveness_timeout);
 
@@ -44,8 +44,8 @@ class KeepAliveDelegate : public CastTransport::Delegate {
   // Creates a keep-alive message (e.g. PING or PONG).
   static CastMessage CreateKeepAliveMessage(const char* message_type);
 
-  void SetTimersForTest(scoped_ptr<base::Timer> injected_ping_timer,
-                        scoped_ptr<base::Timer> injected_liveness_timer);
+  void SetTimersForTest(std::unique_ptr<base::Timer> injected_ping_timer,
+                        std::unique_ptr<base::Timer> injected_liveness_timer);
 
   // CastTransport::Delegate implementation.
   void Start() override;
@@ -85,7 +85,7 @@ class KeepAliveDelegate : public CastTransport::Delegate {
   scoped_refptr<Logger> logger_;
 
   // Delegate object which receives all non-keep alive messages.
-  scoped_ptr<CastTransport::Delegate> inner_delegate_;
+  std::unique_ptr<CastTransport::Delegate> inner_delegate_;
 
   // Amount of idle time to wait before disconnecting.
   base::TimeDelta liveness_timeout_;
@@ -94,10 +94,10 @@ class KeepAliveDelegate : public CastTransport::Delegate {
   base::TimeDelta ping_interval_;
 
   // Fired when |ping_interval_| is exceeded or when triggered by test code.
-  scoped_ptr<base::Timer> ping_timer_;
+  std::unique_ptr<base::Timer> ping_timer_;
 
   // Fired when |liveness_timer_| is exceeded.
-  scoped_ptr<base::Timer> liveness_timer_;
+  std::unique_ptr<base::Timer> liveness_timer_;
 
   // The PING message to send over the wire.
   CastMessage ping_message_;

@@ -99,7 +99,7 @@ void VpnService::VpnConfiguration::OnPacketReceived(
   if (!vpn_service_) {
     return;
   }
-  scoped_ptr<base::ListValue> event_args =
+  std::unique_ptr<base::ListValue> event_args =
       api_vpn::OnPacketReceived::Create(data);
   vpn_service_->SendSignalToExtension(
       extension_id_, extensions::events::VPN_PROVIDER_ON_PACKET_RECEIVED,
@@ -124,8 +124,9 @@ void VpnService::VpnConfiguration::OnPlatformMessage(uint32_t message) {
 
   // TODO(kaliamoorthi): Update the lower layers to get the error message and
   // pass in the error instead of std::string().
-  scoped_ptr<base::ListValue> event_args = api_vpn::OnPlatformMessage::Create(
-      configuration_name_, platform_message, std::string());
+  std::unique_ptr<base::ListValue> event_args =
+      api_vpn::OnPlatformMessage::Create(configuration_name_, platform_message,
+                                         std::string());
 
   vpn_service_->SendSignalToExtension(
       extension_id_, extensions::events::VPN_PROVIDER_ON_PLATFORM_MESSAGE,
@@ -225,7 +226,7 @@ void VpnService::OnConfigurationRemoved(const std::string& service_path,
 
   VpnConfiguration* configuration =
       service_path_to_configuration_map_[service_path];
-  scoped_ptr<base::ListValue> event_args =
+  std::unique_ptr<base::ListValue> event_args =
       api_vpn::OnConfigRemoved::Create(configuration->configuration_name());
   SendSignalToExtension(configuration->extension_id(),
                         extensions::events::VPN_PROVIDER_ON_CONFIG_REMOVED,
@@ -282,8 +283,7 @@ void VpnService::OnGetPropertiesSuccess(
 
 void VpnService::OnGetPropertiesFailure(
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
-}
+    std::unique_ptr<base::DictionaryValue> error_data) {}
 
 void VpnService::NetworkListChanged() {
   NetworkStateHandler::NetworkStateList network_list;
@@ -512,7 +512,7 @@ void VpnService::OnCreateConfigurationFailure(
     const VpnService::FailureCallback& callback,
     VpnConfiguration* configuration,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   DestroyConfigurationInternal(configuration);
   callback.Run(error_name, std::string());
 }
@@ -525,7 +525,7 @@ void VpnService::OnRemoveConfigurationSuccess(
 void VpnService::OnRemoveConfigurationFailure(
     const VpnService::FailureCallback& callback,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   callback.Run(error_name, std::string());
 }
 
@@ -533,8 +533,8 @@ void VpnService::SendSignalToExtension(
     const std::string& extension_id,
     extensions::events::HistogramValue histogram_value,
     const std::string& event_name,
-    scoped_ptr<base::ListValue> event_args) {
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+    std::unique_ptr<base::ListValue> event_args) {
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       histogram_value, event_name, std::move(event_args), browser_context_));
 
   event_router_->DispatchEventToExtension(extension_id, std::move(event));

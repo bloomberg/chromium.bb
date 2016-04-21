@@ -100,7 +100,7 @@ void SaveDevicePermissionEntry(BrowserContext* context,
     devices = update.Create();
   }
 
-  scoped_ptr<base::Value> device_entry(entry->ToValue());
+  std::unique_ptr<base::Value> device_entry(entry->ToValue());
   DCHECK(devices->Find(*device_entry.get()) == devices->end());
   devices->Append(device_entry.release());
 }
@@ -311,13 +311,13 @@ bool DevicePermissionEntry::IsPersistent() const {
   return !serial_number_.empty();
 }
 
-scoped_ptr<base::Value> DevicePermissionEntry::ToValue() const {
+std::unique_ptr<base::Value> DevicePermissionEntry::ToValue() const {
   if (!IsPersistent()) {
     return nullptr;
   }
 
   DCHECK(!serial_number_.empty());
-  scoped_ptr<base::DictionaryValue> entry_dict(
+  std::unique_ptr<base::DictionaryValue> entry_dict(
       DictionaryBuilder()
           .Set(kDeviceType, TypeToString(type_))
           .Set(kDeviceVendorId, vendor_id_)

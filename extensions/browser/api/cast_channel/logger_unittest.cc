@@ -29,7 +29,8 @@ class CastChannelLoggerTest : public testing::Test {
   // |logger_| will take ownership of |clock_|.
   CastChannelLoggerTest()
       : clock_(new base::SimpleTestClock),
-        logger_(new Logger(scoped_ptr<base::Clock>(clock_), base::Time())) {}
+        logger_(
+            new Logger(std::unique_ptr<base::Clock>(clock_), base::Time())) {}
   ~CastChannelLoggerTest() override {}
 
   bool Uncompress(const char* input, int length, std::string* output) {
@@ -64,20 +65,20 @@ class CastChannelLoggerTest : public testing::Test {
     return success;
   }
 
-  scoped_ptr<Log> GetLog() {
+  std::unique_ptr<Log> GetLog() {
     size_t length = 0;
-    scoped_ptr<char[]> output = logger_->GetLogs(&length);
+    std::unique_ptr<char[]> output = logger_->GetLogs(&length);
     if (!output.get())
-      return scoped_ptr<Log>();
+      return std::unique_ptr<Log>();
 
     // 20kb should be enough for test purposes.
     std::string uncompressed(20000, 0);
     if (!Uncompress(output.get(), length, &uncompressed))
-      return scoped_ptr<Log>();
+      return std::unique_ptr<Log>();
 
-    scoped_ptr<Log> log(new Log);
+    std::unique_ptr<Log> log(new Log);
     if (!log->ParseFromString(uncompressed))
-      return scoped_ptr<Log>();
+      return std::unique_ptr<Log>();
 
     return log;
   }
@@ -117,7 +118,7 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
   EXPECT_EQ(last_errors.challenge_reply_error_type,
             proto::CHALLENGE_REPLY_ERROR_CERT_PARSING_FAILED);
 
-  scoped_ptr<Log> log = GetLog();
+  std::unique_ptr<Log> log = GetLog();
   ASSERT_TRUE(log);
 
   ASSERT_EQ(2, log->aggregated_socket_event_size());
@@ -247,7 +248,7 @@ TEST_F(CastChannelLoggerTest, LogSocketReadWrite) {
   logger_->LogSocketEventWithRv(2, EventType::SOCKET_WRITE, -5);
   clock_->Advance(base::TimeDelta::FromMicroseconds(1));
 
-  scoped_ptr<Log> log = GetLog();
+  std::unique_ptr<Log> log = GetLog();
   ASSERT_TRUE(log);
 
   ASSERT_EQ(2, log->aggregated_socket_event_size());
@@ -274,7 +275,7 @@ TEST_F(CastChannelLoggerTest, TooManySockets) {
     logger_->LogSocketEvent(i, EventType::CAST_SOCKET_CREATED);
   }
 
-  scoped_ptr<Log> log = GetLog();
+  std::unique_ptr<Log> log = GetLog();
   ASSERT_TRUE(log);
 
   ASSERT_EQ(kMaxSocketsToLog, log->aggregated_socket_event_size());
@@ -292,7 +293,7 @@ TEST_F(CastChannelLoggerTest, TooManyEvents) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(1));
   }
 
-  scoped_ptr<Log> log = GetLog();
+  std::unique_ptr<Log> log = GetLog();
   ASSERT_TRUE(log);
 
   ASSERT_EQ(1, log->aggregated_socket_event_size());
@@ -308,7 +309,7 @@ TEST_F(CastChannelLoggerTest, TooManyEvents) {
 TEST_F(CastChannelLoggerTest, Reset) {
   logger_->LogSocketEvent(1, EventType::CAST_SOCKET_CREATED);
 
-  scoped_ptr<Log> log = GetLog();
+  std::unique_ptr<Log> log = GetLog();
   ASSERT_TRUE(log);
 
   EXPECT_EQ(1, log->aggregated_socket_event_size());

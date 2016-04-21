@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_EVENT_ROUTER_DELEGATE_H_
 #define EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_EVENT_ROUTER_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class GURL;
 
@@ -35,13 +35,13 @@ class WebRequestEventRouterDelegate {
   virtual ~WebRequestEventRouterDelegate();
 
   // Logs an extension action.
-  virtual void LogExtensionActivity(content::BrowserContext* browser_context,
-                                    bool is_incognito,
-                                    const std::string& extension_id,
-                                    const GURL& url,
-                                    const std::string& api_call,
-                                    scoped_ptr<base::DictionaryValue> details) {
-  }
+  virtual void LogExtensionActivity(
+      content::BrowserContext* browser_context,
+      bool is_incognito,
+      const std::string& extension_id,
+      const GURL& url,
+      const std::string& api_call,
+      std::unique_ptr<base::DictionaryValue> details) {}
 
   // Notifies that a webRequest event that normally would be forwarded to a
   // listener was instead blocked because of withheld permissions.

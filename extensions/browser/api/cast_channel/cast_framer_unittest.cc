@@ -42,7 +42,7 @@ class CastFramerTest : public testing::Test {
   CastMessage cast_message_;
   std::string cast_message_str_;
   scoped_refptr<net::GrowableIOBuffer> buffer_;
-  scoped_ptr<MessageFramer> framer_;
+  std::unique_ptr<MessageFramer> framer_;
 };
 
 TEST_F(CastFramerTest, TestMessageFramerCompleteMessage) {
@@ -66,7 +66,7 @@ TEST_F(CastFramerTest, TestMessageFramerCompleteMessage) {
       framer_->BytesRequested());
 
   // Remainder of packet sent over the wire.
-  scoped_ptr<CastMessage> message;
+  std::unique_ptr<CastMessage> message;
   message = framer_->Ingest(framer_->BytesRequested(), &message_length, &error);
   EXPECT_NE(static_cast<CastMessage*>(nullptr), message.get());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, error);
@@ -130,7 +130,7 @@ TEST_F(CastFramerTest, TestUnparsableBodyProto) {
   EXPECT_EQ(cast_message_str_.size() - 4, framer_->BytesRequested());
 
   // Send body, expect an error.
-  scoped_ptr<CastMessage> message;
+  std::unique_ptr<CastMessage> message;
   EXPECT_EQ(nullptr, framer_->Ingest(framer_->BytesRequested(), &message_length,
                                      &error).get());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_INVALID_MESSAGE, error);

@@ -301,7 +301,7 @@ void BluetoothSocketListenFunction::OnGetAdapter(
     return;
   }
 
-  scoped_ptr<std::string> name;
+  std::unique_ptr<std::string> name;
   if (socket->name())
     name.reset(new std::string(*socket->name()));
 
@@ -364,7 +364,7 @@ bool BluetoothSocketListenUsingRfcommFunction::CreateParams() {
 void BluetoothSocketListenUsingRfcommFunction::CreateService(
     scoped_refptr<device::BluetoothAdapter> adapter,
     const device::BluetoothUUID& uuid,
-    scoped_ptr<std::string> name,
+    std::unique_ptr<std::string> name,
     const device::BluetoothAdapter::CreateServiceCallback& callback,
     const device::BluetoothAdapter::CreateServiceErrorCallback&
         error_callback) {
@@ -407,7 +407,7 @@ bool BluetoothSocketListenUsingL2capFunction::CreateParams() {
 void BluetoothSocketListenUsingL2capFunction::CreateService(
     scoped_refptr<device::BluetoothAdapter> adapter,
     const device::BluetoothUUID& uuid,
-    scoped_ptr<std::string> name,
+    std::unique_ptr<std::string> name,
     const device::BluetoothAdapter::CreateServiceCallback& callback,
     const device::BluetoothAdapter::CreateServiceErrorCallback&
         error_callback) {

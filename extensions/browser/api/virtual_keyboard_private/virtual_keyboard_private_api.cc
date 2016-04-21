@@ -136,7 +136,7 @@ bool VirtualKeyboardPrivateOpenSettingsFunction::RunSync() {
 bool VirtualKeyboardPrivateSetModeFunction::RunSync() {
   VirtualKeyboardDelegate* delegate = GetDelegate(this);
   if (delegate) {
-    scoped_ptr<SetMode::Params> params = SetMode::Params::Create(*args_);
+    std::unique_ptr<SetMode::Params> params = SetMode::Params::Create(*args_);
     EXTENSION_FUNCTION_VALIDATE(params);
     if (!delegate->SetVirtualKeyboardMode(params->mode)) {
       error_ = kVirtualKeyboardNotEnabled;
@@ -152,7 +152,7 @@ bool VirtualKeyboardPrivateSetModeFunction::RunSync() {
 bool VirtualKeyboardPrivateSetKeyboardStateFunction::RunSync() {
   VirtualKeyboardDelegate* delegate = GetDelegate(this);
   if (delegate) {
-    scoped_ptr<SetRequestedKeyboardState::Params> params =
+    std::unique_ptr<SetRequestedKeyboardState::Params> params =
         SetRequestedKeyboardState::Params::Create(*args_);
     EXTENSION_FUNCTION_VALIDATE(params);
     if (!delegate->SetRequestedKeyboardState(params->state)) {

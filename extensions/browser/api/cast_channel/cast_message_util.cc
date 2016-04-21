@@ -4,8 +4,9 @@
 
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "extensions/common/api/cast_channel.h"
@@ -80,7 +81,7 @@ bool CastMessageToMessageInfo(const CastMessage& message_proto,
   message->destination_id = message_proto.destination_id();
   message->namespace_ = message_proto.namespace_();
   // Determine the type of the payload and fill base::Value appropriately.
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   switch (message_proto.payload_type()) {
   case CastMessage_PayloadType_STRING:
     if (message_proto.has_payload_utf8())

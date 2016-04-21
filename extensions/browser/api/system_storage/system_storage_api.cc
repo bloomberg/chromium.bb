@@ -41,7 +41,8 @@ SystemStorageEjectDeviceFunction::~SystemStorageEjectDeviceFunction() {
 bool SystemStorageEjectDeviceFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  scoped_ptr<EjectDevice::Params> params(EjectDevice::Params::Create(*args_));
+  std::unique_ptr<EjectDevice::Params> params(
+      EjectDevice::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   StorageMonitor::GetInstance()->EnsureInitialized(
@@ -102,7 +103,7 @@ SystemStorageGetAvailableCapacityFunction::
 bool SystemStorageGetAvailableCapacityFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  scoped_ptr<GetAvailableCapacity::Params> params(
+  std::unique_ptr<GetAvailableCapacity::Params> params(
       GetAvailableCapacity::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

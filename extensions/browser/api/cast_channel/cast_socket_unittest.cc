@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -168,18 +169,18 @@ class CompleteHandler {
 
 class TestCastSocket : public CastSocketImpl {
  public:
-  static scoped_ptr<TestCastSocket> Create(
+  static std::unique_ptr<TestCastSocket> Create(
       Logger* logger,
       uint64_t device_capabilities = cast_channel::CastDeviceCapability::NONE) {
-    return scoped_ptr<TestCastSocket>(
+    return std::unique_ptr<TestCastSocket>(
         new TestCastSocket(CreateIPEndPointForTest(), CHANNEL_AUTH_TYPE_SSL,
                            kDistantTimeoutMillis, logger, device_capabilities));
   }
 
-  static scoped_ptr<TestCastSocket> CreateSecure(
+  static std::unique_ptr<TestCastSocket> CreateSecure(
       Logger* logger,
       uint64_t device_capabilities = cast_channel::CastDeviceCapability::NONE) {
-    return scoped_ptr<TestCastSocket>(new TestCastSocket(
+    return std::unique_ptr<TestCastSocket>(new TestCastSocket(
         CreateIPEndPointForTest(), CHANNEL_AUTH_TYPE_SSL_VERIFIED,
         kDistantTimeoutMillis, logger, device_capabilities));
   }
@@ -209,7 +210,7 @@ class TestCastSocket : public CastSocketImpl {
 
   void SetupMockTransport() {
     mock_transport_ = new MockCastTransport;
-    SetTransportForTesting(make_scoped_ptr(mock_transport_));
+    SetTransportForTesting(base::WrapUnique(mock_transport_));
   }
 
   // Socket connection helpers.
@@ -274,18 +275,19 @@ class TestCastSocket : public CastSocketImpl {
   }
 
  private:
-  scoped_ptr<net::TCPClientSocket> CreateTcpSocket() override {
+  std::unique_ptr<net::TCPClientSocket> CreateTcpSocket() override {
     if (tcp_unresponsive_) {
-      return scoped_ptr<net::TCPClientSocket>(new MockTCPSocket(true));
+      return std::unique_ptr<net::TCPClientSocket>(new MockTCPSocket(true));
     } else {
       net::MockConnect* connect_data = tcp_connect_data_.get();
       connect_data->peer_addr = ip_;
-      return scoped_ptr<net::TCPClientSocket>(new MockTCPSocket(*connect_data));
+      return std::unique_ptr<net::TCPClientSocket>(
+          new MockTCPSocket(*connect_data));
     }
   }
 
-  scoped_ptr<net::SSLClientSocket> CreateSslSocket(
-      scoped_ptr<net::StreamSocket> socket) override {
+  std::unique_ptr<net::SSLClientSocket> CreateSslSocket(
+      std::unique_ptr<net::StreamSocket> socket) override {
     net::MockConnect* connect_data = ssl_connect_data_.get();
     connect_data->peer_addr = ip_;
 
@@ -293,9 +295,8 @@ class TestCastSocket : public CastSocketImpl {
         reads_.data(), reads_.size(), writes_.data(), writes_.size()));
     ssl_data_->set_connect_data(*connect_data);
     // NOTE: net::MockTCPClientSocket inherits from net::SSLClientSocket !!
-    return scoped_ptr<net::SSLClientSocket>(
-        new net::MockTCPClientSocket(
-            net::AddressList(), &capturing_net_log_, ssl_data_.get()));
+    return std::unique_ptr<net::SSLClientSocket>(new net::MockTCPClientSocket(
+        net::AddressList(), &capturing_net_log_, ssl_data_.get()));
   }
 
   scoped_refptr<net::X509Certificate> ExtractPeerCert() override {
@@ -315,12 +316,12 @@ class TestCastSocket : public CastSocketImpl {
   net::TestNetLog capturing_net_log_;
   net::IPEndPoint ip_;
   // Simulated connect data
-  scoped_ptr<net::MockConnect> tcp_connect_data_;
-  scoped_ptr<net::MockConnect> ssl_connect_data_;
+  std::unique_ptr<net::MockConnect> tcp_connect_data_;
+  std::unique_ptr<net::MockConnect> ssl_connect_data_;
   // Simulated read / write data
   std::vector<net::MockWrite> writes_;
   std::vector<net::MockRead> reads_;
-  scoped_ptr<net::SocketDataProvider> ssl_data_;
+  std::unique_ptr<net::SocketDataProvider> ssl_data_;
   // Simulated result of peer cert extraction.
   bool extract_cert_result_;
   // Simulated result of verifying challenge reply.
@@ -328,7 +329,7 @@ class TestCastSocket : public CastSocketImpl {
   bool verify_challenge_disallow_;
   // If true, makes TCP connection process stall. For timeout testing.
   bool tcp_unresponsive_;
-  scoped_ptr<base::MockTimer> mock_timer_;
+  std::unique_ptr<base::MockTimer> mock_timer_;
   MockCastTransport* mock_transport_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCastSocket);
@@ -338,7 +339,7 @@ class CastSocketTest : public testing::Test {
  public:
   CastSocketTest()
       : logger_(
-            new Logger(make_scoped_ptr<base::Clock>(new base::SimpleTestClock),
+            new Logger(base::WrapUnique<base::Clock>(new base::SimpleTestClock),
                        base::Time())),
         delegate_(new MockDelegate) {}
   ~CastSocketTest() override {}
@@ -385,9 +386,9 @@ class CastSocketTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   Logger* logger_;
-  scoped_ptr<TestCastSocket> socket_;
+  std::unique_ptr<TestCastSocket> socket_;
   CompleteHandler handler_;
-  scoped_ptr<MockDelegate> delegate_;
+  std::unique_ptr<MockDelegate> delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastSocketTest);

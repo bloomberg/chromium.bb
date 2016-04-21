@@ -22,7 +22,7 @@ namespace extensions {
 
 namespace {
 
-scoped_ptr<base::DictionaryValue> SimpleManifest() {
+std::unique_ptr<base::DictionaryValue> SimpleManifest() {
   return DictionaryBuilder()
       .Set("name", "extension")
       .Set("manifest_version", 2)
@@ -36,14 +36,14 @@ struct RecordingCondition {
   typedef int MatchData;
 
   URLMatcherConditionFactory* factory;
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
 
   void GetURLMatcherConditionSets(
       URLMatcherConditionSet::Vector* condition_sets) const {
     // No condition sets.
   }
 
-  static scoped_ptr<RecordingCondition> Create(
+  static std::unique_ptr<RecordingCondition> Create(
       const Extension* extension,
       URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::Value& condition,
@@ -51,10 +51,10 @@ struct RecordingCondition {
     const base::DictionaryValue* dict = NULL;
     if (condition.GetAsDictionary(&dict) && dict->HasKey("bad_key")) {
       *error = "Found error key";
-      return scoped_ptr<RecordingCondition>();
+      return std::unique_ptr<RecordingCondition>();
     }
 
-    scoped_ptr<RecordingCondition> result(new RecordingCondition());
+    std::unique_ptr<RecordingCondition> result(new RecordingCondition());
     result->factory = url_matcher_condition_factory;
     result->value.reset(condition.DeepCopy());
     return result;
@@ -69,7 +69,7 @@ TEST(DeclarativeConditionTest, ErrorConditionSet) {
   conditions.push_back(ParseJson("{\"bad_key\": 2}"));
 
   std::string error;
-  scoped_ptr<RecordingConditionSet> result = RecordingConditionSet::Create(
+  std::unique_ptr<RecordingConditionSet> result = RecordingConditionSet::Create(
       NULL, matcher.condition_factory(), conditions, &error);
   EXPECT_EQ("Found error key", error);
   ASSERT_FALSE(result);
@@ -83,7 +83,7 @@ TEST(DeclarativeConditionTest, CreateConditionSet) {
 
   // Test insertion
   std::string error;
-  scoped_ptr<RecordingConditionSet> result = RecordingConditionSet::Create(
+  std::unique_ptr<RecordingConditionSet> result = RecordingConditionSet::Create(
       NULL, matcher.condition_factory(), conditions, &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result);
@@ -125,12 +125,12 @@ struct FulfillableCondition {
     return match_data.value <= max_value;
   }
 
-  static scoped_ptr<FulfillableCondition> Create(
+  static std::unique_ptr<FulfillableCondition> Create(
       const Extension* extension,
       URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::Value& condition,
       std::string* error) {
-    scoped_ptr<FulfillableCondition> result(new FulfillableCondition());
+    std::unique_ptr<FulfillableCondition> result(new FulfillableCondition());
     const base::DictionaryValue* dict;
     if (!condition.GetAsDictionary(&dict)) {
       *error = "Expected dict";
@@ -159,7 +159,7 @@ TEST(DeclarativeConditionTest, FulfillConditionSet) {
 
   // Test insertion
   std::string error;
-  scoped_ptr<FulfillableConditionSet> result =
+  std::unique_ptr<FulfillableConditionSet> result =
       FulfillableConditionSet::Create(NULL, NULL, conditions, &error);
   ASSERT_EQ("", error);
   ASSERT_TRUE(result);
@@ -260,7 +260,7 @@ TEST(DeclarativeActionTest, ErrorActionSet) {
 
   std::string error;
   bool bad = false;
-  scoped_ptr<SummingActionSet> result =
+  std::unique_ptr<SummingActionSet> result =
       SummingActionSet::Create(NULL, NULL, actions, &error, &bad);
   EXPECT_EQ("the error", error);
   EXPECT_FALSE(bad);
@@ -285,7 +285,7 @@ TEST(DeclarativeActionTest, ApplyActionSet) {
   // Test insertion
   std::string error;
   bool bad = false;
-  scoped_ptr<SummingActionSet> result =
+  std::unique_ptr<SummingActionSet> result =
       SummingActionSet::Create(NULL, NULL, actions, &error, &bad);
   EXPECT_EQ("", error);
   EXPECT_FALSE(bad);
@@ -327,13 +327,9 @@ TEST(DeclarativeRuleTest, Create) {
 
   URLMatcher matcher;
   std::string error;
-  scoped_ptr<Rule> rule(Rule::Create(matcher.condition_factory(),
-                                     NULL,
-                                     extension.get(),
-                                     install_time,
-                                     json_rule,
-                                     Rule::ConsistencyChecker(),
-                                     &error));
+  std::unique_ptr<Rule> rule(Rule::Create(
+      matcher.condition_factory(), NULL, extension.get(), install_time,
+      json_rule, Rule::ConsistencyChecker(), &error));
   EXPECT_EQ("", error);
   ASSERT_TRUE(rule.get());
 
@@ -396,13 +392,9 @@ TEST(DeclarativeRuleTest, CheckConsistency) {
                  "  \"priority\": 200 \n"
                  "}"),
       json_rule.get()));
-  scoped_ptr<Rule> rule(Rule::Create(matcher.condition_factory(),
-                                     NULL,
-                                     extension.get(),
-                                     base::Time(),
-                                     json_rule,
-                                     base::Bind(AtLeastOneCondition),
-                                     &error));
+  std::unique_ptr<Rule> rule(Rule::Create(
+      matcher.condition_factory(), NULL, extension.get(), base::Time(),
+      json_rule, base::Bind(AtLeastOneCondition), &error));
   EXPECT_TRUE(rule);
   EXPECT_EQ("", error);
 

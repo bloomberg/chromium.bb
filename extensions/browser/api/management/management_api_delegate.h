@@ -78,14 +78,15 @@ class ManagementAPIDelegate {
 
   // Used to show a dialog prompt in chrome when management.setEnabled extension
   // function is called.
-  virtual scoped_ptr<InstallPromptDelegate> SetEnabledFunctionDelegate(
+  virtual std::unique_ptr<InstallPromptDelegate> SetEnabledFunctionDelegate(
       content::WebContents* web_contents,
       content::BrowserContext* browser_context,
       const Extension* extension,
       const base::Callback<void(bool)>& callback) const = 0;
 
   // Returns a new RequirementsChecker.
-  virtual scoped_ptr<RequirementsChecker> CreateRequirementsChecker() const = 0;
+  virtual std::unique_ptr<RequirementsChecker> CreateRequirementsChecker()
+      const = 0;
 
   // Enables the extension identified by |extension_id|.
   virtual void EnableExtension(content::BrowserContext* context,
@@ -98,7 +99,7 @@ class ManagementAPIDelegate {
       Extension::DisableReason disable_reason) const = 0;
 
   // Used to show a confirmation dialog when uninstalling |target_extension|.
-  virtual scoped_ptr<UninstallDialogDelegate> UninstallFunctionDelegate(
+  virtual std::unique_ptr<UninstallDialogDelegate> UninstallFunctionDelegate(
       ManagementUninstallFunctionBase* function,
       const Extension* target_extension,
       bool show_programmatic_uninstall_ui) const = 0;
@@ -121,7 +122,8 @@ class ManagementAPIDelegate {
                              LaunchType launch_type) const = 0;
 
   // Creates a bookmark app for |launch_url|.
-  virtual scoped_ptr<AppForLinkDelegate> GenerateAppForLinkFunctionDelegate(
+  virtual std::unique_ptr<AppForLinkDelegate>
+  GenerateAppForLinkFunctionDelegate(
       ManagementGenerateAppForLinkFunction* function,
       content::BrowserContext* context,
       const std::string& title,

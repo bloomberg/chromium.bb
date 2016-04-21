@@ -119,11 +119,11 @@ void UDPSocketEventDispatcher::ReceiveCallback(
     receive_info.data.assign(io_buffer->data(), io_buffer->data() + bytes_read);
     receive_info.remote_address = address;
     receive_info.remote_port = port;
-    scoped_ptr<base::ListValue> args =
+    std::unique_ptr<base::ListValue> args =
         sockets_udp::OnReceive::Create(receive_info);
-    scoped_ptr<Event> event(new Event(events::SOCKETS_UDP_ON_RECEIVE,
-                                      sockets_udp::OnReceive::kEventName,
-                                      std::move(args)));
+    std::unique_ptr<Event> event(new Event(events::SOCKETS_UDP_ON_RECEIVE,
+                                           sockets_udp::OnReceive::kEventName,
+                                           std::move(args)));
     PostEvent(params, std::move(event));
 
     // Post a task to delay the read until the socket is available, as
@@ -141,11 +141,11 @@ void UDPSocketEventDispatcher::ReceiveCallback(
     sockets_udp::ReceiveErrorInfo receive_error_info;
     receive_error_info.socket_id = params.socket_id;
     receive_error_info.result_code = bytes_read;
-    scoped_ptr<base::ListValue> args =
+    std::unique_ptr<base::ListValue> args =
         sockets_udp::OnReceiveError::Create(receive_error_info);
-    scoped_ptr<Event> event(new Event(events::SOCKETS_UDP_ON_RECEIVE_ERROR,
-                                      sockets_udp::OnReceiveError::kEventName,
-                                      std::move(args)));
+    std::unique_ptr<Event> event(
+        new Event(events::SOCKETS_UDP_ON_RECEIVE_ERROR,
+                  sockets_udp::OnReceiveError::kEventName, std::move(args)));
     PostEvent(params, std::move(event));
 
     // Since we got an error, the socket is now "paused" until the application
@@ -160,7 +160,7 @@ void UDPSocketEventDispatcher::ReceiveCallback(
 
 /* static */
 void UDPSocketEventDispatcher::PostEvent(const ReceiveParams& params,
-                                         scoped_ptr<Event> event) {
+                                         std::unique_ptr<Event> event) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
   BrowserThread::PostTask(
@@ -172,7 +172,7 @@ void UDPSocketEventDispatcher::PostEvent(const ReceiveParams& params,
 /*static*/
 void UDPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
                                              const std::string& extension_id,
-                                             scoped_ptr<Event> event) {
+                                             std::unique_ptr<Event> event) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::BrowserContext* context =

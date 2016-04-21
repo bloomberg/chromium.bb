@@ -165,7 +165,7 @@ class VirtualKeyboardAPI : public BrowserContextKeyedAPI {
   // Require accces to delegate while incognito or during login.
   static const bool kServiceHasOwnInstanceInIncognito = true;
 
-  scoped_ptr<VirtualKeyboardDelegate> delegate_;
+  std::unique_ptr<VirtualKeyboardDelegate> delegate_;
 };
 
 }  // namespace extensions

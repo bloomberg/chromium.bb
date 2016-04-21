@@ -40,40 +40,42 @@ AudioService* AudioAPI::GetService() const {
 
 void AudioAPI::OnDeviceChanged() {
   if (EventRouter::Get(browser_context_)) {
-    scoped_ptr<Event> event(new Event(
+    std::unique_ptr<Event> event(new Event(
         events::AUDIO_ON_DEVICE_CHANGED, audio::OnDeviceChanged::kEventName,
-        scoped_ptr<base::ListValue>(new base::ListValue())));
+        std::unique_ptr<base::ListValue>(new base::ListValue())));
     EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
   }
 }
 
 void AudioAPI::OnLevelChanged(const std::string& id, int level) {
   if (EventRouter::Get(browser_context_)) {
-    scoped_ptr<base::ListValue> args = audio::OnLevelChanged::Create(id, level);
-    scoped_ptr<Event> event(new Event(events::AUDIO_ON_LEVEL_CHANGED,
-                                      audio::OnLevelChanged::kEventName,
-                                      std::move(args)));
+    std::unique_ptr<base::ListValue> args =
+        audio::OnLevelChanged::Create(id, level);
+    std::unique_ptr<Event> event(new Event(events::AUDIO_ON_LEVEL_CHANGED,
+                                           audio::OnLevelChanged::kEventName,
+                                           std::move(args)));
     EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
   }
 }
 
 void AudioAPI::OnMuteChanged(bool is_input, bool is_muted) {
   if (EventRouter::Get(browser_context_)) {
-    scoped_ptr<base::ListValue> args =
+    std::unique_ptr<base::ListValue> args =
         audio::OnMuteChanged::Create(is_input, is_muted);
-    scoped_ptr<Event> event(new Event(events::AUDIO_ON_MUTE_CHANGED,
-                                      audio::OnMuteChanged::kEventName,
-                                      std::move(args)));
+    std::unique_ptr<Event> event(new Event(events::AUDIO_ON_MUTE_CHANGED,
+                                           audio::OnMuteChanged::kEventName,
+                                           std::move(args)));
     EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
   }
 }
 
 void AudioAPI::OnDevicesChanged(const DeviceInfoList& devices) {
   if (EventRouter::Get(browser_context_)) {
-    scoped_ptr<base::ListValue> args = audio::OnDevicesChanged::Create(devices);
-    scoped_ptr<Event> event(new Event(events::AUDIO_ON_DEVICES_CHANGED,
-                                      audio::OnDevicesChanged::kEventName,
-                                      std::move(args)));
+    std::unique_ptr<base::ListValue> args =
+        audio::OnDevicesChanged::Create(devices);
+    std::unique_ptr<Event> event(new Event(events::AUDIO_ON_DEVICES_CHANGED,
+                                           audio::OnDevicesChanged::kEventName,
+                                           std::move(args)));
     EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
   }
 }
@@ -98,7 +100,7 @@ bool AudioGetInfoFunction::RunSync() {
 ///////////////////////////////////////////////////////////////////////////////
 
 bool AudioSetActiveDevicesFunction::RunSync() {
-  scoped_ptr<audio::SetActiveDevices::Params> params(
+  std::unique_ptr<audio::SetActiveDevices::Params> params(
       audio::SetActiveDevices::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -113,7 +115,7 @@ bool AudioSetActiveDevicesFunction::RunSync() {
 ///////////////////////////////////////////////////////////////////////////////
 
 bool AudioSetPropertiesFunction::RunSync() {
-  scoped_ptr<audio::SetProperties::Params> params(
+  std::unique_ptr<audio::SetProperties::Params> params(
       audio::SetProperties::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

@@ -41,7 +41,7 @@ class DocumentScanInterfaceChromeosTest : public testing::Test {
 
  protected:
   DocumentScanInterfaceChromeos scan_interface_;
-  scoped_ptr<chromeos::MockLorgnetteManagerClient> client_;
+  std::unique_ptr<chromeos::MockLorgnetteManagerClient> client_;
 };
 
 ACTION_P2(InvokeListScannersCallback, scanner_list, error) {

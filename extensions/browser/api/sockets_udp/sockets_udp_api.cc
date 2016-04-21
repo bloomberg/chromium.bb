@@ -22,9 +22,9 @@ const int kWildcardPort = 0;
 
 UDPSocketAsyncApiFunction::~UDPSocketAsyncApiFunction() {}
 
-scoped_ptr<SocketResourceManagerInterface>
+std::unique_ptr<SocketResourceManagerInterface>
 UDPSocketAsyncApiFunction::CreateSocketResourceManager() {
-  return scoped_ptr<SocketResourceManagerInterface>(
+  return std::unique_ptr<SocketResourceManagerInterface>(
       new SocketResourceManager<ResumableUDPSocket>());
 }
 
@@ -35,9 +35,9 @@ ResumableUDPSocket* UDPSocketAsyncApiFunction::GetUdpSocket(int socket_id) {
 UDPSocketExtensionWithDnsLookupFunction::
     ~UDPSocketExtensionWithDnsLookupFunction() {}
 
-scoped_ptr<SocketResourceManagerInterface>
+std::unique_ptr<SocketResourceManagerInterface>
 UDPSocketExtensionWithDnsLookupFunction::CreateSocketResourceManager() {
-  return scoped_ptr<SocketResourceManagerInterface>(
+  return std::unique_ptr<SocketResourceManagerInterface>(
       new SocketResourceManager<ResumableUDPSocket>());
 }
 

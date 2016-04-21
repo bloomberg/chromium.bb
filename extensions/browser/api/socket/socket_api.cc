@@ -75,9 +75,9 @@ bool SocketAsyncApiFunction::PrePrepare() {
 
 bool SocketAsyncApiFunction::Respond() { return error_.empty(); }
 
-scoped_ptr<SocketResourceManagerInterface>
+std::unique_ptr<SocketResourceManagerInterface>
 SocketAsyncApiFunction::CreateSocketResourceManager() {
-  return scoped_ptr<SocketResourceManagerInterface>(
+  return std::unique_ptr<SocketResourceManagerInterface>(
       new SocketResourceManager<Socket>());
 }
 
@@ -139,7 +139,7 @@ void SocketAsyncApiFunction::OpenFirewallHoleOnUIThread(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AppFirewallHoleManager* manager =
       AppFirewallHoleManager::Get(browser_context());
-  scoped_ptr<AppFirewallHole, BrowserThread::DeleteOnUIThread> hole(
+  std::unique_ptr<AppFirewallHole, BrowserThread::DeleteOnUIThread> hole(
       manager->Open(type, port, extension_id()).release());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -149,7 +149,7 @@ void SocketAsyncApiFunction::OpenFirewallHoleOnUIThread(
 
 void SocketAsyncApiFunction::OnFirewallHoleOpened(
     int socket_id,
-    scoped_ptr<AppFirewallHole, BrowserThread::DeleteOnUIThread> hole) {
+    std::unique_ptr<AppFirewallHole, BrowserThread::DeleteOnUIThread> hole) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!hole) {
     error_ = kFirewallFailure;
@@ -461,8 +461,9 @@ void SocketAcceptFunction::AsyncWorkStart() {
   }
 }
 
-void SocketAcceptFunction::OnAccept(int result_code,
-                                    scoped_ptr<net::TCPClientSocket> socket) {
+void SocketAcceptFunction::OnAccept(
+    int result_code,
+    std::unique_ptr<net::TCPClientSocket> socket) {
   base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kResultCodeKey, result_code);
   if (socket) {
@@ -1058,7 +1059,7 @@ void SocketSecureFunction::AsyncWorkStart() {
       base::Bind(&SocketSecureFunction::TlsConnectDone, this));
 }
 
-void SocketSecureFunction::TlsConnectDone(scoped_ptr<TLSSocket> socket,
+void SocketSecureFunction::TlsConnectDone(std::unique_ptr<TLSSocket> socket,
                                           int result) {
   // if an error occurred, socket MUST be NULL.
   DCHECK(result == net::OK || socket == NULL);

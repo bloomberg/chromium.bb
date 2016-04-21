@@ -86,9 +86,9 @@ void DisplaySourceEventRouter::OnSinksUpdated(
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (!event_router)
     return;
-  scoped_ptr<base::ListValue> args(
+  std::unique_ptr<base::ListValue> args(
       api::display_source::OnSinksUpdated::Create(sinks));
-  scoped_ptr<Event> sinks_updated_event(new Event(
+  std::unique_ptr<Event> sinks_updated_event(new Event(
       events::DISPLAY_SOURCE_ON_SINKS_UPDATED,
       api::display_source::OnSinksUpdated::kEventName, std::move(args)));
   event_router->BroadcastEvent(std::move(sinks_updated_event));

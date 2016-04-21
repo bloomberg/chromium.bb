@@ -17,7 +17,7 @@ AppViewGuestInternalAttachFrameFunction::
 }
 
 bool AppViewGuestInternalAttachFrameFunction::RunAsync() {
-  scoped_ptr<appview::AttachFrame::Params> params(
+  std::unique_ptr<appview::AttachFrame::Params> params(
       appview::AttachFrame::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -34,7 +34,7 @@ AppViewGuestInternalDenyRequestFunction::
 }
 
 bool AppViewGuestInternalDenyRequestFunction::RunAsync() {
-  scoped_ptr<appview::DenyRequest::Params> params(
+  std::unique_ptr<appview::DenyRequest::Params> params(
       appview::DenyRequest::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

@@ -88,9 +88,9 @@ using content::SocketPermissionRequest;
 
 TCPSocketAsyncApiFunction::~TCPSocketAsyncApiFunction() {}
 
-scoped_ptr<SocketResourceManagerInterface>
+std::unique_ptr<SocketResourceManagerInterface>
 TCPSocketAsyncApiFunction::CreateSocketResourceManager() {
-  return scoped_ptr<SocketResourceManagerInterface>(
+  return std::unique_ptr<SocketResourceManagerInterface>(
       new SocketResourceManager<ResumableTCPSocket>());
 }
 
@@ -101,9 +101,9 @@ ResumableTCPSocket* TCPSocketAsyncApiFunction::GetTcpSocket(int socket_id) {
 TCPSocketExtensionWithDnsLookupFunction::
     ~TCPSocketExtensionWithDnsLookupFunction() {}
 
-scoped_ptr<SocketResourceManagerInterface>
+std::unique_ptr<SocketResourceManagerInterface>
 TCPSocketExtensionWithDnsLookupFunction::CreateSocketResourceManager() {
-  return scoped_ptr<SocketResourceManagerInterface>(
+  return std::unique_ptr<SocketResourceManagerInterface>(
       new SocketResourceManager<ResumableTCPSocket>());
 }
 
@@ -522,7 +522,7 @@ void SocketsTcpSecureFunction::AsyncWorkStart() {
       base::Bind(&SocketsTcpSecureFunction::TlsConnectDone, this));
 }
 
-void SocketsTcpSecureFunction::TlsConnectDone(scoped_ptr<TLSSocket> socket,
+void SocketsTcpSecureFunction::TlsConnectDone(std::unique_ptr<TLSSocket> socket,
                                               int result) {
   // If an error occurred, socket MUST be NULL
   DCHECK(result == net::OK || socket == NULL);

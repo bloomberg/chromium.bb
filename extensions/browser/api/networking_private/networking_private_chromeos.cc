@@ -126,7 +126,7 @@ void AppendDeviceState(
       break;
   }
   DCHECK_NE(private_api::DEVICE_STATE_TYPE_NONE, state);
-  scoped_ptr<private_api::DeviceStateProperties> properties(
+  std::unique_ptr<private_api::DeviceStateProperties> properties(
       new private_api::DeviceStateProperties);
   properties->type = private_api::ParseNetworkType(type);
   properties->state = state;
@@ -143,7 +143,7 @@ void AppendDeviceState(
 void NetworkHandlerFailureCallback(
     const NetworkingPrivateDelegate::FailureCallback& callback,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   callback.Run(error_name);
 }
 
@@ -207,7 +207,7 @@ namespace extensions {
 
 NetworkingPrivateChromeOS::NetworkingPrivateChromeOS(
     content::BrowserContext* browser_context,
-    scoped_ptr<VerifyDelegate> verify_delegate)
+    std::unique_ptr<VerifyDelegate> verify_delegate)
     : NetworkingPrivateDelegate(std::move(verify_delegate)),
       browser_context_(browser_context),
       weak_ptr_factory_(this) {}
@@ -279,7 +279,7 @@ void NetworkingPrivateChromeOS::GetState(
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> network_properties =
+  std::unique_ptr<base::DictionaryValue> network_properties =
       chromeos::network_util::TranslateNetworkStateToONC(network_state);
   AppendThirdPartyProviderName(network_properties.get());
 
@@ -288,7 +288,7 @@ void NetworkingPrivateChromeOS::GetState(
 
 void NetworkingPrivateChromeOS::SetProperties(
     const std::string& guid,
-    scoped_ptr<base::DictionaryValue> properties,
+    std::unique_ptr<base::DictionaryValue> properties,
     const VoidCallback& success_callback,
     const FailureCallback& failure_callback) {
   std::string service_path, error;
@@ -311,7 +311,7 @@ void NetworkHandlerCreateCallback(
 
 void NetworkingPrivateChromeOS::CreateNetwork(
     bool shared,
-    scoped_ptr<base::DictionaryValue> properties,
+    std::unique_ptr<base::DictionaryValue> properties,
     const StringCallback& success_callback,
     const FailureCallback& failure_callback) {
   std::string user_id_hash, error;
@@ -352,7 +352,7 @@ void NetworkingPrivateChromeOS::GetNetworks(
     const FailureCallback& failure_callback) {
   NetworkTypePattern pattern =
       chromeos::onc::NetworkTypePatternFromOncType(network_type);
-  scoped_ptr<base::ListValue> network_properties_list =
+  std::unique_ptr<base::ListValue> network_properties_list =
       chromeos::network_util::TranslateNetworkListToONC(
           pattern, configured_only, visible_only, limit);
 
@@ -549,11 +549,11 @@ void NetworkingPrivateChromeOS::SetCellularSimState(
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
-scoped_ptr<base::ListValue>
+std::unique_ptr<base::ListValue>
 NetworkingPrivateChromeOS::GetEnabledNetworkTypes() {
   chromeos::NetworkStateHandler* state_handler = GetStateHandler();
 
-  scoped_ptr<base::ListValue> network_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> network_list(new base::ListValue);
 
   if (state_handler->IsTechnologyEnabled(NetworkTypePattern::Ethernet()))
     network_list->AppendString(::onc::network_type::kEthernet);
@@ -567,13 +567,13 @@ NetworkingPrivateChromeOS::GetEnabledNetworkTypes() {
   return network_list;
 }
 
-scoped_ptr<NetworkingPrivateDelegate::DeviceStateList>
+std::unique_ptr<NetworkingPrivateDelegate::DeviceStateList>
 NetworkingPrivateChromeOS::GetDeviceStateList() {
   std::set<std::string> technologies_found;
   NetworkStateHandler::DeviceStateList devices;
   NetworkHandler::Get()->network_state_handler()->GetDeviceList(&devices);
 
-  scoped_ptr<DeviceStateList> device_state_list(new DeviceStateList);
+  std::unique_ptr<DeviceStateList> device_state_list(new DeviceStateList);
   for (const DeviceState* device : devices) {
     std::string onc_type =
         chromeos::network_util::TranslateShillTypeToONC(device->type());
@@ -627,7 +627,7 @@ void NetworkingPrivateChromeOS::GetPropertiesCallback(
     const DictionaryCallback& callback,
     const std::string& service_path,
     const base::DictionaryValue& dictionary) {
-  scoped_ptr<base::DictionaryValue> dictionary_copy(dictionary.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> dictionary_copy(dictionary.DeepCopy());
   AppendThirdPartyProviderName(dictionary_copy.get());
   callback.Run(std::move(dictionary_copy));
 }
@@ -660,7 +660,7 @@ void NetworkingPrivateChromeOS::ConnectFailureCallback(
     const VoidCallback& success_callback,
     const FailureCallback& failure_callback,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   // TODO(stevenjb): Temporary workaround to show the configuration UI.
   // Eventually the caller (e.g. Settings) should handle any failures and
   // show its own configuration UI. crbug.com/380937.

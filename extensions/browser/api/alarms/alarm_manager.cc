@@ -45,9 +45,9 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
   ~DefaultAlarmDelegate() override {}
 
   void OnAlarm(const std::string& extension_id, const Alarm& alarm) override {
-    scoped_ptr<base::ListValue> args(new base::ListValue());
+    std::unique_ptr<base::ListValue> args(new base::ListValue());
     args->Append(alarm.js_alarm->ToValue().release());
-    scoped_ptr<Event> event(new Event(
+    std::unique_ptr<Event> event(new Event(
         events::ALARMS_ON_ALARM, alarms::OnAlarm::kEventName, std::move(args)));
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_id, std::move(event));
@@ -79,10 +79,12 @@ std::vector<Alarm> AlarmsFromValue(const base::ListValue* list) {
   return alarms;
 }
 
-scoped_ptr<base::ListValue> AlarmsToValue(const std::vector<Alarm>& alarms) {
-  scoped_ptr<base::ListValue> list(new base::ListValue());
+std::unique_ptr<base::ListValue> AlarmsToValue(
+    const std::vector<Alarm>& alarms) {
+  std::unique_ptr<base::ListValue> list(new base::ListValue());
   for (size_t i = 0; i < alarms.size(); ++i) {
-    scoped_ptr<base::DictionaryValue> alarm = alarms[i].js_alarm->ToValue();
+    std::unique_ptr<base::DictionaryValue> alarm =
+        alarms[i].js_alarm->ToValue();
     alarm->Set(kAlarmGranularity,
                base::CreateTimeDeltaValue(alarms[i].granularity));
     list->Append(alarm.release());
@@ -290,7 +292,7 @@ void AlarmManager::WriteToStorage(const std::string& extension_id) {
   if (!storage)
     return;
 
-  scoped_ptr<base::Value> alarms;
+  std::unique_ptr<base::Value> alarms;
   AlarmMap::iterator list = alarms_.find(extension_id);
   if (list != alarms_.end())
     alarms.reset(AlarmsToValue(list->second).release());
@@ -301,7 +303,7 @@ void AlarmManager::WriteToStorage(const std::string& extension_id) {
 }
 
 void AlarmManager::ReadFromStorage(const std::string& extension_id,
-                                   scoped_ptr<base::Value> value) {
+                                   std::unique_ptr<base::Value> value) {
   base::ListValue* list = NULL;
   if (value.get() && value->GetAsList(&list)) {
     std::vector<Alarm> alarm_states = AlarmsFromValue(list);

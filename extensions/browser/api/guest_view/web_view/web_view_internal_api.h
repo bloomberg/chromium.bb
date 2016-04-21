@@ -111,7 +111,7 @@ class WebViewInternalExecuteCodeFunction
 
   GURL guest_src_;
 
-  scoped_ptr<WebUIURLFetcher> url_fetcher_;
+  std::unique_ptr<WebUIURLFetcher> url_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalExecuteCodeFunction);
 };

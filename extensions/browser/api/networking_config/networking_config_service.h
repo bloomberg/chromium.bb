@@ -6,10 +6,10 @@
 #define EXTENSIONS_BROWSER_API_NETWORKING_CONFIG_NETWORKING_CONFIG_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
@@ -54,7 +54,7 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
 
   // Note: |extension_registry| must outlive this class.
   NetworkingConfigService(content::BrowserContext* browser_context,
-                          scoped_ptr<EventDelegate> event_delegate,
+                          std::unique_ptr<EventDelegate> event_delegate,
                           ExtensionRegistry* extension_registry);
   ~NetworkingConfigService() override;
 
@@ -116,13 +116,13 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
   void OnGetPropertiesFailed(const std::string& extension_id,
                              const std::string& guid,
                              const std::string& error_name,
-                             scoped_ptr<base::DictionaryValue> error_data);
+                             std::unique_ptr<base::DictionaryValue> error_data);
 
   // Creates the captive portal event about the network with guid |guid| that is
   // to be dispatched to the extension identified by |extension_id|. |bssid|
   // contains a human readable, hex-encoded version of the BSSID with bytes
   // separated by colons, e.g. 45:67:89:ab:cd:ef.
-  scoped_ptr<Event> CreatePortalDetectedEventAndDispatch(
+  std::unique_ptr<Event> CreatePortalDetectedEventAndDispatch(
       const std::string& extension_id,
       const std::string& guid,
       const std::string* bssid);
@@ -135,7 +135,7 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;
 
-  scoped_ptr<EventDelegate> event_delegate_;
+  std::unique_ptr<EventDelegate> event_delegate_;
 
   // This map associates a given hex encoded SSID to an extension entry.
   std::map<std::string, std::string> hex_ssid_to_extension_id_;

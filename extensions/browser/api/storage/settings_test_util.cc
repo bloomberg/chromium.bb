@@ -17,21 +17,21 @@ namespace extensions {
 namespace settings_test_util {
 
 // Creates a kilobyte of data.
-scoped_ptr<base::Value> CreateKilobyte() {
+std::unique_ptr<base::Value> CreateKilobyte() {
   std::string kilobyte_string;
   for (int i = 0; i < 1024; ++i) {
     kilobyte_string += "a";
   }
-  return scoped_ptr<base::Value>(new base::StringValue(kilobyte_string));
+  return std::unique_ptr<base::Value>(new base::StringValue(kilobyte_string));
 }
 
 // Creates a megabyte of data.
-scoped_ptr<base::Value> CreateMegabyte() {
+std::unique_ptr<base::Value> CreateMegabyte() {
   base::ListValue* megabyte = new base::ListValue();
   for (int i = 0; i < 1000; ++i) {
     megabyte->Append(CreateKilobyte().release());
   }
-  return scoped_ptr<base::Value>(megabyte);
+  return std::unique_ptr<base::Value>(megabyte);
 }
 
 // Intended as a StorageCallback from GetStorage.
@@ -71,7 +71,7 @@ scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
   manifest.SetString("name", std::string("Test extension ") + id);
   manifest.SetString("version", "1.0");
 
-  scoped_ptr<base::ListValue> permissions(new base::ListValue());
+  std::unique_ptr<base::ListValue> permissions(new base::ListValue());
   for (std::set<std::string>::const_iterator it = permissions_set.begin();
       it != permissions_set.end(); ++it) {
     permissions->Append(new base::StringValue(*it));

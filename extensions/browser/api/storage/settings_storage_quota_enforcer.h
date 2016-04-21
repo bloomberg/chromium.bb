@@ -8,12 +8,12 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/value_store/value_store.h"
 
@@ -35,7 +35,7 @@ class SettingsStorageQuotaEnforcer : public ValueStore {
   };
 
   SettingsStorageQuotaEnforcer(const Limits& limits,
-                               scoped_ptr<ValueStore> delegate);
+                               std::unique_ptr<ValueStore> delegate);
 
   ~SettingsStorageQuotaEnforcer() override;
 
@@ -72,7 +72,7 @@ class SettingsStorageQuotaEnforcer : public ValueStore {
   const Limits limits_;
 
   // The delegate storage area.
-  scoped_ptr<ValueStore> const delegate_;
+  std::unique_ptr<ValueStore> const delegate_;
 
   // Total bytes in used by |delegate_|. Includes both key lengths and
   // JSON-encoded values.

@@ -58,19 +58,19 @@ NetworkingPrivateDelegateFactory::~NetworkingPrivateDelegateFactory() {
 }
 
 void NetworkingPrivateDelegateFactory::SetVerifyDelegateFactory(
-    scoped_ptr<VerifyDelegateFactory> factory) {
+    std::unique_ptr<VerifyDelegateFactory> factory) {
   verify_factory_.reset(factory.release());
 }
 
 void NetworkingPrivateDelegateFactory::SetUIDelegateFactory(
-    scoped_ptr<UIDelegateFactory> factory) {
+    std::unique_ptr<UIDelegateFactory> factory) {
   ui_factory_.reset(factory.release());
 }
 
 KeyedService* NetworkingPrivateDelegateFactory::BuildServiceInstanceFor(
     BrowserContext* browser_context) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  scoped_ptr<NetworkingPrivateDelegate::VerifyDelegate> verify_delegate;
+  std::unique_ptr<NetworkingPrivateDelegate::VerifyDelegate> verify_delegate;
   if (verify_factory_)
     verify_delegate = verify_factory_->CreateDelegate();
 
@@ -82,7 +82,7 @@ KeyedService* NetworkingPrivateDelegateFactory::BuildServiceInstanceFor(
   delegate =
       new NetworkingPrivateLinux(browser_context, std::move(verify_delegate));
 #elif defined(OS_WIN) || defined(OS_MACOSX)
-  scoped_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
+  std::unique_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
   delegate = new NetworkingPrivateServiceClient(std::move(wifi_service),
                                                 std::move(verify_delegate));
 #else

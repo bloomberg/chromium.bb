@@ -101,12 +101,13 @@ class BluetoothSocketEventDispatcher
                                   const std::string& error);
 
   // Post an extension event from IO to UI thread
-  static void PostEvent(const SocketParams& params, scoped_ptr<Event> event);
+  static void PostEvent(const SocketParams& params,
+                        std::unique_ptr<Event> event);
 
   // Dispatch an extension event on to EventRouter instance on UI thread.
   static void DispatchEvent(void* browser_context_id,
                             const std::string& extension_id,
-                            scoped_ptr<Event> event);
+                            std::unique_ptr<Event> event);
 
   // Usually FILE thread (except for unit testing).
   content::BrowserThread::ID thread_id_;

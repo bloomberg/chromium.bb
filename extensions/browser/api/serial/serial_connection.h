@@ -187,11 +187,11 @@ class SerialConnection : public ApiResource,
 
   // Closure which will trigger a receive timeout unless cancelled. Reset on
   // initialization and after every successful Receive().
-  scoped_ptr<TimeoutTask> receive_timeout_task_;
+  std::unique_ptr<TimeoutTask> receive_timeout_task_;
 
   // Write timeout closure. Reset on initialization and after every successful
   // Send().
-  scoped_ptr<TimeoutTask> send_timeout_task_;
+  std::unique_ptr<TimeoutTask> send_timeout_task_;
 
   scoped_refptr<net::IOBuffer> receive_buffer_;
 

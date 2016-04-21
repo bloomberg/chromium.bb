@@ -62,9 +62,9 @@ namespace api {
 
 TCPServerSocketAsyncApiFunction::~TCPServerSocketAsyncApiFunction() {}
 
-scoped_ptr<SocketResourceManagerInterface>
+std::unique_ptr<SocketResourceManagerInterface>
 TCPServerSocketAsyncApiFunction::CreateSocketResourceManager() {
-  return scoped_ptr<SocketResourceManagerInterface>(
+  return std::unique_ptr<SocketResourceManagerInterface>(
       new SocketResourceManager<ResumableTCPServerSocket>());
 }
 

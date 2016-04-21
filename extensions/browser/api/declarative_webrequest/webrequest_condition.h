@@ -78,7 +78,7 @@ class WebRequestCondition {
 
   // Factory method that instantiates a WebRequestCondition according to
   // the description |condition| passed by the extension API.
-  static scoped_ptr<WebRequestCondition> Create(
+  static std::unique_ptr<WebRequestCondition> Create(
       const Extension* extension,
       url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::Value& condition,

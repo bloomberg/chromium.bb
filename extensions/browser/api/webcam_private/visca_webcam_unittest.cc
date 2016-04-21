@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/api/webcam_private/visca_webcam.h"
+
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "extensions/browser/api/webcam_private/visca_webcam.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -92,7 +94,7 @@ class ViscaWebcamTest : public testing::Test {
  protected:
   ViscaWebcamTest() {
     webcam_ = new ViscaWebcam;
-    webcam_->OpenForTesting(make_scoped_ptr(new TestSerialConnection));
+    webcam_->OpenForTesting(base::WrapUnique(new TestSerialConnection));
   }
   ~ViscaWebcamTest() override {}
 

@@ -51,7 +51,7 @@ bool IsSrcValid(GURL src) {
 
 bool ExtensionViewInternalLoadSrcFunction::RunAsyncSafe(
     ExtensionViewGuest* guest) {
-  scoped_ptr<extensionview::LoadSrc::Params> params(
+  std::unique_ptr<extensionview::LoadSrc::Params> params(
       extensionview::LoadSrc::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   std::string src = params->src;
@@ -69,7 +69,7 @@ bool ExtensionViewInternalLoadSrcFunction::RunAsyncSafe(
 }
 
 bool ExtensionViewInternalParseSrcFunction::RunAsync() {
-  scoped_ptr<extensionview::ParseSrc::Params> params(
+  std::unique_ptr<extensionview::ParseSrc::Params> params(
       extensionview::ParseSrc::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   GURL url(params->src);
@@ -77,7 +77,7 @@ bool ExtensionViewInternalParseSrcFunction::RunAsync() {
 
   // Return whether the src is valid and the current extension ID to
   // the callback.
-  scoped_ptr<base::ListValue> result_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> result_list(new base::ListValue());
   result_list->AppendBoolean(is_src_valid);
   result_list->AppendString(url.host());
   SetResultList(std::move(result_list));

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "device/core/device_client.h"
 #include "device/hid/hid_device_filter.h"
 #include "device/hid/hid_service.h"
@@ -121,20 +122,20 @@ void HidDeviceManager::GetApiDevices(
   LazyInitialize();
 
   if (enumeration_ready_) {
-    scoped_ptr<base::ListValue> devices =
+    std::unique_ptr<base::ListValue> devices =
         CreateApiDeviceList(extension, filters);
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, base::Passed(&devices)));
   } else {
-    pending_enumerations_.push_back(
-        make_scoped_ptr(new GetApiDevicesParams(extension, filters, callback)));
+    pending_enumerations_.push_back(base::WrapUnique(
+        new GetApiDevicesParams(extension, filters, callback)));
   }
 }
 
-scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevicesFromList(
+std::unique_ptr<base::ListValue> HidDeviceManager::GetApiDevicesFromList(
     const std::vector<scoped_refptr<HidDeviceInfo>>& devices) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  scoped_ptr<base::ListValue> device_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> device_list(new base::ListValue());
   for (const auto& device : devices) {
     const auto device_entry = resource_ids_.find(device->device_id());
     DCHECK(device_entry != resource_ids_.end());
@@ -224,7 +225,7 @@ void HidDeviceManager::OnDeviceAdded(scoped_refptr<HidDeviceInfo> device_info) {
     PopulateHidDeviceInfo(&api_device_info, device_info);
 
     if (api_device_info.collections.size() > 0) {
-      scoped_ptr<base::ListValue> args(
+      std::unique_ptr<base::ListValue> args(
           hid::OnDeviceAdded::Create(api_device_info));
       DispatchEvent(events::HID_ON_DEVICE_ADDED, hid::OnDeviceAdded::kEventName,
                     std::move(args), device_info);
@@ -245,7 +246,8 @@ void HidDeviceManager::OnDeviceRemoved(
 
   if (event_router_) {
     DCHECK(enumeration_ready_);
-    scoped_ptr<base::ListValue> args(hid::OnDeviceRemoved::Create(resource_id));
+    std::unique_ptr<base::ListValue> args(
+        hid::OnDeviceRemoved::Create(resource_id));
     DispatchEvent(events::HID_ON_DEVICE_REMOVED,
                   hid::OnDeviceRemoved::kEventName, std::move(args),
                   device_info);
@@ -268,13 +270,13 @@ void HidDeviceManager::LazyInitialize() {
   initialized_ = true;
 }
 
-scoped_ptr<base::ListValue> HidDeviceManager::CreateApiDeviceList(
+std::unique_ptr<base::ListValue> HidDeviceManager::CreateApiDeviceList(
     const Extension* extension,
     const std::vector<HidDeviceFilter>& filters) {
   HidService* hid_service = device::DeviceClient::Get()->GetHidService();
   DCHECK(hid_service);
 
-  scoped_ptr<base::ListValue> api_devices(new base::ListValue());
+  std::unique_ptr<base::ListValue> api_devices(new base::ListValue());
   for (const ResourceIdToDeviceIdMap::value_type& map_entry : device_ids_) {
     int resource_id = map_entry.first;
     const HidDeviceId& device_id = map_entry.second;
@@ -317,18 +319,19 @@ void HidDeviceManager::OnEnumerationComplete(
   enumeration_ready_ = true;
 
   for (const auto& params : pending_enumerations_) {
-    scoped_ptr<base::ListValue> devices =
+    std::unique_ptr<base::ListValue> devices =
         CreateApiDeviceList(params->extension, params->filters);
     params->callback.Run(std::move(devices));
   }
   pending_enumerations_.clear();
 }
 
-void HidDeviceManager::DispatchEvent(events::HistogramValue histogram_value,
-                                     const std::string& event_name,
-                                     scoped_ptr<base::ListValue> event_args,
-                                     scoped_refptr<HidDeviceInfo> device_info) {
-  scoped_ptr<Event> event(
+void HidDeviceManager::DispatchEvent(
+    events::HistogramValue histogram_value,
+    const std::string& event_name,
+    std::unique_ptr<base::ListValue> event_args,
+    scoped_refptr<HidDeviceInfo> device_info) {
+  std::unique_ptr<Event> event(
       new Event(histogram_value, event_name, std::move(event_args)));
   event->will_dispatch_callback = base::Bind(
       &WillDispatchDeviceEvent, weak_factory_.GetWeakPtr(), device_info);

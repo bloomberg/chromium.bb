@@ -31,7 +31,7 @@ DnsResolveFunction::DnsResolveFunction()
 DnsResolveFunction::~DnsResolveFunction() {}
 
 bool DnsResolveFunction::RunAsync() {
-  scoped_ptr<Resolve::Params> params(Resolve::Params::Create(*args_));
+  std::unique_ptr<Resolve::Params> params(Resolve::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   hostname_ = params->hostname;
@@ -80,7 +80,7 @@ void DnsResolveFunction::RespondOnUIThread() {
 }
 
 void DnsResolveFunction::OnLookupFinished(int resolve_result) {
-  scoped_ptr<ResolveCallbackResolveInfo> resolve_info(
+  std::unique_ptr<ResolveCallbackResolveInfo> resolve_info(
       new ResolveCallbackResolveInfo());
   resolve_info->result_code = resolve_result;
   if (resolve_result == net::OK) {

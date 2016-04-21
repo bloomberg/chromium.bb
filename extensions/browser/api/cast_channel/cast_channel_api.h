@@ -5,12 +5,12 @@
 #ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_CHANNEL_API_H_
 #define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_CHANNEL_API_H_
 
+#include <memory>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
@@ -59,24 +59,25 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
   scoped_refptr<cast_channel::Logger> GetLogger();
 
   // Sets the CastSocket instance to be used for testing.
-  void SetSocketForTest(scoped_ptr<cast_channel::CastSocket> socket_for_test);
+  void SetSocketForTest(
+      std::unique_ptr<cast_channel::CastSocket> socket_for_test);
 
   // Returns a test CastSocket instance, if it is defined.
   // Otherwise returns a scoped_ptr with a nullptr value.
-  scoped_ptr<cast_channel::CastSocket> GetSocketForTest();
+  std::unique_ptr<cast_channel::CastSocket> GetSocketForTest();
 
   // Returns the API browser context.
   content::BrowserContext* GetBrowserContext() const;
 
   // Sets injected ping timeout timer for testing.
-  void SetPingTimeoutTimerForTest(scoped_ptr<base::Timer> timer);
+  void SetPingTimeoutTimerForTest(std::unique_ptr<base::Timer> timer);
 
   // Gets the injected ping timeout timer, if set.
   // Returns a null scoped ptr if there is no injected timer.
-  scoped_ptr<base::Timer> GetInjectedTimeoutTimerForTest();
+  std::unique_ptr<base::Timer> GetInjectedTimeoutTimerForTest();
 
   // Sends an event to the extension's EventRouter, if it exists.
-  void SendEvent(const std::string& extension_id, scoped_ptr<Event> event);
+  void SendEvent(const std::string& extension_id, std::unique_ptr<Event> event);
 
  private:
   friend class BrowserContextKeyedAPIFactory<CastChannelAPI>;
@@ -90,8 +91,8 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
 
   content::BrowserContext* const browser_context_;
   scoped_refptr<cast_channel::Logger> logger_;
-  scoped_ptr<cast_channel::CastSocket> socket_for_test_;
-  scoped_ptr<base::Timer> injected_timeout_timer_;
+  std::unique_ptr<cast_channel::CastSocket> socket_for_test_;
+  std::unique_ptr<base::Timer> injected_timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelAPI);
 };
@@ -163,7 +164,7 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   //     Parameter #0 is the extension's ID.
   //     Parameter #1 is a scoped pointer to the event payload.
   using EventDispatchCallback =
-      base::Callback<void(const std::string&, scoped_ptr<Event>)>;
+      base::Callback<void(const std::string&, std::unique_ptr<Event>)>;
 
   // Receives incoming messages and errors and provides additional API and
   // origin socket context.
@@ -198,11 +199,11 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
 
   void OnOpen(cast_channel::ChannelError result);
 
-  scoped_ptr<cast_channel::Open::Params> params_;
+  std::unique_ptr<cast_channel::Open::Params> params_;
   // The id of the newly opened socket.
   int new_channel_id_;
   CastChannelAPI* api_;
-  scoped_ptr<net::IPEndPoint> ip_endpoint_;
+  std::unique_ptr<net::IPEndPoint> ip_endpoint_;
   cast_channel::ChannelAuthType channel_auth_;
   base::TimeDelta liveness_timeout_;
   base::TimeDelta ping_interval_;
@@ -227,7 +228,7 @@ class CastChannelSendFunction : public CastChannelAsyncApiFunction {
 
   void OnSend(int result);
 
-  scoped_ptr<cast_channel::Send::Params> params_;
+  std::unique_ptr<cast_channel::Send::Params> params_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelSendFunction);
 };
@@ -248,7 +249,7 @@ class CastChannelCloseFunction : public CastChannelAsyncApiFunction {
 
   void OnClose(int result);
 
-  scoped_ptr<cast_channel::Close::Params> params_;
+  std::unique_ptr<cast_channel::Close::Params> params_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelCloseFunction);
 };

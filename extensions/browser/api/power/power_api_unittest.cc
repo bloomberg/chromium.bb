@@ -5,11 +5,11 @@
 #include "extensions/browser/api/power/power_api.h"
 
 #include <deque>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "extensions/browser/api_test_utils.h"
@@ -88,7 +88,7 @@ class PowerSaveBlockerStubManager {
 
  private:
   // Creates a new PowerSaveBlockerStub of type |type|.
-  scoped_ptr<content::PowerSaveBlocker> CreateStub(
+  std::unique_ptr<content::PowerSaveBlocker> CreateStub(
       content::PowerSaveBlocker::PowerSaveBlockerType type,
       content::PowerSaveBlocker::Reason reason,
       const std::string& description) {
@@ -103,11 +103,9 @@ class PowerSaveBlockerStubManager {
         unblock_request = UNBLOCK_DISPLAY_SLEEP;
         break;
     }
-    return scoped_ptr<content::PowerSaveBlocker>(
-        new PowerSaveBlockerStub(
-            base::Bind(&PowerSaveBlockerStubManager::AppendRequest,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       unblock_request)));
+    return std::unique_ptr<content::PowerSaveBlocker>(new PowerSaveBlockerStub(
+        base::Bind(&PowerSaveBlockerStubManager::AppendRequest,
+                   weak_ptr_factory_.GetWeakPtr(), unblock_request)));
   }
 
   void AppendRequest(Request request) {
@@ -169,7 +167,7 @@ class PowerAPITest : public ApiUnitTest {
                               UnloadedExtensionInfo::REASON_UNINSTALL);
   }
 
-  scoped_ptr<PowerSaveBlockerStubManager> manager_;
+  std::unique_ptr<PowerSaveBlockerStubManager> manager_;
 };
 
 TEST_F(PowerAPITest, RequestAndRelease) {

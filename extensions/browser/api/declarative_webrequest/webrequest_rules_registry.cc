@@ -170,7 +170,7 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
     const WebRequestRule::RuleId& rule_id(*rule->id);
     DCHECK(registered_rules.find(rule_id) == registered_rules.end());
 
-    scoped_ptr<WebRequestRule> webrequest_rule(WebRequestRule::Create(
+    std::unique_ptr<WebRequestRule> webrequest_rule(WebRequestRule::Create(
         url_matcher_.condition_factory(), browser_context(), extension,
         extension_installation_time, rule,
         base::Bind(&Checker, base::Unretained(extension)), &error));

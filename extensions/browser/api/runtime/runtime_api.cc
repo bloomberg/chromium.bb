@@ -4,11 +4,11 @@
 
 #include "extensions/browser/api/runtime/runtime_api.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -113,10 +113,10 @@ void DispatchOnStartupEventImpl(BrowserContext* browser_context,
     return;
   }
 
-  scoped_ptr<base::ListValue> event_args(new base::ListValue());
-  scoped_ptr<Event> event(new Event(events::RUNTIME_ON_STARTUP,
-                                    runtime::OnStartup::kEventName,
-                                    std::move(event_args)));
+  std::unique_ptr<base::ListValue> event_args(new base::ListValue());
+  std::unique_ptr<Event> event(new Event(events::RUNTIME_ON_STARTUP,
+                                         runtime::OnStartup::kEventName,
+                                         std::move(event_args)));
   EventRouter::Get(browser_context)
       ->DispatchEventToExtension(extension_id, std::move(event));
 }
@@ -287,7 +287,7 @@ void RuntimeAPI::StorePendingOnInstallInfoToPref(const Extension* extension) {
   // |pending_on_install_info| currently only contains a version string. Instead
   // of making the pref hold a plain string, we store it as a dictionary value
   // so that we can add more stuff to it in the future if necessary.
-  scoped_ptr<base::DictionaryValue> pending_on_install_info(
+  std::unique_ptr<base::DictionaryValue> pending_on_install_info(
       new base::DictionaryValue());
   base::Version previous_version =
       delegate_->GetPreviousExtensionVersion(extension);
@@ -346,7 +346,7 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
   if (!system)
     return;
 
-  scoped_ptr<base::ListValue> event_args(new base::ListValue());
+  std::unique_ptr<base::ListValue> event_args(new base::ListValue());
   base::DictionaryValue* info = new base::DictionaryValue();
   event_args->Append(info);
   if (old_version.IsValid()) {
@@ -359,9 +359,9 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
   }
   EventRouter* event_router = EventRouter::Get(context);
   DCHECK(event_router);
-  scoped_ptr<Event> event(new Event(events::RUNTIME_ON_INSTALLED,
-                                    runtime::OnInstalled::kEventName,
-                                    std::move(event_args)));
+  std::unique_ptr<Event> event(new Event(events::RUNTIME_ON_INSTALLED,
+                                         runtime::OnInstalled::kEventName,
+                                         std::move(event_args)));
   event_router->DispatchEventWithLazyListener(extension_id, std::move(event));
 
   if (old_version.IsValid()) {
@@ -369,20 +369,20 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
         ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
             extension_id);
     if (extension && SharedModuleInfo::IsSharedModule(extension)) {
-      scoped_ptr<ExtensionSet> dependents =
+      std::unique_ptr<ExtensionSet> dependents =
           system->GetDependentExtensions(extension);
       for (ExtensionSet::const_iterator i = dependents->begin();
            i != dependents->end();
            i++) {
-        scoped_ptr<base::ListValue> sm_event_args(new base::ListValue());
+        std::unique_ptr<base::ListValue> sm_event_args(new base::ListValue());
         base::DictionaryValue* sm_info = new base::DictionaryValue();
         sm_event_args->Append(sm_info);
         sm_info->SetString(kInstallReason, kInstallReasonSharedModuleUpdate);
         sm_info->SetString(kInstallPreviousVersion, old_version.GetString());
         sm_info->SetString(kInstallId, extension_id);
-        scoped_ptr<Event> sm_event(new Event(events::RUNTIME_ON_INSTALLED,
-                                             runtime::OnInstalled::kEventName,
-                                             std::move(sm_event_args)));
+        std::unique_ptr<Event> sm_event(new Event(
+            events::RUNTIME_ON_INSTALLED, runtime::OnInstalled::kEventName,
+            std::move(sm_event_args)));
         event_router->DispatchEventWithLazyListener((*i)->id(),
                                                     std::move(sm_event));
       }
@@ -399,13 +399,13 @@ void RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
   if (!system)
     return;
 
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(manifest->DeepCopy());
   EventRouter* event_router = EventRouter::Get(context);
   DCHECK(event_router);
-  scoped_ptr<Event> event(new Event(events::RUNTIME_ON_UPDATE_AVAILABLE,
-                                    runtime::OnUpdateAvailable::kEventName,
-                                    std::move(args)));
+  std::unique_ptr<Event> event(new Event(events::RUNTIME_ON_UPDATE_AVAILABLE,
+                                         runtime::OnUpdateAvailable::kEventName,
+                                         std::move(args)));
   event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
@@ -416,10 +416,10 @@ void RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
   if (!system)
     return;
 
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   EventRouter* event_router = EventRouter::Get(context);
   DCHECK(event_router);
-  scoped_ptr<Event> event(new Event(
+  std::unique_ptr<Event> event(new Event(
       events::RUNTIME_ON_BROWSER_UPDATE_AVAILABLE,
       runtime::OnBrowserUpdateAvailable::kEventName, std::move(args)));
   event_router->BroadcastEvent(std::move(event));
@@ -434,7 +434,7 @@ void RuntimeEventRouter::DispatchOnRestartRequiredEvent(
   if (!system)
     return;
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::RUNTIME_ON_RESTART_REQUIRED,
                 runtime::OnRestartRequired::kEventName,
                 api::runtime::OnRestartRequired::Create(reason)));

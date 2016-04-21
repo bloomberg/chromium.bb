@@ -5,9 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_MESSAGING_NATIVE_MESSAGE_HOST_H_
 #define EXTENSIONS_BROWSER_API_MESSAGING_NATIVE_MESSAGE_HOST_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -37,7 +37,7 @@ class NativeMessageHost {
   };
 
   // Creates the NativeMessageHost based on the |native_host_name|.
-  static scoped_ptr<NativeMessageHost> Create(
+  static std::unique_ptr<NativeMessageHost> Create(
       gfx::NativeView native_view,
       const std::string& source_extension_id,
       const std::string& native_host_name,

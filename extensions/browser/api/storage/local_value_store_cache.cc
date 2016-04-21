@@ -78,7 +78,7 @@ ValueStore* LocalValueStoreCache::GetStorage(const Extension* extension) {
   ValueStoreFactory::ModelType model_type =
       extension->is_app() ? ValueStoreFactory::ModelType::APP
                           : ValueStoreFactory::ModelType::EXTENSION;
-  scoped_ptr<ValueStore> store = storage_factory_->CreateSettingsStore(
+  std::unique_ptr<ValueStore> store = storage_factory_->CreateSettingsStore(
       settings_namespace::LOCAL, model_type, extension->id());
   linked_ptr<SettingsStorageQuotaEnforcer> storage(
       new SettingsStorageQuotaEnforcer(quota_, std::move(store)));

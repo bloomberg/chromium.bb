@@ -261,8 +261,9 @@ class WebRequestRedirectByRegExAction : public WebRequestAction {
  public:
   // The |to_pattern| has to be passed in RE2 syntax with the exception that
   // capture groups are referenced in Perl style ($1, $2, ...).
-  explicit WebRequestRedirectByRegExAction(scoped_ptr<re2::RE2> from_pattern,
-                                           const std::string& to_pattern);
+  explicit WebRequestRedirectByRegExAction(
+      std::unique_ptr<re2::RE2> from_pattern,
+      const std::string& to_pattern);
 
   // Conversion of capture group styles between Perl style ($1, $2, ...) and
   // RE2 (\1, \2, ...).
@@ -279,7 +280,7 @@ class WebRequestRedirectByRegExAction : public WebRequestAction {
  private:
   ~WebRequestRedirectByRegExAction() override;
 
-  scoped_ptr<re2::RE2> from_pattern_;
+  std::unique_ptr<re2::RE2> from_pattern_;
   std::string to_pattern_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestRedirectByRegExAction);

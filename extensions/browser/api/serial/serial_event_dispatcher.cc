@@ -107,8 +107,9 @@ void SerialEventDispatcher::ReceiveCallback(const ReceiveParams& params,
     serial::ReceiveInfo receive_info;
     receive_info.connection_id = params.connection_id;
     receive_info.data = data;
-    scoped_ptr<base::ListValue> args = serial::OnReceive::Create(receive_info);
-    scoped_ptr<extensions::Event> event(
+    std::unique_ptr<base::ListValue> args =
+        serial::OnReceive::Create(receive_info);
+    std::unique_ptr<extensions::Event> event(
         new extensions::Event(extensions::events::SERIAL_ON_RECEIVE,
                               serial::OnReceive::kEventName, std::move(args)));
     PostEvent(params, std::move(event));
@@ -118,9 +119,9 @@ void SerialEventDispatcher::ReceiveCallback(const ReceiveParams& params,
     serial::ReceiveErrorInfo error_info;
     error_info.connection_id = params.connection_id;
     error_info.error = error;
-    scoped_ptr<base::ListValue> args =
+    std::unique_ptr<base::ListValue> args =
         serial::OnReceiveError::Create(error_info);
-    scoped_ptr<extensions::Event> event(new extensions::Event(
+    std::unique_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::SERIAL_ON_RECEIVE_ERROR,
         serial::OnReceiveError::kEventName, std::move(args)));
     PostEvent(params, std::move(event));
@@ -138,8 +139,9 @@ void SerialEventDispatcher::ReceiveCallback(const ReceiveParams& params,
 }
 
 // static
-void SerialEventDispatcher::PostEvent(const ReceiveParams& params,
-                                      scoped_ptr<extensions::Event> event) {
+void SerialEventDispatcher::PostEvent(
+    const ReceiveParams& params,
+    std::unique_ptr<extensions::Event> event) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
   BrowserThread::PostTask(
@@ -149,9 +151,10 @@ void SerialEventDispatcher::PostEvent(const ReceiveParams& params,
 }
 
 // static
-void SerialEventDispatcher::DispatchEvent(void* browser_context_id,
-                                          const std::string& extension_id,
-                                          scoped_ptr<extensions::Event> event) {
+void SerialEventDispatcher::DispatchEvent(
+    void* browser_context_id,
+    const std::string& extension_id,
+    std::unique_ptr<extensions::Event> event) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::BrowserContext* context =

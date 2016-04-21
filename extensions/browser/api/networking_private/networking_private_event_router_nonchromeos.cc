@@ -135,9 +135,9 @@ void NetworkingPrivateEventRouterImpl::OnNetworksChangedEvent(
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (!event_router)
     return;
-  scoped_ptr<base::ListValue> args(
+  std::unique_ptr<base::ListValue> args(
       api::networking_private::OnNetworksChanged::Create(network_guids));
-  scoped_ptr<Event> netchanged_event(new Event(
+  std::unique_ptr<Event> netchanged_event(new Event(
       events::NETWORKING_PRIVATE_ON_NETWORKS_CHANGED,
       api::networking_private::OnNetworksChanged::kEventName, std::move(args)));
   event_router->BroadcastEvent(std::move(netchanged_event));
@@ -148,9 +148,9 @@ void NetworkingPrivateEventRouterImpl::OnNetworkListChangedEvent(
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (!event_router)
     return;
-  scoped_ptr<base::ListValue> args(
+  std::unique_ptr<base::ListValue> args(
       api::networking_private::OnNetworkListChanged::Create(network_guids));
-  scoped_ptr<Event> netlistchanged_event(
+  std::unique_ptr<Event> netlistchanged_event(
       new Event(events::NETWORKING_PRIVATE_ON_NETWORK_LIST_CHANGED,
                 api::networking_private::OnNetworkListChanged::kEventName,
                 std::move(args)));

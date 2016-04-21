@@ -8,13 +8,13 @@
 #define EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_API_HELPERS_H_
 
 #include <list>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/public/common/resource_type.h"
 #include "extensions/browser/warning_set.h"
@@ -66,8 +66,9 @@ struct ExtraInfoSpec {
 struct RequestCookie {
   RequestCookie();
   ~RequestCookie();
-  scoped_ptr<std::string> name;
-  scoped_ptr<std::string> value;
+  std::unique_ptr<std::string> name;
+  std::unique_ptr<std::string> value;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RequestCookie);
 };
@@ -79,14 +80,15 @@ bool NullableEquals(const RequestCookie* a, const RequestCookie* b);
 struct ResponseCookie {
   ResponseCookie();
   ~ResponseCookie();
-  scoped_ptr<std::string> name;
-  scoped_ptr<std::string> value;
-  scoped_ptr<std::string> expires;
-  scoped_ptr<int> max_age;
-  scoped_ptr<std::string> domain;
-  scoped_ptr<std::string> path;
-  scoped_ptr<bool> secure;
-  scoped_ptr<bool> http_only;
+  std::unique_ptr<std::string> name;
+  std::unique_ptr<std::string> value;
+  std::unique_ptr<std::string> expires;
+  std::unique_ptr<int> max_age;
+  std::unique_ptr<std::string> domain;
+  std::unique_ptr<std::string> path;
+  std::unique_ptr<bool> secure;
+  std::unique_ptr<bool> http_only;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ResponseCookie);
 };
@@ -98,9 +100,10 @@ bool NullableEquals(const ResponseCookie* a, const ResponseCookie* b);
 struct FilterResponseCookie : ResponseCookie {
   FilterResponseCookie();
   ~FilterResponseCookie();
-  scoped_ptr<int> age_lower_bound;
-  scoped_ptr<int> age_upper_bound;
-  scoped_ptr<bool> session_cookie;
+  std::unique_ptr<int> age_lower_bound;
+  std::unique_ptr<int> age_upper_bound;
+  std::unique_ptr<bool> session_cookie;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FilterResponseCookie);
 };
@@ -119,9 +122,10 @@ struct RequestCookieModification {
   ~RequestCookieModification();
   CookieModificationType type;
   // Used for EDIT and REMOVE. NULL for ADD.
-  scoped_ptr<RequestCookie> filter;
+  std::unique_ptr<RequestCookie> filter;
   // Used for ADD and EDIT. NULL for REMOVE.
-  scoped_ptr<RequestCookie> modification;
+  std::unique_ptr<RequestCookie> modification;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RequestCookieModification);
 };
@@ -134,9 +138,10 @@ struct ResponseCookieModification {
   ~ResponseCookieModification();
   CookieModificationType type;
   // Used for EDIT and REMOVE.
-  scoped_ptr<FilterResponseCookie> filter;
+  std::unique_ptr<FilterResponseCookie> filter;
   // Used for ADD and EDIT.
-  scoped_ptr<ResponseCookie> modification;
+  std::unique_ptr<ResponseCookie> modification;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ResponseCookieModification);
 };
@@ -177,7 +182,7 @@ struct EventResponseDelta {
   ResponseHeaders deleted_response_headers;
 
   // Authentication Credentials to use.
-  scoped_ptr<net::AuthCredentials> auth_credentials;
+  std::unique_ptr<net::AuthCredentials> auth_credentials;
 
   // Modifications to cookies in request headers.
   RequestCookieModifications request_cookie_modifications;
@@ -243,7 +248,7 @@ EventResponseDelta* CalculateOnAuthRequiredDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
-    scoped_ptr<net::AuthCredentials>* auth_credentials);
+    std::unique_ptr<net::AuthCredentials>* auth_credentials);
 
 // These functions merge the responses (the |deltas|) of request handlers.
 // The |deltas| need to be sorted in decreasing order of precedence of

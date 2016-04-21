@@ -6,11 +6,11 @@
 #define EXTENSIONS_BROWSER_API_API_RESOURCE_MANAGER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/keyed_service/core/keyed_service.h"

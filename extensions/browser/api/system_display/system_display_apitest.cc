@@ -92,7 +92,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
     unified_desktop_enabled_ = enable;
   }
 
-  scoped_ptr<base::DictionaryValue> GetSetInfoValue() {
+  std::unique_ptr<base::DictionaryValue> GetSetInfoValue() {
     return std::move(set_info_value_);
   }
 
@@ -124,7 +124,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
     }
   }
 
-  scoped_ptr<base::DictionaryValue> set_info_value_;
+  std::unique_ptr<base::DictionaryValue> set_info_value_;
   std::string set_info_display_id_;
   bool unified_desktop_enabled_ = false;
 
@@ -146,8 +146,8 @@ class SystemDisplayApiTest : public ShellApiTest {
   }
 
  protected:
-  scoped_ptr<MockDisplayInfoProvider> provider_;
-  scoped_ptr<gfx::Screen> screen_;
+  std::unique_ptr<MockDisplayInfoProvider> provider_;
+  std::unique_ptr<gfx::Screen> screen_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemDisplayApiTest);
@@ -169,24 +169,24 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplay) {
       api_test_utils::RunFunctionAndReturnError(
           set_info_function.get(), "[\"display_id\", {}]", browser_context()));
 
-  scoped_ptr<base::DictionaryValue> set_info = provider_->GetSetInfoValue();
+  std::unique_ptr<base::DictionaryValue> set_info =
+      provider_->GetSetInfoValue();
   EXPECT_FALSE(set_info);
 }
 #endif  // !defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayNotKioskEnabled) {
-  scoped_ptr<base::DictionaryValue> test_extension_value(
-      api_test_utils::ParseDictionary(
-          "{\n"
-          "  \"name\": \"Test\",\n"
-          "  \"version\": \"1.0\",\n"
-          "  \"app\": {\n"
-          "    \"background\": {\n"
-          "      \"scripts\": [\"background.js\"]\n"
-          "    }\n"
-          "  }\n"
-          "}"));
+  std::unique_ptr<base::DictionaryValue> test_extension_value(
+      api_test_utils::ParseDictionary("{\n"
+                                      "  \"name\": \"Test\",\n"
+                                      "  \"version\": \"1.0\",\n"
+                                      "  \"app\": {\n"
+                                      "    \"background\": {\n"
+                                      "      \"scripts\": [\"background.js\"]\n"
+                                      "    }\n"
+                                      "  }\n"
+                                      "}"));
   scoped_refptr<Extension> test_extension(
       api_test_utils::CreateExtension(test_extension_value.get()));
 
@@ -201,23 +201,23 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayNotKioskEnabled) {
       api_test_utils::RunFunctionAndReturnError(
           set_info_function.get(), "[\"display_id\", {}]", browser_context()));
 
-  scoped_ptr<base::DictionaryValue> set_info = provider_->GetSetInfoValue();
+  std::unique_ptr<base::DictionaryValue> set_info =
+      provider_->GetSetInfoValue();
   EXPECT_FALSE(set_info);
 }
 
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayKioskEnabled) {
-  scoped_ptr<base::DictionaryValue> test_extension_value(
-      api_test_utils::ParseDictionary(
-          "{\n"
-          "  \"name\": \"Test\",\n"
-          "  \"version\": \"1.0\",\n"
-          "  \"app\": {\n"
-          "    \"background\": {\n"
-          "      \"scripts\": [\"background.js\"]\n"
-          "    }\n"
-          "  },\n"
-          "  \"kiosk_enabled\": true\n"
-          "}"));
+  std::unique_ptr<base::DictionaryValue> test_extension_value(
+      api_test_utils::ParseDictionary("{\n"
+                                      "  \"name\": \"Test\",\n"
+                                      "  \"version\": \"1.0\",\n"
+                                      "  \"app\": {\n"
+                                      "    \"background\": {\n"
+                                      "      \"scripts\": [\"background.js\"]\n"
+                                      "    }\n"
+                                      "  },\n"
+                                      "  \"kiosk_enabled\": true\n"
+                                      "}"));
   scoped_refptr<Extension> test_extension(
       api_test_utils::CreateExtension(test_extension_value.get()));
 
@@ -239,7 +239,8 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayKioskEnabled) {
       "}]",
       browser_context()));
 
-  scoped_ptr<base::DictionaryValue> set_info = provider_->GetSetInfoValue();
+  std::unique_ptr<base::DictionaryValue> set_info =
+      provider_->GetSetInfoValue();
   ASSERT_TRUE(set_info);
   EXPECT_TRUE(api_test_utils::GetBoolean(set_info.get(), "isPrimary"));
   EXPECT_EQ("mirroringId",
@@ -258,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayKioskEnabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, EnableUnifiedDesktop) {
-  scoped_ptr<base::DictionaryValue> test_extension_value(
+  std::unique_ptr<base::DictionaryValue> test_extension_value(
       api_test_utils::ParseDictionary("{\n"
                                       "  \"name\": \"Test\",\n"
                                       "  \"version\": \"1.0\",\n"

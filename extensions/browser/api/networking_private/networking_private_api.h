@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_API_H_
 #define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_API_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/browser/extension_function.h"
 
@@ -40,7 +40,7 @@ class NetworkingPrivateGetPropertiesFunction : public AsyncExtensionFunction {
   bool RunAsync() override;
 
  private:
-  void Success(scoped_ptr<base::DictionaryValue> result);
+  void Success(std::unique_ptr<base::DictionaryValue> result);
   void Failure(const std::string& error_name);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetPropertiesFunction);
@@ -61,7 +61,7 @@ class NetworkingPrivateGetManagedPropertiesFunction
   bool RunAsync() override;
 
  private:
-  void Success(scoped_ptr<base::DictionaryValue> result);
+  void Success(std::unique_ptr<base::DictionaryValue> result);
   void Failure(const std::string& error);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetManagedPropertiesFunction);
@@ -81,7 +81,7 @@ class NetworkingPrivateGetStateFunction : public AsyncExtensionFunction {
   bool RunAsync() override;
 
  private:
-  void Success(scoped_ptr<base::DictionaryValue> result);
+  void Success(std::unique_ptr<base::DictionaryValue> result);
   void Failure(const std::string& error);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetStateFunction);
@@ -161,7 +161,7 @@ class NetworkingPrivateGetNetworksFunction : public AsyncExtensionFunction {
   bool RunAsync() override;
 
  private:
-  void Success(scoped_ptr<base::ListValue> network_list);
+  void Success(std::unique_ptr<base::ListValue> network_list);
   void Failure(const std::string& error);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetNetworksFunction);
@@ -182,7 +182,7 @@ class NetworkingPrivateGetVisibleNetworksFunction
   bool RunAsync() override;
 
  private:
-  void Success(scoped_ptr<base::ListValue> network_list);
+  void Success(std::unique_ptr<base::ListValue> network_list);
   void Failure(const std::string& error);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetVisibleNetworksFunction);

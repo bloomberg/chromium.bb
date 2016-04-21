@@ -25,7 +25,7 @@ CastTransport::Delegate* MockCastTransport::current_delegate() const {
 }
 
 void MockCastTransport::SetReadDelegate(
-    scoped_ptr<CastTransport::Delegate> delegate) {
+    std::unique_ptr<CastTransport::Delegate> delegate) {
   delegate_ = std::move(delegate);
 }
 

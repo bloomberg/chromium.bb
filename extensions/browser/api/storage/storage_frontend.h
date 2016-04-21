@@ -6,11 +6,11 @@
 #define EXTENSIONS_BROWSER_API_STORAGE_STORAGE_FRONTEND_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/api/storage/value_store_cache.h"
@@ -31,7 +31,7 @@ class StorageFrontend : public BrowserContextKeyedAPI {
   static StorageFrontend* Get(content::BrowserContext* context);
 
   // Creates with a specific |storage_factory|.
-  static scoped_ptr<StorageFrontend> CreateForTesting(
+  static std::unique_ptr<StorageFrontend> CreateForTesting(
       const scoped_refptr<ValueStoreFactory>& storage_factory,
       content::BrowserContext* context);
 
@@ -87,7 +87,7 @@ class StorageFrontend : public BrowserContextKeyedAPI {
   scoped_refptr<SettingsObserverList> observers_;
 
   // Observer for |browser_context_|.
-  scoped_ptr<SettingsObserver> browser_context_observer_;
+  std::unique_ptr<SettingsObserver> browser_context_observer_;
 
   // Maps a known namespace to its corresponding ValueStoreCache. The caches
   // are owned by this object.

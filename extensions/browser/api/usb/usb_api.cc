@@ -5,13 +5,13 @@
 #include "extensions/browser/api/usb/usb_api.h"
 
 #include <algorithm>
+#include <memory>
 #include <numeric>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/core/device_client.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_handle.h"
@@ -459,7 +459,8 @@ UsbTransferFunction::~UsbTransferFunction() {
 void UsbTransferFunction::OnCompleted(UsbTransferStatus status,
                                       scoped_refptr<net::IOBuffer> data,
                                       size_t length) {
-  scoped_ptr<base::DictionaryValue> transfer_info(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> transfer_info(
+      new base::DictionaryValue());
   transfer_info->SetInteger(kResultCodeKey, status);
   transfer_info->Set(kDataKey, base::BinaryValue::CreateWithCopiedBuffer(
                                    data->data(), length));
@@ -467,7 +468,7 @@ void UsbTransferFunction::OnCompleted(UsbTransferStatus status,
   if (status == device::USB_TRANSFER_COMPLETED) {
     Respond(OneArgument(std::move(transfer_info)));
   } else {
-    scoped_ptr<base::ListValue> error_args(new base::ListValue());
+    std::unique_ptr<base::ListValue> error_args(new base::ListValue());
     error_args->Append(std::move(transfer_info));
     // Using ErrorWithArguments is discouraged but required to provide the
     // detailed transfer info as the transfer may have partially succeeded.
@@ -483,7 +484,7 @@ UsbFindDevicesFunction::~UsbFindDevicesFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbFindDevicesFunction::Run() {
-  scoped_ptr<extensions::api::usb::FindDevices::Params> parameters =
+  std::unique_ptr<extensions::api::usb::FindDevices::Params> parameters =
       FindDevices::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -549,7 +550,7 @@ UsbGetDevicesFunction::~UsbGetDevicesFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbGetDevicesFunction::Run() {
-  scoped_ptr<extensions::api::usb::GetDevices::Params> parameters =
+  std::unique_ptr<extensions::api::usb::GetDevices::Params> parameters =
       GetDevices::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -579,7 +580,7 @@ ExtensionFunction::ResponseAction UsbGetDevicesFunction::Run() {
 
 void UsbGetDevicesFunction::OnGetDevicesComplete(
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+  std::unique_ptr<base::ListValue> result(new base::ListValue());
   UsbGuidMap* guid_map = UsbGuidMap::Get(browser_context());
   for (const scoped_refptr<UsbDevice>& device : devices) {
     if ((filters_.empty() || UsbDeviceFilter::MatchesAny(device, filters_)) &&
@@ -600,8 +601,8 @@ UsbGetUserSelectedDevicesFunction::~UsbGetUserSelectedDevicesFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
-  scoped_ptr<extensions::api::usb::GetUserSelectedDevices::Params> parameters =
-      GetUserSelectedDevices::Params::Create(*args_);
+  std::unique_ptr<extensions::api::usb::GetUserSelectedDevices::Params>
+      parameters = GetUserSelectedDevices::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   if (!user_gesture()) {
@@ -635,7 +636,7 @@ ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
 
 void UsbGetUserSelectedDevicesFunction::OnDevicesChosen(
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+  std::unique_ptr<base::ListValue> result(new base::ListValue());
   UsbGuidMap* guid_map = UsbGuidMap::Get(browser_context());
   for (const auto& device : devices) {
     Device api_device;
@@ -651,7 +652,7 @@ UsbGetConfigurationsFunction::UsbGetConfigurationsFunction() {}
 UsbGetConfigurationsFunction::~UsbGetConfigurationsFunction() {}
 
 ExtensionFunction::ResponseAction UsbGetConfigurationsFunction::Run() {
-  scoped_ptr<extensions::api::usb::GetConfigurations::Params> parameters =
+  std::unique_ptr<extensions::api::usb::GetConfigurations::Params> parameters =
       GetConfigurations::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -677,7 +678,7 @@ ExtensionFunction::ResponseAction UsbGetConfigurationsFunction::Run() {
     return RespondNow(Error(kErrorNoDevice));
   }
 
-  scoped_ptr<base::ListValue> configs(new base::ListValue());
+  std::unique_ptr<base::ListValue> configs(new base::ListValue());
   const UsbConfigDescriptor* active_config = device->GetActiveConfiguration();
   for (const UsbConfigDescriptor& config : device->configurations()) {
     ConfigDescriptor api_config = ConvertConfigDescriptor(config);
@@ -697,7 +698,7 @@ UsbRequestAccessFunction::~UsbRequestAccessFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbRequestAccessFunction::Run() {
-  scoped_ptr<extensions::api::usb::RequestAccess::Params> parameters =
+  std::unique_ptr<extensions::api::usb::RequestAccess::Params> parameters =
       RequestAccess::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
   return RespondNow(OneArgument(new base::FundamentalValue(true)));
@@ -710,7 +711,7 @@ UsbOpenDeviceFunction::~UsbOpenDeviceFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbOpenDeviceFunction::Run() {
-  scoped_ptr<extensions::api::usb::OpenDevice::Params> parameters =
+  std::unique_ptr<extensions::api::usb::OpenDevice::Params> parameters =
       OpenDevice::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -764,7 +765,7 @@ UsbSetConfigurationFunction::~UsbSetConfigurationFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbSetConfigurationFunction::Run() {
-  scoped_ptr<extensions::api::usb::SetConfiguration::Params> parameters =
+  std::unique_ptr<extensions::api::usb::SetConfiguration::Params> parameters =
       SetConfiguration::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -795,7 +796,7 @@ UsbGetConfigurationFunction::~UsbGetConfigurationFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbGetConfigurationFunction::Run() {
-  scoped_ptr<extensions::api::usb::GetConfiguration::Params> parameters =
+  std::unique_ptr<extensions::api::usb::GetConfiguration::Params> parameters =
       GetConfiguration::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -823,7 +824,7 @@ UsbListInterfacesFunction::~UsbListInterfacesFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbListInterfacesFunction::Run() {
-  scoped_ptr<extensions::api::usb::ListInterfaces::Params> parameters =
+  std::unique_ptr<extensions::api::usb::ListInterfaces::Params> parameters =
       ListInterfaces::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -838,7 +839,7 @@ ExtensionFunction::ResponseAction UsbListInterfacesFunction::Run() {
   if (config_descriptor) {
     ConfigDescriptor config = ConvertConfigDescriptor(*config_descriptor);
 
-    scoped_ptr<base::ListValue> result(new base::ListValue);
+    std::unique_ptr<base::ListValue> result(new base::ListValue);
     for (size_t i = 0; i < config.interfaces.size(); ++i) {
       result->Append(config.interfaces[i].ToValue());
     }
@@ -856,7 +857,7 @@ UsbCloseDeviceFunction::~UsbCloseDeviceFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbCloseDeviceFunction::Run() {
-  scoped_ptr<extensions::api::usb::CloseDevice::Params> parameters =
+  std::unique_ptr<extensions::api::usb::CloseDevice::Params> parameters =
       CloseDevice::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -878,7 +879,7 @@ UsbClaimInterfaceFunction::~UsbClaimInterfaceFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbClaimInterfaceFunction::Run() {
-  scoped_ptr<extensions::api::usb::ClaimInterface::Params> parameters =
+  std::unique_ptr<extensions::api::usb::ClaimInterface::Params> parameters =
       ClaimInterface::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -909,7 +910,7 @@ UsbReleaseInterfaceFunction::~UsbReleaseInterfaceFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbReleaseInterfaceFunction::Run() {
-  scoped_ptr<extensions::api::usb::ReleaseInterface::Params> parameters =
+  std::unique_ptr<extensions::api::usb::ReleaseInterface::Params> parameters =
       ReleaseInterface::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -942,7 +943,7 @@ UsbSetInterfaceAlternateSettingFunction::
 
 ExtensionFunction::ResponseAction
 UsbSetInterfaceAlternateSettingFunction::Run() {
-  scoped_ptr<extensions::api::usb::SetInterfaceAlternateSetting::Params>
+  std::unique_ptr<extensions::api::usb::SetInterfaceAlternateSetting::Params>
       parameters = SetInterfaceAlternateSetting::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -973,7 +974,7 @@ UsbControlTransferFunction::~UsbControlTransferFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbControlTransferFunction::Run() {
-  scoped_ptr<extensions::api::usb::ControlTransfer::Params> parameters =
+  std::unique_ptr<extensions::api::usb::ControlTransfer::Params> parameters =
       ControlTransfer::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -1030,7 +1031,7 @@ UsbBulkTransferFunction::~UsbBulkTransferFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbBulkTransferFunction::Run() {
-  scoped_ptr<extensions::api::usb::BulkTransfer::Params> parameters =
+  std::unique_ptr<extensions::api::usb::BulkTransfer::Params> parameters =
       BulkTransfer::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -1076,7 +1077,7 @@ UsbInterruptTransferFunction::~UsbInterruptTransferFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbInterruptTransferFunction::Run() {
-  scoped_ptr<extensions::api::usb::InterruptTransfer::Params> parameters =
+  std::unique_ptr<extensions::api::usb::InterruptTransfer::Params> parameters =
       InterruptTransfer::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -1122,8 +1123,8 @@ UsbIsochronousTransferFunction::~UsbIsochronousTransferFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbIsochronousTransferFunction::Run() {
-  scoped_ptr<extensions::api::usb::IsochronousTransfer::Params> parameters =
-      IsochronousTransfer::Params::Create(*args_);
+  std::unique_ptr<extensions::api::usb::IsochronousTransfer::Params>
+      parameters = IsochronousTransfer::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   scoped_refptr<UsbDeviceHandle> device_handle =
@@ -1186,7 +1187,7 @@ void UsbIsochronousTransferFunction::OnCompleted(
       [](const size_t& a, const UsbDeviceHandle::IsochronousPacket& packet) {
         return a + packet.transferred_length;
       });
-  scoped_ptr<char[]> buffer(new char[length]);
+  std::unique_ptr<char[]> buffer(new char[length]);
 
   UsbTransferStatus status = device::USB_TRANSFER_COMPLETED;
   size_t buffer_offset = 0;
@@ -1204,14 +1205,15 @@ void UsbIsochronousTransferFunction::OnCompleted(
     data_offset += packet.length;
   }
 
-  scoped_ptr<base::DictionaryValue> transfer_info(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> transfer_info(
+      new base::DictionaryValue());
   transfer_info->SetInteger(kResultCodeKey, status);
   transfer_info->Set(kDataKey,
                      new base::BinaryValue(std::move(buffer), length));
   if (status == device::USB_TRANSFER_COMPLETED) {
     Respond(OneArgument(std::move(transfer_info)));
   } else {
-    scoped_ptr<base::ListValue> error_args(new base::ListValue());
+    std::unique_ptr<base::ListValue> error_args(new base::ListValue());
     error_args->Append(std::move(transfer_info));
     // Using ErrorWithArguments is discouraged but required to provide the
     // detailed transfer info as the transfer may have partially succeeded.
@@ -1252,7 +1254,7 @@ void UsbResetDeviceFunction::OnComplete(bool success) {
     }
     ReleaseDeviceHandle(parameters_->handle);
 
-    scoped_ptr<base::ListValue> error_args(new base::ListValue());
+    std::unique_ptr<base::ListValue> error_args(new base::ListValue());
     error_args->AppendBoolean(false);
     // Using ErrorWithArguments is discouraged but required to maintain
     // compatibility with existing applications.

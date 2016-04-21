@@ -105,7 +105,7 @@ void UsbEventRouter::DispatchEvent(const std::string& event_name,
     usb::Device device_obj;
     UsbGuidMap::Get(browser_context_)->GetApiDevice(device, &device_obj);
 
-    scoped_ptr<Event> event;
+    std::unique_ptr<Event> event;
     if (event_name == usb::OnDeviceAdded::kEventName) {
       event.reset(new Event(events::USB_ON_DEVICE_ADDED,
                             usb::OnDeviceAdded::kEventName,

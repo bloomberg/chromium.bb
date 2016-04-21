@@ -72,7 +72,7 @@ class CastSocket : public ApiResource {
   // CHANNEL_ERROR_NONE if successful.
   // |delegate| receives message receipt and error events.
   // Ownership of |delegate| is transferred to this CastSocket.
-  virtual void Connect(scoped_ptr<CastTransport::Delegate> delegate,
+  virtual void Connect(std::unique_ptr<CastTransport::Delegate> delegate,
                        base::Callback<void(ChannelError)> callback) = 0;
 
   // Closes the channel if not already closed. On completion, the channel will
@@ -157,7 +157,7 @@ class CastSocketImpl : public CastSocket {
   ~CastSocketImpl() override;
 
   // CastSocket interface.
-  void Connect(scoped_ptr<CastTransport::Delegate> delegate,
+  void Connect(std::unique_ptr<CastTransport::Delegate> delegate,
                base::Callback<void(ChannelError)> callback) override;
   CastTransport* transport() const override;
   void Close(const net::CompletionCallback& callback) override;
@@ -199,7 +199,7 @@ class CastSocketImpl : public CastSocket {
 
   // Replaces the internally-constructed transport object with one provided
   // by the caller (e.g. a mock).
-  void SetTransportForTesting(scoped_ptr<CastTransport> transport);
+  void SetTransportForTesting(std::unique_ptr<CastTransport> transport);
 
   // Verifies whether the socket complies with cast channel policy.
   // Audio only channel policy mandates that a device declaring a video out
@@ -225,10 +225,10 @@ class CastSocketImpl : public CastSocket {
   void CloseInternal();
 
   // Creates an instance of TCPClientSocket.
-  virtual scoped_ptr<net::TCPClientSocket> CreateTcpSocket();
+  virtual std::unique_ptr<net::TCPClientSocket> CreateTcpSocket();
   // Creates an instance of SSLClientSocket with the given underlying |socket|.
-  virtual scoped_ptr<net::SSLClientSocket> CreateSslSocket(
-      scoped_ptr<net::StreamSocket> socket);
+  virtual std::unique_ptr<net::SSLClientSocket> CreateSslSocket(
+      std::unique_ptr<net::StreamSocket> socket);
   // Extracts peer certificate from SSLClientSocket instance when the socket
   // is in cert error state.
   // Returns null if the certificate could not be extracted.
@@ -304,21 +304,21 @@ class CastSocketImpl : public CastSocket {
   // CertVerifier is owned by us but should be deleted AFTER SSLClientSocket
   // since in some cases the destructor of SSLClientSocket may call a method
   // to cancel a cert verification request.
-  scoped_ptr<net::CertVerifier> cert_verifier_;
-  scoped_ptr<net::TransportSecurityState> transport_security_state_;
+  std::unique_ptr<net::CertVerifier> cert_verifier_;
+  std::unique_ptr<net::TransportSecurityState> transport_security_state_;
 
   // Owned ptr to the underlying TCP socket.
-  scoped_ptr<net::TCPClientSocket> tcp_socket_;
+  std::unique_ptr<net::TCPClientSocket> tcp_socket_;
 
   // Owned ptr to the underlying SSL socket.
-  scoped_ptr<net::SSLClientSocket> socket_;
+  std::unique_ptr<net::SSLClientSocket> socket_;
 
   // Certificate of the peer. This field may be empty if the peer
   // certificate is not yet fetched.
   scoped_refptr<net::X509Certificate> peer_cert_;
 
   // Reply received from the receiver to a challenge request.
-  scoped_ptr<CastMessage> challenge_reply_;
+  std::unique_ptr<CastMessage> challenge_reply_;
 
   // Callback invoked when the socket is connected or fails to connect.
   base::Callback<void(ChannelError)> connect_callback_;
@@ -330,7 +330,7 @@ class CastSocketImpl : public CastSocket {
   base::TimeDelta connect_timeout_;
 
   // Timer invoked when the connection has timed out.
-  scoped_ptr<base::Timer> connect_timeout_timer_;
+  std::unique_ptr<base::Timer> connect_timeout_timer_;
 
   // Set when a timeout is triggered and the connection process has
   // canceled.
@@ -367,10 +367,10 @@ class CastSocketImpl : public CastSocket {
   base::CancelableClosure send_auth_challenge_callback_;
 
   // Cast message formatting and parsing layer.
-  scoped_ptr<CastTransport> transport_;
+  std::unique_ptr<CastTransport> transport_;
 
   // Caller's message read and error handling delegate.
-  scoped_ptr<CastTransport::Delegate> delegate_;
+  std::unique_ptr<CastTransport::Delegate> delegate_;
 
   // Raw pointer to the auth handshake delegate. Used to get detailed error
   // information.

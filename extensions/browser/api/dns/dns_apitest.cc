@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -51,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
   resolve_function->set_extension(empty_extension.get());
   resolve_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
       resolve_function.get(), "[\"127.0.0.1\"]", browser_context()));
   base::DictionaryValue* dict = NULL;
   ASSERT_TRUE(result->GetAsDictionary(&dict));
@@ -75,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
   std::string function_arguments("[\"");
   function_arguments += MockHostResolverCreator::kHostname;
   function_arguments += "\"]";
-  scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
       resolve_function.get(), function_arguments, browser_context()));
   base::DictionaryValue* dict = NULL;
   ASSERT_TRUE(result->GetAsDictionary(&dict));

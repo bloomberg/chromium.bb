@@ -71,7 +71,7 @@ class CastTransport {
   // in-flight.
   // Ownership of the pointee of |delegate| is assumed by the transport.
   // Prior delegates are deleted automatically.
-  virtual void SetReadDelegate(scoped_ptr<Delegate> delegate) = 0;
+  virtual void SetReadDelegate(std::unique_ptr<Delegate> delegate) = 0;
 };
 
 // Manager class for reading and writing messages to/from a socket.
@@ -95,7 +95,7 @@ class CastTransportImpl : public CastTransport, public base::NonThreadSafe {
   void SendMessage(const CastMessage& message,
                    const net::CompletionCallback& callback) override;
   void Start() override;
-  void SetReadDelegate(scoped_ptr<Delegate> delegate) override;
+  void SetReadDelegate(std::unique_ptr<Delegate> delegate) override;
 
  private:
   // Internal write states.
@@ -185,16 +185,16 @@ class CastTransportImpl : public CastTransport, public base::NonThreadSafe {
   scoped_refptr<net::GrowableIOBuffer> read_buffer_;
 
   // Constructs and parses the wire representation of message frames.
-  scoped_ptr<MessageFramer> framer_;
+  std::unique_ptr<MessageFramer> framer_;
 
   // Last message received on the socket.
-  scoped_ptr<CastMessage> current_message_;
+  std::unique_ptr<CastMessage> current_message_;
 
   // Socket used for I/O operations.
   net::Socket* const socket_;
 
   // Methods for communicating message receipt and error status to client code.
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   // Write flow state machine state.
   WriteState write_state_;

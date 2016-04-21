@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_device_handle.h"
@@ -83,7 +83,7 @@ class UsbFindDevicesFunction : public UIThreadExtensionFunction {
 
   uint16_t vendor_id_;
   uint16_t product_id_;
-  scoped_ptr<base::ListValue> result_;
+  std::unique_ptr<base::ListValue> result_;
   base::Closure barrier_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbFindDevicesFunction);
@@ -125,7 +125,7 @@ class UsbGetUserSelectedDevicesFunction : public UIThreadExtensionFunction {
   void OnDevicesChosen(
       const std::vector<scoped_refptr<device::UsbDevice>>& devices);
 
-  scoped_ptr<DevicePermissionsPrompt> prompt_;
+  std::unique_ptr<DevicePermissionsPrompt> prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbGetUserSelectedDevicesFunction);
 };
@@ -369,7 +369,7 @@ class UsbResetDeviceFunction : public UsbConnectionFunction {
 
   void OnComplete(bool success);
 
-  scoped_ptr<extensions::api::usb::ResetDevice::Params> parameters_;
+  std::unique_ptr<extensions::api::usb::ResetDevice::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbResetDeviceFunction);
 };

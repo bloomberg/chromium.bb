@@ -106,7 +106,7 @@ TEST_F(DocumentScanScanFunctionTest, Success) {
   EXPECT_CALL(*document_scan_interface_, Scan(_, _, _, _))
       .WillOnce(InvokeScanCallback(kScanData, kMimeType, ""));
   function_->set_user_gesture(true);
-  scoped_ptr<base::DictionaryValue> result(
+  std::unique_ptr<base::DictionaryValue> result(
       RunFunctionAndReturnDictionary(function_, "[{}]"));
   ASSERT_NE(nullptr, result.get());
   document_scan::ScanResults scan_results;

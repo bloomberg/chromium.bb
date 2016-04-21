@@ -25,7 +25,7 @@ namespace extensions {
 class TCPSocket : public Socket {
  public:
   explicit TCPSocket(const std::string& owner_extension_id);
-  TCPSocket(scoped_ptr<net::TCPClientSocket> tcp_client_socket,
+  TCPSocket(std::unique_ptr<net::TCPClientSocket> tcp_client_socket,
             const std::string& owner_extension_id,
             bool is_connected = false);
 
@@ -62,11 +62,11 @@ class TCPSocket : public Socket {
   Socket::SocketType GetSocketType() const override;
 
   static TCPSocket* CreateSocketForTesting(
-      scoped_ptr<net::TCPClientSocket> tcp_client_socket,
+      std::unique_ptr<net::TCPClientSocket> tcp_client_socket,
       const std::string& owner_extension_id,
       bool is_connected = false);
   static TCPSocket* CreateServerSocketForTesting(
-      scoped_ptr<net::TCPServerSocket> tcp_server_socket,
+      std::unique_ptr<net::TCPServerSocket> tcp_server_socket,
       const std::string& owner_extension_id);
 
   // Returns NULL if GetSocketType() isn't TYPE_TCP or if the connection
@@ -87,11 +87,11 @@ class TCPSocket : public Socket {
   void OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer, int result);
   void OnAccept(int result);
 
-  TCPSocket(scoped_ptr<net::TCPServerSocket> tcp_server_socket,
+  TCPSocket(std::unique_ptr<net::TCPServerSocket> tcp_server_socket,
             const std::string& owner_extension_id);
 
-  scoped_ptr<net::TCPClientSocket> socket_;
-  scoped_ptr<net::TCPServerSocket> server_socket_;
+  std::unique_ptr<net::TCPClientSocket> socket_;
+  std::unique_ptr<net::TCPServerSocket> server_socket_;
 
   enum SocketMode { UNKNOWN = 0, CLIENT, SERVER, };
   SocketMode socket_mode_;
@@ -100,7 +100,7 @@ class TCPSocket : public Socket {
 
   ReadCompletionCallback read_callback_;
 
-  scoped_ptr<net::StreamSocket> accept_socket_;
+  std::unique_ptr<net::StreamSocket> accept_socket_;
   AcceptCompletionCallback accept_callback_;
 };
 
@@ -111,7 +111,7 @@ class ResumableTCPSocket : public TCPSocket {
  public:
   explicit ResumableTCPSocket(const std::string& owner_extension_id);
   explicit ResumableTCPSocket(
-      scoped_ptr<net::TCPClientSocket> tcp_client_socket,
+      std::unique_ptr<net::TCPClientSocket> tcp_client_socket,
       const std::string& owner_extension_id,
       bool is_connected);
 

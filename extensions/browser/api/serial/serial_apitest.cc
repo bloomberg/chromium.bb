@@ -138,7 +138,7 @@ void CreateTestSerialServiceOnFileThread(
       io_handler_factory,
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::IO));
-  scoped_ptr<device::SerialDeviceEnumerator> device_enumerator(
+  std::unique_ptr<device::SerialDeviceEnumerator> device_enumerator(
       new FakeSerialDeviceEnumerator);
   new device::SerialServiceImpl(
       connection_factory, std::move(device_enumerator), std::move(request));

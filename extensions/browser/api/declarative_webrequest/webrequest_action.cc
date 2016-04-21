@@ -53,9 +53,9 @@ const char kEmptyDocumentUrl[] = "data:text/html,";
     } \
   } while (0)
 
-scoped_ptr<helpers::RequestCookie> ParseRequestCookie(
+std::unique_ptr<helpers::RequestCookie> ParseRequestCookie(
     const base::DictionaryValue* dict) {
-  scoped_ptr<helpers::RequestCookie> result(new helpers::RequestCookie);
+  std::unique_ptr<helpers::RequestCookie> result(new helpers::RequestCookie);
   std::string tmp;
   if (dict->GetString(keys::kNameKey, &tmp))
     result->name.reset(new std::string(tmp));
@@ -87,16 +87,16 @@ void ParseResponseCookieImpl(const base::DictionaryValue* dict,
     cookie->http_only.reset(new bool(bool_tmp));
 }
 
-scoped_ptr<helpers::ResponseCookie> ParseResponseCookie(
+std::unique_ptr<helpers::ResponseCookie> ParseResponseCookie(
     const base::DictionaryValue* dict) {
-  scoped_ptr<helpers::ResponseCookie> result(new helpers::ResponseCookie);
+  std::unique_ptr<helpers::ResponseCookie> result(new helpers::ResponseCookie);
   ParseResponseCookieImpl(dict, result.get());
   return result;
 }
 
-scoped_ptr<helpers::FilterResponseCookie> ParseFilterResponseCookie(
+std::unique_ptr<helpers::FilterResponseCookie> ParseFilterResponseCookie(
     const base::DictionaryValue* dict) {
-  scoped_ptr<helpers::FilterResponseCookie> result(
+  std::unique_ptr<helpers::FilterResponseCookie> result(
       new helpers::FilterResponseCookie);
   ParseResponseCookieImpl(dict, result.get());
 
@@ -153,7 +153,7 @@ scoped_refptr<const WebRequestAction> CreateRedirectRequestByRegExAction(
 
   RE2::Options options;
   options.set_case_sensitive(false);
-  scoped_ptr<RE2> from_pattern(new RE2(from, options));
+  std::unique_ptr<RE2> from_pattern(new RE2(from, options));
 
   if (!from_pattern->ok()) {
     *error = "Invalid pattern '" + from + "' -> '" + to + "'";
@@ -695,7 +695,7 @@ WebRequestRedirectToEmptyDocumentAction::CreateDelta(
 //
 
 WebRequestRedirectByRegExAction::WebRequestRedirectByRegExAction(
-    scoped_ptr<RE2> from_pattern,
+    std::unique_ptr<RE2> from_pattern,
     const std::string& to_pattern)
     : WebRequestAction(ON_BEFORE_REQUEST | ON_HEADERS_RECEIVED,
                        ACTION_REDIRECT_BY_REGEX_DOCUMENT,

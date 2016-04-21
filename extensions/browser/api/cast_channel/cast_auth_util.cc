@@ -138,7 +138,7 @@ AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
 AuthResult VerifyCredentials(const AuthResponse& response,
                              const std::string& signature_input) {
   // Verify the certificate
-  scoped_ptr<cast_crypto::CertVerificationContext> verification_context;
+  std::unique_ptr<cast_crypto::CertVerificationContext> verification_context;
 
   // Build a single vector containing the certificate chain.
   std::vector<std::string> cert_chain;

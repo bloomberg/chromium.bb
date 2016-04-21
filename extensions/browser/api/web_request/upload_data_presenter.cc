@@ -81,7 +81,7 @@ bool RawDataPresenter::Succeeded() {
   return success_;
 }
 
-scoped_ptr<base::Value> RawDataPresenter::Result() {
+std::unique_ptr<base::Value> RawDataPresenter::Result() {
   if (!success_)
     return nullptr;
 
@@ -136,7 +136,7 @@ bool ParsedDataPresenter::Succeeded() {
   return success_;
 }
 
-scoped_ptr<base::Value> ParsedDataPresenter::Result() {
+std::unique_ptr<base::Value> ParsedDataPresenter::Result() {
   if (!success_)
     return nullptr;
 
@@ -144,9 +144,10 @@ scoped_ptr<base::Value> ParsedDataPresenter::Result() {
 }
 
 // static
-scoped_ptr<ParsedDataPresenter> ParsedDataPresenter::CreateForTests() {
+std::unique_ptr<ParsedDataPresenter> ParsedDataPresenter::CreateForTests() {
   const std::string form_type("application/x-www-form-urlencoded");
-  return scoped_ptr<ParsedDataPresenter>(new ParsedDataPresenter(form_type));
+  return std::unique_ptr<ParsedDataPresenter>(
+      new ParsedDataPresenter(form_type));
 }
 
 ParsedDataPresenter::ParsedDataPresenter(const std::string& form_type)

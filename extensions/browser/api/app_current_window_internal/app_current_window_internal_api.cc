@@ -72,7 +72,7 @@ void GetBoundsFields(const Bounds& bounds_spec, gfx::Rect* bounds) {
 // Copy the constraint value from the API to our internal representation of
 // content size constraints. A value of zero resets the constraints. The insets
 // are used to transform window constraints to content constraints.
-void GetConstraintWidth(const scoped_ptr<int>& width,
+void GetConstraintWidth(const std::unique_ptr<int>& width,
                         const gfx::Insets& insets,
                         gfx::Size* size) {
   if (!width.get())
@@ -82,7 +82,7 @@ void GetConstraintWidth(const scoped_ptr<int>& width,
                              : kUnboundedSize);
 }
 
-void GetConstraintHeight(const scoped_ptr<int>& height,
+void GetConstraintHeight(const std::unique_ptr<int>& height,
                          const gfx::Insets& insets,
                          gfx::Size* size) {
   if (!height.get())
@@ -177,7 +177,7 @@ bool AppCurrentWindowInternalClearAttentionFunction::RunWithWindow(
 }
 
 bool AppCurrentWindowInternalShowFunction::RunWithWindow(AppWindow* window) {
-  scoped_ptr<Show::Params> params(Show::Params::Create(*args_));
+  std::unique_ptr<Show::Params> params(Show::Params::Create(*args_));
   CHECK(params.get());
   if (params->focused && !*params->focused)
     window->Show(AppWindow::SHOW_INACTIVE);
@@ -193,7 +193,7 @@ bool AppCurrentWindowInternalHideFunction::RunWithWindow(AppWindow* window) {
 
 bool AppCurrentWindowInternalSetBoundsFunction::RunWithWindow(
     AppWindow* window) {
-  scoped_ptr<SetBounds::Params> params(SetBounds::Params::Create(*args_));
+  std::unique_ptr<SetBounds::Params> params(SetBounds::Params::Create(*args_));
   CHECK(params.get());
 
   bounds::BoundsType bounds_type = bounds::GetBoundsType(params->bounds_type);
@@ -258,7 +258,7 @@ bool AppCurrentWindowInternalSetBoundsFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetSizeConstraintsFunction::RunWithWindow(
     AppWindow* window) {
-  scoped_ptr<SetSizeConstraints::Params> params(
+  std::unique_ptr<SetSizeConstraints::Params> params(
       SetSizeConstraints::Params::Create(*args_));
   CHECK(params.get());
 
@@ -303,7 +303,7 @@ bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(AppWindow* window) {
     return false;
   }
 
-  scoped_ptr<SetIcon::Params> params(SetIcon::Params::Create(*args_));
+  std::unique_ptr<SetIcon::Params> params(SetIcon::Params::Create(*args_));
   CHECK(params.get());
   // The |icon_url| parameter may be a blob url (e.g. an image fetched with an
   // XMLHttpRequest) or a resource url.
@@ -323,8 +323,7 @@ bool AppCurrentWindowInternalSetShapeFunction::RunWithWindow(
     return false;
   }
 
-  scoped_ptr<SetShape::Params> params(
-      SetShape::Params::Create(*args_));
+  std::unique_ptr<SetShape::Params> params(SetShape::Params::Create(*args_));
   const Region& shape = params->region;
 
   // Build a region from the supplied list of rects.
@@ -332,7 +331,7 @@ bool AppCurrentWindowInternalSetShapeFunction::RunWithWindow(
   // input region so that the entire window accepts input events.
   // To specify an empty input region (so the window ignores all input),
   // |rects| should be an empty list.
-  scoped_ptr<SkRegion> region(new SkRegion);
+  std::unique_ptr<SkRegion> region(new SkRegion);
   if (shape.rects) {
     for (const RegionRect& input_rect : *shape.rects) {
       int32_t x = input_rect.left;
@@ -360,7 +359,7 @@ bool AppCurrentWindowInternalSetAlwaysOnTopFunction::RunWithWindow(
     return false;
   }
 
-  scoped_ptr<SetAlwaysOnTop::Params> params(
+  std::unique_ptr<SetAlwaysOnTop::Params> params(
       SetAlwaysOnTop::Params::Create(*args_));
   CHECK(params.get());
   window->SetAlwaysOnTop(params->always_on_top);
@@ -369,7 +368,7 @@ bool AppCurrentWindowInternalSetAlwaysOnTopFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction::RunWithWindow(
     AppWindow* window) {
-  scoped_ptr<SetVisibleOnAllWorkspaces::Params> params(
+  std::unique_ptr<SetVisibleOnAllWorkspaces::Params> params(
       SetVisibleOnAllWorkspaces::Params::Create(*args_));
   CHECK(params.get());
   window->GetBaseWindow()->SetVisibleOnAllWorkspaces(params->always_visible);

@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_WEB_REQUEST_FORM_DATA_PARSER_H_
 #define EXTENSIONS_BROWSER_API_WEB_REQUEST_FORM_DATA_PARSER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 // Cannot forward declare StringPiece because it is a typedef.
 #include "base/strings/string_piece.h"
 
@@ -44,12 +44,12 @@ class FormDataParser {
 
   // Creates a correct parser instance based on the |request|. Returns NULL
   // on failure.
-  static scoped_ptr<FormDataParser> Create(const net::URLRequest& request);
+  static std::unique_ptr<FormDataParser> Create(const net::URLRequest& request);
 
   // Creates a correct parser instance based on |content_type_header|, the
   // "Content-Type" request header value. If |content_type_header| is NULL, it
   // defaults to "application/x-www-form-urlencoded". Returns NULL on failure.
-  static scoped_ptr<FormDataParser> CreateFromContentTypeHeader(
+  static std::unique_ptr<FormDataParser> CreateFromContentTypeHeader(
       const std::string* content_type_header);
 
   // Returns true if there was some data, it was well formed and all was read.

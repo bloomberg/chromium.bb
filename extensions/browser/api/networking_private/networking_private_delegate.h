@@ -5,12 +5,12 @@
 #ifndef EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_H_
 #define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -33,14 +33,15 @@ struct VerificationProperties;
 class NetworkingPrivateDelegate : public KeyedService {
  public:
   using DictionaryCallback =
-      base::Callback<void(scoped_ptr<base::DictionaryValue>)>;
+      base::Callback<void(std::unique_ptr<base::DictionaryValue>)>;
   using VoidCallback = base::Callback<void()>;
   using BoolCallback = base::Callback<void(bool)>;
   using StringCallback = base::Callback<void(const std::string&)>;
-  using NetworkListCallback = base::Callback<void(scoped_ptr<base::ListValue>)>;
+  using NetworkListCallback =
+      base::Callback<void(std::unique_ptr<base::ListValue>)>;
   using FailureCallback = base::Callback<void(const std::string&)>;
-  using DeviceStateList =
-      std::vector<scoped_ptr<api::networking_private::DeviceStateProperties>>;
+  using DeviceStateList = std::vector<
+      std::unique_ptr<api::networking_private::DeviceStateProperties>>;
   using VerificationProperties =
       api::networking_private::VerificationProperties;
 
@@ -99,10 +100,10 @@ class NetworkingPrivateDelegate : public KeyedService {
   // If |verify_delegate| is not NULL, the Verify* methods will be forwarded
   // to the delegate. Otherwise they will fail with a NotSupported error.
   explicit NetworkingPrivateDelegate(
-      scoped_ptr<VerifyDelegate> verify_delegate);
+      std::unique_ptr<VerifyDelegate> verify_delegate);
   ~NetworkingPrivateDelegate() override;
 
-  void set_ui_delegate(scoped_ptr<UIDelegate> ui_delegate) {
+  void set_ui_delegate(std::unique_ptr<UIDelegate> ui_delegate) {
     ui_delegate_.reset(ui_delegate.release());
   }
 
@@ -120,11 +121,11 @@ class NetworkingPrivateDelegate : public KeyedService {
                         const DictionaryCallback& success_callback,
                         const FailureCallback& failure_callback) = 0;
   virtual void SetProperties(const std::string& guid,
-                             scoped_ptr<base::DictionaryValue> properties,
+                             std::unique_ptr<base::DictionaryValue> properties,
                              const VoidCallback& success_callback,
                              const FailureCallback& failure_callback) = 0;
   virtual void CreateNetwork(bool shared,
-                             scoped_ptr<base::DictionaryValue> properties,
+                             std::unique_ptr<base::DictionaryValue> properties,
                              const StringCallback& success_callback,
                              const FailureCallback& failure_callback) = 0;
   virtual void ForgetNetwork(const std::string& guid,
@@ -174,10 +175,10 @@ class NetworkingPrivateDelegate : public KeyedService {
   // Synchronous methods
 
   // Returns a list of ONC type strings.
-  virtual scoped_ptr<base::ListValue> GetEnabledNetworkTypes() = 0;
+  virtual std::unique_ptr<base::ListValue> GetEnabledNetworkTypes() = 0;
 
   // Returns a list of DeviceStateProperties.
-  virtual scoped_ptr<DeviceStateList> GetDeviceStateList() = 0;
+  virtual std::unique_ptr<DeviceStateList> GetDeviceStateList() = 0;
 
   // Returns true if the ONC network type |type| is enabled.
   virtual bool EnableNetworkType(const std::string& type) = 0;
@@ -211,10 +212,10 @@ class NetworkingPrivateDelegate : public KeyedService {
 
  private:
   // Interface for Verify* methods. May be null.
-  scoped_ptr<VerifyDelegate> verify_delegate_;
+  std::unique_ptr<VerifyDelegate> verify_delegate_;
 
   // Interface for UI methods. May be null.
-  scoped_ptr<UIDelegate> ui_delegate_;
+  std::unique_ptr<UIDelegate> ui_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateDelegate);
 };

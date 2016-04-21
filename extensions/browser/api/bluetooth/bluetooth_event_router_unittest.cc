@@ -4,11 +4,11 @@
 
 #include "extensions/browser/api/bluetooth/bluetooth_event_router.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/browser/notification_service.h"
@@ -60,8 +60,8 @@ class BluetoothEventRouterTest : public ExtensionsTest {
   // Note: |ui_thread_| must be declared before |router_|.
   content::TestBrowserThread ui_thread_;
   testing::StrictMock<device::MockBluetoothAdapter>* mock_adapter_;
-  scoped_ptr<content::NotificationService> notification_service_;
-  scoped_ptr<BluetoothEventRouter> router_;
+  std::unique_ptr<content::NotificationService> notification_service_;
+  std::unique_ptr<BluetoothEventRouter> router_;
 };
 
 TEST_F(BluetoothEventRouterTest, BluetoothEventListener) {
@@ -100,7 +100,7 @@ TEST_F(BluetoothEventRouterTest, UnloadExtension) {
 // This test check that calling SetDiscoveryFilter before StartDiscoverySession
 // for given extension will start session with proper filter.
 TEST_F(BluetoothEventRouterTest, SetDiscoveryFilter) {
-  scoped_ptr<device::BluetoothDiscoveryFilter> discovery_filter(
+  std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter(
       new device::BluetoothDiscoveryFilter(
           device::BluetoothDiscoveryFilter::Transport::TRANSPORT_LE));
 

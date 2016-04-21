@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_APP_RUNTIME_APP_RUNTIME_API_H_
 #define EXTENSIONS_BROWSER_API_APP_RUNTIME_APP_RUNTIME_API_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/constants.h"
 
 class GURL;
@@ -33,7 +33,7 @@ class AppRuntimeEventRouter {
   // Dispatches the onEmbedRequested event to the given app.
   static void DispatchOnEmbedRequestedEvent(
       content::BrowserContext* context,
-      scoped_ptr<base::DictionaryValue> app_embedding_request_data,
+      std::unique_ptr<base::DictionaryValue> app_embedding_request_data,
       const extensions::Extension* extension);
 
   // Dispatches the onLaunched event to the given app.

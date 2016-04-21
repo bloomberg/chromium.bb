@@ -102,7 +102,7 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   void RemovePendingOnInstallInfoFromPref(const ExtensionId& extension_id);
   void StorePendingOnInstallInfoToPref(const Extension* extension);
 
-  scoped_ptr<RuntimeAPIDelegate> delegate_;
+  std::unique_ptr<RuntimeAPIDelegate> delegate_;
 
   content::BrowserContext* browser_context_;
 

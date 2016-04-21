@@ -76,7 +76,7 @@ class BluetoothApiTest : public ExtensionApiTest {
       const BluetoothAdapter::ErrorCallback& error_callback) {
     if (mock_session_.get()) {
       callback.Run(
-          scoped_ptr<BluetoothDiscoverySession>(mock_session_.release()));
+          std::unique_ptr<BluetoothDiscoverySession>(mock_session_.release()));
       return;
     }
     error_callback.Run();
@@ -91,10 +91,11 @@ class BluetoothApiTest : public ExtensionApiTest {
 
  protected:
   testing::StrictMock<MockBluetoothAdapter>* mock_adapter_;
-  scoped_ptr<testing::NiceMock<MockBluetoothDiscoverySession> > mock_session_;
-  scoped_ptr<testing::NiceMock<MockBluetoothDevice> > device1_;
-  scoped_ptr<testing::NiceMock<MockBluetoothDevice> > device2_;
-  scoped_ptr<testing::NiceMock<MockBluetoothDevice> > device3_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothDiscoverySession>>
+      mock_session_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothDevice>> device1_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothDevice>> device2_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothDevice>> device3_;
 
   extensions::BluetoothEventRouter* event_router() {
     return bluetooth_api()->event_router();
@@ -130,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetAdapterState) {
   scoped_refptr<api::BluetoothGetAdapterStateFunction> get_adapter_state;
   get_adapter_state = setupFunction(new api::BluetoothGetAdapterStateFunction);
 
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
       get_adapter_state.get(), "[]", browser()));
   ASSERT_TRUE(result.get() != NULL);
   api::bluetooth::AdapterState state;

@@ -23,18 +23,18 @@ TEST(WebRequestUploadDataPresenterTest, ParsedData) {
   net::UploadBytesElementReader element(block, sizeof(block) - 1);
 
   // Expected output.
-  scoped_ptr<base::ListValue> values(new base::ListValue);
+  std::unique_ptr<base::ListValue> values(new base::ListValue);
   values->Append(new base::StringValue("value"));
   base::DictionaryValue expected_form;
   expected_form.SetWithoutPathExpansion("key.with.dots", values.release());
 
   // Real output.
-  scoped_ptr<ParsedDataPresenter> parsed_data_presenter(
+  std::unique_ptr<ParsedDataPresenter> parsed_data_presenter(
       ParsedDataPresenter::CreateForTests());
   ASSERT_TRUE(parsed_data_presenter.get() != NULL);
   parsed_data_presenter->FeedNext(element);
   EXPECT_TRUE(parsed_data_presenter->Succeeded());
-  scoped_ptr<base::Value> result = parsed_data_presenter->Result();
+  std::unique_ptr<base::Value> result = parsed_data_presenter->Result();
   ASSERT_TRUE(result.get() != NULL);
 
   EXPECT_TRUE(result->Equals(&expected_form));
@@ -49,13 +49,13 @@ TEST(WebRequestUploadDataPresenterTest, RawData) {
   const size_t block2_size = sizeof(block2) - 1;
 
   // Expected output.
-  scoped_ptr<base::BinaryValue> expected_a(
+  std::unique_ptr<base::BinaryValue> expected_a(
       base::BinaryValue::CreateWithCopiedBuffer(block1, block1_size));
   ASSERT_TRUE(expected_a.get() != NULL);
-  scoped_ptr<base::StringValue> expected_b(
+  std::unique_ptr<base::StringValue> expected_b(
       new base::StringValue(kFilename));
   ASSERT_TRUE(expected_b.get() != NULL);
-  scoped_ptr<base::BinaryValue> expected_c(
+  std::unique_ptr<base::BinaryValue> expected_c(
       base::BinaryValue::CreateWithCopiedBuffer(block2, block2_size));
   ASSERT_TRUE(expected_c.get() != NULL);
 
@@ -73,7 +73,7 @@ TEST(WebRequestUploadDataPresenterTest, RawData) {
   raw_presenter.FeedNextFile(kFilename);
   raw_presenter.FeedNextBytes(block2, block2_size);
   EXPECT_TRUE(raw_presenter.Succeeded());
-  scoped_ptr<base::Value> result = raw_presenter.Result();
+  std::unique_ptr<base::Value> result = raw_presenter.Result();
   ASSERT_TRUE(result.get() != NULL);
 
   EXPECT_TRUE(result->Equals(&expected_list));

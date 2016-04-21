@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include "extensions/browser/api/sockets_udp/sockets_udp_api.h"
+
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/socket/socket.h"
 #include "extensions/browser/api/socket/udp_socket.h"
-#include "extensions/browser/api/sockets_udp/sockets_udp_api.h"
 #include "extensions/browser/api_unittest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,9 +18,9 @@
 namespace extensions {
 namespace api {
 
-static scoped_ptr<KeyedService> ApiResourceManagerTestFactory(
+static std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new ApiResourceManager<ResumableUDPSocket>(context));
+  return base::WrapUnique(new ApiResourceManager<ResumableUDPSocket>(context));
 }
 
 class SocketsUdpUnitTest : public ApiUnitTest {
@@ -41,7 +44,7 @@ TEST_F(SocketsUdpUnitTest, Create) {
   function->set_work_thread_id(id);
 
   // Run tests
-  scoped_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
+  std::unique_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
       function, "[{\"persistent\": true, \"name\": \"foo\"}]"));
   ASSERT_TRUE(result.get());
 }

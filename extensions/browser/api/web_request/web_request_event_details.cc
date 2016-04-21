@@ -74,7 +74,7 @@ void WebRequestEventDetails::SetRequestBody(const net::URLRequest* request) {
   static const char* const kKeys[] = {keys::kRequestBodyFormDataKey,
                                       keys::kRequestBodyRawKey};
 
-  const std::vector<scoped_ptr<net::UploadElementReader>>* readers =
+  const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
       upload_data->GetElementReaders();
   bool some_succeeded = false;
   if (readers) {
@@ -160,16 +160,16 @@ void WebRequestEventDetails::DetermineFrameIdOnUI() {
 
 void WebRequestEventDetails::DetermineFrameIdOnIO(
     const DeterminedFrameIdCallback& callback) {
-  scoped_ptr<WebRequestEventDetails> self(this);
+  std::unique_ptr<WebRequestEventDetails> self(this);
   ExtensionApiFrameIdMap::Get()->GetFrameDataOnIO(
       render_process_id_, render_frame_id_,
       base::Bind(&WebRequestEventDetails::OnDeterminedFrameId,
                  base::Unretained(this), base::Passed(&self), callback));
 }
 
-scoped_ptr<base::DictionaryValue> WebRequestEventDetails::GetFilteredDict(
+std::unique_ptr<base::DictionaryValue> WebRequestEventDetails::GetFilteredDict(
     int extra_info_spec) const {
-  scoped_ptr<base::DictionaryValue> result = dict_.CreateDeepCopy();
+  std::unique_ptr<base::DictionaryValue> result = dict_.CreateDeepCopy();
   if ((extra_info_spec & ExtraInfoSpec::REQUEST_BODY) && request_body_)
     result->Set(keys::kRequestBodyKey, request_body_->CreateDeepCopy());
   if ((extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS) && request_headers_)
@@ -179,14 +179,15 @@ scoped_ptr<base::DictionaryValue> WebRequestEventDetails::GetFilteredDict(
   return result;
 }
 
-scoped_ptr<base::DictionaryValue> WebRequestEventDetails::GetAndClearDict() {
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+std::unique_ptr<base::DictionaryValue>
+WebRequestEventDetails::GetAndClearDict() {
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   dict_.Swap(result.get());
   return result;
 }
 
 void WebRequestEventDetails::OnDeterminedFrameId(
-    scoped_ptr<WebRequestEventDetails> self,
+    std::unique_ptr<WebRequestEventDetails> self,
     const DeterminedFrameIdCallback& callback,
     const ExtensionApiFrameIdMap::FrameData& frame_data) {
   dict_.SetInteger(keys::kFrameIdKey, frame_data.frame_id);

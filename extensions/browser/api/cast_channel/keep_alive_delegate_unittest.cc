@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
@@ -54,18 +55,18 @@ class KeepAliveDelegateTest : public testing::Test {
  protected:
   void SetUp() override {
     inner_delegate_ = new MockCastTransportDelegate;
-    logger_ = new Logger(scoped_ptr<base::Clock>(new base::SimpleTestClock),
-                         base::Time());
+    logger_ = new Logger(
+        std::unique_ptr<base::Clock>(new base::SimpleTestClock), base::Time());
     keep_alive_.reset(new KeepAliveDelegate(
-        &socket_, logger_, make_scoped_ptr(inner_delegate_),
+        &socket_, logger_, base::WrapUnique(inner_delegate_),
         base::TimeDelta::FromMilliseconds(kTestPingTimeoutMillis),
         base::TimeDelta::FromMilliseconds(kTestLivenessTimeoutMillis)));
     liveness_timer_ = new MockTimerWithMonitoredReset(true, false);
     ping_timer_ = new MockTimerWithMonitoredReset(true, false);
     EXPECT_CALL(*liveness_timer_, Stop()).Times(0);
     EXPECT_CALL(*ping_timer_, Stop()).Times(0);
-    keep_alive_->SetTimersForTest(make_scoped_ptr(ping_timer_),
-                                  make_scoped_ptr(liveness_timer_));
+    keep_alive_->SetTimersForTest(base::WrapUnique(ping_timer_),
+                                  base::WrapUnique(liveness_timer_));
   }
 
   // Runs all pending tasks in the message loop.
@@ -76,7 +77,7 @@ class KeepAliveDelegateTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   MockCastSocket socket_;
-  scoped_ptr<KeepAliveDelegate> keep_alive_;
+  std::unique_ptr<KeepAliveDelegate> keep_alive_;
   scoped_refptr<Logger> logger_;
   MockCastTransportDelegate* inner_delegate_;
   MockTimerWithMonitoredReset* liveness_timer_;

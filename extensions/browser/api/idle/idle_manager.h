@@ -93,11 +93,12 @@ class IdleManager : public ExtensionRegistryObserver,
   static base::StringValue* CreateIdleValue(ui::IdleState idle_state);
 
   // Override default event class. Callee assumes ownership. Used for testing.
-  void SetEventDelegateForTest(scoped_ptr<EventDelegate> event_delegate);
+  void SetEventDelegateForTest(std::unique_ptr<EventDelegate> event_delegate);
 
   // Override default idle time calculations. Callee assumes ownership. Used
   // for testing.
-  void SetIdleTimeProviderForTest(scoped_ptr<IdleTimeProvider> idle_provider);
+  void SetIdleTimeProviderForTest(
+      std::unique_ptr<IdleTimeProvider> idle_provider);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(IdleTest, ActiveToIdle);
@@ -129,8 +130,8 @@ class IdleManager : public ExtensionRegistryObserver,
 
   base::RepeatingTimer poll_timer_;
 
-  scoped_ptr<IdleTimeProvider> idle_time_provider_;
-  scoped_ptr<EventDelegate> event_delegate_;
+  std::unique_ptr<IdleTimeProvider> idle_time_provider_;
+  std::unique_ptr<EventDelegate> event_delegate_;
 
   base::ThreadChecker thread_checker_;
 

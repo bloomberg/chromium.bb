@@ -5,11 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_EVENT_DETAILS_H_
 #define EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_EVENT_DETAILS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 
@@ -37,7 +37,7 @@ namespace extensions {
 class WebRequestEventDetails {
  public:
   using DeterminedFrameIdCallback =
-      base::Callback<void(scoped_ptr<WebRequestEventDetails>)>;
+      base::Callback<void(std::unique_ptr<WebRequestEventDetails>)>;
 
   // Create a WebRequestEventDetails with the following keys:
   // - method
@@ -111,14 +111,15 @@ class WebRequestEventDetails {
   // Create an event dictionary that contains all required keys, and also the
   // extra keys as specified by the |extra_info_spec| filter.
   // This can be called from any thread.
-  scoped_ptr<base::DictionaryValue> GetFilteredDict(int extra_info_spec) const;
+  std::unique_ptr<base::DictionaryValue> GetFilteredDict(
+      int extra_info_spec) const;
 
   // Get the internal dictionary, unfiltered. After this call, the internal
   // dictionary is empty.
-  scoped_ptr<base::DictionaryValue> GetAndClearDict();
+  std::unique_ptr<base::DictionaryValue> GetAndClearDict();
 
  private:
-  void OnDeterminedFrameId(scoped_ptr<WebRequestEventDetails> self,
+  void OnDeterminedFrameId(std::unique_ptr<WebRequestEventDetails> self,
                            const DeterminedFrameIdCallback& callback,
                            const ExtensionApiFrameIdMap::FrameData& frame_data);
 
@@ -126,9 +127,9 @@ class WebRequestEventDetails {
   base::DictionaryValue dict_;
 
   // Extra event details: Only included when |extra_info_spec_| matches.
-  scoped_ptr<base::DictionaryValue> request_body_;
-  scoped_ptr<base::ListValue> request_headers_;
-  scoped_ptr<base::ListValue> response_headers_;
+  std::unique_ptr<base::DictionaryValue> request_body_;
+  std::unique_ptr<base::ListValue> request_headers_;
+  std::unique_ptr<base::ListValue> response_headers_;
 
   int extra_info_spec_;
 

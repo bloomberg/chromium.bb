@@ -40,7 +40,7 @@ typedef base::Callback<void(int,
                             scoped_refptr<net::IOBuffer> io_buffer,
                             const std::string&,
                             uint16_t)> RecvFromCompletionCallback;
-typedef base::Callback<void(int, scoped_ptr<net::TCPClientSocket>)>
+typedef base::Callback<void(int, std::unique_ptr<net::TCPClientSocket>)>
     AcceptCompletionCallback;
 
 // A Socket wraps a low-level socket and includes housekeeping information that
@@ -64,7 +64,7 @@ class Socket : public ApiResource {
 
 #if defined(OS_CHROMEOS)
   void set_firewall_hole(
-      scoped_ptr<AppFirewallHole, content::BrowserThread::DeleteOnUIThread>
+      std::unique_ptr<AppFirewallHole, content::BrowserThread::DeleteOnUIThread>
           firewall_hole) {
     firewall_hole_ = std::move(firewall_hole);
   }
@@ -149,7 +149,7 @@ class Socket : public ApiResource {
 
 #if defined(OS_CHROMEOS)
   // Represents a hole punched in the system firewall for this socket.
-  scoped_ptr<AppFirewallHole, content::BrowserThread::DeleteOnUIThread>
+  std::unique_ptr<AppFirewallHole, content::BrowserThread::DeleteOnUIThread>
       firewall_hole_;
 #endif  // OS_CHROMEOS
 };

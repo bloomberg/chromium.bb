@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
@@ -106,7 +106,7 @@ PrinterProviderInternalReportPrintResultFunction::
 
 ExtensionFunction::ResponseAction
 PrinterProviderInternalReportPrintResultFunction::Run() {
-  scoped_ptr<internal_api::ReportPrintResult::Params> params(
+  std::unique_ptr<internal_api::ReportPrintResult::Params> params(
       internal_api::ReportPrintResult::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -126,7 +126,7 @@ PrinterProviderInternalReportPrinterCapabilityFunction::
 
 ExtensionFunction::ResponseAction
 PrinterProviderInternalReportPrinterCapabilityFunction::Run() {
-  scoped_ptr<internal_api::ReportPrinterCapability::Params> params(
+  std::unique_ptr<internal_api::ReportPrinterCapability::Params> params(
       internal_api::ReportPrinterCapability::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -154,7 +154,7 @@ PrinterProviderInternalReportPrintersFunction::
 
 ExtensionFunction::ResponseAction
 PrinterProviderInternalReportPrintersFunction::Run() {
-  scoped_ptr<internal_api::ReportPrinters::Params> params(
+  std::unique_ptr<internal_api::ReportPrinters::Params> params(
       internal_api::ReportPrinters::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -184,7 +184,7 @@ PrinterProviderInternalGetPrintDataFunction::
 
 ExtensionFunction::ResponseAction
 PrinterProviderInternalGetPrintDataFunction::Run() {
-  scoped_ptr<internal_api::GetPrintData::Params> params(
+  std::unique_ptr<internal_api::GetPrintData::Params> params(
       internal_api::GetPrintData::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -221,7 +221,7 @@ void PrinterProviderInternalGetPrintDataFunction::OnBlob(
     const std::string& type,
     int size,
     const scoped_refptr<base::RefCountedMemory>& data,
-    scoped_ptr<content::BlobHandle> blob) {
+    std::unique_ptr<content::BlobHandle> blob) {
   if (!blob) {
     SetError("Unable to create the blob.");
     SendResponse(false);
@@ -256,7 +256,7 @@ PrinterProviderInternalReportUsbPrinterInfoFunction::
 
 ExtensionFunction::ResponseAction
 PrinterProviderInternalReportUsbPrinterInfoFunction::Run() {
-  scoped_ptr<internal_api::ReportUsbPrinterInfo::Params> params(
+  std::unique_ptr<internal_api::ReportUsbPrinterInfo::Params> params(
       internal_api::ReportUsbPrinterInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

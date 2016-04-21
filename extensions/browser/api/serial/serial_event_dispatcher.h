@@ -65,11 +65,11 @@ class SerialEventDispatcher : public BrowserContextKeyedAPI {
                               serial::ReceiveError error);
 
   static void PostEvent(const ReceiveParams& params,
-                        scoped_ptr<extensions::Event> event);
+                        std::unique_ptr<extensions::Event> event);
 
   static void DispatchEvent(void* browser_context_id,
                             const std::string& extension_id,
-                            scoped_ptr<extensions::Event> event);
+                            std::unique_ptr<extensions::Event> event);
 
   content::BrowserThread::ID thread_id_;
   content::BrowserContext* const context_;

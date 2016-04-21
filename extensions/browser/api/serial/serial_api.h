@@ -72,7 +72,7 @@ class SerialConnectFunction : public SerialAsyncApiFunction {
   void OnConnected(bool success);
   void FinishConnect();
 
-  scoped_ptr<serial::Connect::Params> params_;
+  std::unique_ptr<serial::Connect::Params> params_;
 
   // SerialEventDispatcher is owned by a BrowserContext.
   SerialEventDispatcher* serial_event_dispatcher_;
@@ -98,7 +98,7 @@ class SerialUpdateFunction : public SerialAsyncApiFunction {
   void Work() override;
 
  private:
-  scoped_ptr<serial::Update::Params> params_;
+  std::unique_ptr<serial::Update::Params> params_;
 };
 
 class SerialDisconnectFunction : public SerialAsyncApiFunction {
@@ -115,7 +115,7 @@ class SerialDisconnectFunction : public SerialAsyncApiFunction {
   void Work() override;
 
  private:
-  scoped_ptr<serial::Disconnect::Params> params_;
+  std::unique_ptr<serial::Disconnect::Params> params_;
 };
 
 class SerialSetPausedFunction : public SerialAsyncApiFunction {
@@ -132,7 +132,7 @@ class SerialSetPausedFunction : public SerialAsyncApiFunction {
   void Work() override;
 
  private:
-  scoped_ptr<serial::SetPaused::Params> params_;
+  std::unique_ptr<serial::SetPaused::Params> params_;
   SerialEventDispatcher* serial_event_dispatcher_;
 };
 
@@ -150,7 +150,7 @@ class SerialGetInfoFunction : public SerialAsyncApiFunction {
   void Work() override;
 
  private:
-  scoped_ptr<serial::GetInfo::Params> params_;
+  std::unique_ptr<serial::GetInfo::Params> params_;
 };
 
 class SerialGetConnectionsFunction : public SerialAsyncApiFunction {
@@ -183,7 +183,7 @@ class SerialSendFunction : public SerialAsyncApiFunction {
  private:
   void OnSendComplete(int bytes_sent, serial::SendError error);
 
-  scoped_ptr<serial::Send::Params> params_;
+  std::unique_ptr<serial::Send::Params> params_;
 };
 
 class SerialFlushFunction : public SerialAsyncApiFunction {
@@ -200,7 +200,7 @@ class SerialFlushFunction : public SerialAsyncApiFunction {
   void Work() override;
 
  private:
-  scoped_ptr<serial::Flush::Params> params_;
+  std::unique_ptr<serial::Flush::Params> params_;
 };
 
 class SerialGetControlSignalsFunction : public SerialAsyncApiFunction {
@@ -218,7 +218,7 @@ class SerialGetControlSignalsFunction : public SerialAsyncApiFunction {
   void Work() override;
 
  private:
-  scoped_ptr<serial::GetControlSignals::Params> params_;
+  std::unique_ptr<serial::GetControlSignals::Params> params_;
 };
 
 class SerialSetControlSignalsFunction : public SerialAsyncApiFunction {
@@ -236,7 +236,7 @@ class SerialSetControlSignalsFunction : public SerialAsyncApiFunction {
   void Work() override;
 
  private:
-  scoped_ptr<serial::SetControlSignals::Params> params_;
+  std::unique_ptr<serial::SetControlSignals::Params> params_;
 };
 
 class SerialSetBreakFunction : public SerialAsyncApiFunction {
@@ -252,7 +252,7 @@ class SerialSetBreakFunction : public SerialAsyncApiFunction {
   void Work() override;
 
  private:
-  scoped_ptr<serial::SetBreak::Params> params_;
+  std::unique_ptr<serial::SetBreak::Params> params_;
 };
 
 class SerialClearBreakFunction : public SerialAsyncApiFunction {
@@ -268,7 +268,7 @@ class SerialClearBreakFunction : public SerialAsyncApiFunction {
   void Work() override;
 
  private:
-  scoped_ptr<serial::ClearBreak::Params> params_;
+  std::unique_ptr<serial::ClearBreak::Params> params_;
 };
 
 }  // namespace api

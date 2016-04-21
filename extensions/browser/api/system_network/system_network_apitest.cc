@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkApiTest, GetNetworkInterfaces) {
   socket_function->set_extension(empty_extension.get());
   socket_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
       socket_function.get(), "[]", browser_context()));
   ASSERT_EQ(base::Value::TYPE_LIST, result->GetType());
 

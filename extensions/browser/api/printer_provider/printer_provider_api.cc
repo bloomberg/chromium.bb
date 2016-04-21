@@ -523,12 +523,12 @@ void PrinterProviderAPIImpl::DispatchGetPrintersRequested(
   // be needed later on.
   int request_id = pending_get_printers_requests_.Add(callback);
 
-  scoped_ptr<base::ListValue> internal_args(new base::ListValue);
+  std::unique_ptr<base::ListValue> internal_args(new base::ListValue);
   // Request id is not part of the public API, but it will be massaged out in
   // custom bindings.
   internal_args->AppendInteger(request_id);
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_GET_PRINTERS_REQUESTED,
                 api::printer_provider::OnGetPrintersRequested::kEventName,
                 std::move(internal_args)));
@@ -561,13 +561,13 @@ void PrinterProviderAPIImpl::DispatchGetCapabilityRequested(
 
   int request_id = pending_capability_requests_[extension_id].Add(callback);
 
-  scoped_ptr<base::ListValue> internal_args(new base::ListValue);
+  std::unique_ptr<base::ListValue> internal_args(new base::ListValue);
   // Request id is not part of the public API, but it will be massaged out in
   // custom bindings.
   internal_args->AppendInteger(request_id);
   internal_args->AppendString(internal_printer_id);
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_GET_CAPABILITY_REQUESTED,
                 api::printer_provider::OnGetCapabilityRequested::kEventName,
                 std::move(internal_args)));
@@ -596,7 +596,8 @@ void PrinterProviderAPIImpl::DispatchPrintRequested(
   print_job.printer_id = internal_printer_id;
 
   JSONStringValueDeserializer deserializer(job.ticket_json);
-  scoped_ptr<base::Value> ticket_value = deserializer.Deserialize(NULL, NULL);
+  std::unique_ptr<base::Value> ticket_value =
+      deserializer.Deserialize(NULL, NULL);
   if (!ticket_value ||
       !api::printer_provider::PrintJob::Ticket::Populate(*ticket_value,
                                                          &print_job.ticket)) {
@@ -609,12 +610,12 @@ void PrinterProviderAPIImpl::DispatchPrintRequested(
   print_job.title = base::UTF16ToUTF8(job.job_title);
   int request_id = pending_print_requests_[extension_id].Add(job, callback);
 
-  scoped_ptr<base::ListValue> internal_args(new base::ListValue);
+  std::unique_ptr<base::ListValue> internal_args(new base::ListValue);
   // Request id is not part of the public API and it will be massaged out in
   // custom bindings.
   internal_args->AppendInteger(request_id);
   internal_args->Append(print_job.ToValue().release());
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_PRINT_REQUESTED,
                 api::printer_provider::OnPrintRequested::kEventName,
                 std::move(internal_args)));
@@ -647,12 +648,12 @@ void PrinterProviderAPIImpl::DispatchGetUsbPrinterInfoRequested(
   api::usb::Device api_device;
   UsbGuidMap::Get(browser_context_)->GetApiDevice(device, &api_device);
 
-  scoped_ptr<base::ListValue> internal_args(new base::ListValue());
+  std::unique_ptr<base::ListValue> internal_args(new base::ListValue());
   // Request id is not part of the public API and it will be massaged out in
   // custom bindings.
   internal_args->AppendInteger(request_id);
   internal_args->Append(api_device.ToValue());
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_GET_USB_PRINTER_INFO_REQUESTED,
                 api::printer_provider::OnGetUsbPrinterInfoRequested::kEventName,
                 std::move(internal_args)));
@@ -668,7 +669,7 @@ void PrinterProviderAPIImpl::OnGetPrintersResult(
   // Update some printer description properties to better identify the extension
   // managing the printer.
   for (const api::printer_provider::PrinterInfo& p : result) {
-    scoped_ptr<base::DictionaryValue> printer(p.ToValue());
+    std::unique_ptr<base::DictionaryValue> printer(p.ToValue());
     UpdatePrinterWithExtensionInfo(printer.get(), extension);
     printer_list.Append(std::move(printer));
   }
@@ -702,7 +703,7 @@ void PrinterProviderAPIImpl::OnGetUsbPrinterInfoResult(
     int request_id,
     const api::printer_provider::PrinterInfo* result) {
   if (result) {
-    scoped_ptr<base::DictionaryValue> printer(result->ToValue());
+    std::unique_ptr<base::DictionaryValue> printer(result->ToValue());
     UpdatePrinterWithExtensionInfo(printer.get(), extension);
     pending_usb_printer_info_requests_[extension->id()].Complete(request_id,
                                                                  *printer);

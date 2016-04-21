@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
@@ -175,7 +176,7 @@ ExtensionFunction::ResponseValue StorageStorageAreaGetFunction::RunWithStorage(
       base::DictionaryValue* with_default_values = as_dict->DeepCopy();
       with_default_values->MergeDictionary(&result->settings());
       return UseReadResult(ValueStore::MakeReadResult(
-          make_scoped_ptr(with_default_values), result->status()));
+          base::WrapUnique(with_default_values), result->status()));
     }
 
     default:

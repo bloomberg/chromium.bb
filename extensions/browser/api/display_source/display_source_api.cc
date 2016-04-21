@@ -44,7 +44,7 @@ DisplaySourceGetAvailableSinksFunction::Run() {
 
 void DisplaySourceGetAvailableSinksFunction::OnGetSinksCompleted(
     const DisplaySourceSinkInfoList& sinks) {
-  scoped_ptr<base::ListValue> result =
+  std::unique_ptr<base::ListValue> result =
       api::display_source::GetAvailableSinks::Results::Create(sinks);
   Respond(ArgumentList(std::move(result)));
 }
@@ -62,7 +62,7 @@ DisplaySourceRequestAuthenticationFunction::
 
 ExtensionFunction::ResponseAction
 DisplaySourceRequestAuthenticationFunction::Run() {
-  scoped_ptr<api::display_source::RequestAuthentication::Params> params(
+  std::unique_ptr<api::display_source::RequestAuthentication::Params> params(
       api::display_source::RequestAuthentication::Params::Create(*args_));
   if (!params) {
     return RespondNow(Error(kErrorInvalidArguments));
@@ -87,7 +87,7 @@ DisplaySourceRequestAuthenticationFunction::Run() {
 
 void DisplaySourceRequestAuthenticationFunction::OnRequestAuthCompleted(
     const DisplaySourceAuthInfo& auth_info) {
-  scoped_ptr<base::ListValue> result =
+  std::unique_ptr<base::ListValue> result =
       api::display_source::RequestAuthentication::Results::Create(auth_info);
   Respond(ArgumentList(std::move(result)));
 }

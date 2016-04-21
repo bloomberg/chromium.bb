@@ -297,7 +297,8 @@ class PrinterProviderApiTest : public ShellApiTest {
                                      test_param, &extension_id);
     ASSERT_FALSE(extension_id.empty());
 
-    scoped_ptr<base::Value> expected_printer_info(new base::DictionaryValue());
+    std::unique_ptr<base::Value> expected_printer_info(
+        new base::DictionaryValue());
     base::RunLoop run_loop;
     StartGetUsbPrinterInfoRequest(
         extension_id, device,
@@ -330,7 +331,7 @@ class PrinterProviderApiTest : public ShellApiTest {
   // in |expoected_printers| are unique.
   void ValidatePrinterListValue(
       const base::ListValue& printers,
-      const std::vector<scoped_ptr<base::Value>> expected_printers) {
+      const std::vector<std::unique_ptr<base::Value>> expected_printers) {
     ASSERT_EQ(expected_printers.size(), printers.GetSize());
     for (const auto& printer_value : expected_printers) {
       EXPECT_TRUE(printers.Find(*printer_value.get()) != printers.end())
@@ -489,7 +490,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersSuccess) {
 
   run_loop.Run();
 
-  std::vector<scoped_ptr<base::Value>> expected_printers;
+  std::vector<std::unique_ptr<base::Value>> expected_printers;
   expected_printers.push_back(
       DictionaryBuilder()
           .Set("description", "Test printer")
@@ -528,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersAsyncSuccess) {
 
   run_loop.Run();
 
-  std::vector<scoped_ptr<base::Value>> expected_printers;
+  std::vector<std::unique_ptr<base::Value>> expected_printers;
   expected_printers.push_back(
       DictionaryBuilder()
           .Set("description", "Test printer")
@@ -566,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
 
   run_loop.Run();
 
-  std::vector<scoped_ptr<base::Value>> expected_printers;
+  std::vector<std::unique_ptr<base::Value>> expected_printers;
   expected_printers.push_back(
       DictionaryBuilder()
           .Set("description", "Test printer")
@@ -661,7 +662,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
 
   run_loop.Run();
 
-  std::vector<scoped_ptr<base::Value>> expected_printers;
+  std::vector<std::unique_ptr<base::Value>> expected_printers;
   expected_printers.push_back(
       DictionaryBuilder()
           .Set("description", "Test printer")
@@ -708,7 +709,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
 
   run_loop.Run();
 
-  std::vector<scoped_ptr<base::Value>> expected_printers;
+  std::vector<std::unique_ptr<base::Value>> expected_printers;
   expected_printers.push_back(
       DictionaryBuilder()
           .Set("description", "Test printer")
@@ -826,7 +827,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetUsbPrinterInfo) {
   ASSERT_FALSE(extension_id.empty());
 
   UsbGuidMap* guid_map = UsbGuidMap::Get(browser_context());
-  scoped_ptr<base::Value> expected_printer_info(
+  std::unique_ptr<base::Value> expected_printer_info(
       DictionaryBuilder()
           .Set("description", "This printer is a USB device.")
           .Set("extensionId", extension_id)

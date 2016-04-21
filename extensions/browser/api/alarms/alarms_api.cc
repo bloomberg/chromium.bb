@@ -103,7 +103,7 @@ AlarmsCreateFunction::~AlarmsCreateFunction() {
 }
 
 bool AlarmsCreateFunction::RunAsync() {
-  scoped_ptr<alarms::Create::Params> params(
+  std::unique_ptr<alarms::Create::Params> params(
       alarms::Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   const std::string& alarm_name =
@@ -135,7 +135,8 @@ void AlarmsCreateFunction::Callback() {
 }
 
 bool AlarmsGetFunction::RunAsync() {
-  scoped_ptr<alarms::Get::Params> params(alarms::Get::Params::Create(*args_));
+  std::unique_ptr<alarms::Get::Params> params(
+      alarms::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string name = params->name.get() ? *params->name : kDefaultAlarmName;
@@ -162,7 +163,7 @@ bool AlarmsGetAllFunction::RunAsync() {
 }
 
 void AlarmsGetAllFunction::Callback(const AlarmList* alarms) {
-  scoped_ptr<base::ListValue> alarms_value(new base::ListValue());
+  std::unique_ptr<base::ListValue> alarms_value(new base::ListValue());
   if (alarms) {
     for (const Alarm& alarm : *alarms)
       alarms_value->Append(alarm.js_alarm->ToValue());
@@ -172,7 +173,7 @@ void AlarmsGetAllFunction::Callback(const AlarmList* alarms) {
 }
 
 bool AlarmsClearFunction::RunAsync() {
-  scoped_ptr<alarms::Clear::Params> params(
+  std::unique_ptr<alarms::Clear::Params> params(
       alarms::Clear::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

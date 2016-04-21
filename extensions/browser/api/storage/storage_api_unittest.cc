@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/api/storage/storage_api.h"
+
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/test/test_browser_context.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
-#include "extensions/browser/api/storage/storage_api.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/api_unittest.h"
 #include "extensions/browser/event_router.h"
@@ -30,15 +33,16 @@ namespace extensions {
 namespace {
 
 // Caller owns the returned object.
-scoped_ptr<KeyedService> CreateStorageFrontendForTesting(
+std::unique_ptr<KeyedService> CreateStorageFrontendForTesting(
     content::BrowserContext* context) {
   scoped_refptr<ValueStoreFactory> factory =
       new ValueStoreFactoryImpl(context->GetPath());
   return StorageFrontend::CreateForTesting(factory, context);
 }
 
-scoped_ptr<KeyedService> BuildEventRouter(content::BrowserContext* context) {
-  return make_scoped_ptr(new extensions::EventRouter(context, nullptr));
+std::unique_ptr<KeyedService> BuildEventRouter(
+    content::BrowserContext* context) {
+  return base::WrapUnique(new extensions::EventRouter(context, nullptr));
 }
 
 }  // namespace
@@ -61,7 +65,7 @@ class StorageApiUnittest : public ApiUnitTest {
   // |value| with the string result.
   testing::AssertionResult RunGetFunction(const std::string& key,
                                           std::string* value) {
-    scoped_ptr<base::Value> result = RunFunctionAndReturnValue(
+    std::unique_ptr<base::Value> result = RunFunctionAndReturnValue(
         new StorageStorageAreaGetFunction(),
         base::StringPrintf("[\"local\", \"%s\"]", key.c_str()));
     if (!result.get())

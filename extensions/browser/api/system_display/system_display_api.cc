@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/system_display/system_display_api.h"
 
+#include <memory>
 #include <string>
 
 #include "build/build_config.h"
@@ -11,7 +12,6 @@
 #include "extensions/common/api/system_display.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "ui/gfx/screen.h"
 #endif
@@ -39,7 +39,7 @@ bool SystemDisplaySetDisplayPropertiesFunction::RunSync() {
     return false;
   }
   std::string error;
-  scoped_ptr<SetDisplayProperties::Params> params(
+  std::unique_ptr<SetDisplayProperties::Params> params(
       SetDisplayProperties::Params::Create(*args_));
   bool result =
       DisplayInfoProvider::Get()->SetInfo(params->id, params->info, &error);
@@ -54,7 +54,7 @@ bool SystemDisplayEnableUnifiedDesktopFunction::RunSync() {
   SetError("Function available only on ChromeOS.");
   return false;
 #else
-  scoped_ptr<api::system_display::EnableUnifiedDesktop::Params> params(
+  std::unique_ptr<api::system_display::EnableUnifiedDesktop::Params> params(
       api::system_display::EnableUnifiedDesktop::Params::Create(*args_));
   DisplayInfoProvider::Get()->EnableUnifiedDesktop(params->enabled);
   return true;

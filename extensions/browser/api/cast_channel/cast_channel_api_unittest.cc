@@ -4,7 +4,8 @@
 
 #include "extensions/browser/api/cast_channel/cast_channel_api.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "net/base/ip_endpoint.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,7 +16,7 @@ namespace cast_channel {
 // Tests parsing of ConnectInfo.
 TEST(CastChannelOpenFunctionTest, TestParseConnectInfo) {
   typedef CastChannelOpenFunction ccof;
-  scoped_ptr<net::IPEndPoint> ip_endpoint;
+  std::unique_ptr<net::IPEndPoint> ip_endpoint;
 
   // Valid ConnectInfo
   ConnectInfo connect_info;

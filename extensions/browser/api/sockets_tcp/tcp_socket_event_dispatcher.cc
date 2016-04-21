@@ -134,11 +134,11 @@ void TCPSocketEventDispatcher::ReadCallback(
     sockets_tcp::ReceiveInfo receive_info;
     receive_info.socket_id = params.socket_id;
     receive_info.data.assign(io_buffer->data(), io_buffer->data() + bytes_read);
-    scoped_ptr<base::ListValue> args =
+    std::unique_ptr<base::ListValue> args =
         sockets_tcp::OnReceive::Create(receive_info);
-    scoped_ptr<Event> event(new Event(events::SOCKETS_TCP_ON_RECEIVE,
-                                      sockets_tcp::OnReceive::kEventName,
-                                      std::move(args)));
+    std::unique_ptr<Event> event(new Event(events::SOCKETS_TCP_ON_RECEIVE,
+                                           sockets_tcp::OnReceive::kEventName,
+                                           std::move(args)));
     PostEvent(params, std::move(event));
 
     // Post a task to delay the read until the socket is available, as
@@ -156,11 +156,11 @@ void TCPSocketEventDispatcher::ReadCallback(
     sockets_tcp::ReceiveErrorInfo receive_error_info;
     receive_error_info.socket_id = params.socket_id;
     receive_error_info.result_code = bytes_read;
-    scoped_ptr<base::ListValue> args =
+    std::unique_ptr<base::ListValue> args =
         sockets_tcp::OnReceiveError::Create(receive_error_info);
-    scoped_ptr<Event> event(new Event(events::SOCKETS_TCP_ON_RECEIVE_ERROR,
-                                      sockets_tcp::OnReceiveError::kEventName,
-                                      std::move(args)));
+    std::unique_ptr<Event> event(
+        new Event(events::SOCKETS_TCP_ON_RECEIVE_ERROR,
+                  sockets_tcp::OnReceiveError::kEventName, std::move(args)));
     PostEvent(params, std::move(event));
 
     // Since we got an error, the socket is now "paused" until the application
@@ -175,7 +175,7 @@ void TCPSocketEventDispatcher::ReadCallback(
 
 // static
 void TCPSocketEventDispatcher::PostEvent(const ReadParams& params,
-                                         scoped_ptr<Event> event) {
+                                         std::unique_ptr<Event> event) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
   BrowserThread::PostTask(
@@ -187,7 +187,7 @@ void TCPSocketEventDispatcher::PostEvent(const ReadParams& params,
 // static
 void TCPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
                                              const std::string& extension_id,
-                                             scoped_ptr<Event> event) {
+                                             std::unique_ptr<Event> event) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::BrowserContext* context =

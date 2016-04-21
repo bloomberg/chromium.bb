@@ -166,9 +166,9 @@ void NetworkingPrivateEventRouterImpl::NetworkListChanged() {
     changes.push_back((*iter)->guid());
   }
 
-  scoped_ptr<base::ListValue> args(
+  std::unique_ptr<base::ListValue> args(
       api::networking_private::OnNetworkListChanged::Create(changes));
-  scoped_ptr<Event> extension_event(
+  std::unique_ptr<Event> extension_event(
       new Event(events::NETWORKING_PRIVATE_ON_NETWORK_LIST_CHANGED,
                 api::networking_private::OnNetworkListChanged::kEventName,
                 std::move(args)));
@@ -182,9 +182,9 @@ void NetworkingPrivateEventRouterImpl::DeviceListChanged() {
     return;
   }
 
-  scoped_ptr<base::ListValue> args(
+  std::unique_ptr<base::ListValue> args(
       api::networking_private::OnDeviceStateListChanged::Create());
-  scoped_ptr<Event> extension_event(
+  std::unique_ptr<Event> extension_event(
       new Event(events::NETWORKING_PRIVATE_ON_DEVICE_STATE_LIST_CHANGED,
                 api::networking_private::OnDeviceStateListChanged::kEventName,
                 std::move(args)));
@@ -201,10 +201,10 @@ void NetworkingPrivateEventRouterImpl::NetworkPropertiesUpdated(
     return;
   }
   NET_LOG_EVENT("NetworkingPrivate.NetworkPropertiesUpdated", network->path());
-  scoped_ptr<base::ListValue> args(
+  std::unique_ptr<base::ListValue> args(
       api::networking_private::OnNetworksChanged::Create(
           std::vector<std::string>(1, network->guid())));
-  scoped_ptr<Event> extension_event(new Event(
+  std::unique_ptr<Event> extension_event(new Event(
       events::NETWORKING_PRIVATE_ON_NETWORKS_CHANGED,
       api::networking_private::OnNetworksChanged::kEventName, std::move(args)));
   event_router->BroadcastEvent(std::move(extension_event));
@@ -262,10 +262,10 @@ void NetworkingPrivateEventRouterImpl::OnPortalDetectionCompleted(
       break;
   }
 
-  scoped_ptr<base::ListValue> args(
+  std::unique_ptr<base::ListValue> args(
       api::networking_private::OnPortalDetectionCompleted::Create(path,
                                                                   status));
-  scoped_ptr<Event> extension_event(
+  std::unique_ptr<Event> extension_event(
       new Event(events::NETWORKING_PRIVATE_ON_PORTAL_DETECTION_COMPLETED,
                 api::networking_private::OnPortalDetectionCompleted::kEventName,
                 std::move(args)));

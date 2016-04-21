@@ -36,7 +36,7 @@ bool NestedPayloadTypeEquals(const std::string& chk_type,
   if (!message_info.data->GetAsString(&type_json)) {
     return false;
   }
-  scoped_ptr<base::Value> type_value(base::JSONReader::Read(type_json));
+  std::unique_ptr<base::Value> type_value(base::JSONReader::Read(type_json));
   if (!type_value.get()) {
     return false;
   }
@@ -82,7 +82,7 @@ CastMessage KeepAliveDelegate::CreateKeepAliveMessage(
 KeepAliveDelegate::KeepAliveDelegate(
     CastSocket* socket,
     scoped_refptr<Logger> logger,
-    scoped_ptr<CastTransport::Delegate> inner_delegate,
+    std::unique_ptr<CastTransport::Delegate> inner_delegate,
     base::TimeDelta ping_interval,
     base::TimeDelta liveness_timeout)
     : started_(false),
@@ -102,8 +102,8 @@ KeepAliveDelegate::~KeepAliveDelegate() {
 }
 
 void KeepAliveDelegate::SetTimersForTest(
-    scoped_ptr<base::Timer> injected_ping_timer,
-    scoped_ptr<base::Timer> injected_liveness_timer) {
+    std::unique_ptr<base::Timer> injected_ping_timer,
+    std::unique_ptr<base::Timer> injected_liveness_timer) {
   ping_timer_ = std::move(injected_ping_timer);
   liveness_timer_ = std::move(injected_liveness_timer);
 }

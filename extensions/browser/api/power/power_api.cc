@@ -35,7 +35,7 @@ base::LazyInstance<BrowserContextKeyedAPIFactory<PowerAPI>> g_factory =
 }  // namespace
 
 bool PowerRequestKeepAwakeFunction::RunSync() {
-  scoped_ptr<api::power::RequestKeepAwake::Params> params(
+  std::unique_ptr<api::power::RequestKeepAwake::Params> params(
       api::power::RequestKeepAwake::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   EXTENSION_FUNCTION_VALIDATE(params->level != api::power::LEVEL_NONE);
@@ -112,7 +112,7 @@ void PowerAPI::UpdatePowerSaveBlocker() {
   if (!power_save_blocker_ || new_level != current_level_) {
     content::PowerSaveBlocker::PowerSaveBlockerType type =
         LevelToPowerSaveBlockerType(new_level);
-    scoped_ptr<content::PowerSaveBlocker> new_blocker(
+    std::unique_ptr<content::PowerSaveBlocker> new_blocker(
         create_blocker_function_.Run(type,
                                      content::PowerSaveBlocker::kReasonOther,
                                      kPowerSaveBlockerDescription));

@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "extensions/browser/api/api_resource.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
@@ -45,7 +46,7 @@ ApiResourceManager<ResumableTCPServerSocket>::GetFactoryInstance() {
 TCPSocket::TCPSocket(const std::string& owner_extension_id)
     : Socket(owner_extension_id), socket_mode_(UNKNOWN) {}
 
-TCPSocket::TCPSocket(scoped_ptr<net::TCPClientSocket> tcp_client_socket,
+TCPSocket::TCPSocket(std::unique_ptr<net::TCPClientSocket> tcp_client_socket,
                      const std::string& owner_extension_id,
                      bool is_connected)
     : Socket(owner_extension_id),
@@ -54,7 +55,7 @@ TCPSocket::TCPSocket(scoped_ptr<net::TCPClientSocket> tcp_client_socket,
   this->is_connected_ = is_connected;
 }
 
-TCPSocket::TCPSocket(scoped_ptr<net::TCPServerSocket> tcp_server_socket,
+TCPSocket::TCPSocket(std::unique_ptr<net::TCPServerSocket> tcp_server_socket,
                      const std::string& owner_extension_id)
     : Socket(owner_extension_id),
       server_socket_(std::move(tcp_server_socket)),
@@ -62,7 +63,7 @@ TCPSocket::TCPSocket(scoped_ptr<net::TCPServerSocket> tcp_server_socket,
 
 // static
 TCPSocket* TCPSocket::CreateSocketForTesting(
-    scoped_ptr<net::TCPClientSocket> tcp_client_socket,
+    std::unique_ptr<net::TCPClientSocket> tcp_client_socket,
     const std::string& owner_extension_id,
     bool is_connected) {
   return new TCPSocket(std::move(tcp_client_socket), owner_extension_id,
@@ -71,7 +72,7 @@ TCPSocket* TCPSocket::CreateSocketForTesting(
 
 // static
 TCPSocket* TCPSocket::CreateServerSocketForTesting(
-    scoped_ptr<net::TCPServerSocket> tcp_server_socket,
+    std::unique_ptr<net::TCPServerSocket> tcp_server_socket,
     const std::string& owner_extension_id) {
   return new TCPSocket(std::move(tcp_server_socket), owner_extension_id);
 }
@@ -299,7 +300,7 @@ void TCPSocket::OnAccept(int result) {
   DCHECK(!accept_callback_.is_null());
   if (result == net::OK && accept_socket_.get()) {
     accept_callback_.Run(result,
-                         make_scoped_ptr(static_cast<net::TCPClientSocket*>(
+                         base::WrapUnique(static_cast<net::TCPClientSocket*>(
                              accept_socket_.release())));
   } else {
     accept_callback_.Run(result, NULL);
@@ -344,7 +345,7 @@ ResumableTCPSocket::ResumableTCPSocket(const std::string& owner_extension_id)
       paused_(false) {}
 
 ResumableTCPSocket::ResumableTCPSocket(
-    scoped_ptr<net::TCPClientSocket> tcp_client_socket,
+    std::unique_ptr<net::TCPClientSocket> tcp_client_socket,
     const std::string& owner_extension_id,
     bool is_connected)
     : TCPSocket(std::move(tcp_client_socket), owner_extension_id, is_connected),

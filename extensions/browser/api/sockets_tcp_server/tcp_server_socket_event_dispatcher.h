@@ -78,15 +78,16 @@ class TCPServerSocketEventDispatcher
   // Called when socket accepts a new connection.
   static void AcceptCallback(const AcceptParams& params,
                              int result_code,
-                             scoped_ptr<net::TCPClientSocket> socket);
+                             std::unique_ptr<net::TCPClientSocket> socket);
 
   // Post an extension event from |thread_id| to UI thread
-  static void PostEvent(const AcceptParams& params, scoped_ptr<Event> event);
+  static void PostEvent(const AcceptParams& params,
+                        std::unique_ptr<Event> event);
 
   // Dispatch an extension event on to EventRouter instance on UI thread.
   static void DispatchEvent(void* browser_context_id,
                             const std::string& extension_id,
-                            scoped_ptr<Event> event);
+                            std::unique_ptr<Event> event);
 
   // Usually IO thread (except for unit testing).
   content::BrowserThread::ID thread_id_;

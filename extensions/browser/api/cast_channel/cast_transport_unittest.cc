@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <queue>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
@@ -147,13 +149,13 @@ class CastTransportTest : public testing::Test {
  public:
   CastTransportTest()
       : logger_(
-            new Logger(make_scoped_ptr<base::Clock>(new base::SimpleTestClock),
+            new Logger(base::WrapUnique<base::Clock>(new base::SimpleTestClock),
                        base::Time())) {
     delegate_ = new MockCastTransportDelegate;
     transport_.reset(new CastTransportImpl(&mock_socket_, kChannelId,
                                            CreateIPEndPointForTest(),
                                            auth_type_, logger_));
-    transport_->SetReadDelegate(make_scoped_ptr(delegate_));
+    transport_->SetReadDelegate(base::WrapUnique(delegate_));
   }
   ~CastTransportTest() override {}
 
@@ -169,7 +171,7 @@ class CastTransportTest : public testing::Test {
   MockSocket mock_socket_;
   ChannelAuthType auth_type_;
   Logger* logger_;
-  scoped_ptr<CastTransport> transport_;
+  std::unique_ptr<CastTransport> transport_;
 };
 
 // ----------------------------------------------------------------------------

@@ -130,7 +130,7 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
       return;
     }
 
-    scoped_ptr<DeviceInfo> device_info(new UsbDeviceInfo(device));
+    std::unique_ptr<DeviceInfo> device_info(new UsbDeviceInfo(device));
     device->CheckUsbAccess(
         base::Bind(&UsbDevicePermissionsPrompt::AddCheckedDevice, this,
                    base::Passed(&device_info)));
@@ -243,7 +243,7 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
   void OnDeviceAdded(scoped_refptr<device::HidDeviceInfo> device) override {
     if (HasUnprotectedCollections(device) &&
         (filters_.empty() || HidDeviceFilter::MatchesAny(device, filters_))) {
-      scoped_ptr<DeviceInfo> device_info(new HidDeviceInfo(device));
+      std::unique_ptr<DeviceInfo> device_info(new HidDeviceInfo(device));
 #if defined(OS_CHROMEOS)
       chromeos::PermissionBrokerClient* client =
           chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
@@ -343,7 +343,7 @@ DevicePermissionsPrompt::Prompt::~Prompt() {
 }
 
 void DevicePermissionsPrompt::Prompt::AddCheckedDevice(
-    scoped_ptr<DeviceInfo> device,
+    std::unique_ptr<DeviceInfo> device,
     bool allowed) {
   if (allowed) {
     devices_.push_back(std::move(device));

@@ -60,12 +60,12 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketsTcpCreateGood) {
   socket_create_function->set_extension(empty_extension.get());
   socket_create_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(
+  std::unique_ptr<base::Value> result(
       api_test_utils::RunFunctionAndReturnSingleResult(
           socket_create_function.get(), "[]", browser_context()));
 
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
-  scoped_ptr<base::DictionaryValue> value =
+  std::unique_ptr<base::DictionaryValue> value =
       base::DictionaryValue::From(std::move(result));
   int socketId = -1;
   EXPECT_TRUE(value->GetInteger("socketId", &socketId));
@@ -73,9 +73,11 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketsTcpCreateGood) {
 }
 
 IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketTcpExtension) {
-  scoped_ptr<net::SpawnedTestServer> test_server(new net::SpawnedTestServer(
-      net::SpawnedTestServer::TYPE_TCP_ECHO, net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("net/data"))));
+  std::unique_ptr<net::SpawnedTestServer> test_server(
+      new net::SpawnedTestServer(
+          net::SpawnedTestServer::TYPE_TCP_ECHO,
+          net::SpawnedTestServer::kLocalhost,
+          base::FilePath(FILE_PATH_LITERAL("net/data"))));
   EXPECT_TRUE(test_server->Start());
 
   net::HostPortPair host_port_pair = test_server->host_port_pair();
@@ -99,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketTcpExtension) {
 }
 
 IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketTcpExtensionTLS) {
-  scoped_ptr<net::SpawnedTestServer> test_https_server(
+  std::unique_ptr<net::SpawnedTestServer> test_https_server(
       new net::SpawnedTestServer(
           net::SpawnedTestServer::TYPE_HTTPS, net::BaseTestServer::SSLOptions(),
           base::FilePath(FILE_PATH_LITERAL("net/data"))));

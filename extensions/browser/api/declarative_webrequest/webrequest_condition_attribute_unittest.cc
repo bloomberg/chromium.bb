@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "content/public/browser/resource_request_info.h"
@@ -99,7 +100,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   EXPECT_EQ(std::string(keys::kResourceTypeKey), attribute->GetName());
 
   net::TestURLRequestContext context;
-  scoped_ptr<net::URLRequest> url_request_ok(context.CreateRequest(
+  std::unique_ptr<net::URLRequest> url_request_ok(context.CreateRequest(
       GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL));
   content::ResourceRequestInfo::AllocateForTesting(
       url_request_ok.get(), content::RESOURCE_TYPE_SUB_FRAME,
@@ -115,7 +116,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   EXPECT_TRUE(attribute->IsFulfilled(WebRequestData(url_request_ok.get(),
                                                     ON_BEFORE_REQUEST)));
 
-  scoped_ptr<net::URLRequest> url_request_fail(context.CreateRequest(
+  std::unique_ptr<net::URLRequest> url_request_fail(context.CreateRequest(
       GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL));
   content::ResourceRequestInfo::AllocateForTesting(
       url_request_fail.get(), content::RESOURCE_TYPE_MAIN_FRAME,
@@ -146,7 +147,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  scoped_ptr<net::URLRequest> url_request(context.CreateRequest(
+  std::unique_ptr<net::URLRequest> url_request(context.CreateRequest(
       test_server.GetURL("/headers.html"), net::DEFAULT_PRIORITY, &delegate));
   url_request->Start();
   base::MessageLoop::current()->Run();
@@ -230,7 +231,7 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
   const GURL url_b("http://b.com");
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  scoped_ptr<net::URLRequest> url_request(
+  std::unique_ptr<net::URLRequest> url_request(
       context.CreateRequest(url_a, net::DEFAULT_PRIORITY, &delegate));
 
   for (unsigned int i = 1; i <= kLastActiveStage; i <<= 1) {
@@ -321,7 +322,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
   const GURL url_empty;
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  scoped_ptr<net::URLRequest> url_request(
+  std::unique_ptr<net::URLRequest> url_request(
       context.CreateRequest(url_empty, net::DEFAULT_PRIORITY, &delegate));
 
   for (size_t i = 0; i < arraysize(active_stages); ++i) {
@@ -366,21 +367,21 @@ void GetArrayAsVector(const std::string array[],
 
 // Builds a DictionaryValue from an array of the form {name1, value1, name2,
 // value2, ...}. Values for the same key are grouped in a ListValue.
-scoped_ptr<base::DictionaryValue> GetDictionaryFromArray(
+std::unique_ptr<base::DictionaryValue> GetDictionaryFromArray(
     const std::vector<const std::string*>& array) {
   const size_t length = array.size();
   CHECK(length % 2 == 0);
 
-  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
   for (size_t i = 0; i < length; i += 2) {
     const std::string* name = array[i];
     const std::string* value = array[i+1];
     if (dictionary->HasKey(*name)) {
       base::Value* entry = NULL;
-      scoped_ptr<base::Value> entry_owned;
+      std::unique_ptr<base::Value> entry_owned;
       base::ListValue* list = NULL;
       if (!dictionary->GetWithoutPathExpansion(*name, &entry))
-        return scoped_ptr<base::DictionaryValue>();
+        return std::unique_ptr<base::DictionaryValue>();
       switch (entry->GetType()) {
         case base::Value::TYPE_STRING:
           // Replace the present string with a list.
@@ -397,7 +398,7 @@ scoped_ptr<base::DictionaryValue> GetDictionaryFromArray(
           break;
         default:
           NOTREACHED();  // We never put other Values here.
-          return scoped_ptr<base::DictionaryValue>();
+          return std::unique_ptr<base::DictionaryValue>();
       }
     } else {
       dictionary->SetString(*name, *value);
@@ -418,7 +419,8 @@ void MatchAndCheck(const std::vector< std::vector<const std::string*> >& tests,
                    bool* result) {
   base::ListValue contains_headers;
   for (size_t i = 0; i < tests.size(); ++i) {
-    scoped_ptr<base::DictionaryValue> temp(GetDictionaryFromArray(tests[i]));
+    std::unique_ptr<base::DictionaryValue> temp(
+        GetDictionaryFromArray(tests[i]));
     ASSERT_TRUE(temp.get());
     contains_headers.Append(temp.release());
   }
@@ -446,7 +448,7 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  scoped_ptr<net::URLRequest> url_request(
+  std::unique_ptr<net::URLRequest> url_request(
       context.CreateRequest(GURL("http://example.com"),  // Dummy URL.
                             net::DEFAULT_PRIORITY, &delegate));
   url_request->SetExtraRequestHeaderByName(
@@ -534,7 +536,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  scoped_ptr<net::URLRequest> url_request(context.CreateRequest(
+  std::unique_ptr<net::URLRequest> url_request(context.CreateRequest(
       test_server.GetURL("/headers.html"), net::DEFAULT_PRIORITY, &delegate));
   url_request->Start();
   base::MessageLoop::current()->Run();

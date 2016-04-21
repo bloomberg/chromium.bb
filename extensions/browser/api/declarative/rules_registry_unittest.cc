@@ -128,7 +128,7 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
   EXPECT_EQ(kRuleId, *get_rules_4b[0]->id);
 
   // Create extension
-  scoped_ptr<base::DictionaryValue> manifest = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> manifest = ParseDictionary(
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\""
@@ -188,7 +188,7 @@ TEST(RulesRegistryTest, TwoRulesInManifest) {
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
   // Create extension
-  scoped_ptr<base::DictionaryValue> manifest = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> manifest = ParseDictionary(
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
@@ -232,7 +232,7 @@ TEST(RulesRegistryTest, TwoRulesInManifest) {
   registry->GetAllRules(kExtensionId, &get_rules);
 
   ASSERT_EQ(2u, get_rules.size());
-  scoped_ptr<base::DictionaryValue> expected_rule_0 = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> expected_rule_0 = ParseDictionary(
       "{"
       "  \"id\": \"000\","
       "  \"priority\": 200,"
@@ -247,7 +247,7 @@ TEST(RulesRegistryTest, TwoRulesInManifest) {
       "}");
   EXPECT_TRUE(expected_rule_0->Equals(get_rules[0]->ToValue().get()));
 
-  scoped_ptr<base::DictionaryValue> expected_rule_1 = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> expected_rule_1 = ParseDictionary(
       "{"
       "  \"id\": \"_0_\","
       "  \"priority\": 100,"
@@ -269,7 +269,7 @@ TEST(RulesRegistryTest, DeleteRuleInManifest) {
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
   // Create extension
-  scoped_ptr<base::DictionaryValue> manifest = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> manifest = ParseDictionary(
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","

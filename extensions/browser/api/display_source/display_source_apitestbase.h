@@ -5,9 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_DISPLAY_SOURCE_DISPLAY_SOURCE_APITESTBASE_H_
 #define EXTENSIONS_BROWSER_API_DISPLAY_SOURCE_DISPLAY_SOURCE_APITESTBASE_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/display_source/display_source_connection_delegate.h"
 #include "extensions/browser/api/display_source/display_source_connection_delegate_factory.h"

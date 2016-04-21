@@ -5,8 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_DISPLAY_SOURCE_DISPLAY_SOURCE_CONNECTION_DELEGATE_FACTORY_H_
 #define EXTENSIONS_BROWSER_API_DISPLAY_SOURCE_DISPLAY_SOURCE_CONNECTION_DELEGATE_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "extensions/browser/api/display_source/display_source_connection_delegate.h"

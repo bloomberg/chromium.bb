@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_context.h"
@@ -46,13 +47,13 @@ class DefaultObserver : public SettingsObserver {
                          const std::string& change_json) override {
     // TODO(gdk): This is a temporary hack while the refactoring for
     // string-based event payloads is removed. http://crbug.com/136045
-    scoped_ptr<base::ListValue> args(new base::ListValue());
+    std::unique_ptr<base::ListValue> args(new base::ListValue());
     args->Append(base::JSONReader::Read(change_json));
     args->Append(new base::StringValue(settings_namespace::ToString(
         settings_namespace)));
-    scoped_ptr<Event> event(new Event(events::STORAGE_ON_CHANGED,
-                                      api::storage::OnChanged::kEventName,
-                                      std::move(args)));
+    std::unique_ptr<Event> event(new Event(events::STORAGE_ON_CHANGED,
+                                           api::storage::OnChanged::kEventName,
+                                           std::move(args)));
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_id, std::move(event));
   }
@@ -69,10 +70,10 @@ StorageFrontend* StorageFrontend::Get(BrowserContext* context) {
 }
 
 // static
-scoped_ptr<StorageFrontend> StorageFrontend::CreateForTesting(
+std::unique_ptr<StorageFrontend> StorageFrontend::CreateForTesting(
     const scoped_refptr<ValueStoreFactory>& storage_factory,
     BrowserContext* context) {
-  return make_scoped_ptr(new StorageFrontend(storage_factory, context));
+  return base::WrapUnique(new StorageFrontend(storage_factory, context));
 }
 
 StorageFrontend::StorageFrontend(BrowserContext* context)

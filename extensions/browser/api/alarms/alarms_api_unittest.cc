@@ -97,8 +97,9 @@ class ExtensionAlarmsTest : public ApiUnitTest {
         "[\"0\", {\"delayInMinutes\": 0}]",
     };
     for (size_t i = 0; i < num_alarms; ++i) {
-      scoped_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
-          new AlarmsCreateFunction(test_clock_), kCreateArgs[i]));
+      std::unique_ptr<base::DictionaryValue> result(
+          RunFunctionAndReturnDictionary(new AlarmsCreateFunction(test_clock_),
+                                         kCreateArgs[i]));
       EXPECT_FALSE(result.get());
     }
   }
@@ -326,7 +327,7 @@ TEST_F(ExtensionAlarmsTest, Get) {
   // Get the default one.
   {
     JsAlarm alarm;
-    scoped_ptr<base::DictionaryValue> result(
+    std::unique_ptr<base::DictionaryValue> result(
         RunFunctionAndReturnDictionary(new AlarmsGetFunction(), "[null]"));
     ASSERT_TRUE(result.get());
     EXPECT_TRUE(JsAlarm::Populate(*result, &alarm));
@@ -339,7 +340,7 @@ TEST_F(ExtensionAlarmsTest, Get) {
   // Get "7".
   {
     JsAlarm alarm;
-    scoped_ptr<base::DictionaryValue> result(
+    std::unique_ptr<base::DictionaryValue> result(
         RunFunctionAndReturnDictionary(new AlarmsGetFunction(), "[\"7\"]"));
     ASSERT_TRUE(result.get());
     EXPECT_TRUE(JsAlarm::Populate(*result, &alarm));
@@ -350,8 +351,9 @@ TEST_F(ExtensionAlarmsTest, Get) {
 
   // Get a non-existent one.
   {
-    scoped_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
-        new AlarmsGetFunction(), "[\"nobody\"]"));
+    std::unique_ptr<base::DictionaryValue> result(
+        RunFunctionAndReturnDictionary(new AlarmsGetFunction(),
+                                       "[\"nobody\"]"));
     ASSERT_FALSE(result.get());
   }
 }
@@ -359,7 +361,7 @@ TEST_F(ExtensionAlarmsTest, Get) {
 TEST_F(ExtensionAlarmsTest, GetAll) {
   // Test getAll with 0 alarms.
   {
-    scoped_ptr<base::ListValue> result(
+    std::unique_ptr<base::ListValue> result(
         RunFunctionAndReturnList(new AlarmsGetAllFunction(), "[]"));
     std::vector<linked_ptr<JsAlarm>> alarms = ToAlarmList(result.get());
     EXPECT_EQ(0u, alarms.size());
@@ -369,7 +371,7 @@ TEST_F(ExtensionAlarmsTest, GetAll) {
   CreateAlarms(2);
 
   {
-    scoped_ptr<base::ListValue> result(
+    std::unique_ptr<base::ListValue> result(
         RunFunctionAndReturnList(new AlarmsGetAllFunction(), "[null]"));
     std::vector<linked_ptr<JsAlarm>> alarms = ToAlarmList(result.get());
     EXPECT_EQ(2u, alarms.size());
@@ -418,7 +420,7 @@ void ExtensionAlarmsTestClearGetAllAlarms1Callback(
 TEST_F(ExtensionAlarmsTest, Clear) {
   // Clear a non-existent one.
   {
-    scoped_ptr<base::Value> result(
+    std::unique_ptr<base::Value> result(
         RunFunctionAndReturnValue(new AlarmsClearFunction(), "[\"nobody\"]"));
     bool copy_bool_result = false;
     ASSERT_TRUE(result->GetAsBoolean(&copy_bool_result));
@@ -430,14 +432,14 @@ TEST_F(ExtensionAlarmsTest, Clear) {
 
   // Clear all but the 0.001-minute alarm.
   {
-    scoped_ptr<base::Value> result(
+    std::unique_ptr<base::Value> result(
         RunFunctionAndReturnValue(new AlarmsClearFunction(), "[\"7\"]"));
     bool copy_bool_result = false;
     ASSERT_TRUE(result->GetAsBoolean(&copy_bool_result));
     EXPECT_TRUE(copy_bool_result);
   }
   {
-    scoped_ptr<base::Value> result(
+    std::unique_ptr<base::Value> result(
         RunFunctionAndReturnValue(new AlarmsClearFunction(), "[\"0\"]"));
     bool copy_bool_result = false;
     ASSERT_TRUE(result->GetAsBoolean(&copy_bool_result));
@@ -470,7 +472,7 @@ void ExtensionAlarmsTestClearAllGetAllAlarms1Callback(
 TEST_F(ExtensionAlarmsTest, ClearAll) {
   // ClearAll with no alarms set.
   {
-    scoped_ptr<base::Value> result(
+    std::unique_ptr<base::Value> result(
         RunFunctionAndReturnValue(new AlarmsClearAllFunction(), "[]"));
     bool copy_bool_result = false;
     ASSERT_TRUE(result->GetAsBoolean(&copy_bool_result));

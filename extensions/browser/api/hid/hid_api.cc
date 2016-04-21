@@ -88,7 +88,7 @@ HidGetDevicesFunction::HidGetDevicesFunction() {}
 HidGetDevicesFunction::~HidGetDevicesFunction() {}
 
 ExtensionFunction::ResponseAction HidGetDevicesFunction::Run() {
-  scoped_ptr<api::hid::GetDevices::Params> parameters =
+  std::unique_ptr<api::hid::GetDevices::Params> parameters =
       hid::GetDevices::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
@@ -118,7 +118,7 @@ ExtensionFunction::ResponseAction HidGetDevicesFunction::Run() {
 }
 
 void HidGetDevicesFunction::OnEnumerationComplete(
-    scoped_ptr<base::ListValue> devices) {
+    std::unique_ptr<base::ListValue> devices) {
   Respond(OneArgument(devices.release()));
 }
 
@@ -129,7 +129,7 @@ HidGetUserSelectedDevicesFunction::~HidGetUserSelectedDevicesFunction() {
 }
 
 ExtensionFunction::ResponseAction HidGetUserSelectedDevicesFunction::Run() {
-  scoped_ptr<api::hid::GetUserSelectedDevices::Params> parameters =
+  std::unique_ptr<api::hid::GetUserSelectedDevices::Params> parameters =
       hid::GetUserSelectedDevices::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
@@ -173,7 +173,7 @@ HidConnectFunction::HidConnectFunction() : connection_manager_(nullptr) {
 HidConnectFunction::~HidConnectFunction() {}
 
 ExtensionFunction::ResponseAction HidConnectFunction::Run() {
-  scoped_ptr<api::hid::Connect::Params> parameters =
+  std::unique_ptr<api::hid::Connect::Params> parameters =
       hid::Connect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
@@ -221,7 +221,7 @@ HidDisconnectFunction::HidDisconnectFunction() {}
 HidDisconnectFunction::~HidDisconnectFunction() {}
 
 ExtensionFunction::ResponseAction HidDisconnectFunction::Run() {
-  scoped_ptr<api::hid::Disconnect::Params> parameters =
+  std::unique_ptr<api::hid::Disconnect::Params> parameters =
       hid::Disconnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters);
 

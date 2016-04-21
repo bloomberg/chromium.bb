@@ -4,10 +4,12 @@
 
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/declarative/rules_cache_delegate.h"
@@ -78,7 +80,7 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
     // Create a RulesCacheDelegate.
     web_request_cache_delegate =
         new RulesCacheDelegate(true /*log_storage_init_delay*/);
-    cache_delegates_.push_back(make_scoped_ptr(web_request_cache_delegate));
+    cache_delegates_.push_back(base::WrapUnique(web_request_cache_delegate));
   }
   scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry(
       new WebRequestRulesRegistry(browser_context_, web_request_cache_delegate,
@@ -95,7 +97,7 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
   if (rules_registry_id == kDefaultRulesRegistryID) {
     RulesCacheDelegate* content_rules_cache_delegate =
         new RulesCacheDelegate(false /*log_storage_init_delay*/);
-    cache_delegates_.push_back(make_scoped_ptr(content_rules_cache_delegate));
+    cache_delegates_.push_back(base::WrapUnique(content_rules_cache_delegate));
     scoped_refptr<ContentRulesRegistry> content_rules_registry =
         ExtensionsAPIClient::Get()->CreateContentRulesRegistry(
             browser_context_, content_rules_cache_delegate);

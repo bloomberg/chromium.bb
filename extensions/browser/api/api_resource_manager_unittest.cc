@@ -28,7 +28,7 @@ class FakeApiResource : public ApiResource {
 };
 
 TEST_F(ApiResourceManagerUnitTest, TwoAppsCannotShareResources) {
-  scoped_ptr<ApiResourceManager<FakeApiResource>> manager(
+  std::unique_ptr<ApiResourceManager<FakeApiResource>> manager(
       new ApiResourceManager<FakeApiResource>(browser_context()));
   scoped_refptr<extensions::Extension> extension_one =
       test_util::CreateEmptyExtension("one");

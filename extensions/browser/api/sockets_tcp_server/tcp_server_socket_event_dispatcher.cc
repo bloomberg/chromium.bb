@@ -124,7 +124,7 @@ void TCPServerSocketEventDispatcher::StartAccept(const AcceptParams& params) {
 void TCPServerSocketEventDispatcher::AcceptCallback(
     const AcceptParams& params,
     int result_code,
-    scoped_ptr<net::TCPClientSocket> socket) {
+    std::unique_ptr<net::TCPClientSocket> socket) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
   if (result_code >= 0) {
@@ -137,11 +137,11 @@ void TCPServerSocketEventDispatcher::AcceptCallback(
     sockets_tcp_server::AcceptInfo accept_info;
     accept_info.socket_id = params.socket_id;
     accept_info.client_socket_id = client_socket_id;
-    scoped_ptr<base::ListValue> args =
+    std::unique_ptr<base::ListValue> args =
         sockets_tcp_server::OnAccept::Create(accept_info);
-    scoped_ptr<Event> event(new Event(events::SOCKETS_TCP_SERVER_ON_ACCEPT,
-                                      sockets_tcp_server::OnAccept::kEventName,
-                                      std::move(args)));
+    std::unique_ptr<Event> event(
+        new Event(events::SOCKETS_TCP_SERVER_ON_ACCEPT,
+                  sockets_tcp_server::OnAccept::kEventName, std::move(args)));
     PostEvent(params, std::move(event));
 
     // Post a task to delay the "accept" until the socket is available, as
@@ -156,9 +156,9 @@ void TCPServerSocketEventDispatcher::AcceptCallback(
     sockets_tcp_server::AcceptErrorInfo accept_error_info;
     accept_error_info.socket_id = params.socket_id;
     accept_error_info.result_code = result_code;
-    scoped_ptr<base::ListValue> args =
+    std::unique_ptr<base::ListValue> args =
         sockets_tcp_server::OnAcceptError::Create(accept_error_info);
-    scoped_ptr<Event> event(new Event(
+    std::unique_ptr<Event> event(new Event(
         events::SOCKETS_TCP_SERVER_ON_ACCEPT_ERROR,
         sockets_tcp_server::OnAcceptError::kEventName, std::move(args)));
     PostEvent(params, std::move(event));
@@ -175,7 +175,7 @@ void TCPServerSocketEventDispatcher::AcceptCallback(
 
 // static
 void TCPServerSocketEventDispatcher::PostEvent(const AcceptParams& params,
-                                               scoped_ptr<Event> event) {
+                                               std::unique_ptr<Event> event) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
   BrowserThread::PostTask(
@@ -188,7 +188,7 @@ void TCPServerSocketEventDispatcher::PostEvent(const AcceptParams& params,
 void TCPServerSocketEventDispatcher::DispatchEvent(
     void* browser_context_id,
     const std::string& extension_id,
-    scoped_ptr<Event> event) {
+    std::unique_ptr<Event> event) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::BrowserContext* context =

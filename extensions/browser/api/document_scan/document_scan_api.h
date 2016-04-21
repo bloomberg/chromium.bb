@@ -5,11 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_API_DOCUMENT_SCAN_DOCUMENT_SCAN_API_H_
 #define EXTENSIONS_BROWSER_API_DOCUMENT_SCAN_DOCUMENT_SCAN_API_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/api/document_scan/document_scan_interface.h"
 #include "extensions/common/api/document_scan.h"
@@ -42,8 +42,8 @@ class DocumentScanScanFunction : public AsyncApiFunction {
                          const std::string& mime_type,
                          const std::string& error);
 
-  scoped_ptr<document_scan::Scan::Params> params_;
-  scoped_ptr<DocumentScanInterface> document_scan_interface_;
+  std::unique_ptr<document_scan::Scan::Params> params_;
+  std::unique_ptr<DocumentScanInterface> document_scan_interface_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentScanScanFunction);
 };

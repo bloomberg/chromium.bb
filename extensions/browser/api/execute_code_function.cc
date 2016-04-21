@@ -84,7 +84,7 @@ void ExecuteCodeFunction::GetFileURLAndLocalizeCSS(
   // Check if the file is CSS and needs localization.
   if ((script_type == ScriptExecutor::CSS) && !extension_id.empty() &&
       (data.find(MessageBundle::kMessageBegin) != std::string::npos)) {
-    scoped_ptr<SubstitutionMap> localization_messages(
+    std::unique_ptr<SubstitutionMap> localization_messages(
         file_util::LoadMessageBundleSubstitutionMap(
             extension_path, extension_id, extension_default_locale));
 

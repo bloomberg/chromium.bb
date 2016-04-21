@@ -39,7 +39,7 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
   typedef std::vector<std::string> GuidList;
 
   NetworkingPrivateLinux(content::BrowserContext* browser_context,
-                         scoped_ptr<VerifyDelegate> verify_delegate);
+                         std::unique_ptr<VerifyDelegate> verify_delegate);
 
   // NetworkingPrivateDelegate
   void GetProperties(const std::string& guid,
@@ -52,11 +52,11 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
                 const DictionaryCallback& success_callback,
                 const FailureCallback& failure_callback) override;
   void SetProperties(const std::string& guid,
-                     scoped_ptr<base::DictionaryValue> properties,
+                     std::unique_ptr<base::DictionaryValue> properties,
                      const VoidCallback& success_callback,
                      const FailureCallback& failure_callback) override;
   void CreateNetwork(bool shared,
-                     scoped_ptr<base::DictionaryValue> properties,
+                     std::unique_ptr<base::DictionaryValue> properties,
                      const StringCallback& success_callback,
                      const FailureCallback& failure_callback) override;
   void ForgetNetwork(const std::string& guid,
@@ -97,8 +97,8 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
                            const VoidCallback& success_callback,
                            const FailureCallback& failure_callback) override;
 
-  scoped_ptr<base::ListValue> GetEnabledNetworkTypes() override;
-  scoped_ptr<DeviceStateList> GetDeviceStateList() override;
+  std::unique_ptr<base::ListValue> GetEnabledNetworkTypes() override;
+  std::unique_ptr<DeviceStateList> GetDeviceStateList() override;
   bool EnableNetworkType(const std::string& type) override;
   bool DisableNetworkType(const std::string& type) override;
   bool RequestScan() override;
@@ -181,13 +181,13 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
 
   // Reply callback accepts the map of networks and fires the
   // OnNetworkListChanged event and user callbacks.
-  void OnAccessPointsFound(scoped_ptr<NetworkMap> network_map,
+  void OnAccessPointsFound(std::unique_ptr<NetworkMap> network_map,
                            const NetworkListCallback& success_callback,
                            const FailureCallback& failure_callback);
 
   // Reply callback accepts the map of networks and fires the
   // OnNetworkListChanged event.
-  void OnAccessPointsFoundViaScan(scoped_ptr<NetworkMap> network_map);
+  void OnAccessPointsFoundViaScan(std::unique_ptr<NetworkMap> network_map);
 
   // Helper function for OnAccessPointsFound and OnAccessPointsFoundViaScan to
   // fire the OnNetworkListChangedEvent.
@@ -198,21 +198,22 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
   // supplied |access_point_path|.
   bool GetAccessPointInfo(
       const dbus::ObjectPath& access_point_path,
-      const scoped_ptr<base::DictionaryValue>& access_point_info);
+      const std::unique_ptr<base::DictionaryValue>& access_point_info);
 
   // Helper function to extract a property from a device.
   // Returns the dbus::Response object from calling Get on the supplied
   // |property_name|.
-  scoped_ptr<dbus::Response> GetAccessPointProperty(
+  std::unique_ptr<dbus::Response> GetAccessPointProperty(
       dbus::ObjectProxy* access_point_proxy,
       const std::string& property_name);
 
   // If the access_point is not already in the map it is added. Otherwise
   // the access point is updated (eg. with the max of the signal
   // strength).
-  void AddOrUpdateAccessPoint(NetworkMap* network_map,
-                              const std::string& network_guid,
-                              scoped_ptr<base::DictionaryValue>& access_point);
+  void AddOrUpdateAccessPoint(
+      NetworkMap* network_map,
+      const std::string& network_guid,
+      std::unique_ptr<base::DictionaryValue>& access_point);
 
   // Maps the WPA security flags to a human readable string.
   void MapSecurityFlagsToString(uint32_t securityFlags, std::string* security);
@@ -245,11 +246,11 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
 
   // Helper method to post an OnNetworkChanged event to the UI thread from the
   // dbus thread. Used for connection status progress during |StartConnect|.
-  void PostOnNetworksChangedToUIThread(scoped_ptr<GuidList> guid_list);
+  void PostOnNetworksChangedToUIThread(std::unique_ptr<GuidList> guid_list);
 
   // Helper method to be called from the UI thread and manage ownership of the
   // passed vector from the |dbus_thread_|.
-  void OnNetworksChangedEventTask(scoped_ptr<GuidList> guid_list);
+  void OnNetworksChangedEventTask(std::unique_ptr<GuidList> guid_list);
 
   void GetCachedNetworkProperties(const std::string& guid,
                                   base::DictionaryValue* properties,
@@ -270,7 +271,7 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
   // This is owned by |dbus_| object. Only access on |dbus_thread_|.
   dbus::ObjectProxy* network_manager_proxy_;
   // Holds the current mapping of known networks. Only access on |dbus_thread_|.
-  scoped_ptr<NetworkMap> network_map_;
+  std::unique_ptr<NetworkMap> network_map_;
   // Observers to Network Events.
   base::ObserverList<NetworkingPrivateDelegateObserver>
       network_events_observers_;

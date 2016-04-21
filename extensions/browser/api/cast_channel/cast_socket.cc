@@ -6,12 +6,14 @@
 
 #include <stdlib.h>
 #include <string.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
@@ -83,7 +85,7 @@ class FakeCertVerifier : public net::CertVerifier {
              net::CRLSet*,
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback&,
-             scoped_ptr<net::CertVerifier::Request>*,
+             std::unique_ptr<net::CertVerifier::Request>*,
              const net::BoundNetLog&) override {
     verify_result->Reset();
     verify_result->verified_cert = cert;
@@ -171,19 +173,19 @@ bool CastSocketImpl::audio_only() const {
   return audio_only_;
 }
 
-scoped_ptr<net::TCPClientSocket> CastSocketImpl::CreateTcpSocket() {
+std::unique_ptr<net::TCPClientSocket> CastSocketImpl::CreateTcpSocket() {
   net::AddressList addresses(ip_endpoint_);
-  return scoped_ptr<net::TCPClientSocket>(
+  return std::unique_ptr<net::TCPClientSocket>(
       new net::TCPClientSocket(addresses, nullptr, net_log_, net_log_source_));
   // Options cannot be set on the TCPClientSocket yet, because the
   // underlying platform socket will not be created until Bind()
   // or Connect() is called.
 }
 
-scoped_ptr<net::SSLClientSocket> CastSocketImpl::CreateSslSocket(
-    scoped_ptr<net::StreamSocket> socket) {
+std::unique_ptr<net::SSLClientSocket> CastSocketImpl::CreateSslSocket(
+    std::unique_ptr<net::StreamSocket> socket) {
   net::SSLConfig ssl_config;
-  cert_verifier_ = make_scoped_ptr(new FakeCertVerifier);
+  cert_verifier_ = base::WrapUnique(new FakeCertVerifier);
   transport_security_state_.reset(new net::TransportSecurityState);
   net::SSLClientSocketContext context;
   // CertVerifier and TransportSecurityState are owned by us, not the
@@ -191,7 +193,8 @@ scoped_ptr<net::SSLClientSocket> CastSocketImpl::CreateSslSocket(
   context.cert_verifier = cert_verifier_.get();
   context.transport_security_state = transport_security_state_.get();
 
-  scoped_ptr<net::ClientSocketHandle> connection(new net::ClientSocketHandle);
+  std::unique_ptr<net::ClientSocketHandle> connection(
+      new net::ClientSocketHandle);
   connection->SetSocket(std::move(socket));
   net::HostPortPair host_and_port = net::HostPortPair::FromIPEndPoint(
       ip_endpoint_);
@@ -239,11 +242,11 @@ bool CastSocketImpl::VerifyChallengeReply() {
 }
 
 void CastSocketImpl::SetTransportForTesting(
-    scoped_ptr<CastTransport> transport) {
+    std::unique_ptr<CastTransport> transport) {
   transport_ = std::move(transport);
 }
 
-void CastSocketImpl::Connect(scoped_ptr<CastTransport::Delegate> delegate,
+void CastSocketImpl::Connect(std::unique_ptr<CastTransport::Delegate> delegate,
                              base::Callback<void(ChannelError)> callback) {
   DCHECK(CalledOnValidThread());
   VLOG_WITH_CONNECTION(1) << "Connect readyState = " << ready_state_;
@@ -425,7 +428,7 @@ int CastSocketImpl::DoSslConnectComplete(int result) {
                                              logger_));
     }
     auth_delegate_ = new AuthTransportDelegate(this);
-    transport_->SetReadDelegate(make_scoped_ptr(auth_delegate_));
+    transport_->SetReadDelegate(base::WrapUnique(auth_delegate_));
     if (channel_auth_ == CHANNEL_AUTH_TYPE_SSL_VERIFIED) {
       // Additionally verify the connection with a handshake.
       SetConnectState(proto::CONN_STATE_AUTH_CHALLENGE_SEND);

@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/api/storage/storage_frontend.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_context.h"
@@ -14,7 +17,6 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
-#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "extensions/browser/value_store/value_store_factory_impl.h"
@@ -64,7 +66,7 @@ class ExtensionSettingsFrontendTest : public ExtensionsTest {
   }
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<StorageFrontend> frontend_;
+  std::unique_ptr<StorageFrontend> frontend_;
   scoped_refptr<ValueStoreFactoryImpl> storage_factory_;
 
  private:
@@ -192,7 +194,7 @@ TEST_F(ExtensionSettingsFrontendTest,
       util::GetStorage(extension, settings::LOCAL, frontend_.get());
 
   // Sync storage should run out after ~100K.
-  scoped_ptr<base::Value> kilobyte = util::CreateKilobyte();
+  std::unique_ptr<base::Value> kilobyte = util::CreateKilobyte();
   for (int i = 0; i < 100; ++i) {
     sync_storage->Set(DEFAULTS, base::IntToString(i), *kilobyte);
   }
@@ -209,7 +211,7 @@ TEST_F(ExtensionSettingsFrontendTest,
       local_storage->Set(DEFAULTS, "WontError", *kilobyte)->status().ok());
 
   // Local storage should run out after ~5MB.
-  scoped_ptr<base::Value> megabyte = util::CreateMegabyte();
+  std::unique_ptr<base::Value> megabyte = util::CreateMegabyte();
   for (int i = 0; i < 5; ++i) {
     local_storage->Set(DEFAULTS, base::IntToString(i), *megabyte);
   }

@@ -142,7 +142,7 @@ BluetoothPrivateSetAdapterStateFunction::
 
 bool BluetoothPrivateSetAdapterStateFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  scoped_ptr<bt_private::SetAdapterState::Params> params(
+  std::unique_ptr<bt_private::SetAdapterState::Params> params(
       bt_private::SetAdapterState::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -250,7 +250,7 @@ BluetoothPrivateSetPairingResponseFunction::
 
 bool BluetoothPrivateSetPairingResponseFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  scoped_ptr<bt_private::SetPairingResponse::Params> params(
+  std::unique_ptr<bt_private::SetPairingResponse::Params> params(
       bt_private::SetPairingResponse::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   const bt_private::SetPairingResponseOptions& options = params->options;
@@ -311,7 +311,7 @@ BluetoothPrivateDisconnectAllFunction::
 
 bool BluetoothPrivateDisconnectAllFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  scoped_ptr<bt_private::DisconnectAll::Params> params(
+  std::unique_ptr<bt_private::DisconnectAll::Params> params(
       bt_private::DisconnectAll::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -364,7 +364,7 @@ BluetoothPrivateForgetDeviceFunction::~BluetoothPrivateForgetDeviceFunction() {}
 
 bool BluetoothPrivateForgetDeviceFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  scoped_ptr<bt_private::ForgetDevice::Params> params(
+  std::unique_ptr<bt_private::ForgetDevice::Params> params(
       bt_private::ForgetDevice::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -399,11 +399,11 @@ void BluetoothPrivateForgetDeviceFunction::OnErrorCallback(
 
 bool BluetoothPrivateSetDiscoveryFilterFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  scoped_ptr<SetDiscoveryFilter::Params> params(
+  std::unique_ptr<SetDiscoveryFilter::Params> params(
       SetDiscoveryFilter::Params::Create(*args_));
   auto& df_param = params->discovery_filter;
 
-  scoped_ptr<device::BluetoothDiscoveryFilter> discovery_filter;
+  std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter;
 
   // If all filter fields are empty, we are clearing filter. If any field is
   // set, then create proper filter.
@@ -475,7 +475,7 @@ BluetoothPrivateConnectFunction::~BluetoothPrivateConnectFunction() {}
 
 bool BluetoothPrivateConnectFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  scoped_ptr<bt_private::Connect::Params> params(
+  std::unique_ptr<bt_private::Connect::Params> params(
       bt_private::Connect::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -577,7 +577,7 @@ BluetoothPrivatePairFunction::~BluetoothPrivatePairFunction() {}
 
 bool BluetoothPrivatePairFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  scoped_ptr<bt_private::Pair::Params> params(
+  std::unique_ptr<bt_private::Pair::Params> params(
       bt_private::Pair::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

@@ -102,7 +102,7 @@ class SystemStorageApiTest : public extensions::ShellApiTest {
   }
 
  private:
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 };
 
 IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, Storage) {

@@ -7,7 +7,8 @@
 #include <windows.h>
 #include <winternl.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/sys_info.h"
 
 namespace extensions {
@@ -38,7 +39,7 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
   CHECK(NtQuerySystemInformation != NULL);
 
   int num_of_processors = base::SysInfo::NumberOfProcessors();
-  scoped_ptr<SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[]> processor_info(
+  std::unique_ptr<SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[]> processor_info(
       new SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[num_of_processors]);
 
   ULONG returned_bytes = 0,

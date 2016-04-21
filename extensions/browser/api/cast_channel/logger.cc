@@ -64,7 +64,7 @@ proto::ChallengeReplyErrorType ChallegeReplyErrorToProto(
   }
 }
 
-scoped_ptr<char[]> Compress(const std::string& input, size_t* length) {
+std::unique_ptr<char[]> Compress(const std::string& input, size_t* length) {
   *length = 0;
   z_stream stream = {0};
   int result = deflateInit2(&stream,
@@ -77,7 +77,7 @@ scoped_ptr<char[]> Compress(const std::string& input, size_t* length) {
   DCHECK_EQ(Z_OK, result);
 
   size_t out_size = deflateBound(&stream, input.size());
-  scoped_ptr<char[]> out(new char[out_size]);
+  std::unique_ptr<char[]> out(new char[out_size]);
 
   stream.next_in = reinterpret_cast<uint8_t*>(const_cast<char*>(input.data()));
   stream.avail_in = input.size();
@@ -125,7 +125,7 @@ Logger::AggregatedSocketEventLog::AggregatedSocketEventLog() {
 Logger::AggregatedSocketEventLog::~AggregatedSocketEventLog() {
 }
 
-Logger::Logger(scoped_ptr<base::Clock> clock, base::Time unix_epoch_time)
+Logger::Logger(std::unique_ptr<base::Clock> clock, base::Time unix_epoch_time)
     : clock_(std::move(clock)), unix_epoch_time_(unix_epoch_time) {
   DCHECK(clock_);
 
@@ -311,7 +311,7 @@ AggregatedSocketEvent& Logger::LogSocketEvent(int channel_id,
   return it->second->aggregated_socket_event;
 }
 
-scoped_ptr<char[]> Logger::GetLogs(size_t* length) const {
+std::unique_ptr<char[]> Logger::GetLogs(size_t* length) const {
   *length = 0;
 
   Log log;
@@ -341,7 +341,7 @@ scoped_ptr<char[]> Logger::GetLogs(size_t* length) const {
   std::string serialized;
   if (!log.SerializeToString(&serialized)) {
     VLOG(2) << "Failed to serialized proto to string.";
-    return scoped_ptr<char[]>();
+    return std::unique_ptr<char[]>();
   }
 
   return Compress(serialized, length);

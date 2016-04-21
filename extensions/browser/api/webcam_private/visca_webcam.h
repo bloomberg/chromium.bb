@@ -114,13 +114,13 @@ class ViscaWebcam : public Webcam {
              const SetPTZCompleteCallback& callback) override;
 
   // Used only in unit tests in place of Open().
-  void OpenForTesting(scoped_ptr<SerialConnection> serial_connection);
+  void OpenForTesting(std::unique_ptr<SerialConnection> serial_connection);
 
   // Used only in unit tests to retrieve |serial_connection_| since this class
   // owns it.
   SerialConnection* GetSerialConnectionForTesting();
 
-  scoped_ptr<SerialConnection> serial_connection_;
+  std::unique_ptr<SerialConnection> serial_connection_;
 
   // Stores the response for the current command.
   std::vector<char> data_buffer_;

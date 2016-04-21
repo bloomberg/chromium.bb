@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 namespace content {
@@ -99,7 +99,7 @@ class DevicePermissionsPrompt {
    protected:
     virtual ~Prompt();
 
-    void AddCheckedDevice(scoped_ptr<DeviceInfo> device, bool allowed);
+    void AddCheckedDevice(std::unique_ptr<DeviceInfo> device, bool allowed);
 
     const Extension* extension() const { return extension_; }
     Observer* observer() const { return observer_; }
@@ -109,7 +109,7 @@ class DevicePermissionsPrompt {
 
     // Subclasses may fill this with a particular subclass of DeviceInfo and may
     // assume that only that instances of that type are stored here.
-    std::vector<scoped_ptr<DeviceInfo>> devices_;
+    std::vector<std::unique_ptr<DeviceInfo>> devices_;
 
    private:
     friend class base::RefCounted<Prompt>;

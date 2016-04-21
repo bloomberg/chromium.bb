@@ -6,9 +6,9 @@
 #define EXTENSIONS_BROWSER_API_EXTENSIONS_API_CLIENT_H_
 
 #include <map>
+#include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/declarative_content/content_rules_registry.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 
@@ -88,12 +88,12 @@ class ExtensionsAPIClient {
       ExtensionOptionsGuest* guest) const;
 
   // Returns a delegate for GuestViewManagerDelegate.
-  virtual scoped_ptr<guest_view::GuestViewManagerDelegate>
+  virtual std::unique_ptr<guest_view::GuestViewManagerDelegate>
   CreateGuestViewManagerDelegate(content::BrowserContext* context) const;
 
   // Creates a delegate for MimeHandlerViewGuest.
-  virtual scoped_ptr<MimeHandlerViewGuestDelegate>
-      CreateMimeHandlerViewGuestDelegate(MimeHandlerViewGuest* guest) const;
+  virtual std::unique_ptr<MimeHandlerViewGuestDelegate>
+  CreateMimeHandlerViewGuestDelegate(MimeHandlerViewGuest* guest) const;
 
   // Returns a delegate for some of WebViewGuest's behavior. The caller owns the
   // returned WebViewGuestDelegate.
@@ -117,12 +117,12 @@ class ExtensionsAPIClient {
       RulesCacheDelegate* cache_delegate) const;
 
   // Creates a DevicePermissionsPrompt appropriate for the embedder.
-  virtual scoped_ptr<DevicePermissionsPrompt> CreateDevicePermissionsPrompt(
-      content::WebContents* web_contents) const;
+  virtual std::unique_ptr<DevicePermissionsPrompt>
+  CreateDevicePermissionsPrompt(content::WebContents* web_contents) const;
 
   // Returns a delegate for some of VirtualKeyboardAPI's behavior.
-  virtual scoped_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate()
-      const;
+  virtual std::unique_ptr<VirtualKeyboardDelegate>
+  CreateVirtualKeyboardDelegate() const;
 
   // Creates a delegate for handling the management extension api.
   virtual ManagementAPIDelegate* CreateManagementAPIDelegate() const;

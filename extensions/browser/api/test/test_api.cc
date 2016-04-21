@@ -58,7 +58,8 @@ bool TestNotifyPassFunction::RunSafe() {
 TestNotifyFailFunction::~TestNotifyFailFunction() {}
 
 bool TestNotifyFailFunction::RunSafe() {
-  scoped_ptr<NotifyFail::Params> params(NotifyFail::Params::Create(*args_));
+  std::unique_ptr<NotifyFail::Params> params(
+      NotifyFail::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_TEST_FAILED,
@@ -70,14 +71,15 @@ bool TestNotifyFailFunction::RunSafe() {
 TestLogFunction::~TestLogFunction() {}
 
 bool TestLogFunction::RunSafe() {
-  scoped_ptr<Log::Params> params(Log::Params::Create(*args_));
+  std::unique_ptr<Log::Params> params(Log::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   VLOG(1) << params->message;
   return true;
 }
 
 bool TestSendMessageFunction::RunAsync() {
-  scoped_ptr<PassMessage::Params> params(PassMessage::Params::Create(*args_));
+  std::unique_ptr<PassMessage::Params> params(
+      PassMessage::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
@@ -131,7 +133,7 @@ bool TestGetConfigFunction::RunSafe() {
 TestWaitForRoundTripFunction::~TestWaitForRoundTripFunction() {}
 
 bool TestWaitForRoundTripFunction::RunSafe() {
-  scoped_ptr<WaitForRoundTrip::Params> params(
+  std::unique_ptr<WaitForRoundTrip::Params> params(
       WaitForRoundTrip::Params::Create(*args_));
   SetResult(new base::StringValue(params->message));
   return true;

@@ -138,7 +138,7 @@ class BluetoothApiSocket : public ApiResource {
   device::BluetoothUUID uuid_;
 
   // Application-defined string - see bluetooth.idl.
-  scoped_ptr<std::string> name_;
+  std::unique_ptr<std::string> name_;
 
   // Flag indicating whether the socket is left open when the application is
   // suspended - see bluetooth.idl.

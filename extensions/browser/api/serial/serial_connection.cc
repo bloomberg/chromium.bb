@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "device/serial/buffer.h"
 #include "extensions/browser/api/api_resource_manager.h"
@@ -222,7 +223,7 @@ bool SerialConnection::Receive(const ReceiveCompleteCallback& callback) {
     return false;
   receive_complete_ = callback;
   receive_buffer_ = new net::IOBuffer(buffer_size_);
-  io_handler_->Read(make_scoped_ptr(new device::ReceiveBuffer(
+  io_handler_->Read(base::WrapUnique(new device::ReceiveBuffer(
       receive_buffer_, buffer_size_,
       base::Bind(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()))));
   receive_timeout_task_.reset();
@@ -240,7 +241,7 @@ bool SerialConnection::Send(const std::vector<char>& data,
   if (!send_complete_.is_null())
     return false;
   send_complete_ = callback;
-  io_handler_->Write(make_scoped_ptr(new device::SendBuffer(
+  io_handler_->Write(base::WrapUnique(new device::SendBuffer(
       data, base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()))));
   send_timeout_task_.reset();
   if (send_timeout_ > 0) {

@@ -5,8 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_MESSAGING_NATIVE_MESSAGING_CHANNEL_H_
 #define EXTENSIONS_BROWSER_API_MESSAGING_NATIVE_MESSAGING_CHANNEL_H_
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class Value;
@@ -23,7 +24,7 @@ class NativeMessagingChannel {
   class EventHandler {
    public:
     // Called when a message is received from the other endpoint.
-    virtual void OnMessage(scoped_ptr<base::Value> message) = 0;
+    virtual void OnMessage(std::unique_ptr<base::Value> message) = 0;
 
     // Called when the channel is disconnected.
     // EventHandler is guaranteed not to be called after OnDisconnect().
@@ -38,7 +39,7 @@ class NativeMessagingChannel {
   virtual void Start(EventHandler* event_handler) = 0;
 
   // Sends a message to the other endpoint.
-  virtual void SendMessage(scoped_ptr<base::Value> message) = 0;
+  virtual void SendMessage(std::unique_ptr<base::Value> message) = 0;
 };
 
 }  // namespace extensions

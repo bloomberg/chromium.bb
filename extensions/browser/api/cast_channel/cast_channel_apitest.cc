@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/timer/mock_timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -94,12 +95,12 @@ class CastChannelAPITest : public ExtensionApiTest {
   void SetUpMockCastSocket() {
     extensions::CastChannelAPI* api = GetApi();
     timeout_timer_ = new base::MockTimer(true, false);
-    api->SetPingTimeoutTimerForTest(make_scoped_ptr(timeout_timer_));
+    api->SetPingTimeoutTimerForTest(base::WrapUnique(timeout_timer_));
 
     net::IPEndPoint ip_endpoint(net::IPAddress(192, 168, 1, 1), 8009);
     mock_cast_socket_ = new MockCastSocket;
     // Transfers ownership of the socket.
-    api->SetSocketForTest(make_scoped_ptr<CastSocket>(mock_cast_socket_));
+    api->SetSocketForTest(base::WrapUnique<CastSocket>(mock_cast_socket_));
     ON_CALL(*mock_cast_socket_, set_id(_))
         .WillByDefault(SaveArg<0>(&channel_id_));
     ON_CALL(*mock_cast_socket_, id())

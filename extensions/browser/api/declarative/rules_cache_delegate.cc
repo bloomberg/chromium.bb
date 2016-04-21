@@ -94,7 +94,7 @@ void RulesCacheDelegate::Init(RulesRegistry* registry) {
 }
 
 void RulesCacheDelegate::WriteToStorage(const std::string& extension_id,
-                                     scoped_ptr<base::Value> value) {
+                                        std::unique_ptr<base::Value> value) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!browser_context_)
     return;
@@ -181,7 +181,7 @@ void RulesCacheDelegate::ReadFromStorage(const std::string& extension_id) {
 
 void RulesCacheDelegate::ReadFromStorageCallback(
     const std::string& extension_id,
-    scoped_ptr<base::Value> value) {
+    std::unique_ptr<base::Value> value) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::BrowserThread::PostTask(
       rules_registry_thread_,

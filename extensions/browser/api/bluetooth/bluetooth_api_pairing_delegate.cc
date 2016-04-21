@@ -4,9 +4,9 @@
 
 #include "extensions/browser/api/bluetooth/bluetooth_api_pairing_delegate.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -101,11 +101,11 @@ void BluetoothApiPairingDelegate::AuthorizePairing(
 
 void BluetoothApiPairingDelegate::DispatchPairingEvent(
     const bt_private::PairingEvent& pairing_event) {
-  scoped_ptr<base::ListValue> args =
+  std::unique_ptr<base::ListValue> args =
       bt_private::OnPairing::Create(pairing_event);
-  scoped_ptr<Event> event(new Event(events::BLUETOOTH_PRIVATE_ON_PAIRING,
-                                    bt_private::OnPairing::kEventName,
-                                    std::move(args)));
+  std::unique_ptr<Event> event(new Event(events::BLUETOOTH_PRIVATE_ON_PAIRING,
+                                         bt_private::OnPairing::kEventName,
+                                         std::move(args)));
   EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
 

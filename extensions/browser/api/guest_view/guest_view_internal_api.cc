@@ -73,7 +73,8 @@ void GuestViewInternalCreateGuestFunction::CreateGuestCallback(
     guest_instance_id = guest->guest_instance_id();
     content_window_id = guest->proxy_routing_id();
   }
-  scoped_ptr<base::DictionaryValue> return_params(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> return_params(
+      new base::DictionaryValue());
   return_params->SetInteger(guest_view::kID, guest_instance_id);
   return_params->SetInteger(guest_view::kContentWindowID, content_window_id);
   SetResult(return_params.release());
@@ -89,7 +90,7 @@ GuestViewInternalDestroyGuestFunction::
 }
 
 bool GuestViewInternalDestroyGuestFunction::RunAsync() {
-  scoped_ptr<guest_view_internal::DestroyGuest::Params> params(
+  std::unique_ptr<guest_view_internal::DestroyGuest::Params> params(
       guest_view_internal::DestroyGuest::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   GuestViewBase* guest = GuestViewBase::From(
@@ -108,7 +109,7 @@ GuestViewInternalSetSizeFunction::~GuestViewInternalSetSizeFunction() {
 }
 
 bool GuestViewInternalSetSizeFunction::RunAsync() {
-  scoped_ptr<guest_view_internal::SetSize::Params> params(
+  std::unique_ptr<guest_view_internal::SetSize::Params> params(
       guest_view_internal::SetSize::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   GuestViewBase* guest = GuestViewBase::From(

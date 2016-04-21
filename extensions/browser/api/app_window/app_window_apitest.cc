@@ -55,7 +55,7 @@ class TestAppWindowRegistryObserver : public AppWindowRegistry::Observer {
 
 // Tests chrome.app.window.setIcon.
 IN_PROC_BROWSER_TEST_F(ExperimentalPlatformAppBrowserTest, WindowsApiSetIcon) {
-  scoped_ptr<TestAppWindowRegistryObserver> test_observer(
+  std::unique_ptr<TestAppWindowRegistryObserver> test_observer(
       new TestAppWindowRegistryObserver(browser()->profile()));
   ExtensionTestMessageListener listener("ready", true);
 

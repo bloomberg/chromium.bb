@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -234,7 +234,7 @@ void SendOnMessageEventOnUI(
     const std::string& extension_id,
     bool is_web_view_guest,
     const WebViewRendererState::WebViewInfo& web_view_info,
-    scoped_ptr<WebRequestEventDetails> event_details) {
+    std::unique_ptr<WebRequestEventDetails> event_details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::BrowserContext* browser_context =
@@ -242,7 +242,7 @@ void SendOnMessageEventOnUI(
   if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
     return;
 
-  scoped_ptr<base::ListValue> event_args(new base::ListValue);
+  std::unique_ptr<base::ListValue> event_args(new base::ListValue);
   event_details->DetermineFrameIdOnUI();
   event_args->Append(event_details->GetAndClearDict());
 
@@ -264,7 +264,7 @@ void SendOnMessageEventOnUI(
     event_name = declarative_keys::kOnMessage;
   }
 
-  scoped_ptr<Event> event(new Event(
+  std::unique_ptr<Event> event(new Event(
       histogram_value, event_name, std::move(event_args), browser_context,
       GURL(), EventRouter::USER_GESTURE_UNKNOWN, event_filtering_info));
   event_router->DispatchEventToExtension(extension_id, std::move(event));
@@ -594,11 +594,11 @@ void ExtensionWebRequestEventRouter::RegisterRulesRegistry(
     rules_registries_.erase(key);
 }
 
-scoped_ptr<WebRequestEventDetails>
+std::unique_ptr<WebRequestEventDetails>
 ExtensionWebRequestEventRouter::CreateEventDetails(
     const net::URLRequest* request,
     int extra_info_spec) {
-  scoped_ptr<WebRequestEventDetails> event_details(
+  std::unique_ptr<WebRequestEventDetails> event_details(
       new WebRequestEventDetails(request, extra_info_spec));
 
   int render_frame_id = -1;
@@ -646,7 +646,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
       web_request::OnBeforeRequest::kEventName, request, &extra_info_spec);
   if (!listeners.empty() &&
       !GetAndSetSignaled(request->identifier(), kOnBeforeRequest)) {
-    scoped_ptr<WebRequestEventDetails> event_details(
+    std::unique_ptr<WebRequestEventDetails> event_details(
         CreateEventDetails(request, extra_info_spec));
     event_details->SetRequestBody(request);
 
@@ -695,7 +695,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
       request, &extra_info_spec);
   if (!listeners.empty() &&
       !GetAndSetSignaled(request->identifier(), kOnBeforeSendHeaders)) {
-    scoped_ptr<WebRequestEventDetails> event_details(
+    std::unique_ptr<WebRequestEventDetails> event_details(
         CreateEventDetails(request, extra_info_spec));
     event_details->SetRequestHeaders(*headers);
 
@@ -743,7 +743,7 @@ void ExtensionWebRequestEventRouter::OnSendHeaders(
   if (listeners.empty())
     return;
 
-  scoped_ptr<WebRequestEventDetails> event_details(
+  std::unique_ptr<WebRequestEventDetails> event_details(
       CreateEventDetails(request, extra_info_spec));
   event_details->SetRequestHeaders(headers);
 
@@ -774,7 +774,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
 
   if (!listeners.empty() &&
       !GetAndSetSignaled(request->identifier(), kOnHeadersReceived)) {
-    scoped_ptr<WebRequestEventDetails> event_details(
+    std::unique_ptr<WebRequestEventDetails> event_details(
         CreateEventDetails(request, extra_info_spec));
     event_details->SetResponseHeaders(request, original_response_headers);
 
@@ -826,7 +826,7 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
   if (listeners.empty())
     return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 
-  scoped_ptr<WebRequestEventDetails> event_details(
+  std::unique_ptr<WebRequestEventDetails> event_details(
       CreateEventDetails(request, extra_info_spec));
   event_details->SetResponseHeaders(request, request->response_headers());
   event_details->SetAuthInfo(auth_info);
@@ -868,7 +868,7 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   if (listeners.empty())
     return;
 
-  scoped_ptr<WebRequestEventDetails> event_details(
+  std::unique_ptr<WebRequestEventDetails> event_details(
       CreateEventDetails(request, extra_info_spec));
   event_details->SetResponseHeaders(request, request->response_headers());
   event_details->SetResponseSource(request);
@@ -895,7 +895,7 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
   if (listeners.empty())
     return;
 
-  scoped_ptr<WebRequestEventDetails> event_details(
+  std::unique_ptr<WebRequestEventDetails> event_details(
       CreateEventDetails(request, extra_info_spec));
   event_details->SetResponseHeaders(request, request->response_headers());
   event_details->SetResponseSource(request);
@@ -933,7 +933,7 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   if (listeners.empty())
     return;
 
-  scoped_ptr<WebRequestEventDetails> event_details(
+  std::unique_ptr<WebRequestEventDetails> event_details(
       CreateEventDetails(request, extra_info_spec));
   event_details->SetResponseHeaders(request, request->response_headers());
   event_details->SetResponseSource(request);
@@ -973,7 +973,7 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   if (listeners.empty())
     return;
 
-  scoped_ptr<WebRequestEventDetails> event_details(
+  std::unique_ptr<WebRequestEventDetails> event_details(
       CreateEventDetails(request, extra_info_spec));
   if (started)
     event_details->SetResponseSource(request);
@@ -1005,12 +1005,12 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     void* browser_context,
     net::URLRequest* request,
     const std::vector<const EventListener*>& listeners,
-    scoped_ptr<WebRequestEventDetails> event_details) {
+    std::unique_ptr<WebRequestEventDetails> event_details) {
   // TODO(mpcomplete): Consider consolidating common (extension_id,json_args)
   // pairs into a single message sent to a list of sub_event_names.
   int num_handlers_blocking = 0;
 
-  scoped_ptr<std::vector<EventListener>> listeners_to_dispatch(
+  std::unique_ptr<std::vector<EventListener>> listeners_to_dispatch(
       new std::vector<EventListener>());
   listeners_to_dispatch->reserve(listeners.size());
   for (const EventListener* listener : listeners) {
@@ -1050,8 +1050,8 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
 
 void ExtensionWebRequestEventRouter::DispatchEventToListeners(
     void* browser_context,
-    scoped_ptr<std::vector<EventListener>> listeners,
-    scoped_ptr<WebRequestEventDetails> event_details) {
+    std::unique_ptr<std::vector<EventListener>> listeners,
+    std::unique_ptr<WebRequestEventDetails> event_details) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(listeners.get());
   DCHECK_GT(listeners->size(), 0UL);
@@ -1084,7 +1084,7 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
       continue;
 
     // Filter out the optional keys that this listener didn't request.
-    scoped_ptr<base::ListValue> args_filtered(new base::ListValue);
+    std::unique_ptr<base::ListValue> args_filtered(new base::ListValue);
     args_filtered->Append(
         event_details->GetFilteredDict(listener->extra_info_spec));
 
@@ -1492,7 +1492,7 @@ helpers::EventResponseDelta* CalculateDelta(
 }
 
 base::Value* SerializeResponseHeaders(const helpers::ResponseHeaders& headers) {
-  scoped_ptr<base::ListValue> serialized_headers(new base::ListValue());
+  std::unique_ptr<base::ListValue> serialized_headers(new base::ListValue());
   for (const auto& it : headers) {
     serialized_headers->Append(
         helpers::CreateHeaderDictionary(it.first, it.second));
@@ -1507,9 +1507,9 @@ base::Value* SerializeResponseHeaders(const helpers::ResponseHeaders& headers) {
 template <typename CookieType>
 base::ListValue* SummarizeCookieModifications(
     const std::vector<linked_ptr<CookieType>>& modifications) {
-  scoped_ptr<base::ListValue> cookie_modifications(new base::ListValue());
+  std::unique_ptr<base::ListValue> cookie_modifications(new base::ListValue());
   for (const auto& it : modifications) {
-    scoped_ptr<base::DictionaryValue> summary(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> summary(new base::DictionaryValue());
     const CookieType& mod = *(it.get());
     switch (mod.type) {
       case helpers::ADD:
@@ -1552,16 +1552,16 @@ base::ListValue* SummarizeCookieModifications(
 
 // Converts an EventResponseDelta object to a dictionary value suitable for the
 // activity log.
-scoped_ptr<base::DictionaryValue> SummarizeResponseDelta(
+std::unique_ptr<base::DictionaryValue> SummarizeResponseDelta(
     const std::string& event_name,
     const helpers::EventResponseDelta& delta) {
-  scoped_ptr<base::DictionaryValue> details(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue());
   if (delta.cancel)
     details->SetBoolean(activity_log::kCancelKey, true);
   if (!delta.new_url.is_empty())
     details->SetString(activity_log::kNewUrlKey, delta.new_url.spec());
 
-  scoped_ptr<base::ListValue> modified_headers(new base::ListValue());
+  std::unique_ptr<base::ListValue> modified_headers(new base::ListValue());
   net::HttpRequestHeaders::Iterator iter(delta.modified_request_headers);
   while (iter.GetNext()) {
     modified_headers->Append(
@@ -1572,7 +1572,7 @@ scoped_ptr<base::DictionaryValue> SummarizeResponseDelta(
                  modified_headers.release());
   }
 
-  scoped_ptr<base::ListValue> deleted_headers(new base::ListValue());
+  std::unique_ptr<base::ListValue> deleted_headers(new base::ListValue());
   deleted_headers->AppendStrings(delta.deleted_request_headers);
   if (!deleted_headers->empty()) {
     details->Set(activity_log::kDeletedRequestHeadersKey,
@@ -1610,7 +1610,7 @@ void ExtensionWebRequestEventRouter::LogExtensionActivity(
     const std::string& extension_id,
     const GURL& url,
     const std::string& api_call,
-    scoped_ptr<base::DictionaryValue> details) {
+    std::unique_ptr<base::DictionaryValue> details) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI,
@@ -1638,7 +1638,7 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
     const std::string& event_name,
     uint64_t request_id,
     EventResponse* response) {
-  scoped_ptr<EventResponse> response_scoped(response);
+  std::unique_ptr<EventResponse> response_scoped(response);
 
   // It's possible that this request was deleted, or cancelled by a previous
   // event handler. If so, ignore this response.
@@ -1704,7 +1704,7 @@ void ExtensionWebRequestEventRouter::SendMessages(
   for (const auto& delta : deltas) {
     const std::set<std::string>& messages = delta->messages_to_extension;
     for (const std::string& message : messages) {
-      scoped_ptr<WebRequestEventDetails> event_details(
+      std::unique_ptr<WebRequestEventDetails> event_details(
           CreateEventDetails(blocked_request.request, /* extra_info_spec */ 0));
       WebViewRendererState::WebViewInfo web_view_info;
       bool is_web_view_guest = GetWebViewInfo(blocked_request.request,
@@ -2120,7 +2120,7 @@ void WebRequestInternalEventHandledFunction::RespondWithError(
     const std::string& event_name,
     const std::string& sub_event_name,
     uint64_t request_id,
-    scoped_ptr<ExtensionWebRequestEventRouter::EventResponse> response,
+    std::unique_ptr<ExtensionWebRequestEventRouter::EventResponse> response,
     const std::string& error) {
   error_ = error;
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
@@ -2145,7 +2145,7 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(base::StringToUint64(request_id_str,
                                                    &request_id));
 
-  scoped_ptr<ExtensionWebRequestEventRouter::EventResponse> response;
+  std::unique_ptr<ExtensionWebRequestEventRouter::EventResponse> response;
   if (HasOptionalArgument(3)) {
     base::DictionaryValue* value = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(3, &value));
@@ -2196,8 +2196,8 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
       }
 
       base::ListValue* headers_value = NULL;
-      scoped_ptr<net::HttpRequestHeaders> request_headers;
-      scoped_ptr<helpers::ResponseHeaders> response_headers;
+      std::unique_ptr<net::HttpRequestHeaders> request_headers;
+      std::unique_ptr<helpers::ResponseHeaders> response_headers;
       if (has_request_headers) {
         request_headers.reset(new net::HttpRequestHeaders());
         EXTENSION_FUNCTION_VALIDATE(value->GetList(keys::kRequestHeadersKey,

@@ -79,7 +79,7 @@ void WiFiDisplaySessionServiceImpl::Connect(int32_t sink_id,
   if (auth_method != AUTHENTICATION_METHOD_NONE) {
     DCHECK(auth_method <= AUTHENTICATION_METHOD_LAST);
     auth_info.method = static_cast<AuthenticationMethod>(auth_method);
-    auth_info.data = scoped_ptr<std::string>(new std::string(auth_data));
+    auth_info.data = std::unique_ptr<std::string>(new std::string(auth_data));
   }
   auto on_error = base::Bind(&WiFiDisplaySessionServiceImpl::OnConnectFailed,
                              weak_factory_.GetWeakPtr(), sink_id);

@@ -6,12 +6,12 @@
 #define EXTENSIONS_BROWSER_API_VPN_PROVIDER_VPN_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -178,7 +178,7 @@ class VpnService : public KeyedService,
       const FailureCallback& callback,
       VpnConfiguration* configuration,
       const std::string& error_name,
-      scoped_ptr<base::DictionaryValue> error_data);
+      std::unique_ptr<base::DictionaryValue> error_data);
 
   // Callback used to indicate that removing a configuration succeeded.
   void OnRemoveConfigurationSuccess(const SuccessCallback& callback);
@@ -187,15 +187,16 @@ class VpnService : public KeyedService,
   void OnRemoveConfigurationFailure(
       const FailureCallback& callback,
       const std::string& error_name,
-      scoped_ptr<base::DictionaryValue> error_data);
+      std::unique_ptr<base::DictionaryValue> error_data);
 
   // Callback used to indicate that GetProperties was successful.
   void OnGetPropertiesSuccess(const std::string& service_path,
                               const base::DictionaryValue& dictionary);
 
   // Callback used to indicate that GetProperties failed.
-  void OnGetPropertiesFailure(const std::string& error_name,
-                              scoped_ptr<base::DictionaryValue> error_data);
+  void OnGetPropertiesFailure(
+      const std::string& error_name,
+      std::unique_ptr<base::DictionaryValue> error_data);
 
   // Creates and adds the configuration to the internal store.
   VpnConfiguration* CreateConfigurationInternal(
@@ -216,7 +217,7 @@ class VpnService : public KeyedService,
   void SendSignalToExtension(const std::string& extension_id,
                              extensions::events::HistogramValue histogram_value,
                              const std::string& event_name,
-                             scoped_ptr<base::ListValue> event_args);
+                             std::unique_ptr<base::ListValue> event_args);
 
   // Destroy configurations belonging to the extension.
   void DestroyConfigurationsForExtension(

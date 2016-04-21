@@ -24,7 +24,7 @@ class NetworkingConfigSetNetworkFilterFunction
  protected:
   ~NetworkingConfigSetNetworkFilterFunction() override;
 
-  scoped_ptr<api::networking_config::SetNetworkFilter::Params> parameters_;
+  std::unique_ptr<api::networking_config::SetNetworkFilter::Params> parameters_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingConfigSetNetworkFilterFunction);
@@ -43,7 +43,8 @@ class NetworkingConfigFinishAuthenticationFunction
  protected:
   ~NetworkingConfigFinishAuthenticationFunction() override;
 
-  scoped_ptr<api::networking_config::FinishAuthentication::Params> parameters_;
+  std::unique_ptr<api::networking_config::FinishAuthentication::Params>
+      parameters_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingConfigFinishAuthenticationFunction);

@@ -260,10 +260,10 @@ net::NetLog::ParametersCallback CreateNetLogExtensionIdCallback(
 }
 
 // Creates NetLog parameters to indicate that an extension modified a request.
-scoped_ptr<base::Value> NetLogModificationCallback(
+std::unique_ptr<base::Value> NetLogModificationCallback(
     const EventResponseDelta* delta,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("extension_id", delta->extension_id);
 
   base::ListValue* modified_headers = new base::ListValue();
@@ -429,7 +429,7 @@ EventResponseDelta* CalculateOnAuthRequiredDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
-    scoped_ptr<net::AuthCredentials>* auth_credentials) {
+    std::unique_ptr<net::AuthCredentials>* auth_credentials) {
   EventResponseDelta* result =
       new EventResponseDelta(extension_id, extension_install_time);
   result->cancel = cancel;

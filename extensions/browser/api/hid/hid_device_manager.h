@@ -6,11 +6,11 @@
 #define EXTENSIONS_BROWSER_API_HID_HID_DEVICE_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "device/hid/hid_service.h"
@@ -34,7 +34,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
                          public device::HidService::Observer,
                          public EventRouter::Observer {
  public:
-  typedef base::Callback<void(scoped_ptr<base::ListValue>)>
+  typedef base::Callback<void(std::unique_ptr<base::ListValue>)>
       GetApiDevicesCallback;
 
   explicit HidDeviceManager(content::BrowserContext* context);
@@ -58,7 +58,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
 
   // Converts a list of HidDeviceInfo objects into a value that can be returned
   // through the API.
-  scoped_ptr<base::ListValue> GetApiDevicesFromList(
+  std::unique_ptr<base::ListValue> GetApiDevicesFromList(
       const std::vector<scoped_refptr<device::HidDeviceInfo>>& devices);
 
   scoped_refptr<device::HidDeviceInfo> GetDeviceInfo(int resource_id);
@@ -101,7 +101,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   // Builds a list of device info objects representing the currently enumerated
   // devices, taking into account the permissions held by the given extension
   // and the filters provided.
-  scoped_ptr<base::ListValue> CreateApiDeviceList(
+  std::unique_ptr<base::ListValue> CreateApiDeviceList(
       const Extension* extension,
       const std::vector<device::HidDeviceFilter>& filters);
   void OnEnumerationComplete(
@@ -109,7 +109,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
 
   void DispatchEvent(events::HistogramValue histogram_value,
                      const std::string& event_name,
-                     scoped_ptr<base::ListValue> event_args,
+                     std::unique_ptr<base::ListValue> event_args,
                      scoped_refptr<device::HidDeviceInfo> device_info);
 
   base::ThreadChecker thread_checker_;
@@ -119,7 +119,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   ScopedObserver<device::HidService, device::HidService::Observer>
       hid_service_observer_;
   bool enumeration_ready_ = false;
-  std::vector<scoped_ptr<GetApiDevicesParams>> pending_enumerations_;
+  std::vector<std::unique_ptr<GetApiDevicesParams>> pending_enumerations_;
   int next_resource_id_ = 0;
   ResourceIdToDeviceIdMap device_ids_;
   DeviceIdToResourceIdMap resource_ids_;

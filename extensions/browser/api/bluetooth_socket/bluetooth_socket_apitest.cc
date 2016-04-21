@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -67,8 +67,8 @@ class BluetoothSocketApiTest : public extensions::ShellApiTest {
 
  protected:
   scoped_refptr<testing::StrictMock<MockBluetoothAdapter> > mock_adapter_;
-  scoped_ptr<testing::NiceMock<MockBluetoothDevice> > mock_device1_;
-  scoped_ptr<testing::NiceMock<MockBluetoothDevice> > mock_device2_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothDevice>> mock_device1_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothDevice>> mock_device2_;
 
  private:
   scoped_refptr<Extension> empty_extension_;

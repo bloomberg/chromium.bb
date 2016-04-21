@@ -24,7 +24,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPCreateGood) {
   socket_create_function->set_extension(empty_extension.get());
   socket_create_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
       socket_create_function.get(), "[\"udp\"]", browser_context()));
   base::DictionaryValue* value = NULL;
   ASSERT_TRUE(result->GetAsDictionary(&value));
@@ -41,7 +41,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPCreateGood) {
   socket_create_function->set_extension(empty_extension.get());
   socket_create_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
       socket_create_function.get(), "[\"tcp\"]", browser_context()));
   base::DictionaryValue* value = NULL;
   ASSERT_TRUE(result->GetAsDictionary(&value));
@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, GetNetworkList) {
   socket_function->set_extension(empty_extension.get());
   socket_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
       socket_function.get(), "[]", browser_context()));
 
   // If we're invoking socket tests, all we can confirm is that we have at

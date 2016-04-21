@@ -5,9 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_DIAGNOSTICS_DIAGNOSTICS_API_H_
 #define EXTENSIONS_BROWSER_API_DIAGNOSTICS_DIAGNOSTICS_API_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/common/api/diagnostics.h"
 
@@ -47,7 +47,7 @@ class DiagnosticsSendPacketFunction : public AsyncApiFunction {
                    const std::string& ip,
                    double latency);
 
-  scoped_ptr<api::diagnostics::SendPacket::Params> parameters_;
+  std::unique_ptr<api::diagnostics::SendPacket::Params> parameters_;
 };
 
 }  // namespace extensions

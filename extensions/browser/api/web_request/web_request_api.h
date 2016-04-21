@@ -146,11 +146,11 @@ class ExtensionWebRequestEventRouter
     // Response values. These are mutually exclusive.
     bool cancel;
     GURL new_url;
-    scoped_ptr<net::HttpRequestHeaders> request_headers;
-    scoped_ptr<extension_web_request_api_helpers::ResponseHeaders>
+    std::unique_ptr<net::HttpRequestHeaders> request_headers;
+    std::unique_ptr<extension_web_request_api_helpers::ResponseHeaders>
         response_headers;
 
-    scoped_ptr<net::AuthCredentials> auth_credentials;
+    std::unique_ptr<net::AuthCredentials> auth_credentials;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(EventResponse);
@@ -325,12 +325,12 @@ class ExtensionWebRequestEventRouter
   bool DispatchEvent(void* browser_context,
                      net::URLRequest* request,
                      const std::vector<const EventListener*>& listeners,
-                     scoped_ptr<WebRequestEventDetails> event_details);
+                     std::unique_ptr<WebRequestEventDetails> event_details);
 
   void DispatchEventToListeners(
       void* browser_context,
-      scoped_ptr<std::vector<EventListener>> listeners,
-      scoped_ptr<WebRequestEventDetails> event_details);
+      std::unique_ptr<std::vector<EventListener>> listeners,
+      std::unique_ptr<WebRequestEventDetails> event_details);
 
   // Returns a list of event listeners that care about the given event, based
   // on their filter parameters. |extra_info_spec| will contain the combined
@@ -373,13 +373,12 @@ class ExtensionWebRequestEventRouter
                            EventResponse* response);
 
   // Logs an extension action.
-  void LogExtensionActivity(
-      void* browser_context_id,
-      bool is_incognito,
-      const std::string& extension_id,
-      const GURL& url,
-      const std::string& api_call,
-      scoped_ptr<base::DictionaryValue> details);
+  void LogExtensionActivity(void* browser_context_id,
+                            bool is_incognito,
+                            const std::string& extension_id,
+                            const GURL& url,
+                            const std::string& api_call,
+                            std::unique_ptr<base::DictionaryValue> details);
 
   // Processes the generated deltas from blocked_requests_ on the specified
   // request. If |call_back| is true, the callback registered in
@@ -418,7 +417,7 @@ class ExtensionWebRequestEventRouter
                             extensions::RequestStage request_stage);
 
   // Returns event details for a given request.
-  scoped_ptr<WebRequestEventDetails> CreateEventDetails(
+  std::unique_ptr<WebRequestEventDetails> CreateEventDetails(
       const net::URLRequest* request,
       int extra_info_spec);
 
@@ -465,7 +464,7 @@ class ExtensionWebRequestEventRouter
 
   // Keeps track of time spent waiting on extensions using the blocking
   // webRequest API.
-  scoped_ptr<ExtensionWebRequestTimeTracker> request_time_tracker_;
+  std::unique_ptr<ExtensionWebRequestTimeTracker> request_time_tracker_;
 
   CallbacksForPageLoad callbacks_for_page_load_;
 
@@ -475,7 +474,7 @@ class ExtensionWebRequestEventRouter
   std::map<RulesRegistryKey,
       scoped_refptr<extensions::WebRequestRulesRegistry> > rules_registries_;
 
-  scoped_ptr<extensions::WebRequestEventRouterDelegate>
+  std::unique_ptr<extensions::WebRequestEventRouterDelegate>
       web_request_event_router_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
@@ -523,7 +522,7 @@ class WebRequestInternalEventHandledFunction
       const std::string& event_name,
       const std::string& sub_event_name,
       uint64_t request_id,
-      scoped_ptr<ExtensionWebRequestEventRouter::EventResponse> response,
+      std::unique_ptr<ExtensionWebRequestEventRouter::EventResponse> response,
       const std::string& error);
 
   // ExtensionFunction:

@@ -5,13 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_API_STORAGE_SETTINGS_TEST_UTIL_H_
 #define EXTENSIONS_BROWSER_API_STORAGE_SETTINGS_TEST_UTIL_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/event_router.h"
@@ -28,10 +28,10 @@ class StorageFrontend;
 namespace settings_test_util {
 
 // Creates a kilobyte of data.
-scoped_ptr<base::Value> CreateKilobyte();
+std::unique_ptr<base::Value> CreateKilobyte();
 
 // Creates a megabyte of data.
-scoped_ptr<base::Value> CreateMegabyte();
+std::unique_ptr<base::Value> CreateMegabyte();
 
 // Synchronously gets the storage area for an extension from |frontend|.
 ValueStore* GetStorage(scoped_refptr<const Extension> extension,

@@ -144,7 +144,7 @@ proto::ErrorState CastTransportImpl::ErrorStateToProto(ChannelError state) {
   }
 }
 
-void CastTransportImpl::SetReadDelegate(scoped_ptr<Delegate> delegate) {
+void CastTransportImpl::SetReadDelegate(std::unique_ptr<Delegate> delegate) {
   DCHECK(CalledOnValidThread());
   DCHECK(delegate);
   delegate_ = std::move(delegate);

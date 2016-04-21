@@ -43,7 +43,8 @@ class AppFirewallHole {
                   const std::string& extension_id);
 
   void SetVisible(bool app_visible);
-  void OnFirewallHoleOpened(scoped_ptr<chromeos::FirewallHole> firewall_hole);
+  void OnFirewallHoleOpened(
+      std::unique_ptr<chromeos::FirewallHole> firewall_hole);
 
   PortType type_;
   uint16_t port_;
@@ -55,7 +56,7 @@ class AppFirewallHole {
   AppFirewallHoleManager* manager_;
 
   // This will hold the FirewallHole object if one is opened.
-  scoped_ptr<chromeos::FirewallHole> firewall_hole_;
+  std::unique_ptr<chromeos::FirewallHole> firewall_hole_;
 
   base::WeakPtrFactory<AppFirewallHole> weak_factory_;
 };
@@ -74,9 +75,9 @@ class AppFirewallHoleManager : public KeyedService,
 
   // Takes ownership of the AppFirewallHole and will open a port on the system
   // firewall if the associated application is currently visible.
-  scoped_ptr<AppFirewallHole> Open(AppFirewallHole::PortType type,
-                                   uint16_t port,
-                                   const std::string& extension_id);
+  std::unique_ptr<AppFirewallHole> Open(AppFirewallHole::PortType type,
+                                        uint16_t port,
+                                        const std::string& extension_id);
 
  private:
   friend class AppFirewallHole;

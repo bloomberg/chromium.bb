@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -43,8 +43,9 @@ class NetworkingPrivateServiceClient
   // Takes ownership of |wifi_service| which is accessed and deleted on the
   // worker thread. The deletion task is posted from the destructor.
   // |verify_delegate| is passed to NetworkingPrivateDelegate and may be NULL.
-  NetworkingPrivateServiceClient(scoped_ptr<wifi::WiFiService> wifi_service,
-                                 scoped_ptr<VerifyDelegate> verify_delegate);
+  NetworkingPrivateServiceClient(
+      std::unique_ptr<wifi::WiFiService> wifi_service,
+      std::unique_ptr<VerifyDelegate> verify_delegate);
 
   // KeyedService
   void Shutdown() override;
@@ -60,11 +61,11 @@ class NetworkingPrivateServiceClient
                 const DictionaryCallback& success_callback,
                 const FailureCallback& failure_callback) override;
   void SetProperties(const std::string& guid,
-                     scoped_ptr<base::DictionaryValue> properties_dict,
+                     std::unique_ptr<base::DictionaryValue> properties_dict,
                      const VoidCallback& success_callback,
                      const FailureCallback& failure_callback) override;
   void CreateNetwork(bool shared,
-                     scoped_ptr<base::DictionaryValue> properties_dict,
+                     std::unique_ptr<base::DictionaryValue> properties_dict,
                      const StringCallback& success_callback,
                      const FailureCallback& failure_callback) override;
   void ForgetNetwork(const std::string& guid,
@@ -104,8 +105,8 @@ class NetworkingPrivateServiceClient
                            const std::string& new_pin,
                            const VoidCallback& success_callback,
                            const FailureCallback& failure_callback) override;
-  scoped_ptr<base::ListValue> GetEnabledNetworkTypes() override;
-  scoped_ptr<DeviceStateList> GetDeviceStateList() override;
+  std::unique_ptr<base::ListValue> GetEnabledNetworkTypes() override;
+  std::unique_ptr<DeviceStateList> GetDeviceStateList() override;
   bool EnableNetworkType(const std::string& type) override;
   bool DisableNetworkType(const std::string& type) override;
   bool RequestScan() override;
@@ -142,7 +143,7 @@ class NetworkingPrivateServiceClient
   // Callback wrappers.
   void AfterGetProperties(ServiceCallbacksID callback_id,
                           const std::string& network_guid,
-                          scoped_ptr<base::DictionaryValue> properties,
+                          std::unique_ptr<base::DictionaryValue> properties,
                           const std::string* error);
   void AfterSetProperties(ServiceCallbacksID callback_id,
                           const std::string* error);
@@ -150,7 +151,7 @@ class NetworkingPrivateServiceClient
                           const std::string* network_guid,
                           const std::string* error);
   void AfterGetVisibleNetworks(ServiceCallbacksID callback_id,
-                               scoped_ptr<base::ListValue> networks);
+                               std::unique_ptr<base::ListValue> networks);
   void AfterStartConnect(ServiceCallbacksID callback_id,
                          const std::string* error);
   void AfterStartDisconnect(ServiceCallbacksID callback_id,
@@ -172,7 +173,7 @@ class NetworkingPrivateServiceClient
   base::ObserverList<NetworkingPrivateDelegateObserver>
       network_events_observers_;
   // Interface to WiFiService. Used and deleted on the worker thread.
-  scoped_ptr<wifi::WiFiService> wifi_service_;
+  std::unique_ptr<wifi::WiFiService> wifi_service_;
   // Sequence token associated with wifi tasks.
   base::SequencedWorkerPool::SequenceToken sequence_token_;
   // Task runner for worker tasks.

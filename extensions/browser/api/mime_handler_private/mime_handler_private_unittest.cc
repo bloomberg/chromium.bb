@@ -4,9 +4,10 @@
 
 #include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
@@ -40,8 +41,8 @@ class TestStreamHandle : public content::StreamHandle {
 class MimeHandlerServiceImplTest : public testing::Test {
  public:
   void SetUp() override {
-    scoped_ptr<content::StreamInfo> stream_info(new content::StreamInfo);
-    stream_info->handle = make_scoped_ptr(new TestStreamHandle);
+    std::unique_ptr<content::StreamInfo> stream_info(new content::StreamInfo);
+    stream_info->handle = base::WrapUnique(new TestStreamHandle);
     stream_info->mime_type = "test/unit";
     stream_info->original_url = GURL("test://extensions_unittests");
     stream_container_.reset(
@@ -60,9 +61,9 @@ class MimeHandlerServiceImplTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<StreamContainer> stream_container_;
+  std::unique_ptr<StreamContainer> stream_container_;
   mime_handler::MimeHandlerServicePtr service_ptr_;
-  scoped_ptr<mime_handler::MimeHandlerService> service_;
+  std::unique_ptr<mime_handler::MimeHandlerService> service_;
   bool abort_called_ = false;
   mime_handler::StreamInfoPtr stream_info_;
 };

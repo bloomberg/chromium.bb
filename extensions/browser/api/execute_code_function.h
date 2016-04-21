@@ -50,7 +50,7 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
   }
 
   // The injection details.
-  scoped_ptr<api::extension_types::InjectDetails> details_;
+  std::unique_ptr<api::extension_types::InjectDetails> details_;
 
  private:
   // Called when contents from the file whose path is specified in JSON

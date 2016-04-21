@@ -24,7 +24,8 @@ namespace {
 const char kNetworkingPrivateSequenceTokenName[] = "NetworkingPrivate";
 
 // Deletes WiFiService object on the worker thread.
-void ShutdownWifiServiceOnWorkerThread(scoped_ptr<WiFiService> wifi_service) {
+void ShutdownWifiServiceOnWorkerThread(
+    std::unique_ptr<WiFiService> wifi_service) {
   DCHECK(wifi_service.get());
 }
 
@@ -37,8 +38,8 @@ NetworkingPrivateServiceClient::ServiceCallbacks::~ServiceCallbacks() {
 }
 
 NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
-    scoped_ptr<WiFiService> wifi_service,
-    scoped_ptr<VerifyDelegate> verify_delegate)
+    std::unique_ptr<WiFiService> wifi_service,
+    std::unique_ptr<VerifyDelegate> verify_delegate)
     : NetworkingPrivateDelegate(std::move(verify_delegate)),
       wifi_service_(std::move(wifi_service)),
       weak_factory_(this) {
@@ -124,7 +125,7 @@ void NetworkingPrivateServiceClient::GetProperties(
   service_callbacks->failure_callback = failure_callback;
   service_callbacks->get_properties_callback = success_callback;
 
-  scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
 
   base::DictionaryValue* properties_ptr = properties.get();
@@ -145,7 +146,7 @@ void NetworkingPrivateServiceClient::GetManagedProperties(
   service_callbacks->failure_callback = failure_callback;
   service_callbacks->get_properties_callback = success_callback;
 
-  scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
 
   base::DictionaryValue* properties_ptr = properties.get();
@@ -166,7 +167,7 @@ void NetworkingPrivateServiceClient::GetState(
   service_callbacks->failure_callback = failure_callback;
   service_callbacks->get_properties_callback = success_callback;
 
-  scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
 
   base::DictionaryValue* properties_ptr = properties.get();
@@ -181,7 +182,7 @@ void NetworkingPrivateServiceClient::GetState(
 
 void NetworkingPrivateServiceClient::SetProperties(
     const std::string& guid,
-    scoped_ptr<base::DictionaryValue> properties,
+    std::unique_ptr<base::DictionaryValue> properties,
     const VoidCallback& success_callback,
     const FailureCallback& failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
@@ -201,7 +202,7 @@ void NetworkingPrivateServiceClient::SetProperties(
 
 void NetworkingPrivateServiceClient::CreateNetwork(
     bool shared,
-    scoped_ptr<base::DictionaryValue> properties,
+    std::unique_ptr<base::DictionaryValue> properties,
     const StringCallback& success_callback,
     const FailureCallback& failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
@@ -239,7 +240,7 @@ void NetworkingPrivateServiceClient::GetNetworks(
   service_callbacks->failure_callback = failure_callback;
   service_callbacks->get_visible_networks_callback = success_callback;
 
-  scoped_ptr<base::ListValue> networks(new base::ListValue);
+  std::unique_ptr<base::ListValue> networks(new base::ListValue);
 
   // TODO(stevenjb/mef): Apply filters (configured, visible, limit).
 
@@ -330,17 +331,17 @@ void NetworkingPrivateServiceClient::SetCellularSimState(
   failure_callback.Run(networking_private::kErrorNotSupported);
 }
 
-scoped_ptr<base::ListValue>
+std::unique_ptr<base::ListValue>
 NetworkingPrivateServiceClient::GetEnabledNetworkTypes() {
-  scoped_ptr<base::ListValue> network_list;
+  std::unique_ptr<base::ListValue> network_list;
   network_list->AppendString(::onc::network_type::kWiFi);
   return network_list;
 }
 
-scoped_ptr<NetworkingPrivateDelegate::DeviceStateList>
+std::unique_ptr<NetworkingPrivateDelegate::DeviceStateList>
 NetworkingPrivateServiceClient::GetDeviceStateList() {
-  scoped_ptr<DeviceStateList> device_state_list(new DeviceStateList);
-  scoped_ptr<api::networking_private::DeviceStateProperties> properties(
+  std::unique_ptr<DeviceStateList> device_state_list(new DeviceStateList);
+  std::unique_ptr<api::networking_private::DeviceStateProperties> properties(
       new api::networking_private::DeviceStateProperties);
   properties->type = api::networking_private::NETWORK_TYPE_WIFI;
   properties->state = api::networking_private::DEVICE_STATE_TYPE_ENABLED;
@@ -370,7 +371,7 @@ bool NetworkingPrivateServiceClient::RequestScan() {
 void NetworkingPrivateServiceClient::AfterGetProperties(
     ServiceCallbacksID callback_id,
     const std::string& network_guid,
-    scoped_ptr<base::DictionaryValue> properties,
+    std::unique_ptr<base::DictionaryValue> properties,
     const std::string* error) {
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
@@ -386,7 +387,7 @@ void NetworkingPrivateServiceClient::AfterGetProperties(
 
 void NetworkingPrivateServiceClient::AfterGetVisibleNetworks(
     ServiceCallbacksID callback_id,
-    scoped_ptr<base::ListValue> networks) {
+    std::unique_ptr<base::ListValue> networks) {
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   DCHECK(!service_callbacks->get_visible_networks_callback.is_null());

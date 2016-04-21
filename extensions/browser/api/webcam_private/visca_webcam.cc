@@ -489,7 +489,7 @@ void ViscaWebcam::Reset(bool pan,
 }
 
 void ViscaWebcam::OpenForTesting(
-    scoped_ptr<SerialConnection> serial_connection) {
+    std::unique_ptr<SerialConnection> serial_connection) {
   serial_connection_ = std::move(serial_connection);
 }
 

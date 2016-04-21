@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/api/display_source/display_source_apitestbase.h"
+
 #include <map>
 #include <utility>
 
-#include "extensions/browser/api/display_source/display_source_apitestbase.h"
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -114,9 +116,10 @@ DisplaySourceSinkInfo CreateSinkInfo(int id, const std::string& name) {
   return ptr;
 }
 
-scoped_ptr<KeyedService> CreateMockDelegate(content::BrowserContext* profile) {
-  return make_scoped_ptr<KeyedService>(
-    new MockDisplaySourceConnectionDelegate());
+std::unique_ptr<KeyedService> CreateMockDelegate(
+    content::BrowserContext* profile) {
+  return base::WrapUnique<KeyedService>(
+      new MockDisplaySourceConnectionDelegate());
 }
 
 }  // namespace

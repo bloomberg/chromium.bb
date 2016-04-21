@@ -19,6 +19,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "components/url_matcher/url_matcher.h"
@@ -44,7 +45,7 @@ namespace extensions {
 // members:
 //
 //   // Arguments passed through from DeclarativeConditionSet::Create.
-//   static scoped_ptr<ConditionT> Create(
+//   static std::unique_ptr<ConditionT> Create(
 //       const Extension* extension,
 //       URLMatcherConditionFactory* url_matcher_condition_factory,
 //       // Except this argument gets elements of the Values array.
@@ -60,14 +61,14 @@ namespace extensions {
 template<typename ConditionT>
 class DeclarativeConditionSet {
  public:
-  typedef std::vector<scoped_ptr<base::Value>> Values;
+  typedef std::vector<std::unique_ptr<base::Value>> Values;
   typedef std::vector<linked_ptr<const ConditionT> > Conditions;
   typedef typename Conditions::const_iterator const_iterator;
 
   // Factory method that creates a DeclarativeConditionSet for |extension|
   // according to the JSON array |conditions| passed by the extension API. Sets
   // |error| and returns NULL in case of an error.
-  static scoped_ptr<DeclarativeConditionSet> Create(
+  static std::unique_ptr<DeclarativeConditionSet> Create(
       const Extension* extension,
       url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
       const Values& condition_values,
@@ -119,7 +120,7 @@ class DeclarativeConditionSet {
 // members:
 //
 //   // Arguments passed through from ActionSet::Create.
-//   static scoped_ptr<ActionT> Create(
+//   static std::unique_ptr<ActionT> Create(
 //       const Extension* extension,
 //       // Except this argument gets elements of the Values array.
 //       const base::Value& definition,
@@ -143,7 +144,7 @@ class DeclarativeConditionSet {
 template<typename ActionT>
 class DeclarativeActionSet {
  public:
-  typedef std::vector<scoped_ptr<base::Value>> Values;
+  typedef std::vector<std::unique_ptr<base::Value>> Values;
   typedef std::vector<scoped_refptr<const ActionT> > Actions;
 
   explicit DeclarativeActionSet(const Actions& actions);
@@ -151,7 +152,7 @@ class DeclarativeActionSet {
   // Factory method that instantiates a DeclarativeActionSet for |extension|
   // according to |actions| which represents the array of actions received from
   // the extension API.
-  static scoped_ptr<DeclarativeActionSet> Create(
+  static std::unique_ptr<DeclarativeActionSet> Create(
       content::BrowserContext* browser_context,
       const Extension* extension,
       const Values& action_values,
@@ -216,8 +217,8 @@ class DeclarativeRule {
   DeclarativeRule(const GlobalRuleId& id,
                   const Tags& tags,
                   base::Time extension_installation_time,
-                  scoped_ptr<ConditionSet> conditions,
-                  scoped_ptr<ActionSet> actions,
+                  std::unique_ptr<ConditionSet> conditions,
+                  std::unique_ptr<ActionSet> actions,
                   Priority priority);
 
   // Creates a DeclarativeRule for |extension| given a json definition.  The
@@ -228,7 +229,7 @@ class DeclarativeRule {
   // actions, error) and returns NULL if it fails.  Pass NULL if no consistency
   // check is needed.  If |error| is empty, the translation was successful and
   // the returned rule is internally consistent.
-  static scoped_ptr<DeclarativeRule> Create(
+  static std::unique_ptr<DeclarativeRule> Create(
       url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
       content::BrowserContext* browser_context,
       const Extension* extension,
@@ -259,8 +260,8 @@ class DeclarativeRule {
   GlobalRuleId id_;
   Tags tags_;
   base::Time extension_installation_time_;  // For precedences of rules.
-  scoped_ptr<ConditionSet> conditions_;
-  scoped_ptr<ActionSet> actions_;
+  std::unique_ptr<ConditionSet> conditions_;
+  std::unique_ptr<ActionSet> actions_;
   Priority priority_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeRule);
@@ -301,7 +302,7 @@ void DeclarativeConditionSet<ConditionT>::GetURLMatcherConditionSets(
 
 // static
 template <typename ConditionT>
-scoped_ptr<DeclarativeConditionSet<ConditionT>>
+std::unique_ptr<DeclarativeConditionSet<ConditionT>>
 DeclarativeConditionSet<ConditionT>::Create(
     const Extension* extension,
     url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
@@ -309,12 +310,12 @@ DeclarativeConditionSet<ConditionT>::Create(
     std::string* error) {
   Conditions result;
 
-  for (const scoped_ptr<base::Value>& value : condition_values) {
+  for (const std::unique_ptr<base::Value>& value : condition_values) {
     CHECK(value.get());
-    scoped_ptr<ConditionT> condition = ConditionT::Create(
+    std::unique_ptr<ConditionT> condition = ConditionT::Create(
         extension, url_matcher_condition_factory, *value, error);
     if (!error->empty())
-      return scoped_ptr<DeclarativeConditionSet>();
+      return std::unique_ptr<DeclarativeConditionSet>();
     result.push_back(make_linked_ptr(condition.release()));
   }
 
@@ -334,7 +335,7 @@ DeclarativeConditionSet<ConditionT>::Create(
     }
   }
 
-  return make_scoped_ptr(new DeclarativeConditionSet(
+  return base::WrapUnique(new DeclarativeConditionSet(
       result, match_id_to_condition, conditions_without_urls));
 }
 
@@ -357,26 +358,27 @@ DeclarativeActionSet<ActionT>::DeclarativeActionSet(const Actions& actions)
 
 // static
 template <typename ActionT>
-scoped_ptr<DeclarativeActionSet<ActionT>> DeclarativeActionSet<ActionT>::Create(
-    content::BrowserContext* browser_context,
-    const Extension* extension,
-    const Values& action_values,
-    std::string* error,
-    bool* bad_message) {
+std::unique_ptr<DeclarativeActionSet<ActionT>>
+DeclarativeActionSet<ActionT>::Create(content::BrowserContext* browser_context,
+                                      const Extension* extension,
+                                      const Values& action_values,
+                                      std::string* error,
+                                      bool* bad_message) {
   *error = "";
   *bad_message = false;
   Actions result;
 
-  for (const scoped_ptr<base::Value>& value : action_values) {
+  for (const std::unique_ptr<base::Value>& value : action_values) {
     CHECK(value.get());
     scoped_refptr<const ActionT> action =
         ActionT::Create(browser_context, extension, *value, error, bad_message);
     if (!error->empty() || *bad_message)
-      return scoped_ptr<DeclarativeActionSet>();
+      return std::unique_ptr<DeclarativeActionSet>();
     result.push_back(action);
   }
 
-  return scoped_ptr<DeclarativeActionSet>(new DeclarativeActionSet(result));
+  return std::unique_ptr<DeclarativeActionSet>(
+      new DeclarativeActionSet(result));
 }
 
 template<typename ActionT>
@@ -420,13 +422,13 @@ int DeclarativeActionSet<ActionT>::GetMinimumPriority() const {
 // DeclarativeRule
 //
 
-template<typename ConditionT, typename ActionT>
+template <typename ConditionT, typename ActionT>
 DeclarativeRule<ConditionT, ActionT>::DeclarativeRule(
     const GlobalRuleId& id,
     const Tags& tags,
     base::Time extension_installation_time,
-    scoped_ptr<ConditionSet> conditions,
-    scoped_ptr<ActionSet> actions,
+    std::unique_ptr<ConditionSet> conditions,
+    std::unique_ptr<ActionSet> actions,
     Priority priority)
     : id_(id),
       tags_(tags),
@@ -439,8 +441,8 @@ DeclarativeRule<ConditionT, ActionT>::DeclarativeRule(
 }
 
 // static
-template<typename ConditionT, typename ActionT>
-scoped_ptr<DeclarativeRule<ConditionT, ActionT> >
+template <typename ConditionT, typename ActionT>
+std::unique_ptr<DeclarativeRule<ConditionT, ActionT>>
 DeclarativeRule<ConditionT, ActionT>::Create(
     url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
     content::BrowserContext* browser_context,
@@ -449,18 +451,17 @@ DeclarativeRule<ConditionT, ActionT>::Create(
     linked_ptr<JsonRule> rule,
     ConsistencyChecker check_consistency,
     std::string* error) {
-  scoped_ptr<DeclarativeRule> error_result;
+  std::unique_ptr<DeclarativeRule> error_result;
 
-  scoped_ptr<ConditionSet> conditions = ConditionSet::Create(
+  std::unique_ptr<ConditionSet> conditions = ConditionSet::Create(
       extension, url_matcher_condition_factory, rule->conditions, error);
   if (!error->empty())
     return std::move(error_result);
   CHECK(conditions.get());
 
   bool bad_message = false;
-  scoped_ptr<ActionSet> actions =
-      ActionSet::Create(
-          browser_context, extension, rule->actions, error, &bad_message);
+  std::unique_ptr<ActionSet> actions = ActionSet::Create(
+      browser_context, extension, rule->actions, error, &bad_message);
   if (bad_message) {
     // TODO(battre) Export concept of bad_message to caller, the extension
     // should be killed in case it is true.
@@ -483,7 +484,7 @@ DeclarativeRule<ConditionT, ActionT>::Create(
 
   GlobalRuleId rule_id(extension->id(), *(rule->id));
   Tags tags = rule->tags ? *rule->tags : Tags();
-  return scoped_ptr<DeclarativeRule>(
+  return std::unique_ptr<DeclarativeRule>(
       new DeclarativeRule(rule_id, tags, extension_installation_time,
                           std::move(conditions), std::move(actions), priority));
 }

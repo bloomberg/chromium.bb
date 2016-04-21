@@ -97,7 +97,7 @@ void AppFirewallHole::SetVisible(bool app_visible) {
 }
 
 void AppFirewallHole::OnFirewallHoleOpened(
-    scoped_ptr<FirewallHole> firewall_hole) {
+    std::unique_ptr<FirewallHole> firewall_hole) {
   if (app_visible_) {
     DCHECK(!firewall_hole_);
     firewall_hole_ = std::move(firewall_hole);
@@ -117,11 +117,11 @@ AppFirewallHoleManager* AppFirewallHoleManager::Get(BrowserContext* context) {
   return AppFirewallHoleManagerFactory::GetForBrowserContext(context, true);
 }
 
-scoped_ptr<AppFirewallHole> AppFirewallHoleManager::Open(
+std::unique_ptr<AppFirewallHole> AppFirewallHoleManager::Open(
     AppFirewallHole::PortType type,
     uint16_t port,
     const std::string& extension_id) {
-  scoped_ptr<AppFirewallHole> hole(
+  std::unique_ptr<AppFirewallHole> hole(
       new AppFirewallHole(this, type, port, extension_id));
   tracked_holes_.insert(std::make_pair(extension_id, hole.get()));
   if (HasVisibleAppWindows(context_, extension_id)) {

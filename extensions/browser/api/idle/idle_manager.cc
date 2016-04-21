@@ -47,11 +47,11 @@ DefaultEventDelegate::~DefaultEventDelegate() {
 
 void DefaultEventDelegate::OnStateChanged(const std::string& extension_id,
                                           ui::IdleState new_state) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(IdleManager::CreateIdleValue(new_state));
-  scoped_ptr<Event> event(new Event(events::IDLE_ON_STATE_CHANGED,
-                                    idle::OnStateChanged::kEventName,
-                                    std::move(args)));
+  std::unique_ptr<Event> event(new Event(events::IDLE_ON_STATE_CHANGED,
+                                         idle::OnStateChanged::kEventName,
+                                         std::move(args)));
   event->restrict_to_browser_context = context_;
   EventRouter::Get(context_)
       ->DispatchEventToExtension(extension_id, std::move(event));
@@ -195,13 +195,13 @@ base::StringValue* IdleManager::CreateIdleValue(ui::IdleState idle_state) {
 }
 
 void IdleManager::SetEventDelegateForTest(
-    scoped_ptr<EventDelegate> event_delegate) {
+    std::unique_ptr<EventDelegate> event_delegate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   event_delegate_ = std::move(event_delegate);
 }
 
 void IdleManager::SetIdleTimeProviderForTest(
-    scoped_ptr<IdleTimeProvider> idle_time_provider) {
+    std::unique_ptr<IdleTimeProvider> idle_time_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   idle_time_provider_ = std::move(idle_time_provider);
 }

@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_BLUETOOTH_BLUETOOTH_API_H_
 #define EXTENSIONS_BROWSER_API_BLUETOOTH_BLUETOOTH_API_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "extensions/browser/api/bluetooth/bluetooth_extension_function.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -61,7 +61,7 @@ class BluetoothAPI : public BrowserContextKeyedAPI,
   content::BrowserContext* browser_context_;
 
   // Created lazily on first access.
-  scoped_ptr<BluetoothEventRouter> event_router_;
+  std::unique_ptr<BluetoothEventRouter> event_router_;
 };
 
 namespace api {

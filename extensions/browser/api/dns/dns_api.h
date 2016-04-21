@@ -43,8 +43,8 @@ class DnsResolveFunction : public AsyncExtensionFunction {
 
   bool response_;  // The value sent in SendResponse().
 
-  scoped_ptr<net::HostResolver::RequestHandle> request_handle_;
-  scoped_ptr<net::AddressList> addresses_;
+  std::unique_ptr<net::HostResolver::RequestHandle> request_handle_;
+  std::unique_ptr<net::AddressList> addresses_;
 };
 
 }  // namespace extensions
