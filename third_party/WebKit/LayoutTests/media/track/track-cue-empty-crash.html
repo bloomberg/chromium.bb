@@ -1,36 +1,19 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
-        var fragment;
-        function startTest()
-        {
-            var emptyCue = new VTTCue(0, 0, "");
-            fragment = emptyCue.getCueAsHTML();
+<title>Tests that having an empty cue does not crash when calling getCueAsHTML().</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+    var emptyCue = new VTTCue(0, 0, "");
+    var fragment = emptyCue.getCueAsHTML();
 
-            consoleWrite("** The getCueAsHTML() method should return a document fragment **");
-            testExpected("fragment", null, "!=");
+    // The getCueAsHTML() method should return a document fragment.
+    assert_true(fragment instanceof DocumentFragment);
 
-            consoleWrite("<br>** The document fragment should have one child, an empty Text node **");
-            testExpected("fragment.childNodes.length", 1);
-            testExpected("fragment.childNodes[0].constructor.name", Text.name);
-            testExpected("fragment.childNodes[0].length", 0);
-
-            consoleWrite("");
-            consoleWrite("No crash. PASS.");
-            consoleWrite("");
-
-            endTest();
-          }
-        </script>
-    </head>
-
-    <body onload="startTest()">
-        <p>Tests that having an empty cue does not crash when calling getCueAsHTML().</p>
-        <video controls />
-    </body>
-</html>
+    // The document fragment should have one child, an empty Text node.
+    assert_equals(fragment.childNodes.length, 1);
+    assert_equals(fragment.childNodes[0].constructor.name, Text.name);
+    assert_equals(fragment.childNodes[0].length, 0);
+    assert_equals(fragment.childNodes[0].data, "");
+});
+</script>

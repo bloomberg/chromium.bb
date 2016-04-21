@@ -1,69 +1,51 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Test that ::cue pseudo-element properties are applied to WebVTT node objects only.</title>
+<script src="../media-file.js"></script>
+<script src="../media-controls.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+::cue { word-spacing: 100px; }
+::cue(c) { padding-left: 10px; color: red; }
+.cue {
+    display: inline;
+    background-color: green;
+}
+</style>
+<video>
+    <track src="captions-webvtt/whitelist.vtt" kind="captions" default>
+</video>
+<div class="cue"></div>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "../content/test");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script src=../media-controls.js></script>
+    video.onseeked = t.step_func_done(function() {
+        var cueNode = textTrackDisplayElement(video, "cue").firstElementChild;
+        var cueStyle = getComputedStyle(cueNode);
+        assert_equals(cueStyle.color, "rgb(255, 0, 0)");
+        assert_equals(cueStyle.padding, "0px");
+        assert_equals(cueStyle.wordSpacing, "0px");
+        
+        cueNode = cueNode.nextElementSibling;
+        cueStyle = getComputedStyle(cueNode);
+        assert_equals(cueStyle.color, "rgb(255, 0, 0)");
+        assert_equals(cueStyle.padding, "0px");
+        assert_equals(cueStyle.wordSpacing, "0px");
+        
+        cueNode = cueNode.nextElementSibling;
+        cueStyle = getComputedStyle(cueNode);
+        assert_equals(cueStyle.color, "rgb(255, 0, 0)");
+        assert_equals(cueStyle.padding, "0px");
+        assert_equals(cueStyle.wordSpacing, "0px");
 
-        <style>
-        ::cue {word-spacing: 100px;}
-        ::cue(c) {padding-left: 10px; color: red;}
-        .cue {
-            display: inline;
-            background-color: green;
-        }
-        </style>
+        // Test that filtering doesn't apply to elements with class "cue" outside WebVTT scope.
+        cueNode = document.getElementsByClassName("cue")[0];
+        assert_equals(getComputedStyle(cueNode).display, "inline");
+    });
 
-        <script>
+    video.currentTime = 0.1;
+});
 
-        var cueNode;
-
-        function seeked()
-        {
-            if (testEnded)
-                return;
-
-            consoleWrite("<br>");
-            consoleWrite("Test that only allowed for the ::cue pseudo-element properties are applied to WebVTT node objects.");
-
-            cueNode = textTrackDisplayElement(video, 'cue').firstElementChild;
-            testExpected("getComputedStyle(cueNode).color", "rgb(255, 0, 0)");
-            testExpected("getComputedStyle(cueNode).padding", "0px");
-            testExpected("getComputedStyle(cueNode).wordSpacing", "0px");
-            cueNode = cueNode.nextElementSibling;
-            testExpected("getComputedStyle(cueNode).color", "rgb(255, 0, 0)");
-            testExpected("getComputedStyle(cueNode).padding", "0px");
-            testExpected("getComputedStyle(cueNode).wordSpacing", "0px");
-            cueNode = cueNode.nextElementSibling;
-            testExpected("getComputedStyle(cueNode).color", "rgb(255, 0, 0)");
-            testExpected("getComputedStyle(cueNode).padding", "0px");
-            testExpected("getComputedStyle(cueNode).wordSpacing", "0px");
-
-            consoleWrite("<br>Test that filtering doesn't apply to elements which class equals 'cue' outside WebVTT scope.");
-            cueNode = document.getElementsByClassName("cue")[0];
-            testExpected("getComputedStyle(cueNode).display", "inline");
-            endTest();
-        }
-
-        function loaded()
-        {
-            findMediaElement();
-            video.src = findMediaFile('video', '../content/test');
-            video.id = "testvideo";
-            waitForEvent('seeked', seeked);
-            waitForEvent('canplaythrough', function() { video.currentTime = 0.1; });
-        }
-
-        </script>
-    </head>
-    <body onload="loaded()">
-        <video controls >
-            <track src="captions-webvtt/whitelist.vtt" kind="captions" default>
-        </video>
-        <div><div class="cue">This should display inline</div></div>
-    </body>
-</html>
+</script>
