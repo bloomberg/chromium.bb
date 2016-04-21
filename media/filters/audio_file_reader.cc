@@ -9,20 +9,25 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
 namespace media {
 
+// AAC(M4A) decoding specific constants.
+static const int kAACPrimingFrameCount = 2112;
+static const int kAACRemainderFrameCount = 519;
+
 AudioFileReader::AudioFileReader(FFmpegURLProtocol* protocol)
     : codec_context_(NULL),
       stream_index_(0),
       protocol_(protocol),
+      audio_codec_(kUnknownAudioCodec),
       channels_(0),
       sample_rate_(0),
-      av_sample_format_(0) {
-}
+      av_sample_format_(0) {}
 
 AudioFileReader::~AudioFileReader() {
   Close();
@@ -105,6 +110,7 @@ bool AudioFileReader::OpenDecoder() {
 
   // Store initial values to guard against midstream configuration changes.
   channels_ = codec_context_->channels;
+  audio_codec_ = CodecIDToAudioCodec(codec_context_->codec_id);
   sample_rate_ = codec_context_->sample_rate;
   av_sample_format_ = codec_context_->sample_fmt;
   return true;
@@ -238,12 +244,30 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
 base::TimeDelta AudioFileReader::GetDuration() const {
   const AVRational av_time_base = {1, AV_TIME_BASE};
 
-  // Add one microsecond to avoid rounding-down errors which can occur when
-  // |duration| has been calculated from an exact number of sample-frames.
-  // One microsecond is much less than the time of a single sample-frame
-  // at any real-world sample-rate.
-  return ConvertFromTimeBase(av_time_base,
-                             glue_->format_context()->duration + 1);
+  // Estimated duration in micro seconds.
+  base::CheckedNumeric<int64_t> estimated_duration_us =
+      glue_->format_context()->duration;
+
+  if (audio_codec_ == kCodecAAC) {
+    // For certain AAC-encoded files, FFMPEG's estimated frame count might not
+    // be sufficient to capture the entire audio content that we want. This is
+    // especially noticeable for short files (< 10ms) resulting in silence
+    // throughout the decoded buffer. Thus we add the priming frames and the
+    // remainder frames to the estimation.
+    // (See: crbug.com/513178)
+    estimated_duration_us +=
+        ceil(1000000.0 * static_cast<double>(kAACPrimingFrameCount +
+                                             kAACRemainderFrameCount) /
+             sample_rate());
+  } else {
+    // Add one microsecond to avoid rounding-down errors which can occur when
+    // |duration| has been calculated from an exact number of sample-frames.
+    // One microsecond is much less than the time of a single sample-frame
+    // at any real-world sample-rate.
+    estimated_duration_us += 1;
+  }
+
+  return ConvertFromTimeBase(av_time_base, estimated_duration_us.ValueOrDie());
 }
 
 int AudioFileReader::GetNumberOfFrames() const {

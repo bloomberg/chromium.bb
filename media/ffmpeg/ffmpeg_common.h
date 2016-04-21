@@ -93,6 +93,9 @@ MEDIA_EXPORT base::TimeDelta ConvertFromTimeBase(const AVRational& time_base,
 MEDIA_EXPORT int64_t ConvertToTimeBase(const AVRational& time_base,
                                        const base::TimeDelta& timestamp);
 
+// Converts an FFmpeg audio codec ID into its corresponding supported codec id.
+MEDIA_EXPORT AudioCodec CodecIDToAudioCodec(AVCodecID codec_id);
+
 // Returns true if AVStream is successfully converted to a AudioDecoderConfig.
 // Returns false if conversion fails, in which case |config| is not modified.
 MEDIA_EXPORT bool AVStreamToAudioDecoderConfig(const AVStream* stream,

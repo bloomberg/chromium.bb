@@ -218,13 +218,8 @@ TEST_F(AudioFileReaderTest, CorruptMP3) {
 }
 
 TEST_F(AudioFileReaderTest, AAC) {
-  RunTest("sfx.m4a",
-          "1.81,1.66,2.32,3.27,4.46,3.36,",
-          1,
-          44100,
-          base::TimeDelta::FromMicroseconds(312001),
-          13760,
-          13312);
+  RunTest("sfx.m4a", "1.81,1.66,2.32,3.27,4.46,3.36,", 1, 44100,
+          base::TimeDelta::FromMicroseconds(371660), 16391, 13312);
 }
 
 TEST_F(AudioFileReaderTest, MidStreamConfigChangesFail) {

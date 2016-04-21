@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "media/base/audio_codecs.h"
 #include "media/base/media_export.h"
 #include "media/filters/ffmpeg_glue.h"
 
@@ -85,6 +86,7 @@ class MEDIA_EXPORT AudioFileReader {
   AVCodecContext* codec_context_;
   int stream_index_;
   FFmpegURLProtocol* protocol_;
+  AudioCodec audio_codec_;
   int channels_;
   int sample_rate_;
 
