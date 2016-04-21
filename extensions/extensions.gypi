@@ -39,6 +39,8 @@
       'common/api/sockets/sockets_manifest_permission.h',
       'common/cast/cast_cert_validator.cc',
       'common/cast/cast_cert_validator.h',
+      'common/cast/cast_root_ca_cert_der-inc.h',
+      'common/cast/eureka_root_ca_der-inc.h',
       'common/common_manifest_handlers.cc',
       'common/common_manifest_handlers.h',
       'common/csp_validator.cc',
