@@ -58,7 +58,7 @@ class HostContentSettingsMap : public content_settings::Observer,
     CUSTOM_EXTENSION_PROVIDER,
     PREF_PROVIDER,
     DEFAULT_PROVIDER,
-    NUM_PROVIDER_TYPES,
+    NUM_PROVIDER_TYPES
   };
 
   // This should be called on the UI thread, otherwise |thread_checker_| handles
@@ -130,6 +130,9 @@ class HostContentSettingsMap : public content_settings::Observer,
   // This should only be called on the UI thread.
   void SetDefaultContentSetting(ContentSettingsType content_type,
                                 ContentSetting setting);
+
+  // Returns true if user exceptions are allowed for |content_type|.
+  bool AreUserExceptionsAllowedForType(ContentSettingsType content_type) const;
 
   // Sets the content |setting| for the given patterns, |content_type| and
   // |resource_identifier|. Setting the value to CONTENT_SETTING_DEFAULT causes
@@ -295,6 +298,12 @@ class HostContentSettingsMap : public content_settings::Observer,
       ContentSettingsType content_type,
       content_settings::ProviderInterface* provider) const;
 
+  // Retrieves default content setting for |content_type|, and writes the
+  // provider's type to |provider_type| (must not be null).
+  ContentSetting GetDefaultContentSettingInternal(
+      ContentSettingsType content_type,
+      ProviderType* provider_type) const;
+
   // Migrate old settings for ContentSettingsTypes which only use a primary
   // pattern. Settings which only used a primary pattern were inconsistent in
   // what they did with the secondary pattern. Some stored a
@@ -354,8 +363,6 @@ class HostContentSettingsMap : public content_settings::Observer,
       ContentSettingsPattern* primary_pattern,
       ContentSettingsPattern* secondary_pattern);
 
-  content_settings::PrefProvider* GetPrefProvider();
-
 #ifndef NDEBUG
   // This starts as the thread ID of the thread that constructs this
   // object, and remains until used by a different thread, at which
@@ -376,6 +383,9 @@ class HostContentSettingsMap : public content_settings::Observer,
   // time and by RegisterExtensionService, both of which should happen
   // before any other uses of it.
   ProviderMap content_settings_providers_;
+
+  // content_settings_providers_[PREF_PROVIDER] but specialized.
+  content_settings::PrefProvider* pref_provider_ = nullptr;
 
   base::ThreadChecker thread_checker_;
 

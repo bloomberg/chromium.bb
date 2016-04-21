@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <string>
+
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
@@ -45,6 +48,71 @@ class HostContentSettingsMapTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
+};
+
+// Wrapper to TestingProfile to reduce test boilerplates, by keeping a fixed
+// |content_type| so caller only need to specify it once.
+class TesterForType {
+ public:
+  TesterForType(TestingProfile *profile, ContentSettingsType content_type)
+      : prefs_(profile->GetTestingPrefService()),
+        host_content_settings_map_(
+            HostContentSettingsMapFactory::GetForProfile(profile)),
+        content_type_(content_type) {
+    switch (content_type_) {
+      case CONTENT_SETTINGS_TYPE_COOKIES:
+        policy_default_setting_ = prefs::kManagedDefaultCookiesSetting;
+        break;
+      case CONTENT_SETTINGS_TYPE_POPUPS:
+        policy_default_setting_ = prefs::kManagedDefaultPopupsSetting;
+        break;
+      default:
+        // Add support as needed.
+        NOTREACHED();
+    }
+  }
+
+  void ClearPolicyDefault() {
+    prefs_->RemoveManagedPref(policy_default_setting_);
+  }
+
+  void SetPolicyDefault(ContentSetting setting) {
+    prefs_->SetManagedPref(policy_default_setting_,
+                           new base::FundamentalValue(setting));
+  }
+
+  bool AreUserExceptionsAllowed() {
+    return host_content_settings_map_->AreUserExceptionsAllowedForType(
+        content_type_);
+  }
+
+  void AddUserException(std::string exception,
+                        ContentSetting content_settings) {
+    ContentSettingsPattern pattern =
+        ContentSettingsPattern::FromString(exception);
+    host_content_settings_map_->SetContentSettingCustomScope(
+        pattern, pattern, content_type_, std::string(), content_settings);
+  }
+
+  // Wrapper to query GetWebsiteSetting(), and only return the source.
+  content_settings::SettingSource GetSettingSourceForURL(
+      const std::string& url_str) {
+    GURL url(url_str);
+    content_settings::SettingInfo setting_info;
+    scoped_ptr<base::Value> result =
+        host_content_settings_map_->GetWebsiteSetting(
+            url, url, content_type_, std::string(),
+            &setting_info);
+    return setting_info.source;
+  };
+
+ private:
+  syncable_prefs::TestingPrefServiceSyncable* prefs_;
+  HostContentSettingsMap* host_content_settings_map_;
+  ContentSettingsType content_type_;
+  const char* policy_default_setting_;
+
+  DISALLOW_COPY_AND_ASSIGN(TesterForType);
 };
 
 TEST_F(HostContentSettingsMapTest, DefaultValues) {
@@ -771,6 +839,67 @@ TEST_F(HostContentSettingsMapTest, OffTheRecordDontInheritSetting) {
   EXPECT_EQ(nullptr, otr_map->GetWebsiteSetting(
                          host, host, CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA,
                          std::string(), nullptr));
+}
+
+TEST_F(HostContentSettingsMapTest, AreUserExceptionsAllowedForType) {
+  ContentSettingsType kContentTypesToTest[] = {
+    CONTENT_SETTINGS_TYPE_COOKIES,
+    CONTENT_SETTINGS_TYPE_POPUPS,
+  };
+
+  TestingProfile profile;
+
+  for (ContentSettingsType type : kContentTypesToTest) {
+    TesterForType tester(&profile, type);
+
+    // No settings: Yes.
+    tester.ClearPolicyDefault();
+    EXPECT_TRUE(tester.AreUserExceptionsAllowed());
+
+    // Policy enforces default value: No.
+    tester.SetPolicyDefault(CONTENT_SETTING_ALLOW);
+    EXPECT_FALSE(tester.AreUserExceptionsAllowed());
+    tester.SetPolicyDefault(CONTENT_SETTING_BLOCK);
+    EXPECT_FALSE(tester.AreUserExceptionsAllowed());
+
+    // Cleanup for next iteration.
+    tester.ClearPolicyDefault();
+  }
+}
+
+TEST_F(HostContentSettingsMapTest, PrefExceptionsOperation) {
+  using content_settings::SETTING_SOURCE_POLICY;
+  using content_settings::SETTING_SOURCE_USER;
+
+  const char kUrl1[] = "http://user_exception_allow.com";
+  const char kUrl2[] = "http://user_exception_block.com";
+  const char kUrl3[] = "http://non_exception.com";
+
+  TestingProfile profile;
+  // Arbitrarily using cookies as content type to test.
+  TesterForType tester(&profile, CONTENT_SETTINGS_TYPE_COOKIES);
+
+  // Add |kUrl1| and |kUrl2| only.
+  tester.AddUserException(kUrl1, CONTENT_SETTING_ALLOW);
+  tester.AddUserException(kUrl2, CONTENT_SETTING_BLOCK);
+
+  // No policy setting: follow users settings.
+  tester.ClearPolicyDefault();
+  // User exceptions.
+  EXPECT_EQ(SETTING_SOURCE_USER, tester.GetSettingSourceForURL(kUrl1));
+  EXPECT_EQ(SETTING_SOURCE_USER, tester.GetSettingSourceForURL(kUrl2));
+  // User default.
+  EXPECT_EQ(SETTING_SOURCE_USER, tester.GetSettingSourceForURL(kUrl3));
+
+  // Policy overrides users always.
+  tester.SetPolicyDefault(CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(SETTING_SOURCE_POLICY, tester.GetSettingSourceForURL(kUrl1));
+  EXPECT_EQ(SETTING_SOURCE_POLICY, tester.GetSettingSourceForURL(kUrl2));
+  EXPECT_EQ(SETTING_SOURCE_POLICY, tester.GetSettingSourceForURL(kUrl3));
+  tester.SetPolicyDefault(CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(SETTING_SOURCE_POLICY, tester.GetSettingSourceForURL(kUrl1));
+  EXPECT_EQ(SETTING_SOURCE_POLICY, tester.GetSettingSourceForURL(kUrl2));
+  EXPECT_EQ(SETTING_SOURCE_POLICY, tester.GetSettingSourceForURL(kUrl3));
 }
 
 // For a single Unicode encoded pattern, check if it gets converted to punycode
