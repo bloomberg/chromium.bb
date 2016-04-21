@@ -65,7 +65,6 @@
         ],
       }, { # OS!=android
         'feature_defines': [
-          'ENABLE_INPUT_MULTIPLE_FIELDS_UI=1',
           'WTF_USE_ICCJPEG=1',
           'WTF_USE_QCMSLIB=1'
         ],

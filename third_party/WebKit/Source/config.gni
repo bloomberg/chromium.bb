@@ -61,10 +61,6 @@ if (use_concatenated_impulse_responses) {
   feature_defines_list += [ "WTF_USE_CONCATENATED_IMPULSE_RESPONSES=1" ]
 }
 
-if (!is_android || use_aura) {
-  feature_defines_list += [ "ENABLE_INPUT_MULTIPLE_FIELDS_UI=1" ]
-}
-
 if (use_low_quality_image_interpolation) {
   feature_defines_list += [ "WTF_USE_LOW_QUALITY_IMAGE_INTERPOLATION=1" ]
 }
