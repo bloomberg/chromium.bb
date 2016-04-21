@@ -4,11 +4,6 @@
 
 // https://w3c.github.io/FileAPI/#file
 
-dictionary FilePropertyBag {
-    DOMString type = "";
+dictionary FilePropertyBag : BlobPropertyBag {
     long long lastModified;
-
-    // TODO(jsbell): This member is non-standard.
-    // https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob
-    NormalizeLineEndings endings = "transparent";
 };
