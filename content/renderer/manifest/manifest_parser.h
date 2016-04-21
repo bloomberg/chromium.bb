@@ -126,12 +126,6 @@ class CONTENT_EXPORT ManifestParser {
   // Returns the parsed string if any, a null string if the parsing failed.
   base::NullableString16 ParseIconType(const base::DictionaryValue& icon);
 
-  // Parses the 'density' field of an icon, as defined in:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-density-member-of-an-icon
-  // Returns the parsed double if any, Manifest::Icon::kDefaultDensity if the
-  // parsing failed.
-  double ParseIconDensity(const base::DictionaryValue& icon);
-
   // Parses the 'sizes' field of an icon, as defined in:
   // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-sizes-member-of-an-icon
   // Returns a vector of gfx::Size with the successfully parsed sizes, if any.

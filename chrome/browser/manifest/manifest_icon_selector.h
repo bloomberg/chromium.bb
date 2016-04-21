@@ -49,26 +49,26 @@ class ManifestIconSelector {
                        int minimum_icon_size_in_px);
   virtual ~ManifestIconSelector() {}
 
+  // Returns the square icon that is the smallest icon larger than
+  // ideal_icon_size_in_px_ (if it exists), or the largest icon smaller than
+  // ideal_icon_size_in_px_ otherwise.
+  int FindClosestIconToIdealSize(
+      const std::vector<content::Manifest::Icon>& icons) const;
+
   // Runs the algorithm to find the best matching icon in the icons listed in
   // the Manifest.
   // Returns the icon url if a suitable icon is found. An empty URL otherwise.
-  int FindBestMatchingIcon(const std::vector<content::Manifest::Icon>& icons);
-
-  // Runs an algorithm only based on icon declared sizes. It will try to find
-  // size that is the closest to preferred_icon_size_in_pixels_ but bigger than
-  // preferred_icon_size_in_pixels_ if possible.
-  // Returns the index of a suitable icon if one is found. -1 otherwise.
-  int FindBestMatchingIconForDensity(
-      const std::vector<content::Manifest::Icon>& icons,
-      float density);
+  int FindBestMatchingIcon(
+      const std::vector<content::Manifest::Icon>& icons) const;
 
   // Returns whether the |preferred_icon_size_in_pixels_| is in |sizes|.
-  bool IconSizesContainsPreferredSize(const std::vector<gfx::Size>& sizes);
+  bool IconSizesContainsPreferredSize(
+      const std::vector<gfx::Size>& sizes) const;
 
   // Returns whether a size bigger than |minimun_icon_size_in_pixels_| is in
   // |sizes|.
   bool IconSizesContainsBiggerThanMinimumSize(
-      const std::vector<gfx::Size>& sizes);
+      const std::vector<gfx::Size>& sizes) const;
 
   // Returns an array containing the items in |icons| without the unsupported
   // image MIME types.
@@ -80,7 +80,6 @@ class ManifestIconSelector {
 
   const int ideal_icon_size_in_px_;
   const int minimum_icon_size_in_px_;
-  const float density_;
 
   friend class ManifestIconSelectorTest;
 

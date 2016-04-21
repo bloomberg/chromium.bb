@@ -314,19 +314,6 @@ base::NullableString16 ManifestParser::ParseIconType(
   return ParseString(icon, "type", Trim);
 }
 
-double ManifestParser::ParseIconDensity(const base::DictionaryValue& icon) {
-  double density;
-  if (!icon.HasKey("density"))
-    return Manifest::Icon::kDefaultDensity;
-
-  if (!icon.GetDouble("density", &density) || density <= 0) {
-    AddErrorInfo(GetErrorPrefix() +
-                 "icon 'density' ignored, must be float greater than 0.");
-    return Manifest::Icon::kDefaultDensity;
-  }
-  return density;
-}
-
 std::vector<gfx::Size> ManifestParser::ParseIconSizes(
     const base::DictionaryValue& icon) {
   base::NullableString16 sizes_str = ParseString(icon, "sizes", NoTrim);
@@ -365,7 +352,6 @@ std::vector<Manifest::Icon> ManifestParser::ParseIcons(
     if (!icon.src.is_valid())
       continue;
     icon.type = ParseIconType(*icon_dictionary);
-    icon.density = ParseIconDensity(*icon_dictionary);
     icon.sizes = ParseIconSizes(*icon_dictionary);
 
     icons.push_back(icon);

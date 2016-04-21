@@ -40,15 +40,9 @@ struct CONTENT_EXPORT Manifest {
     // supported type.
     base::NullableString16 type;
 
-    // Default value is 1.0 if the value is missing or invalid.
-    double density;
-
     // Empty if the parsing failed, the field was not present or empty.
     // The special value "any" is represented by gfx::Size(0, 0).
     std::vector<gfx::Size> sizes;
-
-    // Default density. Set to 1.0.
-    static const double kDefaultDensity;
   };
 
   // Structure representing a related application.

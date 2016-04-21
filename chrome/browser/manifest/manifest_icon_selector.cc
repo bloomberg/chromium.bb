@@ -20,13 +20,11 @@ using content::Manifest;
 ManifestIconSelector::ManifestIconSelector(int ideal_icon_size_in_px,
                                            int minimum_icon_size_in_px)
     : ideal_icon_size_in_px_(ideal_icon_size_in_px),
-      minimum_icon_size_in_px_(minimum_icon_size_in_px),
-      density_(
-          gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor()) {
+      minimum_icon_size_in_px_(minimum_icon_size_in_px) {
 }
 
 bool ManifestIconSelector::IconSizesContainsPreferredSize(
-    const std::vector<gfx::Size>& sizes) {
+    const std::vector<gfx::Size>& sizes) const {
   for (size_t i = 0; i < sizes.size(); ++i) {
     if (sizes[i].height() != sizes[i].width())
       continue;
@@ -38,7 +36,7 @@ bool ManifestIconSelector::IconSizesContainsPreferredSize(
 }
 
 bool ManifestIconSelector::IconSizesContainsBiggerThanMinimumSize(
-    const std::vector<gfx::Size>& sizes) {
+    const std::vector<gfx::Size>& sizes) const {
   for (size_t i = 0; i < sizes.size(); ++i) {
     if (sizes[i].height() != sizes[i].width())
       continue;
@@ -48,16 +46,12 @@ bool ManifestIconSelector::IconSizesContainsBiggerThanMinimumSize(
   return false;
 }
 
-int ManifestIconSelector::FindBestMatchingIconForDensity(
-    const std::vector<content::Manifest::Icon>& icons,
-    float density) {
+int ManifestIconSelector::FindClosestIconToIdealSize(
+    const std::vector<content::Manifest::Icon>& icons) const {
   int best_index = -1;
   int best_delta = std::numeric_limits<int>::min();
 
   for (size_t i = 0; i < icons.size(); ++i) {
-    if (icons[i].density != density)
-        continue;
-
     const std::vector<gfx::Size>& sizes = icons[i].sizes;
     for (size_t j = 0; j < sizes.size(); ++j) {
       if (sizes[j].height() != sizes[j].width())
@@ -79,56 +73,26 @@ int ManifestIconSelector::FindBestMatchingIconForDensity(
 }
 
 int ManifestIconSelector::FindBestMatchingIcon(
-    const std::vector<content::Manifest::Icon>& icons) {
+    const std::vector<content::Manifest::Icon>& icons) const {
   int best_index = -1;
 
-  // The first pass is to find the ideal icon. That icon is of the right size
-  // with the default density or the device's density.
+  // The first pass is to find the ideal icon - one with the exact right size.
   for (size_t i = 0; i < icons.size(); ++i) {
-    if (icons[i].density == density_ &&
-        IconSizesContainsPreferredSize(icons[i].sizes)) {
+    if (IconSizesContainsPreferredSize(icons[i].sizes))
       return i;
-    }
 
-    // If there is an icon with the right size but not the right density, keep
-    // it on the side and only use it if nothing better is found.
-    if (icons[i].density == Manifest::Icon::kDefaultDensity &&
-        IconSizesContainsPreferredSize(icons[i].sizes)) {
+    // If there is an icon size 'any', keep it on the side and only use it if
+    // nothing better is found.
+    if (IconSizesContainsAny(icons[i].sizes))
       best_index = i;
-    }
   }
-
   if (best_index != -1)
     return best_index;
 
-  // The second pass is to find an icon with 'any'. The current device scale
-  // factor is preferred. Otherwise, the default scale factor is used.
-  for (size_t i = 0; i < icons.size(); ++i) {
-    if (icons[i].density == density_ &&
-        IconSizesContainsAny(icons[i].sizes)) {
-      return i;
-    }
+  // The last pass will try to find the smallest icon larger than the ideal
+  // size, or the largest icon smaller than the ideal size.
+  best_index = FindClosestIconToIdealSize(icons);
 
-    // If there is an icon with 'any' but not the right density, keep it on the
-    // side and only use it if nothing better is found.
-    if (icons[i].density == Manifest::Icon::kDefaultDensity &&
-        IconSizesContainsAny(icons[i].sizes)) {
-      best_index = i;
-    }
-  }
-
-  if (best_index != -1)
-    return best_index;
-
-  // The last pass will try to find the best suitable icon for the device's
-  // scale factor. If none, another pass will be run using kDefaultDensity.
-  best_index = FindBestMatchingIconForDensity(icons, density_);
-  if (best_index != -1 &&
-        IconSizesContainsBiggerThanMinimumSize(icons[best_index].sizes))
-    return best_index;
-
-  best_index = FindBestMatchingIconForDensity(icons,
-      Manifest::Icon::kDefaultDensity);
   if (best_index != -1 &&
         IconSizesContainsBiggerThanMinimumSize(icons[best_index].sizes))
     return best_index;
