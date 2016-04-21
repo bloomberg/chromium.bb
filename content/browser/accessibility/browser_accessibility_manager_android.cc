@@ -224,6 +224,12 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   Java_BrowserAccessibilityManager_handleContentChanged(
       env, obj.obj(), node->unique_id());
 
+  // Ignore load complete events on iframes.
+  if (event_type == ui::AX_EVENT_LOAD_COMPLETE &&
+      node->manager() != GetRootManager()) {
+    return;
+  }
+
   switch (event_type) {
     case ui::AX_EVENT_LOAD_COMPLETE:
       Java_BrowserAccessibilityManager_handlePageLoaded(
