@@ -195,6 +195,9 @@ bool AttachmentBrokerPrivilegedMac::RouteWireFormatToAnother(
 base::mac::ScopedMachSendRight AttachmentBrokerPrivilegedMac::ExtractNamedRight(
     mach_port_t task_port,
     mach_port_name_t named_right) {
+  if (named_right == MACH_PORT_NULL)
+    return base::mac::ScopedMachSendRight(MACH_PORT_NULL);
+
   mach_port_t extracted_right = MACH_PORT_NULL;
   mach_msg_type_name_t extracted_right_type;
   kern_return_t kr =
