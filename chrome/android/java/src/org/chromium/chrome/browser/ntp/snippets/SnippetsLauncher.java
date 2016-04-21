@@ -114,7 +114,7 @@ public class SnippetsLauncher {
     private static OneoffTask buildRescheduleTask(Date date) {
         Date now = new Date();
         // Convert from milliseconds to seconds, rounding up.
-        long delaySeconds = (now.getTime() - date.getTime() + 999) / 1000;
+        long delaySeconds = (date.getTime() - now.getTime() + 999) / 1000;
         final long intervalSeconds = 15 * 60;
         return new OneoffTask.Builder()
                 .setService(ChromeBackgroundService.class)
