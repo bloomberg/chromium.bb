@@ -23,6 +23,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
@@ -58,7 +59,7 @@ void PrintContext::computePageRects(const FloatRect& printRect, float headerHeig
     m_pageRects.clear();
     outPageHeight = 0;
 
-    if (!m_frame->document() || !m_frame->view() || !m_frame->document()->layoutView())
+    if (!m_frame->document() || !m_frame->view() || m_frame->document()->layoutViewItem().isNull())
         return;
 
     if (userScaleFactor <= 0) {
@@ -66,8 +67,8 @@ void PrintContext::computePageRects(const FloatRect& printRect, float headerHeig
         return;
     }
 
-    LayoutView* view = m_frame->document()->layoutView();
-    const IntRect& documentRect = view->documentRect();
+    LayoutViewItem view = m_frame->document()->layoutViewItem();
+    const IntRect& documentRect = view.documentRect();
     FloatSize pageSize = m_frame->resizePageRectsKeepingRatio(FloatSize(printRect.width(), printRect.height()), FloatSize(documentRect.width(), documentRect.height()));
     float pageWidth = pageSize.width();
     float pageHeight = pageSize.height();
@@ -91,12 +92,12 @@ void PrintContext::computePageRectsWithPageSize(const FloatSize& pageSizeInPixel
 
 void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSizeInPixels)
 {
-    if (!m_frame->document() || !m_frame->view() || !m_frame->document()->layoutView())
+    if (!m_frame->document() || !m_frame->view() || m_frame->document()->layoutViewItem().isNull())
         return;
 
-    LayoutView* view = m_frame->document()->layoutView();
+    LayoutViewItem view = m_frame->document()->layoutViewItem();
 
-    IntRect docRect = view->documentRect();
+    IntRect docRect = view.documentRect();
 
     int pageWidth = pageSizeInPixels.width();
     // We scaled with floating point arithmetic and need to ensure results like 13329.99
@@ -104,7 +105,7 @@ void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSiz
     // stray pixel.
     int pageHeight = pageSizeInPixels.height() + LayoutUnit::epsilon();
 
-    bool isHorizontal = view->style()->isHorizontalWritingMode();
+    bool isHorizontal = view.style()->isHorizontalWritingMode();
 
     int docLogicalHeight = isHorizontal ? docRect.height() : docRect.width();
     int pageLogicalHeight = isHorizontal ? pageHeight : pageWidth;
@@ -115,25 +116,25 @@ void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSiz
     int blockDirectionStart;
     int blockDirectionEnd;
     if (isHorizontal) {
-        if (view->style()->isFlippedBlocksWritingMode()) {
+        if (view.style()->isFlippedBlocksWritingMode()) {
             blockDirectionStart = docRect.maxY();
             blockDirectionEnd = docRect.y();
         } else {
             blockDirectionStart = docRect.y();
             blockDirectionEnd = docRect.maxY();
         }
-        inlineDirectionStart = view->style()->isLeftToRightDirection() ? docRect.x() : docRect.maxX();
-        inlineDirectionEnd = view->style()->isLeftToRightDirection() ? docRect.maxX() : docRect.x();
+        inlineDirectionStart = view.style()->isLeftToRightDirection() ? docRect.x() : docRect.maxX();
+        inlineDirectionEnd = view.style()->isLeftToRightDirection() ? docRect.maxX() : docRect.x();
     } else {
-        if (view->style()->isFlippedBlocksWritingMode()) {
+        if (view.style()->isFlippedBlocksWritingMode()) {
             blockDirectionStart = docRect.maxX();
             blockDirectionEnd = docRect.x();
         } else {
             blockDirectionStart = docRect.x();
             blockDirectionEnd = docRect.maxX();
         }
-        inlineDirectionStart = view->style()->isLeftToRightDirection() ? docRect.y() : docRect.maxY();
-        inlineDirectionEnd = view->style()->isLeftToRightDirection() ? docRect.maxY() : docRect.y();
+        inlineDirectionStart = view.style()->isLeftToRightDirection() ? docRect.y() : docRect.maxY();
+        inlineDirectionEnd = view.style()->isLeftToRightDirection() ? docRect.maxY() : docRect.y();
     }
 
     unsigned pageCount = ceilf((float)docLogicalHeight / pageLogicalHeight);
