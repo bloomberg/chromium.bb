@@ -19,8 +19,7 @@ var reader = null;
 
 function errorCallback(error) {
     debug("Got error: " + error.name);
-    removeAllInDirectory(fileSystem.root);
-    finishJSTest();
+    removeAllInDirectory(fileSystem.root, finishJSTest, finishJSTest);
 }
 
 function entriesCallback(entries) {
@@ -35,8 +34,7 @@ function entriesCallback(entries) {
         paths.sort();
         shouldBe('"' + paths.join(',') + '"', '"/a,/b,/c,/d2,/e,/f"');
         shouldBe("dirsCount", "3");
-        removeAllInDirectory(fileSystem.root);
-        finishJSTest();
+        removeAllInDirectory(fileSystem.root, finishJSTest, errorCallback);
     }
 }
 

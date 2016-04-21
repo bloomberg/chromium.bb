@@ -19,8 +19,7 @@ var testEntriesCount = 0;
 
 function endTest()
 {
-    removeAllInDirectory(fileSystem.root);
-    finishJSTest();
+    removeAllInDirectory(fileSystem.root, finishJSTest, errorCallback);
 }
 
 function errorCallback(error)
