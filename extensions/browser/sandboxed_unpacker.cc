@@ -431,7 +431,7 @@ void SandboxedUnpacker::OnUnpackExtensionSucceeded(
   got_response_ = true;
   utility_wrapper_ = nullptr;
 
-  scoped_ptr<base::DictionaryValue> final_manifest(
+  std::unique_ptr<base::DictionaryValue> final_manifest(
       RewriteManifestFile(manifest));
   if (!final_manifest)
     return;
@@ -683,7 +683,7 @@ base::DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
   // the original manifest. We do this to ensure the manifest doesn't contain an
   // exploitable bug that could be used to compromise the browser.
   DCHECK(!public_key_.empty());
-  scoped_ptr<base::DictionaryValue> final_manifest(manifest.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> final_manifest(manifest.DeepCopy());
   final_manifest->SetString(manifest_keys::kPublicKey, public_key_);
 
   std::string manifest_json;

@@ -195,7 +195,7 @@ class UpdateServiceTest : public ExtensionsTest {
  private:
   UpdateService* update_service_;
   scoped_refptr<FakeUpdateClient> update_client_;
-  scoped_ptr<content::TestBrowserThreadBundle> browser_threads_;
+  std::unique_ptr<content::TestBrowserThreadBundle> browser_threads_;
   MockExtensionSystemFactory<FakeExtensionSystem>
       fake_extension_system_factory_;
 };
@@ -261,7 +261,7 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
   // Test the install callback.
   base::ScopedTempDir new_version_dir;
   ASSERT_TRUE(new_version_dir.CreateUniqueTempDir());
-  scoped_ptr<base::DictionaryValue> new_manifest(
+  std::unique_ptr<base::DictionaryValue> new_manifest(
       extension1->manifest()->value()->DeepCopy());
   new_manifest->SetString("version", "2.0");
 

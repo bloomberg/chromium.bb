@@ -98,7 +98,7 @@ class ErrorMap::ExtensionEntry {
   void DeleteAllErrors();
 
   // Add the error to the list, and return a weak reference.
-  const ExtensionError* AddError(scoped_ptr<ExtensionError> error);
+  const ExtensionError* AddError(std::unique_ptr<ExtensionError> error);
 
   const ErrorList* list() const { return &list_; }
 
@@ -138,7 +138,7 @@ void ErrorMap::ExtensionEntry::DeleteAllErrors() {
 }
 
 const ExtensionError* ErrorMap::ExtensionEntry::AddError(
-    scoped_ptr<ExtensionError> error) {
+    std::unique_ptr<ExtensionError> error) {
   for (ErrorList::iterator iter = list_.begin(); iter != list_.end(); ++iter) {
     // If we find a duplicate error, remove the old error and add the new one,
     // incrementing the occurrence count of the error. We use the new error
@@ -182,7 +182,8 @@ const ErrorList& ErrorMap::GetErrorsForExtension(
   return iter != map_.end() ? *iter->second->list() : g_empty_error_list.Get();
 }
 
-const ExtensionError* ErrorMap::AddError(scoped_ptr<ExtensionError> error) {
+const ExtensionError* ErrorMap::AddError(
+    std::unique_ptr<ExtensionError> error) {
   EntryMap::iterator iter = map_.find(error->extension_id());
   if (iter == map_.end()) {
     iter = map_.insert(std::pair<std::string, ExtensionEntry*>(

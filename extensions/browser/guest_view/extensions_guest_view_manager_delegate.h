@@ -23,7 +23,7 @@ class ExtensionsGuestViewManagerDelegate
 
   // GuestViewManagerDelegate implementation.
   void DispatchEvent(const std::string& event_name,
-                     scoped_ptr<base::DictionaryValue> args,
+                     std::unique_ptr<base::DictionaryValue> args,
                      guest_view::GuestViewBase* guest,
                      int instance_id) override;
   bool IsGuestAvailableToContext(guest_view::GuestViewBase* guest) override;

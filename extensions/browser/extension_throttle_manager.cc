@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
@@ -54,13 +55,13 @@ ExtensionThrottleManager::~ExtensionThrottleManager() {
   url_entries_.clear();
 }
 
-scoped_ptr<content::ResourceThrottle>
+std::unique_ptr<content::ResourceThrottle>
 ExtensionThrottleManager::MaybeCreateThrottle(const net::URLRequest* request) {
   if (request->first_party_for_cookies().scheme() !=
       extensions::kExtensionScheme) {
     return nullptr;
   }
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new extensions::ExtensionRequestLimitingThrottle(request, this));
 }
 
@@ -118,7 +119,7 @@ ExtensionThrottleManager::RegisterRequestUrl(const GURL& url) {
 }
 
 void ExtensionThrottleManager::SetBackoffPolicyForTests(
-    scoped_ptr<net::BackoffEntry::Policy> policy) {
+    std::unique_ptr<net::BackoffEntry::Policy> policy) {
   backoff_policy_for_tests_ = std::move(policy);
 }
 

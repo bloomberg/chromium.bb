@@ -90,7 +90,7 @@ class ProcessManagerTest : public ExtensionsTest {
   }
 
  private:
-  scoped_ptr<content::NotificationService> notification_service_;
+  std::unique_ptr<content::NotificationService> notification_service_;
   TestBrowserContextIncognito incognito_context_;
   ExtensionRegistry extension_registry_;  // Shared between BrowserContexts.
   TestProcessManagerDelegate process_manager_delegate_;
@@ -101,7 +101,7 @@ class ProcessManagerTest : public ExtensionsTest {
 // Test that notification registration works properly.
 TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
   // Test for a normal context ProcessManager.
-  scoped_ptr<ProcessManager> manager1(ProcessManager::CreateForTesting(
+  std::unique_ptr<ProcessManager> manager1(ProcessManager::CreateForTesting(
       original_context(), extension_registry()));
 
   EXPECT_EQ(original_context(), manager1->browser_context());
@@ -116,10 +116,9 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
                            original_context()));
 
   // Test for an incognito context ProcessManager.
-  scoped_ptr<ProcessManager> manager2(
-      ProcessManager::CreateIncognitoForTesting(incognito_context(),
-                                                original_context(),
-                                                extension_registry()));
+  std::unique_ptr<ProcessManager> manager2(
+      ProcessManager::CreateIncognitoForTesting(
+          incognito_context(), original_context(), extension_registry()));
 
   EXPECT_EQ(incognito_context(), manager2->browser_context());
   EXPECT_EQ(0u, manager2->background_hosts().size());
@@ -143,7 +142,7 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
 // because ExtensionHost is tightly coupled to WebContents and can't be
 // constructed in unit tests.
 TEST_F(ProcessManagerTest, CreateBackgroundHostsOnExtensionsReady) {
-  scoped_ptr<ProcessManager> manager(ProcessManager::CreateForTesting(
+  std::unique_ptr<ProcessManager> manager(ProcessManager::CreateForTesting(
       original_context(), extension_registry()));
   ASSERT_FALSE(manager->startup_background_hosts_created_for_test());
 
@@ -158,7 +157,7 @@ TEST_F(ProcessManagerTest, CreateBackgroundHostsOnExtensionsReady) {
 // Test that startup background hosts can be created explicitly before the
 // extension system is ready (this is the normal pattern in Chrome).
 TEST_F(ProcessManagerTest, CreateBackgroundHostsExplicitly) {
-  scoped_ptr<ProcessManager> manager(ProcessManager::CreateForTesting(
+  std::unique_ptr<ProcessManager> manager(ProcessManager::CreateForTesting(
       original_context(), extension_registry()));
   ASSERT_FALSE(manager->startup_background_hosts_created_for_test());
 
@@ -171,7 +170,7 @@ TEST_F(ProcessManagerTest, CreateBackgroundHostsExplicitly) {
 // Test that the embedder can defer background host creation. Chrome does this
 // when the profile is created asynchronously, which may take a while.
 TEST_F(ProcessManagerTest, CreateBackgroundHostsDeferred) {
-  scoped_ptr<ProcessManager> manager(ProcessManager::CreateForTesting(
+  std::unique_ptr<ProcessManager> manager(ProcessManager::CreateForTesting(
       original_context(), extension_registry()));
   ASSERT_FALSE(manager->startup_background_hosts_created_for_test());
 
@@ -196,7 +195,7 @@ TEST_F(ProcessManagerTest, CreateBackgroundHostsDeferred) {
 // Test that the embedder can disallow background host creation.
 // Chrome OS does this in guest mode.
 TEST_F(ProcessManagerTest, IsBackgroundHostAllowed) {
-  scoped_ptr<ProcessManager> manager(ProcessManager::CreateForTesting(
+  std::unique_ptr<ProcessManager> manager(ProcessManager::CreateForTesting(
       original_context(), extension_registry()));
   ASSERT_FALSE(manager->startup_background_hosts_created_for_test());
 
@@ -218,13 +217,13 @@ TEST_F(ProcessManagerTest, IsBackgroundHostAllowed) {
 TEST_F(ProcessManagerTest, ProcessGrouping) {
   // Extensions in different browser contexts should always be different
   // SiteInstances.
-  scoped_ptr<ProcessManager> manager1(ProcessManager::CreateForTesting(
+  std::unique_ptr<ProcessManager> manager1(ProcessManager::CreateForTesting(
       original_context(), extension_registry()));
   // NOTE: This context is not associated with the TestExtensionsBrowserClient.
   // That's OK because we're not testing regular vs. incognito behavior.
   TestBrowserContext another_context;
   ExtensionRegistry another_registry(&another_context);
-  scoped_ptr<ProcessManager> manager2(
+  std::unique_ptr<ProcessManager> manager2(
       ProcessManager::CreateForTesting(&another_context, &another_registry));
 
   // Extensions with common origins ("scheme://id/") should be grouped in the

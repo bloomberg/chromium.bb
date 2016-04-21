@@ -72,8 +72,8 @@ class KeepAliveTest : public ExtensionsTest {
   }
 
  private:
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<content::NotificationService> notification_service_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<content::NotificationService> notification_service_;
   scoped_refptr<const Extension> extension_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveTest);

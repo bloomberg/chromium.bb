@@ -16,11 +16,12 @@
 
 #include <cmath>
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "base/environment.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
@@ -54,7 +55,7 @@ void VerboseOut(const char* format, ...) {
   static bool should_print = false;
   if (!have_checked_environment) {
     have_checked_environment = true;
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
     if (env->HasVar(kShowSimulationVariableName))
       should_print = true;
   }
@@ -222,7 +223,7 @@ class Server : public DiscreteTimeSimulation::Actor {
     if (num_ticks % ticks_per_column)
       ++num_columns;
     DCHECK_LE(num_columns, terminal_width);
-    scoped_ptr<int[]> columns(new int[num_columns]);
+    std::unique_ptr<int[]> columns(new int[num_columns]);
     for (int tx = 0; tx < num_ticks; ++tx) {
       int cx = tx / ticks_per_column;
       if (tx % ticks_per_column == 0)
@@ -293,7 +294,7 @@ class Server : public DiscreteTimeSimulation::Actor {
   std::vector<int> requests_per_tick_;
 
   TestURLRequestContext context_;
-  scoped_ptr<URLRequest> mock_request_;
+  std::unique_ptr<URLRequest> mock_request_;
 
   DISALLOW_COPY_AND_ASSIGN(Server);
 };
@@ -489,7 +490,7 @@ void SimulateAttack(Server* server,
   const size_t kNumClients = 50;
   DiscreteTimeSimulation simulation;
   ExtensionThrottleManager manager;
-  std::vector<scoped_ptr<Requester>> requesters;
+  std::vector<std::unique_ptr<Requester>> requesters;
   for (size_t i = 0; i < kNumAttackers; ++i) {
     // Use a tiny time_between_requests so the attackers will ping the
     // server at every tick of the simulation.
@@ -502,7 +503,7 @@ void SimulateAttack(Server* server,
         new Requester(throttler_entry.get(), TimeDelta::FromMilliseconds(1),
                       server, attacker_results);
     attacker->SetStartupJitter(TimeDelta::FromSeconds(120));
-    requesters.push_back(make_scoped_ptr(attacker));
+    requesters.push_back(base::WrapUnique(attacker));
     simulation.AddActor(attacker);
   }
   for (size_t i = 0; i < kNumClients; ++i) {
@@ -517,7 +518,7 @@ void SimulateAttack(Server* server,
                       client_results);
     client->SetStartupJitter(TimeDelta::FromSeconds(120));
     client->SetRequestJitter(TimeDelta::FromMinutes(1));
-    requesters.push_back(make_scoped_ptr(client));
+    requesters.push_back(base::WrapUnique(client));
     simulation.AddActor(client);
   }
   simulation.AddActor(server);

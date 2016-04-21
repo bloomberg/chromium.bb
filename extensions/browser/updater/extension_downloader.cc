@@ -255,7 +255,7 @@ void ExtensionDownloader::DoStartAllPending() {
        ++it) {
     std::vector<linked_ptr<ManifestFetchData>>& list = it->second;
     for (size_t i = 0; i < list.size(); ++i) {
-      StartUpdateCheck(scoped_ptr<ManifestFetchData>(list[i].release()));
+      StartUpdateCheck(std::unique_ptr<ManifestFetchData>(list[i].release()));
     }
   }
   fetches_preparing_.clear();
@@ -268,7 +268,7 @@ void ExtensionDownloader::StartBlacklistUpdate(
   // Note: it is very important that we use the https version of the update
   // url here to avoid DNS hijacking of the blacklist, which is not validated
   // by a public key signature like .crx files are.
-  scoped_ptr<ManifestFetchData> blacklist_fetch(CreateManifestFetchData(
+  std::unique_ptr<ManifestFetchData> blacklist_fetch(CreateManifestFetchData(
       extension_urls::GetWebstoreUpdateUrl(), request_id));
   DCHECK(blacklist_fetch->base_url().SchemeIsCryptographic());
   blacklist_fetch->AddExtension(kBlacklistAppID, version, &ping_data,
@@ -277,7 +277,7 @@ void ExtensionDownloader::StartBlacklistUpdate(
 }
 
 void ExtensionDownloader::SetWebstoreIdentityProvider(
-    scoped_ptr<IdentityProvider> identity_provider) {
+    std::unique_ptr<IdentityProvider> identity_provider) {
   identity_provider_.swap(identity_provider);
 }
 
@@ -413,7 +413,7 @@ void ExtensionDownloader::ReportStats() const {
 }
 
 void ExtensionDownloader::StartUpdateCheck(
-    scoped_ptr<ManifestFetchData> fetch_data) {
+    std::unique_ptr<ManifestFetchData> fetch_data) {
   if (g_test_delegate) {
     g_test_delegate->StartUpdateCheck(this, delegate_, std::move(fetch_data));
     return;
@@ -583,7 +583,7 @@ void ExtensionDownloader::HandleManifestResults(
         crx_url = crx_url.ReplaceComponents(replacements);
       }
     }
-    scoped_ptr<ExtensionFetch> fetch(
+    std::unique_ptr<ExtensionFetch> fetch(
         new ExtensionFetch(update->extension_id, crx_url, update->package_hash,
                            update->version, fetch_data->request_ids()));
     FetchUpdatedExtension(std::move(fetch));
@@ -670,7 +670,7 @@ void ExtensionDownloader::DetermineUpdates(
 
 // Begins (or queues up) download of an updated extension.
 void ExtensionDownloader::FetchUpdatedExtension(
-    scoped_ptr<ExtensionFetch> fetch_data) {
+    std::unique_ptr<ExtensionFetch> fetch_data) {
   if (!fetch_data->url.is_valid()) {
     // TODO(asargent): This can sometimes be invalid. See crbug.com/130881.
     DLOG(WARNING) << "Invalid URL: '" << fetch_data->url.possibly_invalid_spec()
@@ -711,7 +711,7 @@ void ExtensionDownloader::FetchUpdatedExtension(
 }
 
 void ExtensionDownloader::NotifyDelegateDownloadFinished(
-    scoped_ptr<ExtensionFetch> fetch_data,
+    std::unique_ptr<ExtensionFetch> fetch_data,
     bool from_cache,
     const base::FilePath& crx_path,
     bool file_ownership_passed) {
@@ -733,7 +733,7 @@ void ExtensionDownloader::NotifyDelegateDownloadFinished(
 }
 
 void ExtensionDownloader::CacheInstallDone(
-    scoped_ptr<ExtensionFetch> fetch_data,
+    std::unique_ptr<ExtensionFetch> fetch_data,
     bool should_download) {
   ping_results_.erase(fetch_data->id);
   if (should_download) {
@@ -803,7 +803,7 @@ void ExtensionDownloader::OnCRXFetchComplete(
     base::FilePath crx_path;
     // Take ownership of the file at |crx_path|.
     CHECK(source->GetResponseAsFilePath(true, &crx_path));
-    scoped_ptr<ExtensionFetch> fetch_data =
+    std::unique_ptr<ExtensionFetch> fetch_data =
         extensions_queue_.reset_active_request();
     if (extension_cache_) {
       const std::string& version = fetch_data->version;

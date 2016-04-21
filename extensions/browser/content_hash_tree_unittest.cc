@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include "extensions/browser/content_hash_tree.h"
+
+#include <memory>
+
 #include "base/stl_util.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
-#include "extensions/browser/content_hash_tree.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using crypto::kSHA256Length;
@@ -38,7 +40,7 @@ TEST(ContentHashTreeTest, HashTreeBasics) {
   nodes.push_back(node2);
 
   std::string expected(kSHA256Length, 0);
-  scoped_ptr<SecureHash> hash(SecureHash::Create(SecureHash::SHA256));
+  std::unique_ptr<SecureHash> hash(SecureHash::Create(SecureHash::SHA256));
   hash->Update(node1.data(), node1.size());
   hash->Update(node2.data(), node2.size());
   hash->Finish(string_as_array(&expected), expected.size());

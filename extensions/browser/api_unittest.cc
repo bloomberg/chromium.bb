@@ -71,19 +71,19 @@ void ApiUnitTest::CreateBackgroundPage() {
   }
 }
 
-scoped_ptr<base::Value> ApiUnitTest::RunFunctionAndReturnValue(
+std::unique_ptr<base::Value> ApiUnitTest::RunFunctionAndReturnValue(
     UIThreadExtensionFunction* function,
     const std::string& args) {
   function->set_extension(extension());
   if (contents_)
     function->SetRenderFrameHost(contents_->GetMainFrame());
-  return scoped_ptr<base::Value>(utils::RunFunctionAndReturnSingleResult(
+  return std::unique_ptr<base::Value>(utils::RunFunctionAndReturnSingleResult(
       function, args, browser_context()));
 }
 
-scoped_ptr<base::DictionaryValue> ApiUnitTest::RunFunctionAndReturnDictionary(
-    UIThreadExtensionFunction* function,
-    const std::string& args) {
+std::unique_ptr<base::DictionaryValue>
+ApiUnitTest::RunFunctionAndReturnDictionary(UIThreadExtensionFunction* function,
+                                            const std::string& args) {
   base::Value* value = RunFunctionAndReturnValue(function, args).release();
   base::DictionaryValue* dict = NULL;
 
@@ -93,10 +93,10 @@ scoped_ptr<base::DictionaryValue> ApiUnitTest::RunFunctionAndReturnDictionary(
   // We expect to either have successfuly retrieved a dictionary from the value,
   // or the value to have been NULL.
   EXPECT_TRUE(dict || !value);
-  return scoped_ptr<base::DictionaryValue>(dict);
+  return std::unique_ptr<base::DictionaryValue>(dict);
 }
 
-scoped_ptr<base::ListValue> ApiUnitTest::RunFunctionAndReturnList(
+std::unique_ptr<base::ListValue> ApiUnitTest::RunFunctionAndReturnList(
     UIThreadExtensionFunction* function,
     const std::string& args) {
   base::Value* value = RunFunctionAndReturnValue(function, args).release();
@@ -108,7 +108,7 @@ scoped_ptr<base::ListValue> ApiUnitTest::RunFunctionAndReturnList(
   // We expect to either have successfuly retrieved a list from the value,
   // or the value to have been NULL.
   EXPECT_TRUE(list || !value);
-  return scoped_ptr<base::ListValue>(list);
+  return std::unique_ptr<base::ListValue>(list);
 }
 
 std::string ApiUnitTest::RunFunctionAndReturnError(

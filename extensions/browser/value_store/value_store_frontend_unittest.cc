@@ -4,11 +4,11 @@
 
 #include "extensions/browser/value_store/value_store_frontend.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "content/public/test/test_browser_thread.h"
@@ -50,7 +50,7 @@ class ValueStoreFrontendTest : public testing::Test {
         factory_, ValueStoreFrontend::BackendType::RULES));
   }
 
-  bool Get(const std::string& key, scoped_ptr<base::Value>* output) {
+  bool Get(const std::string& key, std::unique_ptr<base::Value>* output) {
     storage_->Get(key, base::Bind(&ValueStoreFrontendTest::GetAndWait,
                                   base::Unretained(this), output));
     base::MessageLoop::current()->Run();  // wait for GetAndWait
@@ -58,14 +58,14 @@ class ValueStoreFrontendTest : public testing::Test {
   }
 
  protected:
-  void GetAndWait(scoped_ptr<base::Value>* output,
-                  scoped_ptr<base::Value> result) {
+  void GetAndWait(std::unique_ptr<base::Value>* output,
+                  std::unique_ptr<base::Value> result) {
     *output = std::move(result);
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
   scoped_refptr<extensions::TestValueStoreFactory> factory_;
-  scoped_ptr<ValueStoreFrontend> storage_;
+  std::unique_ptr<ValueStoreFrontend> storage_;
   base::ScopedTempDir temp_dir_;
   base::FilePath db_path_;
   base::MessageLoop message_loop_;
@@ -74,7 +74,7 @@ class ValueStoreFrontendTest : public testing::Test {
 };
 
 TEST_F(ValueStoreFrontendTest, GetExistingData) {
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   ASSERT_FALSE(Get("key0", &value));
 
   // Test existing keys in the DB.
@@ -94,14 +94,16 @@ TEST_F(ValueStoreFrontendTest, GetExistingData) {
 }
 
 TEST_F(ValueStoreFrontendTest, ChangesPersistAfterReload) {
-  storage_->Set("key0", scoped_ptr<base::Value>(new base::FundamentalValue(0)));
-  storage_->Set("key1", scoped_ptr<base::Value>(new base::StringValue("new1")));
+  storage_->Set("key0",
+                std::unique_ptr<base::Value>(new base::FundamentalValue(0)));
+  storage_->Set("key1",
+                std::unique_ptr<base::Value>(new base::StringValue("new1")));
   storage_->Remove("key2");
 
   // Reload the DB and test our changes.
   ResetStorage();
 
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   {
     ASSERT_TRUE(Get("key0", &value));
     int result;

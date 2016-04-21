@@ -5,12 +5,12 @@
 #ifndef EXTENSIONS_BROWSER_VALUE_STORE_LEGACY_VALUE_STORE_FACTORY_H_
 #define EXTENSIONS_BROWSER_VALUE_STORE_LEGACY_VALUE_STORE_FACTORY_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "extensions/browser/value_store/value_store_factory.h"
 #include "extensions/common/extension.h"
@@ -28,9 +28,9 @@ class LegacyValueStoreFactory : public ValueStoreFactory {
   bool StateDBExists() const;
 
   // ValueStoreFactory:
-  scoped_ptr<ValueStore> CreateRulesStore() override;
-  scoped_ptr<ValueStore> CreateStateStore() override;
-  scoped_ptr<ValueStore> CreateSettingsStore(
+  std::unique_ptr<ValueStore> CreateRulesStore() override;
+  std::unique_ptr<ValueStore> CreateStateStore() override;
+  std::unique_ptr<ValueStore> CreateSettingsStore(
       settings_namespace::Namespace settings_namespace,
       ModelType model_type,
       const ExtensionId& extension_id) override;
@@ -82,8 +82,8 @@ class LegacyValueStoreFactory : public ValueStoreFactory {
     ModelSettings* GetModel(ModelType model_type);
 
    private:
-    scoped_ptr<ModelSettings> extensions_;
-    scoped_ptr<ModelSettings> apps_;
+    std::unique_ptr<ModelSettings> extensions_;
+    std::unique_ptr<ModelSettings> apps_;
 
     DISALLOW_COPY_AND_ASSIGN(SettingsRoot);
   };

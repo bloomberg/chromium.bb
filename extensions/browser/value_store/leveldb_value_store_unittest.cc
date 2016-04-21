@@ -63,7 +63,7 @@ class LeveldbValueStoreUnitTest : public testing::Test {
   const base::FilePath& database_path() { return database_dir_.path(); }
 
  private:
-  scoped_ptr<LeveldbValueStore> store_;
+  std::unique_ptr<LeveldbValueStore> store_;
   base::ScopedTempDir database_dir_;
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -75,7 +75,7 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreKeyTest) {
   const char kValue[] = "value";
 
   // Insert a valid pair.
-  scoped_ptr<base::Value> value(new base::StringValue(kValue));
+  std::unique_ptr<base::Value> value(new base::StringValue(kValue));
   ASSERT_TRUE(store()
                   ->Set(ValueStore::DEFAULTS, kNotCorruptKey, *value)
                   ->status().ok());
@@ -117,7 +117,7 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreDoesMinimumNecessary) {
   const char kCorruptValue[] = "[{(.*+\"\'\\";
 
   // Insert a collection of non-corrupted pairs.
-  scoped_ptr<base::Value> value(new base::StringValue(kValue));
+  std::unique_ptr<base::Value> value(new base::StringValue(kValue));
   for (size_t i = 0; i < kNotCorruptKeysSize; ++i) {
     ASSERT_TRUE(store()
                     ->Set(ValueStore::DEFAULTS, kNotCorruptKeys[i], *value)
@@ -163,7 +163,7 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreFullDatabase) {
   const char kValue[] = "value";
 
   // Generate a database.
-  scoped_ptr<base::Value> value(new base::StringValue(kValue));
+  std::unique_ptr<base::Value> value(new base::StringValue(kValue));
   for (size_t i = 0; i < kNotCorruptKeysSize; ++i) {
     ASSERT_TRUE(store()
                     ->Set(ValueStore::DEFAULTS, kNotCorruptKeys[i], *value)

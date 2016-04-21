@@ -51,7 +51,7 @@ namespace {
 // called. May be called from any thread.
 void NotifyApiFunctionCalled(const std::string& extension_id,
                              const std::string& api_name,
-                             scoped_ptr<base::ListValue> args,
+                             std::unique_ptr<base::ListValue> args,
                              content::BrowserContext* browser_context) {
   // The ApiActivityMonitor can only be accessed from the main (UI) thread. If
   // we're running on the wrong thread, re-dispatch from the main thread.
@@ -80,7 +80,7 @@ void NotifyApiFunctionCalled(const std::string& extension_id,
 // this once all the extension APIs are updated to the feature system.
 struct Static {
   Static() : api(ExtensionAPI::CreateWithDefaultConfiguration()) {}
-  scoped_ptr<ExtensionAPI> api;
+  std::unique_ptr<ExtensionAPI> api;
 };
 base::LazyInstance<Static> g_global_io_data = LAZY_INSTANCE_INITIALIZER;
 
@@ -284,7 +284,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                                               &params.arguments,
                                               base::TimeTicks::Now());
   if (violation_error.empty()) {
-    scoped_ptr<base::ListValue> args(params.arguments.DeepCopy());
+    std::unique_ptr<base::ListValue> args(params.arguments.DeepCopy());
     NotifyApiFunctionCalled(extension->id(), params.name, std::move(args),
                             static_cast<content::BrowserContext*>(profile_id));
     UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.FunctionCalls",
@@ -391,7 +391,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
                                               base::TimeTicks::Now());
 
   if (violation_error.empty()) {
-    scoped_ptr<base::ListValue> args(params.arguments.DeepCopy());
+    std::unique_ptr<base::ListValue> args(params.arguments.DeepCopy());
 
     // See crbug.com/39178.
     ExtensionsBrowserClient::Get()->PermitExternalProtocolHandler();

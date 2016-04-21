@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -369,9 +370,9 @@ void WebViewGuest::DidAttachToEmbedder() {
 }
 
 void WebViewGuest::DidDropLink(const GURL& url) {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guest_view::kUrl, url.spec());
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventDropLink, std::move(args))));
 }
 
@@ -425,8 +426,8 @@ void WebViewGuest::ClearDataInternal(base::Time remove_since,
 }
 
 void WebViewGuest::GuestViewDidStopLoading() {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEventToView(make_scoped_ptr(
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventLoadStop, std::move(args))));
 }
 
@@ -476,12 +477,12 @@ void WebViewGuest::GuestReady() {
 
 void WebViewGuest::GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,
                                                  const gfx::Size& new_size) {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kOldHeight, old_size.height());
   args->SetInteger(webview::kOldWidth, old_size.width());
   args->SetInteger(webview::kNewHeight, new_size.height());
   args->SetInteger(webview::kNewWidth, new_size.width());
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventSizeChanged, std::move(args))));
 }
 
@@ -494,10 +495,10 @@ void WebViewGuest::GuestZoomChanged(double old_zoom_level,
   // Dispatch the zoomchange event.
   double old_zoom_factor = ConvertZoomLevelToZoomFactor(old_zoom_level);
   double new_zoom_factor = ConvertZoomLevelToZoomFactor(new_zoom_level);
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetDouble(webview::kOldZoomFactor, old_zoom_factor);
   args->SetDouble(webview::kNewZoomFactor, new_zoom_factor);
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventZoomChange, std::move(args))));
 }
 
@@ -511,20 +512,20 @@ bool WebViewGuest::AddMessageToConsole(WebContents* source,
                                        const base::string16& message,
                                        int32_t line_no,
                                        const base::string16& source_id) {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   // Log levels are from base/logging.h: LogSeverity.
   args->SetInteger(webview::kLevel, level);
   args->SetString(webview::kMessage, message);
   args->SetInteger(webview::kLine, line_no);
   args->SetString(webview::kSourceId, source_id);
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventConsoleMessage, std::move(args))));
   return true;
 }
 
 void WebViewGuest::CloseContents(WebContents* source) {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEventToView(make_scoped_ptr(
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventClose, std::move(args))));
 }
 
@@ -572,10 +573,10 @@ bool WebViewGuest::PreHandleGestureEvent(WebContents* source,
 }
 
 void WebViewGuest::LoadProgressChanged(WebContents* source, double progress) {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guest_view::kUrl, web_contents()->GetURL().spec());
   args->SetDouble(webview::kProgress, progress);
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventLoadProgress, std::move(args))));
 }
 
@@ -583,12 +584,12 @@ void WebViewGuest::LoadAbort(bool is_top_level,
                              const GURL& url,
                              int error_code,
                              const std::string& error_type) {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetBoolean(guest_view::kIsTopLevel, is_top_level);
   args->SetString(guest_view::kUrl, url.possibly_invalid_spec());
   args->SetInteger(guest_view::kCode, error_code);
   args->SetString(guest_view::kReason, error_type);
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventLoadAbort, std::move(args))));
 }
 
@@ -637,18 +638,18 @@ void WebViewGuest::NewGuestWebViewCallback(const content::OpenURLParams& params,
 // TODO(fsamuel): Find a reliable way to test the 'responsive' and
 // 'unresponsive' events.
 void WebViewGuest::RendererResponsive(WebContents* source) {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,
                    web_contents()->GetRenderProcessHost()->GetID());
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventResponsive, std::move(args))));
 }
 
 void WebViewGuest::RendererUnresponsive(WebContents* source) {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,
                    web_contents()->GetRenderProcessHost()->GetID());
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventUnresponsive, std::move(args))));
 }
 
@@ -801,7 +802,7 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
       pending_zoom_factor_ = 0.0;
     }
   }
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guest_view::kUrl, src_.spec());
   args->SetBoolean(guest_view::kIsTopLevel, !render_frame_host->GetParent());
   args->SetString(webview::kInternalBaseURLForDataURL,
@@ -816,7 +817,7 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
                    web_contents()->GetController().GetEntryCount());
   args->SetInteger(webview::kInternalProcessId,
                    web_contents()->GetRenderProcessHost()->GetID());
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventLoadCommit, std::move(args))));
 
   find_helper_.CancelAllFindSessions();
@@ -841,10 +842,10 @@ void WebViewGuest::DidStartProvisionalLoadForFrame(
     const GURL& validated_url,
     bool is_error_page,
     bool is_iframe_srcdoc) {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guest_view::kUrl, validated_url.spec());
   args->SetBoolean(guest_view::kIsTopLevel, !render_frame_host->GetParent());
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventLoadStart, std::move(args))));
 }
 
@@ -852,11 +853,11 @@ void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {
   // Cancel all find sessions in progress.
   find_helper_.CancelAllFindSessions();
 
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,
                    web_contents()->GetRenderProcessHost()->GetID());
   args->SetString(webview::kReason, TerminationStatusToString(status));
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventExit, std::move(args))));
 }
 
@@ -882,26 +883,26 @@ void WebViewGuest::FrameNameChanged(RenderFrameHost* render_frame_host,
 
 void WebViewGuest::ReportFrameNameChange(const std::string& name) {
   name_ = name;
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(webview::kName, name);
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventFrameNameChanged, std::move(args))));
 }
 
 void WebViewGuest::LoadHandlerCalled() {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEventToView(make_scoped_ptr(
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventContentLoad, std::move(args))));
 }
 
 void WebViewGuest::LoadRedirect(const GURL& old_url,
                                 const GURL& new_url,
                                 bool is_top_level) {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetBoolean(guest_view::kIsTopLevel, is_top_level);
   args->SetString(webview::kNewURL, new_url.spec());
   args->SetString(webview::kOldURL, old_url.spec());
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(webview::kEventLoadRedirect, std::move(args))));
 }
 
@@ -1494,8 +1495,8 @@ void WebViewGuest::SetFullscreenState(bool is_fullscreen) {
   if (was_fullscreen && GuestMadeEmbedderFullscreen()) {
     // Dispatch a message so we can call document.webkitCancelFullscreen()
     // on the embedder.
-    scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-    DispatchEventToView(make_scoped_ptr(
+    std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+    DispatchEventToView(base::WrapUnique(
         new GuestViewEvent(webview::kEventExitFullscreen, std::move(args))));
   }
   // Since we changed fullscreen state, sending a Resize message ensures that

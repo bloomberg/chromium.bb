@@ -19,14 +19,14 @@ ExtensionRegistry* ExtensionRegistry::Get(content::BrowserContext* context) {
   return ExtensionRegistryFactory::GetForBrowserContext(context);
 }
 
-scoped_ptr<ExtensionSet> ExtensionRegistry::GenerateInstalledExtensionsSet()
-    const {
+std::unique_ptr<ExtensionSet>
+ExtensionRegistry::GenerateInstalledExtensionsSet() const {
   return GenerateInstalledExtensionsSet(EVERYTHING);
 }
 
-scoped_ptr<ExtensionSet> ExtensionRegistry::GenerateInstalledExtensionsSet(
+std::unique_ptr<ExtensionSet> ExtensionRegistry::GenerateInstalledExtensionsSet(
     int include_mask) const {
-  scoped_ptr<ExtensionSet> installed_extensions(new ExtensionSet);
+  std::unique_ptr<ExtensionSet> installed_extensions(new ExtensionSet);
   if (include_mask & IncludeFlag::ENABLED)
     installed_extensions->InsertAll(enabled_extensions_);
   if (include_mask & IncludeFlag::DISABLED)

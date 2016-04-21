@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_TEST_UTILS_H_
 #define EXTENSIONS_BROWSER_API_TEST_UTILS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/manifest.h"
 
 class UIThreadExtensionFunction;
@@ -30,7 +30,7 @@ class ExtensionFunctionDispatcher;
 // TODO(yoz): crbug.com/394840: Remove duplicate functionality in
 // chrome/browser/extensions/extension_function_test_utils.h.
 //
-// TODO(ckehoe): Accept args as scoped_ptr<base::Value>,
+// TODO(ckehoe): Accept args as std::unique_ptr<base::Value>,
 // and migrate existing users to the new API.
 namespace api_test_utils {
 
@@ -38,7 +38,7 @@ enum RunFunctionFlags { NONE = 0, INCLUDE_INCOGNITO = 1 << 0 };
 
 // Parse JSON and return as the specified type, or NULL if the JSON is invalid
 // or not the specified type.
-scoped_ptr<base::DictionaryValue> ParseDictionary(const std::string& data);
+std::unique_ptr<base::DictionaryValue> ParseDictionary(const std::string& data);
 
 // Get |key| from |val| as the specified type. If |key| does not exist, or is
 // not of the specified type, adds a failure to the current test and returns
@@ -69,12 +69,12 @@ base::Value* RunFunctionWithDelegateAndReturnSingleResult(
     UIThreadExtensionFunction* function,
     const std::string& args,
     content::BrowserContext* context,
-    scoped_ptr<ExtensionFunctionDispatcher> dispatcher);
+    std::unique_ptr<ExtensionFunctionDispatcher> dispatcher);
 base::Value* RunFunctionWithDelegateAndReturnSingleResult(
     UIThreadExtensionFunction* function,
     const std::string& args,
     content::BrowserContext* context,
-    scoped_ptr<ExtensionFunctionDispatcher> dispatcher,
+    std::unique_ptr<ExtensionFunctionDispatcher> dispatcher,
     RunFunctionFlags flags);
 
 // RunFunctionWithDelegateAndReturnSingleResult, except with a NULL
@@ -116,12 +116,12 @@ bool RunFunction(UIThreadExtensionFunction* function,
 bool RunFunction(UIThreadExtensionFunction* function,
                  const std::string& args,
                  content::BrowserContext* context,
-                 scoped_ptr<ExtensionFunctionDispatcher> dispatcher,
+                 std::unique_ptr<ExtensionFunctionDispatcher> dispatcher,
                  RunFunctionFlags flags);
 bool RunFunction(UIThreadExtensionFunction* function,
-                 scoped_ptr<base::ListValue> args,
+                 std::unique_ptr<base::ListValue> args,
                  content::BrowserContext* context,
-                 scoped_ptr<ExtensionFunctionDispatcher> dispatcher,
+                 std::unique_ptr<ExtensionFunctionDispatcher> dispatcher,
                  RunFunctionFlags flags);
 
 }  // namespace api_test_utils

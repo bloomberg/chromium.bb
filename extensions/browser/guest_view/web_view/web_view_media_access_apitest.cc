@@ -95,7 +95,7 @@ class WebViewMediaAccessAPITest : public WebViewAPITest {
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestAllow) {
   LaunchApp("web_view/media_access/allow");
-  scoped_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
+  std::unique_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
   embedder_web_contents_->SetDelegate(mock.get());
 
   RunTest("testAllow");
@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestAllow) {
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestAllowAndThenDeny) {
   LaunchApp("web_view/media_access/allow");
-  scoped_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
+  std::unique_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
   embedder_web_contents_->SetDelegate(mock.get());
 
   RunTest("testAllowAndThenDeny");
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestAllowAndThenDeny) {
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestAllowAsync) {
   LaunchApp("web_view/media_access/allow");
-  scoped_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
+  std::unique_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
   embedder_web_contents_->SetDelegate(mock.get());
 
   RunTest("testAllowAsync");
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestAllowAsync) {
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestAllowTwice) {
   LaunchApp("web_view/media_access/allow");
-  scoped_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
+  std::unique_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
   embedder_web_contents_->SetDelegate(mock.get());
 
   RunTest("testAllowTwice");
@@ -135,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestAllowTwice) {
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestCheck) {
   LaunchApp("web_view/media_access/check");
-  scoped_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
+  std::unique_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
   embedder_web_contents_->SetDelegate(mock.get());
 
   RunTest("testCheck");

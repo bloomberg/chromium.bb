@@ -5,9 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_ACTIVITY_MONITOR_H_
 #define EXTENSIONS_BROWSER_API_ACTIVITY_MONITOR_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class ListValue;
@@ -21,14 +21,15 @@ namespace extensions {
 class ApiActivityMonitor {
  public:
   // Called when an API event is dispatched to an extension.
-  virtual void OnApiEventDispatched(const std::string& extension_id,
-                                    const std::string& event_name,
-                                    scoped_ptr<base::ListValue> event_args) = 0;
+  virtual void OnApiEventDispatched(
+      const std::string& extension_id,
+      const std::string& event_name,
+      std::unique_ptr<base::ListValue> event_args) = 0;
 
   // Called when an extension calls an API function.
   virtual void OnApiFunctionCalled(const std::string& extension_id,
                                    const std::string& api_name,
-                                   scoped_ptr<base::ListValue> args) = 0;
+                                   std::unique_ptr<base::ListValue> args) = 0;
 
  protected:
   virtual ~ApiActivityMonitor() {}

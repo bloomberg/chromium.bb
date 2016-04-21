@@ -105,7 +105,7 @@ void TestExtensionRegistryObserver::OnExtensionUnloaded(
 }
 
 const Extension* TestExtensionRegistryObserver::Wait(
-    scoped_ptr<Waiter>* waiter) {
+    std::unique_ptr<Waiter>* waiter) {
   waiter->get()->Wait();
   const Extension* extension = waiter->get()->extension();
   // Reset the waiter for future uses.

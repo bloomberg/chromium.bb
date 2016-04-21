@@ -42,7 +42,7 @@ class TestMimeHandlerViewGuest : public MimeHandlerViewGuest {
   // Used to call MimeHandlerViewGuest::CreateWebContents using a scoped_ptr for
   // |create_params|.
   void CallBaseCreateWebContents(
-      scoped_ptr<base::DictionaryValue> create_params,
+      std::unique_ptr<base::DictionaryValue> create_params,
       const WebContentsCreatedCallback& callback);
 
   // A value in milliseconds that the next creation of a guest's WebContents

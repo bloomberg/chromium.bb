@@ -72,14 +72,14 @@ class AppViewGuest : public guest_view::GuestView<AppViewGuest> {
                                  const Extension* guest_extension,
                                  const WebContentsCreatedCallback& callback);
 
-  void LaunchAppAndFireEvent(scoped_ptr<base::DictionaryValue> data,
+  void LaunchAppAndFireEvent(std::unique_ptr<base::DictionaryValue> data,
                              const WebContentsCreatedCallback& callback,
                              ExtensionHost* extension_host);
 
   GURL url_;
   std::string guest_extension_id_;
-  scoped_ptr<AppViewGuestDelegate> app_view_guest_delegate_;
-  scoped_ptr<AppDelegate> app_delegate_;
+  std::unique_ptr<AppViewGuestDelegate> app_view_guest_delegate_;
+  std::unique_ptr<AppDelegate> app_delegate_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

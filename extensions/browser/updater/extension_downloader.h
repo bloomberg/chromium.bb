@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -15,7 +16,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
@@ -58,8 +58,9 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
  public:
   // A closure which constructs a new ExtensionDownloader to be owned by the
   // caller.
-  typedef base::Callback<scoped_ptr<ExtensionDownloader>(
-      ExtensionDownloaderDelegate* delegate)> Factory;
+  typedef base::Callback<std::unique_ptr<ExtensionDownloader>(
+      ExtensionDownloaderDelegate* delegate)>
+      Factory;
 
   // |delegate| is stored as a raw pointer and must outlive the
   // ExtensionDownloader.
@@ -97,7 +98,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
   // Sets an IdentityProvider to be used for OAuth2 authentication on protected
   // Webstore downloads.
   void SetWebstoreIdentityProvider(
-      scoped_ptr<IdentityProvider> identity_provider);
+      std::unique_ptr<IdentityProvider> identity_provider);
 
   void set_brand_code(const std::string& brand_code) {
     brand_code_ = brand_code;
@@ -193,7 +194,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
   void ReportStats() const;
 
   // Begins an update check.
-  void StartUpdateCheck(scoped_ptr<ManifestFetchData> fetch_data);
+  void StartUpdateCheck(std::unique_ptr<ManifestFetchData> fetch_data);
 
   // Called by RequestQueue when a new manifest fetch request is started.
   void CreateManifestFetcher();
@@ -220,7 +221,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
                         std::vector<int>* result);
 
   // Begins (or queues up) download of an updated extension.
-  void FetchUpdatedExtension(scoped_ptr<ExtensionFetch> fetch_data);
+  void FetchUpdatedExtension(std::unique_ptr<ExtensionFetch> fetch_data);
 
   // Called by RequestQueue when a new extension fetch request is started.
   void CreateExtensionFetcher();
@@ -247,14 +248,16 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
   void DoStartAllPending();
 
   // Notify delegate and remove ping results.
-  void NotifyDelegateDownloadFinished(scoped_ptr<ExtensionFetch> fetch_data,
-                                      bool from_cache,
-                                      const base::FilePath& crx_path,
-                                      bool file_ownership_passed);
+  void NotifyDelegateDownloadFinished(
+      std::unique_ptr<ExtensionFetch> fetch_data,
+      bool from_cache,
+      const base::FilePath& crx_path,
+      bool file_ownership_passed);
 
   // Cached extension installation completed. If it was not successful, we will
   // try to download it from the web store using already fetched manifest.
-  void CacheInstallDone(scoped_ptr<ExtensionFetch> fetch_data, bool installed);
+  void CacheInstallDone(std::unique_ptr<ExtensionFetch> fetch_data,
+                        bool installed);
 
   // Potentially updates an ExtensionFetch's authentication state and returns
   // |true| if the fetch should be retried. Returns |false| if the failure was
@@ -292,8 +295,8 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
   FetchMap fetches_preparing_;
 
   // Outstanding url fetch requests for manifests and updates.
-  scoped_ptr<net::URLFetcher> manifest_fetcher_;
-  scoped_ptr<net::URLFetcher> extension_fetcher_;
+  std::unique_ptr<net::URLFetcher> manifest_fetcher_;
+  std::unique_ptr<net::URLFetcher> extension_fetcher_;
 
   // Pending manifests and extensions to be fetched when the appropriate fetcher
   // is available.
@@ -308,14 +311,14 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
 
   // An IdentityProvider which may be used for authentication on protected
   // download requests. May be NULL.
-  scoped_ptr<IdentityProvider> identity_provider_;
+  std::unique_ptr<IdentityProvider> identity_provider_;
 
   // A Webstore download-scoped access token for the |identity_provider_|'s
   // active account, if any.
   std::string access_token_;
 
   // A pending token fetch request.
-  scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
 
   // Brand code to include with manifest fetch queries if sending ping data.
   std::string brand_code_;

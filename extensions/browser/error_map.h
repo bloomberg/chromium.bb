@@ -9,11 +9,11 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/extension_error.h"
 
 namespace extensions {
@@ -61,7 +61,7 @@ class ErrorMap {
   const ErrorList& GetErrorsForExtension(const std::string& extension_id) const;
 
   // Add the |error| to the ErrorMap.
-  const ExtensionError* AddError(scoped_ptr<ExtensionError> error);
+  const ExtensionError* AddError(std::unique_ptr<ExtensionError> error);
 
   // Removes errors that match the given |filter| from the map. If non-null,
   // |affected_ids| will be populated with the set of extension ids that were

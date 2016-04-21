@@ -6,11 +6,11 @@
 #define EXTENSIONS_BROWSER_USER_SCRIPT_LOADER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -41,8 +41,8 @@ namespace extensions {
 class UserScriptLoader : public content::NotificationObserver {
  public:
   using LoadScriptsCallback =
-      base::Callback<void(scoped_ptr<UserScriptList>,
-                          scoped_ptr<base::SharedMemory>)>;
+      base::Callback<void(std::unique_ptr<UserScriptList>,
+                          std::unique_ptr<base::SharedMemory>)>;
   class Observer {
    public:
     virtual void OnScriptsLoaded(UserScriptLoader* loader) = 0;
@@ -83,7 +83,7 @@ class UserScriptLoader : public content::NotificationObserver {
   bool scripts_ready() const { return shared_memory_.get() != NULL; }
 
   // Pickle user scripts and return pointer to the shared memory.
-  static scoped_ptr<base::SharedMemory> Serialize(
+  static std::unique_ptr<base::SharedMemory> Serialize(
       const extensions::UserScriptList& scripts);
 
   // Adds or removes observers.
@@ -92,7 +92,7 @@ class UserScriptLoader : public content::NotificationObserver {
 
  protected:
   // Allows the derived classes have different ways to load user scripts.
-  virtual void LoadScripts(scoped_ptr<UserScriptList> user_scripts,
+  virtual void LoadScripts(std::unique_ptr<UserScriptList> user_scripts,
                            const std::set<HostID>& changed_hosts,
                            const std::set<int>& added_script_ids,
                            LoadScriptsCallback callback) = 0;
@@ -119,8 +119,8 @@ class UserScriptLoader : public content::NotificationObserver {
   void AttemptLoad();
 
   // Called once we have finished loading the scripts on the file thread.
-  void OnScriptsLoaded(scoped_ptr<UserScriptList> user_scripts,
-                       scoped_ptr<base::SharedMemory> shared_memory);
+  void OnScriptsLoaded(std::unique_ptr<UserScriptList> user_scripts,
+                       std::unique_ptr<base::SharedMemory> shared_memory);
 
   // Sends the renderer process a new set of user scripts. If
   // |changed_hosts| is not empty, this signals that only the scripts from
@@ -139,10 +139,10 @@ class UserScriptLoader : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
   // Contains the scripts that were found the last time scripts were updated.
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
 
   // List of scripts from currently-installed extensions we should load.
-  scoped_ptr<UserScriptList> user_scripts_;
+  std::unique_ptr<UserScriptList> user_scripts_;
 
   // The mutually-exclusive sets of scripts that were added or removed since the
   // last script load.

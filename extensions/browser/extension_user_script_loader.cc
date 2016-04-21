@@ -129,7 +129,7 @@ void LoadUserScripts(UserScriptList* user_scripts,
   for (UserScript& script : *user_scripts) {
     if (added_script_ids.count(script.id()) == 0)
       continue;
-    scoped_ptr<SubstitutionMap> localization_messages(
+    std::unique_ptr<SubstitutionMap> localization_messages(
         GetLocalizationMessages(hosts_info, script.host_id()));
     for (UserScript::File& script_file : script.js_scripts()) {
       if (script_file.GetContent().empty())
@@ -144,14 +144,14 @@ void LoadUserScripts(UserScriptList* user_scripts,
 }
 
 void LoadScriptsOnFileThread(
-    scoped_ptr<UserScriptList> user_scripts,
+    std::unique_ptr<UserScriptList> user_scripts,
     const ExtensionUserScriptLoader::HostsInfo& hosts_info,
     const std::set<int>& added_script_ids,
     const scoped_refptr<ContentVerifier>& verifier,
     UserScriptLoader::LoadScriptsCallback callback) {
   DCHECK(user_scripts.get());
   LoadUserScripts(user_scripts.get(), hosts_info, added_script_ids, verifier);
-  scoped_ptr<base::SharedMemory> memory =
+  std::unique_ptr<base::SharedMemory> memory =
       UserScriptLoader::Serialize(*user_scripts);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
@@ -196,7 +196,7 @@ void ExtensionUserScriptLoader::LoadScriptsForTest(
 }
 
 void ExtensionUserScriptLoader::LoadScripts(
-    scoped_ptr<UserScriptList> user_scripts,
+    std::unique_ptr<UserScriptList> user_scripts,
     const std::set<HostID>& changed_hosts,
     const std::set<int>& added_script_ids,
     LoadScriptsCallback callback) {

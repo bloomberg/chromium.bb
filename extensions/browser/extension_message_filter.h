@@ -86,7 +86,8 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
 
   const int render_process_id_;
 
-  scoped_ptr<KeyedServiceShutdownNotifier::Subscription> shutdown_notifier_;
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
+      shutdown_notifier_;
 
   // Only access from the UI thread.
   content::BrowserContext* browser_context_;

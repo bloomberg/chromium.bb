@@ -328,7 +328,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   WebViewFindHelper find_helper_;
 
   base::ObserverList<ScriptExecutionObserver> script_observers_;
-  scoped_ptr<ScriptExecutor> script_executor_;
+  std::unique_ptr<ScriptExecutor> script_executor_;
 
   content::NotificationRegistrar notification_registrar_;
 
@@ -348,9 +348,9 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   JavaScriptDialogHelper javascript_dialog_helper_;
 
   // Handles permission requests.
-  scoped_ptr<WebViewPermissionHelper> web_view_permission_helper_;
+  std::unique_ptr<WebViewPermissionHelper> web_view_permission_helper_;
 
-  scoped_ptr<WebViewGuestDelegate> web_view_guest_delegate_;
+  std::unique_ptr<WebViewGuestDelegate> web_view_guest_delegate_;
 
   // Tracks the name, and target URL of the new window. Once the first
   // navigation commits, we no longer track this information.

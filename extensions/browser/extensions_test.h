@@ -5,9 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSIONS_TEST_H_
 #define EXTENSIONS_BROWSER_EXTENSIONS_TEST_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/browser/mock_extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,11 +53,11 @@ class ExtensionsTest : public testing::Test {
 
  private:
   // TODO(yoz): Add a NotificationService here; it's used widely enough.
-  scoped_ptr<content::ContentClient> content_client_;
-  scoped_ptr<content::ContentUtilityClient> content_utility_client_;
-  scoped_ptr<content::ContentBrowserClient> content_browser_client_;
-  scoped_ptr<content::BrowserContext> browser_context_;
-  scoped_ptr<TestExtensionsBrowserClient> extensions_browser_client_;
+  std::unique_ptr<content::ContentClient> content_client_;
+  std::unique_ptr<content::ContentUtilityClient> content_utility_client_;
+  std::unique_ptr<content::ContentBrowserClient> content_browser_client_;
+  std::unique_ptr<content::BrowserContext> browser_context_;
+  std::unique_ptr<TestExtensionsBrowserClient> extensions_browser_client_;
 
   // The existence of this object enables tests via
   // RenderViewHostTester.

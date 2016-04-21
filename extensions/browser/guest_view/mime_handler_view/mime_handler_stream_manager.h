@@ -36,11 +36,11 @@ class MimeHandlerStreamManager : public KeyedService,
   static MimeHandlerStreamManager* Get(content::BrowserContext* context);
 
   void AddStream(const std::string& view_id,
-                 scoped_ptr<StreamContainer> stream,
+                 std::unique_ptr<StreamContainer> stream,
                  int render_process_id,
                  int render_frame_id);
 
-  scoped_ptr<StreamContainer> ReleaseStream(const std::string& view_id);
+  std::unique_ptr<StreamContainer> ReleaseStream(const std::string& view_id);
 
   // ExtensionRegistryObserver override.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,

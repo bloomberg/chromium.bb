@@ -6,12 +6,12 @@
 #define EXTENSIONS_BROWSER_BLOB_HOLDER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 
 namespace content {
@@ -34,7 +34,7 @@ class BlobHolder : public base::SupportsUserData::Data {
   ~BlobHolder() override;
 
   // Causes BlobHolder to take ownership of |blob|.
-  void HoldBlobReference(scoped_ptr<content::BlobHandle> blob);
+  void HoldBlobReference(std::unique_ptr<content::BlobHandle> blob);
 
  private:
   typedef std::multimap<std::string, linked_ptr<content::BlobHandle> >

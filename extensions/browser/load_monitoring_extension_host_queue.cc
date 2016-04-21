@@ -19,7 +19,7 @@
 namespace extensions {
 
 LoadMonitoringExtensionHostQueue::LoadMonitoringExtensionHostQueue(
-    scoped_ptr<ExtensionHostQueue> delegate,
+    std::unique_ptr<ExtensionHostQueue> delegate,
     base::TimeDelta monitor_time,
     const FinishedCallback& finished_callback)
     : delegate_(std::move(delegate)),
@@ -33,7 +33,7 @@ LoadMonitoringExtensionHostQueue::LoadMonitoringExtensionHostQueue(
       weak_ptr_factory_(this) {}
 
 LoadMonitoringExtensionHostQueue::LoadMonitoringExtensionHostQueue(
-    scoped_ptr<ExtensionHostQueue> delegate)
+    std::unique_ptr<ExtensionHostQueue> delegate)
     : LoadMonitoringExtensionHostQueue(std::move(delegate),
                                        base::TimeDelta::FromMinutes(1),
                                        FinishedCallback()) {}

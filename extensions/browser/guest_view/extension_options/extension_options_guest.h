@@ -62,7 +62,7 @@ class ExtensionOptionsGuest
   void DidNavigateMainFrame(const content::LoadCommittedDetails& details,
                             const content::FrameNavigateParams& params) final;
 
-  scoped_ptr<extensions::ExtensionOptionsGuestDelegate>
+  std::unique_ptr<extensions::ExtensionOptionsGuestDelegate>
       extension_options_guest_delegate_;
   GURL options_page_;
 

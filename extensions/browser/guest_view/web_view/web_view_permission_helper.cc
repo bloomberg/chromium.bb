@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -230,14 +231,14 @@ void WebViewPermissionHelper::OnMediaPermissionResponse(
   if (!allow) {
     callback.Run(content::MediaStreamDevices(),
                  content::MEDIA_DEVICE_PERMISSION_DENIED,
-                 scoped_ptr<content::MediaStreamUI>());
+                 std::unique_ptr<content::MediaStreamUI>());
     return;
   }
   if (!web_view_guest()->attached() ||
       !web_view_guest()->embedder_web_contents()->GetDelegate()) {
     callback.Run(content::MediaStreamDevices(),
                  content::MEDIA_DEVICE_INVALID_STATE,
-                 scoped_ptr<content::MediaStreamUI>());
+                 std::unique_ptr<content::MediaStreamUI>());
     return;
   }
 
@@ -328,24 +329,24 @@ int WebViewPermissionHelper::RequestPermission(
   int request_id = next_permission_request_id_++;
   pending_permission_requests_[request_id] =
       PermissionResponseInfo(callback, permission_type, allowed_by_default);
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->Set(webview::kRequestInfo, request_info.DeepCopy());
   args->SetInteger(webview::kRequestId, request_id);
   switch (permission_type) {
     case WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW: {
-      web_view_guest_->DispatchEventToView(make_scoped_ptr(
+      web_view_guest_->DispatchEventToView(base::WrapUnique(
           new GuestViewEvent(webview::kEventNewWindow, std::move(args))));
       break;
     }
     case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG: {
-      web_view_guest_->DispatchEventToView(make_scoped_ptr(
+      web_view_guest_->DispatchEventToView(base::WrapUnique(
           new GuestViewEvent(webview::kEventDialog, std::move(args))));
       break;
     }
     default: {
       args->SetString(webview::kPermission,
                       PermissionTypeToString(permission_type));
-      web_view_guest_->DispatchEventToView(make_scoped_ptr(new GuestViewEvent(
+      web_view_guest_->DispatchEventToView(base::WrapUnique(new GuestViewEvent(
           webview::kEventPermissionRequest, std::move(args))));
       break;
     }

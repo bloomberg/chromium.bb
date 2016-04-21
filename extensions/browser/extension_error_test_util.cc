@@ -20,12 +20,12 @@ namespace {
 const char kDefaultStackTrace[] = "function_name (https://url.com:1:1)";
 }
 
-scoped_ptr<ExtensionError> CreateNewRuntimeError(
+std::unique_ptr<ExtensionError> CreateNewRuntimeError(
     const std::string& extension_id,
     const std::string& message,
     bool from_incognito) {
   StackTrace stack_trace;
-  scoped_ptr<StackFrame> frame =
+  std::unique_ptr<StackFrame> frame =
       StackFrame::CreateFromText(base::ASCIIToUTF16(kDefaultStackTrace));
   CHECK(frame.get());
   stack_trace.push_back(*frame);
@@ -35,7 +35,7 @@ scoped_ptr<ExtensionError> CreateNewRuntimeError(
                             url::kStandardSchemeSeparator +
                             extension_id);
 
-  return scoped_ptr<ExtensionError>(
+  return std::unique_ptr<ExtensionError>(
       new RuntimeError(extension_id, from_incognito, source,
                        base::UTF8ToUTF16(message), stack_trace,
                        GURL::EmptyGURL(),  // no context url
@@ -44,18 +44,18 @@ scoped_ptr<ExtensionError> CreateNewRuntimeError(
                        0));  // Render process id
 }
 
-scoped_ptr<ExtensionError> CreateNewRuntimeError(
-    const std::string& extension_id, const std::string& message) {
+std::unique_ptr<ExtensionError> CreateNewRuntimeError(
+    const std::string& extension_id,
+    const std::string& message) {
   return CreateNewRuntimeError(extension_id, message, false);
 }
 
-scoped_ptr<ExtensionError> CreateNewManifestError(
-    const std::string& extension_id, const std::string& message) {
-  return scoped_ptr<ExtensionError>(
-      new ManifestError(extension_id,
-                        base::UTF8ToUTF16(message),
-                        base::string16(),
-                        base::string16()));
+std::unique_ptr<ExtensionError> CreateNewManifestError(
+    const std::string& extension_id,
+    const std::string& message) {
+  return std::unique_ptr<ExtensionError>(
+      new ManifestError(extension_id, base::UTF8ToUTF16(message),
+                        base::string16(), base::string16()));
 }
 
 }  // namespace error_test_util

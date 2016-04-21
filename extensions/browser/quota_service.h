@@ -18,12 +18,12 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -192,7 +192,7 @@ class QuotaLimitHeuristic {
   const Config config_;
 
   // The mapper used in Map. Cannot be NULL.
-  scoped_ptr<BucketMapper> bucket_mapper_;
+  std::unique_ptr<BucketMapper> bucket_mapper_;
 
   // The name of the heuristic for formatting error messages.
   std::string name_;

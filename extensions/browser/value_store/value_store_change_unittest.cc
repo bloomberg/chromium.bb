@@ -23,7 +23,7 @@ TEST(ValueStoreChangeTest, NullOldValue) {
   EXPECT_EQ("key", change.key());
   EXPECT_EQ(NULL, change.old_value());
   {
-    scoped_ptr<base::Value> expected(new base::StringValue("value"));
+    std::unique_ptr<base::Value> expected(new base::StringValue("value"));
     EXPECT_TRUE(change.new_value()->Equals(expected.get()));
   }
 }
@@ -33,7 +33,7 @@ TEST(ValueStoreChangeTest, NullNewValue) {
 
   EXPECT_EQ("key", change.key());
   {
-    scoped_ptr<base::Value> expected(new base::StringValue("value"));
+    std::unique_ptr<base::Value> expected(new base::StringValue("value"));
     EXPECT_TRUE(change.old_value()->Equals(expected.get()));
   }
   EXPECT_EQ(NULL, change.new_value());
@@ -46,18 +46,18 @@ TEST(ValueStoreChangeTest, NonNullValues) {
 
   EXPECT_EQ("key", change.key());
   {
-    scoped_ptr<base::Value> expected(new base::StringValue("old_value"));
+    std::unique_ptr<base::Value> expected(new base::StringValue("old_value"));
     EXPECT_TRUE(change.old_value()->Equals(expected.get()));
   }
   {
-    scoped_ptr<base::Value> expected(new base::StringValue("new_value"));
+    std::unique_ptr<base::Value> expected(new base::StringValue("new_value"));
     EXPECT_TRUE(change.new_value()->Equals(expected.get()));
   }
 }
 
 TEST(ValueStoreChangeTest, ToJson) {
   // Create a mildly complicated structure that has dots in it.
-  scoped_ptr<base::DictionaryValue> value =
+  std::unique_ptr<base::DictionaryValue> value =
       DictionaryBuilder()
           .Set("key", "value")
           .Set("key.with.dots", "value.with.dots")
@@ -72,14 +72,14 @@ TEST(ValueStoreChangeTest, ToJson) {
       ValueStoreChange("key.with.dots", value->DeepCopy(), value->DeepCopy()));
 
   std::string json = ValueStoreChange::ToJson(change_list);
-  scoped_ptr<base::Value> from_json(base::JSONReader::Read(json));
+  std::unique_ptr<base::Value> from_json(base::JSONReader::Read(json));
   ASSERT_TRUE(from_json.get());
 
   DictionaryBuilder v1(*value);
   DictionaryBuilder v2(*value);
   DictionaryBuilder v3(*value);
   DictionaryBuilder v4(*value);
-  scoped_ptr<base::DictionaryValue> expected_from_json =
+  std::unique_ptr<base::DictionaryValue> expected_from_json =
       DictionaryBuilder()
           .Set("key", DictionaryBuilder()
                           .Set("oldValue", v1.Build())

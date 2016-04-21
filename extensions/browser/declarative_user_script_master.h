@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_DECLARATIVE_USER_SCRIPT_MASTER_H_
 #define EXTENSIONS_BROWSER_DECLARATIVE_USER_SCRIPT_MASTER_H_
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "extensions/common/host_id.h"
 
@@ -65,7 +65,7 @@ class DeclarativeUserScriptMaster {
 
   // Script loader that handles loading contents of scripts into shared memory
   // and notifying renderers of script updates.
-  scoped_ptr<UserScriptLoader> loader_;
+  std::unique_ptr<UserScriptLoader> loader_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeUserScriptMaster);
 };

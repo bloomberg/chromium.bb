@@ -106,7 +106,7 @@ void AppWindowGeometryCache::SyncToStorage() {
     const std::string& extension_id = *it;
     const ExtensionData& extension_data = cache_[extension_id];
 
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     for (ExtensionData::const_iterator it = extension_data.begin(),
                                        eit = extension_data.end();
          it != eit;

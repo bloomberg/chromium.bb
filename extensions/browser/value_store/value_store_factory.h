@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_FACTORY_H_
 #define EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_FACTORY_H_
 
+#include <memory>
 #include <set>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/common/extension.h"
 
@@ -27,14 +27,14 @@ class ValueStoreFactory : public base::RefCountedThreadSafe<ValueStoreFactory> {
   enum class ModelType { APP, EXTENSION };
 
   // Create a |ValueStore| to contain rules data.
-  virtual scoped_ptr<ValueStore> CreateRulesStore() = 0;
+  virtual std::unique_ptr<ValueStore> CreateRulesStore() = 0;
 
   // Create a |ValueStore| to contain state data.
-  virtual scoped_ptr<ValueStore> CreateStateStore() = 0;
+  virtual std::unique_ptr<ValueStore> CreateStateStore() = 0;
 
   // Create a |ValueStore| to contain settings data for a specific extension
   // namespace and model type.
-  virtual scoped_ptr<ValueStore> CreateSettingsStore(
+  virtual std::unique_ptr<ValueStore> CreateSettingsStore(
       settings_namespace::Namespace settings_namespace,
       ModelType model_type,
       const ExtensionId& extension_id) = 0;

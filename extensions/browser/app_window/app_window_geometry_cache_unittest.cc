@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/mock_pref_change_callback.h"
@@ -74,10 +74,10 @@ class AppWindowGeometryCacheTest : public ExtensionsTest {
  protected:
   base::MessageLoopForUI ui_message_loop_;
   content::TestBrowserThread ui_thread_;
-  scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
-  scoped_ptr<PrefService> pref_service_;
-  scoped_ptr<ExtensionPrefs> extension_prefs_;
-  scoped_ptr<AppWindowGeometryCache> cache_;
+  std::unique_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
+  std::unique_ptr<PrefService> pref_service_;
+  std::unique_ptr<ExtensionPrefs> extension_prefs_;
+  std::unique_ptr<AppWindowGeometryCache> cache_;
 };
 
 void AppWindowGeometryCacheTest::SetUp() {
@@ -120,7 +120,7 @@ void AppWindowGeometryCacheTest::AddGeometryAndLoadExtension(
     const gfx::Rect& bounds,
     const gfx::Rect& screen_bounds,
     ui::WindowShowState state) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   base::DictionaryValue* value = new base::DictionaryValue;
   value->SetInteger("x", bounds.x());
   value->SetInteger("y", bounds.y());

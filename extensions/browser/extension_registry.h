@@ -70,7 +70,7 @@ class ExtensionRegistry : public KeyedService {
 
   // Returns the set of all installed extensions, regardless of state (enabled,
   // disabled, etc). Equivalent to GenerateInstalledExtensionSet(EVERYTHING).
-  scoped_ptr<ExtensionSet> GenerateInstalledExtensionsSet() const;
+  std::unique_ptr<ExtensionSet> GenerateInstalledExtensionsSet() const;
 
   // Returns a set of all extensions in the subsets specified by |include_mask|.
   //  * enabled_extensions()     --> ExtensionRegistry::ENABLED
@@ -78,7 +78,7 @@ class ExtensionRegistry : public KeyedService {
   //  * terminated_extensions()  --> ExtensionRegistry::TERMINATED
   //  * blacklisted_extensions() --> ExtensionRegistry::BLACKLISTED
   //  * blocked_extensions()     --> ExtensionRegistry::BLOCKED
-  scoped_ptr<ExtensionSet> GenerateInstalledExtensionsSet(
+  std::unique_ptr<ExtensionSet> GenerateInstalledExtensionsSet(
       int include_mask) const;
 
   // The usual observer interface.

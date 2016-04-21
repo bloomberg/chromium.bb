@@ -39,7 +39,7 @@ class StashBackend {
   void OnHandleReady();
 
   // The objects that have been stashed.
-  std::vector<scoped_ptr<StashEntry>> stashed_objects_;
+  std::vector<std::unique_ptr<StashEntry>> stashed_objects_;
 
   // The callback to call when a handle is readable.
   const base::Closure on_handle_readable_;

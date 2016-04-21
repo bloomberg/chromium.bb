@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/user_script_loader.h"
 
 class WebUIURLFetcher;
@@ -35,7 +35,7 @@ class WebUIUserScriptLoader : public extensions::UserScriptLoader {
   void AddScripts(const std::set<extensions::UserScript>& scripts,
                   int render_process_id,
                   int render_view_id) override;
-  void LoadScripts(scoped_ptr<extensions::UserScriptList> user_scripts,
+  void LoadScripts(std::unique_ptr<extensions::UserScriptList> user_scripts,
                    const std::set<HostID>& changed_hosts,
                    const std::set<int>& added_script_ids,
                    LoadScriptsCallback callback) override;
@@ -64,11 +64,11 @@ class WebUIUserScriptLoader : public extensions::UserScriptLoader {
   size_t complete_fetchers_;
 
   // Caches |user_scripts_| from UserScriptLoader when loading.
-  scoped_ptr<extensions::UserScriptList> user_scripts_cache_;
+  std::unique_ptr<extensions::UserScriptList> user_scripts_cache_;
 
   LoadScriptsCallback scripts_loaded_callback_;
 
-  std::vector<scoped_ptr<WebUIURLFetcher>> fetchers_;
+  std::vector<std::unique_ptr<WebUIURLFetcher>> fetchers_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIUserScriptLoader);
 };

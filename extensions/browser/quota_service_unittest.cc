@@ -121,7 +121,7 @@ class QuotaServiceTest : public testing::Test {
   std::string extension_a_;
   std::string extension_b_;
   std::string extension_c_;
-  scoped_ptr<QuotaService> service_;
+  std::unique_ptr<QuotaService> service_;
   base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
 };

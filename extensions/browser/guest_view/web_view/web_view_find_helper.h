@@ -6,11 +6,11 @@
 #define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_FIND_HELPER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/web_contents.h"
@@ -175,7 +175,7 @@ class WebViewFindHelper {
   int current_find_request_id_;
 
   // Stores aggregated find results and other info for the |findupdate| event.
-  scoped_ptr<FindUpdateEvent> find_update_event_;
+  std::unique_ptr<FindUpdateEvent> find_update_event_;
 
   // Pointer to the first request of the current find session. find_info_map_
   // retains ownership.

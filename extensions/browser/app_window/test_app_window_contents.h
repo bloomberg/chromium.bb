@@ -36,7 +36,7 @@ class TestAppWindowContents : public AppWindowContents {
   WindowController* GetWindowController() const override;
 
  private:
-  scoped_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<content::WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAppWindowContents);
 };

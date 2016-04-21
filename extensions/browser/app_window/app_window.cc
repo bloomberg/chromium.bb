@@ -88,7 +88,7 @@ void SetBoundsProperties(const gfx::Rect& bounds,
                          const gfx::Size& max_size,
                          const std::string& bounds_name,
                          base::DictionaryValue* window_properties) {
-  scoped_ptr<base::DictionaryValue> bounds_properties(
+  std::unique_ptr<base::DictionaryValue> bounds_properties(
       new base::DictionaryValue());
 
   bounds_properties->SetInteger("left", bounds.x());
@@ -583,7 +583,7 @@ void AppWindow::SetAppIconUrl(const GURL& url) {
                  image_loader_ptr_factory_.GetWeakPtr()));
 }
 
-void AppWindow::UpdateShape(scoped_ptr<SkRegion> region) {
+void AppWindow::UpdateShape(std::unique_ptr<SkRegion> region) {
   native_app_window_->UpdateShape(std::move(region));
 }
 

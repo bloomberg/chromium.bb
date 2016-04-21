@@ -43,7 +43,7 @@ void TestMimeHandlerViewGuest::CreateWebContents(
   if (delay_) {
     auto delta = base::TimeDelta::FromMilliseconds(
         delay_);
-    scoped_ptr<base::DictionaryValue> params(create_params.DeepCopy());
+    std::unique_ptr<base::DictionaryValue> params(create_params.DeepCopy());
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::UI,
         FROM_HERE,
@@ -68,7 +68,7 @@ void TestMimeHandlerViewGuest::DidAttachToEmbedder() {
 }
 
 void TestMimeHandlerViewGuest::CallBaseCreateWebContents(
-    scoped_ptr<base::DictionaryValue> create_params,
+    std::unique_ptr<base::DictionaryValue> create_params,
     const WebContentsCreatedCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MimeHandlerViewGuest::CreateWebContents(*create_params.get(), callback);

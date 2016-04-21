@@ -41,7 +41,7 @@ class MockExtensionSystem : public ExtensionSystem {
   AppSorting* app_sorting() override;
   const OneShotEvent& ready() const override;
   ContentVerifier* content_verifier() override;
-  scoped_ptr<ExtensionSet> GetDependentExtensions(
+  std::unique_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;
   void InstallUpdate(const std::string& extension_id,
                      const base::FilePath& temp_dir) override;

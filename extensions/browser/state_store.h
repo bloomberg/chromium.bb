@@ -39,7 +39,8 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
              ValueStoreFrontend::BackendType backend_type,
              bool deferred_load);
   // This variant is useful for testing (using a mock ValueStore).
-  StateStore(content::BrowserContext* context, scoped_ptr<ValueStore> store);
+  StateStore(content::BrowserContext* context,
+             std::unique_ptr<ValueStore> store);
   ~StateStore() override;
 
   // Requests that the state store to be initialized after its usual delay. Can
@@ -60,7 +61,7 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
   // Sets a value for a given extension and key.
   void SetExtensionValue(const std::string& extension_id,
                          const std::string& key,
-                         scoped_ptr<base::Value> value);
+                         std::unique_ptr<base::Value> value);
 
   // Removes a value for a given extension and key.
   void RemoveExtensionValue(const std::string& extension_id,
@@ -96,14 +97,14 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
                                   const std::string& old_name) override;
 
   // The store that holds our key/values.
-  scoped_ptr<ValueStoreFrontend> store_;
+  std::unique_ptr<ValueStoreFrontend> store_;
 
   // List of all known keys. They will be cleared for each extension when it is
   // (un)installed.
   std::set<std::string> registered_keys_;
 
   // Keeps track of tasks we have delayed while starting up.
-  scoped_ptr<DelayedTaskQueue> task_queue_;
+  std::unique_ptr<DelayedTaskQueue> task_queue_;
 
   content::NotificationRegistrar registrar_;
 

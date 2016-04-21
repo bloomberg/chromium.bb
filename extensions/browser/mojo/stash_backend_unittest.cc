@@ -95,7 +95,7 @@ class StashServiceTest : public testing::Test {
  protected:
   base::MessageLoop message_loop_;
   base::Closure stop_run_loop_;
-  scoped_ptr<StashBackend> stash_backend_;
+  std::unique_ptr<StashBackend> stash_backend_;
   Event expected_event_;
   bool expecting_error_;
   mojo::InterfacePtr<StashService> stash_service_;

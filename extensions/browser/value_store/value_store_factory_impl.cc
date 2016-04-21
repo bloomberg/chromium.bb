@@ -15,15 +15,15 @@ ValueStoreFactoryImpl::ValueStoreFactoryImpl(const base::FilePath& profile_path)
 
 ValueStoreFactoryImpl::~ValueStoreFactoryImpl() = default;
 
-scoped_ptr<ValueStore> ValueStoreFactoryImpl::CreateRulesStore() {
+std::unique_ptr<ValueStore> ValueStoreFactoryImpl::CreateRulesStore() {
   return legacy_factory_->CreateRulesStore();
 }
 
-scoped_ptr<ValueStore> ValueStoreFactoryImpl::CreateStateStore() {
+std::unique_ptr<ValueStore> ValueStoreFactoryImpl::CreateStateStore() {
   return legacy_factory_->CreateStateStore();
 }
 
-scoped_ptr<ValueStore> ValueStoreFactoryImpl::CreateSettingsStore(
+std::unique_ptr<ValueStore> ValueStoreFactoryImpl::CreateSettingsStore(
     SettingsNamespace settings_namespace,
     ModelType model_type,
     const ExtensionId& extension_id) {

@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/browser/value_store/value_store_change.h"
 
@@ -88,7 +88,7 @@ class ValueStore {
   // The result of a read operation (Get).
   class ReadResultType {
    public:
-    ReadResultType(scoped_ptr<base::DictionaryValue> settings,
+    ReadResultType(std::unique_ptr<base::DictionaryValue> settings,
                    const Status& status);
     explicit ReadResultType(const Status& status);
     ~ReadResultType();
@@ -99,24 +99,24 @@ class ValueStore {
     //
     // Must only be called if there is no error.
     base::DictionaryValue& settings() { return *settings_; }
-    scoped_ptr<base::DictionaryValue> PassSettings() {
+    std::unique_ptr<base::DictionaryValue> PassSettings() {
       return std::move(settings_);
     }
 
     const Status& status() const { return status_; }
 
    private:
-    scoped_ptr<base::DictionaryValue> settings_;
+    std::unique_ptr<base::DictionaryValue> settings_;
     Status status_;
 
     DISALLOW_COPY_AND_ASSIGN(ReadResultType);
   };
-  typedef scoped_ptr<ReadResultType> ReadResult;
+  typedef std::unique_ptr<ReadResultType> ReadResult;
 
   // The result of a write operation (Set/Remove/Clear).
   class WriteResultType {
    public:
-    WriteResultType(scoped_ptr<ValueStoreChangeList> changes,
+    WriteResultType(std::unique_ptr<ValueStoreChangeList> changes,
                     const Status& status);
     explicit WriteResultType(const Status& status);
     ~WriteResultType();
@@ -125,19 +125,19 @@ class ValueStore {
     // Won't be present if the NO_GENERATE_CHANGES WriteOptions was given.
     // Only call if no error.
     ValueStoreChangeList& changes() { return *changes_; }
-    scoped_ptr<ValueStoreChangeList> PassChanges() {
+    std::unique_ptr<ValueStoreChangeList> PassChanges() {
       return std::move(changes_);
     }
 
     const Status& status() const { return status_; }
 
    private:
-    scoped_ptr<ValueStoreChangeList> changes_;
+    std::unique_ptr<ValueStoreChangeList> changes_;
     Status status_;
 
     DISALLOW_COPY_AND_ASSIGN(WriteResultType);
   };
-  typedef scoped_ptr<WriteResultType> WriteResult;
+  typedef std::unique_ptr<WriteResultType> WriteResult;
 
   // Options for write operations.
   enum WriteOptionsValues {
@@ -156,7 +156,8 @@ class ValueStore {
 
   // Helpers for making a Read/WriteResult.
   template <typename T>
-  static ReadResult MakeReadResult(scoped_ptr<T> arg, const Status& status) {
+  static ReadResult MakeReadResult(std::unique_ptr<T> arg,
+                                   const Status& status) {
     return ReadResult(new ReadResultType(std::move(arg), status));
   }
   static ReadResult MakeReadResult(const Status& status) {
@@ -164,7 +165,8 @@ class ValueStore {
   }
 
   template <typename T>
-  static WriteResult MakeWriteResult(scoped_ptr<T> arg, const Status& status) {
+  static WriteResult MakeWriteResult(std::unique_ptr<T> arg,
+                                     const Status& status) {
     return WriteResult(new WriteResultType(std::move(arg), status));
   }
   static WriteResult MakeWriteResult(const Status& status) {

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
 #include "components/guest_view/browser/guest_view_event.h"
@@ -126,8 +127,8 @@ void ExtensionOptionsGuest::DidInitialize(
 }
 
 void ExtensionOptionsGuest::GuestViewDidStopLoading() {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEventToView(make_scoped_ptr(new GuestViewEvent(
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  DispatchEventToView(base::WrapUnique(new GuestViewEvent(
       extension_options_internal::OnLoad::kEventName, std::move(args))));
 }
 
@@ -148,7 +149,7 @@ void ExtensionOptionsGuest::OnPreferredSizeChanged(const gfx::Size& pref_size) {
   // Convert the size from physical pixels to logical pixels.
   options.width = PhysicalPixelsToLogicalPixels(pref_size.width());
   options.height = PhysicalPixelsToLogicalPixels(pref_size.height());
-  DispatchEventToView(make_scoped_ptr(new GuestViewEvent(
+  DispatchEventToView(base::WrapUnique(new GuestViewEvent(
       extension_options_internal::OnPreferredSizeChanged::kEventName,
       options.ToValue())));
 }
@@ -180,9 +181,9 @@ WebContents* ExtensionOptionsGuest::OpenURLFromTab(
 }
 
 void ExtensionOptionsGuest::CloseContents(WebContents* source) {
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(extension_options_internal::OnClose::kEventName,
-                         make_scoped_ptr(new base::DictionaryValue()))));
+                         base::WrapUnique(new base::DictionaryValue()))));
 }
 
 bool ExtensionOptionsGuest::HandleContextMenu(

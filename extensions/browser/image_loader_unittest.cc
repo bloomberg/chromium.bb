@@ -86,8 +86,9 @@ class ImageLoaderTest : public ExtensionsTest {
     std::string error;
     JSONFileValueDeserializer deserializer(
         extension_dir.AppendASCII("manifest.json"));
-    scoped_ptr<base::DictionaryValue> valid_value = base::DictionaryValue::From(
-        deserializer.Deserialize(&error_code, &error));
+    std::unique_ptr<base::DictionaryValue> valid_value =
+        base::DictionaryValue::From(
+            deserializer.Deserialize(&error_code, &error));
     EXPECT_EQ(0, error_code) << error;
     if (error_code != 0)
       return NULL;
@@ -116,7 +117,7 @@ class ImageLoaderTest : public ExtensionsTest {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
-  scoped_ptr<NotificationService> notification_service_;
+  std::unique_ptr<NotificationService> notification_service_;
 };
 
 // Tests loading an image works correctly.

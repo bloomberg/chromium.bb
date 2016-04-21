@@ -5,11 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_VALUE_STORE_LAZY_LEVELDB_H_
 #define EXTENSIONS_BROWSER_VALUE_STORE_LAZY_LEVELDB_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_base.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -26,8 +26,9 @@ class LazyLevelDb {
  public:
   // Creates a new database iterator. This iterator *must* be deleted before
   // this database is closed.
-  ValueStore::Status CreateIterator(const leveldb::ReadOptions& read_options,
-                                    scoped_ptr<leveldb::Iterator>* iterator);
+  ValueStore::Status CreateIterator(
+      const leveldb::ReadOptions& read_options,
+      std::unique_ptr<leveldb::Iterator>* iterator);
 
   // Converts a leveldb::Status to a ValueStore::Status. Will also sanitize path
   // to eliminate user data path.
@@ -53,7 +54,7 @@ class LazyLevelDb {
   // be returned and value will be unchanged. Caller must ensure the database is
   // open before calling this method.
   ValueStore::Status Read(const std::string& key,
-                          scoped_ptr<base::Value>* value);
+                          std::unique_ptr<base::Value>* value);
 
   // Opens the underlying database if not yet open. If the open fails due to
   // corruption will attempt to repair the database. Failing that, will attempt
@@ -75,7 +76,7 @@ class LazyLevelDb {
       ValueStore::BackingStoreRestoreStatus restore_status) const;
 
   // The leveldb to which this class reads/writes.
-  scoped_ptr<leveldb::DB> db_;
+  std::unique_ptr<leveldb::DB> db_;
   // The path to the underlying leveldb.
   const base::FilePath db_path_;
   // The options to be used when this database is lazily opened.

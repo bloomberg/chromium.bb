@@ -29,8 +29,9 @@ ExtensionsBrowserClient::CreateExtensionApiFrameIdMapHelper(
   return nullptr;
 }
 
-void ExtensionsBrowserClient::ReportError(content::BrowserContext* context,
-                                          scoped_ptr<ExtensionError> error) {
+void ExtensionsBrowserClient::ReportError(
+    content::BrowserContext* context,
+    std::unique_ptr<ExtensionError> error) {
   LOG(ERROR) << error->GetDebugString();
 }
 

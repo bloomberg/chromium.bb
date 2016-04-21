@@ -131,8 +131,8 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   base::ScopedTempDir extensions_dir_;
   MockSandboxedUnpackerClient* client_;
   scoped_refptr<SandboxedUnpacker> sandboxed_unpacker_;
-  scoped_ptr<content::TestBrowserThreadBundle> browser_threads_;
-  scoped_ptr<content::InProcessUtilityThreadHelper>
+  std::unique_ptr<content::TestBrowserThreadBundle> browser_threads_;
+  std::unique_ptr<content::InProcessUtilityThreadHelper>
       in_process_utility_thread_helper_;
 };
 

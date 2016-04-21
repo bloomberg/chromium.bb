@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/renderer_preferences.h"
@@ -200,13 +201,11 @@ void AppViewGuest::CreateWebContents(
   LazyBackgroundTaskQueue* queue =
       LazyBackgroundTaskQueue::Get(browser_context());
   if (queue->ShouldEnqueueTask(browser_context(), guest_extension)) {
-    queue->AddPendingTask(browser_context(),
-                          guest_extension->id(),
-                          base::Bind(
-                              &AppViewGuest::LaunchAppAndFireEvent,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              base::Passed(make_scoped_ptr(data->DeepCopy())),
-                              callback));
+    queue->AddPendingTask(
+        browser_context(), guest_extension->id(),
+        base::Bind(&AppViewGuest::LaunchAppAndFireEvent,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Passed(base::WrapUnique(data->DeepCopy())), callback));
     return;
   }
 
@@ -214,7 +213,7 @@ void AppViewGuest::CreateWebContents(
   ExtensionHost* host =
       process_manager->GetBackgroundHostForExtension(guest_extension->id());
   DCHECK(host);
-  LaunchAppAndFireEvent(make_scoped_ptr(data->DeepCopy()), callback, host);
+  LaunchAppAndFireEvent(base::WrapUnique(data->DeepCopy()), callback, host);
 }
 
 void AppViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
@@ -255,7 +254,7 @@ void AppViewGuest::CompleteCreateWebContents(
 }
 
 void AppViewGuest::LaunchAppAndFireEvent(
-    scoped_ptr<base::DictionaryValue> data,
+    std::unique_ptr<base::DictionaryValue> data,
     const WebContentsCreatedCallback& callback,
     ExtensionHost* extension_host) {
   bool has_event_listener = EventRouter::Get(browser_context())
@@ -267,7 +266,8 @@ void AppViewGuest::LaunchAppAndFireEvent(
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> embed_request(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> embed_request(
+      new base::DictionaryValue());
   embed_request->SetInteger(appview::kGuestInstanceID, guest_instance_id());
   embed_request->SetString(appview::kEmbedderID, owner_host());
   embed_request->Set(appview::kData, data.release());

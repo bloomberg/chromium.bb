@@ -5,12 +5,12 @@
 #ifndef EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_FRONTEND_H_
 #define EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_FRONTEND_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
@@ -32,7 +32,7 @@ class ValueStoreFrontend
   // The kind of extensions data stored in a backend.
   enum class BackendType { RULES, STATE };
 
-  typedef base::Callback<void(scoped_ptr<base::Value>)> ReadCallback;
+  typedef base::Callback<void(std::unique_ptr<base::Value>)> ReadCallback;
 
   ValueStoreFrontend(
       const scoped_refptr<extensions::ValueStoreFactory>& store_factory,
@@ -44,7 +44,7 @@ class ValueStoreFrontend
   void Get(const std::string& key, const ReadCallback& callback);
 
   // Sets a value with the given key.
-  void Set(const std::string& key, scoped_ptr<base::Value> value);
+  void Set(const std::string& key, std::unique_ptr<base::Value> value);
 
   // Removes the value with the given key.
   void Remove(const std::string& key);

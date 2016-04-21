@@ -37,7 +37,7 @@ bool ComputedHashes::Reader::InitFromFile(const base::FilePath& path) {
     return false;
 
   base::DictionaryValue* top_dictionary = NULL;
-  scoped_ptr<base::Value> value(base::JSONReader::Read(contents));
+  std::unique_ptr<base::Value> value(base::JSONReader::Read(contents));
   if (!value.get() || !value->GetAsDictionary(&top_dictionary))
     return false;
 
@@ -177,7 +177,7 @@ void ComputedHashes::ComputeHashesForContent(const std::string& contents,
     const char* block_start = contents.data() + offset;
     DCHECK(offset <= contents.size());
     size_t bytes_to_read = std::min(contents.size() - offset, block_size);
-    scoped_ptr<crypto::SecureHash> hash(
+    std::unique_ptr<crypto::SecureHash> hash(
         crypto::SecureHash::Create(crypto::SecureHash::SHA256));
     hash->Update(block_start, bytes_to_read);
 

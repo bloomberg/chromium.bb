@@ -5,11 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_UPDATER_SAFE_MANIFEST_PARSER_H_
 #define EXTENSIONS_BROWSER_UPDATER_SAFE_MANIFEST_PARSER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/common/update_manifest.h"

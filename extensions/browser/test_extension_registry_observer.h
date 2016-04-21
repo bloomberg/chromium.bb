@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_TEST_EXTENSION_REGISTRY_OBSERVER_H_
 #define EXTENSIONS_BROWSER_TEST_EXTENSION_REGISTRY_OBSERVER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -49,12 +49,12 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
                            const Extension* extension,
                            UnloadedExtensionInfo::Reason reason) override;
 
-  const Extension* Wait(scoped_ptr<Waiter>* waiter);
+  const Extension* Wait(std::unique_ptr<Waiter>* waiter);
 
-  scoped_ptr<Waiter> will_be_installed_waiter_;
-  scoped_ptr<Waiter> uninstalled_waiter_;
-  scoped_ptr<Waiter> loaded_waiter_;
-  scoped_ptr<Waiter> unloaded_waiter_;
+  std::unique_ptr<Waiter> will_be_installed_waiter_;
+  std::unique_ptr<Waiter> uninstalled_waiter_;
+  std::unique_ptr<Waiter> loaded_waiter_;
+  std::unique_ptr<Waiter> unloaded_waiter_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;

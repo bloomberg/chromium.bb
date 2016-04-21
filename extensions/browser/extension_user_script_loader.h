@@ -40,7 +40,7 @@ class ExtensionUserScriptLoader : public UserScriptLoader,
 
  private:
   // UserScriptLoader:
-  void LoadScripts(scoped_ptr<UserScriptList> user_scripts,
+  void LoadScripts(std::unique_ptr<UserScriptList> user_scripts,
                    const std::set<HostID>& changed_hosts,
                    const std::set<int>& added_script_ids,
                    LoadScriptsCallback callback) override;

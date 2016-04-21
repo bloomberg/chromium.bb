@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/event_router.h"
@@ -21,23 +22,23 @@ namespace extensions {
 typedef EventFilter::MatcherID MatcherID;
 
 // static
-scoped_ptr<EventListener> EventListener::ForExtension(
+std::unique_ptr<EventListener> EventListener::ForExtension(
     const std::string& event_name,
     const std::string& extension_id,
     content::RenderProcessHost* process,
-    scoped_ptr<base::DictionaryValue> filter) {
-  return make_scoped_ptr(new EventListener(event_name, extension_id, GURL(),
-                                           process, std::move(filter)));
+    std::unique_ptr<base::DictionaryValue> filter) {
+  return base::WrapUnique(new EventListener(event_name, extension_id, GURL(),
+                                            process, std::move(filter)));
 }
 
 // static
-scoped_ptr<EventListener> EventListener::ForURL(
+std::unique_ptr<EventListener> EventListener::ForURL(
     const std::string& event_name,
     const GURL& listener_url,
     content::RenderProcessHost* process,
-    scoped_ptr<base::DictionaryValue> filter) {
-  return make_scoped_ptr(new EventListener(event_name, "", listener_url,
-                                           process, std::move(filter)));
+    std::unique_ptr<base::DictionaryValue> filter) {
+  return base::WrapUnique(new EventListener(event_name, "", listener_url,
+                                            process, std::move(filter)));
 }
 
 EventListener::~EventListener() {}
@@ -53,13 +54,13 @@ bool EventListener::Equals(const EventListener* other) const {
          (!filter_.get() || filter_->Equals(other->filter_.get()));
 }
 
-scoped_ptr<EventListener> EventListener::Copy() const {
-  scoped_ptr<DictionaryValue> filter_copy;
+std::unique_ptr<EventListener> EventListener::Copy() const {
+  std::unique_ptr<DictionaryValue> filter_copy;
   if (filter_)
     filter_copy.reset(filter_->DeepCopy());
-  return scoped_ptr<EventListener>(new EventListener(event_name_, extension_id_,
-                                                     listener_url_, process_,
-                                                     std::move(filter_copy)));
+  return std::unique_ptr<EventListener>(
+      new EventListener(event_name_, extension_id_, listener_url_, process_,
+                        std::move(filter_copy)));
 }
 
 bool EventListener::IsLazy() const {
@@ -78,7 +79,7 @@ EventListener::EventListener(const std::string& event_name,
                              const std::string& extension_id,
                              const GURL& listener_url,
                              content::RenderProcessHost* process,
-                             scoped_ptr<DictionaryValue> filter)
+                             std::unique_ptr<DictionaryValue> filter)
     : event_name_(event_name),
       extension_id_(extension_id),
       listener_url_(listener_url),
@@ -92,11 +93,12 @@ EventListenerMap::EventListenerMap(Delegate* delegate)
 
 EventListenerMap::~EventListenerMap() {}
 
-bool EventListenerMap::AddListener(scoped_ptr<EventListener> listener) {
+bool EventListenerMap::AddListener(std::unique_ptr<EventListener> listener) {
   if (HasListener(listener.get()))
     return false;
   if (listener->filter()) {
-    scoped_ptr<EventMatcher> matcher(ParseEventMatcher(listener->filter()));
+    std::unique_ptr<EventMatcher> matcher(
+        ParseEventMatcher(listener->filter()));
     MatcherID id = event_filter_.AddEventMatcher(listener->event_name(),
                                                  std::move(matcher));
     listener->set_matcher_id(id);
@@ -111,10 +113,10 @@ bool EventListenerMap::AddListener(scoped_ptr<EventListener> listener) {
   return true;
 }
 
-scoped_ptr<EventMatcher> EventListenerMap::ParseEventMatcher(
+std::unique_ptr<EventMatcher> EventListenerMap::ParseEventMatcher(
     DictionaryValue* filter_dict) {
-  return scoped_ptr<EventMatcher>(new EventMatcher(
-      make_scoped_ptr(filter_dict->DeepCopy()), MSG_ROUTING_NONE));
+  return std::unique_ptr<EventMatcher>(new EventMatcher(
+      base::WrapUnique(filter_dict->DeepCopy()), MSG_ROUTING_NONE));
 }
 
 bool EventListenerMap::RemoveListener(const EventListener* listener) {
@@ -204,7 +206,7 @@ void EventListenerMap::LoadUnfilteredLazyListeners(
   for (std::set<std::string>::const_iterator it = event_names.begin();
        it != event_names.end(); ++it) {
     AddListener(EventListener::ForExtension(
-        *it, extension_id, NULL, scoped_ptr<DictionaryValue>()));
+        *it, extension_id, NULL, std::unique_ptr<DictionaryValue>()));
   }
 }
 
@@ -221,7 +223,7 @@ void EventListenerMap::LoadFilteredLazyListeners(
       if (!filter_list->GetDictionary(i, &filter))
         continue;
       AddListener(EventListener::ForExtension(
-          it.key(), extension_id, NULL, make_scoped_ptr(filter->DeepCopy())));
+          it.key(), extension_id, NULL, base::WrapUnique(filter->DeepCopy())));
     }
   }
 }

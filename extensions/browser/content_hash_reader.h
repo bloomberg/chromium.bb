@@ -5,13 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_CONTENT_HASH_READER_H_
 #define EXTENSIONS_BROWSER_CONTENT_HASH_READER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/version.h"
 #include "extensions/browser/content_verifier_delegate.h"
 
@@ -82,7 +82,7 @@ class ContentHashReader : public base::RefCountedThreadSafe<ContentHashReader> {
   // The blocksize used for generating the hashes.
   int block_size_;
 
-  scoped_ptr<VerifiedContents> verified_contents_;
+  std::unique_ptr<VerifiedContents> verified_contents_;
 
   std::vector<std::string> hashes_;
 

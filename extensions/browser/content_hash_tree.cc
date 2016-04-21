@@ -4,7 +4,8 @@
 
 #include "extensions/browser/content_hash_tree.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/stl_util.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -32,7 +33,7 @@ std::string ComputeTreeHashRoot(const std::vector<std::string>& leaf_hashes,
     // |branch_factor| elements to form the hash of each parent node.
     std::vector<std::string>::const_iterator i = current->begin();
     while (i != current->end()) {
-      scoped_ptr<crypto::SecureHash> hash(
+      std::unique_ptr<crypto::SecureHash> hash(
           crypto::SecureHash::Create(crypto::SecureHash::SHA256));
       for (int j = 0; j < branch_factor && i != current->end(); j++) {
         DCHECK_EQ(i->size(), crypto::kSHA256Length);

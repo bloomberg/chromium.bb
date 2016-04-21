@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_UNITTEST_H_
 #define EXTENSIONS_BROWSER_API_UNITTEST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "extensions/browser/extensions_test.h"
 
@@ -61,19 +61,19 @@ class ApiUnitTest : public ExtensionsTest {
   // See also the RunFunction* methods in extension_function_test_utils.h.
 
   // Return the function result as a base::Value.
-  scoped_ptr<base::Value> RunFunctionAndReturnValue(
+  std::unique_ptr<base::Value> RunFunctionAndReturnValue(
       UIThreadExtensionFunction* function,
       const std::string& args);
 
   // Return the function result as a base::DictionaryValue, or NULL.
   // This will EXPECT-fail if the result is not a DictionaryValue.
-  scoped_ptr<base::DictionaryValue> RunFunctionAndReturnDictionary(
+  std::unique_ptr<base::DictionaryValue> RunFunctionAndReturnDictionary(
       UIThreadExtensionFunction* function,
       const std::string& args);
 
   // Return the function result as a base::ListValue, or NULL.
   // This will EXPECT-fail if the result is not a ListValue.
-  scoped_ptr<base::ListValue> RunFunctionAndReturnList(
+  std::unique_ptr<base::ListValue> RunFunctionAndReturnList(
       UIThreadExtensionFunction* function,
       const std::string& args);
 
@@ -87,14 +87,14 @@ class ApiUnitTest : public ExtensionsTest {
                    const std::string& args);
 
  private:
-  scoped_ptr<content::NotificationService> notification_service_;
+  std::unique_ptr<content::NotificationService> notification_service_;
 
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   user_prefs::TestingPrefServiceSyncable testing_pref_service_;
 
   // The WebContents used to associate a RenderViewHost with API function calls,
   // or null.
-  scoped_ptr<content::WebContents> contents_;
+  std::unique_ptr<content::WebContents> contents_;
 
   // The Extension used when running API function calls.
   scoped_refptr<Extension> extension_;

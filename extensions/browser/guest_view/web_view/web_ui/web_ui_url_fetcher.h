@@ -5,9 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_UI_URL_FETCHER_H
 #define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_UI_URL_FETCHER_H
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -48,7 +49,7 @@ class WebUIURLFetcher : public net::URLFetcherDelegate {
   int render_view_id_;
   GURL url_;
   WebUILoadFileCallback callback_;
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIURLFetcher);
 };

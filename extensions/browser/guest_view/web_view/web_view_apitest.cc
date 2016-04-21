@@ -55,20 +55,20 @@ const char kIsolateExtensions[] = "isolateExtensions";
 
 // Handles |request| by serving a redirect response if the |User-Agent| is
 // foobar.
-static scoped_ptr<net::test_server::HttpResponse> UserAgentResponseHandler(
+static std::unique_ptr<net::test_server::HttpResponse> UserAgentResponseHandler(
     const std::string& path,
     const GURL& redirect_target,
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(path, request.relative_url,
                         base::CompareCase::SENSITIVE))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
 
   auto it = request.headers.find("User-Agent");
   EXPECT_TRUE(it != request.headers.end());
   if (!base::StartsWith("foobar", it->second, base::CompareCase::SENSITIVE))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
   http_response->AddCustomHeader("Location", redirect_target.spec());
@@ -100,15 +100,15 @@ class WebContentsHiddenObserver : public content::WebContentsObserver {
 };
 
 // Handles |request| by serving a redirect response.
-scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
+std::unique_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
     const std::string& path,
     const GURL& redirect_target,
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(path, request.relative_url,
                         base::CompareCase::SENSITIVE))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
   http_response->AddCustomHeader("Location", redirect_target.spec());
@@ -116,16 +116,16 @@ scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
 }
 
 // Handles |request| by serving an empty response.
-scoped_ptr<net::test_server::HttpResponse> EmptyResponseHandler(
+std::unique_ptr<net::test_server::HttpResponse> EmptyResponseHandler(
     const std::string& path,
     const net::test_server::HttpRequest& request) {
   if (base::StartsWith(path, request.relative_url,
                        base::CompareCase::SENSITIVE)) {
-    return scoped_ptr<net::test_server::HttpResponse>(
+    return std::unique_ptr<net::test_server::HttpResponse>(
         new net::test_server::RawHttpResponse("", ""));
   }
 
-  return scoped_ptr<net::test_server::HttpResponse>();
+  return std::unique_ptr<net::test_server::HttpResponse>();
 }
 
 }  // namespace
@@ -269,7 +269,7 @@ TestGuestViewManager* WebViewAPITest::GetGuestViewManager() {
 void WebViewAPITest::SendMessageToGuestAndWait(
     const std::string& message,
     const std::string& wait_message) {
-  scoped_ptr<ExtensionTestMessageListener> listener;
+  std::unique_ptr<ExtensionTestMessageListener> listener;
   if (!wait_message.empty())
     listener.reset(new ExtensionTestMessageListener(wait_message, false));
 

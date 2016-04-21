@@ -39,12 +39,12 @@ ExtensionsGuestViewManagerDelegate::~ExtensionsGuestViewManagerDelegate() {
 
 void ExtensionsGuestViewManagerDelegate::DispatchEvent(
     const std::string& event_name,
-    scoped_ptr<base::DictionaryValue> args,
+    std::unique_ptr<base::DictionaryValue> args,
     GuestViewBase* guest,
     int instance_id) {
   EventFilteringInfo info;
   info.SetInstanceID(instance_id);
-  scoped_ptr<base::ListValue> event_args(new base::ListValue());
+  std::unique_ptr<base::ListValue> event_args(new base::ListValue());
   event_args->Append(args.release());
 
   // GetEventHistogramValue maps guest view event names to their histogram

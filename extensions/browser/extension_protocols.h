@@ -5,9 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_PROTOCOLS_H_
 #define EXTENSIONS_BROWSER_EXTENSION_PROTOCOLS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace base {
@@ -32,7 +32,7 @@ net::HttpResponseHeaders* BuildHttpHeaders(
 // Creates the handlers for the chrome-extension:// scheme. Pass true for
 // |is_incognito| only for incognito profiles and not for Chrome OS guest mode
 // profiles.
-scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
 CreateExtensionProtocolHandler(bool is_incognito, InfoMap* extension_info_map);
 
 }  // namespace extensions

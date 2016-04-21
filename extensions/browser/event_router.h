@@ -95,7 +95,7 @@ class EventRouter : public KeyedService,
                                     const std::string& extension_id,
                                     events::HistogramValue histogram_value,
                                     const std::string& event_name,
-                                    scoped_ptr<base::ListValue> event_args,
+                                    std::unique_ptr<base::ListValue> event_args,
                                     UserGestureState user_gesture,
                                     const EventFilteringInfo& info);
 
@@ -174,18 +174,18 @@ class EventRouter : public KeyedService,
                            const std::set<std::string>& events);
 
   // Broadcasts an event to every listener registered for that event.
-  virtual void BroadcastEvent(scoped_ptr<Event> event);
+  virtual void BroadcastEvent(std::unique_ptr<Event> event);
 
   // Dispatches an event to the given extension.
   virtual void DispatchEventToExtension(const std::string& extension_id,
-                                        scoped_ptr<Event> event);
+                                        std::unique_ptr<Event> event);
 
   // Dispatches |event| to the given extension as if the extension has a lazy
   // listener for it. NOTE: This should be used rarely, for dispatching events
   // to extensions that haven't had a chance to add their own listeners yet, eg:
   // newly installed extensions.
   void DispatchEventWithLazyListener(const std::string& extension_id,
-                                     scoped_ptr<Event> event);
+                                     std::unique_ptr<Event> event);
 
   // Record the Event Ack from the renderer. (One less event in-flight.)
   void OnEventAck(content::BrowserContext* context,
@@ -368,7 +368,7 @@ struct Event {
   std::string event_name;
 
   // Arguments to send to the event listener.
-  scoped_ptr<base::ListValue> event_args;
+  std::unique_ptr<base::ListValue> event_args;
 
   // If non-NULL, then the event will not be sent to other BrowserContexts
   // unless the extension has permission (e.g. incognito tab update -> normal
@@ -397,16 +397,16 @@ struct Event {
 
   Event(events::HistogramValue histogram_value,
         const std::string& event_name,
-        scoped_ptr<base::ListValue> event_args);
+        std::unique_ptr<base::ListValue> event_args);
 
   Event(events::HistogramValue histogram_value,
         const std::string& event_name,
-        scoped_ptr<base::ListValue> event_args,
+        std::unique_ptr<base::ListValue> event_args,
         content::BrowserContext* restrict_to_browser_context);
 
   Event(events::HistogramValue histogram_value,
         const std::string& event_name,
-        scoped_ptr<base::ListValue> event_args,
+        std::unique_ptr<base::ListValue> event_args,
         content::BrowserContext* restrict_to_browser_context,
         const GURL& event_url,
         EventRouter::UserGestureState user_gesture,

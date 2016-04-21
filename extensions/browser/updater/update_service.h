@@ -5,12 +5,12 @@
 #ifndef EXTENSIONS_BROWSER_UPDATER_UPDATE_SERVICE_H_
 #define EXTENSIONS_BROWSER_UPDATER_UPDATE_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace base {

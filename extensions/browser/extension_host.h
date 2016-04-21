@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/elapsed_timer.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -165,7 +165,7 @@ class ExtensionHost : public DeferredStartRenderHost,
   void RecordStopLoadingUMA();
 
   // Delegate for functionality that cannot exist in the extensions module.
-  scoped_ptr<ExtensionHostDelegate> delegate_;
+  std::unique_ptr<ExtensionHostDelegate> delegate_;
 
   // The extension that we're hosting in this view.
   const Extension* extension_;
@@ -177,7 +177,7 @@ class ExtensionHost : public DeferredStartRenderHost,
   content::BrowserContext* browser_context_;
 
   // The host for our HTML content.
-  scoped_ptr<content::WebContents> host_contents_;
+  std::unique_ptr<content::WebContents> host_contents_;
 
   // A weak pointer to the current or pending RenderViewHost. We don't access
   // this through the host_contents because we want to deal with the pending
@@ -213,7 +213,7 @@ class ExtensionHost : public DeferredStartRenderHost,
 
   // Measures how long since the initial URL started loading. This timer is
   // started only once the ExtensionHost has exited the ExtensionHostQueue.
-  scoped_ptr<base::ElapsedTimer> load_start_;
+  std::unique_ptr<base::ElapsedTimer> load_start_;
 
   base::ObserverList<ExtensionHostObserver> observer_list_;
   base::ObserverList<DeferredStartRenderHostObserver>

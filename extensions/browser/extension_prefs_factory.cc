@@ -32,7 +32,7 @@ ExtensionPrefsFactory* ExtensionPrefsFactory::GetInstance() {
 
 void ExtensionPrefsFactory::SetInstanceForTesting(
     content::BrowserContext* context,
-    scoped_ptr<ExtensionPrefs> prefs) {
+    std::unique_ptr<ExtensionPrefs> prefs) {
   Disassociate(context);
   Associate(context, std::move(prefs));
 }

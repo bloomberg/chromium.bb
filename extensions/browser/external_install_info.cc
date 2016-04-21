@@ -18,7 +18,7 @@ ExternalInstallInfo::ExternalInstallInfo(const std::string& extension_id,
 
 ExternalInstallInfoFile::ExternalInstallInfoFile(
     const std::string& extension_id,
-    scoped_ptr<base::Version> version,
+    std::unique_ptr<base::Version> version,
     const base::FilePath& path,
     Manifest::Location crx_location,
     int creation_flags,
@@ -35,7 +35,7 @@ ExternalInstallInfoFile::~ExternalInstallInfoFile() {}
 ExternalInstallInfoUpdateUrl::ExternalInstallInfoUpdateUrl(
     const std::string& extension_id,
     const std::string& install_parameter,
-    scoped_ptr<GURL> update_url,
+    std::unique_ptr<GURL> update_url,
     Manifest::Location download_location,
     int creation_flags,
     bool mark_acknowledged)

@@ -5,7 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_PREFS_FACTORY_H_
 #define EXTENSIONS_BROWSER_EXTENSION_PREFS_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -20,7 +21,7 @@ class ExtensionPrefsFactory : public BrowserContextKeyedServiceFactory {
   static ExtensionPrefsFactory* GetInstance();
 
   void SetInstanceForTesting(content::BrowserContext* context,
-                             scoped_ptr<ExtensionPrefs> prefs);
+                             std::unique_ptr<ExtensionPrefs> prefs);
 
  private:
   friend struct base::DefaultSingletonTraits<ExtensionPrefsFactory>;

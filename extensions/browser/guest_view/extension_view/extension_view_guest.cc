@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "components/crx_file/id_util.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "content/public/browser/render_process_host.h"
@@ -125,9 +126,9 @@ void ExtensionViewGuest::DidCommitProvisionalLoadForFrame(
 
   url_ = url;
 
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guest_view::kUrl, url_.spec());
-  DispatchEventToView(make_scoped_ptr(
+  DispatchEventToView(base::WrapUnique(
       new GuestViewEvent(extensionview::kEventLoadCommit, std::move(args))));
 }
 

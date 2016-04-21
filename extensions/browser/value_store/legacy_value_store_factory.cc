@@ -8,6 +8,7 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
 #include "extensions/common/constants.h"
@@ -167,24 +168,24 @@ bool LegacyValueStoreFactory::StateDBExists() const {
   return ValidDBExists(GetStateDBPath());
 }
 
-scoped_ptr<ValueStore> LegacyValueStoreFactory::CreateRulesStore() {
-  return make_scoped_ptr(
+std::unique_ptr<ValueStore> LegacyValueStoreFactory::CreateRulesStore() {
+  return base::WrapUnique(
       new LeveldbValueStore(kRulesDatabaseUMAClientName, GetRulesDBPath()));
 }
 
-scoped_ptr<ValueStore> LegacyValueStoreFactory::CreateStateStore() {
-  return make_scoped_ptr(
+std::unique_ptr<ValueStore> LegacyValueStoreFactory::CreateStateStore() {
+  return base::WrapUnique(
       new LeveldbValueStore(kStateDatabaseUMAClientName, GetStateDBPath()));
 }
 
-scoped_ptr<ValueStore> LegacyValueStoreFactory::CreateSettingsStore(
+std::unique_ptr<ValueStore> LegacyValueStoreFactory::CreateSettingsStore(
     settings_namespace::Namespace settings_namespace,
     ModelType model_type,
     const ExtensionId& extension_id) {
   const ModelSettings* settings_root =
       GetSettingsRoot(settings_namespace).GetModel(model_type);
   DCHECK(settings_root != nullptr);
-  return make_scoped_ptr(new LeveldbValueStore(
+  return base::WrapUnique(new LeveldbValueStore(
       kSettingsDatabaseUMAClientName, settings_root->GetDBPath(extension_id)));
 }
 

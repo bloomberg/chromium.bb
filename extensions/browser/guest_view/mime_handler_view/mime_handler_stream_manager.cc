@@ -4,6 +4,7 @@
 
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -109,10 +110,11 @@ MimeHandlerStreamManager* MimeHandlerStreamManager::Get(
   return MimeHandlerStreamManagerFactory::GetInstance()->Get(context);
 }
 
-void MimeHandlerStreamManager::AddStream(const std::string& view_id,
-                                         scoped_ptr<StreamContainer> stream,
-                                         int render_process_id,
-                                         int render_frame_id) {
+void MimeHandlerStreamManager::AddStream(
+    const std::string& view_id,
+    std::unique_ptr<StreamContainer> stream,
+    int render_process_id,
+    int render_frame_id) {
   streams_by_extension_id_[stream->extension_id()].insert(view_id);
   auto result = streams_.insert(
       std::make_pair(view_id, make_linked_ptr(stream.release())));
@@ -121,14 +123,14 @@ void MimeHandlerStreamManager::AddStream(const std::string& view_id,
       new EmbedderObserver(this, render_process_id, render_frame_id, view_id));
 }
 
-scoped_ptr<StreamContainer> MimeHandlerStreamManager::ReleaseStream(
+std::unique_ptr<StreamContainer> MimeHandlerStreamManager::ReleaseStream(
     const std::string& view_id) {
   auto stream = streams_.find(view_id);
   if (stream == streams_.end())
     return nullptr;
 
-  scoped_ptr<StreamContainer> result =
-      make_scoped_ptr(stream->second.release());
+  std::unique_ptr<StreamContainer> result =
+      base::WrapUnique(stream->second.release());
   streams_by_extension_id_[result->extension_id()].erase(view_id);
   streams_.erase(stream);
   embedder_observers_.erase(view_id);

@@ -5,12 +5,12 @@
 #ifndef EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_FACTORY_IMPL_H_
 #define EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_FACTORY_IMPL_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "extensions/browser/value_store/value_store_factory.h"
 #include "extensions/common/extension.h"
@@ -26,9 +26,9 @@ class ValueStoreFactoryImpl : public ValueStoreFactory {
   explicit ValueStoreFactoryImpl(const base::FilePath& profile_path);
 
   // ValueStoreFactory
-  scoped_ptr<ValueStore> CreateRulesStore() override;
-  scoped_ptr<ValueStore> CreateStateStore() override;
-  scoped_ptr<ValueStore> CreateSettingsStore(
+  std::unique_ptr<ValueStore> CreateRulesStore() override;
+  std::unique_ptr<ValueStore> CreateStateStore() override;
+  std::unique_ptr<ValueStore> CreateSettingsStore(
       settings_namespace::Namespace settings_namespace,
       ModelType model_type,
       const ExtensionId& extension_id) override;

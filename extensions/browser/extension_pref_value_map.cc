@@ -4,6 +4,7 @@
 
 #include "extensions/browser/extension_pref_value_map.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/prefs/pref_value_map.h"
 
@@ -50,7 +51,7 @@ void ExtensionPrefValueMap::SetExtensionPref(const std::string& ext_id,
                                              base::Value* value) {
   PrefValueMap* prefs = GetExtensionPrefValueMap(ext_id, scope);
 
-  if (prefs->SetValue(key, make_scoped_ptr(value)))
+  if (prefs->SetValue(key, base::WrapUnique(value)))
     NotifyPrefValueChanged(key);
 }
 
@@ -120,7 +121,7 @@ void ExtensionPrefValueMap::RegisterExtension(const std::string& ext_id,
                                               bool is_enabled,
                                               bool is_incognito_enabled) {
   if (entries_.find(ext_id) == entries_.end()) {
-    entries_[ext_id] = make_scoped_ptr(new ExtensionEntry);
+    entries_[ext_id] = base::WrapUnique(new ExtensionEntry);
 
     // Only update the install time if the extension is newly installed.
     entries_[ext_id]->install_time = install_time;

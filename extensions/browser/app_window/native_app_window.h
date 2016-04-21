@@ -5,9 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_APP_WINDOW_NATIVE_APP_WINDOW_H_
 #define EXTENSIONS_BROWSER_APP_WINDOW_NATIVE_APP_WINDOW_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/base_window.h"
@@ -49,7 +49,7 @@ class NativeAppWindow : public ui::BaseWindow,
 
   // Called when the window shape is changed. If |region| is NULL then the
   // window is restored to the default shape.
-  virtual void UpdateShape(scoped_ptr<SkRegion> region) = 0;
+  virtual void UpdateShape(std::unique_ptr<SkRegion> region) = 0;
 
   // Allows the window to handle unhandled keyboard messages coming back from
   // the renderer.

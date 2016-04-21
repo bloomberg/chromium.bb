@@ -11,7 +11,7 @@
 namespace extensions {
 
 ContentVerifierIOData::ExtensionData::ExtensionData(
-    scoped_ptr<std::set<base::FilePath>> browser_image_paths,
+    std::unique_ptr<std::set<base::FilePath>> browser_image_paths,
     const base::Version& version) {
   this->browser_image_paths = std::move(browser_image_paths);
   this->version = version;
@@ -27,7 +27,7 @@ ContentVerifierIOData::~ContentVerifierIOData() {
 }
 
 void ContentVerifierIOData::AddData(const std::string& extension_id,
-                                    scoped_ptr<ExtensionData> data) {
+                                    std::unique_ptr<ExtensionData> data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   CHECK(data->browser_image_paths.get());
   data_map_[extension_id] = linked_ptr<ExtensionData>(data.release());

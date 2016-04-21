@@ -49,9 +49,10 @@ LeveldbScopedDatabase::LeveldbScopedDatabase(const std::string& uma_client_name,
 
 LeveldbScopedDatabase::~LeveldbScopedDatabase() {}
 
-ValueStore::Status LeveldbScopedDatabase::Read(const std::string& scope,
-                                               const std::string& key,
-                                               scoped_ptr<base::Value>* value) {
+ValueStore::Status LeveldbScopedDatabase::Read(
+    const std::string& scope,
+    const std::string& key,
+    std::unique_ptr<base::Value>* value) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   ValueStore::Status status = EnsureDbIsOpen();
@@ -76,16 +77,16 @@ ValueStore::Status LeveldbScopedDatabase::Read(const std::string& scope,
   if (!CreateKey(scope, "", &prefix))
     return ValueStore::Status(ValueStore::OTHER_ERROR, kInvalidScope);
 
-  scoped_ptr<leveldb::Iterator> it(db()->NewIterator(read_options()));
+  std::unique_ptr<leveldb::Iterator> it(db()->NewIterator(read_options()));
 
   base::JSONReader json_reader;
-  scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
 
   for (it->Seek(prefix); it->Valid() && it->key().starts_with(prefix);
        it->Next()) {
     leveldb::Slice descoped_key(it->key());
     descoped_key.remove_prefix(prefix.size());
-    scoped_ptr<base::Value> value = json_reader.Read(
+    std::unique_ptr<base::Value> value = json_reader.Read(
         base::StringPiece(it->value().data(), it->value().size()));
     if (!value) {
       return ValueStore::Status(ValueStore::CORRUPTION,

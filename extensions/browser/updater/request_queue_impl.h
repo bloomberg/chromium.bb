@@ -42,21 +42,22 @@ int RequestQueue<T>::active_request_failure_count() {
 }
 
 template <typename T>
-scoped_ptr<T> RequestQueue<T>::reset_active_request() {
+std::unique_ptr<T> RequestQueue<T>::reset_active_request() {
   active_backoff_entry_.reset();
   return std::move(active_request_);
 }
 
 template <typename T>
-void RequestQueue<T>::ScheduleRequest(scoped_ptr<T> request) {
-  PushImpl(std::move(request), scoped_ptr<net::BackoffEntry>(
+void RequestQueue<T>::ScheduleRequest(std::unique_ptr<T> request) {
+  PushImpl(std::move(request), std::unique_ptr<net::BackoffEntry>(
                                    new net::BackoffEntry(backoff_policy_)));
   StartNextRequest();
 }
 
 template <typename T>
-void RequestQueue<T>::PushImpl(scoped_ptr<T> request,
-                               scoped_ptr<net::BackoffEntry> backoff_entry) {
+void RequestQueue<T>::PushImpl(
+    std::unique_ptr<T> request,
+    std::unique_ptr<net::BackoffEntry> backoff_entry) {
   pending_requests_.push_back(
       Request(backoff_entry.release(), request.release()));
   std::push_heap(

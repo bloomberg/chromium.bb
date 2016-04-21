@@ -4,6 +4,7 @@
 
 #include "extensions/browser/value_store/test_value_store_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
 #include "extensions/browser/value_store/testing_value_store.h"
 
@@ -101,15 +102,15 @@ TestValueStoreFactory::TestValueStoreFactory(const base::FilePath& db_path)
 
 TestValueStoreFactory::~TestValueStoreFactory() {}
 
-scoped_ptr<ValueStore> TestValueStoreFactory::CreateRulesStore() {
+std::unique_ptr<ValueStore> TestValueStoreFactory::CreateRulesStore() {
   if (db_path_.empty())
     last_created_store_ = new TestingValueStore();
   else
     last_created_store_ = new LeveldbValueStore(kUMAClientName, db_path_);
-  return make_scoped_ptr(last_created_store_);
+  return base::WrapUnique(last_created_store_);
 }
 
-scoped_ptr<ValueStore> TestValueStoreFactory::CreateStateStore() {
+std::unique_ptr<ValueStore> TestValueStoreFactory::CreateStateStore() {
   return CreateRulesStore();
 }
 
@@ -129,11 +130,11 @@ TestValueStoreFactory::StorageHelper& TestValueStoreFactory::GetStorageHelper(
   return local_helper_;
 }
 
-scoped_ptr<ValueStore> TestValueStoreFactory::CreateSettingsStore(
+std::unique_ptr<ValueStore> TestValueStoreFactory::CreateSettingsStore(
     SettingsNamespace settings_namespace,
     ModelType model_type,
     const ExtensionId& extension_id) {
-  scoped_ptr<ValueStore> settings_store(CreateRulesStore());
+  std::unique_ptr<ValueStore> settings_store(CreateRulesStore());
   // Note: This factory is purposely keeping the raw pointers to each ValueStore
   //       created. Tests using TestValueStoreFactory must be careful to keep
   //       those ValueStore's alive for the duration of their test.

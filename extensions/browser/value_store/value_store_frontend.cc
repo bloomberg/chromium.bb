@@ -32,7 +32,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
 
     // Extract the value from the ReadResult and pass ownership of it to the
     // callback.
-    scoped_ptr<base::Value> value;
+    std::unique_ptr<base::Value> value;
     if (result->status().ok()) {
       result->settings().RemoveWithoutPathExpansion(key, &value);
     } else {
@@ -45,7 +45,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
                    this, callback, base::Passed(&value)));
   }
 
-  void Set(const std::string& key, scoped_ptr<base::Value> value) {
+  void Set(const std::string& key, std::unique_ptr<base::Value> value) {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     LazyInit();
     // We don't need the old value, so skip generating changes.
@@ -88,7 +88,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   }
 
   void RunCallback(const ValueStoreFrontend::ReadCallback& callback,
-                   scoped_ptr<base::Value> value) {
+                   std::unique_ptr<base::Value> value) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     callback.Run(std::move(value));
   }
@@ -100,7 +100,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
 
   // The actual ValueStore that handles persisting the data to disk. Used
   // exclusively on the FILE thread.
-  scoped_ptr<ValueStore> storage_;
+  std::unique_ptr<ValueStore> storage_;
 
   base::FilePath db_path_;
 
@@ -126,7 +126,7 @@ void ValueStoreFrontend::Get(const std::string& key,
 }
 
 void ValueStoreFrontend::Set(const std::string& key,
-                             scoped_ptr<base::Value> value) {
+                             std::unique_ptr<base::Value> value) {
   DCHECK(CalledOnValidThread());
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,

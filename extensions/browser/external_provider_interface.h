@@ -89,7 +89,7 @@ class ExternalProviderInterface {
   virtual bool GetExtensionDetails(
       const std::string& id,
       Manifest::Location* location,
-      scoped_ptr<base::Version>* version) const = 0;
+      std::unique_ptr<base::Version>* version) const = 0;
 
   // Determines if this provider had loaded the list of external extensions
   // from its source.

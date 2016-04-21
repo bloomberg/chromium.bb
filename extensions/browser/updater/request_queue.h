@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <deque>
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
@@ -51,11 +51,11 @@ class RequestQueue {
   int active_request_failure_count();
 
   // Signals RequestQueue that processing of the current request has completed.
-  scoped_ptr<T> reset_active_request();
+  std::unique_ptr<T> reset_active_request();
 
   // Add the given request to the queue, and starts the next request if no
   // request is currently being processed.
-  void ScheduleRequest(scoped_ptr<T> request);
+  void ScheduleRequest(std::unique_ptr<T> request);
 
   bool empty() const;
   size_t size() const;
@@ -93,8 +93,8 @@ class RequestQueue {
   static bool CompareRequests(const Request& a, const Request& b);
 
   // Pushes a request with a given backoff entry onto the queue.
-  void PushImpl(scoped_ptr<T> request,
-                scoped_ptr<net::BackoffEntry> backoff_entry);
+  void PushImpl(std::unique_ptr<T> request,
+                std::unique_ptr<net::BackoffEntry> backoff_entry);
 
   // The backoff policy used to determine backoff delays.
   const net::BackoffEntry::Policy* backoff_policy_;
@@ -107,8 +107,8 @@ class RequestQueue {
   std::deque<Request> pending_requests_;
 
   // Active request and its associated backoff entry.
-  scoped_ptr<T> active_request_;
-  scoped_ptr<net::BackoffEntry> active_backoff_entry_;
+  std::unique_ptr<T> active_request_;
+  std::unique_ptr<net::BackoffEntry> active_backoff_entry_;
 
   // Timer to schedule calls to StartNextRequest, if the first pending request
   // hasn't passed its release time yet.

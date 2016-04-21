@@ -5,12 +5,12 @@
 #ifndef EXTENSIONS_BROWSER_CONTENT_VERIFIER_H_
 #define EXTENSIONS_BROWSER_CONTENT_VERIFIER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/version.h"
 #include "extensions/browser/content_verifier_delegate.h"
@@ -95,10 +95,10 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
 
   content::BrowserContext* context_;
 
-  scoped_ptr<ContentVerifierDelegate> delegate_;
+  std::unique_ptr<ContentVerifierDelegate> delegate_;
 
   // For fetching content hash signatures.
-  scoped_ptr<ContentHashFetcher> fetcher_;
+  std::unique_ptr<ContentHashFetcher> fetcher_;
 
   // For observing the ExtensionRegistry.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;

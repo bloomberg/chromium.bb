@@ -36,7 +36,7 @@ using guest_view::GuestViewBase;
 
 namespace extensions {
 
-StreamContainer::StreamContainer(scoped_ptr<content::StreamInfo> stream,
+StreamContainer::StreamContainer(std::unique_ptr<content::StreamInfo> stream,
                                  int tab_id,
                                  bool embedded,
                                  const GURL& handler_url,

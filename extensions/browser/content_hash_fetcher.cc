@@ -139,14 +139,14 @@ class ContentHashFetcherJob
   content::BrowserThread::ID creation_thread_;
 
   // Used for fetching content signatures.
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // The key used to validate verified_contents.json.
   ContentVerifierKey key_;
 
   // The parsed contents of the verified_contents.json file, either read from
   // disk or fetched from the network and then written to disk.
-  scoped_ptr<VerifiedContents> verified_contents_;
+  std::unique_ptr<VerifiedContents> verified_contents_;
 
   // Whether this job succeeded.
   bool success_;
@@ -256,7 +256,7 @@ void ContentHashFetcherJob::DoneCheckingForVerifiedContents(bool found) {
 // contents to be written into a file. Also ensures that the directory for
 // |path| exists, creating it if needed.
 static int WriteFileHelper(const base::FilePath& path,
-                           scoped_ptr<std::string> content) {
+                           std::unique_ptr<std::string> content) {
   base::FilePath dir = path.DirName();
   return (base::CreateDirectoryAndGetError(dir, NULL) &&
           base::WriteFile(path, content->data(), content->size()));
@@ -268,7 +268,7 @@ void ContentHashFetcherJob::OnURLFetchComplete(const net::URLFetcher* source) {
           << fetch_url_.possibly_invalid_spec();
   if (IsCancelled())
     return;
-  scoped_ptr<std::string> response(new std::string);
+  std::unique_ptr<std::string> response(new std::string);
   if (!url_fetcher_->GetStatus().is_success() ||
       !url_fetcher_->GetResponseAsString(response.get())) {
     DoneFetchingVerifiedContents(false);
@@ -279,7 +279,7 @@ void ContentHashFetcherJob::OnURLFetchComplete(const net::URLFetcher* source) {
   // can be a login redirect html, xml file, etc. if you aren't logged in with
   // the right cookies).  TODO(asargent) - It would be a nice enhancement to
   // move to parsing this in a sandboxed helper (crbug.com/372878).
-  scoped_ptr<base::Value> parsed(base::JSONReader::Read(*response));
+  std::unique_ptr<base::Value> parsed(base::JSONReader::Read(*response));
   if (parsed) {
     VLOG(1) << "JSON parsed ok for " << extension_id_;
 

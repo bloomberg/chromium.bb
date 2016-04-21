@@ -153,7 +153,7 @@ class WebViewPermissionHelper
 
   WebViewPermissionHelper::RequestMap pending_permission_requests_;
 
-  scoped_ptr<WebViewPermissionHelperDelegate>
+  std::unique_ptr<WebViewPermissionHelperDelegate>
       web_view_permission_helper_delegate_;
 
   WebViewGuest* const web_view_guest_;

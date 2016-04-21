@@ -35,7 +35,7 @@ struct ExternalInstallInfo {
 
 struct ExternalInstallInfoFile : public ExternalInstallInfo {
   ExternalInstallInfoFile(const std::string& extension_id,
-                          scoped_ptr<base::Version> version,
+                          std::unique_ptr<base::Version> version,
                           const base::FilePath& path,
                           Manifest::Location crx_location,
                           int creation_flags,
@@ -43,7 +43,7 @@ struct ExternalInstallInfoFile : public ExternalInstallInfo {
                           bool install_immediately);
   ~ExternalInstallInfoFile() override;
 
-  scoped_ptr<base::Version> version;
+  std::unique_ptr<base::Version> version;
   base::FilePath path;
   Manifest::Location crx_location;
   bool install_immediately;
@@ -52,14 +52,14 @@ struct ExternalInstallInfoFile : public ExternalInstallInfo {
 struct ExternalInstallInfoUpdateUrl : public ExternalInstallInfo {
   ExternalInstallInfoUpdateUrl(const std::string& extension_id,
                                const std::string& install_parameter,
-                               scoped_ptr<GURL> update_url,
+                               std::unique_ptr<GURL> update_url,
                                Manifest::Location download_location,
                                int creation_flags,
                                bool mark_acknowledged);
   ~ExternalInstallInfoUpdateUrl() override;
 
   std::string install_parameter;
-  scoped_ptr<GURL> update_url;
+  std::unique_ptr<GURL> update_url;
   Manifest::Location download_location;
 };
 

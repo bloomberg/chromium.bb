@@ -4,13 +4,14 @@
 
 #include "extensions/browser/event_router.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/values.h"
 #include "content/public/browser/notification_service.h"
@@ -62,28 +63,29 @@ class MockEventRouterObserver : public EventRouter::Observer {
   DISALLOW_COPY_AND_ASSIGN(MockEventRouterObserver);
 };
 
-typedef base::Callback<scoped_ptr<EventListener>(
+typedef base::Callback<std::unique_ptr<EventListener>(
     const std::string&,           // event_name
     content::RenderProcessHost*,  // process
     base::DictionaryValue*        // filter (takes ownership)
-    )> EventListenerConstructor;
+    )>
+    EventListenerConstructor;
 
-scoped_ptr<EventListener> CreateEventListenerForExtension(
+std::unique_ptr<EventListener> CreateEventListenerForExtension(
     const std::string& extension_id,
     const std::string& event_name,
     content::RenderProcessHost* process,
     base::DictionaryValue* filter) {
-  return EventListener::ForExtension(
-      event_name, extension_id, process, make_scoped_ptr(filter));
+  return EventListener::ForExtension(event_name, extension_id, process,
+                                     base::WrapUnique(filter));
 }
 
-scoped_ptr<EventListener> CreateEventListenerForURL(
+std::unique_ptr<EventListener> CreateEventListenerForURL(
     const GURL& listener_url,
     const std::string& event_name,
     content::RenderProcessHost* process,
     base::DictionaryValue* filter) {
-  return EventListener::ForURL(
-      event_name, listener_url, process, make_scoped_ptr(filter));
+  return EventListener::ForURL(event_name, listener_url, process,
+                               base::WrapUnique(filter));
 }
 
 // Creates an extension.  If |component| is true, it is created as a component
@@ -91,8 +93,8 @@ scoped_ptr<EventListener> CreateEventListenerForURL(
 // background page; otherwise it is created with an event page.
 scoped_refptr<Extension> CreateExtension(bool component, bool persistent) {
   ExtensionBuilder builder;
-  scoped_ptr<base::DictionaryValue> manifest =
-      make_scoped_ptr(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> manifest =
+      base::WrapUnique(new base::DictionaryValue());
   manifest->SetString("name", "foo");
   manifest->SetString("version", "1.0.0");
   manifest->SetInteger("manifest_version", 2);
@@ -157,7 +159,7 @@ class EventRouterTest : public ExtensionsTest {
   }
 
  private:
-  scoped_ptr<content::NotificationService> notification_service_;
+  std::unique_ptr<content::NotificationService> notification_service_;
   content::TestBrowserThreadBundle thread_bundle_;
   base::HistogramTester histogram_tester_;
 
@@ -176,7 +178,7 @@ TEST_F(EventRouterTest, GetBaseEventName) {
 void EventRouterTest::RunEventRouterObserverTest(
     const EventListenerConstructor& constructor) {
   EventRouter router(NULL, NULL);
-  scoped_ptr<EventListener> listener =
+  std::unique_ptr<EventListener> listener =
       constructor.Run("event_name", NULL, new base::DictionaryValue());
 
   // Add/remove works without any observers.
@@ -212,7 +214,7 @@ void EventRouterTest::RunEventRouterObserverTest(
   // Adding a listener with a sub-event notifies the main observer with
   // proper details.
   matching_observer.Reset();
-  scoped_ptr<EventListener> sub_event_listener =
+  std::unique_ptr<EventListener> sub_event_listener =
       constructor.Run("event_name/1", NULL, new base::DictionaryValue());
   router.OnListenerAdded(sub_event_listener.get());
   EXPECT_EQ(1, matching_observer.listener_added_count());

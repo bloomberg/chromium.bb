@@ -5,11 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_CHANGE_H_
 #define EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_CHANGE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 class ValueStoreChange;
@@ -48,8 +48,8 @@ class ValueStoreChange {
         const std::string& key, base::Value* old_value, base::Value* new_value);
 
     const std::string key_;
-    const scoped_ptr<base::Value> old_value_;
-    const scoped_ptr<base::Value> new_value_;
+    const std::unique_ptr<base::Value> old_value_;
+    const std::unique_ptr<base::Value> new_value_;
 
    private:
     friend class base::RefCountedThreadSafe<Inner>;

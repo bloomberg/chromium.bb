@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/version.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -276,7 +277,7 @@ void UserScriptLoader::StartLoad() {
 }
 
 // static
-scoped_ptr<base::SharedMemory> UserScriptLoader::Serialize(
+std::unique_ptr<base::SharedMemory> UserScriptLoader::Serialize(
     const UserScriptList& scripts) {
   base::Pickle pickle;
   pickle.WriteUInt32(scripts.size());
@@ -304,10 +305,10 @@ scoped_ptr<base::SharedMemory> UserScriptLoader::Serialize(
   options.size = pickle.size();
   options.share_read_only = true;
   if (!shared_memory.Create(options))
-    return scoped_ptr<base::SharedMemory>();
+    return std::unique_ptr<base::SharedMemory>();
 
   if (!shared_memory.Map(pickle.size()))
-    return scoped_ptr<base::SharedMemory>();
+    return std::unique_ptr<base::SharedMemory>();
 
   // Copy the pickle to shared memory.
   memcpy(shared_memory.memory(), pickle.data(), pickle.size());
@@ -315,10 +316,10 @@ scoped_ptr<base::SharedMemory> UserScriptLoader::Serialize(
   base::SharedMemoryHandle readonly_handle;
   if (!shared_memory.ShareReadOnlyToProcess(base::GetCurrentProcessHandle(),
                                             &readonly_handle))
-    return scoped_ptr<base::SharedMemory>();
+    return std::unique_ptr<base::SharedMemory>();
 
-  return make_scoped_ptr(new base::SharedMemory(readonly_handle,
-                                                /*read_only=*/true));
+  return base::WrapUnique(new base::SharedMemory(readonly_handle,
+                                                 /*read_only=*/true));
 }
 
 void UserScriptLoader::AddObserver(Observer* observer) {
@@ -337,8 +338,8 @@ void UserScriptLoader::SetReady(bool ready) {
 }
 
 void UserScriptLoader::OnScriptsLoaded(
-    scoped_ptr<UserScriptList> user_scripts,
-    scoped_ptr<base::SharedMemory> shared_memory) {
+    std::unique_ptr<UserScriptList> user_scripts,
+    std::unique_ptr<base::SharedMemory> shared_memory) {
   user_scripts_.reset(user_scripts.release());
   if (pending_load_) {
     // While we were loading, there were further changes. Don't bother

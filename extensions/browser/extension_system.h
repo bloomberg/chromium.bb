@@ -125,7 +125,7 @@ class ExtensionSystem : public KeyedService {
   // Get a set of extensions that depend on the given extension.
   // TODO(elijahtaylor): Move SharedModuleService out of chrome/browser
   // so it can be retrieved from ExtensionSystem directly.
-  virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
+  virtual std::unique_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) = 0;
 
   // Install an updated version of |extension_id| with the version given in

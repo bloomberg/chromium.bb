@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -84,7 +85,7 @@ class StashBackend::StashEntry {
   void OnHandleReady(MojoResult result);
 
   // The waiters that are waiting for handles to be readable.
-  std::vector<scoped_ptr<mojo::common::HandleWatcher>> waiters_;
+  std::vector<std::unique_ptr<mojo::common::HandleWatcher>> waiters_;
 
   StashedObjectPtr stashed_object_;
 
@@ -104,7 +105,7 @@ StashBackend::~StashBackend() {
 
 void StashBackend::AddToStash(mojo::Array<StashedObjectPtr> stashed_objects) {
   for (size_t i = 0; i < stashed_objects.size(); i++) {
-    stashed_objects_.push_back(make_scoped_ptr(new StashEntry(
+    stashed_objects_.push_back(base::WrapUnique(new StashEntry(
         std::move(stashed_objects[i]),
         has_notified_ ? base::Closure()
                       : base::Bind(&StashBackend::OnHandleReady,
@@ -144,7 +145,7 @@ StashBackend::StashEntry::StashEntry(StashedObjectPtr stashed_object,
     return;
 
   for (size_t i = 0; i < stashed_object_->stashed_handles.size(); i++) {
-    scoped_ptr<mojo::common::HandleWatcher> watcher(
+    std::unique_ptr<mojo::common::HandleWatcher> watcher(
         new mojo::common::HandleWatcher());
     watcher->Start(stashed_object_->stashed_handles[i].get(),
                    MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE,

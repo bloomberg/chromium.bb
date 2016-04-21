@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 
 namespace base {
@@ -129,7 +129,7 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   int current_block_;
 
   // The hash we're building up for the bytes of |current_block_|.
-  scoped_ptr<crypto::SecureHash> current_hash_;
+  std::unique_ptr<crypto::SecureHash> current_hash_;
 
   // The number of bytes we've already input into |current_hash_|.
   int current_hash_byte_count_;

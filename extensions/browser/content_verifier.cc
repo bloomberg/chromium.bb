@@ -158,13 +158,13 @@ void ContentVerifier::OnExtensionLoaded(
     std::set<base::FilePath> original_image_paths =
         delegate_->GetBrowserImagePaths(extension);
 
-    scoped_ptr<std::set<base::FilePath>> image_paths(
+    std::unique_ptr<std::set<base::FilePath>> image_paths(
         new std::set<base::FilePath>);
     for (const auto& path : original_image_paths) {
       image_paths->insert(NormalizeRelativePath(path));
     }
 
-    scoped_ptr<ContentVerifierIOData::ExtensionData> data(
+    std::unique_ptr<ContentVerifierIOData::ExtensionData> data(
         new ContentVerifierIOData::ExtensionData(
             std::move(image_paths),
             extension->version() ? *extension->version() : base::Version()));
@@ -251,7 +251,7 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
   const std::set<base::FilePath>& browser_images = *(data->browser_image_paths);
 
   base::FilePath locales_dir = extension_root.Append(kLocaleFolder);
-  scoped_ptr<std::set<std::string> > all_locales;
+  std::unique_ptr<std::set<std::string>> all_locales;
 
   for (std::set<base::FilePath>::const_iterator i = relative_paths.begin();
        i != relative_paths.end();

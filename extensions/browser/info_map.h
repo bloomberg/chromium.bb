@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_INFO_MAP_H_
 #define EXTENSIONS_BROWSER_INFO_MAP_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
@@ -114,7 +114,7 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
   // Used by dispatchers to limit API quota for individual extensions.
   // The QuotaService is not thread safe. We need to create and destroy it on
   // the IO thread.
-  scoped_ptr<QuotaService> quota_service_;
+  std::unique_ptr<QuotaService> quota_service_;
 
   // Assignment of extensions to renderer processes.
   extensions::ProcessMap process_map_;

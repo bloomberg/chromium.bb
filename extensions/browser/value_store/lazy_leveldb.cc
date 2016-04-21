@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -90,7 +91,7 @@ LazyLevelDb::~LazyLevelDb() {
 }
 
 ValueStore::Status LazyLevelDb::Read(const std::string& key,
-                                     scoped_ptr<base::Value>* value) {
+                                     std::unique_ptr<base::Value>* value) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(value);
 
@@ -106,7 +107,8 @@ ValueStore::Status LazyLevelDb::Read(const std::string& key,
   if (!s.ok())
     return ToValueStoreError(s);
 
-  scoped_ptr<base::Value> val = base::JSONReader().ReadToValue(value_as_json);
+  std::unique_ptr<base::Value> val =
+      base::JSONReader().ReadToValue(value_as_json);
   if (!val)
     return ValueStore::Status(ValueStore::CORRUPTION, FixCorruption(&key),
                               kInvalidJson);
@@ -274,10 +276,10 @@ bool LazyLevelDb::DeleteDbFile() {
 
 ValueStore::Status LazyLevelDb::CreateIterator(
     const leveldb::ReadOptions& read_options,
-    scoped_ptr<leveldb::Iterator>* iterator) {
+    std::unique_ptr<leveldb::Iterator>* iterator) {
   ValueStore::Status status = EnsureDbIsOpen();
   if (!status.ok())
     return status;
-  *iterator = make_scoped_ptr(db_->NewIterator(read_options));
+  *iterator = base::WrapUnique(db_->NewIterator(read_options));
   return ValueStore::Status();
 }

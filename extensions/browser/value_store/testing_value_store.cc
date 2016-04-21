@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 
 namespace {
 
@@ -59,14 +60,14 @@ ValueStore::ReadResult TestingValueStore::Get(
       settings->SetWithoutPathExpansion(*it, value->DeepCopy());
     }
   }
-  return MakeReadResult(make_scoped_ptr(settings), status_);
+  return MakeReadResult(base::WrapUnique(settings), status_);
 }
 
 ValueStore::ReadResult TestingValueStore::Get() {
   read_count_++;
   if (!status_.ok())
     return MakeReadResult(status_);
-  return MakeReadResult(make_scoped_ptr(storage_.DeepCopy()), status_);
+  return MakeReadResult(base::WrapUnique(storage_.DeepCopy()), status_);
 }
 
 ValueStore::WriteResult TestingValueStore::Set(
@@ -82,7 +83,7 @@ ValueStore::WriteResult TestingValueStore::Set(
   if (!status_.ok())
     return MakeWriteResult(status_);
 
-  scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
+  std::unique_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
   for (base::DictionaryValue::Iterator it(settings);
        !it.IsAtEnd(); it.Advance()) {
     base::Value* old_value = NULL;
@@ -109,10 +110,10 @@ ValueStore::WriteResult TestingValueStore::Remove(
   if (!status_.ok())
     return MakeWriteResult(status_);
 
-  scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
+  std::unique_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
-    scoped_ptr<base::Value> old_value;
+    std::unique_ptr<base::Value> old_value;
     if (storage_.RemoveWithoutPathExpansion(*it, &old_value)) {
       changes->push_back(ValueStoreChange(*it, old_value.release(), NULL));
     }
