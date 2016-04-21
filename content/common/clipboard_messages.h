@@ -72,7 +72,7 @@ IPC_SYNC_MESSAGE_CONTROL1_3(ClipboardHostMsg_ReadImage,
                             ui::ClipboardType /* type */,
                             std::string /* blob_uuid */,
                             std::string /* mime_type */,
-                            int64_t /* size */);
+                            int64_t /* size */)
 IPC_SYNC_MESSAGE_CONTROL2_1(ClipboardHostMsg_ReadCustomData,
                             ui::ClipboardType /* type */,
                             base::string16 /* type */,
