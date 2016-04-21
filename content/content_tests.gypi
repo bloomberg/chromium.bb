@@ -216,7 +216,6 @@
       'browser/download/mhtml_generation_browsertest.cc',
       'browser/download/save_package_browsertest.cc',
       'browser/fileapi/file_system_browsertest.cc',
-      'browser/find_request_manager_browsertest.cc',
       'browser/frame_host/frame_tree_browsertest.cc',
       'browser/frame_host/interstitial_page_impl_browsertest.cc',
       'browser/frame_host/navigation_controller_impl_browsertest.cc',
