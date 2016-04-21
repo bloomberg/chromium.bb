@@ -2543,7 +2543,6 @@ bool LayoutBlockFlow::positionNewFloats(LineWidth* width)
                 strut = adjustForUnsplittableChild(*childBox, floatLogicalLocation.y()) - floatLogicalLocation.y();
             }
 
-            floatingObject.setPaginationStrut(strut);
             childBox->setPaginationStrut(strut);
             if (strut) {
                 floatLogicalLocation = computeLogicalLocationForFloat(floatingObject, floatLogicalLocation.y() + strut);

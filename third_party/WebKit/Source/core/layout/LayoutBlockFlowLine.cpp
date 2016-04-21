@@ -860,8 +860,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
         FloatingObject* lastFloatFromPreviousLine = (containsFloats()) ? m_floatingObjects->set().last().get() : 0;
 
         WordMeasurements wordMeasurements;
-        endOfLine = lineBreaker.nextLineBreak(resolver, layoutState.lineInfo(), layoutTextInfo,
-            lastFloatFromPreviousLine, wordMeasurements);
+        endOfLine = lineBreaker.nextLineBreak(resolver, layoutState.lineInfo(), layoutTextInfo, wordMeasurements);
         layoutTextInfo.m_lineBreakIterator.resetPriorContext();
         if (resolver.position().atEnd()) {
             // FIXME: We shouldn't be creating any runs in nextLineBreak to begin with!
@@ -2002,57 +2001,6 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
         }
         indentText = DoNotIndentText;
     }
-}
-
-bool LayoutBlockFlow::positionNewFloatOnLine(FloatingObject& newFloat, FloatingObject* lastFloatFromPreviousLine, LineInfo& lineInfo, LineWidth& width)
-{
-    if (!positionNewFloats(&width))
-        return false;
-
-    // We only connect floats to lines for pagination purposes if the floats occur at the start of
-    // the line and the previous line had a hard break (so this line is either the first in the block
-    // or follows a <br>).
-    if (!newFloat.paginationStrut() || !lineInfo.previousLineBrokeCleanly() || !lineInfo.isEmpty())
-        return true;
-
-    const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-    ASSERT(floatingObjectSet.last() == &newFloat);
-
-    LayoutUnit floatLogicalTop = logicalTopForFloat(newFloat);
-    int paginationStrut = newFloat.paginationStrut();
-
-    if (floatLogicalTop - paginationStrut != logicalHeight() + lineInfo.floatPaginationStrut())
-        return true;
-
-    FloatingObjectSetIterator it = floatingObjectSet.end();
-    --it; // Last float is newFloat, skip that one.
-    FloatingObjectSetIterator begin = floatingObjectSet.begin();
-    while (it != begin) {
-        --it;
-        FloatingObject& floatingObject = *it->get();
-        if (&floatingObject == lastFloatFromPreviousLine)
-            break;
-        if (logicalTopForFloat(floatingObject) == logicalHeight() + lineInfo.floatPaginationStrut()) {
-            floatingObject.setPaginationStrut(paginationStrut + floatingObject.paginationStrut());
-            LayoutBox* floatBox = floatingObject.layoutObject();
-            setLogicalTopForChild(*floatBox, logicalTopForChild(*floatBox) + marginBeforeForChild(*floatBox) + paginationStrut);
-            if (floatBox->isLayoutBlock())
-                floatBox->forceChildLayout();
-            else
-                floatBox->layoutIfNeeded();
-            // Save the old logical top before calling removePlacedObject which will set
-            // isPlaced to false. Otherwise it will trigger an assert in logicalTopForFloat.
-            LayoutUnit oldLogicalTop = logicalTopForFloat(floatingObject);
-            m_floatingObjects->removePlacedObject(floatingObject);
-            setLogicalTopForFloat(floatingObject, oldLogicalTop + paginationStrut);
-            m_floatingObjects->addPlacedObject(floatingObject);
-        }
-    }
-
-    // Just update the line info's pagination strut without altering our logical height yet. If the line ends up containing
-    // no content, then we don't want to improperly grow the height of the block.
-    lineInfo.setFloatPaginationStrut(lineInfo.floatPaginationStrut() + paginationStrut);
-    return true;
 }
 
 LayoutUnit LayoutBlockFlow::startAlignedOffsetForLine(LayoutUnit position, IndentTextOrNot indentText)

@@ -128,11 +128,6 @@ public:
         return toBlockFlow()->positionNewFloats(width);
     }
 
-    bool positionNewFloatOnLine(FloatingObject& newFloat, FloatingObject* lastFloatFromPreviousLine, LineInfo& lineInfo, LineWidth& lineWidth)
-    {
-        return toBlockFlow()->positionNewFloatOnLine(newFloat, lastFloatFromPreviousLine, lineInfo, lineWidth);
-    }
-
     LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit logicalHeight) const
     {
         return toBlockFlow()->nextFloatLogicalBottomBelow(logicalHeight);

@@ -37,7 +37,6 @@ namespace blink {
 struct SameSizeAsFloatingObject {
     void* pointers[2];
     LayoutRect rect;
-    int paginationStrut;
     uint32_t bitfields : 8;
 };
 
@@ -46,7 +45,6 @@ static_assert(sizeof(FloatingObject) == sizeof(SameSizeAsFloatingObject), "Float
 FloatingObject::FloatingObject(LayoutBox* layoutObject)
     : m_layoutObject(layoutObject)
     , m_originatingLine(nullptr)
-    , m_paginationStrut(0)
     , m_shouldPaint(true)
     , m_isDescendant(false)
     , m_isPlaced(false)
@@ -67,7 +65,6 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject, Type type, const LayoutR
     : m_layoutObject(layoutObject)
     , m_originatingLine(nullptr)
     , m_frameRect(frameRect)
-    , m_paginationStrut(0)
     , m_type(type)
     , m_shouldPaint(shouldPaint)
     , m_isDescendant(isDescendant)
@@ -96,7 +93,6 @@ PassOwnPtr<FloatingObject> FloatingObject::copyToNewContainer(LayoutSize offset,
 PassOwnPtr<FloatingObject> FloatingObject::unsafeClone() const
 {
     OwnPtr<FloatingObject> cloneObject = adoptPtr(new FloatingObject(layoutObject(), getType(), m_frameRect, m_shouldPaint, m_isDescendant, false));
-    cloneObject->m_paginationStrut = m_paginationStrut;
     cloneObject->m_isPlaced = m_isPlaced;
     return cloneObject.release();
 }

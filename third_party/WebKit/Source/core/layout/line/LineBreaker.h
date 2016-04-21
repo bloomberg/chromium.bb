@@ -45,8 +45,7 @@ public:
         reset();
     }
 
-    InlineIterator nextLineBreak(InlineBidiResolver&, LineInfo&, LayoutTextInfo&,
-        FloatingObject* lastFloatFromPreviousLine, WordMeasurements&);
+    InlineIterator nextLineBreak(InlineBidiResolver&, LineInfo&, LayoutTextInfo&, WordMeasurements&);
 
     bool lineWasHyphenated() { return m_hyphenated; }
     const Vector<LineLayoutBox>& positionedObjects() { return m_positionedObjects; }
@@ -54,7 +53,7 @@ public:
 private:
     void reset();
 
-    void skipLeadingWhitespace(InlineBidiResolver&, LineInfo&, FloatingObject* lastFloatFromPreviousLine, LineWidth&);
+    void skipLeadingWhitespace(InlineBidiResolver&, LineInfo&, LineWidth&);
 
     LineLayoutBlockFlow m_block;
     bool m_hyphenated;

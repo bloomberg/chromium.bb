@@ -268,8 +268,6 @@ public:
     // Returns true if and only if it has positioned any floats.
     bool positionNewFloats(LineWidth* = nullptr);
 
-    bool positionNewFloatOnLine(FloatingObject& newFloat, FloatingObject* lastFloatFromPreviousLine, LineInfo&, LineWidth&);
-
     LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit) const;
     LayoutUnit nextFloatLogicalBottomBelowForBlock(LayoutUnit) const;
 

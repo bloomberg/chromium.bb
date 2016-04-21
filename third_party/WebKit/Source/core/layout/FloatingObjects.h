@@ -72,9 +72,6 @@ public:
 
     const LayoutRect& frameRect() const { ASSERT(isPlaced()); return m_frameRect; }
 
-    int paginationStrut() const { return m_paginationStrut; }
-    void setPaginationStrut(int strut) { m_paginationStrut = strut; }
-
 #if ENABLE(ASSERT)
     bool isInPlacedTree() const { return m_isInPlacedTree; }
     void setIsInPlacedTree(bool value) { m_isInPlacedTree = value; }
@@ -98,7 +95,6 @@ private:
     LayoutBox* m_layoutObject;
     RootInlineBox* m_originatingLine;
     LayoutRect m_frameRect;
-    int m_paginationStrut; // FIXME: Is this class size-sensitive? Does this need 32-bits?
 
     unsigned m_type : 2; // Type (left or right aligned)
     unsigned m_shouldPaint : 1;

@@ -45,34 +45,21 @@ public:
     bool isLastLine() const { return m_isLastLine; }
     bool isEmpty() const { return m_isEmpty; }
     bool previousLineBrokeCleanly() const { return m_previousLineBrokeCleanly; }
-    LayoutUnit floatPaginationStrut() const { return m_floatPaginationStrut; }
     unsigned runsFromLeadingWhitespace() const { return m_runsFromLeadingWhitespace; }
     void resetRunsFromLeadingWhitespace() { m_runsFromLeadingWhitespace = 0; }
     void incrementRunsFromLeadingWhitespace() { m_runsFromLeadingWhitespace++; }
 
     void setFirstLine(bool firstLine) { m_isFirstLine = firstLine; }
     void setLastLine(bool lastLine) { m_isLastLine = lastLine; }
-    void setEmpty(bool empty, LineLayoutBlockFlow block = LineLayoutBlockFlow(), LineWidth* lineWidth = nullptr)
-    {
-        if (m_isEmpty == empty)
-            return;
-        m_isEmpty = empty;
-        if (!empty && block && floatPaginationStrut()) {
-            block.setLogicalHeight(block.logicalHeight() + floatPaginationStrut());
-            setFloatPaginationStrut(LayoutUnit());
-            lineWidth->updateAvailableWidth();
-        }
-    }
+    void setEmpty(bool empty) { m_isEmpty = empty; }
 
     void setPreviousLineBrokeCleanly(bool previousLineBrokeCleanly) { m_previousLineBrokeCleanly = previousLineBrokeCleanly; }
-    void setFloatPaginationStrut(LayoutUnit strut) { m_floatPaginationStrut = strut; }
 
 private:
     bool m_isFirstLine;
     bool m_isLastLine;
     bool m_isEmpty;
     bool m_previousLineBrokeCleanly;
-    LayoutUnit m_floatPaginationStrut;
     unsigned m_runsFromLeadingWhitespace;
 };
 
