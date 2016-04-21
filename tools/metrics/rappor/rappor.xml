@@ -483,21 +483,6 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="DomDistiller.OpenPanel" type="UMA_RAPPOR_TYPE">
-  <owner>wychen@chromium.org</owner>
-  <summary>
-    The eTLD+1 of the frame URL where Reader Mode panel is opened by the
-    user.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="DomDistiller.PromptPanel" type="UMA_RAPPOR_TYPE">
-  <owner>wychen@chromium.org</owner>
-  <summary>
-    The eTLD+1 of the frame URL where Reader Mode is prompted.
-  </summary>
-</rappor-metric>
-
 <rappor-metric name="Extensions.AffectedByIsolateExtensions"
     type="UMA_RAPPOR_TYPE">
   <owner>nick@chromium.org</owner>
