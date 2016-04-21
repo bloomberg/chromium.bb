@@ -190,7 +190,7 @@ public:
 
     unsigned m_isolation : 1; // Isolation
 
-    unsigned m_contain : 3; // Containment
+    unsigned m_contain : 4; // Containment
 
     // ScrollBehavior. 'scroll-behavior' has 2 accepted values, but ScrollBehavior has a third
     // value (that can only be specified using CSSOM scroll APIs) so 2 bits are needed.

@@ -2098,7 +2098,7 @@ static float getMaxWidthListMarker(const LayoutBox* layoutObject)
 
 void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues) const
 {
-    computedValues.m_extent = style()->containsLayout() ? borderAndPaddingLogicalWidth() : logicalWidth();
+    computedValues.m_extent = style()->containsSize() ? borderAndPaddingLogicalWidth() : logicalWidth();
     computedValues.m_position = logicalLeft();
     computedValues.m_margins.m_start = marginStart();
     computedValues.m_margins.m_end = marginEnd();
@@ -2434,7 +2434,7 @@ void LayoutBox::updateLogicalHeight()
     m_intrinsicContentLogicalHeight = contentLogicalHeight();
 
     LogicalExtentComputedValues computedValues;
-    LayoutUnit height = style()->containsLayout() ? borderAndPaddingLogicalHeight() : logicalHeight();
+    LayoutUnit height = style()->containsSize() ? borderAndPaddingLogicalHeight() : logicalHeight();
     computeLogicalHeight(height, logicalTop(), computedValues);
 
     setLogicalHeight(computedValues.m_extent);

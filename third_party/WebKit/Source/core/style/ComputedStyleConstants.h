@@ -532,13 +532,15 @@ inline TouchAction& operator&= (TouchAction& a, TouchAction b) { return a = a & 
 
 enum EIsolation { IsolationAuto, IsolationIsolate };
 
-static const size_t ContainmentBits = 3;
+static const size_t ContainmentBits = 4;
 enum Containment {
     ContainsNone = 0x0,
     ContainsLayout = 0x1,
     ContainsStyle = 0x2,
     ContainsPaint = 0x4,
-    ContainsStrict = ContainsLayout | ContainsStyle | ContainsPaint,
+    ContainsSize = 0x8,
+    ContainsStrict = ContainsLayout | ContainsStyle | ContainsPaint | ContainsSize,
+    ContainsContent = ContainsLayout | ContainsStyle | ContainsPaint,
 };
 inline Containment operator| (Containment a, Containment b) { return Containment(int(a) | int(b)); }
 inline Containment& operator|= (Containment& a, Containment b) { return a = a | b; }

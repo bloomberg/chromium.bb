@@ -1384,7 +1384,7 @@ static CSSValue* consumeTextDecorationLine(CSSParserTokenRange& range)
     return list;
 }
 
-// none | strict | [ layout || style || paint ]
+// none | strict | content | [ layout || style || paint || size ]
 static CSSValue* consumeContain(CSSParserTokenRange& range)
 {
     CSSValueID id = range.peek().id();
@@ -1392,12 +1392,12 @@ static CSSValue* consumeContain(CSSParserTokenRange& range)
         return consumeIdent(range);
 
     CSSValueList* list = CSSValueList::createSpaceSeparated();
-    if (id == CSSValueStrict) {
+    if (id == CSSValueStrict || id == CSSValueContent) {
         list->append(consumeIdent(range));
         return list;
     }
     while (true) {
-        CSSPrimitiveValue* ident = consumeIdent<CSSValuePaint, CSSValueLayout, CSSValueStyle>(range);
+        CSSPrimitiveValue* ident = consumeIdent<CSSValuePaint, CSSValueLayout, CSSValueStyle, CSSValueSize>(range);
         if (!ident)
             break;
         if (list->hasValue(ident))

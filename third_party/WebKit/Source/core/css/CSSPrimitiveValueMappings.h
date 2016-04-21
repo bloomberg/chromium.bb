@@ -4625,6 +4625,9 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(Containment snapType)
     case ContainsStrict:
         m_value.valueID = CSSValueStrict;
         break;
+    case ContainsContent:
+        m_value.valueID = CSSValueContent;
+        break;
     case ContainsPaint:
         m_value.valueID = CSSValuePaint;
         break;
@@ -4633,6 +4636,9 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(Containment snapType)
         break;
     case ContainsLayout:
         m_value.valueID = CSSValueLayout;
+        break;
+    case ContainsSize:
+        m_value.valueID = CSSValueSize;
         break;
     }
 }
@@ -4644,12 +4650,16 @@ template<> inline Containment CSSPrimitiveValue::convertTo() const
         return ContainsNone;
     case CSSValueStrict:
         return ContainsStrict;
+    case CSSValueContent:
+        return ContainsContent;
     case CSSValuePaint:
         return ContainsPaint;
     case CSSValueStyle:
         return ContainsStyle;
     case CSSValueLayout:
         return ContainsLayout;
+    case CSSValueSize:
+        return ContainsSize;
     default:
         break;
     }

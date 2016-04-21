@@ -2806,6 +2806,8 @@ CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const Comp
             return cssValuePool().createIdentifierValue(CSSValueNone);
         if (style.contain() == ContainsStrict)
             return cssValuePool().createIdentifierValue(CSSValueStrict);
+        if (style.contain() == ContainsContent)
+            return cssValuePool().createIdentifierValue(CSSValueContent);
 
         CSSValueList* list = CSSValueList::createSpaceSeparated();
         if (style.containsStyle())
@@ -2814,6 +2816,8 @@ CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const Comp
             list->append(cssValuePool().createIdentifierValue(CSSValueLayout));
         if (style.containsPaint())
             list->append(cssValuePool().createIdentifierValue(CSSValuePaint));
+        if (style.containsSize())
+            list->append(cssValuePool().createIdentifierValue(CSSValueSize));
         ASSERT(list->length());
         return list;
     }

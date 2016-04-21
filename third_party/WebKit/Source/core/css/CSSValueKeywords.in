@@ -1071,6 +1071,7 @@ from-image
 paint
 style
 layout
+size
 
 // grid auto-repeat
 auto-fill

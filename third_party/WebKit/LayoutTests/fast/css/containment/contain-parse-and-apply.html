@@ -4,14 +4,18 @@
 #style { contain: style; }
 #layout { contain: layout; }
 #paint { contain: paint; }
+#size { contain: size; }
 #strict { contain: strict; }
+#content { contain: content; }
 </style>
 <body>
 <div id="none"><div></div></div>
 <div id="style"><div></div></div>
 <div id="layout"><div></div></div>
 <div id="paint"><div></div></div>
+<div id="size"><div></div></div>
 <div id="strict"><div></div></div>
+<div id="content"><div></div></div>
 <div id="test"></div>
 <script src="../../../resources/js-test.js"></script>
 <script>
@@ -28,7 +32,9 @@ shouldBeEqualToString("getContainValue('#none')", "none");
 shouldBeEqualToString("getContainValue('#style')", "style");
 shouldBeEqualToString("getContainValue('#layout')", "layout");
 shouldBeEqualToString("getContainValue('#paint')", "paint");
+shouldBeEqualToString("getContainValue('#size')", "size");
 shouldBeEqualToString("getContainValue('#strict')", "strict");
+shouldBeEqualToString("getContainValue('#content')", "content");
 
 var children = document.querySelectorAll("div > div");
 for (var i = 0; i < children.length; i++) {
@@ -37,7 +43,7 @@ for (var i = 0; i < children.length; i++) {
 
 var test = document.querySelector('#test');
 
-test.style.setProperty("contain", "layout paint style");
+test.style.setProperty("contain", "layout paint style size");
 shouldBeEqualToString("getContainValue('#test')", "strict");
 
 test.style.setProperty("contain", "layout paint");

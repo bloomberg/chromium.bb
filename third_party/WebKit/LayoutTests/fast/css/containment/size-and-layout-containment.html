@@ -3,8 +3,12 @@
 body {
     font: 10px Ahem;
 }
+.containSize {
+    contain: size;
+    background-color: green;
+}
 .containLayout {
-    contain: strict;
+    contain: layout;
     background-color: green;
 }
 .sized {
@@ -30,30 +34,30 @@ body {
 </style>
 
 Test an unsized contained block collapses.
-<div class="containLayout" data-expected-height=0><div class="sized"></div></div>
+<div class="containSize" data-expected-height=0><div class="sized"></div></div>
 
 Test a sized contained block respects its size, not its content's size.
-<div class="containLayout sized" data-expected-height=20><div class="overhangingFloat"></div></div>
+<div class="containSize sized" data-expected-height=20><div class="overhangingFloat"></div></div>
 
 Test that the contents of an unsized contained block doesn't effect its parent.
 <div class="testContainer" data-expected-height=0>
-    <div class="containLayout" data-expected-height=0><div class="overhangingFloat"></div></div>
+    <div class="containSize" data-expected-height=0><div class="overhangingFloat"></div></div>
 </div>
 
 Test that the contents of an unsized contained inline-block doesn't change the baseline
 of its parent. Having an inline-block (or other replaced content), even if it's empty,
 creates a line, hence we get a line-height worth of height.
 <div class="testContainer" data-expected-height=15>
-    <div class="containLayout inlineBlock" data-expected-height=0><div class="overhangingFloat"></div></div>
+    <div class="containSize inlineBlock" data-expected-height=0><div class="overhangingFloat"></div></div>
 </div>
 
 Test a sized inline-block uses the proper baseline. Result is 25 instead of 20 due to
 normal inline layout shenanigans.
 <div class="testContainer" data-expected-height=25>
-    <div class="containLayout inlineBlock sized" data-expected-height=20><div class="overhangingFloat"></div></div>
+    <div class="containSize inlineBlock sized" data-expected-height=20><div class="overhangingFloat"></div></div>
 </div>
 
-Test that a contained block avoids floats.
+Test that a layout contained block avoids floats.
 <div class="absolute" style="top: 100px; width: 10px;">
     <div class="overhangingFloat"></div>
     <div class="containLayout sized" data-offset-y=50></div>
@@ -62,11 +66,11 @@ Test that a contained block avoids floats.
 Test that a contained inline-block avoids floats.
 <div class="absolute" style="top: 200px width: 100px;">
     <div class="overhangingFloat"></div>
-    <div class="containLayout sized inlineBlock" data-offset-x=10></div>
+    <div class="containSize sized inlineBlock" data-offset-x=10></div>
 </div>
 
 <script src="../../../resources/check-layout.js"></script>
 <script>
 checkLayout('.testContainer');
-checkLayout('.containLayout');
+checkLayout('.containSize');
 </script>
