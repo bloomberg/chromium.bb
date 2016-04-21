@@ -53,7 +53,8 @@ tryPostMessage('3', '*', { x: 1 }, true);
 tryPostMessage('3a', { x: 1 }, '*', true); // Legacy argument order.
 tryPostMessage('4', '*', window);  // Passes because window has a "length" attribute of value '0', so it looks like an array
 tryPostMessage('4a', window, '*'); // Legacy argument order.
-tryPostMessage('5', '*', null);
+tryPostMessage('5', '*', undefined);
+tryPostMessage('5a', '*', null, true);
 tryPostMessage('6', '*', void 0);
 var channel1 = new MessageChannel;
 tryPostMessageFunction(window.postMessage, '7', '*', [channel1.port1, channel1.port2]);
@@ -62,7 +63,8 @@ tryPostMessageFunction(window.postMessage, '7a', [channel1a.port1, channel1a.por
 var channel2 = new MessageChannel;
 tryPostMessageFunction(window.postMessage, '7', '*', [channel2.port1, channel2.port2]);
 var channel3 = new MessageChannel;
-tryPostMessage(2147483648, '*', null);
+tryPostMessage(2147483648, '*', undefined);
+tryPostMessage(2147483648, '*', null, true);
 tryPostMessageFunction(window.postMessage, channel3.port1, '*', [channel3.port1, channel3.port2]);
 var channel4 = new MessageChannel;
 tryPostMessageFunction(window.postMessage, channel4.port1, '*', [channel4.port1, channel4.port2]);

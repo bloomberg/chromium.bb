@@ -211,7 +211,7 @@ v8::Local<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, Me
 
 bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local<v8::Value> value, int argumentIndex, Transferables& transferables, ExceptionState& exceptionState)
 {
-    if (isUndefinedOrNull(value))
+    if (value.IsEmpty() || value->IsUndefined())
         return true;
 
     uint32_t length = 0;

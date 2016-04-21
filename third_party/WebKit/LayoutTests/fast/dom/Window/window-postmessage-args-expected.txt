@@ -7,12 +7,14 @@ PASS Posting message ('3', [object Object]): threw exception TypeError: Failed t
 PASS Posting message ('3a', *): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 2nd argument is neither an array, nor does it have indexed properties.
 PASS Posting message ('4', [object Window]) did not throw an exception
 PASS Posting message ('4a', *) did not throw an exception
-PASS Posting message ('5', null) did not throw an exception
+PASS Posting message ('5', undefined) did not throw an exception
+PASS Posting message ('5a', null): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 3rd argument is neither an array, nor does it have indexed properties.
 PASS Posting message ('6', undefined) did not throw an exception
 PASS Posting message ('7', [object MessagePort],[object MessagePort]) did not throw an exception
 PASS Posting message ('7a', *) did not throw an exception
 PASS Posting message ('7', [object MessagePort],[object MessagePort]) did not throw an exception
-PASS Posting message ('2147483648', null) did not throw an exception
+PASS Posting message ('2147483648', undefined) did not throw an exception
+PASS Posting message ('2147483648', null): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 3rd argument is neither an array, nor does it have indexed properties.
 PASS Posting message ('[object MessagePort]', [object MessagePort],[object MessagePort]) did not throw an exception
 PASS Posting message ('[object MessagePort]', [object MessagePort],[object MessagePort]) did not throw an exception
 PASS Posting message ('[object MessagePort],[object MessagePort]', [object MessagePort],[object MessagePort]) did not throw an exception

@@ -1064,7 +1064,7 @@ public class PostMessageTest extends AwTestBase {
     private static final String TEST_TRANSFER_EMPTY_PORTS = "<!DOCTYPE html><html><body>"
             + "    <script>"
             + "        onmessage = function (e) {"
-            + "            e.ports[0].postMessage('1', null);"
+            + "            e.ports[0].postMessage('1', undefined);"
             + "            e.ports[0].postMessage('2', []);"
             + "        }"
             + "   </script>"
