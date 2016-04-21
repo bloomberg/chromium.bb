@@ -5,7 +5,7 @@
 #ifndef JINGLE_GLUE_RESOLVING_CLIENT_SOCKET_FACTORY_H_
 #define JINGLE_GLUE_RESOLVING_CLIENT_SOCKET_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace net {
 class ClientSocketHandle;
@@ -24,11 +24,11 @@ class ResolvingClientSocketFactory {
  public:
   virtual ~ResolvingClientSocketFactory() { }
   // Method to create a transport socket using a HostPortPair.
-  virtual scoped_ptr<net::StreamSocket> CreateTransportClientSocket(
+  virtual std::unique_ptr<net::StreamSocket> CreateTransportClientSocket(
       const net::HostPortPair& host_and_port) = 0;
 
-  virtual scoped_ptr<net::SSLClientSocket> CreateSSLClientSocket(
-      scoped_ptr<net::ClientSocketHandle> transport_socket,
+  virtual std::unique_ptr<net::SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<net::ClientSocketHandle> transport_socket,
       const net::HostPortPair& host_and_port) = 0;
 };
 

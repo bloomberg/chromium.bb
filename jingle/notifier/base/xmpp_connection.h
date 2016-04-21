@@ -7,10 +7,11 @@
 #ifndef JINGLE_NOTIFIER_BASE_XMPP_CONNECTION_H_
 #define JINGLE_NOTIFIER_BASE_XMPP_CONNECTION_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -93,7 +94,7 @@ class XmppConnection
 
   void ClearClient();
 
-  scoped_ptr<jingle_glue::TaskPump> task_pump_;
+  std::unique_ptr<jingle_glue::TaskPump> task_pump_;
   base::WeakPtr<WeakXmppClient> weak_xmpp_client_;
   bool on_connect_called_;
   Delegate* delegate_;

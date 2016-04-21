@@ -5,13 +5,14 @@
 #include "jingle/glue/chrome_async_socket.h"
 
 #include <stddef.h>
+
 #include <deque>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_default.h"
 #include "jingle/glue/resolving_client_socket_factory.h"
@@ -124,14 +125,14 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
   }
 
   // ResolvingClientSocketFactory implementation.
-  scoped_ptr<net::StreamSocket> CreateTransportClientSocket(
+  std::unique_ptr<net::StreamSocket> CreateTransportClientSocket(
       const net::HostPortPair& host_and_port) override {
     return mock_client_socket_factory_->CreateTransportClientSocket(
         address_list_, NULL, NULL, net::NetLog::Source());
   }
 
-  scoped_ptr<net::SSLClientSocket> CreateSSLClientSocket(
-      scoped_ptr<net::ClientSocketHandle> transport_socket,
+  std::unique_ptr<net::SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<net::ClientSocketHandle> transport_socket,
       const net::HostPortPair& host_and_port) override {
     net::SSLClientSocketContext context;
     context.cert_verifier = cert_verifier_.get();
@@ -141,11 +142,11 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
   }
 
  private:
-  scoped_ptr<net::ClientSocketFactory> mock_client_socket_factory_;
+  std::unique_ptr<net::ClientSocketFactory> mock_client_socket_factory_;
   net::AddressList address_list_;
   net::SSLConfig ssl_config_;
-  scoped_ptr<net::CertVerifier> cert_verifier_;
-  scoped_ptr<net::TransportSecurityState> transport_security_state_;
+  std::unique_ptr<net::CertVerifier> cert_verifier_;
+  std::unique_ptr<net::TransportSecurityState> transport_security_state_;
 };
 
 class ChromeAsyncSocketTest
@@ -160,14 +161,14 @@ class ChromeAsyncSocketTest
     // __THE_PROCESS_HAS_FORKED_AND_YOU_CANNOT_USE_THIS_COREFOUNDATION_FUNCTIONALITY___YOU_MUST_EXEC__
     // when called.
     // Explicitly create a MessagePumpDefault which can run in this enivronment.
-    scoped_ptr<base::MessagePump> pump(new base::MessagePumpDefault());
+    std::unique_ptr<base::MessagePump> pump(new base::MessagePumpDefault());
     message_loop_.reset(new base::MessageLoop(std::move(pump)));
   }
 
   ~ChromeAsyncSocketTest() override {}
 
   void SetUp() override {
-    scoped_ptr<net::MockClientSocketFactory> mock_client_socket_factory(
+    std::unique_ptr<net::MockClientSocketFactory> mock_client_socket_factory(
         new net::MockClientSocketFactory());
     mock_client_socket_factory->AddSocketDataProvider(
         &async_socket_data_provider_);
@@ -177,10 +178,9 @@ class ChromeAsyncSocketTest
     // Fake DNS resolution for |addr_| and pass it to the factory.
     const net::AddressList address_list = net::AddressList::CreateFromIPAddress(
         net::IPAddress::IPv4Localhost(), addr_.port());
-    scoped_ptr<MockXmppClientSocketFactory> mock_xmpp_client_socket_factory(
-        new MockXmppClientSocketFactory(
-            mock_client_socket_factory.release(),
-            address_list));
+    std::unique_ptr<MockXmppClientSocketFactory>
+        mock_xmpp_client_socket_factory(new MockXmppClientSocketFactory(
+            mock_client_socket_factory.release(), address_list));
     chrome_async_socket_.reset(
         new ChromeAsyncSocket(mock_xmpp_client_socket_factory.release(),
                               14, 20)),
@@ -414,7 +414,7 @@ class ChromeAsyncSocketTest
 
   std::string DrainRead(size_t buf_size) {
     std::string read;
-    scoped_ptr<char[]> buf(new char[buf_size]);
+    std::unique_ptr<char[]> buf(new char[buf_size]);
     size_t len_read;
     while (true) {
       bool success =
@@ -432,12 +432,12 @@ class ChromeAsyncSocketTest
   }
 
   // ChromeAsyncSocket expects a message loop.
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
   AsyncSocketDataProvider async_socket_data_provider_;
   net::SSLSocketDataProvider ssl_socket_data_provider_;
 
-  scoped_ptr<ChromeAsyncSocket> chrome_async_socket_;
+  std::unique_ptr<ChromeAsyncSocket> chrome_async_socket_;
   std::deque<SignalSocketState> signal_socket_states_;
   const rtc::SocketAddress addr_;
 

@@ -76,7 +76,7 @@ class XmppConnectionTest : public testing::Test {
  protected:
   XmppConnectionTest()
       : mock_pre_xmpp_auth_(new MockPreXmppAuth()) {
-    scoped_ptr<base::MessagePump> pump(new base::MessagePumpDefault());
+    std::unique_ptr<base::MessagePump> pump(new base::MessagePumpDefault());
     message_loop_.reset(new base::MessageLoop(std::move(pump)));
 
     url_request_context_getter_ = new net::TestURLRequestContextGetter(
@@ -91,9 +91,9 @@ class XmppConnectionTest : public testing::Test {
   }
 
   // Needed by XmppConnection.
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   MockXmppConnectionDelegate mock_xmpp_connection_delegate_;
-  scoped_ptr<MockPreXmppAuth> mock_pre_xmpp_auth_;
+  std::unique_ptr<MockPreXmppAuth> mock_pre_xmpp_auth_;
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
 };
 

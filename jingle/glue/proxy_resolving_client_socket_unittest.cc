@@ -38,7 +38,7 @@ class ProxyResolvingClientSocketTest : public testing::Test {
   ProxyResolvingClientSocketTest()
       : url_request_context_getter_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get(),
-            scoped_ptr<net::TestURLRequestContext>(
+            std::unique_ptr<net::TestURLRequestContext>(
                 new MyTestURLRequestContext))) {}
 
   ~ProxyResolvingClientSocketTest() override {}

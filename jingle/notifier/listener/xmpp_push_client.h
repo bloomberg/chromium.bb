@@ -5,13 +5,13 @@
 #ifndef JINGLE_NOTIFIER_LISTENER_XMPP_PUSH_CLIENT_H_
 #define JINGLE_NOTIFIER_LISTENER_XMPP_PUSH_CLIENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -77,7 +77,7 @@ class XmppPushClient :
   SubscriptionList subscriptions_;
   buzz::XmppClientSettings xmpp_settings_;
 
-  scoped_ptr<notifier::Login> login_;
+  std::unique_ptr<notifier::Login> login_;
 
   // The XMPP connection.
   base::WeakPtr<buzz::XmppTaskParentInterface> base_task_;

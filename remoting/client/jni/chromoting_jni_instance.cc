@@ -398,7 +398,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 
   client_.reset(
       new ChromotingClient(client_context_.get(), this, video_renderer_.get(),
-                           make_scoped_ptr(new AudioPlayerAndroid())));
+                           base::WrapUnique(new AudioPlayerAndroid())));
 
   signaling_.reset(
       new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),

@@ -4,9 +4,10 @@
 
 #include "jingle/notifier/listener/push_notifications_send_update_task.h"
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,9 +40,9 @@ TEST_F(PushNotificationsSendUpdateTaskTest, MakeUpdateMessage) {
   std::string base64_data;
   base::Base64Encode(notification.data, &base64_data);
 
-  scoped_ptr<buzz::XmlElement> message(
-      PushNotificationsSendUpdateTask::MakeUpdateMessage(
-          notification, to_jid_bare_));
+  std::unique_ptr<buzz::XmlElement> message(
+      PushNotificationsSendUpdateTask::MakeUpdateMessage(notification,
+                                                         to_jid_bare_));
 
   std::string expected_xml_string =
       base::StringPrintf(

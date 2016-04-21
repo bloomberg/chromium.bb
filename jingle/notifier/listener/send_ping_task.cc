@@ -4,10 +4,10 @@
 
 #include "jingle/notifier/listener/send_ping_task.h"
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "third_party/webrtc/libjingle/xmllite/qname.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -30,7 +30,7 @@ SendPingTask::~SendPingTask() {
 
 int SendPingTask::ProcessStart() {
   ping_task_id_ = task_id();
-  scoped_ptr<buzz::XmlElement> stanza(MakePingStanza(ping_task_id_));
+  std::unique_ptr<buzz::XmlElement> stanza(MakePingStanza(ping_task_id_));
   DVLOG(1) << "Sending ping stanza " << XmlElementToString(*stanza);
   if (SendStanza(stanza.get()) != buzz::XMPP_RETURN_OK) {
     DLOG(WARNING) << "Could not send stanza " << XmlElementToString(*stanza);

@@ -13,13 +13,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -182,7 +182,8 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   // Close functions.
   void DoClose();
 
-  scoped_ptr<ResolvingClientSocketFactory> resolving_client_socket_factory_;
+  std::unique_ptr<ResolvingClientSocketFactory>
+      resolving_client_socket_factory_;
 
   // buzz::AsyncSocket state.
   buzz::AsyncSocket::State state_;
@@ -190,7 +191,7 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   net::Error net_error_;
 
   // NULL iff state() == STATE_CLOSED.
-  scoped_ptr<net::StreamSocket> transport_socket_;
+  std::unique_ptr<net::StreamSocket> transport_socket_;
 
   // State for the read loop.  |read_start_| <= |read_end_| <=
   // |read_buf_->size()|.  There's a read in flight (i.e.,

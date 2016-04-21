@@ -6,10 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -69,7 +70,7 @@ std::string SerializeP2PCandidate(const cricket::Candidate& candidate) {
 
 bool DeserializeP2PCandidate(const std::string& candidate_str,
                              cricket::Candidate* candidate) {
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       base::JSONReader::Read(candidate_str, base::JSON_ALLOW_TRAILING_COMMAS));
   if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY)) {
     return false;

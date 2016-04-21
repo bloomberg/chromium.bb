@@ -36,7 +36,7 @@ base::LazyInstance<base::ThreadLocalPointer<JingleThreadWrapper> >
 void JingleThreadWrapper::EnsureForCurrentMessageLoop() {
   if (JingleThreadWrapper::current() == nullptr) {
     base::MessageLoop* message_loop = base::MessageLoop::current();
-    scoped_ptr<JingleThreadWrapper> wrapper =
+    std::unique_ptr<JingleThreadWrapper> wrapper =
         JingleThreadWrapper::WrapTaskRunner(message_loop->task_runner());
     message_loop->AddDestructionObserver(wrapper.release());
   }
@@ -44,12 +44,13 @@ void JingleThreadWrapper::EnsureForCurrentMessageLoop() {
   DCHECK_EQ(rtc::Thread::Current(), current());
 }
 
-scoped_ptr<JingleThreadWrapper> JingleThreadWrapper::WrapTaskRunner(
+std::unique_ptr<JingleThreadWrapper> JingleThreadWrapper::WrapTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!JingleThreadWrapper::current());
   DCHECK(task_runner->BelongsToCurrentThread());
 
-  scoped_ptr<JingleThreadWrapper> result(new JingleThreadWrapper(task_runner));
+  std::unique_ptr<JingleThreadWrapper> result(
+      new JingleThreadWrapper(task_runner));
   g_jingle_thread_wrapper.Get().Set(result.get());
   return result;
 }

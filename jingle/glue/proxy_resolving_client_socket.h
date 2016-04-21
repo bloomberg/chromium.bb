@@ -10,10 +10,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
@@ -93,10 +94,10 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   net::CompletionCallback proxy_resolve_callback_;
   net::CompletionCallback connect_callback_;
 
-  scoped_ptr<net::HttpNetworkSession> network_session_;
+  std::unique_ptr<net::HttpNetworkSession> network_session_;
 
   // The transport socket.
-  scoped_ptr<net::ClientSocketHandle> transport_;
+  std::unique_ptr<net::ClientSocketHandle> transport_;
 
   const net::SSLConfig ssl_config_;
   net::ProxyService::PacRequest* pac_request_;

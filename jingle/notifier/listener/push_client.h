@@ -5,9 +5,9 @@
 #ifndef JINGLE_NOTIFIER_LISTENER_PUSH_CLIENT_H_
 #define JINGLE_NOTIFIER_LISTENER_PUSH_CLIENT_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "jingle/notifier/listener/notification_defines.h"
 
 namespace notifier {
@@ -24,13 +24,13 @@ class PushClient {
 
   // Creates a default non-blocking PushClient implementation from the
   // given options.
-  static scoped_ptr<PushClient> CreateDefault(
+  static std::unique_ptr<PushClient> CreateDefault(
       const NotifierOptions& notifier_options);
 
   // Creates a default blocking PushClient implementation from the
   // given options.  Must be called from the IO thread (according to
   // |notifier_options|).
-  static scoped_ptr<PushClient> CreateDefaultOnIOThread(
+  static std::unique_ptr<PushClient> CreateDefaultOnIOThread(
       const NotifierOptions& notifier_options);
 
   // Manage the list of observers for incoming notifications.

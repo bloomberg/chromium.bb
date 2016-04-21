@@ -19,10 +19,10 @@
 #include <stdint.h>
 
 #include <cstddef>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -37,7 +37,8 @@ namespace jingle_glue {
 
 class FakeSSLClientSocket : public net::StreamSocket {
  public:
-  explicit FakeSSLClientSocket(scoped_ptr<net::StreamSocket> transport_socket);
+  explicit FakeSSLClientSocket(
+      std::unique_ptr<net::StreamSocket> transport_socket);
 
   ~FakeSSLClientSocket() override;
 
@@ -97,7 +98,7 @@ class FakeSSLClientSocket : public net::StreamSocket {
   void OnVerifyServerHelloDone(int status);
   net::Error ProcessVerifyServerHelloDone(size_t read);
 
-  scoped_ptr<net::StreamSocket> transport_socket_;
+  std::unique_ptr<net::StreamSocket> transport_socket_;
 
   // During the handshake process, holds a value from HandshakeState.
   // STATE_NONE otherwise.

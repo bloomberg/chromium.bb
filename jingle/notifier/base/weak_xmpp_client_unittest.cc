@@ -4,8 +4,9 @@
 
 #include "jingle/notifier/base/weak_xmpp_client.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "jingle/glue/task_pump.h"
@@ -62,7 +63,7 @@ class WeakXmppClientTest : public testing::Test {
   // Needed by TaskPump.
   base::MessageLoop message_loop_;
 
-  scoped_ptr<jingle_glue::TaskPump> task_pump_;
+  std::unique_ptr<jingle_glue::TaskPump> task_pump_;
   MockXmppDelegate mock_xmpp_delegate_;
 };
 

@@ -4,9 +4,10 @@
 
 #include "jingle/notifier/listener/send_ping_task.h"
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webrtc/libjingle/xmpp/jid.h"
@@ -28,7 +29,8 @@ class SendPingTaskTest : public testing::Test {
 TEST_F(SendPingTaskTest, MakePingStanza) {
   std::string task_id = "42";
 
-  scoped_ptr<buzz::XmlElement> message(SendPingTask::MakePingStanza(task_id));
+  std::unique_ptr<buzz::XmlElement> message(
+      SendPingTask::MakePingStanza(task_id));
 
   std::string expected_xml_string("<cli:iq type=\"get\" id=\"");
   expected_xml_string += task_id;

@@ -402,7 +402,7 @@ bool ChromeAsyncSocket::StartTls(const std::string& domain_name) {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   DCHECK(transport_socket_.get());
-  scoped_ptr<net::ClientSocketHandle> socket_handle(
+  std::unique_ptr<net::ClientSocketHandle> socket_handle(
       new net::ClientSocketHandle());
   socket_handle->SetSocket(std::move(transport_socket_));
   transport_socket_ = resolving_client_socket_factory_->CreateSSLClientSocket(

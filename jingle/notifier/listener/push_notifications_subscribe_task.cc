@@ -4,10 +4,10 @@
 
 #include "jingle/notifier/listener/push_notifications_subscribe_task.h"
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "jingle/notifier/listener/notification_constants.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "third_party/webrtc/libjingle/xmllite/qname.h"
@@ -40,9 +40,8 @@ bool PushNotificationsSubscribeTask::HandleStanza(
 
 int PushNotificationsSubscribeTask::ProcessStart() {
   DVLOG(1) << "Push notifications: Subscription task started.";
-  scoped_ptr<buzz::XmlElement> iq_stanza(
-      MakeSubscriptionMessage(subscriptions_, GetClient()->jid(),
-                              task_id()));
+  std::unique_ptr<buzz::XmlElement> iq_stanza(
+      MakeSubscriptionMessage(subscriptions_, GetClient()->jid(), task_id()));
   DVLOG(1) << "Push notifications: Subscription stanza: "
           << XmlElementToString(*iq_stanza.get());
 

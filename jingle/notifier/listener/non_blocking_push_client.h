@@ -5,11 +5,12 @@
 #ifndef JINGLE_NOTIFIER_LISTENER_NON_BLOCKING_PUSH_CLIENT_H_
 #define JINGLE_NOTIFIER_LISTENER_NON_BLOCKING_PUSH_CLIENT_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -30,7 +31,7 @@ class NonBlockingPushClient : public PushClient {
  public:
   // The type for a function that creates a (blocking) PushClient.
   // Will be called on the delegate task runner.
-  typedef base::Callback<scoped_ptr<PushClient>()>
+  typedef base::Callback<std::unique_ptr<PushClient>()>
       CreateBlockingPushClientCallback;
 
   // Runs the given callback on the given task runner, and delegates

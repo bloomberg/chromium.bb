@@ -31,25 +31,22 @@ XmppClientSocketFactory::XmppClientSocketFactory(
 
 XmppClientSocketFactory::~XmppClientSocketFactory() {}
 
-scoped_ptr<net::StreamSocket>
+std::unique_ptr<net::StreamSocket>
 XmppClientSocketFactory::CreateTransportClientSocket(
     const net::HostPortPair& host_and_port) {
   // TODO(akalin): Use socket pools.
-  scoped_ptr<net::StreamSocket> transport_socket(
-      new ProxyResolvingClientSocket(
-          NULL,
-          request_context_getter_,
-          ssl_config_,
-          host_and_port));
+  std::unique_ptr<net::StreamSocket> transport_socket(
+      new ProxyResolvingClientSocket(NULL, request_context_getter_, ssl_config_,
+                                     host_and_port));
   return (use_fake_ssl_client_socket_
-              ? scoped_ptr<net::StreamSocket>(
+              ? std::unique_ptr<net::StreamSocket>(
                     new FakeSSLClientSocket(std::move(transport_socket)))
               : std::move(transport_socket));
 }
 
-scoped_ptr<net::SSLClientSocket>
+std::unique_ptr<net::SSLClientSocket>
 XmppClientSocketFactory::CreateSSLClientSocket(
-    scoped_ptr<net::ClientSocketHandle> transport_socket,
+    std::unique_ptr<net::ClientSocketHandle> transport_socket,
     const net::HostPortPair& host_and_port) {
   net::SSLClientSocketContext context;
   context.cert_verifier =

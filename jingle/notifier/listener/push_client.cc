@@ -17,21 +17,21 @@ PushClient::~PushClient() {}
 
 namespace {
 
-scoped_ptr<PushClient> CreateXmppPushClient(
+std::unique_ptr<PushClient> CreateXmppPushClient(
     const NotifierOptions& notifier_options) {
-  return scoped_ptr<PushClient>(new XmppPushClient(notifier_options));
+  return std::unique_ptr<PushClient>(new XmppPushClient(notifier_options));
 }
 
 }  // namespace
 
-scoped_ptr<PushClient> PushClient::CreateDefault(
+std::unique_ptr<PushClient> PushClient::CreateDefault(
     const NotifierOptions& notifier_options) {
-  return scoped_ptr<PushClient>(new NonBlockingPushClient(
+  return std::unique_ptr<PushClient>(new NonBlockingPushClient(
       notifier_options.request_context_getter->GetNetworkTaskRunner(),
       base::Bind(&CreateXmppPushClient, notifier_options)));
 }
 
-scoped_ptr<PushClient> PushClient::CreateDefaultOnIOThread(
+std::unique_ptr<PushClient> PushClient::CreateDefaultOnIOThread(
     const NotifierOptions& notifier_options) {
   CHECK(notifier_options.request_context_getter->GetNetworkTaskRunner()->
         BelongsToCurrentThread());

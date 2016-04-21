@@ -4,8 +4,9 @@
 
 #include "jingle/notifier/listener/push_notifications_subscribe_task.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,9 +43,9 @@ TEST_F(PushNotificationsSubscribeTaskTest, MakeSubscriptionMessage) {
   subscription.channel = "test_channel2";
   subscription.from = "from.test2.com";
   subscriptions.push_back(subscription);
-  scoped_ptr<buzz::XmlElement> message(
-      PushNotificationsSubscribeTask::MakeSubscriptionMessage(
-          subscriptions, jid_, task_id_));
+  std::unique_ptr<buzz::XmlElement> message(
+      PushNotificationsSubscribeTask::MakeSubscriptionMessage(subscriptions,
+                                                              jid_, task_id_));
   std::string expected_xml_string =
       base::StringPrintf(
           "<cli:iq type=\"set\" to=\"%s\" id=\"%s\" "
