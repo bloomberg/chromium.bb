@@ -106,7 +106,9 @@ class PubSubMonitor(Monitor):
       return True
     try:
       self._initialize()
-    except EnvironmentError:
+    except (ValueError, errors.Error,
+            socket.timeout, socket.error, socket.herror, socket.gaierror,
+            httplib2.HttpLib2Error, EnvironmentError):
       # Log a warning, not error, to avoid false alarms in AppEngine apps.
       logging.warning('PubSubMonitor._initialize failed:\n%s',
                       traceback.format_exc())
