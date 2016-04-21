@@ -5555,7 +5555,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           WebRTC H.264 software video encoder/decoder
         </message>
         <message name="IDS_FLAGS_WEBRTC_H264_WITH_OPENH264_FFMPEG_DESCRIPTION" desc="Description of chrome:flags option to enable WebRTC H.264 sw encoder/decoder">
-          When enabled, an H.264 software video encoder/decoder pair is included. (If a hardware decoder is also available it may be used instead of this decoder).
+          When enabled, an H.264 software video encoder/decoder pair is included. If a hardware encoder/decoder is also available it may be used instead of this encoder/decoder.
         </message>
       </if>
       <message name="IDS_FLAGS_WEBVR_NAME" desc="Name of the 'Enable WebVR' flag.">

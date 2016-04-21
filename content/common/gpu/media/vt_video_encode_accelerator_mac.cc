@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/mac/mac_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "media/base/mac/coremedia_glue.h"
 #include "media/base/mac/corevideo_glue.h"
@@ -89,6 +90,11 @@ VTVideoEncodeAccelerator::GetSupportedProfiles() {
   videotoolbox_glue_ = VideoToolboxGlue::Get();
   if (!videotoolbox_glue_) {
     DLOG(ERROR) << "Failed creating VideoToolbox glue.";
+    return profiles;
+  }
+  if (!base::mac::IsOSMavericksOrLater()) {
+    DLOG(ERROR) << "VideoToolbox hardware encoder is supported on Mac OS 10.9 "
+                  "and later.";
     return profiles;
   }
   const bool rv = CreateCompressionSession(

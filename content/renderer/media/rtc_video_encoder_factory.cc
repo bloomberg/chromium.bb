@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "content/renderer/media/rtc_video_encoder.h"
 #include "media/gpu/ipc/client/gpu_video_encode_accelerator_host.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
@@ -32,7 +33,13 @@ void VEAToWebRTCCodecs(
         webrtc::kVideoCodecVP8, "VP8", width, height, fps));
   } else if (profile.profile >= media::H264PROFILE_MIN &&
              profile.profile <= media::H264PROFILE_MAX) {
-    if (cmd_line->HasSwitch(switches::kEnableWebRtcHWH264Encoding)) {
+    bool webrtc_h264_enabled = false;
+#if BUILDFLAG(RTC_USE_H264) && defined(OS_MACOSX)
+    webrtc_h264_enabled =
+        base::FeatureList::IsEnabled(kWebRtcH264WithOpenH264FFmpeg);
+#endif  // BUILDFLAG(RTC_USE_H264) && defined(OS_MACOSX)
+    if (cmd_line->HasSwitch(switches::kEnableWebRtcHWH264Encoding) ||
+        webrtc_h264_enabled) {
       codecs->push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
           webrtc::kVideoCodecH264, "H264", width, height, fps));
     }
