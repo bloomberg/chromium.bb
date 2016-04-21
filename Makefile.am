@@ -65,7 +65,7 @@ weston_LDFLAGS = -export-dynamic
 weston_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
 weston_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
 weston_LDADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
-	$(DLOPEN_LIBS) -lm -lrt libshared.la
+	$(DLOPEN_LIBS) -lm $(CLOCK_GETTIME_LIBS) libshared.la
 
 weston_SOURCES =					\
 	src/git-version.h				\
@@ -270,7 +270,8 @@ drm_backend_la_LIBADD =				\
 	$(COMPOSITOR_LIBS)			\
 	$(DRM_COMPOSITOR_LIBS)			\
 	$(INPUT_BACKEND_LIBS)			\
-	libshared.la -lrt			\
+	libshared.la				\
+	$(CLOCK_GETTIME_LIBS)			\
 	libsession-helper.la
 drm_backend_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
@@ -508,11 +509,11 @@ nodist_weston_presentation_shm_SOURCES =		\
 	protocol/presentation-time-protocol.c		\
 	protocol/presentation-time-client-protocol.h
 weston_presentation_shm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
-weston_presentation_shm_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la -lm -lrt
+weston_presentation_shm_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la -lm $(CLOCK_GETTIME_LIBS)
 
 weston_multi_resource_SOURCES = clients/multi-resource.c
 weston_multi_resource_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
-weston_multi_resource_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la -lrt -lm
+weston_multi_resource_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la $(CLOCK_GETTIME_LIBS) -lm
 endif
 
 if BUILD_SIMPLE_EGL_CLIENTS
@@ -580,7 +581,7 @@ BUILT_SOURCES += $(nodist_libtoytoolkit_la_SOURCES)
 libtoytoolkit_la_LIBADD =			\
 	$(CLIENT_LIBS)				\
 	$(CAIRO_EGL_LIBS)			\
-	libshared-cairo.la -lrt -lm
+	libshared-cairo.la $(CLOCK_GETTIME_LIBS) -lm
 libtoytoolkit_la_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS) $(CAIRO_EGL_CFLAGS)
 
 weston_flower_SOURCES = clients/flower.c
@@ -1181,7 +1182,7 @@ vertex_clip_test_SOURCES =			\
 	shared/helpers.h			\
 	src/vertex-clipping.c			\
 	src/vertex-clipping.h
-vertex_clip_test_LDADD = libtest-runner.la -lm -lrt
+vertex_clip_test_LDADD = libtest-runner.la -lm $(CLOCK_GETTIME_LIBS)
 
 libtest_client_la_SOURCES =			\
 	tests/weston-test-client-helper.c	\
@@ -1269,7 +1270,7 @@ matrix_test_SOURCES =				\
 	shared/matrix.c				\
 	shared/matrix.h
 matrix_test_CPPFLAGS = -DUNIT_TEST
-matrix_test_LDADD = -lm -lrt
+matrix_test_LDADD = -lm $(CLOCK_GETTIME_LIBS)
 
 if ENABLE_IVI_SHELL
 module_tests += 				\

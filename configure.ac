@@ -46,6 +46,11 @@ AC_CHECK_FUNC([dlopen], [],
               AC_CHECK_LIB([dl], [dlopen], DLOPEN_LIBS="-ldl"))
 AC_SUBST(DLOPEN_LIBS)
 
+# In old glibc versions (< 2.17) clock_gettime() is in librt
+AC_SEARCH_LIBS([clock_gettime], [rt],
+             [CLOCK_GETTIME_LIBS="-lrt"])
+AC_SUBST([CLOCK_GETTIME_LIBS])
+
 AC_CHECK_DECL(SFD_CLOEXEC,[],
 	      [AC_MSG_ERROR("SFD_CLOEXEC is needed to compile weston")],
 	      [[#include <sys/signalfd.h>]])
