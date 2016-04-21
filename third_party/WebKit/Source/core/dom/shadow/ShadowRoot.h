@@ -201,7 +201,7 @@ DEFINE_NODE_TYPE_CASTS(ShadowRoot, isShadowRoot());
 DEFINE_TYPE_CASTS(ShadowRoot, TreeScope, treeScope, treeScope->rootNode().isShadowRoot(), treeScope.rootNode().isShadowRoot());
 DEFINE_TYPE_CASTS(TreeScope, ShadowRoot, shadowRoot, true, true);
 
-std::ostream& operator<<(std::ostream&, const ShadowRootType&);
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const ShadowRootType&);
 
 } // namespace blink
 

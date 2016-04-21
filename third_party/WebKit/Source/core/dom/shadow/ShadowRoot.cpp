@@ -351,7 +351,6 @@ DEFINE_TRACE(ShadowRoot)
     DocumentFragment::trace(visitor);
 }
 
-#if DCHECK_IS_ON()
 std::ostream& operator<<(std::ostream& ostream, const ShadowRootType& type)
 {
     switch (type) {
@@ -370,6 +369,5 @@ std::ostream& operator<<(std::ostream& ostream, const ShadowRootType& type)
     }
     return ostream;
 }
-#endif
 
 } // namespace blink
