@@ -4,13 +4,14 @@
 
 #include "components/gcm_driver/gcm_client_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/gcm_driver/gcm_client_impl.h"
 
 namespace gcm {
 
-scoped_ptr<GCMClient> GCMClientFactory::BuildInstance() {
-  return scoped_ptr<GCMClient>(new GCMClientImpl(
-      make_scoped_ptr<GCMInternalsBuilder>(new GCMInternalsBuilder())));
+std::unique_ptr<GCMClient> GCMClientFactory::BuildInstance() {
+  return std::unique_ptr<GCMClient>(new GCMClientImpl(
+      base::WrapUnique<GCMInternalsBuilder>(new GCMInternalsBuilder())));
 }
 
 GCMClientFactory::GCMClientFactory() {

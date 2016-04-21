@@ -6,6 +6,7 @@
 #define COMPONENTS_GCM_DRIVER_CRYPTO_GCM_KEY_STORE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/crypto/proto/gcm_encryption_data.pb.h"
 #include "components/gcm_driver/gcm_delayed_task_controller.h"
@@ -64,7 +64,7 @@ class GCMKeyStore {
 
   void DidInitialize(bool success);
   void DidLoadKeys(bool success,
-                   scoped_ptr<std::vector<EncryptionData>> entries);
+                   std::unique_ptr<std::vector<EncryptionData>> entries);
 
   void DidStoreKeys(const std::string& app_id,
                     const KeyPair& pair,
@@ -93,7 +93,7 @@ class GCMKeyStore {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // Instance of the ProtoDatabase backing the key store.
-  scoped_ptr<leveldb_proto::ProtoDatabase<EncryptionData>> database_;
+  std::unique_ptr<leveldb_proto::ProtoDatabase<EncryptionData>> database_;
 
   enum class State;
 

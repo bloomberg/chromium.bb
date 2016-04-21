@@ -6,11 +6,11 @@
 #define COMPONENTS_GCM_DRIVER_INSTANCE_ID_INSTANCE_ID_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
 namespace gcm {
@@ -58,8 +58,8 @@ class InstanceID {
   // |app_id|: identifies the application that uses the Instance ID.
   // |handler|: provides the GCM functionality needed to support Instance ID.
   //            Must outlive this class. On Android, this can be null instead.
-  static scoped_ptr<InstanceID> Create(const std::string& app_id,
-                                       gcm::InstanceIDHandler* handler);
+  static std::unique_ptr<InstanceID> Create(const std::string& app_id,
+                                            gcm::InstanceIDHandler* handler);
 
   virtual ~InstanceID();
 

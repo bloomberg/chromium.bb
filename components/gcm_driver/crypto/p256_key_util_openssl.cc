@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/gcm_driver/crypto/p256_key_util.h"
-
-#include <stddef.h>
-#include <stdint.h>
-
 #include <openssl/ec.h>
 #include <openssl/ecdh.h>
 #include <openssl/evp.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
+#include "components/gcm_driver/crypto/p256_key_util.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/scoped_openssl_types.h"
 
@@ -32,11 +31,11 @@ bool ComputeSharedP256Secret(const base::StringPiece& private_key,
                              std::string* out_shared_secret) {
   DCHECK(out_shared_secret);
 
-  scoped_ptr<crypto::ECPrivateKey> local_key_pair(
+  std::unique_ptr<crypto::ECPrivateKey> local_key_pair(
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
           "" /* no password */,
-          std::vector<uint8_t>(
-              private_key.data(), private_key.data() + private_key.size()),
+          std::vector<uint8_t>(private_key.data(),
+                               private_key.data() + private_key.size()),
           std::vector<uint8_t>(
               public_key_x509.data(),
               public_key_x509.data() + public_key_x509.size())));

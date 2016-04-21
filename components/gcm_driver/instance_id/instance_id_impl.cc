@@ -7,10 +7,12 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -47,9 +49,10 @@ InstanceID::Result GCMClientResultToInstanceIDResult(
 }  // namespace
 
 // static
-scoped_ptr<InstanceID> InstanceID::Create(const std::string& app_id,
-                                          gcm::InstanceIDHandler* handler) {
-  return make_scoped_ptr(new InstanceIDImpl(app_id, handler));
+std::unique_ptr<InstanceID> InstanceID::Create(
+    const std::string& app_id,
+    gcm::InstanceIDHandler* handler) {
+  return base::WrapUnique(new InstanceIDImpl(app_id, handler));
 }
 
 InstanceIDImpl::InstanceIDImpl(const std::string& app_id,

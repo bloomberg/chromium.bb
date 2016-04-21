@@ -18,11 +18,11 @@ const int kInsanceIDSerializationPrefixLength =
 }  // namespace
 
 // static
-scoped_ptr<RegistrationInfo> RegistrationInfo::BuildFromString(
+std::unique_ptr<RegistrationInfo> RegistrationInfo::BuildFromString(
     const std::string& serialized_key,
     const std::string& serialized_value,
     std::string* registration_id) {
-  scoped_ptr<RegistrationInfo> registration;
+  std::unique_ptr<RegistrationInfo> registration;
 
   if (base::StartsWith(serialized_key, kInsanceIDSerializationPrefix,
                        base::CompareCase::SENSITIVE))
@@ -246,7 +246,8 @@ bool RegistrationInfoComparer::operator()(
 
 bool ExistsGCMRegistrationInMap(const RegistrationInfoMap& map,
                                 const std::string& app_id) {
-  scoped_ptr<GCMRegistrationInfo> gcm_registration(new GCMRegistrationInfo);
+  std::unique_ptr<GCMRegistrationInfo> gcm_registration(
+      new GCMRegistrationInfo);
   gcm_registration->app_id = app_id;
   return map.count(
       make_linked_ptr<RegistrationInfo>(gcm_registration.release())) > 0;

@@ -112,7 +112,7 @@ class GCMEncryptionProviderTest : public ::testing::Test {
   base::ScopedTempDir scoped_temp_dir_;
   base::HistogramTester histogram_tester_;
 
-  scoped_ptr<GCMEncryptionProvider> encryption_provider_;
+  std::unique_ptr<GCMEncryptionProvider> encryption_provider_;
 
   GCMEncryptionProvider::DecryptionResult decryption_result_ =
       GCMEncryptionProvider::DECRYPTION_RESULT_UNENCRYPTED;

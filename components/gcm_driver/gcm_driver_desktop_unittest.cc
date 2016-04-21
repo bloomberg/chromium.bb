@@ -168,9 +168,9 @@ class GCMDriverTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   base::Thread io_thread_;
   base::FieldTrialList field_trial_list_;
-  scoped_ptr<GCMDriverDesktop> driver_;
-  scoped_ptr<FakeGCMAppHandler> gcm_app_handler_;
-  scoped_ptr<FakeGCMConnectionObserver> gcm_connection_observer_;
+  std::unique_ptr<GCMDriverDesktop> driver_;
+  std::unique_ptr<FakeGCMAppHandler> gcm_app_handler_;
+  std::unique_ptr<FakeGCMConnectionObserver> gcm_connection_observer_;
 
   base::Closure async_operation_completed_callback_;
 
@@ -242,7 +242,7 @@ void GCMDriverTest::CreateDriver() {
   scoped_refptr<net::URLRequestContextGetter> request_context =
       new net::TestURLRequestContextGetter(io_thread_.task_runner());
   driver_.reset(new GCMDriverDesktop(
-      scoped_ptr<GCMClientFactory>(new FakeGCMClientFactory(
+      std::unique_ptr<GCMClientFactory>(new FakeGCMClientFactory(
           base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner())),
       GCMClient::ChromeBuildInfo(), "http://channel.status.request.url",
       "user-agent-string", &prefs_, temp_dir_.path(), request_context,

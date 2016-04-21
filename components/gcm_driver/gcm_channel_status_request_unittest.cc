@@ -34,7 +34,7 @@ class GCMChannelStatusRequestTest : public testing::Test {
                           bool enabled,
                           int poll_interval_seconds);
 
-  scoped_ptr<GCMChannelStatusRequest> request_;
+  std::unique_ptr<GCMChannelStatusRequest> request_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   net::TestURLFetcherFactory url_fetcher_factory_;

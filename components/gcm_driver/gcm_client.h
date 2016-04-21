@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/gcm_activity.h"
@@ -231,7 +231,7 @@ class GCMClient {
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
-      scoped_ptr<Encryptor> encryptor,
+      std::unique_ptr<Encryptor> encryptor,
       Delegate* delegate) = 0;
 
   // This will initiate the GCM connection only if |start_mode| means to start
@@ -302,7 +302,7 @@ class GCMClient {
   virtual void SetLastTokenFetchTime(const base::Time& time) = 0;
 
   // Updates the timer used by the HeartbeatManager for sending heartbeats.
-  virtual void UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) = 0;
+  virtual void UpdateHeartbeatTimer(std::unique_ptr<base::Timer> timer) = 0;
 
   // Adds the Instance ID data for a specific app to the persistent store.
   virtual void AddInstanceIDData(const std::string& app_id,

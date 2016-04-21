@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/base64url.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
 #include "crypto/random.h"
@@ -122,7 +123,7 @@ const TestVector kDecryptionTestVectors[] = {
 class GCMMessageCryptographerTest : public ::testing::Test {
  public:
   void SetUp() override {
-    scoped_ptr<crypto::SymmetricKey> random_key(
+    std::unique_ptr<crypto::SymmetricKey> random_key(
         crypto::SymmetricKey::GenerateRandomKey(crypto::SymmetricKey::AES,
                                                 kKeySizeBits));
 
@@ -159,7 +160,7 @@ class GCMMessageCryptographerTest : public ::testing::Test {
   base::StringPiece key() const { return key_; }
 
  private:
-  scoped_ptr<GCMMessageCryptographer> cryptographer_;
+  std::unique_ptr<GCMMessageCryptographer> cryptographer_;
 
   std::string key_;
 };
@@ -425,11 +426,11 @@ class GCMMessageCryptographerReferenceTest
   // Creates a new cryptographer based on the P-256 curve with the given public
   // keys of the sender and receiver, and optionally, the authentication secret.
   // The public keys must be given as uncompressed P-256 EC points.
-  void CreateCryptographer(const char* encoded_receiver_public_key,
-                           const char* encoded_sender_public_key,
-                           const char* encoded_auth_secret,
-                           scoped_ptr<GCMMessageCryptographer>* cryptographer)
-      const {
+  void CreateCryptographer(
+      const char* encoded_receiver_public_key,
+      const char* encoded_sender_public_key,
+      const char* encoded_auth_secret,
+      std::unique_ptr<GCMMessageCryptographer>* cryptographer) const {
     std::string receiver_public_key, sender_public_key, auth_secret;
     ASSERT_TRUE(base::Base64UrlDecode(
         encoded_receiver_public_key,
@@ -444,7 +445,7 @@ class GCMMessageCryptographerReferenceTest
           base::Base64UrlDecodePolicy::IGNORE_PADDING, &auth_secret));
     }
 
-    scoped_ptr<GCMMessageCryptographer> instance(
+    std::unique_ptr<GCMMessageCryptographer> instance(
         new GCMMessageCryptographer(GCMMessageCryptographer::Label::P256,
                                     receiver_public_key, sender_public_key,
                                     auth_secret));
@@ -506,7 +507,7 @@ TEST_F(GCMMessageCryptographerReferenceTest, WithAuthSecret) {
   ASSERT_GT(sender_shared_secret.size(), 0u);
   ASSERT_EQ(sender_shared_secret, receiver_shared_secret);
 
-  scoped_ptr<GCMMessageCryptographer> cryptographer;
+  std::unique_ptr<GCMMessageCryptographer> cryptographer;
   ASSERT_NO_FATAL_FAILURE(CreateCryptographer(
       kReceiverPublicUncompressed, kSenderPublicUncompressed, kAuthSecret,
       &cryptographer));
@@ -579,7 +580,7 @@ TEST_F(GCMMessageCryptographerReferenceTest, WithoutAuthSecret) {
   ASSERT_GT(sender_shared_secret.size(), 0u);
   ASSERT_EQ(sender_shared_secret, receiver_shared_secret);
 
-  scoped_ptr<GCMMessageCryptographer> cryptographer;
+  std::unique_ptr<GCMMessageCryptographer> cryptographer;
   ASSERT_NO_FATAL_FAILURE(CreateCryptographer(
       kReceiverPublicUncompressed, kSenderPublicUncompressed,
       nullptr /* auth_secret */, &cryptographer));

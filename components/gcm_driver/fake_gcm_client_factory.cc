@@ -4,7 +4,8 @@
 
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/sequenced_task_runner.h"
 #include "components/gcm_driver/gcm_client.h"
 
@@ -20,8 +21,8 @@ FakeGCMClientFactory::FakeGCMClientFactory(
 FakeGCMClientFactory::~FakeGCMClientFactory() {
 }
 
-scoped_ptr<GCMClient> FakeGCMClientFactory::BuildInstance() {
-  return scoped_ptr<GCMClient>(new FakeGCMClient(ui_thread_, io_thread_));
+std::unique_ptr<GCMClient> FakeGCMClientFactory::BuildInstance() {
+  return std::unique_ptr<GCMClient>(new FakeGCMClient(ui_thread_, io_thread_));
 }
 
 }  // namespace gcm

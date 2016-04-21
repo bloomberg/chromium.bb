@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_GCM_DRIVER_GCM_CHANNEL_STATUS_SYNCER_H_
 #define COMPONENTS_GCM_DRIVER_GCM_CHANNEL_STATUS_SYNCER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
@@ -85,7 +86,7 @@ class GCMChannelStatusSyncer {
   const std::string user_agent_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
-  scoped_ptr<GCMChannelStatusRequest> request_;
+  std::unique_ptr<GCMChannelStatusRequest> request_;
 
   bool started_;
   bool gcm_enabled_;

@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"
@@ -68,7 +69,7 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
 
   // Called on IO thread.
   void Initialize(
-      scoped_ptr<GCMClientFactory> gcm_client_factory,
+      std::unique_ptr<GCMClientFactory> gcm_client_factory,
       const GCMClient::ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
@@ -119,7 +120,7 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
 
   base::WeakPtr<GCMDriverDesktop> service_;
 
-  scoped_ptr<GCMClient> gcm_client_;
+  std::unique_ptr<GCMClient> gcm_client_;
 
   DISALLOW_COPY_AND_ASSIGN(IOWorker);
 };
@@ -137,7 +138,7 @@ GCMDriverDesktop::IOWorker::~IOWorker() {
 }
 
 void GCMDriverDesktop::IOWorker::Initialize(
-    scoped_ptr<GCMClientFactory> gcm_client_factory,
+    std::unique_ptr<GCMClientFactory> gcm_client_factory,
     const GCMClient::ChromeBuildInfo& chrome_build_info,
     const base::FilePath& store_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
@@ -150,12 +151,9 @@ void GCMDriverDesktop::IOWorker::Initialize(
 
   gcm_client_ = gcm_client_factory->BuildInstance();
 
-  gcm_client_->Initialize(chrome_build_info,
-                          store_path,
-                          blocking_task_runner,
-                          request_context,
-                          make_scoped_ptr<Encryptor>(new SystemEncryptor),
-                          this);
+  gcm_client_->Initialize(
+      chrome_build_info, store_path, blocking_task_runner, request_context,
+      base::WrapUnique<Encryptor>(new SystemEncryptor), this);
 }
 
 void GCMDriverDesktop::IOWorker::OnRegisterFinished(
@@ -325,7 +323,7 @@ void GCMDriverDesktop::IOWorker::Register(
     const std::vector<std::string>& sender_ids) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
+  std::unique_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
   gcm_info->app_id = app_id;
   gcm_info->sender_ids = sender_ids;
   gcm_client_->Register(make_linked_ptr<RegistrationInfo>(gcm_info.release()));
@@ -334,7 +332,7 @@ void GCMDriverDesktop::IOWorker::Register(
 void GCMDriverDesktop::IOWorker::Unregister(const std::string& app_id) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
+  std::unique_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
   gcm_info->app_id = app_id;
   gcm_client_->Unregister(
       make_linked_ptr<RegistrationInfo>(gcm_info.release()));
@@ -450,7 +448,7 @@ void GCMDriverDesktop::IOWorker::GetToken(
     const std::map<std::string, std::string>& options) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<InstanceIDTokenInfo> instance_id_token_info(
+  std::unique_ptr<InstanceIDTokenInfo> instance_id_token_info(
       new InstanceIDTokenInfo);
   instance_id_token_info->app_id = app_id;
   instance_id_token_info->authorized_entity = authorized_entity;
@@ -464,7 +462,7 @@ void GCMDriverDesktop::IOWorker::DeleteToken(
     const std::string& app_id,
     const std::string& authorized_entity,
     const std::string& scope) {
-  scoped_ptr<InstanceIDTokenInfo> instance_id_token_info(
+  std::unique_ptr<InstanceIDTokenInfo> instance_id_token_info(
       new InstanceIDTokenInfo);
   instance_id_token_info->app_id = app_id;
   instance_id_token_info->authorized_entity = authorized_entity;
@@ -477,7 +475,7 @@ void GCMDriverDesktop::IOWorker::WakeFromSuspendForHeartbeat(bool wake) {
 #if defined(OS_CHROMEOS)
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<base::Timer> timer;
+  std::unique_ptr<base::Timer> timer;
   if (wake)
     timer.reset(new timers::SimpleAlarmTimer());
   else
@@ -507,7 +505,7 @@ void GCMDriverDesktop::IOWorker::RecordDecryptionFailure(
 }
 
 GCMDriverDesktop::GCMDriverDesktop(
-    scoped_ptr<GCMClientFactory> gcm_client_factory,
+    std::unique_ptr<GCMClientFactory> gcm_client_factory,
     const GCMClient::ChromeBuildInfo& chrome_build_info,
     const std::string& channel_status_request_url,
     const std::string& user_agent,

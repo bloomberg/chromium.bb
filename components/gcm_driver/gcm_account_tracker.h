@@ -70,7 +70,7 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
 
   // |account_tracker| is used to deliver information about the accounts present
   // in the browser context to |driver|.
-  GCMAccountTracker(scoped_ptr<gaia::AccountTracker> account_tracker,
+  GCMAccountTracker(std::unique_ptr<gaia::AccountTracker> account_tracker,
                     GCMDriver* driver);
   ~GCMAccountTracker() override;
 
@@ -143,7 +143,7 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   OAuth2TokenService* GetTokenService();
 
   // Account tracker.
-  scoped_ptr<gaia::AccountTracker> account_tracker_;
+  std::unique_ptr<gaia::AccountTracker> account_tracker_;
 
   // GCM Driver. Not owned.
   GCMDriver* driver_;

@@ -83,8 +83,8 @@ std::string GetUserAgent(version_info::Channel channel) {
 
 }  // namespace
 
-scoped_ptr<GCMDriver> CreateGCMDriverDesktop(
-    scoped_ptr<GCMClientFactory> gcm_client_factory,
+std::unique_ptr<GCMDriver> CreateGCMDriverDesktop(
+    std::unique_ptr<GCMClientFactory> gcm_client_factory,
     PrefService* prefs,
     const base::FilePath& store_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
@@ -92,7 +92,7 @@ scoped_ptr<GCMDriver> CreateGCMDriverDesktop(
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner) {
-  return scoped_ptr<GCMDriver>(new GCMDriverDesktop(
+  return std::unique_ptr<GCMDriver>(new GCMDriverDesktop(
       std::move(gcm_client_factory), GetChromeBuildInfo(channel),
       GetChannelStatusRequestUrl(channel), GetUserAgent(channel), prefs,
       store_path, request_context, ui_task_runner, io_task_runner,

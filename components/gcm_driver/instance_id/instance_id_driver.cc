@@ -37,7 +37,7 @@ InstanceID* InstanceIDDriver::GetInstanceID(const std::string& app_id) {
 
   gcm::InstanceIDHandler* handler = gcm_driver_->GetInstanceIDHandlerInternal();
 
-  scoped_ptr<InstanceID> instance_id = InstanceID::Create(app_id, handler);
+  std::unique_ptr<InstanceID> instance_id = InstanceID::Create(app_id, handler);
   InstanceID* instance_id_ptr = instance_id.get();
   instance_id_map_.insert(std::make_pair(app_id, std::move(instance_id)));
   return instance_id_ptr;

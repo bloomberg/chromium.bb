@@ -62,7 +62,7 @@ class GCMKeyStoreTest : public ::testing::Test {
   base::ScopedTempDir scoped_temp_dir_;
   base::HistogramTester histogram_tester_;
 
-  scoped_ptr<GCMKeyStore> gcm_key_store_;
+  std::unique_ptr<GCMKeyStore> gcm_key_store_;
 };
 
 TEST_F(GCMKeyStoreTest, EmptyByDefault) {

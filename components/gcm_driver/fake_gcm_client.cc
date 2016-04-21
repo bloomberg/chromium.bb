@@ -78,7 +78,7 @@ void FakeGCMClient::Initialize(
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
-    scoped_ptr<Encryptor> encryptor,
+    std::unique_ptr<Encryptor> encryptor,
     Delegate* delegate) {
   delegate_ = delegate;
 }
@@ -194,8 +194,7 @@ void FakeGCMClient::RemoveAccountMapping(const std::string& account_id) {
 void FakeGCMClient::SetLastTokenFetchTime(const base::Time& time) {
 }
 
-void FakeGCMClient::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
-}
+void FakeGCMClient::UpdateHeartbeatTimer(std::unique_ptr<base::Timer> timer) {}
 
 void FakeGCMClient::AddInstanceIDData(const std::string& app_id,
                                       const std::string& instance_id,

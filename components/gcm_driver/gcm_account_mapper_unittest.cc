@@ -263,7 +263,7 @@ class GCMAccountMapperTest : public testing::Test {
 
  private:
   CustomFakeGCMDriver gcm_driver_;
-  scoped_ptr<GCMAccountMapper> account_mapper_;
+  std::unique_ptr<GCMAccountMapper> account_mapper_;
   base::SimpleTestClock* clock_;
   std::string last_received_app_id_;
   IncomingMessage last_received_message_;
@@ -281,7 +281,7 @@ void GCMAccountMapperTest::Restart() {
     account_mapper_->ShutdownHandler();
   gcm_driver_.RemoveAppHandler(kGCMAccountMapperAppId);
   account_mapper_.reset(new GCMAccountMapper(&gcm_driver_));
-  scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
+  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
   clock_ = clock.get();
   account_mapper_->SetClockForTesting(std::move(clock));
 }

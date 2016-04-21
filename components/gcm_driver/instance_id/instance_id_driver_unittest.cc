@@ -82,8 +82,8 @@ class InstanceIDDriverTest : public testing::Test {
   void DeleteTokenCompleted(InstanceID::Result result);
 
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<FakeGCMDriverForInstanceID> gcm_driver_;
-  scoped_ptr<InstanceIDDriver> driver_;
+  std::unique_ptr<FakeGCMDriverForInstanceID> gcm_driver_;
+  std::unique_ptr<InstanceIDDriver> driver_;
 
   std::string id_;
   base::Time creation_time_;

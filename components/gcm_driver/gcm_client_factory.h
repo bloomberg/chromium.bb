@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_GCM_DRIVER_GCM_CLIENT_FACTORY_H_
 #define COMPONENTS_GCM_DRIVER_GCM_CLIENT_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace gcm {
 
@@ -19,7 +20,7 @@ class GCMClientFactory {
 
   // Creates a new instance of GCMClient. The testing code could override this
   // to provide a mocked instance.
-  virtual scoped_ptr<GCMClient> BuildInstance();
+  virtual std::unique_ptr<GCMClient> BuildInstance();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GCMClientFactory);

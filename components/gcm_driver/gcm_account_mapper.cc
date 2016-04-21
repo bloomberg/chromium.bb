@@ -386,7 +386,7 @@ GCMAccountMapper::FindMappingByMessageId(const std::string& message_id) {
   return accounts_.end();
 }
 
-void GCMAccountMapper::SetClockForTesting(scoped_ptr<base::Clock> clock) {
+void GCMAccountMapper::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
   clock_ = std::move(clock);
 }
 

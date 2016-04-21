@@ -55,7 +55,7 @@ class GCMProfileService::IdentityObserver : public IdentityProvider::Observer {
 
   GCMDriver* driver_;
   IdentityProvider* identity_provider_;
-  scoped_ptr<GCMAccountTracker> gcm_account_tracker_;
+  std::unique_ptr<GCMAccountTracker> gcm_account_tracker_;
 
   // The account ID that this service is responsible for. Empty when the service
   // is not running.
@@ -108,7 +108,7 @@ void GCMProfileService::IdentityObserver::StartAccountTracker(
   if (gcm_account_tracker_)
     return;
 
-  scoped_ptr<gaia::AccountTracker> gaia_account_tracker(
+  std::unique_ptr<gaia::AccountTracker> gaia_account_tracker(
       new gaia::AccountTracker(identity_provider_, request_context));
 
   gcm_account_tracker_.reset(
@@ -141,8 +141,8 @@ GCMProfileService::GCMProfileService(
     base::FilePath path,
     net::URLRequestContextGetter* request_context,
     version_info::Channel channel,
-    scoped_ptr<ProfileIdentityProvider> identity_provider,
-    scoped_ptr<GCMClientFactory> gcm_client_factory,
+    std::unique_ptr<ProfileIdentityProvider> identity_provider,
+    std::unique_ptr<GCMClientFactory> gcm_client_factory,
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)

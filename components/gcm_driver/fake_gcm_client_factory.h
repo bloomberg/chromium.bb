@@ -26,7 +26,7 @@ class FakeGCMClientFactory : public GCMClientFactory {
   ~FakeGCMClientFactory() override;
 
   // GCMClientFactory:
-  scoped_ptr<GCMClient> BuildInstance() override;
+  std::unique_ptr<GCMClient> BuildInstance() override;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> ui_thread_;

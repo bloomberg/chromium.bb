@@ -5,13 +5,15 @@
 #include "components/gcm_driver/gcm_client_impl.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -241,33 +243,29 @@ void RecordResetStoreErrorToUMA(ResetStoreError error) {
 GCMInternalsBuilder::GCMInternalsBuilder() {}
 GCMInternalsBuilder::~GCMInternalsBuilder() {}
 
-scoped_ptr<base::Clock> GCMInternalsBuilder::BuildClock() {
-  return make_scoped_ptr<base::Clock>(new base::DefaultClock());
+std::unique_ptr<base::Clock> GCMInternalsBuilder::BuildClock() {
+  return base::WrapUnique<base::Clock>(new base::DefaultClock());
 }
 
-scoped_ptr<MCSClient> GCMInternalsBuilder::BuildMCSClient(
+std::unique_ptr<MCSClient> GCMInternalsBuilder::BuildMCSClient(
     const std::string& version,
     base::Clock* clock,
     ConnectionFactory* connection_factory,
     GCMStore* gcm_store,
     GCMStatsRecorder* recorder) {
-  return scoped_ptr<MCSClient>(new MCSClient(
-      version, clock, connection_factory, gcm_store, recorder));
+  return std::unique_ptr<MCSClient>(
+      new MCSClient(version, clock, connection_factory, gcm_store, recorder));
 }
 
-scoped_ptr<ConnectionFactory> GCMInternalsBuilder::BuildConnectionFactory(
-      const std::vector<GURL>& endpoints,
-      const net::BackoffEntry::Policy& backoff_policy,
-      net::HttpNetworkSession* gcm_network_session,
-      net::HttpNetworkSession* http_network_session,
-      GCMStatsRecorder* recorder) {
-  return make_scoped_ptr<ConnectionFactory>(
-      new ConnectionFactoryImpl(endpoints,
-                                backoff_policy,
-                                gcm_network_session,
-                                http_network_session,
-                                nullptr,
-                                recorder));
+std::unique_ptr<ConnectionFactory> GCMInternalsBuilder::BuildConnectionFactory(
+    const std::vector<GURL>& endpoints,
+    const net::BackoffEntry::Policy& backoff_policy,
+    net::HttpNetworkSession* gcm_network_session,
+    net::HttpNetworkSession* http_network_session,
+    GCMStatsRecorder* recorder) {
+  return base::WrapUnique<ConnectionFactory>(
+      new ConnectionFactoryImpl(endpoints, backoff_policy, gcm_network_session,
+                                http_network_session, nullptr, recorder));
 }
 
 GCMClientImpl::CheckinInfo::CheckinInfo()
@@ -295,7 +293,8 @@ void GCMClientImpl::CheckinInfo::Reset() {
   last_checkin_accounts.clear();
 }
 
-GCMClientImpl::GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder)
+GCMClientImpl::GCMClientImpl(
+    std::unique_ptr<GCMInternalsBuilder> internals_builder)
     : internals_builder_(std::move(internals_builder)),
       state_(UNINITIALIZED),
       delegate_(NULL),
@@ -316,7 +315,7 @@ void GCMClientImpl::Initialize(
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
-    scoped_ptr<Encryptor> encryptor,
+    std::unique_ptr<Encryptor> encryptor,
     GCMClient::Delegate* delegate) {
   DCHECK_EQ(UNINITIALIZED, state_);
   DCHECK(url_request_context_getter.get());
@@ -377,7 +376,8 @@ void GCMClientImpl::Start(StartMode start_mode) {
   state_ = LOADING;
 }
 
-void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
+void GCMClientImpl::OnLoadCompleted(
+    std::unique_ptr<GCMStore::LoadResult> result) {
   DCHECK_EQ(LOADING, state_);
 
   if (!result->success) {
@@ -419,9 +419,9 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
        iter != result->registrations.end();
        ++iter) {
     std::string registration_id;
-    scoped_ptr<RegistrationInfo> registration =
-        RegistrationInfo::BuildFromString(
-            iter->first, iter->second, &registration_id);
+    std::unique_ptr<RegistrationInfo> registration =
+        RegistrationInfo::BuildFromString(iter->first, iter->second,
+                                          &registration_id);
     // TODO(jianli): Add UMA to track the error case.
     if (registration.get())
       registrations_[make_linked_ptr(registration.release())] = registration_id;
@@ -629,7 +629,7 @@ void GCMClientImpl::SetLastTokenFetchTime(const base::Time& time) {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GCMClientImpl::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
+void GCMClientImpl::UpdateHeartbeatTimer(std::unique_ptr<base::Timer> timer) {
   DCHECK(mcs_client_);
   mcs_client_->UpdateHeartbeatTimer(std::move(timer));
 }
@@ -879,7 +879,7 @@ void GCMClientImpl::Register(
     }
   }
 
-  scoped_ptr<RegistrationRequest::CustomRequestHandler> request_handler;
+  std::unique_ptr<RegistrationRequest::CustomRequestHandler> request_handler;
   std::string source_to_record;
 
   const GCMRegistrationInfo* gcm_registration_info =
@@ -921,13 +921,14 @@ void GCMClientImpl::Register(
       device_checkin_info_.secret,
       registration_info->app_id);
 
-  scoped_ptr<RegistrationRequest> registration_request(new RegistrationRequest(
-      gservices_settings_.GetRegistrationURL(), request_info,
-      std::move(request_handler), GetGCMBackoffPolicy(),
-      base::Bind(&GCMClientImpl::OnRegisterCompleted,
-                 weak_ptr_factory_.GetWeakPtr(), registration_info),
-      kMaxRegistrationRetries, url_request_context_getter_, &recorder_,
-      source_to_record));
+  std::unique_ptr<RegistrationRequest> registration_request(
+      new RegistrationRequest(
+          gservices_settings_.GetRegistrationURL(), request_info,
+          std::move(request_handler), GetGCMBackoffPolicy(),
+          base::Bind(&GCMClientImpl::OnRegisterCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), registration_info),
+          kMaxRegistrationRetries, url_request_context_getter_, &recorder_,
+          source_to_record));
   registration_request->Start();
   pending_registration_requests_.insert(
       std::make_pair(registration_info, std::move(registration_request)));
@@ -981,7 +982,7 @@ void GCMClientImpl::Unregister(
     const linked_ptr<RegistrationInfo>& registration_info) {
   DCHECK_EQ(state_, READY);
 
-  scoped_ptr<UnregistrationRequest::CustomRequestHandler> request_handler;
+  std::unique_ptr<UnregistrationRequest::CustomRequestHandler> request_handler;
   std::string source_to_record;
 
   const GCMRegistrationInfo* gcm_registration_info =
@@ -1061,7 +1062,7 @@ void GCMClientImpl::Unregister(
       device_checkin_info_.secret,
       registration_info->app_id);
 
-  scoped_ptr<UnregistrationRequest> unregistration_request(
+  std::unique_ptr<UnregistrationRequest> unregistration_request(
       new UnregistrationRequest(
           gservices_settings_.GetRegistrationURL(), request_info,
           std::move(request_handler), GetGCMBackoffPolicy(),
@@ -1309,7 +1310,8 @@ void GCMClientImpl::HandleIncomingDataMessage(
   bool registered = false;
 
   // First, find among all GCM registrations.
-  scoped_ptr<GCMRegistrationInfo> gcm_registration(new GCMRegistrationInfo);
+  std::unique_ptr<GCMRegistrationInfo> gcm_registration(
+      new GCMRegistrationInfo);
   gcm_registration->app_id = app_id;
   auto gcm_registration_iter = registrations_.find(
       make_linked_ptr<RegistrationInfo>(gcm_registration.release()));
@@ -1327,7 +1329,8 @@ void GCMClientImpl::HandleIncomingDataMessage(
 
   // Then, find among all InstanceID registrations.
   if (!registered) {
-    scoped_ptr<InstanceIDTokenInfo> instance_id_token(new InstanceIDTokenInfo);
+    std::unique_ptr<InstanceIDTokenInfo> instance_id_token(
+        new InstanceIDTokenInfo);
     instance_id_token->app_id = app_id;
     instance_id_token->authorized_entity = sender;
     instance_id_token->scope = kGCMScope;

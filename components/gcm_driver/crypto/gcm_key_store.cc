@@ -116,8 +116,8 @@ void GCMKeyStore::CreateKeysAfterInitialize(const std::string& app_id,
   using EntryVectorType =
       leveldb_proto::ProtoDatabase<EncryptionData>::KeyEntryVector;
 
-  scoped_ptr<EntryVectorType> entries_to_save(new EntryVectorType());
-  scoped_ptr<std::vector<std::string>> keys_to_remove(
+  std::unique_ptr<EntryVectorType> entries_to_save(new EntryVectorType());
+  std::unique_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>());
 
   entries_to_save->push_back(std::make_pair(app_id, encryption_data));
@@ -166,8 +166,8 @@ void GCMKeyStore::RemoveKeysAfterInitialize(const std::string& app_id,
   using EntryVectorType =
       leveldb_proto::ProtoDatabase<EncryptionData>::KeyEntryVector;
 
-  scoped_ptr<EntryVectorType> entries_to_save(new EntryVectorType());
-  scoped_ptr<std::vector<std::string>> keys_to_remove(
+  std::unique_ptr<EntryVectorType> entries_to_save(new EntryVectorType());
+  std::unique_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>(1, app_id));
 
   database_->UpdateEntries(
@@ -225,8 +225,9 @@ void GCMKeyStore::DidInitialize(bool success) {
       base::Bind(&GCMKeyStore::DidLoadKeys, weak_factory_.GetWeakPtr()));
 }
 
-void GCMKeyStore::DidLoadKeys(bool success,
-                              scoped_ptr<std::vector<EncryptionData>> entries) {
+void GCMKeyStore::DidLoadKeys(
+    bool success,
+    std::unique_ptr<std::vector<EncryptionData>> entries) {
   UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.LoadKeyStoreSuccessRate", success);
   if (!success) {
     DVLOG(1) << "Unable to load entries into the GCM Key Store.";

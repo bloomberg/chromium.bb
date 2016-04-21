@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace base {
@@ -122,7 +122,7 @@ class GCMEncryptionProvider {
                              const KeyPair& pair,
                              const std::string& auth_secret);
 
-  scoped_ptr<GCMKeyStore> key_store_;
+  std::unique_ptr<GCMKeyStore> key_store_;
 
   base::WeakPtrFactory<GCMEncryptionProvider> weak_ptr_factory_;
 

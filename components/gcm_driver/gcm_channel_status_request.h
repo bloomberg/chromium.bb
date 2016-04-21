@@ -5,12 +5,13 @@
 #ifndef COMPONENTS_GCM_DRIVER_GCM_CHANNEL_STATUS_REQUEST_H_
 #define COMPONENTS_GCM_DRIVER_GCM_CHANNEL_STATUS_REQUEST_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -62,7 +63,7 @@ class GCMChannelStatusRequest : public net::URLFetcherDelegate {
   const std::string channel_status_request_url_;
   const std::string user_agent_;
   GCMChannelStatusRequestCallback callback_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
   net::BackoffEntry backoff_entry_;
   base::WeakPtrFactory<GCMChannelStatusRequest> weak_ptr_factory_;
 

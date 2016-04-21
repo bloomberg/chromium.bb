@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_GCM_DRIVER_GCM_ACCOUNT_MAPPER_H_
 #define COMPONENTS_GCM_DRIVER_GCM_ACCOUNT_MAPPER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
@@ -102,7 +102,7 @@ class GCMAccountMapper : public GCMAppHandler {
       const std::string& message_id);
 
   // Sets the clock for testing.
-  void SetClockForTesting(scoped_ptr<base::Clock> clock);
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
   // GCMDriver owns GCMAccountMapper.
   GCMDriver* gcm_driver_;
@@ -111,7 +111,7 @@ class GCMAccountMapper : public GCMAppHandler {
   DispatchMessageCallback dispatch_message_callback_;
 
   // Clock for timestamping status changes.
-  scoped_ptr<base::Clock> clock_;
+  std::unique_ptr<base::Clock> clock_;
 
   // Currnetly tracked account mappings.
   AccountMappings accounts_;

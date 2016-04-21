@@ -6,6 +6,7 @@
 #define COMPONENTS_GCM_DRIVER_GCM_DRIVER_DESKTOP_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/tuple.h"
@@ -49,7 +49,7 @@ class GCMDriverDesktop : public GCMDriver,
                          public InstanceIDHandler {
  public:
   GCMDriverDesktop(
-      scoped_ptr<GCMClientFactory> gcm_client_factory,
+      std::unique_ptr<GCMClientFactory> gcm_client_factory,
       const GCMClient::ChromeBuildInfo& chrome_build_info,
       const std::string& channel_status_request_url,
       const std::string& user_agent,
@@ -186,7 +186,7 @@ class GCMDriverDesktop : public GCMDriver,
                            const std::string& scope,
                            GCMClient::Result result);
 
-  scoped_ptr<GCMChannelStatusSyncer> gcm_channel_status_syncer_;
+  std::unique_ptr<GCMChannelStatusSyncer> gcm_channel_status_syncer_;
 
   // Flag to indicate whether the user is signed in to a GAIA account.
   bool signed_in_;
@@ -206,7 +206,7 @@ class GCMDriverDesktop : public GCMDriver,
   base::ObserverList<GCMConnectionObserver, false> connection_observer_list_;
 
   // Account mapper. Only works when user is signed in.
-  scoped_ptr<GCMAccountMapper> account_mapper_;
+  std::unique_ptr<GCMAccountMapper> account_mapper_;
 
   // Time of last token fetching.
   base::Time last_token_fetch_time_;
@@ -214,7 +214,7 @@ class GCMDriverDesktop : public GCMDriver,
   scoped_refptr<base::SequencedTaskRunner> ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> io_thread_;
 
-  scoped_ptr<GCMDelayedTaskController> delayed_task_controller_;
+  std::unique_ptr<GCMDelayedTaskController> delayed_task_controller_;
 
   // Whether the HeartbeatManager should try to wake the system from suspend for
   // sending heartbeat messages.
@@ -222,7 +222,7 @@ class GCMDriverDesktop : public GCMDriver,
 
   // For all the work occurring on the IO thread. Must be destroyed on the IO
   // thread.
-  scoped_ptr<IOWorker> io_worker_;
+  std::unique_ptr<IOWorker> io_worker_;
 
   // Callback for GetGCMStatistics.
   GetGCMStatisticsCallback request_gcm_statistics_callback_;

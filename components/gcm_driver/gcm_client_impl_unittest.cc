@@ -6,12 +6,14 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -194,13 +196,14 @@ class FakeGCMInternalsBuilder : public GCMInternalsBuilder {
   FakeGCMInternalsBuilder(base::TimeDelta clock_step);
   ~FakeGCMInternalsBuilder() override;
 
-  scoped_ptr<base::Clock> BuildClock() override;
-  scoped_ptr<MCSClient> BuildMCSClient(const std::string& version,
-                                       base::Clock* clock,
-                                       ConnectionFactory* connection_factory,
-                                       GCMStore* gcm_store,
-                                       GCMStatsRecorder* recorder) override;
-  scoped_ptr<ConnectionFactory> BuildConnectionFactory(
+  std::unique_ptr<base::Clock> BuildClock() override;
+  std::unique_ptr<MCSClient> BuildMCSClient(
+      const std::string& version,
+      base::Clock* clock,
+      ConnectionFactory* connection_factory,
+      GCMStore* gcm_store,
+      GCMStatsRecorder* recorder) override;
+  std::unique_ptr<ConnectionFactory> BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
       net::HttpNetworkSession* gcm_network_session,
@@ -217,29 +220,28 @@ FakeGCMInternalsBuilder::FakeGCMInternalsBuilder(base::TimeDelta clock_step)
 
 FakeGCMInternalsBuilder::~FakeGCMInternalsBuilder() {}
 
-scoped_ptr<base::Clock> FakeGCMInternalsBuilder::BuildClock() {
-  return make_scoped_ptr<base::Clock>(new AutoAdvancingTestClock(clock_step_));
+std::unique_ptr<base::Clock> FakeGCMInternalsBuilder::BuildClock() {
+  return base::WrapUnique<base::Clock>(new AutoAdvancingTestClock(clock_step_));
 }
 
-scoped_ptr<MCSClient> FakeGCMInternalsBuilder::BuildMCSClient(
+std::unique_ptr<MCSClient> FakeGCMInternalsBuilder::BuildMCSClient(
     const std::string& version,
     base::Clock* clock,
     ConnectionFactory* connection_factory,
     GCMStore* gcm_store,
     GCMStatsRecorder* recorder) {
-  return make_scoped_ptr<MCSClient>(new FakeMCSClient(clock,
-                                                      connection_factory,
-                                                      gcm_store,
-                                                      recorder));
+  return base::WrapUnique<MCSClient>(
+      new FakeMCSClient(clock, connection_factory, gcm_store, recorder));
 }
 
-scoped_ptr<ConnectionFactory> FakeGCMInternalsBuilder::BuildConnectionFactory(
+std::unique_ptr<ConnectionFactory>
+FakeGCMInternalsBuilder::BuildConnectionFactory(
     const std::vector<GURL>& endpoints,
     const net::BackoffEntry::Policy& backoff_policy,
     net::HttpNetworkSession* gcm_network_session,
     net::HttpNetworkSession* http_network_session,
     GCMStatsRecorder* recorder) {
-  return make_scoped_ptr<ConnectionFactory>(new FakeConnectionFactory());
+  return base::WrapUnique<ConnectionFactory>(new FakeConnectionFactory());
 }
 
 }  // namespace
@@ -391,7 +393,7 @@ class GCMClientImplTest : public testing::Test,
   base::Time last_token_fetch_time_;
   std::vector<AccountMapping> last_account_mappings_;
 
-  scoped_ptr<GCMClientImpl> gcm_client_;
+  std::unique_ptr<GCMClientImpl> gcm_client_;
 
   net::TestURLFetcherFactory url_fetcher_factory_;
 
@@ -439,7 +441,7 @@ bool GCMClientImplTest::CreateUniqueTempDir() {
 }
 
 void GCMClientImplTest::BuildGCMClient(base::TimeDelta clock_step) {
-  gcm_client_.reset(new GCMClientImpl(make_scoped_ptr<GCMInternalsBuilder>(
+  gcm_client_.reset(new GCMClientImpl(base::WrapUnique<GCMInternalsBuilder>(
       new FakeGCMInternalsBuilder(clock_step))));
 }
 
@@ -530,13 +532,9 @@ void GCMClientImplTest::InitializeGCMClient() {
   // Actual initialization.
   GCMClient::ChromeBuildInfo chrome_build_info;
   chrome_build_info.version = kChromeVersion;
-  gcm_client_->Initialize(
-      chrome_build_info,
-      gcm_store_path(),
-      task_runner_,
-      url_request_context_getter_,
-      make_scoped_ptr<Encryptor>(new FakeEncryptor),
-      this);
+  gcm_client_->Initialize(chrome_build_info, gcm_store_path(), task_runner_,
+                          url_request_context_getter_,
+                          base::WrapUnique<Encryptor>(new FakeEncryptor), this);
 }
 
 void GCMClientImplTest::StartGCMClient() {
@@ -548,14 +546,14 @@ void GCMClientImplTest::StartGCMClient() {
 
 void GCMClientImplTest::Register(const std::string& app_id,
                                  const std::vector<std::string>& senders) {
-  scoped_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
+  std::unique_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
   gcm_info->app_id = app_id;
   gcm_info->sender_ids = senders;
   gcm_client()->Register(make_linked_ptr<RegistrationInfo>(gcm_info.release()));
 }
 
 void GCMClientImplTest::Unregister(const std::string& app_id) {
-  scoped_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
+  std::unique_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
   gcm_info->app_id = app_id;
   gcm_client()->Unregister(
       make_linked_ptr<RegistrationInfo>(gcm_info.release()));
@@ -1438,7 +1436,8 @@ void GCMClientInstanceIDTest::RemoveInstanceID(const std::string& app_id) {
 void GCMClientInstanceIDTest::GetToken(const std::string& app_id,
                                        const std::string& authorized_entity,
                                        const std::string& scope) {
-  scoped_ptr<InstanceIDTokenInfo> instance_id_info(new InstanceIDTokenInfo);
+  std::unique_ptr<InstanceIDTokenInfo> instance_id_info(
+      new InstanceIDTokenInfo);
   instance_id_info->app_id = app_id;
   instance_id_info->authorized_entity = authorized_entity;
   instance_id_info->scope = scope;
@@ -1449,7 +1448,8 @@ void GCMClientInstanceIDTest::GetToken(const std::string& app_id,
 void GCMClientInstanceIDTest::DeleteToken(const std::string& app_id,
                                           const std::string& authorized_entity,
                                           const std::string& scope) {
-  scoped_ptr<InstanceIDTokenInfo> instance_id_info(new InstanceIDTokenInfo);
+  std::unique_ptr<InstanceIDTokenInfo> instance_id_info(
+      new InstanceIDTokenInfo);
   instance_id_info->app_id = app_id;
   instance_id_info->authorized_entity = authorized_entity;
   instance_id_info->scope = scope;
@@ -1471,7 +1471,8 @@ void GCMClientInstanceIDTest::CompleteDeleteToken() {
 bool GCMClientInstanceIDTest::ExistsToken(const std::string& app_id,
                                           const std::string& authorized_entity,
                                           const std::string& scope) const {
-  scoped_ptr<InstanceIDTokenInfo> instance_id_info(new InstanceIDTokenInfo);
+  std::unique_ptr<InstanceIDTokenInfo> instance_id_info(
+      new InstanceIDTokenInfo);
   instance_id_info->app_id = app_id;
   instance_id_info->authorized_entity = authorized_entity;
   instance_id_info->scope = scope;

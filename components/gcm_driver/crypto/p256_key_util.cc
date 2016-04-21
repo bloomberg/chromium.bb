@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "crypto/ec_private_key.h"
 
 namespace gcm {
@@ -34,7 +35,8 @@ bool CreateP256KeyPair(std::string* out_private_key,
   DCHECK(out_private_key);
   DCHECK(out_public_key);
 
-  scoped_ptr<crypto::ECPrivateKey> key_pair(crypto::ECPrivateKey::Create());
+  std::unique_ptr<crypto::ECPrivateKey> key_pair(
+      crypto::ECPrivateKey::Create());
   if (!key_pair.get()) {
     DLOG(ERROR) << "Unable to generate a new P-256 key pair.";
     return false;
