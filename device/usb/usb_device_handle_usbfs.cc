@@ -121,6 +121,7 @@ UsbTransferStatus ConvertTransferResult(int rc) {
       return USB_TRANSFER_STALLED;
     case ENODEV:
     case ESHUTDOWN:
+    case EPROTO:
       return USB_TRANSFER_DISCONNECT;
     default:
       // TODO(reillyg): Add a specific error message whenever one of the cases
@@ -240,7 +241,7 @@ struct UsbDeviceHandleUsbfs::Transfer {
   TransferCallback callback;
   IsochronousTransferCallback isoc_callback;
   base::CancelableClosure timeout_closure;
-  bool timed_out = false;
+  bool cancelled = false;
 
   // The |urb| field must be the last in the struct so that the extra space
   // allocated by the overridden new function above extends the length of its
@@ -306,10 +307,14 @@ scoped_refptr<UsbDevice> UsbDeviceHandleUsbfs::GetDevice() const {
 }
 
 void UsbDeviceHandleUsbfs::Close() {
+  if (!device_)
+    return;  // Already closed.
+
   // On the |task_runner_| thread check |device_| to see if the handle is
   // closed. On the |blocking_task_runner_| thread check |fd_.is_valid()| to
   // see if the handle is closed.
-  DCHECK(device_);
+  for (const auto& transfer : transfers_)
+    CancelTransfer(transfer.get(), USB_TRANSFER_CANCELLED);
 #if !defined(OS_ANDROID)
   static_cast<UsbDeviceImpl*>(device_.get())->HandleClosed(this);
 #endif
@@ -694,7 +699,7 @@ void UsbDeviceHandleUsbfs::ReapedUrbs(const std::vector<usbdevfs_urb*>& urbs) {
 }
 
 void UsbDeviceHandleUsbfs::TransferComplete(scoped_ptr<Transfer> transfer) {
-  if (transfer->timed_out)
+  if (transfer->cancelled)
     return;
 
   // The transfer will soon be freed. Cancel the timeout callback so that the
@@ -770,8 +775,8 @@ void UsbDeviceHandleUsbfs::ReportIsochronousError(
 void UsbDeviceHandleUsbfs::SetUpTimeoutCallback(Transfer* transfer,
                                                 unsigned int timeout) {
   if (timeout > 0) {
-    transfer->timeout_closure.Reset(
-        base::Bind(&UsbDeviceHandleUsbfs::TransferTimedOut, transfer));
+    transfer->timeout_closure.Reset(base::Bind(
+        &UsbDeviceHandleUsbfs::CancelTransfer, transfer, USB_TRANSFER_TIMEOUT));
     task_runner_->PostDelayedTask(FROM_HERE,
                                   transfer->timeout_closure.callback(),
                                   base::TimeDelta::FromMilliseconds(timeout));
@@ -779,21 +784,22 @@ void UsbDeviceHandleUsbfs::SetUpTimeoutCallback(Transfer* transfer,
 }
 
 // static
-void UsbDeviceHandleUsbfs::TransferTimedOut(Transfer* transfer) {
+void UsbDeviceHandleUsbfs::CancelTransfer(Transfer* transfer,
+                                          UsbTransferStatus status) {
   // |transfer| must stay in |transfers_| as it is still being processed by the
-  // kernel and will be reaped later. Just tell the caller that the timeout
-  // elapsed.
-  transfer->timed_out = true;
+  // kernel and may be reaped later.
+  transfer->cancelled = true;
+  transfer->timeout_closure.Cancel();
   if (transfer->urb.type == USBDEVFS_URB_TYPE_ISO) {
     std::vector<IsochronousPacket> packets(transfer->urb.number_of_packets);
     for (size_t i = 0; i < packets.size(); ++i) {
       packets[i].length = transfer->urb.iso_frame_desc[i].length;
       packets[i].transferred_length = 0;
-      packets[i].status = USB_TRANSFER_TIMEOUT;
+      packets[i].status = status;
     }
     transfer->isoc_callback.Run(transfer->buffer, packets);
   } else {
-    transfer->callback.Run(USB_TRANSFER_TIMEOUT, transfer->buffer, 0);
+    transfer->callback.Run(status, transfer->buffer, 0);
   }
 }
 

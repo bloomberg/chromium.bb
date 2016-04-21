@@ -121,7 +121,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
       UsbTransferStatus status);
   void SetUpTimeoutCallback(Transfer* transfer, unsigned int timeout);
 
-  static void TransferTimedOut(Transfer* transfer);
+  static void CancelTransfer(Transfer* transfer, UsbTransferStatus status);
 
   scoped_refptr<UsbDevice> device_;
   base::ScopedFD fd_;
