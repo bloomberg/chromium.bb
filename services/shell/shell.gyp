@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 
 {
-  'targets': [{
+  'targets': [
+  {
     'target_name': 'shell_interfaces',
     'type': 'none',
     'variables': {
@@ -17,9 +18,18 @@
         'public/interfaces/shell_client_factory.mojom',
         'public/interfaces/shell_resolver.mojom',
       ],
+      'mojom_typemaps': [
+        '<(DEPTH)/mojo/common/common_custom_types.typemap',
+      ],
     },
     'includes': [ '../../mojo/mojom_bindings_generator_explicit.gypi' ],
-  },
+    'dependencies': [
+      '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
+    ],
+    'export_dependent_settings': [
+      '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
+    ],
+  },  
   {
     # GN version: //services/shell/public/cpp
     'target_name': 'shell_public',
@@ -88,21 +98,21 @@
       'shell.h',
       'switches.cc',
       'switches.cc',
-      '<(DEPTH)/mojo/util/filename_util.cc',
-      '<(DEPTH)/mojo/util/filename_util.h',
     ],
     'dependencies': [
       'shell_public',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_lib',
-      '<(DEPTH)/mojo/mojo_base.gyp:mojo_url_type_converters',
-      '<(DEPTH)/net/net.gyp:net',
-      '<(DEPTH)/url/url.gyp:url_lib',
     ],
     'export_dependent_settings': [
       'shell_public',
     ],
+    'variables': {
+      'mojom_typemaps': [
+        '<(DEPTH)/mojo/common/common_custom_types.typemap',
+      ],
+    }
   }, {
     'target_name': 'mojo_shell_unittests',
     'type': 'executable',
@@ -115,11 +125,9 @@
       'shell_test_public',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_lib',
-      '<(DEPTH)/mojo/mojo_base.gyp:mojo_url_type_converters',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_run_all_unittests',
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
       '<(DEPTH)/testing/gtest.gyp:gtest',
-      '<(DEPTH)/url/url.gyp:url_lib',
     ]
   }, {
     'target_name': 'shell_test_public',

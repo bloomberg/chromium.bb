@@ -37,11 +37,9 @@ source_set("shell") {
     "//base/third_party/dynamic_annotations",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
-    "//mojo/util:filename_util",
     "//services/catalog/public/interfaces",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/interfaces",
-    "//url",
   ]
 
   public_deps = [

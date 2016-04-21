@@ -60,20 +60,20 @@
     },
     {
       # GN version: //mojo/common:common_custom_types
-      'target_name': 'mojo_common_custom_types',
-      'type': 'static_library',
+      'target_name': 'mojo_common_custom_types_mojom',
+      'type': 'none',
       'variables': {
+        'mojom_files': [
+          'common/common_custom_types.mojom',
+        ],
         'mojom_typemaps': [
           'common/common_custom_types.typemap',
         ],
       },
-      'sources': [
-        'common/common_custom_types.mojom',
-      ],
       'dependencies': [
         '../ipc/ipc.gyp:ipc',
       ],
-      'includes': [ 'mojom_bindings_generator.gypi' ],
+      'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
     },
     {
       # GN version: //mojo/common:url_type_converters
@@ -124,7 +124,7 @@
         'common/test_common_custom_types.mojom',
       ],
       'dependencies': [
-        'mojo_common_custom_types',
+        'mojo_common_custom_types_mojom',
       ],
       'includes': [ 'mojom_bindings_generator.gypi' ],
     },
@@ -138,7 +138,7 @@
         '../base/base.gyp:base_message_loop_tests',
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
-        'mojo_common_custom_types',
+        'mojo_common_custom_types_mojom',
         'mojo_common_lib',
         'mojo_test_common_custom_types',
         'mojo_edk.gyp:mojo_system_impl',

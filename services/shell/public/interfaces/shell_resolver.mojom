@@ -4,6 +4,7 @@
 
 module shell.mojom;
 
+import "mojo/common/common_custom_types.mojom";
 import "services/shell/public/interfaces/capabilities.mojom";
 
 // The result of a Resolve operation via ShellResolver.
@@ -24,9 +25,8 @@ struct ResolveResult {
   // The set of capabilities provided and required by |name|.
   CapabilitySpec capabilities;
 
-  // A file URL to the package specified by |name|.
-  // TODO(beng): What if resolved_mojo_name needs to be re-resolved?
-  string package_url;
+  // A path to the package file specified by |name|.
+  mojo.common.mojom.FilePath package_path;
 };
 
 // Implemented exclusively for the Mojo Shell's use in resolving mojo: names

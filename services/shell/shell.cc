@@ -18,10 +18,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
-#include "mojo/common/url_type_converters.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/util/filename_util.h"
 #include "services/shell/connect_util.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/names.h"
@@ -29,7 +27,6 @@
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/shell.mojom.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
-#include "url/gurl.h"
 
 namespace shell {
 
@@ -730,7 +727,7 @@ void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
   } else {
     // Otherwise we create a new ShellClient pipe.
     mojom::ShellClientRequest request = GetProxy(&client);
-    CHECK(!result->package_url.is_null() && !result->capabilities.is_null());
+    CHECK(!result->package_path.empty() && !result->capabilities.is_null());
 
     if (target.name() != result->resolved_name) {
       instance->StartWithClient(std::move(client));
@@ -739,8 +736,7 @@ void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
       CreateShellClientWithFactory(factory, target.name(),
                                    std::move(request));
     } else {
-      instance->StartWithFilePath(
-          mojo::util::UrlToFilePath(result->package_url.To<GURL>()));
+      instance->StartWithFilePath(result->package_path);
     }
   }
 

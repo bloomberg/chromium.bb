@@ -16,5 +16,7 @@ mojom("interfaces") {
     "shell_resolver.mojom",
   ]
 
-  import_dirs = [ "//mojo/services" ]
+  public_deps = [
+    "//mojo/common:common_custom_types",
+  ]
 }

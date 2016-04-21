@@ -5,10 +5,8 @@
 #include "services/catalog/entry.h"
 
 #include "base/values.h"
-#include "mojo/util/filename_util.h"
 #include "services/catalog/store.h"
 #include "services/shell/public/cpp/names.h"
-#include "url/gurl.h"
 
 namespace catalog {
 namespace {
@@ -231,7 +229,7 @@ shell::mojom::ResolveResultPtr
   result->qualifier = input.qualifier();
   result->capabilities =
       shell::mojom::CapabilitySpec::From(input.capabilities());
-  result->package_url = mojo::util::FilePathToFileURL(package.path()).spec();
+  result->package_path = package.path();
   return result;
 }
 
