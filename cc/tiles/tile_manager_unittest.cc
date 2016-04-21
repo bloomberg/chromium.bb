@@ -11,6 +11,7 @@
 #include "cc/playback/raster_source.h"
 #include "cc/playback/recording_source.h"
 #include "cc/raster/raster_buffer.h"
+#include "cc/raster/synchronous_task_graph_runner.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
@@ -1587,16 +1588,14 @@ TEST_F(TileManagerTilePriorityQueueTest, NoRasterTasksforSolidColorTiles) {
 // TODO(vmpstr): Merge TileManagerTest and TileManagerTilePriorityQueueTest.
 class TileManagerTest : public testing::Test {
  public:
-  TileManagerTest()
-      : output_surface_(FakeOutputSurface::CreateSoftware(
-            base::WrapUnique(new SoftwareOutputDevice))) {}
-
   void SetUp() override {
     LayerTreeSettings settings;
     CustomizeSettings(&settings);
+    output_surface_ = GetOutputSurface();
+    task_graph_runner_ = GetTaskGraphRunner();
     host_impl_.reset(new MockLayerTreeHostImpl(settings, &task_runner_provider_,
                                                &shared_bitmap_manager_,
-                                               &task_graph_runner_));
+                                               task_graph_runner_.get()));
     host_impl_->SetVisible(true);
     host_impl_->InitializeRenderer(output_surface_.get());
   }
@@ -1669,13 +1668,25 @@ class TileManagerTest : public testing::Test {
                                 task_graph_runner) {}
 
     MOCK_METHOD0(NotifyAllTileTasksCompleted, void());
+    MOCK_METHOD0(NotifyReadyToDraw, void());
   };
 
   // By default do no customization.
   virtual void CustomizeSettings(LayerTreeSettings* settings) {}
 
+  // By default use TestTaskGraphRunner.
+  virtual std::unique_ptr<TaskGraphRunner> GetTaskGraphRunner() const {
+    return base::WrapUnique(new TestTaskGraphRunner());
+  }
+
+  // By default use SoftwareOutputSurface.
+  virtual std::unique_ptr<OutputSurface> GetOutputSurface() const {
+    return FakeOutputSurface::CreateSoftware(
+        base::WrapUnique(new SoftwareOutputDevice));
+  }
+
   TestSharedBitmapManager shared_bitmap_manager_;
-  TestTaskGraphRunner task_graph_runner_;
+  std::unique_ptr<TaskGraphRunner> task_graph_runner_;
   FakeImplTaskRunnerProvider task_runner_provider_;
   std::unique_ptr<OutputSurface> output_surface_;
   std::unique_ptr<MockLayerTreeHostImpl> host_impl_;
@@ -1827,6 +1838,74 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
   }
 }
 
+class ActivationTasksDoNotBlockReadyToDrawTest : public TileManagerTest {
+ protected:
+  std::unique_ptr<TaskGraphRunner> GetTaskGraphRunner() const override {
+    return base::WrapUnique(new SynchronousTaskGraphRunner());
+  }
+
+  std::unique_ptr<OutputSurface> GetOutputSurface() const override {
+    return FakeOutputSurface::Create3d();
+  }
+
+  void CustomizeSettings(LayerTreeSettings* settings) override {
+    settings->gpu_rasterization_forced = true;
+  }
+
+  SynchronousTaskGraphRunner* GetSynchronousTaskGraphRunner() const {
+    return static_cast<SynchronousTaskGraphRunner*>(task_graph_runner_.get());
+  }
+};
+
+TEST_F(ActivationTasksDoNotBlockReadyToDrawTest,
+       ActivationTasksDoNotBlockReadyToDraw) {
+  const gfx::Size layer_bounds(1000, 1000);
+
+  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+
+  // Active tree has no non-solid tiles, so it will generate no tile tasks.
+  std::unique_ptr<FakeRecordingSource> active_tree_recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
+
+  SkPaint solid_paint;
+  SkColor solid_color = SkColorSetARGB(255, 12, 23, 34);
+  solid_paint.setColor(solid_color);
+  active_tree_recording_source->add_draw_rect_with_paint(
+      gfx::Rect(layer_bounds), solid_paint);
+
+  active_tree_recording_source->Rerecord();
+
+  // Pending tree has non-solid tiles, so it will generate tile tasks.
+  std::unique_ptr<FakeRecordingSource> pending_tree_recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  SkColor non_solid_color = SkColorSetARGB(128, 45, 56, 67);
+  SkPaint non_solid_paint;
+  non_solid_paint.setColor(non_solid_color);
+
+  pending_tree_recording_source->add_draw_rect_with_paint(
+      gfx::Rect(5, 5, 10, 10), non_solid_paint);
+  pending_tree_recording_source->Rerecord();
+
+  scoped_refptr<RasterSource> active_tree_raster_source =
+      RasterSource::CreateFromRecordingSource(
+          active_tree_recording_source.get(), false);
+  scoped_refptr<RasterSource> pending_tree_raster_source =
+      RasterSource::CreateFromRecordingSource(
+          pending_tree_recording_source.get(), false);
+
+  SetupTrees(pending_tree_raster_source, active_tree_raster_source);
+  host_impl_->tile_manager()->PrepareTiles(host_impl_->global_tile_state());
+
+  // The first task to run should be ReadyToDraw (this should not be blocked by
+  // the tasks required for activation).
+  base::RunLoop run_loop;
+  EXPECT_CALL(*host_impl_, NotifyReadyToDraw())
+      .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
+  GetSynchronousTaskGraphRunner()->RunSingleTaskForTesting();
+  run_loop.Run();
+}
+
+// Fake TileTaskRunner that just no-ops all calls.
 // Fake TileTaskWorkerPool that just no-ops all calls.
 class FakeTileTaskWorkerPool : public TileTaskWorkerPool,
                                public RasterBufferProvider {

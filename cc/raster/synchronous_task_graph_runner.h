@@ -27,6 +27,9 @@ class CC_EXPORT SynchronousTaskGraphRunner : public TaskGraphRunner {
   // Runs all pending tasks from all namespaces.
   void RunUntilIdle();
 
+  // For test use only.
+  bool RunSingleTaskForTesting() { return RunTask(); }
+
  private:
   // Returns true if there was a task to run.
   bool RunTask();

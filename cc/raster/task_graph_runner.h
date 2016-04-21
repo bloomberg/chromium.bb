@@ -69,6 +69,8 @@ class CC_EXPORT NamespaceToken {
 //   - A TaskGraphRunner that has a method Run() that runs each task.
 class CC_EXPORT TaskGraphRunner {
  public:
+  virtual ~TaskGraphRunner() {}
+
   // Returns a unique token that can be used to pass a task graph to
   // ScheduleTasks(). Valid tokens are always nonzero.
   virtual NamespaceToken GetNamespaceToken() = 0;
@@ -86,9 +88,6 @@ class CC_EXPORT TaskGraphRunner {
   // Collect all completed tasks in |completed_tasks|.
   virtual void CollectCompletedTasks(NamespaceToken token,
                                      Task::Vector* completed_tasks) = 0;
-
- protected:
-  virtual ~TaskGraphRunner() {}
 };
 
 }  // namespace cc

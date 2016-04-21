@@ -809,16 +809,17 @@ void TileManager::ScheduleTasks(
   }
 
   // Insert nodes for our task completion tasks. We enqueue these using
-  // FOREGROUND priority as they are relatively quick tasks and we'd like
-  // to trigger our callbacks quickly to aid in scheduling.
+  // NONCONCURRENT_FOREGROUND priority as this is the highest prioirty and we'd
+  // like to run these tasks as soon as possible.
   InsertNodeForTask(&graph_, required_for_activation_done_task.get(),
-                    TASK_CATEGORY_FOREGROUND,
+                    TASK_CATEGORY_NONCONCURRENT_FOREGROUND,
                     kRequiredForActivationDoneTaskPriority,
                     required_for_activate_count);
   InsertNodeForTask(&graph_, required_for_draw_done_task.get(),
-                    TASK_CATEGORY_FOREGROUND, kRequiredForDrawDoneTaskPriority,
-                    required_for_draw_count);
-  InsertNodeForTask(&graph_, all_done_task.get(), TASK_CATEGORY_FOREGROUND,
+                    TASK_CATEGORY_NONCONCURRENT_FOREGROUND,
+                    kRequiredForDrawDoneTaskPriority, required_for_draw_count);
+  InsertNodeForTask(&graph_, all_done_task.get(),
+                    TASK_CATEGORY_NONCONCURRENT_FOREGROUND,
                     kAllDoneTaskPriority, all_count);
 
   // We must reduce the amount of unused resoruces before calling
