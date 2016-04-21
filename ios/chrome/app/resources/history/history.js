@@ -44,7 +44,7 @@ var SupervisedUserFilteringBehavior = {
 
 /**
  * The type of the history result object. The definition is based on
- * chrome/browser/ui/webui/history_ui.cc:
+ * chrome/browser/ui/webui/history_ui.mm:
  *     BrowsingHistoryHandler::HistoryEntry::ToValue()
  * @typedef {{allTimestamps: Array<number>,
  *            blockedVisit: (boolean|undefined),
@@ -65,7 +65,7 @@ var HistoryEntry;
 
 /**
  * The type of the history results info object. The definition is based on
- * chrome/browser/ui/webui/history_ui.cc:
+ * chrome/browser/ui/webui/history_ui.mm:
  *     BrowsingHistoryHandler::QueryComplete()
  * @typedef {{finished: boolean,
  *            hasSyncedResults: (boolean|undefined),

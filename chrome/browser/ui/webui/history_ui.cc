@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/history_ui.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
@@ -18,9 +20,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/browsing_data_ui/history_notice_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
@@ -172,6 +176,20 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
     web_ui->AddMessageHandler(new HistoryLoginHandler());
   }
 #endif
+
+  // TODO(crbug.com/595332): Since the API to query other forms of browsing
+  // history is not ready yet, make it possible to test the history UI as if
+  // it were. If the user opens chrome://history/?reset_ofbh, we will assume
+  // that other forms of browsing history exist (for all accounts), and we will
+  // also reset the one-time notice shown in the Clear Browsing Data dialog.
+  // This code should be removed as soon as the API is ready.
+  GURL url = web_ui->GetWebContents()->GetVisibleURL();
+  if (url.has_query() && url.query() == "reset_ofbh") {
+    Profile::FromWebUI(web_ui)->GetPrefs()->SetInteger(
+        prefs::kClearBrowsingDataHistoryNoticeShownTimes, 0);
+    browsing_data_ui::testing::
+        g_override_other_forms_of_browsing_history_query = true;
+  }
 
   // Set up the chrome://history-frame/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
